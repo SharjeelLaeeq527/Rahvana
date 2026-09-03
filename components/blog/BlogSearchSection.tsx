@@ -25,6 +25,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 
 interface BlogSearchSectionProps {
   articles: Article[];
@@ -103,9 +104,9 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
     return articles.filter((article) => {
       // Category filter
       if (selectedCategory !== "All") {
-        const catLower = article.category.toLowerCase();
-        const titleLower = article.title.toLowerCase();
-        const keywordsLower = article.keywords.map((k) => k.toLowerCase());
+        const catLower = (article.category || "").toLowerCase();
+        const titleLower = (article.title || "").toLowerCase();
+        const keywordsLower = (article.keywords || []).map((k) => k.toLowerCase());
 
         if (selectedCategory === "IR-1 / CR-1") {
           const match =
@@ -152,11 +153,11 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
       if (!searchQuery.trim()) return true;
 
       const q = searchQuery.toLowerCase().trim();
-      const titleMatch = article.title.toLowerCase().includes(q);
-      const descMatch = article.description.toLowerCase().includes(q);
-      const blufMatch = article.bluf.toLowerCase().includes(q);
-      const catMatch = article.category.toLowerCase().includes(q);
-      const keywordMatch = article.keywords.some((k) => k.toLowerCase().includes(q));
+      const titleMatch = (article.title || "").toLowerCase().includes(q);
+      const descMatch = (article.description || "").toLowerCase().includes(q);
+      const blufMatch = (article.bluf || "").toLowerCase().includes(q);
+      const catMatch = (article.category || "").toLowerCase().includes(q);
+      const keywordMatch = (article.keywords || []).some((k) => k.toLowerCase().includes(q));
 
       return titleMatch || descMatch || blufMatch || catMatch || keywordMatch;
     });
@@ -188,37 +189,59 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
           </h2>
           <div className="group border-border/70 bg-card relative overflow-hidden rounded-3xl border p-5 shadow-sm transition-all duration-300 hover:border-teal-500/40 hover:shadow-md sm:p-6 lg:p-7">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-12 md:items-center lg:gap-8">
-              <div className="md:col-span-5 lg:col-span-5">
-                <div className="bg-muted relative h-56 w-full overflow-hidden rounded-2xl sm:h-64">
-                  <Image
-                    src={featuredArticle.heroImage}
-                    alt={featuredArticle.title}
-                    fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    priority
-                  />
-                </div>
-              </div>
-
-              <div className="flex flex-col justify-between md:col-span-7 lg:col-span-7">
-                <div>
-                  <div className="text-muted-foreground flex flex-wrap items-center gap-2.5 text-xs">
-                    <span className="rounded-full border border-teal-500/20 bg-teal-500/10 px-3 py-0.5 font-semibold text-teal-700 dark:text-teal-300">
-                      {featuredArticle.category}
-                    </span>
-                    <span>•</span>
-                    <span>{featuredArticle.readTime}</span>
-                    <span>•</span>
-                    <span>Updated {featuredArticle.updatedAt}</span>
+              {featuredArticle.heroImage && (
+                <div className="md:col-span-5 lg:col-span-5">
+                  <div className="bg-muted relative h-56 w-full overflow-hidden rounded-2xl sm:h-64">
+                    <Image
+                      src={featuredArticle.heroImage}
+                      alt={featuredArticle.heroImageAlt || featuredArticle.title || "Featured Article"}
+                      fill
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      priority
+                    />
                   </div>
+                </div>
+              )}
+
+              <div
+                className={cn(
+                  "flex flex-col justify-between",
+                  featuredArticle.heroImage
+                    ? "md:col-span-7 lg:col-span-7"
+                    : "md:col-span-12 lg:col-span-12"
+                )}
+              >
+                <div>
+                  {(featuredArticle.category ||
+                    featuredArticle.readTime ||
+                    featuredArticle.updatedAt) && (
+                    <div className="text-muted-foreground flex flex-wrap items-center gap-2.5 text-xs">
+                      {featuredArticle.category && (
+                        <span className="rounded-full border border-teal-500/20 bg-teal-500/10 px-3 py-0.5 font-semibold text-teal-700 dark:text-teal-300">
+                          {featuredArticle.category}
+                        </span>
+                      )}
+                      {featuredArticle.category &&
+                        (featuredArticle.readTime || featuredArticle.updatedAt) && <span>•</span>}
+                      {featuredArticle.readTime && <span>{featuredArticle.readTime}</span>}
+                      {featuredArticle.readTime && featuredArticle.updatedAt && <span>•</span>}
+                      {featuredArticle.updatedAt && (
+                        <span>Updated {featuredArticle.updatedAt}</span>
+                      )}
+                    </div>
+                  )}
 
                   <h3 className="text-foreground mt-3 text-xl font-bold tracking-tight transition-colors group-hover:text-teal-600 sm:text-2xl dark:group-hover:text-teal-400">
-                    <Link href={`/blog/${featuredArticle.slug}`}>{featuredArticle.title}</Link>
+                    <Link href={`/blog/${featuredArticle.slug}`}>
+                      {featuredArticle.title || "Featured Guide"}
+                    </Link>
                   </h3>
 
-                  <p className="text-muted-foreground mt-2.5 line-clamp-3 text-xs leading-relaxed sm:text-sm">
-                    {featuredArticle.description}
-                  </p>
+                  {featuredArticle.description && (
+                    <p className="text-muted-foreground mt-2.5 line-clamp-3 text-xs leading-relaxed sm:text-sm">
+                      {featuredArticle.description}
+                    </p>
+                  )}
                 </div>
 
                 <div className="mt-6">
@@ -325,51 +348,69 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                   {featuredArticle && (
                     <div className="group border-border bg-card relative overflow-hidden rounded-3xl border p-6 shadow-xl transition-all duration-300 hover:border-teal-500/50 hover:shadow-2xl sm:p-8 lg:p-10">
                       <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-center">
-                        <div className="lg:col-span-7">
-                          <div className="text-muted-foreground flex flex-wrap items-center gap-3 text-xs">
-                            <span className="rounded-full border border-teal-500/20 bg-teal-500/10 px-3 py-1 font-semibold text-teal-600 dark:text-teal-400">
-                              {featuredArticle.category}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Clock className="h-3.5 w-3.5" />
-                              {featuredArticle.readTime}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Calendar className="h-3.5 w-3.5" />
-                              Updated {featuredArticle.updatedAt}
-                            </span>
-                          </div>
+                        <div className={featuredArticle.heroImage ? "lg:col-span-7" : "lg:col-span-12"}>
+                          {(featuredArticle.category ||
+                            featuredArticle.readTime ||
+                            featuredArticle.updatedAt) && (
+                            <div className="text-muted-foreground flex flex-wrap items-center gap-3 text-xs">
+                              {featuredArticle.category && (
+                                <span className="rounded-full border border-teal-500/20 bg-teal-500/10 px-3 py-1 font-semibold text-teal-600 dark:text-teal-400">
+                                  {featuredArticle.category}
+                                </span>
+                              )}
+                              {featuredArticle.readTime && (
+                                <span className="flex items-center gap-1">
+                                  <Clock className="h-3.5 w-3.5" />
+                                  {featuredArticle.readTime}
+                                </span>
+                              )}
+                              {featuredArticle.updatedAt && (
+                                <span className="flex items-center gap-1">
+                                  <Calendar className="h-3.5 w-3.5" />
+                                  Updated {featuredArticle.updatedAt}
+                                </span>
+                              )}
+                            </div>
+                          )}
 
                           <h3 className="text-foreground mt-4 text-2xl font-bold tracking-tight transition-colors group-hover:text-teal-500 sm:text-3xl lg:text-4xl dark:group-hover:text-teal-400">
                             <Link href={`/blog/${featuredArticle.slug}`}>
-                              {featuredArticle.title}
+                              {featuredArticle.title || "Featured Guide"}
                             </Link>
                           </h3>
 
                           {/* AEO / BLUF Summary Box */}
-                          <div className="mt-5 rounded-2xl border border-teal-500/30 bg-slate-900/95 p-4 text-slate-100 shadow-md sm:p-5">
-                            <span className="mb-1.5 block text-xs font-bold tracking-wider text-teal-400 uppercase">
-                              Quick Takeaway (BLUF)
-                            </span>
-                            <p className="line-clamp-3 text-sm leading-relaxed text-slate-200">
-                              {featuredArticle.bluf}
-                            </p>
-                          </div>
-
-                          <div className="mt-6 flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-teal-600 text-xs font-bold text-white">
-                                R
-                              </div>
-                              <div>
-                                <p className="text-foreground text-xs font-semibold">
-                                  {featuredArticle.author.name}
-                                </p>
-                                <p className="text-muted-foreground text-[11px]">
-                                  {featuredArticle.author.title}
-                                </p>
-                              </div>
+                          {featuredArticle.bluf && (
+                            <div className="mt-5 rounded-2xl border border-teal-500/30 bg-slate-900/95 p-4 text-slate-100 shadow-md sm:p-5">
+                              <span className="mb-1.5 block text-xs font-bold tracking-wider text-teal-400 uppercase">
+                                Quick Takeaway (BLUF)
+                              </span>
+                              <p className="line-clamp-3 text-sm leading-relaxed text-slate-200">
+                                {featuredArticle.bluf}
+                              </p>
                             </div>
+                          )}
+
+                          <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
+                            {featuredArticle.author?.name ? (
+                              <div className="flex items-center gap-3">
+                                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-teal-600 text-xs font-bold text-white">
+                                  {featuredArticle.author.name.charAt(0) || "R"}
+                                </div>
+                                <div>
+                                  <p className="text-foreground text-xs font-semibold">
+                                    {featuredArticle.author.name}
+                                  </p>
+                                  {featuredArticle.author.title && (
+                                    <p className="text-muted-foreground text-[11px]">
+                                      {featuredArticle.author.title}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            ) : (
+                              <div />
+                            )}
 
                             <Link
                               href={`/blog/${featuredArticle.slug}`}
@@ -381,16 +422,18 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                           </div>
                         </div>
 
-                        <div className="lg:col-span-5">
-                          <div className="border-border bg-muted relative h-64 w-full overflow-hidden rounded-2xl border sm:h-80">
-                            <Image
-                              src={featuredArticle.heroImage}
-                              alt={featuredArticle.title}
-                              fill
-                              className="object-cover transition-transform duration-500 group-hover:scale-105"
-                            />
+                        {featuredArticle.heroImage && (
+                          <div className="lg:col-span-5">
+                            <div className="border-border bg-muted relative h-64 w-full overflow-hidden rounded-2xl border sm:h-80">
+                              <Image
+                                src={featuredArticle.heroImage}
+                                alt={featuredArticle.heroImageAlt || featuredArticle.title || "Featured Article"}
+                                fill
+                                className="object-cover transition-transform duration-500 group-hover:scale-105"
+                              />
+                            </div>
                           </div>
-                        </div>
+                        )}
                       </div>
                     </div>
                   )}
@@ -408,24 +451,30 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                             className="group border-border bg-card flex flex-col justify-between rounded-2xl border p-6 shadow-sm transition hover:border-teal-500/40 hover:shadow-md"
                           >
                             <div>
-                              <div className="text-muted-foreground mb-3 flex items-center justify-between text-xs">
-                                <span className="bg-muted text-foreground rounded-md px-2.5 py-1 font-medium">
-                                  {art.category}
-                                </span>
-                                <span>{art.readTime}</span>
-                              </div>
+                              {(art.category || art.readTime) && (
+                                <div className="text-muted-foreground mb-3 flex items-center justify-between text-xs">
+                                  {art.category && (
+                                    <span className="bg-muted text-foreground rounded-md px-2.5 py-1 font-medium">
+                                      {art.category}
+                                    </span>
+                                  )}
+                                  {art.readTime && <span>{art.readTime}</span>}
+                                </div>
+                              )}
 
                               <h4 className="text-foreground line-clamp-2 text-lg font-bold transition-colors group-hover:text-teal-500 dark:group-hover:text-teal-400">
-                                <Link href={`/blog/${art.slug}`}>{art.title}</Link>
+                                <Link href={`/blog/${art.slug}`}>{art.title || "Untitled Guide"}</Link>
                               </h4>
 
-                              <p className="text-muted-foreground mt-2.5 line-clamp-3 text-xs leading-relaxed">
-                                {art.description}
-                              </p>
+                              {art.description && (
+                                <p className="text-muted-foreground mt-2.5 line-clamp-3 text-xs leading-relaxed">
+                                  {art.description}
+                                </p>
+                              )}
                             </div>
 
                             <div className="border-border mt-6 flex items-center justify-between border-t pt-4 text-xs">
-                              <span className="text-muted-foreground">{art.updatedAt}</span>
+                              <span className="text-muted-foreground">{art.updatedAt || ""}</span>
                               <Link
                                 href={`/blog/${art.slug}`}
                                 className="flex items-center gap-1 font-semibold text-teal-600 transition-transform group-hover:translate-x-0.5 dark:text-teal-400"
@@ -449,46 +498,66 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                       key={art.id}
                       className="group border-border bg-card flex flex-col overflow-hidden rounded-3xl border shadow-md transition-all duration-300 hover:border-teal-500/50 hover:shadow-xl"
                     >
-                      <div className="bg-muted relative h-48 w-full overflow-hidden">
-                        <Image
-                          src={art.heroImage}
-                          alt={art.title}
-                          fill
-                          className="object-cover transition-transform duration-500 group-hover:scale-105"
-                        />
-                        <div className="absolute top-3 left-3">
-                          <span className="rounded-full bg-slate-900/80 px-3 py-1 text-[11px] font-semibold text-teal-300 backdrop-blur-md">
-                            {art.category}
-                          </span>
+                      {art.heroImage ? (
+                        <div className="bg-muted relative h-48 w-full overflow-hidden">
+                          <Image
+                            src={art.heroImage}
+                            alt={art.heroImageAlt || art.title || "Article Image"}
+                            fill
+                            className="object-cover transition-transform duration-500 group-hover:scale-105"
+                          />
+                          {art.category && (
+                            <div className="absolute top-3 left-3">
+                              <span className="rounded-full bg-slate-900/80 px-3 py-1 text-[11px] font-semibold text-teal-300 backdrop-blur-md">
+                                {art.category}
+                              </span>
+                            </div>
+                          )}
                         </div>
-                      </div>
+                      ) : (
+                        art.category && (
+                          <div className="border-border/40 bg-muted/30 border-b p-4">
+                            <span className="rounded-full border border-teal-500/20 bg-teal-500/10 px-3 py-1 text-[11px] font-semibold text-teal-600 dark:text-teal-400">
+                              {art.category}
+                            </span>
+                          </div>
+                        )
+                      )}
 
                       <div className="flex flex-1 flex-col justify-between p-6">
                         <div>
-                          <div className="text-muted-foreground mb-2 flex items-center gap-3 text-xs">
-                            <span className="flex items-center gap-1">
-                              <Clock className="h-3.5 w-3.5" />
-                              {art.readTime}
-                            </span>
-                            <span>•</span>
-                            <span className="flex items-center gap-1">
-                              <Calendar className="h-3.5 w-3.5" />
-                              {art.updatedAt}
-                            </span>
-                          </div>
+                          {(art.readTime || art.updatedAt) && (
+                            <div className="text-muted-foreground mb-2 flex items-center gap-3 text-xs">
+                              {art.readTime && (
+                                <span className="flex items-center gap-1">
+                                  <Clock className="h-3.5 w-3.5" />
+                                  {art.readTime}
+                                </span>
+                              )}
+                              {art.readTime && art.updatedAt && <span>•</span>}
+                              {art.updatedAt && (
+                                <span className="flex items-center gap-1">
+                                  <Calendar className="h-3.5 w-3.5" />
+                                  {art.updatedAt}
+                                </span>
+                              )}
+                            </div>
+                          )}
 
                           <h3 className="text-foreground line-clamp-2 text-xl font-bold transition-colors group-hover:text-teal-500 dark:group-hover:text-teal-400">
-                            <Link href={`/blog/${art.slug}`}>{art.title}</Link>
+                            <Link href={`/blog/${art.slug}`}>{art.title || "Untitled Article"}</Link>
                           </h3>
 
-                          <p className="text-muted-foreground mt-3 line-clamp-3 text-xs leading-relaxed">
-                            {art.description}
-                          </p>
+                          {art.description && (
+                            <p className="text-muted-foreground mt-3 line-clamp-3 text-xs leading-relaxed">
+                              {art.description}
+                            </p>
+                          )}
                         </div>
 
                         <div className="border-border/50 mt-6 flex items-center justify-between border-t pt-4">
                           <span className="text-muted-foreground text-xs font-medium">
-                            {art.author.name}
+                            {art.author?.name || "Rahvana"}
                           </span>
                           <Link
                             href={`/blog/${art.slug}`}
@@ -513,33 +582,49 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                       className="group border-border/70 bg-card flex flex-col items-start justify-between gap-5 rounded-2xl border p-4 shadow-sm transition hover:border-teal-500/40 hover:shadow-md sm:flex-row sm:items-center sm:p-5"
                     >
                       <div className="flex flex-1 flex-col items-start gap-4 sm:flex-row sm:items-center">
-                        <div className="bg-muted relative h-20 w-32 shrink-0 overflow-hidden rounded-xl sm:h-24 sm:w-36">
-                          <Image
-                            src={art.heroImage}
-                            alt={art.title}
-                            fill
-                            className="object-cover transition-transform duration-300 group-hover:scale-105"
-                          />
-                        </div>
+                        {art.heroImage && (
+                          <div className="bg-muted relative h-20 w-32 shrink-0 overflow-hidden rounded-xl sm:h-24 sm:w-36">
+                            <Image
+                              src={art.heroImage}
+                              alt={art.heroImageAlt || art.title || "Article Image"}
+                              fill
+                              className="object-cover transition-transform duration-300 group-hover:scale-105"
+                            />
+                          </div>
+                        )}
 
                         <div className="min-w-0 flex-1 space-y-1.5">
-                          <div className="flex flex-wrap items-center gap-2 text-xs">
-                            <span className="rounded-full border border-teal-500/20 bg-teal-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-teal-700 dark:text-teal-300">
-                              {art.category}
-                            </span>
-                            <span className="text-muted-foreground">•</span>
-                            <span className="text-muted-foreground">{art.readTime}</span>
-                            <span className="text-muted-foreground">•</span>
-                            <span className="text-muted-foreground">Updated {art.updatedAt}</span>
-                          </div>
+                          {(art.category || art.readTime || art.updatedAt) && (
+                            <div className="flex flex-wrap items-center gap-2 text-xs">
+                              {art.category && (
+                                <span className="rounded-full border border-teal-500/20 bg-teal-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-teal-700 dark:text-teal-300">
+                                  {art.category}
+                                </span>
+                              )}
+                              {art.category && (art.readTime || art.updatedAt) && (
+                                <span className="text-muted-foreground">•</span>
+                              )}
+                              {art.readTime && (
+                                <span className="text-muted-foreground">{art.readTime}</span>
+                              )}
+                              {art.readTime && art.updatedAt && (
+                                <span className="text-muted-foreground">•</span>
+                              )}
+                              {art.updatedAt && (
+                                <span className="text-muted-foreground">Updated {art.updatedAt}</span>
+                              )}
+                            </div>
+                          )}
 
                           <h3 className="text-foreground line-clamp-1 text-base font-bold transition-colors group-hover:text-teal-600 sm:text-lg dark:group-hover:text-teal-400">
-                            <Link href={`/blog/${art.slug}`}>{art.title}</Link>
+                            <Link href={`/blog/${art.slug}`}>{art.title || "Untitled Guide"}</Link>
                           </h3>
 
-                          <p className="text-muted-foreground line-clamp-1 text-xs">
-                            {art.description}
-                          </p>
+                          {art.description && (
+                            <p className="text-muted-foreground line-clamp-1 text-xs">
+                              {art.description}
+                            </p>
+                          )}
                         </div>
                       </div>
 
@@ -567,15 +652,19 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                         <span className="mt-1 text-xs font-bold text-teal-500">0{idx + 1}.</span>
                         <div>
                           <h3 className="text-foreground text-base font-bold transition-colors group-hover:text-teal-500 dark:group-hover:text-teal-400">
-                            <Link href={`/blog/${art.slug}`}>{art.title}</Link>
+                            <Link href={`/blog/${art.slug}`}>{art.title || "Untitled Article"}</Link>
                           </h3>
-                          <div className="text-muted-foreground mt-1 flex flex-wrap items-center gap-3 text-xs">
-                            <span className="text-foreground font-medium">{art.category}</span>
-                            <span>•</span>
-                            <span>{art.readTime}</span>
-                            <span>•</span>
-                            <span>By {art.author.name}</span>
-                          </div>
+                          {(art.category || art.readTime || art.author?.name) && (
+                            <div className="text-muted-foreground mt-1 flex flex-wrap items-center gap-3 text-xs">
+                              {art.category && (
+                                <span className="text-foreground font-medium">{art.category}</span>
+                              )}
+                              {art.category && (art.readTime || art.author?.name) && <span>•</span>}
+                              {art.readTime && <span>{art.readTime}</span>}
+                              {art.readTime && art.author?.name && <span>•</span>}
+                              {art.author?.name && <span>By {art.author.name}</span>}
+                            </div>
+                          )}
                         </div>
                       </div>
 

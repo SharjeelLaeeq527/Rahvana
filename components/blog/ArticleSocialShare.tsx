@@ -4,14 +4,14 @@ import React, { useState } from "react";
 import { Link2, Check, Share2 } from "lucide-react";
 
 interface ArticleSocialShareProps {
-  title: string;
-  slug: string;
+  title?: string;
+  slug?: string;
   description?: string;
 }
 
 export default function ArticleSocialShare({
-  title,
-  slug,
+  title = "Rahvana Immigration Guide",
+  slug = "",
   description = "",
 }: ArticleSocialShareProps) {
   const [copied, setCopied] = useState(false);
