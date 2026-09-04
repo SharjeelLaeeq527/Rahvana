@@ -1,58 +1,94 @@
-export interface ArticleSection {
-  id: string;
-  h2: string;
-  paragraphs: string[];
-  callout?: {
-    type: "info" | "warning" | "tip";
-    title: string;
-    text: string;
-  };
-  table?: {
-    headers: string[];
-    rows: string[][];
-  };
-  bulletList?: string[];
+export interface ArticleImage {
+  url: string;
+  alt?: string;
+  caption?: string;
+}
+
+export interface ArticleCallout {
+  type?: "info" | "warning" | "tip";
+  title?: string;
+  text?: string;
+}
+
+export interface ArticleTable {
+  headers?: string[];
+  rows?: string[][];
 }
 
 export interface ArticleFAQ {
-  question: string;
-  answer: string;
+  question?: string;
+  answer?: string;
 }
 
 export interface ArticleCTA {
-  headline: string;
-  description: string;
-  buttonText: string;
-  buttonHref: string;
+  headline?: string;
+  description?: string;
+  buttonText?: string;
+  buttonHref?: string;
   badge?: string;
+}
+
+export interface ArticleSidebarCTA {
+  title?: string;
+  description?: string;
+  buttonText?: string;
+  buttonHref?: string;
+  badge?: string;
+}
+
+export interface ArticleAuthor {
+  name?: string;
+  title?: string;
+  avatar?: string;
+}
+
+export interface ArticleTOCItem {
+  id?: string;
+  title?: string;
+}
+
+export interface ArticleSection {
+  id?: string;
+  h2?: string;
+  h3?: string;
+  paragraphs?: string[];
+  callout?: ArticleCallout;
+  table?: ArticleTable;
+  bulletList?: string[];
+  numberedList?: string[];
+  image?: ArticleImage;
+  cta?: ArticleCTA;
 }
 
 export interface Article {
   id: string;
   slug: string;
-  title: string;
-  bluf: string; // Bottom Line Up Front answer for AEO / GEO AI Engine citation
-  description: string;
-  category:
+  title?: string;
+  bluf?: string; // Bottom Line Up Front answer for AEO / GEO AI Engine citation
+  description?: string;
+  category?:
     | "Spouse Visa (IR-1/CR-1)"
     | "Parent Visa (IR-5)"
     | "NVC & Documents"
-    | "Consular Interview & 221(g)";
-  author: {
-    name: string;
-    title: string;
-    avatar?: string;
-  };
-  publishedAt: string;
-  updatedAt: string;
-  readTime: string;
-  keywords: string[];
-  heroImage: string;
-  tableOfContents: { id: string; title: string }[];
-  sections: ArticleSection[];
-  faqs: ArticleFAQ[];
-  cta: ArticleCTA;
-  relatedSlugs: string[];
+    | "Consular Interview & 221(g)"
+    | string;
+  author?: ArticleAuthor;
+  publishedAt?: string;
+  updatedAt?: string;
+  readTime?: string;
+  keywords?: string[];
+  heroImage?: string;
+  heroImageAlt?: string;
+  tableOfContents?: ArticleTOCItem[];
+  sections?: ArticleSection[];
+  faqs?: ArticleFAQ[];
+  cta?: ArticleCTA;
+  midArticleCta?: ArticleCTA;
+  sidebarCta?: ArticleSidebarCTA | null;
+  showSocialShare?: boolean;
+  showTableOfContents?: boolean;
+  showFaqs?: boolean;
+  relatedSlugs?: string[];
 }
 
 export const ARTICLES: Article[] = [
@@ -83,7 +119,9 @@ export const ARTICLES: Article[] = [
       "NADRA Marriage Registration Certificate MRC",
       "Police Character Certificate Pakistan FIA",
     ],
-    heroImage: "/assets/images/about-card-1.png",
+    // heroImage: "/assets/images/about-card-1.png",
+    heroImage: "/assets/images/blog/blog1-image.png",
+    heroImageAlt: "IR-1 vs CR-1 Spouse Visa Pakistan Guide",
     tableOfContents: [
       { id: "bluf-overview", title: "1. Executive Summary & Quick Difference" },
       { id: "comparison-matrix", title: "2. CR-1 vs IR-1 Comparison Matrix" },
@@ -266,6 +304,23 @@ export const ARTICLES: Article[] = [
       buttonHref: "/visa-eligibility",
       badge: "Free Interactive Tool",
     },
+    midArticleCta: {
+      badge: "Free Rahvana Automation",
+      headline: "Generate Your Custom NVC Document Vault Checklist",
+      description:
+        "Auto-check your scanned Nikah Nama, NADRA MRC, and Police Certificates for exact NVC formatting rules before uploading to CEAC.",
+      buttonText: "Access Document Vault →",
+      buttonHref: "/pricing?mode=tools",
+    },
+    sidebarCta: {
+      title: "Need Direct Assistance?",
+      description: "Book a strategy consultation with our U.S. visa case managers.",
+      buttonText: "Book Consultation →",
+      buttonHref: "/book-consultation",
+    },
+    showSocialShare: true,
+    showTableOfContents: true,
+    showFaqs: true,
     relatedSlugs: ["ir1-vs-cr1-visa-difference-pakistan"],
   },
 ];
