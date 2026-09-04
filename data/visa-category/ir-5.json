@@ -6571,14 +6571,14 @@
           "step_number": 5,
           "step_type": "tool",
           "step_name": "Courier Registration",
-          "step_description": "Register the parent beneficiary's passport delivery or pickup preference so the passport and issued visa documents can be returned after processing.",
+          "step_description": "Register online before your immigrant visa interview and select your document pick-up location so the Embassy has the information needed to return your passport after the interview. Complete the sign-up, follow the guide, and save your credentials and confirmation.",
           "step_short_description": "Register for visa packet delivery",
           "who": "Parent beneficiary",
           "where": "Home preparation",
           "actions": [
             "Register at usvisascheduling.com",
-            "Select courier delivery for Pakistan",
-            "Save parent's beneficiary login credentials securely",
+            "Select your preferred passport delivery option: Avari Tower pickup or home delivery",
+            "Save your login credentials securely",
             "Save confirmation page to Document Vault"
           ],
           "relevantTools": [
