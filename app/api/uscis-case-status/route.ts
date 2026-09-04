@@ -68,10 +68,10 @@ export async function POST(req: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      console.error("portal-wallet GET unauthorized:", userError);
+      console.error("USCIS Case Status GET unauthorized:", userError);
       return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
-    
+
     const body = await req.json();
     const raw = body?.receiptNumber ?? "";
 
@@ -113,6 +113,30 @@ export async function POST(req: NextRequest) {
     }
 
     const caseData = await caseRes.json();
+
+    const caseStatus = caseData?.case_status ?? caseData;
+
+    const { error: historyError } = await supabase.from("uscis_case_history").upsert(
+      {
+        user_id: user.id,
+        receipt_number: normalized,
+        status: caseStatus.current_case_status_en ?? null,
+        description: caseStatus.current_case_status_desc_en ?? null,
+        form_type: caseStatus.formType ?? null,
+        modified_date: caseStatus.modifiedDate
+          ? new Date(caseStatus.modifiedDate).toISOString()
+          : null,
+        checked_at: new Date().toISOString(),
+        raw_data: caseStatus,
+      },
+      {
+        onConflict: "user_id,receipt_number",
+      }
+    );
+
+    if (historyError) {
+      console.error("Failed to save USCIS history:", historyError);
+    }
 
     return NextResponse.json({
       receiptNumber: normalized,
