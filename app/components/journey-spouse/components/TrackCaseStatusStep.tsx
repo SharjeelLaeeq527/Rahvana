@@ -163,10 +163,10 @@ const TrackCaseStatusStep: React.FC<any> = ({
     // <div className="min-h-screen w-full ch1step-bg">
     <div className="min-h-screen w-full">
       {/* CHANGE 1: px-4 py-8 on mobile, md:px-6 md:py-12 on desktop */}
-      <div className="step mx-auto flex w-full max-w-[680px] flex-col px-4 sm:px-6 md:px-8 pt-5 pb-10 md:pt-8">
+      <div className="step mx-auto flex w-full max-w-[680px] flex-col px-4 pt-5 pb-10 sm:px-6 md:px-8 md:pt-8">
         {/* Title & Desc */}
-        
-        <h1 className="page-title text-[clamp(28px,4vw,36px)] font-bold text-[#0c1b33] leading-[1.15] tracking-tight mb-1">
+
+        <h1 className="page-title mb-1 text-[clamp(28px,4vw,36px)] leading-[1.15] font-bold tracking-tight text-[#0c1b33]">
           Monitor USCIS Case Status
         </h1>
         <p className="page-desc mb-2.5 max-w-[620px] text-[15px] leading-[1.72] text-[#3a4f63] sm:mb-4">
@@ -195,7 +195,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
             <div className="launch-inner p-5 md:p-8 lg:p-[32px_34px_28px]">
               {/* CHANGE 3: flex-wrap added so badge wraps on small screens */}
               <div className="launch-top mb-4 flex flex-wrap items-start gap-4 sm:mb-6">
-                <div className="launch-header flex flex-col gap-2 items-start">
+                <div className="launch-header flex flex-col items-start gap-2">
                   {/* Icon + eyebrow side by side */}
                   <div className="flex items-center gap-4">
                     <div
@@ -209,14 +209,16 @@ const TrackCaseStatusStep: React.FC<any> = ({
                       <Shield className="h-7 w-7 text-[#ffffff]" />
                     </div>
                     <div
-                      className="launch-eyebrow text-[10px] font-bold tracking-widest uppercase leading-[1.6]"
+                      className="launch-eyebrow text-[10px] leading-[1.6] font-bold tracking-widest uppercase"
                       style={{
                         color: launchAccentColor,
                         borderLeft: `5px solid ${launchAccentColor}`,
                         paddingLeft: 10,
                       }}
                     >
-                      Pending with USCIS<br />Active Monitoring
+                      Pending with USCIS
+                      <br />
+                      Active Monitoring
                     </div>
                   </div>
                   {/* Hero + copy below the icon */}
@@ -341,7 +343,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
               </div>
               {/* Tracking Action Buttons */}
               <div className="launch-actions mt-2 grid grid-cols-1 gap-3 md:grid-cols-2">
-                <Button
+                {/* <Button
                   className="flex items-center gap-2 rounded-xl px-5 py-3 font-semibold transition"
                   style={
                     {
@@ -371,25 +373,24 @@ const TrackCaseStatusStep: React.FC<any> = ({
                     } else {
                       e.currentTarget.style.backgroundColor = launchAccentColor;
                     }
-                  }}
-                  onClick={() => {
-                    /* TODO: implement refresh logic */
-                  }}
-                >
-                  <svg
-                    className="h-4 w-4"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M21 12a9 9 0 1 1-2.64-6.36" />
-                    <polyline points="21 3 21 9 15 9" />
-                  </svg>
-                  Refresh tracking status
-                </Button>
+                  }} */}
+                {/*    onClick={() => {
+                   }}
+                 >
+                   <svg
+                     className="h-4 w-4"
+                     viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     strokeWidth="2"
+                     strokeLinecap="round"
+                     strokeLinejoin="round"
+                   >
+                     <path d="M21 12a9 9 0 1 1-2.64-6.36" />
+                     <polyline points="21 3 21 9 15 9" />
+                   </svg>
+                   Refresh tracking status
+                 </Button> */}
                 <Button
                   variant="outline"
                   className={`flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-5 py-3 font-semibold text-white transition hover:bg-white`}
@@ -510,7 +511,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
                 </svg>
                 Check processing-time context
               </Button>
-              <Button
+              {/* <Button
                 variant="outline"
                 size="sm"
                 className="flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-[12px] font-semibold text-[#0c1b33]"
@@ -541,7 +542,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
                   <polyline points="9 18 15 12 9 6" />
                 </svg>
                 See common next milestones
-              </Button>
+              </Button> */}
             </div>
             {/* Right: Interactive Checklist */}
             <div className="flex flex-col gap-3">
@@ -728,7 +729,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
                 Education + Updates
               </span>
             </div>
-            <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3">
+            <div className="mt-4 grid grid-cols-1 gap-3.5 sm:grid-cols-2 md:grid-cols-3">
               {tool.useful_now.map((u: any, i: number) => {
                 const iconColor =
                   u.icon === "green"
@@ -749,27 +750,28 @@ const TrackCaseStatusStep: React.FC<any> = ({
                 return (
                   <div
                     key={i}
-                    className="flex h-full flex-col rounded-2xl bg-white p-4 md:p-6 shadow-[0_8px_24px_rgba(12,27,51,0.07)] transition hover:shadow-md"
+                    className="flex h-full flex-col rounded-2xl bg-white p-3.5 shadow-[0_8px_24px_rgba(12,27,51,0.07)] transition hover:shadow-md sm:p-4"
                     style={{
                       borderWidth: "1px",
                       borderColor: launchAccentColor,
                     }}
                   >
                     <div
-                      className={`mb-4 flex h-[38px] w-[38px] items-center justify-center rounded-[10px] border ${iconColor}`}
+                      className={`mb-3 flex h-[34px] w-[34px] items-center justify-center rounded-[10px] border ${iconColor}`}
                     >
-                      <Icon className="h-[20px] w-[20px]" />
+                      <Icon className="h-[18px] w-[18px]" />
                     </div>
-                    <div className="mb-1 text-[16px] leading-tight font-semibold text-[#0c1b33]">
+                    <div className="mb-1 text-[15px] leading-tight font-semibold text-[#0c1b33]">
                       {u.title}
                     </div>
-                    <div className="mb-4 flex-1 text-[13.5px] leading-[1.6] text-[#3a4f63]">
+                    <div className="mb-4 flex-1 text-[13px] leading-[1.55] text-[#3a4f63]">
                       {u.copy}
                     </div>
                     <Button
                       variant="outline"
+                      title={u.action}
                       size="sm"
-                      className="mt-auto flex items-center gap-2 rounded-lg px-4 py-2 text-[12px] font-semibold text-[var(--rv-navy)]"
+                      className="mt-auto flex w-full items-center justify-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11.5px] font-semibold text-[var(--rv-navy)]"
                       style={{
                         borderWidth: "1px",
                         borderColor: launchAccentColor,
@@ -788,25 +790,25 @@ const TrackCaseStatusStep: React.FC<any> = ({
                           setShowAffidavitSupportModal(true);
                       }}
                     >
-                      {u.action}
-                      <ArrowRight className="ml-1 h-4 w-4" />
+                      <span className="truncate">{u.action}</span>
+                      <ArrowRight className="h-3.5 w-3.5 shrink-0" />
                     </Button>
-                    <AfterI130ApprovalModal
-                      open={showAfterI130Modal}
-                      onClose={() => setShowAfterI130Modal(false)}
-                    />
-                    <RelationshipEvidenceModal
-                      open={showRelationshipEvidenceModal}
-                      onClose={() => setShowRelationshipEvidenceModal(false)}
-                    />
-                    <AffidavitSupportModal
-                      open={showAffidavitSupportModal}
-                      onClose={() => setShowAffidavitSupportModal(false)}
-                    />
                   </div>
                 );
               })}
             </div>
+            <AfterI130ApprovalModal
+              open={showAfterI130Modal}
+              onClose={() => setShowAfterI130Modal(false)}
+            />
+            <RelationshipEvidenceModal
+              open={showRelationshipEvidenceModal}
+              onClose={() => setShowRelationshipEvidenceModal(false)}
+            />
+            <AffidavitSupportModal
+              open={showAffidavitSupportModal}
+              onClose={() => setShowAffidavitSupportModal(false)}
+            />
           </div>
         )}
         {/* Relevant Updates Panel */}
@@ -935,7 +937,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
                 return (
                   <div
                     key={i}
-                    className="flex h-full flex-col rounded-[14px] border border-[#d0e4f7] bg-white p-4 md:p-6 transition"
+                    className="flex h-full flex-col rounded-[14px] border border-[#d0e4f7] bg-white p-4 transition md:p-6"
                   >
                     <div
                       className={`mb-4 flex h-[38px] w-[38px] items-center justify-center rounded-[10px] border ${iconBg}`}
@@ -961,15 +963,15 @@ const TrackCaseStatusStep: React.FC<any> = ({
                         {btn}
                       </button>
                     ))} */}
-                      <AddEvidenceNoteModal
-                        open={showAddEvidenceNoteModal}
-                        onClose={() => setShowAddEvidenceNoteModal(false)}
-                      />
                     </div>
                   </div>
                 );
               })}
             </div>
+            <AddEvidenceNoteModal
+              open={showAddEvidenceNoteModal}
+              onClose={() => setShowAddEvidenceNoteModal(false)}
+            />
           </div>
         )}
         {/* Community & Proof Layer Panel */}

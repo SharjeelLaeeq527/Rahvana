@@ -389,32 +389,43 @@ const ManualForm: React.FC<ManualFormProps & { journeyId: string }> = ({
       <div className="text-[14px] mb-6" style={{ color: "#28151c" }}>
         {isUpdate
           ? "You can update dates and the case label. The receipt number is locked to prevent accidental re-registration."
-          : "Enter the receipt number and dates exactly as they appear on your USCIS notice."}
+          : "Enter the receipt number and dates exactly as they appear on your USCIS notice. You will not be able to update the receipt number later, so please enter it carefully."}
       </div>
       <ErrorBanner message={error} />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 mb-4">
         <div className="md:col-span-2 flex flex-col gap-1">
           <label
-            className="text-[11px] font-semibold uppercase tracking-wider"
+            className="text-[11px] font-semibold uppercase tracking-wider flex items-center justify-between"
             style={{ color: "#6b8097" }}
           >
-            Receipt Number
+            <span>Receipt Number</span>
+            {isUpdate && (
+              <span className="flex items-center gap-1 text-[11px] font-medium text-slate-500 normal-case tracking-normal">
+                <Lock className="w-3 h-3 text-slate-400" /> Locked
+              </span>
+            )}
           </label>
           <input
-            className="rounded-lg px-4 py-3 text-[15px] outline-none"
+            className="rounded-lg px-4 py-3 text-[15px] outline-none transition-colors"
             style={{
-              border: "1.5px solid #d0e4f7",
-              color: "#1c2b3a",
-              background: "#fff",
-              cursor: "text",
+              border: isUpdate ? "1.5px solid #e2e8f0" : "1.5px solid #d0e4f7",
+              color: isUpdate ? "#64748b" : "#1c2b3a",
+              background: isUpdate ? "#f8fafc" : "#fff",
+              cursor: isUpdate ? "not-allowed" : "text",
             }}
             placeholder="IOE1234567890"
             maxLength={13}
             value={fields.receiptNumber}
-            onChange={set("receiptNumber")}
-            onFocus={focusBorder}
-            onBlur={blurBorder}
+            readOnly={isUpdate}
+            onChange={isUpdate ? undefined : set("receiptNumber")}
+            onFocus={isUpdate ? undefined : focusBorder}
+            onBlur={isUpdate ? undefined : blurBorder}
           />
+          {!isUpdate && (
+            <p className="text-[11.5px] text-[#6b8097] mt-1">
+              Double-check your receipt number carefully, it cannot be updated or changed once saved.
+            </p>
+          )}
         </div>
         <div className="flex flex-col gap-1">
           <label
@@ -478,8 +489,8 @@ const ManualForm: React.FC<ManualFormProps & { journeyId: string }> = ({
           color: "#28151c",
         }}
       >
-        Always confirm the receipt number before saving, it is the primary key used for case
-        tracking.
+        Always confirm the receipt number before saving. It is the primary key used for case
+        tracking and cannot be changed later.
       </div>
 
       {/* Tracking locked notice for Basic tier (new registration only) */}
@@ -645,8 +656,10 @@ const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({
 
       await new Promise((resolve) => requestAnimationFrame(resolve));
 
-      setFields(() => ({
-        receiptNumber: data.receiptNumber || "",
+      // When updating, preserve the locked receipt number.
+      setFields((prev) => ({
+        ...prev,
+        receiptNumber: isUpdate ? prev.receiptNumber : (data.receiptNumber || ""),
         noticeDate: data.noticeDate || "",
         priorityDate: data.priorityDate || "",
       }));
@@ -769,7 +782,7 @@ const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({
       <div className="text-[14px] mb-3" style={{ color: "#28151c" }}>
         {isUpdate
           ? "You can replace the notice file on record. The receipt number below is locked."
-          : "Upload your notice file, then confirm the key details below before saving."}
+          : "Upload your notice file, then confirm the key details below before saving. You will not be able to update the receipt number later."}
       </div>
       <div className="flex items-center gap-1.5 text-[11px] text-slate-500 font-semibold mb-6">
         <Lock className="w-3.5 h-3.5 text-primary shrink-0" />
@@ -998,27 +1011,38 @@ const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({
       <div key={formResetKey} className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 mb-4">
         <div className="md:col-span-2 flex flex-col gap-1">
           <label
-            className="text-[11px] font-semibold uppercase tracking-wider"
+            className="text-[11px] font-semibold uppercase tracking-wider flex items-center justify-between"
             style={{ color: "#6b8097" }}
           >
-            Confirm Receipt Number
+            <span>{isUpdate ? "Receipt Number" : "Confirm Receipt Number"}</span>
+            {isUpdate && (
+              <span className="flex items-center gap-1 text-[11px] font-medium text-slate-500 normal-case tracking-normal">
+                <Lock className="w-3 h-3 text-slate-400" /> Locked
+              </span>
+            )}
           </label>
           <input
-            className="rounded-lg px-4 py-3 text-[15px] outline-none"
+            className="rounded-lg px-4 py-3 text-[15px] outline-none transition-colors"
             style={{
-              border: "1.5px solid #d0e4f7",
-              color: "#1c2b3a",
-              background: "#fff",
-              cursor: "text",
+              border: isUpdate ? "1.5px solid #e2e8f0" : "1.5px solid #d0e4f7",
+              color: isUpdate ? "#64748b" : "#1c2b3a",
+              background: isUpdate ? "#f8fafc" : "#fff",
+              cursor: isUpdate ? "not-allowed" : "text",
             }}
             placeholder="IOE1234567890"
             maxLength={13}
             value={fields.receiptNumber}
-            onChange={set("receiptNumber")}
-            onFocus={focusBorder}
-            onBlur={blurBorder}
+            readOnly={isUpdate}
+            onChange={isUpdate ? undefined : set("receiptNumber")}
+            onFocus={isUpdate ? undefined : focusBorder}
+            onBlur={isUpdate ? undefined : blurBorder}
             disabled={ocrLoading}
           />
+          {!isUpdate && (
+            <p className="text-[11.5px] text-[#6b8097] mt-1">
+              Double-check your receipt number carefully, it cannot be updated or changed once saved.
+            </p>
+          )}
         </div>
         <div className="flex flex-col gap-1">
           <label

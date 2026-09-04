@@ -1,11 +1,11 @@
 import React from "react";
 
 export interface ArticleSchemaProps {
-  headline: string;
-  description: string;
-  url: string;
-  datePublished: string;
-  dateModified: string;
+  headline?: string;
+  description?: string;
+  url?: string;
+  datePublished?: string;
+  dateModified?: string;
   authorName?: string;
   authorUrl?: string;
   publisherName?: string;
@@ -14,9 +14,9 @@ export interface ArticleSchemaProps {
 }
 
 export default function ArticleSchema({
-  headline,
-  description,
-  url,
+  headline = "",
+  description = "",
+  url = "https://rahvana.com/blog",
   datePublished,
   dateModified,
   authorName = "Rahvana Immigration Research Team",
@@ -35,8 +35,8 @@ export default function ArticleSchema({
     headline,
     description,
     image,
-    datePublished,
-    dateModified,
+    ...(datePublished ? { datePublished } : {}),
+    ...(dateModified ? { dateModified } : {}),
     author: {
       "@type": "Organization",
       name: authorName,

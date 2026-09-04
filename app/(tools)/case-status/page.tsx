@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Search,
   FileText,
   Clock,
   Building2,
-  AlertCircle,
   CheckCircle2,
   RefreshCw,
   Hash,
@@ -53,6 +52,17 @@ export interface CaseResult {
   modifiedDate: string;
   nextSteps: Array<{ date?: string | undefined; text: string }>;
   rawData: USCISCaseStatus;
+}
+
+interface USCISHistoryRecord {
+  id: string;
+  receipt_number: string;
+  status: string | null;
+  description: string | null;
+  form_type: string | null;
+  modified_date: string | null;
+  checked_at: string;
+  raw_data: USCISCaseStatus | null;
 }
 
 /* ─── Service Centers ─────────────────────────────────────────── */
@@ -162,10 +172,12 @@ export function getStatusTheme(status: string): StatusTheme {
 
 /* ─── Helpers ───────────────────────────────────────────────── */
 export function formatReceiptInput(value: string): string {
-  return value
-    .replace(/[^a-zA-Z0-9]/g, "")
-    .toUpperCase()
-    .slice(0, 13);
+  const cleaned = value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+
+  const letters = cleaned.slice(0, 3).replace(/[^A-Z]/g, "");
+  const numbers = cleaned.slice(3).replace(/\D/g, "").slice(0, 10);
+
+  return `${letters}${numbers}`;
 }
 
 export function decodePrefix(receipt: string) {
@@ -214,32 +226,47 @@ export default function CaseStatusPage() {
 
   const { showToast } = useToast();
 
-  useEffect(() => {
+  const fetchHistory = useCallback(async () => {
     try {
-      const s = localStorage.getItem("uscis_history");
-      if (s) setHistory(JSON.parse(s));
-    } catch {
-      /* noop */
+      const res = await fetch("/api/uscis-case-history");
+  
+      if (!res.ok) return;
+  
+      const json = await res.json();
+  
+      const historyItems: CaseResult[] = (json.data ?? []).map(
+        (item: USCISHistoryRecord) => {
+          const raw = item.raw_data ?? {};
+  
+          return {
+            receiptNumber: item.receipt_number,
+            checkedAt: item.checked_at,
+            status: item.status ?? "",
+            description: item.description ?? "",
+            formType: item.form_type ?? "",
+            modifiedDate: item.modified_date ?? "",
+            nextSteps: (raw.next_case_status ?? []).map((step) => ({
+              date: step.date,
+              text: step.completed_text_en ?? "",
+            })),
+            rawData: raw,
+          };
+        }
+      );
+  
+      setHistory(historyItems);
+    } catch (error) {
+      console.error("Error loading USCIS case history:", error);
     }
   }, []);
 
-  const saveHistory = (item: CaseResult) => {
-    setHistory((prev) => {
-      const filtered = prev.filter((h) => h.receiptNumber !== item.receiptNumber);
-      const next = [item, ...filtered].slice(0, 10);
-      try {
-        localStorage.setItem("uscis_history", JSON.stringify(next));
-      } catch {
-        /* noop */
-      }
-      return next;
-    });
-  };
+  useEffect(() => {
+    fetchHistory();
+  }, [fetchHistory]);
 
   const handleCheck = async () => {
-    const normalized = receipt.trim().toUpperCase().replace(/[-\s]/g, "");
+    const normalized = receipt.trim().toUpperCase();
 
-    // Missing receipt number
     if (!normalized) {
       showToast(
         msg(E.TOOL_CASE_MISSING_ANSWER, {
@@ -250,9 +277,8 @@ export default function CaseStatusPage() {
       return;
     }
 
-    // Invalid receipt number length
-    if (normalized.length !== 13) {
-      showToast(msg(E.TOOL_CASE_RECEIPT_LENGTH), "error");
+    if (!/^[A-Z]{3}\d{10}$/.test(normalized)) {
+      showToast("Receipt number must contain 3 letters followed by 10 digits.", "error");
       return;
     }
 
@@ -284,7 +310,7 @@ export default function CaseStatusPage() {
       const parsed = parseUSCISData(rawCaseStatus, json.receiptNumber ?? normalized);
 
       setResult(parsed);
-      saveHistory(parsed);
+      await fetchHistory();
 
       // Success toast
       showToast("Case status retrieved successfully.", "success");
@@ -388,9 +414,23 @@ export default function CaseStatusPage() {
                       </span>
                       <button
                         type="button"
-                        onClick={() => {
-                          setHistory([]);
-                          localStorage.removeItem("uscis_history");
+                        onClick={async () => {
+                          try {
+                            const res = await fetch("/api/uscis-case-history", {
+                              method: "DELETE",
+                            });
+
+                            if (!res.ok) {
+                              showToast("Failed to clear case history.", "error");
+                              return;
+                            }
+
+                            setHistory([]);
+                            setShowHistory(false);
+                          } catch (error) {
+                            console.error("Error clearing USCIS case history:", error);
+                            showToast("Failed to clear case history.", "error");
+                          }
                         }}
                         className="inline-flex items-center gap-1 text-xs font-semibold text-[#BE211A] transition-opacity hover:opacity-75"
                       >
@@ -524,132 +564,132 @@ export default function CaseStatusPage() {
           {/* Results */}
           {result && theme && !loading && (
             // <ResultGate feature="dq_status_check">
-              <section className="mt-8 overflow-hidden rounded-3xl border border-[#0d7377]/10 bg-[#ffffff] shadow-[0_12px_32px_rgba(13,115,119,0.12)]">
-                <div
-                  className={`flex flex-col gap-4 border-b px-6 py-6 md:flex-row md:items-center md:justify-between md:px-8 ${theme.bg} ${theme.border}`}
+            <section className="mt-8 overflow-hidden rounded-3xl border border-[#0d7377]/10 bg-[#ffffff] shadow-[0_12px_32px_rgba(13,115,119,0.12)]">
+              <div
+                className={`flex flex-col gap-4 border-b px-6 py-6 md:flex-row md:items-center md:justify-between md:px-8 ${theme.bg} ${theme.border}`}
+              >
+                <span
+                  className={`inline-flex w-fit items-center gap-2 rounded-full border bg-[#ffffff]/70 px-3.5 py-1.5 text-xs font-semibold ${theme.color} ${theme.border}`}
                 >
-                  <span
-                    className={`inline-flex w-fit items-center gap-2 rounded-full border bg-[#ffffff]/70 px-3.5 py-1.5 text-xs font-semibold ${theme.color} ${theme.border}`}
-                  >
-                    <span className={`h-1.5 w-1.5 rounded-full ${theme.dot}`} />
-                    {theme.label}
-                  </span>
-                  <div className="md:text-right">
-                    <p className="text-[10px] font-semibold tracking-[0.18em] text-[#5f7777] uppercase">
-                      Status Date
-                    </p>
-                    <p className="mt-1 flex items-center gap-1.5 text-sm font-semibold text-[#183b3b] md:justify-end">
-                      <RefreshCw className="h-3.5 w-3.5 text-[#89a4a0]" />
-                      {new Date(result.checkedAt).toLocaleString()}
-                    </p>
-                  </div>
+                  <span className={`h-1.5 w-1.5 rounded-full ${theme.dot}`} />
+                  {theme.label}
+                </span>
+                <div className="md:text-right">
+                  <p className="text-[10px] font-semibold tracking-[0.18em] text-[#5f7777] uppercase">
+                    Status Date
+                  </p>
+                  <p className="mt-1 flex items-center gap-1.5 text-sm font-semibold text-[#183b3b] md:justify-end">
+                    <RefreshCw className="h-3.5 w-3.5 text-[#89a4a0]" />
+                    {new Date(result.checkedAt).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-8 p-6 md:p-8">
+                {/* Details Grid */}
+                <div className="grid grid-cols-1 gap-6 border-b border-[#c9dddd] pb-7 sm:grid-cols-2 md:grid-cols-3">
+                  <ResultCell
+                    icon={<Hash className="h-3.5 w-3.5" />}
+                    label="Receipt Number"
+                    value={result.receiptNumber}
+                    mono
+                  />
+                  {result.formType && (
+                    <ResultCell
+                      icon={<FileText className="h-3.5 w-3.5" />}
+                      label="Form Type"
+                      value={result.formType}
+                    />
+                  )}
+                  {result.modifiedDate && (
+                    <ResultCell
+                      icon={<Calendar className="h-3.5 w-3.5" />}
+                      label="Last Updated"
+                      value={result.modifiedDate}
+                    />
+                  )}
+                  {decodePrefix(result.receiptNumber) && (
+                    <ResultCell
+                      icon={<Building2 className="h-3.5 w-3.5" />}
+                      label="Service Center"
+                      value={decodePrefix(result.receiptNumber)!.center}
+                    />
+                  )}
+                  {result.rawData.submittedDate && (
+                    <ResultCell
+                      icon={<Clock className="h-3.5 w-3.5" />}
+                      label="Submitted"
+                      value={result.rawData.submittedDate}
+                    />
+                  )}
                 </div>
 
-                <div className="space-y-8 p-6 md:p-8">
-                  {/* Details Grid */}
-                  <div className="grid grid-cols-1 gap-6 border-b border-[#c9dddd] pb-7 sm:grid-cols-2 md:grid-cols-3">
-                    <ResultCell
-                      icon={<Hash className="h-3.5 w-3.5" />}
-                      label="Receipt Number"
-                      value={result.receiptNumber}
-                      mono
-                    />
-                    {result.formType && (
-                      <ResultCell
-                        icon={<FileText className="h-3.5 w-3.5" />}
-                        label="Form Type"
-                        value={result.formType}
-                      />
-                    )}
-                    {result.modifiedDate && (
-                      <ResultCell
-                        icon={<Calendar className="h-3.5 w-3.5" />}
-                        label="Last Updated"
-                        value={result.modifiedDate}
-                      />
-                    )}
-                    {decodePrefix(result.receiptNumber) && (
-                      <ResultCell
-                        icon={<Building2 className="h-3.5 w-3.5" />}
-                        label="Service Center"
-                        value={decodePrefix(result.receiptNumber)!.center}
-                      />
-                    )}
-                    {result.rawData.submittedDate && (
-                      <ResultCell
-                        icon={<Clock className="h-3.5 w-3.5" />}
-                        label="Submitted"
-                        value={result.rawData.submittedDate}
-                      />
-                    )}
-                  </div>
+                <div>
+                  <h3 className="text-2xl font-bold tracking-tight text-[#0d7377]">
+                    {result.status || "Status Unavailable"}
+                  </h3>
 
-                  <div>
-                    <h3 className="text-2xl font-bold tracking-tight text-[#0d7377]">
-                      {result.status || "Status Unavailable"}
-                    </h3>
-
-                    {/* Case Description */}
-                    {result.description && (
-                      <div className="mt-4 rounded-2xl border border-[#0d7377]/10 bg-[#EFF4FF] p-5 md:p-6">
-                        <h4 className="mb-3 flex items-center gap-2 text-[10px] font-semibold tracking-[0.18em] text-[#5f7777] uppercase">
-                          <Info className="h-3.5 w-3.5" /> Official Case Update
-                        </h4>
-                        <p className="text-[15px] leading-relaxed text-[#183b3b]/80 italic">
-                          &ldquo;{result.description}&rdquo;
-                        </p>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Next Steps */}
-                  {result.nextSteps.length > 0 && (
-                    <div>
-                      <h4 className="mb-4 flex items-center gap-2 text-[10px] font-semibold tracking-[0.18em] text-[#5f7777] uppercase">
-                        <ArrowUpCircle className="h-3.5 w-3.5 text-[#0d7377]" /> Roadmap Ahead
+                  {/* Case Description */}
+                  {result.description && (
+                    <div className="mt-4 rounded-2xl border border-[#0d7377]/10 bg-[#EFF4FF] p-5 md:p-6">
+                      <h4 className="mb-3 flex items-center gap-2 text-[10px] font-semibold tracking-[0.18em] text-[#5f7777] uppercase">
+                        <Info className="h-3.5 w-3.5" /> Official Case Update
                       </h4>
-                      <ol className="relative space-y-3 border-l border-dashed border-[#0d7377]/25 pl-6">
-                        {result.nextSteps.map((step, i) => (
-                          <li key={i} className="relative">
-                            <span className="absolute top-3.5 -left-[1.9rem] flex h-4 w-4 items-center justify-center rounded-full border border-[#0d7377]/25 bg-[#ffffff]">
-                              <CheckCircle2 className="h-3 w-3 text-[#0d7377]" />
-                            </span>
-                            <div className="rounded-2xl border border-[#c9dddd] bg-[#edf5f4]/40 p-4">
-                              {step.date && (
-                                <p className="mb-1 text-[11px] font-semibold tracking-wider text-[#89a4a0] uppercase">
-                                  {step.date}
-                                </p>
-                              )}
-                              <p className="text-[15px] leading-relaxed font-medium text-[#183b3b]">
-                                {step.text}
-                              </p>
-                            </div>
-                          </li>
-                        ))}
-                      </ol>
+                      <p className="text-[15px] leading-relaxed text-[#183b3b]/80 italic">
+                        &ldquo;{result.description}&rdquo;
+                      </p>
                     </div>
                   )}
-
-                  {/* Footer Controls */}
-                  <div className="flex flex-wrap gap-3 border-t border-[#c9dddd] pt-7">
-                    <a
-                      href="https://egov.uscis.gov/casestatus/landing.do"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 rounded-xl border border-[#0d7377]/15 bg-[#0d7377]/5 px-5 py-2.5 text-sm font-semibold text-[#0d7377] transition-colors hover:bg-[#0d7377]/10 active:scale-[0.98]"
-                    >
-                      <ExternalLink className="h-4 w-4" /> Official USCIS Website
-                    </a>
-                    <button
-                      type="button"
-                      onClick={reset}
-                      className="inline-flex items-center gap-2 rounded-xl border border-[#c9dddd] bg-[#edf5f4]/50 px-5 py-2.5 text-sm font-semibold text-[#5f7777] transition-colors hover:bg-[#edf5f4] active:scale-[0.98]"
-                    >
-                      <RefreshCcw className="h-4 w-4" /> Check Another Number
-                    </button>
-                  </div>
                 </div>
-              </section>
+
+                {/* Next Steps */}
+                {result.nextSteps.length > 0 && (
+                  <div>
+                    <h4 className="mb-4 flex items-center gap-2 text-[10px] font-semibold tracking-[0.18em] text-[#5f7777] uppercase">
+                      <ArrowUpCircle className="h-3.5 w-3.5 text-[#0d7377]" /> Roadmap Ahead
+                    </h4>
+                    <ol className="relative space-y-3 border-l border-dashed border-[#0d7377]/25 pl-6">
+                      {result.nextSteps.map((step, i) => (
+                        <li key={i} className="relative">
+                          <span className="absolute top-3.5 -left-[1.9rem] flex h-4 w-4 items-center justify-center rounded-full border border-[#0d7377]/25 bg-[#ffffff]">
+                            <CheckCircle2 className="h-3 w-3 text-[#0d7377]" />
+                          </span>
+                          <div className="rounded-2xl border border-[#c9dddd] bg-[#edf5f4]/40 p-4">
+                            {step.date && (
+                              <p className="mb-1 text-[11px] font-semibold tracking-wider text-[#89a4a0] uppercase">
+                                {step.date}
+                              </p>
+                            )}
+                            <p className="text-[15px] leading-relaxed font-medium text-[#183b3b]">
+                              {step.text}
+                            </p>
+                          </div>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                )}
+
+                {/* Footer Controls */}
+                <div className="flex flex-wrap gap-3 border-t border-[#c9dddd] pt-7">
+                  <a
+                    href="https://egov.uscis.gov/casestatus/landing.do"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-xl border border-[#0d7377]/15 bg-[#0d7377]/5 px-5 py-2.5 text-sm font-semibold text-[#0d7377] transition-colors hover:bg-[#0d7377]/10 active:scale-[0.98]"
+                  >
+                    <ExternalLink className="h-4 w-4" /> Official USCIS Website
+                  </a>
+                  <button
+                    type="button"
+                    onClick={reset}
+                    className="inline-flex items-center gap-2 rounded-xl border border-[#c9dddd] bg-[#edf5f4]/50 px-5 py-2.5 text-sm font-semibold text-[#5f7777] transition-colors hover:bg-[#edf5f4] active:scale-[0.98]"
+                  >
+                    <RefreshCcw className="h-4 w-4" /> Check Another Number
+                  </button>
+                </div>
+              </div>
+            </section>
             // </ResultGate>
           )}
         </div>
@@ -699,7 +739,8 @@ export default function CaseStatusPage() {
           <div className="flex items-start gap-3 rounded-3xl border border-[#c9dddd] bg-[#ffffff]/60 p-5">
             <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#89a4a0]" />
             <p className="text-xs leading-relaxed text-[#5f7777]">
-              Searches stay on your device. We never store your receipt number on our servers.
+              Your case history is securely saved to your Rahvana account so you can access your
+              recent searches across devices.
             </p>
           </div>
         </aside>
