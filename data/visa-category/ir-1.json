@@ -3341,7 +3341,7 @@
             "Log into CEAC portal",
             "Open fee payment area",
             "Pay Affidavit of Support fee ($120)",
-            "Pay Immigrant Visa fee ($345)",
+            "Pay Immigrant Visa fee ($335)",
             "Save payment status"
           ],
           "tool_data": {
@@ -4067,7 +4067,7 @@
                 "label": "Step 2 of 13, Submit IV and AOS fees",
                 "heading": "Confirm all fees are paid",
                 "screenTitle": "Confirm all fees are paid",
-                "instruction": "Before document submission begins, verify in CEAC that both the Affidavit of Support fee ($120) and the Immigrant Visa fee ($345) have been successfully processed.",
+                "instruction": "Before document submission begins, verify in CEAC that both the Affidavit of Support fee ($120) and the Immigrant Visa fee ($325) have been successfully processed.",
                 "url": "ceac.state.gov",
                 "ss_label": "Fee Status",
                 "ss_headline": "NVC Fees Paid",
@@ -6178,7 +6178,7 @@
     "Union Council Marriage Registration",
     "Police Certificate - Pakistan (Original)",
     "Passport Photos (2x2 inches, white background)",
-    "Tax Returns (IRS Transcripts - 3 years)",
+    "Tax Returns & IRS Transcripts (Most Recent Year Required, 3 Years Recommended)",
     "Employment Verification Letter",
     "Pay Stubs (6 months)",
     "W-2 Forms",

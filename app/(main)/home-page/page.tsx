@@ -7,7 +7,7 @@ import { ToolsDock } from "./ToolDock";
 import Intro from "./intro";
 import AnimationCard from "./AnimationCard";
 import SectionBird from "./SectionBird";
-import MobileJourneyStory from "./MobileJourneyStory";
+import MobileJourneyRoadmap from "./MobileJourneyRoadmap";
 
 // Load the "Caveat" handwriting-style Google font. It is used for the
 // little handwritten notes/annotations on the page. We expose it as a
@@ -522,7 +522,7 @@ export default function RoadmapPage() {
       <Intro />
 
       {/* Dedicated Full Mobile Story Experience (Mobile Only) */}
-      <MobileJourneyStory />
+      <MobileJourneyRoadmap />
 
       {/* Desktop Snake-Curve Roadmap Experience (Desktop Only) */}
       <div className="hidden md:block">
