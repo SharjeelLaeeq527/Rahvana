@@ -11,15 +11,18 @@ export interface BlogComment {
   content: string;
   status: BlogCommentStatus;
   parentId?: string | null;
+  replyToName?: string | null;
   createdAt: string;
   updatedAt: string;
   isAuthor?: boolean;
+  replies?: BlogComment[];
 }
 
 export interface CreateCommentInput {
   articleSlug: string;
   content: string;
   parentId?: string | null;
+  replyToName?: string | null;
 }
 
 export interface BlogCommentsResponse {

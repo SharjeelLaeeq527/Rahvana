@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 /**
  * GET /api/blog/comments?slug=<article_slug>
- * Fetches approved comments for the given article slug.
+ * Fetches approved comments organized into threaded conversations for the given article slug.
  */
 export async function GET(request: NextRequest) {
   try {
@@ -22,11 +22,11 @@ export async function GET(request: NextRequest) {
       data: { user },
     } = await supabase.auth.getUser();
 
-    const comments = await getApprovedComments(slug.trim(), user?.id ?? null);
+    const { threads, totalCount } = await getApprovedComments(slug.trim(), user?.id ?? null);
 
     return NextResponse.json({
-      comments,
-      count: comments.length,
+      comments: threads,
+      count: totalCount,
       isAuthenticated: Boolean(user),
       currentUserId: user?.id ?? null,
     });
@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST /api/blog/comments
- * Creates a new comment. Requires authentication.
+ * Creates a new top-level comment or threaded reply. Requires authentication.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
 
     if (!user) {
       return NextResponse.json(
-        { error: "You must be signed in to post a comment." },
+        { error: "You must be signed in to post a comment or reply." },
         { status: 401 }
       );
     }
@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
       (user.user_metadata?.name as string | undefined)?.trim() ||
       (user.email ? user.email.split("@")[0] : "Community Member");
 
-    // author_avatar_url is optional as requested
+    // author_avatar_url is optional
     const authorAvatarUrl =
       (profile?.avatar_url as string | undefined)?.trim() ||
       (user.user_metadata?.avatar_url as string | undefined)?.trim() ||
@@ -100,6 +100,7 @@ export async function POST(request: NextRequest) {
       articleSlug: body.articleSlug.trim(),
       content: trimmedContent,
       parentId: body.parentId || null,
+      replyToName: body.replyToName || null,
     });
 
     return NextResponse.json({ comment: newComment }, { status: 201 });

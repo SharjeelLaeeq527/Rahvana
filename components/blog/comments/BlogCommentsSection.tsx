@@ -13,6 +13,7 @@ interface BlogCommentsSectionProps {
 
 export default function BlogCommentsSection({ slug }: BlogCommentsSectionProps) {
   const [comments, setComments] = useState<BlogComment[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,6 +31,7 @@ export default function BlogCommentsSection({ slug }: BlogCommentsSectionProps) 
 
       const data = (await res.json()) as BlogCommentsResponse;
       setComments(data.comments || []);
+      setTotalCount(data.count ?? data.comments?.length ?? 0);
     } catch {
       setError("Unable to load comments at this time. Please refresh to try again.");
     } finally {
@@ -42,11 +44,51 @@ export default function BlogCommentsSection({ slug }: BlogCommentsSectionProps) 
   }, [fetchComments]);
 
   const handleCommentCreated = (newComment: BlogComment) => {
-    // Add new comment at the beginning of the list
-    setComments((prev) => [newComment, ...prev]);
+    // Add new top-level comment at the top
+    setComments((prev) => [{ ...newComment, replies: [] }, ...prev]);
+    setTotalCount((prev) => prev + 1);
   };
 
-  const handleDeleteComment = async (commentId: string) => {
+  const handleReplyCreated = async (
+    parentId: string,
+    content: string,
+    replyToName?: string
+  ) => {
+    const res = await fetch("/api/blog/comments", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        articleSlug: slug,
+        content,
+        parentId,
+        replyToName,
+      }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data?.error || "Failed to post reply");
+    }
+
+    const newReply = data.comment as BlogComment;
+
+    // Optimistically update the target thread
+    setComments((prev) =>
+      prev.map((parent) => {
+        if (parent.id === parentId) {
+          return {
+            ...parent,
+            replies: [...(parent.replies || []), newReply],
+          };
+        }
+        return parent;
+      })
+    );
+
+    setTotalCount((prev) => prev + 1);
+  };
+
+  const handleDeleteComment = async (commentId: string, parentId?: string) => {
     const res = await fetch(`/api/blog/comments/${commentId}`, {
       method: "DELETE",
     });
@@ -55,7 +97,27 @@ export default function BlogCommentsSection({ slug }: BlogCommentsSectionProps) 
       throw new Error("Failed to delete comment");
     }
 
-    setComments((prev) => prev.filter((c) => c.id !== commentId));
+    if (parentId) {
+      // Remove nested reply from matching parent
+      setComments((prev) =>
+        prev.map((parent) => {
+          if (parent.id === parentId) {
+            return {
+              ...parent,
+              replies: (parent.replies || []).filter((r) => r.id !== commentId),
+            };
+          }
+          return parent;
+        })
+      );
+      setTotalCount((prev) => Math.max(0, prev - 1));
+    } else {
+      // Remove top-level comment and all its nested replies from state
+      const target = comments.find((c) => c.id === commentId);
+      const removedCount = 1 + (target?.replies?.length || 0);
+      setComments((prev) => prev.filter((c) => c.id !== commentId));
+      setTotalCount((prev) => Math.max(0, prev - removedCount));
+    }
   };
 
   return (
@@ -70,9 +132,11 @@ export default function BlogCommentsSection({ slug }: BlogCommentsSectionProps) 
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-500/10 text-teal-400">
             <MessageSquare className="h-4 w-4" />
           </div>
-          <h2 className="text-foreground text-xl font-bold tracking-tight sm:text-2xl">Comments</h2>
+          <h2 className="text-foreground text-xl font-bold tracking-tight sm:text-2xl">
+            Discussion
+          </h2>
           <span className="ml-1 rounded-full border border-teal-500/20 bg-teal-500/10 px-2.5 py-0.5 text-xs font-semibold text-teal-500 dark:text-teal-400">
-            {comments.length}
+            {totalCount}
           </span>
         </div>
       </div>
@@ -111,13 +175,14 @@ export default function BlogCommentsSection({ slug }: BlogCommentsSectionProps) 
 
       {/* Comments List */}
       {!isLoading && comments.length > 0 && (
-        <div className="space-y-3.5">
+        <div className="space-y-4">
           {comments.map((comment) => (
             <CommentItem
               key={comment.id}
               comment={comment}
               canDelete={Boolean(comment.isAuthor)}
               onDelete={handleDeleteComment}
+              onReplySubmit={handleReplyCreated}
             />
           ))}
         </div>
@@ -131,7 +196,7 @@ export default function BlogCommentsSection({ slug }: BlogCommentsSectionProps) 
           </div>
           <h3 className="text-foreground text-sm font-semibold">No comments yet</h3>
           <p className="text-muted-foreground mx-auto mt-1 max-w-sm text-xs leading-relaxed">
-            Have questions or insights about this guide? Be the first to share your thoughts!
+            Have questions or insights about this guide? Be the first to start the discussion!
           </p>
         </div>
       )}

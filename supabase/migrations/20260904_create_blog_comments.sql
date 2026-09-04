@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS public.blog_comments (
 
   -- Optional parent_id for threaded replies
   parent_id UUID REFERENCES public.blog_comments(id) ON DELETE CASCADE,
+  reply_to_name TEXT, -- Optional display name of author being replied to
 
   -- Timestamps
   created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
