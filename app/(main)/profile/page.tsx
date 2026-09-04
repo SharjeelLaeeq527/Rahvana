@@ -31,6 +31,7 @@ import { Loader } from "@/components/ui/spinner";
 import { getProfileCompleteness } from "@/lib/profile/helpers";
 import { cn } from "@/lib/utils";
 import { FormField, FormSelect, FormCheckbox } from "./form-field";
+import { US_STATES } from "@/lib/formConfig/constants";
 import { validateProfile } from "@/lib/profile/schema";
 import { useLanguage } from "@/app/context/LanguageContext";
 
@@ -873,14 +874,40 @@ export default function ProfilePage() {
                   }
                   readOnly={!isEditing}
                 />
-                <FormField
-                  label="State"
-                  value={formData.sponsor?.address?.state || ""}
-                  onChange={(v: string) =>
-                    updateSponsorSub("address", "state", v)
-                  }
-                  readOnly={!isEditing}
-                />
+                {isEditing ? (
+                  <FormSelect
+                    label="State"
+                    // Resolve a legacy free-text value (full name) to its code so
+                    // it still pre-selects in the dropdown; new saves store codes.
+                    value={
+                      US_STATES.find(
+                        (s) => s.value === formData.sponsor?.address?.state
+                      )?.value ||
+                      US_STATES.find(
+                        (s) =>
+                          s.label.toLowerCase() ===
+                          (formData.sponsor?.address?.state || "").toLowerCase()
+                      )?.value ||
+                      ""
+                    }
+                    onChange={(v: string) => updateSponsorSub("address", "state", v)}
+                    options={US_STATES}
+                    placeholder="Select state"
+                  />
+                ) : (
+                  <FormField
+                    label="State"
+                    value={
+                      US_STATES.find(
+                        (s) => s.value === formData.sponsor?.address?.state
+                      )?.label ||
+                      formData.sponsor?.address?.state ||
+                      ""
+                    }
+                    onChange={() => {}}
+                    readOnly
+                  />
+                )}
                 <FormField
                   label="ZIP code"
                   value={formData.sponsor?.address?.zipCode || ""}

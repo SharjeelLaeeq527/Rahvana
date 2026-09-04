@@ -48,7 +48,7 @@ export const POLIO_CERTIFICATE_DATA = {
       label: "Step 1 of 5",
       heading: "What is the polio vaccination requirement?",
       instruction:
-        "Pakistan is a polio-endemic country. All immigrant visa applicants from Pakistan must receive an oral polio vaccine dose and obtain a certificate before their consular medical exam.",
+        "Typical cases from Pakistan will require a polio certificate for the medical examination. Therefore, it is highly recommended and advisable to obtain it beforehand to avoid any delays in your medical process.",
       vLabel: "Requirement Overview",
       visual: {
         title: "Why this is required",
@@ -69,9 +69,9 @@ export const POLIO_CERTIFICATE_DATA = {
     },
     {
       label: "Step 3 of 5",
-      heading: "What the certificate looks like",
+      heading: "What to verify on the certificate",
       instruction:
-        "The official polio vaccination certificate is typically a printed card or letter issued at the vaccination site. It should include your name, vaccination date, and the type of vaccine received.",
+        "After vaccination, make sure your vaccination details are correctly recorded and obtain the official polio vaccination certificate. Pakistan's Polio Programme currently provides access to a digital certificate through NIMS/Pak Vaccination Pass.",
       vLabel: "Certificate Format",
       visual: {
         title: "Certificate Details to Verify",

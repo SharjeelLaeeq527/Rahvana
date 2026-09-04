@@ -4842,7 +4842,7 @@
           "step_key": "step_3_1",
           "step_number": 1,
           "step_name": "Schedule Medical Examination",
-          "step_short_description": "Official medical clearance",
+          "step_short_description": "Required medical examination",
           "step_description": "Every immigrant visa applicant must complete a medical examination with an embassy-approved physician before their interview.",
           "step_type": "tool",
           "who": "Beneficiary",
@@ -4852,9 +4852,11 @@
           "display_order": 1,
           "actions": [
             "Select booking method",
-            "Find approved physician",
-            "Schedule appointment",
-            "Record appointment details"
+            "Review approved panel physicians",
+            "Select a panel physician",
+            "Schedule the medical examination",
+            "Record appointment details",
+            "Prepare required documents"
           ],
           "tool_data": {
             "id": "step_3_1",
@@ -4874,7 +4876,7 @@
           "step_number": 2,
           "step_name": "Obtain Polio Vaccination Certificate",
           "step_short_description": "Required for Pakistan applicants",
-          "step_description": "Pakistan-origin applicants must obtain a polio vaccination certificate before the consular interview. This is a required compliance step for all immigrant visa applicants.",
+          "step_description": "Pakistan-origin applicants must obtain a polio vaccination certificate for medical examination. This is a required compliance step for all immigrant visa applicants.",
           "who": "Beneficiary",
           "where": "Government vaccination post / WHO site",
           "timeline": "1-2 days",
@@ -4923,7 +4925,7 @@
           "step_short_description": "Medical screening and vaccinations",
           "step_description": "Attend your scheduled medical examination with an embassy-approved panel physician. This is a mandatory health screening and vaccination review for all immigrants.",
           "who": "Beneficiary",
-          "where": "IOM clinic",
+          "where": "U.S. Embassy-approved Panel Physician",
           "timeline": "2-4 hours at clinic",
           "actions": [
             "Arrive on time with documents",
@@ -4935,8 +4937,8 @@
             "Vaccination review",
             "Physician interview"
           ],
-          "output": "Sealed medical envelope",
-          "notes": "DO NOT OPEN envelope. Results ready in 2-5 days. Collect 1-2 days before interview.",
+          "output": "Medical examination results — sent to Embassy or provided in a sealed envelope",
+          "notes": "DO NOT OPEN envelope. Medical examination results can take up to 96 hours. If the physician provides the results in a sealed envelope, do not open it and bring it to your visa interview. If the physician sends the results directly to the Embassy, no envelope needs to be collected.",
           "relevantTools": [
             {
               "label": "Book Medical Appointment",
@@ -4950,10 +4952,11 @@
             "bring": [
               "Passport (original)",
               "NVC interview appointment letter",
+              "DS-260 confirmation page",
               "Polio vaccination certificate (original)",
-              "Passport-style photos (2-4)",
+              "6 recent passport-sized color photographs",
               "Medical exam fee (confirm with physician)",
-              "Any prior vaccination records if available"
+              "Relevant medical records and test results for major illnesses, surgeries, or current treatment, if applicable"
             ],
             "pitfalls": [
               "Forgetting the polio vaccination certificate",
@@ -5534,7 +5537,7 @@
                   "Current passport (original)",
                   "All prior passports",
                   "Original civil documents (organized packet)",
-                  "Passport-style photos (2-4)",
+                  "2 recent color photographs (5 cm × 5 cm / 2 × 2 in)",
                   "Petitioner's original Affidavit of Support",
                   "Tax evidence and employment letter if applicable"
                 ]

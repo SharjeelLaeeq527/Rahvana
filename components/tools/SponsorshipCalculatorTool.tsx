@@ -23,6 +23,13 @@ import {
 } from "lucide-react";
 import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
+import { US_STATES } from "@/lib/formConfig/constants";
+import {
+  POVERTY_GUIDELINES,
+  getSponsorshipThreshold,
+  resolveJurisdiction,
+  getJurisdictionLabel,
+} from "@/lib/tools/sponsorship/povertyGuidelines";
 
 // --- CONSTANTS ---
 const I864_URL = "https://www.uscis.gov/sites/default/files/document/forms/i-864.pdf";
@@ -39,29 +46,10 @@ const COLORS = {
   danger: "#db8090", // Rose/Coral
 };
 
-export const POVERTY_GUIDELINES: Record<number, { level100: number; level125: number }> = {
-  2: { level100: 21640, level125: 27050 },
-  3: { level100: 27320, level125: 34150 },
-  4: { level100: 33000, level125: 41250 },
-  5: { level100: 38680, level125: 48350 },
-  6: { level100: 44360, level125: 55450 },
-  7: { level100: 50040, level125: 62550 },
-  8: { level100: 55720, level125: 69650 },
-};
-
-const ADDITIONAL_MEMBER_COST = {
-  level100: 5680,
-  level125: 7100,
-};
-
-// --- EXPORTED LOGIC FOR REUSE ---
-export const getSponsorshipThreshold = (householdSize: number, level: 100 | 125) => {
-  const key = level === 100 ? "level100" : "level125";
-  const size = Math.max(householdSize, 2);
-  if (size <= 8) return POVERTY_GUIDELINES[size][key];
-  const extraMembers = size - 8;
-  return POVERTY_GUIDELINES[8][key] + extraMembers * ADDITIONAL_MEMBER_COST[key];
-};
+// Poverty guideline data + threshold logic live in the shared module
+// (lib/tools/sponsorship/povertyGuidelines.ts), which is state/jurisdiction
+// aware. Re-exported here for any existing consumers of these names.
+export { POVERTY_GUIDELINES, getSponsorshipThreshold };
 
 export const calculateSponsorshipHouseholdSize = (d: any): number => {
   const sponsoringOwnSpouse = d.isMarried && d.relationshipToApplicant?.toLowerCase() === "spouse";
@@ -92,6 +80,8 @@ export const getSponsorshipResult = (d: any) => {
       jsIncome: 0,
       assetIncome: 0,
       shortfall: 0,
+      state: d.state || "",
+      jurisdiction: resolveJurisdiction(d.state),
       forms: [
         {
           id: "i864w",
@@ -105,8 +95,9 @@ export const getSponsorshipResult = (d: any) => {
   }
 
   const householdSize = calculateSponsorshipHouseholdSize(d);
+  const jurisdiction = resolveJurisdiction(d.state);
   const povertyLevel = d.isMilitary && d.currentSponsoredApplicant ? 100 : 125;
-  const requiredIncome = getSponsorshipThreshold(householdSize, povertyLevel);
+  const requiredIncome = getSponsorshipThreshold(householdSize, povertyLevel, jurisdiction);
 
   // Primary Income Logic (AGI Fallback)
   const primaryIncome = d.currentAnnualIncome > 0 ? d.currentAnnualIncome : d.agi || 0;
@@ -190,6 +181,8 @@ export const getSponsorshipResult = (d: any) => {
     jsIncome,
     assetIncome: usableAssets,
     shortfall: Math.max(0, requiredIncome - totalIncome),
+    state: d.state || "",
+    jurisdiction,
     forms,
     raw: d,
   };
@@ -200,6 +193,10 @@ interface SponsorshipCalculatorToolProps {
   onClose: () => void;
   initialData?: any;
   onSave: (result: any) => void;
+  // When true, the sponsor state was supplied by the Journey/profile and is
+  // shown read-only (the user is not asked to re-enter it). Defaults to false
+  // (standalone), where a required state selector is shown.
+  lockState?: boolean;
 }
 
 export default function SponsorshipCalculatorTool({
@@ -207,6 +204,7 @@ export default function SponsorshipCalculatorTool({
   onClose,
   initialData,
   onSave,
+  lockState = false,
 }: SponsorshipCalculatorToolProps) {
   const [stepIdx, setStepIdx] = useState(0);
   const [expandedOptions, setExpandedOptions] = useState<Record<string, boolean>>({});
@@ -222,6 +220,7 @@ export default function SponsorshipCalculatorTool({
     };
   }, [isOpen]);
   const [data, setData] = useState({
+    state: initialData?.state || "",
     sponsorStatus: initialData?.sponsorStatus || "",
     isMilitary: initialData?.isMilitary ?? null,
     isMarried: initialData?.isMarried ?? null,
@@ -486,6 +485,38 @@ export default function SponsorshipCalculatorTool({
                       </button>
                     </div>
                   </div>
+                  <div className="mb-6">
+                    <p className="text-[14px] font-semibold text-[#0c1b33] mb-3">
+                      Sponsor's state of residence
+                    </p>
+                    {lockState && data.state ? (
+                      <div
+                        className="rounded-[10px] p-[12px_16px] flex items-center justify-between"
+                        style={{
+                          backgroundColor: `${COLORS.secondary}20`,
+                          border: `1px solid ${COLORS.secondary}50`,
+                        }}
+                      >
+                        <span className="text-[14px] font-semibold text-[#0c1b33]">
+                          {US_STATES.find((s) => s.value === data.state)?.label || data.state}
+                        </span>
+                        <span className="text-[12px] text-[#6b8097]">From your profile</span>
+                      </div>
+                    ) : (
+                      <>
+                        <CustomDropdown
+                          options={US_STATES}
+                          value={data.state}
+                          onChange={(value: string) => setData({ ...data, state: value })}
+                          placeholder="Select your state"
+                        />
+                        <p className="text-[12px] text-[#6b8097] mt-2">
+                          Poverty guidelines are higher for Alaska and Hawaii. All other states
+                          use the same federal thresholds.
+                        </p>
+                      </>
+                    )}
+                  </div>
                   <div className="flex gap-[10px]">
                     <button
                       onClick={() => setStepIdx(0)}
@@ -494,13 +525,15 @@ export default function SponsorshipCalculatorTool({
                       <ArrowLeft size={14} /> Back
                     </button>
                     <button
-                      disabled={!data.sponsorStatus || data.isMilitary === null}
+                      disabled={!data.sponsorStatus || data.isMilitary === null || !data.state}
                       onClick={() => setStepIdx(2)}
                       style={{
                         backgroundColor:
-                          !data.sponsorStatus || data.isMilitary === null ? "#e2e8f0" : "#0d7377",
+                          !data.sponsorStatus || data.isMilitary === null || !data.state
+                            ? "#e2e8f0"
+                            : "#0d7377",
                       }}
-                      className={`flex-1 p-[14px_22px] rounded-[10px] text-[15px] font-semibold transition-all flex items-center justify-center gap-2 ${!data.sponsorStatus || data.isMilitary === null ? "text-slate-400 cursor-not-allowed" : "text-white hover:opacity-90"}`}
+                      className={`flex-1 p-[14px_22px] rounded-[10px] text-[15px] font-semibold transition-all flex items-center justify-center gap-2 ${!data.sponsorStatus || data.isMilitary === null || !data.state ? "text-slate-400 cursor-not-allowed" : "text-white hover:opacity-90"}`}
                     >
                       Continue <ArrowRight size={14} />
                     </button>
@@ -1295,6 +1328,12 @@ export default function SponsorshipCalculatorTool({
                         <p className="text-[14px] text-slate-600 leading-relaxed font-medium">
                           Total Household Income: <strong className="text-[#0c1b33] text-lg">${(result.totalIncome ?? 0).toLocaleString()}</strong><br/>
                           Required (Household of {result.householdSize}): <strong className="text-[#0c1b33] text-lg">${(result.requiredIncome ?? 0).toLocaleString()}</strong>
+                          {result.jurisdiction && (
+                            <>
+                              <br/>
+                              <span className="text-[12px] text-slate-500">Based on {getJurisdictionLabel(result.jurisdiction)} poverty guidelines</span>
+                            </>
+                          )}
                         </p>
                       </div>
 

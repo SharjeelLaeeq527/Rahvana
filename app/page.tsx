@@ -1750,7 +1750,7 @@ function HomePageContent() {
                       className="bg-rahvana-primary-pale text-rahvana-primary mb-4 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-semibold"
                     >
                       <Icons.HelpCircle className="h-4 w-4" />
-                      {t("homePage.faqBadge")}
+                      Need more Clarity?
                     </motion.span>
                     <h2 className="text-foreground mb-4 text-3xl font-bold md:text-5xl">
                       {t("homePage.faqTitle") || "Frequently Asked Questions"}
