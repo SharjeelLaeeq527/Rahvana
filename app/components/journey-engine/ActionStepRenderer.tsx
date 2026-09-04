@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
 import {
   CheckCircle,
@@ -247,6 +247,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
   const [selectedGuideType, setSelectedGuideType] = useState<"print" | "download" | null>(null);
   const [statusSaved, setStatusSaved] = useState(false);
   const [selectedDropdown, setSelectedDropdown] = useState("");
+  const g1651RequirementsRef = useRef<HTMLElement | null>(null);
   const [mailingCarrier, setMailingCarrier] = useState("");
   const [mailingTracking, setMailingTracking] = useState("");
   const [isSavingPayment, setIsSavingPayment] = useState(false);
@@ -1298,7 +1299,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
         .asr-spin { animation: spin 1s linear infinite; }
       `}</style>
       {/* Main Content */}
-      <div className="step mx-auto flex w-full max-w-[680px] flex-col px-4 sm:px-6 md:px-8 pt-5 pb-10 md:pt-8">
+      <div className="step mx-auto flex w-full max-w-[680px] flex-col px-4 pt-5 pb-10 sm:px-6 md:px-8 md:pt-8">
         {/* Eyebrow for Paper Filing Path steps */}
         {/* {(step.step_key === "step_1_11" || 
           step.step_key === "step_1_12" || 
@@ -1318,23 +1319,23 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
         )} */}
         {/* Title */}
         <h1
-          className={`page-title text-[clamp(28px,4vw,36px)] font-bold leading-[1.15] tracking-tight mb-1 ${isChapter1 ? "text-[#0c1b33]" : isChapter2 ? "text-[#27192e]" : "text-[#0c1b33]"}`}
+          className={`page-title mb-1 text-[clamp(28px,4vw,36px)] leading-[1.15] font-bold tracking-tight ${isChapter1 ? "text-[#0c1b33]" : isChapter2 ? "text-[#27192e]" : "text-[#0c1b33]"}`}
         >
           {step.step_name}
         </h1>
 
         {/* Subtitle */}
-        <p className="page-desc text-[15px] md:text-[16px] leading-[1.7] max-w-full md:max-w-[560px] mb-2.5 sm:mb-4 text-[#3a4f63]">
+        <p className="page-desc mb-2.5 max-w-full text-[15px] leading-[1.7] text-[#3a4f63] sm:mb-4 md:max-w-[560px] md:text-[16px]">
           {step.step_description}
         </p>
 
         {/* Chips - Pastel colors */}
         {actionData.chips && actionData.chips.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-3 sm:mb-5">
+          <div className="mb-3 flex flex-wrap gap-2 sm:mb-5">
             {actionData.chips.map((chip, idx) => (
               <span
                 key={idx}
-                className="text-[11px] font-semibold uppercase tracking-[0.06em] px-[12px] py-[5px] rounded-full border whitespace-nowrap"
+                className="rounded-full border px-[12px] py-[5px] text-[11px] font-semibold tracking-[0.06em] whitespace-nowrap uppercase"
                 style={{
                   backgroundColor: isChapter1 ? "#f3f0fb" : isChapter2 ? "#f4e6f3" : "#f0f1fb",
                   borderColor: isChapter1 ? "#c9bef2" : isChapter2 ? "#d5abd2" : "#d0e4f7",
@@ -1395,8 +1396,11 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
               style={{
                 fontSize: "13.5px",
                 lineHeight: 1.55,
-                color: actionData.id === "paper-forms-print" ? CHAPTER1.text : "rgba(255, 255, 255, 0.74)",
-                maxWidth: "470px",
+                color:
+                  actionData.id === "paper-forms-print"
+                    ? CHAPTER1.text
+                    : "rgba(255, 255, 255, 0.74)",
+                width: "100%",
               }}
             >
               {actionData.hero_description}
@@ -1411,7 +1415,9 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                 padding: "6px 11px",
                 borderRadius: "999px",
                 background:
-                  actionData.id === "paper-forms-print" ? CHAPTER1.feature : "rgba(255, 255, 255, 0.1)",
+                  actionData.id === "paper-forms-print"
+                    ? CHAPTER1.feature
+                    : "rgba(255, 255, 255, 0.1)",
                 fontSize: "10px",
                 fontWeight: 700,
                 letterSpacing: ".1em",
@@ -1749,9 +1755,48 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                     if (!value) return;
                     setSelectedDropdown(value);
                     setStatusSaved(false);
+                    if (value.includes("G-1651")) {
+                      setTimeout(() => {
+                        g1651RequirementsRef.current?.scrollIntoView({
+                          behavior: "smooth",
+                          block: "start",
+                        });
+                      }, 120);
+                    }
                   }}
                   placeholder="Select option"
                 />
+
+                {selectedDropdown && selectedDropdown.includes("G-1651") && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      g1651RequirementsRef.current?.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start",
+                      });
+                    }}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      padding: 0,
+                      marginTop: "10px",
+                      fontSize: "12.5px",
+                      fontWeight: 600,
+                      color: "var(--rv-ch1-dark)",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "4px",
+                      textAlign: "left",
+                    }}
+                  >
+                    <span>Read Form G-1651 requirements below</span>
+                    <span>
+                      <strong>&darr;</strong>
+                    </span>
+                  </button>
+                )}
 
                 <div style={{ marginTop: "16px", display: "flex", justifyContent: "flex-end" }}>
                   <button
@@ -1787,7 +1832,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                       }
                     }}
                     disabled={!selectedDropdown || isSavingPayment}
-                    className="w-full sm:w-auto px-6 py-3 rounded-xl font-bold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-sm"
+                    className="w-full rounded-xl px-6 py-3 font-bold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:shadow-sm sm:w-auto"
                     style={{
                       backgroundColor: "var(--rv-ch1)",
                     }}
@@ -2221,6 +2266,292 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
           {/* Status Message Section End */}
         </section>
 
+        {/* Form G-1651 Requirements Section (Shown outside launch module and before "What to keep in mind") */}
+        {selectedDropdown && selectedDropdown.includes("G-1651") && (
+          <section
+            ref={g1651RequirementsRef}
+            id="g1651-requirements-section"
+            style={{
+              marginTop: "16px",
+              background: "#ffffff",
+              border: "1.5px solid rgba(130, 132, 191, 0.35)",
+              borderRadius: "22px",
+              padding: isMobile ? "16px" : "22px",
+              boxShadow: "0 8px 24px rgba(130, 132, 191, 0.12)",
+              scrollMarginTop: "100px",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "flex-start",
+                justifyContent: "space-between",
+                gap: "12px",
+                marginBottom: "14px",
+                flexWrap: "wrap",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <div
+                  style={{
+                    width: "36px",
+                    height: "36px",
+                    borderRadius: "12px",
+                    background: "var(--rv-ch1-soft)",
+                    border: "1px solid rgba(130, 132, 191, 0.3)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "var(--rv-ch1-dark)",
+                    flexShrink: 0,
+                  }}
+                >
+                  <AlertCircle size={20} strokeWidth={2.2} />
+                </div>
+                <div>
+                  <div
+                    style={{
+                      fontSize: "11px",
+                      fontWeight: 800,
+                      letterSpacing: ".1em",
+                      textTransform: "uppercase",
+                      color: "var(--rv-ch1-dark)",
+                      marginBottom: "2px",
+                    }}
+                  >
+                    USCIS Eligibility Requirements
+                  </div>
+                  <h3
+                    style={{
+                      fontSize: "17px",
+                      fontWeight: 700,
+                      color: COLORS.navy,
+                      margin: 0,
+                    }}
+                  >
+                    Form G-1651 Paper Fee Exemption
+                  </h3>
+                </div>
+              </div>
+
+              <a
+                href="https://www.uscis.gov/g-1651"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  fontSize: "12.5px",
+                  fontWeight: 600,
+                  color: "var(--rv-ch1-dark)",
+                  background: "var(--rv-ch1-soft)",
+                  padding: "7px 14px",
+                  borderRadius: "10px",
+                  border: "1px solid rgba(130, 132, 191, 0.3)",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  textDecoration: "none",
+                  transition: "background 0.2s",
+                }}
+              >
+                Official Form G-1651 on uscis.gov &rarr;
+              </a>
+            </div>
+
+            <div
+              style={{
+                background: "#f8fafc",
+                borderRadius: "14px",
+                border: "1px solid #e2e8f0",
+                padding: "12px 16px",
+                marginBottom: "14px",
+              }}
+            >
+              <p
+                style={{
+                  fontSize: "13.5px",
+                  lineHeight: 1.6,
+                  color: "#1e293b",
+                  margin: 0,
+                }}
+              >
+                To request an exemption, you must{" "}
+                <strong>
+                  certify that electronic payment and collection methods are not possible
+                </strong>{" "}
+                and you meet <strong>1 or more</strong> of the following requirements:
+              </p>
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: isMobile ? "1fr" : "repeat(2, minmax(0, 1fr))",
+                gap: "10px",
+                marginBottom: "14px",
+              }}
+            >
+              <div
+                style={{
+                  background: "#fbfdff",
+                  border: "1px solid #e5edf6",
+                  borderRadius: "14px",
+                  padding: "12px 14px",
+                  display: "flex",
+                  gap: "10px",
+                }}
+              >
+                <span
+                  style={{
+                    width: "22px",
+                    height: "22px",
+                    borderRadius: "50%",
+                    background: "var(--rv-ch1-soft)",
+                    color: "var(--rv-ch1-dark)",
+                    border: "1px solid rgba(130, 132, 191, 0.25)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    flexShrink: 0,
+                    marginTop: "1px",
+                  }}
+                >
+                  1
+                </span>
+                <span style={{ fontSize: "13px", lineHeight: 1.55, color: "#334155" }}>
+                  You do not have access to banking services or electronic payment systems.
+                </span>
+              </div>
+
+              <div
+                style={{
+                  background: "#fbfdff",
+                  border: "1px solid #e5edf6",
+                  borderRadius: "14px",
+                  padding: "12px 14px",
+                  display: "flex",
+                  gap: "10px",
+                }}
+              >
+                <span
+                  style={{
+                    width: "22px",
+                    height: "22px",
+                    borderRadius: "50%",
+                    background: "var(--rv-ch1-soft)",
+                    color: "var(--rv-ch1-dark)",
+                    border: "1px solid rgba(130, 132, 191, 0.25)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    flexShrink: 0,
+                    marginTop: "1px",
+                  }}
+                >
+                  2
+                </span>
+                <span style={{ fontSize: "13px", lineHeight: 1.55, color: "#334155" }}>
+                  Electronic disbursement would cause you undue hardship, as discussed in{" "}
+                  <strong>31 C.F.R. Part 208</strong>.
+                </span>
+              </div>
+
+              <div
+                style={{
+                  background: "#fbfdff",
+                  border: "1px solid #e5edf6",
+                  borderRadius: "14px",
+                  padding: "12px 14px",
+                  display: "flex",
+                  gap: "10px",
+                }}
+              >
+                <span
+                  style={{
+                    width: "22px",
+                    height: "22px",
+                    borderRadius: "50%",
+                    background: "var(--rv-ch1-soft)",
+                    color: "var(--rv-ch1-dark)",
+                    border: "1px solid rgba(130, 132, 191, 0.25)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    flexShrink: 0,
+                    marginTop: "1px",
+                  }}
+                >
+                  3
+                </span>
+                <span style={{ fontSize: "13px", lineHeight: 1.55, color: "#334155" }}>
+                  Non-electronic transactions are necessary or desirable for national security or
+                  law enforcement reasons.
+                </span>
+              </div>
+
+              <div
+                style={{
+                  background: "#fbfdff",
+                  border: "1px solid #e5edf6",
+                  borderRadius: "14px",
+                  padding: "12px 14px",
+                  display: "flex",
+                  gap: "10px",
+                }}
+              >
+                <span
+                  style={{
+                    width: "22px",
+                    height: "22px",
+                    borderRadius: "50%",
+                    background: "var(--rv-ch1-soft)",
+                    color: "var(--rv-ch1-dark)",
+                    border: "1px solid rgba(130, 132, 191, 0.25)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    flexShrink: 0,
+                    marginTop: "1px",
+                  }}
+                >
+                  4
+                </span>
+                <span style={{ fontSize: "13px", lineHeight: 1.55, color: "#334155" }}>
+                  There are other circumstances as determined by the Secretary of the Treasury, as
+                  reflected in regulations or other guidance.
+                </span>
+              </div>
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                padding: "11px 15px",
+                borderRadius: "12px",
+                background: "var(--rv-ch1-soft)",
+                border: "1px solid rgba(130, 132, 191, 0.3)",
+                fontSize: "12.5px",
+                color: "var(--rv-ch1-dark)",
+              }}
+            >
+              <span>
+                <strong>Packet Assembly Note:</strong> If eligible for fee exemption, place
+                completed <strong>Form G-1651</strong> at the very front of the mailing packet
+                (before Form I-130).
+              </span>
+            </div>
+          </section>
+        )}
+
         {/* Action Items Section - Enabled appearance */}
         {actionData.action_items && actionData.action_items.length > 0 && (
           <section
@@ -2292,10 +2623,10 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
         createPortal(
           <div className="animate-in slide-in-from-bottom-[18px] fixed inset-0 z-[120] flex flex-col bg-[#fafcff] duration-[0.28s] ease-in-out">
             {/* Guide Topbar */}
-            <div className="flex h-[54px] sm:h-[72px] shrink-0 items-center gap-3 sm:gap-4 border-b border-[#d0e4f7] bg-[#fafcff] px-3.5 sm:px-6">
+            <div className="flex h-[54px] shrink-0 items-center gap-3 border-b border-[#d0e4f7] bg-[#fafcff] px-3.5 sm:h-[72px] sm:gap-4 sm:px-6">
               <button
                 onClick={() => setShowGuide(false)}
-                className="hover:bg-primary/20 flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border-none bg-[#f4f7fb] text-[#3a4f63] transition-all"
+                className="hover:bg-primary/20 flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border-none bg-[#f4f7fb] text-[#3a4f63] transition-all sm:h-9 sm:w-9"
                 aria-label="Close guide"
               >
                 <X size={16} strokeWidth={2} />
@@ -2342,12 +2673,12 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                           <div className="h-2.5 w-2.5 shrink-0 rounded-full bg-[#f26b6b]" />
                           <div className="h-2.5 w-2.5 shrink-0 rounded-full bg-[#f5c56a]" />
                           <div className="h-2.5 w-2.5 shrink-0 rounded-full bg-[#63c48f]" />
-                          <div className="ml-2 flex h-5 max-w-[160px] items-center overflow-hidden text-ellipsis whitespace-nowrap rounded-md bg-white px-2.5 text-[10px] font-mono text-slate-500 sm:max-w-none">
+                          <div className="ml-2 flex h-5 max-w-[160px] items-center overflow-hidden rounded-md bg-white px-2.5 font-mono text-[10px] text-ellipsis whitespace-nowrap text-slate-500 sm:max-w-none">
                             {filteredSteps[guideStep]?.url}
                           </div>
                         </div>
                       )}
-                      <div className="relative flex min-h-[200px] sm:min-h-[280px] items-center justify-center bg-gradient-to-b from-[#fcfeff] to-[#f7fbff] text-slate-400">
+                      <div className="relative flex min-h-[200px] items-center justify-center bg-gradient-to-b from-[#fcfeff] to-[#f7fbff] text-slate-400 sm:min-h-[280px]">
                         {(() => {
                           const stepItem = filteredSteps[guideStep];
                           const imgSrc =
@@ -2387,7 +2718,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
 
                     {/* Important Note */}
                     {filteredSteps[guideStep]?.note && (
-                      <div className="mb-5 flex flex-col gap-1.5 rounded-[12px] border border-[#f0c878]/50 bg-[#fffdf5] p-3.5 sm:p-4 text-[13px] leading-relaxed text-[#7a5800]">
+                      <div className="mb-5 flex flex-col gap-1.5 rounded-[12px] border border-[#f0c878]/50 bg-[#fffdf5] p-3.5 text-[13px] leading-relaxed text-[#7a5800] sm:p-4">
                         <span className="font-bold">Important:</span>
                         <span>{filteredSteps[guideStep]?.note}</span>
                       </div>
@@ -2398,7 +2729,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                       {guideStep > 0 && (
                         <button
                           onClick={handlePrevGuide}
-                          className="rounded-[14px] border border-slate-200 bg-white px-5 py-3 font-semibold text-[#3a4f63] text-xs sm:text-sm transition-all hover:border-slate-300 hover:bg-slate-50 cursor-pointer"
+                          className="cursor-pointer rounded-[14px] border border-slate-200 bg-white px-5 py-3 text-xs font-semibold text-[#3a4f63] transition-all hover:border-slate-300 hover:bg-slate-50 sm:text-sm"
                         >
                           ← Back
                         </button>
@@ -2406,7 +2737,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                       {guideStep < filteredSteps.length - 1 ? (
                         <button
                           onClick={handleNextGuide}
-                          className="flex-1 rounded-[14px] bg-[#0d7377] px-6 py-3 text-center text-xs sm:text-sm font-bold text-white transition-all hover:bg-[#095457] hover:-translate-y-px shadow-sm cursor-pointer"
+                          className="flex-1 cursor-pointer rounded-[14px] bg-[#0d7377] px-6 py-3 text-center text-xs font-bold text-white shadow-sm transition-all hover:-translate-y-px hover:bg-[#095457] sm:text-sm"
                         >
                           Next →
                         </button>
@@ -2417,7 +2748,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                             onToggleComplete();
                             setShowGuide(false);
                           }}
-                          className="flex-1 rounded-[14px] bg-[#15744f] px-6 py-3 text-center text-xs sm:text-sm font-bold text-white transition-all hover:bg-[#0e5c3c] hover:-translate-y-px shadow-sm cursor-pointer"
+                          className="flex-1 cursor-pointer rounded-[14px] bg-[#15744f] px-6 py-3 text-center text-xs font-bold text-white shadow-sm transition-all hover:-translate-y-px hover:bg-[#0e5c3c] sm:text-sm"
                         >
                           Done, return to step
                         </button>
@@ -2435,27 +2766,27 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
       {showGuideChoice &&
         createPortal(
           <div
-            className="fixed inset-0 z-300 flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200"
+            className="animate-in fade-in fixed inset-0 z-300 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs duration-200 sm:p-6"
             onClick={() => setShowGuideChoice(false)}
           >
             <div
-              className="relative w-full max-w-[440px] rounded-3xl bg-white p-6 sm:p-8 shadow-2xl border border-slate-100 animate-in zoom-in-95 duration-200"
+              className="animate-in zoom-in-95 relative w-full max-w-[440px] rounded-3xl border border-slate-100 bg-white p-6 shadow-2xl duration-200 sm:p-8"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Close Button */}
               <button
                 onClick={() => setShowGuideChoice(false)}
-                className="absolute top-4 right-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-all cursor-pointer border-none"
+                className="absolute top-4 right-4 z-10 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-none bg-slate-100 text-slate-500 transition-all hover:bg-slate-200 hover:text-slate-700"
                 aria-label="Close modal"
               >
                 <X size={16} strokeWidth={2} />
               </button>
 
-              <div className="text-center mb-6 pr-6 pl-2">
-                <h2 className="text-xl sm:text-2xl font-black text-[#0c1b33] mb-1.5 leading-tight">
+              <div className="mb-6 pr-6 pl-2 text-center">
+                <h2 className="mb-1.5 text-xl leading-tight font-black text-[#0c1b33] sm:text-2xl">
                   Choose Your Guide
                 </h2>
-                <p className="text-xs sm:text-sm text-[#6b8097] leading-relaxed">
+                <p className="text-xs leading-relaxed text-[#6b8097] sm:text-sm">
                   Select how you would like to proceed with your forms
                 </p>
               </div>
@@ -2468,16 +2799,16 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                     setShowGuideChoice(false);
                     setShowGuide(true);
                   }}
-                  className="group flex w-full items-center gap-4 rounded-2xl border-2 border-slate-200/80 bg-white p-4 text-left transition-all hover:border-[#0d7377] hover:bg-teal-50/40 cursor-pointer"
+                  className="group flex w-full cursor-pointer items-center gap-4 rounded-2xl border-2 border-slate-200/80 bg-white p-4 text-left transition-all hover:border-[#0d7377] hover:bg-teal-50/40"
                 >
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-[#0d7377] transition-colors group-hover:bg-[#0d7377] group-hover:text-white">
                     <Printer size={22} strokeWidth={2} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="mb-0.5 text-sm sm:text-base font-bold text-[#0c1b33] transition-colors group-hover:text-[#0d7377]">
+                    <div className="mb-0.5 text-sm font-bold text-[#0c1b33] transition-colors group-hover:text-[#0d7377] sm:text-base">
                       View Print Guide
                     </div>
-                    <div className="text-xs sm:text-sm text-[#6b8097]">
+                    <div className="text-xs text-[#6b8097] sm:text-sm">
                       Step-by-step guide to print your forms
                     </div>
                   </div>
@@ -2490,16 +2821,16 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                     setShowGuideChoice(false);
                     setShowGuide(true);
                   }}
-                  className="group flex w-full items-center gap-4 rounded-2xl border-2 border-slate-200/80 bg-white p-4 text-left transition-all hover:border-[#0d7377] hover:bg-teal-50/40 cursor-pointer"
+                  className="group flex w-full cursor-pointer items-center gap-4 rounded-2xl border-2 border-slate-200/80 bg-white p-4 text-left transition-all hover:border-[#0d7377] hover:bg-teal-50/40"
                 >
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-[#0d7377] transition-colors group-hover:bg-[#0d7377] group-hover:text-white">
                     <Download size={22} strokeWidth={2} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="mb-0.5 text-sm sm:text-base font-bold text-[#0c1b33] transition-colors group-hover:text-[#0d7377]">
+                    <div className="mb-0.5 text-sm font-bold text-[#0c1b33] transition-colors group-hover:text-[#0d7377] sm:text-base">
                       View Download Guide
                     </div>
-                    <div className="text-xs sm:text-sm text-[#6b8097]">
+                    <div className="text-xs text-[#6b8097] sm:text-sm">
                       Step-by-step guide to download your forms
                     </div>
                   </div>

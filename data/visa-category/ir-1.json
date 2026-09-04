@@ -920,9 +920,7 @@
           "step_description": "Decide between Online vs. Paper filing",
           "who": "Decision required",
           "where": "Rahvana tool",
-          "dependencies": [
-            "step_1_2"
-          ],
+          "dependencies": ["step_1_2"],
           "visible_when": {},
           "estimated_duration_days": 1,
           "is_required": true,
@@ -1178,9 +1176,7 @@
           "who": "via Rahvana wizard",
           "where": "my.uscis.gov",
           "timeline": "2-4 hours",
-          "dependencies": [
-            "step_1_3"
-          ],
+          "dependencies": ["step_1_3"],
           "estimated_duration_days": 2,
           "is_required": true,
           "display_order": 4,
@@ -1217,9 +1213,7 @@
           "step_type": "tool",
           "visible_when": {},
           "who": "via Rahvana wizard",
-          "dependencies": [
-            "step_1_4"
-          ],
+          "dependencies": ["step_1_4"],
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 5,
@@ -1303,9 +1297,7 @@
           },
           "step_description": "Set up the petitioner's USCIS online account, the gateway for filing Form I-130 digitally, tracking the case, and responding to any USCIS requests.",
           "who": "myaccount.uscis.gov",
-          "dependencies": [
-            "step_1_3"
-          ],
+          "dependencies": ["step_1_3"],
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 6,
@@ -1340,7 +1332,7 @@
               "button_label": "Create USCIS Account",
               "href": "https://myaccount.uscis.gov/create-account",
               "note": "Opens USCIS account creation page in a new tab",
-            "return_note": {
+              "return_note": {
                 "title": "USCIS portal opened in a new tab",
                 "body": "Create your USCIS account and then return here."
               }
@@ -1383,9 +1375,7 @@
           "step_description": "Sign in to your USCIS account and begin the online I-130 petition. From your account dashboard, click \"File a Form Online\" to start the form and enter your prepared information.",
           "who": "Petitioner",
           "where": "myaccount.uscis.gov",
-          "dependencies": [
-            "step_1_6"
-          ],
+          "dependencies": ["step_1_6"],
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 7,
@@ -1645,9 +1635,7 @@
           "step_description": "Attach your supporting documents inside the USCIS online portal. This is the evidence-upload phase, your documents become part of the official I-130 filing record.",
           "who": "Petitioner",
           "where": "myaccount.uscis.gov",
-          "dependencies": [
-            "step_1_7"
-          ],
+          "dependencies": ["step_1_7"],
           "visible_when": {
             "filingMethodConfirmed": true,
             "filingMethod": "online"
@@ -1779,13 +1767,7 @@
             "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Always verify current requirements at uscis.gov before submitting.",
             "quality_requirements": {
               "max_file_size_mb": 12,
-              "accepted_formats": [
-                "PDF",
-                "JPG",
-                "JPEG",
-                "TIF",
-                "TIFF"
-              ],
+              "accepted_formats": ["PDF", "JPG", "JPEG", "TIF", "TIFF"],
               "guidance": [
                 "Each individual file must be 12 MB or smaller (USCIS portal limit)",
                 "Scans must be clear and legible, USCIS commonly issues RFEs for unreadable documents",
@@ -1811,9 +1793,7 @@
           "who": "Petitioner",
           "where": "my.uscis.gov / pay.gov",
           "timeline": "Same session as submission",
-          "dependencies": [
-            "step_1_8"
-          ],
+          "dependencies": ["step_1_8"],
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 9,
@@ -1972,9 +1952,7 @@
           "who": "Petitioner",
           "where": "my.uscis.gov",
           "timeline": "Same session as payment",
-          "dependencies": [
-            "step_1_9"
-          ],
+          "dependencies": ["step_1_9"],
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 10,
@@ -2161,9 +2139,7 @@
           "who": "Petitioner",
           "where": "uscis.gov/i-130",
           "timeline": "1-2 hours",
-          "dependencies": [
-            "step_1_3"
-          ],
+          "dependencies": ["step_1_3"],
           "is_required": true,
           "display_order": 11,
           "action_data": {
@@ -2294,9 +2270,7 @@
           "who": "Petitioner",
           "where": "uscis.gov/g-1055?form=i-130",
           "timeline": "1-2 hours",
-          "dependencies": [
-            "step_1_11"
-          ],
+          "dependencies": ["step_1_11"],
           "is_required": true,
           "display_order": 12,
           "action_data": {
@@ -2337,6 +2311,10 @@
               {
                 "title": "Keep payment at the front of the packet",
                 "description": "When your payment item is ready, keep it with the front of the filing packet so assembly is straightforward."
+              },
+              {
+                "title": "USCIS Form G-1651 exemption requirements",
+                "description": "To request an exemption, you must certify that electronic payment and collection methods are not possible and meet 1 or more of the following requirements: (1) You do not have access to banking services or electronic payment systems; (2) Electronic disbursement would cause you undue hardship, as discussed in 31 C.F.R. Part 208; (3) Non-electronic transactions are necessary or desirable for national security or law enforcement reasons; or (4) There are other circumstances as determined by the secretary of the treasury, as reflected in regulations or other guidance."
               }
             ],
             "second_card_title": "Save payment method",
@@ -2359,6 +2337,10 @@
                 {
                   "value": "ACH with Form G-1650",
                   "label": "ACH with Form G-1650"
+                },
+                {
+                  "value": "Fee Exemption with Form G-1651",
+                  "label": "Fee Exemption with Form G-1651"
                 },
                 {
                   "value": "Other verified method",
@@ -2386,17 +2368,17 @@
               {
                 "label": "Payment guide · Step 3",
                 "title": "Choose your paper-filing payment method",
-                "text": "USCIS no longer accepts personal/business checks, money orders, or cashier's checks. You must use one of two methods:<ul style=\"margin-top: 8px; margin-bottom: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px;\"><li><strong>Option A:</strong> Pay by credit, debit, or prepaid card using <strong>Form G-1450</strong> (Authorization for Credit Card Transactions).</li><li><strong>Option B:</strong> Pay from a U.S. bank account (ACH) using <strong>Form G-1650</strong>.</li></ul>",
+                "text": "USCIS no longer accepts personal/business checks, money orders, or cashier's checks. You must use one of the approved payment or fee exemption options:<ul style=\"margin-top: 8px; margin-bottom: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px;\"><li><strong>Option A:</strong> Pay by credit, debit, or prepaid card using <strong>Form G-1450</strong> (Authorization for Credit Card Transactions).</li><li><strong>Option B:</strong> Pay from a U.S. bank account (ACH) using <strong>Form G-1650</strong>.</li><li><strong>Option C:</strong> If eligible for an exemption from the higher paper filing fee, submit <strong>Form G-1651</strong> (Exemption for Paper Fee Payment).</li></ul><div style=\"margin-top: 14px; padding: 12px 14px; background: #f0f7ff; border: 1px solid #bfdbfe; border-radius: 8px;\"><div style=\"font-weight: 700; font-size: 13px; color: #1e3a8a; margin-bottom: 4px;\">USCIS Form G-1651 Exemption Requirements</div><div style=\"font-size: 12.5px; line-height: 1.5; color: #1e293b; margin-bottom: 6px;\">To request an exemption, you must certify that electronic payment and collection methods are not possible and you meet 1 or more of the following requirements:</div><ul style=\"margin: 0; padding-left: 18px; font-size: 12px; line-height: 1.55; color: #334155; display: flex; flex-direction: column; gap: 4px;\"><li>You do not have access to banking services or electronic payment systems;</li><li>Electronic disbursement would cause you undue hardship, as discussed in 31 C.F.R. Part 208;</li><li>Non-electronic transactions are necessary or desirable for national security or law enforcement reasons; or</li><li>There are other circumstances as determined by the secretary of the treasury, as reflected in regulations or other guidance.</li></ul></div>",
                 "url": "uscis.gov/forms/all-forms",
                 "visual": "<img src=\"/assets/images/ir1-journey/c1-step7(mailing)/peyment method.png\" alt=\"Payment Methods\" style=\"width:100%; border-radius: 8px; border: 1px solid #e2e8f0;\" />",
-                "note": "Download and print Form G-1450 or Form G-1650 from uscis.gov and fill it out completely before placing it in the packet."
+                "note": "Download and print Form G-1450, Form G-1650, or Form G-1651 from uscis.gov and fill it out completely before placing it in the packet."
               },
               {
                 "label": "Payment guide · Step 4",
                 "title": "Place payment at the front of the packet",
-                "text": "Once the payment item is ready, whether it is a completed Form G-1450 (card) or Form G-1650 (ACH), place it at the very front of the mailing packet. The payment form should be the first thing USCIS sees when they open the envelope.",
+                "text": "Once the payment item is ready, whether it is a completed Form G-1450 (card), Form G-1650 (ACH), or Form G-1651 (Fee Exemption), place it at the very front of the mailing packet. The payment or fee exemption form should be the first thing USCIS sees when they open the envelope.",
                 "url": "paper packet",
-                "visual": "<div style=\"padding:12px 0;\"><div style=\"font-weight:600;font-size:14px;margin-bottom:14px;\">Recommended Packet Order</div><div style=\"display:flex;flex-direction:column;gap:8px;\"><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#16a34a;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">1</div><div><div style=\"font-weight:600;font-size:13px;\">Payment</div><div style=\"font-size:12px;color:#64748b;\">Form G-1450 (card) or Form G-1650 (ACH), placed first</div></div></div><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#3b82f6;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">2</div><div><div style=\"font-weight:600;font-size:13px;\">Forms</div><div style=\"font-size:12px;color:#64748b;\">Completed I-130 and I-130A forms</div></div></div><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#8b5cf6;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">3</div><div><div style=\"font-weight:600;font-size:13px;\">Supporting Evidence</div><div style=\"font-size:12px;color:#64748b;\">Citizenship proof, marriage docs, translations, relationship evidence</div></div></div></div></div>",
+                "visual": "<div style=\"padding:12px 0;\"><div style=\"font-weight:600;font-size:14px;margin-bottom:14px;\">Recommended Packet Order</div><div style=\"display:flex;flex-direction:column;gap:8px;\"><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#16a34a;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">1</div><div><div style=\"font-weight:600;font-size:13px;\">Payment / Fee Exemption</div><div style=\"font-size:12px;color:#64748b;\">Form G-1450 (card), Form G-1650 (ACH), or Form G-1651 (Exemption), placed first</div></div></div><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#3b82f6;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">2</div><div><div style=\"font-weight:600;font-size:13px;\">Forms</div><div style=\"font-size:12px;color:#64748b;\">Completed I-130 and I-130A forms</div></div></div><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#8b5cf6;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">3</div><div><div style=\"font-weight:600;font-size:13px;\">Supporting Evidence</div><div style=\"font-size:12px;color:#64748b;\">Citizenship proof, marriage docs, translations, relationship evidence</div></div></div></div></div>",
                 "note": "Keep the payment form separate and easy to reach so packet assembly in the next step stays quick and organized."
               },
               {
@@ -2417,6 +2399,10 @@
             {
               "text": "USCIS Form G-1055 Fee Schedule",
               "link": "https://www.uscis.gov/g-1055"
+            },
+            {
+              "text": "USCIS Form G-1651 Paper Fee Exemption",
+              "link": "https://www.uscis.gov/g-1651"
             }
           ]
         },
@@ -2436,9 +2422,7 @@
           "who": "Petitioner",
           "where": "uscis.gov/i-130",
           "timeline": "1-2 hours",
-          "dependencies": [
-            "step_1_12"
-          ],
+          "dependencies": ["step_1_12"],
           "is_required": true,
           "display_order": 13,
           "action_data": {
@@ -2529,7 +2513,7 @@
               "sections": [
                 {
                   "id": "payment",
-                  "label": "Payment form (G-1450 card or G-1650 ACH)",
+                  "label": "Payment form (G-1450 card, G-1650 ACH, or G-1651 fee exemption)",
                   "position": "front of packet",
                   "required": true
                 },
@@ -2596,9 +2580,7 @@
           "who": "Petitioner",
           "where": "uscis.gov/mailing-addresses",
           "timeline": "1-2 hours",
-          "dependencies": [
-            "step_1_13"
-          ],
+          "dependencies": ["step_1_13"],
           "is_required": true,
           "display_order": 14,
           "action_data": {
@@ -2679,7 +2661,7 @@
                 "title": "Mail the packet and save the tracking details",
                 "text": "As soon as the packet is mailed, save the carrier and tracking number in Rahvana.",
                 "url": "rahvana.com/visa-category/ir1-journey",
-                "visual": "<video src=\"/step4chp1.mp4\" autoplay loop muted playsinline style=\"width:100%;border-radius:8px;\" />",
+                "visual": "<video src=\"/assets/videos/ir1-journey/c1_step9(mailing)/guide-step-4.mp4\" autoplay loop muted playsinline style=\"width:100%;border-radius:8px;\" />",
                 "note": "Do not wait until later to record the tracking number. Save it the same day you mail the packet."
               },
               {
@@ -2710,10 +2692,7 @@
           "who": "Petitioner",
           "where": "ceac.state.gov",
           "timeline": "1-2 days after receipt",
-          "dependencies": [
-            "step_1_10",
-            "step_1_14"
-          ],
+          "dependencies": ["step_1_10", "step_1_14"],
           "is_required": true,
           "display_order": 15,
           "tool_data": {
@@ -2910,9 +2889,7 @@
           "who": "Petitioner",
           "where": "ceac.state.gov",
           "timeline": "Ongoing after registration",
-          "dependencies": [
-            "step_1_15"
-          ],
+          "dependencies": ["step_1_15"],
           "is_required": true,
           "display_order": 16,
           "tool_data": {
@@ -3053,19 +3030,13 @@
                 "icon": "green",
                 "title": "Add new evidence entries",
                 "copy": "Log visits, upload new photos, and keep a clean timeline of the relationship as it continues.",
-                "buttons": [
-                  "Add note",
-                  "Mark planned"
-                ]
+                "buttons": ["Add note", "Mark planned"]
               },
               {
                 "icon": "rose",
                 "title": "Track household or income changes",
                 "copy": "If finances, employment, or household size change while waiting, keeping that organized now can make later sponsorship steps easier.",
-                "buttons": [
-                  "Save reminder",
-                  "Open notes"
-                ]
+                "buttons": ["Save reminder", "Open notes"]
               }
             ],
             "community": [
@@ -3089,11 +3060,7 @@
                 "kicker": "Official USCIS tracking",
                 "head": "Case Status Online",
                 "copy": "Track your case using the 13-character receipt number.",
-                "pills": [
-                  "Receipt number required",
-                  "Last action shown",
-                  "Official USCIS tool"
-                ],
+                "pills": ["Receipt number required", "Last action shown", "Official USCIS tool"],
                 "note": "A quiet status page does not necessarily mean nothing is happening internally. It usually means there has been no new official outward-facing update yet."
               },
               {
@@ -3104,12 +3071,7 @@
                 "kicker": "Status guide",
                 "head": "Status meanings",
                 "copy": "Separate passive waiting from states that require action.",
-                "pills": [
-                  "Received",
-                  "Actively reviewed",
-                  "RFE",
-                  "Approved"
-                ],
+                "pills": ["Received", "Actively reviewed", "RFE", "Approved"],
                 "note": "Use this guide to understand whether you need to act now or simply stay prepared."
               },
               {
@@ -3120,11 +3082,7 @@
                 "kicker": "While-you-wait tools",
                 "head": "Stay prepared while waiting",
                 "copy": "A prep checklist, next-step preview, and useful modules for this waiting period.",
-                "pills": [
-                  "Prep checklist",
-                  "Coming next",
-                  "Useful right now"
-                ],
+                "pills": ["Prep checklist", "Coming next", "Useful right now"],
                 "note": "A few small tasks now can make the next phase feel much easier when the case moves forward."
               },
               {
@@ -3135,11 +3093,7 @@
                 "kicker": "Next-step guide",
                 "head": "Pivot when USCIS changes the status",
                 "copy": "RFE and approval should each unlock their own dedicated next-step experiences.",
-                "pills": [
-                  "Conditional branches",
-                  "Next step unlocks",
-                  "Action clarity"
-                ],
+                "pills": ["Conditional branches", "Next step unlocks", "Action clarity"],
                 "note": "Your next task should match the actual update USCIS gives you."
               }
             ],
@@ -3182,9 +3136,7 @@
           "visible_when": {},
           "is_required": true,
           "who": "Petitioner",
-          "dependencies": [
-            "step_1_16"
-          ]
+          "dependencies": ["step_1_16"]
         }
       ]
     },
@@ -3761,10 +3713,7 @@
                       "icon": "passport",
                       "title": "Beneficiary Passport Biographic Page",
                       "sub": "Current passport page showing photo and personal details",
-                      "tags": [
-                        "bene",
-                        "govt"
-                      ],
+                      "tags": ["bene", "govt"],
                       "external_href": "/guides/passport-guide",
                       "status": "not-started",
                       "required": true
@@ -3774,10 +3723,7 @@
                       "icon": "birth",
                       "title": "Birth Certificate",
                       "sub": "Beneficiary's civil birth record",
-                      "tags": [
-                        "bene",
-                        "govt"
-                      ],
+                      "tags": ["bene", "govt"],
                       "external_href": "/guides/birth-certificate-guide",
                       "status": "not-started",
                       "required": true
@@ -3787,10 +3733,7 @@
                       "icon": "marriage",
                       "title": "Marriage Certificate / Marriage Registration Record",
                       "sub": "Official civil proof of the marriage, Nikah Nama and NADRA MRC",
-                      "tags": [
-                        "both",
-                        "govt"
-                      ],
+                      "tags": ["both", "govt"],
                       "external_href": "/guides/nikah-nama-guide",
                       "status": "not-started",
                       "required": true,
@@ -3818,10 +3761,7 @@
                       "icon": "police",
                       "title": "Police Certificate",
                       "sub": "Pakistan Police Character Certificate (PCC) for the beneficiary",
-                      "tags": [
-                        "bene",
-                        "govt"
-                      ],
+                      "tags": ["bene", "govt"],
                       "external_href": "/guides/police-verification-guide",
                       "status": "not-started",
                       "required": true
@@ -3831,10 +3771,7 @@
                       "icon": "translations",
                       "title": "Certified English Translations",
                       "sub": "Required for all non-English civil documents",
-                      "tags": [
-                        "bene",
-                        "3p"
-                      ],
+                      "tags": ["bene", "3p"],
                       "status": "not-started",
                       "required": true,
                       "sections": [
@@ -3868,10 +3805,7 @@
                       "icon": "prior-marriage",
                       "title": "Prior Marriage Termination Documents",
                       "sub": "Required if either spouse was previously married",
-                      "tags": [
-                        "both",
-                        "govt"
-                      ],
+                      "tags": ["both", "govt"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -3898,10 +3832,7 @@
                       "icon": "death-cert",
                       "title": "Death Certificate of Former Spouse",
                       "sub": "Only if prior marriage ended by death",
-                      "tags": [
-                        "both",
-                        "govt"
-                      ],
+                      "tags": ["both", "govt"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -3920,10 +3851,7 @@
                       "icon": "name-change",
                       "title": "Name Change Documents",
                       "sub": "Legal proof of any name change used in the case",
-                      "tags": [
-                        "bene",
-                        "govt"
-                      ],
+                      "tags": ["bene", "govt"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -3942,10 +3870,7 @@
                       "icon": "help",
                       "title": "Missing Document / Record Unavailability Evidence",
                       "sub": "When a required record genuinely does not exist",
-                      "tags": [
-                        "bene",
-                        "3p"
-                      ],
+                      "tags": ["bene", "3p"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -3975,9 +3900,7 @@
                       "icon": "folder",
                       "title": "Organized Translation Set",
                       "sub": "All translations paired and labeled with their originals",
-                      "tags": [
-                        "bene"
-                      ],
+                      "tags": ["bene"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -3996,9 +3919,7 @@
                       "icon": "save",
                       "title": "Upload-Ready File Copies",
                       "sub": "Clean, legible, properly formatted scan set",
-                      "tags": [
-                        "both"
-                      ],
+                      "tags": ["both"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -4021,9 +3942,7 @@
                       "icon": "message",
                       "title": "Relationship Evidence Backup Set",
                       "sub": "Supporting bona fide marriage evidence for later use",
-                      "tags": [
-                        "both"
-                      ],
+                      "tags": ["both"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -5941,10 +5860,7 @@
           "display_order": 11,
           "visible_when": {
             "interviewOutcome": "221g",
-            "outcome221gSubtype": [
-              "docs_requested",
-              "both"
-            ]
+            "outcome221gSubtype": ["docs_requested", "both"]
           },
           "actions": [
             "Read your 221(g) letter thoroughly",
@@ -6055,11 +5971,7 @@
           "display_order": 12,
           "visible_when": {
             "interviewOutcome": "221g",
-            "outcome221gSubtype": [
-              "docs_requested",
-              "further_review",
-              "both"
-            ]
+            "outcome221gSubtype": ["docs_requested", "further_review", "both"]
           },
           "actions": [
             "Monitor CEAC status weekly",
