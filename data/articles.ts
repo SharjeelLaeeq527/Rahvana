@@ -119,7 +119,8 @@ export const ARTICLES: Article[] = [
       "NADRA Marriage Registration Certificate MRC",
       "Police Character Certificate Pakistan FIA",
     ],
-    heroImage: "/assets/images/about-card-1.png",
+    // heroImage: "/assets/images/about-card-1.png",
+    heroImage: "/assets/images/blog/blog1-image.png",
     heroImageAlt: "IR-1 vs CR-1 Spouse Visa Pakistan Guide",
     tableOfContents: [
       { id: "bluf-overview", title: "1. Executive Summary & Quick Difference" },

@@ -9,6 +9,7 @@ import FAQPageSchema from "@/components/seo/FAQPageSchema";
 import BreadcrumbSchema from "@/components/seo/BreadcrumbSchema";
 import ToolCTA from "@/components/blog/ToolCTA";
 import ArticleSocialShare from "@/components/blog/ArticleSocialShare";
+import BlogCommentsSection from "@/components/blog/comments/BlogCommentsSection";
 import { cn } from "@/lib/utils";
 import {
   Clock,
@@ -489,6 +490,9 @@ export default async function ArticleDetailPage({
                 description={article.description}
               />
             )}
+
+            {/* ── Community Comments & Discussion Section ── */}
+            <BlogCommentsSection slug={article.slug} />
 
             {/* ── Bottom Strategic Conversion CTA Banner ── */}
             {article.cta && (article.cta.headline || article.cta.buttonText) && (
