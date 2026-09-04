@@ -29,6 +29,7 @@ import AvailabilityGrid from "./components/consultation-requests/AvailabilityGri
 import VisaCasesTable from "./components/visa-cases/VisaCasesTable";
 import CollapsibleSection from "./components/CollapsibleSection";
 import ReviewsTable from "./components/reviews/ReviewsTable";
+import BlogCommentsTable from "./components/blog-comments/BlogCommentsTable";
 import { FeatureAnnouncementModal } from "./components/feature-announcement/FeatureAnnouncementModal";
 import { BlogAnnouncementModal } from "./components/blog-announcement/BlogAnnouncementModal";
 
@@ -228,6 +229,17 @@ export default function AdminPanel() {
             badgeColor="bg-amber-100 text-amber-800"
           >
             <ReviewsTable />
+          </CollapsibleSection>
+
+          {/* Section 7: Blog Comments */}
+          <CollapsibleSection
+            title="Blog Comments"
+            icon={<MessageSquare className="h-5 w-5" />}
+            description="Moderate, hide, or permanently remove user comments and replies across all blog articles"
+            badge="MODERATION"
+            badgeColor="bg-teal-100 text-teal-800"
+          >
+            <BlogCommentsTable />
           </CollapsibleSection>
 
           <FeatureAnnouncementModal open={openFeatureModal} onOpenChange={setOpenFeatureModal} />
