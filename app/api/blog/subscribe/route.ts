@@ -47,7 +47,10 @@ export async function POST(request: NextRequest) {
 
       if (updateErr) {
         console.error("Error re-activating subscriber:", updateErr);
-        return NextResponse.json({ error: "Failed to update subscription status" }, { status: 500 });
+        return NextResponse.json(
+          { error: "Failed to update subscription status" },
+          { status: 500 }
+        );
       }
     } else {
       // Insert new subscriber
@@ -59,13 +62,17 @@ export async function POST(request: NextRequest) {
 
       if (insertErr) {
         console.error("Error inserting subscriber:", insertErr);
-        return NextResponse.json({ error: "Subscription failed. Please try again." }, { status: 500 });
+        return NextResponse.json(
+          { error: "Subscription failed. Please try again." },
+          { status: 500 }
+        );
       }
       unsubToken = newSub.unsubscribe_token;
     }
 
     // Send Welcome Email
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://rahvana.com";
+    const appUrl = "https://rahvana-test.vercel.app";
+    // const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://rahvana.com";
     const unsubscribeUrl = `${appUrl}/api/blog/unsubscribe?token=${unsubToken}`;
 
     try {

@@ -669,9 +669,17 @@ export function getBlogAnnouncementEmailHtml(params: {
   articleUrl: string;
   readTime?: string;
   category?: string;
+  imageUrl?: string;
   unsubscribeUrl: string;
 }): string {
-  const { title, description, articleUrl, readTime = "8 min read", category = "Immigration Guide", unsubscribeUrl } = params;
+  const { title, description, articleUrl, readTime = "8 min read", category = "Immigration Guide", imageUrl, unsubscribeUrl } = params;
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://rahvana.com";
+  const fullImageUrl = imageUrl
+    ? (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")
+        ? imageUrl
+        : `${baseUrl}${imageUrl.startsWith("/") ? "" : "/"}${imageUrl}`)
+    : null;
+
   return `
     <!DOCTYPE html>
     <html lang="en">
@@ -697,6 +705,21 @@ export function getBlogAnnouncementEmailHtml(params: {
                   <h1 style="margin:0 0 16px; font-size:24px; font-weight:700; color:#0f2e2b; text-align:center; line-height:1.3;">
                     ${title}
                   </h1>
+                  ${
+                    fullImageUrl
+                      ? `
+                  <div style="margin: 20px 0 24px; text-align: center;">
+                    <a href="${articleUrl}" style="text-decoration: none; display: block;">
+                      <img
+                        src="${fullImageUrl}"
+                        alt="${title}"
+                        style="width: 100%; max-width: 528px; height: auto; border-radius: 12px; display: block; margin: 0 auto; border: 1px solid #e2e8f0; object-fit: cover;"
+                      />
+                    </a>
+                  </div>
+                  `
+                      : ""
+                  }
                   <p style="margin:0 0 24px; font-size:15px; line-height:1.7; color:#475569; text-align:left;">
                     ${description}
                   </p>

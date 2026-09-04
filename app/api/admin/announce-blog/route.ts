@@ -68,6 +68,7 @@ export async function GET(request: NextRequest) {
     title: a.title,
     category: a.category,
     readTime: a.readTime,
+    heroImage: a.heroImage,
     updatedAt: a.updatedAt,
   }));
 
@@ -81,7 +82,8 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const { isAdmin, error: authError, user: adminUser } = await checkAdminRole(request);
-    if (!isAdmin) return NextResponse.json({ error: authError || "Admin access required" }, { status: 403 });
+    if (!isAdmin)
+      return NextResponse.json({ error: authError || "Admin access required" }, { status: 403 });
 
     const { slug, customTitle, customDescription, isTestOnly } = await request.json();
 
@@ -96,7 +98,8 @@ export async function POST(request: NextRequest) {
 
     const title = customTitle || article.title;
     const description = customDescription || article.bluf || article.description;
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://rahvana.com";
+    const appUrl = "https://rahvana-test.vercel.app";
+    // const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://rahvana.com";
     const articleUrl = `${appUrl}/blog/${article.slug}`;
 
     // Test send preview only
@@ -110,11 +113,15 @@ export async function POST(request: NextRequest) {
           articleUrl,
           category: article.category,
           readTime: article.readTime,
+          imageUrl: article.heroImage,
           unsubscribeUrl: `${appUrl}/api/blog/unsubscribe?token=test-token`,
         }),
       });
 
-      return NextResponse.json({ success: true, message: `Test email sent to ${adminUser?.email}` });
+      return NextResponse.json({
+        success: true,
+        message: `Test email sent to ${adminUser?.email}`,
+      });
     }
 
     const supabase = createServerClient(
@@ -173,6 +180,7 @@ export async function POST(request: NextRequest) {
             articleUrl,
             category: article.category,
             readTime: article.readTime,
+            imageUrl: article.heroImage,
             unsubscribeUrl,
           }),
         });
