@@ -98,8 +98,7 @@ export async function POST(request: NextRequest) {
 
     const title = customTitle || article.title;
     const description = customDescription || article.bluf || article.description;
-    const appUrl = "https://rahvana-test.vercel.app";
-    // const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://rahvana.com";
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://rahvana.com";
     const articleUrl = `${appUrl}/blog/${article.slug}`;
 
     // Test send preview only

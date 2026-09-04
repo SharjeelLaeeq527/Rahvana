@@ -71,8 +71,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Send Welcome Email
-    const appUrl = "https://rahvana-test.vercel.app";
-    // const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://rahvana.com";
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://rahvana.com";
     const unsubscribeUrl = `${appUrl}/api/blog/unsubscribe?token=${unsubToken}`;
 
     try {
