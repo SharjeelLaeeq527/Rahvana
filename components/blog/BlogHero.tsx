@@ -30,46 +30,50 @@ export default function BlogHero() {
   };
 
   return (
-    <section className="relative overflow-hidden border-b border-[#d8ece7] bg-gradient-to-r from-[#eef8f6] via-[#f4faf9] to-[#edf7f5] py-12 sm:py-16 lg:py-20 dark:border-teal-950/40 dark:from-[#061917] dark:via-[#09221f] dark:to-[#061917]">
-      {/* Ambient decorative glow */}
-      <div className="pointer-events-none absolute -top-24 left-1/4 h-96 w-96 rounded-full bg-teal-300/20 blur-3xl dark:bg-teal-700/10" />
-      <div className="pointer-events-none absolute -bottom-24 right-10 h-80 w-80 rounded-full bg-emerald-300/15 blur-3xl dark:bg-emerald-700/10" />
+    <section className="relative overflow-hidden border-b border-slate-200/80 bg-white py-12 sm:py-16 lg:py-20 dark:border-slate-800 dark:bg-[#070e17]">
+      {/* Crisp Dot Grid Pattern */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(#e2e8f0_1.2px,transparent_1.2px)] [background-size:24px_24px] opacity-70 dark:bg-[radial-gradient(#1e293b_1.2px,transparent_1.2px)]" />
+
+      {/* Subtle radial ambient glow */}
+      <div className="pointer-events-none absolute -top-32 right-1/4 h-96 w-96 rounded-full bg-teal-500/10 blur-3xl dark:bg-teal-500/15" />
+      <div className="pointer-events-none absolute -bottom-32 left-10 h-96 w-96 rounded-full bg-purple-500/10 blur-3xl dark:bg-purple-500/15" />
 
       <div className="relative mx-auto max-w-6xl px-5 sm:px-8 lg:px-10">
         <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-12 lg:gap-8">
           {/* Left Column: Text & Search Input */}
           <div className="lg:col-span-7">
             {/* Pill Badge */}
-            <div className="inline-flex items-center rounded-full border border-teal-600/20 bg-teal-600/10 px-3.5 py-1 text-xs font-semibold tracking-wider text-teal-800 uppercase dark:border-teal-400/30 dark:bg-teal-400/10 dark:text-teal-300">
+            <div className="inline-flex items-center gap-2 rounded-full border border-teal-600/20 bg-teal-50/80 px-3.5 py-1 text-xs font-semibold tracking-wider text-teal-800 uppercase backdrop-blur-sm dark:border-teal-400/30 dark:bg-teal-950/40 dark:text-teal-300">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-teal-500" />
               KNOWLEDGE CENTER
             </div>
 
             {/* Main Headline */}
-            <h1 className="mt-4 font-serif text-3xl font-bold tracking-tight text-[#0f2e2b] sm:text-4xl lg:text-5xl lg:leading-[1.18] dark:text-slate-100">
+            <h1 className="mt-4 font-serif text-3xl font-extrabold tracking-tight text-[#0c1b33] sm:text-4xl lg:text-5xl lg:leading-[1.18] dark:text-white">
               Guides for every step{" "}
-              <span className="block sm:inline lg:block">
+              <span className="block text-teal-600 sm:inline lg:block dark:text-teal-400">
                 of your immigration journey
               </span>
             </h1>
 
             {/* Subtitle */}
-            <p className="mt-3.5 max-w-xl text-base text-[#335552] sm:text-lg dark:text-slate-300">
+            <p className="mt-3.5 max-w-xl text-base font-normal text-slate-600 sm:text-lg dark:text-slate-300">
               Find answers, prepare better, and move forward with confidence.
             </p>
 
             {/* Hero Search Bar */}
             <form onSubmit={handleSearch} className="mt-7 max-w-lg">
-              <div className="relative flex items-center">
+              <div className="relative flex items-center rounded-full border border-slate-200/90 bg-white p-1.5 shadow-[0_10px_35px_-5px_rgba(12,27,51,0.08)] transition-all focus-within:border-teal-500 focus-within:ring-4 focus-within:ring-teal-500/15 dark:border-slate-800 dark:bg-slate-900/90 dark:shadow-none">
                 <input
                   type="text"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search guides, documents, interviews..."
-                  className="w-full rounded-2xl border border-[#cbe3de] bg-white px-5 py-3.5 pr-12 text-sm text-foreground shadow-[0_4px_20px_-4px_rgba(20,70,60,0.08)] transition-all placeholder:text-muted-foreground/70 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 focus:outline-none sm:rounded-full sm:text-base dark:border-teal-900/50 dark:bg-card"
+                  className="w-full bg-transparent px-5 py-3 text-sm text-foreground placeholder:text-slate-400 focus:outline-none sm:text-base dark:placeholder:text-slate-500"
                 />
                 <button
                   type="submit"
-                  className="absolute right-4 text-teal-700 transition-colors hover:text-teal-900 dark:text-teal-400 dark:hover:text-teal-200"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-teal-600 text-white shadow-md transition-all hover:bg-teal-700 hover:shadow-lg dark:bg-teal-500 dark:hover:bg-teal-400"
                   aria-label="Search articles"
                 >
                   <Search className="h-5 w-5" />
