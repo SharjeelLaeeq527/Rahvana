@@ -9,6 +9,7 @@ import FAQPageSchema from "@/components/seo/FAQPageSchema";
 import BreadcrumbSchema from "@/components/seo/BreadcrumbSchema";
 import ToolCTA from "@/components/blog/ToolCTA";
 import ArticleSocialShare from "@/components/blog/ArticleSocialShare";
+import StickyShareSidebar from "@/components/blog/StickyShareSidebar";
 import BlogCommentsSection from "@/components/blog/comments/BlogCommentsSection";
 import { cn } from "@/lib/utils";
 import {
@@ -260,6 +261,19 @@ export default async function ArticleDetailPage({
                     )}
                   </div>
                 )}
+              </div>
+            </aside>
+          )}
+
+          {/* Sticky Right Sidebar - Social Share Icons */}
+          {article.showSocialShare !== false && (
+            <aside className="z-20 hidden shrink-0 lg:absolute lg:top-12 lg:left-full lg:bottom-12 lg:block lg:ml-4 lg:w-14 xl:ml-7">
+              <div className="sticky top-28">
+                <StickyShareSidebar
+                  title={article.title}
+                  slug={article.slug}
+                  description={article.description}
+                />
               </div>
             </aside>
           )}
