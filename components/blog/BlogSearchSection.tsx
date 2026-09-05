@@ -182,7 +182,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
       />
 
       {/* ── 1. Most Helpful Guide Right Now (Featured Card) ── */}
-      {featuredArticle && (
+      {!searchQuery.trim() && featuredArticle && (
         <section className="mx-auto max-w-6xl px-5 sm:px-8 lg:px-10">
           <h2 className="text-foreground mb-4 text-xl font-bold tracking-tight sm:text-2xl">
             Most helpful guide right now
@@ -345,7 +345,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
               {viewMode === "detailed" && (
                 <div className="space-y-12">
                   {/* Featured Pillar Guide Banner */}
-                  {featuredArticle && (
+                  {!searchQuery.trim() && featuredArticle && (
                     <div className="group border-border bg-card relative overflow-hidden rounded-3xl border p-6 shadow-xl transition-all duration-300 hover:border-teal-500/50 hover:shadow-2xl sm:p-8 lg:p-10">
                       <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-center">
                         <div className={featuredArticle.heroImage ? "lg:col-span-7" : "lg:col-span-12"}>
