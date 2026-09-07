@@ -187,7 +187,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
           <h2 className="text-foreground mb-4 text-xl font-bold tracking-tight sm:text-2xl">
             Most helpful guide right now
           </h2>
-          <div className="group border-border/70 bg-card relative overflow-hidden rounded-3xl border p-5 shadow-sm transition-all duration-300 hover:border-teal-500/40 hover:shadow-md sm:p-6 lg:p-7">
+          <div className="group border-border/70 bg-card relative overflow-hidden rounded-3xl border p-5 shadow-sm transition-all duration-300 hover:border-primary/40 hover:shadow-md sm:p-6 lg:p-7">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-12 md:items-center lg:gap-8">
               {featuredArticle.heroImage && (
                 <div className="md:col-span-5 lg:col-span-5">
@@ -217,7 +217,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                     featuredArticle.updatedAt) && (
                     <div className="text-muted-foreground flex flex-wrap items-center gap-2.5 text-xs">
                       {featuredArticle.category && (
-                        <span className="rounded-full border border-teal-500/20 bg-teal-500/10 px-3 py-0.5 font-semibold text-teal-700 dark:text-teal-300">
+                        <span className="rounded-full border border-primary/20 bg-primary/10 px-3 py-0.5 font-semibold text-primary">
                           {featuredArticle.category}
                         </span>
                       )}
@@ -231,7 +231,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                     </div>
                   )}
 
-                  <h3 className="text-foreground mt-3 text-xl font-bold tracking-tight transition-colors group-hover:text-teal-600 sm:text-2xl dark:group-hover:text-teal-400">
+                  <h3 className="text-foreground mt-3 text-xl font-bold tracking-tight transition-colors group-hover:text-primary sm:text-2xl">
                     <Link href={`/blog/${featuredArticle.slug}`}>
                       {featuredArticle.title || "Featured Guide"}
                     </Link>
@@ -247,7 +247,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                 <div className="mt-6">
                   <Link
                     href={`/blog/${featuredArticle.slug}`}
-                    className="inline-flex items-center gap-2 rounded-full bg-[#0d4f49] px-6 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-teal-700 sm:text-sm"
+                    className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 text-xs font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90 sm:text-sm"
                   >
                     <span>Read Guide</span>
                     <ArrowRight className="h-4 w-4" />
@@ -270,12 +270,12 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
           {/* Layout Option on the Right End Side */}
           <button
             onClick={handleOpenLayoutModal}
-            className="border-border/80 bg-card text-foreground hover:bg-muted/40 flex shrink-0 items-center gap-2 rounded-2xl border px-3.5 py-2 text-xs font-semibold shadow-sm transition hover:border-teal-500/50 hover:text-teal-600 dark:hover:text-teal-400"
+            className="border-border/80 bg-card text-foreground hover:bg-muted/40 flex shrink-0 items-center gap-2 rounded-2xl border px-3.5 py-2 text-xs font-semibold shadow-sm transition hover:border-primary/50 hover:text-primary"
             title="Change article display layout"
           >
-            <SlidersHorizontal className="h-4 w-4 text-teal-600 dark:text-teal-400" />
+            <SlidersHorizontal className="h-4 w-4 text-primary" />
             <span className="hidden sm:inline">Layout:</span>
-            <span className="flex items-center gap-1.5 rounded-lg border border-teal-500/20 bg-teal-500/10 px-2 py-0.5 text-xs font-bold text-teal-600 dark:text-teal-400">
+            <span className="flex items-center gap-1.5 rounded-lg border border-primary/20 bg-primary/10 px-2 py-0.5 text-xs font-bold text-primary">
               <CurrentIcon className="h-3.5 w-3.5" />
               <span>{currentViewOption.label}</span>
             </span>
@@ -295,8 +295,8 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                 }}
                 className={`rounded-xl px-4 py-1.5 text-xs font-medium transition-all sm:text-sm ${
                   isActive
-                    ? "bg-[#0d4f49] font-semibold text-white shadow-sm"
-                    : "border-border/80 bg-card text-muted-foreground hover:text-foreground border hover:border-teal-500/50"
+                    ? "bg-primary font-semibold text-primary-foreground shadow-sm"
+                    : "border-border/80 bg-card text-muted-foreground hover:text-foreground border hover:border-primary/50"
                 }`}
               >
                 {tab.label}
@@ -307,7 +307,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
 
         {/* Active Search Filter Banner */}
         {searchQuery && (
-          <div className="mt-4 flex items-center justify-between rounded-2xl border border-teal-500/20 bg-teal-500/10 px-4 py-2 text-xs text-teal-800 dark:text-teal-300">
+          <div className="mt-4 flex items-center justify-between rounded-2xl border border-primary/20 bg-primary/10 px-4 py-2 text-xs text-primary">
             <span>
               Showing results for: <strong>&ldquo;{searchQuery}&rdquo;</strong>
             </span>
@@ -334,7 +334,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                   setSearchQuery("");
                   setSelectedCategory("All");
                 }}
-                className="mt-4 inline-flex items-center gap-2 rounded-xl bg-teal-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-teal-500"
+                className="mt-4 inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground transition hover:bg-primary/90"
               >
                 Reset Filters
               </button>
@@ -346,7 +346,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                 <div className="space-y-12">
                   {/* Featured Pillar Guide Banner */}
                   {!searchQuery.trim() && featuredArticle && (
-                    <div className="group border-border bg-card relative overflow-hidden rounded-3xl border p-6 shadow-xl transition-all duration-300 hover:border-teal-500/50 hover:shadow-2xl sm:p-8 lg:p-10">
+                    <div className="group border-border bg-card relative overflow-hidden rounded-3xl border p-6 shadow-xl transition-all duration-300 hover:border-primary/50 hover:shadow-2xl sm:p-8 lg:p-10">
                       <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-center">
                         <div className={featuredArticle.heroImage ? "lg:col-span-7" : "lg:col-span-12"}>
                           {(featuredArticle.category ||
@@ -354,7 +354,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                             featuredArticle.updatedAt) && (
                             <div className="text-muted-foreground flex flex-wrap items-center gap-3 text-xs">
                               {featuredArticle.category && (
-                                <span className="rounded-full border border-teal-500/20 bg-teal-500/10 px-3 py-1 font-semibold text-teal-600 dark:text-teal-400">
+                                <span className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 font-semibold text-primary">
                                   {featuredArticle.category}
                                 </span>
                               )}
@@ -373,7 +373,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                             </div>
                           )}
 
-                          <h3 className="text-foreground mt-4 text-2xl font-bold tracking-tight transition-colors group-hover:text-teal-500 sm:text-3xl lg:text-4xl dark:group-hover:text-teal-400">
+                          <h3 className="text-foreground mt-4 text-2xl font-bold tracking-tight transition-colors group-hover:text-primary sm:text-3xl lg:text-4xl">
                             <Link href={`/blog/${featuredArticle.slug}`}>
                               {featuredArticle.title || "Featured Guide"}
                             </Link>
@@ -381,8 +381,8 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
 
                           {/* AEO / BLUF Summary Box */}
                           {featuredArticle.bluf && (
-                            <div className="mt-5 rounded-2xl border border-teal-500/30 bg-slate-900/95 p-4 text-slate-100 shadow-md sm:p-5">
-                              <span className="mb-1.5 block text-xs font-bold tracking-wider text-teal-400 uppercase">
+                            <div className="mt-5 rounded-2xl border border-primary/30 bg-slate-900/95 p-4 text-slate-100 shadow-md sm:p-5">
+                              <span className="mb-1.5 block text-xs font-bold tracking-wider text-primary uppercase">
                                 Quick Takeaway (BLUF)
                               </span>
                               <p className="line-clamp-3 text-sm leading-relaxed text-slate-200">
@@ -394,7 +394,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                           <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
                             {featuredArticle.author?.name ? (
                               <div className="flex items-center gap-3">
-                                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-teal-600 text-xs font-bold text-white">
+                                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
                                   {featuredArticle.author.name.charAt(0) || "R"}
                                 </div>
                                 <div>
@@ -414,7 +414,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
 
                             <Link
                               href={`/blog/${featuredArticle.slug}`}
-                              className="inline-flex items-center gap-1.5 rounded-xl bg-teal-600 px-5 py-2.5 text-xs font-semibold text-white transition hover:bg-teal-500"
+                              className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-5 py-2.5 text-xs font-semibold text-primary-foreground transition hover:bg-primary/90"
                             >
                               <span>Read Full Guide</span>
                               <ArrowRight className="h-4 w-4" />
@@ -448,7 +448,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                         {otherArticles.map((art) => (
                           <div
                             key={art.id}
-                            className="group border-border bg-card flex flex-col justify-between rounded-2xl border p-6 shadow-sm transition hover:border-teal-500/40 hover:shadow-md"
+                            className="group border-border bg-card flex flex-col justify-between rounded-2xl border p-6 shadow-sm transition hover:border-primary/40 hover:shadow-md"
                           >
                             <div>
                               {(art.category || art.readTime) && (
@@ -462,7 +462,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                                 </div>
                               )}
 
-                              <h4 className="text-foreground line-clamp-2 text-lg font-bold transition-colors group-hover:text-teal-500 dark:group-hover:text-teal-400">
+                              <h4 className="text-foreground line-clamp-2 text-lg font-bold transition-colors group-hover:text-primary">
                                 <Link href={`/blog/${art.slug}`}>{art.title || "Untitled Guide"}</Link>
                               </h4>
 
@@ -477,7 +477,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                               <span className="text-muted-foreground">{art.updatedAt || ""}</span>
                               <Link
                                 href={`/blog/${art.slug}`}
-                                className="flex items-center gap-1 font-semibold text-teal-600 transition-transform group-hover:translate-x-0.5 dark:text-teal-400"
+                                className="flex items-center gap-1 font-semibold text-primary transition-transform group-hover:translate-x-0.5"
                               >
                                 Read Article →
                               </Link>
@@ -496,7 +496,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                   {displayedArticles.map((art) => (
                     <div
                       key={art.id}
-                      className="group border-border bg-card flex flex-col overflow-hidden rounded-3xl border shadow-md transition-all duration-300 hover:border-teal-500/50 hover:shadow-xl"
+                      className="group border-border bg-card flex flex-col overflow-hidden rounded-3xl border shadow-md transition-all duration-300 hover:border-primary/50 hover:shadow-xl"
                     >
                       {art.heroImage ? (
                         <div className="bg-muted relative h-48 w-full overflow-hidden">
@@ -508,7 +508,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                           />
                           {art.category && (
                             <div className="absolute top-3 left-3">
-                              <span className="rounded-full bg-slate-900/80 px-3 py-1 text-[11px] font-semibold text-teal-300 backdrop-blur-md">
+                              <span className="rounded-full bg-slate-900/80 px-3 py-1 text-[11px] font-semibold text-primary-foreground backdrop-blur-md">
                                 {art.category}
                               </span>
                             </div>
@@ -517,7 +517,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                       ) : (
                         art.category && (
                           <div className="border-border/40 bg-muted/30 border-b p-4">
-                            <span className="rounded-full border border-teal-500/20 bg-teal-500/10 px-3 py-1 text-[11px] font-semibold text-teal-600 dark:text-teal-400">
+                            <span className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] font-semibold text-primary">
                               {art.category}
                             </span>
                           </div>
@@ -544,7 +544,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                             </div>
                           )}
 
-                          <h3 className="text-foreground line-clamp-2 text-xl font-bold transition-colors group-hover:text-teal-500 dark:group-hover:text-teal-400">
+                          <h3 className="text-foreground line-clamp-2 text-xl font-bold transition-colors group-hover:text-primary">
                             <Link href={`/blog/${art.slug}`}>{art.title || "Untitled Article"}</Link>
                           </h3>
 
@@ -561,7 +561,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                           </span>
                           <Link
                             href={`/blog/${art.slug}`}
-                            className="inline-flex items-center gap-1 rounded-xl bg-teal-600/10 px-3.5 py-1.5 text-xs font-semibold text-teal-600 transition hover:bg-teal-600 hover:text-white dark:text-teal-400"
+                            className="inline-flex items-center gap-1 rounded-xl bg-primary/10 px-3.5 py-1.5 text-xs font-semibold text-primary transition hover:bg-primary hover:text-primary-foreground"
                           >
                             <span>Read</span>
                             <ArrowRight className="h-3.5 w-3.5" />
@@ -579,7 +579,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                   {displayedArticles.map((art) => (
                     <div
                       key={art.id}
-                      className="group border-border/70 bg-card flex flex-col items-start justify-between gap-5 rounded-2xl border p-4 shadow-sm transition hover:border-teal-500/40 hover:shadow-md sm:flex-row sm:items-center sm:p-5"
+                      className="group border-border/70 bg-card flex flex-col items-start justify-between gap-5 rounded-2xl border p-4 shadow-sm transition hover:border-primary/40 hover:shadow-md sm:flex-row sm:items-center sm:p-5"
                     >
                       <div className="flex flex-1 flex-col items-start gap-4 sm:flex-row sm:items-center">
                         {art.heroImage && (
@@ -597,7 +597,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                           {(art.category || art.readTime || art.updatedAt) && (
                             <div className="flex flex-wrap items-center gap-2 text-xs">
                               {art.category && (
-                                <span className="rounded-full border border-teal-500/20 bg-teal-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-teal-700 dark:text-teal-300">
+                                <span className="rounded-full border border-primary/20 bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold text-primary">
                                   {art.category}
                                 </span>
                               )}
@@ -616,7 +616,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                             </div>
                           )}
 
-                          <h3 className="text-foreground line-clamp-1 text-base font-bold transition-colors group-hover:text-teal-600 sm:text-lg dark:group-hover:text-teal-400">
+                          <h3 className="text-foreground line-clamp-1 text-base font-bold transition-colors group-hover:text-primary sm:text-lg">
                             <Link href={`/blog/${art.slug}`}>{art.title || "Untitled Guide"}</Link>
                           </h3>
 
@@ -630,7 +630,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
 
                       <Link
                         href={`/blog/${art.slug}`}
-                        className="inline-flex shrink-0 items-center gap-1.5 self-end rounded-full bg-[#0d4f49] px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-teal-700 sm:self-center"
+                        className="inline-flex shrink-0 items-center gap-1.5 self-end rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90 sm:self-center"
                       >
                         <span>Read Guide</span>
                         <ArrowRight className="h-3.5 w-3.5" />
@@ -649,9 +649,9 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                       className="group hover:bg-muted/30 flex flex-col justify-between gap-4 p-5 transition sm:flex-row sm:items-center"
                     >
                       <div className="flex items-start gap-4">
-                        <span className="mt-1 text-xs font-bold text-teal-500">0{idx + 1}.</span>
+                        <span className="mt-1 text-xs font-bold text-primary">0{idx + 1}.</span>
                         <div>
-                          <h3 className="text-foreground text-base font-bold transition-colors group-hover:text-teal-500 dark:group-hover:text-teal-400">
+                          <h3 className="text-foreground text-base font-bold transition-colors group-hover:text-primary">
                             <Link href={`/blog/${art.slug}`}>{art.title || "Untitled Article"}</Link>
                           </h3>
                           {(art.category || art.readTime || art.author?.name) && (
@@ -670,7 +670,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
 
                       <Link
                         href={`/blog/${art.slug}`}
-                        className="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-teal-600 hover:underline dark:text-teal-400"
+                        className="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-primary hover:underline"
                       >
                         <span>Read Article</span>
                         <ArrowRight className="h-3.5 w-3.5" />
@@ -686,7 +686,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                   <button
                     type="button"
                     onClick={() => setVisibleCount((prev) => prev + 5)}
-                    className="bg-card inline-flex items-center justify-center rounded-full border border-teal-600/30 px-8 py-2.5 text-xs font-semibold text-teal-800 shadow-sm transition-all hover:border-teal-600 hover:bg-teal-50 sm:text-sm dark:text-teal-300 dark:hover:bg-teal-950/40"
+                    className="bg-card inline-flex items-center justify-center rounded-full border border-primary/30 px-8 py-2.5 text-xs font-semibold text-primary shadow-sm transition-all hover:border-primary hover:bg-primary/10 sm:text-sm"
                   >
                     Load more guides
                   </button>
@@ -710,7 +710,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
             {/* Modal Header */}
             <DialogHeader className="border-border/50 flex flex-row items-start justify-between space-y-0 border-b pb-3 text-left">
               <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl border border-teal-500/20 bg-teal-500/10 text-teal-600 shadow-sm dark:text-teal-400">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary shadow-sm">
                   <SlidersHorizontal className="h-4 w-4" />
                 </div>
                 <div>
@@ -744,8 +744,8 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                     }}
                     className={`group relative flex flex-col justify-between rounded-2xl border p-3.5 text-left transition-all duration-200 ${
                       isActive
-                        ? "border-teal-500 bg-teal-500/5 shadow-sm ring-2 ring-teal-500/20"
-                        : "border-border/70 bg-background/50 hover:bg-card shadow-sm hover:border-teal-500/50"
+                        ? "border-primary bg-primary/5 shadow-sm ring-2 ring-primary/20"
+                        : "border-border/70 bg-background/50 hover:bg-card shadow-sm hover:border-primary/50"
                     }`}
                   >
                     <div>
@@ -755,7 +755,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                           <div
                             className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${
                               isActive
-                                ? "bg-teal-600 text-white"
+                                ? "bg-primary text-primary-foreground"
                                 : "bg-muted text-muted-foreground group-hover:text-foreground"
                             }`}
                           >
@@ -766,9 +766,9 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                           </span>
                         </div>
                         {isActive ? (
-                          <CheckCircle2 className="h-4 w-4 shrink-0 text-teal-600 dark:text-teal-400" />
+                          <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />
                         ) : (
-                          <span className="border-muted-foreground/40 h-3.5 w-3.5 shrink-0 rounded-full border group-hover:border-teal-500/50" />
+                          <span className="border-muted-foreground/40 h-3.5 w-3.5 shrink-0 rounded-full border group-hover:border-primary/50" />
                         )}
                       </div>
 
@@ -777,7 +777,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                         <span
                           className={`inline-block rounded-md px-1.5 py-0.5 text-[9px] font-bold tracking-wider uppercase ${
                             isActive
-                              ? "bg-teal-500/20 text-teal-600 dark:text-teal-400"
+                              ? "bg-primary/20 text-primary"
                               : "bg-muted text-muted-foreground"
                           }`}
                         >
@@ -796,7 +796,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                       <div className="border-border/50 bg-muted/30 flex h-8 flex-col justify-center gap-0.5 overflow-hidden rounded-lg border p-1">
                         {opt.id === "detailed" && (
                           <div className="flex h-full gap-1">
-                            <div className="w-1/2 rounded border border-teal-500/20 bg-teal-500/30" />
+                            <div className="w-1/2 rounded border border-primary/20 bg-primary/30" />
                             <div className="flex w-1/2 flex-col gap-0.5">
                               <div className="bg-muted-foreground/20 h-1/2 rounded" />
                               <div className="bg-muted-foreground/20 h-1/2 rounded" />
@@ -813,13 +813,13 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                         {opt.id === "list" && (
                           <div className="flex h-full flex-col justify-between gap-0.5">
                             <div className="bg-muted-foreground/30 flex h-1.5 items-center rounded px-0.5">
-                              <div className="h-1 w-1.5 rounded bg-teal-500/50" />
+                              <div className="h-1 w-1.5 rounded bg-primary/50" />
                             </div>
                             <div className="bg-muted-foreground/30 flex h-1.5 items-center rounded px-0.5">
-                              <div className="h-1 w-1.5 rounded bg-teal-500/50" />
+                              <div className="h-1 w-1.5 rounded bg-primary/50" />
                             </div>
                             <div className="bg-muted-foreground/30 flex h-1.5 items-center rounded px-0.5">
-                              <div className="h-1 w-1.5 rounded bg-teal-500/50" />
+                              <div className="h-1 w-1.5 rounded bg-primary/50" />
                             </div>
                           </div>
                         )}
@@ -852,7 +852,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                   setViewMode(pendingViewMode);
                   setIsLayoutModalOpen(false);
                 }}
-                className="rounded-xl bg-teal-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-teal-500"
+                className="rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90"
               >
                 Apply & Close
               </button>

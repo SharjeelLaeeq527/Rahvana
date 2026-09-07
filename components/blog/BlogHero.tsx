@@ -30,32 +30,32 @@ export default function BlogHero() {
   };
 
   return (
-    <section className="relative overflow-hidden border-b border-[#d2e8e3] bg-[#eaf5f2] py-12 sm:py-16 lg:py-20 dark:border-teal-950/40 dark:bg-[#071917]">
+    <section className="border-primary/30 dark:border-primary/40 relative overflow-hidden border-b bg-[#eaf5f2] py-12 sm:py-16 lg:py-20 dark:bg-teal-950/50">
       <div className="relative mx-auto max-w-6xl px-5 sm:px-8 lg:px-10">
         <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-12 lg:gap-8">
           {/* Left Column: Text & Search Input */}
           <div className="lg:col-span-7">
             {/* Pill Badge */}
-            <div className="inline-flex items-center gap-1.5 rounded-full border border-teal-600/30 bg-white/70 px-3.5 py-1 text-xs font-semibold tracking-wider text-teal-800 uppercase backdrop-blur-sm dark:border-teal-400/30 dark:bg-teal-950/50 dark:text-teal-300">
+            <div className="border-primary/30 text-primary dark:border-primary dark:text-primary/30 inline-flex items-center gap-1.5 rounded-full border bg-white/70 px-3.5 py-1 text-xs font-semibold tracking-wider uppercase backdrop-blur-sm dark:bg-teal-950/50">
               KNOWLEDGE CENTER
             </div>
 
             {/* Main Headline */}
             <h1 className="mt-4 font-serif text-3xl font-extrabold tracking-tight text-[#0f2e2b] sm:text-4xl lg:text-5xl lg:leading-[1.18] dark:text-white">
               Guides for every step{" "}
-              <span className="block text-[#0d9488] sm:inline lg:block dark:text-teal-400">
+              <span className="text-primary dark:text-primary/40 block sm:inline lg:block">
                 of your immigration journey
               </span>
             </h1>
 
             {/* Subtitle */}
-            <p className="mt-3.5 max-w-xl text-base font-normal text-[#335552] sm:text-lg dark:text-slate-300">
+            <p className="text-primary mt-3.5 max-w-xl text-base font-normal sm:text-lg dark:text-slate-300">
               Find answers, prepare better, and move forward with confidence.
             </p>
 
             {/* Hero Search Bar */}
             <form onSubmit={handleSearch} className="mt-7 max-w-lg">
-              <div className="relative flex items-center rounded-full border border-[#cbe3de] bg-white p-1.5 shadow-[0_8px_30px_rgba(13,148,136,0.12)] transition-all focus-within:border-teal-600 focus-within:ring-4 focus-within:ring-teal-500/20 dark:border-teal-900/50 dark:bg-slate-900">
+              <div className="focus-within:border-primary/60 focus-within:ring-primary/20 dark:border-primary/50 relative flex items-center rounded-full border border-[#cbe3de] bg-white p-1.5 shadow-[0_8px_30px_rgba(13,148,136,0.12)] transition-all focus-within:ring-4 dark:bg-slate-900">
                 <input
                   type="text"
                   value={query}
@@ -65,7 +65,7 @@ export default function BlogHero() {
                 />
                 <button
                   type="submit"
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#0d9488] text-white shadow-md transition-all hover:bg-teal-700 hover:shadow-lg dark:bg-teal-500 dark:hover:bg-teal-400"
+                  className="bg-primary hover:bg-primary/70 dark:bg-primary/50 dark:hover:bg-primary/40 flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white shadow-md transition-all hover:shadow-lg"
                   aria-label="Search articles"
                 >
                   <Search className="h-5 w-5" />
