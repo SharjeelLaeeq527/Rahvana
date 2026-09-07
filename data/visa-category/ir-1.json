@@ -1619,7 +1619,7 @@
                     "label": "Upload Files"
                   }
                 ],
-                "note": "All documents must be under 12 MB each. Foreign-language documents require certified English translations uploaded separately."
+                "note": "All documents must be under 12 MB each. For any foreign-language document, upload the original, a complete English translation, and the translator's signed certification stating the translation is complete and accurate and that the translator is competent to translate."
               }
             ],
             "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. USCIS.gov is the official filing portal. Always verify information at uscis.gov before submitting."
@@ -1676,7 +1676,7 @@
               "Accepted formats: PDF, JPG, or JPEG only",
               "Maximum file size: 12 MB per file",
               "Files must not be encrypted or password-protected",
-              "Foreign-language documents require a certified English translation uploaded alongside the original"
+              "Foreign-language documents require a complete English translation plus the translator's signed certification (that the translation is complete and accurate and the translator is competent to translate), uploaded alongside the original"
             ],
             "guide_card": {
               "title": "View Step-by-Step Upload Guide",
@@ -1723,7 +1723,7 @@
                     "label": "Upload"
                   }
                 ],
-                "note": "USCIS accepts PDF, JPG, and JPEG files up to 12 MB each. If a document is in a foreign language, upload the original AND the certified English translation as separate files."
+                "note": "USCIS accepts PDF, JPG, and JPEG files up to 12 MB each. If a document is in a foreign language, upload the original, a complete English translation, AND the translator's signed certification stating the translation is complete and accurate and that the translator is competent to translate."
               },
               {
                 "label": "Step 3 of 4, Review Each File",
@@ -1771,7 +1771,7 @@
               "guidance": [
                 "Each individual file must be 12 MB or smaller (USCIS portal limit)",
                 "Scans must be clear and legible, USCIS commonly issues RFEs for unreadable documents",
-                "All non-English documents require a certified English translation uploaded alongside",
+                "All non-English documents require a complete English translation plus the translator's signed certification (translation is complete and accurate; translator is competent to translate), uploaded alongside the original",
                 "Combine multi-page documents into a single PDF per category where appropriate"
               ],
               "source_basis": "USCIS online filing portal, file requirements published at myaccount.uscis.gov"

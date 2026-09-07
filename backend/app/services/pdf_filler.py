@@ -21,6 +21,9 @@ from app.core.form_configs import i864a_config
 from app.core.form_configs import i864ez_config
 from app.core.form_configs import i693_config
 from app.core.form_configs import i485_config
+from app.core.form_configs import g1450_config
+from app.core.form_configs import g1650_config
+from app.core.form_configs import g1651_config
 # from app.core.form_configs import ds260_config
 
 # Master mapping: formId → FIELD_MAPPING
@@ -34,6 +37,9 @@ FORM_CONFIGS = {
     "i864ez": i864ez_config.FIELD_MAPPING,
     "i693": i693_config.FIELD_MAPPING,
     "i485": i485_config.FIELD_MAPPING,
+    "g1450": g1450_config.FIELD_MAPPING,
+    "g1650": g1650_config.FIELD_MAPPING,
+    "g1651": g1651_config.FIELD_MAPPING,
     # "ds260": ds260_config.FIELD_MAPPING,
     # "i485": i485_config.FIELD_MAPPING,
     # "i765": i765_config.FIELD_MAPPING,
@@ -41,11 +47,13 @@ FORM_CONFIGS = {
 
 # Auto-find PDF templates
 def find_pdf_template(form_id: str) -> str:
-    # form_id is already normalized (e.g., 'i130a')
-    # Try with hyphen if it looks like a USCIS form
+    # form_id is already normalized (e.g., 'i130a', 'g1450')
+    # Try with a hyphen after the leading letters if it looks like a USCIS form
+    # (e.g., 'i130a' -> 'i-130a', 'g1450' -> 'g-1450').
     hyphenated = form_id
-    if form_id.startswith('i') and len(form_id) > 1:
-        hyphenated = f"i-{form_id[1:]}"
+    m = re.match(r'^([a-z]+)(\d.*)$', form_id)
+    if m:
+        hyphenated = f"{m.group(1)}-{m.group(2)}"
         
     candidates = [
         f"./pdfs/{form_id}.pdf",
@@ -142,11 +150,27 @@ class PDFFillerService:
             if not str_value:
                 continue
 
+            # Prefer an EXACT field-name match; only fall back to last-segment
+            # matching when no exact match exists anywhere. This prevents
+            # cross-filling widgets that share a last segment -- e.g. XFA forms
+            # like G-1650 where sfApplicantPetitionerName[0].GivenName[0] and
+            # sfBankAccountHolderInfo[0].GivenName[0] both end in 'GivenName[0]'.
+            # (Widgets are matched/updated inline so they stay bound to their page.)
+            target_leaf = pdf_field_name.split('.')[-1]
+            has_exact = any(
+                w.field_name == pdf_field_name
+                for page in doc for w in page.widgets()
+            )
+
             field_found = False
             for page in doc:
                 for widget in page.widgets():
-                    if widget.field_name == pdf_field_name or \
-                       widget.field_name.split('.')[-1] == pdf_field_name.split('.')[-1]:
+                    is_match = (
+                        widget.field_name == pdf_field_name
+                        if has_exact
+                        else widget.field_name.split('.')[-1] == target_leaf
+                    )
+                    if is_match:
                         try:
                              if widget.field_type in (fitz.PDF_WIDGET_TYPE_CHECKBOX, fitz.PDF_WIDGET_TYPE_RADIOBUTTON):
                                 val_lower = str(value).lower().strip()
