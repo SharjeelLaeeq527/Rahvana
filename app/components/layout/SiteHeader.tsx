@@ -730,6 +730,7 @@ export function SiteHeader({
         settings: "/settings",
         "portal-wallet": "/portal-wallet",
         about: "/about",
+        blog: "/blog",
       };
 
       const targetRoute = routes[id] || "/";
@@ -1021,6 +1022,25 @@ export function SiteHeader({
               )}
             </div>
             */}
+            <div className="relative pt-2 pb-0">
+              <Link
+                href="/blog"
+                onClick={(e) => handleNav("blog", e)}
+                className={`block rounded-lg px-4 py-2 text-sm font-semibold transition-all ${
+                  isHomeHeroState
+                    ? isActive("blog", "/blog")
+                      ? "bg-muted text-[#0d7377]"
+                      : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                    : isHomeHeroP2State || isHomepageHeroState
+                      ? "text-[#3fb8bc] hover:bg-[#0d7377]/8 hover:text-[#0d7377]"
+                      : isActive("blog", "/blog")
+                        ? "bg-muted text-[#0d7377]"
+                        : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                }`}
+              >
+                Blog
+              </Link>
+            </div>
             <div className="relative pt-2 pb-0">
               <Link
                 href="/about"
@@ -2112,6 +2132,17 @@ export function SiteHeader({
               })}
 
               {/* <div className="mt-4 px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-400">General</div> */}
+              <HydrationSafeButton
+                onClick={() => handleNav("blog")}
+                className={`flex items-center gap-3 rounded-xl px-4 py-3 text-left transition-all ${
+                  isActive("blog")
+                    ? "bg-[#0d7377]/10 text-[#0d7377]"
+                    : "text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                <FileText className="h-5 w-5 text-cyan-500 dark:text-cyan-400" />
+                <span className="font-bold">Blog</span>
+              </HydrationSafeButton>
               <HydrationSafeButton
                 onClick={() => handleNav("about")}
                 className={`flex items-center gap-3 rounded-xl px-4 py-3 text-left transition-all ${
