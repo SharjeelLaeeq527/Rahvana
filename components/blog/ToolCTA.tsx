@@ -18,7 +18,7 @@ export default function ToolCTA({
   headline = "Check Your U.S. Spouse Visa Eligibility & Timeline",
   description = "Get an instant step-by-step breakdown of your IR-1 / CR-1 journey, mandatory civil documents, and case strength score in under 2 minutes.",
   buttonText = "Start Free Case Strength Check →",
-  buttonHref = "/visa-eligibility",
+  buttonHref = "/visa-category",
   variant = "primary",
   className = "",
 }: ToolCTAProps) {
@@ -86,10 +86,10 @@ export default function ToolCTA({
 
         <div className="mt-8 flex flex-wrap items-center gap-4">
           <Link
-            href={buttonHref}
+            href={"visa-category"}
             className="inline-flex items-center gap-2 rounded-xl bg-teal-500 px-7 py-3.5 text-base font-semibold text-slate-950 transition-all hover:bg-teal-400 hover:scale-[1.02]"
           >
-            <span>{buttonText}</span>
+            <span>Explore Journey Roadmaps</span>
           </Link>
           <Link
             href="/pricing"
