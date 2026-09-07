@@ -115,7 +115,7 @@ export default function ArticleSocialShare({
   ];
 
   return (
-    <section className="border-border/80 bg-card/60 relative my-8 rounded-3xl border p-6 text-center shadow-md backdrop-blur-md sm:p-8">
+    <section className="block lg:hidden border-border/80 bg-card/60 relative my-8 rounded-3xl border p-6 text-center shadow-md backdrop-blur-md sm:p-8">
       {/* Toast Floating Notification */}
       {toastMessage && (
         <div className="animate-in fade-in slide-in-from-bottom-2 absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-teal-600 px-4 py-1.5 text-xs font-semibold text-white shadow-lg duration-200">
