@@ -3293,7 +3293,7 @@
             "Log into CEAC portal",
             "Open fee payment area",
             "Pay Affidavit of Support fee ($120)",
-            "Pay Immigrant Visa fee ($345)",
+            "Pay Immigrant Visa fee ($335)",
             "Save payment status"
           ],
           "tool_data": {
@@ -3986,7 +3986,7 @@
                 "label": "Step 2 of 13, Submit IV and AOS fees",
                 "heading": "Confirm all fees are paid",
                 "screenTitle": "Confirm all fees are paid",
-                "instruction": "Before document submission begins, verify in CEAC that both the Affidavit of Support fee ($120) and the Immigrant Visa fee ($345) have been successfully processed.",
+                "instruction": "Before document submission begins, verify in CEAC that both the Affidavit of Support fee ($120) and the Immigrant Visa fee ($325) have been successfully processed.",
                 "url": "ceac.state.gov",
                 "ss_label": "Fee Status",
                 "ss_headline": "NVC Fees Paid",
@@ -5024,13 +5024,13 @@
           "step_number": 5,
           "step_type": "tool",
           "step_name": "Courier Registration",
-          "step_description": "Register your courier account to receive your visa packet after the interview is approved. Complete the sign-up, follow the guide, and save your credentials and confirmation.",
+          "step_description": "Register online before your immigrant visa interview and select your document pick-up location so the Embassy has the information needed to return your passport after the interview. Complete the sign-up, follow the guide, and save your credentials and confirmation.",
           "step_short_description": "Register for visa packet delivery",
           "who": "Beneficiary",
           "where": "Home preparation",
           "actions": [
             "Register at usvisascheduling.com",
-            "Select courier delivery for Pakistan",
+            "Select your preferred passport delivery option: Avari Tower pickup or home delivery",
             "Save your login credentials securely",
             "Save confirmation page to Document Vault"
           ],
@@ -5116,7 +5116,7 @@
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>Bring the original current passport with at least 6 months validity beyond the interview date. Also bring any prior passports that may contain relevant U.S. visa history.</p>"
+                          "c": "<p>Bring the original current passport with at least 6 months validity beyond the interview date. If applicable, bring previous passports containing relevant U.S. immigration or travel history.</p>"
                         },
                         {
                           "t": "Photocopies",
@@ -5132,11 +5132,15 @@
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>The original NADRA-issued CBRC or other official birth certificate. If you have an older Union Council record, bring both the original and the NADRA CBRC if available.</p>"
+                          "c": "<p>Bring the original Birth Registration Certificate issued by the authority responsible for registering the beneficiary's birth:</p><ul><li><strong>Union Council</strong></li><li><strong>Municipal Corporation</strong></li><li><strong>Capital Development Authority (CDA)</strong> — Islamabad</li><li><strong>Cantonment Board</strong></li></ul><p>Select the issuing authority that applies to your birth record and bring the original document.</p>"
+                        },
+                        {
+                          "t": "Alternative documents",
+                          "c": "<p>If a Birth Registration Certificate is unavailable, the following NADRA documents may serve as alternate documents:</p><ul><li><strong>Child Registration Certificate (CRC/B-Form)</strong></li><li><strong>Family Registration Certificate (FRC)</strong></li></ul>"
                         },
                         {
                           "t": "Translation",
-                          "c": "<p>Bring the original Urdu certificate and the certified English translation together in the same tab.</p>"
+                          "c": "<p>If your birth document is in Urdu, bring the original Urdu document together with the required certified English translation.</p>"
                         }
                       ]
                     },
@@ -5148,7 +5152,7 @@
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>Bring the original Nikah Nama and the NADRA Marriage Registration Certificate. Both should be accompanied by their certified English translations.</p>"
+                          "c": "<p>Bring your original Marriage Registration Certificate (MRC), English translation, and photocopy. Also bring your original Nikah Nama and English translation if applicable/available, particularly as supporting evidence of the marriage.</p>"
                         },
                         {
                           "t": "Important",
@@ -6090,7 +6094,7 @@
     "Union Council Marriage Registration",
     "Police Certificate - Pakistan (Original)",
     "Passport Photos (2x2 inches, white background)",
-    "Tax Returns (IRS Transcripts - 3 years)",
+    "Tax Returns & IRS Transcripts (Most Recent Year Required, 3 Years Recommended)",
     "Employment Verification Letter",
     "Pay Stubs (6 months)",
     "W-2 Forms",

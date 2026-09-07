@@ -9,6 +9,7 @@ import FAQPageSchema from "@/components/seo/FAQPageSchema";
 import BreadcrumbSchema from "@/components/seo/BreadcrumbSchema";
 import ToolCTA from "@/components/blog/ToolCTA";
 import ArticleSocialShare from "@/components/blog/ArticleSocialShare";
+import StickyShareSidebar from "@/components/blog/StickyShareSidebar";
 import BlogCommentsSection from "@/components/blog/comments/BlogCommentsSection";
 import { cn } from "@/lib/utils";
 import {
@@ -69,11 +70,7 @@ export async function generateMetadata({
   };
 }
 
-export default async function ArticleDetailPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function ArticleDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const article = getArticleBySlug(slug);
 
@@ -91,8 +88,8 @@ export default async function ArticleDetailPage({
 
   const hasToc = Boolean(
     article.showTableOfContents !== false &&
-      article.tableOfContents &&
-      article.tableOfContents.length > 0
+    article.tableOfContents &&
+    article.tableOfContents.length > 0
   );
 
   const sidebarCtaConfig =
@@ -208,10 +205,10 @@ export default async function ArticleDetailPage({
         </header>
 
         {/* ── Main Body & Sidebar Layout ── */}
-        <div className="relative mx-auto max-w-3xl px-5 py-10 sm:px-8 sm:py-12">
+        <div className="relative mx-auto max-w-full px-5 py-10 sm:px-8 sm:py-12 lg:max-w-[640px] xl:max-w-4xl">
           {/* Table of Contents Sticky Left Sidebar */}
           {hasSidebar && (
-            <aside className="z-20 mb-10 shrink-0 lg:absolute lg:top-12 lg:right-full lg:bottom-12 lg:mr-4 lg:mb-0 lg:w-64 xl:mr-7">
+            <aside className="z-20 mb-10 shrink-0 lg:absolute lg:top-12 lg:right-full lg:bottom-12 lg:mb-0 lg:w-48 lg:translate-x-3 xl:w-60 xl:translate-x-6">
               <div className="border-border/70 bg-card/40 sticky top-28 rounded-2xl border p-4 shadow-sm backdrop-blur-md sm:top-28 sm:p-5">
                 {hasToc && article.tableOfContents && (
                   <>
@@ -264,8 +261,21 @@ export default async function ArticleDetailPage({
             </aside>
           )}
 
+          {/* Sticky Right Sidebar - Social Share Icons */}
+          {article.showSocialShare !== false && (
+            <aside className="z-20 hidden shrink-0 lg:absolute lg:top-12 lg:bottom-12 lg:left-full lg:ml-3 lg:block lg:w-12 xl:ml-6 xl:w-14">
+              <div className="sticky top-28">
+                <StickyShareSidebar
+                  title={article.title}
+                  slug={article.slug}
+                  description={article.description}
+                />
+              </div>
+            </aside>
+          )}
+
           {/* Main Article Content */}
-          <main className="w-full space-y-10">
+          <main className="w-full space-y-10 lg:ml-3 xl:ml-5">
             {/* ⚡ BLUF (Bottom Line Up Front) Answer Box */}
             {article.bluf && article.bluf.trim() && (
               <section className="rounded-3xl border border-teal-500/30 bg-slate-900/95 p-6 text-slate-100 shadow-lg sm:p-8">
@@ -282,7 +292,11 @@ export default async function ArticleDetailPage({
             {/* Dynamic Content Sections */}
             {article.sections &&
               article.sections.map((section, idx) => (
-                <section key={section.id || `sec-${idx}`} id={section.id} className="scroll-mt-28 space-y-4">
+                <section
+                  key={section.id || `sec-${idx}`}
+                  id={section.id}
+                  className="scroll-mt-28 space-y-4"
+                >
                   {section.h2 && (
                     <h2 className="text-foreground border-border/50 border-b pb-2 text-2xl font-bold tracking-tight">
                       {section.h2}
@@ -412,10 +426,10 @@ export default async function ArticleDetailPage({
 
                   {/* Optional Numbered List */}
                   {section.numberedList && section.numberedList.length > 0 && (
-                    <ol className="text-muted-foreground my-4 space-y-2.5 text-sm list-none">
+                    <ol className="text-muted-foreground my-4 list-none space-y-2.5 text-sm">
                       {section.numberedList.map((item, nIdx) => (
                         <li key={nIdx} className="flex items-start gap-3">
-                          <span className="bg-teal-500/10 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold text-teal-400">
+                          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-teal-500/10 text-xs font-bold text-teal-400">
                             {nIdx + 1}
                           </span>
                           <span className="pt-0.5">{item}</span>

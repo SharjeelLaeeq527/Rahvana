@@ -36,11 +36,7 @@ import {
 
 // ─── Data & Types ─────────────────────────────────────────────────────────────
 type ToolCategory =
-  | "AI & Planning"
-  | "Money & Sponsorship"
-  | "Tracking"
-  | "Docs & PDFs"
-  | "Forms & Automation";
+  "AI & Planning" | "Money & Sponsorship" | "Tracking" | "Docs & PDFs" | "Forms & Automation";
 
 interface Tool {
   id: string;
@@ -131,6 +127,21 @@ const TOOLS: Tool[] = [
     badge: "Live",
     entitlementFeature: "dq_status_check",
   },
+
+  ...(process.env.NEXT_PUBLIC_ENVIRONMENT === "development"
+    ? [
+        {
+          id: "uscis-case-status",
+          title: "USCIS Case Status",
+          description: "Real-time USCIS case status lookup via the official Torch API.",
+          category: "Tracking" as const,
+          href: "/case-status",
+          icon: Search,
+          iconSrc: "/icons/checklist.svg",
+          badge: "Live" as const,
+        },
+      ]
+    : []),
   // {
   //   id: "visa-bulletin-monitor",
   //   title: "Visa Bulletin Monitor",
@@ -141,18 +152,6 @@ const TOOLS: Tool[] = [
   //   iconSrc: "/icons/visa-bulletin-monitor.svg",
   //   badge: "Live",
   //   entitlementFeature: "visa_bulletin_monitor",
-  // },
-  // {
-  //   id: "uscis-case-status",
-  //   title: "USCIS Case Status",
-  //   description:
-  //     "Real-time USCIS case status lookup via the official Torch API.",
-  //   category: "Tracking",
-  //   href: "/case-status",
-  //   icon: FileSearch,
-  //   iconSrc: "/icons/checklist.svg",
-  //   badge: "Live",
-  //   // Public tool — no entitlement required
   // },
 
   // Docs & PDFs
@@ -297,7 +296,7 @@ export default function ToolsPage({ isEmbedded = false }: { isEmbedded?: boolean
 
   return (
     <div
-      className={`bg-background text-foreground font-sans overflow-x-hidden selection:bg-primary selection:text-primary-foreground ${isEmbedded ? "" : "pt-16"}`}
+      className={`bg-background text-foreground selection:bg-primary selection:text-primary-foreground overflow-x-hidden font-sans ${isEmbedded ? "" : "pt-16"}`}
     >
       {/* UpgradeModal */}
       {upgradeModalFeature && (
@@ -305,19 +304,19 @@ export default function ToolsPage({ isEmbedded = false }: { isEmbedded?: boolean
       )}
 
       {/* Ambient Glow */}
-      <div className="fixed top-0 left-0 w-full h-full pointer-events-none -z-10">
-        <div className="absolute top-[10%] left-[15%] w-[500px] h-[500px] bg-[#0d7377]/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-[20%] right-[10%] w-[600px] h-[600px] bg-[#32e0c4]/5 rounded-full blur-3xl" />
+      <div className="pointer-events-none fixed top-0 left-0 -z-10 h-full w-full">
+        <div className="absolute top-[10%] left-[15%] h-[500px] w-[500px] rounded-full bg-[#0d7377]/5 blur-3xl" />
+        <div className="absolute right-[10%] bottom-[20%] h-[600px] w-[600px] rounded-full bg-[#32e0c4]/5 blur-3xl" />
       </div>
 
       <div className="site-main-px site-main-py">
         {/* Hero — hidden in the embedded "My Resources" view */}
         {!isEmbedded && (
-          <section className="text-center mb-5 md:mb-10 pt-1">
-            <h1 className="text-3xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-linear-to-r from-foreground to-muted-foreground animate-fade-up">
+          <section className="mb-5 pt-1 text-center md:mb-10">
+            <h1 className="from-foreground to-muted-foreground animate-fade-up mb-4 bg-linear-to-r bg-clip-text text-3xl font-bold text-transparent md:text-5xl">
               {t("toolsPage.heroTitle") || "Create. Check. Comply."}
             </h1>
-            <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto animate-fade-up [animation-delay:100ms]">
+            <p className="text-muted-foreground animate-fade-up mx-auto max-w-2xl text-base [animation-delay:100ms] md:text-lg">
               {t("toolsPage.heroDescription") ||
                 "A suite of powerful tools designed to simplify complex processes and boost your productivity."}
             </p>
@@ -326,44 +325,44 @@ export default function ToolsPage({ isEmbedded = false }: { isEmbedded?: boolean
 
         {/* Search */}
         {!isEmbedded && (
-          <div className="relative max-w-lg mx-auto mb-10 animate-scale-in [animation-delay:200ms]">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 pointer-events-none" />
+          <div className="animate-scale-in relative mx-auto mb-10 max-w-lg [animation-delay:200ms]">
+            <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2" />
             <input
               type="text"
               placeholder={t("toolsPage.searchPlaceholder") || "Search tools..."}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-card border-2 border-border pl-11 pr-4 py-3 rounded-full text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all shadow-sm placeholder:text-muted-foreground"
+              className="bg-card border-border text-foreground focus:border-primary focus:ring-primary/10 placeholder:text-muted-foreground w-full rounded-full border-2 py-3 pr-4 pl-11 shadow-sm transition-all focus:ring-4 focus:outline-none"
             />
           </div>
         )}
 
         {/* Category tabs — hidden in the embedded "My Resources" view */}
         {!isEmbedded && (
-          <div ref={containerRef} className="relative w-full mb-8 flex justify-center">
+          <div ref={containerRef} className="relative mb-8 flex w-full justify-center">
             <div
               ref={measureRef}
               aria-hidden="true"
-              className="absolute top-0 left-0 w-full flex flex-wrap gap-3 pointer-events-none opacity-0 z-[-1]"
+              className="pointer-events-none absolute top-0 left-0 z-[-1] flex w-full flex-wrap gap-3 opacity-0"
             >
               {CATEGORIES.map((cat) => (
-                <div key={cat} className="px-4 py-2.5 text-sm font-medium whitespace-nowrap border">
+                <div key={cat} className="border px-4 py-2.5 text-sm font-medium whitespace-nowrap">
                   {t(`toolsPage.categories.${cat}`) || cat}
                 </div>
               ))}
               <div
                 data-more-button="true"
-                className="px-4 py-2.5 text-sm font-medium whitespace-nowrap border flex items-center gap-1"
+                className="flex items-center gap-1 border px-4 py-2.5 text-sm font-medium whitespace-nowrap"
               >
-                {t("toolsPage.more") || "More"} <ChevronDown className="w-4 h-4 ml-1" />
+                {t("toolsPage.more") || "More"} <ChevronDown className="ml-1 h-4 w-4" />
               </div>
             </div>
-            <div className="flex flex-wrap gap-3 animate-fade-in [animation-delay:300ms]">
+            <div className="animate-fade-in flex flex-wrap gap-3 [animation-delay:300ms]">
               {visibleCategories.map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
-                  className={`px-4 py-2.5 rounded-full text-sm font-medium whitespace-nowrap border transition-all duration-200 ${selectedCategory === cat ? "bg-primary text-primary-foreground border-primary shadow-md" : "bg-card text-muted-foreground border-border hover:border-primary hover:bg-primary/5 hover:text-primary"}`}
+                  className={`rounded-full border px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-all duration-200 ${selectedCategory === cat ? "bg-primary text-primary-foreground border-primary shadow-md" : "bg-card text-muted-foreground border-border hover:border-primary hover:bg-primary/5 hover:text-primary"}`}
                 >
                   {t(`toolsPage.categories.${cat}`) || cat}
                 </button>
@@ -372,9 +371,9 @@ export default function ToolsPage({ isEmbedded = false }: { isEmbedded?: boolean
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button
-                      className={`px-4 py-2.5 rounded-full text-sm font-medium whitespace-nowrap border transition-all duration-200 flex items-center gap-1 ${isMoreSelected ? "bg-primary text-primary-foreground border-primary shadow-md" : "bg-card text-muted-foreground border-border hover:border-primary hover:bg-primary/5 hover:text-primary"}`}
+                      className={`flex items-center gap-1 rounded-full border px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-all duration-200 ${isMoreSelected ? "bg-primary text-primary-foreground border-primary shadow-md" : "bg-card text-muted-foreground border-border hover:border-primary hover:bg-primary/5 hover:text-primary"}`}
                     >
-                      {t("toolsPage.more") || "More"} <ChevronDown className="w-4 h-4 ml-1" />
+                      {t("toolsPage.more") || "More"} <ChevronDown className="ml-1 h-4 w-4" />
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start" className="w-[200px]">
@@ -403,7 +402,7 @@ export default function ToolsPage({ isEmbedded = false }: { isEmbedded?: boolean
               subtitle="Tools you've unlocked with your plan or add-ons."
               className="-mt-16"
             />
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-6 pt-6">
+            <div className="grid grid-cols-1 gap-x-6 gap-y-10 pt-6 md:grid-cols-2 lg:grid-cols-3">
               {ownedTools.map((tool, index) => renderToolCard(tool, index))}
               <AddResourceCard
                 href="/pricing?mode=tools"
@@ -419,17 +418,17 @@ export default function ToolsPage({ isEmbedded = false }: { isEmbedded?: boolean
                   title="Browse Tools"
                   subtitle="Explore more tools, try a demo or unlock the full version."
                 />
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-6 pt-6">
+                <div className="grid grid-cols-1 gap-x-6 gap-y-10 pt-6 md:grid-cols-2 lg:grid-cols-3">
                   {browseTools.map((tool, index) => renderToolCard(tool, index))}
                 </div>
               </>
             )}
           </>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-6 pt-6">
+          <div className="grid grid-cols-1 gap-x-6 gap-y-10 pt-6 md:grid-cols-2 lg:grid-cols-3">
             {filteredTools.map((tool, index) => renderToolCard(tool, index))}
             {filteredTools.length === 0 && (
-              <div className="col-span-full text-center py-12 text-muted-foreground">
+              <div className="text-muted-foreground col-span-full py-12 text-center">
                 {t("toolsPage.noToolsFound") || "No tools found matching your search."}
               </div>
             )}
@@ -552,12 +551,12 @@ function ToolCard({
     ${
       // isPinned
       //   ? "border-[3px] border-[#0d7377] dark:border-[#32e0c4] bg-white shadow-[0_8px_30px_rgba(13,115,119,0.08)] hover:-translate-y-2 hover:shadow-xl cursor-pointer"
-      //   : 
-        isRouteLocked
-          ? "border-[1.5px] border-slate-200 bg-white cursor-pointer shadow-sm hover:shadow-[0_12px_40px_-12px_rgba(99,102,241,0.18)] hover:-translate-y-1"
-          : isNavigable
-            ? "border-[1.5px] border-slate-200 bg-white hover:-translate-y-2 hover:shadow-xl cursor-pointer"
-            : "border-[1.5px] border-slate-200 bg-white opacity-80 cursor-not-allowed grayscale-[0.5]"
+      //   :
+      isRouteLocked
+        ? "border-[1.5px] border-slate-200 bg-white cursor-pointer shadow-sm hover:shadow-[0_12px_40px_-12px_rgba(99,102,241,0.18)] hover:-translate-y-1"
+        : isNavigable
+          ? "border-[1.5px] border-slate-200 bg-white hover:-translate-y-2 hover:shadow-xl cursor-pointer"
+          : "border-[1.5px] border-slate-200 bg-white opacity-80 cursor-not-allowed grayscale-[0.5]"
     }
     animate-fade-up`;
 
@@ -570,39 +569,39 @@ function ToolCard({
     >
       {/* Ribbon bookmark for Locked/Premium cards */}
       {(isRouteLocked || isResultLocked) && (
-        <div className="absolute -top-21 -right-12 sm:-right-3 z-20 pointer-events-none">
+        <div className="pointer-events-none absolute -top-21 -right-12 z-20 sm:-right-3">
           <Image
             src="/icons/ribbon.png"
             alt="Premium ribbon"
             width={160}
             height={220}
             priority={false}
-            className="block w-40 h-56 object-contain"
+            className="block h-56 w-40 object-contain"
           />
         </div>
       )}
       {/* Hover overlay: pastel fill on hover, sits under ribbon (applies to locked + unlocked) */}
       <div
-        className={`absolute inset-0 rounded-[30px] transition-colors duration-400 pointer-events-none z-0 bg-transparent ${styles.hoverBg}`}
+        className={`pointer-events-none absolute inset-0 z-0 rounded-[30px] bg-transparent transition-colors duration-400 ${styles.hoverBg}`}
       />
 
       {/* Floating icon box */}
       <div
-        className={`absolute -top-6 left-6 w-12 h-12 md:w-14 md:h-14 rounded-2xl border flex items-center justify-center shadow-md transition-all duration-400 z-40 group-hover:-translate-y-1 group-hover:-rotate-3 group-hover:shadow-lg ${styles.iconBox}`}
+        className={`absolute -top-6 left-6 z-40 flex h-12 w-12 items-center justify-center rounded-2xl border shadow-md transition-all duration-400 group-hover:-translate-y-1 group-hover:-rotate-3 group-hover:shadow-lg md:h-14 md:w-14 ${styles.iconBox}`}
       >
         <div
-          className={`absolute inset-1 rounded-[10px] -z-10 transition-colors duration-300 ${styles.innerBox}`}
+          className={`absolute inset-1 -z-10 rounded-[10px] transition-colors duration-300 ${styles.innerBox}`}
         />
-        <Icon className="w-5 h-5 md:w-6 md:h-6 stroke-2" />
+        <Icon className="h-5 w-5 stroke-2 md:h-6 md:w-6" />
       </div>
 
       {/* Radial glow */}
-      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-0 bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(13,115,119,0.04),transparent_40%)] dark:bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(255,255,255,0.03),transparent_40%)]" />
+      <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(13,115,119,0.04),transparent_40%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100 dark:bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(255,255,255,0.03),transparent_40%)]" />
 
       {/* Content */}
-      <div className="relative z-30 flex flex-col grow pt-2">
-        <div className="flex justify-between items-start gap-3">
-          <h3 className="text-xl font-bold mb-1 text-foreground transition-colors">
+      <div className="relative z-30 flex grow flex-col pt-2">
+        <div className="flex items-start justify-between gap-3">
+          <h3 className="text-foreground mb-1 text-xl font-bold transition-colors">
             {t(`toolsPage.toolsItems.${tool.id}.title`) || tool.title}
           </h3>
           {!isLocked && (
@@ -631,8 +630,8 @@ function ToolCard({
             </div>
           )}
         </div>
-        <div className="mb-3 flex gap-2 items-center">
-          <span className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground/80 bg-muted px-2 py-0.5 rounded">
+        <div className="mb-3 flex items-center gap-2">
+          <span className="text-muted-foreground/80 bg-muted rounded px-2 py-0.5 text-[11px] font-bold tracking-wide uppercase">
             {t(`toolsPage.categories.${tool.category}`) || tool.category}
           </span>
           {/* {isResultLocked && (
@@ -641,17 +640,17 @@ function ToolCard({
             </span>
           )} */}
         </div>
-        <p className={`text-sm leading-relaxed mb-1 grow text-slate-900 dark:text-white mb-0 grow`}>
+        <p className={`mb-0 mb-1 grow text-sm leading-relaxed text-slate-900 dark:text-white`}>
           {t(`toolsPage.toolsItems.${tool.id}.desc`) || tool.description}
         </p>
       </div>
 
       {/* Footer */}
-      <div className="relative z-10 flex items-center justify-between pt-3 border-t border-border mt-auto">
-        <span className="text-xs font-medium text-muted-foreground flex items-center gap-1" />
+      <div className="border-border relative z-10 mt-auto flex items-center justify-between border-t pt-3">
+        <span className="text-muted-foreground flex items-center gap-1 text-xs font-medium" />
         {isRouteLocked ? (
           <span
-            className={`text-sm font-semibold flex items-center gap-1.5 group-hover:underline decoration-2 underline-offset-2 ${styles.link}`}
+            className={`flex items-center gap-1.5 text-sm font-semibold decoration-2 underline-offset-2 group-hover:underline ${styles.link}`}
           >
             <Lock size={14} className="mb-[1px]" />{" "}
             {t("toolsPage.unlockPro") !== "toolsPage.unlockPro"
@@ -660,12 +659,12 @@ function ToolCard({
           </span>
         ) : isNavigable ? (
           <span
-            className={`text-sm font-semibold flex items-center gap-1.5 group-hover:underline decoration-2 underline-offset-2 ${styles.link}`}
+            className={`flex items-center gap-1.5 text-sm font-semibold decoration-2 underline-offset-2 group-hover:underline ${styles.link}`}
           >
-            {t("toolsPage.openTool") || "Open Tool"} <ArrowRight className="w-4 h-4" />
+            {t("toolsPage.openTool") || "Open Tool"} <ArrowRight className="h-4 w-4" />
           </span>
         ) : (
-          <span className="text-sm font-semibold text-muted-foreground/50 flex items-center gap-1.5 cursor-not-allowed">
+          <span className="text-muted-foreground/50 flex cursor-not-allowed items-center gap-1.5 text-sm font-semibold">
             {t("toolsPage.comingSoon") || "Coming Soon"}
           </span>
         )}
