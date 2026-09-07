@@ -149,6 +149,8 @@ import { ApprovalNoticeTool } from "./components/ApprovalNoticeTool";
 import RegisterReceiptStep from "./components/RegisterReceiptStep";
 import TrackCaseStatusStep from "./components/TrackCaseStatusStep";
 import { AwaitingReviewStep } from "./components/AwaitingReviewStep";
+import { GuideStepRenderer, AwaitingDecisionTool } from "./components/GuideStepRenderer";
+import { NoticeTriageTool } from "./components/NoticeTriageTool";
 import { FinancialChecklistTool } from "./components/FinancialChecklistTool";
 import SponsorshipCalculatorTool from "./components/SponsorshipCalculatorTool";
 import { ApUpdateModal } from "./PortalWalletManager";
@@ -1224,6 +1226,17 @@ export const StepView: React.FC<StepViewProps> = ({
       return <AwaitingReviewStep data={AWAITING_REVIEW_DATA} />;
     }
 
+    if (tool.notice_types) {
+      return (
+        <NoticeTriageTool
+          tool={tool}
+          state={state}
+          actions={actions}
+          guard={stepEntitlement.guard}
+        />
+      );
+    }
+
     // Theme detection based on icon or ID
     const isBeneficiaryTheme =
       tool.launch_module?.icon === "user" || sId === "step_1_5" || sId === "step_1_2_b";
@@ -1625,8 +1638,10 @@ export const StepView: React.FC<StepViewProps> = ({
             </div>
           )}
 
-          {/* AWAITING NVC REVIEW (Step 2.9 SPECIFIC) */}
           {tool.type === "awaiting_review" && <AwaitingReviewStep data={AWAITING_REVIEW_DATA} />}
+
+          {/* AWAITING USCIS DECISION AFTER RESPONSE (step_1_23) */}
+          {tool.type === "awaiting_decision" && <AwaitingDecisionTool tool={tool} />}
 
           {/* GATHER ORIGINAL DOCUMENTS (Step 3.6) */}
           {tool.type === "gathering_checklist" &&
@@ -3113,6 +3128,14 @@ export const StepView: React.FC<StepViewProps> = ({
               </div>
             ) : currentStep.step_type === "tool" ? (
               renderToolStep()
+            ) : currentStep.step_type === "guide" ? (
+              <GuideStepRenderer
+                guideData={(currentStep as any).guide_data}
+                stepName={currentStep.step_name}
+                stepDescription={currentStep.step_description}
+                actions={actions}
+                state={state}
+              />
             ) : currentStep.step_type === "action" ? (
               <div
               // style={
