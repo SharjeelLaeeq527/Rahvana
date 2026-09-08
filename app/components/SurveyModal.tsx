@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { X, MessageSquareHeart, Check } from "lucide-react";
+import { X, MessageSquareHeart } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -10,11 +10,16 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { useToast } from "@/app/components/shared/ToastProvider";
+import { CustomDropdown } from "./shared/CustomDropdown";
 
 interface SurveyModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onContinue: (reason: string, additionalComments: string) => Promise<unknown>;
+  onContinue: (data: {
+    reason: string;
+    followUpAnswers: Record<string, string>;
+    additionalComments: string;
+  }) => Promise<unknown>;
   onSkip: () => void;
 }
 
@@ -22,10 +27,6 @@ const DELETION_REASONS = [
   {
     value: "journey_completed",
     label: "My immigration journey is complete",
-  },
-  {
-    value: "no_longer_needed",
-    label: "I no longer need Rahvana",
   },
   {
     value: "couldnt_find_needed",
@@ -51,10 +52,205 @@ const DELETION_REASONS = [
     value: "other",
     label: "Other",
   },
-];
+] as const;
+
+const FOLLOW_UP_CONFIG = {
+  journey_completed: {
+    question: "What best describes your current immigration journey?",
+    options: [
+      {
+        value: "visa_received",
+        label: "I received my visa",
+      },
+      {
+        value: "immigration_process_completed",
+        label: "I completed my immigration process",
+      },
+      {
+        value: "no_longer_need_assistance",
+        label: "I no longer need immigration assistance",
+      },
+      {
+        value: "other",
+        label: "Other",
+      },
+    ],
+  },
+
+  couldnt_find_needed: {
+    question: "What were you looking for?",
+    options: [
+      {
+        value: "journey_guidance",
+        label: "Step-by-step immigration journey guidance",
+      },
+      {
+        value: "visa_information",
+        label: "Information about my visa category",
+      },
+      {
+        value: "document_checklists",
+        label: "Document checklists and requirements",
+      },
+      {
+        value: "forms_assistance",
+        label: "Forms and form-filling assistance",
+      },
+      {
+        value: "case_status_information",
+        label: "Case or status information",
+      },
+      {
+        value: "other",
+        label: "Something else",
+      },
+    ],
+  },
+
+  missing_features: {
+    question: "What feature were you hoping Rahvana would have?",
+    options: [
+      {
+        value: "better_journey_tracking",
+        label: "Better journey tracking",
+      },
+      {
+        value: "more_visa_categories",
+        label: "More visa categories",
+      },
+      {
+        value: "document_assistance",
+        label: "Document assistance",
+      },
+      {
+        value: "case_status_tracking",
+        label: "Case or status tracking",
+      },
+      {
+        value: "notifications_reminders",
+        label: "Notifications or reminders",
+      },
+      {
+        value: "more_personalized_guidance",
+        label: "More personalized guidance",
+      },
+      {
+        value: "other",
+        label: "Something else",
+      },
+    ],
+  },
+
+  technical_problem: {
+    question: "What kind of technical problem did you experience?",
+    options: [
+      {
+        value: "something_didnt_work",
+        label: "Something didn't work",
+      },
+      {
+        value: "encountered_error",
+        label: "I encountered an error",
+      },
+      {
+        value: "page_too_slow",
+        label: "The page was too slow",
+      },
+      {
+        value: "couldnt_complete_action",
+        label: "I couldn't complete an action",
+      },
+      {
+        value: "information_not_displaying",
+        label: "Information wasn't displaying correctly",
+      },
+      {
+        value: "other",
+        label: "Other",
+      },
+    ],
+    textFollowUp: {
+      label: "What were you trying to do when this happened?",
+      placeholder:
+        "For example, upload a document, check my case status, prepare for an interview...",
+    },
+  },
+
+  privacy_security_concern: {
+    question: "What was your main privacy or security concern?",
+    options: [
+      {
+        value: "personal_information_storage",
+        label: "How my personal information is stored",
+      },
+      {
+        value: "document_handling",
+        label: "How my documents are handled",
+      },
+      {
+        value: "account_security",
+        label: "Account security",
+      },
+      {
+        value: "data_sharing",
+        label: "Data sharing",
+      },
+      {
+        value: "uncomfortable_providing_information",
+        label: "I wasn't comfortable providing personal information",
+      },
+      {
+        value: "other",
+        label: "Other",
+      },
+    ],
+  },
+
+  found_alternative: {
+    question: "What type of solution are you using instead?",
+    options: [
+      {
+        value: "immigration_attorney",
+        label: "An immigration attorney",
+      },
+      {
+        value: "another_immigration_platform",
+        label: "Another immigration platform",
+      },
+      {
+        value: "government_official_resources",
+        label: "Government or official resources",
+      },
+      {
+        value: "community_social_media",
+        label: "Community or social media",
+      },
+      {
+        value: "personal_research",
+        label: "Personal research",
+      },
+      {
+        value: "someone_helping_directly",
+        label: "Someone helping me directly",
+      },
+      {
+        value: "other",
+        label: "Other",
+      },
+    ],
+    textFollowUp: {
+      label: "What did the other solution provide that you needed?",
+      placeholder: "Tell us what worked better for you...",
+    },
+  },
+} as const;
+
+type FollowUpReason = keyof typeof FOLLOW_UP_CONFIG;
 
 export default function SurveyModal({ open, onOpenChange, onContinue, onSkip }: SurveyModalProps) {
   const [reason, setReason] = useState("");
+  const [followUpAnswer, setFollowUpAnswer] = useState("");
+  const [followUpText, setFollowUpText] = useState("");
   const [additionalComments, setAdditionalComments] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -62,8 +258,25 @@ export default function SurveyModal({ open, onOpenChange, onContinue, onSkip }: 
 
   const resetForm = () => {
     setReason("");
+    setFollowUpAnswer("");
+    setFollowUpText("");
     setAdditionalComments("");
     setIsSubmitting(false);
+  };
+
+  const handleReasonChange = (value: string) => {
+    setReason(value);
+
+    // Clear answers belonging to the previous reason.
+    setFollowUpAnswer("");
+    setFollowUpText("");
+  };
+
+  const handleFollowUpChange = (value: string) => {
+    setFollowUpAnswer(value);
+
+    // If user changes the follow-up answer, keep contextual text
+    // because it may still be relevant to the same reason.
   };
 
   const handleOpenChange = (value: boolean) => {
@@ -90,10 +303,54 @@ export default function SurveyModal({ open, onOpenChange, onContinue, onSkip }: 
       return;
     }
 
+    // "Other" has no structured follow-up question,
+    // so the main feedback field becomes required.
+    if (reason === "other" && !additionalComments.trim()) {
+      showToast("Please tell us a little more about why you're leaving.", "error");
+      return;
+    }
+
+    // All configured reasons require a structured follow-up answer.
+    if (reason !== "other" && !followUpAnswer) {
+      showToast("Please answer the follow-up question.", "error");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      await onContinue(reason, additionalComments.trim());
+      const followUpAnswers: Record<string, string> = {};
+
+      if (reason !== "other" && followUpAnswer) {
+        const answerKeyMap: Record<string, string> = {
+          journey_completed: "journey_stage",
+          couldnt_find_needed: "information_needed",
+          missing_features: "feature_needed",
+          technical_problem: "problem_type",
+          privacy_security_concern: "concern_type",
+          found_alternative: "alternative_type",
+        };
+
+        const answerKey = answerKeyMap[reason];
+
+        if (answerKey) {
+          followUpAnswers[answerKey] = followUpAnswer;
+        }
+
+        if (reason === "technical_problem" && followUpText.trim()) {
+          followUpAnswers["what_were_you_trying_to_do"] = followUpText.trim();
+        }
+
+        if (reason === "found_alternative" && followUpText.trim()) {
+          followUpAnswers["additional_context"] = followUpText.trim();
+        }
+      }
+
+      await onContinue({
+        reason,
+        followUpAnswers,
+        additionalComments: additionalComments.trim(),
+      });
 
       resetForm();
       onOpenChange(false);
@@ -107,6 +364,15 @@ export default function SurveyModal({ open, onOpenChange, onContinue, onSkip }: 
     }
   };
 
+  const selectedReasonConfig =
+    reason !== "other" ? FOLLOW_UP_CONFIG[reason as FollowUpReason] : null;
+
+  const followUpOptions =
+    selectedReasonConfig?.options.map((option) => ({
+      value: option.value,
+      label: option.label,
+    })) ?? [];
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="flex max-h-[90vh] w-[95vw] max-w-xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white p-0 shadow-2xl sm:w-full">
@@ -115,7 +381,7 @@ export default function SurveyModal({ open, onOpenChange, onContinue, onSkip }: 
         </DialogDescription>
 
         {/* Header */}
-        <DialogHeader className="from-primary/[0.06] relative shrink-0 border-b border-slate-100 bg-gradient-to-b to-white px-6 pt-6 pb-2">
+        <DialogHeader className="from-primary/[0.06] relative shrink-0 border-b border-slate-100 bg-gradient-to-b to-white px-6 pt-6 pb-4">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-start gap-3.5">
               <div className="bg-primary/10 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl">
@@ -124,11 +390,12 @@ export default function SurveyModal({ open, onOpenChange, onContinue, onSkip }: 
 
               <div>
                 <DialogTitle className="text-xl font-semibold tracking-tight text-slate-900">
-                  Before you go...
+                  We&apos;re sorry to see you go.
                 </DialogTitle>
 
-                <p className="mt-1 text-sm leading-5 text-slate-500">
-                  A quick question to help us make Rahvana better.
+                <p className="mt-1 max-w-[440px] text-sm leading-5 text-slate-500">
+                  Your journey matters to us. A little feedback can help us make Rahvana better for
+                  people navigating their immigration journey.
                 </p>
               </div>
             </div>
@@ -148,11 +415,14 @@ export default function SurveyModal({ open, onOpenChange, onContinue, onSkip }: 
         <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
           {/* Content */}
           <div className="scrollbar-premium min-h-0 flex-1 overflow-y-auto px-6 py-6">
-            {/* Reason */}
+            {/* Main Reason */}
             <div>
               <div className="mb-3.5">
-                <label className="block text-sm font-semibold text-slate-800">
-                  What&apos;s the main reason you&apos;re deleting your account?
+                <label
+                  htmlFor="deletion-reason"
+                  className="block text-sm font-semibold text-slate-800"
+                >
+                  What&apos;s the main reason you&apos;re leaving Rahvana?
                   <span className="ml-1 text-rose-500">*</span>
                 </label>
 
@@ -161,67 +431,124 @@ export default function SurveyModal({ open, onOpenChange, onContinue, onSkip }: 
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                {DELETION_REASONS.map((item) => {
-                  const isSelected = reason === item.value;
-
-                  return (
-                    <label
-                      key={item.value}
-                      className={`group relative flex min-h-[52px] cursor-pointer items-center gap-3 rounded-xl border px-3.5 py-3 transition-all duration-200 ${
-                        isSelected
-                          ? "border-primary bg-primary/[0.06] shadow-sm"
-                          : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/80"
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="deletion-reason"
-                        value={item.value}
-                        checked={isSelected}
-                        onChange={(e) => setReason(e.target.value)}
-                        className="sr-only"
-                      />
-
-                      {/* Custom radio */}
-                      <span
-                        className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border transition-all ${
-                          isSelected
-                            ? "border-primary bg-primary"
-                            : "border-slate-300 bg-white group-hover:border-slate-400"
-                        }`}
-                      >
-                        {isSelected && <Check className="h-3 w-3 text-white" strokeWidth={3} />}
-                      </span>
-
-                      <span
-                        className={`text-[13px] leading-5 transition-colors ${
-                          isSelected ? "font-medium text-slate-800" : "text-slate-600"
-                        }`}
-                      >
-                        {item.label}
-                      </span>
-                    </label>
-                  );
-                })}
-              </div>
+              <CustomDropdown
+                value={reason}
+                onChange={handleReasonChange}
+                options={DELETION_REASONS.map((item) => ({
+                  value: item.value,
+                  label: item.label,
+                }))}
+                placeholder="Select your main reason"
+                disabled={isSubmitting}
+                className="w-full"
+              />
             </div>
 
-            {/* Divider */}
-            <div className="my-7 h-px bg-slate-100" />
+            {/* Follow-up */}
+            {selectedReasonConfig && (
+              <>
+                <div className="my-6 h-px bg-slate-100" />
+
+                <div>
+                  <div className="mb-3.5">
+                    <label className="block text-sm font-semibold text-slate-800">
+                      {selectedReasonConfig.question}
+                      <span className="ml-1 text-rose-500">*</span>
+                    </label>
+
+                    <p className="mt-1 text-xs text-slate-400">
+                      Select the option that best matches your situation.
+                    </p>
+                  </div>
+
+                  <CustomDropdown
+                    value={followUpAnswer}
+                    onChange={handleFollowUpChange}
+                    options={followUpOptions}
+                    placeholder="Select an option"
+                    disabled={isSubmitting}
+                    className="w-full"
+                  />
+                </div>
+
+                {/* Technical Problem Context */}
+                {reason === "technical_problem" && (
+                  <div className="mt-5">
+                    <label
+                      htmlFor="technical-problem-context"
+                      className="mb-2 block text-sm font-medium text-slate-700"
+                    >
+                      {FOLLOW_UP_CONFIG.technical_problem.textFollowUp.label}
+                    </label>
+
+                    <textarea
+                      id="technical-problem-context"
+                      value={followUpText}
+                      onChange={(e) => setFollowUpText(e.target.value)}
+                      placeholder={FOLLOW_UP_CONFIG.technical_problem.textFollowUp.placeholder}
+                      maxLength={500}
+                      disabled={isSubmitting}
+                      className="focus:border-primary focus:ring-primary/10 min-h-[90px] w-full resize-none rounded-xl border border-slate-200 bg-slate-50/40 px-4 py-3 text-sm leading-6 text-slate-700 transition-all outline-none placeholder:text-slate-400 hover:border-slate-300 focus:bg-white focus:ring-4 disabled:cursor-not-allowed disabled:opacity-60"
+                    />
+
+                    <div className="mt-1.5 text-right text-[10px] text-slate-400">
+                      {followUpText.length}/500
+                    </div>
+                  </div>
+                )}
+
+                {/* Alternative Context */}
+                {reason === "found_alternative" && (
+                  <div className="mt-5">
+                    <label
+                      htmlFor="alternative-context"
+                      className="mb-2 block text-sm font-medium text-slate-700"
+                    >
+                      {FOLLOW_UP_CONFIG.found_alternative.textFollowUp.label}
+                      <span className="ml-1 text-xs font-normal text-slate-400">Optional</span>
+                    </label>
+
+                    <textarea
+                      id="alternative-context"
+                      value={followUpText}
+                      onChange={(e) => setFollowUpText(e.target.value)}
+                      placeholder={FOLLOW_UP_CONFIG.found_alternative.textFollowUp.placeholder}
+                      maxLength={500}
+                      disabled={isSubmitting}
+                      className="focus:border-primary focus:ring-primary/10 min-h-[90px] w-full resize-none rounded-xl border border-slate-200 bg-slate-50/40 px-4 py-3 text-sm leading-6 text-slate-700 transition-all outline-none placeholder:text-slate-400 hover:border-slate-300 focus:bg-white focus:ring-4 disabled:cursor-not-allowed disabled:opacity-60"
+                    />
+
+                    <div className="mt-1.5 text-right text-[10px] text-slate-400">
+                      {followUpText.length}/500
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
 
             {/* Additional Comments */}
-            <div>
+            <div className="mt-6">
               <div className="mb-3">
                 <label
                   htmlFor="deletion-feedback"
                   className="block text-sm font-semibold text-slate-800"
                 >
-                  Is there anything we could have done better?
-                  <span className="ml-1 text-xs font-normal text-slate-400">Optional</span>
+                  {reason === "other"
+                    ? "Could you tell us a little more?"
+                    : "Is there anything we could have done better?"}
+
+                  {reason === "other" ? (
+                    <span className="ml-1 text-rose-500">*</span>
+                  ) : (
+                    <span className="ml-1 text-xs font-normal text-slate-400">Optional</span>
+                  )}
                 </label>
 
-                <p className="mt-1 text-xs text-slate-400">Even a few words can help us improve.</p>
+                <p className="mt-1 text-xs text-slate-400">
+                  {reason === "other"
+                    ? "Your feedback helps us understand what we can improve."
+                    : "Even a few words can help us improve."}
+                </p>
               </div>
 
               <div className="relative">
@@ -229,9 +556,14 @@ export default function SurveyModal({ open, onOpenChange, onContinue, onSkip }: 
                   id="deletion-feedback"
                   value={additionalComments}
                   onChange={(e) => setAdditionalComments(e.target.value)}
-                  placeholder="Share any feedback you'd like us to know..."
-                  className="focus:border-primary focus:ring-primary/10 min-h-[120px] w-full resize-none rounded-xl border border-slate-200 bg-slate-50/40 px-4 py-3.5 text-sm leading-6 text-slate-700 transition-all outline-none placeholder:text-slate-400 hover:border-slate-300 focus:bg-white focus:ring-4"
+                  placeholder={
+                    reason === "other"
+                      ? "Please share why you're leaving Rahvana..."
+                      : "Share any feedback you'd like us to know..."
+                  }
+                  className="focus:border-primary focus:ring-primary/10 min-h-[110px] w-full resize-none rounded-xl border border-slate-200 bg-slate-50/40 px-4 py-3.5 text-sm leading-6 text-slate-700 transition-all outline-none placeholder:text-slate-400 hover:border-slate-300 focus:bg-white focus:ring-4"
                   maxLength={1000}
+                  disabled={isSubmitting}
                 />
 
                 <div className="pointer-events-none absolute right-3 bottom-3 rounded-md bg-white/80 px-1.5 py-0.5 text-[10px] text-slate-400">

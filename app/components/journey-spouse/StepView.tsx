@@ -1706,20 +1706,50 @@ export const StepView: React.FC<StepViewProps> = ({
                         }
                       },
                       onUpload: () => {
-                        if (!stepEntitlement.guard()) return;
                         const defId = mapDocumentNameToId(item.title);
-                        if (!ALL_DOCUMENTS.find((d) => d.id === defId)) {
-                          console.warn(
-                            "[upload] Unknown documentDefId:",
-                            defId,
-                            "for:",
-                            item.title
-                          );
-                          return;
-                        }
+                      
                         setActiveUploadId(item.id);
                         setActiveUploadType("doc");
-                        openUploadModal(defId);
+                      
+                        if (!stepEntitlement.guard()) return;
+                      
+                        const documentDef = ALL_DOCUMENTS.find((d) => d.id === defId);
+                      
+                        if (documentDef?.isDynamicCategory) {
+                          setMultipleUploadModalState({
+                            isOpen: true,
+                            categoryId: defId,
+                            documentName: item.title,
+                            options: documentDef.suggestions || [],
+                          });
+                        } else if (documentDef) {
+                          openUploadModal(defId);
+                        } else {
+                          // Def not in ALL_DOCUMENTS – find parent dynamic category
+                          const parentCat = ALL_DOCUMENTS.find(
+                            (d) =>
+                              d.isDynamicCategory &&
+                              d.suggestions?.some(
+                                (opt: string) => mapDocumentNameToId(opt) === defId
+                              )
+                          );
+                      
+                          if (parentCat) {
+                            setMultipleUploadModalState({
+                              isOpen: true,
+                              categoryId: parentCat.id,
+                              documentName: item.title,
+                              options: parentCat.suggestions || [],
+                            });
+                          } else {
+                            console.warn(
+                              "[upload] Unknown documentDefId:",
+                              defId,
+                              "for:",
+                              item.title
+                            );
+                          }
+                        }
                       },
                     });
                   }}
