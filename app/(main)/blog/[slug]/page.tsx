@@ -137,7 +137,7 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
               {article.category && (
                 <>
                   <ChevronRight className="h-3 w-3" />
-                  <span className="max-w-[200px] truncate font-medium text-teal-400 sm:max-w-xs">
+                  <span className="text-primary max-w-[200px] truncate font-medium sm:max-w-xs">
                     {article.category}
                   </span>
                 </>
@@ -148,7 +148,7 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
             {(article.category || article.readTime || article.updatedAt) && (
               <div className="mb-4 flex flex-wrap items-center gap-3 text-xs">
                 {article.category && (
-                  <span className="rounded-full border border-teal-500/20 bg-teal-500/10 px-3 py-1 font-semibold text-teal-400">
+                  <span className="border-primary/20 bg-primary/10 text-primary rounded-full border px-3 py-1 font-semibold">
                     {article.category}
                   </span>
                 )}
@@ -187,7 +187,7 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
                     />
                   </div>
                 ) : (
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-teal-600 text-sm font-bold text-white shadow-md">
+                  <div className="bg-primary text-primary-foreground flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold shadow-md">
                     {article.author.name ? article.author.name.charAt(0) : "R"}
                   </div>
                 )}
@@ -213,7 +213,7 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
                 {hasToc && article.tableOfContents && (
                   <>
                     <div className="text-muted-foreground mb-3 flex items-center gap-2 text-xs font-bold tracking-wider uppercase">
-                      <List className="h-3.5 w-3.5 text-teal-500 dark:text-teal-400" />
+                      <List className="text-primary h-3.5 w-3.5" />
                       <span>Table of Content</span>
                     </div>
                     <nav className="border-border/60 space-y-1.5 border-l pl-2.5 text-[12px] leading-snug">
@@ -221,7 +221,7 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
                         <a
                           key={toc.id || `toc-${tIdx}`}
                           href={toc.id ? `#${toc.id}` : "#"}
-                          className="text-muted-foreground block py-1 transition-colors hover:font-medium hover:text-teal-600 dark:hover:text-teal-400"
+                          className="text-muted-foreground hover:text-primary block py-1 transition-colors hover:font-medium"
                         >
                           {toc.title}
                         </a>
@@ -233,7 +233,7 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
                 {sidebarCtaConfig && (
                   <div className={cn("border-border/40", hasToc ? "mt-5 border-t pt-3.5" : "")}>
                     {sidebarCtaConfig.badge && (
-                      <span className="mb-1 inline-block rounded bg-teal-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-teal-400">
+                      <span className="bg-primary/10 text-primary mb-1 inline-block rounded px-1.5 py-0.5 text-[10px] font-semibold">
                         {sidebarCtaConfig.badge}
                       </span>
                     )}
@@ -250,7 +250,7 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
                     {sidebarCtaConfig.buttonText && (
                       <Link
                         href={sidebarCtaConfig.buttonHref || "/book-consultation"}
-                        className="block w-full rounded-xl bg-teal-600 px-3.5 py-2 text-center text-[11px] font-semibold text-white shadow-sm transition hover:bg-teal-500"
+                        className="bg-primary text-primary-foreground hover:bg-primary/90 block w-full rounded-xl px-3.5 py-2 text-center text-[11px] font-semibold shadow-sm transition"
                       >
                         {sidebarCtaConfig.buttonText}
                       </Link>
@@ -278,8 +278,8 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
           <main className="w-full space-y-10 lg:ml-3 xl:ml-5">
             {/* ⚡ BLUF (Bottom Line Up Front) Answer Box */}
             {article.bluf && article.bluf.trim() && (
-              <section className="rounded-3xl border border-teal-500/30 bg-slate-900/95 p-6 text-slate-100 shadow-lg sm:p-8">
-                <div className="mb-2 flex items-center gap-2 text-xs font-bold tracking-wider text-teal-400 uppercase">
+              <section className="border-primary/30 rounded-3xl border bg-slate-900/95 p-6 text-slate-100 shadow-lg sm:p-8">
+                <div className="text-primary mb-2 flex items-center gap-2 text-xs font-bold tracking-wider uppercase">
                   <BookOpen className="h-4 w-4" />
                   <span>Bottom Line Up Front (BLUF Summary)</span>
                 </div>
@@ -344,7 +344,7 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
                           ? "border-amber-500/40"
                           : section.callout.type === "tip"
                             ? "border-emerald-500/40"
-                            : "border-teal-500/40"
+                            : "border-primary/40"
                       )}
                     >
                       <div className="mb-1.5 flex items-center gap-2 text-sm font-bold">
@@ -353,7 +353,7 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
                         ) : section.callout.type === "tip" ? (
                           <Lightbulb className="h-4 w-4 shrink-0 text-emerald-400" />
                         ) : (
-                          <Info className="h-4 w-4 shrink-0 text-teal-400" />
+                          <Info className="text-primary h-4 w-4 shrink-0" />
                         )}
                         {section.callout.title && (
                           <span
@@ -362,7 +362,7 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
                                 ? "text-amber-400"
                                 : section.callout.type === "tip"
                                   ? "text-emerald-400"
-                                  : "text-teal-400"
+                                  : "text-primary"
                             }
                           >
                             {section.callout.title}
@@ -417,7 +417,7 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
                     <ul className="text-muted-foreground my-4 space-y-2 text-sm">
                       {section.bulletList.map((item, bIdx) => (
                         <li key={bIdx} className="flex items-start gap-2.5">
-                          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-teal-400" />
+                          <CheckCircle2 className="text-primary mt-0.5 h-4 w-4 shrink-0" />
                           <span>{item}</span>
                         </li>
                       ))}
@@ -429,7 +429,7 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
                     <ol className="text-muted-foreground my-4 list-none space-y-2.5 text-sm">
                       {section.numberedList.map((item, nIdx) => (
                         <li key={nIdx} className="flex items-start gap-3">
-                          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-teal-500/10 text-xs font-bold text-teal-400">
+                          <span className="bg-primary/10 text-primary flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold">
                             {nIdx + 1}
                           </span>
                           <span className="pt-0.5">{item}</span>
@@ -468,7 +468,7 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
             {article.faqs && article.faqs.length > 0 && article.showFaqs !== false && (
               <section id="faq-section" className="border-border mt-16 scroll-mt-28 border-t pt-8">
                 <div className="mb-6 flex items-center gap-2">
-                  <HelpCircle className="h-6 w-6 text-teal-400" />
+                  <HelpCircle className="text-primary h-6 w-6" />
                   <h2 className="text-foreground text-2xl font-bold">Frequently Asked Questions</h2>
                 </div>
 
@@ -478,11 +478,11 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
                     return (
                       <details
                         key={fIdx}
-                        className="group border-border bg-card/50 open:bg-card rounded-2xl border p-5 backdrop-blur-sm transition-all duration-200 open:border-teal-500/50"
+                        className="group border-border bg-card/50 open:bg-card open:border-primary/50 rounded-2xl border p-5 backdrop-blur-sm transition-all duration-200"
                       >
-                        <summary className="text-foreground flex cursor-pointer list-none items-center justify-between text-base font-semibold group-open:text-teal-400">
+                        <summary className="text-foreground group-open:text-primary flex cursor-pointer list-none items-center justify-between text-base font-semibold">
                           <span>{faq.question}</span>
-                          <span className="ml-4 text-xl font-light text-teal-400 transition-transform group-open:rotate-45">
+                          <span className="text-primary ml-4 text-xl font-light transition-transform group-open:rotate-45">
                             +
                           </span>
                         </summary>
