@@ -5163,16 +5163,16 @@
                     {
                       "id": "pcc",
                       "icon": "pcc",
-                      "title": "Original Police Clearance Certificate (Fresh)",
-                      "sub": "The fresh PCC obtained for this interview cycle",
+                      "title": "Original Police Clearance Certificate",
+                      "sub": "The PCC obtained for this interview cycle",
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>Bring the original fresh PCC obtained during Chapter 3 Step 3. Do not bring the older PCC submitted during NVC processing, this must be the fresh one.</p>"
+                          "c": "<p>Bring the original PCC obtained for your interview. Do not bring the older PCC submitted during NVC processing; bring the PCC intended for your current interview.</p>"
                         },
                         {
                           "t": "Validity",
-                          "c": "<p>Confirm the PCC is still within the validity window for your embassy. Some posts specify a maximum age for the PCC at interview.</p>"
+                          "c": "<p>As per U.S. Embassy Islamabad, applicants over 16 years of age must provide a Police Clearance Certificate. Make sure your PCC is still valid and has not expired at the time of your interview.</p>"
                         }
                       ]
                     },
@@ -5180,11 +5180,11 @@
                       "id": "interview-letter",
                       "icon": "mail",
                       "title": "Interview Appointment Letter",
-                      "sub": "The original printed NVC interview appointment letter",
+                      "sub": "The NVC interview appointment letter",
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>Print and bring the original interview appointment letter received from NVC. This is your primary identification for entry into the embassy grounds.</p>"
+                          "c": "<p>Bring a printed copy of your NVC interview appointment letter. You must have the appointment letter with you to enter the U.S. Embassy for your scheduled interview.</p>"
                         }
                       ]
                     }
@@ -5204,26 +5204,6 @@
                         {
                           "t": "What to bring",
                           "c": "<p>Bring the original signed Affidavit of Support. This must be the wet-ink signed original, not a photocopy.</p>"
-                        }
-                      ]
-                    },
-                    {
-                      "id": "ds260-original",
-                      "icon": "file-text",
-                      "title": "DS-260 Confirmation Page",
-                      "sub": "Online Immigrant Visa Application Confirmation",
-                      "sections": [
-                        {
-                          "t": "What to bring",
-                          "c": "<p>Bring the printed DS-260 confirmation page with barcode. This confirms you have successfully submitted your online immigrant visa application.</p>"
-                        },
-                        {
-                          "t": "Important notes",
-                          "c": "<p>Make sure all information in your DS-260 form is accurate and matches your supporting documents such as passport and civil records.</p>"
-                        },
-                        {
-                          "t": "Where to get it",
-                          "c": "<p>You can download and print the confirmation page after submitting your DS-260 form from the Consular Electronic Application Center (CEAC) website.</p>"
                         }
                       ]
                     },
@@ -5259,14 +5239,34 @@
                   "badge": "Required if applicable",
                   "items": [
                     {
-                      "id": "photos",
-                      "icon": "camera",
-                      "title": "Passport-Style Photos",
-                      "sub": "2-4 recent passport-style photos meeting embassy specifications",
+                      "id": "ds260-original",
+                      "icon": "file-text",
+                      "title": "DS-260 Confirmation Page",
+                      "sub": "Online Immigrant Visa Application Confirmation",
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>Bring 2-4 recent passport-style photos. Check your specific embassy's photo requirements for size and background specifications. US Embassy Pakistan typically requires standard 2x2 inch photos.</p>"
+                          "c": "<p>Bring the printed DS-260 confirmation page with barcode. This confirms you have successfully submitted your online immigrant visa application.</p>"
+                        },
+                        {
+                          "t": "Important notes",
+                          "c": "<p>Make sure all information in your DS-260 form is accurate and matches your supporting documents such as passport and civil records.</p>"
+                        },
+                        {
+                          "t": "Where to get it",
+                          "c": "<p>You can download and print the confirmation page after submitting your DS-260 form from the Consular Electronic Application Center (CEAC) website.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "photos",
+                      "icon": "camera",
+                      "title": "Passport-Style Photos",
+                      "sub": "2-4 recent passport-style photos (5cm * 5cm)",
+                      "sections": [
+                        {
+                          "t": "What to bring",
+                          "c": "<p>Bring 2-4 recent passport-style photos. US Embassy Pakistan requires (5cm * 5cm) photos.</p>"
                         }
                       ]
                     },
@@ -5286,11 +5286,11 @@
                       "id": "medical-packet",
                       "icon": "medical",
                       "title": "Medical Examination Results Packet Reference",
-                      "sub": "Not brought by you, sealed by physician, but confirm it was sent",
+                      "sub": "Sealed medical results provided by the physician or sent directly to the embassy",
                       "sections": [
                         {
                           "t": "How this works",
-                          "c": "<p>The medical examination results are sealed by the panel physician and sent directly to the embassy. You do not carry the medical packet yourself. Confirm with your physician that the results were submitted before your interview date.</p>"
+                          "c": "<p>The panel physician may either provide your medical examination results to you in a sealed envelope or send them directly to the U.S. Embassy. If you receive a sealed envelope, do not open it and bring it with you to your interview. If the physician sends the results directly to the embassy, no action is required to carry the packet yourself.</p>"
                         }
                       ]
                     },
@@ -5318,9 +5318,18 @@
                 },
                 {
                   "id": "organization",
-                  "label": "Recommended, Organization Items",
+                  "label": "Recommended, Supporting, and Organization Items",
                   "badge": "Recommended",
                   "items": [
+                    {
+                      "id": "doc_relationship",
+                      "icon": "MessageSquare",
+                      "title": "Relationship Evidence",
+                      "sub": "Proof the marriage is genuine and entered in good faith",
+                      "tag": "both",
+                      "guideUrl": "/guides",
+                      "sections": []
+                    },
                     {
                       "id": "folders",
                       "icon": "folder",
