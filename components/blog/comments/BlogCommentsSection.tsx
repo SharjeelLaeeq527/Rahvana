@@ -129,13 +129,13 @@ export default function BlogCommentsSection({ slug }: BlogCommentsSectionProps) 
       {/* Section Header with Counter */}
       <div className="mb-7 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-500/10 text-teal-400">
+          <div className="border-primary/20 bg-primary/10 text-primary flex h-8 w-8 items-center justify-center rounded-lg border">
             <MessageSquare className="h-4 w-4" />
           </div>
           <h2 className="text-foreground text-xl font-bold tracking-tight sm:text-2xl">
             Discussion
           </h2>
-          <span className="ml-1 rounded-full border border-teal-500/20 bg-teal-500/10 px-2.5 py-0.5 text-xs font-semibold text-teal-500 dark:text-teal-400">
+          <span className="border-primary/20 bg-primary/10 text-primary ml-1 rounded-full border px-2.5 py-0.5 text-xs font-semibold">
             {totalCount}
           </span>
         </div>
