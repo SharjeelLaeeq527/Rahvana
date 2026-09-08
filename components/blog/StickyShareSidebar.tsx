@@ -134,13 +134,13 @@ export default function StickyShareSidebar({
           onClick={handleCopyLink}
           className={`group/btn flex h-10 w-10 shrink-0 items-center justify-center rounded-full border shadow-sm transition-all duration-200 ${
             copied
-              ? "border-teal-500 bg-teal-500/20 text-teal-500 dark:text-teal-400"
-              : "border-border/70 bg-background/80 text-muted-foreground hover:border-teal-500/50 hover:bg-teal-600 hover:text-white"
+              ? "border-primary bg-primary/20 text-primary"
+              : "border-border/70 bg-background/80 text-muted-foreground hover:border-primary/50 hover:bg-primary hover:text-primary-foreground"
           }`}
           aria-label={copied ? "Link copied" : "Copy article link"}
         >
           {copied ? (
-            <Check className="h-4 w-4 shrink-0 text-teal-600 dark:text-teal-400" />
+            <Check className="h-4 w-4 shrink-0 text-primary" />
           ) : (
             <Link2 className="h-4 w-4 shrink-0 transition-transform group-hover/btn:scale-110" />
           )}
