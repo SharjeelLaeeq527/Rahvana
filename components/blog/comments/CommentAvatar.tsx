@@ -37,7 +37,7 @@ export default function CommentAvatar({
         sizeClasses[size],
         hasValidImage
           ? "ring-1 ring-border/80 shadow-xs bg-muted"
-          : "flex items-center justify-center font-bold tracking-tight bg-gradient-to-br from-teal-500/20 via-teal-600/15 to-teal-700/25 text-teal-600 dark:text-teal-300 ring-1 ring-teal-500/30 shadow-xs",
+          : "flex items-center justify-center font-bold tracking-tight bg-primary/10 text-primary ring-1 ring-primary/20 shadow-xs",
         className
       )}
       title={name}
@@ -56,7 +56,7 @@ export default function CommentAvatar({
       ) : initial ? (
         <span>{initial}</span>
       ) : (
-        <User className="h-4 w-4 text-teal-500" />
+        <User className="h-4 w-4 text-primary" />
       )}
     </div>
   );

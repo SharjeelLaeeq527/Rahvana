@@ -13,7 +13,7 @@ export const metadata = {
     title: "Rahvana Immigration Blog & Guides",
     description:
       "Actionable U.S. spouse and parent visa guides optimized for Pakistani applicants and U.S. Citizen sponsors.",
-    images: ["/assets/images/about-card-1.png"],
+    images: ["/assets/images/blog/blog1-image.png"],
   },
 };
 

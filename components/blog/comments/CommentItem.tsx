@@ -283,7 +283,7 @@ export default function CommentItem({
               </span>
 
               {comment.isAuthor && (
-                <span className="rounded-md border border-teal-500/20 bg-teal-500/10 px-1.5 py-0.5 text-[10.5px] font-medium text-teal-600 dark:text-teal-400">
+                <span className="rounded-md border border-primary/20 bg-primary/10 px-1.5 py-0.5 text-[10.5px] font-medium text-primary">
                   You
                 </span>
               )}
@@ -352,7 +352,7 @@ export default function CommentItem({
             <button
               type="button"
               onClick={() => handleOpenReplyForm(comment.authorName)}
-              className="text-muted-foreground inline-flex items-center gap-1.5 text-xs font-semibold transition-colors hover:text-teal-600 dark:hover:text-teal-400"
+              className="text-muted-foreground hover:text-primary inline-flex items-center gap-1.5 text-xs font-semibold transition-colors"
             >
               <CornerDownRight className="h-3.5 w-3.5" />
               <span>Reply</span>
@@ -363,7 +363,7 @@ export default function CommentItem({
 
       {/* ── Inline Reply Box ── */}
       {showReplyForm && (
-        <div className="bg-card/60 animate-in fade-in slide-in-from-top-2 ml-6 rounded-2xl border border-teal-500/30 p-3.5 duration-150 sm:ml-10 sm:p-4">
+        <div className="bg-card/60 animate-in fade-in slide-in-from-top-2 border-primary/30 ml-6 rounded-2xl border p-3.5 duration-150 sm:ml-10 sm:p-4">
           {!user ? (
             <div className="flex items-center justify-between gap-3 text-xs">
               <span className="text-muted-foreground">
@@ -373,7 +373,7 @@ export default function CommentItem({
               <div className="flex items-center gap-2">
                 <Link
                   href={`/login?redirect=${encodeURIComponent(pathname)}`}
-                  className="inline-flex items-center gap-1 rounded-lg bg-teal-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-teal-500"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold shadow-xs"
                 >
                   <LogIn className="h-3 w-3" />
                   <span>Sign in</span>
@@ -401,7 +401,7 @@ export default function CommentItem({
                 <div className="min-w-0 flex-1">
                   <div className="text-muted-foreground mb-1.5 text-[11.5px]">
                     Replying to{" "}
-                    <span className="font-semibold text-teal-600 dark:text-teal-400">
+                    <span className="text-primary font-semibold">
                       @{replyTarget}
                     </span>
                   </div>
@@ -414,7 +414,7 @@ export default function CommentItem({
                     rows={2}
                     maxLength={2000}
                     placeholder={`Write a reply to @${replyTarget}...`}
-                    className="border-border bg-background text-foreground placeholder:text-muted-foreground/60 w-full resize-y rounded-xl border px-3 py-2 text-xs transition-all focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none disabled:opacity-50 sm:text-sm"
+                    className="border-border bg-background text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:ring-primary w-full resize-y rounded-xl border px-3 py-2 text-xs transition-all focus:ring-1 focus:outline-none disabled:opacity-50 sm:text-sm"
                   />
 
                   {replyError && <p className="mt-1 text-xs text-red-500">{replyError}</p>}
@@ -432,7 +432,7 @@ export default function CommentItem({
                     <button
                       type="submit"
                       disabled={isSubmittingReply || replyContent.trim().length < 2}
-                      className="inline-flex items-center gap-1.5 rounded-lg bg-teal-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition-all hover:bg-teal-500 disabled:opacity-50"
+                      className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-semibold shadow-xs transition-all disabled:opacity-50"
                     >
                       {isSubmittingReply ? (
                         <>
@@ -456,12 +456,12 @@ export default function CommentItem({
 
       {/* ── Nested Replies Section ── */}
       {replies.length > 0 && (
-        <div className="ml-5 space-y-3 border-l-2 border-teal-500/25 pt-1 pl-3.5 sm:ml-7 sm:pl-5">
+        <div className="border-primary/25 ml-5 space-y-3 border-l-2 pt-1 pl-3.5 sm:ml-7 sm:pl-5">
           {/* Collapsible toggle button */}
           <button
             type="button"
             onClick={() => setAreRepliesExpanded(!areRepliesExpanded)}
-            className="flex items-center gap-1.5 py-0.5 text-xs font-semibold text-teal-600 transition-colors hover:text-teal-500 dark:text-teal-400"
+            className="text-primary hover:text-primary/80 flex items-center gap-1.5 py-0.5 text-xs font-semibold transition-colors"
           >
             {areRepliesExpanded ? (
               <>
@@ -504,7 +504,7 @@ export default function CommentItem({
                           </span>
 
                           {reply.isAuthor && (
-                            <span className="py-0.2 rounded border border-teal-500/20 bg-teal-500/10 px-1 text-[10px] font-medium text-teal-600 dark:text-teal-400">
+                            <span className="border-primary/20 bg-primary/10 text-primary py-0.2 rounded border px-1 text-[10px] font-medium">
                               You
                             </span>
                           )}
@@ -584,7 +584,7 @@ export default function CommentItem({
                         <button
                           type="button"
                           onClick={() => handleOpenReplyForm(reply.authorName)}
-                          className="text-muted-foreground inline-flex items-center gap-1 text-[11px] font-medium transition-colors hover:text-teal-600 dark:hover:text-teal-400"
+                          className="text-muted-foreground hover:text-primary inline-flex items-center gap-1 text-[11px] font-medium transition-colors"
                         >
                           <CornerDownRight className="h-3 w-3" />
                           <span>Reply</span>

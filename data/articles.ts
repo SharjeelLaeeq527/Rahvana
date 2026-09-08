@@ -305,12 +305,12 @@ export const ARTICLES: Article[] = [
       badge: "Free Interactive Tool",
     },
     midArticleCta: {
-      badge: "Free Rahvana Automation",
+      badge: "Included with Journey Plan",
       headline: "Generate Your Custom NVC Document Vault Checklist",
       description:
-        "Auto-check your scanned Nikah Nama, NADRA MRC, and Police Certificates for exact NVC formatting rules before uploading to CEAC.",
+        "Auto-check your scanned Nikah Nama, NADRA MRC, and Police Certificates for exact NVC formatting rules before uploading to CEAC. Included with any Rahvana Journey Plan.",
       buttonText: "Access Document Vault →",
-      buttonHref: "/pricing?mode=tools",
+      buttonHref: "/document-vault",
     },
     sidebarCta: {
       title: "Need Direct Assistance?",

@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { fmtDate, fmtDateTime } from "@/lib/register-receipt";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, CheckCircle, BookOpen, Scale, Info, Shield } from "lucide-react";
+import { ArrowRight, CheckCircle, BookOpen, Scale, Info, Shield, Bell } from "lucide-react";
 import { GuideTutorialOverlay } from "../GuideTutorialOverlays";
 import {
   AfterI130ApprovalModal,
@@ -1007,6 +1007,82 @@ const TrackCaseStatusStep: React.FC<any> = ({
             </div>
           </div>
         )}
+        {/* USCIS Notice Prompt — unlocks step_1_18 */}
+        {(() => {
+          const alreadyReported = state?.metadata?.uscisNoticeReceived === true;
+          return (
+            <div
+              className="mb-6 overflow-hidden rounded-2xl"
+              style={{
+                border: alreadyReported ? "1.5px solid #a8d9be" : "1.5px solid #e8a87c",
+                background: alreadyReported ? "#f0faf4" : "#fff8f3",
+              }}
+            >
+              <div className="flex items-start gap-4 p-5 md:p-6">
+                <div
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
+                  style={{
+                    background: alreadyReported ? "#d1f5e2" : "#fde8d4",
+                    border: alreadyReported ? "1px solid #a8d9be" : "1px solid #e8a87c",
+                  }}
+                >
+                  <Bell
+                    className="h-5 w-5"
+                    style={{ color: alreadyReported ? "#15744f" : "#b85c00" }}
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div
+                    className="mb-0.5 text-[15px] font-semibold"
+                    style={{ color: alreadyReported ? "#15744f" : "#7a3c00" }}
+                  >
+                    {alreadyReported
+                      ? "USCIS notice reported — guidance is ready"
+                      : "Did you receive a notice from USCIS?"}
+                  </div>
+                  <div
+                    className="text-[13px] leading-[1.65]"
+                    style={{ color: alreadyReported ? "#2a6644" : "#8a4a00" }}
+                  >
+                    {alreadyReported
+                      ? "You reported receiving a USCIS notice. Open the next step in your journey to identify the notice type and get specific response guidance."
+                      : "USCIS may issue a Request for Evidence (RFE), Request for Additional Information (RFI), Request for Original (RFO), or a Notice of Intent to Deny (NOID) while your case is pending. If you received any notice, let Rahvana know so it can guide your response."}
+                  </div>
+                  {!alreadyReported && (
+                    <button
+                      id="uscis-notice-received-btn"
+                      type="button"
+                      className="mt-4 flex items-center gap-2 rounded-xl px-5 py-2.5 text-[13.5px] font-semibold transition"
+                      style={{
+                        background: "#b85c00",
+                        color: "#fff",
+                        border: "none",
+                        cursor: "pointer",
+                      }}
+                      onMouseEnter={(e) =>
+                        (e.currentTarget.style.background = "#8a4400")
+                      }
+                      onMouseLeave={(e) =>
+                        (e.currentTarget.style.background = "#b85c00")
+                      }
+                      onClick={async () => {
+                        if (actions?.updateMetadata) {
+                          await actions.updateMetadata({
+                            uscisNoticeReceived: true,
+                          });
+                        }
+                      }}
+                    >
+                      <Bell className="h-4 w-4" />
+                      I received a USCIS notice
+                      <ArrowRight className="h-3.5 w-3.5 shrink-0" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })()}
         {/* Footer Note */}
         {tool.footer_note && (
           <p className="footer-note pt-4 text-center text-[11.5px] text-[#6b8097]">

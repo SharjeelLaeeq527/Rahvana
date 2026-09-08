@@ -1202,9 +1202,20 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
       setUiState("idle");
       setShowTrackingNudge(false);
       const { record: fresh } = await fetchReceipt(journeyId);
-      setSavedRecord(fresh ?? record);
+      const finalRecord = fresh ?? record;
+      setSavedRecord(finalRecord);
+      // Write receipt data into journey metadata so visible_when conditions
+      // on downstream steps (e.g. step_1_18 USCIS Notice Received) can activate.
+      if (actions?.updateMetadata) {
+        await actions.updateMetadata({
+          uscis_receipt_number: finalRecord.receiptNumber ?? record.receiptNumber ?? "",
+          uscis_tracking_enabled: finalRecord.trackingEnabled ?? record.trackingEnabled ?? false,
+          uscis_notice_date: finalRecord.noticeDate ?? record.noticeDate ?? "",
+          uscis_priority_date: finalRecord.priorityDate ?? record.priorityDate ?? "",
+        });
+      }
     },
-    [journeyId]
+    [journeyId, actions]
   );
 
   const handleFileVault = useCallback((docId: string, files: FileList) => {
