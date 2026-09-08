@@ -14,6 +14,7 @@ export interface BlogComment {
   replyToName?: string | null;
   createdAt: string;
   updatedAt: string;
+  editedAt?: string | null;
   isAuthor?: boolean;
   replies?: BlogComment[];
 }

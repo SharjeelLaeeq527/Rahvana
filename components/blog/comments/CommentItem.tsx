@@ -18,12 +18,16 @@ import {
   ChevronUp,
   Send,
   LogIn,
+  Pencil,
+  X,
+  Save,
 } from "lucide-react";
 
 interface CommentItemProps {
   comment: BlogComment;
   canDelete?: boolean;
   onDelete?: (id: string, parentId?: string) => Promise<void>;
+  onEdit?: (id: string, newContent: string) => Promise<void>;
   onReplySubmit?: (parentId: string, content: string, replyToName?: string) => Promise<void>;
 }
 
@@ -31,12 +35,18 @@ export default function CommentItem({
   comment,
   canDelete,
   onDelete,
+  onEdit,
   onReplySubmit,
 }: CommentItemProps) {
   const { user, profile } = useAuth();
   const pathname = usePathname();
 
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingReplyId, setEditingReplyId] = useState<string | null>(null);
+  const [editContent, setEditContent] = useState("");
+  const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
 
   // Delete confirmation modal state
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -65,6 +75,9 @@ export default function CommentItem({
   }, [showReplyForm]);
 
   const formattedTime = formatCommentTime(comment.createdAt);
+  const commentDisplayTime = formatCommentTime(
+    comment.editedAt ? comment.updatedAt : comment.createdAt
+  );
 
   /**
    * Opens the delete confirmation modal for a comment/reply.
@@ -113,6 +126,89 @@ export default function CommentItem({
 
     await handleDelete(deleteTarget.id, deleteTarget.parentId);
   };
+
+  const handleStartEdit = (targetId: string, content: string) => {
+    setEditContent(content);
+    setEditError(null);
+    if (targetId === comment.id) {
+      setIsEditing(true);
+    } else {
+      setEditingReplyId(targetId);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditingReplyId(null);
+    setEditContent("");
+    setEditError(null);
+  };
+
+  const handleEdit = async (targetId: string) => {
+    if (!onEdit) return;
+
+    const trimmed = editContent.trim();
+    if (trimmed.length < 2) {
+      setEditError("Comment must be at least 2 characters.");
+      return;
+    }
+
+    if (trimmed.length > 2000) {
+      setEditError("Comment cannot exceed 2,000 characters.");
+      return;
+    }
+
+    setIsSubmittingEdit(true);
+    setEditError(null);
+
+    try {
+      await onEdit(targetId, trimmed);
+      handleCancelEdit();
+    } catch {
+      setEditError("Failed to save changes. Please try again.");
+    } finally {
+      setIsSubmittingEdit(false);
+    }
+  };
+
+  const renderEditForm = (targetId: string, authorName: string) => (
+    <div className="mt-2.5">
+      <textarea
+        value={editContent}
+        onChange={(e) => setEditContent(e.target.value)}
+        disabled={isSubmittingEdit}
+        rows={3}
+        maxLength={2000}
+        aria-label={`Edit comment by ${authorName}`}
+        className="border-border bg-background text-foreground placeholder:text-muted-foreground/60 w-full resize-y rounded-xl border px-3 py-2 text-sm leading-relaxed transition-all focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none disabled:opacity-50"
+      />
+      {editError && <p className="mt-1 text-xs text-red-500">{editError}</p>}
+      <div className="mt-2 flex items-center justify-end gap-2">
+        <button
+          type="button"
+          onClick={handleCancelEdit}
+          disabled={isSubmittingEdit}
+          className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-50"
+        >
+          <X className="h-3.5 w-3.5" />
+          <span>Cancel</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => handleEdit(targetId)}
+          disabled={isSubmittingEdit || editContent.trim().length < 2}
+          className="inline-flex items-center gap-1.5 rounded-lg bg-teal-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition-all hover:bg-teal-500 disabled:opacity-50"
+        >
+          {isSubmittingEdit ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <Save className="h-3.5 w-3.5" />
+          )}
+          <span>{isSubmittingEdit ? "Saving..." : "Save"}</span>
+        </button>
+      </div>
+    </div>
+  );
 
   const handleOpenReplyForm = (targetAuthor: string) => {
     setReplyTarget(targetAuthor);
@@ -197,15 +293,31 @@ export default function CommentItem({
               {/* Timestamp */}
               <span
                 className="text-muted-foreground/80 flex items-center gap-1 text-xs font-normal"
-                title={new Date(comment.createdAt).toLocaleString()}
+                title={new Date(comment.editedAt ? comment.updatedAt : comment.createdAt).toLocaleString()}
               >
                 <Clock className="h-3 w-3 shrink-0 opacity-70" />
-                <span>{formattedTime || "Recently"}</span>
+                <span>{comment.editedAt ? commentDisplayTime : formattedTime || "Recently"}</span>
+                {comment.editedAt && (
+                  <span className="text-muted-foreground/70 italic">(Edited)</span>
+                )}
               </span>
 
-              {/* Author / Admin Delete Action */}
-              {canDelete && onDelete && (
+              {/* Author actions */}
+              {(canDelete || (comment.isAuthor && onEdit)) && (
                 <div className="ml-1 flex items-center">
+                  {comment.isAuthor && onEdit && !isEditing && (
+                    <button
+                      type="button"
+                      onClick={() => handleStartEdit(comment.id, comment.content)}
+                      aria-label="Edit comment"
+                      title="Edit your comment"
+                      className="text-muted-foreground/70 rounded-md p-1 transition-colors hover:bg-teal-500/10 hover:text-teal-500"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                  )}
+
+                  {canDelete && onDelete && (
                   <button
                     type="button"
                     onClick={() => handleOpenDeleteModal(comment.id)}
@@ -220,15 +332,20 @@ export default function CommentItem({
                       <Trash2 className="h-4 w-4" />
                     )}
                   </button>
+                  )}
                 </div>
               )}
             </div>
           </div>
 
           {/* Comment Body */}
-          <p className="text-foreground/90 mt-2 text-sm leading-relaxed break-words whitespace-pre-line">
-            {comment.content}
-          </p>
+          {isEditing ? (
+            renderEditForm(comment.id, comment.authorName)
+          ) : (
+            <p className="text-foreground/90 mt-2 text-sm leading-relaxed wrap-break-word whitespace-pre-line">
+              {comment.content}
+            </p>
+          )}
 
           {/* Action Bar: Reply Button */}
           <div className="mt-2.5 flex items-center gap-3">
@@ -396,41 +513,71 @@ export default function CommentItem({
                         <div className="flex items-center gap-2">
                           <span
                             className="text-muted-foreground/80 flex items-center gap-1 text-[11px]"
-                            title={new Date(reply.createdAt).toLocaleString()}
+                            title={
+                              new Date(
+                                reply.editedAt ? reply.updatedAt : reply.createdAt
+                              ).toLocaleString()
+                            }
                           >
                             <Clock className="h-2.5 w-2.5 shrink-0 opacity-70" />
-                            <span>{replyFormattedTime || "Recently"}</span>
+                            <span>
+                              {formatCommentTime(
+                                reply.editedAt ? reply.updatedAt : reply.createdAt
+                              ) ||
+                                replyFormattedTime ||
+                                "Recently"}
+                            </span>
+                            {reply.editedAt && (
+                              <span className="text-muted-foreground/70 italic">(Edited)</span>
+                            )}
                           </span>
 
-                          {/* Delete Reply Button */}
-                          {Boolean(reply.isAuthor) && onDelete && (
-                            <button
-                              type="button"
-                              onClick={() => handleOpenDeleteModal(reply.id, comment.id)}
-                              aria-label="Delete reply"
-                              title="Delete this reply"
-                              disabled={isDeleting}
-                              className="text-muted-foreground/70 rounded-md p-1 transition-colors hover:bg-red-500/10 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-50"
-                            >
-                              {isDeleting && deleteTarget?.id === reply.id ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <Trash2 className="h-4 w-4" />
-                              )}
-                            </button>
-                          )}
+                          <div className="flex items-center">
+                            {reply.isAuthor && onEdit && editingReplyId !== reply.id && (
+                              <button
+                                type="button"
+                                onClick={() => handleStartEdit(reply.id, reply.content)}
+                                aria-label="Edit reply"
+                                title="Edit your reply"
+                                className="text-muted-foreground/70 rounded-md p-1 transition-colors hover:bg-teal-500/10 hover:text-teal-500"
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                              </button>
+                            )}
+
+                            {Boolean(reply.isAuthor) && onDelete && (
+                              <button
+                                type="button"
+                                onClick={() => handleOpenDeleteModal(reply.id, comment.id)}
+                                aria-label="Delete reply"
+                                title="Delete this reply"
+                                disabled={isDeleting}
+                                className="text-muted-foreground/70 rounded-md p-1 transition-colors hover:bg-red-500/10 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                {isDeleting && deleteTarget?.id === reply.id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Trash2 className="h-4 w-4" />
+                                )}
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </div>
 
                       {/* Reply Body with @Mention Tag */}
-                      <p className="text-foreground/90 mt-1 text-xs leading-relaxed break-words whitespace-pre-line">
-                        {reply.replyToName && (
-                          <span className="mr-1.5 font-medium text-teal-600 select-none dark:text-teal-400">
-                            @{reply.replyToName}
-                          </span>
-                        )}
-                        {reply.content}
-                      </p>
+                      {editingReplyId === reply.id ? (
+                        renderEditForm(reply.id, reply.authorName)
+                      ) : (
+                        <p className="text-foreground/90 mt-1 text-xs leading-relaxed wrap-break-word whitespace-pre-line">
+                          {reply.replyToName && (
+                            <span className="mr-1.5 font-medium text-teal-600 select-none dark:text-teal-400">
+                              @{reply.replyToName}
+                            </span>
+                          )}
+                          {reply.content}
+                        </p>
+                      )}
 
                       {/* Quick Reply to this specific replier */}
                       <div className="mt-1.5">
@@ -467,6 +614,7 @@ export default function CommentItem({
         cancelText="Cancel"
         confirmText="Delete"
         confirmVariant="danger"
+        loading={isDeleting}
         onCancel={handleCloseDeleteModal}
         onConfirm={handleConfirmDelete}
       />

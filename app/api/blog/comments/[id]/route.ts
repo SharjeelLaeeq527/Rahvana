@@ -1,7 +1,7 @@
 // app/api/blog/comments/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { deleteComment } from "@/lib/blog/comments";
+import { deleteComment, editComment } from "@/lib/blog/comments";
 
 export const dynamic = "force-dynamic";
 
@@ -45,5 +45,36 @@ export async function DELETE(
   } catch (error) {
     console.error("[api/blog/comments/[id]] DELETE error:", error);
     return NextResponse.json({ error: "Failed to delete comment." }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const { id } = await params;
+    if (!id) {
+      return NextResponse.json({ error: "Missing comment ID" }, { status: 400 });
+    }
+
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const newContent = body.content;
+
+    if (!newContent) {
+      return NextResponse.json({ error: "Missing new content" }, { status: 400 });
+    }
+
+    const updatedComment = await editComment(id, user.id, newContent);
+    return NextResponse.json({ success: true, comment: updatedComment });
+  } catch (error) {
+    console.error("[api/blog/comments/[id]] PATCH error:", error);
+    return NextResponse.json({ error: "Failed to edit comment." }, { status: 500 });
   }
 }
