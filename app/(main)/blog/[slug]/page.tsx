@@ -205,321 +205,328 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
         </header>
 
         {/* ── Main Body & Sidebar Layout ── */}
-        <div className="relative mx-auto max-w-full px-5 py-10 sm:px-8 sm:py-12 lg:max-w-[640px] xl:max-w-4xl">
-          {/* Table of Contents Sticky Left Sidebar */}
-          {hasSidebar && (
-            <aside className="z-20 mb-10 shrink-0 lg:absolute lg:top-12 lg:right-full lg:bottom-12 lg:mb-0 lg:w-48 lg:translate-x-3 xl:w-60 xl:translate-x-6">
-              <div className="border-border/70 bg-card/40 sticky top-28 rounded-2xl border p-4 shadow-sm backdrop-blur-md sm:top-28 sm:p-5">
-                {hasToc && article.tableOfContents && (
-                  <>
-                    <div className="text-muted-foreground mb-3 flex items-center gap-2 text-xs font-bold tracking-wider uppercase">
-                      <List className="text-primary h-3.5 w-3.5" />
-                      <span>Table of Content</span>
-                    </div>
-                    <nav className="border-border/60 space-y-1.5 border-l pl-2.5 text-[12px] leading-snug">
-                      {article.tableOfContents.map((toc, tIdx) => (
-                        <a
-                          key={toc.id || `toc-${tIdx}`}
-                          href={toc.id ? `#${toc.id}` : "#"}
-                          className="text-muted-foreground hover:text-primary block py-1 transition-colors hover:font-medium"
+        <div className="mx-auto w-full max-w-[1600px] px-4 py-10 sm:px-6 sm:py-12 2xl:px-10">
+          <div className="flex w-full flex-col lg:flex-row lg:items-start lg:gap-8 xl:gap-12 2xl:gap-16">
+            {/* Table of Contents Sticky Left Sidebar */}
+            {hasSidebar && (
+              <aside className="z-20 mb-10 w-full shrink-0 self-stretch lg:mb-0 lg:w-60 xl:w-68 2xl:w-72">
+                <div className="border-border/70 bg-card/40 sticky top-28 rounded-2xl border p-4 shadow-sm backdrop-blur-md sm:p-5">
+                  {hasToc && article.tableOfContents && (
+                    <>
+                      <div className="text-muted-foreground mb-3 flex items-center gap-2 text-xs font-bold tracking-wider uppercase">
+                        <List className="text-primary h-3.5 w-3.5" />
+                        <span>Table of Content</span>
+                      </div>
+                      <nav className="border-border/60 space-y-1.5 border-l pl-2.5 text-[12px] leading-snug">
+                        {article.tableOfContents.map((toc, tIdx) => (
+                          <a
+                            key={toc.id || `toc-${tIdx}`}
+                            href={toc.id ? `#${toc.id}` : "#"}
+                            className="text-muted-foreground hover:text-primary block py-1 transition-colors hover:font-medium"
+                          >
+                            {toc.title}
+                          </a>
+                        ))}
+                      </nav>
+                    </>
+                  )}
+
+                  {sidebarCtaConfig && (
+                    <div className={cn("border-border/40", hasToc ? "mt-5 border-t pt-3.5" : "")}>
+                      {sidebarCtaConfig.badge && (
+                        <span className="bg-primary/10 text-primary mb-1 inline-block rounded px-1.5 py-0.5 text-[10px] font-semibold">
+                          {sidebarCtaConfig.badge}
+                        </span>
+                      )}
+                      {sidebarCtaConfig.title && (
+                        <p className="text-foreground mb-1 text-[11px] font-semibold">
+                          {sidebarCtaConfig.title}
+                        </p>
+                      )}
+                      {sidebarCtaConfig.description && (
+                        <p className="text-muted-foreground mb-3 text-[11px] leading-tight">
+                          {sidebarCtaConfig.description}
+                        </p>
+                      )}
+                      {sidebarCtaConfig.buttonText && (
+                        <Link
+                          href={sidebarCtaConfig.buttonHref || "/book-consultation"}
+                          className="bg-primary text-primary-foreground hover:bg-primary/90 block w-full rounded-xl px-3.5 py-2 text-center text-[11px] font-semibold shadow-sm transition"
                         >
-                          {toc.title}
-                        </a>
-                      ))}
-                    </nav>
-                  </>
-                )}
+                          {sidebarCtaConfig.buttonText}
+                        </Link>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </aside>
+            )}
 
-                {sidebarCtaConfig && (
-                  <div className={cn("border-border/40", hasToc ? "mt-5 border-t pt-3.5" : "")}>
-                    {sidebarCtaConfig.badge && (
-                      <span className="bg-primary/10 text-primary mb-1 inline-block rounded px-1.5 py-0.5 text-[10px] font-semibold">
-                        {sidebarCtaConfig.badge}
-                      </span>
-                    )}
-                    {sidebarCtaConfig.title && (
-                      <p className="text-foreground mb-1 text-[11px] font-semibold">
-                        {sidebarCtaConfig.title}
-                      </p>
-                    )}
-                    {sidebarCtaConfig.description && (
-                      <p className="text-muted-foreground mb-3 text-[11px] leading-tight">
-                        {sidebarCtaConfig.description}
-                      </p>
-                    )}
-                    {sidebarCtaConfig.buttonText && (
-                      <Link
-                        href={sidebarCtaConfig.buttonHref || "/book-consultation"}
-                        className="bg-primary text-primary-foreground hover:bg-primary/90 block w-full rounded-xl px-3.5 py-2 text-center text-[11px] font-semibold shadow-sm transition"
-                      >
-                        {sidebarCtaConfig.buttonText}
-                      </Link>
-                    )}
+            {/* Main Article Content */}
+            <main className="w-full min-w-0 flex-1 space-y-10">
+              {/* ⚡ BLUF (Bottom Line Up Front) Answer Box */}
+              {article.bluf && article.bluf.trim() && (
+                <section className="border-primary/30 rounded-3xl border bg-slate-900/95 p-6 text-slate-100 shadow-lg sm:p-8">
+                  <div className="text-primary mb-2 flex items-center gap-2 text-xs font-bold tracking-wider uppercase">
+                    <BookOpen className="h-4 w-4" />
+                    <span>Bottom Line Up Front (BLUF Summary)</span>
                   </div>
-                )}
-              </div>
-            </aside>
-          )}
+                  <p className="text-base leading-relaxed font-medium text-slate-200">
+                    {article.bluf}
+                  </p>
+                </section>
+              )}
 
-          {/* Sticky Right Sidebar - Social Share Icons */}
-          {article.showSocialShare !== false && (
-            <aside className="z-20 hidden shrink-0 lg:absolute lg:top-12 lg:bottom-12 lg:left-full lg:ml-3 lg:block lg:w-12 xl:ml-6 xl:w-14">
-              <div className="sticky top-28">
-                <StickyShareSidebar
+              {/* Dynamic Content Sections */}
+              {article.sections &&
+                article.sections.map((section, idx) => (
+                  <section
+                    key={section.id || `sec-${idx}`}
+                    id={section.id}
+                    className="scroll-mt-28 space-y-4"
+                  >
+                    {section.h2 && (
+                      <h2 className="text-foreground border-border/50 border-b pb-2 text-2xl font-bold tracking-tight">
+                        {section.h2}
+                      </h2>
+                    )}
+
+                    {section.h3 && (
+                      <h3 className="text-foreground text-xl font-bold tracking-tight">
+                        {section.h3}
+                      </h3>
+                    )}
+
+                    {/* Optional Section Image */}
+                    {section.image?.url && (
+                      <figure className="my-6 space-y-2">
+                        <div className="border-border/70 relative h-64 w-full overflow-hidden rounded-2xl border sm:h-80">
+                          <Image
+                            src={section.image.url}
+                            alt={section.image.alt || section.h2 || "Section image"}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                        {section.image.caption && (
+                          <figcaption className="text-muted-foreground text-center text-xs">
+                            {section.image.caption}
+                          </figcaption>
+                        )}
+                      </figure>
+                    )}
+
+                    {section.paragraphs &&
+                      section.paragraphs.map((p, pIdx) => (
+                        <p key={pIdx} className="text-muted-foreground text-base leading-relaxed">
+                          {p}
+                        </p>
+                      ))}
+
+                    {/* Optional Callout Box */}
+                    {section.callout && (
+                      <div
+                        className={cn(
+                          "my-6 rounded-2xl border bg-slate-900/95 p-5 text-slate-100 shadow-md",
+                          section.callout.type === "warning"
+                            ? "border-amber-500/40"
+                            : section.callout.type === "tip"
+                              ? "border-emerald-500/40"
+                              : "border-primary/40"
+                        )}
+                      >
+                        <div className="mb-1.5 flex items-center gap-2 text-sm font-bold">
+                          {section.callout.type === "warning" ? (
+                            <AlertTriangle className="h-4 w-4 shrink-0 text-amber-400" />
+                          ) : section.callout.type === "tip" ? (
+                            <Lightbulb className="h-4 w-4 shrink-0 text-emerald-400" />
+                          ) : (
+                            <Info className="text-primary h-4 w-4 shrink-0" />
+                          )}
+                          {section.callout.title && (
+                            <span
+                              className={
+                                section.callout.type === "warning"
+                                  ? "text-amber-400"
+                                  : section.callout.type === "tip"
+                                    ? "text-emerald-400"
+                                    : "text-primary"
+                              }
+                            >
+                              {section.callout.title}
+                            </span>
+                          )}
+                        </div>
+                        {section.callout.text && (
+                          <p className="text-xs leading-relaxed text-slate-200 sm:text-sm">
+                            {section.callout.text}
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Optional Comparison Table */}
+                    {section.table &&
+                      section.table.headers &&
+                      section.table.headers.length > 0 &&
+                      section.table.rows &&
+                      section.table.rows.length > 0 && (
+                        <div className="border-border my-6 overflow-x-auto rounded-2xl border shadow-sm">
+                          <table className="w-full text-left text-xs sm:text-sm">
+                            <thead className="bg-muted text-foreground border-border border-b font-semibold">
+                              <tr>
+                                {section.table.headers.map((h, hIdx) => (
+                                  <th key={hIdx} className="p-3.5 sm:p-4">
+                                    {h}
+                                  </th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody className="divide-border/60 bg-card/40 divide-y">
+                              {section.table.rows.map((r, rIdx) => (
+                                <tr key={rIdx} className="hover:bg-muted/30 transition-colors">
+                                  {r.map((c, cIdx) => (
+                                    <td
+                                      key={cIdx}
+                                      className="text-muted-foreground p-3.5 font-medium sm:p-4"
+                                    >
+                                      {c}
+                                    </td>
+                                  ))}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+
+                    {/* Optional Bullet List */}
+                    {section.bulletList && section.bulletList.length > 0 && (
+                      <ul className="text-muted-foreground my-4 space-y-2 text-sm">
+                        {section.bulletList.map((item, bIdx) => (
+                          <li key={bIdx} className="flex items-start gap-2.5">
+                            <CheckCircle2 className="text-primary mt-0.5 h-4 w-4 shrink-0" />
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+
+                    {/* Optional Numbered List */}
+                    {section.numberedList && section.numberedList.length > 0 && (
+                      <ol className="text-muted-foreground my-4 list-none space-y-2.5 text-sm">
+                        {section.numberedList.map((item, nIdx) => (
+                          <li key={nIdx} className="flex items-start gap-3">
+                            <span className="bg-primary/10 text-primary flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold">
+                              {nIdx + 1}
+                            </span>
+                            <span className="pt-0.5">{item}</span>
+                          </li>
+                        ))}
+                      </ol>
+                    )}
+
+                    {/* Section CTA or Mid-Article CTA */}
+                    {section.cta ? (
+                      <ToolCTA
+                        badge={section.cta.badge}
+                        headline={section.cta.headline}
+                        description={section.cta.description}
+                        buttonText={section.cta.buttonText}
+                        buttonHref={section.cta.buttonHref}
+                        variant="card"
+                      />
+                    ) : (
+                      idx === 2 &&
+                      article.midArticleCta && (
+                        <ToolCTA
+                          badge={article.midArticleCta.badge}
+                          headline={article.midArticleCta.headline}
+                          description={article.midArticleCta.description}
+                          buttonText={article.midArticleCta.buttonText}
+                          buttonHref={article.midArticleCta.buttonHref}
+                          variant="card"
+                        />
+                      )
+                    )}
+                  </section>
+                ))}
+
+              {/* ── FAQ Section (GEO & Schema Enabled) ── */}
+              {article.faqs && article.faqs.length > 0 && article.showFaqs !== false && (
+                <section
+                  id="faq-section"
+                  className="border-border mt-16 scroll-mt-28 border-t pt-8"
+                >
+                  <div className="mb-6 flex items-center gap-2">
+                    <HelpCircle className="text-primary h-6 w-6" />
+                    <h2 className="text-foreground text-2xl font-bold">
+                      Frequently Asked Questions
+                    </h2>
+                  </div>
+
+                  <div className="space-y-4">
+                    {article.faqs.map((faq, fIdx) => {
+                      if (!faq.question || !faq.answer) return null;
+                      return (
+                        <details
+                          key={fIdx}
+                          className="group border-border bg-card/50 open:bg-card open:border-primary/50 rounded-2xl border p-5 backdrop-blur-sm transition-all duration-200"
+                        >
+                          <summary className="text-foreground group-open:text-primary flex cursor-pointer list-none items-center justify-between text-base font-semibold">
+                            <span>{faq.question}</span>
+                            <span className="text-primary ml-4 text-xl font-light transition-transform group-open:rotate-45">
+                              +
+                            </span>
+                          </summary>
+                          <p className="text-muted-foreground border-border/40 mt-3 border-t pt-3 text-sm leading-relaxed">
+                            {faq.answer}
+                          </p>
+                        </details>
+                      );
+                    })}
+                  </div>
+                </section>
+              )}
+
+              {/* ── Social Share Section ── */}
+              {article.showSocialShare !== false && (
+                <ArticleSocialShare
                   title={article.title}
                   slug={article.slug}
                   description={article.description}
                 />
-              </div>
-            </aside>
-          )}
+              )}
 
-          {/* Main Article Content */}
-          <main className="w-full space-y-10 lg:ml-3 xl:ml-5">
-            {/* ⚡ BLUF (Bottom Line Up Front) Answer Box */}
-            {article.bluf && article.bluf.trim() && (
-              <section className="border-primary/30 rounded-3xl border bg-slate-900/95 p-6 text-slate-100 shadow-lg sm:p-8">
-                <div className="text-primary mb-2 flex items-center gap-2 text-xs font-bold tracking-wider uppercase">
-                  <BookOpen className="h-4 w-4" />
-                  <span>Bottom Line Up Front (BLUF Summary)</span>
-                </div>
-                <p className="text-base leading-relaxed font-medium text-slate-200">
-                  {article.bluf}
-                </p>
-              </section>
-            )}
+              {/* ── Community Comments & Discussion Section ── */}
+              <BlogCommentsSection slug={article.slug} />
 
-            {/* Dynamic Content Sections */}
-            {article.sections &&
-              article.sections.map((section, idx) => (
-                <section
-                  key={section.id || `sec-${idx}`}
-                  id={section.id}
-                  className="scroll-mt-28 space-y-4"
-                >
-                  {section.h2 && (
-                    <h2 className="text-foreground border-border/50 border-b pb-2 text-2xl font-bold tracking-tight">
-                      {section.h2}
-                    </h2>
-                  )}
+              {/* ── Bottom Strategic Conversion CTA Banner ── */}
+              {article.cta && (article.cta.headline || article.cta.buttonText) && (
+                <ToolCTA
+                  badge={article.cta.badge || "Simplify Your Visa Journey"}
+                  headline={article.cta.headline}
+                  description={article.cta.description}
+                  buttonText={article.cta.buttonText}
+                  buttonHref={article.cta.buttonHref}
+                  className="mt-10 mb-0"
+                />
+              )}
+            </main>
 
-                  {section.h3 && (
-                    <h3 className="text-foreground text-xl font-bold tracking-tight">
-                      {section.h3}
-                    </h3>
-                  )}
-
-                  {/* Optional Section Image */}
-                  {section.image?.url && (
-                    <figure className="my-6 space-y-2">
-                      <div className="border-border/70 relative h-64 w-full overflow-hidden rounded-2xl border sm:h-80">
-                        <Image
-                          src={section.image.url}
-                          alt={section.image.alt || section.h2 || "Section image"}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                      {section.image.caption && (
-                        <figcaption className="text-muted-foreground text-center text-xs">
-                          {section.image.caption}
-                        </figcaption>
-                      )}
-                    </figure>
-                  )}
-
-                  {section.paragraphs &&
-                    section.paragraphs.map((p, pIdx) => (
-                      <p key={pIdx} className="text-muted-foreground text-base leading-relaxed">
-                        {p}
-                      </p>
-                    ))}
-
-                  {/* Optional Callout Box */}
-                  {section.callout && (
-                    <div
-                      className={cn(
-                        "my-6 rounded-2xl border bg-slate-900/95 p-5 text-slate-100 shadow-md",
-                        section.callout.type === "warning"
-                          ? "border-amber-500/40"
-                          : section.callout.type === "tip"
-                            ? "border-emerald-500/40"
-                            : "border-primary/40"
-                      )}
-                    >
-                      <div className="mb-1.5 flex items-center gap-2 text-sm font-bold">
-                        {section.callout.type === "warning" ? (
-                          <AlertTriangle className="h-4 w-4 shrink-0 text-amber-400" />
-                        ) : section.callout.type === "tip" ? (
-                          <Lightbulb className="h-4 w-4 shrink-0 text-emerald-400" />
-                        ) : (
-                          <Info className="text-primary h-4 w-4 shrink-0" />
-                        )}
-                        {section.callout.title && (
-                          <span
-                            className={
-                              section.callout.type === "warning"
-                                ? "text-amber-400"
-                                : section.callout.type === "tip"
-                                  ? "text-emerald-400"
-                                  : "text-primary"
-                            }
-                          >
-                            {section.callout.title}
-                          </span>
-                        )}
-                      </div>
-                      {section.callout.text && (
-                        <p className="text-xs leading-relaxed text-slate-200 sm:text-sm">
-                          {section.callout.text}
-                        </p>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Optional Comparison Table */}
-                  {section.table &&
-                    section.table.headers &&
-                    section.table.headers.length > 0 &&
-                    section.table.rows &&
-                    section.table.rows.length > 0 && (
-                      <div className="border-border my-6 overflow-x-auto rounded-2xl border shadow-sm">
-                        <table className="w-full text-left text-xs sm:text-sm">
-                          <thead className="bg-muted text-foreground border-border border-b font-semibold">
-                            <tr>
-                              {section.table.headers.map((h, hIdx) => (
-                                <th key={hIdx} className="p-3.5 sm:p-4">
-                                  {h}
-                                </th>
-                              ))}
-                            </tr>
-                          </thead>
-                          <tbody className="divide-border/60 bg-card/40 divide-y">
-                            {section.table.rows.map((r, rIdx) => (
-                              <tr key={rIdx} className="hover:bg-muted/30 transition-colors">
-                                {r.map((c, cIdx) => (
-                                  <td
-                                    key={cIdx}
-                                    className="text-muted-foreground p-3.5 font-medium sm:p-4"
-                                  >
-                                    {c}
-                                  </td>
-                                ))}
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
-
-                  {/* Optional Bullet List */}
-                  {section.bulletList && section.bulletList.length > 0 && (
-                    <ul className="text-muted-foreground my-4 space-y-2 text-sm">
-                      {section.bulletList.map((item, bIdx) => (
-                        <li key={bIdx} className="flex items-start gap-2.5">
-                          <CheckCircle2 className="text-primary mt-0.5 h-4 w-4 shrink-0" />
-                          <span>{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-
-                  {/* Optional Numbered List */}
-                  {section.numberedList && section.numberedList.length > 0 && (
-                    <ol className="text-muted-foreground my-4 list-none space-y-2.5 text-sm">
-                      {section.numberedList.map((item, nIdx) => (
-                        <li key={nIdx} className="flex items-start gap-3">
-                          <span className="bg-primary/10 text-primary flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold">
-                            {nIdx + 1}
-                          </span>
-                          <span className="pt-0.5">{item}</span>
-                        </li>
-                      ))}
-                    </ol>
-                  )}
-
-                  {/* Section CTA or Mid-Article CTA */}
-                  {section.cta ? (
-                    <ToolCTA
-                      badge={section.cta.badge}
-                      headline={section.cta.headline}
-                      description={section.cta.description}
-                      buttonText={section.cta.buttonText}
-                      buttonHref={section.cta.buttonHref}
-                      variant="card"
-                    />
-                  ) : (
-                    idx === 2 &&
-                    article.midArticleCta && (
-                      <ToolCTA
-                        badge={article.midArticleCta.badge}
-                        headline={article.midArticleCta.headline}
-                        description={article.midArticleCta.description}
-                        buttonText={article.midArticleCta.buttonText}
-                        buttonHref={article.midArticleCta.buttonHref}
-                        variant="card"
-                      />
-                    )
-                  )}
-                </section>
-              ))}
-
-            {/* ── FAQ Section (GEO & Schema Enabled) ── */}
-            {article.faqs && article.faqs.length > 0 && article.showFaqs !== false && (
-              <section id="faq-section" className="border-border mt-16 scroll-mt-28 border-t pt-8">
-                <div className="mb-6 flex items-center gap-2">
-                  <HelpCircle className="text-primary h-6 w-6" />
-                  <h2 className="text-foreground text-2xl font-bold">Frequently Asked Questions</h2>
-                </div>
-
-                <div className="space-y-4">
-                  {article.faqs.map((faq, fIdx) => {
-                    if (!faq.question || !faq.answer) return null;
-                    return (
-                      <details
-                        key={fIdx}
-                        className="group border-border bg-card/50 open:bg-card open:border-primary/50 rounded-2xl border p-5 backdrop-blur-sm transition-all duration-200"
-                      >
-                        <summary className="text-foreground group-open:text-primary flex cursor-pointer list-none items-center justify-between text-base font-semibold">
-                          <span>{faq.question}</span>
-                          <span className="text-primary ml-4 text-xl font-light transition-transform group-open:rotate-45">
-                            +
-                          </span>
-                        </summary>
-                        <p className="text-muted-foreground border-border/40 mt-3 border-t pt-3 text-sm leading-relaxed">
-                          {faq.answer}
-                        </p>
-                      </details>
-                    );
-                  })}
-                </div>
-              </section>
-            )}
-
-            {/* ── Social Share Section ── */}
+            {/* Sticky Right Sidebar - Social Share Icons */}
             {article.showSocialShare !== false && (
-              <ArticleSocialShare
-                title={article.title}
-                slug={article.slug}
-                description={article.description}
-              />
+              <aside className="z-20 hidden shrink-0 self-stretch lg:block lg:w-12 xl:w-14">
+                <div className="sticky top-28">
+                  <StickyShareSidebar
+                    title={article.title}
+                    slug={article.slug}
+                    description={article.description}
+                  />
+                </div>
+              </aside>
             )}
-
-            {/* ── Community Comments & Discussion Section ── */}
-            <BlogCommentsSection slug={article.slug} />
-
-            {/* ── Bottom Strategic Conversion CTA Banner ── */}
-            {article.cta && (article.cta.headline || article.cta.buttonText) && (
-              <ToolCTA
-                badge={article.cta.badge || "Simplify Your Visa Journey"}
-                headline={article.cta.headline}
-                description={article.cta.description}
-                buttonText={article.cta.buttonText}
-                buttonHref={article.cta.buttonHref}
-                className="mt-10 mb-0"
-              />
-            )}
-          </main>
+          </div>
         </div>
       </article>
     </>
