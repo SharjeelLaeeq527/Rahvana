@@ -408,29 +408,6 @@ const AttorneyCard: React.FC<{ data: any }> = ({ data }) => (
   </div>
 );
 
-// ─── Citations ───────────────────────────────────────────────────────────────────
-const Citations: React.FC<{ items: any[] }> = ({ items }) => (
-  <div className="mb-6">
-    <div className="mb-2 text-[11px] font-bold uppercase tracking-wider text-[#6b8097]">
-      Official references
-    </div>
-    <div className="flex flex-col gap-2">
-      {items.map((c: any, i: number) => (
-        <a
-          key={i}
-          href={c.link}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-2 rounded-xl border border-[#d0e4f7] bg-[#fafcff] px-4 py-2.5 text-[13px] font-medium text-[#2f6fd4] transition-colors hover:border-[#2f6fd4] hover:underline"
-        >
-          <ExternalLink className="h-3.5 w-3.5 shrink-0" />
-          {c.text}
-        </a>
-      ))}
-    </div>
-  </div>
-);
-
 // ─── AwaitingDecisionTool (step_1_23, type: "awaiting_decision") ─────────────────
 export const AwaitingDecisionTool: React.FC<{ tool: any }> = ({ tool }) => (
   <div className="flex min-h-full w-full flex-col items-center">
@@ -561,9 +538,6 @@ export const GuideStepRenderer: React.FC<GuideStepRendererProps> = ({
         {guideData.after_noid_response && <OutcomesPanel data={guideData.after_noid_response} />}
         {guideData.attorney_recommendation && (
           <AttorneyCard data={guideData.attorney_recommendation} />
-        )}
-        {guideData.citations && guideData.citations.length > 0 && (
-          <Citations items={guideData.citations} />
         )}
         {guideData.disclaimer && (
           <p className="mt-2 text-center text-[11.5px] leading-[1.65] text-[#6b8097]">

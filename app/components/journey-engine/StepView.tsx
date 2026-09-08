@@ -1120,8 +1120,17 @@ export const StepView: React.FC<StepViewProps> = ({
     );
   };
 
+  const getCitations = () => {
+    return (
+      (currentStep as any)?.citations ||
+      (currentStep as any)?.guide_data?.citations ||
+      (currentStep as any)?.tool_data?.citations ||
+      []
+    );
+  };
+
   const renderCitationsSection = () => {
-    const citations = currentStep.citations;
+    const citations = getCitations();
     if (!citations || citations.length === 0) return null;
 
     return (
@@ -1154,6 +1163,10 @@ export const StepView: React.FC<StepViewProps> = ({
 
     if (tool.type === "awaiting_review") {
       return <AwaitingReviewStep data={tool} />;
+    }
+
+    if (tool.type === "awaiting_decision") {
+      return <AwaitingDecisionTool tool={tool} />;
     }
 
     if (tool.notice_types) {
@@ -4276,7 +4289,7 @@ export const StepView: React.FC<StepViewProps> = ({
             <div className="p-4 sm:p-5 pt-0">
               <div className="mb-3 sm:mb-3 h-px bg-[#d0e4f7]" />
               <div className="flex max-h-[60vh] flex-col gap-3 overflow-y-auto pr-1">
-                {(currentStep.citations || []).map((cite, index) => (
+                {(getCitations() || []).map((cite: any, index: number) => (
                   <a
                     key={index}
                     href={cite.link}

@@ -3215,7 +3215,17 @@
             "deadline_warning": {
               "heading": "Check the deadline on your actual notice",
               "body": "Do not assume you have a specific number of days. The deadline is printed on your RFE or NOID notice. USCIS states that the maximum response period is generally 12 weeks, but the notice controls the actual deadline for your case."
-            }
+            },
+            "citations": [
+              {
+                "text": "USCIS Case Status Tracker",
+                "link": "https://egov.uscis.gov/"
+              },
+              {
+                "text": "myUSCIS Online Account",
+                "link": "https://my.uscis.gov/"
+              }
+            ]
           }
         },
         {
@@ -3364,6 +3374,12 @@
                 "note": "Your copy of the response is important if questions arise later about what was submitted and when."
               }
             ],
+            "citations": [
+              {
+                "text": "USCIS Policy Manual - Request For Evidence",
+                "link": "https://www.uscis.gov/sites/default/files/document/policy-manual-updates/20210609-RFEs%26NOIDs.pdf"
+              }
+            ],
             "after_submission": {
               "heading": "After you submit your RFE response",
               "body": "Your case returns to USCIS review. USCIS will consider the submitted evidence and issue one of these outcomes.",
@@ -3498,6 +3514,12 @@
                 "note": "Keep the tracking number and delivery confirmation. Once the carrier shows delivered, save that proof."
               }
             ],
+            "citations": [
+              {
+                "text": "USCIS Policy Manual - Submitting Documents",
+                "link": "https://www.uscis.gov/policy-manual"
+              }
+            ],
             "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. If you have concerns about submitting irreplaceable original documents, consider consulting a qualified immigration attorney."
           }
         },
@@ -3590,6 +3612,12 @@
                 }
               ]
             },
+            "citations": [
+              {
+                "text": "USCIS Policy Manual - Notice of Intent to Deny",
+                "link": "https://www.uscis.gov/sites/default/files/document/policy-manual-updates/20210609-RFEs%26NOIDs.pdf"
+              }
+            ],
             "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. A NOID is a serious notice that may require legal analysis. Strongly consider consulting a qualified immigration attorney."
           }
         },
@@ -3606,7 +3634,7 @@
           "who": "Petitioner",
           "where": "my.uscis.gov",
           "timeline": "Varies by case",
-          "dependencies": ["step_1_19", "step_1_20", "step_1_21", "step_1_22"],
+          "dependencies": ["step_1_19", "step_1_20", "step_1_21", "step_1_22", "step_1_25"],
           "is_required": false,
           "display_order": 23,
           "tool_data": {
@@ -3752,6 +3780,129 @@
               }
             ],
             "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. An I-130 denial requires careful legal analysis. Strongly consider consulting a qualified immigration attorney before taking any action."
+          }
+        },
+        {
+          "step_key": "step_1_25",
+          "step_number": 25,
+          "step_name": "Respond to Other USCIS Notice",
+          "step_short_description": "General notice guidance · Biometrics, interview, or appointment",
+          "step_type": "guide",
+          "visible_when": {
+            "uscisNoticeType": "other"
+          },
+          "step_description": "USCIS may send notices that are not standard evidence requests — such as appointment notices (Form I-797C), interview notices, transfer notices, or fee adjustment requests. Follow these universal steps to respond appropriately.",
+          "who": "Petitioner / Beneficiary",
+          "where": "my.uscis.gov / mail",
+          "timeline": "Before deadline on notice",
+          "dependencies": ["step_1_18"],
+          "is_required": false,
+          "display_order": 25,
+          "guide_data": {
+            "id": "step_1_25",
+            "title": "Respond to Other USCIS Notice or Request",
+            "subtitle": "USCIS issues various types of notices during petition processing. Identify your specific notice type, follow the required instructions, and ensure timely compliance.",
+            "chips": [
+              { "label": "Petitioner / Beneficiary", "type": "role" },
+              { "label": "General Notice", "type": "track" },
+              { "label": "Action May Be Required", "type": "urgent" }
+            ],
+            "alert": {
+              "type": "info",
+              "heading": "Identify the Form Number and Heading",
+              "body": "Official USCIS notices are usually issued on Form I-797C (Notice of Action) or Form I-797. Look at the top-right header and notice type line to understand whether action is required or if it is purely informational."
+            },
+            "common_rfe_reasons": {
+              "title": "Common notice types you may receive",
+              "subtitle": "USCIS sends several standard communication types. Find your notice type below:",
+              "categories": [
+                {
+                  "id": "biometrics",
+                  "label": "Biometrics / ASC Appointment Notice (Form I-797C)",
+                  "description": "USCIS schedules an appointment at an Application Support Center (ASC) to capture fingerprints, photo, and signature. This is common if biometric verification is needed.",
+                  "evidence_examples": [
+                    "Bring the original appointment notice with barcode.",
+                    "Bring government-issued photo ID (valid passport, driver's license).",
+                    "If you cannot attend, follow the reschedule instructions on the notice immediately before the appointment date."
+                  ],
+                  "important_note": "Failing to appear for a biometrics appointment without rescheduling can result in petition abandonment and denial."
+                },
+                {
+                  "id": "interview",
+                  "label": "Interview Notice (Form I-797C)",
+                  "description": "While most consular I-130 petitions are decided without an in-person USCIS interview, USCIS occasionally requests a domestic petitioner interview or joint interview.",
+                  "evidence_examples": [
+                    "Original civil documents (marriage certificate, birth certificates).",
+                    "Updated proof of ongoing bona fide marriage (recent joint bills, photos, financial statements).",
+                    "Valid government-issued photo identification."
+                  ],
+                  "important_note": "Carefully review the checklist of items to bring on the interview notice and arrive 15 minutes before the scheduled time."
+                },
+                {
+                  "id": "transfer",
+                  "label": "Service Center Transfer Notice (Form I-797C)",
+                  "description": "USCIS frequently transfers cases between service centers (e.g., Nebraska, Texas, Potomac, California, Vermont) to balance processing workloads across the agency.",
+                  "evidence_examples": [
+                    "No action is required on your part.",
+                    "Your receipt number remains unchanged.",
+                    "Future correspondence will come from the new service center."
+                  ],
+                  "important_note": "A case transfer does not mean anything is wrong with your petition. It is routine workload management by USCIS."
+                },
+                {
+                  "id": "fee_rejection",
+                  "label": "Fee Correction / Rejection Notice",
+                  "description": "If payment could not be processed or an essential document was missing at intake, USCIS issues a notice explaining the intake issue.",
+                  "evidence_examples": [
+                    "Check the specific rejection reason printed on the notice.",
+                    "Submit corrected fee payment or missing signature promptly.",
+                    "Ensure payment instrument (check, credit card authorization Form G-1450) is valid and funded."
+                  ],
+                  "important_note": "Pay close attention to any refiling instructions and deadline dates provided on the notice."
+                }
+              ]
+            },
+            "guide_steps": [
+              {
+                "label": "General Notice · Step 1",
+                "title": "Read the entire notice thoroughly",
+                "text": "Check the notice type in the header, read all instructions, and verify whether USCIS requires a response, an appearance, or if the notice is purely informational.",
+                "note": "Look for specific keywords such as 'Action Required', 'Notice of Action', or 'Appointment Scheduled'."
+              },
+              {
+                "label": "General Notice · Step 2",
+                "title": "Check your USCIS online account",
+                "text": "Log in to my.uscis.gov and check the 'Documents' tab for an electronic PDF copy of the notice. Online notices are often available days before physical mail arrives.",
+                "note": "Ensure your mailing address in your USCIS account is completely accurate and up to date."
+              },
+              {
+                "label": "General Notice · Step 3",
+                "title": "Note any deadlines or appointment dates",
+                "text": "If the notice specifies an appointment date, time, and location, or gives a deadline to submit documents, mark it on your calendar immediately.",
+                "note": "Never wait until the last week. If rescheduling is needed, USCIS generally requires requests to be submitted well ahead of the appointment date."
+              },
+              {
+                "label": "General Notice · Step 4",
+                "title": "Comply with the exact instructions and retain proof",
+                "text": "Attend the appointment or submit the requested documentation according to the exact mailing or online upload instructions. Keep copies of everything submitted, along with delivery tracking numbers or stamped appointment notices.",
+                "note": "Save your stamped biometrics confirmation sheet or mailing receipt in your immigration records binder."
+              }
+            ],
+            "citations": [
+              {
+                "text": "USCIS Contact Center & Live Assistance",
+                "link": "https://www.uscis.gov/contactcenter"
+              },
+              {
+                "text": "USCIS Check Case Processing Times",
+                "link": "https://egov.uscis.gov/processing-times/"
+              },
+              {
+                "text": "USCIS Change of Address Online (Form AR-11)",
+                "link": "https://www.uscis.gov/addresschange"
+              }
+            ],
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. If you receive an uncommon notice or need clarification on complex instructions, consider contacting USCIS or consulting a qualified immigration attorney."
           }
         },
         {
