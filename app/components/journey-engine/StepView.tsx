@@ -125,6 +125,8 @@ import { MedicalExamTool } from "./components/MedicalExamTool";
 import { PolioCertificateTool } from "./components/PolioCertificateTool";
 import { PoliceClearanceTool } from "./components/PoliceClearanceTool";
 import { AwaitingReviewStep } from "./components/AwaitingReviewStep";
+import { GuideStepRenderer, AwaitingDecisionTool } from "./components/GuideStepRenderer";
+import { NoticeTriageTool } from "./components/NoticeTriageTool";
 // import { getStepIcon } from "./StepIcon";
 import { SubmissionReviewTool } from "./components/SubmissionReviewTool";
 import { MedicalExamGuideTool } from "./components/MedicalExamGuideTool";
@@ -1118,8 +1120,17 @@ export const StepView: React.FC<StepViewProps> = ({
     );
   };
 
+  const getCitations = () => {
+    return (
+      (currentStep as any)?.citations ||
+      (currentStep as any)?.guide_data?.citations ||
+      (currentStep as any)?.tool_data?.citations ||
+      []
+    );
+  };
+
   const renderCitationsSection = () => {
-    const citations = currentStep.citations;
+    const citations = getCitations();
     if (!citations || citations.length === 0) return null;
 
     return (
@@ -1152,6 +1163,21 @@ export const StepView: React.FC<StepViewProps> = ({
 
     if (tool.type === "awaiting_review") {
       return <AwaitingReviewStep data={tool} />;
+    }
+
+    if (tool.type === "awaiting_decision") {
+      return <AwaitingDecisionTool tool={tool} />;
+    }
+
+    if (tool.notice_types) {
+      return (
+        <NoticeTriageTool
+          tool={tool}
+          state={state}
+          actions={actions}
+          guard={stepEntitlement.guard}
+        />
+      );
     }
 
     // Theme detection based on icon or ID
@@ -1574,6 +1600,9 @@ export const StepView: React.FC<StepViewProps> = ({
 
           {/* AWAITING NVC REVIEW (Step 2.9 SPECIFIC) */}
           {tool.type === "awaiting_review" && <AwaitingReviewStep data={tool} />}
+
+          {/* AWAITING USCIS DECISION AFTER RESPONSE (step_1_23) */}
+          {tool.type === "awaiting_decision" && <AwaitingDecisionTool tool={tool} />}
 
           {/* GATHER ORIGINAL DOCUMENTS (Step 3.6) */}
           {tool.type === "gathering_checklist" &&
@@ -3066,6 +3095,14 @@ export const StepView: React.FC<StepViewProps> = ({
               </div>
             ) : currentStep.step_type === "tool" ? (
               renderToolStep()
+            ) : currentStep.step_type === "guide" ? (
+              <GuideStepRenderer
+                guideData={(currentStep as any).guide_data}
+                stepName={currentStep.step_name}
+                stepDescription={currentStep.step_description}
+                actions={actions}
+                state={state}
+              />
             ) : currentStep.step_type === "action" ? (
               <div
               // style={
@@ -4252,7 +4289,7 @@ export const StepView: React.FC<StepViewProps> = ({
             <div className="p-4 sm:p-5 pt-0">
               <div className="mb-3 sm:mb-3 h-px bg-[#d0e4f7]" />
               <div className="flex max-h-[60vh] flex-col gap-3 overflow-y-auto pr-1">
-                {(currentStep.citations || []).map((cite, index) => (
+                {(getCitations() || []).map((cite: any, index: number) => (
                   <a
                     key={index}
                     href={cite.link}

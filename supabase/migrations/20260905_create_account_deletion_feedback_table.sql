@@ -23,7 +23,6 @@ CREATE TABLE IF NOT EXISTS account_deletion_feedback (
   CHECK (
     reason IN (
       'journey_completed',
-      'no_longer_needed',
       'couldnt_find_needed',
       'missing_features',
       'technical_problem',

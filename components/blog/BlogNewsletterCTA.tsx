@@ -60,7 +60,7 @@ export default function BlogNewsletterCTA() {
           <div className="w-full max-w-md">
             <form
               onSubmit={handleSubmit}
-              className="dark:bg-background flex w-full items-center rounded-full border border-[#cbe3de] bg-white p-1 pl-4 shadow-sm focus-within:border-teal-500 focus-within:ring-2 focus-within:ring-teal-500/20 dark:border-teal-900/50"
+              className="dark:bg-background flex w-full items-center rounded-full border border-primary/20 bg-white p-1 pl-4 shadow-sm focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 dark:border-primary/30"
             >
               <input
                 type="email"
@@ -74,7 +74,7 @@ export default function BlogNewsletterCTA() {
               <button
                 type="submit"
                 disabled={isLoading || isSubscribed}
-                className="shrink-0 rounded-full bg-[#0d4f49] px-6 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-teal-700 disabled:opacity-60 sm:text-sm"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 shrink-0 rounded-full px-6 py-2.5 text-xs font-semibold shadow-sm transition disabled:opacity-60 sm:text-sm"
               >
                 {isLoading ? "Subscribing..." : isSubscribed ? "Subscribed!" : "Subscribe"}
               </button>
@@ -82,7 +82,7 @@ export default function BlogNewsletterCTA() {
             {message && (
               <p
                 className={`mt-2 text-center text-xs font-medium ${
-                  isError ? "text-red-500" : "text-teal-700 dark:text-teal-300"
+                  isError ? "text-red-500" : "text-primary"
                 }`}
               >
                 {message}

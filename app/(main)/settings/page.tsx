@@ -557,7 +557,7 @@ export default function SettingsPage() {
       <SurveyModal
         open={isSurveyOpen}
         onOpenChange={setIsSurveyOpen}
-        onContinue={async (reason, additionalComments) => {
+        onContinue={async ({ reason, followUpAnswers, additionalComments }) => {
           const response = await fetch("/api/account-deletion-feedback", {
             method: "POST",
             headers: {
@@ -565,6 +565,7 @@ export default function SettingsPage() {
             },
             body: JSON.stringify({
               reason,
+              follow_up_answers: followUpAnswers,
               additional_comments: additionalComments || null,
             }),
           });

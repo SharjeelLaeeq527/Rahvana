@@ -149,6 +149,8 @@ import { ApprovalNoticeTool } from "./components/ApprovalNoticeTool";
 import RegisterReceiptStep from "./components/RegisterReceiptStep";
 import TrackCaseStatusStep from "./components/TrackCaseStatusStep";
 import { AwaitingReviewStep } from "./components/AwaitingReviewStep";
+import { GuideStepRenderer, AwaitingDecisionTool } from "./components/GuideStepRenderer";
+import { NoticeTriageTool } from "./components/NoticeTriageTool";
 import { FinancialChecklistTool } from "./components/FinancialChecklistTool";
 import SponsorshipCalculatorTool from "./components/SponsorshipCalculatorTool";
 import { ApUpdateModal } from "./PortalWalletManager";
@@ -1188,8 +1190,17 @@ export const StepView: React.FC<StepViewProps> = ({
     );
   };
 
+  const getCitations = () => {
+    const stepCites =
+      (currentStep as any)?.citations ||
+      (currentStep as any)?.guide_data?.citations ||
+      (currentStep as any)?.tool_data?.citations;
+    if (stepCites && stepCites.length > 0) return stepCites;
+    return STEP_CITATIONS[sId] || [];
+  };
+
   const renderCitationsSection = () => {
-    const citations = STEP_CITATIONS[sId];
+    const citations = getCitations();
     if (!citations || citations.length === 0) return null;
 
     return (
@@ -1222,6 +1233,21 @@ export const StepView: React.FC<StepViewProps> = ({
 
     if (tool.type === "awaiting_review") {
       return <AwaitingReviewStep data={AWAITING_REVIEW_DATA} />;
+    }
+
+    if (tool.type === "awaiting_decision") {
+      return <AwaitingDecisionTool tool={tool} />;
+    }
+
+    if (tool.notice_types) {
+      return (
+        <NoticeTriageTool
+          tool={tool}
+          state={state}
+          actions={actions}
+          guard={stepEntitlement.guard}
+        />
+      );
     }
 
     // Theme detection based on icon or ID
@@ -1625,8 +1651,10 @@ export const StepView: React.FC<StepViewProps> = ({
             </div>
           )}
 
-          {/* AWAITING NVC REVIEW (Step 2.9 SPECIFIC) */}
           {tool.type === "awaiting_review" && <AwaitingReviewStep data={AWAITING_REVIEW_DATA} />}
+
+          {/* AWAITING USCIS DECISION AFTER RESPONSE (step_1_23) */}
+          {tool.type === "awaiting_decision" && <AwaitingDecisionTool tool={tool} />}
 
           {/* GATHER ORIGINAL DOCUMENTS (Step 3.6) */}
           {tool.type === "gathering_checklist" &&
@@ -1678,20 +1706,50 @@ export const StepView: React.FC<StepViewProps> = ({
                         }
                       },
                       onUpload: () => {
-                        if (!stepEntitlement.guard()) return;
                         const defId = mapDocumentNameToId(item.title);
-                        if (!ALL_DOCUMENTS.find((d) => d.id === defId)) {
-                          console.warn(
-                            "[upload] Unknown documentDefId:",
-                            defId,
-                            "for:",
-                            item.title
-                          );
-                          return;
-                        }
+                      
                         setActiveUploadId(item.id);
                         setActiveUploadType("doc");
-                        openUploadModal(defId);
+                      
+                        if (!stepEntitlement.guard()) return;
+                      
+                        const documentDef = ALL_DOCUMENTS.find((d) => d.id === defId);
+                      
+                        if (documentDef?.isDynamicCategory) {
+                          setMultipleUploadModalState({
+                            isOpen: true,
+                            categoryId: defId,
+                            documentName: item.title,
+                            options: documentDef.suggestions || [],
+                          });
+                        } else if (documentDef) {
+                          openUploadModal(defId);
+                        } else {
+                          // Def not in ALL_DOCUMENTS – find parent dynamic category
+                          const parentCat = ALL_DOCUMENTS.find(
+                            (d) =>
+                              d.isDynamicCategory &&
+                              d.suggestions?.some(
+                                (opt: string) => mapDocumentNameToId(opt) === defId
+                              )
+                          );
+                      
+                          if (parentCat) {
+                            setMultipleUploadModalState({
+                              isOpen: true,
+                              categoryId: parentCat.id,
+                              documentName: item.title,
+                              options: parentCat.suggestions || [],
+                            });
+                          } else {
+                            console.warn(
+                              "[upload] Unknown documentDefId:",
+                              defId,
+                              "for:",
+                              item.title
+                            );
+                          }
+                        }
                       },
                     });
                   }}
@@ -3113,6 +3171,14 @@ export const StepView: React.FC<StepViewProps> = ({
               </div>
             ) : currentStep.step_type === "tool" ? (
               renderToolStep()
+            ) : currentStep.step_type === "guide" ? (
+              <GuideStepRenderer
+                guideData={(currentStep as any).guide_data}
+                stepName={currentStep.step_name}
+                stepDescription={currentStep.step_description}
+                actions={actions}
+                state={state}
+              />
             ) : currentStep.step_type === "action" ? (
               <div
               // style={
@@ -4296,7 +4362,7 @@ export const StepView: React.FC<StepViewProps> = ({
             <div className="p-4 pt-0 sm:p-5">
               <div className="mb-3 h-px bg-[#d0e4f7] sm:mb-3" />
               <div className="flex max-h-[60vh] flex-col gap-3 overflow-y-auto pr-1">
-                {(STEP_CITATIONS[sId] || []).map((cite, index) => (
+                {(getCitations() || []).map((cite: any, index: number) => (
                   <a
                     key={index}
                     href={cite.link}

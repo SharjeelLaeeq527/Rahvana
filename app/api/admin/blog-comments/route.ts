@@ -22,6 +22,7 @@ interface AdminCommentRow {
   reply_to_name: string | null;
   created_at: string;
   updated_at: string;
+  edited_at: string | null;
 }
 
 export async function GET(request: NextRequest) {
@@ -79,6 +80,7 @@ export async function GET(request: NextRequest) {
       replyToName: r.reply_to_name,
       createdAt: r.created_at,
       updatedAt: r.updated_at,
+      editedAt: r.edited_at,
     }));
 
     return NextResponse.json({ comments });

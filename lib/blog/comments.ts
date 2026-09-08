@@ -16,6 +16,7 @@ interface CommentRow {
   reply_to_name: string | null;
   created_at: string;
   updated_at: string;
+  edited_at: string | null;
 }
 
 function mapRowToComment(row: CommentRow, currentUserId?: string | null): BlogComment {
@@ -31,6 +32,7 @@ function mapRowToComment(row: CommentRow, currentUserId?: string | null): BlogCo
     replyToName: row.reply_to_name || null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    editedAt: row.edited_at,
     isAuthor: Boolean(currentUserId && row.user_id === currentUserId),
     replies: [],
   };
@@ -63,9 +65,7 @@ export function organizeCommentThreads(comments: BlogComment[]): {
   // Attach replies sorted chronologically (oldest first) so conversation flows naturally
   for (const parent of topLevel) {
     const threadReplies = repliesMap.get(parent.id) || [];
-    threadReplies.sort(
-      (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-    );
+    threadReplies.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
     parent.replies = threadReplies;
   }
 
@@ -134,11 +134,7 @@ export async function submitComment(
     reply_to_name: input.replyToName || null,
   };
 
-  const { data, error } = await supabaseAdmin
-    .from(TABLE)
-    .insert(payload)
-    .select("*")
-    .single();
+  const { data, error } = await supabaseAdmin.from(TABLE).insert(payload).select("*").single();
 
   if (error) {
     console.error("[blog_comments] submitComment error:", error.message);
@@ -168,4 +164,34 @@ export async function deleteComment(
   }
 
   return true;
+}
+
+// Edits an existing comment by ID
+export async function editComment(
+  commentId: string,
+  userId: string,
+  newContent: string
+): Promise<BlogComment> {
+  const cleanContent = newContent.trim();
+  if (cleanContent.length < 2) {
+    throw new Error("Comment must be at least 2 characters long.");
+  }
+  if (cleanContent.length > 2000) {
+    throw new Error("Comment must not exceed 2,000 characters.");
+  }
+
+  const { data, error } = await supabaseAdmin
+    .from(TABLE)
+    .update({ content: cleanContent, edited_at: new Date().toISOString() })
+    .eq("id", commentId)
+    .eq("user_id", userId)
+    .select("*")
+    .single();
+
+  if (error) {
+    console.error("[blog_comments] editComment error:", error.message);
+    throw new Error("Failed to edit comment.");
+  }
+
+  return mapRowToComment(data as CommentRow, userId);
 }

@@ -10,7 +10,6 @@ const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || "ahmed1work2@gmail.com")
 
 const VALID_REASONS = [
   "journey_completed",
-  "no_longer_needed",
   "couldnt_find_needed",
   "missing_features",
   "technical_problem",
@@ -172,7 +171,7 @@ export async function GET(request: NextRequest) {
 
     let query = supabaseAdmin
       .from("account_deletion_feedback")
-      .select("id, reason, additional_comments, created_at", { count: "exact" })
+      .select("id, reason, follow_up_answers, additional_comments, created_at", { count: "exact" })
       .order("created_at", { ascending: false })
       .range(from, to);
 
