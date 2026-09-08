@@ -225,6 +225,17 @@ export function FormStep({
 
   const { main: mainQuestion, hint: hintText } = parseLabel(activeField.label);
 
+  // Info-only fields ("hidden" type) carry read-only guidance in their label.
+  // The first line is the heading; each following line renders on its own row.
+  const isInfoField = activeField.type === "hidden";
+  const infoLines = isInfoField
+    ? activeField.label
+        .split("\n")
+        .slice(1)
+        .map((line) => line.trim())
+        .filter(Boolean)
+    : [];
+
   const renderSubQuestions = (field: FormField) => {
     const hasSubQuestions = field.subQuestions && field.subQuestions.length > 0;
 
@@ -433,13 +444,51 @@ export function FormStep({
             <h2 className="text-[20px] md:text-[24px] font-semibold leading-[1.35] tracking-[-0.02em] text-gray-900 mb-2">
               {mainQuestion}
             </h2>
-            {hintText && (
+            {!isInfoField && hintText && (
               <p className="text-sm text-gray-600 mt-1">{hintText}</p>
             )}
           </div>
 
           {/* Input Section */}
-          <div>{renderSubQuestions(activeField)}</div>
+          {isInfoField ? (
+            <div className="rounded-xl border border-[#d0e8e9] bg-[#f2fafa] p-4 sm:p-5 space-y-3">
+              {infoLines.map((line, i) => {
+                // A line ending with ":" introduces the list below it.
+                if (line.endsWith(":")) {
+                  return (
+                    <p
+                      key={i}
+                      className="text-sm sm:text-[15px] font-medium leading-relaxed text-gray-800"
+                    >
+                      {line}
+                    </p>
+                  );
+                }
+                // A line starting with "Note" is shown as a distinct warning callout.
+                if (/^note\b/i.test(line)) {
+                  return (
+                    <div
+                      key={i}
+                      className="mt-1 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2.5 text-sm leading-relaxed text-amber-900"
+                    >
+                      {line}
+                    </div>
+                  );
+                }
+                // Every other line is one point on its own row.
+                return (
+                  <div key={i} className="flex items-start gap-3">
+                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#0d7377]" />
+                    <p className="text-sm sm:text-[15px] leading-relaxed text-gray-700">
+                      {line}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div>{renderSubQuestions(activeField)}</div>
+          )}
         </motion.div>
       </AnimatePresence>
 
