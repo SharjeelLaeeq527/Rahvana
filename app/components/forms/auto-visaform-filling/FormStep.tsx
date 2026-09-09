@@ -225,10 +225,11 @@ export function FormStep({
 
   const { main: mainQuestion, hint: hintText } = parseLabel(activeField.label);
 
-  // Info-only fields ("hidden" type) carry read-only guidance in their label.
+  // Info-only fields ("hidden" type without subQuestions) carry read-only guidance in their label.
   // The first line is the heading; each following line renders on its own row.
-  const isInfoField = activeField.type === "hidden";
-  const infoLines = isInfoField
+  const hasSubQuestions = !!(activeField.subQuestions && activeField.subQuestions.length > 0);
+  const isInfoField = activeField.type === "hidden" && !hasSubQuestions;
+  const infoLines = activeField.type === "hidden"
     ? activeField.label
         .split("\n")
         .slice(1)
@@ -237,9 +238,9 @@ export function FormStep({
     : [];
 
   const renderSubQuestions = (field: FormField) => {
-    const hasSubQuestions = field.subQuestions && field.subQuestions.length > 0;
+    const hasSubs = field.subQuestions && field.subQuestions.length > 0;
 
-    if (!hasSubQuestions) {
+    if (!hasSubs) {
       return renderInput(field);
     }
 
@@ -247,7 +248,8 @@ export function FormStep({
       (subQ): subQ is FormField => !subQ.condition || subQ.condition(formData)
     );
 
-    const progressiveIndex = progressiveSubQuestionIndices[field.key] ?? -1;
+    const progressiveIndex =
+      progressiveSubQuestionIndices[field.key] ?? (field.type === "hidden" ? 0 : -1);
     const visibleSubQuestions = applicableSubQuestions.slice(0, progressiveIndex + 1);
     const shouldRenderParent = field.type !== "hidden";
     // const shouldRenderParent = field.options && field.options.length > 0;
@@ -450,7 +452,7 @@ export function FormStep({
           </div>
 
           {/* Input Section */}
-          {isInfoField ? (
+          {infoLines.length > 0 && (
             <div className="rounded-xl border border-[#d0e8e9] bg-[#f2fafa] p-4 sm:p-5 space-y-3">
               {infoLines.map((line, i) => {
                 // A line ending with ":" introduces the list below it.
@@ -486,9 +488,9 @@ export function FormStep({
                 );
               })}
             </div>
-          ) : (
-            <div>{renderSubQuestions(activeField)}</div>
           )}
+
+          {!isInfoField && <div>{renderSubQuestions(activeField)}</div>}
         </motion.div>
       </AnimatePresence>
 

@@ -829,7 +829,8 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
     const currentField = visibleFields[currentQuestionIndex];
     if (currentField) {
-      const currentSubCount = progressiveSubQuestionIndices[currentField.key] ?? -1;
+      const minSubCount = currentField.type === "hidden" ? 0 : -1;
+      const currentSubCount = progressiveSubQuestionIndices[currentField.key] ?? minSubCount;
       const applicableSubQuestions = (currentField.subQuestions || []).filter(
         (subQ) => !subQ.condition || subQ.condition(formData)
       );
@@ -841,7 +842,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       ) {
         setProgressiveSubQuestionIndices((prev) => ({
           ...prev,
-          [currentField.key]: (currentSubCount ?? -1) + 1,
+          [currentField.key]: currentSubCount + 1,
         }));
         return;
       }
@@ -899,12 +900,13 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     setNavigationDirection("prev");
     const currentField = visibleFields[currentQuestionIndex];
     if (currentField) {
-      const currentSubCount = progressiveSubQuestionIndices[currentField.key] ?? -1;
-      if (currentSubCount > -1) {
+      const minSubCount = currentField.type === "hidden" ? 0 : -1;
+      const currentSubCount = progressiveSubQuestionIndices[currentField.key] ?? minSubCount;
+      if (currentSubCount > minSubCount) {
         // Hide last shown sub-question
         setProgressiveSubQuestionIndices((prev) => ({
           ...prev,
-          [currentField.key]: Math.max(-1, currentSubCount - 1),
+          [currentField.key]: Math.max(minSubCount, currentSubCount - 1),
         }));
         return;
       }
