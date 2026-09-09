@@ -147,6 +147,11 @@ export const ARTICLES: Article[] = [
       {
         id: "bluf-overview",
         h2: "1. Executive Summary & Key Distinction",
+        image: {
+          url: "/assets/images/blog/blog1-sec1.png",
+          alt: "IR-1 vs CR-1 Executive Summary & Key Distinction",
+          caption: "Understanding IR-1 vs CR-1 Visa Classification for Pakistani Spouses",
+        },
         paragraphs: [
           "Navigating the U.S. immigrant visa process for a Pakistani spouse can feel overwhelming. The two primary immigrant visa categories available to spouses of U.S. Citizens are the CR-1 (Conditional Resident) visa and the IR-1 (Immediate Relative) visa.",
           "It is important to note that you do NOT choose between filing for a CR-1 or an IR-1 visa. USCIS and the Department of State automatically assign your category based on how long you have been legally married on the exact day your immigrant visa is approved at the U.S. Embassy in Islamabad or when you enter the United States.",
@@ -199,6 +204,11 @@ export const ARTICLES: Article[] = [
       {
         id: "step-by-step-journey",
         h2: "3. Step-by-Step Immigration Journey (USCIS to US Embassy Islamabad)",
+        image: {
+          url: "/assets/images/blog/blog1-sec3.png",
+          alt: "Step-by-Step Immigration Journey from USCIS to US Embassy Islamabad",
+          caption: "Complete 3-Phase Roadmap: USCIS, NVC, and Islamabad Embassy Interview",
+        },
         paragraphs: [
           "The IR-1/CR-1 visa journey follows three sequential phases. Understanding where your case currently sits is vital to preventing multi-month administrative delays.",
           "Phase 1: USCIS Petition Filing (Form I-130). The U.S. citizen spouse submits Form I-130 online or via mail, attaching proof of U.S. citizenship, proof of legal marriage (Nikah Nama & NADRA Marriage Registration Certificate), and bona fide marriage evidence (joint travel photos, money transfers, communication logs, joint bank accounts). Approval currently takes 10 to 13 months.",
@@ -221,6 +231,11 @@ export const ARTICLES: Article[] = [
       {
         id: "nvc-documents-pakistan",
         h2: "4. Mandatory Civil Documents Checklist for NVC (Pakistan Specific)",
+        image: {
+          url: "/assets/images/blog/blog1-sec4.png",
+          alt: "Mandatory Civil Documents Checklist for NVC Pakistan",
+          caption: "Essential Pakistani Civil Documents: Nikah Nama, NADRA MRC, Police Certificate, and FRC",
+        },
         paragraphs: [
           "Uploading incorrect or improperly formatted civil documents is the #1 cause of NVC rejection notices (FE Notes). The Department of State enforces strict reciprocity rules for documents issued in Pakistan.",
           "1. Original Urdu Nikah Nama & Certified English Translation: You MUST upload the complete original 4-page Urdu Nikah Nama signed by the Nikah Registrar and Union Council official, along with an official English translation signed and stamped by an authorized translation agency.",
@@ -238,6 +253,11 @@ export const ARTICLES: Article[] = [
       {
         id: "financial-sponsorship-i864",
         h2: "5. Financial Support & Joint Sponsor Rules (Form I-864)",
+        image: {
+          url: "/assets/images/blog/blog1-sec5.png",
+          alt: "Financial Support & Joint Sponsor Rules Form I-864",
+          caption: "Form I-864 Affidavit of Support Income Requirements and Joint Sponsorship Rules",
+        },
         paragraphs: [
           "The U.S. citizen petitioner must meet at least 125% of the Federal Poverty Guidelines for their household size. For a 2-person household (petitioner + immigrating spouse), the minimum annual gross income required is $25,550 (2026 guideline estimate).",
           "What if the petitioner does not meet the income threshold? You can add a Joint Sponsor. A Joint Sponsor must be a U.S. Citizen or Lawful Permanent Resident residing in the U.S. who earns 125% of the poverty guideline for their own household size PLUS the immigrating spouse.",
@@ -254,6 +274,11 @@ export const ARTICLES: Article[] = [
       {
         id: "embassy-interview-prep",
         h2: "6. US Embassy Islamabad Interview & 221(g) Prevention",
+        image: {
+          url: "/assets/images/blog/blog1-sec6.png",
+          alt: "US Embassy Islamabad Interview & 221(g) Prevention",
+          caption: "Preparing for the Consular Interview at the U.S. Embassy in Islamabad",
+        },
         paragraphs: [
           "The consular interview at the U.S. Embassy in Islamabad (located in the Diplomatic Enclave) typically lasts between 5 to 12 minutes. The consular officer's main objective is verifying that your marriage is genuine (bona fide) and not entered into solely for immigration benefits.",
           "Common US Embassy Islamabad Interview Questions:",

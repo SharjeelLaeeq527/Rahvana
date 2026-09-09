@@ -14,17 +14,20 @@ const VALID_REASONS = [
 
 type DeletionReason = (typeof VALID_REASONS)[number];
 
+/**
+ * Structured dropdown options.
+ *
+ * `missing_features` is intentionally excluded because it uses
+ * a required text-only follow-up question.
+ *
+ * `other` is also excluded because it has no follow-up question.
+ */
 const VALID_FOLLOW_UP_OPTIONS: Record<
-  Exclude<DeletionReason, "other">,
+  Exclude<DeletionReason, "other" | "missing_features">,
   Record<string, string[]>
 > = {
   journey_completed: {
-    journey_stage: [
-      "visa_received",
-      "immigration_process_completed",
-      "no_longer_need_assistance",
-      "other",
-    ],
+    journey_stage: ["visa_approved", "visa_denied", "visa_refused", "other"],
   },
 
   couldnt_find_needed: {
@@ -34,18 +37,6 @@ const VALID_FOLLOW_UP_OPTIONS: Record<
       "document_checklists",
       "forms_assistance",
       "case_status_information",
-      "other",
-    ],
-  },
-
-  missing_features: {
-    feature_needed: [
-      "better_journey_tracking",
-      "more_visa_categories",
-      "document_assistance",
-      "case_status_tracking",
-      "notifications_reminders",
-      "more_personalized_guidance",
       "other",
     ],
   },
@@ -77,9 +68,8 @@ const VALID_FOLLOW_UP_OPTIONS: Record<
       "immigration_attorney",
       "another_immigration_platform",
       "government_official_resources",
-      "community_social_media",
+      "family_friends_or_helper",
       "personal_research",
-      "someone_helping_directly",
       "other",
     ],
   },
@@ -89,30 +79,58 @@ function isValidReason(value: unknown): value is DeletionReason {
   return typeof value === "string" && VALID_REASONS.includes(value as DeletionReason);
 }
 
+// Required dropdown answer key for each reason that has a structured follow-up question.
 const FOLLOW_UP_ANSWER_KEYS: Record<
-  Exclude<DeletionReason, "other">,
+  Exclude<DeletionReason, "other" | "missing_features">,
   string
 > = {
   journey_completed: "journey_stage",
   couldnt_find_needed: "information_needed",
-  missing_features: "feature_needed",
   technical_problem: "problem_type",
   privacy_security_concern: "concern_type",
   found_alternative: "alternative_type",
 };
 
-const OPTIONAL_TEXT_KEYS: Partial<
-  Record<Exclude<DeletionReason, "other">, string>
-> = {
+// Required text-only follow-up fields.
+const REQUIRED_TEXT_KEYS: Partial<Record<DeletionReason, string>> = {
+  missing_features: "feature_needed_details",
+};
+
+// Optional text fields that can accompany structured dropdown follow-up questions.
+const OPTIONAL_TEXT_KEYS: Partial<Record<Exclude<DeletionReason, "other">, string>> = {
   technical_problem: "what_were_you_trying_to_do",
   found_alternative: "additional_context",
 };
 
-function validateFollowUpAnswers(
-  reason: DeletionReason,
-  answers: unknown
-): boolean {
-  // "Other" does not have a structured follow-up question.
+// Maximum length for all free-text survey responses.
+const MAX_TEXT_LENGTH = 1000;
+
+/**
+ * Validates the follow-up answers according to the selected
+ * deletion reason.
+ *
+ * Rules:
+ *
+ * - other:
+ *   No structured follow-up is required.
+ *
+ * - missing_features:
+ *   Requires `feature_needed_details` as non-empty text.
+ *
+ * - all other reasons:
+ *   Require the appropriate dropdown answer.
+ *   Some reasons may additionally contain optional text.
+ *
+ * - Unexpected keys are rejected.
+ */
+function validateFollowUpAnswers(reason: DeletionReason, answers: unknown): boolean {
+  /**
+   * OTHER
+   *
+   * There is no follow-up question for "Other".
+   * The frontend normally sends `{}`, but null/undefined
+   * are also accepted.
+   */
   if (reason === "other") {
     if (answers === undefined || answers === null) {
       return true;
@@ -121,7 +139,7 @@ function validateFollowUpAnswers(
     return typeof answers === "object" && !Array.isArray(answers);
   }
 
-  // All other reasons require a follow-up answer.
+  // All remaining reasons must provide an object.
   if (
     answers === undefined ||
     answers === null ||
@@ -133,48 +151,76 @@ function validateFollowUpAnswers(
 
   const followUpAnswers = answers as Record<string, unknown>;
 
+  /**
+   * MISSING FEATURES
+   *
+   * Text-only follow-up.
+   */
+  if (reason === "missing_features") {
+    const requiredTextKey = REQUIRED_TEXT_KEYS[reason];
+
+    if (!requiredTextKey) {
+      return false;
+    }
+
+    const textValue = followUpAnswers[requiredTextKey];
+
+    if (typeof textValue !== "string" || !textValue.trim()) {
+      return false;
+    }
+
+    if (textValue.length > MAX_TEXT_LENGTH) {
+      return false;
+    }
+
+    // Only feature_needed_details is allowed for this reason.
+    for (const key of Object.keys(followUpAnswers)) {
+      if (key !== requiredTextKey) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  // All other non-"other" reasons have a required dropdown answer.
   const answerKey = FOLLOW_UP_ANSWER_KEYS[reason];
+
+  if (!answerKey) {
+    return false;
+  }
+
   const answer = followUpAnswers[answerKey];
 
-  // Required dropdown answer.
+  // Dropdown answer must be a non-empty string.
   if (typeof answer !== "string" || !answer.trim()) {
     return false;
   }
 
-  // Must be one of the configured options.
+  // Dropdown answer must be one of the configured options.
   const allowedOptions = VALID_FOLLOW_UP_OPTIONS[reason][answerKey];
 
   if (!allowedOptions?.includes(answer)) {
     return false;
   }
 
-  // Optional text follow-up.
+  // Validate optional text field if this reason supports one.
   const optionalTextKey = OPTIONAL_TEXT_KEYS[reason];
 
   if (optionalTextKey) {
     const optionalText = followUpAnswers[optionalTextKey];
 
-    if (
-      optionalText !== undefined &&
-      optionalText !== null &&
-      typeof optionalText !== "string"
-    ) {
+    if (optionalText !== undefined && optionalText !== null && typeof optionalText !== "string") {
       return false;
     }
 
-    if (
-      typeof optionalText === "string" &&
-      optionalText.length > 1000
-    ) {
+    if (typeof optionalText === "string" && optionalText.length > MAX_TEXT_LENGTH) {
       return false;
     }
   }
 
   // Reject unexpected keys.
-  const allowedKeys = new Set([
-    answerKey,
-    ...(optionalTextKey ? [optionalTextKey] : []),
-  ]);
+  const allowedKeys = new Set([answerKey, ...(optionalTextKey ? [optionalTextKey] : [])]);
 
   for (const key of Object.keys(followUpAnswers)) {
     if (!allowedKeys.has(key)) {
@@ -189,6 +235,7 @@ export async function POST(request: Request) {
   try {
     const supabase = await createClient();
 
+    // Authenticate the user.
     const {
       data: { user },
       error: userError,
@@ -198,11 +245,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
+    // Parse request body.
     const body = await request.json();
 
     const { reason, follow_up_answers, additional_comments } = body;
 
-    // Validate reason
+    // Validate deletion reason.
     if (!isValidReason(reason)) {
       return NextResponse.json(
         {
@@ -212,7 +260,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validate follow-up answers
+    // Validate follow-up answers.
     if (!validateFollowUpAnswers(reason, follow_up_answers)) {
       return NextResponse.json(
         {
@@ -222,17 +270,22 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validate optional comments
+    // Validate optional additional comments.
     if (
       additional_comments !== undefined &&
       additional_comments !== null &&
       typeof additional_comments !== "string"
     ) {
-      return NextResponse.json({ error: "Invalid additional comments." }, { status: 400 });
+      return NextResponse.json(
+        {
+          error: "Invalid additional comments.",
+        },
+        { status: 400 }
+      );
     }
 
-    // Prevent excessively large comments
-    if (typeof additional_comments === "string" && additional_comments.length > 1000) {
+    // Prevent excessively large comments.
+    if (typeof additional_comments === "string" && additional_comments.length > MAX_TEXT_LENGTH) {
       return NextResponse.json(
         {
           error: "Additional comments cannot exceed 1000 characters.",
@@ -241,10 +294,14 @@ export async function POST(request: Request) {
       );
     }
 
+    // Clean additional comments.
     const cleanedComments =
       typeof additional_comments === "string" ? additional_comments.trim() : "";
 
-      const cleanedFollowUpAnswers =
+    // Clean follow-up answers.
+    //
+    // All string values are trimmed before storage.
+    const cleanedFollowUpAnswers =
       follow_up_answers &&
       typeof follow_up_answers === "object" &&
       !Array.isArray(follow_up_answers)
@@ -256,6 +313,12 @@ export async function POST(request: Request) {
           )
         : {};
 
+    /**
+     * Save feedback.
+     *
+     * `user_id` should remain nullable in the database so the
+     * feedback survives account deletion via ON DELETE SET NULL.
+     */
     const { error: insertError } = await supabase.from("account_deletion_feedback").insert({
       user_id: user.id,
       reason,
@@ -267,15 +330,24 @@ export async function POST(request: Request) {
       console.error("[account-deletion-feedback] Insert error:", insertError);
 
       return NextResponse.json(
-        { error: "Failed to save account deletion feedback." },
+        {
+          error: "Failed to save account deletion feedback.",
+        },
         { status: 500 }
       );
     }
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({
+      success: true,
+    });
   } catch (err) {
     console.error("[account-deletion-feedback] Unexpected error:", err);
 
-    return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: "Something went wrong.",
+      },
+      { status: 500 }
+    );
   }
 }
