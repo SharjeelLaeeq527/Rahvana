@@ -2637,6 +2637,8 @@ export const formFields: RichField[] = [
         key: "household_member1_alien_number",
         pdfKey: "household_member1_alien_number",
         label: "A-Number? (if any)",
+        tooltip:
+          "An A-Number (Alien Registration Number) is a 7 to 9 digit number USCIS gives to non-citizens. You can find it on their green card, work permit, or immigration notices. Leave blank if they do not have one.",
         type: "text",
         section: "Part 4. Information About the Immigrants You Are Sponsoring",
         placeholder: "8 or 9 digits",
@@ -2648,6 +2650,8 @@ export const formFields: RichField[] = [
         key: "household_member1_uscis_account",
         pdfKey: "household_member1_uscis_account",
         label: "USCIS Online Account Number? (if any)",
+        tooltip:
+          "This is the number created when someone makes an account at my.uscis.gov to file or track cases online. It is not the same as an A-Number. Leave blank if they do not have an online account.",
         type: "text",
         section: "Part 4. Information About the Immigrants You Are Sponsoring",
         placeholder: "8 to 12 digits",
@@ -2704,6 +2708,8 @@ export const formFields: RichField[] = [
         key: "household_member2_alien_number",
         pdfKey: "household_member2_alien_number",
         label: "A-Number? (if any)",
+        tooltip:
+          "An A-Number (Alien Registration Number) is a 7 to 9 digit number USCIS gives to non-citizens. You can find it on their green card, work permit, or immigration notices. Leave blank if they do not have one.",
         type: "text",
         section: "Part 4. Information About the Immigrants You Are Sponsoring",
         placeholder: "8 or 9 digits",
@@ -2715,6 +2721,8 @@ export const formFields: RichField[] = [
         key: "household_member2_uscis_account",
         pdfKey: "household_member2_uscis_account",
         label: "USCIS Online Account Number? (if any)",
+        tooltip:
+          "This is the number created when someone makes an account at my.uscis.gov to file or track cases online. It is not the same as an A-Number. Leave blank if they do not have an online account.",
         type: "text",
         section: "Part 4. Information About the Immigrants You Are Sponsoring",
         placeholder: "8 to 12 digits",
@@ -2771,6 +2779,8 @@ export const formFields: RichField[] = [
         key: "household_member3_alien_number",
         pdfKey: "household_member3_alien_number",
         label: "A-Number? (if any)",
+        tooltip:
+          "An A-Number (Alien Registration Number) is a 7 to 9 digit number USCIS gives to non-citizens. You can find it on their green card, work permit, or immigration notices. Leave blank if they do not have one.",
         type: "text",
         section: "Part 4. Information About the Immigrants You Are Sponsoring",
         placeholder: "8 or 9 digits",
@@ -2782,6 +2792,8 @@ export const formFields: RichField[] = [
         key: "household_member3_uscis_account",
         pdfKey: "household_member3_uscis_account",
         label: "USCIS Online Account Number? (if any)",
+        tooltip:
+          "This is the number created when someone makes an account at my.uscis.gov to file or track cases online. It is not the same as an A-Number. Leave blank if they do not have an online account.",
         type: "text",
         section: "Part 4. Information About the Immigrants You Are Sponsoring",
         placeholder: "8 to 12 digits",
@@ -2839,6 +2851,8 @@ export const formFields: RichField[] = [
         key: "household_member4_alien_number",
         pdfKey: "household_member4_alien_number",
         label: "A-Number? (if any)",
+        tooltip:
+          "An A-Number (Alien Registration Number) is a 7 to 9 digit number USCIS gives to non-citizens. You can find it on their green card, work permit, or immigration notices. Leave blank if they do not have one.",
         type: "text",
         section: "Part 4. Information About the Immigrants You Are Sponsoring",
         placeholder: "8 or 9 digits",
@@ -2850,6 +2864,8 @@ export const formFields: RichField[] = [
         key: "household_member4_uscis_account",
         pdfKey: "household_member4_uscis_account",
         label: "USCIS Online Account Number? (if any)",
+        tooltip:
+          "This is the number created when someone makes an account at my.uscis.gov to file or track cases online. It is not the same as an A-Number. Leave blank if they do not have an online account.",
         type: "text",
         section: "Part 4. Information About the Immigrants You Are Sponsoring",
         placeholder: "8 to 12 digits",
@@ -3769,6 +3785,8 @@ export const formFields: RichField[] = [
         key: "p11_add_info_alien_number",
         pdfKey: "p11_add_info_alien_number",
         label: "Your A-Number? (if any)",
+        tooltip:
+          "An A-Number (Alien Registration Number) is a 7 to 9 digit number USCIS gives to non-citizens. You can find it on a green card, work permit, or immigration notices. Leave blank if there is none.",
         type: "text",
         section: "Part 11. Additional Information",
         placeholder: "8 or 9 digits",

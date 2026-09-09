@@ -656,6 +656,8 @@ export const formFields: RichField[] = [
         type: "text",
         section: "Part 1: About You",
         placeholder: "7-9 digits (no letter A)",
+        tooltip:
+          "An A-Number (Alien Registration Number) is a 7 to 9 digit number USCIS gives to non-citizens. You can find it on a green card, work permit, or immigration notices. Leave blank if there is none.",
         condition: (data) => data.pt1_hasANum === "Yes",
         validate: (v) => (/^\d{7,9}$/.test(v) ? null : "7-9 digits only, no letter A"),
       },
@@ -694,6 +696,8 @@ export const formFields: RichField[] = [
         type: "text",
         section: "Part 1: About You",
         placeholder: "8-12 digits",
+        tooltip:
+          "This is the number created when you make an account at my.uscis.gov to file or track cases online. It is not the same as an A-Number. Leave blank if there is no online account.",
         condition: (data) => data.pt1_hasUscis === "Yes",
         validate: (v) => (/^\d{8,12}$/.test(v) ? null : "Should be 8-12 digits"),
       },
@@ -721,6 +725,8 @@ export const formFields: RichField[] = [
         type: "text",
         section: "Part 1: About You",
         placeholder: "9 digits, no dashes",
+        tooltip:
+          "A 9-digit U.S. Social Security Number, found on the Social Security card. Only enter it if there is one.",
         condition: (data) => data.pt1_hasSSN === "Yes",
         validate: (v) => (/^\d{9}$/.test(v) ? null : "Exactly 9 digits, no dashes or spaces"),
       },
@@ -1926,6 +1932,8 @@ export const formFields: RichField[] = [
         type: "text",
         section: "Part 1: Citizenship",
         placeholder: "Certificate number",
+        tooltip:
+          "This is the certificate number printed on your Certificate of Naturalization or Certificate of Citizenship, usually near the top. Leave blank if you do not have one of those certificates.",
         condition: (data) => data.pt1_hasCert === "Yes",
       },
     ],
@@ -2171,6 +2179,8 @@ export const formFields: RichField[] = [
         type: "text",
         section: "Part 2: Beneficiary Name",
         placeholder: "7-9 digits (no letter A)",
+        tooltip:
+          "An A-Number (Alien Registration Number) is a 7 to 9 digit number USCIS gives to non-citizens. The fiance can find it on a green card, work permit, or immigration notices. Leave blank if there is none.",
         condition: (data) => data.pt2_hasANum === "Yes",
         validate: (v) => (/^\d{7,9}$/.test(v) ? null : "7-9 digits, no letter A"),
       },
@@ -2195,6 +2205,8 @@ export const formFields: RichField[] = [
         type: "text",
         section: "Part 2: Beneficiary Name",
         placeholder: "9 digits, no dashes",
+        tooltip:
+          "A 9-digit U.S. Social Security Number, found on the Social Security card. Only enter it if the fiance has one.",
         condition: (data) => data.pt2_hasSSN === "Yes",
         validate: (v) => (/^\d{9}$/.test(v) ? null : "Exactly 9 digits"),
       },

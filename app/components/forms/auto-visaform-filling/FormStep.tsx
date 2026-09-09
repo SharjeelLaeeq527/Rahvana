@@ -267,6 +267,14 @@ export function FormStep({
             <label className="text-[20px] md:text-[24px] font-semibold leading-[1.35] tracking-[-0.02em] text-gray-900">
               {subQ.label}
             </label>
+            {subQ.tooltip && (
+              <ExpandableTooltip
+                icon="?"
+                title="What does this mean?"
+                message={subQ.tooltip}
+                defaultOpen={false}
+              />
+            )}
             {renderInput(subQ as FormField)}
           </motion.div>
         ))}

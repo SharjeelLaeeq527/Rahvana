@@ -277,6 +277,8 @@ const generatePriorChildrenFields = (startIndex: number, endIndex: number): Fiel
           pdfKey: "N/A",
           label: "What is your Child's Alien Registration Number (A-Number)? (If any)",
           placeholder: "123456789",
+          tooltip:
+            "An A-Number (Alien Registration Number) is a 7 to 9 digit number USCIS gives to non-citizens. You can find it on a green card, work permit, or immigration notices. Leave blank if the child never had one.",
           type: "text",
           maxLength: 9,
           section: "Part 7. Information About Your Children",
@@ -568,6 +570,8 @@ export const formFields: Field[] = [
         pdfKey: "p1_alien_number",
         label: "What is your Alien Registration Number (A-Number)?",
         placeholder: "123456789",
+        tooltip:
+          "An A-Number (Alien Registration Number) is a 7 to 9 digit number USCIS gives to non-citizens. You can find it on a green card, work permit, or immigration notices. Leave blank if you never had one.",
         type: "text",
         maxLength: 9,
         condition: (d) => d.p1_has_alien_number === "Yes",
@@ -723,6 +727,8 @@ export const formFields: Field[] = [
         pdfKey: "p1_item4_alien_number",
         label: "What is your Alien Registration Number (A-Number)?",
         placeholder: "123456789",
+        tooltip:
+          "An A-Number (Alien Registration Number) is a 7 to 9 digit number USCIS gives to non-citizens. You can find it on a green card, work permit, or immigration notices. Leave blank if you never had one.",
         type: "text",
         maxLength: 9,
         condition: (d) => d.p1_item4_has_alien === "Yes",

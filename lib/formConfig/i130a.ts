@@ -33,6 +33,8 @@ export const formFields: Field[] = [
         label:
           "Please provide your attorney's USCIS Online Account Number. This is a unique 12-digit number they use for online filings.",
         type: "text",
+        tooltip:
+          "This is the number created when your attorney makes an account at my.uscis.gov to file or track cases online. It is not the same as an A-Number. Leave blank if they have no online account.",
         condition: (d) => d.has_attorney_uscis_account === "Yes",
       },
     ],
@@ -52,6 +54,8 @@ export const formFields: Field[] = [
         pdfKey: "attorney_bar_number",
         label: "What is your attorney's State Bar Number?",
         type: "text",
+        tooltip:
+          "A State Bar Number is the license ID a lawyer receives from the state bar association where they are allowed to practice law. Your attorney will know their own number.",
         condition: (d) => d.has_attorney_bar_number === "Yes",
       },
     ],
@@ -72,6 +76,8 @@ export const formFields: Field[] = [
         pdfKey: "p1_volag_number",
         label: "What is your Volag Number?",
         type: "text",
+        tooltip:
+          "A Volag Number is an identifying number given to a nonprofit or voluntary agency that helps people with immigration. Leave blank if no such agency is representing you.",
         condition: (d) => d.has_volag_number === "Yes",
       },
     ],
@@ -96,6 +102,8 @@ export const formFields: Field[] = [
         pdfKey: "p1_alien_number",
         label: "What is your Alien Registration Number (A-Number)?",
         type: "text",
+        tooltip:
+          "An A-Number (Alien Registration Number) is a 7 to 9 digit number USCIS gives to non-citizens. You can find it on a green card, work permit, or immigration notices. Leave blank if there is none.",
         condition: (d) => d.p1_has_alien_number === "Yes",
         maxLength: 9,
       },
@@ -116,6 +124,8 @@ export const formFields: Field[] = [
         pdfKey: "p1_uscis_account",
         label: "What is your USCIS Online Account Number?",
         type: "text",
+        tooltip:
+          "This is the number created when you make an account at my.uscis.gov to file or track cases online. It is not the same as an A-Number. Leave blank if there is no online account.",
         condition: (d) => d.p1_has_uscis_account === "Yes",
         maxLength: 12,
       },

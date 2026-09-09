@@ -806,6 +806,8 @@ export const formFields: RichField[] = [
         type: "text",
         section: "Part 1: Your Information",
         placeholder: "8 or 9 digits (no letter A)",
+        tooltip:
+          "An A-Number (Alien Registration Number) is a 7 to 9 digit number USCIS gives to non-citizens. You can find it on a green card, work permit, or immigration notices. Leave blank if there is none.",
         condition: (data) => data.pt1_hasANum === "Yes",
         validate: (v) => (/^\d{8,9}$/.test(v) ? null : "8 or 9 digits only, no letter A"),
       },
@@ -835,6 +837,8 @@ export const formFields: RichField[] = [
         type: "text",
         section: "Part 1: Your Information",
         placeholder: "8 to 12 digits",
+        tooltip:
+          "This is the number created when you make an account at my.uscis.gov to file or track cases online. It is not the same as an A-Number. Leave blank if there is no online account.",
         condition: (data) => data.pt1_hasUscis === "Yes",
         validate: (v) => (/^\d{8,12}$/.test(v) ? null : "8 to 12 digits"),
       },
