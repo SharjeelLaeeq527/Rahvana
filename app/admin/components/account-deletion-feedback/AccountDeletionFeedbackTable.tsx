@@ -23,7 +23,6 @@ import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 
 type DeletionReason =
   | "journey_completed"
-  | "no_longer_needed"
   | "couldnt_find_needed"
   | "missing_features"
   | "technical_problem"
@@ -34,6 +33,7 @@ type DeletionReason =
 interface AccountDeletionFeedback {
   id: string;
   reason: DeletionReason;
+  follow_up_answers: Record<string, string> | null;
   additional_comments: string | null;
   created_at: string;
 }
@@ -65,10 +65,6 @@ const DELETION_REASONS: {
     label: "Journey Completed",
   },
   {
-    value: "no_longer_needed",
-    label: "No Longer Needed",
-  },
-  {
     value: "couldnt_find_needed",
     label: "Couldn't Find What I Needed",
   },
@@ -96,13 +92,67 @@ const DELETION_REASONS: {
 
 const REASON_LABELS: Record<DeletionReason, string> = {
   journey_completed: "Journey Completed",
-  no_longer_needed: "No Longer Needed",
   couldnt_find_needed: "Couldn't Find What I Needed",
   missing_features: "Missing Features",
   technical_problem: "Technical Problem",
   privacy_security_concern: "Privacy / Security Concern",
   found_alternative: "Found Another Solution",
   other: "Other",
+};
+
+const FOLLOW_UP_LABELS: Record<string, string> = {
+  journey_stage: "Current journey status",
+  information_needed: "What they were looking for",
+  feature_needed: "Feature needed",
+  problem_type: "Problem type",
+  concern_type: "Privacy / security concern",
+  alternative_type: "Alternative solution",
+  what_were_you_trying_to_do: "What they were trying to do",
+  additional_context: "What the other solution provided",
+};
+
+const FOLLOW_UP_VALUE_LABELS: Record<string, string> = {
+  visa_received: "I received my visa",
+  immigration_process_completed: "I completed my immigration process",
+  no_longer_need_assistance: "I no longer need immigration assistance",
+
+  journey_guidance: "Step-by-step immigration journey guidance",
+  visa_information: "Information about my visa category",
+  document_checklists: "Document checklists and requirements",
+  forms_assistance: "Forms and form-filling assistance",
+  case_status_information: "Case or status information",
+
+  better_journey_tracking: "Better journey tracking",
+  more_visa_categories: "More visa categories",
+  document_assistance: "Document assistance",
+  case_status_tracking: "Case or status tracking",
+  notifications_reminders: "Notifications or reminders",
+  more_personalized_guidance: "More personalized guidance",
+
+  something_didnt_work: "Something didn't work",
+  encountered_error: "I encountered an error",
+  page_too_slow: "The page was too slow",
+  couldnt_complete_action: "I couldn't complete an action",
+  information_not_displaying: "Information wasn't displaying correctly",
+
+  personal_information_storage: "How my personal information is stored",
+  document_handling: "How my documents are handled",
+  account_security: "Account security",
+  data_sharing: "Data sharing",
+  uncomfortable_providing_information: "I wasn't comfortable providing personal information",
+
+  immigration_attorney: "An immigration attorney",
+  another_immigration_platform: "Another immigration platform",
+  government_official_resources: "Government or official resources",
+  community_social_media: "Community or social media",
+  personal_research: "Personal research",
+  someone_helping_directly: "Someone helping me directly",
+
+  other: "Other",
+};
+
+const formatFollowUpValue = (key: string, value: string) => {
+  return FOLLOW_UP_VALUE_LABELS[value] || value;
 };
 
 export default function AccountDeletionFeedbackTable() {
@@ -131,10 +181,7 @@ export default function AccountDeletionFeedbackTable() {
     has_previous_page: false,
   });
 
-  // ---------------------------------------------------------
   // Fetch feedback
-  // ---------------------------------------------------------
-
   const fetchFeedback = async () => {
     setLoading(true);
 
@@ -181,10 +228,7 @@ export default function AccountDeletionFeedbackTable() {
     fetchFeedback();
   }, [currentPage, selectedReason]);
 
-  // ---------------------------------------------------------
   // Client-side search + sorting
-  // ---------------------------------------------------------
-
   const filteredFeedback = useMemo(() => {
     let filtered = [...feedback];
 
@@ -209,18 +253,12 @@ export default function AccountDeletionFeedbackTable() {
     return filtered;
   }, [feedback, searchTerm, sortOrder]);
 
-  // ---------------------------------------------------------
   // Reset page when filters change
-  // ---------------------------------------------------------
-
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedReason]);
 
-  // ---------------------------------------------------------
   // Helpers
-  // ---------------------------------------------------------
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
@@ -243,9 +281,6 @@ export default function AccountDeletionFeedbackTable() {
     switch (reason) {
       case "journey_completed":
         return "bg-green-100 text-green-800";
-
-      case "no_longer_needed":
-        return "bg-slate-100 text-slate-700";
 
       case "couldnt_find_needed":
         return "bg-orange-100 text-orange-800";
@@ -275,10 +310,29 @@ export default function AccountDeletionFeedbackTable() {
     setViewModalOpen(true);
   };
 
-  // ---------------------------------------------------------
-  // Render
-  // ---------------------------------------------------------
+  const renderFollowUpAnswers = (answers: Record<string, string> | null) => {
+    if (!answers || Object.keys(answers).length === 0) {
+      return <p className="text-sm text-slate-400 italic">No follow-up response was provided.</p>;
+    }
 
+    return (
+      <div className="space-y-4">
+        {Object.entries(answers).map(([key, value]) => (
+          <div key={key}>
+            <p className="mb-1 text-sm font-medium text-slate-500">
+              {FOLLOW_UP_LABELS[key] || key}
+            </p>
+
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <p className="text-sm leading-6 text-slate-700">{formatFollowUpValue(key, value)}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  // Render
   return (
     <>
       {/* Main Table Card */}
@@ -349,7 +403,7 @@ export default function AccountDeletionFeedbackTable() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Reason</TableHead>
-                    <TableHead>Feedback</TableHead>
+                    <TableHead>Follow-up / Feedback</TableHead>
                     <TableHead>Submitted Date</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -370,7 +424,27 @@ export default function AccountDeletionFeedbackTable() {
 
                       {/* Feedback */}
                       <TableCell className="max-w-md">
-                        {item.additional_comments ? (
+                        {item.follow_up_answers &&
+                        Object.keys(item.follow_up_answers).length > 0 ? (
+                          <div className="space-y-1">
+                            <p className="truncate text-sm font-medium text-slate-700">
+                              {(() => {
+                                const [key, value] = Object.entries(item.follow_up_answers)[0];
+
+                                return `${FOLLOW_UP_LABELS[key] || key}: ${formatFollowUpValue(
+                                  key,
+                                  value
+                                )}`;
+                              })()}
+                            </p>
+
+                            {item.additional_comments && (
+                              <p className="truncate text-xs text-slate-500">
+                                {item.additional_comments}
+                              </p>
+                            )}
+                          </div>
+                        ) : item.additional_comments ? (
                           <p className="truncate text-sm text-slate-600">
                             {item.additional_comments}
                           </p>
@@ -502,7 +576,14 @@ export default function AccountDeletionFeedbackTable() {
                 </Badge>
               </div>
 
-              {/* Comments */}
+              {/* Follow-up Response */}
+              <div>
+                <p className="mb-2 text-sm font-medium text-slate-500">Follow-up response</p>
+
+                {renderFollowUpAnswers(selectedFeedback.follow_up_answers)}
+              </div>
+
+              {/* Additional Feedback */}
               <div>
                 <p className="mb-2 text-sm font-medium text-slate-500">Additional feedback</p>
 
@@ -517,15 +598,6 @@ export default function AccountDeletionFeedbackTable() {
                     </p>
                   )}
                 </div>
-              </div>
-
-              {/* Submitted */}
-              <div className="border-t border-slate-100 pt-4">
-                <p className="text-xs text-slate-400">Submitted</p>
-
-                <p className="mt-1 text-sm text-slate-600">
-                  {formatDateTime(selectedFeedback.created_at)}
-                </p>
               </div>
             </div>
           )}

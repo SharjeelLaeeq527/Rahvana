@@ -10,6 +10,7 @@ import {
   Plus,
   ExternalLink,
   Filter,
+  PenLine,
 } from "lucide-react";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 import { IR5_ENABLED } from "@/lib/feature-flags";
@@ -31,6 +32,8 @@ interface VisaForm {
   type?: string;
   notes?: string;
   expiryDate?: string;
+  /** Form must be printed and signed by hand; show the Snap & Sign callout. */
+  requiresHandSign?: boolean;
 }
 
 const VISA_FORMS: VisaForm[] = [
@@ -609,6 +612,7 @@ const VISA_FORMS: VisaForm[] = [
     ],
     type: "pdf",
     officialLink: "https://www.uscis.gov/sites/default/files/document/forms/g-1651.pdf",
+    requiresHandSign: true,
     description:
       "Used to request an exemption from mandatory electronic payment requirements in order to submit filing fees via check or money order with a paper application. Applicants must certify electronic payment is not possible and meet 1 or more criteria: lack of banking access, undue hardship (31 C.F.R. Part 208), national security/law enforcement reasons, or circumstances designated by the Secretary of the Treasury.",
   },
@@ -1466,6 +1470,29 @@ export default function VisaFormSelector() {
                         )}
                       </div>
                     </div>
+
+                    {/* Hand-sign callout -> Snap & Sign tool */}
+                    {selectedForm.requiresHandSign && (
+                      <div className="p-4 sm:p-6 bg-[#e8f6f6] border border-[#0d7377]/20 rounded-xl flex items-start gap-4">
+                        <PenLine className="w-6 h-6 text-[#0d7377] shrink-0 mt-1" />
+                        <div>
+                          <h4 className="text-base sm:text-lg font-bold text-[#0a5a5d] mb-1">
+                            This form needs a handwritten signature
+                          </h4>
+                          <p className="text-sm sm:text-base text-gray-700 leading-relaxed">
+                            Print the form, sign it by hand, then capture your signature with our
+                            Snap and Sign tool to add a clean digital copy to your document.
+                          </p>
+                          <a
+                            href="/signature-image-processing"
+                            className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-[#0d7377] hover:bg-[#0a5a5d] text-white rounded-lg font-semibold text-sm shadow-sm transition-all"
+                          >
+                            <PenLine className="w-4 h-4 shrink-0" />
+                            Open Snap and Sign
+                          </a>
+                        </div>
+                      </div>
+                    )}
 
                     {/* PDF Preview or Online Callout */}
                     {selectedForm.type === "online" ? (

@@ -49,11 +49,7 @@ export default function BlogCommentsSection({ slug }: BlogCommentsSectionProps) 
     setTotalCount((prev) => prev + 1);
   };
 
-  const handleReplyCreated = async (
-    parentId: string,
-    content: string,
-    replyToName?: string
-  ) => {
+  const handleReplyCreated = async (parentId: string, content: string, replyToName?: string) => {
     const res = await fetch("/api/blog/comments", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -120,6 +116,52 @@ export default function BlogCommentsSection({ slug }: BlogCommentsSectionProps) 
     }
   };
 
+  const handleEditComment = async (commentId: string, newContent: string) => {
+    const res = await fetch(`/api/blog/comments/${commentId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content: newContent }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data?.error || "Failed to edit comment");
+    }
+
+    const updatedComment = data.comment as BlogComment;
+
+    setComments((prev) =>
+      prev.map((comment) => {
+        if (comment.id === commentId) {
+          return {
+            ...comment,
+            content: updatedComment.content,
+            updatedAt: updatedComment.updatedAt,
+            editedAt: updatedComment.editedAt,
+          };
+        }
+
+        if (comment.replies?.some((reply) => reply.id === commentId)) {
+          return {
+            ...comment,
+            replies: comment.replies.map((reply) =>
+              reply.id === commentId
+                ? {
+                    ...reply,
+                    content: updatedComment.content,
+                    updatedAt: updatedComment.updatedAt,
+                    editedAt: updatedComment.editedAt,
+                  }
+                : reply
+            ),
+          };
+        }
+
+        return comment;
+      })
+    );
+  };
+
   return (
     <section
       id="comments-section"
@@ -183,6 +225,7 @@ export default function BlogCommentsSection({ slug }: BlogCommentsSectionProps) 
               canDelete={Boolean(comment.isAuthor)}
               onDelete={handleDeleteComment}
               onReplySubmit={handleReplyCreated}
+              onEdit={handleEditComment}
             />
           ))}
         </div>

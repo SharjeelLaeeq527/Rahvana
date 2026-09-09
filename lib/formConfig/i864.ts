@@ -1809,9 +1809,9 @@ export const sectionIntroMessages = {
       "If your income already exceeds the poverty guideline threshold for your household size, you can skip this section entirely. Only fill it in if you need to supplement your income with assets.",
   },
   "Part 8. Sponsor's Contract": {
-    greeting: "Almost done, this is your legal commitment.",
+    greeting: "Almost done, this is your legal promise.",
     message:
-      "By signing, you're agreeing to support the immigrant financially until your obligations end. Read the obligations carefully before signing.",
+      "When you sign here, you are making a real legal promise to support the immigrant with your money until your duty ends. We will show you exactly what you are promising in simple words on the next screen, so please read it before you sign. Important: if you leave this form incomplete or skip the required documents, the government can reject your request.",
   },
   "Part 9. Interpreter": {
     greeting: "Was a translator involved?",
@@ -3532,6 +3532,14 @@ export const formFields: RichField[] = [
     skip: "I don't have one",
     validate: (v) =>
       !v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? null : "Enter a valid email address",
+  },
+  {
+    key: "p8_declaration_notice",
+    pdfKey: "",
+    label:
+      "Before you sign: what you are promising\nWhen you sign below, you are legally agreeing to all of these:\nEverything you wrote in this form and in your documents is true, correct, and complete. You are signing under penalty of perjury, which means giving false information here is a crime.\nThe document copies you attached are exact, unchanged copies of the originals, and you understand the government may ask you to send the original documents later.\nYou accept your duty to support the immigrant so they can become a lawful permanent resident, and you will keep supporting them until that duty legally ends.\nYou confirm that you know what is written in the form you are signing.\nIf someone goes to court to make you keep this promise, you agree that the court can decide the case.\nThe tax returns you attached are real, unchanged copies of what you filed with the IRS.\nEven if you are married to the immigrant and later divorce, you must still keep this promise.\nYou allow the Social Security Administration, USCIS, and the U.S. State Department to share your records so your case can be checked.\nNote: If you leave this form incomplete or do not attach the required documents, USCIS or the government may reject your request.",
+    type: "hidden",
+    section: "Part 8. Sponsor's Contract",
   },
   {
     key: "p8_sponsor_signature",
