@@ -185,6 +185,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   } = useDocumentVaultStore();
   const prevStepRef = useRef(currentStep);
   const saveTimerRef = useRef<number | null>(null);
+  const jumpTargetQuestionIndexRef = useRef<number | null>(null);
   // Records the `${formCode}:${userId}` we've already hydrated for. The
   // initialization effect below reads/writes this so it hydrates form state
   // EXACTLY ONCE per (form, user). Auth contexts re-emit a fresh `user` object
@@ -440,11 +441,19 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   // Sync question index when section changes
   useEffect(() => {
     if (!currentSection) return;
-    const lastIndex = getLastAnsweredIndex(visibleFields, formData);
-    setCurrentQuestionIndex(lastIndex);
+
+    let targetIndex: number;
+    if (jumpTargetQuestionIndexRef.current !== null) {
+      targetIndex = jumpTargetQuestionIndexRef.current;
+      jumpTargetQuestionIndexRef.current = null;
+    } else {
+      targetIndex = getLastAnsweredIndex(visibleFields, formData);
+    }
+
+    setCurrentQuestionIndex(targetIndex);
 
     // Initialize progressive sub-question index for the current field
-    const currentField = visibleFields[lastIndex];
+    const currentField = visibleFields[targetIndex];
     if (currentField?.subQuestions && currentField.subQuestions.length > 0) {
       // Check if any subQuestions are non-conditional (should show immediately)
       const hasNonConditionalSubQ = currentField.subQuestions.some(
@@ -979,11 +988,17 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
           return;
         }
       }
-      setCurrentStep(stepIdx + 1);
-      setCurrentQuestionIndex(questionIdx);
+      const targetStep = stepIdx + 1;
+      if (currentStep === targetStep) {
+        setCurrentQuestionIndex(questionIdx);
+      } else {
+        jumpTargetQuestionIndexRef.current = questionIdx;
+        setCurrentStep(targetStep);
+      }
+      setView("form");
       setIsDrawerOpen(false);
     },
-    [isFreePreview, filledFieldsCount, sections, formData]
+    [isFreePreview, filledFieldsCount, sections, formData, currentStep, showToast]
   );
 
   const handleGoToStep = useCallback(
@@ -1488,10 +1503,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                     className="overflow-hidden"
                   >
                     <div className="space-y-1 border-t border-[#e8f6f6] bg-[#f9fdfb] px-3 py-2">
-                      {section.fields.map((field) => {
-                        // Skip conditional fields that don't match
-                        if (field.condition && !field.condition(formData)) return null;
-
+                      {visibleSectionFields.map((field, vIdx) => {
                         // Remove numbering from label
                         const cleanLabel = field.label.replace(/^\d+[a-z]?\.\s*/, "");
                         const fieldAnswered =
@@ -1511,10 +1523,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                             whileHover={{ x: 2 }}
                             onClick={(e) => {
                               e.stopPropagation();
-                              const actualIndex = section.fields.findIndex(
-                                (f) => f.key === field.key
-                              );
-                              handleJumpToQuestion(idx, actualIndex);
+                              handleJumpToQuestion(idx, vIdx);
                             }}
                             className={`group flex w-full items-center gap-2 rounded p-2 text-left text-xs transition-colors ${
                               isActiveQuestion
