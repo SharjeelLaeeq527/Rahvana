@@ -50,7 +50,7 @@ export default function BlogHero() {
           {/* Left Column: Text & Search Input */}
           <div className="lg:col-span-7">
             {/* Pill Badge */}
-            <div className="border-primary/30 text-primary dark:border-primary dark:text-primary/30 inline-flex items-center gap-1.5 rounded-full border bg-white/85 px-3.5 py-1 text-xs font-semibold tracking-wider uppercase shadow-xs backdrop-blur-md dark:bg-teal-950/70">
+            <div className="border-primary/30 text-primary dark:border-primary dark:text-primary/30 inline-flex items-center gap-1.5 rounded-full border bg-white/85 px-3.5 py-1 text-xs font-semibold tracking-wider uppercase shadow-xs backdrop-blur-md dark:bg-card/70">
               KNOWLEDGE CENTER
             </div>
 
@@ -69,7 +69,7 @@ export default function BlogHero() {
 
             {/* Hero Search Bar */}
             <form onSubmit={handleSearch} className="mt-7 max-w-lg">
-              <div className="focus-within:border-primary/60 focus-within:ring-primary/20 dark:border-primary/50 relative flex items-center rounded-full border border-[#cbe3de] bg-white/95 p-1.5 shadow-[0_8px_30px_rgba(13,148,136,0.12)] backdrop-blur-sm transition-all focus-within:ring-4 dark:bg-slate-900/90">
+              <div className="focus-within:border-primary/60 focus-within:ring-primary/20 dark:border-primary/50 relative flex items-center rounded-full border border-primary/20 bg-white/95 p-1.5 shadow-[0_8px_30px_rgba(13,148,136,0.12)] backdrop-blur-sm transition-all focus-within:ring-4 dark:bg-slate-900/90">
                 <input
                   type="text"
                   value={query}
