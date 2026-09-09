@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Share2, X, Link2, Check } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface MobileDraggableShareProps {
   title?: string;
@@ -146,7 +147,7 @@ export default function MobileDraggableShare({
         )}
       </AnimatePresence>
 
-      {/* Viewport Bound Draggable Area (Top offset at 80px to stay clear below SiteHeader) */}
+      {/* Viewport Bound Draggable Area (Top offset to stay clear below SiteHeader) */}
       <div
         ref={constraintsRef}
         className="pointer-events-none fixed inset-x-0 top-16 bottom-0 z-50 overflow-hidden px-3 pt-1 pb-3 sm:top-20"
@@ -165,74 +166,90 @@ export default function MobileDraggableShare({
             }, 100);
           }}
           initial={false}
-          className="pointer-events-auto absolute top-1/2 right-3 -translate-y-1/2 touch-none select-none"
+          className="pointer-events-auto absolute top-1/2 right-3 z-50 -translate-y-1/2 touch-none select-none"
         >
-          {/* Main Floating Container (Morphs between circle FAB and vertical pill tray) */}
-          <motion.div
-            layout
-            transition={{
-              type: "spring",
-              stiffness: 450,
-              damping: 32,
-            }}
-            className={`border-border/80 bg-card/95 flex flex-col items-center border shadow-2xl backdrop-blur-xl ${
-              isOpen ? "gap-2.5 rounded-full p-2.5" : "rounded-full p-1"
-            }`}
+          {/* Main Floating Container */}
+          <div
+            className={cn(
+              "border-border/80 bg-card/95 transform-gpu flex flex-col items-center rounded-full border p-1.5 shadow-2xl backdrop-blur-xl transition-all duration-300",
+              isOpen && "ring-primary/25 shadow-primary/10 ring-1"
+            )}
           >
             {/* Top Anchor Button (Share icon when closed, Close X when open) */}
-            <motion.button
-              layout
+            <button
+              type="button"
               onClick={handleToggleOpen}
-              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-colors duration-200 focus:outline-none ${
+              className={cn(
+                "flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-all duration-300 focus:outline-none active:scale-95",
                 isOpen
-                  ? "border-border/80 bg-muted/70 text-foreground hover:bg-muted border"
-                  : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/20 shadow-md"
-              }`}
-              aria-label={isOpen ? "Close share tray" : "Open share tray"}
+                  ? "border-border/80 bg-muted/80 text-foreground hover:bg-muted border"
+                  : "bg-primary text-primary-foreground shadow-primary/25 hover:bg-primary/90 shadow-md"
+              )}
+              aria-label={isOpen ? "Close share menu" : "Open share menu"}
               aria-expanded={isOpen}
             >
-              <motion.div
-                key={isOpen ? "close" : "share"}
-                initial={{ rotate: -90, opacity: 0, scale: 0.7 }}
-                animate={{ rotate: 0, opacity: 1, scale: 1 }}
-                exit={{ rotate: 90, opacity: 0, scale: 0.7 }}
-                transition={{ duration: 0.2 }}
-                className="flex items-center justify-center"
-              >
-                {isOpen ? <X className="h-5 w-5" /> : <Share2 className="h-5 w-5" />}
-              </motion.div>
-            </motion.button>
+              <div className="relative flex h-5 w-5 items-center justify-center">
+                {/* Animated Share Icon */}
+                <motion.div
+                  animate={{
+                    rotate: isOpen ? 90 : 0,
+                    opacity: isOpen ? 0 : 1,
+                    scale: isOpen ? 0.5 : 1,
+                  }}
+                  transition={{ duration: 0.22, ease: "easeInOut" }}
+                  className="absolute inset-0 flex items-center justify-center"
+                >
+                  <Share2 className="h-5 w-5" />
+                </motion.div>
 
-            {/* Expanded Share Action Buttons */}
-            <AnimatePresence>
+                {/* Animated Close Icon */}
+                <motion.div
+                  animate={{
+                    rotate: isOpen ? 0 : -90,
+                    opacity: isOpen ? 1 : 0,
+                    scale: isOpen ? 1 : 0.5,
+                  }}
+                  transition={{ duration: 0.22, ease: "easeInOut" }}
+                  className="absolute inset-0 flex items-center justify-center"
+                >
+                  <X className="h-5 w-5" />
+                </motion.div>
+              </div>
+            </button>
+
+            {/* Expandable Tray of Share Actions */}
+            <AnimatePresence initial={false}>
               {isOpen && (
                 <motion.div
-                  initial="hidden"
-                  animate="visible"
-                  exit="hidden"
-                  variants={{
-                    visible: {
-                      transition: {
-                        staggerChildren: 0.04,
-                      },
-                    },
-                    hidden: {
-                      transition: {
-                        staggerChildren: 0.02,
-                        staggerDirection: -1,
-                      },
+                  key="share-tray"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{
+                    opacity: 1,
+                    height: "auto",
+                    transition: {
+                      height: { type: "spring", stiffness: 420, damping: 30 },
+                      opacity: { duration: 0.2 },
+                      staggerChildren: 0.035,
+                      delayChildren: 0.04,
                     },
                   }}
-                  className="flex flex-col items-center gap-2.5"
+                  exit={{
+                    opacity: 0,
+                    height: 0,
+                    transition: {
+                      height: { duration: 0.22, ease: "easeInOut" },
+                      opacity: { duration: 0.15 },
+                    },
+                  }}
+                  className="flex flex-col items-center gap-2.5 overflow-hidden pt-2.5 pb-1"
                 >
                   {shareLinks.map((item) => (
                     <motion.div
                       key={item.name}
-                      variants={{
-                        visible: { opacity: 1, scale: 1, y: 0 },
-                        hidden: { opacity: 0, scale: 0.7, y: -8 },
-                      }}
-                      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                      initial={{ opacity: 0, y: -8, scale: 0.8 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -5, scale: 0.8 }}
+                      transition={{ type: "spring", stiffness: 450, damping: 25 }}
                     >
                       <a
                         href={item.href}
@@ -240,9 +257,6 @@ export default function MobileDraggableShare({
                         rel="noopener noreferrer"
                         className={`group border-border/70 bg-background/80 text-muted-foreground flex h-10 w-10 shrink-0 items-center justify-center rounded-full border shadow-sm transition-all duration-200 active:scale-95 ${item.hoverBg} ${item.accentBorder}`}
                         aria-label={item.hoverText}
-                        onClick={() => {
-                          // Allow quick close after sharing or keep tray
-                        }}
                       >
                         <span className="shrink-0 transition-transform group-hover:scale-110">
                           {item.icon}
@@ -253,11 +267,10 @@ export default function MobileDraggableShare({
 
                   {/* Copy Link Button */}
                   <motion.div
-                    variants={{
-                      visible: { opacity: 1, scale: 1, y: 0 },
-                      hidden: { opacity: 0, scale: 0.7, y: -8 },
-                    }}
-                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                    initial={{ opacity: 0, y: -8, scale: 0.8 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -5, scale: 0.8 }}
+                    transition={{ type: "spring", stiffness: 450, damping: 25 }}
                     className="relative flex items-center justify-center"
                   >
                     <button
@@ -283,7 +296,7 @@ export default function MobileDraggableShare({
                           initial={{ opacity: 0, x: -10, scale: 0.9 }}
                           animate={{ opacity: 1, x: 0, scale: 1 }}
                           exit={{ opacity: 0, x: -10, scale: 0.9 }}
-                          className="border-border/70 absolute right-full mr-3 rounded-xl border bg-slate-900/95 px-2.5 py-1 text-xs font-semibold whitespace-nowrap text-slate-100 shadow-xl dark:bg-slate-950/95"
+                          className="border-border/70 bg-slate-900/95 text-slate-100 dark:bg-slate-950/95 pointer-events-none absolute right-full mr-3 rounded-xl border px-2.5 py-1 text-xs font-semibold whitespace-nowrap shadow-xl"
                         >
                           Copied!
                         </motion.div>
@@ -293,7 +306,7 @@ export default function MobileDraggableShare({
                 </motion.div>
               )}
             </AnimatePresence>
-          </motion.div>
+          </div>
         </motion.div>
       </div>
     </div>
