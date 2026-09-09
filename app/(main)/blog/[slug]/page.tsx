@@ -375,22 +375,38 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
                       section.table.rows.length > 0 && (
                         <div className="border-border my-6 overflow-x-auto rounded-2xl border shadow-sm">
                           <table className="w-full text-left text-xs sm:text-sm">
-                            <thead className="bg-muted text-foreground border-border border-b font-semibold">
+                            <thead className="border-border bg-primary/10 text-foreground border-b font-semibold">
                               <tr>
                                 {section.table.headers.map((h, hIdx) => (
-                                  <th key={hIdx} className="p-3.5 sm:p-4">
+                                  <th
+                                    key={hIdx}
+                                    className="p-3.5 sm:p-4 font-bold tracking-tight"
+                                  >
                                     {h}
                                   </th>
                                 ))}
                               </tr>
                             </thead>
-                            <tbody className="divide-border/60 bg-card/40 divide-y">
+                            <tbody className="divide-border/60 divide-y">
                               {section.table.rows.map((r, rIdx) => (
-                                <tr key={rIdx} className="hover:bg-muted/30 transition-colors">
+                                <tr
+                                  key={rIdx}
+                                  className={cn(
+                                    "transition-colors hover:bg-primary/10",
+                                    rIdx % 2 === 1
+                                      ? "bg-primary/[0.06] dark:bg-primary/[0.08]"
+                                      : "bg-card/60 dark:bg-card/20"
+                                  )}
+                                >
                                   {r.map((c, cIdx) => (
                                     <td
                                       key={cIdx}
-                                      className="text-muted-foreground p-3.5 font-medium sm:p-4"
+                                      className={cn(
+                                        "p-3.5 sm:p-4 leading-relaxed",
+                                        cIdx === 0
+                                          ? "font-semibold text-foreground"
+                                          : "text-muted-foreground font-medium"
+                                      )}
                                     >
                                       {c}
                                     </td>
