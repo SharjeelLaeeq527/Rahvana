@@ -300,12 +300,14 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
                     {/* Optional Section Image */}
                     {section.image?.url && (
                       <figure className="my-6 space-y-2">
-                        <div className="border-border/70 relative h-64 w-full overflow-hidden rounded-2xl border sm:h-80">
+                        <div className="border-border/70 bg-card/30 overflow-hidden rounded-2xl border shadow-sm">
                           <Image
                             src={section.image.url}
                             alt={section.image.alt || section.h2 || "Section image"}
-                            fill
-                            className="object-cover"
+                            width={1600}
+                            height={900}
+                            className="h-auto w-full object-contain"
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 85vw, 1100px"
                           />
                         </div>
                         {section.image.caption && (
