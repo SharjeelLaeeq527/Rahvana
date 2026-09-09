@@ -522,7 +522,7 @@ export const formFields: RichField[] = [
     pdfKey: "pt2_l4_acctidentifier",
     label: "Do you have a USCIS Online Account Number?",
     help: "Only assigned if you've personally created an account on my.uscis.gov. It's a website login number, not the same as an A-Number, and not on any physical card. If you've never set one up, you don't have one.",
-    find: 'Log into my.uscis.gov → click your profile icon → look for "USCIS Online Account Number."',
+    find: 'Log into my.uscis.gov -> click your profile icon -> look for "USCIS Online Account Number."',
     type: "text",
     section: "Part 2: Requestor Info",
     placeholder: "8 to 12 digits",

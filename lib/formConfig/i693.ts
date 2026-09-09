@@ -833,7 +833,7 @@ export const formFields: RichField[] = [
         key: "pt1_l3f_USCISOnlineAcctNumber_value",
         pdfKey: "pt1_l3f_uscisonlineacctnumber",
         label: "Your USCIS Online Account Number?",
-        find: 'Log into my.uscis.gov → click your name or profile → look for "USCIS Online Account Number."',
+        find: 'Log into my.uscis.gov -> click your name or profile -> look for "USCIS Online Account Number."',
         type: "text",
         section: "Part 1: Your Information",
         placeholder: "8 to 12 digits",
