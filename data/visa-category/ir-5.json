@@ -7300,7 +7300,7 @@
               {
                 "label": "Step 8 of 8",
                 "heading": "Possible outcomes after the interview",
-                "instruction": "After the interview, the officer may approve the visa, refuse the application under INA 221(g) for missing documents or administrative processing, or refuse it under another legal ground. Follow the written instructions provided by the officer.",
+                "instruction": "The officer will indicate the outcome at the window or shortly after. After the interview, your application may be approved, refused under applicable law (including 221(g) where applicable), or require further administrative processing before a final determination is completed. If you were given a 221(g) refusal letter, continue to Step 9 for Rahvana’s AP guidance.",
                 "vlabel": "Interview Outcomes",
                 "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">Possible case outcomes</div>\n      <div class=\"mock-row\">Approved, visa issuance processing begins <span class=\"mock-badge-green\">Approved</span></div>\n      <div class=\"mock-row\">221(g) refusal, documents or administrative processing required <span class=\"mock-badge-amber\">Further action</span></div>\n      <div class=\"mock-row\">Refused under another legal ground, review the written notice <span class=\"mock-badge-blue\">Legal ground</span></div>\n    </div>"
               }
@@ -7317,6 +7317,8 @@
                   "Petitioner's original or certified birth certificate",
                   "Birth certificates for all of the parent's children",
                   "Original valid police certificates",
+                  "DS-260 Confirmation Page",
+                  "Required English translations",
                   "Two recent 5 cm × 5 cm visa photographs",
                   "Form I-864 and current sponsor evidence",
                   "Joint sponsor or household member package if applicable",
@@ -8163,10 +8165,10 @@
     {
       "label": "Step 7 of 8",
       "heading": "Submit documents to NVC",
-      "instruction": "When every file is verified, proceed to the CEAC submission action. Confirm the submission, do not close the browser tab until you receive a confirmation message.",
-      "vlabel": "Submit to NVC",
-      "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Submission</div><div style=\"font-size:13px;color:#3a4f63;line-height:1.6;margin-top:4px;margin-bottom:12px\">Confirm all documents are ready to submit to NVC for review.</div><div style=\"width:100%;padding:14px;background:#15744f;color:white;border:none;border-radius:10px;font-size:14px;font-weight:600;text-align:center\">Submit Documents to NVC</div></div>",
-      "note": "Submission is not instant. Wait for the CEAC confirmation message before navigating away."
+      "instruction": "Submit your documents only after you are fully satisfied that everything required has been uploaded correctly. Before submitting, confirm that all required documents show as uploaded, each file is assigned to the correct person and document type, translations are included where required, and no required item is missing. Once you submit, review the CEAC confirmation carefully before leaving the page.",
+      "vlabel": "Final Submission",
+      "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Final Submission Check</div><div style=\"font-size:13px;color:#3a4f63;line-height:1.6;margin-top:4px;margin-bottom:12px\">Only submit when you are confident that all required documents are complete, correctly uploaded, and ready for NVC review.</div><div style=\"width:100%;padding:14px;background:#15744f;color:white;border:none;border-radius:10px;font-size:14px;font-weight:600;text-align:center\">Submit Documents to NVC</div></div>",
+      "note": "Take your time before submitting. Do not submit while any required document is missing, incorrectly assigned, or still needs correction. After submission, save or record the CEAC confirmation and check your case status for any follow-up from NVC."
     },
     {
       "label": "Step 8 of 8",

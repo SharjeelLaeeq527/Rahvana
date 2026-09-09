@@ -6331,7 +6331,7 @@
               {
                 "label": "Step 8 of 8",
                 "heading": "Possible outcomes after the interview",
-                "instruction": "The officer will indicate the outcome at the window or shortly after. The three main outcomes are approval, Administrative Processing (AP), or refusal. If AP applies, proceed to Step 9 to track and manage the AP process.",
+                "instruction": "The officer will indicate the outcome at the window or shortly after. After the interview, your application may be approved, refused under applicable law (including 221(g) where applicable), or require further administrative processing before a final determination is completed. If you were given a 221(g) refusal letter, continue to Step 9 for Rahvana’s AP guidance.",
                 "vlabel": "Interview Outcomes",
                 "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">What you may hear</div>\n      <div class=\"mock-row\">Approved, passport retained, visa to be delivered <span class=\"mock-badge-green\">Best</span></div>\n      <div class=\"mock-row\">Administrative Processing, more time needed <span class=\"mock-badge-amber\">Step 9</span></div>\n      <div class=\"mock-row\">Refused, written reason provided <span class=\"mock-badge-blue\">Consult attorney</span></div>\n    </div>"
               }
@@ -6341,13 +6341,16 @@
                 "type": "bring",
                 "title": "What to bring",
                 "items": [
-                  "Interview appointment letter (printed original)",
+                  "Printed NVC interview appointment letter",
                   "Current passport (original)",
                   "All prior passports",
                   "Original civil documents (organized packet)",
                   "2 recent color photographs (5 cm × 5 cm / 2 × 2 in)",
                   "Petitioner's original Affidavit of Support",
-                  "Tax evidence and employment letter if applicable"
+                  "Tax evidence and employment letter if applicable",
+                  "DS-260 Confirmation Page",
+                  "Required English translations",
+                  "Any required certified civil documents and photocopies"
                 ]
               },
               {
@@ -6376,7 +6379,7 @@
                 "label": "Visa approved",
                 "type": "approved",
                 "icon": "check-circle",
-                "sub": "The officer approves the visa. Your passport will be held and the visa will be delivered via the courier service you registered."
+                "sub": "The officer approves the visa. If the visa is approved, the Embassy will generally retain your passport while the visa is prepared and return it through the registered courier service."
               },
               {
                 "label": "Administrative Processing (AP / 221g)",

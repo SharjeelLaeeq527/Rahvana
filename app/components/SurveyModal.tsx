@@ -46,7 +46,7 @@ const DELETION_REASONS = [
   },
   {
     value: "found_alternative",
-    label: "I found another solution",
+    label: "I'm using another way to manage my immigration process",
   },
   {
     value: "other",
@@ -56,19 +56,19 @@ const DELETION_REASONS = [
 
 const FOLLOW_UP_CONFIG = {
   journey_completed: {
-    question: "What best describes your current immigration journey?",
+    question: "What was the outcome of your immigration process?",
     options: [
       {
-        value: "visa_received",
-        label: "I received my visa",
+        value: "visa_approved",
+        label: "My visa was approved",
       },
       {
-        value: "immigration_process_completed",
-        label: "I completed my immigration process",
+        value: "visa_denied",
+        label: "My visa was denied",
       },
       {
-        value: "no_longer_need_assistance",
-        label: "I no longer need immigration assistance",
+        value: "visa_refused",
+        label: "My visa was refused",
       },
       {
         value: "other",
@@ -108,37 +108,10 @@ const FOLLOW_UP_CONFIG = {
   },
 
   missing_features: {
-    question: "What feature were you hoping Rahvana would have?",
-    options: [
-      {
-        value: "better_journey_tracking",
-        label: "Better journey tracking",
-      },
-      {
-        value: "more_visa_categories",
-        label: "More visa categories",
-      },
-      {
-        value: "document_assistance",
-        label: "Document assistance",
-      },
-      {
-        value: "case_status_tracking",
-        label: "Case or status tracking",
-      },
-      {
-        value: "notifications_reminders",
-        label: "Notifications or reminders",
-      },
-      {
-        value: "more_personalized_guidance",
-        label: "More personalized guidance",
-      },
-      {
-        value: "other",
-        label: "Something else",
-      },
-    ],
+    textFollowUp: {
+      label: "What feature or capability were you looking for?",
+      placeholder: "Tell us what you wanted Rahvana to help you do...",
+    },
   },
 
   technical_problem: {
@@ -207,31 +180,27 @@ const FOLLOW_UP_CONFIG = {
   },
 
   found_alternative: {
-    question: "What type of solution are you using instead?",
+    question: "What are you using instead of Rahvana?",
     options: [
       {
         value: "immigration_attorney",
-        label: "An immigration attorney",
-      },
-      {
-        value: "another_immigration_platform",
-        label: "Another immigration platform",
+        label: "An immigration attorney or law firm",
       },
       {
         value: "government_official_resources",
         label: "Government or official resources",
       },
       {
-        value: "community_social_media",
-        label: "Community or social media",
+        value: "another_immigration_platform",
+        label: "Another immigration platform or service",
+      },
+      {
+        value: "family_friends_or_helper",
+        label: "Family, friends, or someone helping me",
       },
       {
         value: "personal_research",
-        label: "Personal research",
-      },
-      {
-        value: "someone_helping_directly",
-        label: "Someone helping me directly",
+        label: "My own research",
       },
       {
         value: "other",
@@ -239,7 +208,7 @@ const FOLLOW_UP_CONFIG = {
       },
     ],
     textFollowUp: {
-      label: "What did the other solution provide that you needed?",
+      label: "What did the alternative provide that you needed?",
       placeholder: "Tell us what worked better for you...",
     },
   },
@@ -310,8 +279,17 @@ export default function SurveyModal({ open, onOpenChange, onContinue, onSkip }: 
       return;
     }
 
-    // All configured reasons require a structured follow-up answer.
-    if (reason !== "other" && !followUpAnswer) {
+    /**
+     * Missing features has a required TEXT-ONLY follow-up.
+     */
+    if (reason === "missing_features" && !followUpText.trim()) {
+      showToast("Please tell us what feature or capability you were looking for.", "error");
+      return;
+    }
+
+    // All configured reasons except missing_features
+    // and other require a structured follow-up answer.
+    if (reason !== "other" && reason !== "missing_features" && !followUpAnswer) {
       showToast("Please answer the follow-up question.", "error");
       return;
     }
@@ -321,26 +299,46 @@ export default function SurveyModal({ open, onOpenChange, onContinue, onSkip }: 
     try {
       const followUpAnswers: Record<string, string> = {};
 
-      if (reason !== "other" && followUpAnswer) {
-        const answerKeyMap: Record<string, string> = {
-          journey_completed: "journey_stage",
-          couldnt_find_needed: "information_needed",
-          missing_features: "feature_needed",
-          technical_problem: "problem_type",
-          privacy_security_concern: "concern_type",
-          found_alternative: "alternative_type",
-        };
+      if (reason !== "other") {
+        /**
+         * Structured dropdown answers.
+         *
+         * missing_features intentionally does NOT appear here
+         * because it uses a text-only follow-up.
+         */
+        if (followUpAnswer) {
+          const answerKeyMap: Record<string, string> = {
+            journey_completed: "journey_stage",
+            couldnt_find_needed: "information_needed",
+            technical_problem: "problem_type",
+            privacy_security_concern: "concern_type",
+            found_alternative: "alternative_type",
+          };
 
-        const answerKey = answerKeyMap[reason];
+          const answerKey = answerKeyMap[reason];
 
-        if (answerKey) {
-          followUpAnswers[answerKey] = followUpAnswer;
+          if (answerKey) {
+            followUpAnswers[answerKey] = followUpAnswer;
+          }
         }
 
+        /**
+         * Missing features text-only response.
+         */
+        if (reason === "missing_features" && followUpText.trim()) {
+          followUpAnswers["feature_needed_details"] = followUpText.trim();
+        }
+
+        /**
+         * Technical problem contextual response.
+         */
         if (reason === "technical_problem" && followUpText.trim()) {
           followUpAnswers["what_were_you_trying_to_do"] = followUpText.trim();
         }
 
+        /**
+         * Found alternative contextual response.
+         */
         if (reason === "found_alternative" && followUpText.trim()) {
           followUpAnswers["additional_context"] = followUpText.trim();
         }
@@ -364,14 +362,22 @@ export default function SurveyModal({ open, onOpenChange, onContinue, onSkip }: 
     }
   };
 
+  /**
+   * Get the configuration for the selected reason.
+   */
   const selectedReasonConfig =
     reason !== "other" ? FOLLOW_UP_CONFIG[reason as FollowUpReason] : null;
 
+  /**
+   * Only dropdown-based configurations have `options`.
+   */
   const followUpOptions =
-    selectedReasonConfig?.options.map((option) => ({
-      value: option.value,
-      label: option.label,
-    })) ?? [];
+    selectedReasonConfig && "options" in selectedReasonConfig
+      ? selectedReasonConfig.options.map((option) => ({
+          value: option.value,
+          label: option.label,
+        }))
+      : [];
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -444,32 +450,58 @@ export default function SurveyModal({ open, onOpenChange, onContinue, onSkip }: 
               />
             </div>
 
-            {/* Follow-up */}
+            {/* Conditional Follow-up */}
             {selectedReasonConfig && (
               <>
                 <div className="my-6 h-px bg-slate-100" />
 
-                <div>
-                  <div className="mb-3.5">
-                    <label className="block text-sm font-semibold text-slate-800">
-                      {selectedReasonConfig.question}
-                      <span className="ml-1 text-rose-500">*</span>
+                {/* Dropdown Follow-up */}
+                {"options" in selectedReasonConfig && (
+                  <div>
+                    <div className="mb-3.5">
+                      <label className="block text-sm font-semibold text-slate-800">
+                        {selectedReasonConfig.question}
+                        <span className="ml-1 text-rose-500">*</span>
+                      </label>
+                    </div>
+
+                    <CustomDropdown
+                      value={followUpAnswer}
+                      onChange={handleFollowUpChange}
+                      options={followUpOptions}
+                      placeholder="Select an option"
+                      disabled={isSubmitting}
+                      className="w-full"
+                    />
+                  </div>
+                )}
+
+                {/* Missing features text-only follow-up */}
+                {reason === "missing_features" && (
+                  <div className="mt-5">
+                    <label
+                      htmlFor="missing-features-details"
+                      className="mb-2 block text-sm font-medium text-slate-700"
+                    >
+                      {FOLLOW_UP_CONFIG.missing_features.textFollowUp.label}
+                      <span className="text-destructive ml-1">*</span>
                     </label>
 
-                    <p className="mt-1 text-xs text-slate-400">
-                      Select the option that best matches your situation.
-                    </p>
-                  </div>
+                    <textarea
+                      id="missing-features-details"
+                      value={followUpText}
+                      onChange={(e) => setFollowUpText(e.target.value)}
+                      placeholder={FOLLOW_UP_CONFIG.missing_features.textFollowUp.placeholder}
+                      maxLength={500}
+                      disabled={isSubmitting}
+                      className="focus:border-primary focus:ring-primary/10 min-h-[90px] w-full resize-none rounded-xl border border-slate-200 bg-slate-50/40 px-4 py-3 text-sm leading-6 text-slate-700 transition-all outline-none placeholder:text-slate-400 hover:border-slate-300 focus:bg-white focus:ring-4 disabled:cursor-not-allowed disabled:opacity-60"
+                    />
 
-                  <CustomDropdown
-                    value={followUpAnswer}
-                    onChange={handleFollowUpChange}
-                    options={followUpOptions}
-                    placeholder="Select an option"
-                    disabled={isSubmitting}
-                    className="w-full"
-                  />
-                </div>
+                    <div className="mt-1.5 text-right text-[10px] text-slate-400">
+                      {followUpText.length}/500
+                    </div>
+                  </div>
+                )}
 
                 {/* Technical Problem Context */}
                 {reason === "technical_problem" && (

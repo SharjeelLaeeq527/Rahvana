@@ -76,11 +76,12 @@ export const SUBMISSION_TUTORIAL_STEPS: SubmissionStep[] = [
     label: "Step 7 of 8",
     heading: "Submit documents to NVC",
     instruction:
-      "When every file is verified, proceed to the CEAC submission action. Confirm the submission, do not close the browser tab until you receive a confirmation message.",
-    vlabel: "Submit to NVC",
+      "Submit your documents only after you are fully satisfied that everything required has been uploaded correctly. Before submitting, confirm that all required documents show as uploaded, each file is assigned to the correct person and document type, translations are included where required, and no required item is missing. Once you submit, review the CEAC confirmation carefully before leaving the page.",
+    vlabel: "Final Submission",
     visual:
-      '<div class="mock-card"><div class="mock-title">Submission</div><div style="font-size:13px;color:#3a4f63;line-height:1.6;margin-top:4px;margin-bottom:12px">Confirm all documents are ready to submit to NVC for review.</div><div style="width:100%;padding:14px;background:#15744f;color:white;border:none;border-radius:10px;font-size:14px;font-weight:600;text-align:center">Submit Documents to NVC</div></div>',
-    note: "Submission is not instant. Wait for the CEAC confirmation message before navigating away.",
+      '<div class="mock-card"><div class="mock-title">Final Submission Check</div><div style="font-size:13px;color:#3a4f63;line-height:1.6;margin-top:4px;margin-bottom:12px">Only submit when you are confident that all required documents are complete, correctly uploaded, and ready for NVC review.</div><div style="width:100%;padding:14px;background:#15744f;color:white;border:none;border-radius:10px;font-size:14px;font-weight:600;text-align:center">Submit Documents to NVC</div></div>',
+    note:
+      "Take your time before submitting. Do not submit while any required document is missing, incorrectly assigned, or still needs correction. After submission, save or record the CEAC confirmation and check your case status for any follow-up from NVC.",
   },
   {
     label: "Step 8 of 8",
