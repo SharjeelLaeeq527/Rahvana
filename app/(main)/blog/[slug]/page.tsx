@@ -392,9 +392,9 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
                                 <tr
                                   key={rIdx}
                                   className={cn(
-                                    "transition-colors hover:bg-primary/10",
+                                    "transition-colors duration-150 hover:bg-primary/20 dark:hover:bg-primary/25",
                                     rIdx % 2 === 1
-                                      ? "bg-primary/[0.06] dark:bg-primary/[0.08]"
+                                      ? "bg-primary/[0.05] dark:bg-primary/[0.07]"
                                       : "bg-card/60 dark:bg-card/20"
                                   )}
                                 >
