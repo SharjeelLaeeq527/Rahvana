@@ -10,6 +10,7 @@ import BreadcrumbSchema from "@/components/seo/BreadcrumbSchema";
 import ToolCTA from "@/components/blog/ToolCTA";
 import ArticleSocialShare from "@/components/blog/ArticleSocialShare";
 import StickyShareSidebar from "@/components/blog/StickyShareSidebar";
+import MobileDraggableShare from "@/components/blog/MobileDraggableShare";
 import BlogCommentsSection from "@/components/blog/comments/BlogCommentsSection";
 import { cn } from "@/lib/utils";
 import {
@@ -378,10 +379,7 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
                             <thead className="border-border bg-primary/10 text-foreground border-b font-semibold">
                               <tr>
                                 {section.table.headers.map((h, hIdx) => (
-                                  <th
-                                    key={hIdx}
-                                    className="p-3.5 sm:p-4 font-bold tracking-tight"
-                                  >
+                                  <th key={hIdx} className="p-3.5 font-bold tracking-tight sm:p-4">
                                     {h}
                                   </th>
                                 ))}
@@ -392,7 +390,7 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
                                 <tr
                                   key={rIdx}
                                   className={cn(
-                                    "transition-colors duration-150 hover:bg-primary/20 dark:hover:bg-primary/25",
+                                    "hover:bg-primary/20 dark:hover:bg-primary/25 transition-colors duration-150",
                                     rIdx % 2 === 1
                                       ? "bg-primary/[0.05] dark:bg-primary/[0.07]"
                                       : "bg-card/60 dark:bg-card/20"
@@ -402,9 +400,9 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
                                     <td
                                       key={cIdx}
                                       className={cn(
-                                        "p-3.5 sm:p-4 leading-relaxed",
+                                        "p-3.5 leading-relaxed sm:p-4",
                                         cIdx === 0
-                                          ? "font-semibold text-foreground"
+                                          ? "text-foreground font-semibold"
                                           : "text-muted-foreground font-medium"
                                       )}
                                     >
@@ -508,13 +506,13 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
               )}
 
               {/* ── Social Share Section ── */}
-              {article.showSocialShare !== false && (
+              {/* {article.showSocialShare !== false && (
                 <ArticleSocialShare
                   title={article.title}
                   slug={article.slug}
                   description={article.description}
                 />
-              )}
+              )} */}
 
               {/* ── Community Comments & Discussion Section ── */}
               <BlogCommentsSection slug={article.slug} />
@@ -532,17 +530,24 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
               )}
             </main>
 
-            {/* Sticky Right Sidebar - Social Share Icons */}
+            {/* Social Share - Sticky Right Sidebar (Desktop) & Floating Draggable Container (Mobile) */}
             {article.showSocialShare !== false && (
-              <aside className="z-20 hidden shrink-0 self-stretch lg:block lg:w-12 xl:w-14">
-                <div className="sticky top-28">
-                  <StickyShareSidebar
-                    title={article.title}
-                    slug={article.slug}
-                    description={article.description}
-                  />
-                </div>
-              </aside>
+              <>
+                <aside className="z-20 hidden shrink-0 self-stretch lg:block lg:w-12 xl:w-14">
+                  <div className="sticky top-28">
+                    <StickyShareSidebar
+                      title={article.title}
+                      slug={article.slug}
+                      description={article.description}
+                    />
+                  </div>
+                </aside>
+                <MobileDraggableShare
+                  title={article.title}
+                  slug={article.slug}
+                  description={article.description}
+                />
+              </>
             )}
           </div>
         </div>
