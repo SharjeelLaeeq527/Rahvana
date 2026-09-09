@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { Link2, Check } from "lucide-react";
+export { default as MobileDraggableShare } from "./MobileDraggableShare";
 
 interface StickyShareSidebarProps {
   title?: string;
@@ -51,7 +52,7 @@ export default function StickyShareSidebar({
         </svg>
       ),
       href: `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-        `${title} - Rahvana Guide`
+        description ? `${title} - ${description}` : `${title} - Rahvana Guide`
       )}&url=${encodeURIComponent(articleUrl)}`,
       hoverBg: "hover:bg-slate-900 hover:text-white dark:hover:bg-slate-800",
       accentBorder: "hover:border-slate-700",
