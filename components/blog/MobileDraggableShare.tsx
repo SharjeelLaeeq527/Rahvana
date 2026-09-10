@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Share2, X, Link2, Check } from "lucide-react";
+import { X, Link2, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface MobileDraggableShareProps {
@@ -171,8 +171,10 @@ export default function MobileDraggableShare({
           {/* Main Floating Container */}
           <div
             className={cn(
-              "border-border/80 bg-card/95 transform-gpu flex flex-col items-center rounded-full border p-1.5 shadow-2xl backdrop-blur-xl transition-all duration-300",
-              isOpen && "ring-primary/25 shadow-primary/10 ring-1"
+              "flex transform-gpu flex-col items-center rounded-full p-1 transition-all duration-300",
+              "bg-white/25 backdrop-blur-xl backdrop-saturate-150 dark:bg-slate-900/40",
+              "shadow-[0_8px_24px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.45)]",
+              isOpen && "ring-primary/30 ring-1 dark:ring-white/20"
             )}
           >
             {/* Top Anchor Button (Share icon when closed, Close X when open) */}
@@ -182,7 +184,7 @@ export default function MobileDraggableShare({
               className={cn(
                 "flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-all duration-300 focus:outline-none active:scale-95",
                 isOpen
-                  ? "border-border/80 bg-muted/80 text-foreground hover:bg-muted border"
+                  ? "text-foreground border border-white/40 bg-white/40 backdrop-blur-md hover:bg-white/60 dark:border-white/10 dark:bg-slate-800/60"
                   : "bg-primary text-primary-foreground shadow-primary/25 hover:bg-primary/90 shadow-md"
               )}
               aria-label={isOpen ? "Close share menu" : "Open share menu"}
@@ -199,7 +201,14 @@ export default function MobileDraggableShare({
                   transition={{ duration: 0.22, ease: "easeInOut" }}
                   className="absolute inset-0 flex items-center justify-center"
                 >
-                  <Share2 className="h-5 w-5" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    className="h-5 w-5"
+                  >
+                    <path d="M14 9V5l7 7-7 7v-4.1c-5 0-8.5 1.6-11 5.1 1-5 4-10 11-11z" />
+                  </svg>
                 </motion.div>
 
                 {/* Animated Close Icon */}
@@ -296,7 +305,7 @@ export default function MobileDraggableShare({
                           initial={{ opacity: 0, x: -10, scale: 0.9 }}
                           animate={{ opacity: 1, x: 0, scale: 1 }}
                           exit={{ opacity: 0, x: -10, scale: 0.9 }}
-                          className="border-border/70 bg-slate-900/95 text-slate-100 dark:bg-slate-950/95 pointer-events-none absolute right-full mr-3 rounded-xl border px-2.5 py-1 text-xs font-semibold whitespace-nowrap shadow-xl"
+                          className="border-border/70 pointer-events-none absolute right-full mr-3 rounded-xl border bg-slate-900/95 px-2.5 py-1 text-xs font-semibold whitespace-nowrap text-slate-100 shadow-xl dark:bg-slate-950/95"
                         >
                           Copied!
                         </motion.div>
