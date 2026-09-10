@@ -2,6 +2,7 @@ export interface ArticleImage {
   url: string;
   alt?: string;
   caption?: string;
+  imageType?: "full" | "sided";
 }
 
 export interface ArticleCallout {
@@ -57,6 +58,7 @@ export interface ArticleSection {
   bulletList?: string[];
   numberedList?: string[];
   image?: ArticleImage;
+  imageType?: "full" | "sided";
   cta?: ArticleCTA;
 }
 
@@ -151,6 +153,7 @@ export const ARTICLES: Article[] = [
           url: "/assets/images/blog/blog1-sec1.png",
           alt: "IR-1 vs CR-1 Executive Summary & Key Distinction",
           caption: "Understanding IR-1 vs CR-1 Visa Classification for Pakistani Spouses",
+          imageType: "sided",
         },
         paragraphs: [
           "Navigating the U.S. immigrant visa process for a Pakistani spouse can feel overwhelming. The two primary immigrant visa categories available to spouses of U.S. Citizens are the CR-1 (Conditional Resident) visa and the IR-1 (Immediate Relative) visa.",
@@ -235,6 +238,7 @@ export const ARTICLES: Article[] = [
           url: "/assets/images/blog/blog1-sec4.png",
           alt: "Mandatory Civil Documents Checklist for NVC Pakistan",
           caption: "Essential Pakistani Civil Documents: Nikah Nama, NADRA MRC, Police Certificate, and FRC",
+          imageType: "sided",
         },
         paragraphs: [
           "Uploading incorrect or improperly formatted civil documents is the #1 cause of NVC rejection notices (FE Notes). The Department of State enforces strict reciprocity rules for documents issued in Pakistan.",
