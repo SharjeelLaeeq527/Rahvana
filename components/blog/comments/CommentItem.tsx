@@ -8,6 +8,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import CommentAvatar from "@/components/blog/comments/CommentAvatar";
 import { formatCommentTime } from "@/lib/blog/time";
 import type { BlogComment } from "@/types/blog-comments";
+import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import {
   Clock,
   Trash2,
@@ -17,30 +18,42 @@ import {
   ChevronUp,
   Send,
   LogIn,
+  Pencil,
+  X,
+  Save,
 } from "lucide-react";
 
 interface CommentItemProps {
   comment: BlogComment;
   canDelete?: boolean;
   onDelete?: (id: string, parentId?: string) => Promise<void>;
-  onReplySubmit?: (
-    parentId: string,
-    content: string,
-    replyToName?: string
-  ) => Promise<void>;
+  onEdit?: (id: string, newContent: string) => Promise<void>;
+  onReplySubmit?: (parentId: string, content: string, replyToName?: string) => Promise<void>;
 }
 
 export default function CommentItem({
   comment,
   canDelete,
   onDelete,
+  onEdit,
   onReplySubmit,
 }: CommentItemProps) {
   const { user, profile } = useAuth();
   const pathname = usePathname();
 
   const [isDeleting, setIsDeleting] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingReplyId, setEditingReplyId] = useState<string | null>(null);
+  const [editContent, setEditContent] = useState("");
+  const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
+
+  // Delete confirmation modal state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{
+    id: string;
+    parentId?: string;
+  } | null>(null);
 
   // Threading / Reply state
   const [showReplyForm, setShowReplyForm] = useState(false);
@@ -49,7 +62,7 @@ export default function CommentItem({
   const [isSubmittingReply, setIsSubmittingReply] = useState(false);
   const [replyError, setReplyError] = useState<string | null>(null);
 
-  // Collapsible replies toggle (default collapsed if > 2 replies, expanded if <= 2)
+  // Collapsible replies toggle
   const replies = comment.replies || [];
   const [areRepliesExpanded, setAreRepliesExpanded] = useState(true);
 
@@ -62,17 +75,140 @@ export default function CommentItem({
   }, [showReplyForm]);
 
   const formattedTime = formatCommentTime(comment.createdAt);
+  const commentDisplayTime = formatCommentTime(
+    comment.editedAt ? comment.updatedAt : comment.createdAt
+  );
 
+  /**
+   * Opens the delete confirmation modal for a comment/reply.
+   */
+  const handleOpenDeleteModal = (targetId: string, parentId?: string) => {
+    setDeleteTarget({
+      id: targetId,
+      parentId,
+    });
+    setShowDeleteModal(true);
+  };
+
+  /**
+   * Closes the delete confirmation modal.
+   */
+  const handleCloseDeleteModal = () => {
+    if (isDeleting) return;
+
+    setShowDeleteModal(false);
+    setDeleteTarget(null);
+  };
+
+  /**
+   * Handles the actual deletion after confirmation.
+   */
   const handleDelete = async (targetId: string, parentId?: string) => {
     if (!onDelete) return;
+
     setIsDeleting(true);
+
     try {
       await onDelete(targetId, parentId);
-    } catch {
+
+      // Close modal after successful deletion
+      setShowDeleteModal(false);
+      setDeleteTarget(null);
       setIsDeleting(false);
-      setConfirmDelete(false);
+    } catch {
+      // Keep the modal available if deletion fails
+      setIsDeleting(false);
     }
   };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+
+    await handleDelete(deleteTarget.id, deleteTarget.parentId);
+  };
+
+  const handleStartEdit = (targetId: string, content: string) => {
+    setEditContent(content);
+    setEditError(null);
+    if (targetId === comment.id) {
+      setIsEditing(true);
+    } else {
+      setEditingReplyId(targetId);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditingReplyId(null);
+    setEditContent("");
+    setEditError(null);
+  };
+
+  const handleEdit = async (targetId: string) => {
+    if (!onEdit) return;
+
+    const trimmed = editContent.trim();
+    if (trimmed.length < 2) {
+      setEditError("Comment must be at least 2 characters.");
+      return;
+    }
+
+    if (trimmed.length > 2000) {
+      setEditError("Comment cannot exceed 2,000 characters.");
+      return;
+    }
+
+    setIsSubmittingEdit(true);
+    setEditError(null);
+
+    try {
+      await onEdit(targetId, trimmed);
+      handleCancelEdit();
+    } catch {
+      setEditError("Failed to save changes. Please try again.");
+    } finally {
+      setIsSubmittingEdit(false);
+    }
+  };
+
+  const renderEditForm = (targetId: string, authorName: string) => (
+    <div className="mt-2.5">
+      <textarea
+        value={editContent}
+        onChange={(e) => setEditContent(e.target.value)}
+        disabled={isSubmittingEdit}
+        rows={3}
+        maxLength={2000}
+        aria-label={`Edit comment by ${authorName}`}
+        className="border-border bg-background text-foreground placeholder:text-muted-foreground/60 w-full resize-y rounded-xl border px-3 py-2 text-sm leading-relaxed transition-all focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none disabled:opacity-50"
+      />
+      {editError && <p className="mt-1 text-xs text-red-500">{editError}</p>}
+      <div className="mt-2 flex items-center justify-end gap-2">
+        <button
+          type="button"
+          onClick={handleCancelEdit}
+          disabled={isSubmittingEdit}
+          className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-50"
+        >
+          <X className="h-3.5 w-3.5" />
+          <span>Cancel</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => handleEdit(targetId)}
+          disabled={isSubmittingEdit || editContent.trim().length < 2}
+          className="inline-flex items-center gap-1.5 rounded-lg bg-teal-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition-all hover:bg-teal-500 disabled:opacity-50"
+        >
+          {isSubmittingEdit ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <Save className="h-3.5 w-3.5" />
+          )}
+          <span>{isSubmittingEdit ? "Saving..." : "Save"}</span>
+        </button>
+      </div>
+    </div>
+  );
 
   const handleOpenReplyForm = (targetAuthor: string) => {
     setReplyTarget(targetAuthor);
@@ -82,11 +218,14 @@ export default function CommentItem({
 
   const handleSendReply = async (e: React.FormEvent) => {
     e.preventDefault();
+
     const trimmed = replyContent.trim();
+
     if (trimmed.length < 2) {
       setReplyError("Reply must be at least 2 characters.");
       return;
     }
+
     if (trimmed.length > 2000) {
       setReplyError("Reply cannot exceed 2,000 characters.");
       return;
@@ -101,7 +240,7 @@ export default function CommentItem({
       await onReplySubmit(comment.id, trimmed, replyTarget);
       setReplyContent("");
       setShowReplyForm(false);
-      setAreRepliesExpanded(true); // Auto-expand replies so the user sees their reply
+      setAreRepliesExpanded(true);
     } catch {
       setReplyError("Failed to send reply. Please try again.");
     } finally {
@@ -125,7 +264,7 @@ export default function CommentItem({
   return (
     <div className="space-y-2">
       {/* ── Main Top-Level Comment ── */}
-      <article className="group relative flex items-start gap-3.5 rounded-2xl border border-border/60 bg-card/40 p-4.5 sm:p-5 backdrop-blur-xs transition-all duration-200 hover:border-border hover:bg-card/70">
+      <article className="group border-border/60 bg-card/40 hover:border-border hover:bg-card/70 relative flex items-start gap-3.5 rounded-2xl border p-4.5 backdrop-blur-xs transition-all duration-200 sm:p-5">
         {/* Circular Profile Container */}
         <CommentAvatar
           name={comment.authorName}
@@ -139,12 +278,12 @@ export default function CommentItem({
           {/* Author Header & Timestamp */}
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold tracking-tight text-foreground">
+              <span className="text-foreground text-sm font-semibold tracking-tight">
                 {comment.authorName}
               </span>
 
               {comment.isAuthor && (
-                <span className="rounded-md bg-teal-500/10 px-1.5 py-0.5 text-[10.5px] font-medium text-teal-600 dark:text-teal-400 border border-teal-500/20">
+                <span className="rounded-md border border-primary/20 bg-primary/10 px-1.5 py-0.5 text-[10.5px] font-medium text-primary">
                   You
                 </span>
               )}
@@ -153,45 +292,46 @@ export default function CommentItem({
             <div className="flex items-center gap-2">
               {/* Timestamp */}
               <span
-                className="flex items-center gap-1 text-xs text-muted-foreground/80 font-normal"
-                title={new Date(comment.createdAt).toLocaleString()}
+                className="text-muted-foreground/80 flex items-center gap-1 text-xs font-normal"
+                title={new Date(comment.editedAt ? comment.updatedAt : comment.createdAt).toLocaleString()}
               >
                 <Clock className="h-3 w-3 shrink-0 opacity-70" />
-                <span>{formattedTime || "Recently"}</span>
+                <span>{comment.editedAt ? commentDisplayTime : formattedTime || "Recently"}</span>
+                {comment.editedAt && (
+                  <span className="text-muted-foreground/70 italic">(Edited)</span>
+                )}
               </span>
 
-              {/* Author / Admin Delete Action */}
-              {canDelete && onDelete && (
+              {/* Author actions */}
+              {(canDelete || (comment.isAuthor && onEdit)) && (
                 <div className="ml-1 flex items-center">
-                  {confirmDelete ? (
-                    <div className="flex items-center gap-1.5 animate-in fade-in duration-150">
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(comment.id)}
-                        disabled={isDeleting}
-                        className="text-[11px] font-medium text-red-500 hover:text-red-600 underline disabled:opacity-50"
-                      >
-                        {isDeleting ? <Loader2 className="h-3 w-3 animate-spin" /> : "Delete?"}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setConfirmDelete(false)}
-                        disabled={isDeleting}
-                        className="text-[11px] text-muted-foreground hover:text-foreground"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  ) : (
+                  {comment.isAuthor && onEdit && !isEditing && (
                     <button
                       type="button"
-                      onClick={() => setConfirmDelete(true)}
-                      aria-label="Delete comment"
-                      title="Delete your comment"
-                      className="text-muted-foreground/50 opacity-0 group-hover:opacity-100 hover:text-red-500 transition-all p-1 rounded-md hover:bg-red-500/10"
+                      onClick={() => handleStartEdit(comment.id, comment.content)}
+                      aria-label="Edit comment"
+                      title="Edit your comment"
+                      className="text-muted-foreground/70 rounded-md p-1 transition-colors hover:bg-teal-500/10 hover:text-teal-500"
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
+                      <Pencil className="h-4 w-4" />
                     </button>
+                  )}
+
+                  {canDelete && onDelete && (
+                  <button
+                    type="button"
+                    onClick={() => handleOpenDeleteModal(comment.id)}
+                    aria-label="Delete comment"
+                    title="Delete your comment"
+                    disabled={isDeleting}
+                    className="text-muted-foreground/70 rounded-md p-1 transition-colors hover:bg-red-500/10 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {isDeleting && deleteTarget?.id === comment.id ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="h-4 w-4" />
+                    )}
+                  </button>
                   )}
                 </div>
               )}
@@ -199,16 +339,20 @@ export default function CommentItem({
           </div>
 
           {/* Comment Body */}
-          <p className="mt-2 text-sm leading-relaxed text-foreground/90 whitespace-pre-line break-words">
-            {comment.content}
-          </p>
+          {isEditing ? (
+            renderEditForm(comment.id, comment.authorName)
+          ) : (
+            <p className="text-foreground/90 mt-2 text-sm leading-relaxed wrap-break-word whitespace-pre-line">
+              {comment.content}
+            </p>
+          )}
 
           {/* Action Bar: Reply Button */}
           <div className="mt-2.5 flex items-center gap-3">
             <button
               type="button"
               onClick={() => handleOpenReplyForm(comment.authorName)}
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:text-teal-600 dark:hover:text-teal-400"
+              className="text-muted-foreground hover:text-primary inline-flex items-center gap-1.5 text-xs font-semibold transition-colors"
             >
               <CornerDownRight className="h-3.5 w-3.5" />
               <span>Reply</span>
@@ -219,21 +363,22 @@ export default function CommentItem({
 
       {/* ── Inline Reply Box ── */}
       {showReplyForm && (
-        <div className="ml-6 sm:ml-10 rounded-2xl border border-teal-500/30 bg-card/60 p-3.5 sm:p-4 animate-in fade-in slide-in-from-top-2 duration-150">
+        <div className="bg-card/60 animate-in fade-in slide-in-from-top-2 border-primary/30 ml-6 rounded-2xl border p-3.5 duration-150 sm:ml-10 sm:p-4">
           {!user ? (
             <div className="flex items-center justify-between gap-3 text-xs">
               <span className="text-muted-foreground">
-                Sign in to reply to{" "}
-                <strong className="text-foreground">@{replyTarget}</strong>
+                Sign in to reply to <strong className="text-foreground">@{replyTarget}</strong>
               </span>
+
               <div className="flex items-center gap-2">
                 <Link
                   href={`/login?redirect=${encodeURIComponent(pathname)}`}
-                  className="inline-flex items-center gap-1 rounded-lg bg-teal-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-teal-500"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold shadow-xs"
                 >
                   <LogIn className="h-3 w-3" />
                   <span>Sign in</span>
                 </Link>
+
                 <button
                   type="button"
                   onClick={() => setShowReplyForm(false)}
@@ -252,13 +397,15 @@ export default function CommentItem({
                   size="sm"
                   className="mt-1"
                 />
+
                 <div className="min-w-0 flex-1">
-                  <div className="mb-1.5 text-[11.5px] text-muted-foreground">
+                  <div className="text-muted-foreground mb-1.5 text-[11.5px]">
                     Replying to{" "}
-                    <span className="font-semibold text-teal-600 dark:text-teal-400">
+                    <span className="text-primary font-semibold">
                       @{replyTarget}
                     </span>
                   </div>
+
                   <textarea
                     ref={replyTextareaRef}
                     value={replyContent}
@@ -267,26 +414,25 @@ export default function CommentItem({
                     rows={2}
                     maxLength={2000}
                     placeholder={`Write a reply to @${replyTarget}...`}
-                    className="w-full resize-y rounded-xl border border-border bg-background px-3 py-2 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none transition-all disabled:opacity-50"
+                    className="border-border bg-background text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:ring-primary w-full resize-y rounded-xl border px-3 py-2 text-xs transition-all focus:ring-1 focus:outline-none disabled:opacity-50 sm:text-sm"
                   />
 
-                  {replyError && (
-                    <p className="mt-1 text-xs text-red-500">{replyError}</p>
-                  )}
+                  {replyError && <p className="mt-1 text-xs text-red-500">{replyError}</p>}
 
                   <div className="mt-2 flex items-center justify-end gap-2">
                     <button
                       type="button"
                       onClick={() => setShowReplyForm(false)}
                       disabled={isSubmittingReply}
-                      className="rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                      className="text-muted-foreground hover:text-foreground rounded-lg px-3 py-1.5 text-xs font-medium transition-colors"
                     >
                       Cancel
                     </button>
+
                     <button
                       type="submit"
                       disabled={isSubmittingReply || replyContent.trim().length < 2}
-                      className="inline-flex items-center gap-1.5 rounded-lg bg-teal-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-teal-500 transition-all disabled:opacity-50"
+                      className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-semibold shadow-xs transition-all disabled:opacity-50"
                     >
                       {isSubmittingReply ? (
                         <>
@@ -308,14 +454,14 @@ export default function CommentItem({
         </div>
       )}
 
-      {/* ── Nested Replies Section (Facebook / Instagram Style) ── */}
+      {/* ── Nested Replies Section ── */}
       {replies.length > 0 && (
-        <div className="ml-5 sm:ml-7 pl-3.5 sm:pl-5 border-l-2 border-teal-500/25 space-y-3 pt-1">
+        <div className="border-primary/25 ml-5 space-y-3 border-l-2 pt-1 pl-3.5 sm:ml-7 sm:pl-5">
           {/* Collapsible toggle button */}
           <button
             type="button"
             onClick={() => setAreRepliesExpanded(!areRepliesExpanded)}
-            className="flex items-center gap-1.5 text-xs font-semibold text-teal-600 dark:text-teal-400 hover:text-teal-500 transition-colors py-0.5"
+            className="text-primary hover:text-primary/80 flex items-center gap-1.5 py-0.5 text-xs font-semibold transition-colors"
           >
             {areRepliesExpanded ? (
               <>
@@ -332,13 +478,14 @@ export default function CommentItem({
 
           {/* Expanded Replies List */}
           {areRepliesExpanded && (
-            <div className="space-y-2.5 animate-in fade-in duration-200">
+            <div className="animate-in fade-in space-y-2.5 duration-200">
               {replies.map((reply) => {
                 const replyFormattedTime = formatCommentTime(reply.createdAt);
+
                 return (
                   <article
                     key={reply.id}
-                    className="group relative flex items-start gap-2.5 rounded-xl border border-border/50 bg-card/30 p-3 sm:p-3.5 backdrop-blur-xs transition-colors hover:border-border hover:bg-card/50"
+                    className="group border-border/50 bg-card/30 hover:border-border hover:bg-card/50 relative flex items-start gap-2.5 rounded-xl border p-3 backdrop-blur-xs transition-colors sm:p-3.5"
                   >
                     {/* Smaller circular avatar for replies */}
                     <CommentAvatar
@@ -352,11 +499,12 @@ export default function CommentItem({
                       {/* Author Header */}
                       <div className="flex flex-wrap items-center justify-between gap-1.5">
                         <div className="flex items-center gap-1.5">
-                          <span className="text-xs font-semibold text-foreground">
+                          <span className="text-foreground text-xs font-semibold">
                             {reply.authorName}
                           </span>
+
                           {reply.isAuthor && (
-                            <span className="rounded bg-teal-500/10 px-1 py-0.2 text-[10px] font-medium text-teal-600 dark:text-teal-400 border border-teal-500/20">
+                            <span className="border-primary/20 bg-primary/10 text-primary py-0.2 rounded border px-1 text-[10px] font-medium">
                               You
                             </span>
                           )}
@@ -364,44 +512,79 @@ export default function CommentItem({
 
                         <div className="flex items-center gap-2">
                           <span
-                            className="flex items-center gap-1 text-[11px] text-muted-foreground/80"
-                            title={new Date(reply.createdAt).toLocaleString()}
+                            className="text-muted-foreground/80 flex items-center gap-1 text-[11px]"
+                            title={
+                              new Date(
+                                reply.editedAt ? reply.updatedAt : reply.createdAt
+                              ).toLocaleString()
+                            }
                           >
                             <Clock className="h-2.5 w-2.5 shrink-0 opacity-70" />
-                            <span>{replyFormattedTime || "Recently"}</span>
+                            <span>
+                              {formatCommentTime(
+                                reply.editedAt ? reply.updatedAt : reply.createdAt
+                              ) ||
+                                replyFormattedTime ||
+                                "Recently"}
+                            </span>
+                            {reply.editedAt && (
+                              <span className="text-muted-foreground/70 italic">(Edited)</span>
+                            )}
                           </span>
 
-                          {/* Delete Reply Button */}
-                          {Boolean(reply.isAuthor) && onDelete && (
-                            <button
-                              type="button"
-                              onClick={() => handleDelete(reply.id, comment.id)}
-                              aria-label="Delete reply"
-                              title="Delete this reply"
-                              className="text-muted-foreground/50 opacity-0 group-hover:opacity-100 hover:text-red-500 transition-all p-0.5 rounded"
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </button>
-                          )}
+                          <div className="flex items-center">
+                            {reply.isAuthor && onEdit && editingReplyId !== reply.id && (
+                              <button
+                                type="button"
+                                onClick={() => handleStartEdit(reply.id, reply.content)}
+                                aria-label="Edit reply"
+                                title="Edit your reply"
+                                className="text-muted-foreground/70 rounded-md p-1 transition-colors hover:bg-teal-500/10 hover:text-teal-500"
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                              </button>
+                            )}
+
+                            {Boolean(reply.isAuthor) && onDelete && (
+                              <button
+                                type="button"
+                                onClick={() => handleOpenDeleteModal(reply.id, comment.id)}
+                                aria-label="Delete reply"
+                                title="Delete this reply"
+                                disabled={isDeleting}
+                                className="text-muted-foreground/70 rounded-md p-1 transition-colors hover:bg-red-500/10 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                {isDeleting && deleteTarget?.id === reply.id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Trash2 className="h-4 w-4" />
+                                )}
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </div>
 
                       {/* Reply Body with @Mention Tag */}
-                      <p className="mt-1 text-xs leading-relaxed text-foreground/90 whitespace-pre-line break-words">
-                        {reply.replyToName && (
-                          <span className="mr-1.5 font-medium text-teal-600 dark:text-teal-400 select-none">
-                            @{reply.replyToName}
-                          </span>
-                        )}
-                        {reply.content}
-                      </p>
+                      {editingReplyId === reply.id ? (
+                        renderEditForm(reply.id, reply.authorName)
+                      ) : (
+                        <p className="text-foreground/90 mt-1 text-xs leading-relaxed wrap-break-word whitespace-pre-line">
+                          {reply.replyToName && (
+                            <span className="mr-1.5 font-medium text-teal-600 select-none dark:text-teal-400">
+                              @{reply.replyToName}
+                            </span>
+                          )}
+                          {reply.content}
+                        </p>
+                      )}
 
                       {/* Quick Reply to this specific replier */}
                       <div className="mt-1.5">
                         <button
                           type="button"
                           onClick={() => handleOpenReplyForm(reply.authorName)}
-                          className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground hover:text-teal-600 dark:hover:text-teal-400 transition-colors"
+                          className="text-muted-foreground hover:text-primary inline-flex items-center gap-1 text-[11px] font-medium transition-colors"
                         >
                           <CornerDownRight className="h-3 w-3" />
                           <span>Reply</span>
@@ -415,6 +598,26 @@ export default function CommentItem({
           )}
         </div>
       )}
+
+      {/* ── Delete Confirmation Modal ── */}
+      <ConfirmationModal
+        open={showDeleteModal}
+        onOpenChange={(open) => {
+          if (!open) {
+            handleCloseDeleteModal();
+          } else {
+            setShowDeleteModal(true);
+          }
+        }}
+        title="Delete comment?"
+        description="Are you sure you want to delete this comment? This action cannot be undone."
+        cancelText="Cancel"
+        confirmText="Delete"
+        confirmVariant="danger"
+        loading={isDeleting}
+        onCancel={handleCloseDeleteModal}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   );
 }

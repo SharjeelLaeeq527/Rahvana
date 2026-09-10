@@ -277,6 +277,8 @@ const generatePriorChildrenFields = (startIndex: number, endIndex: number): Fiel
           pdfKey: "N/A",
           label: "What is your Child's Alien Registration Number (A-Number)? (If any)",
           placeholder: "123456789",
+          tooltip:
+            "An A-Number (Alien Registration Number) is a 7 to 9 digit number USCIS gives to non-citizens. You can find it on a green card, work permit, or immigration notices. Leave blank if the child never had one.",
           type: "text",
           maxLength: 9,
           section: "Part 7. Information About Your Children",
@@ -568,6 +570,8 @@ export const formFields: Field[] = [
         pdfKey: "p1_alien_number",
         label: "What is your Alien Registration Number (A-Number)?",
         placeholder: "123456789",
+        tooltip:
+          "An A-Number (Alien Registration Number) is a 7 to 9 digit number USCIS gives to non-citizens. You can find it on a green card, work permit, or immigration notices. Leave blank if you never had one.",
         type: "text",
         maxLength: 9,
         condition: (d) => d.p1_has_alien_number === "Yes",
@@ -723,6 +727,8 @@ export const formFields: Field[] = [
         pdfKey: "p1_item4_alien_number",
         label: "What is your Alien Registration Number (A-Number)?",
         placeholder: "123456789",
+        tooltip:
+          "An A-Number (Alien Registration Number) is a 7 to 9 digit number USCIS gives to non-citizens. You can find it on a green card, work permit, or immigration notices. Leave blank if you never had one.",
         type: "text",
         maxLength: 9,
         condition: (d) => d.p1_item4_has_alien === "Yes",
@@ -750,6 +756,8 @@ export const formFields: Field[] = [
         pdfKey: "p1_other_alien_number1",
         label: "First Other A-Number",
         placeholder: "123456789",
+        tooltip:
+          "An A-Number (Alien Registration Number) is a 7 to 9 digit number USCIS gives to non-citizens. You can find it on a green card, work permit, or immigration notices. Leave blank if you never had one.",
         type: "text",
         maxLength: 9,
         condition: (d) => d.p1_has_other_alien === "Yes",
@@ -759,6 +767,8 @@ export const formFields: Field[] = [
         pdfKey: "p1_other_alien_number2",
         label: "Second Other A-Number",
         placeholder: "123456789",
+        tooltip:
+          "An A-Number (Alien Registration Number) is a 7 to 9 digit number USCIS gives to non-citizens. You can find it on a green card, work permit, or immigration notices. Leave blank if you never had one.",
         type: "text",
         maxLength: 9,
         condition: (d) => d.p1_has_other_alien === "Yes",
@@ -833,6 +843,8 @@ export const formFields: Field[] = [
         pdfKey: "p1_uscis_account_number",
         label: "What is your 12-digit USCIS Online Account Number?",
         placeholder: "123456789012",
+        tooltip:
+          "This is the number created when you make an account at my.uscis.gov to file or track cases online. It is not the same as your A-Number. Leave blank if you do not have an online account.",
         type: "text",
         maxLength: 12,
         condition: (d) => d.p1_has_uscis_account === "Yes",
@@ -996,6 +1008,8 @@ export const formFields: Field[] = [
         pdfKey: "p1_i94_number",
         label: "Form I-94 Arrival/Departure Record Number",
         placeholder: "11-digit number",
+        tooltip:
+          "The I-94 is the U.S. arrival and departure record. Its 11-character number can be found at the CBP I-94 website (i94.cbp.dhs.gov) or on the small card in the passport.",
         type: "text",
         maxLength: 11,
         condition: (d) => d.p1_has_i94 === "Yes",
@@ -1004,6 +1018,8 @@ export const formFields: Field[] = [
         key: "p1_i94_exp_date",
         pdfKey: "p1_i94_exp_date",
         label: "Expiration Date of Authorized Stay Shown on Form I-94 (mm/dd/yyyy or type D/S)",
+        tooltip:
+          "D/S means Duration of Status. Enter D/S if your I-94 lets you stay as long as you keep your status (common for F-1 students and J-1 visitors). Otherwise enter the date your authorized stay ends.",
         type: "text",
         condition: (d) => d.p1_has_i94 === "Yes",
       },
@@ -1011,6 +1027,8 @@ export const formFields: Field[] = [
         key: "p1_i94_status",
         pdfKey: "p1_i94_status",
         label: "Immigration Status on Form I-94 (e.g., B2 visitor, F1 student, H1B worker)",
+        tooltip:
+          "This is the visa category you used to enter the U.S., such as B-2 visitor or F-1 student. It is shown on your visa, I-94 record, or entry stamp.",
         type: "text",
         condition: (d) => d.p1_has_i94 === "Yes",
       },
@@ -1173,6 +1191,8 @@ export const formFields: Field[] = [
         key: "p1_mail_in_care_of",
         pdfKey: "p1_mail_in_care_of",
         label: "Who receives mail for you at this mailing address? (In Care Of Name)",
+        tooltip:
+          "In Care Of means the person who receives mail for you at this address when it is not in your own name, for example a landlord or relative. Leave blank if the mail is in your own name.",
         type: "text",
         condition: (d) => d.p1_is_current_mailing_same === "No",
       },
@@ -1266,6 +1286,8 @@ export const formFields: Field[] = [
         key: "p1_prior_in_care_of",
         pdfKey: "p1_prior_in_care_of",
         label: "Who received mail for you at your prior address? (In Care Of Name)",
+        tooltip:
+          "In Care Of means the person who received mail for you at this address when it was not in your own name, for example a landlord or relative. Leave blank if the mail was in your own name.",
         type: "text",
         condition: (d) => d.p1_resided_5yrs === "No" && Number(d.p1_address_count) >= 1,
       },
@@ -1468,6 +1490,8 @@ export const formFields: Field[] = [
         pdfKey: "p1_ssn_number",
         label: "What is your U.S. Social Security Number (SSN)?",
         placeholder: "9-digit number",
+        tooltip:
+          "Your 9-digit U.S. Social Security Number, found on your Social Security card. Only enter it if you have one.",
         type: "text",
         maxLength: 9,
         condition: (d) => d.p1_ssn_issued === "Yes",
@@ -1576,6 +1600,8 @@ export const formFields: Field[] = [
         pdfKey: "p2_principal_alien_number",
         label: "What is the Principal Applicant's Alien Registration Number (A-Number)?",
         placeholder: "123456789",
+        tooltip:
+          "An A-Number (Alien Registration Number) is a 7 to 9 digit number USCIS gives to non-citizens. You can find it on a green card, work permit, or immigration notices. Leave blank if the principal applicant never had one.",
         type: "text",
         maxLength: 9,
         condition: (d) => d.p2_applicant_type === "Derivative",
@@ -1998,6 +2024,8 @@ export const formFields: Field[] = [
         key: "p2_dv_rank_number",
         pdfKey: "p2_dv_rank_number",
         label: "What is your Diversity Visa Rank Number?",
+        tooltip:
+          "This is the case number the U.S. State Department gives you if you are selected in the Diversity Visa (Green Card) lottery. It appears on your selection letter and shows your place in line.",
         type: "text",
         condition: (d) => d.p2_additional_option_category === "DV",
       },

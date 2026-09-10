@@ -49,11 +49,7 @@ export default function BlogCommentsSection({ slug }: BlogCommentsSectionProps) 
     setTotalCount((prev) => prev + 1);
   };
 
-  const handleReplyCreated = async (
-    parentId: string,
-    content: string,
-    replyToName?: string
-  ) => {
+  const handleReplyCreated = async (parentId: string, content: string, replyToName?: string) => {
     const res = await fetch("/api/blog/comments", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -120,6 +116,52 @@ export default function BlogCommentsSection({ slug }: BlogCommentsSectionProps) 
     }
   };
 
+  const handleEditComment = async (commentId: string, newContent: string) => {
+    const res = await fetch(`/api/blog/comments/${commentId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content: newContent }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data?.error || "Failed to edit comment");
+    }
+
+    const updatedComment = data.comment as BlogComment;
+
+    setComments((prev) =>
+      prev.map((comment) => {
+        if (comment.id === commentId) {
+          return {
+            ...comment,
+            content: updatedComment.content,
+            updatedAt: updatedComment.updatedAt,
+            editedAt: updatedComment.editedAt,
+          };
+        }
+
+        if (comment.replies?.some((reply) => reply.id === commentId)) {
+          return {
+            ...comment,
+            replies: comment.replies.map((reply) =>
+              reply.id === commentId
+                ? {
+                    ...reply,
+                    content: updatedComment.content,
+                    updatedAt: updatedComment.updatedAt,
+                    editedAt: updatedComment.editedAt,
+                  }
+                : reply
+            ),
+          };
+        }
+
+        return comment;
+      })
+    );
+  };
+
   return (
     <section
       id="comments-section"
@@ -129,13 +171,13 @@ export default function BlogCommentsSection({ slug }: BlogCommentsSectionProps) 
       {/* Section Header with Counter */}
       <div className="mb-7 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-500/10 text-teal-400">
+          <div className="border-primary/20 bg-primary/10 text-primary flex h-8 w-8 items-center justify-center rounded-lg border">
             <MessageSquare className="h-4 w-4" />
           </div>
           <h2 className="text-foreground text-xl font-bold tracking-tight sm:text-2xl">
             Discussion
           </h2>
-          <span className="ml-1 rounded-full border border-teal-500/20 bg-teal-500/10 px-2.5 py-0.5 text-xs font-semibold text-teal-500 dark:text-teal-400">
+          <span className="border-primary/20 bg-primary/10 text-primary ml-1 rounded-full border px-2.5 py-0.5 text-xs font-semibold">
             {totalCount}
           </span>
         </div>
@@ -183,6 +225,7 @@ export default function BlogCommentsSection({ slug }: BlogCommentsSectionProps) 
               canDelete={Boolean(comment.isAuthor)}
               onDelete={handleDeleteComment}
               onReplySubmit={handleReplyCreated}
+              onEdit={handleEditComment}
             />
           ))}
         </div>

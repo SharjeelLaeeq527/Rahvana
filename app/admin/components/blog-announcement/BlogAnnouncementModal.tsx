@@ -15,6 +15,7 @@ interface ArticleSummary {
   title: string;
   category: string;
   readTime: string;
+  heroImage?: string;
 }
 
 export function BlogAnnouncementModal({ open, onOpenChange }: BlogAnnouncementModalProps) {
@@ -27,6 +28,8 @@ export function BlogAnnouncementModal({ open, onOpenChange }: BlogAnnouncementMo
   const [isTestLoading, setIsTestLoading] = useState(false);
 
   const { showToast } = useToast();
+
+  const selectedArticle = articles.find((a) => a.slug === selectedSlug);
 
   useEffect(() => {
     if (open) {
@@ -87,8 +90,8 @@ export function BlogAnnouncementModal({ open, onOpenChange }: BlogAnnouncementMo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl w-[95%] bg-background overflow-hidden rounded-2xl p-0">
-        <div className="relative w-full px-8 py-8 space-y-6">
+      <DialogContent className="max-w-2xl w-[95%] max-h-[90vh] flex flex-col bg-background overflow-hidden rounded-2xl p-0">
+        <div className="relative w-full overflow-y-auto px-6 py-6 sm:px-8 sm:py-8 space-y-5">
           <div>
             <div className="flex items-center gap-2 text-teal-600 dark:text-teal-400 text-xs font-bold uppercase tracking-wider">
               <BookOpen className="h-4 w-4" />
@@ -121,6 +124,19 @@ export function BlogAnnouncementModal({ open, onOpenChange }: BlogAnnouncementMo
                 ))}
               </select>
             </div>
+
+            {selectedArticle?.heroImage && (
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-foreground">Article Image Preview</label>
+                <div className="relative h-28 w-full overflow-hidden rounded-xl border border-border bg-muted/30">
+                  <img
+                    src={selectedArticle.heroImage}
+                    alt={selectedArticle.title}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+              </div>
+            )}
 
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-foreground">Email Subject / Headline</label>

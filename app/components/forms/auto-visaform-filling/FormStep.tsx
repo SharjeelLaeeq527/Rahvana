@@ -225,10 +225,44 @@ export function FormStep({
 
   const { main: mainQuestion, hint: hintText } = parseLabel(activeField.label);
 
-  const renderSubQuestions = (field: FormField) => {
-    const hasSubQuestions = field.subQuestions && field.subQuestions.length > 0;
+  // Info-only fields ("hidden" type without subQuestions) carry read-only guidance in their label.
+  // The first line is the heading; each following line renders on its own row.
+  const hasSubQuestions = !!(activeField.subQuestions && activeField.subQuestions.length > 0);
+  const isInfoField = activeField.type === "hidden" && !hasSubQuestions;
+  const infoLines = activeField.type === "hidden"
+    ? activeField.label
+        .split("\n")
+        .slice(1)
+        .map((line) => line.trim())
+        .filter(Boolean)
+    : [];
 
-    if (!hasSubQuestions) {
+  // Prefer an explicit hint/tooltip; fall back to help text or the bracket text parsed from the label.
+  const topHint = activeField.hint || hintText;
+  const topHelp = activeField.tooltip || activeField.help;
+
+  // Renders the "Where to find this" and "Example" info boxes for any field that defines them.
+  const renderFindExample = (field: FormField) => (
+    <>
+      {field.find && (
+        <div className="rounded-lg border border-[#d0e8e9] bg-[#f2fafa] px-3 py-2.5 text-sm leading-relaxed text-[#0a5a5d]">
+          <span className="font-semibold">Where to find this: </span>
+          {field.find}
+        </div>
+      )}
+      {field.example && (
+        <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm leading-relaxed text-emerald-900">
+          <span className="font-semibold">Example: </span>
+          {field.example}
+        </div>
+      )}
+    </>
+  );
+
+  const renderSubQuestions = (field: FormField) => {
+    const hasSubs = field.subQuestions && field.subQuestions.length > 0;
+
+    if (!hasSubs) {
       return renderInput(field);
     }
 
@@ -236,7 +270,8 @@ export function FormStep({
       (subQ): subQ is FormField => !subQ.condition || subQ.condition(formData)
     );
 
-    const progressiveIndex = progressiveSubQuestionIndices[field.key] ?? -1;
+    const progressiveIndex =
+      progressiveSubQuestionIndices[field.key] ?? (field.type === "hidden" ? 0 : -1);
     const visibleSubQuestions = applicableSubQuestions.slice(0, progressiveIndex + 1);
     const shouldRenderParent = field.type !== "hidden";
     // const shouldRenderParent = field.options && field.options.length > 0;
@@ -256,6 +291,16 @@ export function FormStep({
             <label className="text-[20px] md:text-[24px] font-semibold leading-[1.35] tracking-[-0.02em] text-gray-900">
               {subQ.label}
             </label>
+            {subQ.hint && <p className="text-sm text-gray-600">{subQ.hint}</p>}
+            {(subQ.tooltip || subQ.help) && (
+              <ExpandableTooltip
+                icon="?"
+                title="What does this mean?"
+                message={(subQ.tooltip || subQ.help) as string}
+                defaultOpen={false}
+              />
+            )}
+            {renderFindExample(subQ as FormField)}
             {renderInput(subQ as FormField)}
           </motion.div>
         ))}
@@ -402,12 +447,12 @@ export function FormStep({
         </p>
       </div>
 
-      {/* Expandable Tooltip */}
-      {activeField.tooltip && (
+      {/* Expandable Tooltip (explicit tooltip, or long-form help text) */}
+      {topHelp && (
         <ExpandableTooltip
           icon="?"
           title="What does this mean?"
-          message={activeField.tooltip}
+          message={topHelp}
           defaultOpen={false}
         />
       )}
@@ -433,13 +478,56 @@ export function FormStep({
             <h2 className="text-[20px] md:text-[24px] font-semibold leading-[1.35] tracking-[-0.02em] text-gray-900 mb-2">
               {mainQuestion}
             </h2>
-            {hintText && (
-              <p className="text-sm text-gray-600 mt-1">{hintText}</p>
+            {!isInfoField && topHint && (
+              <p className="text-sm text-gray-600 mt-1">{topHint}</p>
             )}
           </div>
 
+          {/* Guidance boxes: where to find this / example */}
+          {!isInfoField && (activeField.find || activeField.example) && (
+            <div className="space-y-2">{renderFindExample(activeField)}</div>
+          )}
+
           {/* Input Section */}
-          <div>{renderSubQuestions(activeField)}</div>
+          {infoLines.length > 0 && (
+            <div className="rounded-xl border border-[#d0e8e9] bg-[#f2fafa] p-4 sm:p-5 space-y-3">
+              {infoLines.map((line, i) => {
+                // A line ending with ":" introduces the list below it.
+                if (line.endsWith(":")) {
+                  return (
+                    <p
+                      key={i}
+                      className="text-sm sm:text-[15px] font-medium leading-relaxed text-gray-800"
+                    >
+                      {line}
+                    </p>
+                  );
+                }
+                // A line starting with "Note" is shown as a distinct warning callout.
+                if (/^note\b/i.test(line)) {
+                  return (
+                    <div
+                      key={i}
+                      className="mt-1 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2.5 text-sm leading-relaxed text-amber-900"
+                    >
+                      {line}
+                    </div>
+                  );
+                }
+                // Every other line is one point on its own row.
+                return (
+                  <div key={i} className="flex items-start gap-3">
+                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#0d7377]" />
+                    <p className="text-sm sm:text-[15px] leading-relaxed text-gray-700">
+                      {line}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {!isInfoField && <div>{renderSubQuestions(activeField)}</div>}
         </motion.div>
       </AnimatePresence>
 

@@ -31,7 +31,8 @@ CREATE TABLE IF NOT EXISTS public.blog_comments (
 
   -- Timestamps
   created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
-  updated_at TIMESTAMPTZ DEFAULT now() NOT NULL
+  updated_at TIMESTAMPTZ DEFAULT now() NOT NULL,
+  edited_at TIMESTAMPTZ DEFAULT NULL
 );
 
 -- Indexes for fast querying

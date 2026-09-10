@@ -46,7 +46,7 @@ export default function BlogNewsletterCTA() {
     <div className="border-border/70 bg-card relative overflow-hidden rounded-3xl border p-6 shadow-sm sm:p-8 lg:p-10">
       <div className="flex flex-col items-center justify-between gap-6 lg:flex-row">
         {/* Left Side: Headline & Subtitle */}
-        <div className="text-center lg:text-left shrink-0">
+        <div className="shrink-0 text-center lg:text-left">
           <h3 className="text-foreground text-xl font-bold tracking-tight sm:text-2xl">
             Never miss an update
           </h3>
@@ -60,7 +60,7 @@ export default function BlogNewsletterCTA() {
           <div className="w-full max-w-md">
             <form
               onSubmit={handleSubmit}
-              className="dark:bg-background flex w-full items-center rounded-full border border-[#cbe3de] bg-white p-1 pl-4 shadow-sm focus-within:border-teal-500 focus-within:ring-2 focus-within:ring-teal-500/20 dark:border-teal-900/50"
+              className="dark:bg-background flex w-full items-center rounded-full border border-primary/20 bg-white p-1 pl-4 shadow-sm focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 dark:border-primary/30"
             >
               <input
                 type="email"
@@ -69,12 +69,12 @@ export default function BlogNewsletterCTA() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
                 disabled={isLoading}
-                className="text-foreground placeholder:text-muted-foreground/70 w-full bg-transparent text-xs focus:outline-none sm:text-sm disabled:opacity-60"
+                className="text-foreground placeholder:text-muted-foreground/70 w-full bg-transparent text-xs autofill:bg-transparent autofill:shadow-[inset_0_0_0_1000px_white] focus:outline-none disabled:opacity-60 sm:text-sm dark:autofill:shadow-[inset_0_0_0_1000px_hsl(var(--background))]"
               />
               <button
                 type="submit"
                 disabled={isLoading || isSubscribed}
-                className="shrink-0 rounded-full bg-[#0d4f49] px-6 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-teal-700 sm:text-sm disabled:opacity-60"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 shrink-0 rounded-full px-6 py-2.5 text-xs font-semibold shadow-sm transition disabled:opacity-60 sm:text-sm"
               >
                 {isLoading ? "Subscribing..." : isSubscribed ? "Subscribed!" : "Subscribe"}
               </button>
@@ -82,7 +82,7 @@ export default function BlogNewsletterCTA() {
             {message && (
               <p
                 className={`mt-2 text-center text-xs font-medium ${
-                  isError ? "text-red-500" : "text-teal-700 dark:text-teal-300"
+                  isError ? "text-red-500" : "text-primary"
                 }`}
               >
                 {message}
