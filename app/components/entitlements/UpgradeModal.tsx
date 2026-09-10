@@ -291,6 +291,24 @@ export function UpgradeModal({ feature, onClose, onConfirm, interviewMode }: Upg
 
       if (data.url) {
         window.location.href = data.url;
+      } else if (data?.portal) {
+        // Past-due / recovery: send the user to the billing portal to fix their
+        // existing plan instead of buying a duplicate subscription.
+        try {
+          const portalRes = await fetch("/api/stripe/portal", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId: user?.id }),
+          });
+          const portalData = await portalRes.json();
+          if (portalData?.url) {
+            window.location.href = portalData.url;
+            return;
+          }
+        } catch (portalErr) {
+          console.error("[Checkout] Portal redirect failed:", portalErr);
+        }
+        setProcessing(false);
       } else {
         console.error("[Checkout] No URL in response:", data);
         setProcessing(false);

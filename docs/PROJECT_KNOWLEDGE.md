@@ -904,6 +904,22 @@ External: Stripe . Resend . EasyPost . Gemini . USCIS . GA4 . Sheets . OCR.space
 - **`canvas` is aliased away** for pdfjs. **WhatsApp assistant is disabled** in
   `backend/main.py`. **MODNet** is a git submodule.
 - **Stripe truth = `verify-session`**, not the webhook.
+- **One journey subscription per customer (Stripe is the source of truth).** Checkout
+  lists the customer's live Stripe subs (`active/trialing/past_due/unpaid`) and blocks
+  same-tier/downgrade even when the DB is stale — the old DB-only guard let duplicate live
+  subs be created on any desync. New subs are tagged `subscription_data.metadata.tier`.
+  `verify-session` + webhook run `cancelDuplicateSubscriptions(customer, keepSubId)` which
+  cancels every live sub except the confirmed one. **Ordering is load-bearing:** the old
+  sub is cancelled ONLY after the new payment is confirmed and after the DB points at the
+  new sub, so (a) a failed checkout never removes the user's existing plan and (b) the
+  `customer.subscription.deleted` guard skips the downgrade → upgrades never reset tier or
+  journey progress (journey rows are independent of tier anyway). The existing Stripe
+  customer is resolved (search by metadata/email) BEFORE the live-sub guard runs, so a
+  DB desync with no stored customer id can't bypass the guard; a customer-lookup error on a
+  subscription purchase FAILS CLOSED (503). The per-user checkout lock
+  (`lib/stripe/checkoutLock.ts`) uses a random ownership token + compare-and-delete release
+  so it can't delete another request's lock; it stays fail-open on a Redis error (cleanup is
+  the backstop).
 - **`outputFileTracingIncludes`** bundles `data/**` into API routes (routes read
   `data/visa-category/*.json` at runtime).
 - Migrations include big "combined"/"run_all" files — mind apply order and duplication.
