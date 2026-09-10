@@ -188,47 +188,29 @@ class PDFFillerService:
         if additional_blocks:
             self._fill_additional_blocks(doc, additional_blocks)
 
-        # Autofill petitioner name and A-number on Page 12 + duplicated pages for I-130
-        if self.form_id == "i130":
-            for page_idx in range(11, len(doc)):
-                page = doc[page_idx]
-                for widget in page.widgets():
-                    w_name = widget.field_name or ""
-                    if "Pt2Line4a_FamilyName" in w_name:
-                        widget.field_value = petitioner_family
-                        widget.update()
-                    elif "Pt2Line4b_GivenName" in w_name:
-                        widget.field_value = petitioner_given
-                        widget.update()
-                    elif "Pt2Line4c_MiddleName" in w_name:
-                        widget.field_value = petitioner_middle
-                        widget.update()
-                    elif "Pt2Line1_AlienNumber" in w_name:
-                        widget.field_value = petitioner_alien
-                        widget.update()
+        # Autofill petitioner/applicant name and A-number on the last page & duplicated pages for all forms
+        family_val = str(form_data.get("petitioner_familyName") or form_data.get("p1_legal_family_name") or form_data.get("pt1_l6a_familyname") or form_data.get("p1_family_name") or "").strip()
+        given_val = str(form_data.get("petitioner_givenName") or form_data.get("p1_legal_given_name") or form_data.get("pt1_l6b_givenname") or form_data.get("p1_given_name") or "").strip()
+        middle_val = str(form_data.get("petitioner_middleName") or form_data.get("p1_legal_middle_name") or form_data.get("pt1_l6c_middlename") or form_data.get("p1_middle_name") or "").strip()
+        alien_val = str(form_data.get("petitioner_alienNumber") or form_data.get("p1_alien_number") or form_data.get("pt1_l1_aliennumber") or form_data.get("p1_item4_alien_number") or "").strip()
 
-        # Autofill applicant name and A-number on the last page + duplicated pages for I-485
-        if self.form_id == "i485":
-            applicant_family = str(form_data.get("p1_legal_family_name") or "").strip()
-            applicant_given = str(form_data.get("p1_legal_given_name") or "").strip()
-            applicant_middle = str(form_data.get("p1_legal_middle_name") or "").strip()
-            applicant_alien = str(form_data.get("p1_alien_number") or form_data.get("p1_item4_alien_number") or "").strip()
-            
-            for page_idx in range(23, len(doc)):
-                page = doc[page_idx]
-                for widget in page.widgets():
-                    w_name = widget.field_name or ""
-                    if "Pt1Line1_FamilyName" in w_name:
-                        widget.field_value = applicant_family
+        start_header_page = max(0, len(doc) - (len(additional_blocks) // 5 + 2))
+        for page_idx in range(start_header_page, len(doc)):
+            page = doc[page_idx]
+            for widget in page.widgets():
+                w_name = widget.field_name or ""
+                if not widget.field_value:
+                    if any(fn in w_name for fn in ["FamilyName", "familyname", "Family_Name"]) and family_val:
+                        widget.field_value = family_val
                         widget.update()
-                    elif "Pt1Line1_GivenName" in w_name:
-                        widget.field_value = applicant_given
+                    elif any(gn in w_name for gn in ["GivenName", "givenname", "Given_Name"]) and given_val:
+                        widget.field_value = given_val
                         widget.update()
-                    elif "Pt1Line1_MiddleName" in w_name:
-                        widget.field_value = applicant_middle
+                    elif any(mn in w_name for mn in ["MiddleName", "middlename", "Middle_Name"]) and middle_val:
+                        widget.field_value = middle_val
                         widget.update()
-                    elif "AlienNumber" in w_name:
-                        widget.field_value = applicant_alien
+                    elif any(an in w_name for an in ["AlienNumber", "aliennumber", "Alien_Number"]) and alien_val:
+                        widget.field_value = alien_val
                         widget.update()
 
         output = io.BytesIO()

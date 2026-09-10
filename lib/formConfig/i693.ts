@@ -4563,6 +4563,31 @@ export const getInitialFormData = (): Record<string, string> => {
   return data;
 };
 
+export const overflowFields = [
+  {
+    prefix: "pt11_remarks",
+    countKey: "pt11_remarks_count",
+    startIndex: 1,
+    maxIndex: 5,
+    pageNumber: "14",
+    partNumber: "11",
+    itemNumber: "1",
+    labelPrefix: "Medical Remark",
+    fields: [
+      { suffix: "topic", label: "Topic/Category" },
+      { suffix: "details", label: "Remark Details" },
+    ],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const topic = data[`pt11_remarks_${index}_topic`] || "";
+      const details = data[`pt11_remarks_${index}_details`] || "";
+
+      let info = `Medical Remark ${index}: ${topic}`;
+      if (details) info += ` - ${details}`;
+      return info + ".";
+    },
+  },
+];
+
 export const i693Config = {
   formId,
   formTitle,
@@ -4570,6 +4595,7 @@ export const i693Config = {
   formFields,
   getInitialFormData,
   sectionIntroMessages,
+  overflowFields,
 };
 
 export default i693Config;

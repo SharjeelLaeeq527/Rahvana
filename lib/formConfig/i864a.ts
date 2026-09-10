@@ -2386,6 +2386,34 @@ export const getInitialFormData = (): Record<string, string> => {
   return data;
 };
 
+export const overflowFields = [
+  {
+    prefix: "pt4_member",
+    countKey: "pt4_member_count",
+    startIndex: 2,
+    maxIndex: 8,
+    pageNumber: "3",
+    partNumber: "4",
+    itemNumber: "1",
+    labelPrefix: "Household Member",
+    fields: [
+      { suffix: "name", label: "Full Name" },
+      { suffix: "relationship", label: "Relationship" },
+      { suffix: "income", label: "Income Amount" },
+    ],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const name = data[`pt4_member_${index}_name`] || "";
+      const rel = data[`pt4_member_${index}_relationship`] || "";
+      const income = data[`pt4_member_${index}_income`] || "";
+
+      let info = `Household Member ${index}: ${name}`;
+      if (rel) info += ` (${rel})`;
+      if (income) info += `, Income: $${income}`;
+      return info + ".";
+    },
+  },
+];
+
 export const i864aConfig = {
   formId,
   formTitle,
@@ -2393,6 +2421,7 @@ export const i864aConfig = {
   formFields,
   getInitialFormData,
   sectionIntroMessages,
+  overflowFields,
 };
 
 export default i864aConfig;

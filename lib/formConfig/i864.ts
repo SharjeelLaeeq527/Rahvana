@@ -3944,6 +3944,40 @@ export const getInitialFormData = (): Record<string, string> => {
   return data;
 };
 
+export const overflowFields = [
+  {
+    prefix: "p5_member",
+    countKey: "p5_member_count",
+    startIndex: 3,
+    maxIndex: 8,
+    pageNumber: "5",
+    partNumber: "5",
+    itemNumber: "1",
+    labelPrefix: "Household Member",
+    fields: [
+      { suffix: "name", label: "Full Name" },
+      { suffix: "relationship", label: "Relationship" },
+      { suffix: "dob", label: "Date of Birth" },
+      { suffix: "ssn", label: "SSN" },
+      { suffix: "income", label: "Current Income" },
+    ],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const name = data[`p5_member_${index}_name`] || "";
+      const rel = data[`p5_member_${index}_relationship`] || "";
+      const dob = data[`p5_member_${index}_dob`] || "";
+      const ssn = data[`p5_member_${index}_ssn`] || "";
+      const income = data[`p5_member_${index}_income`] || "";
+
+      let info = `Household Member ${index}: ${name}`;
+      if (rel) info += ` (${rel})`;
+      if (dob) info += `, DOB: ${dob}`;
+      if (ssn) info += `, SSN: ${ssn}`;
+      if (income) info += `, Income: $${income}`;
+      return info + ".";
+    },
+  },
+];
+
 export const i864Config = {
   formId,
   formTitle,
@@ -3951,6 +3985,7 @@ export const i864Config = {
   formFields,
   getInitialFormData,
   sectionIntroMessages,
+  overflowFields,
 };
 
 export default i864Config;
