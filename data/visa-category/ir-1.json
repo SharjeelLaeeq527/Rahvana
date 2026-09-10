@@ -6435,7 +6435,7 @@
               {
                 "id": "approved",
                 "label": "Approved",
-                "description": "The officer approved your visa. Your passport will be held and delivered via the courier service you registered.",
+                "description": "The officer approved your visa application. The Embassy will keep your passport to issue the visa and then return it to you by courier.",
                 "icon": "check-circle"
               },
               {
@@ -6460,7 +6460,7 @@
                 {
                   "id": "docs_requested",
                   "label": "I was asked to submit documents or information",
-                  "sub": "The officer gave you a 221(g) sheet listing specific items to provide"
+                  "sub": "The officer gave you a 221(g) letter listing specific documents, information, or actions required"
                 },
                 {
                   "id": "further_review",
@@ -6832,20 +6832,12 @@
                   "value": "Ready"
                 },
                 {
-                  "label": "Approved",
-                  "value": "Approved"
-                },
-                {
                   "label": "Issued",
                   "value": "Issued"
                 },
                 {
                   "label": "Refused",
                   "value": "Refused"
-                },
-                {
-                  "label": "Administrative Processing",
-                  "value": "Administrative Processing"
                 },
                 {
                   "label": "Case Status Not Available",
@@ -6867,7 +6859,7 @@
                   "Monitor the email address registered with the embassy for additional requests or updates.",
                   "Respond promptly if the embassy requests further documents or information.",
                   "Ensure your passport remains valid throughout the review process.",
-                  "If your case remains pending significantly longer than normal, follow your embassy's official inquiry instructions before contacting them."
+                  "For Administrative Processing inquiries, follow the Embassy’s current instructions for your case. The Department of State generally recommends allowing up to 180 days from the interview or submission of supplemental documents, whichever is later, for Administrative Processing. This is a general guideline, not a requirement to wait 180 days before making an inquiry. If you have concerns about your case or believe an inquiry is appropriate, check the Embassy’s latest guidance and contact them through the appropriate channel."
                 ]
               },
               {
@@ -6876,9 +6868,9 @@
                 "icon": "check",
                 "items": [
                   "Issued — Your visa has been approved and printed.",
-                  "Administrative Processing — Additional review is still underway.",
+                  "Administrative Processing — Your case may remain refused under 221(g) while additional processing is underway.",
                   "Additional Documents Requested — The embassy requires more information.",
-                  "Refused — Review your written notice carefully for the official reason and next steps."
+                  "Refused — Review your 221(g) notice or other written instructions carefully. CEAC may continue to show 'Refused' while a case is undergoing Administrative Processing."
                 ]
               }
             ],
