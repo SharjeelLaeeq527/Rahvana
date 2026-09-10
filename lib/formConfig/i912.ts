@@ -522,7 +522,7 @@ export const formFields: RichField[] = [
     pdfKey: "pt2_l4_acctidentifier",
     label: "Do you have a USCIS Online Account Number?",
     help: "Only assigned if you've personally created an account on my.uscis.gov. It's a website login number, not the same as an A-Number, and not on any physical card. If you've never set one up, you don't have one.",
-    find: 'Log into my.uscis.gov → click your profile icon → look for "USCIS Online Account Number."',
+    find: 'Log into my.uscis.gov -> click your profile icon -> look for "USCIS Online Account Number."',
     type: "text",
     section: "Part 2: Requestor Info",
     placeholder: "8 to 12 digits",
@@ -703,6 +703,8 @@ export const formFields: RichField[] = [
         section: "Part 3: Applications",
         placeholder: "8 or 9 digits",
         skip: "No A-Number",
+        tooltip:
+          "An A-Number (Alien Registration Number) is a 7 to 9 digit number USCIS gives to non-citizens. You can find it on a green card, work permit, or immigration notices. Leave blank if there is none.",
         validate: (v) => (!v || /^\d{8,9}$/.test(v) ? null : "8 or 9 digits"),
       },
       {
@@ -766,6 +768,8 @@ export const formFields: RichField[] = [
         section: "Part 3: Applications",
         placeholder: "8 or 9 digits",
         skip: "No A-Number",
+        tooltip:
+          "An A-Number (Alien Registration Number) is a 7 to 9 digit number USCIS gives to non-citizens. You can find it on a green card, work permit, or immigration notices. Leave blank if there is none.",
         validate: (v) => (!v || /^\d{8,9}$/.test(v) ? null : "8 or 9 digits"),
       },
       {
@@ -817,6 +821,8 @@ export const formFields: RichField[] = [
         section: "Part 3: Applications",
         placeholder: "8 or 9 digits",
         skip: "No A-Number",
+        tooltip:
+          "An A-Number (Alien Registration Number) is a 7 to 9 digit number USCIS gives to non-citizens. You can find it on a green card, work permit, or immigration notices. Leave blank if there is none.",
         validate: (v) => (!v || /^\d{8,9}$/.test(v) ? null : "8 or 9 digits"),
       },
       {
@@ -868,6 +874,8 @@ export const formFields: RichField[] = [
         section: "Part 3: Applications",
         placeholder: "8 or 9 digits",
         skip: "No A-Number",
+        tooltip:
+          "An A-Number (Alien Registration Number) is a 7 to 9 digit number USCIS gives to non-citizens. You can find it on a green card, work permit, or immigration notices. Leave blank if there is none.",
         validate: (v) => (!v || /^\d{8,9}$/.test(v) ? null : "8 or 9 digits"),
       },
       {
@@ -955,6 +963,8 @@ export const formFields: RichField[] = [
         type: "text",
         section: "Part 4: Benefits",
         placeholder: "e.g. Medicaid / SNAP / SSI",
+        tooltip:
+          "A means-tested benefit is government help given because of low income, such as Medicaid, SNAP (food stamps), SSI, or TANF. It does not include benefits like Social Security retirement or unemployment.",
       },
       {
         key: "pt4_l1_DateAward1",
@@ -1024,6 +1034,8 @@ export const formFields: RichField[] = [
         type: "text",
         section: "Part 4: Benefits",
         placeholder: "e.g. Medicaid / SNAP",
+        tooltip:
+          "A means-tested benefit is government help given because of low income, such as Medicaid, SNAP (food stamps), SSI, or TANF. It does not include benefits like Social Security retirement or unemployment.",
       },
       {
         key: "pt4_l1_DateAward2",
@@ -1091,6 +1103,8 @@ export const formFields: RichField[] = [
         type: "text",
         section: "Part 4: Benefits",
         placeholder: "e.g. Medicaid / SNAP",
+        tooltip:
+          "A means-tested benefit is government help given because of low income, such as Medicaid, SNAP (food stamps), SSI, or TANF. It does not include benefits like Social Security retirement or unemployment.",
       },
       {
         key: "pt4_l1_DateAward3",
@@ -1158,6 +1172,8 @@ export const formFields: RichField[] = [
         type: "text",
         section: "Part 4: Benefits",
         placeholder: "e.g. Medicaid / SNAP",
+        tooltip:
+          "A means-tested benefit is government help given because of low income, such as Medicaid, SNAP (food stamps), SSI, or TANF. It does not include benefits like Social Security retirement or unemployment.",
       },
       {
         key: "pt4_l1_DateAward4",
@@ -1223,6 +1239,8 @@ export const formFields: RichField[] = [
         type: "text",
         section: "Part 4: Benefits",
         placeholder: "e.g. Medicaid / SNAP",
+        tooltip:
+          "A means-tested benefit is government help given because of low income, such as Medicaid, SNAP (food stamps), SSI, or TANF. It does not include benefits like Social Security retirement or unemployment.",
       },
       {
         key: "pt4_l1_DateAward1_1",
@@ -1275,6 +1293,8 @@ export const formFields: RichField[] = [
         type: "text",
         section: "Part 4: Benefits",
         placeholder: "e.g. Medicaid / SNAP",
+        tooltip:
+          "A means-tested benefit is government help given because of low income, such as Medicaid, SNAP (food stamps), SSI, or TANF. It does not include benefits like Social Security retirement or unemployment.",
       },
       {
         key: "pt4_l1_DateAward2_1",
@@ -1327,6 +1347,8 @@ export const formFields: RichField[] = [
         type: "text",
         section: "Part 4: Benefits",
         placeholder: "e.g. Medicaid / SNAP",
+        tooltip:
+          "A means-tested benefit is government help given because of low income, such as Medicaid, SNAP (food stamps), SSI, or TANF. It does not include benefits like Social Security retirement or unemployment.",
       },
       {
         key: "pt4_l1_DateAward3_1",
@@ -1379,6 +1401,8 @@ export const formFields: RichField[] = [
         type: "text",
         section: "Part 4: Benefits",
         placeholder: "e.g. Medicaid / SNAP",
+        tooltip:
+          "A means-tested benefit is government help given because of low income, such as Medicaid, SNAP (food stamps), SSI, or TANF. It does not include benefits like Social Security retirement or unemployment.",
       },
       {
         key: "pt4_l1_DateAward4_1",
@@ -2417,6 +2441,8 @@ export const formFields: RichField[] = [
         type: "checkbox",
         section: "Part 9: Preparer",
         condition: (data) => data.pt10_lL7_chbx === "attorney",
+        tooltip:
+          "Check this if the attorney or representative is helping with more of the immigration case, not just this fee waiver form. If they are only helping with this one form, choose the other option instead.",
       },
       {
         key: "pt10_lL7B_chbx_1",
@@ -2426,6 +2452,8 @@ export const formFields: RichField[] = [
         type: "checkbox",
         section: "Part 9: Preparer",
         condition: (data) => data.pt10_lL7_chbx === "attorney",
+        tooltip:
+          "Check this if the attorney or representative is only helping with this fee waiver form and nothing else in the immigration case.",
       },
     ],
   },
@@ -2698,6 +2726,37 @@ export const getInitialFormData = (): Record<string, string> => {
   return data;
 };
 
+export const overflowFields = [
+  {
+    prefix: "pt3_member",
+    countKey: "pt3_member_count",
+    startIndex: 3,
+    maxIndex: 8,
+    pageNumber: "3",
+    partNumber: "3",
+    itemNumber: "1",
+    labelPrefix: "Household Member",
+    fields: [
+      { suffix: "name", label: "Full Name" },
+      { suffix: "rel", label: "Relationship" },
+      { suffix: "dob", label: "Date of Birth" },
+      { suffix: "income", label: "Income" },
+    ],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const name = data[`pt3_member_${index}_name`] || "";
+      const rel = data[`pt3_member_${index}_rel`] || "";
+      const dob = data[`pt3_member_${index}_dob`] || "";
+      const income = data[`pt3_member_${index}_income`] || "";
+
+      let info = `Household Member ${index}: ${name}`;
+      if (rel) info += ` (${rel})`;
+      if (dob) info += `, DOB: ${dob}`;
+      if (income) info += `, Income: $${income}`;
+      return info + ".";
+    },
+  },
+];
+
 export const i912Config = {
   formId,
   formTitle,
@@ -2705,6 +2764,7 @@ export const i912Config = {
   formFields,
   getInitialFormData,
   sectionIntroMessages,
+  overflowFields,
 };
 
 export default i912Config;

@@ -33,6 +33,8 @@ export const formFields: Field[] = [
         label:
           "Please provide your attorney's USCIS Online Account Number. This is a unique 12-digit number they use for online filings.",
         type: "text",
+        tooltip:
+          "This is the number created when your attorney makes an account at my.uscis.gov to file or track cases online. It is not the same as an A-Number. Leave blank if they have no online account.",
         condition: (d) => d.has_attorney_uscis_account === "Yes",
       },
     ],
@@ -52,6 +54,8 @@ export const formFields: Field[] = [
         pdfKey: "attorney_bar_number",
         label: "What is your attorney's State Bar Number?",
         type: "text",
+        tooltip:
+          "A State Bar Number is the license ID a lawyer receives from the state bar association where they are allowed to practice law. Your attorney will know their own number.",
         condition: (d) => d.has_attorney_bar_number === "Yes",
       },
     ],
@@ -72,6 +76,8 @@ export const formFields: Field[] = [
         pdfKey: "p1_volag_number",
         label: "What is your Volag Number?",
         type: "text",
+        tooltip:
+          "A Volag Number is an identifying number given to a nonprofit or voluntary agency that helps people with immigration. Leave blank if no such agency is representing you.",
         condition: (d) => d.has_volag_number === "Yes",
       },
     ],
@@ -96,6 +102,8 @@ export const formFields: Field[] = [
         pdfKey: "p1_alien_number",
         label: "What is your Alien Registration Number (A-Number)?",
         type: "text",
+        tooltip:
+          "An A-Number (Alien Registration Number) is a 7 to 9 digit number USCIS gives to non-citizens. You can find it on a green card, work permit, or immigration notices. Leave blank if there is none.",
         condition: (d) => d.p1_has_alien_number === "Yes",
         maxLength: 9,
       },
@@ -116,6 +124,8 @@ export const formFields: Field[] = [
         pdfKey: "p1_uscis_account",
         label: "What is your USCIS Online Account Number?",
         type: "text",
+        tooltip:
+          "This is the number created when you make an account at my.uscis.gov to file or track cases online. It is not the same as an A-Number. Leave blank if there is no online account.",
         condition: (d) => d.p1_has_uscis_account === "Yes",
         maxLength: 12,
       },
@@ -1249,6 +1259,83 @@ export const sectionIntroMessages = {
   },
 };
 
+export const overflowFields = [
+  {
+    prefix: "p1_addr",
+    countKey: "p1_addr_count",
+    startIndex: 3,
+    maxIndex: 9,
+    pageNumber: "2",
+    partNumber: "1",
+    itemNumber: "4",
+    labelPrefix: "Address",
+    fields: [
+      { suffix: "street", label: "Street" },
+      { suffix: "city", label: "City" },
+      { suffix: "state", label: "State" },
+      { suffix: "zip", label: "Zip" },
+      { suffix: "from", label: "From" },
+      { suffix: "to", label: "To" },
+      { suffix: "country", label: "Country" },
+    ],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const street = data[`p1_addr_${index}_street`] || "";
+      const city = data[`p1_addr_${index}_city`] || "";
+      const state = data[`p1_addr_${index}_state`] || "";
+      const zip = data[`p1_addr_${index}_zip`] || "";
+      const from = data[`p1_addr_${index}_from`] || "";
+      const to = data[`p1_addr_${index}_to`] || "";
+      const country = data[`p1_addr_${index}_country`] || "";
+
+      const parts = [street, city, state, zip, country].filter(Boolean);
+      let info = `Address ${index}: ${parts.join(", ")}.`;
+      if (from || to) {
+        info += ` Dates: ${from} to ${to}`;
+      }
+      return info;
+    },
+  },
+  {
+    prefix: "p2_emp",
+    countKey: "p2_emp_count",
+    startIndex: 3,
+    maxIndex: 9,
+    pageNumber: "3",
+    partNumber: "2",
+    itemNumber: "1",
+    labelPrefix: "Employer",
+    fields: [
+      { suffix: "name", label: "Employer Name" },
+      { suffix: "occupation", label: "Occupation" },
+      { suffix: "street", label: "Street" },
+      { suffix: "city", label: "City" },
+      { suffix: "state", label: "State" },
+      { suffix: "zip", label: "Zip" },
+      { suffix: "from", label: "From" },
+      { suffix: "to", label: "To" },
+      { suffix: "country", label: "Country" },
+    ],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const name = data[`p2_emp_${index}_name`] || "";
+      const occupation = data[`p2_emp_${index}_occupation`] || "";
+      const street = data[`p2_emp_${index}_street`] || "";
+      const city = data[`p2_emp_${index}_city`] || "";
+      const state = data[`p2_emp_${index}_state`] || "";
+      const zip = data[`p2_emp_${index}_zip`] || "";
+      const from = data[`p2_emp_${index}_from`] || "";
+      const to = data[`p2_emp_${index}_to`] || "";
+      const country = data[`p2_emp_${index}_country`] || "";
+
+      const addrParts = [street, city, state, zip, country].filter(Boolean);
+      let info = `Employer ${index}: ${name} (${occupation}). Address: ${addrParts.join(", ")}.`;
+      if (from || to) {
+        info += ` Dates: ${from} to ${to}`;
+      }
+      return info;
+    },
+  },
+];
+
 export const i130aConfig = {
   formId,
   formTitle,
@@ -1256,6 +1343,7 @@ export const i130aConfig = {
   formFields,
   getInitialFormData,
   sectionIntroMessages,
+  overflowFields,
 };
 
 export default i130aConfig;

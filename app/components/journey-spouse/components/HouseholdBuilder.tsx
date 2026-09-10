@@ -392,12 +392,10 @@ export const HouseholdBuilder: React.FC<HouseholdBuilderProps> = ({
             Joint Sponsor
           </div>
           <div className="text-[15px] font-semibold text-[#0c1b33] mb-1.5 leading-tight">
-            Added in CEAC, no proof checklist
+            A separate sponsor who meets the income requirement on their own.
           </div>
           <div className="text-[13px] text-[#3a4f63] leading-relaxed">
-            A joint sponsor is an independent U.S. citizen or LPR who sponsors separately. Added
-            through the CEAC sponsorship flow \u2014{" "}
-            <strong>no relationship-proof documents</strong> are typically required from them.
+            A joint sponsor is a U.S. citizen or green card holder who meets the full income requirement independently. They file their own separate sponsorship form and do not need to live with you or be related to you.
           </div>
         </div>
         <div className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[16px] p-4.5">
@@ -405,12 +403,10 @@ export const HouseholdBuilder: React.FC<HouseholdBuilderProps> = ({
             Household Member
           </div>
           <div className="text-[15px] font-semibold text-[#0e5c3c] mb-1.5 leading-tight">
-            Added in CEAC + relationship proof required
+            A relative in your home who combines income with yours.
           </div>
           <div className="text-[13px] text-[#3a4f63] leading-relaxed">
-            A household member&apos;s income is used alongside the petitioner&apos;s. Added through
-            CEAC \u2014 and also requires <strong>relationship-proof documentation</strong> showing
-            their connection to the sponsoring household.
+            A household member is a relative related to you by birth, marriage, or adoption who lives at your same address or is claimed as a dependent on your tax return. When combining their income with yours, you must provide proof of your relationship and proof of your shared address.
           </div>
         </div>
       </div>

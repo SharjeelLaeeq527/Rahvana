@@ -2320,7 +2320,7 @@ export const formFields: RichField[] = [
     label: "Do you have an Alien Registration Number (A-Number)?",
     help: "An A-Number starts with \"A\" followed by 8 or 9 digits. You'd have one if you hold or previously held a green card or work permit. U.S. citizens typically don't have one.",
     find: 'Front of your green card, labeled "A-Number" or "USCIS#."',
-    example: "A123456789 → type: 123456789",
+    example: "A123456789 -> type: 123456789",
     type: "text",
     section: "Part 2. Sponsor Information",
     placeholder: "8 or 9 digits (no letter A)",
@@ -2333,7 +2333,7 @@ export const formFields: RichField[] = [
     pdfKey: "sponsor_uscis_account",
     label: "Do you have a USCIS Online Account Number?",
     help: "Only if you've created an account on my.uscis.gov. Not the same as an A-Number, and not on any physical card.",
-    find: 'Log into my.uscis.gov → click your name or profile icon → look for "USCIS Online Account Number."',
+    find: 'Log into my.uscis.gov -> click your name or profile icon -> look for "USCIS Online Account Number."',
     type: "text",
     section: "Part 2. Sponsor Information",
     placeholder: "8 to 12 digits",
@@ -2512,7 +2512,7 @@ export const formFields: RichField[] = [
     label: "Do they have an Alien Registration Number (A-Number)?",
     help: "Most first-time green card applicants don't have one yet. They'd only have one from a previous green card, work permit, or prior immigration case.",
     find: 'Front of their green card or work permit, labeled "A-Number" or "USCIS#."',
-    example: "A123456789 → type: 123456789",
+    example: "A123456789 -> type: 123456789",
     type: "text",
     section: "Part 3. Information About the Principal Immigrant",
     placeholder: "8 or 9 digits (no letter A)",
@@ -2637,6 +2637,8 @@ export const formFields: RichField[] = [
         key: "household_member1_alien_number",
         pdfKey: "household_member1_alien_number",
         label: "A-Number? (if any)",
+        tooltip:
+          "An A-Number (Alien Registration Number) is a 7 to 9 digit number USCIS gives to non-citizens. You can find it on their green card, work permit, or immigration notices. Leave blank if they do not have one.",
         type: "text",
         section: "Part 4. Information About the Immigrants You Are Sponsoring",
         placeholder: "8 or 9 digits",
@@ -2648,6 +2650,8 @@ export const formFields: RichField[] = [
         key: "household_member1_uscis_account",
         pdfKey: "household_member1_uscis_account",
         label: "USCIS Online Account Number? (if any)",
+        tooltip:
+          "This is the number created when someone makes an account at my.uscis.gov to file or track cases online. It is not the same as an A-Number. Leave blank if they do not have an online account.",
         type: "text",
         section: "Part 4. Information About the Immigrants You Are Sponsoring",
         placeholder: "8 to 12 digits",
@@ -2704,6 +2708,8 @@ export const formFields: RichField[] = [
         key: "household_member2_alien_number",
         pdfKey: "household_member2_alien_number",
         label: "A-Number? (if any)",
+        tooltip:
+          "An A-Number (Alien Registration Number) is a 7 to 9 digit number USCIS gives to non-citizens. You can find it on their green card, work permit, or immigration notices. Leave blank if they do not have one.",
         type: "text",
         section: "Part 4. Information About the Immigrants You Are Sponsoring",
         placeholder: "8 or 9 digits",
@@ -2715,6 +2721,8 @@ export const formFields: RichField[] = [
         key: "household_member2_uscis_account",
         pdfKey: "household_member2_uscis_account",
         label: "USCIS Online Account Number? (if any)",
+        tooltip:
+          "This is the number created when someone makes an account at my.uscis.gov to file or track cases online. It is not the same as an A-Number. Leave blank if they do not have an online account.",
         type: "text",
         section: "Part 4. Information About the Immigrants You Are Sponsoring",
         placeholder: "8 to 12 digits",
@@ -2771,6 +2779,8 @@ export const formFields: RichField[] = [
         key: "household_member3_alien_number",
         pdfKey: "household_member3_alien_number",
         label: "A-Number? (if any)",
+        tooltip:
+          "An A-Number (Alien Registration Number) is a 7 to 9 digit number USCIS gives to non-citizens. You can find it on their green card, work permit, or immigration notices. Leave blank if they do not have one.",
         type: "text",
         section: "Part 4. Information About the Immigrants You Are Sponsoring",
         placeholder: "8 or 9 digits",
@@ -2782,6 +2792,8 @@ export const formFields: RichField[] = [
         key: "household_member3_uscis_account",
         pdfKey: "household_member3_uscis_account",
         label: "USCIS Online Account Number? (if any)",
+        tooltip:
+          "This is the number created when someone makes an account at my.uscis.gov to file or track cases online. It is not the same as an A-Number. Leave blank if they do not have an online account.",
         type: "text",
         section: "Part 4. Information About the Immigrants You Are Sponsoring",
         placeholder: "8 to 12 digits",
@@ -2839,6 +2851,8 @@ export const formFields: RichField[] = [
         key: "household_member4_alien_number",
         pdfKey: "household_member4_alien_number",
         label: "A-Number? (if any)",
+        tooltip:
+          "An A-Number (Alien Registration Number) is a 7 to 9 digit number USCIS gives to non-citizens. You can find it on their green card, work permit, or immigration notices. Leave blank if they do not have one.",
         type: "text",
         section: "Part 4. Information About the Immigrants You Are Sponsoring",
         placeholder: "8 or 9 digits",
@@ -2850,6 +2864,8 @@ export const formFields: RichField[] = [
         key: "household_member4_uscis_account",
         pdfKey: "household_member4_uscis_account",
         label: "USCIS Online Account Number? (if any)",
+        tooltip:
+          "This is the number created when someone makes an account at my.uscis.gov to file or track cases online. It is not the same as an A-Number. Leave blank if they do not have an online account.",
         type: "text",
         section: "Part 4. Information About the Immigrants You Are Sponsoring",
         placeholder: "8 to 12 digits",
@@ -3057,9 +3073,9 @@ export const formFields: RichField[] = [
     key: "emp_current_annual_income",
     pdfKey: "emp_current_annual_income",
     label: "What is your current annual income, before taxes?",
-    help: "Your gross income, total earnings before anything is taken out. Salaried: your annual salary. Hourly: pay × hours per week × 52. Self-employed: total earnings minus business expenses.",
+    help: "Your gross income, total earnings before anything is taken out. Salaried: your annual salary. Hourly: pay x hours per week x 52. Self-employed: total earnings minus business expenses.",
     find: "Salaried: your offer letter or most recent pay stub. Self-employed: Line 11 on your most recent Form 1040.",
-    example: "Salary of $55,000 → type: 55000",
+    example: "Salary of $55,000 -> type: 55000",
     type: "text",
     section: "Part 6. Sponsor's Employment and Income",
     placeholder: "Annual income in dollars, numbers only (e.g. 55000)",
@@ -3186,7 +3202,7 @@ export const formFields: RichField[] = [
     pdfKey: "hh_total_household_income",
     label: "Total current annual household income?",
     help: "Add together your own income and the incomes of all household members listed above. This total is what USCIS compares against the Federal Poverty Guidelines.",
-    example: "Your income $55,000 + spouse's income $30,000 → total: 85000",
+    example: "Your income $55,000 + spouse's income $30,000 -> total: 85000",
     type: "text",
     section: "Part 6. Sponsor's Employment and Income",
     placeholder: "Total household income, numbers only",
@@ -3258,7 +3274,7 @@ export const formFields: RichField[] = [
     label: "Most recent tax year?",
     help: "The year on your return is the year you earned the money, not when you filed. Filed April 2025 for income earned in 2024? Enter 2024.",
     find: 'The top of your Form 1040, it says "20__ U.S. Individual Income Tax Return."',
-    example: "Filed April 2025 for income earned in 2024 → enter: 2024",
+    example: "Filed April 2025 for income earned in 2024 -> enter: 2024",
     type: "text",
     section: "Part 6. Sponsor's Employment and Income",
     placeholder: "e.g. 2024",
@@ -3346,7 +3362,7 @@ export const formFields: RichField[] = [
     label: "Total balance across all your cash, savings, and checking accounts?",
     help: "Add up current balances in all your checking and savings accounts. Don't include retirement accounts (401k, IRA) here.",
     find: "Log into your bank app or website for current balances.",
-    example: "Checking $3,000 + Savings $8,000 → enter: 11000",
+    example: "Checking $3,000 + Savings $8,000 -> enter: 11000",
     type: "text",
     section: "Part 7. Use of Assets to Supplement Income (if Applicable)",
     placeholder: "Dollar amount, numbers only",
@@ -3358,7 +3374,7 @@ export const formFields: RichField[] = [
     pdfKey: "asset_sponsor_total",
     label: "Net value of any real estate you own?",
     help: "Net value means the property's current worth minus any remaining mortgage. If you own it outright, the full value counts.",
-    example: "Worth $350,000 minus $200,000 still owed → enter: 150000",
+    example: "Worth $350,000 minus $200,000 still owed -> enter: 150000",
     type: "text",
     section: "Part 7. Use of Assets to Supplement Income (if Applicable)",
     placeholder: "Dollar amount, numbers only",
@@ -3370,7 +3386,7 @@ export const formFields: RichField[] = [
     pdfKey: "asset_sponsor_real_estate",
     label: "Value of stocks, bonds, CDs, or other assets not listed above?",
     help: "Include brokerage accounts, individual stocks, bonds, and certificates of deposit. Use today's value. Don't include assets already listed above.",
-    example: "Brokerage account shows $15,320 today → enter: 15320",
+    example: "Brokerage account shows $15,320 today -> enter: 15320",
     type: "text",
     section: "Part 7. Use of Assets to Supplement Income (if Applicable)",
     placeholder: "Dollar amount, numbers only",
@@ -3769,6 +3785,8 @@ export const formFields: RichField[] = [
         key: "p11_add_info_alien_number",
         pdfKey: "p11_add_info_alien_number",
         label: "Your A-Number? (if any)",
+        tooltip:
+          "An A-Number (Alien Registration Number) is a 7 to 9 digit number USCIS gives to non-citizens. You can find it on a green card, work permit, or immigration notices. Leave blank if there is none.",
         type: "text",
         section: "Part 11. Additional Information",
         placeholder: "8 or 9 digits",
@@ -3952,6 +3970,40 @@ export const getInitialFormData = (): Record<string, string> => {
   return data;
 };
 
+export const overflowFields = [
+  {
+    prefix: "p5_member",
+    countKey: "p5_member_count",
+    startIndex: 3,
+    maxIndex: 8,
+    pageNumber: "5",
+    partNumber: "5",
+    itemNumber: "1",
+    labelPrefix: "Household Member",
+    fields: [
+      { suffix: "name", label: "Full Name" },
+      { suffix: "relationship", label: "Relationship" },
+      { suffix: "dob", label: "Date of Birth" },
+      { suffix: "ssn", label: "SSN" },
+      { suffix: "income", label: "Current Income" },
+    ],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const name = data[`p5_member_${index}_name`] || "";
+      const rel = data[`p5_member_${index}_relationship`] || "";
+      const dob = data[`p5_member_${index}_dob`] || "";
+      const ssn = data[`p5_member_${index}_ssn`] || "";
+      const income = data[`p5_member_${index}_income`] || "";
+
+      let info = `Household Member ${index}: ${name}`;
+      if (rel) info += ` (${rel})`;
+      if (dob) info += `, DOB: ${dob}`;
+      if (ssn) info += `, SSN: ${ssn}`;
+      if (income) info += `, Income: $${income}`;
+      return info + ".";
+    },
+  },
+];
+
 export const i864Config = {
   formId,
   formTitle,
@@ -3959,6 +4011,7 @@ export const i864Config = {
   formFields,
   getInitialFormData,
   sectionIntroMessages,
+  overflowFields,
 };
 
 export default i864Config;

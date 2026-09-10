@@ -237,6 +237,28 @@ export function FormStep({
         .filter(Boolean)
     : [];
 
+  // Prefer an explicit hint/tooltip; fall back to help text or the bracket text parsed from the label.
+  const topHint = activeField.hint || hintText;
+  const topHelp = activeField.tooltip || activeField.help;
+
+  // Renders the "Where to find this" and "Example" info boxes for any field that defines them.
+  const renderFindExample = (field: FormField) => (
+    <>
+      {field.find && (
+        <div className="rounded-lg border border-[#d0e8e9] bg-[#f2fafa] px-3 py-2.5 text-sm leading-relaxed text-[#0a5a5d]">
+          <span className="font-semibold">Where to find this: </span>
+          {field.find}
+        </div>
+      )}
+      {field.example && (
+        <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm leading-relaxed text-emerald-900">
+          <span className="font-semibold">Example: </span>
+          {field.example}
+        </div>
+      )}
+    </>
+  );
+
   const renderSubQuestions = (field: FormField) => {
     const hasSubs = field.subQuestions && field.subQuestions.length > 0;
 
@@ -269,6 +291,16 @@ export function FormStep({
             <label className="text-[20px] md:text-[24px] font-semibold leading-[1.35] tracking-[-0.02em] text-gray-900">
               {subQ.label}
             </label>
+            {subQ.hint && <p className="text-sm text-gray-600">{subQ.hint}</p>}
+            {(subQ.tooltip || subQ.help) && (
+              <ExpandableTooltip
+                icon="?"
+                title="What does this mean?"
+                message={(subQ.tooltip || subQ.help) as string}
+                defaultOpen={false}
+              />
+            )}
+            {renderFindExample(subQ as FormField)}
             {renderInput(subQ as FormField)}
           </motion.div>
         ))}
@@ -415,12 +447,12 @@ export function FormStep({
         </p>
       </div>
 
-      {/* Expandable Tooltip */}
-      {activeField.tooltip && (
+      {/* Expandable Tooltip (explicit tooltip, or long-form help text) */}
+      {topHelp && (
         <ExpandableTooltip
           icon="?"
           title="What does this mean?"
-          message={activeField.tooltip}
+          message={topHelp}
           defaultOpen={false}
         />
       )}
@@ -446,10 +478,15 @@ export function FormStep({
             <h2 className="text-[20px] md:text-[24px] font-semibold leading-[1.35] tracking-[-0.02em] text-gray-900 mb-2">
               {mainQuestion}
             </h2>
-            {!isInfoField && hintText && (
-              <p className="text-sm text-gray-600 mt-1">{hintText}</p>
+            {!isInfoField && topHint && (
+              <p className="text-sm text-gray-600 mt-1">{topHint}</p>
             )}
           </div>
+
+          {/* Guidance boxes: where to find this / example */}
+          {!isInfoField && (activeField.find || activeField.example) && (
+            <div className="space-y-2">{renderFindExample(activeField)}</div>
+          )}
 
           {/* Input Section */}
           {infoLines.length > 0 && (
