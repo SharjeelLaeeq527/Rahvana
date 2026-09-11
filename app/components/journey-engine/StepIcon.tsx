@@ -1,5 +1,12 @@
 import React from "react";
 import {
+  BadgeCheck,
+  BriefcaseBusiness,
+  FileCheck,
+  Flag,
+  Heart,
+  IdCard,
+  Languages,
   BookOpen,
   FileText,
   Scroll,
@@ -50,6 +57,8 @@ export const getStepIcon = (iconKey: string, size = 18, className?: string) => {
       return <ShieldCheck size={size} className={className} />;
     case "military":
       return <ShieldCheck size={size} className={className} />;
+      case "shield-check":
+        return <ShieldCheck size={size} className={className} />;
     case "home":
       return <Home size={size} className={className} />;
     case "user":
@@ -117,6 +126,20 @@ export const getStepIcon = (iconKey: string, size = 18, className?: string) => {
       return <Stethoscope size={size} className={className} />;
     case "book":
       return <Book size={size} className={className} />;
+    case "badge-check":
+      return <BadgeCheck size={size} className={className} />;
+    case "briefcase-business":
+      return <BriefcaseBusiness size={size} className={className} />;
+    case "file-check":
+      return <FileCheck size={size} className={className} />;
+    case "flag":
+      return <Flag size={size} className={className} />;
+    case "heart":
+      return <Heart size={size} className={className} />;
+    case "id-card":
+      return <IdCard size={size} className={className} />;
+    case "languages":
+      return <Languages size={size} className={className} />;
     default:
       return null;
   }

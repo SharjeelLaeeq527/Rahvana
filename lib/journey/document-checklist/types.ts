@@ -16,6 +16,7 @@ export interface DocumentChecklistItem {
   source_steps: string[];
   vault_file_id?: string;
   help_url?: string;
+  notes?: string;
   tags?: string[];
 }
 

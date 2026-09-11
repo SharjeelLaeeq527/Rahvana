@@ -6163,70 +6163,20 @@
         {
           "step_key": "step_3_7",
           "step_number": 7,
+          "step_name": "Review Document Checklist",
+          "step_short_description": "Complete document readiness review",
+          "step_description": "Review all uploaded documents, check expiration dates, and prepare post-interview documents",
           "step_type": "tool",
-          "step_name": "Prepare for Interview",
-          "step_description": "Use Rahvana's interview prep tool to practice questions, review your case history, and build confidence before interview day.",
-          "step_short_description": "Practice questions and build confidence",
-          "who": "Beneficiary",
-          "where": "Home preparation",
-          "actions": [
-            "Review DS-260 answers",
-            "Practice common questions",
-            "Study relationship details",
-            "Check document checklist",
-            "Plan outfit (professional)",
-            "Arrange travel to Islamabad if needed"
-          ],
+          "who": "Both",
+          "where": "Rahvana tool",
+          "estimated_duration_days": 1,
+          "is_required": true,
+          "display_order": 7,
+          "dependencies": ["step_3_6"],
           "tool_data": {
-            "type": "interview_prep",
-            "chips": [
-              {
-                "label": "Interview Prep",
-                "type": "purple"
-              },
-              {
-                "label": "Practice Tool",
-                "type": "sky"
-              },
-              {
-                "label": "Build Confidence",
-                "type": "green"
-              }
-            ],
-            "launch_module": {
-              "title": "Rahvana Interview Prep Tool",
-              "heading": "Practice questions, review facts, build confidence",
-              "icon": "message",
-              "cues": [
-                "Review likely interview questions and ideal answers",
-                "Review your DS-260 responses for consistency",
-                "Strengthen recall of your relationship timeline",
-                "Practice concise, truthful, confident answers"
-              ]
-            },
-            "readiness_grid": [
-              {
-                "title": "Review before your interview",
-                "items": [
-                  "DS-260 answers, know every section you completed",
-                  "Relationship timeline, dates, meetings, visits",
-                  "Sponsor income and financial details",
-                  "Civil document details, names, dates, record history",
-                  "Travel history and prior U.S. visa history if any"
-                ]
-              },
-              {
-                "title": "Mindset and approach",
-                "items": [
-                  "Answer only what is asked, do not volunteer extra information",
-                  "Answer truthfully and consistently with your filed documents",
-                  "Stay calm, the officer is doing their job, not targeting you",
-                  "If unsure, say so calmly, do not guess",
-                  "Practice out loud, not just in your head"
-                ]
-              }
-            ],
-            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice, always verify with official sources."
+            "id": "step_3_7",
+            "type": "document_checklist",
+            "title": "Document Readiness Checklist"
           }
         },
         {
