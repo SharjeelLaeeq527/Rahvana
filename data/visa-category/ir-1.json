@@ -6183,6 +6183,75 @@
           "step_key": "step_3_8",
           "step_number": 8,
           "step_type": "tool",
+          "step_name": "Prepare for Interview",
+          "step_description": "Use Rahvana's interview prep tool to practice questions, review your case history, and build confidence before interview day.",
+          "step_short_description": "Practice questions and build confidence",
+          "who": "Beneficiary",
+          "where": "Home preparation",
+          "actions": [
+            "Review DS-260 answers",
+            "Practice common questions",
+            "Study relationship details",
+            "Check document checklist",
+            "Plan outfit (professional)",
+            "Arrange travel to Islamabad if needed"
+          ],
+          "tool_data": {
+            "type": "interview_prep",
+            "chips": [
+              {
+                "label": "Interview Prep",
+                "type": "purple"
+              },
+              {
+                "label": "Practice Tool",
+                "type": "sky"
+              },
+              {
+                "label": "Build Confidence",
+                "type": "green"
+              }
+            ],
+            "launch_module": {
+              "title": "Rahvana Interview Prep Tool",
+              "heading": "Practice questions, review facts, build confidence",
+              "icon": "message",
+              "cues": [
+                "Review likely interview questions and ideal answers",
+                "Review your DS-260 responses for consistency",
+                "Strengthen recall of your relationship timeline",
+                "Practice concise, truthful, confident answers"
+              ]
+            },
+            "readiness_grid": [
+              {
+                "title": "Review before your interview",
+                "items": [
+                  "DS-260 answers, know every section you completed",
+                  "Relationship timeline, dates, meetings, visits",
+                  "Sponsor income and financial details",
+                  "Civil document details, names, dates, record history",
+                  "Travel history and prior U.S. visa history if any"
+                ]
+              },
+              {
+                "title": "Mindset and approach",
+                "items": [
+                  "Answer only what is asked, do not volunteer extra information",
+                  "Answer truthfully and consistently with your filed documents",
+                  "Stay calm, the officer is doing their job, not targeting you",
+                  "If unsure, say so calmly, do not guess",
+                  "Practice out loud, not just in your head"
+                ]
+              }
+            ],
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice, always verify with official sources."
+          }
+        },
+        {
+          "step_key": "step_3_9",
+          "step_number": 9,
+          "step_type": "tool",
           "step_name": "Attend Visa Interview",
           "step_description": "Your interview day has arrived. Know exactly what to bring, how to prepare at the door, and what to expect inside the consular window.",
           "step_short_description": "What to expect on interview day",
@@ -6349,8 +6418,8 @@
           "pakistanSpecific": "Address: Diplomatic Enclave, Ramna 5, Islamabad. NO mobile phones allowed."
         },
         {
-          "step_key": "step_3_9",
-          "step_number": 9,
+          "step_key": "step_3_10",
+          "step_number": 10,
           "step_type": "tool",
           "step_name": "Confirm Interview Outcome",
           "step_description": "Record what happened at your consular interview. Your selection unlocks the correct next steps for your specific situation.",
@@ -6359,7 +6428,7 @@
           "where": "Post-interview",
           "estimated_duration_days": 1,
           "is_required": true,
-          "display_order": 9,
+          "display_order": 10,
           "actions": [
             "Select your interview outcome",
             "If 221(g), record situation type",
@@ -6515,8 +6584,8 @@
           }
         },
         {
-          "step_key": "step_3_10",
-          "step_number": 10,
+          "step_key": "step_3_11",
+          "step_number": 11,
           "step_type": "tool",
           "step_name": "Track Visa Issuance",
           "step_description": "Your visa has been approved. Track the delivery of your passport and visa packet via your registered courier service.",
@@ -6525,7 +6594,7 @@
           "where": "USVisaScheduling courier portal",
           "estimated_duration_days": 7,
           "is_required": true,
-          "display_order": 10,
+          "display_order": 11,
           "visible_when": {
             "interviewOutcome": "approved"
           },
@@ -6568,8 +6637,8 @@
           }
         },
         {
-          "step_key": "step_3_10b",
-          "step_number": 10,
+          "step_key": "step_3_11b",
+          "step_number": 11,
           "step_type": "tool",
           "step_name": "Review Your 221(g) Letter",
           "step_description": "Open your 221(g) letter and select every item the embassy requested. This generates your personalized action plan for the next step.",
@@ -6578,7 +6647,7 @@
           "where": "Your 221(g) letter",
           "estimated_duration_days": 1,
           "is_required": true,
-          "display_order": 10,
+          "display_order": 11,
           "visible_when": {
             "interviewOutcome": "221g"
           },
@@ -6604,8 +6673,8 @@
           }
         },
         {
-          "step_key": "step_3_11",
-          "step_number": 11,
+          "step_key": "step_3_12",
+          "step_number": 12,
           "step_type": "tool",
           "step_name": "Submit Your 221(g) Documents",
           "step_description": "Gather exactly what the embassy requested, submit your packet via the specified method, and log your submission to stay organized.",
@@ -6614,7 +6683,7 @@
           "where": "Embassy / CEAC",
           "estimated_duration_days": 14,
           "is_required": true,
-          "display_order": 11,
+          "display_order": 12,
           "visible_when": {
             "interviewOutcome": "221g",
             "outcome221gSubtype": ["docs_requested", "both"]
@@ -6715,8 +6784,8 @@
           }
         },
         {
-          "step_key": "step_3_12",
-          "step_number": 12,
+          "step_key": "step_3_13",
+          "step_number": 13,
           "step_type": "tool",
           "step_name": "Track Administrative Processing",
           "step_description": "Monitor your CEAC case status, track updates, and stay informed while the U.S. embassy completes post-interview processing.",
@@ -6725,7 +6794,7 @@
           "where": "ceac.state.gov",
           "estimated_duration_days": 90,
           "is_required": false,
-          "display_order": 12,
+          "display_order": 13,
           "visible_when": {
             "interviewOutcome": "221g",
             "outcome221gSubtype": ["docs_requested", "further_review", "both"]
