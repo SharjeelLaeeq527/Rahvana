@@ -64,6 +64,31 @@ function normalizeTier(raw: string | null | undefined): PlanTier {
   return DB_TIER_MAP[raw.toLowerCase()] ?? "free";
 }
 
+// Defensive plan reconciliation is expensive (reads `payments` + calls Stripe on
+// every run). It only needs to run occasionally to self-heal a missed webhook —
+// NOT on every page load. We gate it behind a per-user localStorage cooldown and
+// always force it when the app explicitly asks (refresh(), e.g. after checkout).
+const RECONCILE_COOLDOWN_MS = 24 * 60 * 60 * 1000; // once per 24h per user
+
+function shouldReconcile(userId: string, force: boolean): boolean {
+  if (force) return true;
+  try {
+    const last = localStorage.getItem(`plan_reconciled_at_${userId}`);
+    if (!last) return true;
+    return Date.now() - Number(last) > RECONCILE_COOLDOWN_MS;
+  } catch {
+    return true; // localStorage unavailable -> fail open (old behavior)
+  }
+}
+
+function markReconciled(userId: string) {
+  try {
+    localStorage.setItem(`plan_reconciled_at_${userId}`, String(Date.now()));
+  } catch {
+    /* ignore */
+  }
+}
+
 export function PlanProvider({ children }: { children: React.ReactNode }) {
   const { user, isLoading: authLoading } = useAuth();
   const [realTier, setRealTier] = useState<PlanTier>("free");
@@ -99,9 +124,22 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     // 1. Defensive reconciliation: if user has a successful payment that
     //    hasn't been applied to subscription_tier yet, apply it.
     //    Fails open — if the endpoint errors, we still load from DB normally.
-    const reconcile = fetch("/api/plan/reconcile", { method: "POST" })
-      .then((r) => (r.ok ? r.json() : null))
-      .catch(() => null);
+    //    Gated: only runs once per 24h per user, OR whenever refresh() was called
+    //    explicitly (refreshCounter > 0, e.g. right after a successful checkout).
+    //    This stops the per-page-load `payments` read + Stripe call storm that
+    //    was a top Supabase Disk IO source.
+    const forceReconcile = refreshCounter > 0;
+    const reconcile = shouldReconcile(user.id, forceReconcile)
+      ? fetch("/api/plan/reconcile", { method: "POST" })
+          .then((r) => {
+            if (r.ok) {
+              markReconciled(user.id);
+              return r.json();
+            }
+            return null;
+          })
+          .catch(() => null)
+      : Promise.resolve(null);
 
     // 2. Wait for reconcile to settle, THEN read the (possibly updated) tier.
     reconcile

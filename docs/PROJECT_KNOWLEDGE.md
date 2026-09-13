@@ -244,8 +244,12 @@ only seeds initial stage/step position. It also **bidirectionally syncs with the
   add-on id mismatches).
 
 Note `DB_TIER_MAP` in `PlanContext`: DB historically used `core/plus/pro`, mapped to
-`basic/premium/executive`. On load, `PlanContext` POSTs `/api/plan/reconcile` before
-reading the tier (defensive, fail-open payment reconciliation). Add-ons come from
+`basic/premium/executive`. `PlanContext` POSTs `/api/plan/reconcile` before reading
+the tier (defensive, fail-open payment reconciliation), but this is **throttled** to
+once per 24h per user via a `plan_reconciled_at_<userId>` localStorage cooldown; it is
+forced only when `refresh()` is called (e.g. after checkout on the payment-success
+page). This avoids a `payments` read + Stripe call on every page load (a Disk IO
+source). Add-ons come from
 `profile_details.purchased_addons`. Time-based lock `lib/journey-lock.ts`
 (`JOURNEY_LOCK_DAYS = 14`) locks a journey 14 days after `metadata.ceacIssuedAt`
 (distinct from entitlement gating).
@@ -461,7 +465,8 @@ into `user_profiles.profile_details`** so tools share one profile.
   - **AuthContext** — Supabase user/session/profile, `isAdmin`, MFA state
     (`mfaPending`), sign-in/out (via `/api/auth/login`, not direct Supabase), OAuth.
   - **PlanContext** — real vs effective tier (dev override), purchased add-ons, and the
-    entitlement helpers. Maps DB `core/plus/pro` -> tiers; POSTs `/api/plan/reconcile` on load.
+    entitlement helpers. Maps DB `core/plus/pro` -> tiers; POSTs `/api/plan/reconcile`
+    (throttled to once/24h per user via localStorage; forced on `refresh()`).
   - **UserProfileContext** — loads `MasterProfile` once ("fill once, use everywhere"),
     optimistic merge + debounced save to `/api/profile/complete` (server-side encryption).
   - **LanguageContext** — `en` / `ur` i18n with `t()`/`tRaw()`, persisted to localStorage.
@@ -1010,7 +1015,8 @@ route by slug: IR-1/CR-1 -> `RoadmapLayoutSpouse`, chapters-schema (IR-5+) ->
 `RoadmapLayoutEngine`, old stages-schema -> legacy `Wizard`.
 
 **State.** Global React Contexts: **Auth**, **Plan** (tier + entitlements; DB
-`core/plus/pro` -> `basic/premium/executive`; reconcile on load), **UserProfile** (one
+`core/plus/pro` -> `basic/premium/executive`; reconcile throttled to once/24h per user),
+**UserProfile** (one
 `MasterProfile`, top level IS the beneficiary, nested sponsor/relationship/etc.),
 **Language**. Active journey driven by **`useWizard.ts`** (optimistic local <-> Supabase,
 single combined `journeys/initialize`). Profile and journey `case_data` sync
