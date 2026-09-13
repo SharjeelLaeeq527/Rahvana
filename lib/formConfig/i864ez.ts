@@ -1865,6 +1865,34 @@ export const getInitialFormData = (): Record<string, string> => {
   return data;
 };
 
+export const overflowFields = [
+  {
+    prefix: "pt4_income",
+    countKey: "pt4_income_count",
+    startIndex: 2,
+    maxIndex: 8,
+    pageNumber: "4",
+    partNumber: "4",
+    itemNumber: "1",
+    labelPrefix: "Income Details",
+    fields: [
+      { suffix: "source", label: "Income Source" },
+      { suffix: "amount", label: "Amount" },
+      { suffix: "year", label: "Tax Year" },
+    ],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const source = data[`pt4_income_${index}_source`] || "";
+      const amount = data[`pt4_income_${index}_amount`] || "";
+      const year = data[`pt4_income_${index}_year`] || "";
+
+      let info = `Additional Income ${index}: ${source}`;
+      if (year) info += ` (Tax Year ${year})`;
+      if (amount) info += `, Amount: $${amount}`;
+      return info + ".";
+    },
+  },
+];
+
 export const i864ezConfig = {
   formId,
   formTitle,
@@ -1872,6 +1900,7 @@ export const i864ezConfig = {
   formFields,
   getInitialFormData,
   sectionIntroMessages,
+  overflowFields,
 };
 
 export default i864ezConfig;

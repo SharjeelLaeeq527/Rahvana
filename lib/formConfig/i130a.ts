@@ -1259,6 +1259,83 @@ export const sectionIntroMessages = {
   },
 };
 
+export const overflowFields = [
+  {
+    prefix: "p1_addr",
+    countKey: "p1_addr_count",
+    startIndex: 3,
+    maxIndex: 9,
+    pageNumber: "2",
+    partNumber: "1",
+    itemNumber: "4",
+    labelPrefix: "Address",
+    fields: [
+      { suffix: "street", label: "Street" },
+      { suffix: "city", label: "City" },
+      { suffix: "state", label: "State" },
+      { suffix: "zip", label: "Zip" },
+      { suffix: "from", label: "From" },
+      { suffix: "to", label: "To" },
+      { suffix: "country", label: "Country" },
+    ],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const street = data[`p1_addr_${index}_street`] || "";
+      const city = data[`p1_addr_${index}_city`] || "";
+      const state = data[`p1_addr_${index}_state`] || "";
+      const zip = data[`p1_addr_${index}_zip`] || "";
+      const from = data[`p1_addr_${index}_from`] || "";
+      const to = data[`p1_addr_${index}_to`] || "";
+      const country = data[`p1_addr_${index}_country`] || "";
+
+      const parts = [street, city, state, zip, country].filter(Boolean);
+      let info = `Address ${index}: ${parts.join(", ")}.`;
+      if (from || to) {
+        info += ` Dates: ${from} to ${to}`;
+      }
+      return info;
+    },
+  },
+  {
+    prefix: "p2_emp",
+    countKey: "p2_emp_count",
+    startIndex: 3,
+    maxIndex: 9,
+    pageNumber: "3",
+    partNumber: "2",
+    itemNumber: "1",
+    labelPrefix: "Employer",
+    fields: [
+      { suffix: "name", label: "Employer Name" },
+      { suffix: "occupation", label: "Occupation" },
+      { suffix: "street", label: "Street" },
+      { suffix: "city", label: "City" },
+      { suffix: "state", label: "State" },
+      { suffix: "zip", label: "Zip" },
+      { suffix: "from", label: "From" },
+      { suffix: "to", label: "To" },
+      { suffix: "country", label: "Country" },
+    ],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const name = data[`p2_emp_${index}_name`] || "";
+      const occupation = data[`p2_emp_${index}_occupation`] || "";
+      const street = data[`p2_emp_${index}_street`] || "";
+      const city = data[`p2_emp_${index}_city`] || "";
+      const state = data[`p2_emp_${index}_state`] || "";
+      const zip = data[`p2_emp_${index}_zip`] || "";
+      const from = data[`p2_emp_${index}_from`] || "";
+      const to = data[`p2_emp_${index}_to`] || "";
+      const country = data[`p2_emp_${index}_country`] || "";
+
+      const addrParts = [street, city, state, zip, country].filter(Boolean);
+      let info = `Employer ${index}: ${name} (${occupation}). Address: ${addrParts.join(", ")}.`;
+      if (from || to) {
+        info += ` Dates: ${from} to ${to}`;
+      }
+      return info;
+    },
+  },
+];
+
 export const i130aConfig = {
   formId,
   formTitle,
@@ -1266,6 +1343,7 @@ export const i130aConfig = {
   formFields,
   getInitialFormData,
   sectionIntroMessages,
+  overflowFields,
 };
 
 export default i130aConfig;

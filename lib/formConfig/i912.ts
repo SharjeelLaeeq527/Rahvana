@@ -2726,6 +2726,37 @@ export const getInitialFormData = (): Record<string, string> => {
   return data;
 };
 
+export const overflowFields = [
+  {
+    prefix: "pt3_member",
+    countKey: "pt3_member_count",
+    startIndex: 3,
+    maxIndex: 8,
+    pageNumber: "3",
+    partNumber: "3",
+    itemNumber: "1",
+    labelPrefix: "Household Member",
+    fields: [
+      { suffix: "name", label: "Full Name" },
+      { suffix: "rel", label: "Relationship" },
+      { suffix: "dob", label: "Date of Birth" },
+      { suffix: "income", label: "Income" },
+    ],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const name = data[`pt3_member_${index}_name`] || "";
+      const rel = data[`pt3_member_${index}_rel`] || "";
+      const dob = data[`pt3_member_${index}_dob`] || "";
+      const income = data[`pt3_member_${index}_income`] || "";
+
+      let info = `Household Member ${index}: ${name}`;
+      if (rel) info += ` (${rel})`;
+      if (dob) info += `, DOB: ${dob}`;
+      if (income) info += `, Income: $${income}`;
+      return info + ".";
+    },
+  },
+];
+
 export const i912Config = {
   formId,
   formTitle,
@@ -2733,6 +2764,7 @@ export const i912Config = {
   formFields,
   getInitialFormData,
   sectionIntroMessages,
+  overflowFields,
 };
 
 export default i912Config;

@@ -181,6 +181,14 @@ export const SubmissionReviewTool: React.FC<SubmissionReviewToolProps> = ({
         </div>
       </div>
 
+      {/* Corrections Warning Note */}
+      <div className="flex items-start gap-[10px] bg-[#fff8ed] border border-[#f5d78e] rounded-[12px] p-[13px_15px] mb-[18px]">
+        <AlertTriangle size={15} className="text-[#a06000] shrink-0 mt-[1px]" />
+        <p className="text-[12px] text-[#7a5200] leading-[1.65]">
+          <span className="font-semibold">Before you submit:</span> even a single corrected document returns your case to NVC&apos;s full review queue — the clock effectively resets. Take the time to get each file right before submitting.
+        </p>
+      </div>
+
       {/* Submission Status Section */}
       <div
         onClick={isStatusLocked ? onLockedClick : undefined}

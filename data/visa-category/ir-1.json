@@ -4486,7 +4486,7 @@
           "is_required": true,
           "display_order": 4,
           "actions": [
-            "Scan all documents (300 DPI, PDF)",
+            "Scan all documents in color (PDF preferred)",
             "Ensure translations certified",
             "Verify all stamps/seals visible",
             "Name files clearly"
@@ -4917,7 +4917,7 @@
                 "label": "Step 10 of 13, Re-upload rejected documents",
                 "heading": "Upload the corrected document",
                 "screenTitle": "Upload the corrected document",
-                "instruction": "After correcting the issue, re-upload the document following CEAC's process. If the file was too large, try compressing it. If it was blurry, rescan it at higher resolution (300 DPI minimum). Upload the corrected version and wait for confirmation.",
+                "instruction": "After correcting the issue, re-upload the document following CEAC's process. If the file was too large, try compressing it. If it was blurry, rescan it at a higher resolution. Upload the corrected version and wait for confirmation.",
                 "url": "ceac.state.gov",
                 "ss_label": "Resubmission",
                 "ss_headline": "Upload Corrected File",
@@ -5149,7 +5149,7 @@
                 "ss_headline": "Document Rejected",
                 "ss_desc": "Review reason and prepare corrected file",
                 "ss_highlight": null,
-                "caption": "Re-scan blurry documents at 300 DPI and compress large files using Rahvana's Document Vault tool.",
+                "caption": "Re-scan blurry documents at a higher resolution and compress large files using Rahvana's pdf tool kit.",
                 "note": null,
                 "media": {
                   "type": "img",
