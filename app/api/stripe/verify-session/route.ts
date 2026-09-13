@@ -4,6 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
 import { consultationService } from "@/lib/services/consultationService";
 import { buildAddonPurchaseUpdate } from "@/lib/payments/addon-purchase-ledger";
+import { cancelDuplicateSubscriptions } from "@/lib/stripe/subscriptionCleanup";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -81,6 +82,10 @@ export async function GET(request: NextRequest) {
     // ── 3a. JOURNEY PLAN (subscription) ──────────────────────────────────────
     if (productType === "journey_plan" && productId && TIER_RANK[productId] > 0) {
       const targetRank = TIER_RANK[productId];
+      const newSubId = (session.subscription as string) || null;
+      // Which single subscription should SURVIVE the cleanup below. Everything
+      // else live on this customer is a duplicate and gets cancelled.
+      let subscriptionToKeep: string | null = null;
 
       if (targetRank > currentRank || profile?.subscription_status !== "active") {
         // Parse add-ons that came with the plan
@@ -120,17 +125,41 @@ export async function GET(request: NextRequest) {
 
         appliedTier = productId;
         activated = true;
+        // We just made THIS session's subscription the active one in the DB, so
+        // it is the one to keep.
+        subscriptionToKeep = newSubId || (profile?.profile_details?.stripe_subscription_id as string) || null;
+      } else {
+        // Already on this tier or higher — keep the EXISTING subscription and let
+        // the cleanup cancel this session's redundant new subscription, so the
+        // customer is never left paying for two at once. (With the Stripe-aware
+        // guard in checkout this branch is defensive only.)
+        appliedTier = currentTier;
+        activated = true;
+        subscriptionToKeep =
+          (profile?.profile_details?.stripe_subscription_id as string) || newSubId || null;
+      }
 
-        // Cancel previous subscription if this was an upgrade
-        if (isUpgrade && oldSubId && oldSubId !== session.subscription) {
+      // ── Safety cleanup: exactly ONE live subscription per customer. ──────────
+      // CRITICAL ORDERING: this runs only AFTER payment is confirmed (the `paid`
+      // check above) and AFTER the DB already points at `subscriptionToKeep`.
+      //   • Payment-confirmed-first means a failed/abandoned checkout never
+      //     cancels the user's existing (e.g. Premium) subscription.
+      //   • DB-updated-first means the customer.subscription.deleted webhook that
+      //     fires for each cancelled sub sees the NEW sub as current and skips the
+      //     downgrade (see handleSubscriptionDeleted guard), so tier/journey
+      //     progress is preserved through an upgrade.
+      // This app only ever intends ONE journey subscription per customer, so any
+      // OTHER live sub is a duplicate. We never cancel `subscriptionToKeep`.
+      const customerId = (session.customer as string) || profile?.stripe_customer_id;
+      if (customerId && subscriptionToKeep) {
+        await cancelDuplicateSubscriptions(customerId, subscriptionToKeep, "[verify-session]");
+      } else if (customerId && !subscriptionToKeep) {
+        // Fall back to the checkout hint only when we somehow have no keep target.
+        if (isUpgrade && oldSubId) {
           stripe.subscriptions
             .cancel(oldSubId)
             .catch((e) => console.error("[verify-session] cancel old sub failed:", e?.message));
         }
-      } else {
-        // Already on this tier or higher
-        appliedTier = currentTier;
-        activated = true;
       }
     }
 
@@ -277,8 +306,11 @@ export async function GET(request: NextRequest) {
       .from("payments")
       .update({
         status: "succeeded",
-        stripe_payment_id:
-          (session.subscription as string) || (session.payment_intent as string) || undefined,
+        // Store each Stripe id in its own column: pi_... for one-time payments,
+        // sub_... for subscriptions (undefined keys are dropped, so neither
+        // overwrites the other).
+        stripe_payment_id: (session.payment_intent as string) || undefined,
+        stripe_subscription_id: (session.subscription as string) || undefined,
       })
       .eq("stripe_checkout_session_id", sessionId)
       .eq("user_id", userId)
