@@ -535,24 +535,55 @@ export function SiteHeader({
     } catch {}
   }, []);
 
-  // Fetch on mount — so bell badge and data are ready before user clicks
-  useEffect(() => {
-    if (resolvedUser) fetchNotifications();
-  }, [resolvedUser]);
+  // Throttle guard so rapid tab-focus switches don't refetch the whole fan-out.
+  const lastNotifFetchRef = useRef(0);
 
-  // Re-fetch every 2 minutes in background to keep count fresh
+  const runFetchNotifications = useCallback(() => {
+    lastNotifFetchRef.current = Date.now();
+    fetchNotifications();
+  }, [fetchNotifications]);
+
+  // Fetch on mount — so bell badge and data are ready before user clicks.
+  // Keyed on the user ID (not the user object): AuthContext re-emits a NEW user
+  // reference on every auth event, and keying on the object would re-trigger the
+  // whole per-journey notification fan-out each time (extra Supabase Disk IO).
   useEffect(() => {
-    if (!resolvedUser) return;
-    const interval = setInterval(fetchNotifications, 2 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, [resolvedUser, fetchNotifications]);
+    if (resolvedUser?.id) runFetchNotifications();
+  }, [resolvedUser?.id, runFetchNotifications]);
+
+  // Background refresh. Poll every 10 minutes AND only while the tab is visible —
+  // a hidden/background tab makes zero DB calls. When the tab becomes visible
+  // again we catch up once (throttled to at most once per minute). This replaces
+  // the old always-on 2-minute poll, which fanned out reads (journeys progress +
+  // per-journey reminders + notifications) for every user on every open tab.
+  useEffect(() => {
+    if (!resolvedUser?.id) return;
+
+    const tick = () => {
+      if (typeof document !== "undefined" && document.visibilityState !== "visible") return;
+      runFetchNotifications();
+    };
+    const interval = setInterval(tick, 10 * 60 * 1000);
+
+    const onVisible = () => {
+      if (document.visibilityState !== "visible") return;
+      if (Date.now() - lastNotifFetchRef.current < 60 * 1000) return;
+      runFetchNotifications();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [resolvedUser?.id, runFetchNotifications]);
 
   // Re-fetch immediately when any data save triggers refresh-reminders
   useEffect(() => {
-    if (!resolvedUser) return;
+    if (!resolvedUser?.id) return;
     window.addEventListener("refresh-reminders", fetchNotifications);
     return () => window.removeEventListener("refresh-reminders", fetchNotifications);
-  }, [resolvedUser, fetchNotifications]);
+  }, [resolvedUser?.id, fetchNotifications]);
 
   const markAllRead = (ids: string[]) => {
     setReadIds((prev) => {
