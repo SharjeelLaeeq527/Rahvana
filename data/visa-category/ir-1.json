@@ -1165,7 +1165,6 @@
                 "label": "Good to know",
                 "items": [
                   "You can save progress and return",
-                  "No fee is charged inside the tool",
                   "USCIS account setup is a separate step",
                   "Complete this before uploading to USCIS"
                 ]
@@ -1263,8 +1262,7 @@
                 "items": [
                   "Best completed right after Form I-130",
                   "Filed together as one petition package",
-                  "You can save progress and return later",
-                  "No fee is charged inside the tool"
+                  "You can save progress and return later"
                 ]
               }
             ]

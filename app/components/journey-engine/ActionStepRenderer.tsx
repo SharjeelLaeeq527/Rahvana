@@ -2787,7 +2787,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   Choose Your Guide
                 </h2>
                 <p className="text-xs leading-relaxed text-[#6b8097] sm:text-sm">
-                  Select how you would like to proceed with your forms
+                  Select how you would like to proceed with your form
                 </p>
               </div>
 
@@ -2809,7 +2809,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                       View Print Guide
                     </div>
                     <div className="text-xs text-[#6b8097] sm:text-sm">
-                      Step-by-step guide to print your forms
+                      Step-by-step guide to print your form
                     </div>
                   </div>
                 </button>
@@ -2831,7 +2831,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                       View Download Guide
                     </div>
                     <div className="text-xs text-[#6b8097] sm:text-sm">
-                      Step-by-step guide to download your forms
+                      Step-by-step guide to download your form
                     </div>
                   </div>
                 </button>

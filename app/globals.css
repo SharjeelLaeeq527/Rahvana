@@ -1,3 +1,6 @@
+@import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=DM+Serif+Display:ital@0;1&display=swap");
+
 html {
   scroll-behavior: smooth;
 }
@@ -198,8 +201,6 @@ html {
   margin-top: 0px;
 }
 /* Chapter 1 Step Background Utility */
-@import "tailwindcss";
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=DM+Serif+Display:ital@0;1&display=swap");
 
 @custom-variant dark (&:is(.dark *));
 
