@@ -2212,10 +2212,10 @@
               {
                 "label": "Print guide · Step 4",
                 "title": "Set paper size and orientation",
-                "text": "Select the correct paper size: <strong>Letter</strong> (8.5\" × 11\") for US filing, or <strong>A4</strong> (210 × 297mm) for Pakistan or other international locations. Ensure orientation matches your document.",
+                "text": "Select the correct paper size: Use <strong>US Letter size (8.5\" × 11\") only </strong>Do not use A4 paper, even if printing from Pakistan or overseas. Match your printer settings to the document orientation and select \"Actual Size.\"",
                 "url": "paper-setup",
                 "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/4-select-paper-size.png\" alt=\"Set paper size\" style=\"width:100%; \" />",
-                "note": "USCIS accepts both Letter and A4 sizes. Check your local requirements."
+                "note": "USCIS strictly mandates Letter size for scanning and processing. A4 paper is not accepted and may result in your application being rejected or delayed."
               },
               {
                 "label": "Print guide · Step 5",
