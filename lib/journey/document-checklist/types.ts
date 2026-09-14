@@ -1,5 +1,6 @@
-export type DocumentCategory = "already_uploaded" | "expirable" | "post_interview";
+export type DocumentCategory = "ceac_required" | "needs_attention" | "post_appointment";
 export type ExpirationStatus = "valid" | "expiring_soon" | "expired";
+export type UploadStatus = "uploaded" | "not_uploaded";
 
 export interface DocumentChecklistItem {
   id: string;
@@ -18,10 +19,13 @@ export interface DocumentChecklistItem {
   help_url?: string;
   notes?: string;
   tags?: string[];
+  category: DocumentCategory;
+  needs_attention?: boolean;
+  attention_reason?: string;
 }
 
 export interface GroupedDocuments {
-  already_uploaded: DocumentChecklistItem[];
-  expirable: DocumentChecklistItem[];
-  post_interview: DocumentChecklistItem[];
+  ceac_required: DocumentChecklistItem[];
+  needs_attention: DocumentChecklistItem[];
+  post_appointment: DocumentChecklistItem[];
 }

@@ -6163,9 +6163,9 @@
         {
           "step_key": "step_3_7",
           "step_number": 7,
-          "step_name": "Review Document Checklist",
-          "step_short_description": "Complete document readiness review",
-          "step_description": "Review all uploaded documents, check expiration dates, and prepare post-interview documents",
+          "step_name": "Review Document Readiness",
+          "step_short_description": "Check document status and resolve issues",
+          "step_description": "Review your document checklist, confirm uploaded documents are current, address any expired or soon-to-expire documents, and prepare documents needed after receiving your interview appointment letter.",
           "step_type": "tool",
           "who": "Both",
           "where": "Rahvana tool",
