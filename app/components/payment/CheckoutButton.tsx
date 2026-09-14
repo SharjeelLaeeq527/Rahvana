@@ -1,15 +1,69 @@
-User is buying through CheckoutButton (message 1800 comes only from there). The problem: CheckoutButton throws a generic message for any non-200 — it ignores the real data.error the server sends (e.g. "You already own the premium plan", the 503 text, or a past_due→portal case). So the real reason is being hidden.
+"use client";
 
-Given the account history (leftover/duplicate live subscriptions existed, 57 payment rows), the most likely real reason is the duplicate/downgrade guard returning 400 because a live subscription already exists for that customer — which is correct behavior, just shown as a scary generic message.
+import { useEffect, useState } from "react";
+import { Loader } from "@/components/ui/spinner";
+import { E, msg } from "@/lib/errors";
 
-Fix: make CheckoutButton show the real error and route past_due/manage cases to the billing portal (same as the pricing page already does):
+interface CheckoutButtonProps {
+  productTier?: string;
+  addons?: string[];
+  visaCategory?: string;
+  consultationId?: string;
+  userId: string;
+  children: React.ReactNode;
+  className?: string;
+  disabled?: boolean;
+}
 
-● Update(app\components\payment\CheckoutButton.tsx)
-Added 23 lines, removed 1 line
+export default function CheckoutButton({
+  productTier,
+  addons,
+  visaCategory,
+  consultationId,
+  userId,
+  children,
+  className = "",
+  disabled = false,
+  onLoadingChange,
+}: CheckoutButtonProps & { onLoadingChange?: (loading: boolean) => void }) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // After redirecting to Stripe, hitting the browser Back button restores this
+  // page from the bfcache with React state intact — leaving the button stuck on
+  // "Processing...". Reset the loading state whenever the page is shown again.
+  useEffect(() => {
+    const onPageShow = (e: PageTransitionEvent) => {
+      if (!e.persisted) return;
+      setIsLoading(false);
+      onLoadingChange?.(false);
+    };
+    window.addEventListener("pageshow", onPageShow);
+    return () => window.removeEventListener("pageshow", onPageShow);
+  }, [onLoadingChange]);
+
+  const handleCheckout = async () => {
+    setIsLoading(true);
+    onLoadingChange?.(true);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          productTier,
+          addons,
+          visaCategory,
+          consultationId,
+        }),
+      });
+
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(msg(E.PAYMENT_CHECKOUT_FAILED));
         // Payment is failing on a plan the user already holds (past_due / manage),
         // or the server asks us to send them to the billing portal to recover
         // instead of buying again. Route there rather than showing a dead error.
@@ -36,39 +90,39 @@ Added 23 lines, removed 1 line
       }
 
       // Redirect to Stripe checkout
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error(msg(E.DASH_CHECKOUT_NO_URL));
+      }
+    } catch (err: unknown) {
+      console.error("Checkout error:", err);
+      const errorMessage = err instanceof Error ? err.message : msg(E.PAYMENT_CHECKOUT_FAILED);
+      setError(errorMessage);
+      setIsLoading(false);
+      onLoadingChange?.(false);
+    }
+  };
 
-  Ran 1 shell command
-
-Type-clean. Yeh raha diagnosis + fix:
-
-Kya ho raha tha
-
-Woh message (PAYMENT_CHECKOUT_FAILED, id 1800) sirf CheckoutButton component se aata hai, aur woh har non-200 response pe same generic message dikhata tha — server ka asli data.error ignore kar raha tha. Yani asli wajah chhup rahi thi.
-
-Maine kya check kiya (live)
-
-- Teeno naye Stripe calls (customers.search, customers.list, subscriptions.list for-await) live key pe theek chal rahe hain — to 503 wala path wajah nahi hai.
-- Migration/column bhi theek hai (pehle confirm kiya tha).
-
-Sabse mumkin asli wajah
-
-Us customer ke paas pehle se ek live subscription mojood hai (purane testing/duplicate-subs ke leftover se — us account pe 57 payment rows aur duplicate subs the). Aise me checkout ka guard jaan-boojh ke 400 return karta hai ("You already own..." ya downgrade) — yeh sahi behavior hai (duplicate rokne ke liye), bas CheckoutButton usay scary generic message bana ke dikha raha tha.
-
-Fix kiya
-
-app/components/payment/CheckoutButton.tsx — ab:
-1. Server ka asli error message dikhata hai (e.g. "You already own the premium plan"), generic ki jagah.
-2. Agar server portal: true bhejta hai (past_due / manage case), to seedha billing portal pe le jaata hai, buy dobara karane ki bajaye.
-
-Type-clean. Deploy ke baad button asli wajah bata dega.
-
-Aap abhi confirm kaise karein
-
-Deploy ke baad dobara buy karein — ab message asli reason dikhayega. 3 me se koi hoga:
-- "You already own..." → us account ke paas already active plan hai (Stripe dashboard me us customer ki active subscription cancel karke fresh buy karein, ya doosre test account se try karein).
-- "...past due..." → portal khul jayega, card update karein.
-- "...try again in a moment..." → transient, dobara try.
-
-Agar aap mujhe woh exact email/account bata dein jisse buy kar rahe the (taha.nadeem wala account is DB me nahi mila), to main uska live Stripe state nikaal ke exact reason bata deta hoon — 30 second ka kaam. Bolo?
-
-✻ Baked for 5m 24s · done 12:26 AM
+  return (
+    <div>
+      <button
+        onClick={handleCheckout}
+        disabled={disabled || isLoading}
+        className={`${className} flex items-center justify-center ${
+          isLoading || disabled ? "opacity-50 cursor-not-allowed" : ""
+        }`}
+      >
+        {isLoading ? (
+          <span className="flex items-center gap-2">
+            <Loader size="sm" />
+            <span>Processing...</span>
+          </span>
+        ) : (
+          children
+        )}
+      </button>
+      {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+    </div>
+  );
+}
