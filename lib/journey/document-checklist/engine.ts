@@ -192,7 +192,7 @@ export class DocumentChecklistEngine {
       },
 
       {
-        document_key: "i864-affidavit-support",
+        document_key: "i-864-affidavit",
         title: "I-864 Affidavit of Support",
         subtitle: "Completed and signed Form I-864 from the petitioner or qualifying sponsor",
         icon: "FileText",
@@ -204,7 +204,7 @@ export class DocumentChecklistEngine {
       },
 
       {
-        document_key: "tax-transcripts-petitioner",
+        document_key: "tax-returns-petitioner",
         title: "Tax Transcripts (IRS)",
         subtitle: "Most recent IRS tax transcript or applicable federal tax evidence",
         icon: "FileText",
@@ -219,7 +219,7 @@ export class DocumentChecklistEngine {
       },
 
       {
-        document_key: "w2-forms-petitioner",
+        document_key: "w2-forms",
         title: "W-2 Forms",
         subtitle: "Most recent W-2 forms, when applicable",
         icon: "FileText",
@@ -261,7 +261,7 @@ export class DocumentChecklistEngine {
       },
 
       {
-        document_key: "nvc-interview-letter",
+        document_key: "interview-letter",
         title: "NVC Interview Appointment Letter",
         subtitle: "Official interview appointment letter issued by the National Visa Center",
         icon: "Mail",
