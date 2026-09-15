@@ -6697,7 +6697,7 @@
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>Bring the parent beneficiary's original birth certificate issued by the competent civil authority. For Pakistan, this must be the original <strong>NADRA Computerized Birth Registration Certificate (CBRC)</strong>. Photocopies or printed scans of a digitally-issued CBRC are not accepted as originals, you must bring the physically-issued original certificate.</p>"
+                          "c": "<p>Bring the original Birth Registration Certificate issued by the authority responsible for registering the beneficiary's birth:</p><ul><li><strong>Union Council</strong></li><li><strong>Municipal Corporation</strong></li><li><strong>Capital Development Authority (CDA)</strong> — Islamabad</li><li><strong>Cantonment Board</strong></li></ul><p>Select the issuing authority that applies to your birth record and bring the original document.</p>"
                         },
                         {
                           "t": "Translation and copy",
@@ -6756,12 +6756,12 @@
                     {
                       "id": "pcc",
                       "icon": "pcc",
-                      "title": "Original Police Clearance Certificate (Fresh)",
-                      "sub": "The fresh PCC obtained for this interview cycle",
+                      "title": "Original Police Clearance Certificate",
+                      "sub": "The PCC obtained for this interview cycle",
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>Bring the original fresh Police Character Certificate (PCC) obtained during Chapter 3, Step 3, specifically for this interview cycle. <strong>Do not bring the older PCC</strong> that was submitted to NVC during Chapter 2 processing, U.S. Embassy Islamabad requires a PCC that is no older than 1 year at the time of the interview, and frequently requires one issued specifically for the consular interview stage.</p>"
+                          "c": "<p>Bring the original PCC obtained for your interview. Do not bring the older PCC submitted during NVC processing; bring the PCC intended for your current interview.</p>"
                         },
                         {
                           "t": "Validity",
@@ -6800,7 +6800,7 @@
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>Bring a complete photocopy of the signed Form I-864 submitted by the U.S. citizen petitioner. Although NVC reviews this digitally, the consular officer at U.S. Embassy Islamabad frequently asks to see a physical copy of the Form I-864 at the interview window to verify details and confirm that all pages are present.</p>"
+                          "c": "<p>Bring the original signed Affidavit of Support. This must be the wet-ink signed original, not a photocopy.</p>"
                         },
                         {
                           "t": "Petitioner remains required",
@@ -6867,22 +6867,6 @@
                           "c": "<p>If a household member's income or assets were included via Form I-864A, bring the signed Form I-864A together with the household member's tax transcript or return, pay stubs, and employment letter as applicable.</p>"
                         }
                       ]
-                    },
-                    {
-                      "id": "ds260-original",
-                      "icon": "file-text",
-                      "title": "DS-260 Confirmation Page",
-                      "sub": "Printed Immigrant Visa Application confirmation page",
-                      "sections": [
-                        {
-                          "t": "What to bring",
-                          "c": "<p>Bring the printed DS-260 confirmation page with its barcode for the parent beneficiary.</p>"
-                        },
-                        {
-                          "t": "Review before interview",
-                          "c": "<p>Review the submitted DS-260 and be prepared to explain any changes or corrections.</p>"
-                        }
-                      ]
                     }
                   ]
                 },
@@ -6891,6 +6875,34 @@
                   "label": "Bring, Interview Day and Conditional Documents",
                   "badge": "Required if applicable",
                   "items": [
+                    {
+                      "id": "ds260-original",
+                      "icon": "file-text",
+                      "title": "DS-260 Confirmation Page",
+                      "sub": "Printed Immigrant Visa Application confirmation page",
+                      "items": [
+                        {
+                          "id": "ds260-original",
+                          "icon": "file-text",
+                          "title": "DS-260 Confirmation Page",
+                          "sub": "Online Immigrant Visa Application Confirmation",
+                          "sections": [
+                            {
+                              "t": "What to bring",
+                              "c": "<p>Bring the printed DS-260 confirmation page with barcode. This confirms you have successfully submitted your online immigrant visa application.</p>"
+                            },
+                            {
+                              "t": "Important notes",
+                              "c": "<p>Make sure all information in your DS-260 form is accurate and matches your supporting documents such as passport and civil records.</p>"
+                            },
+                            {
+                              "t": "Where to get it",
+                              "c": "<p>You can download and print the confirmation page after submitting your DS-260 form from the Consular Electronic Application Center (CEAC) website.</p>"
+                            }
+                          ]
+                        }
+                    ]
+                    },
                     {
                       "id": "photos",
                       "icon": "camera",
@@ -6911,7 +6923,7 @@
                       "id": "medical-packet",
                       "icon": "medical",
                       "title": "Medical Examination Results",
-                      "sub": "Sealed medical envelope only if the panel physician gives it to the parent",
+                      "sub": "Sealed medical results provided by the physician or sent directly to the embassy",
                       "sections": [
                         {
                           "t": "How this works",
@@ -6939,7 +6951,7 @@
                         },
                         {
                           "t": "Pakistan records",
-                          "c": "<p>For a Pakistani Muslim marriage, bring both the original Urdu <strong>Nikah Nama</strong> (with a full certified English translation) and the bilingual <strong>NADRA Marriage Registration Certificate (MRC)</strong>. Both documents are commonly requested by the consular officer to cross-verify dates, names, and witnesses.</p>"
+                          "c": "<p>For a Pakistani Muslim marriage, bring both the original Urdu <strong>Nikah Nama</strong> (with a full certified English translation) and the bilingual <strong>NADRA Marriage Registration Certificate (MRC)</strong>."
                         },
                         {
                           "t": "Consistency check",

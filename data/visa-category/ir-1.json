@@ -5967,7 +5967,7 @@
                         },
                         {
                           "t": "Validity",
-                          "c": "<p>As per U.S. Embassy Islamabad, applicants over 16 years of age must provide a Police Clearance Certificate. Make sure your PCC is still valid and has not expired at the time of your interview.</p>"
+                          "c": "<p>Confirm the issue date on the PCC. If the PCC was obtained more than 12 months before the interview date, a fresh one must be obtained from the District Police Officer (DPO) office or Khidmat Markaz before attending the interview.</p>"
                         }
                       ]
                     },
@@ -6086,6 +6086,14 @@
                         {
                           "t": "How this works",
                           "c": "<p>The panel physician may either provide your medical examination results to you in a sealed envelope or send them directly to the U.S. Embassy. If you receive a sealed envelope, do not open it and bring it with you to your interview. If the physician sends the results directly to the embassy, no action is required to carry the packet yourself.</p>"
+                        },
+                        {
+                          "t": "If a sealed envelope is provided",
+                          "c": "<div class=\"note-box\"><p><strong>Do not open the envelope under any circumstances.</strong> An opened medical envelope will be rejected at the consular window and the medical examination may need to be repeated. Bring the sealed envelope directly to the interview and hand it to the consular officer.</p></div>"
+                        },
+                        {
+                          "t": "Approved clinics",
+                          "c": "<p>Panel physicians approved by U.S. Embassy Islamabad operate in Islamabad, Lahore, and Karachi. Only results from an approved panel physician are accepted for the immigrant visa interview. Do not use a general clinic or hospital not on the embassy's approved list.</p>"
                         }
                       ]
                     },
