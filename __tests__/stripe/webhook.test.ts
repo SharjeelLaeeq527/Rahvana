@@ -5,13 +5,31 @@
 
 import { NextRequest } from 'next/server'
 
-// Mock @/lib/stripe/config before importing the route (avoids hoisting issues)
-jest.mock('@/lib/stripe/config', () => ({
-  stripe: {
-    webhooks: { constructEvent: jest.fn() },
-    subscriptions: { cancel: jest.fn().mockResolvedValue({}) },
-  },
-}))
+// Mock @/lib/stripe/config before importing the route (avoids hoisting issues).
+// Includes STRIPE_PRICES (subscriptionCleanup reads it at import) and an
+// async-iterable subscriptions.list (the cleanup auto-paginates).
+jest.mock('@/lib/stripe/config', () => {
+  const listImpl = jest.fn(() => ({
+    async *[Symbol.asyncIterator]() {
+      /* default: no other subs */
+    },
+  }))
+  return {
+    stripe: {
+      webhooks: { constructEvent: jest.fn() },
+      subscriptions: { cancel: jest.fn().mockResolvedValue({}), list: listImpl },
+      customers: { retrieve: jest.fn().mockResolvedValue({ email: 'x@y.com' }) },
+    },
+    STRIPE_PRICES: {
+      BASIC: 'price_basic',
+      PREMIUM: 'price_premium',
+      EXECUTIVE: 'price_exec',
+      BASIC_MONTHLY: 'price_basic_m',
+      PREMIUM_MONTHLY: 'price_premium_m',
+      EXECUTIVE_MONTHLY: 'price_exec_m',
+    },
+  }
+})
 
 jest.mock('@supabase/supabase-js', () => ({
   createClient: jest.fn(() => ({
@@ -167,6 +185,53 @@ describe('Webhook — customer.subscription.deleted', () => {
       (args) => args[0] && JSON.stringify(args[0]).includes('"free"')
     )
     expect(downgradedToFree).toBe(false)
+  })
+})
+
+describe('Webhook — checkout.session.completed (subscription activation)', () => {
+  const { paymentService } = require('@/lib/services/paymentService')
+
+  beforeEach(() => jest.clearAllMocks())
+
+  it('stores the sub id in stripe_subscription_id, NOT stripe_payment_id', async () => {
+    paymentService.getPaymentBySessionId.mockResolvedValueOnce({ id: 'pay_1' })
+    mockConstructEvent.mockReturnValue({
+      type: 'checkout.session.completed',
+      data: { object: buildCheckoutSession() }, // subscription: 'sub_test123', no payment_intent
+    })
+    setProfile({ subscription_tier: 'free' })
+
+    const res = await POST(makeRequest({}))
+    expect(res.status).toBe(200)
+
+    expect(paymentService.updatePayment).toHaveBeenCalledWith(
+      'pay_1',
+      expect.objectContaining({ stripe_subscription_id: 'sub_test123', status: 'succeeded' })
+    )
+    const call = paymentService.updatePayment.mock.calls.find((c: any[]) => c[0] === 'pay_1')
+    // A subscription session has no top-level PaymentIntent → stripe_payment_id
+    // must be undefined (omitted), never the subscription id.
+    expect(call[1].stripe_payment_id).toBeUndefined()
+  })
+
+  it('runs the duplicate cleanup keeping THIS session\'s subscription', async () => {
+    paymentService.getPaymentBySessionId.mockResolvedValueOnce({ id: 'pay_1' })
+    ;(stripeConfig.stripe as any).subscriptions.list.mockReturnValueOnce({
+      async *[Symbol.asyncIterator]() {
+        yield { id: 'sub_old', status: 'active', metadata: { tier: 'premium' }, items: { data: [] } }
+      },
+    })
+    mockConstructEvent.mockReturnValue({
+      type: 'checkout.session.completed',
+      data: { object: buildCheckoutSession() },
+    })
+    setProfile({ subscription_tier: 'free' })
+
+    await POST(makeRequest({}))
+
+    // The old duplicate is cancelled; the just-paid sub_test123 is kept.
+    expect((stripeConfig.stripe as any).subscriptions.cancel).toHaveBeenCalledWith('sub_old')
+    expect((stripeConfig.stripe as any).subscriptions.cancel).not.toHaveBeenCalledWith('sub_test123')
   })
 })
 

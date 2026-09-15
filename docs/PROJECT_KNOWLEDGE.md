@@ -244,8 +244,12 @@ only seeds initial stage/step position. It also **bidirectionally syncs with the
   add-on id mismatches).
 
 Note `DB_TIER_MAP` in `PlanContext`: DB historically used `core/plus/pro`, mapped to
-`basic/premium/executive`. On load, `PlanContext` POSTs `/api/plan/reconcile` before
-reading the tier (defensive, fail-open payment reconciliation). Add-ons come from
+`basic/premium/executive`. `PlanContext` POSTs `/api/plan/reconcile` before reading
+the tier (defensive, fail-open payment reconciliation), but this is **throttled** to
+once per 24h per user via a `plan_reconciled_at_<userId>` localStorage cooldown; it is
+forced only when `refresh()` is called (e.g. after checkout on the payment-success
+page). This avoids a `payments` read + Stripe call on every page load (a Disk IO
+source). Add-ons come from
 `profile_details.purchased_addons`. Time-based lock `lib/journey-lock.ts`
 (`JOURNEY_LOCK_DAYS = 14`) locks a journey 14 days after `metadata.ceacIssuedAt`
 (distinct from entitlement gating).
@@ -461,7 +465,8 @@ into `user_profiles.profile_details`** so tools share one profile.
   - **AuthContext** — Supabase user/session/profile, `isAdmin`, MFA state
     (`mfaPending`), sign-in/out (via `/api/auth/login`, not direct Supabase), OAuth.
   - **PlanContext** — real vs effective tier (dev override), purchased add-ons, and the
-    entitlement helpers. Maps DB `core/plus/pro` -> tiers; POSTs `/api/plan/reconcile` on load.
+    entitlement helpers. Maps DB `core/plus/pro` -> tiers; POSTs `/api/plan/reconcile`
+    (throttled to once/24h per user via localStorage; forced on `refresh()`).
   - **UserProfileContext** — loads `MasterProfile` once ("fill once, use everywhere"),
     optimistic merge + debounced save to `/api/profile/complete` (server-side encryption).
   - **LanguageContext** — `en` / `ur` i18n with `t()`/`tRaw()`, persisted to localStorage.
@@ -904,6 +909,22 @@ External: Stripe . Resend . EasyPost . Gemini . USCIS . GA4 . Sheets . OCR.space
 - **`canvas` is aliased away** for pdfjs. **WhatsApp assistant is disabled** in
   `backend/main.py`. **MODNet** is a git submodule.
 - **Stripe truth = `verify-session`**, not the webhook.
+- **One journey subscription per customer (Stripe is the source of truth).** Checkout
+  lists the customer's live Stripe subs (`active/trialing/past_due/unpaid`) and blocks
+  same-tier/downgrade even when the DB is stale — the old DB-only guard let duplicate live
+  subs be created on any desync. New subs are tagged `subscription_data.metadata.tier`.
+  `verify-session` + webhook run `cancelDuplicateSubscriptions(customer, keepSubId)` which
+  cancels every live sub except the confirmed one. **Ordering is load-bearing:** the old
+  sub is cancelled ONLY after the new payment is confirmed and after the DB points at the
+  new sub, so (a) a failed checkout never removes the user's existing plan and (b) the
+  `customer.subscription.deleted` guard skips the downgrade → upgrades never reset tier or
+  journey progress (journey rows are independent of tier anyway). The existing Stripe
+  customer is resolved (search by metadata/email) BEFORE the live-sub guard runs, so a
+  DB desync with no stored customer id can't bypass the guard; a customer-lookup error on a
+  subscription purchase FAILS CLOSED (503). The per-user checkout lock
+  (`lib/stripe/checkoutLock.ts`) uses a random ownership token + compare-and-delete release
+  so it can't delete another request's lock; it stays fail-open on a Redis error (cleanup is
+  the backstop).
 - **`outputFileTracingIncludes`** bundles `data/**` into API routes (routes read
   `data/visa-category/*.json` at runtime).
 - Migrations include big "combined"/"run_all" files — mind apply order and duplication.
@@ -994,7 +1015,8 @@ route by slug: IR-1/CR-1 -> `RoadmapLayoutSpouse`, chapters-schema (IR-5+) ->
 `RoadmapLayoutEngine`, old stages-schema -> legacy `Wizard`.
 
 **State.** Global React Contexts: **Auth**, **Plan** (tier + entitlements; DB
-`core/plus/pro` -> `basic/premium/executive`; reconcile on load), **UserProfile** (one
+`core/plus/pro` -> `basic/premium/executive`; reconcile throttled to once/24h per user),
+**UserProfile** (one
 `MasterProfile`, top level IS the beneficiary, nested sponsor/relationship/etc.),
 **Language**. Active journey driven by **`useWizard.ts`** (optimistic local <-> Supabase,
 single combined `journeys/initialize`). Profile and journey `case_data` sync

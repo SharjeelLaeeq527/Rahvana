@@ -2881,7 +2881,7 @@
         {
           "step_key": "step_1_16",
           "step_number": 12,
-          "step_name": "Track Case Status in CEAC",
+          "step_name": "Monitor USCIS Case Status",
           "step_short_description": "Monitor your case status and updates",
           "step_type": "tool",
           "visible_when": {},
