@@ -67,7 +67,6 @@ const VALID_FOLLOW_UP_OPTIONS: Record<
     alternative_type: [
       "immigration_attorney",
       "another_immigration_platform",
-      "government_official_resources",
       "family_friends_or_helper",
       "personal_research",
       "other",
