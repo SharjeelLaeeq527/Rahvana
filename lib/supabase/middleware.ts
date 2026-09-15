@@ -158,15 +158,22 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    // Audit: successful admin access
-    auditLog({
-      userId: user.id,
-      action: "admin.access",
-      resource: "admin",
-      request,
-      metadata: { pathname },
-      status: "success",
-    });
+    // Audit successful admin access — but ONLY for state-changing requests
+    // (POST/PUT/PATCH/DELETE). Previously we wrote an audit_logs row on EVERY
+    // admin request including plain reads; the admin dashboard's 30s polling of
+    // GET endpoints turned that into a constant stream of INSERTs (a Supabase
+    // Disk IO source). Reads are not security-interesting; only writes are.
+    const isMutation = !["GET", "HEAD", "OPTIONS"].includes(request.method);
+    if (isMutation) {
+      auditLog({
+        userId: user.id,
+        action: "admin.access",
+        resource: "admin",
+        request,
+        metadata: { pathname, method: request.method },
+        status: "success",
+      });
+    }
   }
 
   // =============================
