@@ -1747,13 +1747,13 @@ export function SiteHeader({
                         <UserIcon className="h-4 w-4 text-violet-600 dark:text-violet-400" />
                         My Profile
                       </button>
-                      {/* <button
+                      <button
                         onClick={() => handleNav("my-journeys")}
                         className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-teal-700 transition-colors text-sm font-medium"
                       >
                         <Map className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
                         My Journeys
-                      </button> */}
+                      </button>
                       <button
                         onClick={() => handleNav("document-vault")}
                         className="text-muted-foreground hover:bg-muted flex w-full items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors hover:text-teal-700"
