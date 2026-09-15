@@ -95,7 +95,7 @@ function ComingSoonJourneyCard() {
           COMING SOON
         </p>
 
-        <h3 className="mt-3 text-3xl font-extrabold tracking-[-0.04em] text-[var(--rv-navy)]">
+        <h3 className="mt-3 text-2xl font-extrabold tracking-[-0.04em] text-[var(--rv-navy)]">
           More Journeys Coming Soon
         </h3>
 
