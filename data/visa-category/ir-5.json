@@ -2608,7 +2608,7 @@
                 "label": "Assembly guide · Step 2",
                 "title": "Place the forms next",
                 "text": "Put the completed I-130 right behind the payment section as the main filing form.",
-                "visual": "<img src=\"/assets/images/ir1-journey/c1_step8_mail/step2.png\" alt=\"Place the forms next\" style=\"width:100%; \" />",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step8_mail/step2a.png\" alt=\"Place the forms next\" style=\"width:100%; \" />",
                 "note": "Keep the pages complete and in order. Do not mix the form pages into the evidence stack."
               },
               {
@@ -2629,7 +2629,7 @@
                 "label": "Assembly guide · Step 5",
                 "title": "Do one final packet check",
                 "text": "Before mailing, confirm the packet is complete, legible, and arranged the way you intend to send it.",
-                "visual": "<img src=\"/assets/images/ir1-journey/c1_step8_mail/step5.png\" alt=\"Do one final packet check\" style=\"width:100%; \" />",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step8_mail/step5c.png\" alt=\"Do one final packet check\" style=\"width:100%; \" />",
                 "note": "Once this is done, the next paper-only step is mailing the packet and tracking delivery."
               }
             ],
