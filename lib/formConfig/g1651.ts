@@ -40,10 +40,18 @@ export const sectionIntroMessages = {
   },
 };
 
+export const legalCitation = {
+  regulation: "31 C.F.R. Part 208",
+  section: "31 C.F.R. § 208.4",
+  title: "Management of Federal Agency Disbursements - Undue Hardship & Electronic Payment Exemption",
+  url: "https://www.govinfo.gov/content/pkg/CFR-2025-title31-vol2/pdf/CFR-2025-title31-vol2-sec208-1.pdf",
+};
+
 export const g1651Config = {
   formId,
   formTitle,
   formSubtitle,
+  legalCitation,
   formFields,
   getInitialFormData,
   sectionIntroMessages,
