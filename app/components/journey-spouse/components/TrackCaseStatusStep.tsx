@@ -57,6 +57,16 @@ const TrackCaseStatusStep: React.FC<any> = ({
   const [showAfterI130Modal, setShowAfterI130Modal] = useState(false);
   const [showRelationshipEvidenceModal, setShowRelationshipEvidenceModal] = useState(false);
   const [showAffidavitSupportModal, setShowAffidavitSupportModal] = useState(false);
+  // What's Coming Next: which phase's details are open (defaults to the current phase)
+  const [activePhase, setActivePhase] = useState<number | null>(() => {
+    const arr = tool?.future_timeline || [];
+    const i = arr.findIndex((it: any) =>
+      String(it.pill || "")
+        .toLowerCase()
+        .includes("current")
+    );
+    return i >= 0 ? i : 0;
+  });
 
   // Chapter 1 accent (this component is for Chapter 1)
   const launchAccentColor = "var(--rv-ch1)";
@@ -211,7 +221,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
                 className="launch-divider mb-5 h-px"
                 style={{ backgroundColor: "rgba(130,132,191,0.20)" }}
               />
-              {/* What's Coming Next - horizontal progress stepper */}
+              {/* What's Coming Next - horizontal progress stepper (tap a phase for details) */}
               {tool.future_timeline && (
                 <div className="mb-6">
                   <div className="mb-5">
@@ -222,8 +232,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
                       className="mt-1 max-w-[540px] text-[13px] leading-relaxed"
                       style={{ color: "rgba(247,248,255,0.82)" }}
                     >
-                      See the likely path ahead so you can prepare early without feeling rushed
-                      into work that does not matter yet.
+                      Tap a phase to see what it means for your case.
                     </div>
                   </div>
                   <div className="relative">
@@ -232,13 +241,20 @@ const TrackCaseStatusStep: React.FC<any> = ({
                       className="pointer-events-none absolute top-[15px] right-[12.5%] left-[12.5%] hidden h-px md:block"
                       style={{ background: "rgba(255,255,255,0.16)" }}
                     />
-                    <div className="grid grid-cols-2 gap-x-5 gap-y-6 md:grid-cols-4">
+                    <div className="grid grid-cols-2 gap-x-5 gap-y-5 md:grid-cols-4">
                       {tool.future_timeline.map((item: any, idx: number) => {
                         const isCurrent = String(item.pill || "")
                           .toLowerCase()
                           .includes("current");
+                        const isActive = activePhase === idx;
                         return (
-                          <div key={idx} className="relative flex flex-col items-center text-center">
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => setActivePhase(isActive ? null : idx)}
+                            aria-expanded={isActive}
+                            className="relative flex cursor-pointer flex-col items-center text-center focus:outline-none"
+                          >
                             {/* Stop indicator */}
                             <span className="relative z-10 mb-3.5 block h-[30px] w-[30px]">
                               {isCurrent && (
@@ -263,33 +279,29 @@ const TrackCaseStatusStep: React.FC<any> = ({
                                 {idx + 1}
                               </span>
                             </span>
-                            {/* Phase card */}
-                            <div
-                              className="flex w-full flex-1 flex-col rounded-2xl border p-4 transition"
+                            {/* Compact phase card (title + pill only) */}
+                            <span
+                              className="flex w-full flex-1 flex-col items-center rounded-2xl border px-3 py-3 transition"
                               style={{
-                                borderColor: isCurrent
-                                  ? "rgba(255,255,255,0.55)"
-                                  : "rgba(255,255,255,0.14)",
-                                backgroundColor: isCurrent
-                                  ? "rgba(255,255,255,0.12)"
-                                  : "rgba(255,255,255,0.05)",
-                                boxShadow: isCurrent
-                                  ? "0 8px 24px rgba(0,0,0,0.18)"
-                                  : "none",
+                                borderColor: isActive
+                                  ? "rgba(255,255,255,0.6)"
+                                  : isCurrent
+                                    ? "rgba(255,255,255,0.32)"
+                                    : "rgba(255,255,255,0.14)",
+                                backgroundColor: isActive
+                                  ? "rgba(255,255,255,0.14)"
+                                  : isCurrent
+                                    ? "rgba(255,255,255,0.08)"
+                                    : "rgba(255,255,255,0.05)",
+                                boxShadow: isActive ? "0 8px 24px rgba(0,0,0,0.2)" : "none",
                               }}
                             >
-                              <div className="mb-1.5 text-[13.5px] font-semibold leading-tight text-white">
+                              <span className="mb-2 text-[13px] font-semibold leading-tight text-white">
                                 {item.title}
-                              </div>
-                              <div
-                                className="mb-3 flex-1 text-[12px] leading-relaxed"
-                                style={{ color: "rgba(247,248,255,0.78)" }}
-                              >
-                                {item.copy}
-                              </div>
+                              </span>
                               {item.pill && (
                                 <span
-                                  className="mx-auto inline-block rounded-full border px-2.5 py-1 text-[9.5px] font-bold tracking-wide uppercase"
+                                  className="inline-block rounded-full border px-2.5 py-1 text-[9.5px] font-bold tracking-wide uppercase"
                                   style={
                                     isCurrent
                                       ? {
@@ -307,115 +319,41 @@ const TrackCaseStatusStep: React.FC<any> = ({
                                   {item.pill}
                                 </span>
                               )}
-                            </div>
-                          </div>
+                              <span
+                                className="mt-2 inline-flex items-center gap-1 text-[10px] font-medium"
+                                style={{ color: "rgba(247,248,255,0.6)" }}
+                              >
+                                <Info className="h-3 w-3" />
+                                {isActive ? "Hide" : "Details"}
+                              </span>
+                            </span>
+                          </button>
                         );
                       })}
                     </div>
+                    {/* Detail panel for the selected phase */}
+                    {activePhase !== null && tool.future_timeline[activePhase] && (
+                      <div
+                        className="mt-4 rounded-xl border p-4 text-left"
+                        style={{
+                          borderColor: "rgba(255,255,255,0.2)",
+                          backgroundColor: "rgba(255,255,255,0.07)",
+                        }}
+                      >
+                        <div className="mb-1 text-[13px] font-semibold text-white">
+                          {tool.future_timeline[activePhase].title}
+                        </div>
+                        <div
+                          className="text-[12.5px] leading-relaxed"
+                          style={{ color: "rgba(247,248,255,0.85)" }}
+                        >
+                          {tool.future_timeline[activePhase].copy}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
-              {/* Metrics */}
-              {/* CHANGE 5: grid-cols-2 on mobile (was grid-cols-1), md:grid-cols-4 */}
-              <div className="metrics mb-4 grid grid-cols-2 items-stretch gap-3 md:grid-cols-4">
-                {/* Status */}
-                <div
-                  className="metric flex h-full min-h-[118px] flex-col rounded-[12px] px-4 py-3"
-                  style={{
-                    borderColor: launchAccentColor,
-                    backgroundColor: "var(--rv-ch1-feature-bg)",
-                  }}
-                >
-                  <div
-                    className="metric-label mb-1 text-[10px] font-bold tracking-widest uppercase"
-                    style={{ color: launchAccentColor }}
-                  >
-                    Status
-                  </div>
-                  <div
-                    className="metric-value text-[14px] font-semibold"
-                    style={{ color: "var(--rv-ch1-text)" }}
-                  >
-                    {receiptInfo?.lastKnownStatus || ""}
-                  </div>
-                  <div className="metric-sub mt-1 text-[11px] text-white">
-                    Current USCIS case status
-                  </div>
-                </div>
-
-                {/* Last Checked */}
-                <div
-                  className="metric flex h-full min-h-[118px] flex-col rounded-[12px] px-4 py-3"
-                  style={{
-                    borderColor: launchAccentColor,
-                    backgroundColor: "var(--rv-ch1-feature-bg)",
-                  }}
-                >
-                  <div
-                    className="metric-label mb-1 text-[10px] font-bold tracking-widest uppercase"
-                    style={{ color: launchAccentColor }}
-                  >
-                    Last Checked
-                  </div>
-                  <div
-                    className="metric-value text-[14px] font-semibold"
-                    style={{ color: "var(--rv-ch1-text)" }}
-                  >
-                    {receiptInfo?.lastCheckedAt ? fmtDateTime(receiptInfo.lastCheckedAt) : ""}
-                  </div>
-                  <div className="metric-sub mt-1 text-[11px] text-white">
-                    Latest system refresh
-                  </div>
-                </div>
-
-                {/* Notice Date */}
-                <div
-                  className="metric flex h-full min-h-[118px] flex-col rounded-[12px] px-4 py-3"
-                  style={{
-                    borderColor: launchAccentColor,
-                    backgroundColor: "var(--rv-ch1-feature-bg)",
-                  }}
-                >
-                  <div
-                    className="metric-label mb-1 text-[10px] font-bold tracking-widest uppercase"
-                    style={{ color: launchAccentColor }}
-                  >
-                    Notice Date
-                  </div>
-                  <div
-                    className="metric-value text-[14px] font-semibold"
-                    style={{ color: "var(--rv-ch1-text)" }}
-                  >
-                    {receiptInfo?.noticeDate ? fmtDate(receiptInfo.noticeDate) : ""}
-                  </div>
-                  <div className="metric-sub mt-1 text-[11px] text-white">USCIS receipt notice</div>
-                </div>
-
-                {/* Priority Date */}
-                <div
-                  className="metric flex h-full min-h-[118px] flex-col rounded-[12px] px-4 py-3"
-                  style={{
-                    borderColor: launchAccentColor,
-                    backgroundColor: "var(--rv-ch1-feature-bg)",
-                  }}
-                >
-                  <div
-                    className="metric-label mb-1 text-[10px] font-bold tracking-widest uppercase"
-                    style={{ color: launchAccentColor }}
-                  >
-                    Priority Date
-                  </div>
-                  <div
-                    className="metric-value text-[14px] font-semibold"
-                    style={{ color: "var(--rv-ch1-text)" }}
-                  >
-                    {receiptInfo?.priorityDate ? fmtDate(receiptInfo.priorityDate) : ""}
-                  </div>
-                  <div className="metric-sub mt-1 text-[11px] text-white">
-                    Filing priority reference
-                  </div>
-                </div>
-              </div>
               {/* Tracking Action Buttons */}
               <div className="launch-actions mt-2 grid grid-cols-1 gap-3 md:grid-cols-2">
                 {/* <Button
