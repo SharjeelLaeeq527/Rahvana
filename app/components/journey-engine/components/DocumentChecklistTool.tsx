@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   AlertTriangle,
   CalendarDays,
@@ -157,6 +157,110 @@ export function DocumentChecklistTool({ journeyId, journeyType }: DocumentCheckl
   const [selectedDocument, setSelectedDocument] = useState<DocumentChecklistItem | null>(null);
 
   const [modalType, setModalType] = useState<ModalType>(null);
+
+  const [activeGuidanceId, setActiveGuidanceId] = useState<string | null>(null);
+  const [guidancePosition, setGuidancePosition] = useState<{
+    top: number;
+    left: number;
+  }>({
+    top: 0,
+    left: 0,
+  });
+
+  const guidanceTooltipRef = useRef<HTMLDivElement | null>(null);
+
+  const handleGuidanceClick = (
+    event: React.MouseEvent<HTMLButtonElement>,
+    item: DocumentChecklistItem
+  ) => {
+    event.stopPropagation();
+
+    // Desktop relies on hover/focus behavior.
+    // Only use the fixed tooltip interaction on mobile/tablet.
+    if (window.innerWidth >= 768) {
+      return;
+    }
+
+    const buttonRect = event.currentTarget.getBoundingClientRect();
+
+    const horizontalPadding = 12;
+    const verticalGap = 8;
+
+    const tooltipWidth = Math.min(280, window.innerWidth - horizontalPadding * 2);
+
+    let left = buttonRect.left + buttonRect.width / 2 - tooltipWidth / 2;
+
+    // Keep tooltip inside viewport horizontally
+    left = Math.max(
+      horizontalPadding,
+      Math.min(left, window.innerWidth - tooltipWidth - horizontalPadding)
+    );
+
+    /*
+     * We don't know the exact tooltip height before rendering,
+     * so use a reasonable estimate and allow the tooltip itself
+     * to scroll if the content is long.
+     */
+    const estimatedTooltipHeight = 150;
+
+    let top = buttonRect.bottom + verticalGap;
+
+    // If there isn't enough room below, place it above the icon.
+    if (top + estimatedTooltipHeight > window.innerHeight - horizontalPadding) {
+      top = buttonRect.top - estimatedTooltipHeight - verticalGap;
+    }
+
+    // Final vertical safety
+    top = Math.max(
+      horizontalPadding,
+      Math.min(top, window.innerHeight - estimatedTooltipHeight - horizontalPadding)
+    );
+
+    setGuidancePosition({
+      top,
+      left,
+    });
+
+    setActiveGuidanceId((current) => (current === item.id ? null : item.id));
+  };
+
+  useEffect(() => {
+    if (!activeGuidanceId) return;
+
+    const handleOutsideClick = (event: MouseEvent | TouchEvent) => {
+      const target = event.target as HTMLElement | null;
+
+      if (!target) return;
+
+      // Don't close the tooltip when interacting with the info trigger.
+      if (target.closest("[data-guidance-trigger='true']")) {
+        return;
+      }
+
+      // Don't close it when interacting with the tooltip itself.
+      if (guidanceTooltipRef.current && guidanceTooltipRef.current.contains(target)) {
+        return;
+      }
+
+      setActiveGuidanceId(null);
+    };
+
+    const handleViewportChange = () => {
+      setActiveGuidanceId(null);
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("touchstart", handleOutsideClick);
+    window.addEventListener("resize", handleViewportChange);
+    window.addEventListener("scroll", handleViewportChange, true);
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("touchstart", handleOutsideClick);
+      window.removeEventListener("resize", handleViewportChange);
+      window.removeEventListener("scroll", handleViewportChange, true);
+    };
+  }, [activeGuidanceId]);
 
   const loadDocuments = async () => {
     try {
@@ -388,28 +492,58 @@ export function DocumentChecklistTool({ journeyId, journeyType }: DocumentCheckl
       return null;
     }
 
+    const isActive = activeGuidanceId === item.id;
+
     return (
-      <div className="group/guidance relative shrink-0">
-        <button
-          type="button"
-          aria-label={`Guidance for ${item.title}`}
-          className="flex h-6 w-6 items-center justify-center rounded-full text-[#7A8FA2] transition-colors hover:bg-[#EAF4F5] hover:text-[#0D7377] focus-visible:bg-[#EAF4F5] focus-visible:text-[#0D7377] focus-visible:outline-none"
-        >
-          <Info size={14} strokeWidth={2} />
-        </button>
+      <>
+        {/* Guidance trigger + desktop tooltip */}
+        <div className="group/guidance relative shrink-0">
+          <button
+            type="button"
+            aria-label={`Guidance for ${item.title}`}
+            aria-expanded={isActive}
+            data-guidance-trigger="true"
+            onClick={(event) => handleGuidanceClick(event, item)}
+            className="flex h-6 w-6 items-center justify-center rounded-full text-[#7A8FA2] transition-colors hover:bg-[#EAF4F5] hover:text-[#0D7377] focus-visible:bg-[#EAF4F5] focus-visible:text-[#0D7377] focus-visible:outline-none"
+          >
+            <Info size={14} strokeWidth={2} />
+          </button>
 
-        <div className="pointer-events-none absolute top-full right-0 z-[100] mt-2 max-h-[180px] w-[min(280px,calc(100vw-48px))] overflow-y-auto rounded-[10px] border border-gray-700 bg-gradient-to-br from-gray-900 to-gray-800 p-3 text-white opacity-0 shadow-[0_14px_35px_rgba(17,34,52,0.25)] transition-all duration-150 group-focus-within/guidance:pointer-events-auto group-focus-within/guidance:translate-y-0 group-focus-within/guidance:opacity-100 group-hover/guidance:pointer-events-auto group-hover/guidance:translate-y-0 group-hover/guidance:opacity-100">
-          <div className="mb-1.5 flex items-center gap-1.5">
-            <Info size={12} className="shrink-0 text-[#AFDBDB]" />
+          {/* Desktop tooltip — original UI preserved */}
+          <div className="pointer-events-none absolute top-full right-0 z-[100] mt-2 hidden max-h-[180px] w-[min(280px,calc(100vw-48px))] overflow-y-auto rounded-[10px] border border-gray-700 bg-gradient-to-br from-gray-900 to-gray-800 p-3 text-white opacity-0 shadow-[0_14px_35px_rgba(17,34,52,0.25)] transition-all duration-150 group-focus-within/guidance:pointer-events-auto group-focus-within/guidance:translate-y-0 group-focus-within/guidance:opacity-100 group-hover/guidance:pointer-events-auto group-hover/guidance:translate-y-0 group-hover/guidance:opacity-100 md:block">
+            <div className="mb-1.5 flex items-center gap-1.5">
+              <Info size={12} className="shrink-0 text-[#AFDBDB]" />
 
-            <span className="text-[10px] font-bold text-white">Guidance</span>
+              <span className="text-[10px] font-bold text-white">Guidance</span>
+            </div>
+
+            <p className="text-[10px] leading-[1.55] text-gray-200">{item.notes}</p>
+
+            <div className="absolute -top-1 right-2 h-2 w-2 rotate-45 border-t border-l border-gray-700 bg-gray-900" />
           </div>
-
-          <p className="text-[10px] leading-[1.55] text-gray-200">{item.notes}</p>
-
-          <div className="absolute -top-1 right-2 h-2 w-2 rotate-45 border-t border-l border-gray-700 bg-gray-900" />
         </div>
-      </div>
+
+        {/* Mobile / tablet viewport-aware tooltip */}
+        {isActive && (
+          <div
+            ref={guidanceTooltipRef}
+            className="fixed z-[9999] max-h-[180px] w-[280px] max-w-[calc(100vw-24px)] overflow-y-auto rounded-[10px] border border-gray-700 bg-gradient-to-br from-gray-900 to-gray-800 p-3 text-white shadow-[0_14px_35px_rgba(17,34,52,0.25)] md:hidden"
+            style={{
+              top: `${guidancePosition.top}px`,
+              left: `${guidancePosition.left}px`,
+            }}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="mb-1.5 flex items-center gap-1.5">
+              <Info size={12} className="shrink-0 text-[#AFDBDB]" />
+
+              <span className="text-[10px] font-bold text-white">Guidance</span>
+            </div>
+
+            <p className="text-[10px] leading-[1.55] text-gray-200">{item.notes}</p>
+          </div>
+        )}
+      </>
     );
   };
 
@@ -512,24 +646,22 @@ export function DocumentChecklistTool({ journeyId, journeyType }: DocumentCheckl
     const isRequired = item.is_required;
     const isExpired = item.expiration_status === "expired";
     const isExpiringSoon = item.expiration_status === "expiring_soon";
-  
+
     let borderClass = "border-[#D5E0E7] bg-white";
     let iconClass = "bg-[#E7F2F7] text-[#0D7377]";
     let statusClass = "text-[#7890A3]";
     let statusLabel = "Optional";
-    let statusIndicator = "bg-[#A8B8C4]";
-  
+
     if (isExpired) {
       borderClass = "border-[#D98B94] bg-[#FFF7F8]";
       iconClass = "bg-[#FDEBEC] text-[#B4232D]";
       statusClass = "text-[#B4232D]";
       statusLabel = "Expired";
-      statusIndicator = "bg-[#B4232D]";
     } else if (isExpiringSoon) {
       borderClass = "border-[#E7C27A] bg-[#FFFBF2]";
       iconClass = "bg-[#FFF1D8] text-[#A15C00]";
       statusClass = "text-[#A15C00]";
-  
+
       if (item.days_until_expiry === 0) {
         statusLabel = "Expires today";
       } else if (item.days_until_expiry === 1) {
@@ -539,26 +671,21 @@ export function DocumentChecklistTool({ journeyId, journeyType }: DocumentCheckl
       } else {
         statusLabel = "Expiring Soon";
       }
-  
-      statusIndicator = "bg-[#E09A2D]";
     } else if (isUploaded) {
       borderClass = "border-[#A8D8BE] bg-[#F7FCF9]";
       iconClass = "bg-[#E5F5EE] text-[#15704F]";
       statusClass = "text-[#15704F]";
       statusLabel = "Uploaded";
-      statusIndicator = "bg-[#36A269]";
     } else if (isRequired) {
       borderClass = "border-[#E0A3A8] bg-[#FFF9F9]";
       iconClass = "bg-[#FDEBEC] text-[#BE3542]";
       statusClass = "text-[#B4232D]";
       statusLabel = "Required";
-      statusIndicator = "bg-[#C43E4B]";
     }
-  
+
     return (
-      <motion.button
+      <motion.div
         key={item.id}
-        type="button"
         initial={{ opacity: 0, scale: 0.96 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.18 }}
@@ -566,30 +693,26 @@ export function DocumentChecklistTool({ journeyId, journeyType }: DocumentCheckl
           setSelectedDocument(item);
           setModalType("upload");
         }}
-        className={`relative flex min-h-[108px] w-full flex-col items-center justify-center rounded-[12px] border-2 px-2 py-3 text-center shadow-[0_2px_8px_rgba(22,45,65,0.035)] transition-all active:scale-[0.98] ${borderClass}`}
+        className={`relative flex min-h-[108px] w-full cursor-pointer flex-col items-center justify-center overflow-visible rounded-[12px] border-2 px-2 py-3 text-center shadow-[0_2px_8px_rgba(22,45,65,0.035)] transition-all active:scale-[0.98] ${borderClass}`}
       >
-        {/* Status indicator */}
-        <span
-          className={`absolute right-2 top-2 h-2 w-2 rounded-full ${statusIndicator}`}
-        />
-  
+        {/* Info / guidance */}
+        <div className="absolute top-2 right-2 z-20" onClick={(event) => event.stopPropagation()}>
+          {renderGuidanceTooltip(item)}
+        </div>
+
         {/* Document icon */}
-        <div
-          className={`flex h-9 w-9 items-center justify-center rounded-[9px] ${iconClass}`}
-        >
+        <div className={`flex h-9 w-9 items-center justify-center rounded-[9px] ${iconClass}`}>
           {getStepIcon(item.icon || "file-text", 17)}
         </div>
-  
+
         {/* Document name */}
-        <span className="mt-2 line-clamp-2 w-full text-[10px] font-semibold leading-[1.3] text-[#10233C]">
+        <span className="mt-2 line-clamp-2 w-full text-[10px] leading-[1.3] font-semibold text-[#10233C]">
           {item.title}
         </span>
-  
+
         {/* Document status */}
-        <span className={`mt-1 text-[8px] font-medium ${statusClass}`}>
-          {statusLabel}
-        </span>
-      </motion.button>
+        <span className={`mt-1 text-[8px] font-medium ${statusClass}`}>{statusLabel}</span>
+      </motion.div>
     );
   };
 
