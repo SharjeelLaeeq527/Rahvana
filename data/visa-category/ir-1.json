@@ -6412,7 +6412,7 @@
                 "label": "Administrative Processing (AP / 221g)",
                 "type": "ap",
                 "icon": "clipboard",
-                "sub": "The officer needs more time or additional documents. This is not a refusal. Proceed to Step 9 to track and manage the AP process."
+                "sub": "The officer needs more time or additional documents. This is not a refusal. Proceed to Step 10 to track and manage the AP process."
               },
               {
                 "label": "Visa refused",
