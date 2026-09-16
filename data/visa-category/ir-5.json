@@ -5674,6 +5674,7 @@
               ],
               "button_label": "Start Submission Guide"
             },
+            "correctionsNote": "Before you submit: even a single corrected document returns your case to NVC's full review queue — the clock effectively resets. Take the time to get each file right before submitting.",
             "disclaimer": "Rahvana provides structured guidance only. Always confirm submission status directly in CEAC after submitting."
           }
         },
@@ -5786,6 +5787,7 @@
                 "Resubmit promptly, delay in responding extends the overall timeline"
               ]
             },
+            "correctionsNote": "Note: Even a single corrected or replaced document returns your case to NVC's full review queue — the clock effectively resets. It's worth taking the time to get each correction right before resubmitting.",
             "disclaimer": "Rahvana provides structured guidance only. NVC review timelines vary. Monitor your registered email and CEAC messages directly.",
             "id": "step_2_9",
             "type": "awaiting_review"
@@ -6695,7 +6697,7 @@
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>Bring the parent beneficiary's original birth certificate issued by the competent civil authority. For Pakistan, this must be the original <strong>NADRA Computerized Birth Registration Certificate (CBRC)</strong>. Photocopies or printed scans of a digitally-issued CBRC are not accepted as originals, you must bring the physically-issued original certificate.</p>"
+                          "c": "<p>Bring the original Birth Registration Certificate issued by the authority responsible for registering the beneficiary's birth:</p><ul><li><strong>Union Council</strong></li><li><strong>Municipal Corporation</strong></li><li><strong>Capital Development Authority (CDA)</strong> — Islamabad</li><li><strong>Cantonment Board</strong></li></ul><p>Select the issuing authority that applies to your birth record and bring the original document.</p>"
                         },
                         {
                           "t": "Translation and copy",
@@ -6754,12 +6756,12 @@
                     {
                       "id": "pcc",
                       "icon": "pcc",
-                      "title": "Original Police Clearance Certificate (Fresh)",
-                      "sub": "The fresh PCC obtained for this interview cycle",
+                      "title": "Original Police Clearance Certificate",
+                      "sub": "The PCC obtained for this interview cycle",
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>Bring the original fresh Police Character Certificate (PCC) obtained during Chapter 3, Step 3, specifically for this interview cycle. <strong>Do not bring the older PCC</strong> that was submitted to NVC during Chapter 2 processing, U.S. Embassy Islamabad requires a PCC that is no older than 1 year at the time of the interview, and frequently requires one issued specifically for the consular interview stage.</p>"
+                          "c": "<p>Bring the original PCC obtained for your interview. Do not bring the older PCC submitted during NVC processing; bring the PCC intended for your current interview.</p>"
                         },
                         {
                           "t": "Validity",
@@ -6798,7 +6800,7 @@
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>Bring a complete photocopy of the signed Form I-864 submitted by the U.S. citizen petitioner. Although NVC reviews this digitally, the consular officer at U.S. Embassy Islamabad frequently asks to see a physical copy of the Form I-864 at the interview window to verify details and confirm that all pages are present.</p>"
+                          "c": "<p>Bring the original signed Affidavit of Support. This must be the wet-ink signed original, not a photocopy.</p>"
                         },
                         {
                           "t": "Petitioner remains required",
@@ -6865,22 +6867,6 @@
                           "c": "<p>If a household member's income or assets were included via Form I-864A, bring the signed Form I-864A together with the household member's tax transcript or return, pay stubs, and employment letter as applicable.</p>"
                         }
                       ]
-                    },
-                    {
-                      "id": "ds260-original",
-                      "icon": "file-text",
-                      "title": "DS-260 Confirmation Page",
-                      "sub": "Printed Immigrant Visa Application confirmation page",
-                      "sections": [
-                        {
-                          "t": "What to bring",
-                          "c": "<p>Bring the printed DS-260 confirmation page with its barcode for the parent beneficiary.</p>"
-                        },
-                        {
-                          "t": "Review before interview",
-                          "c": "<p>Review the submitted DS-260 and be prepared to explain any changes or corrections.</p>"
-                        }
-                      ]
                     }
                   ]
                 },
@@ -6889,6 +6875,34 @@
                   "label": "Bring, Interview Day and Conditional Documents",
                   "badge": "Required if applicable",
                   "items": [
+                    {
+                      "id": "ds260-original",
+                      "icon": "file-text",
+                      "title": "DS-260 Confirmation Page",
+                      "sub": "Printed Immigrant Visa Application confirmation page",
+                      "items": [
+                        {
+                          "id": "ds260-original",
+                          "icon": "file-text",
+                          "title": "DS-260 Confirmation Page",
+                          "sub": "Online Immigrant Visa Application Confirmation",
+                          "sections": [
+                            {
+                              "t": "What to bring",
+                              "c": "<p>Bring the printed DS-260 confirmation page with barcode. This confirms you have successfully submitted your online immigrant visa application.</p>"
+                            },
+                            {
+                              "t": "Important notes",
+                              "c": "<p>Make sure all information in your DS-260 form is accurate and matches your supporting documents such as passport and civil records.</p>"
+                            },
+                            {
+                              "t": "Where to get it",
+                              "c": "<p>You can download and print the confirmation page after submitting your DS-260 form from the Consular Electronic Application Center (CEAC) website.</p>"
+                            }
+                          ]
+                        }
+                      ]
+                    },
                     {
                       "id": "photos",
                       "icon": "camera",
@@ -6909,7 +6923,7 @@
                       "id": "medical-packet",
                       "icon": "medical",
                       "title": "Medical Examination Results",
-                      "sub": "Sealed medical envelope only if the panel physician gives it to the parent",
+                      "sub": "Sealed medical results provided by the physician or sent directly to the embassy",
                       "sections": [
                         {
                           "t": "How this works",
@@ -6937,7 +6951,7 @@
                         },
                         {
                           "t": "Pakistan records",
-                          "c": "<p>For a Pakistani Muslim marriage, bring both the original Urdu <strong>Nikah Nama</strong> (with a full certified English translation) and the bilingual <strong>NADRA Marriage Registration Certificate (MRC)</strong>. Both documents are commonly requested by the consular officer to cross-verify dates, names, and witnesses.</p>"
+                          "c": "<p>For a Pakistani Muslim marriage, bring both the original Urdu <strong>Nikah Nama</strong> (with a full certified English translation) and the bilingual <strong>NADRA Marriage Registration Certificate (MRC)</strong>."
                         },
                         {
                           "t": "Consistency check",
@@ -7130,6 +7144,25 @@
         {
           "step_key": "step_3_7",
           "step_number": 7,
+          "step_name": "Review Document Readiness",
+          "step_short_description": "Check document status and resolve issues",
+          "step_description": "Review your document checklist, confirm uploaded documents are current, address any expired or soon-to-expire documents, and prepare documents needed after receiving your interview appointment letter.",
+          "step_type": "tool",
+          "who": "Both",
+          "where": "Rahvana tool",
+          "estimated_duration_days": 1,
+          "is_required": true,
+          "display_order": 7,
+          "dependencies": ["step_3_6"],
+          "tool_data": {
+            "id": "step_3_7",
+            "type": "document_checklist",
+            "title": "Document Readiness Checklist"
+          }
+        },
+        {
+          "step_key": "step_3_8",
+          "step_number": 8,
           "step_type": "tool",
           "step_name": "Prepare for Interview",
           "step_description": "Use Rahvana's interview prep tool to practice questions, review your case history, and build confidence before interview day.",
@@ -7199,8 +7232,8 @@
           }
         },
         {
-          "step_key": "step_3_8",
-          "step_number": 8,
+          "step_key": "step_3_9",
+          "step_number": 9,
           "step_type": "tool",
           "step_name": "Attend Visa Interview",
           "step_description": "Your interview day has arrived. Know exactly what to bring, how to prepare at the door, and what to expect inside the consular window.",
@@ -7363,7 +7396,7 @@
                 "label": "Administrative Processing (AP / 221g)",
                 "type": "ap",
                 "icon": "clipboard",
-                "sub": "The officer needs more time or additional documents. This is not a refusal. Proceed to Step 9 to track and manage the AP process."
+                "sub": "The officer needs more time or additional documents. This is not a refusal. Proceed to Step 10 to track and manage the AP process."
               },
               {
                 "label": "Visa refused",
@@ -7377,8 +7410,8 @@
           "pakistanSpecific": "Address: Diplomatic Enclave, Ramna 5, Islamabad. NO mobile phones allowed."
         },
         {
-          "step_key": "step_3_9",
-          "step_number": 9,
+          "step_key": "step_3_10",
+          "step_number": 10,
           "step_type": "tool",
           "step_name": "Confirm Interview Outcome",
           "step_description": "Record what happened at your consular interview. Your selection unlocks the correct next steps for your specific situation.",
@@ -7387,7 +7420,7 @@
           "where": "Post-interview",
           "estimated_duration_days": 1,
           "is_required": true,
-          "display_order": 9,
+          "display_order": 10,
           "actions": [
             "Select your interview outcome",
             "If 221(g), record situation type",
@@ -7413,7 +7446,7 @@
               {
                 "id": "approved",
                 "label": "Approved",
-                "description": "The officer indicated that the visa application was approved. The passport may be retained for visa issuance and returned through the registered passport delivery or pickup process. Continue monitoring the case until CEAC shows 'Issued' and the passport is returned.",
+                "description": "The officer approved your visa application. The Embassy will keep your passport to issue the visa and then return it to you by courier.",
                 "icon": "check-circle"
               },
               {
@@ -7438,7 +7471,7 @@
                 {
                   "id": "docs_requested",
                   "label": "I was asked to submit documents or information",
-                  "sub": "The officer gave you a 221(g) sheet listing specific items to provide"
+                  "sub": "The officer gave you a 221(g) letter listing specific documents, information, or actions required"
                 },
                 {
                   "id": "further_review",
@@ -7543,8 +7576,8 @@
           }
         },
         {
-          "step_key": "step_3_10",
-          "step_number": 10,
+          "step_key": "step_3_11",
+          "step_number": 11,
           "step_type": "tool",
           "step_name": "Track Visa Issuance",
           "step_description": "Your visa has been approved. Track the delivery of your passport and visa packet via your registered courier service.",
@@ -7553,7 +7586,7 @@
           "where": "USVisaScheduling courier portal",
           "estimated_duration_days": 7,
           "is_required": true,
-          "display_order": 10,
+          "display_order": 11,
           "visible_when": {
             "interviewOutcome": "approved"
           },
@@ -7596,8 +7629,8 @@
           }
         },
         {
-          "step_key": "step_3_10b",
-          "step_number": 10,
+          "step_key": "step_3_11b",
+          "step_number": 11,
           "step_type": "tool",
           "step_name": "Review Your 221(g) Letter",
           "step_description": "Open your 221(g) letter and select every item the embassy requested. This generates your personalized action plan for the next step.",
@@ -7606,7 +7639,7 @@
           "where": "Your 221(g) letter",
           "estimated_duration_days": 1,
           "is_required": true,
-          "display_order": 10,
+          "display_order": 11,
           "visible_when": {
             "interviewOutcome": "221g"
           },
@@ -7632,8 +7665,8 @@
           }
         },
         {
-          "step_key": "step_3_11",
-          "step_number": 11,
+          "step_key": "step_3_12",
+          "step_number": 12,
           "step_type": "tool",
           "step_name": "Submit Your 221(g) Documents",
           "step_description": "Gather exactly what the embassy requested, submit your packet via the specified method, and log your submission to stay organized.",
@@ -7642,7 +7675,7 @@
           "where": "Embassy / CEAC",
           "estimated_duration_days": 14,
           "is_required": false,
-          "display_order": 11,
+          "display_order": 12,
           "visible_when": {
             "interviewOutcome": "221g",
             "outcome221gSubtype": ["docs_requested", "both"]
@@ -7743,8 +7776,8 @@
           }
         },
         {
-          "step_key": "step_3_12",
-          "step_number": 12,
+          "step_key": "step_3_13",
+          "step_number": 13,
           "step_type": "tool",
           "step_name": "Track Administrative Processing",
           "step_description": "Monitor your CEAC case status, track updates, and stay informed while the U.S. embassy completes post-interview processing.",
@@ -7753,7 +7786,7 @@
           "where": "ceac.state.gov",
           "estimated_duration_days": 90,
           "is_required": false,
-          "display_order": 12,
+          "display_order": 13,
           "visible_when": {
             "interviewOutcome": "221g",
             "outcome221gSubtype": ["docs_requested", "further_review", "both"]
@@ -7810,20 +7843,12 @@
                   "value": "Ready"
                 },
                 {
-                  "label": "Approved",
-                  "value": "Approved"
-                },
-                {
                   "label": "Issued",
                   "value": "Issued"
                 },
                 {
                   "label": "Refused",
                   "value": "Refused"
-                },
-                {
-                  "label": "Administrative Processing",
-                  "value": "Administrative Processing"
                 },
                 {
                   "label": "Case Status Not Available",
@@ -7845,7 +7870,7 @@
                   "Monitor the email address registered with the embassy for additional requests or updates.",
                   "Respond promptly if the embassy requests further documents or information.",
                   "Ensure your passport remains valid throughout the review process.",
-                  "If your case remains pending significantly longer than normal, follow your embassy's official inquiry instructions before contacting them."
+                  "For Administrative Processing inquiries, follow the Embassy’s current instructions for your case. The Department of State generally recommends allowing up to 180 days from the interview or submission of supplemental documents, whichever is later, for Administrative Processing. This is a general guideline, not a requirement to wait 180 days before making an inquiry. If you have concerns about your case or believe an inquiry is appropriate, check the Embassy’s latest guidance and contact them through the appropriate channel."
                 ]
               },
               {
@@ -7854,9 +7879,9 @@
                 "icon": "check",
                 "items": [
                   "Issued — Your visa has been approved and printed.",
-                  "Administrative Processing — Additional review is still underway.",
+                  "Administrative Processing — Your case may remain refused under 221(g) while additional processing is underway.",
                   "Additional Documents Requested — The embassy requires more information.",
-                  "Refused — Review your written notice carefully for the official reason and next steps."
+                  "Refused — Review your 221(g) notice or other written instructions carefully. CEAC may continue to show 'Refused' while a case is undergoing Administrative Processing."
                 ]
               }
             ],

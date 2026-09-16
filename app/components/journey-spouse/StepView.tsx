@@ -158,6 +158,7 @@ import { HouseholdSponsorshipTool } from "./components/HouseholdSponsorshipTool"
 import { DocumentQuestionnaire } from "@/app/components/questionnaire/DocumentQuestionnaire";
 import { QuestRenderer } from "./QuestRenderer";
 import { ActionStepRenderer } from "./ActionStepRenderer";
+import {DocumentChecklistTool} from "@/app/components/journey-engine/components/DocumentChecklistTool";
 import { SafeHtml } from "../shared/SafeHTML";
 
 const STEP_CITATIONS: Record<string, { text: string; link: string }[]> = {
@@ -1707,14 +1708,14 @@ export const StepView: React.FC<StepViewProps> = ({
                       },
                       onUpload: () => {
                         const defId = mapDocumentNameToId(item.title);
-                      
+
                         setActiveUploadId(item.id);
                         setActiveUploadType("doc");
-                      
+
                         if (!stepEntitlement.guard()) return;
-                      
+
                         const documentDef = ALL_DOCUMENTS.find((d) => d.id === defId);
-                      
+
                         if (documentDef?.isDynamicCategory) {
                           setMultipleUploadModalState({
                             isOpen: true,
@@ -1733,7 +1734,7 @@ export const StepView: React.FC<StepViewProps> = ({
                                 (opt: string) => mapDocumentNameToId(opt) === defId
                               )
                           );
-                      
+
                           if (parentCat) {
                             setMultipleUploadModalState({
                               isOpen: true,
@@ -1760,6 +1761,14 @@ export const StepView: React.FC<StepViewProps> = ({
                 />
               );
             })()}
+
+          {/* DOCUMENT CHECKLIST (Step 3.7 SPECIFIC) */}
+          {tool.type === "document_checklist" && (
+  <DocumentChecklistTool
+    journeyId={journeyId}
+    journeyType={data.journey_type}
+  />
+)}
 
           {/* ATTEND MEDICAL EXAM (Step 3.5 SPECIFIC) */}
           {tool.type === "medical_exam_guide" && (
@@ -4186,8 +4195,7 @@ export const StepView: React.FC<StepViewProps> = ({
           ...(sponsorshipResult?.raw || {}),
           // Auto-supply the sponsor's state from the profile so the user is not
           // asked to re-enter it. Prior saved input wins if present.
-          state:
-            sponsorshipResult?.raw?.state || profile?.sponsor?.address?.state || "",
+          state: sponsorshipResult?.raw?.state || profile?.sponsor?.address?.state || "",
         }}
         // Lock (show read-only) only when we actually have a sponsor state;
         // otherwise fall back to asking the user.

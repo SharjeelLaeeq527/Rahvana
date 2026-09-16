@@ -109,8 +109,8 @@ const FOLLOW_UP_CONFIG = {
 
   missing_features: {
     textFollowUp: {
-      label: "What feature or capability were you looking for?",
-      placeholder: "Tell us what you wanted Rahvana to help you do...",
+      label: "What would you like Rahvana to add or improve?",
+      placeholder: "Tell us what you'd like Rahvana to help you with...",
     },
   },
 
@@ -185,10 +185,6 @@ const FOLLOW_UP_CONFIG = {
       {
         value: "immigration_attorney",
         label: "An immigration attorney or law firm",
-      },
-      {
-        value: "government_official_resources",
-        label: "Government or official resources",
       },
       {
         value: "another_immigration_platform",

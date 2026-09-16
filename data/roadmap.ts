@@ -441,13 +441,13 @@ export const roadmapData = {
             "سابقہ شادی کا خاتمہ (اگر لاگو ہو)",
           ],
           actions: [
-            "Scan all documents (300 DPI, PDF)",
+            "Scan all documents in color (PDF preferred)",
             "Ensure translations certified",
             "Verify all stamps/seals visible",
             "Name files clearly",
           ],
           actionsUr: [
-            "تمام دستاویزات کو اسکین کریں (300 DPI، پی ڈی ایف)",
+            "تمام دستاویزات کو اسکین کریں (پی ڈی ایف)",
             "یقینی بنائیں کہ ترجمہ تصدیق شدہ ہے",
             "تصدیق کریں کہ تمام مہریں/مہریں نظر آ رہی ہیں",
             "فائلوں کے نام واضح رکھیں",

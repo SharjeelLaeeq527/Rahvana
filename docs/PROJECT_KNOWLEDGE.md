@@ -891,6 +891,15 @@ External: Stripe . Resend . EasyPost . Gemini . USCIS . GA4 . Sheets . OCR.space
 - **Two dashboard renderers** — `journey-spouse` (IR-1/CR-1) and `journey-engine`
   (chapters-schema, IR-5+). Editing one does not change the other; shared logic must go
   into `lib/case-strength/*` + `app/components/case-health/*`.
+- **My Journeys step counts come from the JSON, not DB `steps` rows.** The per-user DB
+  `steps` rows drift from `data/visa-category/*.json`: `syncStepsBackground`
+  (`app/api/journeys/initialize`) only INSERTS steps new in the JSON, never DELETES steps
+  removed from it, so removed steps linger as stale rows. `lib/journey/journeyProgressService.ts`
+  (`calculateActiveProgressFromSteps`) therefore derives the total from the JSON via
+  `getAllActiveSteps` (same visibility rules as the dashboard) and only reads DB `status`
+  for which active steps are completed. Do NOT switch this back to counting DB rows /
+  hardcoded per-filing-method totals (the historical bug: IR-1 over-counted from stale
+  rows, IR-5 under-counted from un-seeded rows).
 - **Two encryption schemes** — global key for portal-wallet/profile fields
   (`lib/encryption.ts`), per-user key for vault files
   (`document-vault/file-encryption.ts`). Don't assume per-user everywhere.

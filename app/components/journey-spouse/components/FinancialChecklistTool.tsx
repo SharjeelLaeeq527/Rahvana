@@ -54,7 +54,7 @@ export const getFinancialDocs = (scKey: string) => {
   const sc = SCENARIOS[scKey] || SCENARIOS["pet-only"];
   const docs: any = { required: [], conditional: [], recommended: [] };
 
-  const taxNote = `${sc.taxYears} most recent years`;
+  const taxNote = "most recent tax year (3 recommended)";
   const allSponsors = [...sc.sponsors, ...sc.jointSponsors];
 
   allSponsors.forEach((sp) => {
@@ -67,14 +67,14 @@ export const getFinancialDocs = (scKey: string) => {
       sub: `${taxNote} · Aligns with affidavit income statement`,
       tags: [
         { cls: tagClass, label: sp },
-        { cls: "tag-tax", label: "3 Years" },
+        { cls: "tag-tax", label: "1 Year Req. (3 Rec.)" },
       ],
       guide: {
         intro: `The federal tax return (Form 1040) is the primary income evidence for ${sp}. It must align with the income figure reported in the affidavit of support.`,
         sections: [
           {
             title: "What is needed",
-            body: `Most recent ${taxNote} of federal tax returns. Ensure the income figures are consistent with what was stated in the affidavit form.`,
+            body: `Federal tax return for the most recent tax year (1 year required, up to 3 years recommended). Ensure the income figures are consistent with what was stated in the affidavit form.`,
           },
           {
             title: "Organization",
@@ -90,7 +90,7 @@ export const getFinancialDocs = (scKey: string) => {
       sub: `${taxNote} · Wage and salary income documentation`,
       tags: [
         { cls: tagClass, label: sp },
-        { cls: "tag-tax", label: "3 Years" },
+        { cls: "tag-tax", label: "1 Year Req. (3 Rec.)" },
       ],
       guide: {
         intro: `W-2 forms report annual wages and are issued by employers. They support the income figures shown on the tax return.`,
@@ -109,11 +109,15 @@ export const getFinancialDocs = (scKey: string) => {
       sub: "Official IRS verification of filed tax information",
       tags: [
         { cls: tagClass, label: sp },
-        { cls: "tag-tax", label: "3 Years" },
+        { cls: "tag-tax", label: "Preferred Evidence" },
       ],
       guide: {
-        intro: `IRS Tax Transcripts are official IRS-issued records confirming what was filed for a given tax year. They are a strong verification tool.`,
+        intro: `An IRS tax transcript for the most recent tax year is the preferred tax evidence because it can be reviewed more efficiently than a full copy of a tax return.`,
         sections: [
+          {
+            title: "What is needed",
+            body: "Official IRS tax transcript for the most recent tax year (1 year required, 3 years recommended).",
+          },
           {
             title: "How to obtain",
             body: "Request transcripts at IRS.gov (Get Transcript tool) or via mail using Form 4506-T. Processing time varies.",
@@ -353,7 +357,7 @@ export const FinancialChecklistTool: React.FC<FinancialChecklistToolProps> = ({
                 ["Affidavit forms", sc.forms],
                 ["Joint sponsors", sc.jointSponsors.length || "None"],
                 ["Household members", sc.householdMembers.length || "None"],
-                ["Tax evidence needed", "3 most recent years"],
+                ["Tax evidence needed", "1 year req. (3 rec.)"],
               ].map(([k, v], i) => (
                 <div
                   key={i}
@@ -373,7 +377,7 @@ export const FinancialChecklistTool: React.FC<FinancialChecklistToolProps> = ({
       {/* Document Groups */}
       <div className="flex flex-col gap-[36px] mt-2">
         {(() => {
-          const docs = getFinancialDocs(selectedScenario, tool);
+          const docs = getFinancialDocs(selectedScenario);
           const groups = [
             {
               id: "required",

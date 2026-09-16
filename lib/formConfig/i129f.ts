@@ -4950,6 +4950,83 @@ export const getInitialFormData = (): Record<string, string> => {
   return data;
 };
 
+export const overflowFields = [
+  {
+    prefix: "pt1_address",
+    countKey: "pt1_address_count",
+    startIndex: 2,
+    maxIndex: 8,
+    pageNumber: "2",
+    partNumber: "1",
+    itemNumber: "11",
+    labelPrefix: "Physical Address",
+    fields: [
+      { suffix: "street", label: "Street" },
+      { suffix: "city", label: "City" },
+      { suffix: "state", label: "State" },
+      { suffix: "zip", label: "Zip" },
+      { suffix: "from", label: "From" },
+      { suffix: "to", label: "To" },
+      { suffix: "country", label: "Country" },
+    ],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const street = data[`pt1_address_${index}_street`] || "";
+      const city = data[`pt1_address_${index}_city`] || "";
+      const state = data[`pt1_address_${index}_state`] || "";
+      const zip = data[`pt1_address_${index}_zip`] || "";
+      const from = data[`pt1_address_${index}_from`] || "";
+      const to = data[`pt1_address_${index}_to`] || "";
+      const country = data[`pt1_address_${index}_country`] || "";
+
+      const parts = [street, city, state, zip, country].filter(Boolean);
+      let info = `Physical Address ${index}: ${parts.join(", ")}.`;
+      if (from || to) {
+        info += ` Dates: ${from} to ${to}`;
+      }
+      return info;
+    },
+  },
+  {
+    prefix: "pt1_emp",
+    countKey: "pt1_emp_count",
+    startIndex: 2,
+    maxIndex: 8,
+    pageNumber: "3",
+    partNumber: "1",
+    itemNumber: "14",
+    labelPrefix: "Employer",
+    fields: [
+      { suffix: "name", label: "Employer Name" },
+      { suffix: "occupation", label: "Occupation" },
+      { suffix: "street", label: "Street" },
+      { suffix: "city", label: "City" },
+      { suffix: "state", label: "State" },
+      { suffix: "zip", label: "Zip" },
+      { suffix: "from", label: "From" },
+      { suffix: "to", label: "To" },
+      { suffix: "country", label: "Country" },
+    ],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const name = data[`pt1_emp_${index}_name`] || "";
+      const occupation = data[`pt1_emp_${index}_occupation`] || "";
+      const street = data[`pt1_emp_${index}_street`] || "";
+      const city = data[`pt1_emp_${index}_city`] || "";
+      const state = data[`pt1_emp_${index}_state`] || "";
+      const zip = data[`pt1_emp_${index}_zip`] || "";
+      const from = data[`pt1_emp_${index}_from`] || "";
+      const to = data[`pt1_emp_${index}_to`] || "";
+      const country = data[`pt1_emp_${index}_country`] || "";
+
+      const addrParts = [street, city, state, zip, country].filter(Boolean);
+      let info = `Employer ${index}: ${name} (${occupation}). Address: ${addrParts.join(", ")}.`;
+      if (from || to) {
+        info += ` Dates: ${from} to ${to}`;
+      }
+      return info;
+    },
+  },
+];
+
 export const i129fConfig = {
   formId,
   formTitle,
@@ -4957,6 +5034,7 @@ export const i129fConfig = {
   formFields,
   getInitialFormData,
   sectionIntroMessages,
+  overflowFields,
 };
 
 export default i129fConfig;

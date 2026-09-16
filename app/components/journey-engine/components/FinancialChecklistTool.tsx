@@ -443,10 +443,7 @@ export const FinancialChecklistTool: React.FC<FinancialChecklistToolProps> = ({
                 ["Household members", sc.householdMembers.length || "None"],
                 [
                   "Tax evidence needed",
-                  sc.taxEvidenceLabel ||
-                    (sc.taxYears === 1
-                      ? "Most recent tax year"
-                      : `${sc.taxYears} most recent tax years`),
+                  sc.taxEvidenceLabel || "1 year req. (3 rec.)",
                 ],
               ].map(([k, v], i) => (
                 <div

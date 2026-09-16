@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, Bell, Hourglass } from "lucide-react";
+import { ArrowRight, Hourglass } from "lucide-react";
 import type { ExplorerJourneyCard as ExplorerJourneyCardType } from "../data/journeys";
 
 export function ExplorerJourneyCard({ card }: { card: ExplorerJourneyCardType }) {
@@ -24,12 +24,12 @@ export function ExplorerJourneyCard({ card }: { card: ExplorerJourneyCardType })
           style={{ backgroundImage: `url(${card.image})` }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,27,51,0.86)] via-[rgba(12,27,51,0.28)] to-transparent" />
-        <div className="absolute left-4 top-4 flex items-center gap-2">
-          <span className="rounded-full bg-white/90 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--rahvana-primary-dark)] backdrop-blur">
+        <div className="absolute top-4 left-4 flex items-center gap-2">
+          <span className="rounded-full bg-white/90 px-3 py-1 text-[11px] font-bold tracking-[0.16em] text-[var(--rahvana-primary-dark)] uppercase backdrop-blur">
             {card.category}
           </span>
           <span
-            className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] backdrop-blur ${
+            className={`rounded-full px-3 py-1 text-[11px] font-bold tracking-[0.16em] uppercase backdrop-blur ${
               isLive
                 ? "bg-[var(--rahvana-secondary)]/90 text-[var(--rv-navy)]"
                 : "bg-white/80 text-[var(--rv-muted)]"
@@ -38,8 +38,8 @@ export function ExplorerJourneyCard({ card }: { card: ExplorerJourneyCardType })
             {card.status}
           </span>
         </div>
-        <div className="absolute bottom-4 left-4 right-4 text-white">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/70">
+        <div className="absolute right-4 bottom-4 left-4 text-white">
+          <p className="text-sm font-semibold tracking-[0.18em] text-white/70 uppercase">
             {card.code}
           </p>
           <h3 className="mt-1 text-2xl font-semibold tracking-[-0.02em]">{card.title}</h3>
@@ -77,45 +77,31 @@ function ComingSoonJourneyCard() {
       className="guide-grid-bg relative flex h-full min-h-[341px] flex-col overflow-hidden rounded-[1.35rem] border border-[var(--rv-line)] bg-white p-6 text-center shadow-[0_20px_46px_-34px_rgba(12,27,51,0.48)]"
     >
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.88),rgba(232,241,251,0.72))]" />
+
       <div className="relative z-10 flex flex-1 flex-col items-center justify-center">
         <motion.div
           animate={{ y: [0, -5, 0] }}
-          transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+          transition={{
+            duration: 2.4,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
           className="flex h-14 w-14 items-center justify-center rounded-full bg-[var(--rahvana-primary-pale)] text-[var(--rahvana-primary)]"
         >
           <Hourglass className="h-7 w-7" />
         </motion.div>
 
-        <p className="mt-6 text-xs font-bold uppercase tracking-[0.22em] text-[var(--rahvana-primary)]">
-          FUTURE READY
+        <p className="mt-6 text-xs font-bold tracking-[0.22em] text-[var(--rahvana-primary)] uppercase">
+          COMING SOON
         </p>
-        <h3 className="mt-3 text-3xl font-extrabold tracking-[-0.04em] text-[var(--rv-navy)]">
-          More Journeys Ahead
+
+        <h3 className="mt-3 text-2xl font-extrabold tracking-[-0.04em] text-[#667085]">
+          More Journeys Coming Soon
         </h3>
-        <p className="mt-3 max-w-xs text-sm leading-7 text-[var(--rv-soft)]">
-          Rahvana is designed to support more immigration pathways over time, while IR-1 and IR-5
-          remain the active guided journeys today.
+
+        <p className="mt-3 max-w-xs text-sm leading-7 text-[#A3ACB8]">
+          More immigration pathways are on the way. Stay tuned.
         </p>
-
-        <div className="mt-6 inline-flex items-center gap-3 rounded-full border border-[var(--rv-line)] bg-white/80 px-5 py-3 shadow-sm backdrop-blur">
-          <div className="flex gap-1">
-            {[0, 1, 2].map((item) => (
-              <span
-                key={item}
-                className="h-2 w-2 animate-bounce rounded-full bg-[var(--rahvana-primary)]"
-                style={{ animationDelay: `${item * 0.18}s` }}
-              />
-            ))}
-          </div>
-          <span className="text-sm font-semibold text-[var(--rv-navy)]">
-            Built for future expansion
-          </span>
-        </div>
-
-        <div className="mt-5 flex items-center gap-2 text-[11px] font-semibold text-[var(--rv-muted)]">
-          <Bell className="h-3 w-3 text-[var(--rahvana-primary)]" />
-          Additional journeys will be introduced when they are ready.
-        </div>
       </div>
     </motion.article>
   );
