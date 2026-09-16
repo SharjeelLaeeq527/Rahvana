@@ -31,16 +31,12 @@ const formatJourneyType = (journeyType: string): string => {
 };
 
 const formatStatus = (item: DocumentChecklistItem): string => {
-  if (item.is_uploaded) {
-    return "Uploaded";
-  }
-
-  return "Not uploaded";
+  return item.is_uploaded ? "Uploaded" : "Not uploaded";
 };
 
 const formatExpiration = (item: DocumentChecklistItem): string => {
   if (!item.is_expirable || !item.expiry_date) {
-    return "—";
+    return "";
   }
 
   if (item.expiration_status === "expired") {
@@ -113,55 +109,62 @@ const addWrappedText = (
   return y + lines.length * lineHeight;
 };
 
+// Header
 const addPageHeader = (doc: jsPDF, logoDataUrl: string, sectionTitle: string) => {
   const pageWidth = doc.internal.pageSize.getWidth();
 
-  // Header background
+  const safeInset = 4;
+  const headerHeight = 20;
+
+  // Header background with print-safe inset.
   doc.setFillColor(4, 58, 62);
-  doc.rect(0, 0, pageWidth, 20, "F");
+  doc.rect(safeInset, safeInset, pageWidth - safeInset * 2, headerHeight, "F");
 
-  // Rahvana logo
-  doc.addImage(logoDataUrl, "PNG", 14, 4.5, 30, 10);
+  // Rahvana logo.
+  doc.addImage(logoDataUrl, "PNG", safeInset + 10, safeInset + 4.5, 30, 10);
 
-  // Right-side title
+  // Right-side title.
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8.5);
   doc.setTextColor(255, 255, 255);
 
-  doc.text(sectionTitle || "Document Checklist", pageWidth - 14, 8, {
+  doc.text(sectionTitle || "Document Checklist", pageWidth - safeInset - 10, safeInset + 8, {
     align: "right",
   });
 
-  // Website
+  // Website.
   doc.setFont("helvetica", "normal");
   doc.setFontSize(5.5);
   doc.setTextColor(180, 219, 219);
 
-  doc.text("rahvana.com", pageWidth - 14, 12.5, {
+  doc.text("rahvana.com", pageWidth - safeInset - 10, safeInset + 12.5, {
     align: "right",
   });
 };
 
+// Footer
 const addPageFooter = (doc: jsPDF, logoDataUrl: string, pageNumber: number) => {
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
+
+  const safeInset = 4;
   const margin = 20;
 
-  // Footer divider
+  // Footer divider.
   doc.setDrawColor(230, 236, 241);
   doc.setLineWidth(0.25);
 
-  doc.line(margin, pageHeight - 18, pageWidth - margin, pageHeight - 18);
+  doc.line(margin, pageHeight - 18 - safeInset, pageWidth - margin, pageHeight - 18 - safeInset);
 
-  // Rahvana logo
-  doc.addImage(logoDataUrl, "PNG", margin, pageHeight - 14.5, 22, 7);
+  // Rahvana logo.
+  doc.addImage(logoDataUrl, "PNG", margin, pageHeight - 14.5 - safeInset, 22, 7);
 
-  // Page number
+  // Page number.
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7);
   doc.setTextColor(110, 126, 141);
 
-  doc.text(String(pageNumber), pageWidth - margin, pageHeight - 10.5, {
+  doc.text(String(pageNumber), pageWidth - margin, pageHeight - 10.5 - safeInset, {
     align: "right",
   });
 };
@@ -196,7 +199,8 @@ export const exportChecklistToPdf = async ({
 
   addPageHeader(doc, headerLogo, "Document Checklist");
 
-  let currentY = 38;
+  // Main heading
+  let currentY = 32;
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(14);
@@ -211,7 +215,7 @@ export const exportChecklistToPdf = async ({
     5
   );
 
-  currentY += 5;
+  currentY += 3;
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
@@ -219,23 +223,27 @@ export const exportChecklistToPdf = async ({
 
   currentY = addWrappedText(doc, sectionTitle, margin, currentY, contentWidth, 5);
 
-  currentY += 3;
+  // Section description.
+  if (sectionDescription) {
+    currentY += 2;
 
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
-  doc.setTextColor(82, 101, 121);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(82, 101, 121);
 
-  currentY = addWrappedText(doc, sectionDescription, margin, currentY, contentWidth, 5);
+    currentY = addWrappedText(doc, sectionDescription, margin, currentY, contentWidth, 4);
+  }
 
-  currentY += 5;
+  // Generated date.
+  currentY += 2;
 
-  doc.setFontSize(8.5);
+  doc.setFontSize(7.5);
   doc.setTextColor(96, 116, 135);
 
   doc.text(`Generated: ${formatDate(new Date())}`, margin, currentY);
 
-  // Summary
-  currentY += 14;
+  // Summary - Moved closer to the heading so there isn't a large empty gap.
+  currentY += 7;
 
   const uploadedCount = documents.filter((item) => item.is_uploaded).length;
 
@@ -243,138 +251,137 @@ export const exportChecklistToPdf = async ({
 
   const attentionCount = documents.filter((item) => item.needs_attention).length;
 
+  const summaryHeight = attentionCount > 0 ? 21 : 17;
+
   doc.setFillColor(247, 250, 252);
   doc.setDrawColor(225, 234, 241);
 
-  doc.roundedRect(margin, currentY, contentWidth, 25, 3, 3, "FD");
+  doc.roundedRect(margin, currentY, contentWidth, summaryHeight, 2.5, 2.5, "FD");
 
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(9);
+  doc.setFontSize(8.5);
   doc.setTextColor(16, 35, 60);
 
-  doc.text("Checklist Summary", margin + 6, currentY + 7);
+  doc.text("Checklist Summary", margin + 5, currentY + 6);
 
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(8);
+  doc.setFontSize(7.5);
   doc.setTextColor(82, 101, 121);
 
-  doc.text(`${documents.length} total documents`, margin + 6, currentY + 14);
+  doc.text(`${documents.length} total`, margin + 5, currentY + 12);
 
-  doc.text(`${uploadedCount} uploaded`, margin + 65, currentY + 14);
+  doc.text(`${uploadedCount} uploaded`, margin + 48, currentY + 12);
 
-  doc.text(`${remainingCount} remaining`, margin + 110, currentY + 14);
+  doc.text(`${remainingCount} remaining`, margin + 90, currentY + 12);
 
   if (attentionCount > 0) {
-    doc.text(`${attentionCount} requiring attention`, margin + 6, currentY + 20);
+    doc.text(`${attentionCount} requiring attention`, margin + 135, currentY + 12);
   }
 
-  currentY += 35;
+  if (attentionCount > 0) {
+    doc.setTextColor(180, 91, 104);
 
-  // Documents
+    doc.text("Please review items requiring attention.", margin + 5, currentY + 18);
+  }
 
+  currentY += summaryHeight + 7;
+
+  // Checklist
   documents.forEach((item, index) => {
     const title = item.title || "Untitled document";
-    const subtitle = item.subtitle || "";
-    const notes = item.notes || "";
-
     const status = formatStatus(item);
     const expiration = formatExpiration(item);
 
-    // Estimate card height.
-    const titleLines = doc.splitTextToSize(title, contentWidth - 12);
+    /*
+     * Compact two-line checklist item:
+     *
+     * [✓] Document Name
+     *     Status: Uploaded    Expiration: Valid
+     */
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8.5);
 
-    const subtitleLines = subtitle ? doc.splitTextToSize(subtitle, contentWidth - 12) : [];
+    const titleLines = doc.splitTextToSize(title, contentWidth - 18);
 
-    const notesLines = notes ? doc.splitTextToSize(notes, contentWidth - 12) : [];
+    const titleLineHeight = 4.2;
 
-    const cardHeight =
-      17 +
-      titleLines.length * 5 +
-      (subtitleLines.length ? subtitleLines.length * 4 + 4 : 0) +
-      13 +
-      (notesLines.length ? notesLines.length * 4 + 5 : 0);
+    const titleHeight = titleLines.length * titleLineHeight;
 
-    // Page break.
-    if (currentY + cardHeight > pageHeight - 25) {
+    const statusLineHeight = 3.8;
+
+    const itemHeight = Math.max(titleHeight, 4.5) + statusLineHeight + 3;
+
+    if (currentY + itemHeight > pageHeight - 27) {
       doc.addPage();
 
       addPageHeader(doc, headerLogo, "Document Checklist");
 
-      currentY = 38;
+      currentY = 32;
     }
 
-    // Card
-    doc.setFillColor(255, 255, 255);
-    doc.setDrawColor(220, 231, 239);
+    // Checkbox
+    const checkboxX = margin;
+    const checkboxY = currentY + 0.5;
+    const checkboxSize = 4;
 
-    doc.roundedRect(margin, currentY, contentWidth, cardHeight, 3, 3, "FD");
+    if (item.is_uploaded) {
+      doc.setFillColor(13, 115, 119);
+      doc.setDrawColor(13, 115, 119);
 
-    // Document number.
-    doc.setFillColor(231, 242, 247);
+      doc.roundedRect(checkboxX, checkboxY, checkboxSize, checkboxSize, 0.8, 0.8, "FD");
 
-    doc.circle(margin + 7, currentY + 8, 3.5, "F");
+      // Check mark.
+      doc.setDrawColor(255, 255, 255);
+      doc.setLineWidth(0.7);
 
+      doc.line(checkboxX + 0.9, checkboxY + 2.1, checkboxX + 1.8, checkboxY + 3);
+
+      doc.line(checkboxX + 1.8, checkboxY + 3, checkboxX + 3.3, checkboxY + 1);
+    } else {
+      doc.setFillColor(255, 255, 255);
+      doc.setDrawColor(180, 194, 204);
+      doc.setLineWidth(0.5);
+
+      doc.roundedRect(checkboxX, checkboxY, checkboxSize, checkboxSize, 0.8, 0.8, "FD");
+    }
+
+    // Document name.
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(7);
-    doc.setTextColor(13, 115, 119);
-
-    doc.text(String(index + 1), margin + 7, currentY + 10, {
-      align: "center",
-    });
-
-    // Title.
-    let itemY = currentY + 8;
-
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(10);
+    doc.setFontSize(8.5);
     doc.setTextColor(16, 35, 60);
 
-    itemY = addWrappedText(doc, title, margin + 14, itemY, contentWidth - 14, 5);
+    doc.text(titleLines, margin + 8, currentY + 4, {
+      lineHeightFactor: 1.15,
+    });
 
-    // Subtitle.
-    if (subtitle) {
-      itemY += 1;
+    // Status + optional expiration.
+    const statusY = currentY + Math.max(titleHeight, 4.5) + 2.5;
 
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(8);
-      doc.setTextColor(83, 103, 121);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    doc.setTextColor(96, 116, 135);
 
-      itemY = addWrappedText(doc, subtitle, margin + 14, itemY, contentWidth - 14, 4);
+    doc.text(`Status: ${status}`, margin + 8, statusY);
+
+    if (expiration) {
+      doc.text(`Expiration: ${expiration}`, margin + 65, statusY);
     }
 
-    // Status line.
-    itemY += 4;
+    // Small divider between checklist items.
+    // This keeps the checklist visually structured without wasting vertical space with large cards.
+    if (index < documents.length - 1) {
+      doc.setDrawColor(232, 238, 243);
+      doc.setLineWidth(0.2);
 
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(7.5);
-    doc.setTextColor(82, 101, 121);
-
-    doc.text(`Status: ${status}`, margin + 14, itemY);
-
-    doc.text(`Required: ${item.is_required ? "Yes" : "No"}`, margin + 70, itemY);
-
-    doc.text(`Expiration: ${expiration}`, margin + 120, itemY);
-
-    // Guidance.
-    if (notes) {
-      itemY += 7;
-
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(7.5);
-      doc.setTextColor(13, 115, 119);
-
-      doc.text("Guidance", margin + 14, itemY);
-
-      itemY += 4;
-
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(7.5);
-      doc.setTextColor(82, 101, 121);
-
-      addWrappedText(doc, notes, margin + 14, itemY, contentWidth - 14, 4);
+      doc.line(
+        margin + 8,
+        currentY + itemHeight - 1,
+        margin + contentWidth,
+        currentY + itemHeight - 1
+      );
     }
 
-    currentY += cardHeight + 5;
+    currentY += itemHeight;
   });
 
   // Footer
@@ -386,7 +393,7 @@ export const exportChecklistToPdf = async ({
     addPageFooter(doc, footerLogo, page);
   }
 
-  // Download
+  // Filename
   const safeJourneyType = normalizedJourneyType.replace(/[^a-zA-Z0-9-]/g, "");
 
   const safeSectionName = sectionTitle
