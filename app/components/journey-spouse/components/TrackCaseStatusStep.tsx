@@ -241,7 +241,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
                       className="pointer-events-none absolute top-[15px] right-[12.5%] left-[12.5%] hidden h-px md:block"
                       style={{ background: "rgba(255,255,255,0.16)" }}
                     />
-                    <div className="grid grid-cols-2 gap-x-5 gap-y-5 md:grid-cols-4">
+                    <div className="grid grid-cols-2 items-stretch gap-x-5 gap-y-5 md:grid-cols-4">
                       {tool.future_timeline.map((item: any, idx: number) => {
                         const isCurrent = String(item.pill || "")
                           .toLowerCase()
@@ -253,7 +253,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
                             type="button"
                             onClick={() => setActivePhase(isActive ? null : idx)}
                             aria-expanded={isActive}
-                            className="relative flex cursor-pointer flex-col items-center text-center focus:outline-none"
+                            className="relative flex h-full cursor-pointer flex-col items-center text-center focus:outline-none"
                           >
                             {/* Stop indicator */}
                             <span className="relative z-10 mb-3.5 block h-[30px] w-[30px]">
@@ -281,7 +281,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
                             </span>
                             {/* Compact phase card (title + pill only) */}
                             <span
-                              className="flex w-full flex-1 flex-col items-center rounded-2xl border px-3 py-3 transition"
+                              className="flex h-full w-full flex-1 flex-col items-center rounded-2xl border px-3 py-3.5 transition"
                               style={{
                                 borderColor: isActive
                                   ? "rgba(255,255,255,0.6)"
@@ -296,35 +296,37 @@ const TrackCaseStatusStep: React.FC<any> = ({
                                 boxShadow: isActive ? "0 8px 24px rgba(0,0,0,0.2)" : "none",
                               }}
                             >
-                              <span className="mb-2 text-[13px] font-semibold leading-tight text-white">
+                              <span className="text-[13px] font-semibold leading-snug text-white">
                                 {item.title}
                               </span>
-                              {item.pill && (
+                              <span className="mt-auto flex flex-col items-center gap-2 pt-3">
+                                {item.pill && (
+                                  <span
+                                    className="inline-block rounded-full border px-2.5 py-1 text-[9.5px] font-bold tracking-wide uppercase"
+                                    style={
+                                      isCurrent
+                                        ? {
+                                            borderColor: "transparent",
+                                            backgroundColor: "#ffffff",
+                                            color: "var(--rv-ch1)",
+                                          }
+                                        : {
+                                            borderColor: "rgba(255,255,255,0.25)",
+                                            backgroundColor: "rgba(255,255,255,0.06)",
+                                            color: "rgba(247,248,255,0.9)",
+                                          }
+                                    }
+                                  >
+                                    {item.pill}
+                                  </span>
+                                )}
                                 <span
-                                  className="inline-block rounded-full border px-2.5 py-1 text-[9.5px] font-bold tracking-wide uppercase"
-                                  style={
-                                    isCurrent
-                                      ? {
-                                          borderColor: "transparent",
-                                          backgroundColor: "#ffffff",
-                                          color: "var(--rv-ch1)",
-                                        }
-                                      : {
-                                          borderColor: "rgba(255,255,255,0.25)",
-                                          backgroundColor: "rgba(255,255,255,0.06)",
-                                          color: "rgba(247,248,255,0.9)",
-                                        }
-                                  }
+                                  className="inline-flex items-center gap-1 text-[10px] font-medium"
+                                  style={{ color: "rgba(247,248,255,0.6)" }}
                                 >
-                                  {item.pill}
+                                  <Info className="h-3 w-3" />
+                                  {isActive ? "Hide" : "Details"}
                                 </span>
-                              )}
-                              <span
-                                className="mt-2 inline-flex items-center gap-1 text-[10px] font-medium"
-                                style={{ color: "rgba(247,248,255,0.6)" }}
-                              >
-                                <Info className="h-3 w-3" />
-                                {isActive ? "Hide" : "Details"}
                               </span>
                             </span>
                           </button>
