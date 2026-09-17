@@ -50,6 +50,15 @@ async function syncJourneyMetadataToUserProfile(
 
     const newProfileDetails = deepMerge({ ...currentProfile }, profileDelta);
 
+    // 3b. No-op guard: if the merge produced nothing new, skip the write.
+    // profile_details is a JSONB column, so an upsert rewrites the WHOLE row
+    // (+ WAL). This sync fires on every case_data save; without this guard we
+    // rewrote the entire profile even when the values were identical to what
+    // was already there -- a needless Supabase Disk IO cost.
+    if (JSON.stringify(newProfileDetails) === JSON.stringify(currentProfile)) {
+      return;
+    }
+
     // 4. Save synced profile details back to database
     const { error: upsertError } = await supabase.from("user_profiles").upsert(
       {

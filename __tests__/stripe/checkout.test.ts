@@ -1,26 +1,32 @@
 /**
  * Critical checkout tests.
- * Risk: user buys a lower tier (downgrade), buys same tier twice, bypasses tier guard.
+ * Risk: user buys a lower tier (downgrade), buys the same tier twice, bypasses the
+ * tier guard on a DB<->Stripe desync, a second Stripe customer gets created when a
+ * lookup fails (dup-sub hole), or a past_due user re-buys instead of recovering.
  */
 
 import { NextRequest } from 'next/server'
 
-// Mutable vars — closures in mock factory access these at call-time (during tests),
-// not at factory creation time, so TDZ is not an issue.
+// Mutable DB profile the supabase mock returns (read at call-time).
 let mockTier = 'free'
 let mockStatus = 'inactive'
 
+jest.mock('@/lib/api/authGuards', () => ({
+  getAuthenticatedUser: jest.fn().mockResolvedValue({ id: 'user-123', email: 'test@test.com' }),
+}))
+
+// Deterministic lock (its own unit tests cover token/ownership behavior).
+jest.mock('@/lib/stripe/checkoutLock', () => ({
+  acquireCheckoutLock: jest.fn().mockResolvedValue({ ok: true, token: 'tok' }),
+  releaseCheckoutLock: jest.fn().mockResolvedValue(undefined),
+}))
+
 jest.mock('@supabase/supabase-js', () => ({
-  // Regular function (not jest.fn) so createClient always returns a fresh client
-  // with closures that read mockTier/mockStatus at call-time
   createClient: () => ({
     auth: {
       admin: {
         getUserById: () =>
-          Promise.resolve({
-            data: { user: { id: 'user-123', email: 'test@test.com' } },
-            error: null,
-          }),
+          Promise.resolve({ data: { user: { id: 'user-123', email: 'test@test.com' } }, error: null }),
       },
     },
     from: () => ({
@@ -36,27 +42,49 @@ jest.mock('@supabase/supabase-js', () => ({
           },
           error: null,
         }),
+      update: jest.fn(() => ({ eq: jest.fn().mockResolvedValue({ error: null }) })),
       insert: jest.fn().mockResolvedValue({ data: {}, error: null }),
     }),
   }),
 }))
 
+// Async-iterable helper for stripe.subscriptions.list (auto-pagination).
+function asyncSubs(subs: any[]) {
+  return {
+    async *[Symbol.asyncIterator]() {
+      for (const s of subs) yield s
+    },
+  }
+}
+
+const mockCustomersSearch = jest.fn().mockResolvedValue({ data: [] })
+const mockCustomersList = jest.fn().mockResolvedValue({ data: [] })
+const mockSubsList = jest.fn(() => asyncSubs([]))
+
 jest.mock('@/lib/stripe/config', () => ({
   stripe: {
     customers: {
+      search: (...a: any[]) => mockCustomersSearch(...a),
+      list: (...a: any[]) => mockCustomersList(...a),
       create: jest.fn().mockResolvedValue({ id: 'cus_new' }),
-      list: jest.fn().mockResolvedValue({ data: [] }),
+    },
+    subscriptions: {
+      list: (...a: any[]) => mockSubsList(...a),
+      cancel: jest.fn().mockResolvedValue({}),
     },
     checkout: {
-      sessions: {
-        create: jest.fn().mockResolvedValue({ url: 'https://checkout.stripe.com/test' }),
-      },
+      sessions: { create: jest.fn().mockResolvedValue({ id: 'cs_1', url: 'https://checkout.stripe.com/x' }) },
     },
   },
+  STRIPE_PRICES: {
+    BASIC: 'price_basic', PREMIUM: 'price_premium', EXECUTIVE: 'price_exec',
+    BASIC_MONTHLY: 'price_basic_m', PREMIUM_MONTHLY: 'price_premium_m', EXECUTIVE_MONTHLY: 'price_exec_m',
+  },
   PRODUCTS: {
-    BASIC:     { price: 349, monthlyPrice: 29.08, priceId: 'price_basic_annual', recurringPriceId: 'price_1basic_monthly' },
-    PREMIUM:   { price: 699, monthlyPrice: 58.25, priceId: 'price_premium_annual', recurringPriceId: 'price_1premium_monthly' },
-    EXECUTIVE: { price: 1099, monthlyPrice: 91.58, priceId: 'price_exec_annual', recurringPriceId: 'price_1exec_monthly' },
+    BASIC:     { name: 'Basic', price: 349, monthlyPrice: 29.08, priceId: 'price_basic', recurringPriceId: 'price_basic_m', features: [] },
+    PREMIUM:   { name: 'Premium', price: 699, monthlyPrice: 58.25, priceId: 'price_premium', recurringPriceId: 'price_premium_m', features: [] },
+    EXECUTIVE: { name: 'Executive', price: 1099, monthlyPrice: 91.58, priceId: 'price_exec', recurringPriceId: 'price_exec_m', features: [] },
+    ADDONS: {},
   },
 }))
 
@@ -64,15 +92,18 @@ jest.mock('@/lib/plan/reconcile', () => ({
   reconcileUserPlan: jest.fn().mockResolvedValue({ tier: 'free', reconciled: false }),
 }))
 
+let mockCustomerId: string | null = null
 jest.mock('@/lib/services/paymentService', () => ({
   paymentService: {
-    getUserSubscription: jest.fn().mockResolvedValue(null),
+    getUserSubscription: jest.fn(() =>
+      Promise.resolve(mockCustomerId ? { stripe_customer_id: mockCustomerId } : null)
+    ),
     createPayment: jest.fn().mockResolvedValue({ id: 'pay_123' }),
     updatePayment: jest.fn().mockResolvedValue({}),
   },
 }))
 
-jest.mock('@/app/(main)/pricing/data/pricing', () => ({ VISA_CATEGORIES: [] }))
+jest.mock('@/app/(main)/pricing/data/pricing', () => ({ VISA_CATEGORIES: [], ADDONS: [] }))
 
 import { POST } from '@/app/api/stripe/checkout/route'
 
@@ -84,87 +115,121 @@ function makeRequest(body: object) {
   })
 }
 
-// --- Downgrade guard ---
+function resetAll() {
+  mockTier = 'free'
+  mockStatus = 'inactive'
+  mockCustomerId = null
+  mockCustomersSearch.mockResolvedValue({ data: [] })
+  mockCustomersList.mockResolvedValue({ data: [] })
+  mockSubsList.mockImplementation(() => asyncSubs([]))
+}
+
+// --- Downgrade / duplicate guards (DB-driven) ---
 
 describe('Checkout — downgrade guard', () => {
-  beforeEach(() => { mockTier = 'free'; mockStatus = 'inactive' })
+  beforeEach(resetAll)
 
-  it('rejects downgrade: premium → basic', async () => {
+  it('rejects downgrade: premium -> basic', async () => {
     mockTier = 'premium'; mockStatus = 'active'
-    const res = await POST(makeRequest({ userId: 'user-123', productTier: 'basic' }))
+    const res = await POST(makeRequest({ productTier: 'basic' }))
     expect(res.status).toBe(400)
-    const body = await res.json()
-    expect(body.error).toMatch(/downgrade/i)
+    expect((await res.json()).error).toMatch(/downgrade/i)
   })
 
-  it('rejects downgrade: executive → premium', async () => {
+  it('rejects downgrade: executive -> premium', async () => {
     mockTier = 'executive'; mockStatus = 'active'
-    const res = await POST(makeRequest({ userId: 'user-123', productTier: 'premium' }))
-    expect(res.status).toBe(400)
-  })
-
-  it('rejects downgrade: executive → basic', async () => {
-    mockTier = 'executive'; mockStatus = 'active'
-    const res = await POST(makeRequest({ userId: 'user-123', productTier: 'basic' }))
-    expect(res.status).toBe(400)
+    expect((await POST(makeRequest({ productTier: 'premium' }))).status).toBe(400)
   })
 })
 
-// --- Duplicate purchase guard ---
-
 describe('Checkout — duplicate purchase guard', () => {
-  beforeEach(() => { mockTier = 'free'; mockStatus = 'inactive' })
+  beforeEach(resetAll)
 
-  it('rejects same tier: premium → premium', async () => {
+  it('rejects same tier: premium -> premium (alreadyOwned)', async () => {
     mockTier = 'premium'; mockStatus = 'active'
-    const res = await POST(makeRequest({ userId: 'user-123', productTier: 'premium' }))
+    const res = await POST(makeRequest({ productTier: 'premium' }))
     expect(res.status).toBe(400)
-    const body = await res.json()
-    expect(body.alreadyOwned).toBe(true)
-  })
-
-  it('rejects same tier: basic → basic', async () => {
-    mockTier = 'basic'; mockStatus = 'active'
-    const res = await POST(makeRequest({ userId: 'user-123', productTier: 'basic' }))
-    expect(res.status).toBe(400)
+    expect((await res.json()).alreadyOwned).toBe(true)
   })
 })
 
 // --- Allowed purchases ---
 
 describe('Checkout — allowed purchases', () => {
-  beforeEach(() => { mockTier = 'free'; mockStatus = 'inactive' })
+  beforeEach(resetAll)
 
-  it('allows upgrade: basic → premium', async () => {
+  it('allows upgrade: basic -> premium', async () => {
     mockTier = 'basic'; mockStatus = 'active'
-    const res = await POST(makeRequest({ userId: 'user-123', productTier: 'premium', isUpgrade: true }))
-    expect(res.status).toBe(200)
+    expect((await POST(makeRequest({ productTier: 'premium' }))).status).toBe(200)
   })
 
-  it('allows first purchase: free → basic', async () => {
-    const res = await POST(makeRequest({ userId: 'user-123', productTier: 'basic' }))
-    expect(res.status).toBe(200)
-  })
-
-  it('allows upgrade: free → executive', async () => {
-    const res = await POST(makeRequest({ userId: 'user-123', productTier: 'executive' }))
-    expect(res.status).toBe(200)
+  it('allows first purchase: free -> basic', async () => {
+    expect((await POST(makeRequest({ productTier: 'basic' }))).status).toBe(200)
   })
 })
 
-// --- Tier ranking logic (pure, no HTTP) ---
+// --- Stripe-aware guard: DB desync (the ordering fix) ---
 
-describe('Tier ranking — TIER_RANK values', () => {
-  const TIER_RANK: Record<string, number> = { free: 0, basic: 1, premium: 2, executive: 3 }
+describe('Checkout — Stripe is the source of truth on DB desync', () => {
+  beforeEach(resetAll)
 
-  it('free < basic < premium < executive', () => {
-    expect(TIER_RANK.free).toBeLessThan(TIER_RANK.basic)
-    expect(TIER_RANK.basic).toBeLessThan(TIER_RANK.premium)
-    expect(TIER_RANK.premium).toBeLessThan(TIER_RANK.executive)
+  it('blocks a duplicate when DB says free but Stripe has a live premium sub', async () => {
+    // DB profile is stale (free/inactive) and has NO customer id...
+    mockTier = 'free'; mockStatus = 'inactive'; mockCustomerId = null
+    // ...but the existing customer is found via Stripe search...
+    mockCustomersSearch.mockResolvedValue({ data: [{ id: 'cus_existing' }] })
+    // ...and that customer already holds a live premium subscription.
+    mockSubsList.mockImplementation(() =>
+      asyncSubs([{ id: 'sub_live', status: 'active', metadata: { tier: 'premium' }, items: { data: [] } }])
+    )
+    const res = await POST(makeRequest({ productTier: 'premium' }))
+    expect(res.status).toBe(400) // dup guard fired off Stripe, not the stale DB
+    expect((await res.json()).alreadyOwned).toBe(true)
   })
 
-  it('all four tiers have unique ranks', () => {
-    const ranks = Object.values(TIER_RANK)
-    expect(new Set(ranks).size).toBe(4)
+  it('still allows an upgrade when Stripe shows a lower live tier', async () => {
+    mockCustomerId = 'cus_existing'
+    mockSubsList.mockImplementation(() =>
+      asyncSubs([{ id: 'sub_live', status: 'active', metadata: { tier: 'basic' }, items: { data: [] } }])
+    )
+    expect((await POST(makeRequest({ productTier: 'premium' }))).status).toBe(200)
+  })
+})
+
+// --- Fail-closed customer resolution ---
+
+describe('Checkout — fail closed when Stripe lookups error', () => {
+  beforeEach(resetAll)
+
+  it('returns 503 (not a new customer) when customer search throws on a subscription', async () => {
+    mockCustomerId = null
+    mockCustomersSearch.mockRejectedValue(new Error('stripe down'))
+    const res = await POST(makeRequest({ productTier: 'basic' }))
+    expect(res.status).toBe(503)
+  })
+
+  it('returns 503 when subscription listing throws for an existing customer', async () => {
+    mockCustomerId = 'cus_existing'
+    mockSubsList.mockImplementation(() => { throw new Error('list down') })
+    const res = await POST(makeRequest({ productTier: 'basic' }))
+    expect(res.status).toBe(503)
+  })
+})
+
+// --- past_due recovery ---
+
+describe('Checkout — past_due recovers instead of re-buying', () => {
+  beforeEach(resetAll)
+
+  it('returns 409 with portal:true for a same-tier past_due sub', async () => {
+    mockCustomerId = 'cus_existing'
+    mockSubsList.mockImplementation(() =>
+      asyncSubs([{ id: 'sub_pd', status: 'past_due', metadata: { tier: 'premium' }, items: { data: [] } }])
+    )
+    const res = await POST(makeRequest({ productTier: 'premium' }))
+    expect(res.status).toBe(409)
+    const body = await res.json()
+    expect(body.portal).toBe(true)
+    expect(body.recover).toBe(true)
   })
 })

@@ -1,5 +1,12 @@
 import React from "react";
 import {
+  BadgeCheck,
+  BriefcaseBusiness,
+  FileCheck,
+  Flag,
+  Heart,
+  IdCard,
+  Languages,
   BookOpen,
   FileText,
   Scroll,
@@ -18,6 +25,7 @@ import {
   Receipt,
   Banknote,
   Building,
+  Building2,
   Landmark,
   Wallet,
   HardDrive,
@@ -30,85 +38,129 @@ import {
   Hospital,
   Copy,
   Truck,
+  Stethoscope,
+  Book,
 } from "lucide-react";
 
-export const getStepIcon = (iconKey: string) => {
-  switch (iconKey) {
+export const getStepIcon = (iconKey: string, size = 18, className?: string) => {
+  switch (iconKey.toLowerCase()) {
     case "passport":
-      return <BookOpen size={18} />;
-    case "birth":
-      return <FileText size={18} />;
-    case "marriage":
-      return <Scroll size={18} />;
-    case "divorce":
-      return <Scroll size={18} />;
-    case "pcc":
-    case "police":
-      return <ShieldCheck size={18} />;
-    case "military":
-      return <ShieldCheck size={18} />;
+  return <BookOpen size={size} className={className} />;
+
+case "birth":
+case "filetext":
+case "file-text":
+  return <FileText size={size} className={className} />;
+
+case "marriage":
+case "divorce":
+  return <Scroll size={size} className={className} />;
+
+case "pcc":
+case "police":
+case "shieldcheck":
+case "shield-check":
+  return <ShieldCheck size={size} className={className} />;
+
+case "filecheck":
+case "file-check":
+case "death-cert":
+  return <FileCheck size={size} className={className} />;
+
+case "flag":
+  return <Flag size={size} className={className} />;
+
+case "heart":
+  return <Heart size={size} className={className} />;
+
+case "mail":
+  return <Mail size={size} className={className} />;
+
+case "camera":
+case "photos":
+  return <Camera size={size} className={className} />;
+
+case "syringe":
+case "polio":
+  return <Syringe size={size} className={className} />;
     case "home":
-      return <Home size={18} />;
+      return <Home size={size} className={className} />;
     case "user":
-      return <User size={18} />;
-    case "link":
-      return <ExternalLink size={18} />;
     case "id":
-      return <User size={18} />;
+      return <User size={size} className={className} />;
+    case "link":
+      return <ExternalLink size={size} className={className} />;
     case "translations":
-      return <Globe size={18} />;
+      return <Globe size={size} className={className} />;
     case "prior-marriage":
-      return <Scale size={18} />;
-    case "death-cert":
-      return <FileText size={18} />;
+      return <Scale size={size} className={className} />;
     case "name-change":
-      return <Edit3 size={18} />;
+      return <Edit3 size={size} className={className} />;
     case "help":
-      return <HelpCircle size={18} />;
+      return <HelpCircle size={size} className={className} />;
     case "folder":
-      return <FolderOpen size={18} />;
+      return <FolderOpen size={size} className={className} />;
     case "save":
-      return <Save size={18} />;
+      return <Save size={size} className={className} />;
     case "message":
-      return <MessageSquare size={18} />;
+      return <MessageSquare size={size} className={className} />;
     case "calculator":
-      return <Calculator size={18} />;
+      return <Calculator size={size} className={className} />;
     case "receipt":
-      return <Receipt size={18} />;
+      return <Receipt size={size} className={className} />;
     case "banknote":
-      return <Banknote size={18} />;
+      return <Banknote size={size} className={className} />;
     case "building":
-      return <Building size={18} />;
+      return <Building size={size} className={className} />;
+    case "building2":
+      return <Building2 size={size} className={className} />;
     case "landmark":
-      return <Landmark size={18} />;
+      return <Landmark size={size} className={className} />;
     case "wallet":
-      return <Wallet size={18} />;
+      return <Wallet size={size} className={className} />;
     case "hard-drive":
-      return <HardDrive size={18} />;
+      return <HardDrive size={size} className={className} />;
     case "file-text":
-      return <FileText size={18} />;
+      return <FileText size={size} className={className} />;
     case "clipboard":
-      return <ClipboardList size={18} />;
+      return <ClipboardList size={size} className={className} />;
     case "mail":
-      return <Mail size={18} />;
+      return <Mail size={size} className={className} />;
     case "briefcase":
-      return <Briefcase size={18} />;
+      return <Briefcase size={size} className={className} />;
     case "camera":
     case "photos":
-      return <Camera size={18} />;
+      return <Camera size={size} className={className} />;
     case "medical":
     case "pulse":
-      return <Activity size={18} />;
+      return <Activity size={size} className={className} />;
     case "syringe":
     case "polio":
-      return <Syringe size={18} />;
+      return <Syringe size={size} className={className} />;
     case "hospital":
-    case "medical":
-      return <Hospital size={18} />;
+      return <Hospital size={size} className={className} />;
     case "copy":
-      return <Copy size={18} />;
+      return <Copy size={size} className={className} />;
     case "truck":
-      return <Truck size={18} />;
+      return <Truck size={size} className={className} />;
+    case "stethoscope":
+      return <Stethoscope size={size} className={className} />;
+    case "book":
+      return <Book size={size} className={className} />;
+    case "badge-check":
+      return <BadgeCheck size={size} className={className} />;
+    case "briefcase-business":
+      return <BriefcaseBusiness size={size} className={className} />;
+    case "file-check":
+      return <FileCheck size={size} className={className} />;
+    case "flag":
+      return <Flag size={size} className={className} />;
+    case "heart":
+      return <Heart size={size} className={className} />;
+    case "id-card":
+      return <IdCard size={size} className={className} />;
+    case "languages":
+      return <Languages size={size} className={className} />;
     default:
       return null;
   }

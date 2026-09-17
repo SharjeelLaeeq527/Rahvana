@@ -64,7 +64,29 @@ export default function CheckoutButton({
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(msg(E.PAYMENT_CHECKOUT_FAILED));
+        // Payment is failing on a plan the user already holds (past_due / manage),
+        // or the server asks us to send them to the billing portal to recover
+        // instead of buying again. Route there rather than showing a dead error.
+        if (data?.portal) {
+          try {
+            const portalRes = await fetch("/api/stripe/portal", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ userId }),
+            });
+            const portalData = await portalRes.json();
+            if (portalData?.url) {
+              window.location.href = portalData.url;
+              return;
+            }
+          } catch {
+            /* fall through to showing the server's message */
+          }
+        }
+        // Surface the ACTUAL reason from the server (e.g. "You already own the
+        // premium plan", or a "try again in a moment" message) instead of a
+        // generic one, so the user knows what to do.
+        throw new Error(data?.error || msg(E.PAYMENT_CHECKOUT_FAILED));
       }
 
       // Redirect to Stripe checkout

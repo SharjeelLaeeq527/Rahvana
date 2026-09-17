@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { runSecurityScan } from "@/lib/security/alerting";
+import { runSecurityScan, pruneOldAuditLogs } from "@/lib/security/alerting";
 
 /**
  * GET /api/cron/security-scan
@@ -36,7 +36,17 @@ export async function GET(request: NextRequest) {
       blockedWindowMin: 1440,
       blockedThreshold: 30,
     });
-    return NextResponse.json({ ok: true, ...result });
+
+    // Same daily run also trims audit_logs so the table (and every future scan
+    // over it) stays small. Non-fatal: a prune error must not fail the scan.
+    let pruned = 0;
+    try {
+      pruned = await pruneOldAuditLogs(90);
+    } catch (e) {
+      console.error("[security-scan] prune error:", e);
+    }
+
+    return NextResponse.json({ ok: true, pruned, ...result });
   } catch (err) {
     console.error("[security-scan] error:", err);
     return NextResponse.json({ ok: false, error: "scan_failed" }, { status: 500 });

@@ -16,6 +16,7 @@ import { getStepIcon } from "./StepIcon";
 import { useToast } from "@/app/components/shared/ToastProvider";
 // import Link from "next/link";
 import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
+import { DocumentChecklistTool } from "./components/DocumentChecklistTool";
 
 const renderPathIcon = (icon: any, pathId?: string, toolType?: string) => {
   if (typeof icon === "string") {
@@ -84,7 +85,7 @@ export const AwaitingReviewStep: React.FC<{
           {data.chips?.map((chip: any, i: number) => (
             <span
               key={i}
-              className={`text-[11px] font-semibold uppercase tracking-[0.06em] px-[12px] py-[5px] rounded-full border whitespace-nowrap ${
+              className={`text-[11px] font-semibold upper tracking-[0.06em] px-[12px] py-[5px] rounded-full border whitespace-nowrap ${
                 chip.type === "nvc"
                   ? "bg-[#f3f0fb] text-[#4a2d8a] border-[#c9bef2]"
                   : chip.type === "status"

@@ -637,8 +637,8 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
     return checks;
   },
 
-  // Step 3.7 — Prepare for Interview (consistency — primary at interview stage)
-  step_3_7: ({ eligibilityAnswers }) => {
+  // Step 3.8 — Prepare for Interview (consistency — primary at interview stage)
+  step_3_8: ({ eligibilityAnswers }) => {
     const checks: StepCheck[] = [];
     checks.push({
       level: "info",
@@ -650,8 +650,8 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
     return checks;
   },
 
-  // Step 3.8 — Attend Visa Interview (final readiness gate)
-  step_3_8: ({ state }) => {
+  // Step 3.9 — Attend Visa Interview (final readiness gate)
+  step_3_9: ({ state }) => {
     const checks: StepCheck[] = [];
     const done = (key: string) => state.completedSteps?.has?.(key);
     if (!done("step_3_6")) {
@@ -661,7 +661,7 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
         hint: "Finish gathering and organizing your original documents (Step 6) before interview day, the officer may ask for any of them.",
       });
     }
-    if (!done("step_3_7")) {
+    if (!done("step_3_8")) {
       checks.push({
         level: "info",
         title: "Run interview prep before you go",
@@ -676,8 +676,8 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
     return checks;
   },
 
-  // Step 3.9 — Confirm Interview Outcome (tracking)
-  step_3_9: ({ state }) => {
+  // Step 3.10 — Confirm Interview Outcome (tracking)
+  step_3_10: ({ state }) => {
     const checks: StepCheck[] = [];
     if (!state.metadata?.interviewOutcome) {
       checks.push({
@@ -689,8 +689,8 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
     return checks;
   },
 
-  // Step 3.10 — Track Visa Issuance (evidence accuracy — approved path)
-  step_3_10: () => [
+  // Step 3.11 — Track Visa Issuance (evidence accuracy — approved path)
+  step_3_11: () => [
     {
       level: "info",
       title: "Verify your visa details when the passport arrives",
@@ -698,8 +698,8 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
     },
   ],
 
-  // Step 3.11 — Submit 221(g) Documents (completeness + accuracy)
-  step_3_11: () => [
+  // Step 3.12 — Submit 221(g) Documents (completeness + accuracy)
+  step_3_12: () => [
     {
       level: "warning",
       title: "Submit exactly what the 221(g) requested",

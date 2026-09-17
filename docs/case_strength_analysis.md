@@ -447,7 +447,7 @@ This follows the existing `ENTITLEMENTS` pattern in `lib/entitlements/config.ts`
 
 ### Phase 4 — Risk Detection
 
-- Red flag screening rules (marriage duration, age gap, no in-person meeting, prior petitions)
+- Red flag screening rules (marriage duration, no in-person meeting, prior petitions)
 - Proactive defense recommendations
 - 221(g) risk factor assessment at interview prep stage
 
