@@ -336,7 +336,22 @@ personalization by visa type / sponsor structure / country
 (`personalization-engine.ts`), expiration tracking, Zustand store (`store.ts`), client +
 server storage clients (`storage-client.ts`, `storage-server.ts`, `storage-database.ts`),
 `journey-mapping.ts`, `flag-registry.ts`, and `useInitDocumentVault.ts` (prefetch on
-dashboard mount). Vault files are AES-256-GCM encrypted with a **per-user** key
+dashboard mount).
+
+**Multi-candidate (IR-5+).** A journey's vault can hold documents for more than one
+candidate (IR-5 = Parent 1 / Parent 2). A candidate is a sub-scope INSIDE one journey (no
+extra journey row): documents carry an optional `candidate_id` (null = legacy /
+single-candidate), and the roster lives in `document_vault_config.candidates` (JSONB
+`{id,label,name?}[]`). Cross-candidate sharing reuses the SAME `storage_path` across rows
+(no file copy), mirroring cross-journey sharing; safe delete uses a `storage_path`
+reference count (`scope=candidate|all` on `DELETE /api/documents/[id]`), which also fixed
+the older cross-journey orphan-on-delete bug. Relevance ("only offer shareable docs") is
+in `lib/document-vault/candidate-sharing.ts` (`isDocumentShareableAcrossCandidates`:
+petitioner/joint-sponsor/household docs shareable by default, any BENEFICIARY doc
+candidate-specific, explicit `shareableAcrossCandidates` override on a `DocumentDefinition`).
+The share prompt is opt-in (unchecked). UI cap is IR-5 = 2 via
+`getMaxCandidates(journeyType)`; the data model + helpers are N-candidate capable for
+future categories (e.g. IR-2). Full design + status: `docs/IR5-DOCUMENT-VAULT-MULTI-CANDIDATE-PLAN.md`. Vault files are AES-256-GCM encrypted with a **per-user** key
 (`file-encryption.ts`, `SHA-256(PORTAL_WALLET_SECRET + ":" + userId)`, `RVLT` magic
 header) — this per-user derivation is unique to vault files (see 23).
 
@@ -515,6 +530,11 @@ migrations (`create_{journeys,chapters,steps,case_data}_table.sql`).
 | `chapters` | Stage subdivisions of a journey | `journey_id`, `chapter_key`, `chapter_number`, `status`, `display_order`, `is_visible`, `visible_when` (JSONB) |
 | `steps` | Granular action items | `chapter_id`, `step_key`, `step_type`, `tool_integration`, `dependencies` (JSONB), `visible_when` (JSONB), `status`, `substatus`, `is_required`, `metadata` |
 | `case_data` | Flexible key-value case facts | `journey_id`, `data_key`, `data_value` (JSONB), `source`, `is_verified`, `version`, `previous_value` (audit) |
+
+> **Document vault multi-candidate columns** (migration `20260917_01_ir5_candidate_support`):
+> `documents.candidate_id TEXT` (nullable; null = legacy/single-candidate) and
+> `document_vault_config.candidates JSONB` (per-journey candidate roster). Additive +
+> backward-safe; no backfill. See 4.7 and `docs/IR5-DOCUMENT-VAULT-MULTI-CANDIDATE-PLAN.md`.
 
 **Supporting journey tables** — `journey_documents` (+ `journey_id` on documents),
 `tool_sessions`, `journey_portal_records` (**no passwords**), `journey_appointments`,

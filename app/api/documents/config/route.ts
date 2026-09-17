@@ -67,6 +67,7 @@ export async function POST(request: NextRequest) {
       beneficiaryName: body.beneficiaryName,
       jointSponsorName: body.jointSponsorName,
       dynamicDocuments: body.dynamicDocuments || {},
+      candidates: body.candidates || [],
       journeyId: body.journeyId,
     };
 

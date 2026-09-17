@@ -135,7 +135,9 @@ export async function POST(request: NextRequest) {
     const expirationDateStr = formData.get("expirationDate") as string | undefined;
     const notes = formData.get("notes") as string | undefined;
     const journeyId = formData.get("journeyId") as string | undefined;
+    const candidateId = (formData.get("candidateId") as string | undefined) || undefined;
     const shareWithJourneyIdsStr = formData.get("shareWithJourneyIds") as string | undefined;
+    const shareWithCandidateIdsStr = formData.get("shareWithCandidateIds") as string | undefined;
 
     let shareWithJourneyIds: string[] = [];
     if (shareWithJourneyIdsStr) {
@@ -146,6 +148,24 @@ export async function POST(request: NextRequest) {
         shareWithJourneyIds = JSON.parse(shareWithJourneyIdsStr);
       } catch (e) {
         console.error("Failed to parse shareWithJourneyIds:", e);
+      }
+    }
+
+    let shareWithCandidateIds: string[] = [];
+    if (shareWithCandidateIdsStr) {
+      try {
+        const tooLarge = assertRequestBodySize(request);
+        if (tooLarge) return tooLarge;
+
+        const parsed = JSON.parse(shareWithCandidateIdsStr);
+        if (Array.isArray(parsed)) {
+          // Only share to real candidate ids, never to the active candidate itself.
+          shareWithCandidateIds = parsed.filter(
+            (id): id is string => typeof id === "string" && !!id && id !== candidateId
+          );
+        }
+      } catch (e) {
+        console.error("Failed to parse shareWithCandidateIds:", e);
       }
     }
 
@@ -243,13 +263,14 @@ export async function POST(request: NextRequest) {
     let existingDocs = await dbStorage.getDocumentsByDefId(
       documentDefId,
       user.id,
-      journeyId || undefined
+      journeyId || undefined,
+      candidateId
     );
 
     // Safety check for rapid sequential uploads
     // If the specific query missed a very recent upload, fallback to global list
     if (existingDocs.length === 0) {
-      const allDocs = await dbStorage.getAllDocuments(user.id, journeyId || undefined);
+      const allDocs = await dbStorage.getAllDocuments(user.id, journeyId || undefined, candidateId);
       const recentDocs = allDocs.filter(
         (d) =>
           d.documentDefId === documentDefId && Date.now() - new Date(d.uploadedAt).getTime() < 10000
@@ -410,6 +431,7 @@ export async function POST(request: NextRequest) {
       status: "UPLOADED",
       notes,
       journeyId: journeyId || null,
+      candidateId: candidateId || null,
     };
 
     // Save document metadata to database
@@ -440,6 +462,50 @@ export async function POST(request: NextRequest) {
           console.log(`Document cross-shared to journey ${sharedJourneyId} successfully.`);
         } catch (shareErr) {
           console.error(`Failed to cross-share document to journey ${sharedJourneyId}:`, shareErr);
+        }
+      }
+    }
+
+    // Cross-share to other candidates in the SAME journey (IR-5+ multi-candidate).
+    // The shared row reuses the primary row's storage_path (one physical blob) and only
+    // differs by candidate_id and a per-candidate version. Never copies the file.
+    if (shareWithCandidateIds.length > 0 && journeyId) {
+      // Validate targets against this journey's candidate roster so a malformed id can
+      // never create an orphan row under a candidate that does not exist.
+      let rosterIds: string[] = [];
+      try {
+        const vaultConfig = await dbStorage.getVaultConfig(user.id, journeyId);
+        rosterIds = (vaultConfig?.candidates || []).map((c) => c.id);
+      } catch (cfgErr) {
+        console.error("Failed to load vault config for candidate-share validation:", cfgErr);
+      }
+      const validTargets = shareWithCandidateIds.filter((id) => rosterIds.includes(id));
+
+      for (const targetCandidateId of validTargets) {
+        try {
+          const sharedExisting = await dbStorage.getDocumentsByDefId(
+            documentDefId,
+            user.id,
+            journeyId,
+            targetCandidateId
+          );
+          const sharedVersion = getNextVersionNumber(sharedExisting);
+
+          const sharedDocument: UploadedDocument = {
+            ...uploadedDocument,
+            id: generateDocumentId(),
+            version: sharedVersion,
+            candidateId: targetCandidateId,
+            isRead: false,
+            status: "UPLOADED",
+          };
+          await dbStorage.saveDocument(sharedDocument);
+          console.log(`Document cross-shared to candidate ${targetCandidateId} successfully.`);
+        } catch (shareErr) {
+          console.error(
+            `Failed to cross-share document to candidate ${targetCandidateId}:`,
+            shareErr
+          );
         }
       }
     }

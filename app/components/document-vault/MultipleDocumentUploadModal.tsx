@@ -101,6 +101,7 @@ export function MultipleDocumentUploadModal({
     isDeletingIds,
     addNamedDynamicSlot,
     currentJourneyId,
+    currentCandidateId,
   } = useDocumentVaultStore();
   const { t } = useLanguage();
   const { showToast } = useToast();
@@ -651,6 +652,12 @@ export function MultipleDocumentUploadModal({
         formData.append("notes", notesPayload);
         if (activeJourneyId) {
           formData.append("journeyId", activeJourneyId);
+        }
+        // Scope bulk uploads to the active candidate (IR-5+). Per-document candidate
+        // cross-share in bulk is intentionally deferred; users can share individual docs
+        // from the single-document upload modal.
+        if (currentCandidateId) {
+          formData.append("candidateId", currentCandidateId);
         }
         const applicableSharedIds = sharedJourneyIds.filter((targetId) => {
           const targetJourney = userJourneys.find((j) => j.id === targetId);

@@ -11,6 +11,7 @@ import {
   NotificationMessage,
   ScenarioFlags,
   VisaCategory,
+  VaultCandidate,
 } from "./types";
 import { generateRequiredDocuments, getCategoryDisplayName } from "./personalization-engine";
 import { updateDocumentStatuses, generateNotifications } from "./expiration-tracker";
@@ -46,8 +47,17 @@ interface DocumentVaultStore {
   notificationCenterOpen: boolean;
   currentJourneyId: string | null;
 
+  // Multi-candidate (IR-5+): the active candidate sub-scope and the journey's roster.
+  currentCandidateId: string | null;
+  candidates: VaultCandidate[];
+
   // Actions
-  initialize: (userId: string, t?: TranslateFn, journeyId?: string) => Promise<void>;
+  initialize: (
+    userId: string,
+    t?: TranslateFn,
+    journeyId?: string,
+    candidateId?: string
+  ) => Promise<void>;
   setConfig: (config: DocumentVaultConfig) => Promise<void>;
   updateScenarioFlags: (flags: Partial<ScenarioFlags>) => void;
   setVisaCategory: (category: VisaCategory) => void;
@@ -55,9 +65,10 @@ interface DocumentVaultStore {
   // Document operations
   addDocument: (document: UploadedDocument) => void;
   updateDocument: (documentId: string, updates: Partial<UploadedDocument>) => void;
-  deleteDocument: (documentId: string) => void;
+  deleteDocument: (documentId: string, scope?: "candidate" | "all") => void;
   refreshDocumentStatuses: () => void;
-  reloadDocuments: (journeyId?: string) => Promise<void>;
+  reloadDocuments: (journeyId?: string, candidateId?: string) => Promise<void>;
+  setCandidate: (candidateId: string | null) => Promise<void>;
   addDynamicSlot: (category: string) => void;
   addNamedDynamicSlot: (category: string, name: string) => Promise<string>;
   renameDynamicSlot: (categoryId: string, slotId: string, newName: string) => void;
@@ -129,13 +140,19 @@ const initialState = {
   uploadModalOpen: false,
   notificationCenterOpen: false,
   currentJourneyId: null,
+  currentCandidateId: null,
+  candidates: [],
 };
 
 export const useDocumentVaultStore = create<DocumentVaultStore>()((set, get) => ({
   ...initialState,
 
-  initialize: async (userId: string, t?: TranslateFn, journeyId?: string) => {
-    set({ isLoading: true, currentJourneyId: journeyId || null });
+  initialize: async (userId: string, t?: TranslateFn, journeyId?: string, candidateId?: string) => {
+    set({
+      isLoading: true,
+      currentJourneyId: journeyId || null,
+      currentCandidateId: candidateId || null,
+    });
 
     try {
       // Load completed steps from localStorage
@@ -179,8 +196,11 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()((set, get) => 
       const configData = await configResponse.json();
       const config = configData.config;
 
-      // Fetch documents from API (filtered by journey if provided)
-      const docsResponse = await fetch(journeyId ? `/api/documents/list?journeyId=${journeyId}` : "/api/documents/list");
+      // Fetch documents from API (filtered by journey + candidate if provided)
+      const listUrl = journeyId
+        ? `/api/documents/list?journeyId=${journeyId}${candidateId ? `&candidateId=${candidateId}` : ""}`
+        : "/api/documents/list";
+      const docsResponse = await fetch(listUrl);
       const docsData = await docsResponse.json();
       const documents = docsData.documents || [];
 
@@ -197,6 +217,7 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()((set, get) => 
           config,
           uploadedDocuments: updatedDocs,
           requiredDocuments: requiredDocs,
+          candidates: config.candidates || [],
           completedSteps,
           notificationConfig,
           notificationPreferences,
@@ -258,10 +279,12 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()((set, get) => 
     const uploadedDocIds = uploadedDocuments.map((d) => d.documentDefId);
     const requiredDocs = generateRequiredDocuments(configWithJourney, true, uploadedDocuments); // Include optional documents
 
-    // Set config in store IMMEDIATELY — don't wait for DB
+    // Set config in store IMMEDIATELY — don't wait for DB. Keep the separate `candidates`
+    // state in sync so the candidate switcher reflects roster changes without a reload.
     set({
       config: configWithJourney,
       requiredDocuments: requiredDocs,
+      candidates: configWithJourney.candidates || [],
     });
 
     try {
@@ -331,10 +354,10 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()((set, get) => 
     get().refreshNotifications();
   },
 
-  deleteDocument: async (documentId: string) => {
+  deleteDocument: async (documentId: string, scope: "candidate" | "all" = "candidate") => {
     set({ isDeletingIds: [...get().isDeletingIds, documentId] });
     try {
-      const response = await fetch(`/api/documents/${documentId}`, {
+      const response = await fetch(`/api/documents/${documentId}?scope=${scope}`, {
         method: "DELETE",
       });
 
@@ -369,12 +392,19 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()((set, get) => 
     set({ uploadedDocuments: updatedDocs });
   },
 
-  reloadDocuments: async (journeyId?: string) => {
-    const { hasLoadedDocsInitial, currentJourneyId } = get();
+  reloadDocuments: async (journeyId?: string, candidateId?: string) => {
+    const { hasLoadedDocsInitial, currentJourneyId, currentCandidateId } = get();
     const targetJourneyId = journeyId || currentJourneyId || undefined;
+    const targetCandidateId =
+      candidateId !== undefined ? candidateId : currentCandidateId || undefined;
     const isNewJourney = journeyId && journeyId !== currentJourneyId;
-    if (!hasLoadedDocsInitial || isNewJourney) {
-      set({ isReloadingDocs: true, currentJourneyId: targetJourneyId || null });
+    const isNewCandidate = candidateId !== undefined && candidateId !== currentCandidateId;
+    if (!hasLoadedDocsInitial || isNewJourney || isNewCandidate) {
+      set({
+        isReloadingDocs: true,
+        currentJourneyId: targetJourneyId || null,
+        currentCandidateId: targetCandidateId || null,
+      });
     }
     try {
       // 1. Fetch config from API for this journey
@@ -383,8 +413,10 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()((set, get) => 
       const configData = await configResponse.json();
       const config = configData.config;
 
-      // 2. Fetch documents from API (filtered by journey if provided)
-      const url = targetJourneyId ? `/api/documents/list?journeyId=${targetJourneyId}` : "/api/documents/list";
+      // 2. Fetch documents from API (filtered by journey + candidate if provided)
+      const url = targetJourneyId
+        ? `/api/documents/list?journeyId=${targetJourneyId}${targetCandidateId ? `&candidateId=${targetCandidateId}` : ""}`
+        : "/api/documents/list";
       const response = await fetch(url);
       const data = await response.json();
       const documents = (data.documents || []).map((doc: Record<string, unknown>) => ({
@@ -403,6 +435,7 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()((set, get) => 
           config,
           uploadedDocuments: updatedDocs,
           requiredDocuments: requiredDocs,
+          candidates: config.candidates || [],
           isReloadingDocs: false,
           hasLoadedDocsInitial: true,
         });
@@ -419,6 +452,13 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()((set, get) => 
       console.error("Failed to reload documents:", error);
       set({ isReloadingDocs: false });
     }
+  },
+
+  setCandidate: async (candidateId: string | null) => {
+    const { currentJourneyId, currentCandidateId } = get();
+    if (candidateId === currentCandidateId) return;
+    // reloadDocuments handles state + fetch for the newly active candidate.
+    await get().reloadDocuments(currentJourneyId || undefined, candidateId ?? undefined);
   },
 
   addDynamicSlot: (category: string) => {
