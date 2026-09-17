@@ -22,7 +22,6 @@ import {
   ArrowLeft,
   ArrowRight,
   ArrowUpRight,
-  ChevronDown,
   ShoppingCart,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -30,6 +29,11 @@ import { E, msg, errorCode } from "@/lib/errors";
 import { VISA_CATEGORIES, HELPER_DATA, COMPARISON_GROUPS, ADDONS, FAQS } from "./data/pricing";
 import type { PlanData } from "./data/pricing";
 import ResourceToolCard from "@/components/pricing/ResourceToolCard";
+import { ExplorerJourneyCard } from "@/app/(tools)/(visa)/visa-category/components/journey-explorer-card";
+import {
+  EXPLORER_CARDS,
+  type ExplorerJourneyCard as ExplorerJourneyCardType,
+} from "@/app/(tools)/(visa)/visa-category/data/journeys";
 import { useToast } from "@/app/components/shared/ToastProvider";
 
 /* ===========================================================================
@@ -286,82 +290,6 @@ function IcoInfo({ className }: { className?: string }) {
       <line x1="8" y1="7" x2="8" y2="10.5" />
       <circle cx="8" cy="5.5" r="0.6" fill="currentColor" stroke="none" />
     </svg>
-  );
-}
-
-/* ===========================================================================
-   VISA SELECTOR — a compact dropdown-style picker that scales cleanly as the
-   list of visa categories grows. It is used in the journey-plan flow and stays
-   out of the add-on/resource views so those tabs remain focused on add-ons.
-   =========================================================================== */
-function VisaSelector({
-  categories,
-  value,
-  onChange,
-  size = "md",
-}: {
-  categories: { id: string; label: string }[];
-  value: string | null;
-  onChange: (id: string) => void;
-  size?: "md" | "sm";
-}) {
-  const [isOpen, setIsOpen] = useState(false);
-  const triggerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (triggerRef.current && !triggerRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const activeLabel = categories.find((cat) => cat.id === value)?.label ?? "I'm applying for";
-  const baseClass =
-    size === "sm"
-      ? "w-fit max-w-[280px] text-[12px] py-2 px-3"
-      : "w-fit max-w-[3000px] text-[13.5px] py-2 px-3";
-
-  return (
-    <div ref={triggerRef} className={`relative ${baseClass}`}>
-      <button
-        type="button"
-        aria-label="Visa category"
-        onClick={() => setIsOpen((prev) => !prev)}
-        className={`flex w-full max-w-full items-center justify-between rounded-lg border-[1.5px] border-[#4A7772] bg-[#ffff] px-3 py-2 text-left font-semibold text-[#2E5450] shadow-sm ${baseClass}`}
-      >
-        <span className="min-w-0 flex-1 truncate">{activeLabel}</span>
-        <ChevronDown
-          className={`ml-2 shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`}
-        />
-      </button>
-
-      {isOpen && (
-        <div className="absolute top-[calc(100%+6px)] left-0 z-[60] ml-3 w-max max-w-[240px] min-w-[180px] overflow-hidden rounded-lg border border-[#4A7772]/25 bg-white shadow-xl">
-          {categories.map((cat) => {
-            const isSelected = cat.id === value;
-            return (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => {
-                  onChange(cat.id);
-                  setIsOpen(false);
-                }}
-                className={`flex w-full items-center px-4 py-3 text-left text-sm font-medium transition-colors ${
-                  isSelected ? "bg-[#EAF5F0] text-[#2E5450]" : "text-slate-700 hover:bg-slate-50"
-                }`}
-              >
-                {cat.label}
-              </button>
-            );
-          })}
-        </div>
-      )}
-    </div>
   );
 }
 
@@ -664,7 +592,18 @@ function PricingContent() {
   const [mode, setMode] = useState<"plans" | ResourceMode>("plans");
   const [purchaseStep, setPurchaseStep] = useState<"browse" | "review">("browse");
 
-  const [visa, setVisa] = useState<string | null>(null);
+  const [visa, setVisa] = useState<string>(() => {
+    if (typeof window === "undefined") {
+      return "";
+    }
+
+    return localStorage.getItem("rahvana_selected_visa") ?? "";
+  });
+  // Step control — when a visa was already picked (or restored from storage)
+  // the user lands on plan selection; flipping this back to true returns them
+  // to journey selection without losing their current pick (it stays visibly
+  // highlighted on the journey cards).
+  const [isChangingJourney, setIsChangingJourney] = useState(false);
   const billing = "monthly";
 
   const [selectedPlan, setSelectedPlan] = useState("premium");
@@ -698,13 +637,6 @@ function PricingContent() {
     () => VISA_CATEGORIES.find((v) => v.id === visa) || VISA_CATEGORIES[0],
     [visa]
   );
-  // Only the categories flagged as ready in AVAILABLE_VISA_IDS are selectable —
-  // VISA_CATEGORIES itself may contain more (F-2A, K-1/K-2, F-1, CR-2, etc.)
-  // that aren't switched on for users yet.
-  const availableVisaCategories = useMemo(
-    () => VISA_CATEGORIES.filter((v) => AVAILABLE_VISA_IDS.includes(v.id)),
-    []
-  );
   const activePlans = activeVisaCategory.plans;
   const paidPlans = activePlans.filter((p) => p.id !== "free");
   const currentPlanData = activePlans.find((p) => p.id === selectedPlan) || activePlans[2];
@@ -724,6 +656,14 @@ function PricingContent() {
     if (mode === "plans") return [];
     return ADDONS.filter((a) => a.kind === mode).sort((a, b) => a.title.localeCompare(b.title));
   }, [mode]);
+
+  useEffect(() => {
+    if (visa) {
+      localStorage.setItem("rahvana_selected_visa", visa);
+    } else {
+      localStorage.removeItem("rahvana_selected_visa");
+    }
+  }, [visa]);
 
   // Handlers
   const handleCheckout = useCallback(
@@ -948,20 +888,9 @@ function PricingContent() {
 
   // Layout tokens
   const W = "px-4 sm:px-6 lg:px-10 max-w-[1440px] mx-auto";
-  const eyebrow = "text-[11px] tracking-[0.15em] uppercase font-bold text-primary mb-2";
+  const eyebrow = "text-[12px] tracking-[0.15em] uppercase font-bold text-primary mt-0.5";
   const secBtn =
     "px-4 py-[8px] rounded-full text-[13px] font-medium cursor-pointer transition-colors border border-border bg-card hover:bg-muted/40 text-foreground inline-flex items-center gap-2";
-
-  // Visa selectors — a visible segmented toggle (see VisaSelector above),
-  // sized down for the review/resources headers where it's secondary to the
-  // main content, and full-size in the plans hero where the choice needs to
-  // be made first, before anything else on the page is trustworthy.
-  const visaSelectorLg = (
-    <VisaSelector categories={availableVisaCategories} value={visa} onChange={setVisa} size="md" />
-  );
-  const visaSelectorSm = (
-    <VisaSelector categories={availableVisaCategories} value={visa} onChange={setVisa} size="sm" />
-  );
 
   // Checkout button (shared)
   const checkoutBtn = (
@@ -1166,305 +1095,482 @@ function PricingContent() {
       )}
 
       {/* ═══════════════════════════════════════════════════════════════════════
-          JOURNEY PLANS — BROWSE
-          ═══════════════════════════════════════════════════════════════════════ */}
+  JOURNEY PLANS — BROWSE
+  ═══════════════════════════════════════════════════════════════════════ */}
       {mode === "plans" && purchaseStep === "browse" && (
         <div className="animate-in fade-in duration-300">
-          {/* Hero */}
-          <section className={`${W} pt-7 pb-6`}>
-            <div className={eyebrow}>Journey Plans</div>
-            <h1 className="page-heading m-0">Choose your Rahvana journey plan</h1>
-            <p className="page-description text-muted-foreground mt-2">
-              Pick the level of guidance, tools, and support that fits your case.
-            </p>
+          {/* ═══════════════════════════════════════════════════════════════════
+    STEP 1 — CHOOSE JOURNEY
+    ═══════════════════════════════════════════════════════════════════ */}
+          {!visa || isChangingJourney ? (
+            <section className={`${W} pt-7 pb-8`}>
+              {/* Hero */}
+              <div className={eyebrow}>Journey Plans</div>
 
-            {/* Visa category + Compare plans */}
-            <div className="mt-4 -ml-3">
-              <div className="flex flex-wrap items-center justify-between gap-2 md:flex-row md:flex-nowrap">
-                {visaSelectorLg}
+              <h1 className="page-heading m-0">Choose your immigration journey</h1>
 
-                <button className={`${secBtn} shrink-0`} onClick={() => setComparePlansOpen(true)}>
-                  <IcoTableCompare className="h-4 w-4 opacity-60" />
-                  Compare plans
-                </button>
-              </div>
-            </div>
-
-            {/* Checkout error + Government fees */}
-            <div className="mt-4 -ml-3">
-              {checkoutError && (
-                <div className="mb-3 flex w-full items-start gap-3 rounded-xl border border-red-100 bg-red-50 p-4">
-                  <svg
-                    className="mt-0.5 h-5 w-5 shrink-0 text-red-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-
-                  <p className="text-sm text-red-700">{checkoutError}</p>
-                </div>
-              )}
-
-              <div className="flex items-center gap-3">
-                <span className="text-muted-foreground/50 text-[12px]">·</span>
-
-                <span className="text-muted-foreground text-[12px]">
-                  Government fees are not included in any plan
-                </span>
-              </div>
-            </div>
-          </section>
-
-          {/* Plan cards — full width, no sidebar */}
-          <div className={`${W}`}>
-            {(() => {
-              const TIER_RANK: Record<string, number> = {
-                free: 0,
-                basic: 1,
-                premium: 2,
-                executive: 3,
-              };
-              const activeTierRank = TIER_RANK[userActiveTier ?? "free"] ?? 0;
-              return (
-                <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
-                  {paidPlans.map((plan) => {
-                    const tc = TIER[plan.id as TierKey];
-                    const isSelected = selectedPlan === plan.id;
-                    const planRank = TIER_RANK[plan.id] ?? 0;
-                    const isCurrentPlan = userActiveTier && plan.id === userActiveTier;
-                    const isDowngrade = !!userActiveTier && planRank < activeTierRank;
-                    return (
-                      <article
-                        key={plan.id}
-                        className={`${tc.cardBg} relative flex flex-col rounded-[24px] border p-6 transition-all duration-200 ${
-                          isDowngrade
-                            ? "cursor-not-allowed opacity-50"
-                            : `cursor-pointer ${isSelected ? `${tc.selBorder} ${tc.ring} ${tc.glow}` : `${tc.border} hover:-translate-y-0.5 hover:shadow-lg`}`
-                        }`}
-                        onClick={() => {
-                          if (!isDowngrade) setSelectedPlan(plan.id);
-                        }}
-                      >
-                        {isCurrentPlan && (
-                          <div className="absolute top-4 right-4 rounded-full border border-green-300 bg-green-100 px-2.5 py-1 text-[10px] font-bold tracking-[0.06em] text-green-700 uppercase">
-                            Current Plan
-                          </div>
-                        )}
-                        {!isCurrentPlan && plan.recommended && !isDowngrade && (
-                          <div
-                            className={`absolute top-4 right-4 rounded-full px-2.5 py-1 text-[10px] font-bold tracking-[0.06em] uppercase ${tc.badgeBg} ${tc.badgeText}`}
-                          >
-                            Most Popular
-                          </div>
-                        )}
-                        {isSelected && !plan.recommended && !isCurrentPlan && !isDowngrade && (
-                          <div
-                            className={`absolute top-4 right-4 h-6 w-6 rounded-full ${tc.btn} flex items-center justify-center`}
-                          >
-                            <IconCheck className="h-3.5 w-3.5" />
-                          </div>
-                        )}
-
-                        {/* Icon + Name/Price row */}
-                        <div className="mb-4 -ml-3 flex items-center gap-0">
-                          <span
-                            aria-hidden="true"
-                            className={`plan-icon plan-icon--${plan.id}`}
-                            style={{ width: 72, height: 72, flexShrink: 0 }}
-                          />
-                          <div className="flex flex-col gap-0.5">
-                            <div
-                              className={`text-[10px] font-extrabold tracking-[0.16em] uppercase ${tc.textAccent}`}
-                            >
-                              {plan.name}
-                            </div>
-                            <div className="flex items-baseline gap-1">
-                              <span className="text-[34px] leading-none font-bold tracking-tight">
-                                ${planDisplayPrice(plan)}
-                              </span>
-                              <span className="text-muted-foreground text-[12px]">/mo</span>
-                            </div>
-                            <div className="text-muted-foreground text-[11px]">
-                              ${plan.annualPrice} total
-                            </div>
-                          </div>
-                        </div>
-                        <p className="text-muted-foreground mb-4 text-[13px] leading-[1.5]">
-                          {plan.tagline}
-                        </p>
-
-                        {/* Key features — single line each */}
-                        <ul className="m-0 flex-1 list-none space-y-2 p-0">
-                          {plan.bullets.slice(0, 5).map((item, idx) => (
-                            <li key={idx} className="flex items-center gap-2 text-[13px]">
-                              <IconCheck className={`h-4 w-4 flex-shrink-0 ${tc.checkCol}`} />
-                              <span className="truncate">{item}</span>
-                            </li>
-                          ))}
-                        </ul>
-
-                        {/* "See what else is included" → opens compare modal */}
-                        {plan.bullets.length > 5 && (
-                          <button
-                            className={`mt-3 flex items-center gap-1 text-[12px] font-semibold ${tc.textAccent} cursor-pointer border-0 bg-transparent p-0 text-left`}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setComparePlansOpen(true);
-                            }}
-                          >
-                            Click here to see what else is included
-                            <IcoChevron className="h-3.5 w-3.5 -rotate-90" />
-                          </button>
-                        )}
-
-                        <button
-                          disabled={isDowngrade || !!isCurrentPlan}
-                          className={`mt-4 w-full rounded-full px-4 py-[10px] text-[13.5px] font-semibold transition-all duration-150 ${
-                            isDowngrade || isCurrentPlan
-                              ? "bg-muted text-muted-foreground border-border cursor-not-allowed border opacity-60"
-                              : `cursor-pointer ${isSelected ? tc.btn : `${tc.btnOut} border`}`
-                          }`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-
-                            if (isDowngrade || isCurrentPlan) return;
-
-                            if (!visa) {
-                              showToast("Please select a visa category first.", "error");
-                              return;
-                            }
-
-                            setSelectedPlan(plan.id);
-                            setPurchaseStep("review");
-                            window.scrollTo({ top: 0, behavior: "smooth" });
-                          }}
-                        >
-                          {isCurrentPlan
-                            ? "Your Current Plan"
-                            : isDowngrade
-                              ? "Not Available"
-                              : isSelected
-                                ? "Continue to Checkout →"
-                                : plan.cta}
-                        </button>
-                      </article>
-                    );
-                  })}
-                </div>
-              );
-            })()}
-
-            {/* Free plan strip */}
-            <div className="bg-muted/30 border-border mt-4 flex flex-col items-start justify-between gap-3 rounded-[18px] border px-5 py-4 sm:flex-row sm:items-center">
-              <div>
-                <p className="m-0 text-[14px] font-semibold">
-                  Not ready to commit? Start with a free preview.
-                </p>
-                <p className="text-muted-foreground m-0 mt-0.5 text-[13px]">
-                  Preview the roadmap structure, access public tools, no payment required.
-                </p>
-              </div>
-              <Link href={userId ? "/" : "/signup"} className="shrink-0">
-                <button className={secBtn}>Get Started Free</button>
-              </Link>
-            </div>
-
-            {/* Help me choose — full width */}
-            <div className="mt-10">
-              <h3 className="m-0 mb-1 text-[17px] font-bold">Help me choose</h3>
-              <p className="text-muted-foreground mb-4 text-[13.5px]">
-                Pick the description that matches you.
+              <p className="page-description text-muted-foreground mt-2 max-w-2xl">
+                Select the journey that matches your immigration case to see the plans, tools, and
+                guidance available for you.
               </p>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                {HELPER_DATA.map((card, idx) => {
-                  const tc = TIER[card.plan as TierKey];
-                  const isActive = selectedPlan === card.plan;
+
+              {/* Journey Cards */}
+              <div className="mt-7 grid grid-cols-1 gap-5 md:grid-cols-3">
+                {EXPLORER_CARDS.map((card) => {
+                  const isLive = card.status === "Live" && Boolean(card.href);
+                  const isSelected = card.code === visa;
+
                   return (
-                    <button
-                      key={idx}
-                      className={`cursor-pointer rounded-[18px] border p-5 text-left transition-all ${
-                        isActive
-                          ? `${tc.cardBg} ${tc.selBorder} ${tc.ring}`
-                          : "bg-card border-border hover:bg-muted/20"
+                    <div
+                      key={card.code}
+                      className={`relative rounded-[24px] transition-all duration-200 ${
+                        isSelected
+                          ? "shadow-[0_12px_36px_rgba(13,122,92,0.18)] ring-2 ring-[#0d7a5c] ring-offset-2 ring-offset-[#fafcfb]"
+                          : ""
                       }`}
-                      onClick={() => setSelectedPlan(card.plan)}
                     >
-                      <strong className="mb-2 block text-[14.5px]">{card.title}</strong>
-                      <p className="text-muted-foreground m-0 mb-3 text-[13px] leading-[1.55]">
-                        {card.copy}
-                      </p>
-                      <span className={`text-[12px] font-bold ${tc.textAccent}`}>
-                        → Use {activePlans.find((p) => p.id === card.plan)?.name}
-                      </span>
-                    </button>
+                      <ExplorerJourneyCard
+                        card={card}
+                        onSelect={
+                          isLive
+                            ? () => {
+                                setVisa(card.code);
+                                setIsChangingJourney(false);
+                              }
+                            : undefined
+                        }
+                      />
+
+                      {isSelected && (
+                        <span className="absolute top-3 right-3 z-10 inline-flex items-center gap-1 rounded-full bg-[#0d7a5c] px-2.5 py-1 text-[10.5px] font-bold tracking-wide text-white uppercase shadow-sm">
+                          <IconCheck className="h-3 w-3" strokeWidth={3} />
+                          Selected
+                        </span>
+                      )}
+                    </div>
                   );
                 })}
               </div>
-            </div>
 
-            {/* FAQs — full width */}
-            <div className="mt-10">
-              <h2 className="m-0 mb-1 text-[22px] font-bold">Common questions</h2>
-              <p className="text-muted-foreground mb-4 text-[13.5px]">
-                Everything you need to know before purchasing.
-              </p>
-              <div className="bg-card border-border overflow-hidden rounded-[20px] border">
-                {FAQS.map(([q, a], idx) => (
-                  <div
-                    key={idx}
-                    className={`border-border border-t first:border-0 ${openFaqIndex === idx ? "bg-muted/20" : ""}`}
-                  >
-                    <button
-                      className="hover:bg-muted/25 flex w-full cursor-pointer items-center justify-between gap-4 border-0 bg-transparent p-[16px_22px] text-left transition-colors"
-                      onClick={() => setOpenFaqIndex(openFaqIndex === idx ? -1 : idx)}
-                    >
-                      <span className="text-[14px] font-semibold">{q}</span>
-                      <span className="text-muted-foreground shrink-0 text-xl leading-none font-normal">
-                        {openFaqIndex === idx ? "−" : "+"}
-                      </span>
-                    </button>
-                    {openFaqIndex === idx && (
-                      <div className="text-muted-foreground px-[22px] pb-4 text-[13.5px] leading-[1.65]">
-                        {a}
-                      </div>
-                    )}
+              {/* Supporting note */}
+              <div className="mt-6 flex items-center gap-3">
+                <span className="text-muted-foreground/50 text-[12px]">·</span>
+
+                <span className="text-muted-foreground text-[12px]">
+                  Select a journey to continue to available plans.
+                </span>
+              </div>
+            </section>
+          ) : (
+            <>
+              {/* ═════════════════════════════════════════════════════════════════
+          STEP 2 — PLAN SELECTION HERO
+          ═════════════════════════════════════════════════════════════════ */}
+              <section className={`${W} pt-7 pb-6`}>
+                <div className="flex items-start justify-between gap-4">
+                  {/* Hero copy */}
+                  <div>
+                    <div className="flex gap-3">
+                  <div className="mb-6 flex items-center justify-between gap-3">
+              <button
+                className="text-muted-foreground hover:text-foreground inline-flex cursor-pointer items-center gap-1.5 border-0 bg-transparent p-0 text-[13.5px] font-medium transition-colors"
+                onClick={() => {
+                  setIsChangingJourney(true);
+                  window.scrollTo({ top: 0 });
+                }}
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to Journeys
+              </button>
+            </div>
+                    <div className={eyebrow}>Journey Plans</div>
+                    </div>
+
+                    <h1 className="page-heading m-0">Choose your Rahvana journey plan</h1>
+
+                    <p className="page-description text-muted-foreground mt-2">
+                      Pick the level of guidance, tools, and support that fits your case.
+                    </p>
                   </div>
-                ))}
-              </div>
-            </div>
+                </div>
 
-            {/* CTA Banner — full width */}
-            <div className="bg-primary mt-8 flex flex-col justify-between gap-4 rounded-[22px] p-7 text-white md:flex-row md:items-center">
-              <div>
-                <h2 className="m-[0_0_6px] text-[22px] font-bold tracking-tight">
-                  Start with the level that fits you.
-                </h2>
-                <p className="m-0 text-[14px] text-white/80">
-                  Pick a plan, then add only the extras that apply to your case.
-                </p>
+                {/* Compare plans */}
+                <div className="mt-4 -ml-3">
+                  <div className="flex flex-wrap items-center justify-start ml-2 gap-2 md:flex-row md:flex-nowrap">
+                    <button
+                      type="button"
+                      className={`${secBtn} shrink-0`}
+                      onClick={() => setComparePlansOpen(true)}
+                    >
+                      <IcoTableCompare className="h-4 w-4 opacity-60" />
+                      Compare plans
+                    </button>
+                  </div>
+                </div>
+
+                {/* Checkout error + Government fees */}
+                <div className="mt-4 -ml-3">
+                  {checkoutError && (
+                    <div className="mb-3 flex w-full items-start gap-3 rounded-xl border border-red-100 bg-red-50 p-4">
+                      <svg
+                        className="mt-0.5 h-5 w-5 shrink-0 text-red-500"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+
+                      <p className="text-sm text-red-700">{checkoutError}</p>
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-3">
+                    <span className="text-muted-foreground/50 text-[12px]">·</span>
+
+                    <span className="text-muted-foreground text-[12px]">
+                      Government fees are not included in any plan
+                    </span>
+                  </div>
+                </div>
+              </section>
+
+              {/* ═════════════════════════════════════════════════════════════════
+          PLAN CARDS — FULL WIDTH
+          ═════════════════════════════════════════════════════════════════ */}
+              <div className={`${W}`}>
+                {(() => {
+                  const TIER_RANK: Record<string, number> = {
+                    free: 0,
+                    basic: 1,
+                    premium: 2,
+                    executive: 3,
+                  };
+
+                  const activeTierRank = TIER_RANK[userActiveTier ?? "free"] ?? 0;
+
+                  return (
+                    <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+                      {paidPlans.map((plan) => {
+                        const tc = TIER[plan.id as TierKey];
+
+                        const isSelected = selectedPlan === plan.id;
+
+                        const planRank = TIER_RANK[plan.id] ?? 0;
+
+                        const isCurrentPlan = !!userActiveTier && plan.id === userActiveTier;
+
+                        const isDowngrade = !!userActiveTier && planRank < activeTierRank;
+
+                        return (
+                          <article
+                            key={plan.id}
+                            className={`${tc.cardBg} relative flex flex-col rounded-[24px] border p-6 transition-all duration-200 ${
+                              isDowngrade
+                                ? "cursor-not-allowed opacity-50"
+                                : `cursor-pointer ${
+                                    isSelected
+                                      ? `${tc.selBorder} ${tc.ring} ${tc.glow}`
+                                      : `${tc.border} hover:-translate-y-0.5 hover:shadow-lg`
+                                  }`
+                            }`}
+                            onClick={() => {
+                              if (!isDowngrade) {
+                                setSelectedPlan(plan.id);
+                              }
+                            }}
+                          >
+                            {/* Current plan badge */}
+                            {isCurrentPlan && (
+                              <div className="absolute top-4 right-4 rounded-full border border-green-300 bg-green-100 px-2.5 py-1 text-[10px] font-bold tracking-[0.06em] text-green-700 uppercase">
+                                Current Plan
+                              </div>
+                            )}
+
+                            {/* Most popular badge */}
+                            {!isCurrentPlan && plan.recommended && !isDowngrade && (
+                              <div
+                                className={`absolute top-4 right-4 rounded-full px-2.5 py-1 text-[10px] font-bold tracking-[0.06em] uppercase ${tc.badgeBg} ${tc.badgeText}`}
+                              >
+                                Most Popular
+                              </div>
+                            )}
+
+                            {/* Selected check */}
+                            {isSelected && !plan.recommended && !isCurrentPlan && !isDowngrade && (
+                              <div
+                                className={`absolute top-4 right-4 flex h-6 w-6 items-center justify-center rounded-full ${tc.btn}`}
+                              >
+                                <IconCheck className="h-3.5 w-3.5" />
+                              </div>
+                            )}
+
+                            {/* Icon + Name + Price */}
+                            <div className="mb-4 -ml-3 flex items-center gap-0">
+                              <span
+                                aria-hidden="true"
+                                className={`plan-icon plan-icon--${plan.id}`}
+                                style={{
+                                  width: 72,
+                                  height: 72,
+                                  flexShrink: 0,
+                                }}
+                              />
+
+                              <div className="flex flex-col gap-0.5">
+                                {/* Plan name */}
+                                <div
+                                  className={`text-[10px] font-extrabold tracking-[0.16em] uppercase ${tc.textAccent}`}
+                                >
+                                  {plan.name}
+                                </div>
+
+                                {/* Monthly price */}
+                                <div className="flex items-baseline gap-1">
+                                  <span className="text-[34px] leading-none font-bold tracking-tight">
+                                    ${planDisplayPrice(plan)}
+                                  </span>
+
+                                  <span className="text-muted-foreground text-[12px]">/mo</span>
+                                </div>
+
+                                {/* Annual price */}
+                                <div className="text-muted-foreground text-[11px]">
+                                  ${plan.annualPrice} total
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Tagline */}
+                            <p className="text-muted-foreground mb-4 text-[13px] leading-[1.5]">
+                              {plan.tagline}
+                            </p>
+
+                            {/* Key Features */}
+                            <ul className="m-0 flex-1 list-none space-y-2 p-0">
+                              {plan.bullets.slice(0, 5).map((item, idx) => (
+                                <li key={idx} className="flex items-center gap-2 text-[13px]">
+                                  <IconCheck className={`h-4 w-4 flex-shrink-0 ${tc.checkCol}`} />
+
+                                  <span className="truncate">{item}</span>
+                                </li>
+                              ))}
+                            </ul>
+
+                            {/* More Features */}
+                            {plan.bullets.length > 5 && (
+                              <button
+                                type="button"
+                                className={`mt-3 flex cursor-pointer items-center gap-1 border-0 bg-transparent p-0 text-left text-[12px] font-semibold ${tc.textAccent}`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setComparePlansOpen(true);
+                                }}
+                              >
+                                Click here to see what else is included
+                                <IcoChevron className="h-3.5 w-3.5 -rotate-90" />
+                              </button>
+                            )}
+
+                            {/* CTA */}
+                            <button
+                              type="button"
+                              disabled={isDowngrade || !!isCurrentPlan}
+                              className={`mt-4 w-full rounded-full px-4 py-[10px] text-[13.5px] font-semibold transition-all duration-150 ${
+                                isDowngrade || isCurrentPlan
+                                  ? "bg-muted text-muted-foreground border-border cursor-not-allowed border opacity-60"
+                                  : `cursor-pointer ${isSelected ? tc.btn : `${tc.btnOut} border`}`
+                              }`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+
+                                if (isDowngrade || isCurrentPlan) {
+                                  return;
+                                }
+
+                                if (!visa) {
+                                  showToast("Please select a visa category first.", "error");
+
+                                  return;
+                                }
+
+                                setSelectedPlan(plan.id);
+                                setPurchaseStep("review");
+
+                                window.scrollTo({
+                                  top: 0,
+                                  behavior: "smooth",
+                                });
+                              }}
+                            >
+                              {isCurrentPlan
+                                ? "Your Current Plan"
+                                : isDowngrade
+                                  ? "Not Available"
+                                  : isSelected
+                                    ? "Continue to Checkout →"
+                                    : plan.cta}
+                            </button>
+                          </article>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
+
+                {/* ═══════════════════════════════════════════════════════════════
+            FREE PLAN STRIP
+            ═══════════════════════════════════════════════════════════════ */}
+                <div className="bg-muted/30 border-border mt-4 flex flex-col items-start justify-between gap-3 rounded-[18px] border px-5 py-4 sm:flex-row sm:items-center">
+                  <div>
+                    <p className="m-0 text-[14px] font-semibold">
+                      Not ready to commit? Start with a free preview.
+                    </p>
+
+                    <p className="text-muted-foreground m-0 mt-0.5 text-[13px]">
+                      Preview the roadmap structure, access public tools, no payment required.
+                    </p>
+                  </div>
+
+                  <Link href={userId ? "/" : "/signup"} className="shrink-0">
+                    <button type="button" className={secBtn}>
+                      Get Started Free
+                    </button>
+                  </Link>
+                </div>
+
+                {/* ═══════════════════════════════════════════════════════════════
+            HELP ME CHOOSE
+            ═══════════════════════════════════════════════════════════════ */}
+                <div className="mt-10">
+                  <h3 className="m-0 mb-1 text-[17px] font-bold">Help me choose</h3>
+
+                  <p className="text-muted-foreground mb-4 text-[13.5px]">
+                    Pick the description that matches you.
+                  </p>
+
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                    {HELPER_DATA.map((card, idx) => {
+                      const tc = TIER[card.plan as TierKey];
+
+                      const isActive = selectedPlan === card.plan;
+
+                      return (
+                        <button
+                          key={idx}
+                          type="button"
+                          className={`cursor-pointer rounded-[18px] border p-5 text-left transition-all ${
+                            isActive
+                              ? `${tc.cardBg} ${tc.selBorder} ${tc.ring}`
+                              : "bg-card border-border hover:bg-muted/20"
+                          }`}
+                          onClick={() => {
+                            setSelectedPlan(card.plan);
+                          }}
+                        >
+                          <strong className="mb-2 block text-[14.5px]">{card.title}</strong>
+
+                          <p className="text-muted-foreground m-0 mb-3 text-[13px] leading-[1.55]">
+                            {card.copy}
+                          </p>
+
+                          <span className={`text-[12px] font-bold ${tc.textAccent}`}>
+                            → Use {activePlans.find((p) => p.id === card.plan)?.name}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* ═══════════════════════════════════════════════════════════════
+            FAQs — FULL WIDTH
+            ═══════════════════════════════════════════════════════════════ */}
+                <div className="mt-10">
+                  <h2 className="m-0 mb-1 text-[22px] font-bold">Common questions</h2>
+
+                  <p className="text-muted-foreground mb-4 text-[13.5px]">
+                    Everything you need to know before purchasing.
+                  </p>
+
+                  <div className="bg-card border-border overflow-hidden rounded-[20px] border">
+                    {FAQS.map(([q, a], idx) => (
+                      <div
+                        key={idx}
+                        className={`border-border border-t first:border-0 ${
+                          openFaqIndex === idx ? "bg-muted/20" : ""
+                        }`}
+                      >
+                        <button
+                          type="button"
+                          className="hover:bg-muted/25 flex w-full cursor-pointer items-center justify-between gap-4 border-0 bg-transparent p-[16px_22px] text-left transition-colors"
+                          onClick={() => setOpenFaqIndex(openFaqIndex === idx ? -1 : idx)}
+                        >
+                          <span className="text-[14px] font-semibold">{q}</span>
+
+                          <span className="text-muted-foreground shrink-0 text-xl leading-none font-normal">
+                            {openFaqIndex === idx ? "−" : "+"}
+                          </span>
+                        </button>
+
+                        {openFaqIndex === idx && (
+                          <div className="text-muted-foreground px-[22px] pb-4 text-[13.5px] leading-[1.65]">
+                            {a}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ═══════════════════════════════════════════════════════════════
+            CTA BANNER — FULL WIDTH
+            ═══════════════════════════════════════════════════════════════ */}
+                <div className="bg-primary mt-8 flex flex-col justify-between gap-4 rounded-[22px] p-7 text-white md:flex-row md:items-center">
+                  <div>
+                    <h2 className="m-[0_0_6px] text-[22px] font-bold tracking-tight">
+                      Start with the level that fits you.
+                    </h2>
+
+                    <p className="m-0 text-[14px] text-white/80">
+                      Pick a plan, then add only the extras that apply to your case.
+                    </p>
+                  </div>
+
+                  <div className="flex shrink-0 flex-wrap gap-3">
+                    <button
+                      type="button"
+                      className="text-primary cursor-pointer rounded-full bg-white px-5 py-[9px] text-[13.5px] font-semibold transition-colors hover:bg-white/90"
+                      onClick={() =>
+                        window.scrollTo({
+                          top: 0,
+                          behavior: "smooth",
+                        })
+                      }
+                    >
+                      Review Plans
+                    </button>
+
+                    <Link href="/#contact">
+                      <button
+                        type="button"
+                        className="cursor-pointer rounded-full border border-white/30 px-5 py-[9px] text-[13.5px] font-semibold text-white transition-colors hover:bg-white/10"
+                      >
+                        Talk to Support
+                      </button>
+                    </Link>
+                  </div>
+                </div>
               </div>
-              <div className="flex shrink-0 flex-wrap gap-3">
-                <button
-                  className="text-primary cursor-pointer rounded-full bg-white px-5 py-[9px] text-[13.5px] font-semibold transition-colors hover:bg-white/90"
-                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                >
-                  Review Plans
-                </button>
-                <Link href="/#contact">
-                  <button className="cursor-pointer rounded-full border border-white/30 px-5 py-[9px] text-[13.5px] font-semibold text-white transition-colors hover:bg-white/10">
-                    Talk to Support
-                  </button>
-                </Link>
-              </div>
-            </div>
-          </div>
+            </>
+          )}
         </div>
       )}
 
@@ -1486,7 +1592,6 @@ function PricingContent() {
                 <ArrowLeft className="h-4 w-4" />
                 Back to plans
               </button>
-              {visaSelectorSm}
             </div>
 
             <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[1fr_320px]">

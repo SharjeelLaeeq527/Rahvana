@@ -45,7 +45,7 @@ const JOURNEY_META: Record<string, JourneyMeta> = {
     name: "IR-1 Spouse Visa",
     description: "A guided immigration journey for the spouse of a U.S. citizen.",
     route: ir1journeyHref,
-    image: "/assets/images/ir1-doc-vault-image.png",
+    image: "/assets/images/ir1-doc-vault-image.jpg",
     code: "IR-1",
   },
   ir5: {
