@@ -157,6 +157,7 @@ import { HouseholdSponsorshipTool } from "./components/HouseholdSponsorshipTool"
 import { DocumentQuestionnaire } from "@/app/components/questionnaire/DocumentQuestionnaire";
 import { QuestRenderer } from "./QuestRenderer";
 import { ActionStepRenderer } from "./ActionStepRenderer";
+import { DocumentChecklistTool } from "./components/DocumentChecklistTool";
 import { SafeHtml } from "../shared/SafeHTML";
 
 /**
@@ -1678,6 +1679,15 @@ export const StepView: React.FC<StepViewProps> = ({
                 />
               );
             })()}
+
+{/* DOCUMENT CHECKLIST (Step 3.7 SPECIFIC) */}
+{tool.type === "document_checklist" && (
+  <DocumentChecklistTool
+    journeyId={journeyId}
+    journeyType={data.journey_type}
+  />
+)}
+
 
           {/* ATTEND MEDICAL EXAM (Step 3.5 SPECIFIC) */}
           {tool.type === "medical_exam_guide" && (

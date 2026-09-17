@@ -30,7 +30,7 @@ import { E, msg, errorCode } from "@/lib/errors";
 import { VISA_CATEGORIES, HELPER_DATA, COMPARISON_GROUPS, ADDONS, FAQS } from "./data/pricing";
 import type { PlanData } from "./data/pricing";
 import ResourceToolCard from "@/components/pricing/ResourceToolCard";
-import ResourceCarousel from "@/components/pricing/ResourceCarousel";
+import { useToast } from "@/app/components/shared/ToastProvider";
 
 /* ===========================================================================
    TIER VISUAL CONFIG
@@ -672,6 +672,8 @@ function PricingContent() {
 
   const requestedInterviewCategory =
     searchParams.get("interview_category") || VISA_TO_INTERVIEW_CATEGORY[visa] || null;
+
+  const { showToast } = useToast();
 
   const checkoutAddonIds = useMemo(
     () =>
@@ -1331,7 +1333,14 @@ function PricingContent() {
                           }`}
                           onClick={(e) => {
                             e.stopPropagation();
+
                             if (isDowngrade || isCurrentPlan) return;
+
+                            if (!visa) {
+                              showToast("Please select a visa category first.", "error");
+                              return;
+                            }
+
                             setSelectedPlan(plan.id);
                             setPurchaseStep("review");
                             window.scrollTo({ top: 0, behavior: "smooth" });

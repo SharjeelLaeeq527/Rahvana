@@ -2883,7 +2883,7 @@
         {
           "step_key": "step_1_16",
           "step_number": 12,
-          "step_name": "Track Case Status in CEAC",
+          "step_name": "Monitor USCIS Case Status",
           "step_short_description": "Monitor your case status and updates",
           "step_type": "tool",
           "visible_when": {},
@@ -3099,7 +3099,7 @@
                 "note": "Your next task should match the actual update USCIS gives you."
               }
             ],
-            "footer_note": "Rahvana will keep this case visible, explain major updates clearly, and help you stay prepared while USCIS reviews the petition."
+            "footer_note": "USCIS processing can take several months. Check your case status here whenever you want an update, and use the phases above to see what usually comes next."
           },
           "citations": [
             {
@@ -5969,7 +5969,7 @@
                         },
                         {
                           "t": "Validity",
-                          "c": "<p>As per U.S. Embassy Islamabad, applicants over 16 years of age must provide a Police Clearance Certificate. Make sure your PCC is still valid and has not expired at the time of your interview.</p>"
+                          "c": "<p>Confirm the issue date on the PCC. If the PCC was obtained more than 12 months before the interview date, a fresh one must be obtained from the District Police Officer (DPO) office or Khidmat Markaz before attending the interview.</p>"
                         }
                       ]
                     },
@@ -6088,6 +6088,14 @@
                         {
                           "t": "How this works",
                           "c": "<p>The panel physician may either provide your medical examination results to you in a sealed envelope or send them directly to the U.S. Embassy. If you receive a sealed envelope, do not open it and bring it with you to your interview. If the physician sends the results directly to the embassy, no action is required to carry the packet yourself.</p>"
+                        },
+                        {
+                          "t": "If a sealed envelope is provided",
+                          "c": "<div class=\"note-box\"><p><strong>Do not open the envelope under any circumstances.</strong> An opened medical envelope will be rejected at the consular window and the medical examination may need to be repeated. Bring the sealed envelope directly to the interview and hand it to the consular officer.</p></div>"
+                        },
+                        {
+                          "t": "Approved clinics",
+                          "c": "<p>Panel physicians approved by U.S. Embassy Islamabad operate in Islamabad, Lahore, and Karachi. Only results from an approved panel physician are accepted for the immigrant visa interview. Do not use a general clinic or hospital not on the embassy's approved list.</p>"
                         }
                       ]
                     },
@@ -6165,6 +6173,25 @@
         {
           "step_key": "step_3_7",
           "step_number": 7,
+          "step_name": "Review Document Readiness",
+          "step_short_description": "Check document status and resolve issues",
+          "step_description": "Review your document checklist, confirm uploaded documents are current, address any expired or soon-to-expire documents, and prepare documents needed after receiving your interview appointment letter.",
+          "step_type": "tool",
+          "who": "Both",
+          "where": "Rahvana tool",
+          "estimated_duration_days": 1,
+          "is_required": true,
+          "display_order": 7,
+          "dependencies": ["step_3_6"],
+          "tool_data": {
+            "id": "step_3_7",
+            "type": "document_checklist",
+            "title": "Document Readiness Checklist"
+          }
+        },
+        {
+          "step_key": "step_3_8",
+          "step_number": 8,
           "step_type": "tool",
           "step_name": "Prepare for Interview",
           "step_description": "Use Rahvana's interview prep tool to practice questions, review your case history, and build confidence before interview day.",
@@ -6232,8 +6259,8 @@
           }
         },
         {
-          "step_key": "step_3_8",
-          "step_number": 8,
+          "step_key": "step_3_9",
+          "step_number": 9,
           "step_type": "tool",
           "step_name": "Attend Visa Interview",
           "step_description": "Your interview day has arrived. Know exactly what to bring, how to prepare at the door, and what to expect inside the consular window.",
@@ -6387,7 +6414,7 @@
                 "label": "Administrative Processing (AP / 221g)",
                 "type": "ap",
                 "icon": "clipboard",
-                "sub": "The officer needs more time or additional documents. This is not a refusal. Proceed to Step 9 to track and manage the AP process."
+                "sub": "The officer needs more time or additional documents. This is not a refusal. Proceed to Step 10 to track and manage the AP process."
               },
               {
                 "label": "Visa refused",
@@ -6401,8 +6428,8 @@
           "pakistanSpecific": "Address: Diplomatic Enclave, Ramna 5, Islamabad. NO mobile phones allowed."
         },
         {
-          "step_key": "step_3_9",
-          "step_number": 9,
+          "step_key": "step_3_10",
+          "step_number": 10,
           "step_type": "tool",
           "step_name": "Confirm Interview Outcome",
           "step_description": "Record what happened at your consular interview. Your selection unlocks the correct next steps for your specific situation.",
@@ -6411,7 +6438,7 @@
           "where": "Post-interview",
           "estimated_duration_days": 1,
           "is_required": true,
-          "display_order": 9,
+          "display_order": 10,
           "actions": [
             "Select your interview outcome",
             "If 221(g), record situation type",
@@ -6437,7 +6464,7 @@
               {
                 "id": "approved",
                 "label": "Approved",
-                "description": "The officer approved your visa. Your passport will be held and delivered via the courier service you registered.",
+                "description": "The officer approved your visa application. The Embassy will keep your passport to issue the visa and then return it to you by courier.",
                 "icon": "check-circle"
               },
               {
@@ -6462,7 +6489,7 @@
                 {
                   "id": "docs_requested",
                   "label": "I was asked to submit documents or information",
-                  "sub": "The officer gave you a 221(g) sheet listing specific items to provide"
+                  "sub": "The officer gave you a 221(g) letter listing specific documents, information, or actions required"
                 },
                 {
                   "id": "further_review",
@@ -6567,8 +6594,8 @@
           }
         },
         {
-          "step_key": "step_3_10",
-          "step_number": 10,
+          "step_key": "step_3_11",
+          "step_number": 11,
           "step_type": "tool",
           "step_name": "Track Visa Issuance",
           "step_description": "Your visa has been approved. Track the delivery of your passport and visa packet via your registered courier service.",
@@ -6577,7 +6604,7 @@
           "where": "USVisaScheduling courier portal",
           "estimated_duration_days": 7,
           "is_required": true,
-          "display_order": 10,
+          "display_order": 11,
           "visible_when": {
             "interviewOutcome": "approved"
           },
@@ -6620,8 +6647,8 @@
           }
         },
         {
-          "step_key": "step_3_10b",
-          "step_number": 10,
+          "step_key": "step_3_11b",
+          "step_number": 11,
           "step_type": "tool",
           "step_name": "Review Your 221(g) Letter",
           "step_description": "Open your 221(g) letter and select every item the embassy requested. This generates your personalized action plan for the next step.",
@@ -6630,7 +6657,7 @@
           "where": "Your 221(g) letter",
           "estimated_duration_days": 1,
           "is_required": true,
-          "display_order": 10,
+          "display_order": 11,
           "visible_when": {
             "interviewOutcome": "221g"
           },
@@ -6656,8 +6683,8 @@
           }
         },
         {
-          "step_key": "step_3_11",
-          "step_number": 11,
+          "step_key": "step_3_12",
+          "step_number": 12,
           "step_type": "tool",
           "step_name": "Submit Your 221(g) Documents",
           "step_description": "Gather exactly what the embassy requested, submit your packet via the specified method, and log your submission to stay organized.",
@@ -6666,7 +6693,7 @@
           "where": "Embassy / CEAC",
           "estimated_duration_days": 14,
           "is_required": true,
-          "display_order": 11,
+          "display_order": 12,
           "visible_when": {
             "interviewOutcome": "221g",
             "outcome221gSubtype": ["docs_requested", "both"]
@@ -6767,8 +6794,8 @@
           }
         },
         {
-          "step_key": "step_3_12",
-          "step_number": 12,
+          "step_key": "step_3_13",
+          "step_number": 13,
           "step_type": "tool",
           "step_name": "Track Administrative Processing",
           "step_description": "Monitor your CEAC case status, track updates, and stay informed while the U.S. embassy completes post-interview processing.",
@@ -6777,7 +6804,7 @@
           "where": "ceac.state.gov",
           "estimated_duration_days": 90,
           "is_required": false,
-          "display_order": 12,
+          "display_order": 13,
           "visible_when": {
             "interviewOutcome": "221g",
             "outcome221gSubtype": ["docs_requested", "further_review", "both"]
@@ -6834,20 +6861,12 @@
                   "value": "Ready"
                 },
                 {
-                  "label": "Approved",
-                  "value": "Approved"
-                },
-                {
                   "label": "Issued",
                   "value": "Issued"
                 },
                 {
                   "label": "Refused",
                   "value": "Refused"
-                },
-                {
-                  "label": "Administrative Processing",
-                  "value": "Administrative Processing"
                 },
                 {
                   "label": "Case Status Not Available",
@@ -6869,7 +6888,7 @@
                   "Monitor the email address registered with the embassy for additional requests or updates.",
                   "Respond promptly if the embassy requests further documents or information.",
                   "Ensure your passport remains valid throughout the review process.",
-                  "If your case remains pending significantly longer than normal, follow your embassy's official inquiry instructions before contacting them."
+                  "For Administrative Processing inquiries, follow the Embassy’s current instructions for your case. The Department of State generally recommends allowing up to 180 days from the interview or submission of supplemental documents, whichever is later, for Administrative Processing. This is a general guideline, not a requirement to wait 180 days before making an inquiry. If you have concerns about your case or believe an inquiry is appropriate, check the Embassy’s latest guidance and contact them through the appropriate channel."
                 ]
               },
               {
@@ -6878,9 +6897,9 @@
                 "icon": "check",
                 "items": [
                   "Issued — Your visa has been approved and printed.",
-                  "Administrative Processing — Additional review is still underway.",
+                  "Administrative Processing — Your case may remain refused under 221(g) while additional processing is underway.",
                   "Additional Documents Requested — The embassy requires more information.",
-                  "Refused — Review your written notice carefully for the official reason and next steps."
+                  "Refused — Review your 221(g) notice or other written instructions carefully. CEAC may continue to show 'Refused' while a case is undergoing Administrative Processing."
                 ]
               }
             ],

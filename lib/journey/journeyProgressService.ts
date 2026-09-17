@@ -1,5 +1,48 @@
 import { createClient } from "@/lib/supabase/client";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
+import { getAllActiveSteps as getAllActiveStepsEngine } from "@/app/components/journey-engine/journeyHelpers";
+import { getAllActiveSteps as getAllActiveStepsSpouse } from "@/app/components/journey-spouse/journeyHelpers";
+import ir1Config from "@/data/visa-category/ir-1.json";
+import ir5Config from "@/data/visa-category/ir-5.json";
+
+type ActiveStepResolver = (data: any, metadata: any, filingMethodFallback?: string | null) => any[];
+
+/**
+ * Chapters-schema journey configs surfaced in "My Journeys", each paired with the
+ * SAME `getAllActiveSteps` helper its dashboard renders with.
+ *
+ * These JSON files are the source of truth for step visibility (see CLAUDE.md).
+ * The per-user DB `steps` rows can drift from them: the background step sync in
+ * `app/api/journeys/initialize` only INSERTS steps that are new in the JSON, it
+ * never deletes steps that were removed from the JSON. That drift is exactly why
+ * "My Journeys" over/under-counted (e.g. IR-1 showing stale extra steps, IR-5
+ * missing a newly added one). We therefore derive the total from the JSON so the
+ * numbers stay correct when steps are added or removed in the future.
+ *
+ * The helper MUST match the journey's own dashboard so the count can never diverge
+ * from what the user sees: IR-1/CR-1 render via `journey-spouse` (RoadmapLayoutSpouse),
+ * IR-5 (and other chapters-schema journeys) via `journey-engine` (RoadmapLayoutEngine).
+ * The two `journeyHelpers.ts` copies are not identical (e.g. only the engine copy has
+ * the 221g `outcome221gSubtype` coercion), so using the wrong one would re-introduce a
+ * per-journey mismatch.
+ */
+const JOURNEY_CONFIG_BY_TYPE: Record<
+  string,
+  { config: unknown; getActiveSteps: ActiveStepResolver }
+> = {
+  ir1: { config: ir1Config, getActiveSteps: getAllActiveStepsSpouse as ActiveStepResolver },
+  ir5: { config: ir5Config, getActiveSteps: getAllActiveStepsEngine as ActiveStepResolver },
+};
+
+function normalizeJourneyType(journeyType?: string | null): string {
+  return (journeyType || "").toLowerCase().replace(/-/g, "");
+}
+
+function resolveJourneyConfig(
+  journeyType?: string | null
+): { config: any; getActiveSteps: ActiveStepResolver } | null {
+  return (JOURNEY_CONFIG_BY_TYPE[normalizeJourneyType(journeyType)] as any) ?? null;
+}
 
 export interface JourneyProgressRecord {
   id: string;
@@ -109,16 +152,18 @@ function isStepActiveForJourney(
 
 async function calculateActiveProgressFromSteps(
   supabase: ReturnType<typeof createClient>,
-  journeyId: string,
-  filingMethod: string
+  journey: { id: string; journey_type?: string | null; filing_method?: string | null }
 ) {
+  const filingMethod = journey.filing_method || "online";
+  const config = resolveJourneyConfig(journey.journey_type);
+
   const [{ data: steps, error: stepsError }, { data: caseData, error: caseDataError }] =
     await Promise.all([
       supabase
         .from("steps")
-        .select("id, status, visible_when, chapters!inner(journey_id)")
-        .eq("chapters.journey_id", journeyId),
-      supabase.from("case_data").select("data_key, data_value").eq("journey_id", journeyId),
+        .select("step_key, status, visible_when, chapters!inner(journey_id)")
+        .eq("chapters.journey_id", journey.id),
+      supabase.from("case_data").select("data_key, data_value").eq("journey_id", journey.id),
     ]);
 
   if (stepsError || caseDataError) {
@@ -126,6 +171,34 @@ async function calculateActiveProgressFromSteps(
   }
 
   const caseDataValues = caseDataRowsToValues(caseData || []);
+
+  // Steps the user has actually completed, keyed by step_key. Completion always
+  // lives in the DB; only the *set of active steps* is taken from the JSON.
+  const completedKeys = new Set(
+    (steps || [])
+      .filter((step: any) => step.status === "completed")
+      .map((step: any) => step.step_key)
+      .filter(Boolean)
+  );
+
+  // Preferred path: derive the active steps from the JSON source of truth using
+  // the exact same visibility rules as the live dashboard (getActiveStepsForStage).
+  // This ignores stale/missing DB rows so the total matches what the user sees in
+  // the journey and stays correct when the JSON's steps change.
+  if (config?.config && Array.isArray(config.config.chapters)) {
+    const activeSteps = config.getActiveSteps(config.config, caseDataValues, filingMethod);
+    const activeKeys = activeSteps
+      .map((step: any) => step.step_key || step.id)
+      .filter(Boolean) as string[];
+
+    return {
+      total_steps_count: activeKeys.length,
+      completed_steps_count: activeKeys.filter((key) => completedKeys.has(key)).length,
+    };
+  }
+
+  // Fallback for journeys without a chapters-schema config (older stages-schema
+  // journeys): keep the previous DB-driven active-step filter.
   const activeSteps = (steps || []).filter((step: any) =>
     isStepActiveForJourney(step, filingMethod, caseDataValues)
   );
@@ -170,11 +243,11 @@ export async function loadJourneyProgress(
     };
 
     try {
-      activeProgress = await calculateActiveProgressFromSteps(
-        supabase,
-        data.id,
-        data.filing_method || "online"
-      );
+      activeProgress = await calculateActiveProgressFromSteps(supabase, {
+        id: data.id,
+        journey_type: data.journey_type,
+        filing_method: data.filing_method,
+      });
     } catch (progressError) {
       console.warn("[Journey] Failed to calculate active progress, using stored counts:", progressError);
     }
@@ -240,11 +313,11 @@ export async function listUserJourneys(userId: string): Promise<JourneyProgressR
         };
 
         try {
-          activeProgress = await calculateActiveProgressFromSteps(
-            supabase,
-            record.id,
-            record.filing_method || "online"
-          );
+          activeProgress = await calculateActiveProgressFromSteps(supabase, {
+            id: record.id,
+            journey_type: record.journey_type,
+            filing_method: record.filing_method,
+          });
         } catch (progressError) {
           console.warn(
             "[Journey] Failed to calculate active progress, using stored counts:",
@@ -336,9 +409,23 @@ export async function saveJourneyProgress(
   try {
     const supabase = createClient();
 
-    // Calculate progress metrics
-    const completedCount = state.completedSteps.size || 0;
-    const totalCount = getFallbackTotalSteps(state.filingType);
+    // Calculate progress metrics. Prefer the JSON source of truth so the stored
+    // counts match what the dashboard and "My Journeys" derive; fall back to the
+    // filing-method estimate only for journeys without a chapters-schema config.
+    const config = resolveJourneyConfig(journeyId);
+    let totalCount = getFallbackTotalSteps(state.filingType);
+    let completedCount = state.completedSteps.size || 0;
+
+    if (config?.config && Array.isArray(config.config.chapters)) {
+      const activeSteps = config.getActiveSteps(config.config, state.metadata, state.filingType);
+      const activeKeys = activeSteps
+        .map((step: any) => step.step_key || step.id)
+        .filter(Boolean) as string[];
+      totalCount = activeKeys.length;
+      // Only count completed steps that are still active in the current JSON.
+      completedCount = activeKeys.filter((key) => state.completedSteps.has(key)).length;
+    }
+
     const completionPercentage = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
     const payload = {
