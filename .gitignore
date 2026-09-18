@@ -210,4 +210,6 @@ nul
 !/scratch/register_adoption_guide.mjs
 !/scratch/register_step_parent_guide.mjs
 
-agents.md
+/Agents.md
+
+.agents

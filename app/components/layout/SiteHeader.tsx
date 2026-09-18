@@ -55,8 +55,9 @@ import { useAuth, UserProfile } from "@/app/context/AuthContext";
 import { NAV_DATA } from "./navigationData";
 import { ConfirmationModal } from "../shared/ConfirmationModal";
 import { requestNavigation } from "@/lib/guides/navigationGuardStore";
-// import { useTheme } from "next-themes";
 import { ir1journeyHref, ir5journeyHref } from "@/lib/constants/routes";
+import { ActiveCandidateBadge } from "@/app/components/candidate/ActiveCandidateBadge";
+import { CandidateSwitcherTray } from "@/app/components/candidate/CandidateSwitcherTray";
 
 interface HeaderProps {
   activeSection?: string;
@@ -1664,84 +1665,91 @@ export function SiteHeader({
           {isLoading && !resolvedUser ? (
             <div className="h-10 w-22 animate-pulse rounded-lg bg-[#0d7377]/10" />
           ) : user ? (
-            <div
-              className="relative"
-              ref={profileRef}
-              onPointerEnter={(e) => {
-                // Ignore touch pointer types to prevent double-triggering on mobile
-                if (e.pointerType === "touch") return;
-                handleMenuEnter("profile");
-              }}
-              onMouseLeave={handleMenuLeave}
-            >
-              <HydrationSafeButton
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (menuTimeoutRef.current) clearTimeout(menuTimeoutRef.current);
-                  setActiveMenu(activeMenu === "profile" ? null : "profile");
+            <div className="flex items-center gap-2">
+              <ActiveCandidateBadge
+                onClick={() => setActiveMenu(activeMenu === "profile" ? null : "profile")}
+              />
+              <div
+                className="relative"
+                ref={profileRef}
+                onPointerEnter={(e) => {
+                  // Ignore touch pointer types to prevent double-triggering on mobile
+                  if (e.pointerType === "touch") return;
+                  handleMenuEnter("profile");
                 }}
-                className={`mb-2 flex h-auto w-auto items-center justify-center rounded-none p-0 text-lg font-semibold shadow-none transition-all ${
-                  isHomeHeroState
-                    ? "text-white"
-                    : isHomeHeroP2State
-                      ? "text-[#0d7377]"
-                      : "text-rahvana-primary"
-                }`}
-                style={{
-                  background: "none",
-                  boxShadow: "none",
-                  border: "none",
-                  width: "auto",
-                  height: "auto",
-                  padding: 0,
-                  borderRadius: 0,
-                }}
+                onMouseLeave={handleMenuLeave}
               >
-                <span
-                  style={
+                <HydrationSafeButton
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (menuTimeoutRef.current) clearTimeout(menuTimeoutRef.current);
+                    setActiveMenu(activeMenu === "profile" ? null : "profile");
+                  }}
+                  className={`mb-2 flex h-auto w-auto items-center justify-center rounded-none p-0 text-lg font-semibold shadow-none transition-all ${
                     isHomeHeroState
-                      ? { color: "#305d5aff" }
+                      ? "text-white"
                       : isHomeHeroP2State
-                        ? { color: "#0d7377" }
-                        : { color: "var(--rahvana-primary, #0d7377)" }
-                  }
-                  // className={`flex items-center justify-center w-[34px] h-[34px] rounded-full border-[1.5px] text-[15px] font-bold transition-colors ${
-                  //   isHomeHeroState || isHomeHeroP2State
-                  //     ? "bg-white/20 border-white/40 text-white"
-                  //     : "bg-[#0d7377]/10 border-[#0d7377]/30 text-[#0d7377]"
-                  // }`}
+                        ? "text-[#0d7377]"
+                        : "text-rahvana-primary"
+                  }`}
+                  style={{
+                    background: "none",
+                    boxShadow: "none",
+                    border: "none",
+                    width: "auto",
+                    height: "auto",
+                    padding: 0,
+                    borderRadius: 0,
+                  }}
                 >
-                  {(
-                    profile?.full_name ||
-                    user?.user_metadata?.full_name ||
-                    user?.user_metadata?.name ||
-                    "U"
-                  )
-                    .charAt(0)
-                    .toUpperCase()}
-                </span>
-              </HydrationSafeButton>
-
-              <AnimatePresence>
-                {activeMenu === "profile" && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                    className="absolute top-full right-0 z-9999 mt-1 max-h-[80vh] w-72 origin-top-right transform overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl"
+                  <span
+                    style={
+                      isHomeHeroState
+                        ? { color: "#305d5aff" }
+                        : isHomeHeroP2State
+                          ? { color: "#0d7377" }
+                          : { color: "var(--rahvana-primary, #0d7377)" }
+                    }
+                    // className={`flex items-center justify-center w-[34px] h-[34px] rounded-full border-[1.5px] text-[15px] font-bold transition-colors ${
+                    //   isHomeHeroState || isHomeHeroP2State
+                    //     ? "bg-white/20 border-white/40 text-white"
+                    //     : "bg-[#0d7377]/10 border-[#0d7377]/30 text-[#0d7377]"
+                    // }`}
                   >
-                    {/* Header */}
-                    <div className="border-border bg-muted/30 border-b px-5 py-4">
-                      <h3 className="text-foreground font-bold">
-                        {profile?.full_name ||
-                          user?.user_metadata?.full_name ||
-                          user?.user_metadata?.name ||
-                          "Valued User"}
-                      </h3>
-                      <p className="text-muted-foreground text-sm">
-                        {user?.email || "No email available"}
-                      </p>
-                    </div>
+                    {(
+                      profile?.full_name ||
+                      user?.user_metadata?.full_name ||
+                      user?.user_metadata?.name ||
+                      "U"
+                    )
+                      .charAt(0)
+                      .toUpperCase()}
+                  </span>
+                </HydrationSafeButton>
+
+                <AnimatePresence>
+                  {activeMenu === "profile" && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                      className="absolute top-full right-0 z-9999 mt-1 max-h-[80vh] w-76 origin-top-right transform overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl"
+                    >
+                      {/* Header */}
+                      <div className="border-border bg-muted/30 border-b px-5 py-4">
+                        <h3 className="text-foreground font-bold">
+                          {profile?.full_name ||
+                            user?.user_metadata?.full_name ||
+                            user?.user_metadata?.name ||
+                            "Valued User"}
+                        </h3>
+                        <p className="text-muted-foreground text-sm">
+                          {user?.email || "No email available"}
+                        </p>
+                      </div>
+
+                      {/* Candidate Switcher Tray */}
+                      <CandidateSwitcherTray onCandidateSwitched={() => setActiveMenu(null)} />
 
                     {/* Section 1 */}
                     <div className="border-border border-b py-2">
@@ -1800,18 +1808,19 @@ export function SiteHeader({
                 )}
               </AnimatePresence>
             </div>
-          ) : (
-            <HydrationSafeButton
-              onClick={() => onToggleAuth?.()}
-              className={`rounded-lg px-6 py-2 font-semibold shadow-md transition-all ${
-                isHomeHeroState
-                  ? "bg-white/50 text-[#6d9a9b] hover:bg-white/65"
-                  : "bg-primary hover:bg-primary/90 text-white"
-              }`}
-            >
-              LOGIN
-            </HydrationSafeButton>
-          )}
+          </div>
+        ) : (
+          <HydrationSafeButton
+            onClick={() => onToggleAuth?.()}
+            className={`rounded-lg px-6 py-2 font-semibold shadow-md transition-all ${
+              isHomeHeroState
+                ? "bg-white/50 text-[#6d9a9b] hover:bg-white/65"
+                : "bg-primary hover:bg-primary/90 text-white"
+            }`}
+          >
+            LOGIN
+          </HydrationSafeButton>
+        )}
         </div>
       </div>
 

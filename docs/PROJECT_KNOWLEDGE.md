@@ -338,20 +338,25 @@ server storage clients (`storage-client.ts`, `storage-server.ts`, `storage-datab
 `journey-mapping.ts`, `flag-registry.ts`, and `useInitDocumentVault.ts` (prefetch on
 dashboard mount).
 
-**Multi-candidate (IR-5+).** A journey's vault can hold documents for more than one
-candidate (IR-5 = Parent 1 / Parent 2). A candidate is a sub-scope INSIDE one journey (no
-extra journey row): documents carry an optional `candidate_id` (null = legacy /
-single-candidate), and the roster lives in `document_vault_config.candidates` (JSONB
-`{id,label,name?}[]`). Cross-candidate sharing reuses the SAME `storage_path` across rows
-(no file copy), mirroring cross-journey sharing; safe delete uses a `storage_path`
-reference count (`scope=candidate|all` on `DELETE /api/documents/[id]`), which also fixed
-the older cross-journey orphan-on-delete bug. Relevance ("only offer shareable docs") is
-in `lib/document-vault/candidate-sharing.ts` (`isDocumentShareableAcrossCandidates`:
-petitioner/joint-sponsor/household docs shareable by default, any BENEFICIARY doc
-candidate-specific, explicit `shareableAcrossCandidates` override on a `DocumentDefinition`).
-The share prompt is opt-in (unchecked). UI cap is IR-5 = 2 via
-`getMaxCandidates(journeyType)`; the data model + helpers are N-candidate capable for
-future categories (e.g. IR-2). Full design + status: `docs/IR5-DOCUMENT-VAULT-MULTI-CANDIDATE-PLAN.md`. Vault files are AES-256-GCM encrypted with a **per-user** key
+**Multi-candidate (IR-5 / IR-2).** A single petitioner can sponsor several beneficiaries
+(IR-5 = Mother + Father; IR-2 = multiple children). This is modeled as **one journey per
+candidate**, coordinated by a central `CandidateContext` (`app/context/CandidateContext.tsx`,
+provided in `app/layout.tsx`). Candidates live on the `MasterProfile`
+(`profile.candidates: CandidateProfile[]` + `activeCandidateId`; see `types/candidate.ts`),
+and each candidate maps to a distinct `journey_type` via
+`getCandidateJourneyKey(baseType, candidateId)` in `lib/candidate/candidateSyncService.ts`
+(`ir5` for candidate-1, `ir5_candidate-2` for candidate-2, ...), so the existing
+`UNIQUE(user_id, journey_type)` constraint holds without a schema change. Sponsor/petitioner
+data is auto-shared across candidates (`SHARED_PETITIONER_FIELDS`) while beneficiary data is
+isolated (`CANDIDATE_SPECIFIC_FIELDS`). The vault, roadmap, tools and forms all scope by the
+active candidate's journey (via `useCandidate()` + `journey_id`); the vault therefore reuses
+the existing per-`journey_id` scoping (no `candidate_id` column). UI: `CandidateSwitcherTray`
++ `ActiveCandidateBadge` in the SiteHeader, `AddCandidateModal`. Full design:
+`docs/multi-candidate-desciption.md`. **Cross-candidate document sharing** (e.g. a petitioner
+doc used for both parents) rides the existing **cross-journey** share (`shareWithJourneyIds`);
+`DELETE /api/documents/[id]` reference-counts `storage_path` before removing the blob so
+deleting one shared copy never orphans the file for the other candidate's journey.
+Vault files are AES-256-GCM encrypted with a **per-user** key
 (`file-encryption.ts`, `SHA-256(PORTAL_WALLET_SECRET + ":" + userId)`, `RVLT` magic
 header) — this per-user derivation is unique to vault files (see 23).
 
@@ -531,10 +536,10 @@ migrations (`create_{journeys,chapters,steps,case_data}_table.sql`).
 | `steps` | Granular action items | `chapter_id`, `step_key`, `step_type`, `tool_integration`, `dependencies` (JSONB), `visible_when` (JSONB), `status`, `substatus`, `is_required`, `metadata` |
 | `case_data` | Flexible key-value case facts | `journey_id`, `data_key`, `data_value` (JSONB), `source`, `is_verified`, `version`, `previous_value` (audit) |
 
-> **Document vault multi-candidate columns** (migration `20260917_01_ir5_candidate_support`):
-> `documents.candidate_id TEXT` (nullable; null = legacy/single-candidate) and
-> `document_vault_config.candidates JSONB` (per-journey candidate roster). Additive +
-> backward-safe; no backfill. See 4.7 and `docs/IR5-DOCUMENT-VAULT-MULTI-CANDIDATE-PLAN.md`.
+> **Multi-candidate (IR-5/IR-2) uses NO new DB columns.** Each candidate is a separate
+> `journeys` row with its own `journey_type` (`ir5`, `ir5_candidate-2`, ...); documents stay
+> scoped by the existing `journey_id`. Candidate rosters live on `user_profiles.profile_details`
+> (`profile.candidates`), not in a dedicated table. See 4.7 and `docs/multi-candidate-desciption.md`.
 
 **Supporting journey tables** — `journey_documents` (+ `journey_id` on documents),
 `tool_sessions`, `journey_portal_records` (**no passwords**), `journey_appointments`,

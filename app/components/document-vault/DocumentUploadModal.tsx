@@ -24,8 +24,6 @@ import {
   fetchUserJourneysCached,
   isSameJourneyType,
 } from "@/lib/document-vault/journey-mapping";
-import { getCandidateShareTargets } from "@/lib/document-vault/candidate-sharing";
-import { ShareTargetSelector } from "./ShareTargetSelector";
 
 interface DocumentUploadModalProps {
   open: boolean;
@@ -61,8 +59,7 @@ export function DocumentUploadModal({
   const [uploading, setUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { config, replaceDocumentId, deleteDocument, currentJourneyId, candidates, currentCandidateId } =
-    useDocumentVaultStore();
+  const { config, replaceDocumentId, deleteDocument, currentJourneyId } = useDocumentVaultStore();
   const { t } = useLanguage();
 
   const [internalUserJourneys, setInternalUserJourneys] = useState<any[]>(() => {
@@ -151,19 +148,6 @@ export function DocumentUploadModal({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, otherJourneysKey]);
-
-  // Candidate cross-share targets (IR-5+): the OTHER candidates this shareable document may
-  // also be used for. Opt-in by design: default selection is EMPTY - the user must
-  // explicitly choose a candidate to share with.
-  const candidateShareTargets = useMemo(
-    () => getCandidateShareTargets(documentDef, candidates, currentCandidateId),
-    [documentDef, candidates, currentCandidateId]
-  );
-  const [sharedCandidateIds, setSharedCandidateIds] = useState<string[]>([]);
-  useEffect(() => {
-    if (open) setSharedCandidateIds([]);
-  }, [open]);
-
   const { refreshProfile, profile } = useUserProfile();
 
   // ── Inline OCR auto-fill (passport, etc.) ──
@@ -423,17 +407,11 @@ export function DocumentUploadModal({
       if (notes) {
         formData.append("notes", notes);
       }
-      if (activeJourneyId) {
-        formData.append("journeyId", activeJourneyId);
-      }
-      if (currentCandidateId) {
-        formData.append("candidateId", currentCandidateId);
+      if (effectiveActiveJourneyId) {
+        formData.append("journeyId", effectiveActiveJourneyId);
       }
       if (sharedJourneyIds.length > 0) {
         formData.append("shareWithJourneyIds", JSON.stringify(sharedJourneyIds));
-      }
-      if (sharedCandidateIds.length > 0) {
-        formData.append("shareWithCandidateIds", JSON.stringify(sharedCandidateIds));
       }
 
       const response = await fetch("/api/documents/upload", {
@@ -504,7 +482,6 @@ export function DocumentUploadModal({
     setOcrFields({});
     setOcrWarnings([]);
     setJourneyPriorMarriage(null);
-    setSharedCandidateIds([]);
     onClose();
   };
 
@@ -923,34 +900,73 @@ export function DocumentUploadModal({
               />
             </div>
 
-            {/* Sibling Journeys Cross-Sharing */}
-            <ShareTargetSelector
-              title="Cross-share this document"
-              description="Select which of your other active immigration journeys should also receive this uploaded file:"
-              targets={otherJourneys.map((j) => ({
-                id: j.id,
-                label: getFriendlyJourneyName(j.journey_type, j.journey_name),
-              }))}
-              selectedIds={sharedJourneyIds}
-              onToggle={(id) =>
-                setSharedJourneyIds((prev) =>
-                  prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-                )
-              }
-            />
-
-            {/* Cross-candidate sharing (IR-5+). Opt-in: nothing selected by default. */}
-            <ShareTargetSelector
-              title="Also use this document for"
-              description="This document can be used for more than one candidate. Select any it also applies to:"
-              targets={candidateShareTargets.map((c) => ({ id: c.id, label: c.label }))}
-              selectedIds={sharedCandidateIds}
-              onToggle={(id) =>
-                setSharedCandidateIds((prev) =>
-                  prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-                )
-              }
-            />
+            {/* Sibling Journeys Cross-Sharing Checkboxes */}
+            {otherJourneys.length > 0 && (
+              <div className="space-y-3 rounded-2xl border border-slate-100 bg-slate-50 p-4 shadow-inner dark:border-slate-800/80 dark:bg-slate-800/40">
+                <label className="text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-slate-300">
+                  Cross-share this document
+                </label>
+                <p className="mb-1 text-[11px] leading-normal text-slate-500">
+                  Select which of your other active immigration journeys should also receive this
+                  uploaded file:
+                </p>
+                <div className="space-y-2.5 pt-1">
+                  {otherJourneys.map((j) => {
+                    const isChecked = sharedJourneyIds.includes(j.id);
+                    return (
+                      <div
+                        key={j.id}
+                        onClick={() => {
+                          if (isChecked) {
+                            setSharedJourneyIds(sharedJourneyIds.filter((id) => id !== j.id));
+                          } else {
+                            setSharedJourneyIds([...sharedJourneyIds, j.id]);
+                          }
+                        }}
+                        className={`flex cursor-pointer items-center justify-between rounded-xl border p-3.5 transition-all duration-300 select-none ${
+                          isChecked
+                            ? "bg-primary/5 border-primary shadow-xs"
+                            : "border-slate-200 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`flex h-5 w-5 items-center justify-center rounded-md border transition-all duration-300 ${
+                              isChecked
+                                ? "bg-primary border-primary scale-100 text-white"
+                                : "border-slate-300 bg-transparent dark:border-slate-700"
+                            }`}
+                          >
+                            {isChecked && (
+                              <svg
+                                className="h-3.5 w-3.5 fill-none stroke-white stroke-[3]"
+                                viewBox="0 0 24 24"
+                              >
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
+                            )}
+                          </div>
+                          <span
+                            className={`text-xs font-bold transition-colors ${
+                              isChecked
+                                ? "text-slate-900 dark:text-white"
+                                : "text-slate-600 dark:text-slate-400"
+                            }`}
+                          >
+                            {getFriendlyJourneyName(j.journey_type, j.journey_name)}
+                          </span>
+                        </div>
+                        {isChecked && (
+                          <span className="text-primary bg-primary/10 animate-in fade-in zoom-in-95 rounded-md px-2 py-0.5 text-[10px] font-black tracking-wider uppercase duration-200">
+                            Shared
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* USCIS Naming Preview */}
             {selectedFile && config && (

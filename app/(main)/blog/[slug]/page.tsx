@@ -280,193 +280,240 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
 
               {/* Dynamic Content Sections */}
               {article.sections &&
-                article.sections.map((section, idx) => (
-                  <section
-                    key={section.id || `sec-${idx}`}
-                    id={section.id}
-                    className="scroll-mt-28 space-y-4"
-                  >
-                    {section.h2 && (
-                      <h2 className="text-foreground border-border/50 border-b pb-2 text-2xl font-bold tracking-tight">
-                        {section.h2}
-                      </h2>
-                    )}
+                article.sections.map((section, idx) => {
+                  const imageType = section.image?.imageType || section.imageType || "full";
+                  const isSided = imageType === "sided" && !!section.image?.url;
 
-                    {section.h3 && (
-                      <h3 className="text-foreground text-xl font-bold tracking-tight">
-                        {section.h3}
-                      </h3>
-                    )}
+                  return (
+                    <section
+                      key={section.id || `sec-${idx}`}
+                      id={section.id}
+                      className="scroll-mt-28 space-y-4"
+                    >
+                      {section.h2 && (
+                        <h2 className="text-foreground border-border/50 border-b pb-2 text-2xl font-bold tracking-tight">
+                          {section.h2}
+                        </h2>
+                      )}
 
-                    {/* Optional Section Image */}
-                    {section.image?.url && (
-                      <figure className="my-6 space-y-2">
-                        <div className="border-border/70 bg-card/30 overflow-hidden rounded-2xl border shadow-sm">
-                          <Image
-                            src={section.image.url}
-                            alt={section.image.alt || section.h2 || "Section image"}
-                            width={1600}
-                            height={900}
-                            className="h-auto w-full object-contain"
-                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 85vw, 1100px"
-                          />
+                      {section.h3 && (
+                        <h3 className="text-foreground text-xl font-bold tracking-tight">
+                          {section.h3}
+                        </h3>
+                      )}
+
+                      {isSided ? (
+                        <div className="flow-root space-y-4">
+                          {/* Floated Sided Image on the Right */}
+                          <figure className="my-2 space-y-2 lg:float-right lg:ml-8 lg:mb-4 lg:w-[42%] lg:max-w-[520px]">
+                            <div className="border-border/70 bg-card/30 overflow-hidden rounded-2xl border shadow-sm">
+                              <Image
+                                src={section.image!.url}
+                                alt={section.image!.alt || section.h2 || "Section image"}
+                                width={1200}
+                                height={800}
+                                className="h-auto w-full object-contain"
+                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 45vw, 520px"
+                              />
+                            </div>
+                            {section.image!.caption && (
+                              <figcaption className="text-muted-foreground text-center text-xs">
+                                {section.image!.caption}
+                              </figcaption>
+                            )}
+                          </figure>
+
+                          {/* Paragraphs that wrap around the floated image and expand to full width underneath */}
+                          {section.paragraphs &&
+                            section.paragraphs.map((p, pIdx) => (
+                              <p
+                                key={pIdx}
+                                className="text-muted-foreground text-base leading-relaxed"
+                              >
+                                {p}
+                              </p>
+                            ))}
                         </div>
-                        {section.image.caption && (
-                          <figcaption className="text-muted-foreground text-center text-xs">
-                            {section.image.caption}
-                          </figcaption>
-                        )}
-                      </figure>
-                    )}
-
-                    {section.paragraphs &&
-                      section.paragraphs.map((p, pIdx) => (
-                        <p key={pIdx} className="text-muted-foreground text-base leading-relaxed">
-                          {p}
-                        </p>
-                      ))}
-
-                    {/* Optional Callout Box */}
-                    {section.callout && (
-                      <div
-                        className={cn(
-                          "my-6 rounded-2xl border bg-slate-900/95 p-5 text-slate-100 shadow-md",
-                          section.callout.type === "warning"
-                            ? "border-amber-500/40"
-                            : section.callout.type === "tip"
-                              ? "border-emerald-500/40"
-                              : "border-primary/40"
-                        )}
-                      >
-                        <div className="mb-1.5 flex items-center gap-2 text-sm font-bold">
-                          {section.callout.type === "warning" ? (
-                            <AlertTriangle className="h-4 w-4 shrink-0 text-amber-400" />
-                          ) : section.callout.type === "tip" ? (
-                            <Lightbulb className="h-4 w-4 shrink-0 text-emerald-400" />
-                          ) : (
-                            <Info className="text-primary h-4 w-4 shrink-0" />
+                      ) : (
+                        <>
+                          {/* Optional Section Image (Full width / default) */}
+                          {section.image?.url && (
+                            <figure className="my-6 space-y-2">
+                              <div className="border-border/70 bg-card/30 overflow-hidden rounded-2xl border shadow-sm">
+                                <Image
+                                  src={section.image.url}
+                                  alt={section.image.alt || section.h2 || "Section image"}
+                                  width={1600}
+                                  height={900}
+                                  className="h-auto w-full object-contain"
+                                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 85vw, 1100px"
+                                />
+                              </div>
+                              {section.image.caption && (
+                                <figcaption className="text-muted-foreground text-center text-xs">
+                                  {section.image.caption}
+                                </figcaption>
+                              )}
+                            </figure>
                           )}
-                          {section.callout.title && (
-                            <span
-                              className={
-                                section.callout.type === "warning"
-                                  ? "text-amber-400"
-                                  : section.callout.type === "tip"
-                                    ? "text-emerald-400"
-                                    : "text-primary"
-                              }
-                            >
-                              {section.callout.title}
-                            </span>
-                          )}
-                        </div>
-                        {section.callout.text && (
-                          <p className="text-xs leading-relaxed text-slate-200 sm:text-sm">
-                            {section.callout.text}
-                          </p>
-                        )}
-                      </div>
-                    )}
 
-                    {/* Optional Comparison Table */}
-                    {section.table &&
-                      section.table.headers &&
-                      section.table.headers.length > 0 &&
-                      section.table.rows &&
-                      section.table.rows.length > 0 && (
-                        <div className="border-border my-6 overflow-x-auto rounded-2xl border shadow-sm">
-                          <table className="w-full text-left text-xs sm:text-sm">
-                            <thead className="border-border bg-primary/10 text-foreground border-b font-semibold">
-                              <tr>
-                                {section.table.headers.map((h, hIdx) => (
-                                  <th key={hIdx} className="p-3.5 font-bold tracking-tight sm:p-4">
-                                    {h}
-                                  </th>
-                                ))}
-                              </tr>
-                            </thead>
-                            <tbody className="divide-border/60 divide-y">
-                              {section.table.rows.map((r, rIdx) => (
-                                <tr
-                                  key={rIdx}
-                                  className={cn(
-                                    "hover:bg-primary/20 dark:hover:bg-primary/25 transition-colors duration-150",
-                                    rIdx % 2 === 1
-                                      ? "bg-primary/[0.05] dark:bg-primary/[0.07]"
-                                      : "bg-card/60 dark:bg-card/20"
-                                  )}
-                                >
-                                  {r.map((c, cIdx) => (
-                                    <td
-                                      key={cIdx}
-                                      className={cn(
-                                        "p-3.5 leading-relaxed sm:p-4",
-                                        cIdx === 0
-                                          ? "text-foreground font-semibold"
-                                          : "text-muted-foreground font-medium"
-                                      )}
-                                    >
-                                      {c}
-                                    </td>
-                                  ))}
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                          {section.paragraphs &&
+                            section.paragraphs.map((p, pIdx) => (
+                              <p
+                                key={pIdx}
+                                className="text-muted-foreground text-base leading-relaxed"
+                              >
+                                {p}
+                              </p>
+                            ))}
+                        </>
+                      )}
+
+                      {/* Optional Callout Box */}
+                      {section.callout && (
+                        <div
+                          className={cn(
+                            "my-6 rounded-2xl border bg-slate-900/95 p-5 text-slate-100 shadow-md",
+                            section.callout.type === "warning"
+                              ? "border-amber-500/40"
+                              : section.callout.type === "tip"
+                                ? "border-emerald-500/40"
+                                : "border-primary/40"
+                          )}
+                        >
+                          <div className="mb-1.5 flex items-center gap-2 text-sm font-bold">
+                            {section.callout.type === "warning" ? (
+                              <AlertTriangle className="h-4 w-4 shrink-0 text-amber-400" />
+                            ) : section.callout.type === "tip" ? (
+                              <Lightbulb className="h-4 w-4 shrink-0 text-emerald-400" />
+                            ) : (
+                              <Info className="text-primary h-4 w-4 shrink-0" />
+                            )}
+                            {section.callout.title && (
+                              <span
+                                className={
+                                  section.callout.type === "warning"
+                                    ? "text-amber-400"
+                                    : section.callout.type === "tip"
+                                      ? "text-emerald-400"
+                                      : "text-primary"
+                                }
+                              >
+                                {section.callout.title}
+                              </span>
+                            )}
+                          </div>
+                          {section.callout.text && (
+                            <p className="text-xs leading-relaxed text-slate-200 sm:text-sm">
+                              {section.callout.text}
+                            </p>
+                          )}
                         </div>
                       )}
 
-                    {/* Optional Bullet List */}
-                    {section.bulletList && section.bulletList.length > 0 && (
-                      <ul className="text-muted-foreground my-4 space-y-2 text-sm">
-                        {section.bulletList.map((item, bIdx) => (
-                          <li key={bIdx} className="flex items-start gap-2.5">
-                            <CheckCircle2 className="text-primary mt-0.5 h-4 w-4 shrink-0" />
-                            <span>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
+                      {/* Optional Comparison Table */}
+                      {section.table &&
+                        section.table.headers &&
+                        section.table.headers.length > 0 &&
+                        section.table.rows &&
+                        section.table.rows.length > 0 && (
+                          <div className="border-border my-6 overflow-x-auto rounded-2xl border shadow-sm">
+                            <table className="w-full text-left text-xs sm:text-sm">
+                              <thead className="border-border bg-primary/10 text-foreground border-b font-semibold">
+                                <tr>
+                                  {section.table.headers.map((h, hIdx) => (
+                                    <th
+                                      key={hIdx}
+                                      className="p-3.5 font-bold tracking-tight sm:p-4"
+                                    >
+                                      {h}
+                                    </th>
+                                  ))}
+                                </tr>
+                              </thead>
+                              <tbody className="divide-border/60 divide-y">
+                                {section.table.rows.map((r, rIdx) => (
+                                  <tr
+                                    key={rIdx}
+                                    className={cn(
+                                      "hover:bg-primary/20 dark:hover:bg-primary/25 transition-colors duration-150",
+                                      rIdx % 2 === 1
+                                        ? "bg-primary/[0.05] dark:bg-primary/[0.07]"
+                                        : "bg-card/60 dark:bg-card/20"
+                                    )}
+                                  >
+                                    {r.map((c, cIdx) => (
+                                      <td
+                                        key={cIdx}
+                                        className={cn(
+                                          "p-3.5 leading-relaxed sm:p-4",
+                                          cIdx === 0
+                                            ? "text-foreground font-semibold"
+                                            : "text-muted-foreground font-medium"
+                                        )}
+                                      >
+                                        {c}
+                                      </td>
+                                    ))}
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
 
-                    {/* Optional Numbered List */}
-                    {section.numberedList && section.numberedList.length > 0 && (
-                      <ol className="text-muted-foreground my-4 list-none space-y-2.5 text-sm">
-                        {section.numberedList.map((item, nIdx) => (
-                          <li key={nIdx} className="flex items-start gap-3">
-                            <span className="bg-primary/10 text-primary flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold">
-                              {nIdx + 1}
-                            </span>
-                            <span className="pt-0.5">{item}</span>
-                          </li>
-                        ))}
-                      </ol>
-                    )}
+                      {/* Optional Bullet List */}
+                      {section.bulletList && section.bulletList.length > 0 && (
+                        <ul className="text-muted-foreground my-4 space-y-2 text-sm">
+                          {section.bulletList.map((item, bIdx) => (
+                            <li key={bIdx} className="flex items-start gap-2.5">
+                              <CheckCircle2 className="text-primary mt-0.5 h-4 w-4 shrink-0" />
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
 
-                    {/* Section CTA or Mid-Article CTA */}
-                    {section.cta ? (
-                      <ToolCTA
-                        badge={section.cta.badge}
-                        headline={section.cta.headline}
-                        description={section.cta.description}
-                        buttonText={section.cta.buttonText}
-                        buttonHref={section.cta.buttonHref}
-                        variant="card"
-                      />
-                    ) : (
-                      idx === 2 &&
-                      article.midArticleCta && (
+                      {/* Optional Numbered List */}
+                      {section.numberedList && section.numberedList.length > 0 && (
+                        <ol className="text-muted-foreground my-4 list-none space-y-2.5 text-sm">
+                          {section.numberedList.map((item, nIdx) => (
+                            <li key={nIdx} className="flex items-start gap-3">
+                              <span className="bg-primary/10 text-primary flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold">
+                                {nIdx + 1}
+                              </span>
+                              <span className="pt-0.5">{item}</span>
+                            </li>
+                          ))}
+                        </ol>
+                      )}
+
+                      {/* Section CTA or Mid-Article CTA */}
+                      {section.cta ? (
                         <ToolCTA
-                          badge={article.midArticleCta.badge}
-                          headline={article.midArticleCta.headline}
-                          description={article.midArticleCta.description}
-                          buttonText={article.midArticleCta.buttonText}
-                          buttonHref={article.midArticleCta.buttonHref}
+                          badge={section.cta.badge}
+                          headline={section.cta.headline}
+                          description={section.cta.description}
+                          buttonText={section.cta.buttonText}
+                          buttonHref={section.cta.buttonHref}
                           variant="card"
                         />
-                      )
-                    )}
-                  </section>
-                ))}
+                      ) : (
+                        idx === 2 &&
+                        article.midArticleCta && (
+                          <ToolCTA
+                            badge={article.midArticleCta.badge}
+                            headline={article.midArticleCta.headline}
+                            description={article.midArticleCta.description}
+                            buttonText={article.midArticleCta.buttonText}
+                            buttonHref={article.midArticleCta.buttonHref}
+                            variant="card"
+                          />
+                        )
+                      )}
+                    </section>
+                  );
+                })}
 
               {/* ── FAQ Section (GEO & Schema Enabled) ── */}
               {article.faqs && article.faqs.length > 0 && article.showFaqs !== false && (

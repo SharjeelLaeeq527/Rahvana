@@ -11,6 +11,7 @@ import { ToastProvider } from "./components/shared/ToastProvider";
 import { LanguageProvider } from "./context/LanguageContext";
 import { PlanProvider } from "./context/PlanContext";
 import { UserProfileProvider } from "./context/UserProfileContext";
+import { CandidateProvider } from "./context/CandidateContext";
 import { PlanTierDevToggle } from "./components/entitlements/PlanTierDevToggle"; // DEV ONLY — uncomment for local testing
 import { ToolsGuard } from "./(tools)/ToolsGuard";
 import { QuickAccessProvider } from "./context/QuickAccessContext";
@@ -185,23 +186,25 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <AuthProvider>
             <PlanProvider>
               <UserProfileProvider>
-                <QuickAccessProvider>
-                <LanguageProvider>
-                  {/* <ThemeProvider
-              attribute="class"
-              // un comment if you want bydefault device theme
-              // defaultTheme="system"
-              disableTransitionOnChange
-            > */}
-                  <ClientHeader />
-                  <ToolsGuard>{children}</ToolsGuard>
-                  <ClientWidgets />
-                  <Footer />
-                  {/* </ThemeProvider> */}
-                </LanguageProvider>
-                </QuickAccessProvider>
-                <PlanTierDevToggle />
-                {/* DEV ONLY — uncomment for local testing */}
+                <CandidateProvider>
+                  <QuickAccessProvider>
+                    <LanguageProvider>
+                      {/* <ThemeProvider
+                  attribute="class"
+                  // un comment if you want bydefault device theme
+                  // defaultTheme="system"
+                  disableTransitionOnChange
+                > */}
+                      <ClientHeader />
+                      <ToolsGuard>{children}</ToolsGuard>
+                      <ClientWidgets />
+                      <Footer />
+                      {/* </ThemeProvider> */}
+                    </LanguageProvider>
+                  </QuickAccessProvider>
+                  <PlanTierDevToggle />
+                  {/* DEV ONLY — uncomment for local testing */}
+                </CandidateProvider>
               </UserProfileProvider>
             </PlanProvider>
           </AuthProvider>

@@ -12,12 +12,6 @@ import {
   getDocumentsByCategory,
 } from "@/lib/document-vault/personalization-engine";
 import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
-import {
-  getDefaultCandidates,
-  getMaxCandidates,
-  getNextCandidate,
-  isMultiCandidateJourney,
-} from "@/lib/document-vault/candidate-sharing";
 import type { UploadedDocument, VisaCategory, ScenarioFlags } from "@/lib/document-vault/types";
 import { VISA_FLAG_REGISTRY } from "@/lib/document-vault/flag-registry";
 import { DocumentCard } from "@/app/components/document-vault/DocumentCard";
@@ -62,6 +56,8 @@ import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Plus, Info, LayoutTemplate } from "lucide-react";
 import { useWizard } from "@/app/(main)/dashboard/hooks/useWizard";
+import { useCandidate } from "@/app/context/CandidateContext";
+import { getJourneyKeyForCandidate } from "@/lib/candidate/candidateSyncService";
 import Link from "next/link";
 import Image from "next/image";
 import { PageGate } from "@/app/components/entitlements/PageGate";
@@ -69,30 +65,11 @@ import { ir1journeyHref, ir5journeyHref } from "@/lib/constants/routes";
 import type { Journey } from "@/lib/journey/types";
 import {
   getFriendlyJourneyName,
+  journeyTypeToVisaCategory,
   setCachedUserJourneys,
   syncQuestionnaireAnswersToFlags,
   mapDocumentNameToId,
 } from "@/lib/document-vault/journey-mapping";
-
-// ── Journey → Visa Category mapping ──────────────────────────────────────────
-const JOURNEY_TYPE_TO_VISA: Record<string, VisaCategory> = {
-  IR1: "IR-1",
-  "IR-1": "IR-1",
-  ir1: "IR-1",
-  "ir-1": "IR-1",
-  IR5: "IR-5",
-  "IR-5": "IR-5",
-  ir5: "IR-5",
-  "ir-5": "IR-5",
-};
-
-function journeyTypeToVisaCategory(journeyType: string): VisaCategory | null {
-  if (!journeyType) return null;
-  const clean = journeyType.toUpperCase().replace(/[^A-Z0-9]/g, ""); // e.g., "ir-5" -> "IR5"
-  if (clean === "IR1") return "IR-1";
-  if (clean === "IR5") return "IR-5";
-  return JOURNEY_TYPE_TO_VISA[journeyType] ?? null;
-}
 
 // Session-storage key for persisted journey choice (Case 3)
 const SESSION_KEY = "doc_vault_active_journey";
@@ -122,9 +99,6 @@ export default function DocumentVaultPage() {
     renameDynamicSlot,
     deleteDynamicSlot,
     isReloadingDocs,
-    candidates,
-    currentCandidateId,
-    setCandidate,
   } = useDocumentVaultStore();
 
   const [showConfigWizard, setShowConfigWizard] = useState(false);
@@ -173,9 +147,6 @@ export default function DocumentVaultPage() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedDeleteId, setSelectedDeleteId] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
-  // Multi-candidate (IR-5+) UI state
-  const [activeCandidateId, setActiveCandidateId] = useState<string | null>(null);
-  const [sharedDeleteOpen, setSharedDeleteOpen] = useState(false);
   const [deleteSlotModalOpen, setDeleteSlotModalOpen] = useState(false);
   const [slotToDelete, setSlotToDelete] = useState<{ category: string; id: string } | null>(null);
   const [welcomeModalOpen, setWelcomeModalOpen] = useState(false);
@@ -195,6 +166,14 @@ export default function DocumentVaultPage() {
    */
   const journeyGateEvaluated = useRef(false);
 
+  const { activeCandidate, activeCandidateId, isMultiCandidate, candidates } = useCandidate();
+
+  // Derive active candidate journey key
+  const activeCandidateJourneyKey = useMemo(() => {
+    if (!activeCandidate) return undefined;
+    return getJourneyKeyForCandidate(activeCandidate.visaCategory || "IR-5", activeCandidate.id);
+  }, [activeCandidate]);
+
   // Derive active journey for labelling and wizard loading
   const activeJourney = useMemo(() => {
     return userJourneys.find((j) => j.id === activeJourneyId) ?? null;
@@ -209,8 +188,9 @@ export default function DocumentVaultPage() {
   }, [activeJourney]);
 
   const wizard = useWizard({
-    userId: journeysLoading ? null : user?.id,
+    userId: journeysLoading || !activeJourneyId ? null : user?.id,
     journeyId: activeJourney?.journey_type || undefined,
+    candidateId: activeCandidateId,
   });
 
   // Filter documents based on search query
@@ -372,16 +352,15 @@ export default function DocumentVaultPage() {
   // ── Auto-configure vault based on active journey ──────────────────────────
   const { setConfig: setVaultConfig } = useDocumentVaultStore();
   useEffect(() => {
-    if (!activeJourneyId || !journeyGateReady || !user || !wizard.isLoaded) return;
-    // Safety check: ensure wizard has loaded the active journey
-    if (wizard.state.backendId !== activeJourneyId) return;
+    if (!activeJourneyId || !journeyGateReady || !user) return;
     const activeJourney = userJourneys.find((j) => j.id === activeJourneyId);
-    if (!activeJourney) return;
-    const visaCategory = journeyTypeToVisaCategory(activeJourney.journey_type);
-    if (!visaCategory) return;
+    const visaCategory =
+      (activeJourney ? journeyTypeToVisaCategory(activeJourney.journey_type) : null) ||
+      (activeCandidate?.visaCategory as VisaCategory) ||
+      "IR-5";
 
     // Retrieve questionnaire answers from journey metadata if available
-    const metadata = wizard.state?.metadata || {};
+    const metadata = (wizard.state?.backendId === activeJourneyId ? wizard.state?.metadata : {}) || {};
     const hasQuestionnaire = metadata.docQuestionnaireCompleted === true;
     const questionnaireAnswers = (metadata.docQuestionnaireAnswers as Record<string, string>) || {};
 
@@ -437,36 +416,38 @@ export default function DocumentVaultPage() {
     mappedFlags.hhCount = hhCount;
     mappedFlags.hhRelationships = metadata.hhRelationships || {};
 
-    // Seed the candidate roster for multi-candidate journeys (IR-5 = Parent 1) once, and
-    // never overwrite an existing roster (the user may have added a second candidate).
-    const seededCandidates =
-      config?.candidates && config.candidates.length > 0
-        ? config.candidates
-        : getDefaultCandidates(activeJourney.journey_type);
+    const beneficiaryDisplayName =
+      activeCandidate?.fullName ||
+      (metadata.beneficiaryName as string) ||
+      activeCandidate?.label ||
+      "Beneficiary";
 
     if (!config) {
-      // No vault config saved yet for this user — create a minimal one from the
-      // journey's visa category so the document list can populate immediately.
+      // No vault config saved yet for this user — create a minimal one immediately
+      // from the journey's visa category so the document checklist renders immediately.
       setVaultConfig({
         userId: user.id,
+        journeyId: activeJourneyId,
+        beneficiaryName: beneficiaryDisplayName,
         visaCategory,
         scenarioFlags: mappedFlags,
-        candidates: seededCandidates,
       });
     } else if (
       config.visaCategory !== visaCategory ||
-      JSON.stringify(config.scenarioFlags) !== JSON.stringify(mappedFlags) ||
-      (config.candidates?.length ?? 0) !== seededCandidates.length
+      config.journeyId !== activeJourneyId ||
+      config.beneficiaryName !== beneficiaryDisplayName ||
+      JSON.stringify(config.scenarioFlags) !== JSON.stringify(mappedFlags)
     ) {
-      // Config exists but points to a different visa category or flags have changed — update it.
+      // Config exists but points to a different visa category, journey, or flags have changed — update it.
       setVaultConfig({
         ...config,
+        journeyId: activeJourneyId,
+        beneficiaryName: beneficiaryDisplayName,
         visaCategory,
         scenarioFlags: {
           ...config.scenarioFlags,
           ...mappedFlags,
         },
-        candidates: seededCandidates,
       });
     }
   }, [
@@ -479,7 +460,42 @@ export default function DocumentVaultPage() {
     wizard.isLoaded,
     wizard.state?.metadata,
     wizard.state?.backendId,
+    activeCandidate,
   ]);
+
+  // ── Synchronize active journey with active candidate profile ─────────────
+  useEffect(() => {
+    if (!userJourneys || userJourneys.length === 0 || !activeCandidate) return;
+
+    const visaCategory = activeCandidate.visaCategory || "IR-5";
+    const candidateJourneyKey = getJourneyKeyForCandidate(visaCategory, activeCandidate.id);
+    const normCandidateKey = candidateJourneyKey.toLowerCase().replace(/[-:_]/g, "");
+    const normBaseKey = visaCategory.toLowerCase().replace(/[-:_]/g, "");
+
+    const matched = userJourneys.find((j) => {
+      const normJ = j.journey_type.toLowerCase().replace(/[-:_]/g, "");
+      if (activeCandidate.isPrimary) {
+        return (
+          normJ === normBaseKey ||
+          normJ === normCandidateKey ||
+          (!normJ.includes("candidate2") && !normJ.includes("candidate3") && !normJ.includes("candidate4"))
+        );
+      }
+      return normJ === normCandidateKey || (normJ.includes(normCandidateKey) && !normJ.includes("candidate1"));
+    });
+
+    if (matched && matched.id !== activeJourneyId) {
+      setActiveJourneyId(matched.id);
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem(SESSION_KEY, matched.id);
+      }
+    } else if (!matched && wizard.state.backendId && wizard.state.backendId !== activeJourneyId) {
+      setActiveJourneyId(wizard.state.backendId);
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem(SESSION_KEY, wizard.state.backendId);
+      }
+    }
+  }, [activeCandidateId, activeCandidate, userJourneys, activeJourneyId, wizard.state.backendId]);
 
   // ── Case 3 picker confirmation handler ────────────────────────────────────
   const handlePickJourney = useCallback((journeyId: string) => {
@@ -494,28 +510,10 @@ export default function DocumentVaultPage() {
   useEffect(() => {
     setActiveTab("required");
     setSearchQuery("");
-    setActiveCandidateId(null); // re-default per new journey once its roster loads
     if (initialized && activeJourneyId) {
       reloadDocuments(activeJourneyId);
     }
   }, [activeJourneyId, initialized, reloadDocuments]);
-
-  // Default the active candidate to the first in the roster (multi-candidate journeys only).
-  useEffect(() => {
-    if (candidates.length === 0) {
-      if (activeCandidateId !== null) setActiveCandidateId(null);
-      return;
-    }
-    const stillValid = candidates.some((c) => c.id === activeCandidateId);
-    if (!stillValid) setActiveCandidateId(candidates[0].id);
-  }, [candidates, activeCandidateId]);
-
-  // Load the active candidate's documents whenever it changes.
-  useEffect(() => {
-    if (!initialized || !activeJourneyId || !activeCandidateId) return;
-    if (activeCandidateId === currentCandidateId) return;
-    setCandidate(activeCandidateId);
-  }, [activeCandidateId, activeJourneyId, initialized, currentCandidateId, setCandidate]);
 
   const isEligibilityDone = wizard.state?.completedSteps?.has("step_1_1");
   const isPersonalizationDone = wizard.state?.metadata?.docQuestionnaireCompleted === true;
@@ -672,17 +670,10 @@ export default function DocumentVaultPage() {
 
   const handleDelete = (documentId: string) => {
     setSelectedDeleteId(documentId);
-    // If this document's physical file is shared with another candidate, ask whether to
-    // remove only this candidate's copy or delete the file for everyone.
-    const doc = uploadedDocuments.find((d) => d.id === documentId);
-    if (doc?.isShared) {
-      setSharedDeleteOpen(true);
-    } else {
-      setDeleteModalOpen(true);
-    }
+    setDeleteModalOpen(true);
   };
 
-  const confirmDelete = async (scope: "candidate" | "all" = "candidate") => {
+  const confirmDelete = async () => {
     if (!selectedDeleteId) return;
 
     try {
@@ -692,7 +683,7 @@ export default function DocumentVaultPage() {
         id: "delete-doc",
       });
 
-      const response = await fetch(`/api/documents/${selectedDeleteId}?scope=${scope}`, {
+      const response = await fetch(`/api/documents/${selectedDeleteId}`, {
         method: "DELETE",
       });
 
@@ -701,8 +692,7 @@ export default function DocumentVaultPage() {
       }
 
       if (user) {
-        // Re-init scoped to the active journey + candidate so the list stays correct.
-        await initialize(user.id, t, activeJourneyId || undefined, activeCandidateId || undefined);
+        await initialize(user.id, t);
       }
 
       showToast(t("documentVaultPage.page.messages.deleted"), "success", {
@@ -710,7 +700,6 @@ export default function DocumentVaultPage() {
       });
 
       setDeleteModalOpen(false);
-      setSharedDeleteOpen(false);
       setSelectedDeleteId(null);
     } catch (error) {
       console.error("Delete error:", error);
@@ -721,27 +710,6 @@ export default function DocumentVaultPage() {
       setDeleteLoading(false);
     }
   };
-
-  // ── Candidate roster management (IR-5+) ────────────────────────────────────
-  const activeCandidateLabel =
-    candidates.find((c) => c.id === activeCandidateId)?.label || "";
-  const selectedDeleteDoc = uploadedDocuments.find((d) => d.id === selectedDeleteId) || null;
-
-  // Plain function (NOT useCallback): it is defined after an early return above, so it
-  // must not be a hook.
-  const handleAddCandidate = async () => {
-    if (!config || !activeJourney) return;
-    const next = getNextCandidate(activeJourney.journey_type, candidates);
-    if (!next) return; // at cap (IR-5 = 2)
-    const updated = [...candidates, next];
-    await setVaultConfig({ ...config, candidates: updated });
-    setActiveCandidateId(next.id);
-  };
-
-  const canAddCandidate =
-    !!activeJourney &&
-    isMultiCandidateJourney(activeJourney.journey_type) &&
-    candidates.length < getMaxCandidates(activeJourney.journey_type);
 
   const handleDeleteSlot = (category: string, slotId: string) => {
     setSlotToDelete({ category, id: slotId });
@@ -1074,14 +1042,31 @@ export default function DocumentVaultPage() {
                           className="bg-primary/5 hover:bg-primary/5 text-primary border-primary/20 font-bold px-2.5 py-0.5"
                         >
                           {config?.visaCategory
-                            ? config.visaCategory
+                            ? `${config.visaCategory} Journey`
                             : activeJourney
                               ? getFriendlyJourneyName(
                                   activeJourney.journey_type,
                                   activeJourney.journey_name
                                 )
-                              : ""}
+                              : `${activeCandidate?.visaCategory || "IR-5"} Journey`}
                         </Badge>
+                        {isMultiCandidate && activeCandidate && (
+                          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                            <span>{activeCandidate.relation}:</span>
+                            <span className="font-bold text-slate-900 dark:text-white">
+                              {activeCandidate.fullName || activeCandidate.label}
+                            </span>
+                            {activeCandidate.isPreview && (
+                              <Badge
+                                variant="outline"
+                                className="text-[10px] px-1.5 py-0 border-amber-400 text-amber-600 bg-amber-50 dark:bg-amber-950/40"
+                              >
+                                Preview
+                              </Badge>
+                            )}
+                          </div>
+                        )}
                         <span className="text-xs text-slate-500 font-medium">
                           {t("documentVaultPage.page.subtitle")}
                         </span>
@@ -1095,43 +1080,6 @@ export default function DocumentVaultPage() {
                 </div>
               </div>
             </div>
-
-            {/* Candidate switcher (IR-5+ multi-candidate journeys) */}
-            {activeJourney && isMultiCandidateJourney(activeJourney.journey_type) && candidates.length > 0 && (
-              <div className="bg-slate-50 dark:bg-slate-900/60 border-b border-slate-100 dark:border-slate-800">
-                <div className="site-main-px flex items-center gap-2 overflow-x-auto py-2.5">
-                  <span className="text-[11px] font-bold tracking-wider text-slate-500 uppercase shrink-0">
-                    Candidate
-                  </span>
-                  {candidates.map((c) => {
-                    const isActive = c.id === activeCandidateId;
-                    return (
-                      <button
-                        key={c.id}
-                        type="button"
-                        onClick={() => setActiveCandidateId(c.id)}
-                        className={`shrink-0 rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all ${
-                          isActive
-                            ? "bg-primary text-white shadow-sm"
-                            : "bg-white text-slate-600 border border-slate-200 hover:border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700"
-                        }`}
-                      >
-                        {c.label}
-                      </button>
-                    );
-                  })}
-                  {canAddCandidate && (
-                    <button
-                      type="button"
-                      onClick={handleAddCandidate}
-                      className="shrink-0 inline-flex items-center gap-1 rounded-xl border border-dashed border-slate-300 px-3 py-1.5 text-xs font-bold text-slate-500 hover:border-primary hover:text-primary transition-all dark:border-slate-700"
-                    >
-                      <Plus className="h-3.5 w-3.5" /> Add parent
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
 
             <div className="container mx-auto p-6 max-w-450">
               {/* Main Grid Layout */}
@@ -1769,7 +1717,7 @@ export default function DocumentVaultPage() {
               activeJourneyId={activeJourneyId}
               onUploadComplete={async () => {
                 // Reload documents in the store instantly — no full re-init needed
-                await reloadDocuments(activeJourneyId || undefined, activeCandidateId || undefined);
+                await reloadDocuments(activeJourneyId || undefined);
                 refreshNotifications(t);
               }}
             />
@@ -1782,7 +1730,7 @@ export default function DocumentVaultPage() {
               activeJourneyId={activeJourneyId}
               onUploadComplete={async () => {
                 // Reload documents in the store instantly — no full re-init needed
-                await reloadDocuments(activeJourneyId || undefined, activeCandidateId || undefined);
+                await reloadDocuments(activeJourneyId || undefined);
                 refreshNotifications(t);
               }}
             />
@@ -1863,7 +1811,7 @@ export default function DocumentVaultPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Confirmation Modal (non-shared document) */}
+      {/* Confirmation Modal */}
       <ConfirmationModal
         open={deleteModalOpen}
         onOpenChange={setDeleteModalOpen}
@@ -1873,41 +1821,8 @@ export default function DocumentVaultPage() {
         cancelText="Cancel"
         confirmVariant="danger"
         loading={deleteLoading}
-        onConfirm={() => confirmDelete("candidate")}
+        onConfirm={confirmDelete}
       />
-
-      {/* Shared-document delete: this file is used for more than one candidate */}
-      <Dialog open={sharedDeleteOpen} onOpenChange={setSharedDeleteOpen}>
-        <DialogContent className="max-w-md rounded-2xl p-6">
-          <h2 className="text-lg font-bold text-[#0c1b33]">
-            This document is used for more than one candidate
-          </h2>
-          <p className="mt-2 text-sm text-slate-600">
-            {selectedDeleteDoc?.sharedCandidateLabels?.length
-              ? `It is also used for: ${selectedDeleteDoc.sharedCandidateLabels.join(", ")}. `
-              : "It is shared across candidates. "}
-            Remove it only from {activeCandidateLabel || "this candidate"}, or delete the file
-            for everyone?
-          </p>
-          <div className="mt-6 flex flex-col gap-2 sm:flex-row">
-            <Button
-              variant="outline"
-              disabled={deleteLoading}
-              onClick={() => confirmDelete("candidate")}
-              className="flex-1 rounded-xl"
-            >
-              Remove from {activeCandidateLabel || "this candidate"} only
-            </Button>
-            <Button
-              disabled={deleteLoading}
-              onClick={() => confirmDelete("all")}
-              className="flex-1 rounded-xl bg-red-600 text-white hover:bg-red-700"
-            >
-              Delete for all candidates
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* Delete Slot Confirmation Modal */}
       <ConfirmationModal

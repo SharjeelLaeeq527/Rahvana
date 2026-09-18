@@ -39,16 +39,6 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 }
 
 // DELETE - Delete document (from Supabase Storage)
-//
-// Query param `scope` (IR-5+ multi-candidate, safe for shared physical files):
-//   "candidate" (default) - remove ONLY this row (this candidate's copy). The physical
-//                           blob is removed only if no other row references its storage_path.
-//   "all"                 - remove every row in THIS journey that shares this storage_path
-//                           (all candidates' copies), then remove the blob if nothing else
-//                           (e.g. a cross-journey share) still references it.
-//
-// The storage_path reference count also fixes the pre-existing cross-journey orphan bug:
-// a plain single delete no longer removes a blob that another row still points at.
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -66,8 +56,6 @@ export async function DELETE(
 
     const { id } = await params;
     const documentId = id;
-    const scope = new URL(request.url).searchParams.get("scope") === "all" ? "all" : "candidate";
-
     const dbStorage = new DocumentDatabaseStorage(supabase);
     const document = await dbStorage.getDocument(documentId, user.id);
 
@@ -75,27 +63,18 @@ export async function DELETE(
       return NextResponse.json({ error: "Document not found" }, { status: 404 });
     }
 
-    // All rows (any journey / candidate) that reference the same physical blob.
+    // Reference-count the physical file BEFORE deleting the metadata row. A shared
+    // document (e.g. a petitioner doc cross-shared to another candidate's journey) has
+    // multiple rows pointing at the SAME storage_path. We must only remove the blob when
+    // no OTHER row still references it, otherwise we orphan the file for the others.
     const sharingRows = await dbStorage.getDocumentsByStoragePath(document.storagePath, user.id);
+    const otherRowsReferenceBlob = sharingRows.some((d) => d.id !== documentId);
 
-    // Which metadata rows to delete for this request.
-    let rowsToDelete = [document];
-    if (scope === "all") {
-      rowsToDelete = sharingRows.filter((d) => d.journeyId === document.journeyId);
-      // Always include the targeted row (covers journeyId === null grouping).
-      if (!rowsToDelete.some((d) => d.id === document.id)) rowsToDelete.push(document);
-    }
+    // Delete this metadata row first.
+    await dbStorage.deleteDocument(documentId, user.id);
 
-    const deleteIds = new Set(rowsToDelete.map((d) => d.id));
-
-    // Delete the metadata rows.
-    for (const row of rowsToDelete) {
-      await dbStorage.deleteDocument(row.id, user.id);
-    }
-
-    // Remove the physical blob(s) ONLY when no surviving row references the storage_path.
-    const survivorsReferenceBlob = sharingRows.some((d) => !deleteIds.has(d.id));
-    if (!survivorsReferenceBlob) {
+    // Remove the physical file(s) only when nothing else points at them.
+    if (!otherRowsReferenceBlob) {
       const storageSupabase = createClientJs(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -112,8 +91,7 @@ export async function DELETE(
     return NextResponse.json({
       success: true,
       message: "Document deleted successfully",
-      deletedCount: rowsToDelete.length,
-      fileRemoved: !survivorsReferenceBlob,
+      fileRemoved: !otherRowsReferenceBlob,
     });
   } catch (error) {
     console.error("Delete document error:", error);

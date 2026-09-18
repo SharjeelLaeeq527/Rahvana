@@ -121,12 +121,6 @@ export interface DocumentDefinition {
   // Dynamic Category Support
   isDynamicCategory?: boolean; // If true, this document acts as a container for multiple sub-documents
   suggestions?: string[]; // List of suggested document types/names for this dynamic category
-
-  // Cross-candidate sharing (IR-5+ multi-candidate journeys).
-  // Explicit override for whether this document can be shared between candidates
-  // (e.g. two parents in an IR-5 case). When undefined, sharing eligibility is derived
-  // from `roles` by isDocumentShareableAcrossCandidates() in candidate-sharing.ts.
-  shareableAcrossCandidates?: boolean;
 }
 
 export interface DocumentWizardStep {
@@ -175,26 +169,6 @@ export interface UploadedDocument {
   status: DocumentStatus;
   notes?: string;
   journeyId?: string | null;
-
-  // Candidate sub-scope within a journey (IR-5+ multi-candidate). null/undefined =
-  // legacy / single-candidate journey (behaves exactly as before).
-  candidateId?: string | null;
-
-  // Derived (not stored): set by the list API when this document's physical file
-  // (storage_path) is shared with rows under other candidates in the same journey.
-  isShared?: boolean;
-  sharedCandidateLabels?: string[];
-}
-
-/**
- * A candidate (e.g. a parent in an IR-5 case) is a sub-scope inside ONE journey's vault.
- * The roster is stored on DocumentVaultConfig.candidates. `id` is a stable string
- * ("candidate_1", "candidate_2", ...) so the model is N-candidate capable.
- */
-export interface VaultCandidate {
-  id: string;
-  label: string;
-  name?: string;
 }
 
 export interface DocumentVaultConfig {
@@ -209,10 +183,6 @@ export interface DocumentVaultConfig {
   beneficiaryName?: string;
   jointSponsorName?: string;
   dynamicDocuments?: Record<string, { id: string; name: string }[]>;
-
-  // Candidate roster for this journey's vault (IR-5+ multi-candidate). Empty/absent =
-  // single-candidate vault (unchanged behavior).
-  candidates?: VaultCandidate[];
 }
 
 export type NotificationType =

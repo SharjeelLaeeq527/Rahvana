@@ -131,7 +131,7 @@ export function ConsistencyBaselineCapture({ baseline, onSave }: ConsistencyBase
           </div>
           <p className="text-[12px] leading-relaxed text-[#57534e]">
             Saving these here lets Rahvana detect date-driven risk patterns (e.g., short marriage
-            duration, age gap) and cross-check the same values against DS-260 and I-864 later.
+            duration) and cross-check the same values against DS-260 and I-864 later.
             Independent of the I-130 form data.
           </p>
         </div>

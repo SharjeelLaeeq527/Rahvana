@@ -3043,10 +3043,6 @@ const PARENT_DOCS: DocumentDefinition[] = [
     required: false,
     multipleFilesAllowed: false,
     validityType: "none",
-    // The petitioner's parents' marriage certificate is the SAME document for both
-    // parent-beneficiaries, so allow cross-candidate sharing despite the BENEFICIARY role
-    // (which would otherwise mark it candidate-specific).
-    shareableAcrossCandidates: true,
     requiredWhen: {
       scenarioFlags: { relationship_type: "father_married" },
     },

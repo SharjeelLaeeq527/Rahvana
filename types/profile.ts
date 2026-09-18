@@ -379,7 +379,14 @@ export interface MasterProfile {
 
   // Journey-scoped profile data to prevent multi-journey bleed
   journeys?: Record<string, Record<string, any>>;
+
+  // Multi-Candidate / Beneficiary profiles (IR-5 parents, IR-2 children)
+  activeCandidateId?: string;
+  candidates?: import("./candidate").CandidateProfile[];
+  candidateSync?: import("./candidate").CandidateSyncConfig;
 }
+
+export * from "./candidate";
 
 export interface QuestionDefinition {
   id: string;

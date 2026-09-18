@@ -2,13 +2,7 @@
 // Handles document metadata storage in Supabase (SERVER-SIDE ONLY)
 
 import { SupabaseClient } from "@supabase/supabase-js";
-import {
-  UploadedDocument,
-  DocumentVaultConfig,
-  DocumentRole,
-  VisaCategory,
-  VaultCandidate,
-} from "./types";
+import { UploadedDocument, DocumentVaultConfig, DocumentRole, VisaCategory } from "./types";
 
 /**
  * Server-side database storage manager
@@ -21,11 +15,7 @@ export class DocumentDatabaseStorage {
   /**
    * Gets all documents for a user, optionally filtered by journey ID
    */
-  async getAllDocuments(
-    userId: string,
-    journeyId?: string,
-    candidateId?: string
-  ): Promise<UploadedDocument[]> {
+  async getAllDocuments(userId: string, journeyId?: string): Promise<UploadedDocument[]> {
     let query = this.supabase
       .from("documents")
       .select("*")
@@ -33,10 +23,6 @@ export class DocumentDatabaseStorage {
 
     if (journeyId) {
       query = query.eq("journey_id", journeyId);
-    }
-
-    if (candidateId) {
-      query = query.eq("candidate_id", candidateId);
     }
 
     const { data, error } = await query.order("uploaded_at", { ascending: false });
@@ -143,8 +129,7 @@ export class DocumentDatabaseStorage {
   async getDocumentsByDefId(
     documentDefId: string,
     userId: string,
-    journeyId?: string,
-    candidateId?: string
+    journeyId?: string
   ): Promise<UploadedDocument[]> {
     let query = this.supabase
       .from("documents")
@@ -154,10 +139,6 @@ export class DocumentDatabaseStorage {
 
     if (journeyId) {
       query = query.eq("journey_id", journeyId);
-    }
-
-    if (candidateId) {
-      query = query.eq("candidate_id", candidateId);
     }
 
     const { data, error } = await query.order("version", { ascending: true });
@@ -172,8 +153,8 @@ export class DocumentDatabaseStorage {
 
   /**
    * Gets all document rows that reference the same physical file (storage_path) for a user.
-   * Used to reference-count a shared blob before deleting it, so removing one candidate's
-   * copy of a shared document never orphans the file for the others.
+   * Used to reference-count a shared blob before deleting it, so removing one journey's copy
+   * of a cross-shared document never orphans the file for the others.
    */
   async getDocumentsByStoragePath(
     storagePath: string,
@@ -271,7 +252,6 @@ export class DocumentDatabaseStorage {
       beneficiary_name: config.beneficiaryName,
       joint_sponsor_name: config.jointSponsorName,
       dynamic_documents: config.dynamicDocuments || {},
-      candidates: config.candidates || [],
       journey_id: config.journeyId || null,
       updated_at: new Date().toISOString(),
     };
@@ -413,7 +393,6 @@ export class DocumentDatabaseStorage {
       status: data.status as UploadedDocument["status"],
       notes: data.notes as string | undefined,
       journeyId: data.journey_id as string | null | undefined,
-      candidateId: data.candidate_id as string | null | undefined,
     };
   }
 
@@ -443,12 +422,6 @@ export class DocumentDatabaseStorage {
       journey_id: document.journeyId,
     };
 
-    // Only include candidate_id when set, so inserts on a DB that has not yet run the
-    // multi-candidate migration keep working for legacy single-candidate uploads.
-    if (document.candidateId) {
-      dbDoc.candidate_id = document.candidateId;
-    }
-
     // Add compressed file info if available (columns may not exist in DB yet)
     if (document.hasCompressedVersion) {
       dbDoc.has_compressed_version = true;
@@ -475,7 +448,6 @@ export class DocumentDatabaseStorage {
       jointSponsorName: data.joint_sponsor_name as string | undefined,
       dynamicDocuments:
         (data.dynamic_documents as Record<string, { id: string; name: string }[]>) || {},
-      candidates: (data.candidates as VaultCandidate[]) || [],
     };
   }
 }

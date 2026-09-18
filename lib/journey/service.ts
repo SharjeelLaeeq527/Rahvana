@@ -90,15 +90,20 @@ function isStepActiveForFilingMethod(
  */
 export class ProgressCalculationService {
   // Calculate progress for a journey based on its chapters and steps. Called after any step completion/uncomplete.
-  async calculateJourneyProgress(journeyId: string): Promise<ProgressData> {
+  async calculateJourneyProgress(
+    journeyId: string,
+    client?: { supabase: any; user: any }
+  ): Promise<ProgressData> {
     try {
-      const journey = await db.getJourneyDB(journeyId);
+      const journey = await db.getJourneyDB(journeyId, client);
       if (!journey) {
         throw new Error("Journey not found");
       }
 
-      const allSteps = await db.getStepsForJourneyDB(journeyId);
-      const caseData = caseDataRowsToValues(await db.getCaseDataForJourneyDB(journeyId));
+      const allSteps = await db.getStepsForJourneyDB(journeyId, undefined, client);
+      const caseData = caseDataRowsToValues(
+        await db.getCaseDataForJourneyDB(journeyId, undefined, client)
+      );
       const filingMethod = journey.filing_method || "online";
       const activeSteps = allSteps.filter((step) =>
         isStepActiveForFilingMethod(step, filingMethod, caseData)
@@ -117,11 +122,11 @@ export class ProgressCalculationService {
       };
 
       //   Update journey with new progress
-      await db.updateJourneyProgressDB(journeyId, progressData);
+      await db.updateJourneyProgressDB(journeyId, progressData, client);
 
       // Auto-mark journey as completed if all steps are done
       if (completionPercentage === 100) {
-        await db.updateJourneyDB(journeyId, { status: "completed" });
+        await db.updateJourneyDB(journeyId, { status: "completed" }, client);
 
         // Delete associated interview sessions to free uniqueness slot for future journeys
         try {
@@ -995,7 +1000,9 @@ export class JourneyService {
     overrides?: {
       filing_method?: "online" | "paper";
       visa_category?: string;
-    }
+      journey_type?: string;
+    },
+    client?: { supabase: any; user: any }
   ) {
     try {
       console.log(`Creating journey from config: ${filePath}`);
@@ -1014,11 +1021,14 @@ export class JourneyService {
       if (overrides?.visa_category) {
         journeyInput.visa_category = overrides.visa_category;
       }
+      if (overrides?.journey_type) {
+        journeyInput.journey_type = overrides.journey_type;
+      }
 
       console.log(`Loaded: ${journeyInput.journey_name} with ${chaptersInput.length} chapters`);
 
       // Create journey in database
-      const journey = await db.createJourneyDB(journeyInput);
+      const journey = await db.createJourneyDB(journeyInput, client);
 
       // Create chapters and steps
       const createdChapters: Chapter[] = [];
@@ -1028,7 +1038,7 @@ export class JourneyService {
         const rawChapter = rawJSON.chapters[i];
         const chapterInput = chaptersInput[i];
 
-        const chapter = await db.createChapterDB(journey.id, chapterInput);
+        const chapter = await db.createChapterDB(journey.id, chapterInput, client);
         createdChapters.push(chapter);
 
         const stepsInput = ConfigLoader.transformStepsInput(
@@ -1036,22 +1046,12 @@ export class JourneyService {
           rawChapter.chapter_key
         );
 
-        const createdSteps = await Promise.all(
-          stepsInput.map((stepInput) => db.createStepDB(chapter.id, stepInput))
-        );
-
+        const createdSteps = await db.createStepsBatchDB(chapter.id, stepsInput, client);
         totalStepsCreated += createdSteps.length;
       }
 
-      // Initialize case data keys
-      // const createdCaseData = await Promise.all(
-      //   caseDataInput.map((caseInput) =>
-      //     db.createOrUpdateCaseDataDB(journey.id, caseInput.data_key, caseInput),
-      //   ),
-      // );
-
       // Calculate initial progress
-      const progressSummary = await this.progressService.calculateJourneyProgress(journey.id);
+      const progressSummary = await this.progressService.calculateJourneyProgress(journey.id, client);
 
       // Auto-create interview session for IR-1 journeys
       // This creates a "ready" session without triggering questionnaire flow
