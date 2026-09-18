@@ -71,7 +71,6 @@ import {
   mapDocumentNameToId,
 } from "@/lib/document-vault/journey-mapping";
 
-  "IR-1": "IR-1",
 // Session-storage key for persisted journey choice (Case 3)
 const SESSION_KEY = "doc_vault_active_journey";
 
