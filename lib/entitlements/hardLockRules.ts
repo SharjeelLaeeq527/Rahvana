@@ -45,33 +45,65 @@ export interface StepLockStatus {
  */
 export function getStepLockStatus(
   stepId: string,
-  tier: PlanTier,
-  chapterIdx: number,
-  localIdx: number
+  tier: PlanTier = "free",
+  chapterIdx?: number,
+  localIdx?: number
 ): StepLockStatus {
-  const isFreeTier = tier === "free";
-  const isChapter1 = chapterIdx === 0;
+  // Free tier rule:
+  // Free users can only view Chapter 1, Step 1.
+  if (tier === "free") {
+    if (chapterIdx !== undefined && localIdx !== undefined) {
+      if (chapterIdx > 0 || localIdx > 0) {
+        return {
+          isLocked: true,
+          requiredPlan: "basic",
+          reason: "free",
+        };
+      }
+    }
+  }
 
-  // Free tier restriction — only first step of Chapter 1 accessible
-  if (isFreeTier && isChapter1 && localIdx > 0) {
+  // Check step-specific hard lock rules.
+  const restrictedTiers = HARD_LOCK_RULES[stepId];
+
+  if (!restrictedTiers) {
     return {
-      isLocked: true,
-      requiredPlan: "basic" as PlanTier,
-      reason: "free",
+      isLocked: false,
+      requiredPlan: null,
+      reason: null,
     };
   }
 
-  // Hard lock rules (specific tiers can't access specific steps)
-  const restrictedTiers = HARD_LOCK_RULES[stepId];
-  if (restrictedTiers && restrictedTiers.includes(tier)) {
-    // Find the minimum required tier to access this step
-    const allTiers: PlanTier[] = ["free", "basic", "premium", "executive"];
-    const requiredPlan =
-      (allTiers.find((t) => !restrictedTiers.includes(t)) as PlanTier) || "premium";
-    return { isLocked: true, requiredPlan, reason: "tier" };
+  // Determine the user's rank.
+  const TIER_RANK: Record<PlanTier, number> = {
+    free: 0,
+    basic: 1,
+    premium: 2,
+    executive: 3,
+  };
+
+  const userRank = TIER_RANK[tier] ?? 0;
+
+  // Find the minimum tier that is NOT restricted.
+  const allTiers: PlanTier[] = ["free", "basic", "premium", "executive"];
+
+  const requiredPlan = allTiers.find((plan) => !restrictedTiers.includes(plan)) ?? "premium";
+
+  const requiredRank = TIER_RANK[requiredPlan];
+
+  if (userRank < requiredRank) {
+    return {
+      isLocked: true,
+      requiredPlan,
+      reason: "tier",
+    };
   }
 
-  return { isLocked: false, requiredPlan: null, reason: null };
+  return {
+    isLocked: false,
+    requiredPlan: null,
+    reason: null,
+  };
 }
 
 /**
