@@ -8,6 +8,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Users,
   Heart,
@@ -19,6 +20,7 @@ import {
 } from "lucide-react";
 import { useCandidate } from "@/app/context/CandidateContext";
 import type { CandidateProfile, CandidateRelation } from "@/types/candidate";
+import { getJourneyHrefByType } from "@/lib/constants/routes";
 import { AddCandidateModal } from "./AddCandidateModal";
 
 const RELATION_ICONS: Record<CandidateRelation, React.ComponentType<{ className?: string }>> = {
@@ -75,6 +77,7 @@ export function CandidateSwitcherTray({
 }: {
   onCandidateSwitched?: () => void;
 }) {
+  const router = useRouter();
   const {
     candidates,
     activeCandidateId,
@@ -92,6 +95,25 @@ export function CandidateSwitcherTray({
   const handleSelectCandidate = (candidateId: string) => {
     setActiveCandidateId(candidateId);
     onCandidateSwitched?.();
+
+    // If currently on a journey roadmap route, navigate to the selected candidate's journey route
+    const target = candidates.find((c) => c.id === candidateId);
+    if (target && typeof window !== "undefined") {
+      const currentPath = window.location.pathname;
+      const isRoadmapRoute =
+        currentPath.includes("/visa-category/ir1-journey") ||
+        currentPath.includes("/visa-category/ir5-journey") ||
+        currentPath.includes("/ir-1-roadmap") ||
+        currentPath.includes("/visa-category/ir-1") ||
+        currentPath.includes("/visa-category/ir-5");
+
+      if (isRoadmapRoute) {
+        const targetRoute = getJourneyHrefByType(target.visaCategory);
+        if (targetRoute && !currentPath.includes(targetRoute)) {
+          router.push(targetRoute);
+        }
+      }
+    }
   };
 
   return (

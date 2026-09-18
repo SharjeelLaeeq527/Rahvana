@@ -13,6 +13,7 @@ import type {
   CandidateRelation,
   CandidateTier,
 } from "@/types/candidate";
+import type { VisaCategory } from "@/lib/document-vault/types";
 
 /**
  * Fields that belong to the Petitioner / U.S. Sponsor.
@@ -158,6 +159,31 @@ export function getDefaultCandidatesForVisa(
 }
 
 /**
+ * Maps a candidate relation to its official Visa Category.
+ * - Mother, Father, Stepparent, AdoptiveParent -> IR-5 (Parent)
+ * - Spouse -> IR-1 (Spouse)
+ * - Child -> IR-2 (Child)
+ */
+export function getVisaCategoryForRelation(
+  relation: CandidateRelation,
+  fallbackVisa?: string
+): string {
+  switch (relation) {
+    case "Mother":
+    case "Father":
+    case "Stepparent":
+    case "AdoptiveParent":
+      return "IR-5";
+    case "Spouse":
+      return "IR-1";
+    case "Child":
+      return "IR-2";
+    default:
+      return fallbackVisa || "IR-5";
+  }
+}
+
+/**
  * Creates a new candidate profile (e.g. adding 2nd parent for free preview or multi-petition).
  */
 export function createNewCandidate(
@@ -191,12 +217,17 @@ export function createNewCandidate(
   ];
   const colorTag = colorTags[(nextNum - 1) % colorTags.length] || "teal";
 
+  // Automatically determine the exact Visa Category from relation unless explicitly specified
+  const visaCategory =
+    params.visaCategory ||
+    getVisaCategoryForRelation(relation, existingCandidates[0]?.visaCategory || "IR-5");
+
   return {
     id: `candidate-${nextNum}`,
     label: `Candidate ${nextNum} (${relationLabel})`,
     relation,
     fullName: params.fullName || relationLabel,
-    visaCategory: params.visaCategory || existingCandidates[0]?.visaCategory || "IR-5",
+    visaCategory,
     tier: params.tier || (params.isPreview ? "free" : existingCandidates[0]?.tier || "free"),
     isPrimary: existingCandidates.length === 0,
     isPreview: params.isPreview ?? false,
@@ -206,16 +237,41 @@ export function createNewCandidate(
 }
 
 /**
- * Derives the database journey type key for a candidate.
- * Candidate 1 can map to the root (e.g. "ir-5") or "ir-5:candidate-1",
- * while subsequent candidates map to "ir-5:candidate-2", etc.
+ * Extracts base visa category ("IR-5", "IR-1", "IR-2", "CR-1", etc.)
+ * from any raw journey type, candidate key, or compound string.
  */
-export function getCandidateJourneyKey(baseJourneyType: string, candidateId: string): string {
-  const normalized = baseJourneyType.toLowerCase().replace(/-/g, "");
-  if (!candidateId || candidateId === "candidate-1") {
-    return normalized;
+export function getBaseVisaCategory(journeyTypeOrVisa?: string | null): VisaCategory {
+  if (!journeyTypeOrVisa) return "IR-5";
+  const cleaned = journeyTypeOrVisa.split("_")[0].split(":")[0].trim();
+  const normalized = cleaned.toLowerCase().replace(/[^a-z0-9]/g, "");
+  if (normalized.startsWith("ir5")) return "IR-5";
+  if (normalized.startsWith("ir1")) return "IR-1";
+  if (normalized.startsWith("ir2")) return "IR-2";
+  if (normalized.startsWith("cr1")) return "CR-1";
+  if (normalized.startsWith("cr2")) return "CR-2";
+  if (normalized === "f1") return "F-1 Student Visa";
+  
+  if (/^[a-zA-Z]+[0-9]+$/.test(cleaned)) {
+    const formatted = cleaned.replace(/^([a-zA-Z]+)([0-9]+)$/, "$1-$2").toUpperCase();
+    return formatted as VisaCategory;
   }
-  return `${normalized}_${candidateId.toLowerCase().replace(/[^a-z0-9]/g, "")}`;
+  return (cleaned.toUpperCase() as VisaCategory) || "IR-5";
+}
+
+/**
+ * Derives the database journey type key for a candidate.
+ * Candidate 1 maps to the base root (e.g. "ir5", "ir1"),
+ * while subsequent candidates map to "ir5_candidate2", "ir5_candidate3", etc.
+ * Fully idempotent even if passed an already candidate-scoped key.
+ */
+export function getCandidateJourneyKey(baseJourneyType: string, candidateId?: string | null): string {
+  const baseVisa = getBaseVisaCategory(baseJourneyType);
+  const normalizedBase = baseVisa.toLowerCase().replace(/[^a-z0-9]/g, "");
+  if (!candidateId || candidateId === "candidate-1") {
+    return normalizedBase;
+  }
+  const cleanCandId = candidateId.toLowerCase().replace(/[^a-z0-9]/g, "");
+  return `${normalizedBase}_${cleanCandId}`;
 }
 
 /** Alias for getCandidateJourneyKey */

@@ -17,26 +17,19 @@ import * as db from "@/lib/journey/data-access";
 import { ConfigLoader } from "@/lib/journey/config-loader";
 import { decrypt } from "@/lib/encryption";
 import { E, msg } from "@/lib/errors";
+import { getCandidateJourneyKey, getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
 
 // ── In-memory server cache (resets on cold start, fine for Vercel) ───────────
 const serverCache = new Map<string, { data: any; cachedAt: number }>();
 const CACHE_TTL_MS = 30_000; // 30 seconds
 
 function normType(t: string) {
-  return t.toLowerCase().replace(/[-:]/g, "");
+  return t.toLowerCase().replace(/[-:_]/g, "");
 }
 
 function configTypeFromJourneyType(journeyType: string) {
-  const base = journeyType.split("_")[0].split(":")[0];
-  const normalized = normType(base);
-
-  const map: Record<string, string> = {
-    ir1: "ir-1",
-    ir5: "ir-5",
-    ir2: "ir-2",
-  };
-
-  return map[normalized] ?? base.toLowerCase();
+  const base = getBaseVisaCategory(journeyType);
+  return base.toLowerCase();
 }
 
 // Runs AFTER response is sent — never blocks the user
@@ -89,10 +82,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Resolve effective journey type key (candidate-isolated)
-    const effectiveJourneyType =
-      candidate_id && candidate_id !== "candidate-1"
-        ? (journey_type.includes(candidate_id) ? journey_type : `${journey_type}_${candidate_id}`)
-        : journey_type;
+    const effectiveJourneyType = getCandidateJourneyKey(journey_type, candidate_id);
 
     const bustCache = req.headers.get("x-cache-bust") === "1";
     const cacheKey = `${user.id}_${normType(effectiveJourneyType)}`;
@@ -117,7 +107,15 @@ export async function POST(req: NextRequest) {
     // ── Find or create journey ────────────────────────────────────────────────
     const allJourneys = await db.getAllJourneysDB(undefined, dbClient);
     const normalizedQuery = normType(effectiveJourneyType);
-    const existing = allJourneys.find((j) => normType(j.journey_type) === normalizedQuery);
+    const existing = allJourneys.find((j) => {
+      const normJ = normType(j.journey_type);
+      if (normJ === normalizedQuery) return true;
+      // Handle legacy match if journey_type had extra suffix
+      if (candidate_id && candidate_id !== "candidate-1" && normJ.includes(normType(candidate_id))) {
+        return true;
+      }
+      return false;
+    });
 
     let journeyId: string;
     const configType = configTypeFromJourneyType(journey_type);

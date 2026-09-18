@@ -27,6 +27,7 @@ import type {
 import {
   getDefaultCandidatesForVisa,
   createNewCandidate,
+  getVisaCategoryForRelation,
 } from "@/lib/candidate/candidateSyncService";
 import { useToast } from "@/app/components/shared/ToastProvider";
 
@@ -49,6 +50,7 @@ interface CandidateContextType {
   addCandidate: (params: {
     relation: CandidateRelation;
     fullName?: string;
+    visaCategory?: string;
     isPreview?: boolean;
     tier?: CandidateTier;
   }) => CandidateProfile;
@@ -145,13 +147,21 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
     (params: {
       relation: CandidateRelation;
       fullName?: string;
+      visaCategory?: string;
       isPreview?: boolean;
       tier?: CandidateTier;
     }): CandidateProfile => {
+      const derivedVisa =
+        params.visaCategory ||
+        getVisaCategoryForRelation(
+          params.relation,
+          profile?.visaCategory || profile?.visaType || "IR-5"
+        );
+
       const newCand = createNewCandidate(candidatesRef.current, {
         relation: params.relation,
         fullName: params.fullName,
-        visaCategory: profile?.visaCategory || profile?.visaType || "IR-5",
+        visaCategory: derivedVisa,
         isPreview: params.isPreview ?? true,
         tier: params.tier ?? (params.isPreview ? "free" : "free"),
       });

@@ -104,10 +104,12 @@ Governs data synchronization and boundary enforcement:
   - `beneficiary`, `dateOfBirth`, `placeOfBirth`, `passportNumber`, `passportIssueDate`, `passportExpiry`, `cnic`, `nativeFullName`, `caseNumber`, `receiptNumber`, `priorityDate`, `approvalDate`, `dqDate`, `interviewDate`, `medicalDate`, `pccDate`, `actionPlanner`.
 - **`getDefaultCandidatesForVisa(visaCategory, tier, bothParents)`**:
   Generates initial candidate profiles for IR-5 (Mother & Father) or IR-2 (Child 1).
+- **`getVisaCategoryForRelation(relation, fallbackVisa)`**:
+  Maps candidate relationships directly to their official visa category (`Mother`/`Father`/`Stepparent`/`AdoptiveParent` -> `IR-5`, `Spouse` -> `IR-1`, `Child` -> `IR-2`).
 - **`createNewCandidate(existingCandidates, params)`**:
-  Constructs a new candidate profile with sequential numbering (`candidate-2`, `candidate-3`), distinct avatar color tagging, and tier assignment.
+  Constructs a new candidate profile with sequential numbering (`candidate-2`, `candidate-3`), automatically derived visa category based on relation, distinct avatar color tagging, and tier assignment.
 - **`getCandidateJourneyKey(baseJourneyType, candidateId)`**:
-  Generates database journey keys (`ir5` for candidate-1, `ir5_candidate2` for candidate-2).
+  Generates idempotent database journey keys (`ir5` for candidate-1, `ir5_candidate2` for candidate-2).
 
 #### 4. [lib/autoFill/journeyProfileBridge.ts](file:///d:/arachnie_work/updated_work/lib/autoFill/journeyProfileBridge.ts) `[MODIFIED]`
 - Updated `BENEFICIARY_SPECIFIC_KEYS` to include `cnic`, `nativeFullName`, `dateOfBirth`, and case identifiers.
