@@ -407,8 +407,8 @@ export function DocumentUploadModal({
       if (notes) {
         formData.append("notes", notes);
       }
-      if (activeJourneyId) {
-        formData.append("journeyId", activeJourneyId);
+      if (effectiveActiveJourneyId) {
+        formData.append("journeyId", effectiveActiveJourneyId);
       }
       if (sharedJourneyIds.length > 0) {
         formData.append("shareWithJourneyIds", JSON.stringify(sharedJourneyIds));

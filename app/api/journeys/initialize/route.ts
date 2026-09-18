@@ -23,18 +23,20 @@ const serverCache = new Map<string, { data: any; cachedAt: number }>();
 const CACHE_TTL_MS = 30_000; // 30 seconds
 
 function normType(t: string) {
-  return t.toLowerCase().replace(/-/g, "");
+  return t.toLowerCase().replace(/[-:]/g, "");
 }
 
 function configTypeFromJourneyType(journeyType: string) {
-  const normalized = normType(journeyType);
+  const base = journeyType.split("_")[0].split(":")[0];
+  const normalized = normType(base);
 
   const map: Record<string, string> = {
     ir1: "ir-1",
     ir5: "ir-5",
+    ir2: "ir-2",
   };
 
-  return map[normalized] ?? journeyType.toLowerCase();
+  return map[normalized] ?? base.toLowerCase();
 }
 
 // Runs AFTER response is sent — never blocks the user
@@ -54,10 +56,9 @@ async function syncStepsBackground(journeyId: string, configType: string) {
       const stepsInput = ConfigLoader.transformStepsInput(rawChapter.steps, rawChapter.chapter_key);
       const newSteps = stepsInput.filter((s) => !existingKeys.has(s.step_key));
 
-      // Batch inserts — parallel instead of sequential
-      await Promise.all(
-        newSteps.map((stepInput) => db.createStepDB(dbChapter.id, stepInput).catch(() => {}))
-      );
+      if (newSteps.length > 0) {
+        await db.createStepsBatchDB(dbChapter.id, newSteps).catch(() => {});
+      }
     }
   } catch {
     // sync is non-critical — ignore errors
@@ -79,7 +80,7 @@ export async function POST(req: NextRequest) {
     // Shared context to avoid redundant auth calls in data-access
     const dbClient = { supabase, user };
 
-    const { journey_type } = await req.json();
+    const { journey_type, candidate_id } = await req.json();
     if (!journey_type) {
       return NextResponse.json(
         { error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: "[journey_type]" }) },
@@ -87,8 +88,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Resolve effective journey type key (candidate-isolated)
+    const effectiveJourneyType =
+      candidate_id && candidate_id !== "candidate-1"
+        ? (journey_type.includes(candidate_id) ? journey_type : `${journey_type}_${candidate_id}`)
+        : journey_type;
+
     const bustCache = req.headers.get("x-cache-bust") === "1";
-    const cacheKey = `${user.id}_${normType(journey_type)}`;
+    const cacheKey = `${user.id}_${normType(effectiveJourneyType)}`;
 
     // ── Server cache hit — return immediately (repeat visits ~200ms) ──────────
     if (!bustCache) {
@@ -109,7 +116,7 @@ export async function POST(req: NextRequest) {
 
     // ── Find or create journey ────────────────────────────────────────────────
     const allJourneys = await db.getAllJourneysDB(undefined, dbClient);
-    const normalizedQuery = normType(journey_type);
+    const normalizedQuery = normType(effectiveJourneyType);
     const existing = allJourneys.find((j) => normType(j.journey_type) === normalizedQuery);
 
     let journeyId: string;
@@ -120,7 +127,13 @@ export async function POST(req: NextRequest) {
     } else {
       const configPath = `data/visa-category/${configType}.json`;
       try {
-        const result = await journeyService.createJourneyFromConfig(configPath);
+        const result = await journeyService.createJourneyFromConfig(
+          configPath,
+          {
+            journey_type: effectiveJourneyType,
+          },
+          dbClient
+        );
         journeyId = result.journey.id;
       } catch (createErr: any) {
         // Race condition: another tab already created it
