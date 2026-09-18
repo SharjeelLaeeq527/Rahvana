@@ -8,6 +8,7 @@ import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { mapDocumentNameToId } from "@/lib/document-vault/journey-mapping";
 import { getJourneyLockStatus } from "@/lib/journey-lock";
 import { useUserProfile } from "@/app/context/UserProfileContext";
+import { useCandidate } from "@/app/context/CandidateContext";
 import { syncCaseDataToProfile, syncProfileToCaseData } from "@/lib/autoFill/journeyProfileBridge";
 
 export interface WizardState {
@@ -58,6 +59,7 @@ const DEFAULT_STATE: WizardState = {
 interface UseWizardOptions {
   userId?: string | null;
   journeyId?: string;
+  candidateId?: string;
   roadmapData?: any;
 }
 
@@ -65,6 +67,9 @@ export function useWizard(options: UseWizardOptions = {}) {
   const params = useParams();
   const routeJourney = params?.["visa-journey"];
   const routeJourneyId = typeof routeJourney === "string" ? routeJourney.replace("-", "").toLowerCase() : undefined;
+
+  const { activeCandidateId } = useCandidate();
+  const effectiveCandidateId = options.candidateId || activeCandidateId || "candidate-1";
 
   const { userId, journeyId = routeJourneyId, roadmapData: externalRoadmapData } = options;
   const { profile, updateProfile } = useUserProfile();
@@ -172,7 +177,10 @@ export function useWizard(options: UseWizardOptions = {}) {
         const res = await fetch("/api/journeys/initialize", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ journey_type: journeyId }),
+          body: JSON.stringify({
+            journey_type: journeyId,
+            candidate_id: effectiveCandidateId,
+          }),
         });
 
         if (!res.ok) throw new Error(`Initialize failed: HTTP ${res.status}`);
@@ -270,7 +278,7 @@ export function useWizard(options: UseWizardOptions = {}) {
     };
     // activeRoadmap intentionally excluded — API starts immediately on userId
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId, journeyId]);
+  }, [userId, journeyId, effectiveCandidateId]);
 
   // Synchronize MasterProfile standard fields back into wizard metadata in-memory
   useEffect(() => {
@@ -302,7 +310,10 @@ export function useWizard(options: UseWizardOptions = {}) {
           "Content-Type": "application/json",
           "x-cache-bust": "1",
         },
-        body: JSON.stringify({ journey_type: journeyId }),
+        body: JSON.stringify({
+          journey_type: journeyId,
+          candidate_id: effectiveCandidateId,
+        }),
       }).catch(() => {}); // Non-blocking
     };
 

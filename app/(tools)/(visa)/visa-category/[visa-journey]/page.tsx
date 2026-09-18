@@ -23,6 +23,7 @@ function resolveJourneyData(visaJourney: string): any | null {
   return JOURNEY_DATA_MAP[visaJourney] ?? null;
 }
 import { useAuth } from "@/app/context/AuthContext";
+import { useCandidate } from "@/app/context/CandidateContext";
 import { useWizard, type WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useParams, useRouter } from "next/navigation";
@@ -96,7 +97,21 @@ export default function IR1JourneyPage() {
   // link cannot open IR-5. Hooks are declared before any early return to keep a
   // stable hook order across renders.
   const router = useRouter();
+  const { activeCandidate } = useCandidate();
   const isIr5Route = visaJourneyParam === "ir-5" || visaJourneyParam === "ir5-journey";
+
+  // Automatically align journey roadmap URL if active candidate belongs to a different visa type
+  useEffect(() => {
+    if (!activeCandidate?.visaCategory) return;
+    const candidateVisaNorm = activeCandidate.visaCategory.toLowerCase().replace(/[^a-z0-9]/g, "");
+    const currentParamNorm = visaJourneyParam.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+    if (currentParamNorm.startsWith("ir1") && candidateVisaNorm === "ir5") {
+      router.push("/visa-category/ir5-journey");
+    } else if (currentParamNorm.startsWith("ir5") && (candidateVisaNorm === "ir1" || candidateVisaNorm === "cr1")) {
+      router.push("/visa-category/ir1-journey");
+    }
+  }, [activeCandidate?.id, activeCandidate?.visaCategory, visaJourneyParam, router]);
 
   useEffect(() => {
     if (isIr5Route && !IR5_ENABLED) {

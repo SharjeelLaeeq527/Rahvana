@@ -1,5 +1,8 @@
 import { ALL_DOCUMENTS } from "./document-definitions";
 import { VisaCategory, ScenarioFlags } from "./types";
+import { getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
+
+export { getBaseVisaCategory };
 
 /**
  * Check whether any vault document matches a journey doc item,
@@ -364,25 +367,40 @@ export const FRIENDLY_JOURNEY_NAMES: Record<string, string> = {
   "IR-1": "IR-1 Spouse Visa Journey",
   ir5: "IR-5 Parent Visa Journey",
   "ir-5": "IR-5 Parent Visa Journey",
+  "IR-5": "IR-5 Parent Visa Journey",
+  ir2: "IR-2 Child Visa Journey",
+  "ir-2": "IR-2 Child Visa Journey",
+  "IR-2": "IR-2 Child Visa Journey",
+  cr1: "CR-1 Spouse Visa Journey",
+  "cr-1": "CR-1 Spouse Visa Journey",
+  "CR-1": "CR-1 Spouse Visa Journey",
 };
 
 export function getFriendlyJourneyName(journeyType: string, defaultName?: string): string {
   if (!journeyType) return defaultName || "Immigration Journey";
-  const key = journeyType.toLowerCase().replace(/[^a-z0-9]/g, "");
-  return FRIENDLY_JOURNEY_NAMES[key] || defaultName || `${journeyType.toUpperCase()} Journey`;
+  const baseVisa = getBaseVisaCategory(journeyType);
+  const key = baseVisa.toLowerCase().replace(/[^a-z0-9]/g, "");
+  return FRIENDLY_JOURNEY_NAMES[key] || defaultName || `${baseVisa} Journey`;
 }
 
 export const JOURNEY_TYPE_TO_VISA: Record<string, string> = {
   ir1: "IR-1",
   "ir-1": "IR-1",
+  "IR-1": "IR-1",
   ir5: "IR-5",
   "ir-5": "IR-5",
+  "IR-5": "IR-5",
+  ir2: "IR-2",
+  "ir-2": "IR-2",
+  "IR-2": "IR-2",
+  cr1: "CR-1",
+  "cr-1": "CR-1",
+  "CR-1": "CR-1",
 };
 
 export function journeyTypeToVisaCategory(journeyType: string): VisaCategory | null {
   if (!journeyType) return null;
-  const key = journeyType.toLowerCase().replace(/[^a-z0-9]/g, "");
-  return (JOURNEY_TYPE_TO_VISA[key] as VisaCategory) || null;
+  return getBaseVisaCategory(journeyType) || null;
 }
 
 export function isSameJourneyType(typeA?: string | null, typeB?: string | null): boolean {

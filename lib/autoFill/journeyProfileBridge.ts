@@ -145,6 +145,11 @@ export const BENEFICIARY_SPECIFIC_KEYS = new Set([
   "passportNumber",
   "surname",
   "beneficiaryName",
+  "cnic",
+  "nativeFullName",
+  "dateOfBirth",
+  "date_of_birth",
+  "dob",
   "med_date",
   "med_time",
   "med_clinic",
@@ -161,7 +166,7 @@ export const BENEFICIARY_SPECIFIC_KEYS = new Set([
   "receiptNumber",
   "receiptNum",
   "approvalDate",
-  "priorityDate"
+  "priorityDate",
 ]);
 
 /**
