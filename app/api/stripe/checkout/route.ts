@@ -26,6 +26,11 @@ function logDebug(msg: string, obj?: any) {
 
 const INTERVIEW_PREP_ADDON_PREFIX = "interview-prep:";
 
+/** Keeps checkout ownership checks scoped to the selected journey. */
+function journeyTypeForVisaCategory(visaCategory: string): "IR1" | "IR5" {
+  return visaCategory.toLowerCase().includes("5") ? "IR5" : "IR1";
+}
+
 function getCatalogAddonId(addonId: string): string {
   const normalized = addonId.toLowerCase();
 
@@ -112,6 +117,15 @@ export async function POST(request: NextRequest) {
     const dbVisaCategory =
       profile?.profile_details?.plan_visa_category || profile?.profile_details?.visa_category;
     const effectiveVisaCategory = visaCategory || dbVisaCategory || "IR-1 / CR-1";
+    const selectedJourneyType = journeyTypeForVisaCategory(effectiveVisaCategory);
+    const { data: selectedJourney } = productTier
+      ? await supabase
+          .from("journeys")
+          .select("subscription_tier, stripe_subscription_id, status")
+          .eq("user_id", userId)
+          .ilike("journey_type", selectedJourneyType)
+          .maybeSingle()
+      : { data: null };
 
     // ── Concurrency guard: serialize subscription checkouts per user so two
     // in-flight requests can't both pass the "no live sub" check below and each
@@ -221,9 +235,20 @@ export async function POST(request: NextRequest) {
     // legacy Premium sub is never mis-read as Free — else the DB tier. Taking the
     // MAX means a stale DB can never UNDER-report the current tier and let a
     // duplicate or downgrade slip through.
-    const dbTier = (profile?.subscription_tier ?? "free").toLowerCase();
-    const dbStatus = profile?.subscription_status ?? "inactive";
-    const stripeTierRank = liveSubs.reduce((max, s) => {
+    // The account profile holds a maximum tier. Checkout guards must instead
+    // consider only the selected journey and its Stripe subscription.
+    const journeyLiveSubs = liveSubs.filter((subscription) => {
+      const subscriptionJourneyType = subscription.metadata?.visa_category
+        ? journeyTypeForVisaCategory(subscription.metadata.visa_category)
+        : null;
+      return (
+        subscriptionJourneyType === selectedJourneyType ||
+        subscription.id === selectedJourney?.stripe_subscription_id
+      );
+    });
+    const dbTier = (selectedJourney?.subscription_tier ?? "free").toLowerCase();
+    const dbStatus = selectedJourney?.status ?? "not_started";
+    const stripeTierRank = journeyLiveSubs.reduce((max, s) => {
       const t = resolveSubscriptionTier(s);
       return Math.max(max, t ? (TIER_RANK[t] ?? 0) : 0);
     }, 0);
@@ -231,22 +256,25 @@ export async function POST(request: NextRequest) {
     const effectiveCurrentTier = tierNameForRank(effectiveCurrentRank);
     // "Has a plan" is true if EITHER source says so — this closes the desync gap.
     const hasLivePlan =
-      liveSubs.length > 0 || (dbStatus === "active" && (TIER_RANK[dbTier] ?? 0) > 0);
+      journeyLiveSubs.length > 0 ||
+      (dbStatus !== "completed" && (TIER_RANK[dbTier] ?? 0) > 0);
 
     // A live sub whose recurring charge is failing. Such a user should RECOVER
     // (update payment method / pay the open invoice) via the billing portal, not
     // buy the same plan again — that would create a second subscription and leave
     // the broken one behind.
-    const failingSub = liveSubs.find((s) => s.status === "past_due" || s.status === "unpaid");
+    const failingSub = journeyLiveSubs.find(
+      (s) => s.status === "past_due" || s.status === "unpaid"
+    );
 
     // The real subscription to retire on an upgrade — prefer the one the DB points
     // at, else the highest-tier live sub. This is only a HINT: verify-session runs
     // a belt-and-suspenders cleanup, and (critically) the old sub is cancelled ONLY
     // after the new one is confirmed paid, never here at checkout time.
-    const dbSubId = profile?.profile_details?.stripe_subscription_id as string | undefined;
+    const dbSubId = selectedJourney?.stripe_subscription_id as string | undefined;
     const oldSubscriptionId =
-      liveSubs.find((s) => s.id === dbSubId)?.id ||
-      [...liveSubs].sort((a, b) => {
+      journeyLiveSubs.find((s) => s.id === dbSubId)?.id ||
+      [...journeyLiveSubs].sort((a, b) => {
         const ra = resolveSubscriptionTier(b);
         const rb = resolveSubscriptionTier(a);
         return (ra ? TIER_RANK[ra] : 0) - (rb ? TIER_RANK[rb] : 0);
