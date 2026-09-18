@@ -47,9 +47,13 @@ export async function GET(request: NextRequest) {
     const offset = parseInt(searchParams.get("offset") || "0", 10);
 
     // Build query using admin client (bypasses RLS to see all logs)
+    // count: "planned" uses Postgres's query-planner ESTIMATE instead of
+    // physically counting every matching row. "exact" forced a full scan of
+    // audit_logs on every page view of the admin viewer. For a paginated log
+    // list an approximate total is perfectly fine.
     let query = supabaseAdmin
       .from("audit_logs")
-      .select("*", { count: "exact" })
+      .select("*", { count: "planned" })
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
 

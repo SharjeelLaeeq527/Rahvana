@@ -19,6 +19,24 @@ const TIER_RANK: Record<string, number> = {
   executive: 3,
 };
 
+// A subscription in one of these statuses still grants access. `canceled`,
+// `incomplete`, `incomplete_expired`, and `paused` do NOT.
+const LIVE_SUB_STATUSES = ["active", "trialing", "past_due", "unpaid"];
+
+// Lazily-loaded Stripe client (cached). Kept lazy to avoid import errors in edge
+// contexts where this util might be pulled in without Stripe configured.
+let _stripe: Stripe | null = null;
+async function getStripe(): Promise<Stripe | null> {
+  if (_stripe) return _stripe;
+  try {
+    const { stripe } = await import("@/lib/stripe/config");
+    _stripe = stripe;
+  } catch {
+    _stripe = null;
+  }
+  return _stripe;
+}
+
 export interface ReconcileResult {
   tier: string;
   status: string;
@@ -45,7 +63,7 @@ export async function reconcileUserPlan(
   const { data: payments } = await admin
     .from("payments")
     .select(
-      "id, product_id, stripe_payment_id, stripe_checkout_session_id, status, metadata, created_at"
+      "id, product_id, stripe_payment_id, stripe_subscription_id, stripe_checkout_session_id, status, metadata, created_at"
     )
     .eq("user_id", userId)
     .eq("product_type", "journey_plan")
@@ -75,22 +93,16 @@ export async function reconcileUserPlan(
       bestRank = rank;
       bestTier = pid;
       bestSubId =
+        (p.stripe_subscription_id as string) ??
         ((p.metadata as any)?.stripe_subscription_id as string) ??
-        (p.stripe_payment_id as string) ??
+        (p.stripe_payment_id as string) ?? // legacy rows stored the sub id here
         null;
     }
   }
 
   // Second pass: check pending payments by verifying with Stripe
   if (bestRank === 0 || currentRank < bestRank) {
-    // Try to initialise Stripe lazily (only when needed, avoids import errors in edge)
-    let stripeClient: Stripe | null = null;
-    try {
-      const { stripe } = await import("@/lib/stripe/config");
-      stripeClient = stripe;
-    } catch {
-      /* Stripe unavailable in this context — skip */
-    }
+    const stripeClient = await getStripe();
 
     if (stripeClient) {
       for (const p of payments) {
@@ -133,6 +145,30 @@ export async function reconcileUserPlan(
     return { tier: currentTier, status: currentStatus, reconciled: false };
   }
 
+  // 4b. RESURRECTION GUARD — the chosen tier must be backed by a CURRENTLY LIVE
+  // subscription in Stripe. Without this, a historical "succeeded" payment row
+  // would let reconcile re-activate a user whose subscription was since canceled
+  // (payments is an append-only history, not current billing state). Stripe is
+  // the source of truth for whether access is still owed.
+  {
+    const stripeClient = await getStripe();
+    // Fail SAFE: if we cannot positively confirm a live subscription, do NOT
+    // grant access from a payment record alone.
+    if (!stripeClient || !bestSubId) {
+      return { tier: currentTier, status: currentStatus, reconciled: false };
+    }
+    try {
+      const sub = await stripeClient.subscriptions.retrieve(bestSubId);
+      if (!LIVE_SUB_STATUSES.includes(sub.status)) {
+        return { tier: currentTier, status: currentStatus, reconciled: false };
+      }
+    } catch {
+      // bestSubId isn't a retrievable live subscription (e.g. a payment-intent id
+      // or a deleted sub) — refuse to reactivate from history.
+      return { tier: currentTier, status: currentStatus, reconciled: false };
+    }
+  }
+
   // 5. Apply paid tier
   const updateData: Record<string, unknown> = {
     subscription_tier: bestTier,
@@ -161,7 +197,9 @@ export async function reconcileUserPlan(
       .from("payments")
       .update({
         status: "succeeded",
-        ...(bestSubId ? { stripe_payment_id: bestSubId } : {}),
+        // reconcile only handles journey_plan payments, so bestSubId is a
+        // subscription id — store it in its own column, not stripe_payment_id.
+        ...(bestSubId ? { stripe_subscription_id: bestSubId } : {}),
       })
       .eq("id", pendingPaymentId);
   }

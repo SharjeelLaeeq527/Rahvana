@@ -42,6 +42,7 @@ import HeroSection from "./(main)/home-page/herosection";
 import AnimationCard from "./(main)/home-page/AnimationCard";
 import Intro from "./(main)/home-page/intro";
 import SectionBird from "./(main)/home-page/SectionBird";
+import MobileJourneyRoadmap from "./(main)/home-page/MobileJourneyRoadmap";
 import ConsultationSection from "./components/home-page/ConsultationSection";
 import { Star, User, ShieldCheck } from "lucide-react";
 
@@ -938,7 +939,12 @@ function HomePageContent() {
             <div className={`min-h-screen w-full bg-slate-50/50 ${caveat.variable}`}>
               <Intro />
 
-              <RoadmapProvider>
+              {/* Reimagined Living Timeline Roadmap — Mobile Only */}
+              <MobileJourneyRoadmap />
+
+              {/* Desktop Snake-Curve Roadmap Experience (Desktop Only) */}
+              <div className="hidden md:block">
+                <RoadmapProvider>
                 <div className="relative w-full bg-white">
                   <div className="relative mx-auto max-w-5xl px-6">
                     <SectionBird
@@ -1613,6 +1619,7 @@ function HomePageContent() {
                   </div>
                 </div>
               </RoadmapProvider>
+              </div>
 
               {/* SECTION — Toolkit / ToolDock */}
               <ToolsDock />
@@ -1750,7 +1757,7 @@ function HomePageContent() {
                       className="bg-rahvana-primary-pale text-rahvana-primary mb-4 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-semibold"
                     >
                       <Icons.HelpCircle className="h-4 w-4" />
-                      {t("homePage.faqBadge")}
+                      Need more Clarity?
                     </motion.span>
                     <h2 className="text-foreground mb-4 text-3xl font-bold md:text-5xl">
                       {t("homePage.faqTitle") || "Frequently Asked Questions"}

@@ -6,6 +6,7 @@ import { createClient } from "@supabase/supabase-js";
 import Stripe from "stripe";
 import { consultationService } from "@/lib/services/consultationService";
 import { buildAddonPurchaseUpdate } from "@/lib/payments/addon-purchase-ledger";
+import { cancelDuplicateSubscriptions } from "@/lib/stripe/subscriptionCleanup";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -128,7 +129,11 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
   const payment = await paymentService.getPaymentBySessionId(session.id);
   if (payment) {
     await paymentService.updatePayment(payment.id, {
-      stripe_payment_id: (session.payment_intent as string) || (session.subscription as string),
+      // Keep each Stripe id in its own column: pi_... vs sub_... (undefined
+      // values are omitted by the client, so a subscription won't null out
+      // stripe_payment_id and vice versa).
+      stripe_payment_id: (session.payment_intent as string) || undefined,
+      stripe_subscription_id: (session.subscription as string) || undefined,
       status: "succeeded",
     });
   }
@@ -197,16 +202,19 @@ const mergedPlanAddons = [
 
         console.log(`✅ User ${userId} subscribed to ${productId}`);
 
-        // Handle Upgrade cleanup
-        if (session.metadata.is_upgrade === "true" && session.metadata.old_subscription_id) {
-          try {
-            await stripe.subscriptions.cancel(session.metadata.old_subscription_id);
-            console.log(
-              `✅ Cancelled old subscription ${session.metadata.old_subscription_id} after upgrade.`
-            );
-          } catch (cancelErr) {
-            console.error("Error cancelling old subscription after upgrade:", cancelErr);
-          }
+        // ── Safety cleanup: exactly ONE live subscription per customer. ────────
+        // Runs only after this checkout completed (payment confirmed) and after
+        // the DB above now points at this session's subscription, so a retired
+        // duplicate can never be mistaken for the current sub and trigger a
+        // downgrade. This mirrors verify-session; whichever activation path fires
+        // first, the customer is left with a single active subscription. It
+        // supersedes the old is_upgrade/old_subscription_id targeted cancel by
+        // also healing duplicates from earlier desyncs.
+        const customerIdForCleanup =
+          (session.customer as string) || session.metadata.stripe_customer_id;
+        const keepSubId = session.subscription as string;
+        if (customerIdForCleanup && keepSubId) {
+          await cancelDuplicateSubscriptions(customerIdForCleanup, keepSubId, "[webhook]");
         }
       } catch (error) {
         console.error("Error updating user subscription:", error);
@@ -454,7 +462,9 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
     return;
   }
 
-  // Downgrade user to free plan
+  // Downgrade user to free plan. Clear the subscription id in BOTH metadata and
+  // profile_details — the rest of the app reads profile_details.stripe_subscription_id,
+  // so leaving a stale id there would confuse the next purchase's upgrade detection.
   await supabase
     .from("user_profiles")
     .update({
@@ -464,6 +474,11 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
         ...profile.metadata,
         active_plan: null,
         plan_cancelled_date: new Date().toISOString(),
+        stripe_subscription_id: null,
+      },
+      profile_details: {
+        ...(profile.profile_details || {}),
+        active_plan: null,
         stripe_subscription_id: null,
       },
     })

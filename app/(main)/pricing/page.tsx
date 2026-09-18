@@ -30,7 +30,7 @@ import { E, msg, errorCode } from "@/lib/errors";
 import { VISA_CATEGORIES, HELPER_DATA, COMPARISON_GROUPS, ADDONS, FAQS } from "./data/pricing";
 import type { PlanData } from "./data/pricing";
 import ResourceToolCard from "@/components/pricing/ResourceToolCard";
-import ResourceCarousel from "@/components/pricing/ResourceCarousel";
+import { useToast } from "@/app/components/shared/ToastProvider";
 
 /* ===========================================================================
    TIER VISUAL CONFIG
@@ -673,6 +673,8 @@ function PricingContent() {
   const requestedInterviewCategory =
     searchParams.get("interview_category") || VISA_TO_INTERVIEW_CATEGORY[visa] || null;
 
+  const { showToast } = useToast();
+
   const checkoutAddonIds = useMemo(
     () =>
       Array.from(selectedAddons).map((addonId) =>
@@ -747,7 +749,28 @@ function PricingContent() {
         });
         const data = await res.json();
         if (!res.ok) {
-          setCheckoutError(`${msg(E.DASH_CHECKOUT_NO_URL)}`);
+          // Past-due / payment-recovery case: the server tells us to send the user
+          // to the billing portal to fix their existing plan instead of buying a
+          // duplicate. Route there rather than showing a dead-end error.
+          if (data?.portal) {
+            try {
+              const portalRes = await fetch("/api/stripe/portal", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ userId: uid }),
+              });
+              const portalData = await portalRes.json();
+              if (portalData?.url) {
+                window.location.href = portalData.url;
+                return;
+              }
+            } catch (portalErr) {
+              console.error("Portal redirect failed:", portalErr);
+            }
+          }
+          // Prefer the server's specific message (e.g. "you already own", past-due
+          // recovery) over the generic fallback.
+          setCheckoutError(data?.error || `${msg(E.DASH_CHECKOUT_NO_URL)}`);
           setIsProcessingAutoCheckout(false);
           return;
         }
@@ -1310,7 +1333,14 @@ function PricingContent() {
                           }`}
                           onClick={(e) => {
                             e.stopPropagation();
+
                             if (isDowngrade || isCurrentPlan) return;
+
+                            if (!visa) {
+                              showToast("Please select a visa category first.", "error");
+                              return;
+                            }
+
                             setSelectedPlan(plan.id);
                             setPurchaseStep("review");
                             window.scrollTo({ top: 0, behavior: "smooth" });

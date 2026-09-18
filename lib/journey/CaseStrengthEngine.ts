@@ -196,11 +196,19 @@ export class CaseStrengthEngine {
         risk_flags: risk_flags,
       };
 
-      // Auto-save the score back to case_data so it stays indexed
-      await this.caseDataService.setCaseData(journeyId, "case_strength_score", finalScore, {
-        is_verified: true,
-        source: "CaseStrengthEngine",
-      });
+      // Auto-save the score back to case_data so it stays indexed.
+      // Only write when the score actually CHANGED. This runs on every single
+      // case_data save; re-writing an identical score each time caused a
+      // redundant full-row rewrite (+ 7 index updates + the version/previous_value
+      // trigger) on case_data for no reason — a Supabase Disk IO source. We already
+      // have the stored value in caseProfile, so the check is free.
+      const previousScore = Number(caseProfile.all_data?.case_strength_score?.data_value);
+      if (previousScore !== finalScore) {
+        await this.caseDataService.setCaseData(journeyId, "case_strength_score", finalScore, {
+          is_verified: true,
+          source: "CaseStrengthEngine",
+        });
+      }
 
       return strengthResult;
     } catch (error) {

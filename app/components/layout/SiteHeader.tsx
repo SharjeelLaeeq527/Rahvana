@@ -536,24 +536,55 @@ export function SiteHeader({
     } catch {}
   }, []);
 
-  // Fetch on mount — so bell badge and data are ready before user clicks
-  useEffect(() => {
-    if (resolvedUser) fetchNotifications();
-  }, [resolvedUser]);
+  // Throttle guard so rapid tab-focus switches don't refetch the whole fan-out.
+  const lastNotifFetchRef = useRef(0);
 
-  // Re-fetch every 2 minutes in background to keep count fresh
+  const runFetchNotifications = useCallback(() => {
+    lastNotifFetchRef.current = Date.now();
+    fetchNotifications();
+  }, [fetchNotifications]);
+
+  // Fetch on mount — so bell badge and data are ready before user clicks.
+  // Keyed on the user ID (not the user object): AuthContext re-emits a NEW user
+  // reference on every auth event, and keying on the object would re-trigger the
+  // whole per-journey notification fan-out each time (extra Supabase Disk IO).
   useEffect(() => {
-    if (!resolvedUser) return;
-    const interval = setInterval(fetchNotifications, 2 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, [resolvedUser, fetchNotifications]);
+    if (resolvedUser?.id) runFetchNotifications();
+  }, [resolvedUser?.id, runFetchNotifications]);
+
+  // Background refresh. Poll every 10 minutes AND only while the tab is visible —
+  // a hidden/background tab makes zero DB calls. When the tab becomes visible
+  // again we catch up once (throttled to at most once per minute). This replaces
+  // the old always-on 2-minute poll, which fanned out reads (journeys progress +
+  // per-journey reminders + notifications) for every user on every open tab.
+  useEffect(() => {
+    if (!resolvedUser?.id) return;
+
+    const tick = () => {
+      if (typeof document !== "undefined" && document.visibilityState !== "visible") return;
+      runFetchNotifications();
+    };
+    const interval = setInterval(tick, 10 * 60 * 1000);
+
+    const onVisible = () => {
+      if (document.visibilityState !== "visible") return;
+      if (Date.now() - lastNotifFetchRef.current < 60 * 1000) return;
+      runFetchNotifications();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [resolvedUser?.id, runFetchNotifications]);
 
   // Re-fetch immediately when any data save triggers refresh-reminders
   useEffect(() => {
-    if (!resolvedUser) return;
+    if (!resolvedUser?.id) return;
     window.addEventListener("refresh-reminders", fetchNotifications);
     return () => window.removeEventListener("refresh-reminders", fetchNotifications);
-  }, [resolvedUser, fetchNotifications]);
+  }, [resolvedUser?.id, fetchNotifications]);
 
   const markAllRead = (ids: string[]) => {
     setReadIds((prev) => {
@@ -731,6 +762,7 @@ export function SiteHeader({
         settings: "/settings",
         "portal-wallet": "/portal-wallet",
         about: "/about",
+        blog: "/blog",
       };
 
       const targetRoute = routes[id] || "/";
@@ -1024,6 +1056,25 @@ export function SiteHeader({
             */}
             <div className="relative pt-2 pb-0">
               <Link
+                href="/blog"
+                onClick={(e) => handleNav("blog", e)}
+                className={`block rounded-lg px-4 py-2 text-sm font-semibold transition-all ${
+                  isHomeHeroState
+                    ? isActive("blog", "/blog")
+                      ? "bg-muted text-[#0d7377]"
+                      : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                    : isHomeHeroP2State || isHomepageHeroState
+                      ? "text-[#3fb8bc] hover:bg-[#0d7377]/8 hover:text-[#0d7377]"
+                      : isActive("blog", "/blog")
+                        ? "bg-muted text-[#0d7377]"
+                        : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                }`}
+              >
+                Blog
+              </Link>
+            </div>
+            <div className="relative pt-2 pb-0">
+              <Link
                 href="/about"
                 onClick={(e) => handleNav("about", e)}
                 className={`block rounded-lg px-4 py-2 text-sm font-semibold transition-all ${
@@ -1160,33 +1211,7 @@ export function SiteHeader({
               </div>
             </motion.div>
           )}
-          {/* Commented out - Tools, Guides, Services now under Resources */}
-          {/*
-          {activeMenu === "tools" && (
-            <MegaMenu
-              key="tools"
-              isOpen={true}
-              arrowOffset={arrowOffset}
-              {...NAV_DATA.tools}
-            />
-          )}
-          {activeMenu === "guides" && (
-            <MegaMenu
-              key="guides"
-              isOpen={true}
-              arrowOffset={arrowOffset}
-              {...NAV_DATA.guides}
-            />
-          )}
-          {activeMenu === "services" && (
-            <MegaMenu
-              key="services"
-              isOpen={true}
-              arrowOffset={arrowOffset}
-              {...NAV_DATA.services}
-            />
-          )}
-          */}
+      
         </div>
 
         {/* Right side – Search + Login */}
@@ -1735,13 +1760,13 @@ export function SiteHeader({
                         <UserIcon className="h-4 w-4 text-violet-600 dark:text-violet-400" />
                         My Profile
                       </button>
-                      {/* <button
+                      <button
                         onClick={() => handleNav("my-journeys")}
                         className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-teal-700 transition-colors text-sm font-medium"
                       >
                         <Map className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
                         My Journeys
-                      </button> */}
+                      </button>
                       <button
                         onClick={() => handleNav("document-vault")}
                         className="text-muted-foreground hover:bg-muted flex w-full items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors hover:text-teal-700"
@@ -1756,19 +1781,6 @@ export function SiteHeader({
                         <LockIcon className="h-4 w-4 text-indigo-500 dark:text-indigo-400" />
                         Portal Wallet
                       </button>
-
-                      {/* <button
-                        onClick={() =>
-                          setTheme(theme === "dark" ? "light" : "dark")
-                        }
-                        className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-teal-700 transition-colors text-sm font-medium"
-                      >
-                        <div className="relative w-4 h-4">
-                          <Sun className="absolute w-4 h-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                          <Moon className="absolute w-4 h-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                        </div>
-                        <span>Switch Theme</span>
-                      </button> */}
                     </div>
 
                     {/* Section 2 */}
@@ -1780,20 +1792,6 @@ export function SiteHeader({
                         <Settings className="h-4 w-4 text-slate-500 dark:text-slate-400" />
                         Account Settings
                       </button>
-                      {/* <button
-                        onClick={() => handleNav("view-security-questions")}
-                        className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-teal-700 transition-colors text-sm font-medium"
-                      >
-                        <Shield className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
-                        My Credentials
-                      </button> */}
-                      {/* <button
-                        onClick={() => {}} // Placeholder
-                        className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-teal-700 transition-colors text-sm font-medium"
-                      >
-                        <HelpCircle className="w-4 h-4 text-cyan-500 dark:text-cyan-400" />
-                        Help Center
-                      </button> */}
                     </div>
 
                     {/* Footer - Sign Out */}
@@ -1847,18 +1845,6 @@ export function SiteHeader({
           }`}
         >
           <div className="flex items-center justify-between border-b border-slate-100 p-5">
-            {/* <Link
-                href="/"
-                onClick={(e) => handleNav("home", e)}
-                className="flex items-center gap-2 group"
-              >
-                <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary shadow-lg shadow-primary/20 text-white font-bold text-lg">
-                  R
-                </div>
-                <span className="text-xl font-bold text-slate-900 tracking-tight">
-                  Rahvana
-                </span>
-              </Link> */}
             <Link
               href="/"
               onClick={(e) => handleNav("home", e)}
@@ -2122,6 +2108,17 @@ export function SiteHeader({
 
               {/* <div className="mt-4 px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-400">General</div> */}
               <HydrationSafeButton
+                onClick={() => handleNav("blog")}
+                className={`flex items-center gap-3 rounded-xl px-4 py-3 text-left transition-all ${
+                  isActive("blog")
+                    ? "bg-[#0d7377]/10 text-[#0d7377]"
+                    : "text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                <FileText className="h-5 w-5 text-cyan-500 dark:text-cyan-400" />
+                <span className="font-bold">Blog</span>
+              </HydrationSafeButton>
+              <HydrationSafeButton
                 onClick={() => handleNav("about")}
                 className={`flex items-center gap-3 rounded-xl px-4 py-3 text-left transition-all ${
                   isActive("about")
@@ -2156,65 +2153,6 @@ export function SiteHeader({
                   <span className="font-bold">FAQ</span>
                 </HydrationSafeButton>
               )}
-              {/* {isSignedIn && (
-                  <>
-                    <HydrationSafeButton
-                      onClick={() => handleNav("dashboard")}
-                      className={`flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
-                        isActive("dashboard", "/user-dashboard")
-                          ? "bg-primary/10 text-primary"
-                          : "text-muted-foreground hover:bg-muted"
-                      }`}
-                    >
-                      <Layout className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
-                      <span className="font-bold">My Dashboard</span>
-                    </HydrationSafeButton>
-                    <HydrationSafeButton
-                      onClick={() => handleNav("my-journeys")}
-                      className={`flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
-                        isActive("my-journeys", "/my-journeys")
-                          ? "bg-primary/10 text-primary"
-                          : "text-muted-foreground hover:bg-muted"
-                      }`}
-                    >
-                      <Briefcase className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                      <span className="font-bold">My Journeys</span>
-                    </HydrationSafeButton>
-                    <HydrationSafeButton
-                      onClick={() => handleNav("my-guides")}
-                      className={`flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
-                        isActive("my-guides", "/guides/my-guides")
-                          ? "bg-primary/10 text-primary"
-                          : "text-muted-foreground hover:bg-muted"
-                      }`}
-                    >
-                      <BookOpen className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                      <span className="font-bold">My Guides</span>
-                    </HydrationSafeButton>
-                    <HydrationSafeButton
-                      onClick={() => handleNav("profile")}
-                      className={`flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
-                        isActive("profile", "/profile")
-                          ? "bg-primary/10 text-primary"
-                          : "text-muted-foreground hover:bg-muted"
-                      }`}
-                    >
-                      <UserIcon className="w-5 h-5 text-violet-600 dark:text-violet-400" />
-                      <span className="font-bold">My Profile</span>
-                    </HydrationSafeButton>
-                    <HydrationSafeButton
-                      onClick={() => handleNav("settings")}
-                      className={`flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
-                        isActive("settings", "/settings")
-                          ? "bg-primary/10 text-primary"
-                          : "text-muted-foreground hover:bg-muted"
-                      }`}
-                    >
-                      <Settings className="w-5 h-5 text-slate-500 dark:text-slate-400" />
-                      <span className="font-bold">Account Settings</span>
-                    </HydrationSafeButton>
-                  </>
-                )} */}
               <HydrationSafeButton
                 onClick={() => handleNav("contact")}
                 className={`flex items-center gap-3 rounded-xl px-4 py-3 text-left transition-all ${

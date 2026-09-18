@@ -111,7 +111,7 @@
                     "hint": {
                       "intro": "Commonly accepted proofs include:",
                       "items": [
-                        "Valid or recently expired U.S. passport",
+                        "Valid, unexpired U.S. passport",
                         "U.S. birth certificate issued by a state or county",
                         "USCIS Certificate of Naturalization (Form N-550)",
                         "USCIS Certificate of Citizenship (Form N-560)",
@@ -566,7 +566,7 @@
                     "id": "q5s3",
                     "label": "Health & Medical",
                     "question": "Is there any known health issue that might arise during the required immigration medical exam?",
-                    "helper": "The beneficiary must pass a medical exam by a USCIS-designated physician. This screen only asks whether there's a known concern to plan around.",
+                    "helper": "The beneficiary must pass a medical exam by a State Department-authorized panel physician at an embassy-approved clinic (consular processing abroad). This screen only asks whether there's a known concern to plan around.",
                     "type": "single",
                     "hint": {
                       "intro": "Medical grounds of inadmissibility can include:",
@@ -683,7 +683,7 @@
                 "title": "Petitioner previously filed I-130 for a different spouse",
                 "trigger_field": "eligibility_quest_answer",
                 "severity": "critical",
-                "advisory": "Under INA Section 204(c), if any prior marriage was found to be entered into for the purpose of evading immigration laws, all future I-130 petitions by the same petitioner are barred. Consult an immigration attorney before filing.",
+                "advisory": "Under INA Section 204(c), the marriage-fraud bar attaches to the beneficiary, not the petitioner. If the beneficiary was ever found to have entered into (or attempted or conspired to enter into) a marriage to evade the immigration laws, no future petition filed on the beneficiary's behalf may be approved. A petitioner who previously filed for a different spouse is not automatically barred. Consult an immigration attorney before filing.",
                 "source_basis": "INA Section 204(c), 8 USC Section 1154(c)"
               },
               {
@@ -723,7 +723,7 @@
                 "title": "Beneficiary has arrest, charge, or conviction",
                 "trigger_field": "eligibility_quest_q5s2",
                 "severity": "critical",
-                "advisory": "Any arrest, charge, or conviction, anywhere in the world, must be disclosed and may trigger an inadmissibility bar under INA 212(a)(2). Certified court dispositions and police records will be required. Some convictions are waivable; others are permanent bars. Consult an immigration attorney to evaluate impact before filing.",
+                "advisory": "Any arrest, charge, or conviction, anywhere in the world, must be disclosed. A conviction or an admission of a crime involving moral turpitude or a controlled-substance offense may trigger an inadmissibility bar under INA 212(a)(2); an arrest or charge alone generally does not, but must still be documented. Certified court dispositions and police records will be required. Some convictions are waivable; others are permanent bars. Consult an immigration attorney to evaluate impact before filing.",
                 "source_basis": "INA Section 212(a)(2), 8 USC Section 1182(a)(2), criminal-related grounds of inadmissibility"
               }
             ]
@@ -738,11 +738,11 @@
           "step_description": "Prepare the documents needed for your IR-1 spouse petition. Open each item to see exactly what is needed, where to get it, and what to watch out for.",
           "who": "Pakistan-specific full checklist",
           "where": "Various sources",
-          "timeline": "4-8 weeks",
+          "timeline": "approx 4-8 weeks (varies)",
           "actions": [
             "Collect proof of U.S. citizenship",
             "Obtain Pakistani passport",
-            "Get NADRA birth certificate",
+            "Get birth certificate (Union Council, or NADRA CRC/FRC as alternatives)",
             "Obtain Nikah Nama + translation",
             "Get Union Council marriage registration",
             "Apply for police certificate",
@@ -761,15 +761,26 @@
               "required": true
             },
             {
-              "id": "doc_passport_ben",
-              "name": "Beneficiary Passport",
-              "subtitle": "Pakistan passport of the immigrant spouse",
-              "tag": "beneficiary",
-              "guideUrl": "/guides/passport-guide",
-              "icon": "User",
+              "id": "doc_petitioner_photos",
+              "name": "Petitioner Passport Photos",
+              "subtitle": "Two passport-style photos of the petitioner, taken within 30 days, required with the I-130 filing",
+              "tag": "petitioner",
+              "guideUrl": "/guides",
+              "icon": "Camera",
               "group": "Required Now",
               "status": "not-started",
               "required": true
+            },
+            {
+              "id": "doc_passport_ben",
+              "name": "Beneficiary Passport",
+              "subtitle": "Pakistan passport of the immigrant spouse; needed at the NVC/consular stage, not to file the I-130",
+              "tag": "beneficiary",
+              "guideUrl": "/guides/passport-guide",
+              "icon": "User",
+              "group": "Gather Now for Later",
+              "status": "not-started",
+              "required": false
             },
             {
               "id": "doc_nikah_nama",
@@ -784,8 +795,8 @@
             },
             {
               "id": "doc_mrc",
-              "name": "NADRA Marriage Certificate",
-              "subtitle": "Government civil registration of the marriage (MRC)",
+              "name": "Marriage Registration Certificate (MRC)",
+              "subtitle": "Civil registration of the marriage, issued by the local Union Council / Municipal Corporation / CDA, registering the Nikah Nama",
               "tag": "beneficiary",
               "guideUrl": "/guides/nikah-nama-guide",
               "icon": "FileCheck",
@@ -840,7 +851,7 @@
             {
               "id": "doc_police_cert",
               "name": "Police Character Certificate",
-              "subtitle": "Pakistan PCC, required at consular stage",
+              "subtitle": "Pakistan PCC, required at consular stage; valid only 2 years, so obtain it closer to the interview",
               "tag": "beneficiary",
               "guideUrl": "/guides/police-verification-guide",
               "icon": "Lock",
@@ -860,7 +871,7 @@
               "required": false
             }
           ],
-          "pakistanSpecific": "Union Council registration increasingly required by Islamabad Embassy. Police certificate: 3-7 days processing for Punjab/Islamabad.",
+          "pakistanSpecific": "Practical note (not an official USCIS requirement): the marriage should be registered with the local Union Council to obtain an acceptable MRC. Police certificate processing times vary by location and are not officially published; local estimates for Punjab/Islamabad are often a few days.",
           "relevantTools": [
             {
               "label": "Marriage Cert Guide",
@@ -909,9 +920,7 @@
           "step_description": "Decide between Online vs. Paper filing",
           "who": "Decision required",
           "where": "Rahvana tool",
-          "dependencies": [
-            "step_1_2"
-          ],
+          "dependencies": ["step_1_2"],
           "visible_when": {},
           "estimated_duration_days": 1,
           "is_required": true,
@@ -1156,7 +1165,6 @@
                 "label": "Good to know",
                 "items": [
                   "You can save progress and return",
-                  "No fee is charged inside the tool",
                   "USCIS account setup is a separate step",
                   "Complete this before uploading to USCIS"
                 ]
@@ -1167,9 +1175,7 @@
           "who": "via Rahvana wizard",
           "where": "my.uscis.gov",
           "timeline": "2-4 hours",
-          "dependencies": [
-            "step_1_3"
-          ],
+          "dependencies": ["step_1_3"],
           "estimated_duration_days": 2,
           "is_required": true,
           "display_order": 4,
@@ -1206,9 +1212,7 @@
           "step_type": "tool",
           "visible_when": {},
           "who": "via Rahvana wizard",
-          "dependencies": [
-            "step_1_4"
-          ],
+          "dependencies": ["step_1_4"],
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 5,
@@ -1258,8 +1262,7 @@
                 "items": [
                   "Best completed right after Form I-130",
                   "Filed together as one petition package",
-                  "You can save progress and return later",
-                  "No fee is charged inside the tool"
+                  "You can save progress and return later"
                 ]
               }
             ]
@@ -1267,12 +1270,10 @@
           "beneficiary_residence_capture": {
             "title": "Beneficiary residence history",
             "subtitle": "Capture the beneficiary's residence countries here so Rahvana can pre-prepare the police certificate requirements for Chapter 3 and cross-check against the I-130A and DS-260 later.",
-            "rule_summary": "A police certificate is required from every country where the beneficiary lived for 6 months or more since age 16. Some countries are exempt, refer to the travel.state.gov Reciprocity Schedule for each country.",
+            "rule_summary": "A police certificate is required (age 16+) from the country of current residence and the country of nationality if the beneficiary lived there 6 months or more, and from any other country of past residence where the beneficiary lived 12 months (one year) or more since age 16. Some countries are exempt, refer to the travel.state.gov Reciprocity Schedule for each country.",
             "source_basis": "9 FAM 504.4-4(B)(2), Police Certificate Requirement; travel.state.gov Reciprocity Schedule",
             "exempt_country_note": "A small list of countries does not produce reliable police certificates (see travel.state.gov Reciprocity Schedule). The consular officer at the interview will indicate whether a substitute is acceptable.",
-            "age_threshold": 16,
-            "duration_threshold_months": 6,
-            "lookback_years": 5
+            "age_threshold": 16
           },
           "citations": [
             {
@@ -1294,9 +1295,7 @@
           },
           "step_description": "Set up the petitioner's USCIS online account, the gateway for filing Form I-130 digitally, tracking the case, and responding to any USCIS requests.",
           "who": "myaccount.uscis.gov",
-          "dependencies": [
-            "step_1_3"
-          ],
+          "dependencies": ["step_1_3"],
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 6,
@@ -1331,7 +1330,7 @@
               "button_label": "Create USCIS Account",
               "href": "https://myaccount.uscis.gov/create-account",
               "note": "Opens USCIS account creation page in a new tab",
-            "return_note": {
+              "return_note": {
                 "title": "USCIS portal opened in a new tab",
                 "body": "Create your USCIS account and then return here."
               }
@@ -1374,9 +1373,7 @@
           "step_description": "Sign in to your USCIS account and begin the online I-130 petition. From your account dashboard, click \"File a Form Online\" to start the form and enter your prepared information.",
           "who": "Petitioner",
           "where": "myaccount.uscis.gov",
-          "dependencies": [
-            "step_1_6"
-          ],
+          "dependencies": ["step_1_6"],
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 7,
@@ -1620,7 +1617,7 @@
                     "label": "Upload Files"
                   }
                 ],
-                "note": "All documents must be under 12 MB each. Foreign-language documents require certified English translations uploaded separately."
+                "note": "All documents must be under 12 MB each. For any foreign-language document, upload the original, a complete English translation, and the translator's signed certification stating the translation is complete and accurate and that the translator is competent to translate."
               }
             ],
             "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. USCIS.gov is the official filing portal. Always verify information at uscis.gov before submitting."
@@ -1636,9 +1633,7 @@
           "step_description": "Attach your supporting documents inside the USCIS online portal. This is the evidence-upload phase, your documents become part of the official I-130 filing record.",
           "who": "Petitioner",
           "where": "myaccount.uscis.gov",
-          "dependencies": [
-            "step_1_7"
-          ],
+          "dependencies": ["step_1_7"],
           "visible_when": {
             "filingMethodConfirmed": true,
             "filingMethod": "online"
@@ -1679,7 +1674,7 @@
               "Accepted formats: PDF, JPG, or JPEG only",
               "Maximum file size: 12 MB per file",
               "Files must not be encrypted or password-protected",
-              "Foreign-language documents require a certified English translation uploaded alongside the original"
+              "Foreign-language documents require a complete English translation plus the translator's signed certification (that the translation is complete and accurate and the translator is competent to translate), uploaded alongside the original"
             ],
             "guide_card": {
               "title": "View Step-by-Step Upload Guide",
@@ -1726,7 +1721,7 @@
                     "label": "Upload"
                   }
                 ],
-                "note": "USCIS accepts PDF, JPG, and JPEG files up to 12 MB each. If a document is in a foreign language, upload the original AND the certified English translation as separate files."
+                "note": "USCIS accepts PDF, JPG, and JPEG files up to 12 MB each. If a document is in a foreign language, upload the original, a complete English translation, AND the translator's signed certification stating the translation is complete and accurate and that the translator is competent to translate."
               },
               {
                 "label": "Step 3 of 4, Review Each File",
@@ -1770,17 +1765,11 @@
             "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Always verify current requirements at uscis.gov before submitting.",
             "quality_requirements": {
               "max_file_size_mb": 12,
-              "accepted_formats": [
-                "PDF",
-                "JPG",
-                "JPEG",
-                "TIF",
-                "TIFF"
-              ],
+              "accepted_formats": ["PDF", "JPG", "JPEG", "TIF", "TIFF"],
               "guidance": [
                 "Each individual file must be 12 MB or smaller (USCIS portal limit)",
                 "Scans must be clear and legible, USCIS commonly issues RFEs for unreadable documents",
-                "All non-English documents require a certified English translation uploaded alongside",
+                "All non-English documents require a complete English translation plus the translator's signed certification (translation is complete and accurate; translator is competent to translate), uploaded alongside the original",
                 "Combine multi-page documents into a single PDF per category where appropriate"
               ],
               "source_basis": "USCIS online filing portal, file requirements published at myaccount.uscis.gov"
@@ -1802,9 +1791,7 @@
           "who": "Petitioner",
           "where": "my.uscis.gov / pay.gov",
           "timeline": "Same session as submission",
-          "dependencies": [
-            "step_1_8"
-          ],
+          "dependencies": ["step_1_8"],
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 9,
@@ -1963,9 +1950,7 @@
           "who": "Petitioner",
           "where": "my.uscis.gov",
           "timeline": "Same session as payment",
-          "dependencies": [
-            "step_1_9"
-          ],
+          "dependencies": ["step_1_9"],
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 10,
@@ -2152,9 +2137,7 @@
           "who": "Petitioner",
           "where": "uscis.gov/i-130",
           "timeline": "1-2 hours",
-          "dependencies": [
-            "step_1_3"
-          ],
+          "dependencies": ["step_1_3"],
           "is_required": true,
           "display_order": 11,
           "action_data": {
@@ -2229,10 +2212,10 @@
               {
                 "label": "Print guide · Step 4",
                 "title": "Set paper size and orientation",
-                "text": "Select the correct paper size: <strong>Letter</strong> (8.5\" × 11\") for US filing, or <strong>A4</strong> (210 × 297mm) for Pakistan or other international locations. Ensure orientation matches your document.",
+                "text": "Select the correct paper size: Use <strong>US Letter size (8.5\" × 11\") only </strong>Do not use A4 paper, even if printing from Pakistan or overseas. Match your printer settings to the document orientation and select \"Actual Size.\"",
                 "url": "paper-setup",
                 "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/4-select-paper-size.png\" alt=\"Set paper size\" style=\"width:100%; \" />",
-                "note": "USCIS accepts both Letter and A4 sizes. Check your local requirements."
+                "note": "USCIS strictly mandates Letter size for scanning and processing. A4 paper is not accepted and may result in your application being rejected or delayed."
               },
               {
                 "label": "Print guide · Step 5",
@@ -2285,9 +2268,7 @@
           "who": "Petitioner",
           "where": "uscis.gov/g-1055?form=i-130",
           "timeline": "1-2 hours",
-          "dependencies": [
-            "step_1_11"
-          ],
+          "dependencies": ["step_1_11"],
           "is_required": true,
           "display_order": 12,
           "action_data": {
@@ -2328,6 +2309,10 @@
               {
                 "title": "Keep payment at the front of the packet",
                 "description": "When your payment item is ready, keep it with the front of the filing packet so assembly is straightforward."
+              },
+              {
+                "title": "USCIS Form G-1651 exemption requirements",
+                "description": "To request an exemption, you must certify that electronic payment and collection methods are not possible and meet 1 or more requirements under 31 C.F.R. Part 208 (including lack of banking access, infrastructure barriers in remote/foreign regions, personal financial/physical hardship, national security, or Treasury-designated circumstances). Official legal citation: GovInfo 31 C.F.R. Part 208."
               }
             ],
             "second_card_title": "Save payment method",
@@ -2350,6 +2335,10 @@
                 {
                   "value": "ACH with Form G-1650",
                   "label": "ACH with Form G-1650"
+                },
+                {
+                  "value": "Fee Exemption with Form G-1651",
+                  "label": "Fee Exemption with Form G-1651"
                 },
                 {
                   "value": "Other verified method",
@@ -2377,17 +2366,17 @@
               {
                 "label": "Payment guide · Step 3",
                 "title": "Choose your paper-filing payment method",
-                "text": "USCIS no longer accepts personal/business checks, money orders, or cashier's checks. You must use one of two methods:<ul style=\"margin-top: 8px; margin-bottom: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px;\"><li><strong>Option A:</strong> Pay by credit, debit, or prepaid card using <strong>Form G-1450</strong> (Authorization for Credit Card Transactions).</li><li><strong>Option B:</strong> Pay from a U.S. bank account (ACH) using <strong>Form G-1650</strong>.</li></ul>",
+                "text": "USCIS no longer accepts personal/business checks, money orders, or cashier's checks. You must use one of the approved payment or fee exemption options:<ul style=\"margin-top: 8px; margin-bottom: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px;\"><li><strong>Option A:</strong> Pay by credit, debit, or prepaid card using <strong>Form G-1450</strong> (Authorization for Credit Card Transactions).</li><li><strong>Option B:</strong> Pay from a U.S. bank account (ACH) using <strong>Form G-1650</strong>.</li><li><strong>Option C:</strong> If eligible for an exemption from the higher paper filing fee, submit <strong>Form G-1651</strong> (Exemption for Paper Fee Payment).</li></ul><div style=\"margin-top: 14px; padding: 12px 14px; background: #f0f7ff; border: 1px solid #bfdbfe; border-radius: 8px;\"><div style=\"font-weight: 700; font-size: 13px; color: #1e3a8a; margin-bottom: 4px;\">USCIS Form G-1651 Exemption Requirements</div><div style=\"font-size: 12.5px; line-height: 1.5; color: #1e293b; margin-bottom: 6px;\">To request an exemption, you must certify that electronic payment and collection methods are not possible and you meet 1 or more of the following requirements:</div><ul style=\"margin: 0; padding-left: 18px; font-size: 12px; line-height: 1.55; color: #334155; display: flex; flex-direction: column; gap: 4px;\"><li>You do not have access to banking services or electronic payment systems;</li><li>Electronic disbursement would cause you undue hardship (infrastructure barriers in remote/foreign areas or personal limitations), as discussed in <a href=\"https://www.govinfo.gov/content/pkg/CFR-2025-title31-vol2/pdf/CFR-2025-title31-vol2-sec208-1.pdf\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #2563eb; font-weight: 600; text-decoration: underline;\">31 C.F.R. Part 208 (GovInfo Official Citation ↗)</a>;</li><li>Non-electronic transactions are necessary or desirable for national security or law enforcement reasons; or</li><li>There are other circumstances as determined by the secretary of the treasury, as reflected in regulations or other guidance.</li></ul><div style=\"margin-top: 8px; padding: 6px 10px; background: #e0f2fe; border-radius: 6px; font-size: 11.5px; color: #0369a1;\"><strong>Hardship categories under 31 C.F.R. § 208.4:</strong> Infrastructure barriers (foreign/remote regions lacking U.S. digital banking) and personal barriers (financial, physical, or technical inability to manage online banking).</div></div>",
                 "url": "uscis.gov/forms/all-forms",
                 "visual": "<img src=\"/assets/images/ir1-journey/c1-step7(mailing)/peyment method.png\" alt=\"Payment Methods\" style=\"width:100%; border-radius: 8px; border: 1px solid #e2e8f0;\" />",
-                "note": "Download and print Form G-1450 or Form G-1650 from uscis.gov and fill it out completely before placing it in the packet."
+                "note": "Download and print Form G-1450, Form G-1650, or Form G-1651 from uscis.gov and fill it out completely before placing it in the packet."
               },
               {
                 "label": "Payment guide · Step 4",
                 "title": "Place payment at the front of the packet",
-                "text": "Once the payment item is ready, whether it is a completed Form G-1450 (card) or Form G-1650 (ACH), place it at the very front of the mailing packet. The payment form should be the first thing USCIS sees when they open the envelope.",
+                "text": "Once the payment item is ready, whether it is a completed Form G-1450 (card), Form G-1650 (ACH), or Form G-1651 (Fee Exemption), place it at the very front of the mailing packet. The payment or fee exemption form should be the first thing USCIS sees when they open the envelope.",
                 "url": "paper packet",
-                "visual": "<div style=\"padding:12px 0;\"><div style=\"font-weight:600;font-size:14px;margin-bottom:14px;\">Recommended Packet Order</div><div style=\"display:flex;flex-direction:column;gap:8px;\"><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#16a34a;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">1</div><div><div style=\"font-weight:600;font-size:13px;\">Payment</div><div style=\"font-size:12px;color:#64748b;\">Form G-1450 (card) or Form G-1650 (ACH), placed first</div></div></div><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#3b82f6;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">2</div><div><div style=\"font-weight:600;font-size:13px;\">Forms</div><div style=\"font-size:12px;color:#64748b;\">Completed I-130 and I-130A forms</div></div></div><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#8b5cf6;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">3</div><div><div style=\"font-weight:600;font-size:13px;\">Supporting Evidence</div><div style=\"font-size:12px;color:#64748b;\">Citizenship proof, marriage docs, translations, relationship evidence</div></div></div></div></div>",
+                "visual": "<div style=\"padding:12px 0;\"><div style=\"font-weight:600;font-size:14px;margin-bottom:14px;\">Recommended Packet Order</div><div style=\"display:flex;flex-direction:column;gap:8px;\"><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#16a34a;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">1</div><div><div style=\"font-weight:600;font-size:13px;\">Payment / Fee Exemption</div><div style=\"font-size:12px;color:#64748b;\">Form G-1450 (card), Form G-1650 (ACH), or Form G-1651 (Exemption), placed first</div></div></div><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#3b82f6;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">2</div><div><div style=\"font-weight:600;font-size:13px;\">Forms</div><div style=\"font-size:12px;color:#64748b;\">Completed I-130 and I-130A forms</div></div></div><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#8b5cf6;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">3</div><div><div style=\"font-weight:600;font-size:13px;\">Supporting Evidence</div><div style=\"font-size:12px;color:#64748b;\">Citizenship proof, marriage docs, translations, relationship evidence</div></div></div></div></div>",
                 "note": "Keep the payment form separate and easy to reach so packet assembly in the next step stays quick and organized."
               },
               {
@@ -2408,6 +2397,14 @@
             {
               "text": "USCIS Form G-1055 Fee Schedule",
               "link": "https://www.uscis.gov/g-1055"
+            },
+            {
+              "text": "USCIS Form G-1651 Paper Fee Exemption",
+              "link": "https://www.uscis.gov/g-1651"
+            },
+            {
+              "text": "31 C.F.R. Part 208",
+              "link": "https://www.govinfo.gov/content/pkg/CFR-2025-title31-vol2/pdf/CFR-2025-title31-vol2-sec208-1.pdf"
             }
           ]
         },
@@ -2427,9 +2424,7 @@
           "who": "Petitioner",
           "where": "uscis.gov/i-130",
           "timeline": "1-2 hours",
-          "dependencies": [
-            "step_1_12"
-          ],
+          "dependencies": ["step_1_12"],
           "is_required": true,
           "display_order": 13,
           "action_data": {
@@ -2520,7 +2515,7 @@
               "sections": [
                 {
                   "id": "payment",
-                  "label": "Payment form (G-1450 card or G-1650 ACH)",
+                  "label": "Payment form (G-1450 card, G-1650 ACH, or G-1651 fee exemption)",
                   "position": "front of packet",
                   "required": true
                 },
@@ -2587,9 +2582,7 @@
           "who": "Petitioner",
           "where": "uscis.gov/mailing-addresses",
           "timeline": "1-2 hours",
-          "dependencies": [
-            "step_1_13"
-          ],
+          "dependencies": ["step_1_13"],
           "is_required": true,
           "display_order": 14,
           "action_data": {
@@ -2670,7 +2663,7 @@
                 "title": "Mail the packet and save the tracking details",
                 "text": "As soon as the packet is mailed, save the carrier and tracking number in Rahvana.",
                 "url": "rahvana.com/visa-category/ir1-journey",
-                "visual": "<video src=\"/step4chp1.mp4\" autoplay loop muted playsinline style=\"width:100%;border-radius:8px;\" />",
+                "visual": "<video src=\"/assets/videos/ir1-journey/c1_step9(mailing)/guide-step-4.mp4\" autoplay loop muted playsinline style=\"width:100%;border-radius:8px;\" />",
                 "note": "Do not wait until later to record the tracking number. Save it the same day you mail the packet."
               },
               {
@@ -2701,10 +2694,7 @@
           "who": "Petitioner",
           "where": "ceac.state.gov",
           "timeline": "1-2 days after receipt",
-          "dependencies": [
-            "step_1_10",
-            "step_1_14"
-          ],
+          "dependencies": ["step_1_10", "step_1_14"],
           "is_required": true,
           "display_order": 15,
           "tool_data": {
@@ -2893,7 +2883,7 @@
         {
           "step_key": "step_1_16",
           "step_number": 12,
-          "step_name": "Track Case Status in CEAC",
+          "step_name": "Monitor USCIS Case Status",
           "step_short_description": "Monitor your case status and updates",
           "step_type": "tool",
           "visible_when": {},
@@ -2901,9 +2891,7 @@
           "who": "Petitioner",
           "where": "ceac.state.gov",
           "timeline": "Ongoing after registration",
-          "dependencies": [
-            "step_1_15"
-          ],
+          "dependencies": ["step_1_15"],
           "is_required": true,
           "display_order": 16,
           "tool_data": {
@@ -3044,19 +3032,13 @@
                 "icon": "green",
                 "title": "Add new evidence entries",
                 "copy": "Log visits, upload new photos, and keep a clean timeline of the relationship as it continues.",
-                "buttons": [
-                  "Add note",
-                  "Mark planned"
-                ]
+                "buttons": ["Add note", "Mark planned"]
               },
               {
                 "icon": "rose",
                 "title": "Track household or income changes",
                 "copy": "If finances, employment, or household size change while waiting, keeping that organized now can make later sponsorship steps easier.",
-                "buttons": [
-                  "Save reminder",
-                  "Open notes"
-                ]
+                "buttons": ["Save reminder", "Open notes"]
               }
             ],
             "community": [
@@ -3080,11 +3062,7 @@
                 "kicker": "Official USCIS tracking",
                 "head": "Case Status Online",
                 "copy": "Track your case using the 13-character receipt number.",
-                "pills": [
-                  "Receipt number required",
-                  "Last action shown",
-                  "Official USCIS tool"
-                ],
+                "pills": ["Receipt number required", "Last action shown", "Official USCIS tool"],
                 "note": "A quiet status page does not necessarily mean nothing is happening internally. It usually means there has been no new official outward-facing update yet."
               },
               {
@@ -3095,12 +3073,7 @@
                 "kicker": "Status guide",
                 "head": "Status meanings",
                 "copy": "Separate passive waiting from states that require action.",
-                "pills": [
-                  "Received",
-                  "Actively reviewed",
-                  "RFE",
-                  "Approved"
-                ],
+                "pills": ["Received", "Actively reviewed", "RFE", "Approved"],
                 "note": "Use this guide to understand whether you need to act now or simply stay prepared."
               },
               {
@@ -3111,11 +3084,7 @@
                 "kicker": "While-you-wait tools",
                 "head": "Stay prepared while waiting",
                 "copy": "A prep checklist, next-step preview, and useful modules for this waiting period.",
-                "pills": [
-                  "Prep checklist",
-                  "Coming next",
-                  "Useful right now"
-                ],
+                "pills": ["Prep checklist", "Coming next", "Useful right now"],
                 "note": "A few small tasks now can make the next phase feel much easier when the case moves forward."
               },
               {
@@ -3126,15 +3095,11 @@
                 "kicker": "Next-step guide",
                 "head": "Pivot when USCIS changes the status",
                 "copy": "RFE and approval should each unlock their own dedicated next-step experiences.",
-                "pills": [
-                  "Conditional branches",
-                  "Next step unlocks",
-                  "Action clarity"
-                ],
+                "pills": ["Conditional branches", "Next step unlocks", "Action clarity"],
                 "note": "Your next task should match the actual update USCIS gives you."
               }
             ],
-            "footer_note": "Rahvana will keep this case visible, explain major updates clearly, and help you stay prepared while USCIS reviews the petition."
+            "footer_note": "USCIS processing can take several months. Check your case status here whenever you want an update, and use the phases above to see what usually comes next."
           },
           "citations": [
             {
@@ -3144,8 +3109,801 @@
           ]
         },
         {
-          "step_key": "step_1_17",
+          "step_key": "step_1_18",
           "step_number": 17,
+          "step_name": "USCIS Notice Received",
+          "step_short_description": "Identify & route your USCIS notice",
+          "step_type": "tool",
+          "visible_when": {
+            "uscisNoticeReceived": true
+          },
+          "step_description": "During USCIS review, USCIS may issue a notice requesting additional evidence or information before making a decision. Identify the notice type so Rahvana can guide your specific response.",
+          "who": "Petitioner",
+          "where": "my.uscis.gov / mail",
+          "timeline": "Varies by notice type",
+          "dependencies": ["step_1_16"],
+          "is_required": false,
+          "display_order": 17,
+          "tool_data": {
+            "id": "step_1_18",
+            "title": "USCIS Notice Received",
+            "subtitle": "USCIS may ask for additional evidence or information before deciding your petition. Identify the notice type below so Rahvana can guide your response.",
+            "chips": [
+              { "label": "Petitioner", "type": "role" },
+              { "label": "Conditional", "type": "conditional" },
+              { "label": "Action Required", "type": "urgent" }
+            ],
+            "alert": {
+              "type": "warning",
+              "heading": "Do not ignore this notice",
+              "body": "Missing the response deadline can result in your petition being denied — including denial based on abandonment. USCIS generally does not grant extensions beyond the permitted response period."
+            },
+            "intro_card": {
+              "heading": "Receiving a USCIS notice is not the end of the road",
+              "body": "Most notices give you an opportunity to respond before a final decision is made. The key is to read the notice carefully, respond to exactly what USCIS asked for, and submit a complete response before the deadline."
+            },
+            "notice_types": [
+              {
+                "type": "approved",
+                "label": "I-797 — Approval Notice",
+                "icon": "check",
+                "description": "USCIS has approved your I-130 petition and issued an I-797 approval notice. Save the original notice and prepare for the NVC stage.",
+                "severity": "success",
+                "cta": "View approval next steps"
+              },
+              {
+                "type": "rfe",
+                "label": "RFE — Request for Evidence",
+                "icon": "document",
+                "description": "USCIS needs additional evidence or information before it can decide your petition. This is the most common notice. Receiving an RFE does not mean your petition has been denied.",
+                "severity": "standard",
+                "cta": "Get RFE guidance"
+              },
+              {
+                "type": "rfi",
+                "label": "RFI — Request for Additional Information",
+                "icon": "info",
+                "description": "USCIS is asking for clarifying information. Similar in nature to an RFE but typically more limited in scope.",
+                "severity": "standard",
+                "cta": "Get RFI guidance"
+              },
+              {
+                "type": "rfo",
+                "label": "RFO — Request for Original Document",
+                "icon": "folder",
+                "description": "USCIS is requesting an original document. You may have submitted a copy where an original is required.",
+                "severity": "standard",
+                "cta": "Get RFO guidance"
+              },
+              {
+                "type": "noid",
+                "label": "NOID — Notice of Intent to Deny",
+                "icon": "alert",
+                "description": "USCIS is considering denying your petition and is giving you a chance to respond. This is more serious than an RFE. Consider consulting a qualified immigration attorney.",
+                "severity": "serious",
+                "cta": "Get NOID guidance"
+              },
+              {
+                "type": "denied",
+                "label": "Denial — I-130 Petition Denied",
+                "icon": "x-circle",
+                "description": "USCIS has issued a denial of your I-130 petition. Review the denial notice carefully — it explains the reasons and your available options such as appeal or motion.",
+                "severity": "serious",
+                "cta": "Review denial options"
+              },
+              {
+                "type": "other",
+                "label": "Other USCIS notice or request",
+                "icon": "mail",
+                "description": "USCIS may send other types of requests such as biometrics appointments or interview notices. Follow the specific instructions on your notice.",
+                "severity": "standard",
+                "cta": "Review notice details"
+              }
+            ],
+            "where_to_find": {
+              "title": "Where to find your notice",
+              "items": [
+                {
+                  "source": "USCIS online account",
+                  "detail": "Log in to my.uscis.gov and check your case notices and messages. USCIS recommends checking your online account first."
+                },
+                {
+                  "source": "Physical mail",
+                  "detail": "Notices may also be sent by mail to the petitioner's address on file. Keep your address updated with USCIS."
+                }
+              ],
+              "note": "If your USCIS online account shows an RFE, an online response portal may be available. Do not mail a duplicate response if you submit online."
+            },
+            "deadline_warning": {
+              "heading": "Check the deadline on your actual notice",
+              "body": "Do not assume you have a specific number of days. The deadline is printed on your RFE or NOID notice. USCIS states that the maximum response period is generally 12 weeks, but the notice controls the actual deadline for your case."
+            },
+            "citations": [
+              {
+                "text": "USCIS Case Status Tracker",
+                "link": "https://egov.uscis.gov/"
+              },
+              {
+                "text": "myUSCIS Online Account",
+                "link": "https://my.uscis.gov/"
+              }
+            ]
+          }
+        },
+        {
+          "step_key": "step_1_19",
+          "step_number": 19,
+          "step_name": "Respond to RFE",
+          "step_short_description": "Request for Evidence · Prepare & submit response",
+          "step_type": "guide",
+          "visible_when": {
+            "uscisNoticeType": "rfe"
+          },
+          "step_description": "USCIS has issued a Request for Evidence on your I-130 petition. This does not mean your petition is denied — USCIS is giving you an opportunity to provide the evidence needed to decide your case.",
+          "who": "Petitioner",
+          "where": "my.uscis.gov / mail",
+          "timeline": "Before deadline on notice",
+          "dependencies": ["step_1_18"],
+          "is_required": false,
+          "display_order": 19,
+          "guide_data": {
+            "id": "step_1_19",
+            "title": "Respond to USCIS RFE",
+            "subtitle": "A Request for Evidence (RFE) means USCIS needs more information before deciding your petition. This is your opportunity to provide the evidence that closes the gap.",
+            "chips": [
+              { "label": "Petitioner", "type": "role" },
+              { "label": "RFE Response", "type": "urgent" },
+              { "label": "Time-sensitive", "type": "deadline" }
+            ],
+            "alert": {
+              "type": "info",
+              "heading": "An RFE does not mean your petition was denied",
+              "body": "Receiving an RFE means USCIS is giving you a chance to provide additional evidence before making a final decision. Many petitions are approved after a successful RFE response."
+            },
+            "warning_banner": {
+              "type": "warning",
+              "text": "Submit your complete RFE response before the deadline printed on your notice. Do not send documents in pieces — USCIS treats a partial response as a request for a decision on the existing record."
+            },
+            "common_rfe_reasons": {
+              "title": "Common reasons USCIS issues an I-130 RFE",
+              "subtitle": "Read your RFE notice first to identify exactly what USCIS is requesting. The categories below describe common areas — your response should address your specific notice, not all of these.",
+              "categories": [
+                {
+                  "id": "bona_fide",
+                  "label": "Proof of bona fide marriage",
+                  "description": "USCIS may require stronger evidence that the marriage is genuine and not entered into solely for immigration purposes.",
+                  "evidence_examples": [
+                    "Marriage certificate",
+                    "Nikah Nama",
+                    "NADRA marriage registration certificate",
+                    "Photos together (multiple events, locations, over time)",
+                    "Travel records showing visits",
+                    "Communication history (call logs, messages)",
+                    "Joint financial records",
+                    "Joint property or lease agreements",
+                    "Insurance policies naming spouse as beneficiary",
+                    "Children's birth certificates",
+                    "Evidence of ongoing marital relationship"
+                  ],
+                  "important_note": "Do not automatically send all of these. Read exactly what your RFE requests and provide evidence relevant to that specific request."
+                },
+                {
+                  "id": "relationship_docs",
+                  "label": "Missing or insufficient relationship documentation",
+                  "description": "USCIS may determine that submitted marriage documentation is insufficient or that additional documents are required.",
+                  "evidence_examples": [
+                    "Nikah Nama (certified copy)",
+                    "Union Council marriage registration certificate",
+                    "NADRA-issued marriage registration certificate",
+                    "Certified English translation of marriage documents",
+                    "Evidence explaining discrepancies between documents"
+                  ],
+                  "important_note": "For Pakistan-based spouses, USCIS may specifically request multiple forms of marriage documentation recognized under Pakistani law."
+                },
+                {
+                  "id": "civil_documents",
+                  "label": "Identity or civil-document issues",
+                  "description": "USCIS may request clarification or supporting documents related to identity or civil records.",
+                  "evidence_examples": [
+                    "Birth certificate",
+                    "Documentation of name variations",
+                    "Divorce records from previous marriages",
+                    "Death certificates of previous spouses",
+                    "Passport or CNIC identity information",
+                    "Other civil records"
+                  ]
+                },
+                {
+                  "id": "inconsistencies",
+                  "label": "Inconsistencies between documents",
+                  "description": "If dates, spellings, or other details differ across documents such as your passport, CNIC, Nikah Nama, NADRA certificate, and I-130, USCIS may request clarification.",
+                  "evidence_examples": [
+                    "Explanation letter addressing specific discrepancies",
+                    "Certified document showing the correct information",
+                    "Affidavit explaining the inconsistency"
+                  ],
+                  "important_note": "Name spelling variations and date discrepancies across Pakistani identity documents are common. Address them directly and specifically in your response."
+                }
+              ]
+            },
+            "guide_steps": [
+              {
+                "label": "RFE Response · Step 1",
+                "title": "Don't panic — read your RFE first",
+                "text": "An RFE does not mean your petition is denied. USCIS is asking for additional evidence before making a decision. Your first task is to obtain the actual RFE notice and read it carefully — every word of it.",
+                "note": "Get the notice from your USCIS online account at my.uscis.gov or from physical mail. The online account is the recommended first place to check."
+              },
+              {
+                "label": "RFE Response · Step 2",
+                "title": "Identify exactly what USCIS is requesting",
+                "text": "Do not randomly gather documents. The RFE will specifically identify what is deficient and what USCIS needs. Your response must directly address the specific issue identified in the RFE — nothing more, nothing less.",
+                "note": "For example: 'Submit evidence demonstrating that the marriage between the petitioner and beneficiary is bona fide' is different from 'Submit a certified English translation of the marriage certificate.' Each requires a different response."
+              },
+              {
+                "label": "RFE Response · Step 3",
+                "title": "Check the deadline printed on your notice",
+                "text": "The response deadline is printed on your RFE notice. Do not assume you have a specific number of days — the actual notice controls your deadline. USCIS policy states that extensions beyond the permitted response period are generally not granted.",
+                "note": "Mark the deadline in your calendar immediately. Build in time to organize, review, and submit your response well before the deadline."
+              },
+              {
+                "label": "RFE Response · Step 4",
+                "title": "Organize your evidence by RFE request",
+                "text": "Structure your evidence to match each item USCIS requested. Group documents under the specific request they address. For example — USCIS Request: Proof of bona fide marriage: Exhibit A — Marriage certificate, Exhibit B — Photos, Exhibit C — Travel records, Exhibit D — Communication evidence, Exhibit E — Joint financial records. This structure makes it easy for the USCIS officer to match your response to their request.",
+                "note": "Clear organization significantly helps the reviewing officer understand your response and reduces the chance of important evidence being overlooked."
+              },
+              {
+                "label": "RFE Response · Step 5",
+                "title": "Write a cover letter",
+                "text": "Prepare a brief cover letter that explains: (1) what USCIS requested, (2) how your response addresses each specific request, and (3) what evidence is included and how it is organized. The cover letter is the roadmap for your response package.",
+                "note": "The cover letter does not need to be lengthy. It should clearly summarize the response contents and make it easy for the officer to navigate your package."
+              },
+              {
+                "label": "RFE Response · Step 6",
+                "title": "Assemble one complete response package",
+                "text": "Gather your cover letter and all evidence together into one complete response package before submitting. USCIS policy states that when responding to an RFE, materials should generally be submitted together. A partial response is treated as a request for a decision on the record — USCIS does not wait for additional packages or issue another RFE.",
+                "note": "Double-check that every document is included, every translation is certified, and the cover letter is accurate before you submit."
+              },
+              {
+                "label": "RFE Response · Step 7",
+                "title": "Choose the correct submission method",
+                "text": "Check whether your USCIS online account provides an RFE response portal for your case. If it does, follow the online submission instructions. If your case requires a mailed response, use the address and instructions specified in your RFE notice.",
+                "note": "USCIS has specifically stated that users who respond online should NOT also mail a duplicate response. Follow the method indicated on your notice or in your USCIS account."
+              },
+              {
+                "label": "RFE Response · Step 8",
+                "title": "Keep a complete copy of everything you submit",
+                "text": "Before submitting, make copies of your complete response package, including the cover letter and all evidence. If submitting by mail, use a trackable carrier and save the tracking number. If submitting online, save a copy of the confirmation.",
+                "note": "Your copy of the response is important if questions arise later about what was submitted and when."
+              }
+            ],
+            "citations": [
+              {
+                "text": "USCIS Policy Manual - Request For Evidence",
+                "link": "https://www.uscis.gov/sites/default/files/document/policy-manual-updates/20210609-RFEs%26NOIDs.pdf"
+              }
+            ],
+            "after_submission": {
+              "heading": "After you submit your RFE response",
+              "body": "Your case returns to USCIS review. USCIS will consider the submitted evidence and issue one of these outcomes.",
+              "outcomes": [
+                {
+                  "icon": "approved",
+                  "label": "Approval",
+                  "description": "USCIS approves the I-130 petition. For consular processing, the case moves toward the National Visa Center (NVC) stage."
+                },
+                {
+                  "icon": "denied",
+                  "label": "Denial",
+                  "description": "If the response does not establish eligibility, USCIS may deny the petition. The denial notice will explain available appeal and motion options."
+                }
+              ]
+            },
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. If your RFE involves complex legal issues or you are uncertain how to respond, consider consulting a qualified immigration attorney."
+          }
+        },
+        {
+          "step_key": "step_1_20",
+          "step_number": 20,
+          "step_name": "Respond to RFI",
+          "step_short_description": "Request for Additional Information · Prepare & submit response",
+          "step_type": "guide",
+          "visible_when": {
+            "uscisNoticeType": "rfi"
+          },
+          "step_description": "USCIS has issued a Request for Additional Information (RFI) on your I-130 petition. An RFI typically requests clarifying information and is generally narrower in scope than an RFE.",
+          "who": "Petitioner",
+          "where": "my.uscis.gov / mail",
+          "timeline": "Before deadline on notice",
+          "dependencies": ["step_1_18"],
+          "is_required": false,
+          "display_order": 20,
+          "guide_data": {
+            "id": "step_1_20",
+            "title": "Respond to USCIS RFI",
+            "subtitle": "A Request for Additional Information (RFI) means USCIS needs specific clarifying information before proceeding. Read the notice carefully and respond directly to what is asked.",
+            "chips": [
+              { "label": "Petitioner", "type": "role" },
+              { "label": "RFI Response", "type": "urgent" },
+              { "label": "Time-sensitive", "type": "deadline" }
+            ],
+            "alert": {
+              "type": "info",
+              "heading": "An RFI does not mean your petition was denied",
+              "body": "USCIS is requesting clarifying information to continue processing your petition. Respond to exactly what is asked, before the deadline printed on the notice."
+            },
+            "guide_steps": [
+              {
+                "label": "RFI Response · Step 1",
+                "title": "Obtain and read the RFI notice",
+                "text": "Check your USCIS online account at my.uscis.gov or your physical mail for the RFI notice. Read the notice carefully to understand exactly what information USCIS is requesting.",
+                "note": "An RFI is typically narrower in scope than an RFE. USCIS is asking for specific clarifying information, not a broad set of evidence."
+              },
+              {
+                "label": "RFI Response · Step 2",
+                "title": "Check the response deadline",
+                "text": "The deadline is printed on your RFI notice. Note it immediately and plan your response with enough time to review everything before submitting.",
+                "note": "USCIS generally does not grant extensions beyond the permitted response period. Missing the deadline can result in a denial."
+              },
+              {
+                "label": "RFI Response · Step 3",
+                "title": "Prepare a clear, direct response",
+                "text": "Respond directly to the information USCIS requested. Provide only what is asked — clear, focused, and accurate. Include a brief cover letter that identifies what was requested and how your response addresses it.",
+                "note": "Clarity is key. A focused response that directly answers the question is more effective than a large unorganized package."
+              },
+              {
+                "label": "RFI Response · Step 4",
+                "title": "Submit one complete response",
+                "text": "Assemble your complete response into a single submission. Do not submit in pieces. Use the submission method specified in your RFI notice — online portal if available in your USCIS account, or mail if instructed.",
+                "note": "If submitting online, do not also mail a duplicate response. Keep a copy of everything you submit."
+              }
+            ],
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. If you are uncertain about your RFI response, consider consulting a qualified immigration attorney."
+          }
+        },
+        {
+          "step_key": "step_1_21",
+          "step_number": 21,
+          "step_name": "Respond to RFO",
+          "step_short_description": "Request for Original Document · Locate & submit original",
+          "step_type": "guide",
+          "visible_when": {
+            "uscisNoticeType": "rfo"
+          },
+          "step_description": "USCIS has issued a Request for an Original (RFO) document. USCIS is requesting that you submit the original version of a document you may have previously submitted as a copy.",
+          "who": "Petitioner",
+          "where": "my.uscis.gov / mail",
+          "timeline": "Before deadline on notice",
+          "dependencies": ["step_1_18"],
+          "is_required": false,
+          "display_order": 21,
+          "guide_data": {
+            "id": "step_1_21",
+            "title": "Respond to USCIS RFO",
+            "subtitle": "USCIS is requesting an original document. Identify the specific document requested, locate the original, and submit it following the instructions on your notice.",
+            "chips": [
+              { "label": "Petitioner", "type": "role" },
+              { "label": "RFO Response", "type": "urgent" },
+              { "label": "Original document required", "type": "deadline" }
+            ],
+            "alert": {
+              "type": "info",
+              "heading": "USCIS is asking for an original, not a copy",
+              "body": "Carefully read your RFO notice to identify exactly which document is required in original form. Submitting another copy will not satisfy the request."
+            },
+            "guide_steps": [
+              {
+                "label": "RFO Response · Step 1",
+                "title": "Identify the specific document requested",
+                "text": "Read your RFO notice carefully. USCIS will identify the specific document it is requesting in original form. Common examples include original marriage certificates, original Nikah Namas, or other original civil documents.",
+                "note": "If you are unsure whether your document is truly the original versus a certified copy, contact the issuing authority to clarify."
+              },
+              {
+                "label": "RFO Response · Step 2",
+                "title": "Check the response deadline",
+                "text": "The deadline is printed on your RFO notice. Mark it immediately. Plan enough time to locate the document, make a copy for your records, and prepare your submission.",
+                "note": "Do not wait until close to the deadline. Locating original documents, especially civil documents from Pakistan, may take time."
+              },
+              {
+                "label": "RFO Response · Step 3",
+                "title": "Make a copy before submitting the original",
+                "text": "Before sending any original document to USCIS, make a clear copy for your own records. USCIS receives many documents and originals are not always returned promptly, or may take significant time to be returned.",
+                "note": "Keep your copy in a safe place. If the original is irreplaceable, consider consulting an immigration attorney about the best approach."
+              },
+              {
+                "label": "RFO Response · Step 4",
+                "title": "Submit using a secure, trackable method",
+                "text": "Send the original document using a secure and trackable shipping method. Include a cover letter identifying the case receipt number, the RFO reference, and what document is enclosed. Follow the submission instructions in your RFO notice.",
+                "note": "Keep the tracking number and delivery confirmation. Once the carrier shows delivered, save that proof."
+              }
+            ],
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. If you have concerns about submitting irreplaceable original documents, consider consulting a qualified immigration attorney."
+          }
+        },
+        {
+          "step_key": "step_1_22",
+          "step_number": 22,
+          "step_name": "Respond to NOID",
+          "step_short_description": "Notice of Intent to Deny · Respond carefully before deadline",
+          "step_type": "guide",
+          "visible_when": {
+            "uscisNoticeType": "noid"
+          },
+          "step_description": "USCIS has issued a Notice of Intent to Deny (NOID) on your I-130 petition. A NOID is more serious than an RFE — USCIS is indicating it is considering denying your petition based on the current record and is giving you one opportunity to respond.",
+          "who": "Petitioner",
+          "where": "my.uscis.gov / mail",
+          "timeline": "Before deadline on notice",
+          "dependencies": ["step_1_18"],
+          "is_required": false,
+          "display_order": 22,
+          "guide_data": {
+            "id": "step_1_22",
+            "title": "Respond to USCIS NOID",
+            "subtitle": "A Notice of Intent to Deny (NOID) means USCIS is considering denying your petition. This is your opportunity to respond with evidence and legal arguments before a final decision is made.",
+            "chips": [
+              { "label": "Petitioner", "type": "role" },
+              { "label": "NOID — Serious", "type": "serious" },
+              { "label": "Act Quickly", "type": "urgent" }
+            ],
+            "alert": {
+              "type": "serious",
+              "heading": "A NOID is more serious than an RFE",
+              "body": "USCIS is not simply asking for more evidence. It is indicating that based on the current record, it intends to deny your petition — and is giving you one opportunity to respond. Carefully review the reasons USCIS has stated. Because the response may require legal analysis, strongly consider getting help from a qualified immigration attorney."
+            },
+            "noid_vs_rfe": {
+              "title": "NOID vs. RFE — the key difference",
+              "rfe": {
+                "label": "RFE",
+                "description": "We need more evidence before we can make a decision."
+              },
+              "noid": {
+                "label": "NOID",
+                "description": "Based on what we currently have, we are considering denying your petition. Here is why. You have one opportunity to respond."
+              }
+            },
+            "guide_steps": [
+              {
+                "label": "NOID Response · Step 1",
+                "title": "Obtain and read the NOID notice immediately",
+                "text": "Obtain the NOID notice from your USCIS online account at my.uscis.gov or from physical mail. Read the entire notice carefully. USCIS is required to identify the intended reasons for denial, explain deficiencies, and identify potentially missing evidence.",
+                "note": "Understanding exactly what USCIS says is wrong is the foundation of your response. Do not skip or skim any part of the notice."
+              },
+              {
+                "label": "NOID Response · Step 2",
+                "title": "Check the response deadline immediately",
+                "text": "The response deadline is printed on your NOID notice. Note it immediately and treat it as your hard deadline. Extensions are generally not granted.",
+                "note": "Given the seriousness of a NOID, you should begin working on your response immediately — do not wait until close to the deadline."
+              },
+              {
+                "label": "NOID Response · Step 3",
+                "title": "Strongly consider consulting a qualified immigration attorney",
+                "text": "Because a NOID response may require legal analysis and argumentation — not just evidence submission — strongly consider consulting a qualified immigration attorney before preparing your response. An attorney can assess the specific deficiencies USCIS identified and advise on the best response strategy.",
+                "note": "This is Rahvana's strongest recommendation for NOID situations. The consequences of a denial are significant — the response deserves careful legal attention."
+              },
+              {
+                "label": "NOID Response · Step 4",
+                "title": "Address each stated reason for the proposed denial",
+                "text": "Your response must directly address each reason USCIS stated in the NOID. For each issue identified, explain why that reason does not support denial and provide evidence that counters or clarifies the issue.",
+                "note": "A NOID response is not just an evidence package — it should include a legal argument explaining why, based on the law and facts, the petition should be approved."
+              },
+              {
+                "label": "NOID Response · Step 5",
+                "title": "Submit one complete response before the deadline",
+                "text": "Assemble your complete response — cover letter, legal arguments, and all supporting evidence — into a single submission. Follow the submission instructions on your NOID notice. Do not send documents in pieces.",
+                "note": "Keep a complete copy of everything you submit, with proof of submission (tracking number or online confirmation)."
+              }
+            ],
+            "after_noid_response": {
+              "heading": "After submitting your NOID response",
+              "body": "USCIS will review your response and issue a final decision.",
+              "outcomes": [
+                {
+                  "icon": "approved",
+                  "label": "Approval",
+                  "description": "USCIS approves the petition based on your response. The case moves toward the NVC stage for consular processing."
+                },
+                {
+                  "icon": "denied",
+                  "label": "Denial",
+                  "description": "If the response does not establish eligibility, USCIS will deny the petition. The denial notice will explain available appeal and motion options such as an appeal to the Board of Immigration Appeals."
+                }
+              ]
+            },
+            "citations": [
+              {
+                "text": "USCIS Policy Manual - Notice of Intent to Deny",
+                "link": "https://www.uscis.gov/sites/default/files/document/policy-manual-updates/20210609-RFEs%26NOIDs.pdf"
+              }
+            ],
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. A NOID is a serious notice that may require legal analysis. Strongly consider consulting a qualified immigration attorney."
+          }
+        },
+        {
+          "step_key": "step_1_23",
+          "step_number": 23,
+          "step_name": "Await USCIS Decision After Response",
+          "step_short_description": "Response submitted · awaiting USCIS decision",
+          "step_type": "tool",
+          "visible_when": {
+            "uscisNoticeResponseSubmitted": true
+          },
+          "step_description": "Your response to the USCIS notice has been submitted. The case is back in USCIS review. Monitor case status and be prepared for the possible outcomes.",
+          "who": "Petitioner",
+          "where": "my.uscis.gov",
+          "timeline": "Varies by case",
+          "dependencies": ["step_1_19", "step_1_20", "step_1_21", "step_1_22", "step_1_25"],
+          "is_required": false,
+          "display_order": 23,
+          "tool_data": {
+            "id": "step_1_23",
+            "type": "awaiting_decision",
+            "title": "Awaiting USCIS Decision",
+            "subtitle": "Your response has been submitted. USCIS is now reviewing your response alongside the original petition. Monitor your case status and be ready for the next update.",
+            "chips": [
+              { "label": "Petitioner", "type": "role" },
+              { "label": "Awaiting Decision", "type": "track" },
+              { "label": "Response Submitted", "type": "status" }
+            ],
+            "status_card": {
+              "heading": "Response submitted — USCIS is reviewing",
+              "body": "After receiving your response, USCIS will review the submitted evidence and issue a decision. There is no set timeline for this review. Continue monitoring your case status.",
+              "badge": "Pending decision"
+            },
+            "possible_outcomes": [
+              {
+                "icon": "approved",
+                "label": "Approval",
+                "description": "USCIS approves your I-130 petition. For a spouse living outside the U.S. pursuing consular processing, the case generally moves to the National Visa Center (NVC) stage. USCIS sends the approved petition to the Department of State/NVC."
+              },
+              {
+                "icon": "denied",
+                "label": "Denial",
+                "description": "If the response does not establish eligibility, USCIS may deny the petition. Review the denial notice carefully — it will explain the specific reasons and what appeal or motion options may be available."
+              },
+              {
+                "icon": "notice",
+                "label": "Further Action",
+                "description": "In some cases, USCIS may issue additional requests before making a final decision. Continue monitoring your USCIS online account."
+              }
+            ],
+            "monitoring_tips": [
+              "Check your USCIS online account regularly for status updates.",
+              "Keep a copy of your submitted response accessible in case it is needed again.",
+              "If USCIS issues a denial, the denial notice will explain available appeal or motion options.",
+              "Use the waiting period to stay prepared for the NVC stage in case the petition is approved."
+            ],
+            "footer_note": "Rahvana will help you navigate the next step based on the outcome USCIS provides."
+          }
+        },
+        {
+          "step_key": "step_1_24",
+          "step_number": 24,
+          "step_name": "I-130 Denied — Review Options",
+          "step_short_description": "Denial received · understand your options",
+          "step_type": "guide",
+          "visible_when": {
+            "uscisNoticeType": "denied"
+          },
+          "step_description": "USCIS has denied the I-130 petition. Review the denial notice carefully to understand the specific reasons and determine which options — appeal, motion, or another strategy — may be appropriate for your situation.",
+          "who": "Petitioner",
+          "where": "my.uscis.gov / EOIR",
+          "timeline": "Varies — deadlines apply",
+          "dependencies": ["step_1_23"],
+          "is_required": false,
+          "display_order": 24,
+          "guide_data": {
+            "id": "step_1_24",
+            "title": "I-130 Denied — Review Your Options",
+            "subtitle": "An I-130 denial is a serious outcome, but it may not be the end of the road. Review the denial notice carefully and understand what options may be available.",
+            "chips": [
+              { "label": "Petitioner", "type": "role" },
+              { "label": "Denial", "type": "serious" },
+              { "label": "Review Options", "type": "urgent" }
+            ],
+            "alert": {
+              "type": "serious",
+              "heading": "Carefully review the denial notice",
+              "body": "The denial notice explains USCIS's specific reasons for the denial and states what appeal or motion options are available in your case. The correct next step depends entirely on the specific reasons for the denial and the facts of your case. Do not file an appeal or motion without understanding the denial first."
+            },
+            "denial_options": {
+              "title": "Possible options after an I-130 denial",
+              "subtitle": "Which option is appropriate depends on the specific reasons for the denial and the circumstances of your case. The denial notice itself explains what options are available.",
+              "options": [
+                {
+                  "id": "appeal",
+                  "label": "Appeal to the Board of Immigration Appeals (BIA)",
+                  "description": "Certain I-130 decisions can be appealed to the Board of Immigration Appeals using Form EOIR-29 (Notice of Appeal to the Board of Immigration Appeals from a Decision of a DHS Officer). USCIS confirms that I-130 appeals are among the appeals filed using Form EOIR-29.",
+                  "important": "Appeals have strict deadlines. Check your denial notice for the deadline and the specific appeal procedure that applies to your case.",
+                  "url": "https://www.uscis.gov/eoir-29"
+                },
+                {
+                  "id": "motion_reopen",
+                  "label": "Motion to Reopen",
+                  "description": "A motion to reopen asks USCIS to reopen the case based on new facts or evidence that was not available at the time of the decision.",
+                  "important": "A motion to reopen is appropriate when there is new factual evidence that was not part of the original record. Review the denial carefully before pursuing this option."
+                },
+                {
+                  "id": "motion_reconsider",
+                  "label": "Motion to Reconsider",
+                  "description": "A motion to reconsider asks USCIS to reconsider its decision based on an error of law or incorrect application of policy to the existing facts.",
+                  "important": "A motion to reconsider is appropriate when you believe USCIS made a legal error in the denial, not when you simply have new evidence."
+                },
+                {
+                  "id": "new_petition",
+                  "label": "File a new petition",
+                  "description": "Depending on the denial reason, it may sometimes be appropriate to file a new I-130 petition with corrected information or additional evidence. This should be carefully evaluated based on the specific denial reason.",
+                  "important": "Filing a new petition when an appeal or motion is more appropriate may not be the best strategy. Consult an immigration attorney."
+                }
+              ]
+            },
+            "attorney_recommendation": {
+              "heading": "Strongly consider consulting a qualified immigration attorney",
+              "body": "Determining the right strategy after an I-130 denial — appeal vs. motion vs. new petition — requires careful analysis of the denial reasons, the evidence record, and the applicable law. The wrong choice can waste time, resources, or foreclose other options. An experienced immigration attorney can help you evaluate the best path forward."
+            },
+            "guide_steps": [
+              {
+                "label": "After Denial · Step 1",
+                "title": "Read the denial notice completely",
+                "text": "The denial notice contains the specific reasons USCIS denied the petition and explains what appeal or motion rights are available. Read it completely before deciding on any next step.",
+                "note": "The denial notice is the most important document at this stage. Every option you consider must be evaluated against the specific reasons stated in the notice."
+              },
+              {
+                "label": "After Denial · Step 2",
+                "title": "Note any deadlines for appeal or motion",
+                "text": "If the denial notice indicates appeal or motion rights, it will also state the deadlines for filing. These deadlines are strict — missing them can eliminate certain options.",
+                "note": "Do not delay in reviewing the notice and understanding the available deadlines. Begin consulting an attorney as soon as possible if you are considering an appeal or motion."
+              },
+              {
+                "label": "After Denial · Step 3",
+                "title": "Consult a qualified immigration attorney",
+                "text": "Given the complexity of determining the right post-denial strategy, consulting a qualified immigration attorney is strongly recommended. An attorney can review the denial notice, assess the options, and advise on the best course of action specific to your case.",
+                "note": "Do not treat this as optional. The stakes of an I-130 denial are high, and the correct path forward requires professional evaluation."
+              },
+              {
+                "label": "After Denial · Step 4",
+                "title": "Evaluate and act on the appropriate option",
+                "text": "Based on the denial reasons and legal advice, determine whether an appeal (Form EOIR-29 to the BIA), a motion to reopen, a motion to reconsider, or another strategy is appropriate. Act within the applicable deadlines.",
+                "note": "Rahvana can guide you through general information about each option, but the final decision on which path to take should be made with qualified legal assistance."
+              }
+            ],
+            "citations": [
+              {
+                "text": "Form EOIR-29 — Notice of Appeal to the Board of Immigration Appeals",
+                "link": "https://www.uscis.gov/eoir-29"
+              },
+              {
+                "text": "USCIS — Motions and Appeals",
+                "link": "https://www.uscis.gov/i-290b"
+              }
+            ],
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. An I-130 denial requires careful legal analysis. Strongly consider consulting a qualified immigration attorney before taking any action."
+          }
+        },
+        {
+          "step_key": "step_1_25",
+          "step_number": 25,
+          "step_name": "Respond to Other USCIS Notice",
+          "step_short_description": "General notice guidance · Biometrics, interview, or appointment",
+          "step_type": "guide",
+          "visible_when": {
+            "uscisNoticeType": "other"
+          },
+          "step_description": "USCIS may send notices that are not standard evidence requests — such as appointment notices (Form I-797C), interview notices, transfer notices, or fee adjustment requests. Follow these universal steps to respond appropriately.",
+          "who": "Petitioner / Beneficiary",
+          "where": "my.uscis.gov / mail",
+          "timeline": "Before deadline on notice",
+          "dependencies": ["step_1_18"],
+          "is_required": false,
+          "display_order": 25,
+          "guide_data": {
+            "id": "step_1_25",
+            "title": "Respond to Other USCIS Notice or Request",
+            "subtitle": "USCIS issues various types of notices during petition processing. Identify your specific notice type, follow the required instructions, and ensure timely compliance.",
+            "chips": [
+              { "label": "Petitioner / Beneficiary", "type": "role" },
+              { "label": "General Notice", "type": "track" },
+              { "label": "Action May Be Required", "type": "urgent" }
+            ],
+            "alert": {
+              "type": "info",
+              "heading": "Identify the Form Number and Heading",
+              "body": "Official USCIS notices are usually issued on Form I-797C (Notice of Action) or Form I-797. Look at the top-right header and notice type line to understand whether action is required or if it is purely informational."
+            },
+            "common_rfe_reasons": {
+              "title": "Common notice types you may receive",
+              "subtitle": "USCIS sends several standard communication types. Find your notice type below:",
+              "categories": [
+                {
+                  "id": "biometrics",
+                  "label": "Biometrics / ASC Appointment Notice (Form I-797C)",
+                  "description": "USCIS schedules an appointment at an Application Support Center (ASC) to capture fingerprints, photo, and signature. This is common if biometric verification is needed.",
+                  "evidence_examples": [
+                    "Bring the original appointment notice with barcode.",
+                    "Bring government-issued photo ID (valid passport, driver's license).",
+                    "If you cannot attend, follow the reschedule instructions on the notice immediately before the appointment date."
+                  ],
+                  "important_note": "Failing to appear for a biometrics appointment without rescheduling can result in petition abandonment and denial."
+                },
+                {
+                  "id": "interview",
+                  "label": "Interview Notice (Form I-797C)",
+                  "description": "While most consular I-130 petitions are decided without an in-person USCIS interview, USCIS occasionally requests a domestic petitioner interview or joint interview.",
+                  "evidence_examples": [
+                    "Original civil documents (marriage certificate, birth certificates).",
+                    "Updated proof of ongoing bona fide marriage (recent joint bills, photos, financial statements).",
+                    "Valid government-issued photo identification."
+                  ],
+                  "important_note": "Carefully review the checklist of items to bring on the interview notice and arrive 15 minutes before the scheduled time."
+                },
+                {
+                  "id": "transfer",
+                  "label": "Service Center Transfer Notice (Form I-797C)",
+                  "description": "USCIS frequently transfers cases between service centers (e.g., Nebraska, Texas, Potomac, California, Vermont) to balance processing workloads across the agency.",
+                  "evidence_examples": [
+                    "No action is required on your part.",
+                    "Your receipt number remains unchanged.",
+                    "Future correspondence will come from the new service center."
+                  ],
+                  "important_note": "A case transfer does not mean anything is wrong with your petition. It is routine workload management by USCIS."
+                },
+                {
+                  "id": "fee_rejection",
+                  "label": "Fee Correction / Rejection Notice",
+                  "description": "If payment could not be processed or an essential document was missing at intake, USCIS issues a notice explaining the intake issue.",
+                  "evidence_examples": [
+                    "Check the specific rejection reason printed on the notice.",
+                    "Submit corrected fee payment or missing signature promptly.",
+                    "Ensure payment instrument (check, credit card authorization Form G-1450) is valid and funded."
+                  ],
+                  "important_note": "Pay close attention to any refiling instructions and deadline dates provided on the notice."
+                }
+              ]
+            },
+            "guide_steps": [
+              {
+                "label": "General Notice · Step 1",
+                "title": "Read the entire notice thoroughly",
+                "text": "Check the notice type in the header, read all instructions, and verify whether USCIS requires a response, an appearance, or if the notice is purely informational.",
+                "note": "Look for specific keywords such as 'Action Required', 'Notice of Action', or 'Appointment Scheduled'."
+              },
+              {
+                "label": "General Notice · Step 2",
+                "title": "Check your USCIS online account",
+                "text": "Log in to my.uscis.gov and check the 'Documents' tab for an electronic PDF copy of the notice. Online notices are often available days before physical mail arrives.",
+                "note": "Ensure your mailing address in your USCIS account is completely accurate and up to date."
+              },
+              {
+                "label": "General Notice · Step 3",
+                "title": "Note any deadlines or appointment dates",
+                "text": "If the notice specifies an appointment date, time, and location, or gives a deadline to submit documents, mark it on your calendar immediately.",
+                "note": "Never wait until the last week. If rescheduling is needed, USCIS generally requires requests to be submitted well ahead of the appointment date."
+              },
+              {
+                "label": "General Notice · Step 4",
+                "title": "Comply with the exact instructions and retain proof",
+                "text": "Attend the appointment or submit the requested documentation according to the exact mailing or online upload instructions. Keep copies of everything submitted, along with delivery tracking numbers or stamped appointment notices.",
+                "note": "Save your stamped biometrics confirmation sheet or mailing receipt in your immigration records binder."
+              }
+            ],
+            "citations": [
+              {
+                "text": "USCIS Contact Center & Live Assistance",
+                "link": "https://www.uscis.gov/contactcenter"
+              },
+              {
+                "text": "USCIS Check Case Processing Times",
+                "link": "https://egov.uscis.gov/processing-times/"
+              },
+              {
+                "text": "USCIS Change of Address Online (Form AR-11)",
+                "link": "https://www.uscis.gov/addresschange"
+              }
+            ],
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. If you receive an uncommon notice or need clarification on complex instructions, consider contacting USCIS or consulting a qualified immigration attorney."
+          }
+        },
+        {
+          "step_key": "step_1_17",
+          "step_number": 18,
           "step_name": "Receive Approval Notice (I-797)",
           "step_short_description": "I-130 petition approved",
           "step_description": "Your I-130 approval notice confirms that USCIS approved the petition. Save this notice, keep the original safe, and start preparing for NVC while you wait for the next contact.",
@@ -3169,13 +3927,13 @@
               "type": "purple"
             }
           ],
-          "display_order": 17,
-          "visible_when": {},
-          "is_required": true,
+          "display_order": 18,
+          "visible_when": {
+            "uscisNoticeType": "approved"
+          },
+          "is_required": false,
           "who": "Petitioner",
-          "dependencies": [
-            "step_1_16"
-          ]
+          "dependencies": ["step_1_16", "step_1_18"]
         }
       ]
     },
@@ -3332,7 +4090,7 @@
             "Log into CEAC portal",
             "Open fee payment area",
             "Pay Affidavit of Support fee ($120)",
-            "Pay Immigrant Visa fee ($345)",
+            "Pay Immigrant Visa fee ($335)",
             "Save payment status"
           ],
           "tool_data": {
@@ -3730,7 +4488,7 @@
           "is_required": true,
           "display_order": 4,
           "actions": [
-            "Scan all documents (300 DPI, PDF)",
+            "Scan all documents in color (PDF preferred)",
             "Ensure translations certified",
             "Verify all stamps/seals visible",
             "Name files clearly"
@@ -3752,10 +4510,7 @@
                       "icon": "passport",
                       "title": "Beneficiary Passport Biographic Page",
                       "sub": "Current passport page showing photo and personal details",
-                      "tags": [
-                        "bene",
-                        "govt"
-                      ],
+                      "tags": ["bene", "govt"],
                       "external_href": "/guides/passport-guide",
                       "status": "not-started",
                       "required": true
@@ -3765,10 +4520,7 @@
                       "icon": "birth",
                       "title": "Birth Certificate",
                       "sub": "Beneficiary's civil birth record",
-                      "tags": [
-                        "bene",
-                        "govt"
-                      ],
+                      "tags": ["bene", "govt"],
                       "external_href": "/guides/birth-certificate-guide",
                       "status": "not-started",
                       "required": true
@@ -3778,10 +4530,7 @@
                       "icon": "marriage",
                       "title": "Marriage Certificate / Marriage Registration Record",
                       "sub": "Official civil proof of the marriage, Nikah Nama and NADRA MRC",
-                      "tags": [
-                        "both",
-                        "govt"
-                      ],
+                      "tags": ["both", "govt"],
                       "external_href": "/guides/nikah-nama-guide",
                       "status": "not-started",
                       "required": true,
@@ -3809,10 +4558,7 @@
                       "icon": "police",
                       "title": "Police Certificate",
                       "sub": "Pakistan Police Character Certificate (PCC) for the beneficiary",
-                      "tags": [
-                        "bene",
-                        "govt"
-                      ],
+                      "tags": ["bene", "govt"],
                       "external_href": "/guides/police-verification-guide",
                       "status": "not-started",
                       "required": true
@@ -3822,10 +4568,7 @@
                       "icon": "translations",
                       "title": "Certified English Translations",
                       "sub": "Required for all non-English civil documents",
-                      "tags": [
-                        "bene",
-                        "3p"
-                      ],
+                      "tags": ["bene", "3p"],
                       "status": "not-started",
                       "required": true,
                       "sections": [
@@ -3859,10 +4602,7 @@
                       "icon": "prior-marriage",
                       "title": "Prior Marriage Termination Documents",
                       "sub": "Required if either spouse was previously married",
-                      "tags": [
-                        "both",
-                        "govt"
-                      ],
+                      "tags": ["both", "govt"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -3889,10 +4629,7 @@
                       "icon": "death-cert",
                       "title": "Death Certificate of Former Spouse",
                       "sub": "Only if prior marriage ended by death",
-                      "tags": [
-                        "both",
-                        "govt"
-                      ],
+                      "tags": ["both", "govt"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -3911,10 +4648,7 @@
                       "icon": "name-change",
                       "title": "Name Change Documents",
                       "sub": "Legal proof of any name change used in the case",
-                      "tags": [
-                        "bene",
-                        "govt"
-                      ],
+                      "tags": ["bene", "govt"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -3933,10 +4667,7 @@
                       "icon": "help",
                       "title": "Missing Document / Record Unavailability Evidence",
                       "sub": "When a required record genuinely does not exist",
-                      "tags": [
-                        "bene",
-                        "3p"
-                      ],
+                      "tags": ["bene", "3p"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -3966,9 +4697,7 @@
                       "icon": "folder",
                       "title": "Organized Translation Set",
                       "sub": "All translations paired and labeled with their originals",
-                      "tags": [
-                        "bene"
-                      ],
+                      "tags": ["bene"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -3987,9 +4716,7 @@
                       "icon": "save",
                       "title": "Upload-Ready File Copies",
                       "sub": "Clean, legible, properly formatted scan set",
-                      "tags": [
-                        "both"
-                      ],
+                      "tags": ["both"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -4012,9 +4739,7 @@
                       "icon": "message",
                       "title": "Relationship Evidence Backup Set",
                       "sub": "Supporting bona fide marriage evidence for later use",
-                      "tags": [
-                        "both"
-                      ],
+                      "tags": ["both"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -4058,7 +4783,7 @@
                 "label": "Step 2 of 13, Submit IV and AOS fees",
                 "heading": "Confirm all fees are paid",
                 "screenTitle": "Confirm all fees are paid",
-                "instruction": "Before document submission begins, verify in CEAC that both the Affidavit of Support fee ($120) and the Immigrant Visa fee ($345) have been successfully processed.",
+                "instruction": "Before document submission begins, verify in CEAC that both the Affidavit of Support fee ($120) and the Immigrant Visa fee ($325) have been successfully processed.",
                 "url": "ceac.state.gov",
                 "ss_label": "Fee Status",
                 "ss_headline": "NVC Fees Paid",
@@ -4194,7 +4919,7 @@
                 "label": "Step 10 of 13, Re-upload rejected documents",
                 "heading": "Upload the corrected document",
                 "screenTitle": "Upload the corrected document",
-                "instruction": "After correcting the issue, re-upload the document following CEAC's process. If the file was too large, try compressing it. If it was blurry, rescan it at higher resolution (300 DPI minimum). Upload the corrected version and wait for confirmation.",
+                "instruction": "After correcting the issue, re-upload the document following CEAC's process. If the file was too large, try compressing it. If it was blurry, rescan it at a higher resolution. Upload the corrected version and wait for confirmation.",
                 "url": "ceac.state.gov",
                 "ss_label": "Resubmission",
                 "ss_headline": "Upload Corrected File",
@@ -4426,7 +5151,7 @@
                 "ss_headline": "Document Rejected",
                 "ss_desc": "Review reason and prepare corrected file",
                 "ss_highlight": null,
-                "caption": "Re-scan blurry documents at 300 DPI and compress large files using Rahvana's Document Vault tool.",
+                "caption": "Re-scan blurry documents at a higher resolution and compress large files using Rahvana's pdf tool kit.",
                 "note": null,
                 "media": {
                   "type": "img",
@@ -4914,7 +5639,7 @@
           "step_key": "step_3_1",
           "step_number": 1,
           "step_name": "Schedule Medical Examination",
-          "step_short_description": "Official medical clearance",
+          "step_short_description": "Required medical examination",
           "step_description": "Every immigrant visa applicant must complete a medical examination with an embassy-approved physician before their interview.",
           "step_type": "tool",
           "who": "Beneficiary",
@@ -4924,9 +5649,11 @@
           "display_order": 1,
           "actions": [
             "Select booking method",
-            "Find approved physician",
-            "Schedule appointment",
-            "Record appointment details"
+            "Review approved panel physicians",
+            "Select a panel physician",
+            "Schedule the medical examination",
+            "Record appointment details",
+            "Prepare required documents"
           ],
           "tool_data": {
             "id": "step_3_1",
@@ -4946,7 +5673,7 @@
           "step_number": 2,
           "step_name": "Obtain Polio Vaccination Certificate",
           "step_short_description": "Required for Pakistan applicants",
-          "step_description": "Pakistan-origin applicants must obtain a polio vaccination certificate before the consular interview. This is a required compliance step for all immigrant visa applicants.",
+          "step_description": "Pakistan-origin applicants must obtain a polio vaccination certificate for medical examination. This is a required compliance step for all immigrant visa applicants.",
           "who": "Beneficiary",
           "where": "Government vaccination post / WHO site",
           "timeline": "1-2 days",
@@ -4995,7 +5722,7 @@
           "step_short_description": "Medical screening and vaccinations",
           "step_description": "Attend your scheduled medical examination with an embassy-approved panel physician. This is a mandatory health screening and vaccination review for all immigrants.",
           "who": "Beneficiary",
-          "where": "IOM clinic",
+          "where": "U.S. Embassy-approved Panel Physician",
           "timeline": "2-4 hours at clinic",
           "actions": [
             "Arrive on time with documents",
@@ -5007,8 +5734,8 @@
             "Vaccination review",
             "Physician interview"
           ],
-          "output": "Sealed medical envelope",
-          "notes": "DO NOT OPEN envelope. Results ready in 2-5 days. Collect 1-2 days before interview.",
+          "output": "Medical examination results — sent to Embassy or provided in a sealed envelope",
+          "notes": "DO NOT OPEN envelope. Medical examination results can take up to 96 hours. If the physician provides the results in a sealed envelope, do not open it and bring it to your visa interview. If the physician sends the results directly to the Embassy, no envelope needs to be collected.",
           "relevantTools": [
             {
               "label": "Book Medical Appointment",
@@ -5022,10 +5749,11 @@
             "bring": [
               "Passport (original)",
               "NVC interview appointment letter",
+              "DS-260 confirmation page",
               "Polio vaccination certificate (original)",
-              "Passport-style photos (2-4)",
+              "6 recent passport-sized color photographs",
               "Medical exam fee (confirm with physician)",
-              "Any prior vaccination records if available"
+              "Relevant medical records and test results for major illnesses, surgeries, or current treatment, if applicable"
             ],
             "pitfalls": [
               "Forgetting the polio vaccination certificate",
@@ -5093,13 +5821,13 @@
           "step_number": 5,
           "step_type": "tool",
           "step_name": "Courier Registration",
-          "step_description": "Register your courier account to receive your visa packet after the interview is approved. Complete the sign-up, follow the guide, and save your credentials and confirmation.",
+          "step_description": "Register online before your immigrant visa interview and select your document pick-up location so the Embassy has the information needed to return your passport after the interview. Complete the sign-up, follow the guide, and save your credentials and confirmation.",
           "step_short_description": "Register for visa packet delivery",
           "who": "Beneficiary",
           "where": "Home preparation",
           "actions": [
             "Register at usvisascheduling.com",
-            "Select courier delivery for Pakistan",
+            "Select your preferred passport delivery option: Avari Tower pickup or home delivery",
             "Save your login credentials securely",
             "Save confirmation page to Document Vault"
           ],
@@ -5185,7 +5913,7 @@
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>Bring the original current passport with at least 6 months validity beyond the interview date. Also bring any prior passports that may contain relevant U.S. visa history.</p>"
+                          "c": "<p>Bring the original current passport with at least 6 months validity beyond the interview date. If applicable, bring previous passports containing relevant U.S. immigration or travel history.</p>"
                         },
                         {
                           "t": "Photocopies",
@@ -5201,11 +5929,15 @@
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>The original NADRA-issued CBRC or other official birth certificate. If you have an older Union Council record, bring both the original and the NADRA CBRC if available.</p>"
+                          "c": "<p>Bring the original Birth Registration Certificate issued by the authority responsible for registering the beneficiary's birth:</p><ul><li><strong>Union Council</strong></li><li><strong>Municipal Corporation</strong></li><li><strong>Capital Development Authority (CDA)</strong> — Islamabad</li><li><strong>Cantonment Board</strong></li></ul><p>Select the issuing authority that applies to your birth record and bring the original document.</p>"
+                        },
+                        {
+                          "t": "Alternative documents",
+                          "c": "<p>If a Birth Registration Certificate is unavailable, the following NADRA documents may serve as alternate documents:</p><ul><li><strong>Child Registration Certificate (CRC/B-Form)</strong></li><li><strong>Family Registration Certificate (FRC)</strong></li></ul>"
                         },
                         {
                           "t": "Translation",
-                          "c": "<p>Bring the original Urdu certificate and the certified English translation together in the same tab.</p>"
+                          "c": "<p>If your birth document is in Urdu, bring the original Urdu document together with the required certified English translation.</p>"
                         }
                       ]
                     },
@@ -5217,7 +5949,7 @@
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>Bring the original Nikah Nama and the NADRA Marriage Registration Certificate. Both should be accompanied by their certified English translations.</p>"
+                          "c": "<p>Bring your original Marriage Registration Certificate (MRC), English translation, and photocopy. Also bring your original Nikah Nama and English translation if applicable/available, particularly as supporting evidence of the marriage.</p>"
                         },
                         {
                           "t": "Important",
@@ -5228,16 +5960,16 @@
                     {
                       "id": "pcc",
                       "icon": "pcc",
-                      "title": "Original Police Clearance Certificate (Fresh)",
-                      "sub": "The fresh PCC obtained for this interview cycle",
+                      "title": "Original Police Clearance Certificate",
+                      "sub": "The PCC obtained for this interview cycle",
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>Bring the original fresh PCC obtained during Chapter 3 Step 3. Do not bring the older PCC submitted during NVC processing, this must be the fresh one.</p>"
+                          "c": "<p>Bring the original PCC obtained for your interview. Do not bring the older PCC submitted during NVC processing; bring the PCC intended for your current interview.</p>"
                         },
                         {
                           "t": "Validity",
-                          "c": "<p>Confirm the PCC is still within the validity window for your embassy. Some posts specify a maximum age for the PCC at interview.</p>"
+                          "c": "<p>Confirm the issue date on the PCC. If the PCC was obtained more than 12 months before the interview date, a fresh one must be obtained from the District Police Officer (DPO) office or Khidmat Markaz before attending the interview.</p>"
                         }
                       ]
                     },
@@ -5245,11 +5977,11 @@
                       "id": "interview-letter",
                       "icon": "mail",
                       "title": "Interview Appointment Letter",
-                      "sub": "The original printed NVC interview appointment letter",
+                      "sub": "The NVC interview appointment letter",
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>Print and bring the original interview appointment letter received from NVC. This is your primary identification for entry into the embassy grounds.</p>"
+                          "c": "<p>Bring a printed copy of your NVC interview appointment letter. You must have the appointment letter with you to enter the U.S. Embassy for your scheduled interview.</p>"
                         }
                       ]
                     }
@@ -5269,26 +6001,6 @@
                         {
                           "t": "What to bring",
                           "c": "<p>Bring the original signed Affidavit of Support. This must be the wet-ink signed original, not a photocopy.</p>"
-                        }
-                      ]
-                    },
-                    {
-                      "id": "ds260-original",
-                      "icon": "file-text",
-                      "title": "DS-260 Confirmation Page",
-                      "sub": "Online Immigrant Visa Application Confirmation",
-                      "sections": [
-                        {
-                          "t": "What to bring",
-                          "c": "<p>Bring the printed DS-260 confirmation page with barcode. This confirms you have successfully submitted your online immigrant visa application.</p>"
-                        },
-                        {
-                          "t": "Important notes",
-                          "c": "<p>Make sure all information in your DS-260 form is accurate and matches your supporting documents such as passport and civil records.</p>"
-                        },
-                        {
-                          "t": "Where to get it",
-                          "c": "<p>You can download and print the confirmation page after submitting your DS-260 form from the Consular Electronic Application Center (CEAC) website.</p>"
                         }
                       ]
                     },
@@ -5324,14 +6036,34 @@
                   "badge": "Required if applicable",
                   "items": [
                     {
-                      "id": "photos",
-                      "icon": "camera",
-                      "title": "Passport-Style Photos",
-                      "sub": "2-4 recent passport-style photos meeting embassy specifications",
+                      "id": "ds260-original",
+                      "icon": "file-text",
+                      "title": "DS-260 Confirmation Page",
+                      "sub": "Online Immigrant Visa Application Confirmation",
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>Bring 2-4 recent passport-style photos. Check your specific embassy's photo requirements for size and background specifications. US Embassy Pakistan typically requires standard 2x2 inch photos.</p>"
+                          "c": "<p>Bring the printed DS-260 confirmation page with barcode. This confirms you have successfully submitted your online immigrant visa application.</p>"
+                        },
+                        {
+                          "t": "Important notes",
+                          "c": "<p>Make sure all information in your DS-260 form is accurate and matches your supporting documents such as passport and civil records.</p>"
+                        },
+                        {
+                          "t": "Where to get it",
+                          "c": "<p>You can download and print the confirmation page after submitting your DS-260 form from the Consular Electronic Application Center (CEAC) website.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "photos",
+                      "icon": "camera",
+                      "title": "Passport-Style Photos",
+                      "sub": "2-4 recent passport-style photos (5cm * 5cm)",
+                      "sections": [
+                        {
+                          "t": "What to bring",
+                          "c": "<p>Bring 2-4 recent passport-style photos. US Embassy Pakistan requires (5cm * 5cm) photos.</p>"
                         }
                       ]
                     },
@@ -5351,11 +6083,19 @@
                       "id": "medical-packet",
                       "icon": "medical",
                       "title": "Medical Examination Results Packet Reference",
-                      "sub": "Not brought by you, sealed by physician, but confirm it was sent",
+                      "sub": "Sealed medical results provided by the physician or sent directly to the embassy",
                       "sections": [
                         {
                           "t": "How this works",
-                          "c": "<p>The medical examination results are sealed by the panel physician and sent directly to the embassy. You do not carry the medical packet yourself. Confirm with your physician that the results were submitted before your interview date.</p>"
+                          "c": "<p>The panel physician may either provide your medical examination results to you in a sealed envelope or send them directly to the U.S. Embassy. If you receive a sealed envelope, do not open it and bring it with you to your interview. If the physician sends the results directly to the embassy, no action is required to carry the packet yourself.</p>"
+                        },
+                        {
+                          "t": "If a sealed envelope is provided",
+                          "c": "<div class=\"note-box\"><p><strong>Do not open the envelope under any circumstances.</strong> An opened medical envelope will be rejected at the consular window and the medical examination may need to be repeated. Bring the sealed envelope directly to the interview and hand it to the consular officer.</p></div>"
+                        },
+                        {
+                          "t": "Approved clinics",
+                          "c": "<p>Panel physicians approved by U.S. Embassy Islamabad operate in Islamabad, Lahore, and Karachi. Only results from an approved panel physician are accepted for the immigrant visa interview. Do not use a general clinic or hospital not on the embassy's approved list.</p>"
                         }
                       ]
                     },
@@ -5383,9 +6123,18 @@
                 },
                 {
                   "id": "organization",
-                  "label": "Recommended, Organization Items",
+                  "label": "Recommended, Supporting, and Organization Items",
                   "badge": "Recommended",
                   "items": [
+                    {
+                      "id": "doc_relationship",
+                      "icon": "MessageSquare",
+                      "title": "Relationship Evidence",
+                      "sub": "Proof the marriage is genuine and entered in good faith",
+                      "tag": "both",
+                      "guideUrl": "/guides",
+                      "sections": []
+                    },
                     {
                       "id": "folders",
                       "icon": "folder",
@@ -5424,6 +6173,25 @@
         {
           "step_key": "step_3_7",
           "step_number": 7,
+          "step_name": "Review Document Readiness",
+          "step_short_description": "Check document status and resolve issues",
+          "step_description": "Review your document checklist, confirm uploaded documents are current, address any expired or soon-to-expire documents, and prepare documents needed after receiving your interview appointment letter.",
+          "step_type": "tool",
+          "who": "Both",
+          "where": "Rahvana tool",
+          "estimated_duration_days": 1,
+          "is_required": true,
+          "display_order": 7,
+          "dependencies": ["step_3_6"],
+          "tool_data": {
+            "id": "step_3_7",
+            "type": "document_checklist",
+            "title": "Document Readiness Checklist"
+          }
+        },
+        {
+          "step_key": "step_3_8",
+          "step_number": 8,
           "step_type": "tool",
           "step_name": "Prepare for Interview",
           "step_description": "Use Rahvana's interview prep tool to practice questions, review your case history, and build confidence before interview day.",
@@ -5491,8 +6259,8 @@
           }
         },
         {
-          "step_key": "step_3_8",
-          "step_number": 8,
+          "step_key": "step_3_9",
+          "step_number": 9,
           "step_type": "tool",
           "step_name": "Attend Visa Interview",
           "step_description": "Your interview day has arrived. Know exactly what to bring, how to prepare at the door, and what to expect inside the consular window.",
@@ -5592,7 +6360,7 @@
               {
                 "label": "Step 8 of 8",
                 "heading": "Possible outcomes after the interview",
-                "instruction": "The officer will indicate the outcome at the window or shortly after. The three main outcomes are approval, Administrative Processing (AP), or refusal. If AP applies, proceed to Step 9 to track and manage the AP process.",
+                "instruction": "The officer will indicate the outcome at the window or shortly after. After the interview, your application may be approved, refused under applicable law (including 221(g) where applicable), or require further administrative processing before a final determination is completed. If you were given a 221(g) refusal letter, continue to Step 9 for Rahvana’s AP guidance.",
                 "vlabel": "Interview Outcomes",
                 "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">What you may hear</div>\n      <div class=\"mock-row\">Approved, passport retained, visa to be delivered <span class=\"mock-badge-green\">Best</span></div>\n      <div class=\"mock-row\">Administrative Processing, more time needed <span class=\"mock-badge-amber\">Step 9</span></div>\n      <div class=\"mock-row\">Refused, written reason provided <span class=\"mock-badge-blue\">Consult attorney</span></div>\n    </div>"
               }
@@ -5602,13 +6370,16 @@
                 "type": "bring",
                 "title": "What to bring",
                 "items": [
-                  "Interview appointment letter (printed original)",
+                  "Printed NVC interview appointment letter",
                   "Current passport (original)",
                   "All prior passports",
                   "Original civil documents (organized packet)",
-                  "Passport-style photos (2-4)",
+                  "2 recent color photographs (5 cm × 5 cm / 2 × 2 in)",
                   "Petitioner's original Affidavit of Support",
-                  "Tax evidence and employment letter if applicable"
+                  "Tax evidence and employment letter if applicable",
+                  "DS-260 Confirmation Page",
+                  "Required English translations",
+                  "Any required certified civil documents and photocopies"
                 ]
               },
               {
@@ -5637,13 +6408,13 @@
                 "label": "Visa approved",
                 "type": "approved",
                 "icon": "check-circle",
-                "sub": "The officer approves the visa. Your passport will be held and the visa will be delivered via the courier service you registered."
+                "sub": "The officer approves the visa. If the visa is approved, the Embassy will generally retain your passport while the visa is prepared and return it through the registered courier service."
               },
               {
                 "label": "Administrative Processing (AP / 221g)",
                 "type": "ap",
                 "icon": "clipboard",
-                "sub": "The officer needs more time or additional documents. This is not a refusal. Proceed to Step 9 to track and manage the AP process."
+                "sub": "The officer needs more time or additional documents. This is not a refusal. Proceed to Step 10 to track and manage the AP process."
               },
               {
                 "label": "Visa refused",
@@ -5657,8 +6428,8 @@
           "pakistanSpecific": "Address: Diplomatic Enclave, Ramna 5, Islamabad. NO mobile phones allowed."
         },
         {
-          "step_key": "step_3_9",
-          "step_number": 9,
+          "step_key": "step_3_10",
+          "step_number": 10,
           "step_type": "tool",
           "step_name": "Confirm Interview Outcome",
           "step_description": "Record what happened at your consular interview. Your selection unlocks the correct next steps for your specific situation.",
@@ -5667,7 +6438,7 @@
           "where": "Post-interview",
           "estimated_duration_days": 1,
           "is_required": true,
-          "display_order": 9,
+          "display_order": 10,
           "actions": [
             "Select your interview outcome",
             "If 221(g), record situation type",
@@ -5693,7 +6464,7 @@
               {
                 "id": "approved",
                 "label": "Approved",
-                "description": "The officer approved your visa. Your passport will be held and delivered via the courier service you registered.",
+                "description": "The officer approved your visa application. The Embassy will keep your passport to issue the visa and then return it to you by courier.",
                 "icon": "check-circle"
               },
               {
@@ -5718,7 +6489,7 @@
                 {
                   "id": "docs_requested",
                   "label": "I was asked to submit documents or information",
-                  "sub": "The officer gave you a 221(g) sheet listing specific items to provide"
+                  "sub": "The officer gave you a 221(g) letter listing specific documents, information, or actions required"
                 },
                 {
                   "id": "further_review",
@@ -5823,8 +6594,8 @@
           }
         },
         {
-          "step_key": "step_3_10",
-          "step_number": 10,
+          "step_key": "step_3_11",
+          "step_number": 11,
           "step_type": "tool",
           "step_name": "Track Visa Issuance",
           "step_description": "Your visa has been approved. Track the delivery of your passport and visa packet via your registered courier service.",
@@ -5833,7 +6604,7 @@
           "where": "USVisaScheduling courier portal",
           "estimated_duration_days": 7,
           "is_required": true,
-          "display_order": 10,
+          "display_order": 11,
           "visible_when": {
             "interviewOutcome": "approved"
           },
@@ -5876,8 +6647,8 @@
           }
         },
         {
-          "step_key": "step_3_10b",
-          "step_number": 10,
+          "step_key": "step_3_11b",
+          "step_number": 11,
           "step_type": "tool",
           "step_name": "Review Your 221(g) Letter",
           "step_description": "Open your 221(g) letter and select every item the embassy requested. This generates your personalized action plan for the next step.",
@@ -5886,7 +6657,7 @@
           "where": "Your 221(g) letter",
           "estimated_duration_days": 1,
           "is_required": true,
-          "display_order": 10,
+          "display_order": 11,
           "visible_when": {
             "interviewOutcome": "221g"
           },
@@ -5912,8 +6683,8 @@
           }
         },
         {
-          "step_key": "step_3_11",
-          "step_number": 11,
+          "step_key": "step_3_12",
+          "step_number": 12,
           "step_type": "tool",
           "step_name": "Submit Your 221(g) Documents",
           "step_description": "Gather exactly what the embassy requested, submit your packet via the specified method, and log your submission to stay organized.",
@@ -5922,13 +6693,10 @@
           "where": "Embassy / CEAC",
           "estimated_duration_days": 14,
           "is_required": true,
-          "display_order": 11,
+          "display_order": 12,
           "visible_when": {
             "interviewOutcome": "221g",
-            "outcome221gSubtype": [
-              "docs_requested",
-              "both"
-            ]
+            "outcome221gSubtype": ["docs_requested", "both"]
           },
           "actions": [
             "Read your 221(g) letter thoroughly",
@@ -6026,8 +6794,8 @@
           }
         },
         {
-          "step_key": "step_3_12",
-          "step_number": 12,
+          "step_key": "step_3_13",
+          "step_number": 13,
           "step_type": "tool",
           "step_name": "Track Administrative Processing",
           "step_description": "Monitor your CEAC case status, track updates, and stay informed while the U.S. embassy completes post-interview processing.",
@@ -6036,14 +6804,10 @@
           "where": "ceac.state.gov",
           "estimated_duration_days": 90,
           "is_required": false,
-          "display_order": 12,
+          "display_order": 13,
           "visible_when": {
             "interviewOutcome": "221g",
-            "outcome221gSubtype": [
-              "docs_requested",
-              "further_review",
-              "both"
-            ]
+            "outcome221gSubtype": ["docs_requested", "further_review", "both"]
           },
           "actions": [
             "Monitor CEAC status weekly",
@@ -6097,20 +6861,12 @@
                   "value": "Ready"
                 },
                 {
-                  "label": "Approved",
-                  "value": "Approved"
-                },
-                {
                   "label": "Issued",
                   "value": "Issued"
                 },
                 {
                   "label": "Refused",
                   "value": "Refused"
-                },
-                {
-                  "label": "Administrative Processing",
-                  "value": "Administrative Processing"
                 },
                 {
                   "label": "Case Status Not Available",
@@ -6132,7 +6888,7 @@
                   "Monitor the email address registered with the embassy for additional requests or updates.",
                   "Respond promptly if the embassy requests further documents or information.",
                   "Ensure your passport remains valid throughout the review process.",
-                  "If your case remains pending significantly longer than normal, follow your embassy's official inquiry instructions before contacting them."
+                  "For Administrative Processing inquiries, follow the Embassy’s current instructions for your case. The Department of State generally recommends allowing up to 180 days from the interview or submission of supplemental documents, whichever is later, for Administrative Processing. This is a general guideline, not a requirement to wait 180 days before making an inquiry. If you have concerns about your case or believe an inquiry is appropriate, check the Embassy’s latest guidance and contact them through the appropriate channel."
                 ]
               },
               {
@@ -6141,9 +6897,9 @@
                 "icon": "check",
                 "items": [
                   "Issued — Your visa has been approved and printed.",
-                  "Administrative Processing — Additional review is still underway.",
+                  "Administrative Processing — Your case may remain refused under 221(g) while additional processing is underway.",
                   "Additional Documents Requested — The embassy requires more information.",
-                  "Refused — Review your written notice carefully for the official reason and next steps."
+                  "Refused — Review your 221(g) notice or other written instructions carefully. CEAC may continue to show 'Refused' while a case is undergoing Administrative Processing."
                 ]
               }
             ],
@@ -6166,7 +6922,7 @@
     "Union Council Marriage Registration",
     "Police Certificate - Pakistan (Original)",
     "Passport Photos (2x2 inches, white background)",
-    "Tax Returns (IRS Transcripts - 3 years)",
+    "Tax Returns & IRS Transcripts (Most Recent Year Required, 3 Years Recommended)",
     "Employment Verification Letter",
     "Pay Stubs (6 months)",
     "W-2 Forms",

@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { ARTICLES } from "@/data/articles";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://rahvana.com";
 
@@ -8,17 +9,24 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://rahvana.com";
  * Only includes publicly crawlable pages. Paid, auth-gated, and dev routes
  * are excluded — those pages carry `noindex` metadata + X-Robots-Tag headers
  * as belt-and-suspenders protection.
- *
- * Priority guide:
- *   1.0  — Primary landing / home
- *   0.9  — High-intent commercial pages (pricing, services, visa tools)
- *   0.85 — Per-visa journey pages (IR-1, IR-5, IR-2, F-1)
- *   0.8  — About, resources hub, eligibility checker
- *   0.7  — Individual public guides and resource articles
- *   0.3  — Legal pages (low SEO value, required for accessibility)
  */
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
+
+  const blogPages: MetadataRoute.Sitemap = [
+    {
+      url: `${SITE_URL}/blog`,
+      lastModified: now,
+      changeFrequency: "daily",
+      priority: 0.85,
+    },
+    ...ARTICLES.map((art) => ({
+      url: `${SITE_URL}/blog/${art.slug}`,
+      lastModified: art.updatedAt ? new Date(art.updatedAt) : now,
+      changeFrequency: "weekly" as const,
+      priority: 0.8,
+    })),
+  ];
 
   const staticPages: MetadataRoute.Sitemap = [
     // ── Primary ────────────────────────────────────────────────────────────────
@@ -179,5 +187,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ];
 
-  return staticPages;
+  return [...staticPages, ...blogPages];
 }
+

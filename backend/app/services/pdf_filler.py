@@ -21,6 +21,9 @@ from app.core.form_configs import i864a_config
 from app.core.form_configs import i864ez_config
 from app.core.form_configs import i693_config
 from app.core.form_configs import i485_config
+from app.core.form_configs import g1450_config
+from app.core.form_configs import g1650_config
+from app.core.form_configs import g1651_config
 # from app.core.form_configs import ds260_config
 
 # Master mapping: formId → FIELD_MAPPING
@@ -34,6 +37,9 @@ FORM_CONFIGS = {
     "i864ez": i864ez_config.FIELD_MAPPING,
     "i693": i693_config.FIELD_MAPPING,
     "i485": i485_config.FIELD_MAPPING,
+    "g1450": g1450_config.FIELD_MAPPING,
+    "g1650": g1650_config.FIELD_MAPPING,
+    "g1651": g1651_config.FIELD_MAPPING,
     # "ds260": ds260_config.FIELD_MAPPING,
     # "i485": i485_config.FIELD_MAPPING,
     # "i765": i765_config.FIELD_MAPPING,
@@ -41,11 +47,13 @@ FORM_CONFIGS = {
 
 # Auto-find PDF templates
 def find_pdf_template(form_id: str) -> str:
-    # form_id is already normalized (e.g., 'i130a')
-    # Try with hyphen if it looks like a USCIS form
+    # form_id is already normalized (e.g., 'i130a', 'g1450')
+    # Try with a hyphen after the leading letters if it looks like a USCIS form
+    # (e.g., 'i130a' -> 'i-130a', 'g1450' -> 'g-1450').
     hyphenated = form_id
-    if form_id.startswith('i') and len(form_id) > 1:
-        hyphenated = f"i-{form_id[1:]}"
+    m = re.match(r'^([a-z]+)(\d.*)$', form_id)
+    if m:
+        hyphenated = f"{m.group(1)}-{m.group(2)}"
         
     candidates = [
         f"./pdfs/{form_id}.pdf",
@@ -142,11 +150,27 @@ class PDFFillerService:
             if not str_value:
                 continue
 
+            # Prefer an EXACT field-name match; only fall back to last-segment
+            # matching when no exact match exists anywhere. This prevents
+            # cross-filling widgets that share a last segment -- e.g. XFA forms
+            # like G-1650 where sfApplicantPetitionerName[0].GivenName[0] and
+            # sfBankAccountHolderInfo[0].GivenName[0] both end in 'GivenName[0]'.
+            # (Widgets are matched/updated inline so they stay bound to their page.)
+            target_leaf = pdf_field_name.split('.')[-1]
+            has_exact = any(
+                w.field_name == pdf_field_name
+                for page in doc for w in page.widgets()
+            )
+
             field_found = False
             for page in doc:
                 for widget in page.widgets():
-                    if widget.field_name == pdf_field_name or \
-                       widget.field_name.split('.')[-1] == pdf_field_name.split('.')[-1]:
+                    is_match = (
+                        widget.field_name == pdf_field_name
+                        if has_exact
+                        else widget.field_name.split('.')[-1] == target_leaf
+                    )
+                    if is_match:
                         try:
                              if widget.field_type in (fitz.PDF_WIDGET_TYPE_CHECKBOX, fitz.PDF_WIDGET_TYPE_RADIOBUTTON):
                                 val_lower = str(value).lower().strip()
@@ -188,47 +212,29 @@ class PDFFillerService:
         if additional_blocks:
             self._fill_additional_blocks(doc, additional_blocks)
 
-        # Autofill petitioner name and A-number on Page 12 + duplicated pages for I-130
-        if self.form_id == "i130":
-            for page_idx in range(11, len(doc)):
-                page = doc[page_idx]
-                for widget in page.widgets():
-                    w_name = widget.field_name or ""
-                    if "Pt2Line4a_FamilyName" in w_name:
-                        widget.field_value = petitioner_family
-                        widget.update()
-                    elif "Pt2Line4b_GivenName" in w_name:
-                        widget.field_value = petitioner_given
-                        widget.update()
-                    elif "Pt2Line4c_MiddleName" in w_name:
-                        widget.field_value = petitioner_middle
-                        widget.update()
-                    elif "Pt2Line1_AlienNumber" in w_name:
-                        widget.field_value = petitioner_alien
-                        widget.update()
+        # Autofill petitioner/applicant name and A-number on the last page & duplicated pages for all forms
+        family_val = str(form_data.get("petitioner_familyName") or form_data.get("p1_legal_family_name") or form_data.get("pt1_l6a_familyname") or form_data.get("p1_family_name") or "").strip()
+        given_val = str(form_data.get("petitioner_givenName") or form_data.get("p1_legal_given_name") or form_data.get("pt1_l6b_givenname") or form_data.get("p1_given_name") or "").strip()
+        middle_val = str(form_data.get("petitioner_middleName") or form_data.get("p1_legal_middle_name") or form_data.get("pt1_l6c_middlename") or form_data.get("p1_middle_name") or "").strip()
+        alien_val = str(form_data.get("petitioner_alienNumber") or form_data.get("p1_alien_number") or form_data.get("pt1_l1_aliennumber") or form_data.get("p1_item4_alien_number") or "").strip()
 
-        # Autofill applicant name and A-number on the last page + duplicated pages for I-485
-        if self.form_id == "i485":
-            applicant_family = str(form_data.get("p1_legal_family_name") or "").strip()
-            applicant_given = str(form_data.get("p1_legal_given_name") or "").strip()
-            applicant_middle = str(form_data.get("p1_legal_middle_name") or "").strip()
-            applicant_alien = str(form_data.get("p1_alien_number") or form_data.get("p1_item4_alien_number") or "").strip()
-            
-            for page_idx in range(23, len(doc)):
-                page = doc[page_idx]
-                for widget in page.widgets():
-                    w_name = widget.field_name or ""
-                    if "Pt1Line1_FamilyName" in w_name:
-                        widget.field_value = applicant_family
+        start_header_page = max(0, len(doc) - (len(additional_blocks) // 5 + 2))
+        for page_idx in range(start_header_page, len(doc)):
+            page = doc[page_idx]
+            for widget in page.widgets():
+                w_name = widget.field_name or ""
+                if not widget.field_value:
+                    if any(fn in w_name for fn in ["FamilyName", "familyname", "Family_Name"]) and family_val:
+                        widget.field_value = family_val
                         widget.update()
-                    elif "Pt1Line1_GivenName" in w_name:
-                        widget.field_value = applicant_given
+                    elif any(gn in w_name for gn in ["GivenName", "givenname", "Given_Name"]) and given_val:
+                        widget.field_value = given_val
                         widget.update()
-                    elif "Pt1Line1_MiddleName" in w_name:
-                        widget.field_value = applicant_middle
+                    elif any(mn in w_name for mn in ["MiddleName", "middlename", "Middle_Name"]) and middle_val:
+                        widget.field_value = middle_val
                         widget.update()
-                    elif "AlienNumber" in w_name:
-                        widget.field_value = applicant_alien
+                    elif any(an in w_name for an in ["AlienNumber", "aliennumber", "Alien_Number"]) and alien_val:
+                        widget.field_value = alien_val
                         widget.update()
 
         output = io.BytesIO()

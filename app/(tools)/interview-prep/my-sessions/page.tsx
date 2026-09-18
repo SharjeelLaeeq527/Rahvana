@@ -178,11 +178,14 @@ export default function MyInterviewSessions() {
   useEffect(() => {
     fetchUserSessions(false);
 
+    // Poll to reflect session status changes. 30s (was 5s) — a sessions LIST
+    // does not need second-by-second freshness, and 5s meant ~12 DB hits/min per
+    // open tab. Still gated on tab visibility so background tabs make no calls.
     const interval = setInterval(() => {
       if (document.visibilityState === "visible") {
         fetchUserSessions(true);
       }
-    }, 5000);
+    }, 30000);
 
     return () => clearInterval(interval);
   }, []);
@@ -382,8 +385,18 @@ export default function MyInterviewSessions() {
       <div className="mt-12">
         <NarrativeModal
           isOpen={showNarrative}
-          onClose={() => setShowNarrative(false)}
-          onComplete={() => setShowNarrative(false)}
+          onClose={() => {
+            if (dontShowAgain) {
+              localStorage.setItem("dont_show_interview_narrative", "true");
+            }
+            setShowNarrative(false);
+          }}
+          onComplete={() => {
+            if (dontShowAgain) {
+              localStorage.setItem("dont_show_interview_narrative", "true");
+            }
+            setShowNarrative(false);
+          }}
           dontShowAgain={dontShowAgain}
           onDontShowAgainChange={setDontShowAgain}
           variant="interview-prep"

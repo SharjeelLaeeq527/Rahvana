@@ -69,6 +69,8 @@ export const metadata: Metadata = {
 
   // ── Keywords (GEO signal — helps AI models understand the site topic) ───────
   keywords: [
+    "Rahvana",
+    "Rahvana immigration",
     "IR-1 visa",
     ...(IR5_ENABLED ? ["IR-5 visa"] : []),
     "CR-1 visa",
@@ -141,7 +143,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className="scroll-smooth">
       <body suppressHydrationWarning className="bg-background">
         <JsonLd schema={ROOT_STRUCTURED_DATA} />
         <Script async src="https://www.googletagmanager.com/gtag/js?id=G-TNW3YZDTCR" />

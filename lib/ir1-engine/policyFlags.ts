@@ -76,9 +76,9 @@ export const POLICY_FLAGS: Record<PolicyFlagId, PolicyFlag> = {
   // SOURCE: pk.usembassy.gov/visas/ + DOS Federal Register Jan 20 2026
   PAKISTAN_IV_PAUSE: {
     id: "PAKISTAN_IV_PAUSE",
-    active: true,
+    active: false,
     since: "2026-01-21",
-    liftedDate: null,
+    liftedDate: "2026-09-03",
     severity: "blocking",
     affectedStages: [
       "INTERVIEW_SCHEDULED",

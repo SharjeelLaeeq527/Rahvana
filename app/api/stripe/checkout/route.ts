@@ -7,8 +7,11 @@ import { VISA_CATEGORIES, ADDONS } from "@/app/(main)/pricing/data/pricing";
 import { reconcileUserPlan } from "@/lib/plan/reconcile";
 import * as fs from "fs";
 import * as path from "path";
+import * as crypto from "crypto";
 import { E, msg } from "@/lib/errors";
 import { getAuthenticatedUser } from "@/lib/api/authGuards";
+import { acquireCheckoutLock, releaseCheckoutLock } from "@/lib/stripe/checkoutLock";
+import { resolveSubscriptionTier } from "@/lib/stripe/subscriptionCleanup";
 
 function logDebug(msg: string, obj?: any) {
   // Never write request/session details to disk in production (PII hygiene).
@@ -39,6 +42,10 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 export async function POST(request: NextRequest) {
   logDebug("--- NEW CHECKOUT REQUEST ---");
+  // Set when we acquire the per-user checkout lock, so `finally` can release it.
+  // `lockToken` is the ownership token so release only removes OUR lock.
+  let lockedUserId: string | null = null;
+  let lockToken: string | null = null;
   try {
     // AUTH: the buyer is always the authenticated user. Never trust a `userId`
     // from the request body — that allowed anyone to create checkouts/payment
@@ -105,43 +112,189 @@ export async function POST(request: NextRequest) {
     const dbVisaCategory =
       profile?.profile_details?.plan_visa_category || profile?.profile_details?.visa_category;
     const effectiveVisaCategory = visaCategory || dbVisaCategory || "IR-1 / CR-1";
-    const oldSubscriptionId = profile?.profile_details?.stripe_subscription_id;
 
-    // ── Authoritative upgrade state — derived from the DB, NEVER the client ──
-    // The proration below subtracts the current-tier price from the target
-    // price. If we trusted a client-supplied `currentTier`/`isUpgrade`, a free
-    // user could send { isUpgrade: true, currentTier: "premium" } and pay only
-    // the tier *difference* while still being provisioned the full higher tier.
-    // So both are computed from the DB profile only.
-    const dbTierForUpgrade = (profile?.subscription_tier ?? "free").toLowerCase();
-    const dbActiveForUpgrade = (profile?.subscription_status ?? "inactive") === "active";
-    const serverIsUpgrade = dbActiveForUpgrade && dbTierForUpgrade !== "free";
-    const serverCurrentTier = serverIsUpgrade ? dbTierForUpgrade : undefined;
-
-    // ── Server-side downgrade + duplicate-purchase guard ─────────────────────
-    // Rejects two scenarios:
-    //   (a) target tier <  current tier  → downgrade attempt
-    //   (b) target tier == current tier  → duplicate purchase (already owned)
-    // We derive this from DB — never trust the client's `currentTier` field.
+    // ── Concurrency guard: serialize subscription checkouts per user so two
+    // in-flight requests can't both pass the "no live sub" check below and each
+    // create a subscription (double-click / retried request race). Only needed
+    // for subscription purchases; one-time add-ons don't create subscriptions. ──
     if (productTier) {
-      const TIER_RANK: Record<string, number> = { free: 0, basic: 1, premium: 2, executive: 3 };
-      const dbTier = (profile?.subscription_tier ?? "free").toLowerCase();
-      const dbStatus = profile?.subscription_status ?? "inactive";
-      const targetRank = TIER_RANK[productTier.toLowerCase()] ?? 0;
-      const currentRank = TIER_RANK[dbTier] ?? 0;
+      const lock = await acquireCheckoutLock(userId);
+      if (!lock.ok) {
+        return NextResponse.json(
+          { error: "A checkout is already in progress. Please wait a moment and try again." },
+          { status: 409 }
+        );
+      }
+      lockedUserId = userId;
+      lockToken = lock.token;
+    }
 
-      if (dbStatus === "active" && targetRank < currentRank) {
+    const TIER_RANK: Record<string, number> = { free: 0, basic: 1, premium: 2, executive: 3 };
+    const tierNameForRank = (rank: number): string =>
+      (Object.keys(TIER_RANK).find((k) => TIER_RANK[k] === rank) as string | undefined) || "free";
+
+    // ── Resolve the Stripe customer FIRST so we can consult Stripe (the real
+    // source of truth) for any LIVE subscriptions before deciding anything. ──
+    const subscriptionRecord = await paymentService.getUserSubscription(userId);
+    let stripeCustomerId: string | undefined = subscriptionRecord?.stripe_customer_id || undefined;
+
+    // ── Resolve the EXISTING Stripe customer BEFORE the live-subscription guard ─
+    // If the DB has no `stripe_customer_id` (a webhook/DB desync), the customer
+    // used to be resolved only AFTER the guard below — so the guard was skipped
+    // entirely and duplicate protection fell back to post-hoc cleanup, in exactly
+    // the desync case the Stripe-aware guard exists to cover. Resolve it here
+    // (search by our metadata tag, then by email) so the guard runs against the
+    // customer that actually holds any live subs. We look up but do NOT create
+    // yet — creation stays after the guard so a blocked request leaves no stray
+    // customer. For a subscription purchase we FAIL CLOSED if a lookup errors:
+    // proceeding could create a second customer (and a second subscription) while
+    // a pre-existing customer/sub can't be ruled out.
+    let searchedForCustomer = false;
+    if (!stripeCustomerId && productTier) {
+      searchedForCustomer = true;
+      try {
+        const byUserId = await stripe.customers.search({
+          query: `metadata['supabase_user_id']:'${userId}'`,
+          limit: 1,
+        });
+        stripeCustomerId = byUserId.data[0]?.id;
+        if (!stripeCustomerId) {
+          const byEmail = await stripe.customers.list({ email: userEmail, limit: 1 });
+          stripeCustomerId = byEmail.data[0]?.id;
+        }
+      } catch (e) {
+        console.error("[checkout] Failed to resolve existing Stripe customer:", e);
         return NextResponse.json(
           {
-            error: `You already have the ${dbTier} plan. Downgrades are not allowed, manage via billing portal.`,
+            error:
+              "We could not verify your billing account with our payment provider. Please try again in a moment.",
+          },
+          { status: 503 }
+        );
+      }
+      if (stripeCustomerId) {
+        // Persist the recovered id so future requests skip the lookup and never
+        // create a duplicate customer.
+        await supabase
+          .from("user_profiles")
+          .update({ stripe_customer_id: stripeCustomerId })
+          .eq("id", userId);
+      }
+    }
+
+    // ── Ask Stripe what subscriptions this customer ACTUALLY has live. ────────
+    // The DB (subscription_status / profile_details.stripe_subscription_id) can
+    // drift from Stripe (delayed or failed webhook, past_due, manual edits).
+    // Trusting it alone let a second live subscription get created on the same
+    // customer. These statuses all mean "occupies a live subscription slot".
+    const LIVE_SUB_STATUSES = ["active", "trialing", "past_due", "unpaid"];
+    let liveSubs: Stripe.Subscription[] = [];
+    if (stripeCustomerId && productTier) {
+      // FAIL CLOSED: for a subscription purchase we MUST know the customer's
+      // current subscriptions before creating a new one. If Stripe is unreachable
+      // we cannot verify, so we refuse rather than risk creating a duplicate.
+      try {
+        // Auto-paginate (matches cancelDuplicateSubscriptions): a customer with
+        // >100 historical subs would otherwise hide live ones past the first page,
+        // letting a duplicate slip through. `for await` walks every page.
+        for await (const s of stripe.subscriptions.list({
+          customer: stripeCustomerId,
+          status: "all",
+          limit: 100,
+        })) {
+          if (LIVE_SUB_STATUSES.includes(s.status)) liveSubs.push(s);
+        }
+      } catch (e) {
+        console.error("[checkout] Failed to list Stripe subscriptions:", e);
+        return NextResponse.json(
+          {
+            error:
+              "We could not verify your current subscription with our payment provider. Please try again in a moment.",
+          },
+          { status: 503 }
+        );
+      }
+    }
+
+    // Highest tier the customer actually holds. Derived from the subscription's
+    // resolvable tier (metadata OR known price id) — NOT metadata alone, so a
+    // legacy Premium sub is never mis-read as Free — else the DB tier. Taking the
+    // MAX means a stale DB can never UNDER-report the current tier and let a
+    // duplicate or downgrade slip through.
+    const dbTier = (profile?.subscription_tier ?? "free").toLowerCase();
+    const dbStatus = profile?.subscription_status ?? "inactive";
+    const stripeTierRank = liveSubs.reduce((max, s) => {
+      const t = resolveSubscriptionTier(s);
+      return Math.max(max, t ? (TIER_RANK[t] ?? 0) : 0);
+    }, 0);
+    const effectiveCurrentRank = Math.max(TIER_RANK[dbTier] ?? 0, stripeTierRank);
+    const effectiveCurrentTier = tierNameForRank(effectiveCurrentRank);
+    // "Has a plan" is true if EITHER source says so — this closes the desync gap.
+    const hasLivePlan =
+      liveSubs.length > 0 || (dbStatus === "active" && (TIER_RANK[dbTier] ?? 0) > 0);
+
+    // A live sub whose recurring charge is failing. Such a user should RECOVER
+    // (update payment method / pay the open invoice) via the billing portal, not
+    // buy the same plan again — that would create a second subscription and leave
+    // the broken one behind.
+    const failingSub = liveSubs.find((s) => s.status === "past_due" || s.status === "unpaid");
+
+    // The real subscription to retire on an upgrade — prefer the one the DB points
+    // at, else the highest-tier live sub. This is only a HINT: verify-session runs
+    // a belt-and-suspenders cleanup, and (critically) the old sub is cancelled ONLY
+    // after the new one is confirmed paid, never here at checkout time.
+    const dbSubId = profile?.profile_details?.stripe_subscription_id as string | undefined;
+    const oldSubscriptionId =
+      liveSubs.find((s) => s.id === dbSubId)?.id ||
+      [...liveSubs].sort((a, b) => {
+        const ra = resolveSubscriptionTier(b);
+        const rb = resolveSubscriptionTier(a);
+        return (ra ? TIER_RANK[ra] : 0) - (rb ? TIER_RANK[rb] : 0);
+      })[0]?.id ||
+      dbSubId ||
+      "";
+
+    // ── Authoritative upgrade state — derived from Stripe+DB, NEVER the client. ─
+    // The proration below subtracts the current-tier price from the target price.
+    // If we trusted a client-supplied `currentTier`/`isUpgrade`, a free user could
+    // send { isUpgrade: true, currentTier: "premium" } and pay only the tier
+    // *difference* while being provisioned the full higher tier. So it is server-derived.
+    const serverIsUpgrade = hasLivePlan && effectiveCurrentRank > 0;
+    const serverCurrentTier = serverIsUpgrade ? effectiveCurrentTier : undefined;
+
+    // ── Server-side downgrade + duplicate-purchase guard (Stripe-aware) ──────
+    // Rejects two scenarios:
+    //   (a) target tier <  current tier  → downgrade attempt
+    //   (b) target tier == current tier  → duplicate purchase (already owned/live)
+    // Blocks even when the DB status is stale, because `hasLivePlan` also trusts
+    // Stripe. Upgrades (target > current) fall through and are allowed.
+    if (productTier) {
+      const targetRank = TIER_RANK[productTier.toLowerCase()] ?? 0;
+
+      if (hasLivePlan && targetRank < effectiveCurrentRank) {
+        return NextResponse.json(
+          {
+            error: `You already have the ${effectiveCurrentTier} plan. Downgrades are not allowed, manage via billing portal.`,
           },
           { status: 400 }
         );
       }
-      if (dbStatus === "active" && targetRank === currentRank) {
+      if (hasLivePlan && targetRank === effectiveCurrentRank) {
+        // Payment failing on the plan they already hold → send them to recover it,
+        // not re-buy (which would spawn a duplicate subscription).
+        if (failingSub) {
+          return NextResponse.json(
+            {
+              error: `Your ${effectiveCurrentTier} plan payment is past due. Please update your payment method to restore it instead of purchasing again.`,
+              recover: true,
+              portal: true,
+            },
+            { status: 409 }
+          );
+        }
         return NextResponse.json(
           {
-            error: `You already own the ${dbTier} plan. No need to purchase again.`,
+            error: `You already own the ${effectiveCurrentTier} plan. No need to purchase again.`,
             alreadyOwned: true,
           },
           { status: 400 }
@@ -150,18 +303,49 @@ export async function POST(request: NextRequest) {
     }
     // ────────────────────────────────────────────────────────────────────────
 
-    // Get or create Stripe customer
-    let stripeCustomerId: string | undefined;
-    const subscriptionRecord = await paymentService.getUserSubscription(userId);
+    // Resolve/create the Stripe customer now (done AFTER the guard so a blocked/
+    // duplicate request never creates a stray customer). For a subscription
+    // purchase the existing-customer SEARCH already ran above (fail-closed), so we
+    // only reach `create` here for a genuinely new customer that passed the guard.
+    // For one-time purchases (no productTier) we do the best-effort search here
+    // (its failure is non-fatal — a one-time payment can't create a duplicate sub).
+    if (!stripeCustomerId) {
+      if (!searchedForCustomer) {
+        try {
+          // Preferred: match on the id we stamp into customer metadata at creation.
+          const byUserId = await stripe.customers.search({
+            query: `metadata['supabase_user_id']:'${userId}'`,
+            limit: 1,
+          });
+          stripeCustomerId = byUserId.data[0]?.id;
+        } catch (e) {
+          console.error("[checkout] customer search by user id failed (non-fatal):", e);
+        }
 
-    if (subscriptionRecord?.stripe_customer_id) {
-      stripeCustomerId = subscriptionRecord.stripe_customer_id;
-    } else {
-      const customer = await stripe.customers.create({
-        email: userEmail,
-        metadata: { supabase_user_id: userId },
-      });
-      stripeCustomerId = customer.id;
+        if (!stripeCustomerId) {
+          // Fallback: match on email (covers customers created before we tagged them).
+          try {
+            const byEmail = await stripe.customers.list({ email: userEmail, limit: 1 });
+            stripeCustomerId = byEmail.data[0]?.id;
+          } catch (e) {
+            console.error("[checkout] customer list by email failed (non-fatal):", e);
+          }
+        }
+      }
+
+      if (!stripeCustomerId) {
+        const customer = await stripe.customers.create({
+          email: userEmail,
+          metadata: { supabase_user_id: userId },
+        });
+        stripeCustomerId = customer.id;
+      }
+
+      // Persist the resolved customer id so we never re-derive (or re-create) it.
+      await supabase
+        .from("user_profiles")
+        .update({ stripe_customer_id: stripeCustomerId })
+        .eq("id", userId);
     }
 
     // Base URL for redirects — derive from the incoming request origin so it
@@ -236,6 +420,18 @@ export async function POST(request: NextRequest) {
 
       // Subscription mode for all journey plans
       sessionParams.mode = "subscription";
+
+      // Tag the subscription itself (not just the checkout session) with the tier
+      // so Stripe stays the source of truth: future checkouts and the safety
+      // cleanup can read `subscription.metadata.tier` to know exactly what a live
+      // sub represents, instead of guessing from price amounts.
+      sessionParams.subscription_data = {
+        metadata: {
+          user_id: userId,
+          tier: tierLower,
+          visa_category: effectiveVisaCategory,
+        },
+      };
 
       // Check visa category for custom annual price (e.g. CR-2 has lower price)
       let targetAnnualPrice: number = product.price;
@@ -591,11 +787,29 @@ export async function POST(request: NextRequest) {
       sessionParams.mode = "payment";
     }
 
+    // Idempotency key (subscription checkouts): dedupes accidental retries of the
+    // SAME purchase (network timeout, double submit) so a retry returns the
+    // existing session instead of creating a second one. Scoped to a short time
+    // bucket so a genuinely new attempt later still gets a fresh session, and
+    // includes the selection so changing plan/add-ons yields a new session.
+    let idempotencyKey: string | undefined;
+    if (productTier) {
+      const bucket = Math.floor(Date.now() / (10 * 60 * 1000)); // 10-minute window
+      const addonKey = Array.isArray(addons) ? [...addons].sort().join(",") : "";
+      idempotencyKey = crypto
+        .createHash("sha256")
+        .update(`checkout|${userId}|${productTier}|${addonKey}|${effectiveVisaCategory}|${bucket}`)
+        .digest("hex");
+    }
+
     logDebug("Calling Stripe with sessionParams:", sessionParams);
     // Create Stripe checkout session
     let session;
     try {
-      session = await stripe.checkout.sessions.create(sessionParams);
+      session = await stripe.checkout.sessions.create(
+        sessionParams,
+        idempotencyKey ? { idempotencyKey } : undefined
+      );
       logDebug("Stripe session created successfully:", { id: session.id, url: session.url });
     } catch (stripeErr: any) {
       logDebug("Stripe SDK error:", { msg: stripeErr.message, type: stripeErr.type });
@@ -736,5 +950,11 @@ export async function POST(request: NextRequest) {
       error instanceof Error ? error.message : "Failed to create checkout session";
     logDebug("Returning 500 with errorMessage:", errorMessage);
     return NextResponse.json({ error: errorMessage }, { status: 500 });
+  } finally {
+    // Always release the checkout lock, on success or any error/early return.
+    // Pass the ownership token so we never delete another request's lock.
+    if (lockedUserId) {
+      await releaseCheckoutLock(lockedUserId, lockToken).catch(() => {});
+    }
   }
 }

@@ -25,6 +25,14 @@ export type Field = {
   repeatable?: boolean;
   groupId?: string;
   tooltip?: string;
+  /** Short explanatory text shown beneath the question heading */
+  hint?: string;
+  /** Long-form help shown inside a collapsible "What does this mean?" panel */
+  help?: string;
+  /** "Where to find this" tip shown in a teal info box */
+  find?: string;
+  /** Concrete example shown in a green info box */
+  example?: string;
   originalLabel?: string;
   /** Nested sub-questions (e.g., 4a, 4b, 4c) rendered in same card */
   subQuestions?: (Omit<Field, "section"> & {

@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { ResultGate } from "@/app/components/entitlements/ResultGate";
 
-// Define the exact shape here (or import from a shared types file)
+
 type VisaData = {
   status: "current" | "waiting" | "unavailable" | string;
   categoryFull: string;

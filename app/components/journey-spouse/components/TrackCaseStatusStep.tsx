@@ -1,15 +1,12 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { fmtDate, fmtDateTime } from "@/lib/register-receipt";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, CheckCircle, BookOpen, Scale, Info, Shield } from "lucide-react";
+import { ArrowRight, CheckCircle, BookOpen, Scale, Info, Shield, Bell } from "lucide-react";
 import { GuideTutorialOverlay } from "../GuideTutorialOverlays";
 import {
   AfterI130ApprovalModal,
   RelationshipEvidenceModal,
   AffidavitSupportModal,
-  AddEvidenceNoteModal,
-  ProcessingTimeModal,
-  MilestonesModal,
 } from "../StatusModals";
 import {
   buildTimelineItems,
@@ -54,38 +51,22 @@ const TrackCaseStatusStep: React.FC<any> = ({
     };
     load();
   }, [journeyId]); // fetch on mount and when journeyId changes
-  // Modal and checklist state
+  // Modal state
   const [showStatusGuide, setShowStatusGuide] = useState(false);
   const [statusGuideStep, setStatusGuideStep] = useState(0);
-  const [showProcessingModal, setShowProcessingModal] = useState(false);
-  const [showMilestonesModal, setShowMilestonesModal] = useState(false);
   const [showAfterI130Modal, setShowAfterI130Modal] = useState(false);
   const [showRelationshipEvidenceModal, setShowRelationshipEvidenceModal] = useState(false);
   const [showAffidavitSupportModal, setShowAffidavitSupportModal] = useState(false);
-  const [showAddEvidenceNoteModal, setShowAddEvidenceNoteModal] = useState(false);
-
-  // Interactive checklist state (persisted to localStorage)
-  const checklistKey = "ir1_step12_checklist";
-  const initialChecklist = useMemo(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem(checklistKey);
-      if (saved) return JSON.parse(saved);
-    }
-    return tool.checklist ? tool.checklist.map(() => false) : [];
-  }, [tool.checklist]);
-  const [checklist, setChecklist] = useState(initialChecklist);
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem(checklistKey, JSON.stringify(checklist));
-    }
-  }, [checklist]);
-  const toggleChecklist = (idx: number) => {
-    setChecklist((prev: boolean[]) => {
-      const next = [...prev];
-      next[idx] = !next[idx];
-      return next;
-    });
-  };
+  // What's Coming Next: which phase's details are open (defaults to the current phase)
+  const [activePhase, setActivePhase] = useState<number | null>(() => {
+    const arr = tool?.future_timeline || [];
+    const i = arr.findIndex((it: any) =>
+      String(it.pill || "")
+        .toLowerCase()
+        .includes("current")
+    );
+    return i >= 0 ? i : 0;
+  });
 
   // Chapter 1 accent (this component is for Chapter 1)
   const launchAccentColor = "var(--rv-ch1)";
@@ -163,10 +144,10 @@ const TrackCaseStatusStep: React.FC<any> = ({
     // <div className="min-h-screen w-full ch1step-bg">
     <div className="min-h-screen w-full">
       {/* CHANGE 1: px-4 py-8 on mobile, md:px-6 md:py-12 on desktop */}
-      <div className="step mx-auto flex w-full max-w-[680px] flex-col px-4 sm:px-6 md:px-8 pt-5 pb-10 md:pt-8">
+      <div className="step mx-auto flex w-full max-w-[680px] flex-col px-4 pt-5 pb-10 sm:px-6 md:px-8 md:pt-8">
         {/* Title & Desc */}
-        
-        <h1 className="page-title text-[clamp(28px,4vw,36px)] font-bold text-[#0c1b33] leading-[1.15] tracking-tight mb-1">
+
+        <h1 className="page-title mb-1 text-[clamp(28px,4vw,36px)] leading-[1.15] font-bold tracking-tight text-[#0c1b33]">
           Monitor USCIS Case Status
         </h1>
         <p className="page-desc mb-2.5 max-w-[620px] text-[15px] leading-[1.72] text-[#3a4f63] sm:mb-4">
@@ -195,7 +176,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
             <div className="launch-inner p-5 md:p-8 lg:p-[32px_34px_28px]">
               {/* CHANGE 3: flex-wrap added so badge wraps on small screens */}
               <div className="launch-top mb-4 flex flex-wrap items-start gap-4 sm:mb-6">
-                <div className="launch-header flex flex-col gap-2 items-start">
+                <div className="launch-header flex flex-col items-start gap-2">
                   {/* Icon + eyebrow side by side */}
                   <div className="flex items-center gap-4">
                     <div
@@ -209,14 +190,16 @@ const TrackCaseStatusStep: React.FC<any> = ({
                       <Shield className="h-7 w-7 text-[#ffffff]" />
                     </div>
                     <div
-                      className="launch-eyebrow text-[10px] font-bold tracking-widest uppercase leading-[1.6]"
+                      className="launch-eyebrow text-[10px] leading-[1.6] font-bold tracking-widest uppercase"
                       style={{
                         color: launchAccentColor,
                         borderLeft: `5px solid ${launchAccentColor}`,
                         paddingLeft: 10,
                       }}
                     >
-                      Pending with USCIS<br />Active Monitoring
+                      Pending with USCIS
+                      <br />
+                      Active Monitoring
                     </div>
                   </div>
                   {/* Hero + copy below the icon */}
@@ -238,110 +221,144 @@ const TrackCaseStatusStep: React.FC<any> = ({
                 className="launch-divider mb-5 h-px"
                 style={{ backgroundColor: "rgba(130,132,191,0.20)" }}
               />
-              {/* Metrics */}
-              {/* CHANGE 5: grid-cols-2 on mobile (was grid-cols-1), md:grid-cols-4 */}
-              <div className="metrics mb-4 grid grid-cols-2 items-stretch gap-3 md:grid-cols-4">
-                {/* Status */}
-                <div
-                  className="metric flex h-full min-h-[118px] flex-col rounded-[12px] px-4 py-3"
-                  style={{
-                    borderColor: launchAccentColor,
-                    backgroundColor: "var(--rv-ch1-feature-bg)",
-                  }}
-                >
-                  <div
-                    className="metric-label mb-1 text-[10px] font-bold tracking-widest uppercase"
-                    style={{ color: launchAccentColor }}
-                  >
-                    Status
+              {/* What's Coming Next - horizontal progress stepper (tap a phase for details) */}
+              {tool.future_timeline && (
+                <div className="mb-6">
+                  <div className="mb-5">
+                    <div className="text-[16px] font-semibold leading-tight text-white">
+                      What's Coming Next
+                    </div>
+                    <div
+                      className="mt-1 max-w-[540px] text-[13px] leading-relaxed"
+                      style={{ color: "rgba(247,248,255,0.82)" }}
+                    >
+                      Tap a phase to see what it means for your case.
+                    </div>
                   </div>
-                  <div
-                    className="metric-value text-[14px] font-semibold"
-                    style={{ color: "var(--rv-ch1-text)" }}
-                  >
-                    {receiptInfo?.lastKnownStatus || ""}
-                  </div>
-                  <div className="metric-sub mt-1 text-[11px] text-white">
-                    Current USCIS case status
+                  <div className="relative">
+                    {/* connector line behind the dots (desktop only) */}
+                    <div
+                      className="pointer-events-none absolute top-[15px] right-[12.5%] left-[12.5%] hidden h-px md:block"
+                      style={{ background: "rgba(255,255,255,0.16)" }}
+                    />
+                    <div className="grid grid-cols-2 items-stretch gap-x-5 gap-y-5 md:grid-cols-4">
+                      {tool.future_timeline.map((item: any, idx: number) => {
+                        const isCurrent = String(item.pill || "")
+                          .toLowerCase()
+                          .includes("current");
+                        const isActive = activePhase === idx;
+                        return (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => setActivePhase(isActive ? null : idx)}
+                            aria-expanded={isActive}
+                            className="relative flex h-full cursor-pointer flex-col items-center text-center focus:outline-none"
+                          >
+                            {/* Stop indicator */}
+                            <span className="relative z-10 mb-3.5 block h-[30px] w-[30px]">
+                              {isCurrent && (
+                                <span
+                                  className="absolute inset-0 animate-ping rounded-full"
+                                  style={{ backgroundColor: "rgba(255,255,255,0.4)" }}
+                                />
+                              )}
+                              <span
+                                className="relative flex h-[30px] w-[30px] items-center justify-center rounded-full border-[3px] text-[12px] font-bold"
+                                style={{
+                                  borderColor: isCurrent ? "#ffffff" : launchAccentColor,
+                                  backgroundColor: isCurrent
+                                    ? "#ffffff"
+                                    : "var(--rv-ch1-module-bg)",
+                                  color: isCurrent ? "var(--rv-ch1)" : "#ffffff",
+                                  boxShadow: isCurrent
+                                    ? "0 0 0 5px rgba(255,255,255,0.14)"
+                                    : "none",
+                                }}
+                              >
+                                {idx + 1}
+                              </span>
+                            </span>
+                            {/* Compact phase card (title + pill only) */}
+                            <span
+                              className="flex h-full w-full flex-1 flex-col items-center rounded-2xl border px-3 py-3.5 transition"
+                              style={{
+                                borderColor: isActive
+                                  ? "rgba(255,255,255,0.6)"
+                                  : isCurrent
+                                    ? "rgba(255,255,255,0.32)"
+                                    : "rgba(255,255,255,0.14)",
+                                backgroundColor: isActive
+                                  ? "rgba(255,255,255,0.14)"
+                                  : isCurrent
+                                    ? "rgba(255,255,255,0.08)"
+                                    : "rgba(255,255,255,0.05)",
+                                boxShadow: isActive ? "0 8px 24px rgba(0,0,0,0.2)" : "none",
+                              }}
+                            >
+                              <span className="text-[13px] font-semibold leading-snug text-white">
+                                {item.title}
+                              </span>
+                              <span className="mt-auto flex flex-col items-center gap-2 pt-3">
+                                {item.pill && (
+                                  <span
+                                    className="inline-block rounded-full border px-2.5 py-1 text-[9.5px] font-bold tracking-wide uppercase"
+                                    style={
+                                      isCurrent
+                                        ? {
+                                            borderColor: "transparent",
+                                            backgroundColor: "#ffffff",
+                                            color: "var(--rv-ch1)",
+                                          }
+                                        : {
+                                            borderColor: "rgba(255,255,255,0.25)",
+                                            backgroundColor: "rgba(255,255,255,0.06)",
+                                            color: "rgba(247,248,255,0.9)",
+                                          }
+                                    }
+                                  >
+                                    {item.pill}
+                                  </span>
+                                )}
+                                <span
+                                  className="inline-flex items-center gap-1 text-[10px] font-medium"
+                                  style={{ color: "rgba(247,248,255,0.6)" }}
+                                >
+                                  <Info className="h-3 w-3" />
+                                  {isActive ? "Hide" : "Details"}
+                                </span>
+                              </span>
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {/* Detail panel for the selected phase */}
+                    {activePhase !== null && tool.future_timeline[activePhase] && (
+                      <div
+                        className="mt-4 rounded-xl border p-4 text-left"
+                        style={{
+                          borderColor: "rgba(255,255,255,0.2)",
+                          backgroundColor: "rgba(255,255,255,0.07)",
+                        }}
+                      >
+                        <div className="mb-1 text-[13px] font-semibold text-white">
+                          {tool.future_timeline[activePhase].title}
+                        </div>
+                        <div
+                          className="text-[12.5px] leading-relaxed"
+                          style={{ color: "rgba(247,248,255,0.85)" }}
+                        >
+                          {tool.future_timeline[activePhase].copy}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
-
-                {/* Last Checked */}
-                <div
-                  className="metric flex h-full min-h-[118px] flex-col rounded-[12px] px-4 py-3"
-                  style={{
-                    borderColor: launchAccentColor,
-                    backgroundColor: "var(--rv-ch1-feature-bg)",
-                  }}
-                >
-                  <div
-                    className="metric-label mb-1 text-[10px] font-bold tracking-widest uppercase"
-                    style={{ color: launchAccentColor }}
-                  >
-                    Last Checked
-                  </div>
-                  <div
-                    className="metric-value text-[14px] font-semibold"
-                    style={{ color: "var(--rv-ch1-text)" }}
-                  >
-                    {receiptInfo?.lastCheckedAt ? fmtDateTime(receiptInfo.lastCheckedAt) : ""}
-                  </div>
-                  <div className="metric-sub mt-1 text-[11px] text-white">
-                    Latest system refresh
-                  </div>
-                </div>
-
-                {/* Notice Date */}
-                <div
-                  className="metric flex h-full min-h-[118px] flex-col rounded-[12px] px-4 py-3"
-                  style={{
-                    borderColor: launchAccentColor,
-                    backgroundColor: "var(--rv-ch1-feature-bg)",
-                  }}
-                >
-                  <div
-                    className="metric-label mb-1 text-[10px] font-bold tracking-widest uppercase"
-                    style={{ color: launchAccentColor }}
-                  >
-                    Notice Date
-                  </div>
-                  <div
-                    className="metric-value text-[14px] font-semibold"
-                    style={{ color: "var(--rv-ch1-text)" }}
-                  >
-                    {receiptInfo?.noticeDate ? fmtDate(receiptInfo.noticeDate) : ""}
-                  </div>
-                  <div className="metric-sub mt-1 text-[11px] text-white">USCIS receipt notice</div>
-                </div>
-
-                {/* Priority Date */}
-                <div
-                  className="metric flex h-full min-h-[118px] flex-col rounded-[12px] px-4 py-3"
-                  style={{
-                    borderColor: launchAccentColor,
-                    backgroundColor: "var(--rv-ch1-feature-bg)",
-                  }}
-                >
-                  <div
-                    className="metric-label mb-1 text-[10px] font-bold tracking-widest uppercase"
-                    style={{ color: launchAccentColor }}
-                  >
-                    Priority Date
-                  </div>
-                  <div
-                    className="metric-value text-[14px] font-semibold"
-                    style={{ color: "var(--rv-ch1-text)" }}
-                  >
-                    {receiptInfo?.priorityDate ? fmtDate(receiptInfo.priorityDate) : ""}
-                  </div>
-                  <div className="metric-sub mt-1 text-[11px] text-white">
-                    Filing priority reference
-                  </div>
-                </div>
-              </div>
+              )}
               {/* Tracking Action Buttons */}
               <div className="launch-actions mt-2 grid grid-cols-1 gap-3 md:grid-cols-2">
-                <Button
+                {/* <Button
                   className="flex items-center gap-2 rounded-xl px-5 py-3 font-semibold transition"
                   style={
                     {
@@ -371,25 +388,24 @@ const TrackCaseStatusStep: React.FC<any> = ({
                     } else {
                       e.currentTarget.style.backgroundColor = launchAccentColor;
                     }
-                  }}
-                  onClick={() => {
-                    /* TODO: implement refresh logic */
-                  }}
-                >
-                  <svg
-                    className="h-4 w-4"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M21 12a9 9 0 1 1-2.64-6.36" />
-                    <polyline points="21 3 21 9 15 9" />
-                  </svg>
-                  Refresh tracking status
-                </Button>
+                  }} */}
+                {/*    onClick={() => {
+                   }}
+                 >
+                   <svg
+                     className="h-4 w-4"
+                     viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     strokeWidth="2"
+                     strokeLinecap="round"
+                     strokeLinejoin="round"
+                   >
+                     <path d="M21 12a9 9 0 1 1-2.64-6.36" />
+                     <polyline points="21 3 21 9 15 9" />
+                   </svg>
+                   Refresh tracking status
+                 </Button> */}
                 <Button
                   variant="outline"
                   className={`flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-5 py-3 font-semibold text-white transition hover:bg-white`}
@@ -423,277 +439,6 @@ const TrackCaseStatusStep: React.FC<any> = ({
             </div>
           </div>
         )}
-        {/* Interactive Checklist Panel */}
-        <div
-          className="mb-6 rounded-[18px] bg-white/80 p-4 shadow-[0_8px_24px_rgba(12,27,51,0.07)] md:mb-2 md:p-8"
-          style={{
-            borderWidth: "1px",
-            borderColor: launchAccentColor,
-          }}
-        >
-          <div className="mb-2 flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
-            <div>
-              <h2 className="mb-1 text-[22px] leading-tight text-[#0c1b33] md:text-[32px]">
-                Stay Prepared While USCIS Reviews Your Case
-              </h2>
-              <div className="max-w-[560px] text-[13px] leading-[1.7] text-[#3a4f63]">
-                Use this waiting period to stay organized, build stronger records, and prepare for
-                the steps that usually come after USCIS review.
-              </div>
-            </div>
-            <span
-              className="mt-2 ml-auto flex-shrink-0 rounded-full px-3 py-1 text-[11px] font-bold tracking-wide whitespace-nowrap text-[#2d4a6e] uppercase shadow-sm md:mt-0"
-              style={{
-                backgroundColor: isChapter1
-                  ? "#f0f1fb"
-                  : isChapter2
-                    ? "var(--rv-ch2-feature-bg)"
-                    : "#e8ecf3",
-                borderWidth: "1px",
-                borderColor: launchAccentColor,
-              }}
-            >
-              High-value now
-            </span>
-          </div>
-          <div className="mt-4 grid grid-cols-1 gap-6 md:grid-cols-2">
-            {/* Left: Explainer */}
-            <div
-              className="flex h-full flex-col rounded-[14px] bg-white p-4 md:p-6"
-              style={{
-                borderColor: launchAccentColor,
-                borderWidth: "1px",
-              }}
-            >
-              <div
-                className="mb-3 text-[10px] font-bold tracking-wide uppercase"
-                style={{ color: launchAccentColor }}
-              >
-                What this status means
-              </div>
-              <div className="mb-1 text-[18px] text-[#0c1b33]">USCIS has the case</div>
-              <div className="mb-4 text-[12px] text-[#3a4f63]">
-                This usually means the filing has entered the system and is in line for review. Most
-                users do not need to take any action right now unless USCIS later issues an update,
-                a request for evidence, or another notice.
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="mb-2 flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-[12px] font-semibold text-[#0c1b33]"
-                style={{
-                  borderColor: launchAccentColor,
-                  borderWidth: "1px",
-                }}
-                onMouseEnter={(e) =>
-                  (e.currentTarget.style.borderColor = isChapter1
-                    ? "#6a6a9f"
-                    : isChapter2
-                      ? "var(--rv-ch2)"
-                      : "#031020")
-                }
-                onMouseLeave={(e) => (e.currentTarget.style.borderColor = launchAccentColor)}
-                onClick={() => setShowProcessingModal(true)}
-                type="button"
-              >
-                <svg
-                  className="h-4 w-4"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M3 12h18" />
-                  <path d="M12 3v18" />
-                </svg>
-                Check processing-time context
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-[12px] font-semibold text-[#0c1b33]"
-                style={{
-                  borderColor: launchAccentColor,
-                  borderWidth: "1px",
-                }}
-                onMouseEnter={(e) =>
-                  (e.currentTarget.style.borderColor = isChapter1
-                    ? "#6a6a9f"
-                    : isChapter2
-                      ? "var(--rv-ch2)"
-                      : "#031020")
-                }
-                onMouseLeave={(e) => (e.currentTarget.style.borderColor = launchAccentColor)}
-                onClick={() => setShowMilestonesModal(true)}
-                type="button"
-              >
-                <svg
-                  className="h-4 w-4"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
-                See common next milestones
-              </Button>
-            </div>
-            {/* Right: Interactive Checklist */}
-            <div className="flex flex-col gap-3">
-              {tool.checklist &&
-                tool.checklist.map((c: any, i: number) => {
-                  const done = !!checklist[i];
-                  return (
-                    <div
-                      key={i}
-                      className="flex cursor-pointer items-start gap-3 rounded-[14px] border p-4 transition"
-                      style={{
-                        backgroundColor: done ? "#e8f5ef" : "white",
-                        borderColor: done ? "#a8d9be" : launchAccentColor,
-                      }}
-                      onClick={() => toggleChecklist(i)}
-                      tabIndex={0}
-                      role="button"
-                      aria-pressed={done}
-                    >
-                      <div
-                        className={`mt-1.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition ${done ? "border-[#15744f] bg-[#64dca0]" : "border-[#b8d9f0] bg-white"}`}
-                      >
-                        {done ? (
-                          <svg
-                            className="h-3 w-3 text-white"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="3"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <polyline points="20 6 9 17 4 12" />
-                          </svg>
-                        ) : (
-                          <svg
-                            className="h-3 w-3 text-[#a8d9be]"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <polyline points="20 6 9 17 4 12" />
-                          </svg>
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <div
-                          className={`mb-1 text-[13px] font-bold ${done ? "text-[#15744f]" : "text-[#0c1b33]"}`}
-                        >
-                          {c.title}
-                        </div>
-                        <div className="text-[11px] leading-[1.6] text-[#3a4f63]">{c.copy}</div>
-                      </div>
-                    </div>
-                  );
-                })}
-              <div className="muted-note mt-2 text-[10px] text-[#6b8097]">
-                These are practical ways to stay prepared while you wait.
-              </div>
-            </div>
-          </div>
-        </div>
-        {/* Processing Time Modal */}
-        <ProcessingTimeModal
-          open={showProcessingModal}
-          onClose={() => setShowProcessingModal(false)}
-        />
-        <MilestonesModal open={showMilestonesModal} onClose={() => setShowMilestonesModal(false)} />
-        {tool.future_timeline && (
-          <div
-            className="mb-8 rounded-[18px] bg-white/80 p-4 shadow-[0_8px_24px_rgba(12,27,51,0.07)] md:mb-6 md:p-8"
-            style={{
-              borderWidth: "1px",
-              borderColor: launchAccentColor,
-            }}
-          >
-            <div className="mb-2 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-              <div className="min-w-0">
-                <h2 className="mb-1 text-[28px] leading-tight text-[#0c1b33] md:text-[32px]">
-                  What's Coming Next
-                </h2>
-                <div className="max-w-[560px] text-[15px] leading-[1.7] text-[#3a4f63]">
-                  See the likely path ahead so you can prepare early without feeling rushed into
-                  work that does not matter yet.
-                </div>
-              </div>
-              <span
-                className="mt-2 ml-auto flex-shrink-0 rounded-full px-3 py-1 text-[11px] font-bold tracking-wide whitespace-nowrap text-[#2d4a6e] uppercase shadow-sm md:mt-0"
-                style={{
-                  backgroundColor: isChapter1 ? "#f0f1fb" : isChapter2 ? "#f4e6f3" : "#e8ecf3",
-                  borderWidth: "1px",
-                  borderColor: launchAccentColor,
-                }}
-              >
-                Coming Next
-              </span>
-            </div>
-            {/* Timeline */}
-            <div className="relative mt-6 flex flex-col gap-8">
-              {/* Vertical line for timeline */}
-              <div
-                className="absolute top-[33px] bottom-0 left-[11px] z-0 w-px"
-                style={{
-                  backgroundColor: launchAccentColor,
-                  height: `calc(100% - 33px)`,
-                }}
-              />
-              {tool.future_timeline?.map((item: any, idx: number) => {
-                const isLast = idx === (tool.future_timeline?.length ?? 0) - 1;
-                return (
-                  <div key={idx} className="relative z-10 flex items-start gap-4">
-                    {/* Timeline dot */}
-                    <div className="flex min-w-[24px] flex-col items-center">
-                      <span
-                        className="mt-1 block h-4 w-4 rounded-full border-4 bg-white"
-                        style={{ borderColor: launchAccentColor }}
-                      />
-                    </div>
-                    {/* Step content */}
-                    <div>
-                      <div className="mb-1 text-[16px] leading-tight font-semibold text-[#0c1b33]">
-                        {item.title}
-                      </div>
-                      <div className="mb-2 text-[14px] leading-[1.6] text-[#3a4f63]">
-                        {item.copy}
-                      </div>
-                      {item.pill && (
-                        <span
-                          className="inline-block rounded-full px-3 py-1 text-[12px] font-bold tracking-wide whitespace-nowrap text-[#6b8097] uppercase"
-                          style={{
-                            backgroundColor: isChapter1
-                              ? "#f0f1fb"
-                              : isChapter2
-                                ? "#f4e6f3"
-                                : "#e8ecf3",
-                            borderWidth: "1px",
-                            borderColor: launchAccentColor,
-                          }}
-                        >
-                          {item.pill}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
         {/* Useful Right Now Panel */}
         {tool.useful_now && (
           <div
@@ -713,22 +458,8 @@ const TrackCaseStatusStep: React.FC<any> = ({
                   processing your petition.
                 </div>
               </div>
-              <span
-                className="mt-2 ml-auto rounded-full px-4 py-2 text-[13px] font-bold tracking-wide text-[var(--rv-navy)] uppercase shadow-sm md:mt-0"
-                style={{
-                  backgroundColor: isChapter1
-                    ? "var(--rv-purple-bg)"
-                    : isChapter2
-                      ? "var(--rv-launch-note)"
-                      : "var(--rv-sky)",
-                  borderWidth: "1px",
-                  borderColor: launchAccentColor,
-                }}
-              >
-                Education + Updates
-              </span>
             </div>
-            <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3">
+            <div className="mt-4 grid grid-cols-1 gap-3.5 sm:grid-cols-2 md:grid-cols-3">
               {tool.useful_now.map((u: any, i: number) => {
                 const iconColor =
                   u.icon === "green"
@@ -749,27 +480,28 @@ const TrackCaseStatusStep: React.FC<any> = ({
                 return (
                   <div
                     key={i}
-                    className="flex h-full flex-col rounded-2xl bg-white p-4 md:p-6 shadow-[0_8px_24px_rgba(12,27,51,0.07)] transition hover:shadow-md"
+                    className="flex h-full flex-col rounded-2xl bg-white p-3.5 shadow-[0_8px_24px_rgba(12,27,51,0.07)] transition hover:shadow-md sm:p-4"
                     style={{
                       borderWidth: "1px",
                       borderColor: launchAccentColor,
                     }}
                   >
                     <div
-                      className={`mb-4 flex h-[38px] w-[38px] items-center justify-center rounded-[10px] border ${iconColor}`}
+                      className={`mb-3 flex h-[34px] w-[34px] items-center justify-center rounded-[10px] border ${iconColor}`}
                     >
-                      <Icon className="h-[20px] w-[20px]" />
+                      <Icon className="h-[18px] w-[18px]" />
                     </div>
-                    <div className="mb-1 text-[16px] leading-tight font-semibold text-[#0c1b33]">
+                    <div className="mb-1 text-[15px] leading-tight font-semibold text-[#0c1b33]">
                       {u.title}
                     </div>
-                    <div className="mb-4 flex-1 text-[13.5px] leading-[1.6] text-[#3a4f63]">
+                    <div className="mb-4 flex-1 text-[13px] leading-[1.55] text-[#3a4f63]">
                       {u.copy}
                     </div>
                     <Button
                       variant="outline"
+                      title={u.action}
                       size="sm"
-                      className="mt-auto flex items-center gap-2 rounded-lg px-4 py-2 text-[12px] font-semibold text-[var(--rv-navy)]"
+                      className="mt-auto flex w-full items-center justify-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11.5px] font-semibold text-[var(--rv-navy)]"
                       style={{
                         borderWidth: "1px",
                         borderColor: launchAccentColor,
@@ -788,223 +520,103 @@ const TrackCaseStatusStep: React.FC<any> = ({
                           setShowAffidavitSupportModal(true);
                       }}
                     >
-                      {u.action}
-                      <ArrowRight className="ml-1 h-4 w-4" />
+                      <span className="truncate">{u.action}</span>
+                      <ArrowRight className="h-3.5 w-3.5 shrink-0" />
                     </Button>
-                    <AfterI130ApprovalModal
-                      open={showAfterI130Modal}
-                      onClose={() => setShowAfterI130Modal(false)}
-                    />
-                    <RelationshipEvidenceModal
-                      open={showRelationshipEvidenceModal}
-                      onClose={() => setShowRelationshipEvidenceModal(false)}
-                    />
-                    <AffidavitSupportModal
-                      open={showAffidavitSupportModal}
-                      onClose={() => setShowAffidavitSupportModal(false)}
-                    />
                   </div>
                 );
               })}
             </div>
+            <AfterI130ApprovalModal
+              open={showAfterI130Modal}
+              onClose={() => setShowAfterI130Modal(false)}
+            />
+            <RelationshipEvidenceModal
+              open={showRelationshipEvidenceModal}
+              onClose={() => setShowRelationshipEvidenceModal(false)}
+            />
+            <AffidavitSupportModal
+              open={showAffidavitSupportModal}
+              onClose={() => setShowAffidavitSupportModal(false)}
+            />
           </div>
         )}
-        {/* Relevant Updates Panel */}
-        {tool.relevant_updates && (
-          <div
-            className="panel mb-6 rounded-2xl border-[1.5px] bg-white p-4 shadow-sm md:mb-2"
-            style={{
-              borderColor: launchAccentColor,
-            }}
-          >
-            <div className="panel-header mb-4 flex items-start justify-between gap-4">
-              <div>
-                <div className="panel-title text-[24px] text-[#0c1b33]">Relevant Updates</div>
-              </div>
-              <div
-                className="panel-tag rounded-full px-3 py-1 text-[11px] font-bold whitespace-nowrap text-[#2d4a6e] uppercase"
-                style={{
-                  backgroundColor: isChapter1 ? "#f0f1fb" : isChapter2 ? "#f4e6f3" : "#e8ecf3",
-                  borderWidth: "1px",
-                  borderColor: launchAccentColor,
-                }}
-              >
-                Updates
-              </div>
-            </div>
-            <div className="update-list flex flex-col gap-3">
-              {tool.relevant_updates.map((u: any, i: number) => (
+        {/* USCIS Notice Prompt — unlocks step_1_18 */}
+        {(() => {
+          const alreadyReported = state?.metadata?.uscisNoticeReceived === true;
+          return (
+            <div
+              className="mb-6 overflow-hidden rounded-2xl"
+              style={{
+                border: alreadyReported ? "1.5px solid #a8d9be" : "1.5px solid #e8a87c",
+                background: alreadyReported ? "#f0faf4" : "#fff8f3",
+              }}
+            >
+              <div className="flex items-start gap-4 p-5 md:p-6">
                 <div
-                  key={i}
-                  className="update-card rounded-lg p-4"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
                   style={{
-                    border: `1px solid var(--rv-line)`,
-                    backgroundColor: `var(--rv-sky)`,
+                    background: alreadyReported ? "#d1f5e2" : "#fde8d4",
+                    border: alreadyReported ? "1px solid #a8d9be" : "1px solid #e8a87c",
                   }}
                 >
-                  <div className="update-top mb-1 flex items-start justify-between gap-2">
-                    <div className="update-title font-semibold text-[var(--rv-navy)]">
-                      {u.title}
-                    </div>
-                    <div className="update-source text-[11px] font-bold text-[var(--rv-muted)] uppercase">
-                      {u.source}
-                    </div>
-                  </div>
-                  <div className="update-copy text-[13px]" style={{ color: `var(--rv-soft)` }}>
-                    {u.copy}
-                  </div>
+                  <Bell
+                    className="h-5 w-5"
+                    style={{ color: alreadyReported ? "#15744f" : "#b85c00" }}
+                  />
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
-        {/* Keep Building Your Case Panel */}
-        {tool.build_case && (
-          <div
-            className="mb-8 rounded-[18px] bg-white/80 p-4 shadow-[0_8px_24px_rgba(12,27,51,0.07)] md:mb-6 md:p-8"
-            style={{
-              borderWidth: "1px",
-              borderColor: launchAccentColor,
-            }}
-          >
-            <div className="mb-2 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-              <div>
-                <h2 className="mb-1 text-[24px] leading-tight text-[var(--rv-navy)] md:text-[28px]">
-                  Keep Building Your Case
-                </h2>
-                <div
-                  className="text-[15px]"
-                  style={{
-                    color: "var(--rv-soft)",
-                    lineHeight: "1.7",
-                    maxWidth: "620px",
-                    marginTop: "0.25rem",
-                  }}
-                >
-                  Even while the case is pending, you can strengthen readiness by continuing to
-                  collect relationship evidence and organizing what may matter later.
-                </div>
-              </div>
-              <span
-                className="mt-2 ml-auto flex-shrink-0 rounded-full px-4 py-1.5 text-[13px] font-bold tracking-wide whitespace-nowrap text-[var(--rv-navy)] uppercase shadow-sm md:mt-0"
-                style={{
-                  backgroundColor: "var(--rv-sky)",
-                  border: "1px solid var(--rv-line)",
-                }}
-              >
-                Ongoing Prep
-              </span>
-            </div>
-            <div className="mt-4 grid grid-cols-1 gap-6 md:grid-cols-2">
-              {tool.build_case.map((b: any, i: number) => {
-                const iconBg =
-                  i === 0 ? "bg-[#e8f5ef] border-[#a8d9be]" : "bg-[#fbeff3] border-[#f7b8d0]";
-                const iconColor = i === 0 ? "#15744f" : "#d12b6a";
-                const Icon =
-                  i === 0
-                    ? (props: any) => (
-                        <svg
-                          {...props}
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke={iconColor}
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M12 21c-4.8-4-8-6.7-8-10.2C4 6.6 7.6 3 12 3s8 3.6 8 7.8c0 3.5-3.2 6.2-8 10.2z" />
-                          <circle cx="12" cy="10" r="3" />
-                        </svg>
-                      )
-                    : (props: any) => (
-                        <svg
-                          {...props}
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke={iconColor}
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <rect x="3" y="8" width="18" height="13" rx="2" />
-                          <circle cx="8.5" cy="14.5" r="2.5" />
-                          <path d="M19 8V6a2 2 0 0 0-2-2h-2.5" />
-                          <path d="M15 2v4" />
-                        </svg>
-                      );
-                return (
+                <div className="flex-1 min-w-0">
                   <div
-                    key={i}
-                    className="flex h-full flex-col rounded-[14px] border border-[#d0e4f7] bg-white p-4 md:p-6 transition"
+                    className="mb-0.5 text-[15px] font-semibold"
+                    style={{ color: alreadyReported ? "#15744f" : "#7a3c00" }}
                   >
-                    <div
-                      className={`mb-4 flex h-[38px] w-[38px] items-center justify-center rounded-[10px] border ${iconBg}`}
-                    >
-                      <Icon className="h-[22px] w-[22px]" />
-                    </div>
-                    <div className="mb-1 text-[16px] leading-tight font-semibold text-[#0c1b33]">
-                      {b.title}
-                    </div>
-                    <div className="mb-4 flex-1 text-[13.5px] leading-[1.6] text-[#3a4f63]">
-                      {b.copy}
-                    </div>
-                    <div className="mt-auto flex flex-wrap gap-2">
-                      {/* {b.buttons && b.buttons.map((btn: string, j: number) => (
-                      <button
-                        key={j}
-                        type="button"
-                        className="px-4 py-2 rounded-lg border border-[#d0e4f7] bg-[#f4f7fb] text-[14px] font-semibold text-[#0c1b33] hover:border-[#2f6fd4] focus:outline-none focus:ring-2 focus:ring-[#2f6fd4] transition shadow-sm"
-                        onClick={() => {
-                          if (btn.toLowerCase().includes("add note")) setShowAddEvidenceNoteModal(true);
-                        }}
-                      >
-                        {btn}
-                      </button>
-                    ))} */}
-                      <AddEvidenceNoteModal
-                        open={showAddEvidenceNoteModal}
-                        onClose={() => setShowAddEvidenceNoteModal(false)}
-                      />
-                    </div>
+                    {alreadyReported
+                      ? "USCIS notice reported — guidance is ready"
+                      : "Did you receive a notice from USCIS?"}
                   </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-        {/* Community & Proof Layer Panel */}
-        {tool.community && (
-          <div className="mb-8 rounded-[15px] border border-[#d0e4f7] bg-white/80 p-4 shadow-[0_8px_24px_rgba(12,27,51,0.07)] md:mb-6 md:p-8">
-            <div className="mb-2 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-              <div>
-                <h2 className="mb-1 text-[24px] leading-tight text-[#0c1b33] md:text-[22px]">
-                  Community & Proof Layer
-                </h2>
-                <div className="mt-1 max-w-[620px] text-[12px] leading-[1.7] text-[#3a4f63]">
-                  See practical insights from similar journeys and common habits that help people
-                  stay organized during this stage.
+                  <div
+                    className="text-[13px] leading-[1.65]"
+                    style={{ color: alreadyReported ? "#2a6644" : "#8a4a00" }}
+                  >
+                    {alreadyReported
+                      ? "You reported receiving a USCIS notice. Open the next step in your journey to identify the notice type and get specific response guidance."
+                      : "USCIS may issue a Request for Evidence (RFE), Request for Additional Information (RFI), Request for Original (RFO), or a Notice of Intent to Deny (NOID) while your case is pending. If you received any notice, let Rahvana know so it can guide your response."}
+                  </div>
+                  {!alreadyReported && (
+                    <button
+                      id="uscis-notice-received-btn"
+                      type="button"
+                      className="mt-4 flex items-center gap-2 rounded-xl px-5 py-2.5 text-[13.5px] font-semibold transition"
+                      style={{
+                        background: "#b85c00",
+                        color: "#fff",
+                        border: "none",
+                        cursor: "pointer",
+                      }}
+                      onMouseEnter={(e) =>
+                        (e.currentTarget.style.background = "#8a4400")
+                      }
+                      onMouseLeave={(e) =>
+                        (e.currentTarget.style.background = "#b85c00")
+                      }
+                      onClick={async () => {
+                        if (actions?.updateMetadata) {
+                          await actions.updateMetadata({
+                            uscisNoticeReceived: true,
+                          });
+                        }
+                      }}
+                    >
+                      <Bell className="h-4 w-4" />
+                      I received a USCIS notice
+                      <ArrowRight className="h-3.5 w-3.5 shrink-0" />
+                    </button>
+                  )}
                 </div>
               </div>
-              <span className="mt-2 ml-auto flex-shrink-0 rounded-full border border-[#d0e4f7] bg-[#f4f7fb] px-4 py-1.5 text-[11px] font-bold tracking-wide whitespace-nowrap text-[#2d4a6e] uppercase shadow-sm md:mt-0">
-                Human Context
-              </span>
             </div>
-            <div className="mt-4 grid grid-cols-1 gap-6 md:grid-cols-2">
-              {tool.community.map((c: any, i: number) => (
-                <div
-                  key={i}
-                  className="flex h-full flex-col rounded-[14px] border border-[#d0e4f7] bg-white p-4 md:p-6"
-                >
-                  <div className="mb-5 text-[12px] leading-[1.7] text-[#0c1b33] italic">
-                    {c.quote}
-                  </div>
-                  <div className="mb-0.5 text-[12px] font-semibold text-[#0c1b33]">{c.meta}</div>
-                  <div className="mt-0.5 text-[13px] text-[#6b8097]">{c.sub}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+          );
+        })()}
         {/* Footer Note */}
         {tool.footer_note && (
           <p className="footer-note pt-4 text-center text-[11.5px] text-[#6b8097]">

@@ -14,6 +14,20 @@ import { assertMiddlewareBodySize } from "@/lib/security/request-body";
  *   3. X-Robots-Tag header   — THIS LAYER — server-enforced, always runs
  *                              before any HTML is delivered to the crawler.
  */
+/**
+ * The canonical production hostname. Any request served from a different
+ * host (Vercel preview URLs, staging domains, local dev) will receive
+ * X-Robots-Tag: noindex, nofollow so Google never indexes them.
+ */
+const PRODUCTION_HOST = "rahvana.com";
+
+function isNonProductionHost(host: string): boolean {
+  // Strip port if present (e.g. localhost:3000)
+  const hostname = host.split(":")[0];
+  // Allow exact match and www subdomain
+  return hostname !== PRODUCTION_HOST && hostname !== `www.${PRODUCTION_HOST}`;
+}
+
 const PRIVATE_PREFIXES = [
   // Auth / personal
   "/dashboard",
@@ -91,6 +105,14 @@ export async function middleware(request: NextRequest) {
   // reading any page HTML, making it impossible to accidentally index
   // paid content even if the page renders without JS.
   if (isPrivatePath(pathname)) {
+    response.headers.set("X-Robots-Tag", "noindex, nofollow");
+  }
+
+  // Block indexing of ALL non-production environments (staging, Vercel
+  // preview URLs, local dev). This prevents staging from appearing in
+  // Google search results instead of the real production site.
+  const host = request.headers.get("host") ?? "";
+  if (isNonProductionHost(host)) {
     response.headers.set("X-Robots-Tag", "noindex, nofollow");
   }
 

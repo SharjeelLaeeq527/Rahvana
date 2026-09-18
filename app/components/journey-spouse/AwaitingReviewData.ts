@@ -58,6 +58,8 @@ export const AWAITING_REVIEW_DATA = {
       "Resubmit promptly, delay in responding extends the overall timeline",
     ],
   },
+  correctionsNote:
+    "Note: Even a single corrected or replaced document returns your case to NVC's full review queue — the clock effectively resets. It's worth taking the time to get each correction right before resubmitting.",
   disclaimer:
     "Rahvana provides structured guidance only. NVC review timelines vary. Monitor your registered email and CEAC messages directly.",
 };

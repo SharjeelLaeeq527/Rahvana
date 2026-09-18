@@ -157,7 +157,11 @@ export async function runSecurityScan(opts: ScanOptions = {}): Promise<SecurityS
     .select("ip_address, metadata")
     .eq("action", "auth.login")
     .eq("status", "failure")
-    .gte("created_at", sinceIso(failWindowMin));
+    .gte("created_at", sinceIso(failWindowMin))
+    // Safety cap: we only tally counts against small thresholds (5-20), so we
+    // never need more than a few thousand rows. Without a limit a big attack
+    // window would pull every matching row into memory (extra Disk IO).
+    .limit(5000);
 
   const fails = (failRows ?? []) as Array<Record<string, unknown>>;
 
@@ -193,7 +197,9 @@ export async function runSecurityScan(opts: ScanOptions = {}): Promise<SecurityS
     .from("audit_logs")
     .select("ip_address")
     .eq("status", "blocked")
-    .gte("created_at", sinceIso(blockedWindowMin));
+    .gte("created_at", sinceIso(blockedWindowMin))
+    // Same safety cap as the failed-login query above.
+    .limit(5000);
 
   const blocked = (blockedRows ?? []) as Array<Record<string, unknown>>;
 
@@ -217,6 +223,25 @@ export async function runSecurityScan(opts: ScanOptions = {}): Promise<SecurityS
     alerted,
     checked: { failedLogins: fails.length, blocked: blocked.length },
   };
+}
+
+// ── Retention / pruning ───────────────────────────────────────────────────────
+// audit_logs is append-only and was never cleaned up, so it grew forever. The
+// bigger it gets, the more disk every scan/count has to read. We delete rows
+// older than the retention window (default 90 days) once a day from the cron.
+export async function pruneOldAuditLogs(retentionDays = 90): Promise<number> {
+  const cutoff = new Date(Date.now() - retentionDays * 24 * 60 * 60 * 1000).toISOString();
+  const { data, error } = await supabase
+    .from("audit_logs")
+    .delete()
+    .lt("created_at", cutoff)
+    .select("id"); // ask for ids back so we can report how many were removed
+
+  if (error) {
+    console.error("[audit-log] prune failed:", error.message);
+    return 0;
+  }
+  return data?.length ?? 0;
 }
 
 // ── Throttled trigger (for the login hot path) ────────────────────────────────

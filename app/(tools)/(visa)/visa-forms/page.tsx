@@ -10,9 +10,13 @@ import {
   Plus,
   ExternalLink,
   Filter,
+  PenLine,
+  BookOpen,
+  Scale,
 } from "lucide-react";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 import { IR5_ENABLED } from "@/lib/feature-flags";
+import { CfrExplanationModal } from "@/app/components/shared/CfrExplanationModal";
 
 interface VisaForm {
   id?: string;
@@ -31,6 +35,8 @@ interface VisaForm {
   type?: string;
   notes?: string;
   expiryDate?: string;
+  /** Form must be printed and signed by hand; show the Snap & Sign callout. */
+  requiresHandSign?: boolean;
 }
 
 const VISA_FORMS: VisaForm[] = [
@@ -546,6 +552,74 @@ const VISA_FORMS: VisaForm[] = [
 
   // ──────────────── ADDITIONAL USCIS FORMS ────────────────
   {
+    id: "g1450",
+    code: "G-1450",
+    name: "Authorization for Credit Card Transactions",
+    agency: "USCIS",
+    journeys: ["IR1-CR1", "IR5", "K1", "AOS", "Naturalization"],
+    stage: "USCIS Filing",
+    category: ["Financial"],
+    keywords: [
+      "credit card",
+      "payment",
+      "fee",
+      "filing fee",
+      "authorization",
+      "debit card",
+      "pay",
+    ],
+    type: "pdf",
+    officialLink: "https://www.uscis.gov/sites/default/files/document/forms/g-1450.pdf",
+    description:
+      "Authorizes USCIS to charge a credit, debit, or prepaid card for immigration filing fees. Must be placed on top of your application package when filing by mail.",
+  },
+  {
+    id: "g1650",
+    code: "G-1650",
+    name: "Authorization for ACH Transactions",
+    agency: "USCIS",
+    journeys: ["IR1-CR1", "IR5", "K1", "AOS", "Naturalization"],
+    stage: "USCIS Filing",
+    category: ["Financial"],
+    keywords: [
+      "ach",
+      "bank account",
+      "payment",
+      "direct debit",
+      "fee",
+      "filing fee",
+      "checking",
+      "savings",
+    ],
+    type: "pdf",
+    officialLink: "https://www.uscis.gov/sites/default/files/document/forms/g-1650.pdf",
+    description:
+      "Authorizes USCIS to electronically debit filing fees directly from a U.S. bank account (checking or savings) via ACH for paper-filed benefit requests.",
+  },
+  {
+    id: "g1651",
+    code: "G-1651",
+    name: "Exemption for Paper Fee Payment",
+    agency: "USCIS",
+    journeys: ["IR1-CR1", "IR5", "K1", "AOS", "Naturalization"],
+    stage: "USCIS Filing",
+    category: ["Financial"],
+    keywords: [
+      "exemption",
+      "paper payment",
+      "check",
+      "money order",
+      "fee",
+      "payment exemption",
+      "hardship",
+    ],
+    type: "pdf",
+    officialLink: "https://www.uscis.gov/sites/default/files/document/forms/g-1651.pdf",
+    requiresHandSign: true,
+    description:
+      "Used to request an exemption from mandatory electronic payment requirements in order to submit filing fees via check or money order with a paper application. Applicants must certify electronic payment is not possible and meet 1 or more criteria: lack of banking access, undue hardship (31 C.F.R. Part 208), national security/law enforcement reasons, or circumstances designated by the Secretary of the Treasury.",
+  },
+  {
     id: "i912",
     code: "I-912",
     name: "Request for Fee Waiver",
@@ -598,9 +672,34 @@ export default function VisaFormSelector() {
     message: string;
     type: "success" | "info";
   } | null>(null);
+  const [isCfrModalOpen, setIsCfrModalOpen] = useState(false);
   const [isFilterPopoverOpen, setIsFilterPopoverOpen] = useState(false);
   const filterPopoverRef = useRef<HTMLDivElement>(null);
   const filterButtonRef = useRef<HTMLButtonElement>(null);
+
+  const renderFormDescription = (text: string) => {
+    if (!text || !text.includes("31 C.F.R. Part 208")) {
+      return text;
+    }
+    const parts = text.split("31 C.F.R. Part 208");
+    return (
+      <>
+        {parts[0]}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsCfrModalOpen(true);
+          }}
+          className="text-blue-600 font-bold underline hover:text-blue-800 transition-colors inline-flex items-center gap-0.5 cursor-pointer mx-0.5"
+          title="Click to view explanation of 31 C.F.R. Part 208"
+        >
+          31 C.F.R. Part 208
+        </button>
+        {parts[1]}
+      </>
+    );
+  };
 
   // Close filter popover when clicking outside
   useEffect(() => {
@@ -1391,14 +1490,75 @@ export default function VisaFormSelector() {
                         Description & Notes
                       </div>
                       <div className="text-sm sm:text-base text-gray-700 leading-relaxed bg-gray-50 p-4 sm:p-6 rounded-xl border border-gray-100">
-                        {selectedForm.description}
+                        {renderFormDescription(selectedForm.description)}
                         {selectedForm.notes && (
                           <p className="mt-4 pt-4 border-t border-gray-200 text-gray-600 italic">
                             {selectedForm.notes}
                           </p>
                         )}
                       </div>
+
+                      {/* 31 C.F.R. Part 208 Special Callout for Form G-1651 */}
+                      {selectedForm.code === "G-1651" && (
+                        <div className="mt-3 p-3.5 sm:p-4 bg-blue-50/70 border border-blue-200/70 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-700 shrink-0">
+                              <Scale className="w-4 h-4" />
+                            </div>
+                            <div>
+                              <div className="text-xs font-bold text-blue-950">
+                                31 C.F.R. Part 208 Undue Hardship Regulation
+                              </div>
+                              <div className="text-[11.5px] text-blue-800 leading-normal">
+                                Learn what qualifies as an infrastructure or personal barrier under Treasury rules
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => setIsCfrModalOpen(true)}
+                              className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-xs inline-flex items-center gap-1.5 cursor-pointer"
+                            >
+                              <BookOpen className="w-3.5 h-3.5" />
+                              <span>View Explanation</span>
+                            </button>
+                            <a
+                              href="https://www.govinfo.gov/content/pkg/CFR-2025-title31-vol2/pdf/CFR-2025-title31-vol2-sec208-1.pdf"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-3 py-1.5 rounded-lg bg-white border border-blue-200 text-blue-700 hover:bg-blue-50 text-xs font-semibold transition-all inline-flex items-center gap-1"
+                            >
+                              <span>GovInfo Citation</span>
+                              <ExternalLink className="w-3 h-3" />
+                            </a>
+                          </div>
+                        </div>
+                      )}
                     </div>
+
+                    {/* Hand-sign callout -> Snap & Sign tool */}
+                    {selectedForm.requiresHandSign && (
+                      <div className="p-4 sm:p-6 bg-[#e8f6f6] border border-[#0d7377]/20 rounded-xl flex items-start gap-4">
+                        <PenLine className="w-6 h-6 text-[#0d7377] shrink-0 mt-1" />
+                        <div>
+                          <h4 className="text-base sm:text-lg font-bold text-[#0a5a5d] mb-1">
+                            This form needs a handwritten signature
+                          </h4>
+                          <p className="text-sm sm:text-base text-gray-700 leading-relaxed">
+                            Print the form, sign it by hand, then capture your signature with our
+                            Snap and Sign tool to add a clean digital copy to your document.
+                          </p>
+                          <a
+                            href="/signature-image-processing"
+                            className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-[#0d7377] hover:bg-[#0a5a5d] text-white rounded-lg font-semibold text-sm shadow-sm transition-all"
+                          >
+                            <PenLine className="w-4 h-4 shrink-0" />
+                            Open Snap and Sign
+                          </a>
+                        </div>
+                      </div>
+                    )}
 
                     {/* PDF Preview or Online Callout */}
                     {selectedForm.type === "online" ? (
@@ -1480,6 +1640,11 @@ export default function VisaFormSelector() {
             </div>
           </div>
         )}
+
+        <CfrExplanationModal
+          open={isCfrModalOpen}
+          onOpenChange={setIsCfrModalOpen}
+        />
       </div>
     </div>
   );

@@ -123,6 +123,8 @@ export const formFields: Field[] = [
         label: "1.a Are you and your brother or sister related because one of you was adopted?",
         type: "radio",
         section: "Part 1. Relationship",
+        tooltip:
+          "Answer Yes only if you and your brother or sister are related through a legal adoption, for example one of you was adopted into the family. Answer No if you share birth parents.",
         condition: (d) => d.relationship === "BrotherSister",
         options: [
           { label: "Yes", value: "Yes", pdfKey: "sibling_adoption_Yes" },
@@ -169,6 +171,8 @@ export const formFields: Field[] = [
         condition: (d) => d.has_a_number === "Yes",
         placeholder: "A-Number",
         maxLength: 9,
+        tooltip:
+          "An A-Number (Alien Registration Number) is a 7 to 9 digit number USCIS gives to non-citizens. You can find it on a green card, work permit, or immigration notices. Leave blank if you never had one.",
       },
     ],
   },
@@ -191,6 +195,8 @@ export const formFields: Field[] = [
         condition: (d) => d.has_uscis_account === "Yes",
         placeholder: "USCIS Account",
         maxLength: 12,
+        tooltip:
+          "This is the number created when you make an account at my.uscis.gov to file or track cases online. It is not the same as your A-Number. Leave blank if you do not have an online account.",
       },
     ],
   },
@@ -213,6 +219,8 @@ export const formFields: Field[] = [
         condition: (d) => d.has_ssn === "Yes",
         placeholder: "SSN",
         maxLength: 9,
+        tooltip:
+          "Your 9-digit U.S. Social Security Number, found on your Social Security card. Only enter it if you have one.",
       },
     ],
   },
@@ -346,6 +354,8 @@ export const formFields: Field[] = [
         pdfKey: "current_in_care_of",
         placeholder: "Full Name",
         condition: (d) => d.has_another_mail === "Yes",
+        tooltip:
+          "In Care Of means the person who receives mail for you at this address when it is not in your own name, for example a landlord or a relative. Leave blank if the mail is in your own name.",
       },
     ],
   },
@@ -2291,6 +2301,8 @@ export const formFields: Field[] = [
         placeholder: "A-XXXXXXXXX",
         maxLength: 9,
         condition: (d) => d.has_a_number_1 === "Yes",
+        tooltip:
+          "The beneficiary's A-Number (Alien Registration Number), a 7 to 9 digit number on their green card, work permit, or immigration papers. Leave blank if they never had one.",
       },
     ],
   },
@@ -2313,6 +2325,8 @@ export const formFields: Field[] = [
         placeholder: "USCIS Account Number",
         condition: (d) => d.has_a_uscis_number === "Yes",
         maxLength: 20,
+        tooltip:
+          "The number from the beneficiary's account at my.uscis.gov. It is different from the A-Number. Leave blank if they do not have an online account.",
       },
     ],
   },
@@ -2335,6 +2349,8 @@ export const formFields: Field[] = [
         placeholder: "XXX-XX-XXXX",
         condition: (d) => d.has_a_ssn_number === "Yes",
         maxLength: 11,
+        tooltip:
+          "The beneficiary's 9-digit U.S. Social Security Number, if they have ever been given one.",
       },
     ],
   },
@@ -3143,6 +3159,8 @@ export const formFields: Field[] = [
         section: "Information About Beneficiary (Continued)",
         pdfKey: "Pt4Line21a_ClassOfAdmission",
         placeholder: "Select Class of Admission",
+        tooltip:
+          "Class of Admission is the visa category the beneficiary used to enter the U.S., such as B-2 visitor or F-1 student. You can find it on their visa, I-94 record, or entry stamp.",
         options: [
           // Existing options
           {
@@ -3457,6 +3475,8 @@ export const formFields: Field[] = [
         placeholder: "11-digit number",
         maxLength: 11,
         condition: (data) => data.beneficiary_everInUS === "Yes",
+        tooltip:
+          "The I-94 is the U.S. arrival and departure record. Its 11-character number can be found at the CBP I-94 website (i94.cbp.dhs.gov) or on the small card in the passport.",
       },
       {
         key: "beneficiary_dateOfArrival",

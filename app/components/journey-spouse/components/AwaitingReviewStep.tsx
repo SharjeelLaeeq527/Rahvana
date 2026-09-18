@@ -210,6 +210,14 @@ export const AwaitingReviewStep: React.FC<AwaitingReviewStepProps> = ({ data }) 
           </div>
         </div>
 
+        {/* Corrections Note */}
+        {data.correctionsNote && (
+          <div className="flex items-start gap-[9px] bg-[#fff8ed] border border-[#f5d78e] rounded-[12px] p-[12px_14px] mb-[12px] animate-in fade-in slide-in-from-top-2 duration-300 delay-[300ms]">
+            <span className="text-[15px] shrink-0">⚠️</span>
+            <p className="text-[12px] text-[#7a5200] leading-[1.6]">{data.correctionsNote}</p>
+          </div>
+        )}
+
         {/* Disclaimer */}
         <p className="text-[11.5px] text-[#6b8097] leading-[1.65] text-center pt-[4px] mt-[8px] animate-in fade-in slide-in-from-top-2 duration-300 delay-[320ms]">
           {data.disclaimer}

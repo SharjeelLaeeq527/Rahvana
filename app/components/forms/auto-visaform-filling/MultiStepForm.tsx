@@ -155,7 +155,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   const savedScrollPosition = useRef<number>(0);
   const hasShownInitialIntro = useRef(false);
   const draftJourneyKey = "global";
-  const { user } = useAuth();
+  const { user, isLoading: isAuthLoading } = useAuth();
   const {
     profile: userProfile,
     isProfileLoading: isContextProfileLoading,
@@ -172,6 +172,11 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   const [isNavigating, setIsNavigating] = useState(false);
   const [isAutoSaving, setIsAutoSaving] = useState(false);
   const [draftStatus, setDraftStatus] = useState<"draft" | "completed">("draft");
+  // Mirror of draftStatus for reads inside dependency-free callbacks (handleChange).
+  const draftStatusRef = useRef(draftStatus);
+  useEffect(() => {
+    draftStatusRef.current = draftStatus;
+  }, [draftStatus]);
   const { showToast } = useToast();
   const {
     config: vaultConfig,
@@ -180,6 +185,14 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   } = useDocumentVaultStore();
   const prevStepRef = useRef(currentStep);
   const saveTimerRef = useRef<number | null>(null);
+  const jumpTargetQuestionIndexRef = useRef<number | null>(null);
+  // Records the `${formCode}:${userId}` we've already hydrated for. The
+  // initialization effect below reads/writes this so it hydrates form state
+  // EXACTLY ONCE per (form, user). Auth contexts re-emit a fresh `user` object
+  // on token refresh / tab refocus / profile save-back; without this guard
+  // every such re-emit would re-run the initializer and overwrite live edits
+  // with a staler server draft (or blank the form on a fetch timeout).
+  const hydratedKeyRef = useRef<string | null>(null);
   const draftDataRef = useRef({
     formData: formData,
     currentStep: currentStep,
@@ -195,12 +208,23 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   const [isReady, setIsReady] = useState(false);
 
   // ============ CONSOLIDATED INITIALIZATION EFFECT ============
+  // Hydrate form state ONCE per (formCode, user). We wait for auth to settle
+  // (isAuthLoading === false) so we hydrate with the correct identity, then
+  // mark the key as hydrated so later `user` re-emits can never re-run this and
+  // clobber the user's in-progress edits.
   useEffect(() => {
+    if (!isClient || !config || isAuthLoading) return;
+
+    const userId = user?.id ?? null;
+    const hydrationKey = `${formCode}:${userId ?? "anon"}`;
+    if (hydratedKeyRef.current === hydrationKey) return;
+    // Claim the key synchronously (before any await) so a concurrent re-render
+    // or React StrictMode double-invoke can't kick off a second hydration.
+    hydratedKeyRef.current = hydrationKey;
+
     let isMounted = true;
 
     const initializeForm = async () => {
-      if (!isClient || !config) return;
-
       try {
         let draftData: FormProgressDraft | null = null;
 
@@ -324,7 +348,11 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     return () => {
       isMounted = false;
     };
-  }, [isClient, config, user, formCode]);
+    // Depend on the stable user ID, not the `user` object — the object gets a
+    // new reference on every auth re-emit, which used to re-run this whole
+    // initializer and wipe the form. The ref guard above enforces once-per-key.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isClient, config, user?.id, formCode, isAuthLoading]);
 
   // ============ SESSION VALIDATION ============
   useEffect(() => {
@@ -413,11 +441,19 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   // Sync question index when section changes
   useEffect(() => {
     if (!currentSection) return;
-    const lastIndex = getLastAnsweredIndex(visibleFields, formData);
-    setCurrentQuestionIndex(lastIndex);
+
+    let targetIndex: number;
+    if (jumpTargetQuestionIndexRef.current !== null) {
+      targetIndex = jumpTargetQuestionIndexRef.current;
+      jumpTargetQuestionIndexRef.current = null;
+    } else {
+      targetIndex = getLastAnsweredIndex(visibleFields, formData);
+    }
+
+    setCurrentQuestionIndex(targetIndex);
 
     // Initialize progressive sub-question index for the current field
-    const currentField = visibleFields[lastIndex];
+    const currentField = visibleFields[targetIndex];
     if (currentField?.subQuestions && currentField.subQuestions.length > 0) {
       // Check if any subQuestions are non-conditional (should show immediately)
       const hasNonConditionalSubQ = currentField.subQuestions.some(
@@ -530,6 +566,15 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
       const { name, value, type } = e.target;
       const checked = (e.target as HTMLInputElement).checked;
+
+      // The user is editing a form they'd already finalized (Download / Save to
+      // Vault marked it "completed", which switches off autosave AND the local
+      // backup). Re-open it as a draft so this edit — and every edit after —
+      // starts persisting again. Guarded by the ref so it fires only on the
+      // first post-completion edit, not on every keystroke.
+      if (draftStatusRef.current === "completed") {
+        setDraftStatus("draft");
+      }
 
       setFormData((prev) => {
         const newData = {
@@ -784,7 +829,8 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
     const currentField = visibleFields[currentQuestionIndex];
     if (currentField) {
-      const currentSubCount = progressiveSubQuestionIndices[currentField.key] ?? -1;
+      const minSubCount = currentField.type === "hidden" ? 0 : -1;
+      const currentSubCount = progressiveSubQuestionIndices[currentField.key] ?? minSubCount;
       const applicableSubQuestions = (currentField.subQuestions || []).filter(
         (subQ) => !subQ.condition || subQ.condition(formData)
       );
@@ -796,7 +842,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       ) {
         setProgressiveSubQuestionIndices((prev) => ({
           ...prev,
-          [currentField.key]: (currentSubCount ?? -1) + 1,
+          [currentField.key]: currentSubCount + 1,
         }));
         return;
       }
@@ -854,12 +900,13 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     setNavigationDirection("prev");
     const currentField = visibleFields[currentQuestionIndex];
     if (currentField) {
-      const currentSubCount = progressiveSubQuestionIndices[currentField.key] ?? -1;
-      if (currentSubCount > -1) {
+      const minSubCount = currentField.type === "hidden" ? 0 : -1;
+      const currentSubCount = progressiveSubQuestionIndices[currentField.key] ?? minSubCount;
+      if (currentSubCount > minSubCount) {
         // Hide last shown sub-question
         setProgressiveSubQuestionIndices((prev) => ({
           ...prev,
-          [currentField.key]: Math.max(-1, currentSubCount - 1),
+          [currentField.key]: Math.max(minSubCount, currentSubCount - 1),
         }));
         return;
       }
@@ -943,11 +990,17 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
           return;
         }
       }
-      setCurrentStep(stepIdx + 1);
-      setCurrentQuestionIndex(questionIdx);
+      const targetStep = stepIdx + 1;
+      if (currentStep === targetStep) {
+        setCurrentQuestionIndex(questionIdx);
+      } else {
+        jumpTargetQuestionIndexRef.current = questionIdx;
+        setCurrentStep(targetStep);
+      }
+      setView("form");
       setIsDrawerOpen(false);
     },
-    [isFreePreview, filledFieldsCount, sections, formData]
+    [isFreePreview, filledFieldsCount, sections, formData, currentStep, showToast]
   );
 
   const handleGoToStep = useCallback(
@@ -1103,6 +1156,13 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
     const { controller, timeoutId } = createAbortController(60000); // 60s timeout for preview
 
+    // Open the tab synchronously inside the click gesture. Mobile browsers block
+    // a window.open() that runs after an await (the gesture has expired by then),
+    // which is why preview worked on desktop but was blocked on mobile. Note: we
+    // deliberately do NOT pass "noopener" here, otherwise open() returns null and
+    // we lose the handle we need to redirect once the PDF is ready.
+    const previewWindow = window.open("", "_blank");
+
     setIsPreviewing(true);
     try {
       const res = await fetch(`${apiUrl}/fill-pdf`, {
@@ -1114,13 +1174,24 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
       clearTimeout(timeoutId);
 
-      if (!res.ok) throw new Error(`${await res.text()} (Endpoint: ${apiUrl})`);
+      if (!res.ok) {
+        if (previewWindow) previewWindow.close();
+        throw new Error(`${await res.text()} (Endpoint: ${apiUrl})`);
+      }
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
-      window.open(url, "_blank", "noopener,noreferrer");
+
+      if (previewWindow) {
+        // Tab opened successfully in the gesture: point it at the PDF.
+        previewWindow.location.href = url;
+      } else {
+        // Popup was blocked even synchronously: fall back to same-tab open.
+        window.location.href = url;
+      }
       setTimeout(() => URL.revokeObjectURL(url), 10000);
     } catch (err: unknown) {
       clearTimeout(timeoutId);
+      if (previewWindow) previewWindow.close();
       console.error("Preview error:", err);
       if (err instanceof Error && err.name === "AbortError") {
         showToast("Preview timed out. Server may be slow.", "error");
@@ -1434,10 +1505,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                     className="overflow-hidden"
                   >
                     <div className="space-y-1 border-t border-[#e8f6f6] bg-[#f9fdfb] px-3 py-2">
-                      {section.fields.map((field) => {
-                        // Skip conditional fields that don't match
-                        if (field.condition && !field.condition(formData)) return null;
-
+                      {visibleSectionFields.map((field, vIdx) => {
                         // Remove numbering from label
                         const cleanLabel = field.label.replace(/^\d+[a-z]?\.\s*/, "");
                         const fieldAnswered =
@@ -1457,10 +1525,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                             whileHover={{ x: 2 }}
                             onClick={(e) => {
                               e.stopPropagation();
-                              const actualIndex = section.fields.findIndex(
-                                (f) => f.key === field.key
-                              );
-                              handleJumpToQuestion(idx, actualIndex);
+                              handleJumpToQuestion(idx, vIdx);
                             }}
                             className={`group flex w-full items-center gap-2 rounded p-2 text-left text-xs transition-colors ${
                               isActiveQuestion

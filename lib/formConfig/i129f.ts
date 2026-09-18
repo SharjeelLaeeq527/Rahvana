@@ -458,14 +458,14 @@
 // export default i129fConfig;
 
 // Enriched fields for Form I-129F
-// Petition for Alien Fiancé(e)
+// Petition for Alien Fiance(e)
 // Style: conversational, plain-English, modeled after i864a enrichment pattern
 
 import type { Field } from "./types";
 
 export const formId = "i129f";
 export const formTitle = "Form I-129F";
-export const formSubtitle = "Petition for Alien Fiancé(e)";
+export const formSubtitle = "Petition for Alien Fiance(e)";
 
 // ─── Section intro messages ────────────────────────────────────────────────
 export const sectionIntroMessages = {
@@ -523,30 +523,30 @@ export const sectionIntroMessages = {
     message:
       "USCIS wants to know if you've ever filed an I-129F for someone else. This is called being a 'multiple filer' and can affect your application.",
   },
-  "Part 2: About Your Fiancé(e)": {
-    greeting: "Now let's talk about your fiancé(e).",
+  "Part 2: About Your Fiance(e)": {
+    greeting: "Now let's talk about your fiance(e).",
     message:
-      "Your fiancé(e) is called the 'beneficiary', the person you're petitioning for. We'll need their personal details, background, and address.",
+      "Your fiance(e) is called the 'beneficiary', the person you're petitioning for. We'll need their personal details, background, and address.",
   },
   "Part 2: Beneficiary Name": {
-    greeting: "What is your fiancé(e)'s name?",
+    greeting: "What is your fiance(e)'s name?",
     message: "Use their name exactly as it appears on their passport or national ID.",
   },
   "Part 2: Beneficiary Address": {
-    greeting: "Where does your fiancé(e) live?",
+    greeting: "Where does your fiance(e) live?",
     message:
       "We need their current mailing address and their address history for the past five years.",
   },
   "Part 2: Beneficiary Employment": {
-    greeting: "Where does your fiancé(e) work?",
+    greeting: "Where does your fiance(e) work?",
     message: "List their employment for the last five years, starting with their current job.",
   },
   "Part 2: Beneficiary Parents": {
-    greeting: "Your fiancé(e)'s parents.",
-    message: "Basic details about your fiancé(e)'s parents, use whatever you know.",
+    greeting: "Your fiance(e)'s parents.",
+    message: "Basic details about your fiance(e)'s parents, use whatever you know.",
   },
   "Part 2: Beneficiary Background": {
-    greeting: "A few more details about your fiancé(e).",
+    greeting: "A few more details about your fiance(e).",
     message:
       "We need information about prior marriages, whether they've been in the U.S. before, and any children they have.",
   },
@@ -556,9 +556,9 @@ export const sectionIntroMessages = {
       "USCIS needs to verify that your relationship is genuine. We'll ask about how you met and whether you've met in person.",
   },
   "Part 2: Consular Processing": {
-    greeting: "Where will your fiancé(e) apply for their visa?",
+    greeting: "Where will your fiance(e) apply for their visa?",
     message:
-      "Your fiancé(e) will need to apply for their K-1 visa at a U.S. embassy or consulate in their home country.",
+      "Your fiance(e) will need to apply for their K-1 visa at a U.S. embassy or consulate in their home country.",
   },
   "Part 3: Other Information": {
     greeting: "Some important background questions.",
@@ -615,7 +615,7 @@ export const formFields: RichField[] = [
     options: [
       {
         value: "fiance",
-        label: "My fiancé(e), we plan to marry in the U.S.",
+        label: "My fiance(e), we plan to marry in the U.S.",
         sublabel: "They will apply for a K-1 visa.",
       },
       {
@@ -650,12 +650,14 @@ export const formFields: RichField[] = [
         key: "pt1_l1_AlienNumber_value",
         pdfKey: "pt1_l1_aliennumber",
         label: "What is your A-Number?",
-        help: 'Type the digits only, leave out the letter "A". So A123456789 → type 123456789.',
+        help: 'Type the digits only, leave out the letter "A". So A123456789 -> type 123456789.',
         find: 'Front of your green card or work permit, labeled "A-Number" or "USCIS#."',
         example: "Card says A123456789, type: 123456789",
         type: "text",
         section: "Part 1: About You",
         placeholder: "7-9 digits (no letter A)",
+        tooltip:
+          "An A-Number (Alien Registration Number) is a 7 to 9 digit number USCIS gives to non-citizens. You can find it on a green card, work permit, or immigration notices. Leave blank if there is none.",
         condition: (data) => data.pt1_hasANum === "Yes",
         validate: (v) => (/^\d{7,9}$/.test(v) ? null : "7-9 digits only, no letter A"),
       },
@@ -690,10 +692,12 @@ export const formFields: RichField[] = [
         key: "pt1_l2_AcctIdentifier_value",
         pdfKey: "pt1_l2_acctidentifier",
         label: "Your USCIS Online Account Number?",
-        find: 'Log into my.uscis.gov → click your name top-right → look for "USCIS Online Account Number."',
+        find: 'Log into my.uscis.gov -> click your name top-right -> look for "USCIS Online Account Number."',
         type: "text",
         section: "Part 1: About You",
         placeholder: "8-12 digits",
+        tooltip:
+          "This is the number created when you make an account at my.uscis.gov to file or track cases online. It is not the same as an A-Number. Leave blank if there is no online account.",
         condition: (data) => data.pt1_hasUscis === "Yes",
         validate: (v) => (/^\d{8,12}$/.test(v) ? null : "Should be 8-12 digits"),
       },
@@ -721,6 +725,8 @@ export const formFields: RichField[] = [
         type: "text",
         section: "Part 1: About You",
         placeholder: "9 digits, no dashes",
+        tooltip:
+          "A 9-digit U.S. Social Security Number, found on the Social Security card. Only enter it if there is one.",
         condition: (data) => data.pt1_hasSSN === "Yes",
         validate: (v) => (/^\d{9}$/.test(v) ? null : "Exactly 9 digits, no dashes or spaces"),
       },
@@ -731,8 +737,8 @@ export const formFields: RichField[] = [
   {
     key: "pt1_l4a_Checkboxes",
     pdfKey: "pt1_l4a_checkboxes",
-    label: "Are you filing for a K-1 (Fiancé(e)) visa?",
-    help: "Check this if you and your partner are not yet married and plan to marry in the U.S. within 90 days of your fiancé(e)'s arrival.",
+    label: "Are you filing for a K-1 (Fiance(e)) visa?",
+    help: "Check this if you and your partner are not yet married and plan to marry in the U.S. within 90 days of your fiance(e)'s arrival.",
     type: "checkbox",
     section: "Part 1: About You",
   },
@@ -1926,6 +1932,8 @@ export const formFields: RichField[] = [
         type: "text",
         section: "Part 1: Citizenship",
         placeholder: "Certificate number",
+        tooltip:
+          "This is the certificate number printed on your Certificate of Naturalization or Certificate of Citizenship, usually near the top. Leave blank if you do not have one of those certificates.",
         condition: (data) => data.pt1_hasCert === "Yes",
       },
     ],
@@ -2121,7 +2129,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l1a_FamilyName",
     pdfKey: "pt2_l1a_familyname",
-    label: "Your fiancé(e)'s last name?",
+    label: "Your fiance(e)'s last name?",
     help: "Exactly as it appears on their passport.",
     type: "text",
     section: "Part 2: Beneficiary Name",
@@ -2130,7 +2138,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l1b_GivenName",
     pdfKey: "pt2_l1b_givenname",
-    label: "Your fiancé(e)'s first name?",
+    label: "Your fiance(e)'s first name?",
     type: "text",
     section: "Part 2: Beneficiary Name",
     placeholder: "First name",
@@ -2138,7 +2146,7 @@ export const formFields: RichField[] = [
       {
         key: "pt2_l1c_MiddleName",
         pdfKey: "pt2_l1c_middlename",
-        label: "Your fiancé(e)'s middle name?",
+        label: "Your fiance(e)'s middle name?",
         type: "text",
         section: "Part 2: Beneficiary Name",
         placeholder: "Middle name",
@@ -2149,7 +2157,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l2_AlienNumber",
     pdfKey: "pt2_l2_aliennumber",
-    label: "Does your fiancé(e) have a U.S. A-Number?",
+    label: "Does your fiance(e) have a U.S. A-Number?",
     help: "Most people applying for a K-1 visa from outside the U.S. won't have one. They'd only have an A-Number from a prior U.S. immigration case.",
     type: "radio",
     section: "Part 2: Beneficiary Name",
@@ -2167,10 +2175,12 @@ export const formFields: RichField[] = [
         pdfKey: "pt2_l2_aliennumber",
         label: "Their A-Number?",
         find: 'Front of a green card or work permit, labeled "A-Number" or "USCIS#."',
-        example: "A123456789 → type: 123456789",
+        example: "A123456789 -> type: 123456789",
         type: "text",
         section: "Part 2: Beneficiary Name",
         placeholder: "7-9 digits (no letter A)",
+        tooltip:
+          "An A-Number (Alien Registration Number) is a 7 to 9 digit number USCIS gives to non-citizens. The fiance can find it on a green card, work permit, or immigration notices. Leave blank if there is none.",
         condition: (data) => data.pt2_hasANum === "Yes",
         validate: (v) => (/^\d{7,9}$/.test(v) ? null : "7-9 digits, no letter A"),
       },
@@ -2179,7 +2189,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l3_SSN",
     pdfKey: "pt2_l3_ssn",
-    label: "Does your fiancé(e) have a U.S. Social Security Number?",
+    label: "Does your fiance(e) have a U.S. Social Security Number?",
     help: "Foreign nationals living abroad generally won't have one. They may have one if they've lived or worked in the U.S. previously.",
     type: "radio",
     section: "Part 2: Beneficiary Name",
@@ -2195,6 +2205,8 @@ export const formFields: RichField[] = [
         type: "text",
         section: "Part 2: Beneficiary Name",
         placeholder: "9 digits, no dashes",
+        tooltip:
+          "A 9-digit U.S. Social Security Number, found on the Social Security card. Only enter it if the fiance has one.",
         condition: (data) => data.pt2_hasSSN === "Yes",
         validate: (v) => (/^\d{9}$/.test(v) ? null : "Exactly 9 digits"),
       },
@@ -2203,7 +2215,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l4_DateOfBirth",
     pdfKey: "pt2_l4_dateofbirth",
-    label: "Your fiancé(e)'s date of birth?",
+    label: "Your fiance(e)'s date of birth?",
     find: "Their passport.",
     type: "date",
     section: "Part 2: Beneficiary Name",
@@ -2212,7 +2224,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l5_Checkboxes",
     pdfKey: "pt2_l5_checkboxes",
-    label: "Your fiancé(e)'s sex?",
+    label: "Your fiance(e)'s sex?",
     type: "radio",
     section: "Part 2: Beneficiary Name",
     options: [
@@ -2232,7 +2244,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l6_Checkboxes",
     pdfKey: "pt2_l6_checkboxes",
-    label: "Your fiancé(e)'s current marital status?",
+    label: "Your fiance(e)'s current marital status?",
     type: "radio",
     section: "Part 2: Beneficiary Name",
     options: [
@@ -2268,7 +2280,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l7_CityTownOfBirth",
     pdfKey: "pt2_l7_citytownofbirth",
-    label: "What city or town was your fiancé(e) born in?",
+    label: "What city or town was your fiance(e) born in?",
     type: "text",
     section: "Part 2: Beneficiary Name",
     placeholder: "City or town of birth",
@@ -2276,7 +2288,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l8_CountryOfBirth",
     pdfKey: "pt2_l8_countryofbirth",
-    label: "Which country was your fiancé(e) born in?",
+    label: "Which country was your fiance(e) born in?",
     type: "country",
     section: "Part 2: Beneficiary Name",
     placeholder: "Country of birth",
@@ -2284,7 +2296,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l9_CountryofCitzOrNationality",
     pdfKey: "pt2_l9_countryofcitzornationality",
-    label: "What is your fiancé(e)'s current citizenship or nationality?",
+    label: "What is your fiance(e)'s current citizenship or nationality?",
     help: "The country whose passport they hold, not necessarily where they live.",
     type: "country",
     section: "Part 2: Beneficiary Name",
@@ -2295,7 +2307,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l10a_FamilyName",
     pdfKey: "pt2_l10a_familyname",
-    label: "Other last name your fiancé(e) has used (aliases, maiden name, etc.)?",
+    label: "Other last name your fiance(e) has used (aliases, maiden name, etc.)?",
     type: "text",
     section: "Part 2: Beneficiary Name",
     placeholder: "Other last name",
@@ -2329,7 +2341,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l11_InCareOfName",
     pdfKey: "pt2_l11_incareofname",
-    label: "Does your fiancé(e)'s mail go to someone else's name? (In Care Of)",
+    label: "Does your fiance(e)'s mail go to someone else's name? (In Care Of)",
     type: "text",
     section: "Part 2: Beneficiary Address",
     placeholder: "e.g. Maria Santos",
@@ -2338,7 +2350,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l11_StreetNumberName",
     pdfKey: "pt2_l11_streetnumbername",
-    label: "Your fiancé(e)'s mailing address, street?",
+    label: "Your fiance(e)'s mailing address, street?",
     type: "text",
     section: "Part 2: Beneficiary Address",
     placeholder: "Street number and name",
@@ -2665,7 +2677,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l16_NameofEmployer",
     pdfKey: "pt2_l16_nameofemployer",
-    label: "Your fiancé(e)'s current or most recent employer?",
+    label: "Your fiance(e)'s current or most recent employer?",
     help: "The official name of the company or organization. Write 'Self-employed' if they work for themselves.",
     type: "text",
     section: "Part 2: Beneficiary Employment",
@@ -2769,7 +2781,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l18_Occupation",
     pdfKey: "pt2_l18_occupation",
-    label: "Your fiancé(e)'s occupation at Employer 1?",
+    label: "Your fiance(e)'s occupation at Employer 1?",
     example: "Teacher / Accountant / Engineer / Nurse",
     type: "text",
     section: "Part 2: Beneficiary Employment",
@@ -2930,7 +2942,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l24a_FamilyName",
     pdfKey: "pt2_l24a_familyname",
-    label: "Your fiancé(e)'s Parent 1, last name?",
+    label: "Your fiance(e)'s Parent 1, last name?",
     type: "text",
     section: "Part 2: Beneficiary Parents",
     placeholder: "Last name",
@@ -3044,7 +3056,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l29a_FamilyName",
     pdfKey: "pt2_l29a_familyname",
-    label: "Your fiancé(e)'s Parent 2, last name?",
+    label: "Your fiance(e)'s Parent 2, last name?",
     type: "text",
     section: "Part 2: Beneficiary Parents",
     placeholder: "Last name",
@@ -3133,7 +3145,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l34_Checkboxes",
     pdfKey: "pt2_l34_checkboxes",
-    label: "Has your fiancé(e) ever been previously married?",
+    label: "Has your fiance(e) ever been previously married?",
     type: "radio",
     section: "Part 2: Beneficiary Background",
     options: [
@@ -3191,7 +3203,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l37_Checkboxes",
     pdfKey: "pt2_l37_checkboxes",
-    label: "Has your fiancé(e) ever been in the United States?",
+    label: "Has your fiance(e) ever been in the United States?",
     type: "radio",
     section: "Part 2: Beneficiary Background",
     options: [
@@ -3213,7 +3225,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l38a_LastArrivedAs",
     pdfKey: "pt2_l38a_lastarrivedas",
-    label: "How did your fiancé(e) last enter the U.S.?",
+    label: "How did your fiance(e) last enter the U.S.?",
     help: "What category were they admitted as? Common examples: visitor (tourist), student, temporary worker, exchange alien.",
     example: "Visitor / Student / Temporary Worker / Exchange Alien",
     type: "text",
@@ -3298,7 +3310,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l39_Checkboxes",
     pdfKey: "pt2_l39_checkboxes",
-    label: "Does your fiancé(e) have any children?",
+    label: "Does your fiance(e) have any children?",
     hint: "This includes biological children, adopted children, and stepchildren, regardless of age.",
     type: "radio",
     section: "Part 2: Beneficiary Background",
@@ -3366,7 +3378,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l43_Checkboxes",
     pdfKey: "pt2_l43_checkboxes",
-    label: "Does this child live with your fiancé(e)?",
+    label: "Does this child live with your fiance(e)?",
     type: "radio",
     section: "Part 2: Beneficiary Background",
     condition: (data) => data.pt2_l39_Checkboxes === "Yes",
@@ -3393,7 +3405,7 @@ export const formFields: RichField[] = [
     key: "pt2_l44_StreetNumberName",
     pdfKey: "pt2_l44_streetnumbername",
     label: "Child's address, street?",
-    hint: "Only if the child doesn't live with your fiancé(e).",
+    hint: "Only if the child doesn't live with your fiance(e).",
     type: "text",
     section: "Part 2: Beneficiary Background",
     placeholder: "Street number and name",
@@ -3496,7 +3508,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l45a_StreetNumberName",
     pdfKey: "pt2_l45a_streetnumbername",
-    label: "Where does your fiancé(e) plan to live after arriving in the U.S.?",
+    label: "Where does your fiance(e) plan to live after arriving in the U.S.?",
     hint: "This is usually your address or a place you've arranged for them to stay. It doesn't have to be permanent.",
     type: "text",
     section: "Part 2: Beneficiary Background",
@@ -3574,7 +3586,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l47_StreetNumberName",
     pdfKey: "pt2_l47_streetnumbername",
-    label: "Your fiancé(e)'s current address abroad, street?",
+    label: "Your fiance(e)'s current address abroad, street?",
     hint: "Where they live right now outside the U.S. This is where the U.S. consulate will contact them.",
     type: "text",
     section: "Part 2: Beneficiary Background",
@@ -3640,7 +3652,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l48_DaytimeTelephoneNum",
     pdfKey: "pt2_l48_daytimetelephonenum",
-    label: "Your fiancé(e)'s daytime phone number abroad?",
+    label: "Your fiance(e)'s daytime phone number abroad?",
     type: "text",
     section: "Part 2: Beneficiary Background",
     placeholder: "Phone number with country code",
@@ -3651,7 +3663,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l49a_FamilyName",
     pdfKey: "pt2_l49a_familyname",
-    label: "Your fiancé(e)'s last name in their native alphabet?",
+    label: "Your fiance(e)'s last name in their native alphabet?",
     hint: "If their language uses a non-Latin alphabet (like Arabic, Chinese, Cyrillic, etc.), write their name in that script here. Leave blank if their native alphabet is the same as English (Latin).",
     type: "text",
     section: "Part 2: Beneficiary Background",
@@ -3728,7 +3740,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l51_Checkboxes",
     pdfKey: "pt2_l51_checkboxes",
-    label: "Are you related to your fiancé(e) by blood or marriage?",
+    label: "Are you related to your fiance(e) by blood or marriage?",
     hint: "USCIS asks this because marriage between close relatives is legally restricted in the U.S.",
     type: "radio",
     section: "Part 2: Relationship",
@@ -3767,7 +3779,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l53_Checkboxes",
     pdfKey: "pt2_l53_checkboxes",
-    label: "Have you and your fiancé(e) met in person within the last two years?",
+    label: "Have you and your fiance(e) met in person within the last two years?",
     hint: "U.S. law requires you to have met face-to-face in the past two years before filing. There are limited exceptions.",
     type: "radio",
     section: "Part 2: Relationship",
@@ -3815,7 +3827,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l55_Checkboxes",
     pdfKey: "pt2_l55_checkboxes",
-    label: "Did you meet your fiancé(e) through an International Marriage Broker (IMB)?",
+    label: "Did you meet your fiance(e) through an International Marriage Broker (IMB)?",
     help: "An IMB is a business that helps people from different countries meet for romantic purposes, for example, an international dating service or marriage agency. This does not include social networking sites or apps.",
     type: "radio",
     section: "Part 2: Relationship",
@@ -3979,8 +3991,8 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l62a_CityTown",
     pdfKey: "pt2_l62a_citytown",
-    label: "Which city will your fiancé(e) apply for their visa in?",
-    hint: "This should be the U.S. Embassy or U.S. Consulate in your fiancé(e)'s home country. They will attend their visa interview here.",
+    label: "Which city will your fiance(e) apply for their visa in?",
+    hint: "This should be the U.S. Embassy or U.S. Consulate in your fiance(e)'s home country. They will attend their visa interview here.",
     example: "London / Paris / Manila / New Delhi / Lagos / Karachi",
     type: "text",
     section: "Part 2: Consular Processing",
@@ -4938,6 +4950,83 @@ export const getInitialFormData = (): Record<string, string> => {
   return data;
 };
 
+export const overflowFields = [
+  {
+    prefix: "pt1_address",
+    countKey: "pt1_address_count",
+    startIndex: 2,
+    maxIndex: 8,
+    pageNumber: "2",
+    partNumber: "1",
+    itemNumber: "11",
+    labelPrefix: "Physical Address",
+    fields: [
+      { suffix: "street", label: "Street" },
+      { suffix: "city", label: "City" },
+      { suffix: "state", label: "State" },
+      { suffix: "zip", label: "Zip" },
+      { suffix: "from", label: "From" },
+      { suffix: "to", label: "To" },
+      { suffix: "country", label: "Country" },
+    ],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const street = data[`pt1_address_${index}_street`] || "";
+      const city = data[`pt1_address_${index}_city`] || "";
+      const state = data[`pt1_address_${index}_state`] || "";
+      const zip = data[`pt1_address_${index}_zip`] || "";
+      const from = data[`pt1_address_${index}_from`] || "";
+      const to = data[`pt1_address_${index}_to`] || "";
+      const country = data[`pt1_address_${index}_country`] || "";
+
+      const parts = [street, city, state, zip, country].filter(Boolean);
+      let info = `Physical Address ${index}: ${parts.join(", ")}.`;
+      if (from || to) {
+        info += ` Dates: ${from} to ${to}`;
+      }
+      return info;
+    },
+  },
+  {
+    prefix: "pt1_emp",
+    countKey: "pt1_emp_count",
+    startIndex: 2,
+    maxIndex: 8,
+    pageNumber: "3",
+    partNumber: "1",
+    itemNumber: "14",
+    labelPrefix: "Employer",
+    fields: [
+      { suffix: "name", label: "Employer Name" },
+      { suffix: "occupation", label: "Occupation" },
+      { suffix: "street", label: "Street" },
+      { suffix: "city", label: "City" },
+      { suffix: "state", label: "State" },
+      { suffix: "zip", label: "Zip" },
+      { suffix: "from", label: "From" },
+      { suffix: "to", label: "To" },
+      { suffix: "country", label: "Country" },
+    ],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const name = data[`pt1_emp_${index}_name`] || "";
+      const occupation = data[`pt1_emp_${index}_occupation`] || "";
+      const street = data[`pt1_emp_${index}_street`] || "";
+      const city = data[`pt1_emp_${index}_city`] || "";
+      const state = data[`pt1_emp_${index}_state`] || "";
+      const zip = data[`pt1_emp_${index}_zip`] || "";
+      const from = data[`pt1_emp_${index}_from`] || "";
+      const to = data[`pt1_emp_${index}_to`] || "";
+      const country = data[`pt1_emp_${index}_country`] || "";
+
+      const addrParts = [street, city, state, zip, country].filter(Boolean);
+      let info = `Employer ${index}: ${name} (${occupation}). Address: ${addrParts.join(", ")}.`;
+      if (from || to) {
+        info += ` Dates: ${from} to ${to}`;
+      }
+      return info;
+    },
+  },
+];
+
 export const i129fConfig = {
   formId,
   formTitle,
@@ -4945,6 +5034,7 @@ export const i129fConfig = {
   formFields,
   getInitialFormData,
   sectionIntroMessages,
+  overflowFields,
 };
 
 export default i129fConfig;

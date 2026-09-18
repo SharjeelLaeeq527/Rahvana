@@ -85,14 +85,14 @@ export const HouseholdSponsorshipTool: React.FC<HouseholdSponsorshipToolProps> =
     {
       id: "household_member",
       title: "Household member",
-      subtitle: "Someone in your household who can help with income.",
+      subtitle: "A relative living with you or on your tax return who adds income to yours.",
       iconBg: "bg-[#fff7ed] border-[#fed7aa]",
       iconColor: "text-[#b45309]",
     },
     {
       id: "joint_sponsor",
       title: "Joint sponsor",
-      subtitle: "A separate sponsor who meets the income requirement.",
+      subtitle: "A separate sponsor who meets the full income requirement on their own.",
       iconBg: "bg-[#f3f0fb] border-[#c9bef2]",
       iconColor: "text-[#4a2d8a]",
     },
@@ -121,11 +121,10 @@ export const HouseholdSponsorshipTool: React.FC<HouseholdSponsorshipToolProps> =
             Joint Sponsor
           </div>
           <div className="text-[15px] font-semibold text-[#0c1b33] mb-1.5 leading-tight">
-            Use this when a separate person helps with income.
+            A separate sponsor who meets the income requirement on their own.
           </div>
           <div className="text-[13px] text-[#3a4f63] leading-relaxed">
-            A joint sponsor is a separate sponsor who helps meet the income requirement. In CEAC,
-            they are added as their own sponsor and usually <b>do not need relationship proof </b>.
+            A joint sponsor is a U.S. citizen or green card holder who meets the full income requirement independently. They file their own separate sponsorship form and do not need to live with you or be related to you.
           </div>
         </div>
         <div className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[16px] p-4.5">
@@ -133,11 +132,10 @@ export const HouseholdSponsorshipTool: React.FC<HouseholdSponsorshipToolProps> =
             Household Member
           </div>
           <div className="text-[15px] font-semibold text-[#0e5c3c] mb-1.5 leading-tight">
-            Use this when someone in your home helps with income.
+            A relative in your home who combines income with yours.
           </div>
           <div className="text-[13px] text-[#3a4f63] leading-relaxed">
-            A household member lives with you and helps with income. In CEAC, they are added on your
-            form and <b> you will need to explain your relationship to that person </b>.
+            A household member is a relative related to you by birth, marriage, or adoption who lives at your same address or is claimed as a dependent on your tax return. When combining their income with yours, you must provide proof of your relationship and proof of your shared address.
           </div>
         </div>
       </div>

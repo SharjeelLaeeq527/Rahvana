@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { FormSelections } from "../types/221g";
 import StaticCountryAutocomplete from "@/app/components/shared/StaticCountryAutocomplete";
 import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
+import { Settings } from "lucide-react";
 
 interface Actual221GFormCheckerProps {
   selectedItems: FormSelections;
@@ -54,7 +55,7 @@ export default function Actual221GFormChecker({
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle className="text-2xl font-bold text-primary">
+        <CardTitle className="text-primary text-2xl font-bold">
           What Did Your 221(g) Letter Request?
         </CardTitle>
         <CardDescription>
@@ -62,18 +63,18 @@ export default function Actual221GFormChecker({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="mb-6 p-4 bg-primary/10 rounded-lg border border-primary/20">
-          <h3 className="font-semibold text-primary text-center text-lg">
+        <div className="bg-primary/10 border-primary/20 mb-6 rounded-lg border p-4">
+          <h3 className="text-primary text-center text-lg font-semibold">
             {consularPost || "Your Embassy / Consulate"}
           </h3>
-          <h4 className="font-medium text-primary text-center">{visaUnitLabel}</h4>
+          <h4 className="text-primary text-center font-medium">{visaUnitLabel}</h4>
         </div>
 
-        <div className="space-y-4 sm:p-4 sm:bg-card sm:rounded-lg sm:border-2 sm:border-border sm:shadow-sm">
-          <h4 className="font-bold text-lg mb-4 text-foreground">SELECT WHAT WAS REQUESTED</h4>
+        <div className="sm:bg-card sm:border-border space-y-4 sm:rounded-lg sm:border-2 sm:p-4 sm:shadow-sm">
+          <h4 className="text-foreground mb-4 text-lg font-bold">SELECT WHAT WAS REQUESTED</h4>
 
           {/* Administrative processing */}
-          <div className="flex items-start space-x-2 mb-3">
+          <div className="mb-3 flex items-start space-x-2">
             <Checkbox
               id="admin_processing"
               checked={!!selectedItems.admin_processing}
@@ -82,30 +83,30 @@ export default function Actual221GFormChecker({
               }
               className="mt-1"
             />
-            <Label htmlFor="admin_processing" className="text-sm font-normal cursor-pointer">
+            <Label htmlFor="admin_processing" className="cursor-pointer text-sm font-normal">
               <span className="font-semibold">Administrative processing</span>{" "}
-              <span className="italic text-muted-foreground">
+              <span className="text-muted-foreground italic">
                 (you will be notified if further action is needed)
               </span>
             </Label>
           </div>
 
           {/* Passport */}
-          <div className="flex items-start space-x-2 mb-3">
+          <div className="mb-3 flex items-start space-x-2">
             <Checkbox
               id="passport"
               checked={!!selectedItems.passport}
               onCheckedChange={(checked) => handleCheckboxChange("passport", checked as boolean)}
               className="mt-1"
             />
-            <Label htmlFor="passport" className="text-sm font-normal cursor-pointer">
+            <Label htmlFor="passport" className="cursor-pointer text-sm font-normal">
               <span className="font-semibold">Passport</span>{" "}
-              <span className="italic text-muted-foreground">(submit via courier)</span>
+              <span className="text-muted-foreground italic">(submit via courier)</span>
             </Label>
           </div>
 
           {/* Medical examination */}
-          <div className="flex items-start space-x-2 mb-3">
+          <div className="mb-3 flex items-start space-x-2">
             <Checkbox
               id="medical_examination"
               checked={!!selectedItems.medical_examination}
@@ -114,14 +115,14 @@ export default function Actual221GFormChecker({
               }
               className="mt-1"
             />
-            <Label htmlFor="medical_examination" className="text-sm font-normal cursor-pointer">
+            <Label htmlFor="medical_examination" className="cursor-pointer text-sm font-normal">
               <span className="font-semibold">Medical examination</span>{" "}
-              <span className="italic text-muted-foreground">(through panel physician)</span>
+              <span className="text-muted-foreground italic">(through panel physician)</span>
             </Label>
           </div>
 
           {/* Original NADRA Family Registration Certificate */}
-          <div className="flex items-start space-x-2 mb-3">
+          <div className="mb-3 flex items-start space-x-2">
             <Checkbox
               id="nadra_family_reg"
               checked={!!selectedItems.nadra_family_reg}
@@ -131,14 +132,14 @@ export default function Actual221GFormChecker({
               className="mt-1"
             />
             <div className="flex-1">
-              <Label htmlFor="nadra_family_reg" className="text-sm font-normal cursor-pointer">
+              <Label htmlFor="nadra_family_reg" className="cursor-pointer text-sm font-normal">
                 Original{" "}
                 <span className="font-semibold">NADRA Family Registration Certificate</span>{" "}
-                <span className="italic text-muted-foreground">(submit via courier)</span> for:{" "}
+                <span className="text-muted-foreground italic">(submit via courier)</span> for:{" "}
                 <Input
                   type="text"
                   placeholder="(optional)"
-                  className="inline-block w-56 h-6 px-2 border-grey-500 border-input rounded-none focus:border-ring focus:ring-0"
+                  className="border-grey-500 border-input focus:border-ring inline-block h-6 w-56 rounded-none px-2 focus:ring-0"
                   value={selectedItems.nadra_family_reg_name || ""}
                   onChange={(e) => handleInputChange("nadra_family_reg_name", e.target.value)}
                 />
@@ -147,7 +148,7 @@ export default function Actual221GFormChecker({
           </div>
 
           {/* Original NADRA Birth Cert. */}
-          <div className="flex items-start space-x-2 mb-3">
+          <div className="mb-3 flex items-start space-x-2">
             <Checkbox
               id="nadra_birth_cert"
               checked={!!selectedItems.nadra_birth_cert}
@@ -157,11 +158,11 @@ export default function Actual221GFormChecker({
               className="mt-1"
             />
             <div className="flex-1">
-              <Label htmlFor="nadra_birth_cert" className="text-sm font-normal cursor-pointer">
+              <Label htmlFor="nadra_birth_cert" className="cursor-pointer text-sm font-normal">
                 Original <span className="font-semibold">NADRA Birth Cert.</span>{" "}
-                <span className="italic text-muted-foreground">(submit via courier)</span>
+                <span className="text-muted-foreground italic">(submit via courier)</span>
               </Label>
-              <div className="ml-6 mt-1 flex items-center space-x-4">
+              <div className="mt-1 ml-6 flex items-center space-x-4">
                 <div className="flex items-center space-x-1">
                   <Checkbox
                     id="nadra_birth_cert_petitioner"
@@ -170,7 +171,7 @@ export default function Actual221GFormChecker({
                       handleCheckboxChange("nadra_birth_cert_petitioner", checked as boolean)
                     }
                   />
-                  <Label htmlFor="nadra_birth_cert_petitioner" className="text-xs cursor-pointer">
+                  <Label htmlFor="nadra_birth_cert_petitioner" className="cursor-pointer text-xs">
                     Petitioner
                   </Label>
                 </div>
@@ -182,7 +183,7 @@ export default function Actual221GFormChecker({
                       handleCheckboxChange("nadra_birth_cert_beneficiary", checked as boolean)
                     }
                   />
-                  <Label htmlFor="nadra_birth_cert_beneficiary" className="text-xs cursor-pointer">
+                  <Label htmlFor="nadra_birth_cert_beneficiary" className="cursor-pointer text-xs">
                     Beneficiary
                   </Label>
                 </div>
@@ -191,7 +192,7 @@ export default function Actual221GFormChecker({
           </div>
 
           {/* Original NADRA Marriage Certificate */}
-          <div className="flex items-start space-x-2 mb-3">
+          <div className="mb-3 flex items-start space-x-2">
             <Checkbox
               id="nadra_marriage_cert"
               checked={!!selectedItems.nadra_marriage_cert}
@@ -200,14 +201,14 @@ export default function Actual221GFormChecker({
               }
               className="mt-1"
             />
-            <Label htmlFor="nadra_marriage_cert" className="text-sm font-normal cursor-pointer">
+            <Label htmlFor="nadra_marriage_cert" className="cursor-pointer text-sm font-normal">
               Original <span className="font-semibold">NADRA Marriage Certificate</span>{" "}
-              <span className="italic text-muted-foreground">(submit via courier)</span>
+              <span className="text-muted-foreground italic">(submit via courier)</span>
             </Label>
           </div>
 
           {/* Original Nikah Nama */}
-          <div className="flex items-start space-x-2 mb-3">
+          <div className="mb-3 flex items-start space-x-2">
             <Checkbox
               id="nikah_nama"
               checked={!!selectedItems.nikah_nama}
@@ -215,21 +216,21 @@ export default function Actual221GFormChecker({
               className="mt-1"
             />
             <div className="flex-1">
-              <Label htmlFor="nikah_nama" className="text-sm font-normal cursor-pointer">
+              <Label htmlFor="nikah_nama" className="cursor-pointer text-sm font-normal">
                 Original <span className="font-semibold">Nikah Nama</span>{" "}
-                <span className="italic text-muted-foreground">(submit via courier)</span>
+                <span className="text-muted-foreground italic">(submit via courier)</span>
               </Label>
               {!!selectedItems.nikah_nama && (
-                <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md p-2 mt-2 font-medium">
-                  Note: You must also submit a Computerized Marriage Registration Certificate
-                  (MRC) and the beneficiary&apos;s CNIC showing husband&apos;s name.
+                <div className="mt-2 rounded-md border border-amber-200 bg-amber-50 p-2 text-xs font-medium text-amber-700">
+                  Note: You must also submit a Computerized Marriage Registration Certificate (MRC)
+                  and the beneficiary&apos;s CNIC showing husband&apos;s name.
                 </div>
               )}
             </div>
           </div>
 
           {/* Original NADRA Divorce Cert. */}
-          <div className="flex items-start space-x-2 mb-3">
+          <div className="mb-3 flex items-start space-x-2">
             <Checkbox
               id="nadra_divorce_cert"
               checked={!!selectedItems.nadra_divorce_cert}
@@ -239,11 +240,11 @@ export default function Actual221GFormChecker({
               className="mt-1"
             />
             <div className="flex-1">
-              <Label htmlFor="nadra_divorce_cert" className="text-sm font-normal cursor-pointer">
+              <Label htmlFor="nadra_divorce_cert" className="cursor-pointer text-sm font-normal">
                 Original <span className="font-semibold">NADRA Divorce Cert.</span>{" "}
-                <span className="italic text-muted-foreground">(submit via courier)</span>
+                <span className="text-muted-foreground italic">(submit via courier)</span>
               </Label>
-              <div className="ml-6 mt-1 flex items-center space-x-4">
+              <div className="mt-1 ml-6 flex items-center space-x-4">
                 <div className="flex items-center space-x-1">
                   <Checkbox
                     id="nadra_divorce_cert_petitioner"
@@ -252,7 +253,7 @@ export default function Actual221GFormChecker({
                       handleCheckboxChange("nadra_divorce_cert_petitioner", checked as boolean)
                     }
                   />
-                  <Label htmlFor="nadra_divorce_cert_petitioner" className="text-xs cursor-pointer">
+                  <Label htmlFor="nadra_divorce_cert_petitioner" className="cursor-pointer text-xs">
                     Petitioner
                   </Label>
                 </div>
@@ -266,7 +267,7 @@ export default function Actual221GFormChecker({
                   />
                   <Label
                     htmlFor="nadra_divorce_cert_beneficiary"
-                    className="text-xs cursor-pointer"
+                    className="cursor-pointer text-xs"
                   >
                     Beneficiary
                   </Label>
@@ -276,7 +277,7 @@ export default function Actual221GFormChecker({
           </div>
 
           {/* Original U.S. Divorce Decree */}
-          <div className="flex items-start space-x-2 mb-3">
+          <div className="mb-3 flex items-start space-x-2">
             <Checkbox
               id="us_divorce_decree"
               checked={!!selectedItems.us_divorce_decree}
@@ -285,14 +286,14 @@ export default function Actual221GFormChecker({
               }
               className="mt-1"
             />
-            <Label htmlFor="us_divorce_decree" className="text-sm font-normal cursor-pointer">
+            <Label htmlFor="us_divorce_decree" className="cursor-pointer text-sm font-normal">
               Original <span className="font-semibold">U.S. Divorce Decree</span> or certified copy{" "}
-              <span className="italic text-muted-foreground">(submit via courier)</span>
+              <span className="text-muted-foreground italic">(submit via courier)</span>
             </Label>
           </div>
 
           {/* Original Death Certificate */}
-          <div className="flex items-start space-x-2 mb-3">
+          <div className="mb-3 flex items-start space-x-2">
             <Checkbox
               id="death_certificate"
               checked={!!selectedItems.death_certificate}
@@ -302,13 +303,13 @@ export default function Actual221GFormChecker({
               className="mt-1"
             />
             <div className="flex-1">
-              <Label htmlFor="death_certificate" className="text-sm font-normal cursor-pointer">
+              <Label htmlFor="death_certificate" className="cursor-pointer text-sm font-normal">
                 Original <span className="font-semibold">Death Certificate</span>{" "}
-                <span className="italic text-muted-foreground">(submit via courier)</span> for:{" "}
+                <span className="text-muted-foreground italic">(submit via courier)</span> for:{" "}
                 <Input
                   type="text"
                   placeholder=""
-                  className="inline-block w-56 h-6 px-2 border-grey-500 border-input rounded-none focus:border-ring focus:ring-0"
+                  className="border-grey-500 border-input focus:border-ring inline-block h-6 w-56 rounded-none px-2 focus:ring-0"
                   value={selectedItems.death_certificate_name || ""}
                   onChange={(e) => handleInputChange("death_certificate_name", e.target.value)}
                 />
@@ -317,7 +318,7 @@ export default function Actual221GFormChecker({
           </div>
 
           {/* Original Police Certificate */}
-          <div className="flex items-start space-x-2 mb-3">
+          <div className="mb-3 flex items-start space-x-2">
             <Checkbox
               id="police_certificate"
               checked={!!selectedItems.police_certificate}
@@ -327,9 +328,9 @@ export default function Actual221GFormChecker({
               className="mt-1"
             />
             <div className="flex-1">
-              <Label htmlFor="police_certificate" className="text-sm font-normal cursor-pointer">
+              <Label htmlFor="police_certificate" className="cursor-pointer text-sm font-normal">
                 Original <span className="font-semibold">Police Certificate</span>{" "}
-                <span className="italic text-muted-foreground">(submit via courier)</span> for
+                <span className="text-muted-foreground italic">(submit via courier)</span> for
                 country:{" "}
                 <StaticCountryAutocomplete
                   className="w-full"
@@ -343,7 +344,7 @@ export default function Actual221GFormChecker({
           </div>
 
           {/* English translation */}
-          <div className="flex items-start space-x-2 mb-3">
+          <div className="mb-3 flex items-start space-x-2">
             <Checkbox
               id="english_translation"
               checked={!!selectedItems.english_translation}
@@ -353,14 +354,14 @@ export default function Actual221GFormChecker({
               className="mt-1"
             />
             <div className="flex-1">
-              <Label htmlFor="english_translation" className="text-sm font-normal cursor-pointer">
+              <Label htmlFor="english_translation" className="cursor-pointer text-sm font-normal">
                 <span className="font-semibold">English translation</span>{" "}
-                <span className="italic text-muted-foreground">(submit via courier)</span> of
+                <span className="text-muted-foreground italic">(submit via courier)</span> of
                 document:{" "}
                 <Input
                   type="text"
                   placeholder=""
-                  className="inline-block w-56 h-6 px-2 border-grey-500 border-input rounded-none focus:border-ring focus:ring-0"
+                  className="border-grey-500 border-input focus:border-ring inline-block h-6 w-56 rounded-none px-2 focus:ring-0"
                   value={selectedItems.english_translation_document || ""}
                   onChange={(e) =>
                     handleInputChange("english_translation_document", e.target.value)
@@ -371,7 +372,7 @@ export default function Actual221GFormChecker({
           </div>
 
           {/* I-864 Affidavit of Support (Restructured) */}
-          <div className="flex items-start space-x-2 mb-3">
+          <div className="mb-3 flex items-start space-x-2">
             <Checkbox
               id="i864_affidavit"
               checked={!!selectedItems.i864_affidavit}
@@ -381,7 +382,7 @@ export default function Actual221GFormChecker({
               className="mt-1"
             />
             <div className="flex-1">
-              <Label htmlFor="i864_affidavit" className="text-sm font-normal cursor-pointer">
+              <Label htmlFor="i864_affidavit" className="cursor-pointer text-sm font-normal">
                 <span className="font-semibold">I-864 Affidavit of Support</span>
               </Label>
 
@@ -389,41 +390,41 @@ export default function Actual221GFormChecker({
                 // --- PREMIUM SEQUENTIAL LAYOUT (Only for Smart Mode) ---
                 <>
                   {!!selectedItems.i864_affidavit && (
-                    <div className="mt-4 space-y-4 rounded-xl border border-emerald-200 bg-emerald-50/40 p-4 shadow-sm animate-in fade-in slide-in-from-top-2 duration-500 sm:ml-6 sm:space-y-6 sm:p-5">
+                    <div className="animate-in fade-in slide-in-from-top-2 mt-4 space-y-4 rounded-xl border border-emerald-200 bg-emerald-50/40 p-4 shadow-sm duration-500 sm:ml-6 sm:space-y-6 sm:p-5">
                       {/* Submission Method Selection */}
-                      <div className="flex flex-col space-y-2 pb-4 border-b border-emerald-100">
-                        <Label className="text-[11px] font-bold text-emerald-900 uppercase tracking-wider mb-1">
+                      <div className="flex flex-col space-y-2 border-b border-emerald-100 pb-4">
+                        <Label className="mb-1 text-[11px] font-bold tracking-wider text-emerald-900 uppercase">
                           Submission Method *
                         </Label>
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
-                          <div className="flex items-center space-x-2 group">
+                          <div className="group flex items-center space-x-2">
                             <Checkbox
                               id="i864_courier"
                               checked={!!selectedItems.i864_courier}
                               onCheckedChange={(checked) =>
                                 handleCheckboxChange("i864_courier", checked as boolean)
                               }
-                              className="data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
+                              className="data-[state=checked]:border-emerald-600 data-[state=checked]:bg-emerald-600"
                             />
                             <Label
                               htmlFor="i864_courier"
-                              className="text-xs font-semibold cursor-pointer text-emerald-800 group-hover:text-emerald-900 transition-colors"
+                              className="cursor-pointer text-xs font-semibold text-emerald-800 transition-colors group-hover:text-emerald-900"
                             >
                               Submit via Courier
                             </Label>
                           </div>
-                          <div className="flex items-center space-x-2 group">
+                          <div className="group flex items-center space-x-2">
                             <Checkbox
                               id="i864_online"
                               checked={!!selectedItems.i864_online}
                               onCheckedChange={(checked) =>
                                 handleCheckboxChange("i864_online", checked as boolean)
                               }
-                              className="data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
+                              className="data-[state=checked]:border-emerald-600 data-[state=checked]:bg-emerald-600"
                             />
                             <Label
                               htmlFor="i864_online"
-                              className="text-xs font-semibold cursor-pointer text-emerald-800 group-hover:text-emerald-900 transition-colors"
+                              className="cursor-pointer text-xs font-semibold text-emerald-800 transition-colors group-hover:text-emerald-900"
                             >
                               Submit Online (CEAC)
                             </Label>
@@ -433,14 +434,12 @@ export default function Actual221GFormChecker({
 
                       {/* Sponsor Structure */}
                       <div className="space-y-2">
-                        <Label className="text-sm font-semibold text-foreground flex items-center group">
+                        <Label className="text-foreground group flex items-center text-sm font-semibold">
                           Sponsor Structure *
                         </Label>
                         <CustomDropdown
                           value={selectedItems.i864_sponsor_structure || ""}
-                          onChange={(value) =>
-                            handleInputChange("i864_sponsor_structure", value)
-                          }
+                          onChange={(value) => handleInputChange("i864_sponsor_structure", value)}
                           options={[
                             { value: "petitioner-only", label: "Petitioner only" },
                             {
@@ -463,8 +462,8 @@ export default function Actual221GFormChecker({
 
                       {/* Step 2: Sponsor Names */}
                       {!!sponsorStructure && (
-                        <div className="space-y-4 animate-in fade-in duration-500">
-                          <Label className="text-sm font-semibold text-foreground flex items-center">
+                        <div className="animate-in fade-in space-y-4 duration-500">
+                          <Label className="text-foreground flex items-center text-sm font-semibold">
                             Sponsor Identification
                           </Label>
                           <div className="grid grid-cols-1 gap-4 sm:ml-7 sm:grid-cols-2">
@@ -479,12 +478,12 @@ export default function Actual221GFormChecker({
                                   handleInputChange("i864_petitioner_name", e.target.value)
                                 }
                                 placeholder="Full name as on I-864"
-                                className="h-10 bg-white border-emerald-100 focus:border-emerald-500 shadow-none focus:ring-1 focus:ring-emerald-500 hover:border-emerald-200 transition-all font-medium"
+                                className="h-10 border-emerald-100 bg-white font-medium shadow-none transition-all hover:border-emerald-200 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                               />
                             </div>
 
                             {showJointSponsorName && (
-                              <div className="space-y-1.5 animate-in slide-in-from-left-2 duration-500">
+                              <div className="animate-in slide-in-from-left-2 space-y-1.5 duration-500">
                                 <Label className="ml-1 text-[11px] font-medium text-emerald-800/70">
                                   Joint Sponsor Full Name (optional)
                                 </Label>
@@ -495,13 +494,13 @@ export default function Actual221GFormChecker({
                                     handleInputChange("i864_joint_sponsor_name", e.target.value)
                                   }
                                   placeholder="Full name of joint sponsor"
-                                  className="h-10 bg-white border-emerald-100 focus:border-emerald-500 shadow-none focus:ring-1 focus:ring-emerald-500 font-medium"
+                                  className="h-10 border-emerald-100 bg-white font-medium shadow-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                                 />
                               </div>
                             )}
 
                             {showHouseholdMemberName && (
-                              <div className="space-y-1.5 animate-in slide-in-from-left-2 duration-500">
+                              <div className="animate-in slide-in-from-left-2 space-y-1.5 duration-500">
                                 <Label className="ml-1 text-[11px] font-medium text-emerald-800/70">
                                   Household Member Name (optional)
                                 </Label>
@@ -512,7 +511,7 @@ export default function Actual221GFormChecker({
                                     handleInputChange("i864_household_member_name", e.target.value)
                                   }
                                   placeholder="Name from I-864A contract"
-                                  className="h-10 bg-white border-emerald-100 focus:border-emerald-500 shadow-none focus:ring-1 focus:ring-emerald-500 font-medium"
+                                  className="h-10 border-emerald-100 bg-white font-medium shadow-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                                 />
                               </div>
                             )}
@@ -522,7 +521,7 @@ export default function Actual221GFormChecker({
 
                       {/* Step 3: Forms Requested */}
                       <div className="space-y-3">
-                        <Label className="text-sm font-semibold text-foreground flex items-center">
+                        <Label className="text-foreground flex items-center text-sm font-semibold">
                           Forms Requested
                         </Label>
                         <div className="grid grid-cols-1 gap-2 sm:ml-7 sm:grid-cols-2 md:grid-cols-4">
@@ -534,7 +533,7 @@ export default function Actual221GFormChecker({
                           ].map((form) => (
                             <div
                               key={form.id}
-                              className="flex items-center space-x-2 p-2 rounded-lg bg-white border border-emerald-50 hover:border-emerald-300 transition-all shadow-[0_1px_2px_rgba(0,0,0,0.03)] group"
+                              className="group flex items-center space-x-2 rounded-lg border border-emerald-50 bg-white p-2 shadow-[0_1px_2px_rgba(0,0,0,0.03)] transition-all hover:border-emerald-300"
                             >
                               <Checkbox
                                 id={`premium_${form.id}`}
@@ -545,11 +544,11 @@ export default function Actual221GFormChecker({
                                     checked as boolean
                                   )
                                 }
-                                className="data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
+                                className="data-[state=checked]:border-emerald-600 data-[state=checked]:bg-emerald-600"
                               />
                               <Label
                                 htmlFor={`premium_${form.id}`}
-                                className="text-[11px] font-semibold cursor-pointer group-hover:text-emerald-700 transition-colors"
+                                className="cursor-pointer text-[11px] font-semibold transition-colors group-hover:text-emerald-700"
                               >
                                 {form.label}
                               </Label>
@@ -560,7 +559,7 @@ export default function Actual221GFormChecker({
 
                       {/* Step 4: Evidence Required */}
                       <div className="space-y-3">
-                        <Label className="text-sm font-semibold text-foreground flex items-center">
+                        <Label className="text-foreground flex items-center text-sm font-semibold">
                           Financial Evidence Checklist
                         </Label>
                         <div className="grid grid-cols-1 gap-2 sm:ml-7 md:grid-cols-3">
@@ -574,7 +573,7 @@ export default function Actual221GFormChecker({
                           ].map((ev) => (
                             <div
                               key={ev.id}
-                              className="flex items-center space-x-2 p-2 rounded-lg bg-white border border-emerald-50 hover:border-emerald-300 transition-all shadow-[0_1px_2px_rgba(0,0,0,0.03)] group"
+                              className="group flex items-center space-x-2 rounded-lg border border-emerald-50 bg-white p-2 shadow-[0_1px_2px_rgba(0,0,0,0.03)] transition-all hover:border-emerald-300"
                             >
                               <Checkbox
                                 id={`premium_${ev.id}`}
@@ -585,11 +584,11 @@ export default function Actual221GFormChecker({
                                     checked as boolean
                                   )
                                 }
-                                className="data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
+                                className="data-[state=checked]:border-emerald-600 data-[state=checked]:bg-emerald-600"
                               />
                               <Label
                                 htmlFor={`premium_${ev.id}`}
-                                className="text-[11px] font-semibold cursor-pointer group-hover:text-emerald-700"
+                                className="cursor-pointer text-[11px] font-semibold group-hover:text-emerald-700"
                               >
                                 {ev.label}
                               </Label>
@@ -600,7 +599,7 @@ export default function Actual221GFormChecker({
 
                       {/* Step 5: Status Documentation */}
                       <div className="space-y-3">
-                        <Label className="text-sm font-semibold text-foreground flex items-center">
+                        <Label className="text-foreground flex items-center text-sm font-semibold">
                           Legal Status Proof
                         </Label>
                         <div className="grid grid-cols-1 gap-2 sm:ml-7 md:grid-cols-2">
@@ -613,7 +612,7 @@ export default function Actual221GFormChecker({
                           ].map((status) => (
                             <div
                               key={status.id}
-                              className="flex items-center space-x-2 p-2 rounded-lg bg-white border border-emerald-50 hover:border-emerald-300 transition-all shadow-[0_1px_2px_rgba(0,0,0,0.03)] group"
+                              className="group flex items-center space-x-2 rounded-lg border border-emerald-50 bg-white p-2 shadow-[0_1px_2px_rgba(0,0,0,0.03)] transition-all hover:border-emerald-300"
                             >
                               <Checkbox
                                 id={`premium_${status.id}`}
@@ -624,11 +623,11 @@ export default function Actual221GFormChecker({
                                     checked as boolean
                                   )
                                 }
-                                className="data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
+                                className="data-[state=checked]:border-emerald-600 data-[state=checked]:bg-emerald-600"
                               />
                               <Label
                                 htmlFor={`premium_${status.id}`}
-                                className="text-[11px] font-semibold cursor-pointer group-hover:text-emerald-700"
+                                className="cursor-pointer text-[11px] font-semibold group-hover:text-emerald-700"
                               >
                                 {status.label}
                               </Label>
@@ -639,7 +638,7 @@ export default function Actual221GFormChecker({
 
                       {/* Step 6: Tax Years */}
                       <div className="space-y-2">
-                        <Label className="text-sm font-semibold text-foreground flex items-center">
+                        <Label className="text-foreground flex items-center text-sm font-semibold">
                           Tax Year(s) Requested
                         </Label>
                         <div className="sm:ml-7">
@@ -648,10 +647,10 @@ export default function Actual221GFormChecker({
                             value={selectedItems.i864_tax_years || ""}
                             onChange={(e) => handleInputChange("i864_tax_years", e.target.value)}
                             placeholder="e.g., 2024, 2023, 2022"
-                            className="h-10 bg-white border-emerald-100 focus:border-emerald-500 shadow-none focus:ring-1 focus:ring-emerald-500"
+                            className="h-10 border-emerald-100 bg-white shadow-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                           />
-                          <div className="mt-2 ml-1 text-[10px] font-medium text-emerald-700/80">
-                            <span className="mr-1.5 flex-shrink-0">⚙️</span>
+                          <div className="mt-2 ml-1 flex text-[10px] font-medium text-emerald-700/80">
+                            <Settings className="mr-1.5 flex-shrink-0" size={14} />
                             <span>
                               Only provide years expressly mentioned on your 221(g) letter.
                             </span>
@@ -664,7 +663,7 @@ export default function Actual221GFormChecker({
               ) : (
                 // --- ORIGINAL DEFAULT LAYOUT (For non-premium users) ---
                 <>
-                  <div className="mt-1 flex flex-col gap-2 text-xs italic text-muted-foreground sm:ml-6 sm:flex-row sm:items-center sm:space-x-3 sm:gap-0">
+                  <div className="text-muted-foreground mt-1 flex flex-col gap-2 text-xs italic sm:ml-6 sm:flex-row sm:items-center sm:gap-0 sm:space-x-3">
                     <span>(submit via</span>
                     <div className="flex items-center space-x-1">
                       <Checkbox
@@ -676,7 +675,7 @@ export default function Actual221GFormChecker({
                       />
                       <Label
                         htmlFor="i864_courier"
-                        className="text-xs cursor-pointer italic text-muted-foreground"
+                        className="text-muted-foreground cursor-pointer text-xs italic"
                       >
                         courier /
                       </Label>
@@ -691,7 +690,7 @@ export default function Actual221GFormChecker({
                       />
                       <Label
                         htmlFor="i864_online"
-                        className="text-xs cursor-pointer italic text-muted-foreground"
+                        className="text-muted-foreground cursor-pointer text-xs italic"
                       >
                         online)
                       </Label>
@@ -724,7 +723,7 @@ export default function Actual221GFormChecker({
                           handleCheckboxChange("i864_joint_sponsor", checked as boolean)
                         }
                       />
-                      <Label htmlFor="i864_joint_sponsor" className="text-xs cursor-pointer">
+                      <Label htmlFor="i864_joint_sponsor" className="cursor-pointer text-xs">
                         Joint Sponsor
                       </Label>
                     </div>
@@ -738,7 +737,7 @@ export default function Actual221GFormChecker({
                           handleCheckboxChange("i864a", checked as boolean)
                         }
                       />
-                      <Label htmlFor="i864a" className="text-xs cursor-pointer">
+                      <Label htmlFor="i864a" className="cursor-pointer text-xs">
                         I-864A
                       </Label>
                     </div>
@@ -750,7 +749,7 @@ export default function Actual221GFormChecker({
                           handleCheckboxChange("i134", checked as boolean)
                         }
                       />
-                      <Label htmlFor="i134" className="text-xs cursor-pointer">
+                      <Label htmlFor="i134" className="cursor-pointer text-xs">
                         I-134
                       </Label>
                     </div>
@@ -762,7 +761,7 @@ export default function Actual221GFormChecker({
                           handleCheckboxChange("i864w", checked as boolean)
                         }
                       />
-                      <Label htmlFor="i864w" className="text-xs cursor-pointer">
+                      <Label htmlFor="i864w" className="cursor-pointer text-xs">
                         I-864W
                       </Label>
                     </div>
@@ -774,7 +773,7 @@ export default function Actual221GFormChecker({
                           handleCheckboxChange("tax_1040", checked as boolean)
                         }
                       />
-                      <Label htmlFor="tax_1040" className="text-xs cursor-pointer">
+                      <Label htmlFor="tax_1040" className="cursor-pointer text-xs">
                         1040
                       </Label>
                     </div>
@@ -786,7 +785,7 @@ export default function Actual221GFormChecker({
                           handleCheckboxChange("w2", checked as boolean)
                         }
                       />
-                      <Label htmlFor="w2" className="text-xs cursor-pointer">
+                      <Label htmlFor="w2" className="cursor-pointer text-xs">
                         W-2
                       </Label>
                     </div>
@@ -798,7 +797,7 @@ export default function Actual221GFormChecker({
                           handleCheckboxChange("irs_transcript", checked as boolean)
                         }
                       />
-                      <Label htmlFor="irs_transcript" className="text-xs cursor-pointer">
+                      <Label htmlFor="irs_transcript" className="cursor-pointer text-xs">
                         IRS tax transcript
                       </Label>
                     </div>
@@ -812,7 +811,7 @@ export default function Actual221GFormChecker({
                           handleCheckboxChange("proof_citizenship", checked as boolean)
                         }
                       />
-                      <Label htmlFor="proof_citizenship" className="text-xs cursor-pointer">
+                      <Label htmlFor="proof_citizenship" className="cursor-pointer text-xs">
                         Proof of U.S. citizenship or LPR status
                       </Label>
                     </div>
@@ -824,7 +823,7 @@ export default function Actual221GFormChecker({
                           handleCheckboxChange("domicile", checked as boolean)
                         }
                       />
-                      <Label htmlFor="domicile" className="text-xs cursor-pointer">
+                      <Label htmlFor="domicile" className="cursor-pointer text-xs">
                         Domicile
                       </Label>
                     </div>
@@ -834,7 +833,7 @@ export default function Actual221GFormChecker({
             </div>
           </div>
           {/* DNA test */}
-          <div className="flex items-start space-x-2 mb-3">
+          <div className="mb-3 flex items-start space-x-2">
             <Checkbox
               id="dna_test"
               checked={!!selectedItems.dna_test}
@@ -842,12 +841,12 @@ export default function Actual221GFormChecker({
               className="mt-1"
             />
             <div className="flex-1">
-              <Label htmlFor="dna_test" className="text-sm font-normal cursor-pointer">
+              <Label htmlFor="dna_test" className="cursor-pointer text-sm font-normal">
                 <span className="font-semibold">DNA test</span> recommended for:{" "}
                 <Input
                   type="text"
                   placeholder=""
-                  className="inline-block w-56 h-6 px-2 border-grey-500 border-input rounded-none focus:border-ring focus:ring-0"
+                  className="border-grey-500 border-input focus:border-ring inline-block h-6 w-56 rounded-none px-2 focus:ring-0"
                   value={selectedItems.dna_test_name || ""}
                   onChange={(e) => handleInputChange("dna_test_name", e.target.value)}
                 />
@@ -856,7 +855,7 @@ export default function Actual221GFormChecker({
           </div>
 
           {/* Other */}
-          <div className="flex items-start space-x-2 mb-3">
+          <div className="mb-3 flex items-start space-x-2">
             <Checkbox
               id="other"
               checked={!!selectedItems.other}
@@ -864,12 +863,12 @@ export default function Actual221GFormChecker({
               className="mt-1"
             />
             <div className="flex-1">
-              <Label htmlFor="other" className="text-sm font-normal cursor-pointer">
+              <Label htmlFor="other" className="cursor-pointer text-sm font-normal">
                 <span className="font-semibold">Other:</span>{" "}
                 <Input
                   type="text"
                   placeholder=""
-                  className="inline-block w-96 h-6 px-2 border-grey-500 border-input rounded-none focus:border-ring focus:ring-0"
+                  className="border-grey-500 border-input focus:border-ring inline-block h-6 w-96 rounded-none px-2 focus:ring-0"
                   value={selectedItems.other_details || ""}
                   onChange={(e) => handleInputChange("other_details", e.target.value)}
                 />

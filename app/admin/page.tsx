@@ -16,6 +16,7 @@ import {
   ShieldCheck,
   Clock,
   Star,
+  Trash2,
 } from "lucide-react";
 import Link from "next/link";
 import { Loader } from "@/components/ui/spinner";
@@ -29,13 +30,17 @@ import AvailabilityGrid from "./components/consultation-requests/AvailabilityGri
 import VisaCasesTable from "./components/visa-cases/VisaCasesTable";
 import CollapsibleSection from "./components/CollapsibleSection";
 import ReviewsTable from "./components/reviews/ReviewsTable";
+import BlogCommentsTable from "./components/blog-comments/BlogCommentsTable";
 import { FeatureAnnouncementModal } from "./components/feature-announcement/FeatureAnnouncementModal";
+import { BlogAnnouncementModal } from "./components/blog-announcement/BlogAnnouncementModal";
+import AccountDeletionFeedbackTable from "./components/account-deletion-feedback/AccountDeletionFeedbackTable";
 
 export default function AdminPanel() {
   const { user, isAdmin, isLoading: authLoading, signOut } = useAuth();
   const router = useRouter();
 
   const [openFeatureModal, setOpenFeatureModal] = useState(false);
+  const [openBlogModal, setOpenBlogModal] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -59,7 +64,7 @@ export default function AdminPanel() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-6">
+      <div className="bg-background flex min-h-screen items-center justify-center p-6">
         <Loader size="md" text="Checking authorization..." />
       </div>
     );
@@ -86,14 +91,14 @@ export default function AdminPanel() {
   return (
     <div className="bg-background">
       {/* Admin Header */}
-      <header className="bg-card shadow-sm border-b border-border">
+      <header className="bg-card border-border border-b shadow-sm">
         <div className="site-main-px site-main-py">
-          <div className="flex justify-between h-16">
+          <div className="flex h-16 justify-between">
             <div className="flex items-center">
-              <h1 className="text-xl font-bold text-foreground">Admin Dashboard</h1>
+              <h1 className="text-foreground text-xl font-bold">Admin Dashboard</h1>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1.5 text-xs font-medium text-blue-800">
                 <Globe className="h-3.5 w-3.5" />
                 Your Time:{" "}
                 {new Date().toLocaleTimeString("en-US", {
@@ -102,25 +107,31 @@ export default function AdminPanel() {
                   timeZoneName: "short",
                 })}
               </span>
-              <span className="text-sm text-muted-foreground">Admin: {user?.email}</span>
+              <span className="text-muted-foreground text-sm">Admin: {user?.email}</span>
               <Link
                 href="/admin/dashboard"
-                className="text-white bg-teal-600 hover:bg-teal-700 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors flex items-center gap-1.5"
+                className="flex items-center gap-1.5 rounded-lg bg-teal-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-teal-700"
               >
                 <TrendingUp className="h-4 w-4" />
                 View Analytics
               </Link>
               <button
                 onClick={() => setOpenFeatureModal(true)}
-                className="text-teal-600 border-2 border-teal-600 hover:bg-teal-100 hover:text-teal-700 rounded-lg p-1"
+                className="rounded-lg border-2 border-teal-600 p-1 text-teal-600 hover:bg-teal-100 hover:text-teal-700"
               >
                 Feature Announcement
+              </button>
+              <button
+                onClick={() => setOpenBlogModal(true)}
+                className="rounded-lg bg-teal-600 px-2.5 py-1 text-sm font-medium text-white transition-colors hover:bg-teal-700"
+              >
+                Blog Announcement
               </button>
               <Button
                 onClick={handleLogout}
                 variant="outline"
                 size="sm"
-                className="text-red-600 border-red-600 hover:bg-red-50 hover:text-red-700"
+                className="border-red-600 text-red-600 hover:bg-red-50 hover:text-red-700"
               >
                 Logout
               </Button>
@@ -131,9 +142,9 @@ export default function AdminPanel() {
       </header>
 
       <main className="site-main-px py-6">
-        <div className="max-w-7xl mx-auto">
+        <div className="mx-auto max-w-7xl">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-foreground">Admin Dashboard</h1>
+            <h1 className="text-foreground text-3xl font-bold">Admin Dashboard</h1>
             <p className="text-muted-foreground mt-1">
               Manage visa cases, appointments, consultations, and platform operations
             </p>
@@ -166,8 +177,8 @@ export default function AdminPanel() {
                 <AvailabilityGrid />
               </div> */}
               <div>
-                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 pt-4">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                <h3 className="mb-4 flex items-center gap-2 pt-4 text-lg font-semibold">
+                  <Calendar className="text-muted-foreground h-4 w-4" />
                   Booked Appointments
                 </h3>
                 <BookAppointmentTable />
@@ -183,8 +194,8 @@ export default function AdminPanel() {
           >
             <div className="space-y-6">
               <div className="mt-4">
-                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
+                <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold">
+                  <Clock className="text-muted-foreground h-4 w-4" />
                   Availability Schedule
                 </h3>
                 <AvailabilityGrid />
@@ -222,7 +233,30 @@ export default function AdminPanel() {
             <ReviewsTable />
           </CollapsibleSection>
 
+          {/* Section 7: Blog Comments */}
+          <CollapsibleSection
+            title="Blog Comments"
+            icon={<MessageSquare className="h-5 w-5" />}
+            description="Moderate, hide, or permanently remove user comments and replies across all blog articles"
+            badge="MODERATION"
+            badgeColor="bg-teal-100 text-teal-800"
+          >
+            <BlogCommentsTable />
+          </CollapsibleSection>
+
+          {/* Section 8: Account Deletion Feedback */}
+          <CollapsibleSection
+            title="Account Deletion Feedback"
+            icon={<Trash2 className="h-5 w-5" />}
+            description="Review and manage feedback from users who have deleted their accounts"
+            badge="MODERATION"
+            badgeColor="bg-teal-100 text-teal-800"
+          >
+            <AccountDeletionFeedbackTable />
+          </CollapsibleSection>
+
           <FeatureAnnouncementModal open={openFeatureModal} onOpenChange={setOpenFeatureModal} />
+          <BlogAnnouncementModal open={openBlogModal} onOpenChange={setOpenBlogModal} />
         </div>
       </main>
     </div>

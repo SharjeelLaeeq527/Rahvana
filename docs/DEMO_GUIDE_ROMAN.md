@@ -13,7 +13,7 @@ Score (0 se 100 tak "Case Health" ring) **4 cheezon** se banta hai. Yaad rakho:
 | **Evidence** | Kitne asli documents upload kiye | **40%** |
 | **Consistency** | Aapke jawab aur documents aapas mein match karte hain? | **30%** |
 | **Completeness** | Kitne forms / sawaal complete kiye | **20%** |
-| **Risk** | Koi red flag hai? (short marriage, age gap, etc.) — ye score **minus** karta hai | **10%** |
+| **Risk** | Koi red flag hai? (short marriage, etc.) — ye score **minus** karta hai | **10%** |
 
 **Formula:** `Score = Evidence×0.40 + Consistency×0.30 + Completeness×0.20 + Risk×0.10`
 

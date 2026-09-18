@@ -3,16 +3,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { createBrowserClient } from "@supabase/ssr";
 import { useRouter } from "next/navigation";
-import {
-  KeyRound,
-  LogOut,
-  Trash2,
-  Loader2,
-  User,
-  Eye,
-  EyeOff,
-  ChevronRight,
-} from "lucide-react";
+import { KeyRound, LogOut, Trash2, Loader2, User, Eye, EyeOff, ChevronRight } from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { Button } from "@/components/ui/button";
@@ -24,6 +15,7 @@ import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { MFACodeModal } from "@/app/components/shared/MFACodeModal";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { validateStrongPassword } from "@/lib/security/password";
+import SurveyModal from "@/app/components/SurveyModal";
 
 export default function SettingsPage() {
   const { t } = useLanguage();
@@ -58,6 +50,7 @@ export default function SettingsPage() {
   const [mfaCode, setMfaCode] = useState("");
   const [mfaCodeError, setMfaCodeError] = useState("");
   const [isVerifyingMfaCode, setIsVerifyingMfaCode] = useState(false);
+  const [isSurveyOpen, setIsSurveyOpen] = useState(false);
 
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: "",
@@ -262,7 +255,7 @@ export default function SettingsPage() {
 
   if (authLoading || pageLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="bg-background flex min-h-screen items-center justify-center p-4">
         <Loader size="lg" text={t("pages.settings.loading")} />
       </div>
     );
@@ -277,34 +270,34 @@ export default function SettingsPage() {
   const toggleSection = (id: string) => setOpenSection((prev) => (prev === id ? null : id));
 
   return (
-    <div className="mx-auto w-full max-w-2xl space-y-6 px-4 pb-16 pt-8 sm:px-6 sm:pt-10">
+    <div className="mx-auto w-full max-w-2xl space-y-6 px-4 pt-8 pb-16 sm:px-6 sm:pt-10">
       <div className="space-y-2">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+        <h1 className="text-foreground text-2xl font-semibold tracking-tight sm:text-3xl">
           {t("pages.settings.title")}
         </h1>
-        <p className="text-sm leading-6 text-muted-foreground sm:text-base">
+        <p className="text-muted-foreground text-sm leading-6 sm:text-base">
           {t("pages.settings.subtitle")}
         </p>
       </div>
 
       {/* Account summary cards */}
       <div className="grid gap-3 sm:grid-cols-2">
-        <div className="flex items-start gap-3 rounded-2xl border border-border bg-card px-4 py-3.5 shadow-sm">
+        <div className="border-border bg-card flex items-start gap-3 rounded-2xl border px-4 py-3.5 shadow-sm">
           <User className="mt-0.5 h-5 w-5 shrink-0 text-[#0d7377]" />
           <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+            <p className="text-muted-foreground text-[11px] font-semibold tracking-wide uppercase">
               Signed in as
             </p>
-            <p className="mt-0.5 truncate text-sm font-medium text-foreground">{user.email}</p>
+            <p className="text-foreground mt-0.5 truncate text-sm font-medium">{user.email}</p>
           </div>
         </div>
-        <div className="flex items-start gap-3 rounded-2xl border border-border bg-card px-4 py-3.5 shadow-sm">
+        <div className="border-border bg-card flex items-start gap-3 rounded-2xl border px-4 py-3.5 shadow-sm">
           <KeyRound className="mt-0.5 h-5 w-5 shrink-0 text-[#0d7377]" />
           <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+            <p className="text-muted-foreground text-[11px] font-semibold tracking-wide uppercase">
               Security status
             </p>
-            <p className="mt-0.5 text-sm font-medium text-foreground">
+            <p className="text-foreground mt-0.5 text-sm font-medium">
               {profile?.mfa_enabled
                 ? "Two-factor authentication enabled"
                 : "Two-factor authentication off"}
@@ -315,31 +308,31 @@ export default function SettingsPage() {
 
       {/* Security & Access */}
       <section className="space-y-2.5">
-        <h2 className="px-1 text-base font-semibold text-foreground">Security &amp; Access</h2>
-        <div className="divide-y divide-border/60 overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+        <h2 className="text-foreground px-1 text-base font-semibold">Security &amp; Access</h2>
+        <div className="divide-border/60 border-border bg-card divide-y overflow-hidden rounded-2xl border shadow-sm">
           {/* Account Settings row */}
           <button
             type="button"
             onClick={() => toggleSection("account")}
             aria-expanded={accountOpen}
-            className="flex w-full cursor-pointer items-center gap-3 px-4 py-4 text-left transition hover:bg-muted/40"
+            className="hover:bg-muted/40 flex w-full cursor-pointer items-center gap-3 px-4 py-4 text-left transition"
           >
             <User className="h-5 w-5 shrink-0 text-[#0d7377]" />
-            <span className="flex-1 text-sm font-medium text-foreground">Account Settings</span>
+            <span className="text-foreground flex-1 text-sm font-medium">Account Settings</span>
             <ChevronRight
-              className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${
+              className={`text-muted-foreground h-4 w-4 shrink-0 transition-transform ${
                 accountOpen ? "rotate-90" : ""
               }`}
             />
           </button>
           {accountOpen && (
-            <div className="space-y-4 bg-muted/20 px-4 py-4">
-              <div className="flex items-center justify-between gap-4 rounded-xl border border-border bg-background p-4">
+            <div className="bg-muted/20 space-y-4 px-4 py-4">
+              <div className="border-border bg-background flex items-center justify-between gap-4 rounded-xl border p-4">
                 <div className="min-w-0 space-y-1">
-                  <Label htmlFor="two-factor" className="text-sm font-medium text-foreground">
+                  <Label htmlFor="two-factor" className="text-foreground text-sm font-medium">
                     Two-Factor Authentication
                   </Label>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     {profile?.mfa_enabled ? "Enabled on this account" : "Not enabled yet"}
                   </p>
                 </div>
@@ -347,8 +340,8 @@ export default function SettingsPage() {
               </div>
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="space-y-1">
-                  <p className="text-sm font-medium text-foreground">Manage authentication</p>
-                  <p className="text-sm text-muted-foreground">Open the 2FA setup flow.</p>
+                  <p className="text-foreground text-sm font-medium">Manage authentication</p>
+                  <p className="text-muted-foreground text-sm">Open the 2FA setup flow.</p>
                 </div>
                 <Button
                   onClick={() => router.push("/mfa-setup")}
@@ -368,12 +361,12 @@ export default function SettingsPage() {
                 type="button"
                 onClick={() => toggleSection("password")}
                 aria-expanded={passwordOpen}
-                className="flex w-full cursor-pointer items-center gap-3 px-4 py-4 text-left transition hover:bg-muted/40"
+                className="hover:bg-muted/40 flex w-full cursor-pointer items-center gap-3 px-4 py-4 text-left transition"
               >
                 <KeyRound className="h-5 w-5 shrink-0 text-[#0d7377]" />
-                <span className="flex-1 text-sm font-medium text-foreground">Change Password</span>
+                <span className="text-foreground flex-1 text-sm font-medium">Change Password</span>
                 <ChevronRight
-                  className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${
+                  className={`text-muted-foreground h-4 w-4 shrink-0 transition-transform ${
                     passwordOpen ? "rotate-90" : ""
                   }`}
                 />
@@ -403,7 +396,7 @@ export default function SettingsPage() {
                           <button
                             type="button"
                             onClick={() => setShowCurrentPassword((prev) => !prev)}
-                            className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground transition hover:text-foreground"
+                            className="text-muted-foreground hover:text-foreground absolute inset-y-0 right-0 flex items-center px-3 transition"
                             aria-label={
                               showCurrentPassword
                                 ? "Hide current password"
@@ -439,7 +432,7 @@ export default function SettingsPage() {
                           <button
                             type="button"
                             onClick={() => setShowNewPassword((prev) => !prev)}
-                            className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground transition hover:text-foreground"
+                            className="text-muted-foreground hover:text-foreground absolute inset-y-0 right-0 flex items-center px-3 transition"
                             aria-label={showNewPassword ? "Hide new password" : "Show new password"}
                           >
                             {showNewPassword ? (
@@ -471,7 +464,7 @@ export default function SettingsPage() {
                           <button
                             type="button"
                             onClick={() => setShowConfirmPassword((prev) => !prev)}
-                            className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground transition hover:text-foreground"
+                            className="text-muted-foreground hover:text-foreground absolute inset-y-0 right-0 flex items-center px-3 transition"
                             aria-label={
                               showConfirmPassword
                                 ? "Hide confirmation password"
@@ -514,32 +507,32 @@ export default function SettingsPage() {
 
       {/* Device & Sessions */}
       <section className="space-y-2.5">
-        <h2 className="px-1 text-base font-semibold text-foreground">Device &amp; Sessions</h2>
-        <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+        <h2 className="text-foreground px-1 text-base font-semibold">Device &amp; Sessions</h2>
+        <div className="border-border bg-card overflow-hidden rounded-2xl border shadow-sm">
           <button
             type="button"
             onClick={() => setConfirmSignOutOpen(true)}
-            className="flex w-full cursor-pointer items-center gap-3 px-4 py-4 text-left transition hover:bg-muted/40"
+            className="hover:bg-muted/40 flex w-full cursor-pointer items-center gap-3 px-4 py-4 text-left transition"
           >
             <LogOut className="h-5 w-5 shrink-0 text-[#0d7377]" />
             <span className="flex-1">
-              <span className="block text-sm font-medium text-foreground">Sign Out</span>
-              <span className="mt-0.5 block text-xs text-muted-foreground">
+              <span className="text-foreground block text-sm font-medium">Sign Out</span>
+              <span className="text-muted-foreground mt-0.5 block text-xs">
                 Sign out of all devices connected to your account.
               </span>
             </span>
-            <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <ChevronRight className="text-muted-foreground h-4 w-4 shrink-0" />
           </button>
         </div>
       </section>
 
       {/* Danger Zone */}
       <section className="space-y-2.5">
-        <h2 className="px-1 text-base font-semibold text-[#c0596a]">Danger Zone</h2>
-        <div className="overflow-hidden rounded-2xl border border-[#c0596a]/30 bg-card shadow-sm">
+        <h2 className="text-foreground px-1 text-base font-semibold">Leaving So Soon?</h2>
+        <div className="bg-card overflow-hidden rounded-2xl border border-[#c0596a]/30 shadow-sm">
           <button
             type="button"
-            onClick={() => setDeleteAccountModalOpen(true)}
+            onClick={() => setIsSurveyOpen(true)}
             disabled={isDeletingAccount}
             className="flex w-full cursor-pointer items-center gap-3 px-4 py-4 text-left transition hover:bg-[#c0596a]/5 disabled:cursor-not-allowed disabled:opacity-60"
           >
@@ -549,10 +542,10 @@ export default function SettingsPage() {
               <Trash2 className="h-5 w-5 shrink-0 text-[#c0596a]" />
             )}
             <span className="flex-1">
-              <span className="block text-sm font-medium text-[#c0596a]">
+              <span className="text-foreground block text-sm font-medium">
                 {isDeletingAccount ? "Deleting..." : "Delete Account"}
               </span>
-              <span className="mt-0.5 block text-xs text-muted-foreground">
+              <span className="text-muted-foreground mt-0.5 block text-xs">
                 Permanently delete your account and related settings data.
               </span>
             </span>
@@ -560,6 +553,34 @@ export default function SettingsPage() {
           </button>
         </div>
       </section>
+
+      <SurveyModal
+        open={isSurveyOpen}
+        onOpenChange={setIsSurveyOpen}
+        onContinue={async ({ reason, followUpAnswers, additionalComments }) => {
+          const response = await fetch("/api/account-deletion-feedback", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              reason,
+              follow_up_answers: followUpAnswers,
+              additional_comments: additionalComments || null,
+            }),
+          });
+
+          if (!response.ok) {
+            const data = await response.json().catch(() => ({}));
+            throw new Error(data.error || "Failed to save account deletion feedback.");
+          }
+
+          setDeleteAccountModalOpen(true);
+        }}
+        onSkip={() => {
+          setDeleteAccountModalOpen(true);
+        }}
+      />
 
       <ConfirmationModal
         open={confirmSignOutOpen}
