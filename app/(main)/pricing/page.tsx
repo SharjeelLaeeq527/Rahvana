@@ -581,7 +581,7 @@ function PricingContent() {
   const searchParams = useSearchParams();
 
   const [userId, setUserId] = useState<string | null>(null);
-  const [userActiveTier, setUserActiveTier] = useState<string | null>(null);
+  const [journeyTiers, setJourneyTiers] = useState<Record<string, string>>({});
   const [isLoadingUser, setIsLoadingUser] = useState(true);
   const [isProcessingAutoCheckout, setIsProcessingAutoCheckout] = useState(false);
   const [isManualCheckoutLoading, setIsManualCheckoutLoading] = useState(false);
@@ -637,6 +637,9 @@ function PricingContent() {
     () => VISA_CATEGORIES.find((v) => v.id === visa) || VISA_CATEGORIES[0],
     [visa]
   );
+  const selectedJourneyTier = visa.toLowerCase().includes("5")
+    ? journeyTiers.ir5 ?? "free"
+    : journeyTiers.ir1 ?? "free";
   const activePlans = activeVisaCategory.plans;
   const paidPlans = activePlans.filter((p) => p.id !== "free");
   const currentPlanData = activePlans.find((p) => p.id === selectedPlan) || activePlans[2];
@@ -873,14 +876,19 @@ function PricingContent() {
       const uid = data.user?.id || null;
       setUserId(uid);
       if (uid) {
-        const { data: profile } = await supabase
-          .from("user_profiles")
-          .select("subscription_tier, subscription_status")
-          .eq("id", uid)
-          .single();
-        if (profile?.subscription_status === "active" && profile?.subscription_tier) {
-          setUserActiveTier(profile.subscription_tier);
-        }
+        const { data: journeys } = await supabase
+          .from("journeys")
+          .select("journey_type, subscription_tier")
+          .eq("user_id", uid);
+        setJourneyTiers(
+          (journeys || []).reduce<Record<string, string>>((tiers, journey) => {
+            const key = String(journey.journey_type || "").toLowerCase().includes("5")
+              ? "ir5"
+              : "ir1";
+            tiers[key] = journey.subscription_tier || "free";
+            return tiers;
+          }, {})
+        );
       }
       setIsLoadingUser(false);
     });
@@ -1254,7 +1262,7 @@ function PricingContent() {
                     executive: 3,
                   };
 
-                  const activeTierRank = TIER_RANK[userActiveTier ?? "free"] ?? 0;
+                  const activeTierRank = TIER_RANK[selectedJourneyTier] ?? 0;
 
                   return (
                     <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
@@ -1265,9 +1273,9 @@ function PricingContent() {
 
                         const planRank = TIER_RANK[plan.id] ?? 0;
 
-                        const isCurrentPlan = !!userActiveTier && plan.id === userActiveTier;
+                        const isCurrentPlan = plan.id === selectedJourneyTier;
 
-                        const isDowngrade = !!userActiveTier && planRank < activeTierRank;
+                        const isDowngrade = planRank < activeTierRank;
 
                         return (
                           <article
