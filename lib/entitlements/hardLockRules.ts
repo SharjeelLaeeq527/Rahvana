@@ -29,8 +29,9 @@ export const HARD_LOCK_RULES: Record<string, PlanTier[]> = {
   step_3_8: ["free"],
   step_3_9: ["free"],
   step_3_10: ["free"],
-  step_3_11: ["free", "basic", "premium"],
-  step_3_12: ["free"],
+  step_3_11: ["free"],
+  step_3_12: ["free", "basic", "premium"],
+  step_3_13: ["free"],
 };
 
 export interface StepLockStatus {
