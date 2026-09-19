@@ -1411,7 +1411,6 @@
                 "items": [
                   "A separate Form I-130 is required for each parent",
                   "You can save progress and return",
-                  "No fee is charged inside the tool",
                   "USCIS account setup and final filing are separate steps"
                 ]
               }
@@ -2253,7 +2252,7 @@
         {
           "step_key": "step_1_10",
           "step_number": 10,
-          "step_name": "Print Hard Copies of the Forms",
+          "step_name": "Print Hard Copy of the Form",
           "step_short_description": "Paper Filing Path",
           "step_type": "action",
           "branch": "paper",
@@ -2262,7 +2261,7 @@
             "filingMethod": "paper"
           },
           "display_number_override": 5,
-          "step_description": "Before mailing anything to USCIS, print the completed I-130 from Rahvana in full, at normal size, and in a clear readable format.",
+          "step_description": "Before mailing anything to USCIS, print the completed I-130 form from Rahvana, at normal size, and in a clear readable format.",
           "who": "Petitioner",
           "where": "uscis.gov/i-130",
           "timeline": "1-2 hours",
@@ -2305,8 +2304,8 @@
             "action_items_title": "Before you continue",
             "action_items": [
               {
-                "title": "Print both forms",
-                "description": "Make sure you print the completed I-130 together so the packet is ready for assembly."
+                "title": "Print form",
+                "description": "Make sure you print the completed I-130 form so the packet is ready for assembly."
               },
               {
                 "title": "Check page quality",
@@ -2316,8 +2315,8 @@
             "guide_steps": [
               {
                 "label": "Print guide · Step 1",
-                "title": "Navigate to the Print Hard Copies step",
-                "text": "In USCIS Petition Filing, navigate to the <strong>Print Hard Copies of the Forms</strong> step, and click on either <strong>Print I-130</strong> button.",
+                "title": "Navigate to the Print Hard Copy step",
+                "text": "In USCIS Petition Filing, navigate to the <strong>Print Hard Copy of the Form</strong> step, and click on <strong>Print I-130</strong> button.",
                 "url": "uscis-petition",
                 "visual": "<img src=\"/assets/images/ir5-journey/c1_step10/1-click-button.png\" alt=\"Navigate to print forms\" style=\"width:100%; \" />",
                 "note": "If you have not added this document in the Document Vault yet, you will get an error. First upload the document there, then try again."
@@ -2341,10 +2340,10 @@
               {
                 "label": "Print guide · Step 4",
                 "title": "Set paper size and orientation",
-                "text": "Select the correct paper size: <strong>Letter</strong> (8.5\" × 11\") for US filing, or <strong>A4</strong> (210 × 297mm) for Pakistan or other international locations. Ensure orientation matches your document.",
+                "text": "Select the correct paper size: Use <strong>US Letter size (8.5\" × 11\") only </strong>Do not use A4 paper, even if printing from Pakistan or overseas. Match your printer settings to the document orientation and select \"Actual Size.\"",
                 "url": "paper-setup",
                 "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/4-select-paper-size.png\" alt=\"Set paper size\" style=\"width:100%; \" />",
-                "note": "USCIS accepts both Letter and A4 sizes. Check your local requirements."
+                "note": "USCIS strictly mandates Letter size for scanning and processing. A4 paper is not accepted and may result in your application being rejected or delayed."
               },
               {
                 "label": "Print guide · Step 5",
@@ -2356,8 +2355,8 @@
               },
               {
                 "label": "Download guide · Step 1",
-                "title": "Navigate to the Print Hard Copies step",
-                "text": "In USCIS Petition Filing, navigate to the <strong>Print Hard Copies of Forms</strong> step, and click on either <strong>Print I-130</strong> button.",
+                "title": "Navigate to the Print Hard Copy step",
+                "text": "In USCIS Petition Filing, navigate to the <strong>Print Hard Copy of Form</strong> step, and click on <strong>Print I-130</strong> button.",
                 "url": "uscis-petition",
                 "visual": "<img src=\"/assets/images/ir5-journey/c1_step10/1-click-button.png\" alt=\"Navigate to download forms\" style=\"width:100%; \" />",
                 "note": "If you have not added this document in the Document Vault yet, you will get an error. First upload the document there, then try again."
@@ -2441,7 +2440,7 @@
               },
               {
                 "title": "USCIS Form G-1651 exemption requirements",
-                "description": "To request an exemption, you must certify that electronic payment and collection methods are not possible and meet 1 or more of the following requirements: (1) You do not have access to banking services or electronic payment systems; (2) Electronic disbursement would cause you undue hardship, as discussed in 31 C.F.R. Part 208; (3) Non-electronic transactions are necessary or desirable for national security or law enforcement reasons; or (4) There are other circumstances as determined by the secretary of the treasury, as reflected in regulations or other guidance."
+                "description": "To request an exemption, you must certify that electronic payment and collection methods are not possible and meet 1 or more requirements under 31 C.F.R. Part 208 (including lack of banking access, infrastructure barriers in remote/foreign regions, personal financial/physical hardship, national security, or Treasury-designated circumstances). Official legal citation: GovInfo 31 C.F.R. Part 208."
               }
             ],
             "second_card_title": "Save payment method",
@@ -2495,7 +2494,7 @@
               {
                 "label": "Payment guide · Step 3",
                 "title": "Choose your paper-filing payment method",
-                "text": "USCIS no longer accepts personal/business checks, money orders, or cashier's checks. You must use one of the approved payment or fee exemption options:<ul style=\"margin-top: 8px; margin-bottom: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px;\"><li><strong>Option A:</strong> Pay by credit, debit, or prepaid card using <strong>Form G-1450</strong> (Authorization for Credit Card Transactions).</li><li><strong>Option B:</strong> Pay from a U.S. bank account (ACH) using <strong>Form G-1650</strong>.</li><li><strong>Option C:</strong> If eligible for an exemption from the higher paper filing fee, submit <strong>Form G-1651</strong> (Exemption for Paper Fee Payment).</li></ul><div style=\"margin-top: 14px; padding: 12px 14px; background: #f0f7ff; border: 1px solid #bfdbfe; border-left: 4px solid #2563eb; border-radius: 8px;\"><div style=\"font-weight: 700; font-size: 13px; color: #1e3a8a; margin-bottom: 4px;\">USCIS Form G-1651 Exemption Requirements</div><div style=\"font-size: 12.5px; line-height: 1.5; color: #1e293b; margin-bottom: 6px;\">To request an exemption, you must certify that electronic payment and collection methods are not possible and you meet 1 or more of the following requirements:</div><ul style=\"margin: 0; padding-left: 18px; font-size: 12px; line-height: 1.55; color: #334155; display: flex; flex-direction: column; gap: 4px;\"><li>You do not have access to banking services or electronic payment systems;</li><li>Electronic disbursement would cause you undue hardship, as discussed in 31 C.F.R. Part 208;</li><li>Non-electronic transactions are necessary or desirable for national security or law enforcement reasons; or</li><li>There are other circumstances as determined by the secretary of the treasury, as reflected in regulations or other guidance.</li></ul></div>",
+                "text": "USCIS no longer accepts personal/business checks, money orders, or cashier's checks. You must use one of the approved payment or fee exemption options:<ul style=\"margin-top: 8px; margin-bottom: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px;\"><li><strong>Option A:</strong> Pay by credit, debit, or prepaid card using <strong>Form G-1450</strong> (Authorization for Credit Card Transactions).</li><li><strong>Option B:</strong> Pay from a U.S. bank account (ACH) using <strong>Form G-1650</strong>.</li><li><strong>Option C:</strong> If eligible for an exemption from the higher paper filing fee, submit <strong>Form G-1651</strong> (Exemption for Paper Fee Payment).</li></ul><div style=\"margin-top: 14px; padding: 12px 14px; background: #f0f7ff; border: 1px solid #bfdbfe; border-left: 4px solid #2563eb; border-radius: 8px;\"><div style=\"font-weight: 700; font-size: 13px; color: #1e3a8a; margin-bottom: 4px;\">USCIS Form G-1651 Exemption Requirements</div><div style=\"font-size: 12.5px; line-height: 1.5; color: #1e293b; margin-bottom: 6px;\">To request an exemption, you must certify that electronic payment and collection methods are not possible and you meet 1 or more of the following requirements:</div><ul style=\"margin: 0; padding-left: 18px; font-size: 12px; line-height: 1.55; color: #334155; display: flex; flex-direction: column; gap: 4px;\"><li>You do not have access to banking services or electronic payment systems;</li><li>Electronic disbursement would cause you undue hardship (infrastructure barriers in remote/foreign areas or personal limitations), as discussed in <a href=\"https://www.govinfo.gov/content/pkg/CFR-2025-title31-vol2/pdf/CFR-2025-title31-vol2-sec208-1.pdf\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #2563eb; font-weight: 600; text-decoration: underline;\">31 C.F.R. Part 208 (GovInfo Official Citation ↗)</a>;</li><li>Non-electronic transactions are necessary or desirable for national security or law enforcement reasons; or</li><li>There are other circumstances as determined by the secretary of the treasury, as reflected in regulations or other guidance.</li></ul><div style=\"margin-top: 8px; padding: 6px 10px; background: #e0f2fe; border-radius: 6px; font-size: 11.5px; color: #0369a1;\"><strong>Hardship categories under 31 C.F.R. § 208.4:</strong> Infrastructure barriers (foreign/remote regions lacking U.S. digital banking) and personal barriers (financial, physical, or technical inability to manage online banking).</div></div>",
                 "url": "uscis.gov/forms/all-forms",
                 "visual": "<img src=\"/assets/images/ir1-journey/c1-step7(mailing)/peyment method.png\" alt=\"Payment Methods\" style=\"width:100%; border-radius: 8px; border: 1px solid #e2e8f0;\" />",
                 "note": "Download and print Form G-1450, Form G-1650, or Form G-1651 from uscis.gov and fill it out completely before placing it in the packet."
@@ -2505,7 +2504,7 @@
                 "title": "Place payment at the front of the packet",
                 "text": "Once the payment item is ready, whether it is a completed Form G-1450 (card), Form G-1650 (ACH), or Form G-1651 (Fee Exemption), place it at the very front of the mailing packet. The payment or fee exemption form should be the first thing USCIS sees when they open the envelope.",
                 "url": "paper packet",
-                "visual": "<div style=\"padding:12px 0;\"><div style=\"font-weight:600;font-size:14px;margin-bottom:14px;\">Recommended Packet Order</div><div style=\"display:flex;flex-direction:column;gap:8px;\"><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#16a34a;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">1</div><div><div style=\"font-weight:600;font-size:13px;\">Payment / Fee Exemption</div><div style=\"font-size:12px;color:#64748b;\">Form G-1450 (card), Form G-1650 (ACH), or Form G-1651 (Exemption), placed first</div></div></div><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#3b82f6;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">2</div><div><div style=\"font-weight:600;font-size:13px;\">Forms</div><div style=\"font-size:12px;color:#64748b;\">Completed I-130</div></div></div><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#8b5cf6;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">3</div><div><div style=\"font-weight:600;font-size:13px;\">Supporting Evidence</div><div style=\"font-size:12px;color:#64748b;\">Citizenship proof, marriage docs, translations, relationship evidence</div></div></div></div></div>",
+                "visual": "<div style=\"padding:12px 0;\"><div style=\"font-weight:600;font-size:14px;margin-bottom:14px;\">Recommended Packet Order</div><div style=\"display:flex;flex-direction:column;gap:8px;\"><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#16a34a;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">1</div><div><div style=\"font-weight:600;font-size:13px;\">Payment / Fee Exemption</div><div style=\"font-size:12px;color:#64748b;\">Form G-1450 (card), Form G-1650 (ACH), or Form G-1651 (Exemption), placed first</div></div></div><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#3b82f6;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">2</div><div><div style=\"font-weight:600;font-size:13px;\">Form</div><div style=\"font-size:12px;color:#64748b;\">Completed I-130</div></div></div><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#8b5cf6;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">3</div><div><div style=\"font-weight:600;font-size:13px;\">Supporting Evidence</div><div style=\"font-size:12px;color:#64748b;\">Citizenship proof, marriage docs, translations, relationship evidence</div></div></div></div></div>",
                 "note": "Keep the payment form separate and easy to reach so packet assembly in the next step stays quick and organized."
               },
               {
@@ -2608,8 +2607,8 @@
               {
                 "label": "Assembly guide · Step 2",
                 "title": "Place the forms next",
-                "text": "Put the completed I-130 right behind the payment section as the main filing forms.",
-                "visual": "<img src=\"/assets/images/ir1-journey/c1_step8_mail/step2.png\" alt=\"Place the forms next\" style=\"width:100%; \" />",
+                "text": "Put the completed I-130 right behind the payment section as the main filing form.",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step8_mail/step2a.png\" alt=\"Place the forms next\" style=\"width:100%; \" />",
                 "note": "Keep the pages complete and in order. Do not mix the form pages into the evidence stack."
               },
               {
@@ -2630,7 +2629,7 @@
                 "label": "Assembly guide · Step 5",
                 "title": "Do one final packet check",
                 "text": "Before mailing, confirm the packet is complete, legible, and arranged the way you intend to send it.",
-                "visual": "<img src=\"/assets/images/ir1-journey/c1_step8_mail/step5.png\" alt=\"Do one final packet check\" style=\"width:100%; \" />",
+                "visual": "<img src=\"/assets/images/ir1-journey/c1_step8_mail/step5c.png\" alt=\"Do one final packet check\" style=\"width:100%; \" />",
                 "note": "Once this is done, the next paper-only step is mailing the packet and tracking delivery."
               }
             ],

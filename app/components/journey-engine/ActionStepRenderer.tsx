@@ -16,11 +16,13 @@ import {
   Lock,
   Crown,
   X,
+  BookOpen,
 } from "lucide-react";
 // import { InterviewOutcomeTool } from "./components/InterviewOutcomeTool";
 // import { Input221gTool } from "./components/Input221gTool";
 import { useStepEntitlement } from "./useStepEntitlement";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
+import { CfrExplanationModal } from "@/app/components/shared/CfrExplanationModal";
 import { useWizard } from "@/app/(main)/dashboard/hooks/useWizard";
 import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 import { RoadmapStepV3 } from "./types";
@@ -247,6 +249,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
   const [selectedGuideType, setSelectedGuideType] = useState<"print" | "download" | null>(null);
   const [statusSaved, setStatusSaved] = useState(false);
   const [selectedDropdown, setSelectedDropdown] = useState("");
+  const [isCfrModalOpen, setIsCfrModalOpen] = useState(false);
   const g1651RequirementsRef = useRef<HTMLElement | null>(null);
   const [mailingCarrier, setMailingCarrier] = useState("");
   const [mailingTracking, setMailingTracking] = useState("");
@@ -2453,10 +2456,71 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                 >
                   2
                 </span>
-                <span style={{ fontSize: "13px", lineHeight: 1.55, color: "#334155" }}>
-                  Electronic disbursement would cause you undue hardship, as discussed in{" "}
-                  <strong>31 C.F.R. Part 208</strong>.
-                </span>
+                <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                  <span style={{ fontSize: "13px", lineHeight: 1.55, color: "#334155" }}>
+                    Electronic disbursement would cause you undue hardship, as discussed in{" "}
+                    <button
+                      type="button"
+                      onClick={() => setIsCfrModalOpen(true)}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        padding: "0 2px",
+                        color: "#2563eb",
+                        fontWeight: 700,
+                        textDecoration: "underline",
+                        textUnderlineOffset: "3px",
+                        cursor: "pointer",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "3px",
+                        fontSize: "inherit",
+                        fontFamily: "inherit",
+                      }}
+                      title="Click to view explanation of 31 C.F.R. Part 208"
+                    >
+                      31 C.F.R. Part 208
+                    </button>
+                    .
+                  </span>
+                  <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "8px", marginTop: "2px" }}>
+                    <button
+                      type="button"
+                      onClick={() => setIsCfrModalOpen(true)}
+                      style={{
+                        background: "rgba(37, 99, 235, 0.08)",
+                        border: "1px solid rgba(37, 99, 235, 0.22)",
+                        color: "#2563eb",
+                        borderRadius: "6px",
+                        padding: "2px 8px",
+                        fontSize: "11px",
+                        fontWeight: 600,
+                        cursor: "pointer",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "4px",
+                      }}
+                    >
+                      <BookOpen size={12} />
+                      <span>View hardship explanation</span>
+                    </button>
+                    <a
+                      href="https://www.govinfo.gov/content/pkg/CFR-2025-title31-vol2/pdf/CFR-2025-title31-vol2-sec208-1.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        color: "#64748b",
+                        fontSize: "11px",
+                        textDecoration: "underline",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "2px",
+                      }}
+                    >
+                      GovInfo citation ↗
+                    </a>
+                  </div>
+                </div>
               </div>
 
               <div
@@ -2787,7 +2851,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   Choose Your Guide
                 </h2>
                 <p className="text-xs leading-relaxed text-[#6b8097] sm:text-sm">
-                  Select how you would like to proceed with your forms
+                  Select how you would like to proceed with your form
                 </p>
               </div>
 
@@ -2809,7 +2873,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                       View Print Guide
                     </div>
                     <div className="text-xs text-[#6b8097] sm:text-sm">
-                      Step-by-step guide to print your forms
+                      Step-by-step guide to print your form
                     </div>
                   </div>
                 </button>
@@ -2831,7 +2895,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                       View Download Guide
                     </div>
                     <div className="text-xs text-[#6b8097] sm:text-sm">
-                      Step-by-step guide to download your forms
+                      Step-by-step guide to download your form
                     </div>
                   </div>
                 </button>
@@ -2856,6 +2920,11 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
           onClose={stepEntitlement.closeUpgradeModal}
         />
       )}
+
+      <CfrExplanationModal
+        open={isCfrModalOpen}
+        onOpenChange={setIsCfrModalOpen}
+      />
 
       <style>{`
         @media (max-width: 640px) {
