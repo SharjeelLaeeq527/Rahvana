@@ -24,6 +24,8 @@ import {
   fetchUserJourneysCached,
   isSameJourneyType,
 } from "@/lib/document-vault/journey-mapping";
+import { isDocumentShareableAcrossCandidates } from "@/lib/document-vault/candidate-sharing";
+import { getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
 
 interface DocumentUploadModalProps {
   open: boolean;
@@ -131,10 +133,23 @@ export function DocumentUploadModal({
   }, [open, userJourneys, activeJourneyId, currentJourneyId]);
 
   const otherJourneys = useMemo(() => {
+    const activeJourney = effectiveUserJourneys.find((j) => j.id === effectiveActiveJourneyId);
+    const activeBase = activeJourney ? getBaseVisaCategory(activeJourney.journey_type) : null;
+
     return effectiveUserJourneys.filter((j) => {
       if (j.id === effectiveActiveJourneyId) return false;
       if (isSameJourneyType(j.journey_type, effectiveActiveJourneyId)) return false;
-      return isDocumentApplicableToJourney(documentDef.id, documentDef.name, j.journey_type);
+      if (!isDocumentApplicableToJourney(documentDef.id, documentDef.name, j.journey_type))
+        return false;
+
+      // Sibling candidate = another candidate (e.g. the other parent) in the SAME case,
+      // i.e. same base visa category. Between siblings, only offer documents that are
+      // shareable across candidates; parent-specific docs (passport, CNIC, birth, medical,
+      // ...) are never offered. Sharing to a genuinely different visa journey is unchanged.
+      const isSiblingCandidate = !!activeBase && getBaseVisaCategory(j.journey_type) === activeBase;
+      if (isSiblingCandidate && !isDocumentShareableAcrossCandidates(documentDef)) return false;
+
+      return true;
     });
   }, [effectiveUserJourneys, effectiveActiveJourneyId, documentDef]);
 
@@ -144,7 +159,9 @@ export function DocumentUploadModal({
 
   useEffect(() => {
     if (open) {
-      setSharedJourneyIds(otherJourneys.map((j) => j.id));
+      // Opt-in by design: nothing pre-selected. The user must explicitly tick a target to
+      // share this document with another candidate/journey.
+      setSharedJourneyIds([]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, otherJourneysKey]);

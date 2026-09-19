@@ -351,9 +351,20 @@ data is auto-shared across candidates (`SHARED_PETITIONER_FIELDS`) while benefic
 isolated (`CANDIDATE_SPECIFIC_FIELDS`). The vault, roadmap, tools and forms all scope by the
 active candidate's journey (via `useCandidate()` + `journey_id`); the vault therefore reuses
 the existing per-`journey_id` scoping (no `candidate_id` column). UI: `CandidateSwitcherTray`
-+ `ActiveCandidateBadge` in the SiteHeader, `AddCandidateModal`. Full design:
+(switch / add / rename / preview badge) is rendered **only inside the IR-5 journey card** -
+the roadmap dashboard (`RoadmapLayoutEngine`) and the Document Vault page - gated by
+`getBaseVisaCategory(journey_type)` being IR-5/IR-2. It is intentionally **NOT** in the global
+SiteHeader and never appears for IR-1 (`ActiveCandidateBadge`/header tray were removed).
+`AddCandidateModal` opens from the tray. Full design:
 `docs/multi-candidate-desciption.md`. **Cross-candidate document sharing** (e.g. a petitioner
-doc used for both parents) rides the existing **cross-journey** share (`shareWithJourneyIds`);
+doc used for both parents) rides the existing **cross-journey** share (`shareWithJourneyIds`).
+Both upload modals default the share targets to **unchecked (opt-in)**, and when a target is a
+**sibling candidate** (another parent = same base visa category via `getBaseVisaCategory`) they
+only offer documents that pass `isDocumentShareableAcrossCandidates`
+(`lib/document-vault/candidate-sharing.ts`: petitioner/joint-sponsor/household docs shareable by
+default, any BENEFICIARY doc parent-specific, explicit `shareableAcrossCandidates` override on a
+`DocumentDefinition`) - so parent-specific docs (passport, CNIC, birth, medical) are never
+offered between parents, while sharing to a genuinely different visa journey is unchanged.
 `DELETE /api/documents/[id]` reference-counts `storage_path` before removing the blob so
 deleting one shared copy never orphans the file for the other candidate's journey.
 Vault files are AES-256-GCM encrypted with a **per-user** key

@@ -57,7 +57,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Plus, Info, LayoutTemplate } from "lucide-react";
 import { useWizard } from "@/app/(main)/dashboard/hooks/useWizard";
 import { useCandidate } from "@/app/context/CandidateContext";
-import { getJourneyKeyForCandidate } from "@/lib/candidate/candidateSyncService";
+import { getJourneyKeyForCandidate, getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
+import { CandidateSwitcherTray } from "@/app/components/candidate/CandidateSwitcherTray";
 import Link from "next/link";
 import Image from "next/image";
 import { PageGate } from "@/app/components/entitlements/PageGate";
@@ -166,6 +167,14 @@ export default function DocumentVaultPage() {
    */
   const journeyGateEvaluated = useRef(false);
 
+  /**
+   * Tracks the last candidate we auto-resolved to a journey. The candidate->journey sync
+   * effect must only run when the CANDIDATE changes, otherwise "Back to Journeys"
+   * (which sets activeJourneyId to null) is instantly undone by the effect re-selecting the
+   * candidate's journey.
+   */
+  const lastResolvedCandidateRef = useRef<string | null>(null);
+
   const { activeCandidate, activeCandidateId, isMultiCandidate, candidates } = useCandidate();
 
   // Derive active candidate journey key
@@ -178,6 +187,15 @@ export default function DocumentVaultPage() {
   const activeJourney = useMemo(() => {
     return userJourneys.find((j) => j.id === activeJourneyId) ?? null;
   }, [userJourneys, activeJourneyId]);
+
+  // Candidate (Mother/Father) switching only applies to multi-candidate categories (IR-5,
+  // and future IR-2). Never for IR-1. Gate purely on the ACTIVE JOURNEY's type so the
+  // candidate default on the profile can never leak the switcher into an IR-1 vault.
+  const isCandidateJourney = useMemo(() => {
+    if (!activeJourney?.journey_type) return false;
+    const base = getBaseVisaCategory(activeJourney.journey_type);
+    return base === "IR-5" || base === "IR-2";
+  }, [activeJourney]);
 
   const journeyRoadmapHref = useMemo(() => {
     const type = activeJourney?.journey_type?.toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -467,6 +485,11 @@ export default function DocumentVaultPage() {
   useEffect(() => {
     if (!userJourneys || userJourneys.length === 0 || !activeCandidate) return;
 
+    // Only react to an actual CANDIDATE change. Without this guard, clicking
+    // "Back to Journeys" (which sets activeJourneyId to null) would be instantly
+    // reverted here, and picking a different journey folder would bounce back.
+    if (activeCandidateId === lastResolvedCandidateRef.current) return;
+
     const visaCategory = activeCandidate.visaCategory || "IR-5";
     const candidateJourneyKey = getJourneyKeyForCandidate(visaCategory, activeCandidate.id);
     const normCandidateKey = candidateJourneyKey.toLowerCase().replace(/[-:_]/g, "");
@@ -484,15 +507,23 @@ export default function DocumentVaultPage() {
       return normJ === normCandidateKey || (normJ.includes(normCandidateKey) && !normJ.includes("candidate1"));
     });
 
-    if (matched && matched.id !== activeJourneyId) {
-      setActiveJourneyId(matched.id);
-      if (typeof window !== "undefined") {
-        sessionStorage.setItem(SESSION_KEY, matched.id);
+    // Only mark this candidate resolved once we actually found a journey for it, so a
+    // late-arriving journey (e.g. a freshly created 2nd-parent journey) is still picked up.
+    if (matched) {
+      lastResolvedCandidateRef.current = activeCandidateId;
+      if (matched.id !== activeJourneyId) {
+        setActiveJourneyId(matched.id);
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem(SESSION_KEY, matched.id);
+        }
       }
-    } else if (!matched && wizard.state.backendId && wizard.state.backendId !== activeJourneyId) {
-      setActiveJourneyId(wizard.state.backendId);
-      if (typeof window !== "undefined") {
-        sessionStorage.setItem(SESSION_KEY, wizard.state.backendId);
+    } else if (wizard.state.backendId) {
+      lastResolvedCandidateRef.current = activeCandidateId;
+      if (wizard.state.backendId !== activeJourneyId) {
+        setActiveJourneyId(wizard.state.backendId);
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem(SESSION_KEY, wizard.state.backendId);
+        }
       }
     }
   }, [activeCandidateId, activeCandidate, userJourneys, activeJourneyId, wizard.state.backendId]);
@@ -1050,7 +1081,7 @@ export default function DocumentVaultPage() {
                                 )
                               : `${activeCandidate?.visaCategory || "IR-5"} Journey`}
                         </Badge>
-                        {isMultiCandidate && activeCandidate && (
+                        {isCandidateJourney && isMultiCandidate && activeCandidate && (
                           <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                             <span>{activeCandidate.relation}:</span>
@@ -1086,6 +1117,14 @@ export default function DocumentVaultPage() {
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                 {/* Left Side: Stats & Configuration */}
                 <div className="lg:col-span-3 space-y-6 lg:sticky lg:top-24">
+                  {/* Candidate switcher - shown ONLY inside a multi-candidate (IR-5) journey,
+                      never in the global header and never for IR-1. */}
+                  {isCandidateJourney && (
+                    <Card className="overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm p-0">
+                      <CandidateSwitcherTray />
+                    </Card>
+                  )}
+
                   {/* Professional Stats Card */}
                   <Card className="overflow-hidden border-none shadow-xl bg-linear-to-br from-primary via-primary/95 to-primary/90 text-white p-0">
                     <div className="p-6">

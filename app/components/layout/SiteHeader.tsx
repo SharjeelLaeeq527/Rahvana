@@ -56,8 +56,6 @@ import { NAV_DATA } from "./navigationData";
 import { ConfirmationModal } from "../shared/ConfirmationModal";
 import { requestNavigation } from "@/lib/guides/navigationGuardStore";
 import { ir1journeyHref, ir5journeyHref } from "@/lib/constants/routes";
-import { ActiveCandidateBadge } from "@/app/components/candidate/ActiveCandidateBadge";
-import { CandidateSwitcherTray } from "@/app/components/candidate/CandidateSwitcherTray";
 
 interface HeaderProps {
   activeSection?: string;
@@ -1666,9 +1664,8 @@ export function SiteHeader({
             <div className="h-10 w-22 animate-pulse rounded-lg bg-[#0d7377]/10" />
           ) : user ? (
             <div className="flex items-center gap-2">
-              <ActiveCandidateBadge
-                onClick={() => setActiveMenu(activeMenu === "profile" ? null : "profile")}
-              />
+              {/* Candidate (Mother/Father) badge intentionally NOT shown in the global
+                  header. Candidate switching lives INSIDE the IR-5 journey/vault only. */}
               <div
                 className="relative"
                 ref={profileRef}
@@ -1748,8 +1745,8 @@ export function SiteHeader({
                         </p>
                       </div>
 
-                      {/* Candidate Switcher Tray */}
-                      <CandidateSwitcherTray onCandidateSwitched={() => setActiveMenu(null)} />
+                    {/* Candidate switcher intentionally removed from the global profile
+                        dropdown - it now lives INSIDE the IR-5 journey/vault card only. */}
 
                     {/* Section 1 */}
                     <div className="border-border border-b py-2">
