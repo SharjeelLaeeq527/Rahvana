@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo, Suspense } from "react";
 import { RoadmapDataV3 } from "./types";
 import { DashboardView } from "./DashboardView";
+import { JourneyPlanBadge } from "@/app/components/shared/JourneyPlanBadge";
 import { ChapterView } from "./ChapterView";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { getActiveStepsForStage } from "./journeyHelpers";
@@ -230,23 +231,29 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
           )}
         </ol>
 
+        <div className="ml-auto shrink-0">
+          <JourneyPlanBadge tier={state.subscriptionTier} />
+        </div>
+
         {/* Right-side toolbar */}
         <div className="nav-actions">
           {view === "step" && (
             <button
-              onClick={handleToggleComplete}
-              className={`complete-btn ${isStepDone ? "complete-btn--done" : "complete-btn--idle"}`}
-              aria-pressed={!!isStepDone}
-              title={isStepDone ? "Completed" : "Mark complete"}
-            >
-              <Check size={12} strokeWidth={3} aria-hidden="true" />
-              <span className="complete-label complete-label--full">
-                {isStepDone ? "Done" : "Complete"}
-              </span>
-              <span className="complete-label complete-label--short">
-                {isStepDone ? "Done" : "Complete"}
-              </span>
-            </button>
+            onClick={handleToggleComplete}
+            className={`complete-btn ${
+              isStepDone ? "complete-btn--done" : "complete-btn--idle"
+            }`}
+            aria-pressed={!!isStepDone}
+            title={isStepDone ? "Completed" : "Mark complete"}
+          >
+            {/* Icon: visible on all screen sizes */}
+            <Check size={12} strokeWidth={3} aria-hidden="true" />
+          
+            {/* Text: hidden on mobile, visible from md */}
+            <span className="hidden md:inline">
+              {isStepDone ? "Done" : "Complete"}
+            </span>
+          </button>
           )}
           {/* DEV ONLY — reset button */}
           {isDevelopment && (

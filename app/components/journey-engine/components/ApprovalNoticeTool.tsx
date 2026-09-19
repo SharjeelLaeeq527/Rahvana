@@ -5,7 +5,7 @@ import { X, Info, RefreshCw, Upload, Lock, Eye } from "lucide-react";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { usePlan } from "@/app/context/PlanContext";
+import { useJourneyPlan } from "@/app/context/useJourneyPlan";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { DocumentPreviewModal } from "@/app/components/document-vault/DocumentPreviewModal";
@@ -91,7 +91,7 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
 
   const { openUploadModal, uploadedDocuments } = useDocumentVaultStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const plan = usePlan();
+  const plan = useJourneyPlan(state);
 
   // Basic tier cannot upload — manual entry only
   const isBasic = plan.tier === "basic";

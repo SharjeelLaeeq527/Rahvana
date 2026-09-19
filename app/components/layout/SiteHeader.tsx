@@ -394,13 +394,11 @@ export function SiteHeader({
   const menuTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [arrowOffset, setArrowOffset] = useState(40);
 
-  const showToggle = process.env.NEXT_PUBLIC_ENVIRONMENT === "development";
+  const journeyButtonText = "Explore Journeys";
 
-  const journeyButtonText = showToggle ? "Explore Journeys" : "IR-1 Journey";
+  const journeyButtonHref = "/visa-category";
 
-  const journeyButtonHref = showToggle ? "/visa-category" : ir1journeyHref;
-
-  const journeyNavigationId = showToggle ? "journeys" : "ir1-journey";
+  const journeyNavigationId = "journeys";
 
   // Refs for each nav button wrapper — used to calculate arrow position
   const navRefs = useRef<Record<string, HTMLDivElement | null>>({

@@ -5,7 +5,13 @@ import { motion } from "framer-motion";
 import { ArrowRight, Hourglass } from "lucide-react";
 import type { ExplorerJourneyCard as ExplorerJourneyCardType } from "../data/journeys";
 
-export function ExplorerJourneyCard({ card }: { card: ExplorerJourneyCardType }) {
+export function ExplorerJourneyCard({
+  card,
+  onSelect,
+}: {
+  card: ExplorerJourneyCardType;
+  onSelect?: () => void;
+}) {
   const isLive = card.status === "Live" && card.href;
 
   if (card.code === "K-1") {
@@ -48,13 +54,28 @@ export function ExplorerJourneyCard({ card }: { card: ExplorerJourneyCardType })
 
       <div className="mt-auto p-5">
         {isLive && card.href ? (
-          <Link
-            href={card.href}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--rahvana-primary)] px-5 py-3 text-sm font-semibold text-white transition duration-200 hover:-translate-y-0.5 hover:bg-[var(--rahvana-primary-dark)]"
-          >
-            Learn More
-            <ArrowRight className="h-4 w-4" />
-          </Link>
+          <div className="flex flex-row sm:flex-col xl:flex-row items-center justify-between gap-3">
+            {/* Learn More */}
+            <Link
+              href={card.href}
+              className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-[var(--rahvana-primary)] px-5 py-3 text-sm font-semibold text-white transition duration-200 hover:-translate-y-0.5 hover:bg-[var(--rahvana-primary-dark)]"
+            >
+              Learn More
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+
+            {/* Select Journey */}
+            {onSelect && (
+              <button
+                type="button"
+                onClick={onSelect}
+                className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-[var(--rv-line)] bg-white px-5 py-3 text-sm font-semibold text-[var(--rv-navy)] transition duration-200 hover:-translate-y-0.5 hover:bg-[var(--rv-sky)] cursor-pointer"
+              >
+                Pick Journey
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            )}
+          </div>
         ) : (
           <button
             type="button"

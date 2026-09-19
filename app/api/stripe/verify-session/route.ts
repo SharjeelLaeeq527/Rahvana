@@ -81,92 +81,86 @@ export async function GET(request: NextRequest) {
 
     // ── 3a. JOURNEY PLAN (subscription) ──────────────────────────────────────
     if (productType === "journey_plan" && productId && TIER_RANK[productId] > 0) {
-      const targetRank = TIER_RANK[productId];
-      const newSubId = (session.subscription as string) || null;
-      // Which single subscription should SURVIVE the cleanup below. Everything
-      // else live on this customer is a duplicate and gets cancelled.
-      let subscriptionToKeep: string | null = null;
+      const visaCategoryMeta = session.metadata?.visa_category || "ir1";
 
-      if (targetRank > currentRank || profile?.subscription_status !== "active") {
-        // Parse add-ons that came with the plan
-        let selectedAddons: string[] = [];
-        if (addonsJson) {
-          try {
-            selectedAddons = JSON.parse(addonsJson);
-          } catch {
-            selectedAddons = addonsJson.split(",");
-          }
-        }
+      // Normalize visa category slug to match DB journey_type ('IR1' or 'IR5')
+      const normVisaType = visaCategoryMeta.toLowerCase().includes("5") ? "IR5" : "IR1";
 
-        const existingAddons = (profile?.profile_details?.purchased_addons as string[]) || [];
-        const mergedAddons = [...new Set([...existingAddons, ...selectedAddons])];
+      // ── 1. Find or update the specific journey record ───────────────────────
+      // The purchased subscription belongs to the selected journey/visa category,
+      // not globally to the user profile.
+      const { data: targetJourney } = await supabase
+        .from("journeys")
+        .select("id, subscription_tier")
+        .eq("user_id", userId)
+        .ilike("journey_type", normVisaType)
+        .maybeSingle();
 
+      if (targetJourney) {
+        // Update the existing journey with the purchased plan tier.
         await supabase
-          .from("user_profiles")
+          .from("journeys")
           .update({
             subscription_tier: productId,
-            subscription_status: "active",
-            stripe_customer_id:
-              (session.customer as string) || profile?.stripe_customer_id || undefined,
-            profile_details: {
-              ...(profile?.profile_details || {}),
-              active_plan: productId,
-              plan_visa_category:
-                session.metadata?.visa_category || profile?.profile_details?.plan_visa_category,
-              plan_purchase_date: new Date().toISOString(),
-              stripe_subscription_id:
-                (session.subscription as string) ||
-                profile?.profile_details?.stripe_subscription_id,
-              purchased_addons: mergedAddons,
-              activated_by: "verify-session",
-            },
+            stripe_subscription_id: (session.subscription as string) || undefined,
+            updated_at: new Date().toISOString(),
           })
-          .eq("id", userId);
-
-        appliedTier = productId;
-        activated = true;
-        // We just made THIS session's subscription the active one in the DB, so
-        // it is the one to keep.
-        subscriptionToKeep = newSubId || (profile?.profile_details?.stripe_subscription_id as string) || null;
+          .eq("id", targetJourney.id);
       } else {
-        // Already on this tier or higher — keep the EXISTING subscription and let
-        // the cleanup cancel this session's redundant new subscription, so the
-        // customer is never left paying for two at once. (With the Stripe-aware
-        // guard in checkout this branch is defensive only.)
-        appliedTier = currentTier;
-        activated = true;
-        subscriptionToKeep =
-          (profile?.profile_details?.stripe_subscription_id as string) || newSubId || null;
+        // Create the journey record if the user does not have one yet.
+        await supabase.from("journeys").insert({
+          user_id: userId,
+          journey_type: normVisaType,
+          filing_method: "online",
+          sponsor_structure: "individual",
+          subscription_tier: productId,
+          stripe_subscription_id: (session.subscription as string) || undefined,
+          status: "not_started",
+        });
       }
 
-      // ── Safety cleanup: exactly ONE live subscription per customer. ──────────
-      // CRITICAL ORDERING: this runs only AFTER payment is confirmed (the `paid`
-      // check above) and AFTER the DB already points at `subscriptionToKeep`.
-      //   • Payment-confirmed-first means a failed/abandoned checkout never
-      //     cancels the user's existing (e.g. Premium) subscription.
-      //   • DB-updated-first means the customer.subscription.deleted webhook that
-      //     fires for each cancelled sub sees the NEW sub as current and skips the
-      //     downgrade (see handleSubscriptionDeleted guard), so tier/journey
-      //     progress is preserved through an upgrade.
-      // This app only ever intends ONE journey subscription per customer, so any
-      // OTHER live sub is a duplicate. We never cancel `subscriptionToKeep`.
-      const customerId = (session.customer as string) || profile?.stripe_customer_id;
-      if (customerId && subscriptionToKeep) {
-        await cancelDuplicateSubscriptions(customerId, subscriptionToKeep, "[verify-session]");
-      } else if (customerId && !subscriptionToKeep) {
-        // Fall back to the checkout hint only when we somehow have no keep target.
-        if (isUpgrade && oldSubId) {
-          stripe.subscriptions
-            .cancel(oldSubId)
-            .catch((e) => console.error("[verify-session] cancel old sub failed:", e?.message));
-        }
-      }
+      // ── 2. Compute highest active tier across all user journeys ─────────────
+      // user_profiles.subscription_tier acts as an account-level summary.
+      const { data: userJourneys } = await supabase
+        .from("journeys")
+        .select("subscription_tier")
+        .eq("user_id", userId);
+
+      const highestRank = (userJourneys || []).reduce((max, journey) => {
+        const rank = TIER_RANK[(journey.subscription_tier || "free").toLowerCase()] || 0;
+
+        return Math.max(max, rank);
+      }, TIER_RANK[productId] || 0);
+
+      const highestTierName =
+        Object.keys(TIER_RANK).find((tier) => TIER_RANK[tier] === highestRank) || productId;
+
+      // ── 3. Update user profile account-level summary ────────────────────────
+      await supabase
+        .from("user_profiles")
+        .update({
+          subscription_tier: highestTierName,
+          subscription_status: "active",
+          stripe_customer_id:
+            (session.customer as string) || profile?.stripe_customer_id || undefined,
+          profile_details: {
+            ...(profile?.profile_details || {}),
+            active_plan: highestTierName,
+            plan_purchase_date: new Date().toISOString(),
+            activated_by: "verify-session",
+          },
+        })
+        .eq("id", userId);
+
+      // ── 4. Mark verification as successfully activated ─────────────────────
+      appliedTier = productId;
+      activated = true;
     }
 
     // ── 3b. STANDALONE ADD-ON (one-time) ─────────────────────────────────────
     else if (productType === "standalone_addon") {
       let selectedAddons: string[] = [];
-    
+
       if (addonsJson) {
         try {
           selectedAddons = JSON.parse(addonsJson);
@@ -174,25 +168,20 @@ export async function GET(request: NextRequest) {
           selectedAddons = addonsJson.split(",");
         }
       }
-    
-      const {
-        alreadyProcessed,
-        profileDetails,
-      } = buildAddonPurchaseUpdate(
+
+      const { alreadyProcessed, profileDetails } = buildAddonPurchaseUpdate(
         profile?.profile_details,
         sessionId,
         selectedAddons
       );
-    
+
       if (!alreadyProcessed) {
         await supabase
           .from("user_profiles")
           .update({
             stripe_customer_id:
-              (session.customer as string) ||
-              profile?.stripe_customer_id ||
-              undefined,
-    
+              (session.customer as string) || profile?.stripe_customer_id || undefined,
+
             profile_details: {
               ...profileDetails,
               activated_by: "verify-session",
@@ -200,7 +189,7 @@ export async function GET(request: NextRequest) {
           })
           .eq("id", userId);
       }
-    
+
       activated = true;
       appliedTier = currentTier;
     }
@@ -243,9 +232,11 @@ export async function GET(request: NextRequest) {
         }
 
         // Reconstruct arrays
-        const attachments = session.metadata?.c_attachments ? session.metadata.c_attachments.split(",") : [];
-        const alternateSlots = session.metadata?.c_alternate_slots 
-          ? session.metadata.c_alternate_slots.split(",").map((s) => new Date(s)) 
+        const attachments = session.metadata?.c_attachments
+          ? session.metadata.c_attachments.split(",")
+          : [];
+        const alternateSlots = session.metadata?.c_alternate_slots
+          ? session.metadata.c_alternate_slots.split(",").map((s) => new Date(s))
           : [];
 
         const bookingData = {

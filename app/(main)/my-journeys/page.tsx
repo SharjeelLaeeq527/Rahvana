@@ -14,6 +14,7 @@ import { Loader } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { JourneyPlanBadge } from "@/app/components/shared/JourneyPlanBadge";
 
 const JOURNEY_ALIASES: Record<string, string> = {
   "ir-1": "ir1",
@@ -45,7 +46,7 @@ const JOURNEY_META: Record<string, JourneyMeta> = {
     name: "IR-1 Spouse Visa",
     description: "A guided immigration journey for the spouse of a U.S. citizen.",
     route: ir1journeyHref,
-    image: "/assets/images/ir1-doc-vault-image.png",
+    image: "/assets/images/ir1-doc-vault-image.jpg",
     code: "IR-1",
   },
   ir5: {
@@ -285,6 +286,7 @@ export default function MyJourneysPage() {
           totalSteps,
           meta,
           status,
+          subscriptionTier: journey.subscription_tier || "free",
           activity: getActivityLabel(journey),
         };
       }),
@@ -372,7 +374,7 @@ export default function MyJourneysPage() {
                   <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
                     {visibleJourneys.map(
                       (
-                        { journey, progress, completedSteps, totalSteps, meta, status, activity },
+                        { journey, progress, completedSteps, totalSteps, meta, status, subscriptionTier, activity },
                         index
                       ) => (
                         <motion.div
@@ -403,6 +405,7 @@ export default function MyJourneysPage() {
                             totalSteps={totalSteps}
                             meta={meta}
                             status={status}
+                            subscriptionTier={subscriptionTier}
                             activity={activity}
                             onOpen={() => handleOpenJourney(meta.route)}
                           />
@@ -430,6 +433,7 @@ interface JourneyCardProps {
     className: string;
     dotClassName: string;
   };
+  subscriptionTier?: string;
   activity: string;
   onOpen: () => void;
 }
@@ -440,6 +444,7 @@ function JourneyCard({
   totalSteps,
   meta,
   status,
+  subscriptionTier = "free",
   activity,
   onOpen,
 }: JourneyCardProps) {
@@ -472,10 +477,13 @@ function JourneyCard({
         <div className="absolute inset-0 bg-linear-to-br from-[#0d7377]/15 via-transparent to-[#32e0c4]/10" />
 
         {/* Image badges */}
-        <div className="absolute left-4 right-4 top-4 flex items-center justify-between gap-3">
-          <Badge className="rounded-full border border-white/25 bg-white/90 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-[#0a5a5d] shadow-lg shadow-slate-950/10 backdrop-blur-md hover:bg-white">
-            {meta.code}
-          </Badge>
+        <div className="absolute left-4 right-4 top-4 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5">
+            <Badge className="rounded-full border border-white/25 bg-white/90 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-[#0a5a5d] shadow-lg shadow-slate-950/10 backdrop-blur-md hover:bg-white">
+              {meta.code}
+            </Badge>
+            <JourneyPlanBadge tier={subscriptionTier} />
+          </div>
 
           <Badge
             className={`rounded-full border px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] shadow-lg shadow-slate-950/10 backdrop-blur-md hover:${status.className} ${status.className}`}

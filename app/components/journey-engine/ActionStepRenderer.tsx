@@ -34,7 +34,7 @@ import { ZoomableGuideImage } from "@/app/components/shared/ZoomableGuideImage";
 import { UploadedDocument, DocumentDefinition } from "@/lib/document-vault/types";
 import { useAuth } from "@/app/context/AuthContext";
 import { PlanTier } from "@/lib/entitlements/config";
-import { usePlan } from "@/app/context/PlanContext";
+import { useJourneyPlan } from "@/app/context/useJourneyPlan";
 import { E, msg } from "@/lib/errors";
 import { SafeHtml } from "../shared/SafeHTML";
 
@@ -189,8 +189,8 @@ function PlanTierBadge({ tier }: { tier: PlanTier | null }) {
     </span>
   );
 }
-function useRequiredTier(featureKey: string | null): PlanTier | null {
-  const plan = usePlan();
+function useRequiredTier(featureKey: string | null, state: any): PlanTier | null {
+  const plan = useJourneyPlan(state);
 
   if (!featureKey) return null;
 
@@ -263,10 +263,10 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
   const [deliveredAt, setDeliveredAt] = useState<string | null>(null);
   const [isLoadingTracking, setIsLoadingTracking] = useState(false);
 
-  const stepEntitlement = useStepEntitlement(step.step_key);
+  const stepEntitlement = useStepEntitlement(step.step_key, state);
   // Executive-only (crown) logic
   // const isCrown = stepEntitlement.featureKey === "polio_certificate" || stepEntitlement.featureKey === "action_221g";
-  const requiredTier = useRequiredTier(stepEntitlement.featureKey);
+  const requiredTier = useRequiredTier(stepEntitlement.featureKey, state);
   // Only show the badge when the step is actually locked for this user
   const showTierBadge = stepEntitlement.isLocked && requiredTier !== null;
 

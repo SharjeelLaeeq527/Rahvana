@@ -1,7 +1,7 @@
 // components/RegisterReceiptStep.tsx
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Globe, Lock, UploadCloud } from "lucide-react";
-import { usePlan } from "@/app/context/PlanContext";
+import { useJourneyPlan } from "@/app/context/useJourneyPlan";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { GuideTutorialOverlay } from "./GuideTutorialOverlays";
 import {
@@ -1166,9 +1166,9 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
   state,
   actions,
 }) => {
-  const stepEntitlement = useStepEntitlement("step_1_15");
+  const stepEntitlement = useStepEntitlement("step_1_15", state);
 
-  const plan = usePlan();
+  const plan = useJourneyPlan(state);
 
   // Basic tier cannot use upload or guide; tracking is locked on save
   const isBasic = plan.tier === "basic";

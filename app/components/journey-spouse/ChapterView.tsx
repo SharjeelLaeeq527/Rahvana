@@ -5,7 +5,7 @@ import { ChevronRight, AlertTriangle, Lock } from "lucide-react";
 import { RoadmapData } from "@/app/(tools)/(visa)/visa-category/[visa-journey]/components/types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { getActiveStepsForStage, getStageProgress } from "./journeyHelpers";
-import { usePlan } from "@/app/context/PlanContext";
+import { useJourneyPlan } from "@/app/context/useJourneyPlan";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { PlanTier } from "@/lib/entitlements/config";
 import {
@@ -23,7 +23,7 @@ interface ChapterViewProps {
 }
 
 export function ChapterView({ data, chapterIdx, state, onBack, onSelectStep }: ChapterViewProps) {
-  const plan = usePlan();
+  const plan = useJourneyPlan(state);
   const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
 
   const chapters = data.chapters || (data as any).stages;
@@ -42,11 +42,12 @@ export function ChapterView({ data, chapterIdx, state, onBack, onSelectStep }: C
   const isInProgress = prog.pct > 0 && prog.pct < 100;
 
   const isChapter1 = chapterIdx === 0;
-  const isFreeTier = plan.tier === "free";
+  const effectiveTier = plan.tier;
+  const isFreeTier = effectiveTier === "free";
   const upgradeIconClass =
-    plan.tier === "free"
+    effectiveTier === "free"
       ? "plan-icon--basic"
-      : plan.tier === "basic"
+      : effectiveTier === "basic"
         ? "plan-icon--premium"
         : "plan-icon--executive";
 
@@ -71,7 +72,7 @@ export function ChapterView({ data, chapterIdx, state, onBack, onSelectStep }: C
 
   // Helper function to check if a step is locked and why
   const getStepLockStatusLocal = (idx: number, sId: string) => {
-    return getStepLockStatus(sId, plan.tier, chapterIdx, idx);
+    return getStepLockStatus(sId, effectiveTier, chapterIdx, idx);
   };
 
   return (
@@ -197,39 +198,39 @@ export function ChapterView({ data, chapterIdx, state, onBack, onSelectStep }: C
         {/* Plan Card */}
         <div
           className={`mb-4 flex flex-col gap-3 rounded-2xl border-[1.5px] bg-white px-4 py-3 shadow-[0_4px_16px_rgba(0,0,0,0.08)] transition-all duration-300 hover:scale-[1.01] hover:shadow-[0_8px_24px_rgba(0,0,0,0.12)] sm:flex-row sm:items-center sm:gap-4 sm:px-5 sm:py-4 ${
-            plan.tier === "free"
+            effectiveTier === "free"
               ? "border-[#a8c4e0]"
-              : plan.tier === "basic"
+              : effectiveTier === "basic"
                 ? "border-[#7fbfba]"
-                : plan.tier === "premium"
+                : effectiveTier === "premium"
                   ? "border-[#b399d8]"
                   : "border-[#d4a855]"
           }`}
         >
           <div
             className={`flex flex-shrink-0 items-center justify-center rounded-full border-2 shadow-[0_2px_8px_rgba(0,0,0,0.09)] transition-all ${
-              plan.tier === "free"
+              effectiveTier === "free"
                 ? "h-10 w-10 border-[#8fa8d4] bg-[#f0f4fb] sm:h-12 sm:w-12"
-                : plan.tier === "basic"
+                : effectiveTier === "basic"
                   ? "h-10 w-10 border-[#bfe5e2] bg-[#eef9f8] sm:h-12 sm:w-12"
-                  : plan.tier === "premium"
+                  : effectiveTier === "premium"
                     ? "h-10 w-10 border-[#a088d8] bg-[#faf7fe] sm:h-12 sm:w-12"
                     : "h-10 w-10 border-[#c9a855] bg-[#fef9f0] sm:h-12 sm:w-12"
             }`}
           >
             <span
               className={`plan-icon ${
-                plan.tier === "free"
+                effectiveTier === "free"
                   ? "plan-icon--free"
-                  : plan.tier === "basic"
+                  : effectiveTier === "basic"
                     ? "plan-icon--basic"
-                    : plan.tier === "premium"
+                    : effectiveTier === "premium"
                       ? "plan-icon--premium"
                       : "plan-icon--executive"
               }`}
               style={{
-                fontSize: plan.tier === "executive" ? 23 : plan.tier === "basic" ? 23 : 23,
-                color: plan.tier === "basic" ? "#296d6c" : undefined,
+                fontSize: effectiveTier === "executive" ? 23 : effectiveTier === "basic" ? 23 : 23,
+                color: effectiveTier === "basic" ? "#296d6c" : undefined,
                 fontWeight: 600,
               }}
               aria-hidden="true"
@@ -238,31 +239,31 @@ export function ChapterView({ data, chapterIdx, state, onBack, onSelectStep }: C
 
           <p
             className={`m-0 flex-1 text-[12px] leading-relaxed font-semibold sm:text-[13px] ${
-              plan.tier === "free"
+              effectiveTier === "free"
                 ? "text-[#2e4f72]"
-                : plan.tier === "basic"
+                : effectiveTier === "basic"
                   ? "text-[#0f6f6d]"
-                  : plan.tier === "premium"
+                  : effectiveTier === "premium"
                     ? "text-[#332d80]"
                     : "text-[#6b4a0d]"
             }`}
           >
-            {plan.tier === "free"
+            {effectiveTier === "free"
               ? "Upgrade to unlock the full roadmap, step-by-step guidance, and tools for your next steps."
-              : plan.tier === "basic"
+              : effectiveTier === "basic"
                 ? "Upgrade to Premium for step-by-step guidance, a document vault, and reminders."
-                : plan.tier === "premium"
+                : effectiveTier === "premium"
                   ? "Upgrade to Executive for expert consultation, document reviews, and hands-on support."
                   : "Full plan active, complete tools and end-to-end support throughout the process."}
           </p>
 
-          {plan.tier !== "executive" && (
+          {effectiveTier !== "executive" && (
             <button
               onClick={() => setUpgradeModalFeature("checklist_engine")}
               className={`group relative inline-flex flex-shrink-0 items-center gap-1 overflow-hidden rounded-xl border border-white/15 px-4 py-2 text-[11px] font-bold whitespace-nowrap text-white shadow-md transition-all hover:-translate-y-0.5 hover:shadow-xl active:scale-[0.96] sm:gap-1.5 sm:px-5.5 sm:py-2.75 sm:text-[12.5px] ${
-                plan.tier === "free"
+                effectiveTier === "free"
                   ? "bg-[#7fa8d8] hover:bg-[#6f98cc]"
-                  : plan.tier === "basic"
+                  : effectiveTier === "basic"
                     ? "bg-[#2f9a95] hover:bg-[#257e7a]"
                     : "bg-[#9b7dd8] hover:bg-[#8b6dcf]"
               }`}
