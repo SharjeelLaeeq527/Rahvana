@@ -6,6 +6,7 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const slug = searchParams.get("slug");
+    const candidateId = searchParams.get("candidateId") || "candidate-1";
 
     if (!slug) {
       return NextResponse.json({ error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: '[slug]' }) }, { status: 400 });
@@ -21,22 +22,48 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
-    // 1. Get the session for this guide
-    const { data: session, error: sessionError } = await supabase
+    // 1. Get the session for this guide and candidate
+    let session = null;
+    let query = supabase
       .from("user_guides")
       .select(
         `
         *,
-        guides!inner(slug, title)
+        guides!inner(slug, title, description)
       `
       )
       .eq("user_id", user.id)
-      .eq("guides.slug", slug)
-      .maybeSingle();
+      .eq("guides.slug", slug);
 
-    if (sessionError) {
-      console.error("Error fetching session:", sessionError);
-      return NextResponse.json({ error: msg(E.AUTH_UNEXPECTED_ERROR) }, { status: 500 });
+    if (candidateId === "candidate-1") {
+      query = query.or(`candidate_id.eq.candidate-1,candidate_id.is.null`);
+    } else {
+      query = query.eq("candidate_id", candidateId);
+    }
+
+    const { data: sessionData, error: sessionError } = await query.maybeSingle();
+
+    if (!sessionError && sessionData) {
+      session = sessionData;
+    } else if (sessionError) {
+      // Fallback query without candidate_id column filter
+      const fallback = await supabase
+        .from("user_guides")
+        .select(
+          `
+          *,
+          guides!inner(slug, title, description)
+        `
+        )
+        .eq("user_id", user.id)
+        .eq("guides.slug", slug)
+        .maybeSingle();
+
+      if (!fallback.error && fallback.data) {
+        if (candidateId === "candidate-1" || fallback.data.candidate_id === candidateId) {
+          session = fallback.data;
+        }
+      }
     }
 
     if (!session) {

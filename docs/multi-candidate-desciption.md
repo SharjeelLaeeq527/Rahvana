@@ -205,6 +205,49 @@ Interactive modal for adding a 2nd parent (IR-5) or additional children (IR-2):
 
 ---
 
+### G. Guides & Resources Multi-Beneficiary Isolation & Lifecycle
+
+#### 17. Database Migration: [supabase/migrations/20260919_candidate_guides.sql](file:///d:/arachnie_work/updated_work/supabase/migrations/20260919_candidate_guides.sql) `[NEW]`
+- Adds `candidate_id TEXT DEFAULT 'candidate-1'` column to the `user_guides` table.
+- Creates a composite unique index on `(user_id, guide_id, candidate_id)` ensuring each beneficiary has independent guide instances.
+- Adds index `idx_user_guides_candidate_id` for performant candidate lookups.
+
+#### 18. Guide API Endpoints
+- **[app/api/guides/my-guides/route.ts](file:///d:/arachnie_work/updated_work/app/api/guides/my-guides/route.ts)**:
+  - Accepts `?candidateId=` query parameter.
+  - Queries `user_guides` strictly for `saved.eq.true` records belonging to the active candidate (with fallback for legacy records to `candidate-1`).
+  - Ensures unsaved in-progress guides do not clutter the "My Guides" catalog or Resources page until explicitly bookmarked.
+- **[app/api/guides/progress/route.ts](file:///d:/arachnie_work/updated_work/app/api/guides/progress/route.ts)**:
+  - Scopes session and step fetching by `?slug=&candidateId=`.
+  - Returns the exact `progress_percent`, `current_step_key`, `saved` status, and step answers for the active beneficiary.
+- **[app/api/guides/start/route.ts](file:///d:/arachnie_work/updated_work/app/api/guides/start/route.ts)**:
+  - Initializes candidate-scoped sessions with `saved: false` and `status: 'in_progress'`.
+  - Enriches the returned session with guide metadata (`slug`, `title`, `description`).
+- **[app/api/guides/save/route.ts](file:///d:/arachnie_work/updated_work/app/api/guides/save/route.ts)**:
+  - Bookmarks a guide by updating or creating a `user_guides` record with `saved: true` for the given `candidateId`.
+- **[app/api/guides/save-step/route.ts](file:///d:/arachnie_work/updated_work/app/api/guides/save-step/route.ts)**:
+  - Upserts step payloads in `user_guide_steps` and updates `progress_percent`, `current_step_key`, and `last_updated_at` in `user_guides`.
+
+#### 19. Client Hooks & Wizard Components
+- **[lib/guides/useGuideSession.ts](file:///d:/arachnie_work/updated_work/lib/guides/useGuideSession.ts)**:
+  - Manages candidate-isolated state and local caches (`rahvana_guide_${slug}_${candidateId}` and `rahvana_guide_sessions_${candidateId}`).
+  - **On-Demand Session Start**: When a user interacts with a step in an unsaved guide, `saveStep` silently starts the backend session in the background to obtain a real UUID without blocking the UI with full-screen loaders, reliably persisting step data and progress percentage.
+  - **Saved Sessions Cache**: `syncToLocal` only includes sessions in the global candidate session list if `saved === true`.
+- **[lib/guides/useWizardSession.ts](file:///d:/arachnie_work/updated_work/lib/guides/useWizardSession.ts)**:
+  - Bound to `CandidateContext`. Automatically resets loaded state when switching candidates.
+  - Removed mount-time auto-start so merely viewing an unsaved guide does not create database records.
+- **[lib/guides/useGuideSave.ts](file:///d:/arachnie_work/updated_work/lib/guides/useGuideSave.ts)**:
+  - Passes `activeCandidateId` to `/api/guides/save` and immediately syncs the saved session to `rahvana_guide_sessions_${candidateId}`.
+- **[app/components/guides/WizardSidebar.tsx](file:///d:/arachnie_work/updated_work/app/components/guides/WizardSidebar.tsx)**:
+  - Displays the **"Add to My Guides"** button whenever `(!session || (!session.saved && !localSaved))`.
+  - Hides the button immediately when clicked and saved.
+- **[app/(tools)/guides/page.tsx](file:///d:/arachnie_work/updated_work/app/(tools)/guides/page.tsx) & [app/(main)/resources/ResourcesContent.tsx](file:///d:/arachnie_work/updated_work/app/(main)/resources/ResourcesContent.tsx)**:
+  - Reactively queries and renders the active beneficiary's saved progress cards and updates notification badges when switching profiles.
+- **[app/(tools)/guides/my-guides/page.tsx](file:///d:/arachnie_work/updated_work/app/(tools)/guides/my-guides/page.tsx)**:
+  - Scoped to `activeCandidateId` for dedicated guide management.
+
+---
+
 ## 4. How the Flow Works in Practice
 
 ### Scenario 1: User Buying IR-5 for Both Parents
@@ -233,11 +276,28 @@ Interactive modal for adding a 2nd parent (IR-5) or additional children (IR-2):
 2. For an IR-2 case with 3 children, the petitioner can add `Child 1`, `Child 2`, and `Child 3`.
 3. Each child has an independent journey roadmap and document vault while sharing the parent's sponsor financial profile.
 
+### Scenario 4: Multi-Beneficiary Guides & Document Workflows
+1. When `Candidate 1 (Mother)` is selected, the user opens the **Police Character Certificate (PCC) Guide** and completes Steps 1 and 2 (66% progress).
+2. The user also opens the **Passport Guide** and marks it complete (100% progress) and clicks **"Add to My Guides"**.
+3. The user switches to `Candidate 2 (Father)`:
+   - The **Resources** page and **Guides** page update immediately.
+   - Mother's Passport Guide and PCC Guide do not bleed into Father's profile.
+   - The user starts Father's **PCC Guide** and selects Punjab (33% progress).
+   - Father's PCC progress is tracked independently at 33%.
+4. Switching back to `Mother` restores Mother's 66% PCC progress and 100% Passport Guide.
+
+### Scenario 5: Guide Lifecycle & Save State Separation
+1. **Browsing**: Opening an unsaved guide does not auto-create database records or prematurely mark the guide as saved.
+2. **Interacting**: Making progress inside the wizard saves the step answers and progress percentage on-demand so work is preserved across reloads.
+3. **Saving**: The guide only appears as a saved progress card on the **Resources** and **Guides** catalog pages once the user explicitly clicks **"Add to My Guides"**.
+
 ---
 
 ## 5. Automated Tests
 
-Unit tests are located in [__tests__/candidate/candidate-sync.test.ts](file:///d:/arachnie_work/updated_work/__tests__/candidate/candidate-sync.test.ts).
+Unit test suites:
+- [__tests__/candidate/candidate-sync.test.ts](file:///d:/arachnie_work/updated_work/__tests__/candidate/candidate-sync.test.ts) (21 tests)
+- [__tests__/candidate/candidate-guides.test.ts](file:///d:/arachnie_work/updated_work/__tests__/candidate/candidate-guides.test.ts) (11 tests)
 
 ### Test Coverage Summary:
 - **Default Profile Generation**: Verified default profiles for IR-5 (single parent & both parents), IR-2, and IR-1.
@@ -245,3 +305,8 @@ Unit tests are located in [__tests__/candidate/candidate-sync.test.ts](file:///d
 - **Journey Key Derivation**: Verified root keys for primary candidate and candidate-isolated keys for subsequent candidates.
 - **Data Boundary Integrity**: Verified that `SHARED_PETITIONER_FIELDS` and `CANDIDATE_SPECIFIC_FIELDS` have strictly zero overlap.
 - **Document Vault Scoping**: Verified independent journey key derivation and vault isolation for IR-5 parents and multi-child IR-2 cases.
+- **Guides Scoping & Isolation**: Verified independent guide sessions, progress percent calculation, and candidate query URL building.
+- **Guide Save Lifecycle**: Verified that new sessions default to `saved: false`, the save button is visible until clicked, unsaved guides are excluded from My Guides / Resources progress cards, and progress persists across page refresh.
+
+**Total Test Suite Result**: **32 / 32 tests passing** (0 regressions).
+

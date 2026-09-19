@@ -8,6 +8,7 @@ import ServicesPage from "@/app/(main)/services/page";
 import { Wrench, BookOpen, Briefcase } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/app/context/AuthContext";
+import { useCandidate } from "@/app/context/CandidateContext";
 
 export type ResourceTab = "toolbox" | "guides" | "services";
 
@@ -20,6 +21,7 @@ const tabs: { id: ResourceTab; icon: React.ElementType; label: string }[] = [
 export default function ResourcesContent({ initialTab }: { initialTab: ResourceTab }) {
   const router = useRouter();
   const { user } = useAuth();
+  const { activeCandidateId } = useCandidate();
   const [activeTab, setActiveTab] = useState<ResourceTab>(initialTab);
   const [hasActiveRequests, setHasActiveRequests] = useState(false);
   const [hasStartedGuides, setHasStartedGuides] = useState(false);
@@ -54,7 +56,8 @@ export default function ResourcesContent({ initialTab }: { initialTab: ResourceT
 
     const fetchGuidesStatus = async () => {
       try {
-        const res = await fetch("/api/guides/my-guides");
+        const currentCandidateId = activeCandidateId || "candidate-1";
+        const res = await fetch(`/api/guides/my-guides?candidateId=${currentCandidateId}`);
         if (res.ok) {
           const data = await res.json();
           setHasStartedGuides(data.sessions && data.sessions.length > 0);
@@ -66,7 +69,7 @@ export default function ResourcesContent({ initialTab }: { initialTab: ResourceT
 
     fetchStatus();
     fetchGuidesStatus();
-  }, [user]);
+  }, [user, activeCandidateId]);
 
   const handleTabChange = (tab: ResourceTab) => {
     setActiveTab(tab);

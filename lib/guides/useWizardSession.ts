@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/app/context/AuthContext";
+import { useCandidate } from "@/app/context/CandidateContext";
 import { useGuideSession } from "./useGuideSession";
 
 export function useWizardSession<T>(
@@ -12,14 +13,18 @@ export function useWizardSession<T>(
 ) {
   const [hasLoaded, setHasLoaded] = useState(false);
   const { user } = useAuth();
-  const { session, stepsData, startSession, saveStep, loading } = useGuideSession(slug);
+  const { activeCandidateId } = useCandidate();
+  const currentCandidateId = activeCandidateId || "candidate-1";
 
-  // 1. Initial Session Start
+  const { session, stepsData, startSession, saveStep, loading } = useGuideSession(
+    slug,
+    currentCandidateId
+  );
+
+  // Reset loaded state when candidate switches so new candidate's session/steps load cleanly
   useEffect(() => {
-    if (user && !session && !loading) {
-      startSession();
-    }
-  }, [user, session, loading, startSession]);
+    setHasLoaded(false);
+  }, [currentCandidateId]);
 
   // 2. Load backend data into state (ONCE)
   useEffect(() => {
@@ -44,7 +49,7 @@ export function useWizardSession<T>(
 
   // 3. Helper to save a step with progress calculation
   const saveWizardStep = (stepKey: string, data: any, isCompleted = false) => {
-    if (user && session) {
+    if (user) {
       const stepIdx = stepIds.indexOf(stepKey);
       const progressPercent = Math.round(((stepIdx + 1) / stepIds.length) * 100);
       saveStep(stepKey, data, isCompleted, progressPercent);
