@@ -1608,7 +1608,7 @@ function HomePageContent() {
                               icon={Icons.ArrowRight}
                               label="Start Your Journey"
                               color="green"
-                              href={"/visa-category/ir1-journey"}
+                              href={"/visa-category"}
                               // href={"/visa-category"}
                             />
                           </RoadmapAnchor>
