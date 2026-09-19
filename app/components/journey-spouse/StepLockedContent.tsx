@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Lock, ArrowRight } from "lucide-react";
-import { usePlan } from "@/app/context/PlanContext";
+import { JourneyPlanState, useJourneyPlan } from "@/app/context/useJourneyPlan";
 import { STEP_PRIMARY_FEATURE } from "@/lib/entitlements/stepFeatureMap";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { Loader } from "@/components/ui/spinner";
@@ -92,6 +92,7 @@ interface StepLockedContentProps {
    */
   lockMessage?: string;
   className?: string;
+  state: JourneyPlanState;
 }
 
 export function StepLockedContent({
@@ -100,8 +101,9 @@ export function StepLockedContent({
   mode = "overlay",
   lockMessage,
   className,
+  state,
 }: StepLockedContentProps) {
-  const plan = usePlan();
+  const plan = useJourneyPlan(state);
   const [showUpgrade, setShowUpgrade] = useState(false);
 
   const featureKey = STEP_PRIMARY_FEATURE[stepKey] ?? null;
