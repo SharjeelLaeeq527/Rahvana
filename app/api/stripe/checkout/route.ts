@@ -258,12 +258,15 @@ export async function POST(request: NextRequest) {
     const hasLivePlan =
       journeyLiveSubs.length > 0 ||
       (dbStatus !== "completed" && (TIER_RANK[dbTier] ?? 0) > 0);
+
     // A live sub whose recurring charge is failing. Such a user should RECOVER
     // (update payment method / pay the open invoice) via the billing portal, not
+    // buy the same plan again — that would create a second subscription and leave
+    // the broken one behind.
     const failingSub = journeyLiveSubs.find(
       (s) => s.status === "past_due" || s.status === "unpaid"
     );
-    
+
     // The real subscription to retire on an upgrade — prefer the one the DB points
     // at, else the highest-tier live sub. This is only a HINT: verify-session runs
     // a belt-and-suspenders cleanup, and (critically) the old sub is cancelled ONLY
@@ -276,6 +279,12 @@ export async function POST(request: NextRequest) {
         const rb = resolveSubscriptionTier(a);
         return (ra ? TIER_RANK[ra] : 0) - (rb ? TIER_RANK[rb] : 0);
       })[0]?.id ||
+      dbSubId ||
+      "";
+
+    // ── Authoritative upgrade state — derived from Stripe+DB, NEVER the client. ─
+    // The proration below subtracts the current-tier price from the target price.
+    // If we trusted a client-supplied `currentTier`/`isUpgrade`, a free user could
     // send { isUpgrade: true, currentTier: "premium" } and pay only the tier
     // *difference* while being provisioned the full higher tier. So it is server-derived.
     const serverIsUpgrade = hasLivePlan && effectiveCurrentRank > 0;
