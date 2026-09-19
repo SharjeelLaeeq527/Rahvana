@@ -143,7 +143,7 @@ import CaseRegistrationForm from "./components/CaseRegistrationForm";
 import { StepEntitlementBanner } from "@/app/components/entitlements/StepEntitlementBanner";
 import { useStepEntitlement } from "./useStepEntitlement";
 import { StepLockedContent } from "./StepLockedContent";
-import { usePlan } from "@/app/context/PlanContext";
+import { useJourneyPlan } from "@/app/context/useJourneyPlan";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { getStepLockStatus, getModalFeatureForTier } from "@/lib/entitlements/hardLockRules";
 import { ApprovalNoticeTool } from "./components/ApprovalNoticeTool";
@@ -293,8 +293,9 @@ export const StepView: React.FC<StepViewProps> = ({
   const isUscisAccountStep = sId === "step_1_6" || (isIr5Journey && sId === "step_1_5");
   const inlineGuideData = data.inline_guide_data || {};
   // ── Step-level entitlement gating ──────────────────────────────────────────
-  const plan = usePlan();
-  const stepEntitlement = useStepEntitlement(sId);
+  const plan = useJourneyPlan(state);
+  const effectiveTier = plan.tier;
+  const stepEntitlement = useStepEntitlement(sId, state);
 
   const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
   const [isApUpdateModalOpen, setIsApUpdateModalOpen] = useState(false);
@@ -914,7 +915,7 @@ export const StepView: React.FC<StepViewProps> = ({
     );
   } else if (sId === "step_1_16" && currentStep.tool_data) {
     customRenderer = (
-      <StepLockedContent stepKey={sId} mode="overlay">
+      <StepLockedContent stepKey={sId} state={state} mode="overlay">
         <TrackCaseStatusStep
           tool={currentStep.tool_data}
           state={state}
@@ -958,8 +959,8 @@ export const StepView: React.FC<StepViewProps> = ({
   const nextStepLock = useMemo(() => {
     if (!nextStep || !nextStepInfo) return { isLocked: false, requiredPlan: null };
     const nsId = nextStep.step_key || (nextStep as any).id;
-    return getStepLockStatus(nsId, plan.tier, nextStepInfo.chapterIdx, nextStepInfo.localIdx);
-  }, [nextStep, nextStepInfo, plan.tier]);
+    return getStepLockStatus(nsId, effectiveTier, nextStepInfo.chapterIdx, nextStepInfo.localIdx);
+  }, [nextStep, nextStepInfo, effectiveTier]);
 
   const prevStepInfo = useMemo(() => {
     if (!prevStep) return null;
@@ -976,8 +977,8 @@ export const StepView: React.FC<StepViewProps> = ({
   const prevStepLock = useMemo(() => {
     if (!prevStep || !prevStepInfo) return { isLocked: false, requiredPlan: null };
     const psId = prevStep.step_key || (prevStep as any).id;
-    return getStepLockStatus(psId, plan.tier, prevStepInfo.chapterIdx, prevStepInfo.localIdx);
-  }, [prevStep, prevStepInfo, plan.tier]);
+    return getStepLockStatus(psId, effectiveTier, prevStepInfo.chapterIdx, prevStepInfo.localIdx);
+  }, [prevStep, prevStepInfo, effectiveTier]);
 
   useEffect(() => {
     const scrollContainer = document.querySelector(".scrollbar-hide");
@@ -1248,7 +1249,7 @@ export const StepView: React.FC<StepViewProps> = ({
           />
 
           {/* Entitlement Banner — shown when step features are locked for current plan */}
-          <StepEntitlementBanner stepKey={sId} />
+          <StepEntitlementBanner stepKey={sId} state={state} />
 
           {/* UpgradeModal — triggered by stepEntitlement.guard() when user clicks locked content */}
           {stepEntitlement.upgradeModalFeature && (
@@ -1429,7 +1430,7 @@ export const StepView: React.FC<StepViewProps> = ({
           )}
 
           {tool.type === "medical_exam" && (
-            <StepLockedContent stepKey={sId} mode="overlay">
+            <StepLockedContent stepKey={sId} state={state} mode="overlay">
               <MedicalExamTool
                 tool={tool}
                 actions={actions}
@@ -1456,7 +1457,7 @@ export const StepView: React.FC<StepViewProps> = ({
           )}
 
           {tool.type === "polio_certificate" && (
-            <StepLockedContent stepKey={sId} mode="overlay">
+            <StepLockedContent stepKey={sId} state={state} mode="overlay">
               <PolioCertificateTool
                 tool={tool}
                 actions={actions}

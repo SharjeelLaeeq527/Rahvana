@@ -144,24 +144,24 @@ const GUIDES: Guide[] = [
     icon: Syringe,
     entitlementFeature: "polio_certificate",
   },
-  // {
-  //   id: "step-parent",
-  //   title: "Step-Parent",
-  //   subtitle: "USCIS Eligibility & Document Compilation",
-  //   description: "USCIS roadmap for sponsoring step-parents, marriage rules, and document requirements.",
-  //   category: "Pakistan Document",
-  //   href: "/guides/step-parent-guide",
-  //   icon: BookOpen,
-  // },
-  // {
-  //   id: "adoptive-parent",
-  //   title: "Adoptive Parent & Guardianship",
-  //   subtitle: "USCIS Eligibility & Document Requirements",
-  //   description: "USCIS adoption criteria, 2-year custody rule, and legal guardianship vs. U.S. adoption.",
-  //   category: "Pakistan Document",
-  //   href: "/guides/adoptive-parent-guide",
-  //   icon: BookOpen,
-  // },
+  {
+    id: "step-parent",
+    title: "Step-Parent",
+    subtitle: "USCIS Eligibility & Document Compilation",
+    description: "USCIS roadmap for sponsoring step-parents, marriage rules, and document requirements.",
+    category: "Pakistan Document",
+    href: "/guides/step-parent-guide",
+    icon: BookOpen,
+  },
+  {
+    id: "adoptive-parent",
+    title: "Adoptive Parent & Guardianship",
+    subtitle: "USCIS Eligibility & Document Requirements",
+    description: "USCIS adoption criteria, 2-year custody rule, and legal guardianship vs. U.S. adoption.",
+    category: "Pakistan Document",
+    href: "/guides/adoptive-parent-guide",
+    icon: BookOpen,
+  },
 ];
 
 const CATEGORIES: ("All" | GuideCategory)[] = ["All", "Pakistan Document", "Medical & Exam"];

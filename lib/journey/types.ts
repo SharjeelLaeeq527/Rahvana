@@ -7,6 +7,8 @@ export interface Journey {
   journey_name?: string; // Display name from config (e.g., "Immediate Relative - IR1")
   filing_method: string; // 'online' | 'paper'
   sponsor_structure: string; // 'individual' | 'joint_sponsor'
+  subscription_tier: "free" | "basic" | "premium" | "executive" | string;
+  stripe_subscription_id?: string; 
   status: "not_started" | "in_progress" | "completed" | "paused"; // Journey lifecycle
   current_chapter_id?: string; // UUID of current chapter (nullable)
   current_step_id?: string; // UUID of current step (nullable)
@@ -108,6 +110,7 @@ export interface JourneyInput {
   case_id?: string; // Optional: external case ID
   visa_category?: string; // Optional: specific visa ID
   sponsor_structure: string; // Required: "individual" | "joint_sponsor"
+  subscription_tier?: string; // Optional: "free" | "basic" | "premium" | "executive"
   filing_method: string; // Required: "online" | "paper"
   journey_description?: string; // Metadata for display
   journey_name?: string; // Metadata for display

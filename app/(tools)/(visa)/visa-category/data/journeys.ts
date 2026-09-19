@@ -95,7 +95,7 @@ export const EXPLORER_CARDS: ExplorerJourneyCard[] = [
     status: "Live",
     featured: true,
     href: "/visa-category/ir-1",
-    image: "/assets/images/ir1-doc-vault-image.png",
+    image: "/assets/images/ir1-doc-vault-image.jpg",
     highlights: ["Immediate relative", "Consular processing", "Work authorization on arrival"],
   },
   {
@@ -138,7 +138,7 @@ export const JOURNEY_DETAILS: Record<JourneySlug, JourneyDetailContent> = {
     summary:
       "A focused, immediate-relative pathway for spouses pursuing lawful permanent residency through consular processing.",
     heroEyebrow: "Family-based journey",
-    heroImage: "/assets/images/ir1-doc-vault-image.png",
+    heroImage: "/assets/images/ir1-doc-vault-image.jpg",
     heroOverlay: "linear-gradient(180deg, rgba(4, 67, 73, 0.12) 0%, rgba(4, 67, 73, 0.72) 100%)",
     quickFacts: [
       { label: "Green card type", value: "10-year if married 2+ years" },

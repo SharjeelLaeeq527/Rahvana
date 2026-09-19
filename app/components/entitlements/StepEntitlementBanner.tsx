@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Lock, ShieldCheck, ArrowRight } from "lucide-react";
 import { usePlan } from "@/app/context/PlanContext";
 import { UpgradeModal } from "./UpgradeModal";
+import { useJourneyPlan, type JourneyPlanState } from "@/app/context/useJourneyPlan";
 import { STEP_PRIMARY_FEATURE } from "@/lib/entitlements/stepFeatureMap";
 
 // ── Human-readable labels per feature key ────────────────────────────────────
@@ -132,10 +133,11 @@ const TIER_THEME: Record<
 interface StepEntitlementBannerProps {
   stepKey: string;
   defaultOpen?: boolean;
+  state: JourneyPlanState;
 }
 
-export function StepEntitlementBanner({ stepKey, defaultOpen = true }: StepEntitlementBannerProps) {
-  const plan = usePlan();
+export function StepEntitlementBanner({ stepKey, defaultOpen = true, state }: StepEntitlementBannerProps) {
+  const plan = useJourneyPlan(state);
   const [dismissed, setDismissed] = useState(false);
   const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
 

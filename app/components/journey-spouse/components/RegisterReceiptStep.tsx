@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { E, msg } from "@/lib/errors";
 import { Globe, Lock } from "lucide-react";
-import { usePlan } from "@/app/context/PlanContext";
+import { useJourneyPlan } from "@/app/context/useJourneyPlan";
 import { GuideTutorialOverlay } from "../GuideTutorialOverlays";
 import {
   fmtDate,
@@ -1026,8 +1026,8 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
 }) => {
   console.log("DEBUG [RegisterReceiptStep v2] Root render with journeyId:", journeyId);
 
-  const stepEntitlement = useStepEntitlement("step_1_15");
-  const plan = usePlan();
+  const stepEntitlement = useStepEntitlement("step_1_15", state);
+  const plan = useJourneyPlan(state);
 
   // Basic tier cannot use upload or guide; tracking is locked on save
   const isBasic = plan.tier === "basic";

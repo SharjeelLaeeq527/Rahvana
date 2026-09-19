@@ -48,6 +48,7 @@ export interface JourneyProgressRecord {
   id: string;
   user_id: string;
   journey_id: string;
+  subscription_tier?: string;
   current_stage: number;
   current_step: number;
   scenario_type_ir2?: "bio" | "step" | "adopted";
@@ -293,7 +294,7 @@ export async function listUserJourneys(userId: string): Promise<JourneyProgressR
       supabase
         .from("journeys")
         .select(
-          "id, journey_type, completed_steps_count, total_steps_count, updated_at, filing_method"
+          "id, journey_type, subscription_tier, completed_steps_count, total_steps_count, updated_at, filing_method"
         )
         .eq("user_id", userId)
         .order("updated_at", { ascending: false })
@@ -329,6 +330,7 @@ export async function listUserJourneys(userId: string): Promise<JourneyProgressR
           id: record.id,
           user_id: userId,
           journey_id: record.journey_type, // Map journey_type to journey_id for backward compatibility
+          subscription_tier: record.subscription_tier || "free",
           current_stage: 0,
           current_step: 0,
           completed_steps: Array(activeProgress.completed_steps_count || 0).fill(""), // Create array of appropriate length

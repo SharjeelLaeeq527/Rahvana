@@ -802,8 +802,8 @@ const NARR_BEATS = [
   {
     eyebrow: "You just wanted a simple answer.",
     lines: [{ text: "WHERE TO START?" }],
-    sub: "Spouse Visa · IR-1 ",
-    // sub: "Family Visas  ·  IR-1  . IR-5",
+    // sub: "Spouse Visa · IR-1 ",
+    sub: "Family Visas  ·  IR-1  . IR-5",
   },
   {
     eyebrow: "But one thing leads to ten others.",
@@ -1197,8 +1197,8 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
 
       setSubmit(false);
       setCharPose("standing");
-      const q1 = "how do I bring my spouse to the U.S?";
-      // const q1 = "how do I bring my family to the US";
+      // const q1 = "how do I bring my spouse to the U.S?";
+      const q1 = "how do I bring my family to the US";
       for (let i = 0; i < q1.length; i++) {
         if (!isAlive || !aliveRef.current) return;
         if (i === 3) setCharPose("thinking");
@@ -2292,8 +2292,7 @@ function HeroFrame({ typeText, isMobile, isTablet, vw, onSkip, isVisible = true 
           <motion.button
             type="button"
             onClick={() => {
-              window.location.href = "/visa-category/ir1-journey";
-              // window.location.href = hasJourney ? "/my-journeys" : "/visa-category";
+              window.location.href = hasJourney ? "/my-journeys" : "/visa-category";
             }}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}

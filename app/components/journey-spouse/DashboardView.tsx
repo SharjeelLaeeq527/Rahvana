@@ -47,7 +47,7 @@ import {
 import { resolveCaseStrengthProfile } from "@/lib/case-strength/categories";
 import type { ConsistencyFinding } from "@/lib/case-strength/consistency-intelligence";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
-import { usePlan } from "@/app/context/PlanContext";
+import { useJourneyPlan } from "@/app/context/useJourneyPlan";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { LockedFeature } from "@/app/components/entitlements/LockedFeature";
 import { STEP_PRIMARY_FEATURE } from "@/lib/entitlements/stepFeatureMap";
@@ -83,7 +83,8 @@ export function DashboardView({
   onSelectStep,
   actions,
 }: DashboardViewProps) {
-  const plan = usePlan();
+  const plan = useJourneyPlan(state);
+  const effectiveTier = plan.tier;
   const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
 
   // Pull uploaded docs from vault for DocCaseStrengthMeter
@@ -695,11 +696,11 @@ export function DashboardView({
     const stepId = nextActionData.step.step_key;
     return getStepLockStatus(
       stepId,
-      plan.tier,
+      effectiveTier,
       nextActionData.chapterIdx,
       nextActionData.stepIdxInChapter
     );
-  }, [nextActionData, plan.tier]);
+  }, [nextActionData, effectiveTier]);
 
   const lockStatus = useMemo(() => getJourneyLockStatus(state.metadata || {}), [state.metadata]);
 
