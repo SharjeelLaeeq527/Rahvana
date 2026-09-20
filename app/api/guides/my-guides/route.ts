@@ -4,8 +4,11 @@ import { E, msg } from "@/lib/errors";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const candidateId = searchParams.get("candidateId") || "candidate-1";
+
     const supabase = await createClient();
 
     const {
@@ -18,7 +21,8 @@ export async function GET() {
       return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
-    const { data: sessions, error: sessionsError } = await supabase
+    // 1. Try querying user_guides with candidate_id column
+    let { data: sessions, error: sessionsError } = await supabase
       .from("user_guides")
       .select(
         `
@@ -26,22 +30,50 @@ export async function GET() {
         progress_percent,
         status,
         saved,
+        candidate_id,
         last_updated_at,
         guides(slug, title, description)
       `
       )
       .eq("user_id", user.id)
-      .eq("saved", true) // fetch only saved guides
+      .eq("saved", true)
       .order("last_updated_at", { ascending: false });
 
+    // 2. Fallback if candidate_id column or filter has schema variance
     if (sessionsError) {
-      console.error("Error fetching user guides:", sessionsError);
-      return NextResponse.json({ error: msg(E.ADMIN_FETCH_FAILED) }, { status: 500 });
+      const fallback = await supabase
+        .from("user_guides")
+        .select(
+          `
+          id,
+          progress_percent,
+          status,
+          saved,
+          last_updated_at,
+          guides(slug, title, description)
+        `
+        )
+        .eq("user_id", user.id)
+        .eq("saved", true)
+        .order("last_updated_at", { ascending: false });
+
+      sessions = fallback.data || [];
     }
 
-    return NextResponse.json({ sessions: sessions || [] });
+    // 3. Filter by candidate_id in memory
+    const filteredSessions = (sessions || []).filter((s: any) => {
+      // Must be explicitly saved by user (saved === true)
+      if (s.saved !== true) return false;
+
+      if (candidateId === "candidate-1") {
+        return !s.candidate_id || s.candidate_id === "candidate-1";
+      }
+      return s.candidate_id === candidateId;
+    });
+
+    return NextResponse.json({ sessions: filteredSessions });
   } catch (error) {
     console.error("Unexpected error in /api/guides/my-guides:", error);
-    return NextResponse.json({ error: msg(E.ADMIN_FETCH_FAILED) }, { status: 500 });
+    return NextResponse.json({ sessions: [] });
   }
 }

@@ -27,6 +27,7 @@ export interface WizardState {
   metadata: Record<string, any>;
   unresolvedTasks: string[];
   backendId?: string;
+  subscriptionTier: string;
   stepMap: Record<string, string>;
   /**
    * Per-step timestamps (ms epoch) for time-based case-strength gating.
@@ -248,6 +249,7 @@ export function useWizard(options: UseWizardOptions = {}) {
         setState((prev) => ({
           ...prev,
           backendId: journey.id,
+          subscriptionTier: journey.subscription_tier || "free", 
           stepMap,
           stepTimestamps,
           completedSteps: completedSet,

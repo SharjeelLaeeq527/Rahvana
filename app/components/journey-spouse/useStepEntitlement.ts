@@ -1,7 +1,7 @@
 -"use client";
 
 import { useState, useCallback, useMemo } from "react";
-import { usePlan } from "@/app/context/PlanContext";
+import { JourneyPlanState, useJourneyPlan } from "@/app/context/useJourneyPlan";
 import { STEP_PRIMARY_FEATURE } from "@/lib/entitlements/stepFeatureMap";
 
 /**
@@ -12,8 +12,8 @@ import { STEP_PRIMARY_FEATURE } from "@/lib/entitlements/stepFeatureMap";
  *  2. Show the correct lock hint / CTA.
  *  3. Open the UpgradeModal on demand.
  */
-export function useStepEntitlement(stepKey: string) {
-  const plan = usePlan();
+export function useStepEntitlement(stepKey: string, state: JourneyPlanState) {
+  const plan = useJourneyPlan(state);
   const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
 
   const featureKey = STEP_PRIMARY_FEATURE[stepKey] ?? null;

@@ -51,6 +51,7 @@ export async function createJourneyDB(
         case_id: journeyData.case_id,
         filing_method: journeyData.filing_method,
         sponsor_structure: journeyData.sponsor_structure,
+        subscription_tier: journeyData.subscription_tier || "free",
         status: "not_started", // Default status on creation
         current_chapter_id: null,
         current_step_id: null,

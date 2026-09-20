@@ -913,7 +913,7 @@ export default function DocumentVaultPage() {
               if (visaCategory) {
                 const cleanCategory = visaCategory.toUpperCase().replace(/[^A-Z0-9]/g, "");
                 if (cleanCategory === "IR1") {
-                  cardImage = "/assets/images/ir1-doc-vault-image.png";
+                  cardImage = "/assets/images/ir1-doc-vault-image.jpg";
                   cardDesc =
                     "Spouse of a U.S. Citizen Visa Document Vault. Keep track of marriage certificates, petitioner details, and sponsorship documents.";
                 } else if (cleanCategory === "IR5") {

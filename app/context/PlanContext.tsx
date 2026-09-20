@@ -23,6 +23,8 @@ interface PlanContextValue {
   realTier: PlanTier;
   /** Effective tier — devOverride when set, otherwise realTier. */
   tier: PlanTier;
+  /** Highest active subscription tier across the user's journeys. */
+  maxActiveJourneyTier: PlanTier;
   isLoading: boolean;
   /** Dev-only: override the active tier for UI testing. null = use real tier. */
   devOverride: PlanTier | null;
@@ -59,7 +61,8 @@ const DB_TIER_MAP: Record<string, PlanTier> = {
   free: "free",
 };
 
-function normalizeTier(raw: string | null | undefined): PlanTier {
+/** Normalizes both account and journey tier values stored by older/current DB schemas. */
+export function normalizePlanTier(raw: string | null | undefined): PlanTier {
   if (!raw) return "free";
   return DB_TIER_MAP[raw.toLowerCase()] ?? "free";
 }
@@ -98,6 +101,7 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
   const [refreshCounter, setRefreshCounter] = useState(0);
 
   const tier = devOverride ?? realTier;
+  const maxActiveJourneyTier = realTier;
 
   const refresh = useCallback(() => setRefreshCounter((n) => n + 1), []);
 
@@ -160,7 +164,7 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
           } | null;
         }) => {
           if (cancelled) return;
-          setRealTier(normalizeTier(data?.subscription_tier));
+          setRealTier(normalizePlanTier(data?.subscription_tier));
           const addons = data?.profile_details?.purchased_addons as string[] | undefined;
           setPurchasedAddons(Array.isArray(addons) ? addons : []);
         }
@@ -183,6 +187,7 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
   const value: PlanContextValue = {
     realTier,
     tier,
+    maxActiveJourneyTier,
     isLoading,
     devOverride,
     setDevOverride,

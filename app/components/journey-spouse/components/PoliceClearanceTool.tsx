@@ -4,7 +4,7 @@ import React from "react";
 import { Search, X, CheckCircle2, Upload, Lock } from "lucide-react";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { POLICE_CLEARANCE_DATA } from "../PoliceClearanceData";
-import { usePlan } from "@/app/context/PlanContext";
+import { useJourneyPlan } from "@/app/context/useJourneyPlan";
 import { E, msg } from "@/lib/errors";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 
@@ -37,6 +37,7 @@ interface PoliceClearanceToolProps {
 }
 
 export const PoliceClearanceTool: React.FC<PoliceClearanceToolProps> = ({
+  state,
   actions,
   pccState,
   openUploadModal,
@@ -62,7 +63,7 @@ export const PoliceClearanceTool: React.FC<PoliceClearanceToolProps> = ({
   } = pccState;
   const [isSaving, setIsSaving] = React.useState(false);
   const [errors, setErrors] = React.useState<Record<string, string>>({});
-  const { tier } = usePlan();
+  const { tier } = useJourneyPlan(state);
   const [showUpgradeModal, setShowUpgradeModal] = React.useState(false);
 
   const validatePccField = (id: string, value: string) => {
