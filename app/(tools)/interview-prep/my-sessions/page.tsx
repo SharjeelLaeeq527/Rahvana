@@ -125,8 +125,6 @@ export default function MyInterviewSessions() {
 
   const { showToast } = useToast();
 
-  const environment = process.env.NEXT_PUBLIC_ENVIRONMENT === "development";
-
   // Filter states
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
@@ -140,12 +138,8 @@ export default function MyInterviewSessions() {
   const ITEMS_PER_PAGE = 10;
 
   const visibleSessions = useMemo(() => {
-    if (environment) {
-      return sessions;
-    }
-
-    return sessions.filter((session) => session.category_slug !== "ir-5-parent");
-  }, [sessions, environment]);
+    return sessions;
+  }, [sessions]);
 
   // fetch user sessions
   const fetchUserSessions = async (isRefresh = false) => {
@@ -429,23 +423,18 @@ export default function MyInterviewSessions() {
             {sessions.length > 0 && (
               <FilterPanel
                 fields={[
-                  ...(environment
-                    ? [
-                        {
-                          key: "category",
-                          label: "Visa Category",
-                          options: [
-                            { value: "all", label: "All Categories" },
-                            ...uniqueCategories.map((cat) => ({
-                              value: cat,
-                              label: getCategoryLabel(cat),
-                            })),
-                          ],
-                          value: selectedCategory,
-                        },
-                      ]
-                    : []),
-
+                  {
+                    key: "category",
+                    label: "Visa Category",
+                    options: [
+                      { value: "all", label: "All Categories" },
+                      ...uniqueCategories.map((cat) => ({
+                        value: cat,
+                        label: getCategoryLabel(cat),
+                      })),
+                    ],
+                    value: selectedCategory,
+                  },
                   {
                     key: "status",
                     label: "Status",
