@@ -75,7 +75,7 @@ const AdoptionGuidePage = () => {
   const hasInitializedModal = useRef(false);
 
   const { saveWizardStep, session, loading } = useWizardSession(
-    "adoption-guide",
+    "adoptive-parent-guide",
     state,
     setState,
     STEP_IDS as string[],
@@ -105,7 +105,7 @@ const AdoptionGuidePage = () => {
   const handleUploadFile = async (file: File) => {
     setIsUploading(true);
     try {
-      await uploadFileHook(file, "adoption-guide", "validation");
+      await uploadFileHook(file, "adoptive-parent-guide", "validation");
       setState((s) => ({ ...s, uploadedFile: true }));
       saveWizardStep("validation", {
         checks: state.validationChecks,
@@ -124,7 +124,7 @@ const AdoptionGuidePage = () => {
     attachment?: File
   ) => {
     await submitFeedbackHook(
-      "adoption-guide",
+      "adoptive-parent-guide",
       currentStepId as string,
       feedbackType,
       description,
@@ -753,7 +753,7 @@ const AdoptionGuidePage = () => {
           steps={STEP_IDS}
           onStepClick={(stepIndex) => setCurrentStep(stepIndex)}
           stepLabels={STEP_LABELS}
-          guideSlug="adoption-guide"
+          guideSlug="adoptive-parent-guide"
           onSaveGuide={saveGuide}
           onGuideSaved={() => setIsSaved(true)}
           saving={saving}
@@ -846,7 +846,7 @@ const AdoptionGuidePage = () => {
       <NavigationGuard
         shouldBlock={hasProgress && !isSaved}
         onSave={async () => {
-          await saveGuide("adoption-guide");
+          await saveGuide("adoptive-parent-guide");
           setIsSaved(true);
         }}
         navigationHandled={navigationHandled}
