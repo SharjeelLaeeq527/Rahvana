@@ -19,11 +19,7 @@ import React, {
 } from "react";
 import { useUserProfile } from "@/app/context/UserProfileContext";
 import { useAuth } from "@/app/context/AuthContext";
-import type {
-  CandidateProfile,
-  CandidateRelation,
-  CandidateTier,
-} from "@/types/candidate";
+import type { CandidateProfile, CandidateRelation, CandidateTier } from "@/types/candidate";
 import {
   getDefaultCandidatesForVisa,
   createNewCandidate,
@@ -129,10 +125,7 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (user?.id && !isProfileLoading) {
-        updateProfile(
-          { activeCandidateId: id },
-          { silent: true }
-        );
+        updateProfile({ activeCandidateId: id }, { silent: true });
       }
 
       showToast(`Switched active profile to ${target.label}`, "info", {
@@ -152,7 +145,10 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
       tier?: CandidateTier;
     }): CandidateProfile => {
       // Guard: USCIS permits only one spouse to be sponsored at a time
-      if (params.relation === "Spouse" || candidatesRef.current.some((c) => c.relation === "Spouse" && params.relation === "Spouse")) {
+      if (
+        params.relation === "Spouse" ||
+        candidatesRef.current.some((c) => c.relation === "Spouse" && params.relation === "Spouse")
+      ) {
         showToast("Only one spouse can be sponsored at a time.", "error");
         throw new Error("Only one spouse can be sponsored at a time.");
       }
@@ -215,15 +211,22 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
   const removeCandidate = useCallback(
     (id: string) => {
       if (candidatesRef.current.length <= 1) {
-        showToast("Cannot remove the primary candidate profile.", "error");
+        showToast("Cannot remove the only candidate profile.", "error");
         return;
       }
 
+      const target = candidatesRef.current.find((c) => c.id === id);
       const updated = candidatesRef.current.filter((c) => c.id !== id);
       candidatesRef.current = updated;
 
       const nextActiveId = activeCandidateId === id ? updated[0].id : activeCandidateId;
       setActiveCandidateIdState(nextActiveId);
+
+      try {
+        sessionStorage.setItem(ACTIVE_CANDIDATE_STORAGE_KEY, nextActiveId);
+      } catch {
+        /* non-fatal */
+      }
 
       if (user?.id) {
         updateProfile(
@@ -235,7 +238,7 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
         );
       }
 
-      showToast("Candidate profile removed.", "info");
+      showToast(`Removed ${target?.label || "candidate"} profile.`, "info");
     },
     [activeCandidateId, user?.id, updateProfile, showToast]
   );
@@ -243,16 +246,19 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
   // ── Active Candidate & Tier calculation ──────────────────────────────────
   const activeCandidate = useMemo(() => {
     const found = candidates.find((c) => c.id === activeCandidateId);
-    return found || candidates[0] || {
-      id: "candidate-1",
-      label: "Candidate 1",
-      relation: "Mother" as const,
-      fullName: "Beneficiary 1",
-      visaCategory: "IR-5",
-      tier: "free" as const,
-      isPrimary: true,
-      createdAt: new Date().toISOString(),
-    };
+    return (
+      found ||
+      candidates[0] || {
+        id: "candidate-1",
+        label: "Candidate 1",
+        relation: "Mother" as const,
+        fullName: "Beneficiary 1",
+        visaCategory: "IR-5",
+        tier: "free" as const,
+        isPrimary: true,
+        createdAt: new Date().toISOString(),
+      }
+    );
   }, [candidates, activeCandidateId]);
 
   const activeCandidateTier: CandidateTier = useMemo(() => {

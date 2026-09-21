@@ -17,6 +17,7 @@ import {
   Check,
   RefreshCw,
   Sparkles,
+  Trash2,
 } from "lucide-react";
 import { useCandidate } from "@/app/context/CandidateContext";
 import type { CandidateProfile, CandidateRelation } from "@/types/candidate";
@@ -84,6 +85,7 @@ export function CandidateSwitcherTray({
     setActiveCandidateId,
     activeCandidate,
     isMultiCandidate,
+    removeCandidate,
   } = useCandidate();
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -144,53 +146,76 @@ export function CandidateSwitcherTray({
           const style = COLOR_STYLES[candidate.colorTag || "teal"] || COLOR_STYLES.teal;
 
           return (
-            <button
+            <div
               key={candidate.id}
-              type="button"
-              onClick={() => handleSelectCandidate(candidate.id)}
-              className={`w-full flex items-center justify-between p-2 rounded-lg text-left transition-all ${
+              className={`group/candidate relative flex items-center w-full rounded-lg transition-all ${
                 isActive
                   ? `${style.bg} ${style.border} border shadow-xs ring-1 ${style.ring}`
                   : "hover:bg-muted/60 border border-transparent"
               }`}
             >
-              <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                {/* Avatar Icon */}
-                <div
-                  className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
-                    isActive ? "bg-white dark:bg-slate-900 shadow-xs" : "bg-muted"
-                  } ${style.text}`}
-                >
-                  <Icon className="w-3.5 h-3.5" />
-                </div>
+              <button
+                type="button"
+                onClick={() => handleSelectCandidate(candidate.id)}
+                className="flex items-center justify-between p-2 flex-1 min-w-0 text-left cursor-pointer"
+              >
+                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                  {/* Avatar Icon */}
+                  <div
+                    className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
+                      isActive ? "bg-white dark:bg-slate-900 shadow-xs" : "bg-muted"
+                    } ${style.text}`}
+                  >
+                    <Icon className="w-3.5 h-3.5" />
+                  </div>
 
-                {/* Candidate Information */}
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-bold text-foreground truncate">
-                      {candidate.fullName && candidate.fullName !== candidate.relation
-                        ? `${candidate.label}: ${candidate.fullName}`
-                        : candidate.label}
-                    </span>
-                    {candidate.isPreview && (
-                      <span className="px-1.5 py-0.2 rounded text-[9px] font-bold uppercase tracking-wider bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-400">
-                        Preview
+                  {/* Candidate Information */}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-bold text-foreground truncate">
+                        {candidate.fullName && candidate.fullName !== candidate.relation
+                          ? `${candidate.label}: ${candidate.fullName}`
+                          : candidate.label}
                       </span>
-                    )}
-                  </div>
-                  <div className="text-[10px] text-muted-foreground truncate">
-                    {candidate.visaCategory} · {candidate.relation}
+                      {candidate.isPreview && (
+                        <span className="px-1.5 py-0.2 rounded text-[9px] font-bold uppercase tracking-wider bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-400">
+                          Preview
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-[10px] text-muted-foreground truncate">
+                      {candidate.visaCategory} · {candidate.relation}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Active checkmark */}
-              {isActive && (
-                <div className="w-4 h-4 rounded-full bg-primary text-white flex items-center justify-center shrink-0 ml-2 shadow-xs">
-                  <Check className="w-2.5 h-2.5 stroke-[3]" />
-                </div>
+                {/* Active checkmark */}
+                {isActive && (
+                  <div className="w-4 h-4 rounded-full bg-primary text-white flex items-center justify-center shrink-0 ml-1.5 shadow-xs">
+                    <Check className="w-2.5 h-2.5 stroke-[3]" />
+                  </div>
+                )}
+              </button>
+
+              {/* Delete Candidate Button (available when more than 1 candidate exists) */}
+              {candidates.length > 1 && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    if (confirm(`Are you sure you want to delete ${candidate.label}?`)) {
+                      removeCandidate(candidate.id);
+                    }
+                  }}
+                  className="p-1.5 mr-1.5 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition-all opacity-70 group-hover/candidate:opacity-100 shrink-0 cursor-pointer"
+                  title={`Delete ${candidate.label}`}
+                  aria-label={`Delete ${candidate.label}`}
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
               )}
-            </button>
+            </div>
           );
         })}
       </div>

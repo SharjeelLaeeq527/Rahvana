@@ -209,7 +209,9 @@ describe("Multi-Candidate Profile Management & Sync Engine", () => {
 
     it("is fully idempotent when passed already candidate-suffixed keys", () => {
       expect(getCandidateJourneyKey("ir5_candidate2", "candidate-2")).toBe("ir5_candidate2");
-      expect(getCandidateJourneyKey("IR5_CANDIDATE-2_CANDIDATE-2_CANDIDATE-2", "candidate-2")).toBe("ir5_candidate2");
+      expect(getCandidateJourneyKey("IR5_CANDIDATE-2_CANDIDATE-2_CANDIDATE-2", "candidate-2")).toBe(
+        "ir5_candidate2"
+      );
       expect(getCandidateJourneyKey("ir5_candidate2", "candidate-3")).toBe("ir5_candidate3");
     });
   });
@@ -218,7 +220,9 @@ describe("Multi-Candidate Profile Management & Sync Engine", () => {
     it("formats friendly journey names cleanly without candidate key repetition", () => {
       expect(getFriendlyJourneyName("ir5")).toBe("IR-5 Parent Visa Journey");
       expect(getFriendlyJourneyName("ir5_candidate2")).toBe("IR-5 Parent Visa Journey");
-      expect(getFriendlyJourneyName("IR5_CANDIDATE-2_CANDIDATE-2_CANDIDATE-3")).toBe("IR-5 Parent Visa Journey");
+      expect(getFriendlyJourneyName("IR5_CANDIDATE-2_CANDIDATE-2_CANDIDATE-3")).toBe(
+        "IR-5 Parent Visa Journey"
+      );
       expect(getFriendlyJourneyName("ir1")).toBe("IR-1 Spouse Visa Journey");
       expect(getFriendlyJourneyName("ir2_candidate3")).toBe("IR-2 Child Visa Journey");
     });
