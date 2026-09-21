@@ -169,10 +169,14 @@ on the vault page / `RoadmapLayoutEngine` were removed.
 - "+ Add 2nd Parent" or "+ Add Child Profile" action button (no "Preview" wording).
 - "Sponsor synced" confirmation indicator with tooltip.
 
-#### 8. `ActiveCandidateBadge.tsx` `[REMOVED FROM UI]`
-The always-on navbar "active candidate" badge was removed. Candidate context lives in the
-header switcher tray (see #7) and a small "whose vault" chip on the Document Vault page. The
-file may still exist but is not rendered anywhere.
+#### 8. Active-candidate badge on the header bar
+A small pill on the SiteHeader bar (next to the avatar) shows the active beneficiary
+(`activeCandidate.fullName || label`) so the user always sees which candidate/journey is
+active **without opening the profile tray**. It is gated exactly like the switcher
+(`showCandidateSwitcher`, IR-5/IR-2 accounts only, never IR-1) and clicking it opens the
+profile tray to switch. (This replaces the old standalone `ActiveCandidateBadge.tsx`
+component, which is not rendered; the new badge is inline in `SiteHeader` and uses the
+generic candidate label/name, no relation.)
 
 #### 9. [app/components/candidate/AddCandidateModal.tsx](file:///d:/arachnie_work/updated_work/app/components/candidate/AddCandidateModal.tsx) `[NEW]`
 Interactive modal for adding a 2nd parent (IR-5) or additional children (IR-2):
@@ -191,8 +195,10 @@ Interactive modal for adding a 2nd parent (IR-5) or additional children (IR-2):
   `showCandidateSwitcher = hasCandidateJourney`, where `hasCandidateJourney` is derived from
   the user's actual journeys via `fetchUserJourneysCached` + `getBaseVisaCategory` (only
   fetched when a user is signed in). It deliberately does NOT fall back to defaulted
-  candidates / `isMultiCandidate`, so IR-1 users never see it. The always-on navbar badge is
-  not rendered.
+  candidates / `isMultiCandidate`, so IR-1 users never see it.
+- Also renders a small **active-candidate badge on the header bar** (same `showCandidateSwitcher`
+  gate) showing `activeCandidate.fullName || label`, so the active beneficiary is visible
+  without opening the tray; clicking it opens the tray.
 
 ---
 

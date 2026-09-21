@@ -57,6 +57,7 @@ import { ConfirmationModal } from "../shared/ConfirmationModal";
 import { requestNavigation } from "@/lib/guides/navigationGuardStore";
 import { ir1journeyHref, ir5journeyHref } from "@/lib/constants/routes";
 import { CandidateSwitcherTray } from "@/app/components/candidate/CandidateSwitcherTray";
+import { useCandidate } from "@/app/context/CandidateContext";
 import { fetchUserJourneysCached, getCachedUserJourneys } from "@/lib/document-vault/journey-mapping";
 import { getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
 
@@ -483,6 +484,9 @@ export function SiteHeader({
   // reliable signal): show it only when the account actually has an IR-5/IR-2 journey. We do
   // NOT fall back to isMultiCandidate/defaulted candidates - that is exactly what leaked the
   // tray onto IR-1 accounts before.
+  // Active candidate is shown as a small badge on the header bar (so the user can see which
+  // beneficiary/journey is active without opening the profile tray).
+  const { activeCandidate } = useCandidate();
   const [hasCandidateJourney, setHasCandidateJourney] = useState(false);
   // IMPORTANT: key this on the user ID, NOT the user object. AuthContext re-emits a fresh
   // user object on every auth event, so depending on `resolvedUser` would re-run this effect
@@ -1710,8 +1714,26 @@ export function SiteHeader({
             <div className="h-10 w-22 animate-pulse rounded-lg bg-[#0d7377]/10" />
           ) : user ? (
             <div className="flex items-center gap-2">
-              {/* Candidate (Mother/Father) badge intentionally NOT shown in the global
-                  header. Candidate switching lives INSIDE the IR-5 journey/vault only. */}
+              {/* Active-candidate badge on the header bar (IR-5/IR-2 accounts only) so the
+                  user always sees which beneficiary/journey is active without opening the
+                  profile tray. Clicking it opens the tray to switch. Never shown for IR-1. */}
+              {showCandidateSwitcher && activeCandidate && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (menuTimeoutRef.current) clearTimeout(menuTimeoutRef.current);
+                    setActiveMenu(activeMenu === "profile" ? null : "profile");
+                  }}
+                  title="Switch beneficiary profile"
+                  className="hidden sm:flex items-center gap-1.5 max-w-[170px] rounded-full border border-[#0d7377]/25 bg-[#0d7377]/10 px-2.5 py-1 text-xs font-semibold text-[#0d7377] hover:bg-[#0d7377]/20 transition-colors"
+                >
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
+                  <span className="truncate">
+                    {activeCandidate.fullName || activeCandidate.label}
+                  </span>
+                </button>
+              )}
               <div
                 className="relative"
                 ref={profileRef}

@@ -359,7 +359,9 @@ candidate - so it **never appears for IR-1**, which is a separate single-benefic
 kept fully outside the candidate system. (Gating on the journeys, not on the defaulted
 `activeCandidate.visaCategory`, avoids the old leak where a defaulted IR-5 candidate showed the
 tray for IR-1 users. The in-card copies previously on the vault page / `RoadmapLayoutEngine`
-were removed; the vault page keeps only a small "whose vault" context chip.)
+were removed; the vault page keeps only a small "whose vault" context chip.) The header bar
+also shows a small **active-candidate badge** (same gate) so the active beneficiary is visible
+without opening the tray; clicking it opens the tray.
 `AddCandidateModal` opens from the tray and offers **only IR-5 parent relations (Mother /
 Father / Stepparent / Adoptive Parent) or IR-2 Child - never IR-1 Spouse** (a candidate can
 never be IR-1). Full design: `docs/multi-candidate-desciption.md`. **Cross-candidate document
