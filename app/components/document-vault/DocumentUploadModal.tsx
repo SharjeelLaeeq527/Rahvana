@@ -138,7 +138,9 @@ export function DocumentUploadModal({
 
     return effectiveUserJourneys.filter((j) => {
       if (j.id === effectiveActiveJourneyId) return false;
-      if (isSameJourneyType(j.journey_type, effectiveActiveJourneyId)) return false;
+      // Compare journey TYPE to the active journey's TYPE (effectiveActiveJourneyId is a
+      // journey UUID, so passing it here was a permanent no-op).
+      if (isSameJourneyType(j.journey_type, activeJourney?.journey_type)) return false;
       if (!isDocumentApplicableToJourney(documentDef.id, documentDef.name, j.journey_type))
         return false;
 

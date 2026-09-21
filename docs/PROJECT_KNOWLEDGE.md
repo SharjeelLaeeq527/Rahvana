@@ -351,7 +351,7 @@ data is auto-shared across candidates (`SHARED_PETITIONER_FIELDS`) while benefic
 isolated (`CANDIDATE_SPECIFIC_FIELDS`). The vault, roadmap, tools and forms all scope by the
 active candidate's journey (via `useCandidate()` + `journey_id`); the vault therefore reuses
 the existing per-`journey_id` scoping (no `candidate_id` column). UI: `CandidateSwitcherTray`
-(switch / add / rename / preview badge) is rendered **only inside the IR-5 journey card** -
+(switch / add / rename) is rendered **only inside the IR-5 journey card** -
 the roadmap dashboard (`RoadmapLayoutEngine`) and the Document Vault page - gated by
 `getBaseVisaCategory(journey_type)` being IR-5/IR-2. It is intentionally **NOT** in the global
 SiteHeader and never appears for IR-1 (`ActiveCandidateBadge`/header tray were removed).

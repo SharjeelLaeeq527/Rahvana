@@ -37,33 +37,38 @@ describe("Multi-Candidate Profile Management & Sync Engine", () => {
   });
 
   describe("getDefaultCandidatesForVisa", () => {
-    it("generates Mother as default Candidate 1 for single-parent IR-5", () => {
+    it("generates a generic, unspecified-relation Candidate 1 for single-parent IR-5", () => {
       const candidates = getDefaultCandidatesForVisa("IR-5", "premium", false);
       expect(candidates).toHaveLength(1);
       expect(candidates[0].id).toBe("candidate-1");
-      expect(candidates[0].relation).toBe("Mother");
+      // Default does NOT assume Mother/Father (could be a step/adoptive parent).
+      expect(candidates[0].relation).toBe("Other");
+      expect(candidates[0].label).toBe("Candidate 1");
+      expect(candidates[0].fullName).toBe("");
       expect(candidates[0].isPrimary).toBe(true);
       expect(candidates[0].tier).toBe("premium");
     });
 
-    it("generates Mother and Father candidates when bothParents is true for IR-5", () => {
+    it("generates two generic candidates when bothParents is true for IR-5", () => {
       const candidates = getDefaultCandidatesForVisa("IR-5", "premium", true);
       expect(candidates).toHaveLength(2);
       expect(candidates[0].id).toBe("candidate-1");
-      expect(candidates[0].relation).toBe("Mother");
+      expect(candidates[0].relation).toBe("Other");
+      expect(candidates[0].label).toBe("Candidate 1");
       expect(candidates[0].isPrimary).toBe(true);
 
       expect(candidates[1].id).toBe("candidate-2");
-      expect(candidates[1].relation).toBe("Father");
+      expect(candidates[1].relation).toBe("Other");
+      expect(candidates[1].label).toBe("Candidate 2");
       expect(candidates[1].isPrimary).toBe(false);
       expect(candidates[1].tier).toBe("premium");
     });
 
-    it("generates Child 1 candidate for IR-2", () => {
+    it("generates a generic Candidate 1 for IR-2", () => {
       const candidates = getDefaultCandidatesForVisa("IR-2", "basic", false);
       expect(candidates).toHaveLength(1);
       expect(candidates[0].relation).toBe("Child");
-      expect(candidates[0].label).toBe("Candidate 1 (Child)");
+      expect(candidates[0].label).toBe("Candidate 1");
     });
 
     it("generates Spouse candidate for IR-1 / CR-1", () => {
@@ -163,14 +168,14 @@ describe("Multi-Candidate Profile Management & Sync Engine", () => {
       expect(child2.id).toBe("candidate-2");
       expect(child2.relation).toBe("Child");
       expect(child2.visaCategory).toBe("IR-2");
-      expect(child2.label).toBe("Candidate 2 (Child 2)");
+      expect(child2.label).toBe("Candidate 2");
 
       const child3 = createNewCandidate([...initial, child2], {
         relation: "Child",
         isPreview: true,
       });
       expect(child3.id).toBe("candidate-3");
-      expect(child3.label).toBe("Candidate 3 (Child 3)");
+      expect(child3.label).toBe("Candidate 3");
       expect(child3.visaCategory).toBe("IR-2");
     });
   });

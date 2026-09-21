@@ -9,7 +9,9 @@ In U.S. immigration petitions for immediate relatives, a single petitioner (e.g.
 ### The Architectural Challenge
 1. **Separation**: Beneficiary-specific data (case numbers, receipt numbers, personal IDs, DS-260 answers, stage progress, roadmap milestones) must be strictly isolated per candidate so that progress on one parent/child does not overwrite or corrupt the other.
 2. **Reusability & Syncing**: Petitioner/Sponsor data (U.S. citizenship proofs, annual income, I-864 Affidavit of Support household calculations, tax returns, and address history) is identical across all petitions. The user must **not** have to re-enter sponsor information multiple times.
-3. **Single Account & Seamless UX**: The user manages all candidates from a single account without logging out, switching active candidate profiles via the **SiteHeader Profile Tray** with real-time UI synchronization across all pages, roadmaps, tools, and guides.
+3. **Single Account & Seamless UX**: The user manages all candidates from a single account without logging out, switching active candidate profiles via the **in-journey Candidate Switcher Tray** (rendered inside the IR-5/IR-2 journey card - the roadmap dashboard and the Document Vault page - NOT the global SiteHeader) with real-time UI synchronization across the journey's pages, roadmap, tools, and guides.
+
+> **Current-behavior note (2026-09).** This document was originally written when the switcher lived in the SiteHeader with an "Active Candidate" navbar badge and a per-candidate "Free Preview" upsell. Those were removed. The switcher now lives only inside the IR-5/IR-2 journey surfaces; there is no navbar badge and no per-candidate preview (every candidate is a real beneficiary, treated equally). Default candidate labels are generic ("Candidate 1", "Candidate 2", ...) and never assume Mother/Father. See sections D and 4 for the up-to-date behavior.
 
 ---
 
@@ -19,7 +21,7 @@ In U.S. immigration petitions for immediate relatives, a single petitioner (e.g.
 graph TD
     User["Petitioner Account (Single Auth)"] --> CandidateCtx["CandidateContext<br/>(Single Source of Truth)"]
     
-    CandidateCtx --> HeaderTray["SiteHeader Profile Tray<br/>(1-Click Switcher & Active Badge)"]
+    CandidateCtx --> HeaderTray["In-Journey Candidate Switcher Tray<br/>(1-Click Switcher, inside IR-5/IR-2 journey card)"]
     CandidateCtx --> SyncService["CandidateSyncService<br/>(Auto-Syncs Shared Sponsor Data)"]
     
     CandidateCtx --> C1["Candidate 1 (e.g., Mother)"]
@@ -61,9 +63,9 @@ Defines the core TypeScript types for multi-candidate management:
   ```ts
   export interface CandidateProfile {
     id: string; // e.g. "candidate-1", "candidate-2"
-    label: string; // e.g. "Candidate 1 (Mother)", "Candidate 2 (Father)"
-    relation: "Mother" | "Father" | "Child" | "Spouse" | "Other";
-    fullName: string;
+    label: string; // generic: "Candidate 1", "Candidate 2", ... (no baked-in relation)
+    relation: "Mother" | "Father" | "Stepparent" | "AdoptiveParent" | "Child" | "Spouse" | "Other";
+    fullName: string; // "" until the user enters a real name; defaults are NOT prefilled with the relation
     name?: PersonName;
     dateOfBirth?: string;
     placeOfBirth?: { city?: string; state?: string; country?: string };
@@ -72,7 +74,7 @@ Defines the core TypeScript types for multi-candidate management:
     visaCategory: string; // e.g. "IR-5", "IR-2"
     tier: "free" | "basic" | "premium" | "executive";
     isPrimary: boolean;
-    isPreview?: boolean; // True if added for free testing/preview
+    isPreview?: boolean; // DEPRECATED - kept in the type but always treated as false (no per-candidate preview/upsell). Legacy true values are normalized to false on load.
     receiptNumber?: string; // USCIS IOE...
     caseNumber?: string; // NVC ISL...
     caseStatus?: string;
@@ -103,7 +105,7 @@ Governs data synchronization and boundary enforcement:
   Explicit list of beneficiary-specific fields that are strictly isolated:
   - `beneficiary`, `dateOfBirth`, `placeOfBirth`, `passportNumber`, `passportIssueDate`, `passportExpiry`, `cnic`, `nativeFullName`, `caseNumber`, `receiptNumber`, `priorityDate`, `approvalDate`, `dqDate`, `interviewDate`, `medicalDate`, `pccDate`, `actionPlanner`.
 - **`getDefaultCandidatesForVisa(visaCategory, tier, bothParents)`**:
-  Generates initial candidate profiles for IR-5 (Mother & Father) or IR-2 (Child 1).
+  Generates initial candidate profiles with generic labels ("Candidate 1", "Candidate 2"), empty `fullName`, and no assumed parent relation (IR-5 primary uses `relation: "Other"`; IR-2 uses "Child"; IR-1 uses "Spouse"). It does NOT bake Mother/Father into defaults - the sponsored parent may be a step or adoptive parent.
 - **`getVisaCategoryForRelation(relation, fallbackVisa)`**:
   Maps candidate relationships directly to their official visa category (`Mother`/`Father`/`Stepparent`/`AdoptiveParent` -> `IR-5`, `Spouse` -> `IR-1`, `Child` -> `IR-2`).
 - **`createNewCandidate(existingCandidates, params)`**:
@@ -126,12 +128,21 @@ Provides the central `useCandidate()` React hook used across the entire applicat
   - `activeCandidate: CandidateProfile`: The currently selected candidate.
   - `activeCandidateId: string`: ID of the active candidate.
   - `isMultiCandidate: boolean`: Boolean indicating whether 2+ candidates exist.
-  - `activeCandidateTier: CandidateTier`: Effective subscription tier of the active candidate (`free` if preview, or the account tier).
+  - `activeCandidateTier: CandidateTier`: Effective subscription tier of the active candidate (the account/candidate tier; there is no per-candidate preview downgrade anymore).
 - **Actions**:
   - `setActiveCandidateId(id: string)`: Switches the active candidate, updates profile, persists to session storage, and displays a feedback toast.
   - `addCandidate(params)`: Adds a new candidate profile (e.g. 2nd parent preview).
   - `updateCandidate(id, updates)`: Updates candidate metadata.
   - `removeCandidate(id)`: Removes candidate profile (safeguarded against removing primary).
+- **Legacy normalization on load.** The `candidates` memo repairs older saved data with no
+  migration: any `isPreview: true` is cleared, and UNTOUCHED default names (empty, equal to
+  the relation, or a baked-in default like "Child 1"/"Mother"/"Father"/"Spouse") are made
+  generic ("Candidate N", empty `fullName`). For the PRIMARY candidate an assumed parent
+  relation is dropped to "Other" (its relation was always system-assigned). A real name the
+  user typed is preserved.
+- **Hydrate-once active candidate.** A ref guard hydrates `activeCandidateId` a single time
+  from profile/session; after that an explicit switch wins, so a profile re-emit
+  (optimistic/debounced save) cannot snap the active candidate back.
 - Persists state seamlessly through `UserProfileContext.updateProfile()` with server-side encryption.
 
 #### 6. [app/layout.tsx](file:///d:/arachnie_work/updated_work/app/layout.tsx) `[MODIFIED]`
@@ -142,32 +153,41 @@ Provides the central `useCandidate()` React hook used across the entire applicat
 ### D. UI Components & Profile Tray
 
 #### 7. [app/components/candidate/CandidateSwitcherTray.tsx](file:///d:/arachnie_work/updated_work/app/components/candidate/CandidateSwitcherTray.tsx) `[NEW]`
-The candidate switcher menu rendered inside the SiteHeader profile dropdown:
+The candidate switcher, rendered **only inside the IR-5/IR-2 journey card** - the roadmap
+dashboard (`RoadmapLayoutEngine`) and the Document Vault page - gated by
+`getBaseVisaCategory(journey_type)` being IR-5/IR-2. It is intentionally **NOT** in the
+global SiteHeader and never appears for IR-1.
 - Displays all candidate profiles with:
   - Relation-specific avatar icons (Heart for Mother, Users for Father/Stepparent, Baby for Child).
   - Distinct pastel color styling (Purple, Teal, Blue, etc.).
-  - Candidate label and full name.
-  - "Preview" badge for unpaid/preview candidates.
+  - Generic candidate label plus the real name if the user entered one; the chosen relation
+    is shown in the subtitle only when it is specified (relation "Other" is hidden).
   - Active checkmark for the currently selected profile.
-- 1-click profile switching.
-- "+ Add 2nd Parent (Preview)" or "+ Add Child Profile" action button.
+- 1-click profile switching + inline name editing (pencil/check/cancel).
+- "+ Add 2nd Parent" or "+ Add Child Profile" action button (no "Preview" wording).
 - "Sponsor synced" confirmation indicator with tooltip.
 
-#### 8. [app/components/candidate/ActiveCandidateBadge.tsx](file:///d:/arachnie_work/updated_work/app/components/candidate/ActiveCandidateBadge.tsx) `[NEW]`
-Navbar indicator rendered next to the user avatar in the header:
-- Shows the active candidate relation (e.g. `Mother`, `Father`, `Child`) with relation icon.
-- Visible across all pages so the petitioner always knows which candidate's file is currently active.
-- Clicking the badge opens the profile dropdown tray.
+#### 8. `ActiveCandidateBadge.tsx` `[REMOVED FROM UI]`
+The navbar "active candidate" badge was removed. Candidate context is shown inside the
+journey surfaces (the switcher tray + the Document Vault header chip), never in the global
+header. The file may still exist but is not rendered anywhere.
 
 #### 9. [app/components/candidate/AddCandidateModal.tsx](file:///d:/arachnie_work/updated_work/app/components/candidate/AddCandidateModal.tsx) `[NEW]`
 Interactive modal for adding a 2nd parent (IR-5) or additional children (IR-2):
-- Relationship selector (Mother, Father, Stepparent, Adoptive Parent, Child).
-- Beneficiary full name input.
-- Notice explaining free preview mode and automatic sponsor data synchronization.
+- Relationship selector filtered by the current journey's visa category: **IR-5 offers only
+  parent relations (Mother, Father, Stepparent, Adoptive Parent); IR-2 offers Child; IR-1
+  offers Spouse.** No IR-1 Spouse or IR-2 Child options leak into an IR-5 journey.
+- Optional beneficiary full name input (blank is fine; the profile stays "Candidate N").
+- A plain "Multi-Profile Support" notice about automatic sponsor-data syncing (no preview
+  upsell, no decorative icon).
+- The modal is **portaled to `document.body`** (`createPortal`) so its fixed overlay escapes
+  the sticky/`overflow-hidden` card it is triggered from - otherwise the page behind bled
+  through the modal.
 
 #### 10. [app/components/layout/SiteHeader.tsx](file:///d:/arachnie_work/updated_work/app/components/layout/SiteHeader.tsx) `[MODIFIED]`
-- Integrated `ActiveCandidateBadge` into the navbar header.
-- Embedded `CandidateSwitcherTray` at the top of the profile dropdown menu (`activeMenu === "profile"`).
+- The candidate badge and switcher tray were **removed** from the header. The header no
+  longer references any candidate UI; the switcher lives only inside the IR-5/IR-2 journey
+  surfaces (see #7).
 
 ---
 
@@ -203,6 +223,30 @@ Interactive modal for adding a 2nd parent (IR-5) or additional children (IR-2):
 #### 16. [app/components/document-vault/DocumentUploadModal.tsx](file:///d:/arachnie_work/updated_work/app/components/document-vault/DocumentUploadModal.tsx) `[MODIFIED]`
 - Ensured uploaded documents attach `effectiveActiveJourneyId`, tagging files with the active candidate's journey in Supabase storage and database.
 
+#### 17. Cross-candidate sharing, delete safety, and scoping robustness `[document-vault]`
+- **Cross-candidate document sharing** rides the existing **cross-journey** share
+  (`shareWithJourneyIds`), since each candidate is its own journey. Both upload modals
+  (`DocumentUploadModal`, `MultipleDocumentUploadModal`) default share targets to
+  **unchecked (opt-in)**. When a target is a **sibling candidate** (another parent = same
+  base visa category via `getBaseVisaCategory`), only documents passing
+  `isDocumentShareableAcrossCandidates` (`lib/document-vault/candidate-sharing.ts`) are
+  offered: petitioner / joint-sponsor / household docs are shareable by default, any
+  BENEFICIARY-role doc is candidate-specific (passport, CNIC, birth, medical are never
+  offered between parents), and an explicit `shareableAcrossCandidates` flag on a
+  `DocumentDefinition` overrides. Sharing to a genuinely different visa journey is unchanged.
+- **Delete safety:** `DELETE /api/documents/[id]` reference-counts `storage_path` (via
+  `getDocumentsByStoragePath`, user-scoped) before removing the blob, so deleting one shared
+  copy never orphans the file for the other candidate's journey; only the metadata row is
+  removed when a sibling row still references the same blob.
+- **Candidate -> journey scoping (vault page).** The effect that maps the active candidate to
+  its journey (`app/(tools)/document-vault/page.tsx`): (a) never matches a journey from a
+  different base visa category; (b) for the primary candidate, excludes **any**
+  candidate-scoped journey (`!normJ.includes("candidate")`) so a 5th+ sibling can't be
+  mis-adopted by the primary; (c) only pins `lastResolvedCandidateRef` once a real journey is
+  matched - a missing sibling journey (freshly added parent) is left unpinned so the effect
+  re-runs and adopts the journey once the candidate-scoped wizard/`userJourneys` produce it,
+  instead of permanently freezing on the previous candidate's journey.
+
 ---
 
 ## 4. How the Flow Works in Practice
@@ -222,11 +266,15 @@ Interactive modal for adding a 2nd parent (IR-5) or additional children (IR-2):
    - Father's case numbers (IOE... / ISL...) and civil documents are tracked separately.
    - The petitioner does **not** have to re-enter sponsor income or tax documents.
 
-### Scenario 2: User on Free Plan or Single-Parent Plan (Previewing Multi-Candidate)
-1. A user who bought a plan for 1 parent opens the Profile Tray.
-2. They click **"+ Add 2nd Parent (Preview)"**.
-3. `Candidate 2 (Father)` is added in **Free Preview mode** (`tier: 'free'`).
-4. When switching to Candidate 2, the user can explore the roadmap structure and separate document vault, but paid step tools trigger the standard paywall, protecting revenue while showcasing the platform's multi-candidate capabilities.
+### Scenario 2: Adding a 2nd Parent (No Per-Candidate Preview)
+1. From the in-journey Candidate Switcher Tray the user clicks **"+ Add 2nd Parent"**.
+2. The Add modal offers only IR-5 parent relations. The user picks one (e.g. Father) and
+   optionally types a name.
+3. `Candidate 2` is added as a full, equal beneficiary (no "preview" flag or downgrade).
+   Plan/entitlement gating still applies exactly as it does for the primary candidate -
+   there is no separate per-candidate preview tier.
+4. Switching to Candidate 2 loads its own roadmap and Document Vault, scoped by its own
+   journey (`ir5_candidate-2`).
 
 ### Scenario 3: Expanding to IR-2 (Multiple Children)
 1. The architecture uses dynamic arrays and sequential candidate IDs (`candidate-1`, `candidate-2`, `candidate-3`...).
@@ -240,8 +288,8 @@ Interactive modal for adding a 2nd parent (IR-5) or additional children (IR-2):
 Unit tests are located in [__tests__/candidate/candidate-sync.test.ts](file:///d:/arachnie_work/updated_work/__tests__/candidate/candidate-sync.test.ts).
 
 ### Test Coverage Summary:
-- **Default Profile Generation**: Verified default profiles for IR-5 (single parent & both parents), IR-2, and IR-1.
-- **Candidate Creation**: Verified sequential ID generation, relation tagging, and preview tier assignment.
+- **Default Profile Generation**: Verified generic default profiles for IR-5 (single and both), IR-2, and IR-1 - generic "Candidate N" labels, empty `fullName`, and no assumed parent relation.
+- **Candidate Creation**: Verified sequential ID generation, relation tagging, and generic labeling.
 - **Journey Key Derivation**: Verified root keys for primary candidate and candidate-isolated keys for subsequent candidates.
 - **Data Boundary Integrity**: Verified that `SHARED_PETITIONER_FIELDS` and `CANDIDATE_SPECIFIC_FIELDS` have strictly zero overlap.
 - **Document Vault Scoping**: Verified independent journey key derivation and vault isolation for IR-5 parents and multi-child IR-2 cases.

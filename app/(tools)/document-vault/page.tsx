@@ -496,12 +496,22 @@ export default function DocumentVaultPage() {
     const normBaseKey = visaCategory.toLowerCase().replace(/[-:_]/g, "");
 
     const matched = userJourneys.find((j) => {
+      // Never match a journey from a different visa category. Without this, the primary
+      // candidate's loose fallback below would wrongly grab an unrelated journey (e.g. an
+      // IR-1 journey), making Mother's IR-5 vault show "IR-1". Normalize both sides so
+      // "IR-5" / "IR5" / "ir-5" all compare equal.
+      if (getBaseVisaCategory(j.journey_type) !== getBaseVisaCategory(visaCategory)) return false;
+
       const normJ = j.journey_type.toLowerCase().replace(/[-:_]/g, "");
       if (activeCandidate.isPrimary) {
+        // The primary candidate owns the base journey (e.g. "ir5"), which is never
+        // candidate-scoped. Any journey_type containing "candidate" belongs to a sibling
+        // (candidate-2, candidate-3, ... candidate-N), so exclude all of them regardless of
+        // number - hardcoding candidate2/3/4 leaked a 5th+ candidate's journey to the primary.
         return (
           normJ === normBaseKey ||
           normJ === normCandidateKey ||
-          (!normJ.includes("candidate2") && !normJ.includes("candidate3") && !normJ.includes("candidate4"))
+          !normJ.includes("candidate")
         );
       }
       return normJ === normCandidateKey || (normJ.includes(normCandidateKey) && !normJ.includes("candidate1"));
@@ -518,7 +528,13 @@ export default function DocumentVaultPage() {
         }
       }
     } else if (wizard.state.backendId) {
-      lastResolvedCandidateRef.current = activeCandidateId;
+      // No journey for this candidate is in userJourneys yet (e.g. a freshly added parent
+      // whose journey row is still being created). Fall back to the candidate-scoped
+      // wizard's backendId, but do NOT pin lastResolvedCandidateRef here: pinning froze the
+      // candidate on whatever backendId existed at switch time (often the PREVIOUS
+      // candidate's journey), permanently blocking the correct journey from being adopted
+      // once it appears. Leaving it unpinned lets this effect re-run as wizard.state.backendId
+      // converges to this candidate's journey and, later, as userJourneys gains the real row.
       if (wizard.state.backendId !== activeJourneyId) {
         setActiveJourneyId(wizard.state.backendId);
         if (typeof window !== "undefined") {
@@ -1084,18 +1100,12 @@ export default function DocumentVaultPage() {
                         {isCandidateJourney && isMultiCandidate && activeCandidate && (
                           <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                            <span>{activeCandidate.relation}:</span>
+                            {activeCandidate.relation && activeCandidate.relation !== "Other" && (
+                              <span>{activeCandidate.relation}:</span>
+                            )}
                             <span className="font-bold text-slate-900 dark:text-white">
                               {activeCandidate.fullName || activeCandidate.label}
                             </span>
-                            {activeCandidate.isPreview && (
-                              <Badge
-                                variant="outline"
-                                className="text-[10px] px-1.5 py-0 border-amber-400 text-amber-600 bg-amber-50 dark:bg-amber-950/40"
-                              >
-                                Preview
-                              </Badge>
-                            )}
                           </div>
                         )}
                         <span className="text-xs text-slate-500 font-medium">

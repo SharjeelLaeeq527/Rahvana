@@ -16,7 +16,6 @@ import {
   UserPlus,
   Check,
   RefreshCw,
-  Sparkles,
   Pencil,
   X,
 } from "lucide-react";
@@ -218,14 +217,12 @@ export function CandidateSwitcherTray({
                             ? `${candidate.label}: ${candidate.fullName}`
                             : candidate.label}
                         </span>
-                        {candidate.isPreview && (
-                          <span className="px-1.5 py-0.2 rounded text-[9px] font-bold uppercase tracking-wider bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-400">
-                            Preview
-                          </span>
-                        )}
                       </div>
                       <div className="text-[10px] text-muted-foreground truncate">
-                        {candidate.visaCategory} · {candidate.relation}
+                        {candidate.visaCategory}
+                        {candidate.relation && candidate.relation !== "Other"
+                          ? ` · ${candidate.relation}`
+                          : ""}
                       </div>
                     </>
                   )}
@@ -287,7 +284,7 @@ export function CandidateSwitcherTray({
           <span>
             {isIr5
               ? candidates.length === 1
-                ? "+ Add 2nd Parent (Preview)"
+                ? "+ Add 2nd Parent"
                 : "+ Add Parent Profile"
               : isIr2
                 ? "+ Add Child Profile"

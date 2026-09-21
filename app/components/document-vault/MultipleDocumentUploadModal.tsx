@@ -118,9 +118,12 @@ export function MultipleDocumentUploadModal({
   const [sharedJourneyIds, setSharedJourneyIds] = useState<string[]>([]);
 
   const otherJourneys = useMemo(() => {
+    // Compare journey TYPE to the active journey's TYPE (activeJourneyId is a journey UUID,
+    // so passing it to isSameJourneyType was a permanent no-op).
+    const activeJourney = userJourneys.find((x) => x.id === activeJourneyId);
     return userJourneys.filter((j) => {
       if (j.id === activeJourneyId) return false;
-      if (isSameJourneyType(j.journey_type, activeJourneyId)) return false;
+      if (isSameJourneyType(j.journey_type, activeJourney?.journey_type)) return false;
       return true;
     });
   }, [userJourneys, activeJourneyId]);
