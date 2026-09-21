@@ -11,8 +11,6 @@ import { ChevronRight, ArrowLeft, Check, X, LayoutDashboard } from "lucide-react
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { useAuth } from "@/app/context/AuthContext";
 import { useInitDocumentVault } from "@/lib/document-vault/useInitDocumentVault";
-import { CandidateSwitcherTray } from "@/app/components/candidate/CandidateSwitcherTray";
-import { getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
 
 /** Lazy-load StepView — only fetched when user navigates to a step */
 const LazyStepView = React.lazy(() =>
@@ -273,15 +271,8 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
 
       {/* ── Main Content ── */}
       <main className="roadmap-main">
-        {/* Candidate (Mother/Father) switcher - lives INSIDE the IR-5 journey card only
-            (multi-candidate categories), never in the global header. Shown on the dashboard. */}
-        {view === "dashboard" &&
-          ["IR-5", "IR-2"].includes(getBaseVisaCategory(data.journey_type)) && (
-            <div className="mx-auto mb-4 max-w-3xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-              <CandidateSwitcherTray />
-            </div>
-          )}
-
+        {/* Candidate switcher now lives in the global SiteHeader (app-wide, IR-5/IR-2 only),
+            so it is not duplicated on the dashboard. */}
         {view === "dashboard" && (
           <DashboardView
             data={data}

@@ -36,20 +36,19 @@ export function AddCandidateModal({
 }: AddCandidateModalProps) {
   const { addCandidate, candidates } = useCandidate();
 
-  const isIr5 = visaCategory.toUpperCase().includes("IR-5") || visaCategory.toUpperCase().includes("IR5");
   const isIr2 = visaCategory.toUpperCase().includes("IR-2") || visaCategory.toUpperCase().includes("IR2");
 
   // Determine smart default relation
   const hasMother = candidates.some((c) => c.relation === "Mother");
   const hasFather = candidates.some((c) => c.relation === "Father");
 
-  const defaultRelation: CandidateRelation = isIr5
-    ? hasMother && !hasFather
+  // Candidates only ever belong to IR-5 (parents) or IR-2 (children). IR-1 is a separate,
+  // single-beneficiary journey and is intentionally NOT part of the candidate system.
+  const defaultRelation: CandidateRelation = isIr2
+    ? "Child"
+    : hasMother && !hasFather
       ? "Father"
-      : "Mother"
-    : isIr2
-      ? "Child"
-      : "Spouse";
+      : "Mother";
 
   const [relation, setRelation] = useState<CandidateRelation>(defaultRelation);
   const [fullName, setFullName] = useState("");
@@ -89,19 +88,16 @@ export function AddCandidateModal({
     { value: "Father", label: "Father", visaBadge: "IR-5 Parent", icon: Users },
     { value: "Stepparent", label: "Stepparent", visaBadge: "IR-5 Parent", icon: Users },
     { value: "AdoptiveParent", label: "Adoptive Parent", visaBadge: "IR-5 Parent", icon: Heart },
-    { value: "Spouse", label: "Spouse", visaBadge: "IR-1 Spouse", icon: Heart },
     { value: "Child", label: "Child", visaBadge: "IR-2 Child", icon: Baby },
   ];
 
   // Only offer relations that belong to the current journey's visa category:
-  // IR-5 -> parents only, IR-2 -> child, IR-1/other -> spouse. (No IR-1 Spouse or
-  // IR-2 Child options leaking into an IR-5 journey.)
+  // IR-2 -> child, everything else (IR-5) -> parents only. IR-1 (Spouse) is never a
+  // candidate, so it is not offered here at all.
   const PARENT_RELATIONS: CandidateRelation[] = ["Mother", "Father", "Stepparent", "AdoptiveParent"];
-  const relationOptions = isIr5
-    ? allRelationOptions.filter((o) => PARENT_RELATIONS.includes(o.value))
-    : isIr2
-      ? allRelationOptions.filter((o) => o.value === "Child")
-      : allRelationOptions.filter((o) => o.value === "Spouse");
+  const relationOptions = isIr2
+    ? allRelationOptions.filter((o) => o.value === "Child")
+    : allRelationOptions.filter((o) => PARENT_RELATIONS.includes(o.value));
 
   const modal = (
     <AnimatePresence>

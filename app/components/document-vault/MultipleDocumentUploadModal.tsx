@@ -121,9 +121,13 @@ export function MultipleDocumentUploadModal({
     // Compare journey TYPE to the active journey's TYPE (activeJourneyId is a journey UUID,
     // so passing it to isSameJourneyType was a permanent no-op).
     const activeJourney = userJourneys.find((x) => x.id === activeJourneyId);
+    const activeBase = activeJourney ? getBaseVisaCategory(activeJourney.journey_type) : null;
     return userJourneys.filter((j) => {
       if (j.id === activeJourneyId) return false;
       if (isSameJourneyType(j.journey_type, activeJourney?.journey_type)) return false;
+      // Same base visa category only - IR-1 (a separate single-beneficiary journey) is never
+      // offered as a candidate share target; the candidate system stays isolated from IR-1.
+      if (!activeBase || getBaseVisaCategory(j.journey_type) !== activeBase) return false;
       return true;
     });
   }, [userJourneys, activeJourneyId]);

@@ -56,6 +56,9 @@ import { NAV_DATA } from "./navigationData";
 import { ConfirmationModal } from "../shared/ConfirmationModal";
 import { requestNavigation } from "@/lib/guides/navigationGuardStore";
 import { ir1journeyHref, ir5journeyHref } from "@/lib/constants/routes";
+import { CandidateSwitcherTray } from "@/app/components/candidate/CandidateSwitcherTray";
+import { fetchUserJourneysCached, getCachedUserJourneys } from "@/lib/document-vault/journey-mapping";
+import { getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
 
 interface HeaderProps {
   activeSection?: string;
@@ -472,6 +475,49 @@ export function SiteHeader({
   }, [pathname]);
   const { profile, isLoading, user: authUser } = useAuth();
   const resolvedUser = user ?? authUser;
+
+  // ── Candidate switcher visibility (app-wide, but ONLY for IR-5/IR-2) ───────
+  // The candidate switcher is a whole-journey feature (one account, multiple beneficiary
+  // journeys), so it lives in the global header - but it must NEVER appear for IR-1, which
+  // is a separate single-beneficiary journey. We gate on the user's ACTUAL journeys (the
+  // reliable signal): show it only when the account actually has an IR-5/IR-2 journey. We do
+  // NOT fall back to isMultiCandidate/defaulted candidates - that is exactly what leaked the
+  // tray onto IR-1 accounts before.
+  const [hasCandidateJourney, setHasCandidateJourney] = useState(false);
+  // IMPORTANT: key this on the user ID, NOT the user object. AuthContext re-emits a fresh
+  // user object on every auth event, so depending on `resolvedUser` would re-run this effect
+  // constantly - each re-run's cleanup cancels the in-flight fetch before it can set state, so
+  // the switcher would never appear. See the "Auth user-object re-ref wipes state" pitfall.
+  const resolvedUserId = resolvedUser?.id ?? null;
+  useEffect(() => {
+    if (!resolvedUserId) {
+      setHasCandidateJourney(false);
+      return;
+    }
+    let cancelled = false;
+    // Seed synchronously from the shared cache if the vault/roadmap already populated it.
+    const cached = getCachedUserJourneys();
+    if (cached && cached.length > 0) {
+      setHasCandidateJourney(
+        cached.some((j) => ["IR-5", "IR-2"].includes(getBaseVisaCategory(j?.journey_type)))
+      );
+    }
+    fetchUserJourneysCached()
+      .then((journeys) => {
+        if (cancelled) return;
+        const has = (journeys || []).some((j) =>
+          ["IR-5", "IR-2"].includes(getBaseVisaCategory(j?.journey_type))
+        );
+        setHasCandidateJourney(has);
+      })
+      .catch(() => {
+        /* non-fatal - just keep the switcher hidden */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [resolvedUserId]);
+  const showCandidateSwitcher = hasCandidateJourney;
 
   const fetchNotifications = useCallback(async () => {
     try {
@@ -1745,8 +1791,11 @@ export function SiteHeader({
                         </p>
                       </div>
 
-                    {/* Candidate switcher intentionally removed from the global profile
-                        dropdown - it now lives INSIDE the IR-5 journey/vault card only. */}
+                    {/* Candidate switcher: app-wide (whole-journey feature), shown only for
+                        IR-5/IR-2 accounts. Never rendered for IR-1 (kept fully separate). */}
+                    {showCandidateSwitcher && (
+                      <CandidateSwitcherTray onCandidateSwitched={() => setActiveMenu(null)} />
+                    )}
 
                     {/* Section 1 */}
                     <div className="border-border border-b py-2">

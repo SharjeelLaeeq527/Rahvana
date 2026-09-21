@@ -220,9 +220,6 @@ export function CandidateSwitcherTray({
                       </div>
                       <div className="text-[10px] text-muted-foreground truncate">
                         {candidate.visaCategory}
-                        {candidate.relation && candidate.relation !== "Other"
-                          ? ` · ${candidate.relation}`
-                          : ""}
                       </div>
                     </>
                   )}

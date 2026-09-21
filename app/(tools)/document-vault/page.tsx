@@ -58,7 +58,6 @@ import { Plus, Info, LayoutTemplate } from "lucide-react";
 import { useWizard } from "@/app/(main)/dashboard/hooks/useWizard";
 import { useCandidate } from "@/app/context/CandidateContext";
 import { getJourneyKeyForCandidate, getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
-import { CandidateSwitcherTray } from "@/app/components/candidate/CandidateSwitcherTray";
 import Link from "next/link";
 import Image from "next/image";
 import { PageGate } from "@/app/components/entitlements/PageGate";
@@ -1127,13 +1126,9 @@ export default function DocumentVaultPage() {
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                 {/* Left Side: Stats & Configuration */}
                 <div className="lg:col-span-3 space-y-6 lg:sticky lg:top-24">
-                  {/* Candidate switcher - shown ONLY inside a multi-candidate (IR-5) journey,
-                      never in the global header and never for IR-1. */}
-                  {isCandidateJourney && (
-                    <Card className="overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm p-0">
-                      <CandidateSwitcherTray />
-                    </Card>
-                  )}
+                  {/* Candidate switcher lives in the global SiteHeader (app-wide, IR-5/IR-2
+                      only) - it is intentionally NOT duplicated here. The header chip above
+                      still shows whose vault is active. */}
 
                   {/* Professional Stats Card */}
                   <Card className="overflow-hidden border-none shadow-xl bg-linear-to-br from-primary via-primary/95 to-primary/90 text-white p-0">

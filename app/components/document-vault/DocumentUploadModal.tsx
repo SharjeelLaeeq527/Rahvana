@@ -141,15 +141,20 @@ export function DocumentUploadModal({
       // Compare journey TYPE to the active journey's TYPE (effectiveActiveJourneyId is a
       // journey UUID, so passing it here was a permanent no-op).
       if (isSameJourneyType(j.journey_type, activeJourney?.journey_type)) return false;
+
+      // Only offer OTHER candidates within the SAME case (same base visa category). A
+      // different-category journey - notably IR-1, which is a separate single-beneficiary
+      // journey - is NEVER a candidate share target. The candidate system is isolated from
+      // IR-1 by design.
+      if (!activeBase || getBaseVisaCategory(j.journey_type) !== activeBase) return false;
+
       if (!isDocumentApplicableToJourney(documentDef.id, documentDef.name, j.journey_type))
         return false;
 
-      // Sibling candidate = another candidate (e.g. the other parent) in the SAME case,
-      // i.e. same base visa category. Between siblings, only offer documents that are
+      // Between sibling candidates (e.g. the other parent) only offer documents that are
       // shareable across candidates; parent-specific docs (passport, CNIC, birth, medical,
-      // ...) are never offered. Sharing to a genuinely different visa journey is unchanged.
-      const isSiblingCandidate = !!activeBase && getBaseVisaCategory(j.journey_type) === activeBase;
-      if (isSiblingCandidate && !isDocumentShareableAcrossCandidates(documentDef)) return false;
+      // ...) are never offered.
+      if (!isDocumentShareableAcrossCandidates(documentDef)) return false;
 
       return true;
     });
