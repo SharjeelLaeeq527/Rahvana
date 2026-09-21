@@ -752,11 +752,14 @@ export default function VisaFormSelector() {
   };
 
   const filteredForms = VISA_FORMS.filter((form) => {
-    // 1. Filter by Journey & Stage (Only in Journey View)
-    if (currentView === "journey") {
-      if (currentJourney && form.journeys && !form.journeys.includes(currentJourney)) return false;
+    // 1. Filter by Journey (Applies whenever a journey is selected)
+    if (currentJourney && (!form.journeys || !form.journeys.includes(currentJourney))) {
+      return false;
+    }
 
-      if (currentStage && form.stage !== currentStage) return false;
+    // 2. Filter by Stage (Only in Journey View)
+    if (currentView === "journey" && currentStage && form.stage !== currentStage) {
+      return false;
     }
 
     // 2. Filter by Search Query

@@ -13,38 +13,45 @@ if (!supabaseUrl || !supabaseServiceKey) {
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-console.log("🔍 Checking and registering 'adoption-guide'...");
+const slugsToRegister = [
+  {
+    slug: "adoptive-parent-guide",
+    title: "Adoptive Parent & Guardianship Guide",
+    description: "USCIS adoption and guardianship eligibility, document requirements, and Pakistani system nuances.",
+  },
+  {
+    slug: "adoption-guide",
+    title: "Adoptive Parent & Guardianship Guide",
+    description: "USCIS adoption and guardianship eligibility, document requirements, and Pakistani system nuances.",
+  },
+];
 
-const { data: existing, error: fetchError } = await supabase
-  .from("guides")
-  .select("id")
-  .eq("slug", "adoption-guide")
-  .maybeSingle();
-
-if (fetchError) {
-  console.error("❌ Error fetching guide:", fetchError.message);
-  process.exit(1);
-}
-
-if (existing) {
-  console.log("✅ 'adoption-guide' is already registered with ID:", existing.id);
-} else {
-  const { data: inserted, error: insertError } = await supabase
+for (const item of slugsToRegister) {
+  console.log(`🔍 Checking and registering '${item.slug}'...`);
+  const { data: existing, error: fetchError } = await supabase
     .from("guides")
-    .insert([
-      {
-        slug: "adoption-guide",
-        title: "Adoptive Parent & Guardianship Guide",
-        description: "USCIS adoption and guardianship eligibility, document requirements, and Pakistani system nuances.",
-      }
-    ])
-    .select()
-    .single();
+    .select("id")
+    .eq("slug", item.slug)
+    .maybeSingle();
 
-  if (insertError) {
-    console.error("❌ Error registering guide:", insertError.message);
-    process.exit(1);
+  if (fetchError) {
+    console.error(`❌ Error fetching guide '${item.slug}':`, fetchError.message);
+    continue;
   }
 
-  console.log("🎉 Successfully registered 'adoption-guide':", inserted);
+  if (existing) {
+    console.log(`✅ '${item.slug}' is already registered with ID:`, existing.id);
+  } else {
+    const { data: inserted, error: insertError } = await supabase
+      .from("guides")
+      .insert([item])
+      .select()
+      .single();
+
+    if (insertError) {
+      console.error(`❌ Error registering guide '${item.slug}':`, insertError.message);
+    } else {
+      console.log(`🎉 Successfully registered '${item.slug}':`, inserted);
+    }
+  }
 }

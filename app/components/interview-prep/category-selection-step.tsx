@@ -124,14 +124,8 @@ export function CategorySelectionStep({
   onPurchaseAgain,
   error,
 }: CategorySelectionStepProps) {
-  const environment = process.env.NEXT_PUBLIC_ENVIRONMENT === "development";
-
-  const visibleCategories = environment
-  ? categories
-  : categories.filter(
-      (category) => category.categorySlug !== "ir-5-parent"
-    );
-
+  const visibleCategories = categories
+  
   if (visibleCategories.length === 0) {
     return (
       <div className="rounded-3xl border border-slate-200 bg-white px-6 py-14 text-center shadow-sm sm:px-10">
