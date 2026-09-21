@@ -37,13 +37,13 @@ export function ExplorerSupportSection() {
             connects process steps, document preparation, and milestone readiness in one place.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
-            <Link
+            {/* <Link
               href="/visa-eligibility"
               className="inline-flex items-center gap-2 rounded-full bg-[var(--rahvana-primary)] px-5 py-3 text-sm font-semibold text-white transition duration-200 hover:-translate-y-0.5 hover:bg-[var(--rahvana-primary-dark)]"
             >
               Check eligibility
               <ArrowRight className="h-4 w-4" />
-            </Link>
+            </Link> */}
             <Link
               href="/book-consultation"
               className="inline-flex items-center gap-2 rounded-full border border-[var(--rv-line)] bg-white px-5 py-3 text-sm font-semibold text-[var(--rv-navy)] transition-colors hover:bg-[var(--rahvana-primary-pale)]"
