@@ -162,7 +162,8 @@ Navbar indicator rendered next to the user avatar in the header:
 #### 9. [app/components/candidate/AddCandidateModal.tsx](file:///d:/arachnie_work/updated_work/app/components/candidate/AddCandidateModal.tsx) `[NEW]`
 Interactive modal for adding a 2nd parent (IR-5) or additional children (IR-2):
 - Relationship selector (Mother, Father, Stepparent, Adoptive Parent, Child).
-- Beneficiary full name input.
+- **Single Spouse Constraint**: "Spouse" is disallowed from multi-candidate addition because USCIS regulations permit only one spouse to be sponsored at a time.
+- **Strict Free Tier Tagging**: All newly added candidate profiles default to `tier: "free"` and `isPreview: true`.
 - Notice explaining free preview mode and automatic sponsor data synchronization.
 
 #### 10. [app/components/layout/SiteHeader.tsx](file:///d:/arachnie_work/updated_work/app/components/layout/SiteHeader.tsx) `[MODIFIED]`
