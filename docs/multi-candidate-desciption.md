@@ -245,6 +245,16 @@ Interactive modal for adding a 2nd parent (IR-5) or additional children (IR-2):
   `getDocumentsByStoragePath`, user-scoped) before removing the blob, so deleting one shared
   copy never orphans the file for the other candidate's journey; only the metadata row is
   removed when a sibling row still references the same blob.
+- **Vault journey picker dedupe.** The Document Vault's "choose a journey" picker
+  (`app/(tools)/document-vault/page.tsx`) shows **one card per base visa category**
+  (`dedupeJourneysByBaseCategory`), not one per journey row. Candidate-scoped journeys
+  (`ir5_candidate-2`, ...) and any leftover/duplicate rows (e.g. an old `ir1_candidate-*` from
+  when Spouse could be added as a candidate) collapse into a single card, preferring the base
+  (non-candidate) journey - so IR-1 can never show as two/many cards. When only one base
+  category exists (even with several candidate rows), the vault auto-selects it instead of
+  showing a one-card picker; candidate switching then happens via the header switcher. Stray
+  `ir1_candidate-*` rows in the DB (from when Spouse could be added) are removed by the one-off
+  `scripts/cleanup-invalid-ir1-candidate-journeys.sql` (run manually in the Supabase SQL editor).
 - **Candidate -> journey scoping (vault page).** The effect that maps the active candidate to
   its journey (`app/(tools)/document-vault/page.tsx`): (a) never matches a journey from a
   different base visa category; (b) for the primary candidate, excludes **any**

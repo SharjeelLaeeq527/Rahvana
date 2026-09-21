@@ -74,6 +74,37 @@ import {
 // Session-storage key for persisted journey choice (Case 3)
 const SESSION_KEY = "doc_vault_active_journey";
 
+// The journey picker shows ONE card per base visa category (IR-1, IR-5, ...). Candidate-scoped
+// journeys (e.g. ir5_candidate-2) are NOT separate vaults in the picker - once a category is
+// opened, the header candidate switcher moves between candidates. This also collapses any stray
+// duplicate or leftover candidate rows (e.g. an old ir1_candidate-2 from when Spouse could be
+// added as a candidate) into a single card, preferring the base (non-candidate) journey.
+function dedupeJourneysByBaseCategory(journeys: Journey[]): Journey[] {
+  const byBase = new Map<string, Journey>();
+  for (const j of journeys) {
+    if (!j?.journey_type) continue;
+    const base = getBaseVisaCategory(j.journey_type);
+    const existing = byBase.get(base);
+    if (!existing) {
+      byBase.set(base, j);
+      continue;
+    }
+    const jIsCandidate = j.journey_type.toLowerCase().includes("candidate");
+    const existingIsCandidate = existing.journey_type.toLowerCase().includes("candidate");
+    // Prefer the base (non-candidate / primary) journey as the category's representative;
+    // otherwise prefer an in-progress one.
+    if (existingIsCandidate && !jIsCandidate) byBase.set(base, j);
+    else if (
+      existingIsCandidate === jIsCandidate &&
+      existing.status !== "in_progress" &&
+      j.status === "in_progress"
+    ) {
+      byBase.set(base, j);
+    }
+  }
+  return Array.from(byBase.values());
+}
+
 export default function DocumentVaultPage() {
   const { showToast } = useToast();
   const { user, isLoading: authLoading } = useAuth();
@@ -186,6 +217,13 @@ export default function DocumentVaultPage() {
   const activeJourney = useMemo(() => {
     return userJourneys.find((j) => j.id === activeJourneyId) ?? null;
   }, [userJourneys, activeJourneyId]);
+
+  // One entry per base visa category for the journey picker (IR-1, IR-5, ...). Collapses
+  // candidate-scoped and stray duplicate journey rows so IR-1 can never show as two/many cards.
+  const dedupedUserJourneys = useMemo(
+    () => dedupeJourneysByBaseCategory(userJourneys),
+    [userJourneys]
+  );
 
   // Candidate (Mother/Father) switching only applies to multi-candidate categories (IR-5,
   // and future IR-2). Never for IR-1. Gate purely on the ACTIVE JOURNEY's type so the
@@ -336,16 +374,21 @@ export default function DocumentVaultPage() {
         setUserJourneys(journeys);
         setCachedUserJourneys(journeys);
 
+        // Collapse candidate/duplicate rows to distinct base categories so the picker only
+        // appears when the user genuinely has more than one KIND of journey (e.g. IR-1 + IR-5).
+        const distinctBases = dedupeJourneysByBaseCategory(journeys);
+
         if (journeys.length === 0) {
           // ── Case 1: No journey at all ──────────────────────────────────
           setNoJourneyModalOpen(true);
           setJourneyGateReady(true);
-        } else if (journeys.length === 1) {
-          // ── Case 2: Exactly one journey — auto-configure ───────────────
-          setActiveJourneyId(journeys[0].id);
+        } else if (distinctBases.length === 1) {
+          // ── Case 2: One base category (even if it has multiple candidate journeys) —
+          //    auto-select its representative; the header switcher handles candidates. ──
+          setActiveJourneyId(distinctBases[0].id);
           setJourneyGateReady(true);
         } else {
-          // ── Case 3: Multiple journeys — check session storage ──────────
+          // ── Case 3: Multiple distinct categories — check session storage ──────────
           const saved = typeof window !== "undefined" ? sessionStorage.getItem(SESSION_KEY) : null;
           if (saved && journeys.some((j) => j.id === saved)) {
             setActiveJourneyId(saved);
@@ -931,7 +974,7 @@ export default function DocumentVaultPage() {
     );
   }
 
-  if (userJourneys.length > 1 && !activeJourneyId) {
+  if (dedupedUserJourneys.length > 1 && !activeJourneyId) {
     return (
       <div className="bg-slate-50/50 dark:bg-slate-950/50 mt-[55px] min-h-[calc(100vh-55px)] py-12 px-6">
         <div className="container mx-auto max-w-5xl">
@@ -948,7 +991,7 @@ export default function DocumentVaultPage() {
 
           {/* Grid of Folders / Journey Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {userJourneys.map((journey) => {
+            {dedupedUserJourneys.map((journey) => {
               const visaCategory = journeyTypeToVisaCategory(journey.journey_type);
               const isActive = journey.status === "in_progress";
 
@@ -1061,7 +1104,7 @@ export default function DocumentVaultPage() {
               <div className="site-main-px py-4">
                 <div className="flex flex-row items-start justify-between gap-4 md:items-center">
                   <div className="flex items-center gap-4 min-w-0 flex-1">
-                    {userJourneys.length > 1 && activeJourneyId ? (
+                    {dedupedUserJourneys.length > 1 && activeJourneyId ? (
                       <Button
                         variant="ghost"
                         onClick={() => {
