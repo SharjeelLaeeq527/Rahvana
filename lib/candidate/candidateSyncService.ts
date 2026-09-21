@@ -228,9 +228,9 @@ export function createNewCandidate(
     relation,
     fullName: params.fullName || relationLabel,
     visaCategory,
-    tier: params.tier || (params.isPreview ? "free" : existingCandidates[0]?.tier || "free"),
+    tier: params.tier || (params.isPreview ?? true ? "free" : "free"),
     isPrimary: existingCandidates.length === 0,
-    isPreview: params.isPreview ?? false,
+    isPreview: params.isPreview ?? true,
     createdAt: new Date().toISOString(),
     colorTag,
   };

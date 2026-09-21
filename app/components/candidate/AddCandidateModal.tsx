@@ -39,7 +39,7 @@ export function AddCandidateModal({
   const isIr5 = visaCategory.toUpperCase().includes("IR-5") || visaCategory.toUpperCase().includes("IR5");
   const isIr2 = visaCategory.toUpperCase().includes("IR-2") || visaCategory.toUpperCase().includes("IR2");
 
-  // Determine smart default relation
+  // Determine smart default relation (Spouse cannot be added as multi-candidate beneficiary)
   const hasMother = candidates.some((c) => c.relation === "Mother");
   const hasFather = candidates.some((c) => c.relation === "Father");
 
@@ -59,6 +59,10 @@ export function AddCandidateModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (relation === "Spouse") {
+      // USCIS permits only one spouse to be sponsored at a time
+      return;
+    }
     setIsSubmitting(true);
 
     try {
@@ -67,7 +71,7 @@ export function AddCandidateModal({
         relation,
         fullName: fullName.trim() || undefined,
         visaCategory: targetVisa,
-        isPreview: true, // Free preview mode for testing
+        isPreview: true, // Free preview mode for multi-candidate testing
         tier: "free",
       });
       onClose();
@@ -88,7 +92,6 @@ export function AddCandidateModal({
     { value: "Father", label: "Father", visaBadge: "IR-5 Parent", icon: Users },
     { value: "Stepparent", label: "Stepparent", visaBadge: "IR-5 Parent", icon: Users },
     { value: "AdoptiveParent", label: "Adoptive Parent", visaBadge: "IR-5 Parent", icon: Heart },
-    { value: "Spouse", label: "Spouse", visaBadge: "IR-1 Spouse", icon: Heart },
     { value: "Child", label: "Child", visaBadge: "IR-2 Child", icon: Baby },
   ];
 
@@ -133,11 +136,10 @@ export function AddCandidateModal({
               <div className="p-3 sm:p-3.5 rounded-xl bg-teal-50/80 border border-teal-200/70 text-xs text-teal-800 space-y-1">
                 <div className="flex items-center gap-1.5 font-semibold text-teal-900 text-xs sm:text-sm">
                   <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-teal-600 shrink-0" />
-                  <span>Multi-Profile Preview Experience</span>
+                  <span>Free Preview Beneficiary Profile</span>
                 </div>
                 <p className="text-teal-700 leading-relaxed text-[11px] sm:text-[11.5px]">
-                  You can switch between candidate profiles right from the header tray.
-                  Petitioner sponsor information (income, affidavit metrics, tax records) will be automatically synced.
+                  New beneficiary profiles are added on the <strong>Free Tier</strong> to preview available roadmap steps, tools, and services. Sponsor information is automatically synchronized. <em>(Note: Only one spouse may be sponsored at a time per USCIS regulations)</em>.
                 </p>
               </div>
 

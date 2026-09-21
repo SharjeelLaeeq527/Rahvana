@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { useAuth } from "./AuthContext";
+import { CandidateContext } from "./CandidateContext";
 import { createClient } from "@/lib/supabase/client";
 import {
   PlanTier,
@@ -94,13 +95,22 @@ function markReconciled(userId: string) {
 
 export function PlanProvider({ children }: { children: React.ReactNode }) {
   const { user, isLoading: authLoading } = useAuth();
+  const candidateCtx = useContext(CandidateContext);
   const [realTier, setRealTier] = useState<PlanTier>("free");
   const [purchasedAddons, setPurchasedAddons] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [devOverride, setDevOverride] = useState<PlanTier | null>(null);
   const [refreshCounter, setRefreshCounter] = useState(0);
 
-  const tier = devOverride ?? realTier;
+  // If candidate is in Free Preview mode, force effective tier to 'free'
+  const isCandidatePreview = Boolean(
+    candidateCtx &&
+      (candidateCtx.activeCandidate?.isPreview ||
+        candidateCtx.activeCandidateTier === "free" ||
+        candidateCtx.activeCandidate?.tier === "free")
+  );
+
+  const tier: PlanTier = devOverride ?? (isCandidatePreview ? "free" : realTier);
   const maxActiveJourneyTier = realTier;
 
   const refresh = useCallback(() => setRefreshCounter((n) => n + 1), []);

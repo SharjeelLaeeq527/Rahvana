@@ -72,7 +72,7 @@ interface CandidateContextType {
   activeCandidateTier: CandidateTier;
 }
 
-const CandidateContext = createContext<CandidateContextType | undefined>(undefined);
+export const CandidateContext = createContext<CandidateContextType | undefined>(undefined);
 
 export function CandidateProvider({ children }: { children: React.ReactNode }) {
   const { profile, updateProfile, isProfileLoading } = useUserProfile();
@@ -151,6 +151,12 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
       isPreview?: boolean;
       tier?: CandidateTier;
     }): CandidateProfile => {
+      // Guard: USCIS permits only one spouse to be sponsored at a time
+      if (params.relation === "Spouse" || candidatesRef.current.some((c) => c.relation === "Spouse" && params.relation === "Spouse")) {
+        showToast("Only one spouse can be sponsored at a time.", "error");
+        throw new Error("Only one spouse can be sponsored at a time.");
+      }
+
       const derivedVisa =
         params.visaCategory ||
         getVisaCategoryForRelation(
@@ -163,7 +169,7 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
         fullName: params.fullName,
         visaCategory: derivedVisa,
         isPreview: params.isPreview ?? true,
-        tier: params.tier ?? (params.isPreview ? "free" : "free"),
+        tier: params.tier ?? "free",
       });
 
       const updated = [...candidatesRef.current, newCand];

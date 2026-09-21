@@ -74,7 +74,7 @@ describe("Multi-Candidate Profile Management & Sync Engine", () => {
   });
 
   describe("createNewCandidate", () => {
-    it("creates a 2nd parent candidate in free preview mode and sets IR-5 visaCategory", () => {
+    it("creates a 2nd parent candidate in free preview mode and sets IR-5 visaCategory and free tier", () => {
       const existing: CandidateProfile[] = [
         {
           id: "candidate-1",
@@ -125,6 +125,8 @@ describe("Multi-Candidate Profile Management & Sync Engine", () => {
       expect(spouseCand.id).toBe("candidate-2");
       expect(spouseCand.relation).toBe("Spouse");
       expect(spouseCand.visaCategory).toBe("IR-1");
+      expect(spouseCand.tier).toBe("free");
+      expect(spouseCand.isPreview).toBe(true);
     });
 
     it("creates Mother candidate and correctly assigns IR-5 visaCategory even from IR-1 account", () => {
@@ -150,20 +152,24 @@ describe("Multi-Candidate Profile Management & Sync Engine", () => {
       expect(motherCand.id).toBe("candidate-2");
       expect(motherCand.relation).toBe("Mother");
       expect(motherCand.visaCategory).toBe("IR-5");
+      expect(motherCand.tier).toBe("free");
+      expect(motherCand.isPreview).toBe(true);
     });
 
-    it("creates sequential child candidates for IR-2 (Child 1, Child 2, Child 3)", () => {
+    it("creates sequential child candidates for IR-2 (Child 1, Child 2, Child 3) in free preview", () => {
       const initial = getDefaultCandidatesForVisa("IR-2", "premium", false);
       expect(initial).toHaveLength(1);
 
       const child2 = createNewCandidate(initial, {
         relation: "Child",
-        isPreview: false,
+        isPreview: true,
       });
       expect(child2.id).toBe("candidate-2");
       expect(child2.relation).toBe("Child");
       expect(child2.visaCategory).toBe("IR-2");
       expect(child2.label).toBe("Candidate 2 (Child 2)");
+      expect(child2.tier).toBe("free");
+      expect(child2.isPreview).toBe(true);
 
       const child3 = createNewCandidate([...initial, child2], {
         relation: "Child",
@@ -172,6 +178,8 @@ describe("Multi-Candidate Profile Management & Sync Engine", () => {
       expect(child3.id).toBe("candidate-3");
       expect(child3.label).toBe("Candidate 3 (Child 3)");
       expect(child3.visaCategory).toBe("IR-2");
+      expect(child3.tier).toBe("free");
+      expect(child3.isPreview).toBe(true);
     });
   });
 
