@@ -308,11 +308,11 @@ export function ToolsDock() {
             Do it yourself
           </span>
           <h2 className="text-balance text-2xl md:text-4xl font-medium leading-[1.1] tracking-tight text-zinc-400">
-            Already know what you're doing?{" "}
+            Already know what you&apos;re doing?{" "}
             <span className="text-zinc-900">You just need the right tools.</span>
           </h2>
           <p className="mx-auto mt-2 md:mt-3 max-w-lg text-[13px] md:text-[15px] leading-relaxed text-zinc-500">
-            Tools, expert services, and country-specific guides, all in one place.
+            Tools, expert services, and Pakistan-specific guides, all in one place.
           </p>
         </div>
 
