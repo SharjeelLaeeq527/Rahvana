@@ -284,7 +284,7 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
 
   /** Snap & Sign — sign documents digitally. */
   snap_sign: {
-    free: lockedBuy(ADDON.snapSign, "basic"),
+    free: full(),
     basic: full(),
     premium: full(),
     executive: full(),
