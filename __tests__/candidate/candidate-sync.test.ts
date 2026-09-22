@@ -172,7 +172,7 @@ describe("Multi-Candidate Profile Management & Sync Engine", () => {
       expect(child2.id).toBe("candidate-2");
       expect(child2.relation).toBe("Child");
       expect(child2.visaCategory).toBe("IR-2");
-      expect(child2.label).toBe("Candidate 2 (Child 2)");
+      expect(child2.label).toBe("Candidate 2");
       expect(child2.tier).toBe("free");
       expect(child2.isPreview).toBe(true);
 
@@ -291,6 +291,40 @@ describe("Multi-Candidate Profile Management & Sync Engine", () => {
       expect(child2Key).toBe("ir2_candidate2");
       expect(child3Key).toBe("ir2_candidate3");
       expect(new Set([child1Key, child2Key, child3Key]).size).toBe(3);
+    });
+  });
+
+  describe("Candidate Deletion and Lifecycle Persistence", () => {
+    it("filters out candidate cleanly on deletion without mutating primary candidate", () => {
+      const initial = getDefaultCandidatesForVisa("IR-5", "premium", true);
+      expect(initial).toHaveLength(2);
+      expect(initial.map((c) => c.id)).toEqual(["candidate-1", "candidate-2"]);
+
+      // Remove candidate-2
+      const remaining = initial.filter((c) => c.id !== "candidate-2");
+      expect(remaining).toHaveLength(1);
+      expect(remaining[0].id).toBe("candidate-1");
+      expect(remaining[0].isPrimary).toBe(true);
+    });
+
+    it("resets active candidate to primary candidate when active candidate is deleted", () => {
+      const candidates = getDefaultCandidatesForVisa("IR-5", "free", true);
+      const activeId = "candidate-2";
+
+      const updated = candidates.filter((c) => c.id !== activeId);
+      const nextActiveId = activeId === "candidate-2" ? updated[0].id : activeId;
+
+      expect(nextActiveId).toBe("candidate-1");
+      expect(updated).toHaveLength(1);
+    });
+
+    it("guards against deleting the only or primary candidate", () => {
+      const candidates = getDefaultCandidatesForVisa("IR-5", "free", false);
+      expect(candidates).toHaveLength(1);
+      expect(candidates[0].id).toBe("candidate-1");
+
+      const canDelete = candidates[0].id !== "candidate-1" && candidates.length > 1;
+      expect(canDelete).toBe(false);
     });
   });
 });

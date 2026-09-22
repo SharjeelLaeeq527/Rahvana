@@ -267,9 +267,9 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
 
   // ── Remove Candidate ──────────────────────────────────────────────────────
   const removeCandidate = useCallback(
-    (id: string) => {
-      if (candidatesRef.current.length <= 1) {
-        showToast("Cannot remove the only candidate profile.", "error");
+    async (id: string) => {
+      if (id === "candidate-1" || candidatesRef.current.length <= 1) {
+        showToast("Cannot remove the primary candidate profile.", "error");
         return;
       }
 
@@ -282,18 +282,45 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
 
       try {
         sessionStorage.setItem(ACTIVE_CANDIDATE_STORAGE_KEY, nextActiveId);
+        // Clean up candidate-scoped local storage keys
+        localStorage.removeItem(`rahvana_guide_sessions_${id}`);
+        const keysToRemove: string[] = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && (key.endsWith(`_${id}`) || key.includes(`_${id}_`))) {
+            keysToRemove.push(key);
+          }
+        }
+        keysToRemove.forEach((k) => localStorage.removeItem(k));
       } catch {
         /* non-fatal */
       }
 
+      // Optimistically update profile in UserProfileContext
+      updateProfile(
+        {
+          candidates: updated,
+          activeCandidateId: nextActiveId,
+        },
+        { silent: true }
+      );
+
+      // If user is authenticated, call the server-side delete API
       if (user?.id) {
-        updateProfile(
-          {
-            candidates: updated,
-            activeCandidateId: nextActiveId,
-          },
-          { silent: false, immediate: true }
-        );
+        try {
+          const res = await fetch("/api/candidate/delete", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ candidateId: id }),
+          });
+
+          if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            console.error("[CandidateContext] Server deletion error:", errData);
+          }
+        } catch (err) {
+          console.error("[CandidateContext] Failed to call delete API:", err);
+        }
       }
 
       showToast(`Removed ${target?.label || "candidate"} profile.`, "info");

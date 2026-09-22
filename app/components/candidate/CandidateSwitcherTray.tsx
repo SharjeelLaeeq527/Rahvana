@@ -17,6 +17,7 @@ import {
   Check,
   RefreshCw,
   Pencil,
+  Trash2,
   X,
 } from "lucide-react";
 import { useCandidate } from "@/app/context/CandidateContext";
@@ -86,6 +87,7 @@ export function CandidateSwitcherTray({
     activeCandidate,
     isMultiCandidate,
     updateCandidate,
+    removeCandidate,
   } = useCandidate();
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -257,6 +259,29 @@ export function CandidateSwitcherTray({
                     >
                       <Pencil className="w-3 h-3" />
                     </button>
+                    {candidate.id !== "candidate-1" && candidates.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          if (
+                            confirm(
+                              `Are you sure you want to delete ${
+                                candidate.fullName || candidate.label
+                              }?`
+                            )
+                          ) {
+                            removeCandidate(candidate.id);
+                          }
+                        }}
+                        title={`Delete ${candidate.label}`}
+                        aria-label={`Delete ${candidate.label}`}
+                        className="w-6 h-6 rounded-full text-muted-foreground hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40 flex items-center justify-center transition-colors cursor-pointer"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    )}
                     {isActive && (
                       <div className="w-4 h-4 rounded-full bg-primary text-white flex items-center justify-center shadow-xs">
                         <Check className="w-2.5 h-2.5 stroke-[3]" />
