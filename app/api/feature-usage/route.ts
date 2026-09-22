@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { E, msg } from "@/lib/errors";
 import { checkFeatureUsage } from "@/lib/usage/checkFeatureUsage";
-import { type PlanTier } from "@/lib/entitlements/config";
+import { type PlanTier, normalizePlanTier } from "@/lib/entitlements/config";
 import { getEffectiveEntitlement } from "@/lib/entitlements/helpers";
 
 // GET /api/feature-usage?feature=xyz - Check feature usage for the authenticated user
@@ -39,7 +39,7 @@ export async function GET(request: Request) {
       .eq("id", user.id)
       .single();
 
-    const userTier: PlanTier = profile?.subscription_tier || "free";
+    const userTier: PlanTier = normalizePlanTier(profile?.subscription_tier);
     const purchasedAddons: string[] = profile?.profile_details?.purchased_addons ?? [];
 
     const usage = await checkFeatureUsage(user.id, feature, userTier, purchasedAddons);
@@ -88,7 +88,7 @@ export async function POST(request: Request) {
       .eq("id", user.id)
       .single();
 
-    const userTier: PlanTier = profile?.subscription_tier || "free";
+    const userTier: PlanTier = normalizePlanTier(profile?.subscription_tier);
     const purchasedAddons: string[] = profile?.profile_details?.purchased_addons ?? [];
 
     const entitlement = getEffectiveEntitlement(feature, userTier, purchasedAddons);

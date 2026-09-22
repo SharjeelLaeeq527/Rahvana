@@ -19,6 +19,21 @@
 export type PlanTier = "free" | "basic" | "premium" | "executive";
 
 /**
+ * Validates raw `user_profiles.subscription_tier` values against the four
+ * supported plans (free/basic/premium/executive). MUST be used anywhere a DB
+ * tier string is consumed — an unexpected value would otherwise miss
+ * ENTITLEMENTS and resolve to a fail-safe locked state. Anything unknown
+ * resolves to "free".
+ */
+const VALID_PLAN_TIERS: readonly string[] = ["free", "basic", "premium", "executive"];
+
+export function normalizePlanTier(raw: string | null | undefined): PlanTier {
+  if (!raw) return "free";
+  const tier = raw.toLowerCase();
+  return VALID_PLAN_TIERS.includes(tier) ? (tier as PlanTier) : "free";
+}
+
+/**
  * Normalized feature states.
  *
  * full           → Fully included, no restrictions

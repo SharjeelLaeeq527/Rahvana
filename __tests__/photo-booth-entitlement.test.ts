@@ -6,6 +6,7 @@
  *    executive unlimited.
  */
 import { getEffectiveEntitlement } from "@/lib/entitlements/helpers";
+import { normalizePlanTier } from "@/lib/entitlements/config";
 
 describe("getEffectiveEntitlement — photo_booth credit pool", () => {
   it("free, no purchase → locked_buy with buy-or-upgrade path", () => {
@@ -56,5 +57,29 @@ describe("getEffectiveEntitlement — photo_booth credit pool", () => {
   it("non-pool add-ons keep the old purchased → full behaviour (sponsor)", () => {
     const e = getEffectiveEntitlement("sponsorship_calc", "free", ["sponsor"]);
     expect(e.state).toBe("full");
+  });
+
+  it("unexpected DB tier strings fail safe to free via normalizePlanTier", () => {
+    const e = getEffectiveEntitlement("photo_booth", normalizePlanTier("gold"), []);
+    expect(e.state).toBe("locked_buy");
+  });
+});
+
+describe("normalizePlanTier", () => {
+  it("maps current tier names to themselves", () => {
+    expect(normalizePlanTier("free")).toBe("free");
+    expect(normalizePlanTier("basic")).toBe("basic");
+    expect(normalizePlanTier("premium")).toBe("premium");
+    expect(normalizePlanTier("executive")).toBe("executive");
+  });
+
+  it("is case-insensitive and fail-safes unknown values to free", () => {
+    expect(normalizePlanTier("PREMIUM")).toBe("premium");
+    expect(normalizePlanTier(null)).toBe("free");
+    expect(normalizePlanTier(undefined)).toBe("free");
+    expect(normalizePlanTier("gold")).toBe("free");
+    expect(normalizePlanTier("core")).toBe("free");
+    expect(normalizePlanTier("plus")).toBe("free");
+    expect(normalizePlanTier("pro")).toBe("free");
   });
 });
