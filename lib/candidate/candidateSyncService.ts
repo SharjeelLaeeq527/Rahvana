@@ -225,9 +225,10 @@ export function createNewCandidate(
     relation,
     fullName: params.fullName || "",
     visaCategory,
-    tier: params.tier || (params.isPreview ?? true ? "free" : "free"),
+    tier: params.tier || "free",
     isPrimary: existingCandidates.length === 0,
-    isPreview: params.isPreview ?? true,
+    // No per-candidate preview: added candidates are full, equal beneficiaries.
+    isPreview: params.isPreview ?? false,
     createdAt: new Date().toISOString(),
     colorTag,
   };

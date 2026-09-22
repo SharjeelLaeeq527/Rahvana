@@ -182,8 +182,10 @@ generic candidate label/name, no relation.)
 Interactive modal for adding a 2nd parent (IR-5) or additional children (IR-2):
 - Relationship selector (Mother, Father, Stepparent, Adoptive Parent, Child).
 - **Single Spouse Constraint**: "Spouse" is disallowed from multi-candidate addition because USCIS regulations permit only one spouse to be sponsored at a time.
-- **Strict Free Tier Tagging**: All newly added candidate profiles default to `tier: "free"` and `isPreview: true`.
-- Notice explaining free preview mode and automatic sponsor data synchronization.
+- **No per-candidate preview.** Newly added candidates default to `tier: "free"` and
+  `isPreview: false` - they are full, equal beneficiaries; plan/entitlement gating applies
+  exactly as it does for the primary candidate (there is no per-candidate "preview" tier or
+  upsell). Legacy `isPreview: true` values are normalized to false on load.
 - Relationship selector filtered by the current journey's visa category: **IR-5 offers only
   parent relations (Mother, Father, Stepparent, Adoptive Parent); IR-2 offers Child.**
   **There is NO IR-1 Spouse option** - a candidate can never be IR-1 (IR-1 is a separate,
@@ -233,7 +235,10 @@ Interactive modal for adding a 2nd parent (IR-5) or additional children (IR-2):
 - Connected standalone Document Vault page to `CandidateContext`.
 - Automatically maps active candidate to candidate-specific journey (e.g. `ir5` vs `ir5_candidate-2`).
 - Re-fetches candidate-scoped documents via `reloadDocuments(activeCandidateJourneyId)` upon profile switch.
-- Renders an active candidate badge in the top header with relation and name (e.g., `Mother — Fatima Bibi` or `Father — Mohammad Ali`) so the user always has clear visual context of whose vault they are managing.
+- Renders a small "whose vault" context chip in the top header showing the active
+  candidate's name or generic label (`activeCandidate.fullName || label`); the chosen
+  relation is shown only when the user has specified one (relation "Other" is hidden, no
+  assumed Mother/Father), so the user always knows whose vault they are managing.
 
 #### 16. [app/components/document-vault/DocumentUploadModal.tsx](file:///d:/arachnie_work/updated_work/app/components/document-vault/DocumentUploadModal.tsx) `[MODIFIED]`
 - Ensured uploaded documents attach `effectiveActiveJourneyId`, tagging files with the active candidate's journey in Supabase storage and database.
@@ -251,6 +256,17 @@ Interactive modal for adding a 2nd parent (IR-5) or additional children (IR-2):
   BENEFICIARY-role doc is candidate-specific (passport, CNIC, birth, medical are never
   offered between parents), and an explicit `shareableAcrossCandidates` flag on a
   `DocumentDefinition` overrides.
+- **Cross-share list clarity (both upload modals).** The "Cross-share this document" list
+  shows **one row per distinct `journey_type`** (`dedupeJourneysByType`) - duplicate journey
+  rows never render twice. Because two siblings can share the same base category (e.g. two
+  IR-5 parents), each row carries a small **candidate tag pill** next to the friendly journey
+  name (`getFriendlyJourneyName`), built by `getCandidateJourneyTag(journey_type,
+  profile.candidates)`: it matches the journey back to its candidate roster entry (via
+  `getCandidateJourneyKey`) and shows the numbered label plus the user-set name when present
+  ("Candidate 2 - Nadeem", or just "Candidate 2" when unnamed). This is what tells the user
+  whether a target is Candidate 1's or Candidate 2's journey; without it both rows read
+  identically as "IR-5 Parent Visa Journey". (Helpers live in
+  `lib/document-vault/journey-mapping.ts`.)
 - **Delete safety:** `DELETE /api/documents/[id]` reference-counts `storage_path` (via
   `getDocumentsByStoragePath`, user-scoped) before removing the blob, so deleting one shared
   copy never orphans the file for the other candidate's journey; only the metadata row is
@@ -323,14 +339,16 @@ Interactive modal for adding a 2nd parent (IR-5) or additional children (IR-2):
 
 ### Scenario 1: User Buying IR-5 for Both Parents
 1. The user purchases an IR-5 journey for both parents.
-2. Two candidate profiles are initialized: `Candidate 1 (Mother)` and `Candidate 2 (Father)`.
+2. Two candidate profiles are initialized with generic labels: `Candidate 1` and
+   `Candidate 2` (no assumed Mother/Father; the user may name them, e.g. "Fatima Bibi" /
+   "Mohammad Ali", from the switcher).
 3. The petitioner enters their U.S. citizenship, income, tax transcripts, and household size once.
 4. When `Candidate 1 (Mother)` is active:
    - The roadmap displays Mother's I-130, DS-260, medical exam, and interview steps.
    - The Document Vault displays Mother's civil documents (Mother's Birth Certificate, CNIC, Passport).
    - All sponsor financial info is auto-filled.
-5. The petitioner clicks **SiteHeader > Profile Tray > Candidate 2 (Father)**:
-   - The navbar badge immediately switches to `Father`.
+5. The petitioner clicks **SiteHeader > Profile Tray > Candidate 2**:
+   - The header active-candidate badge immediately switches to Candidate 2's name/label.
    - The roadmap updates to Father's I-130 and DS-260 steps.
    - The Document Vault re-initializes to show Father's documents (Father's Birth Certificate, CNIC, Passport).
    - Father's case numbers (IOE... / ISL...) and civil documents are tracked separately.

@@ -32,6 +32,8 @@ import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import {
   mapDocumentNameToId,
   getFriendlyJourneyName,
+  getCandidateJourneyTag,
+  dedupeJourneysByType,
   isDocumentApplicableToJourney,
   getCachedUserJourneys,
   setCachedUserJourneys,
@@ -122,7 +124,8 @@ export function MultipleDocumentUploadModal({
     // so passing it to isSameJourneyType was a permanent no-op).
     const activeJourney = userJourneys.find((x) => x.id === activeJourneyId);
     const activeBase = activeJourney ? getBaseVisaCategory(activeJourney.journey_type) : null;
-    return userJourneys.filter((j) => {
+    // One entry per distinct journey_type - collapse any duplicate journey rows first.
+    return dedupeJourneysByType(userJourneys).filter((j) => {
       if (j.id === activeJourneyId) return false;
       if (isSameJourneyType(j.journey_type, activeJourney?.journey_type)) return false;
       // Same base visa category only - IR-1 (a separate single-beneficiary journey) is never
@@ -1327,6 +1330,9 @@ export function MultipleDocumentUploadModal({
               <div className="space-y-2.5">
                 {visibleOtherJourneys.map((j) => {
                   const isChecked = sharedJourneyIds.includes(j.id);
+                  // Disambiguate same-category siblings (e.g. two IR-5 parents): which
+                  // candidate this is, plus the user-set name when present.
+                  const candidateTag = getCandidateJourneyTag(j.journey_type, profile?.candidates);
                   return (
                     <div
                       key={j.id}
@@ -1341,14 +1347,14 @@ export function MultipleDocumentUploadModal({
                           setManuallyUncheckedIds(manuallyUncheckedIds.filter((id) => id !== j.id));
                         }
                       }}
-                      className={`flex items-center justify-between p-3.5 rounded-xl border cursor-pointer select-none transition-all duration-300 ${
+                      className={`flex items-center justify-between gap-2 p-3.5 rounded-xl border cursor-pointer select-none transition-all duration-300 ${
                         isChecked
                           ? "bg-primary/5 border-primary shadow-xs"
                           : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
                       }`}
                     >
-                      <div className="flex items-center gap-3">
-                        <div className={`w-5 h-5 rounded-md flex items-center justify-center border transition-all duration-300 ${
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className={`w-5 h-5 shrink-0 rounded-md flex items-center justify-center border transition-all duration-300 ${
                           isChecked
                             ? "bg-primary border-primary text-white scale-100"
                             : "border-slate-300 dark:border-slate-700 bg-transparent"
@@ -1359,14 +1365,21 @@ export function MultipleDocumentUploadModal({
                             </svg>
                           )}
                         </div>
-                        <span className={`text-xs font-bold transition-colors ${
-                          isChecked ? "text-slate-900 dark:text-white" : "text-slate-600 dark:text-slate-400"
-                        }`}>
-                          {getFriendlyJourneyName(j.journey_type, j.journey_name)}
-                        </span>
+                        <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+                          <span className={`text-xs font-bold transition-colors ${
+                            isChecked ? "text-slate-900 dark:text-white" : "text-slate-600 dark:text-slate-400"
+                          }`}>
+                            {getFriendlyJourneyName(j.journey_type, j.journey_name)}
+                          </span>
+                          {candidateTag && (
+                            <span className="rounded-md border border-slate-200 bg-slate-100 px-2 py-0.5 text-[10px] font-bold tracking-wide text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                              {candidateTag}
+                            </span>
+                          )}
+                        </div>
                       </div>
                       {isChecked && (
-                        <span className="text-[10px] font-black uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded-md animate-in fade-in zoom-in-95 duration-200">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded-md shrink-0 animate-in fade-in zoom-in-95 duration-200">
                           Shared
                         </span>
                       )}

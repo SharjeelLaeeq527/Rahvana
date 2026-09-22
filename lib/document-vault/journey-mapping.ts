@@ -1,6 +1,6 @@
 import { ALL_DOCUMENTS } from "./document-definitions";
 import { VisaCategory, ScenarioFlags } from "./types";
-import { getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
+import { getBaseVisaCategory, getCandidateJourneyKey } from "@/lib/candidate/candidateSyncService";
 
 export { getBaseVisaCategory };
 
@@ -330,7 +330,6 @@ export function mapDocumentNameToId(name: string): string {
     cnic: "cnic-beneficiary",
     "divorce decree": "divorce-decree-beneficiary",
     "talaq nama": "divorce-decree-beneficiary",
-    "certified english translations": "certified-translations",
     "translated nikah nama": "nikah-nama-translation",
     "translated nadra mrc": "nadra-mrc-translation",
     "translated birth certificate": "birth-cert-translation",
@@ -381,6 +380,74 @@ export function getFriendlyJourneyName(journeyType: string, defaultName?: string
   const baseVisa = getBaseVisaCategory(journeyType);
   const key = baseVisa.toLowerCase().replace(/[^a-z0-9]/g, "");
   return FRIENDLY_JOURNEY_NAMES[key] || defaultName || `${baseVisa} Journey`;
+}
+
+/** Minimal candidate shape needed to label a journey (subset of CandidateProfile). */
+export interface CandidateLike {
+  id: string;
+  label?: string;
+  fullName?: string;
+  visaCategory?: string;
+}
+
+/**
+ * Find the candidate roster entry that owns a given journey, by matching the journey's
+ * `journey_type` to the candidate's derived journey key (candidate-1 -> base "ir5",
+ * candidate-2 -> "ir5_candidate2", ...). Returns null when there is no roster match
+ * (e.g. a legacy journey with no candidate, or a single-candidate account).
+ */
+export function getCandidateForJourneyType(
+  journeyType: string,
+  candidates?: CandidateLike[] | null
+): CandidateLike | null {
+  if (!journeyType || !candidates || candidates.length === 0) return null;
+  const base = getBaseVisaCategory(journeyType);
+  return (
+    candidates.find((c) => {
+      const candBase = c.visaCategory || base;
+      return isSameJourneyType(getCandidateJourneyKey(candBase, c.id), journeyType);
+    }) || null
+  );
+}
+
+/**
+ * Short human identity for a candidate journey, used to disambiguate two journeys of the
+ * SAME base category (e.g. two IR-5 parents). Prefers the user-typed name and always keeps
+ * the numbered label so the user can tell Candidate 1 from Candidate 2:
+ *   - named:   "Candidate 2 - Nadeem"
+ *   - unnamed: "Candidate 2"
+ * Returns null when the journey has no matching candidate (nothing to disambiguate).
+ */
+export function getCandidateJourneyTag(
+  journeyType: string,
+  candidates?: CandidateLike[] | null
+): string | null {
+  const cand = getCandidateForJourneyType(journeyType, candidates);
+  if (!cand) return null;
+  const name = (cand.fullName || "").trim();
+  const label = (cand.label || "").trim();
+  if (name && label) return `${label} - ${name}`;
+  return name || label || null;
+}
+
+/**
+ * De-duplicate a list of journeys by normalized `journey_type`, keeping the first
+ * occurrence of each type. Guards the cross-share list against duplicate journey rows
+ * (the per-row filter only compares each journey to the ACTIVE one, never to its
+ * siblings, so without this two rows of the same type would both render).
+ */
+export function dedupeJourneysByType<T extends { journey_type?: string | null }>(
+  journeys: T[]
+): T[] {
+  const seen = new Set<string>();
+  const out: T[] = [];
+  for (const j of journeys) {
+    const norm = (j.journey_type || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+    if (seen.has(norm)) continue;
+    seen.add(norm);
+    out.push(j);
+  }
+  return out;
 }
 
 export const JOURNEY_TYPE_TO_VISA: Record<string, string> = {

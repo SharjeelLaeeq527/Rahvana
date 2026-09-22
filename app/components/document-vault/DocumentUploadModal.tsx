@@ -18,6 +18,8 @@ import { useUserProfile } from "@/app/context/UserProfileContext";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   getFriendlyJourneyName,
+  getCandidateJourneyTag,
+  dedupeJourneysByType,
   isDocumentApplicableToJourney,
   getCachedUserJourneys,
   setCachedUserJourneys,
@@ -136,7 +138,12 @@ export function DocumentUploadModal({
     const activeJourney = effectiveUserJourneys.find((j) => j.id === effectiveActiveJourneyId);
     const activeBase = activeJourney ? getBaseVisaCategory(activeJourney.journey_type) : null;
 
-    return effectiveUserJourneys.filter((j) => {
+    // Collapse duplicate journey rows to one entry per distinct journey_type BEFORE the
+    // per-row filter (the filter only compares each row to the ACTIVE journey, so two rows
+    // of the same sibling type would otherwise both survive).
+    const uniqueJourneys = dedupeJourneysByType(effectiveUserJourneys);
+
+    return uniqueJourneys.filter((j) => {
       if (j.id === effectiveActiveJourneyId) return false;
       // Compare journey TYPE to the active journey's TYPE (effectiveActiveJourneyId is a
       // journey UUID, so passing it here was a permanent no-op).
@@ -937,6 +944,9 @@ export function DocumentUploadModal({
                 <div className="space-y-2.5 pt-1">
                   {otherJourneys.map((j) => {
                     const isChecked = sharedJourneyIds.includes(j.id);
+                    // Disambiguate two journeys of the same base category (e.g. two IR-5
+                    // parents): show which candidate this is, and the user-set name if any.
+                    const candidateTag = getCandidateJourneyTag(j.journey_type, profile?.candidates);
                     return (
                       <div
                         key={j.id}
@@ -947,15 +957,15 @@ export function DocumentUploadModal({
                             setSharedJourneyIds([...sharedJourneyIds, j.id]);
                           }
                         }}
-                        className={`flex cursor-pointer items-center justify-between rounded-xl border p-3.5 transition-all duration-300 select-none ${
+                        className={`flex cursor-pointer items-center justify-between gap-2 rounded-xl border p-3.5 transition-all duration-300 select-none ${
                           isChecked
                             ? "bg-primary/5 border-primary shadow-xs"
                             : "border-slate-200 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
                         }`}
                       >
-                        <div className="flex items-center gap-3">
+                        <div className="flex min-w-0 items-center gap-3">
                           <div
-                            className={`flex h-5 w-5 items-center justify-center rounded-md border transition-all duration-300 ${
+                            className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-all duration-300 ${
                               isChecked
                                 ? "bg-primary border-primary scale-100 text-white"
                                 : "border-slate-300 bg-transparent dark:border-slate-700"
@@ -970,18 +980,25 @@ export function DocumentUploadModal({
                               </svg>
                             )}
                           </div>
-                          <span
-                            className={`text-xs font-bold transition-colors ${
-                              isChecked
-                                ? "text-slate-900 dark:text-white"
-                                : "text-slate-600 dark:text-slate-400"
-                            }`}
-                          >
-                            {getFriendlyJourneyName(j.journey_type, j.journey_name)}
-                          </span>
+                          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+                            <span
+                              className={`text-xs font-bold transition-colors ${
+                                isChecked
+                                  ? "text-slate-900 dark:text-white"
+                                  : "text-slate-600 dark:text-slate-400"
+                              }`}
+                            >
+                              {getFriendlyJourneyName(j.journey_type, j.journey_name)}
+                            </span>
+                            {candidateTag && (
+                              <span className="rounded-md border border-slate-200 bg-slate-100 px-2 py-0.5 text-[10px] font-bold tracking-wide text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                                {candidateTag}
+                              </span>
+                            )}
+                          </div>
                         </div>
                         {isChecked && (
-                          <span className="text-primary bg-primary/10 animate-in fade-in zoom-in-95 rounded-md px-2 py-0.5 text-[10px] font-black tracking-wider uppercase duration-200">
+                          <span className="text-primary bg-primary/10 animate-in fade-in zoom-in-95 shrink-0 rounded-md px-2 py-0.5 text-[10px] font-black tracking-wider uppercase duration-200">
                             Shared
                           </span>
                         )}

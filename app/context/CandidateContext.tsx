@@ -222,7 +222,8 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
         relation: params.relation,
         fullName: params.fullName,
         visaCategory: derivedVisa,
-        isPreview: params.isPreview ?? true,
+        // No per-candidate preview: every candidate is a full, equal beneficiary.
+        isPreview: params.isPreview ?? false,
         tier: params.tier ?? "free",
       });
 

@@ -75,7 +75,7 @@ export function AddCandidateModal({
         visaCategory: targetVisa,
         // Every candidate/parent is a real beneficiary and is treated equally.
         // We do NOT flag added parents as "preview" based on creation order.
-        isPreview: true,
+        isPreview: false,
         tier: "free",
       });
       onClose();

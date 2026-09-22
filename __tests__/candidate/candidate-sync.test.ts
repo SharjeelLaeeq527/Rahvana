@@ -84,6 +84,7 @@ describe("Multi-Candidate Profile Management & Sync Engine", () => {
         {
           id: "candidate-1",
           label: "Candidate 1 (Mother)",
+          fullName: "",
           relation: "Mother",
           visaCategory: "IR-5",
           tier: "premium",
@@ -112,6 +113,7 @@ describe("Multi-Candidate Profile Management & Sync Engine", () => {
         {
           id: "candidate-1",
           label: "Candidate 1 (Mother)",
+          fullName: "",
           relation: "Mother",
           visaCategory: "IR-5",
           tier: "premium",
@@ -131,7 +133,8 @@ describe("Multi-Candidate Profile Management & Sync Engine", () => {
       expect(spouseCand.relation).toBe("Spouse");
       expect(spouseCand.visaCategory).toBe("IR-1");
       expect(spouseCand.tier).toBe("free");
-      expect(spouseCand.isPreview).toBe(true);
+      // No per-candidate preview: isPreview defaults to false when not passed.
+      expect(spouseCand.isPreview).toBe(false);
     });
 
     it("creates Mother candidate and correctly assigns IR-5 visaCategory even from IR-1 account", () => {
@@ -139,6 +142,7 @@ describe("Multi-Candidate Profile Management & Sync Engine", () => {
         {
           id: "candidate-1",
           label: "Candidate 1 (Spouse)",
+          fullName: "",
           relation: "Spouse",
           visaCategory: "IR-1",
           tier: "premium",
@@ -158,7 +162,8 @@ describe("Multi-Candidate Profile Management & Sync Engine", () => {
       expect(motherCand.relation).toBe("Mother");
       expect(motherCand.visaCategory).toBe("IR-5");
       expect(motherCand.tier).toBe("free");
-      expect(motherCand.isPreview).toBe(true);
+      // No per-candidate preview: isPreview defaults to false when not passed.
+      expect(motherCand.isPreview).toBe(false);
     });
 
     it("creates sequential child candidates for IR-2 (Child 1, Child 2, Child 3) in free preview", () => {
@@ -172,7 +177,8 @@ describe("Multi-Candidate Profile Management & Sync Engine", () => {
       expect(child2.id).toBe("candidate-2");
       expect(child2.relation).toBe("Child");
       expect(child2.visaCategory).toBe("IR-2");
-      expect(child2.label).toBe("Candidate 2 (Child 2)");
+      // Generic numbered label, no relation suffix baked in.
+      expect(child2.label).toBe("Candidate 2");
       expect(child2.tier).toBe("free");
       expect(child2.isPreview).toBe(true);
 
