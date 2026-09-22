@@ -8,8 +8,13 @@ import {
 
 /**
  * Resolves the effective entitlement for a feature, taking purchased add-ons
- * into account. If the tier would lock the feature as `locked_buy` but the
- * user has already purchased that add-on, returns `{ state: 'full' }`.
+ * into account:
+ *  - Credit-pool add-ons (`creditsPerAddon`, e.g. Photo Booth): each entry in
+ *    the purchase ledger grants `creditsPerAddon` credits on top of the tier's
+ *    included credits, so the feature resolves to `limited(plan + purchased)`.
+ *    The `feature_usage` counter enforces how many of that pool are spent.
+ *  - Everything else: if the tier would lock the feature as `locked_buy` but
+ *    the user has already purchased that add-on, returns `{ state: 'full' }`.
  */
 export function getEffectiveEntitlement(
   feature: string,
@@ -17,7 +22,23 @@ export function getEffectiveEntitlement(
   purchasedAddons: string[] = []
 ): FeatureEntitlement {
   const e = getEntitlement(feature, tier);
-  if (e.state === "locked_buy" && e.addon && purchasedAddons.includes(e.addon.id)) {
+  if (!e.addon) return e;
+
+  // The add-on ledger stores duplicate ids for duplicate purchases —
+  // count occurrences, don't dedupe (see lib/payments/addon-purchase-ledger.ts).
+  const purchaseCount = purchasedAddons.filter((id) => id === e.addon!.id).length;
+  if (purchaseCount === 0) return e;
+
+  if (e.creditsPerAddon && (e.state === "locked_buy" || e.state === "limited")) {
+    const planCredits = e.state === "limited" ? (e.limit ?? 0) : 0;
+    return {
+      ...e,
+      state: "limited",
+      limit: planCredits + e.creditsPerAddon * purchaseCount,
+    };
+  }
+
+  if (e.state === "locked_buy") {
     return { state: "full" };
   }
   return e;
