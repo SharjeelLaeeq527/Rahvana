@@ -100,6 +100,10 @@ const limited = (count: number, addon?: AddonInfo): FeatureEntitlement => ({
 /** Credits granted per Photo Booth add-on purchase (stacks on plan credits). */
 export const PHOTOBOOTH_CREDITS_PER_ADDON = 2;
 
+/** Credits granted per add-on purchase for the service credit pools.
+ *  (Consultation / Medical / PCC / Translation: 1 credit = 1 service unit.) */
+export const SERVICE_CREDITS_PER_ADDON = 1;
+
 /** Must upgrade — no add-on option. */
 const lockedUpgrade = (target: PlanTier = "premium"): FeatureEntitlement => ({
   state: target === "executive" ? "executive_only" : "locked_upgrade",
@@ -157,7 +161,7 @@ export const ADDON: Record<string, AddonInfo> = {
     id: "consultation",
     name: "Expert Consultation",
     price: 99,
-    unit: "per 30 min",
+    unit: "for 1 credit",
   },
   medical: {
     id: "medical",
@@ -417,11 +421,24 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
     executive: full(),
   },
 
-  /** Book Medical Appointment through Rahvana. */
+  /**
+   * Book Medical Appointment — credit-pool model:
+   *  - Executive: unlimited (no credits consumed).
+   *  - Each $5 add-on purchase: +1 credit, on ANY tier.
+   */
   medical_booking: {
-    free: lockedBuy(ADDON.medical, "executive"),
-    basic: lockedBuy(ADDON.medical, "executive"),
-    premium: lockedBuy(ADDON.medical, "executive"),
+    free: {
+      ...lockedBuy(ADDON.medical, "executive"),
+      creditsPerAddon: SERVICE_CREDITS_PER_ADDON,
+    },
+    basic: {
+      ...lockedBuy(ADDON.medical, "executive"),
+      creditsPerAddon: SERVICE_CREDITS_PER_ADDON,
+    },
+    premium: {
+      ...lockedBuy(ADDON.medical, "executive"),
+      creditsPerAddon: SERVICE_CREDITS_PER_ADDON,
+    },
     executive: full(),
   },
 
@@ -521,32 +538,66 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
     executive: limited(2, ADDON.docReview),
   },
 
-  /** Expert Consultation. Executive: 2 included; others add-on. */
+  /**
+   * Expert Consultation — credit-pool model:
+   *  - Executive: 2 credits included.
+   *  - Each $99 add-on purchase: +1 credit, on ANY tier.
+   *  - Free/Basic/Premium without credits: locked (buy or upgrade).
+   */
   expert_consultation: {
-    free: lockedBuy(ADDON.consultation, "executive"),
-    basic: lockedBuy(ADDON.consultation, "executive"),
-    premium: lockedBuy(ADDON.consultation, "executive"),
-    executive: limited(2, ADDON.consultation),
+    free: {
+      ...lockedBuy(ADDON.consultation, "executive"),
+      creditsPerAddon: SERVICE_CREDITS_PER_ADDON,
+    },
+    basic: {
+      ...lockedBuy(ADDON.consultation, "executive"),
+      creditsPerAddon: SERVICE_CREDITS_PER_ADDON,
+    },
+    premium: {
+      ...lockedBuy(ADDON.consultation, "executive"),
+      creditsPerAddon: SERVICE_CREDITS_PER_ADDON,
+    },
+    executive: {
+      ...limited(2, ADDON.consultation),
+      creditsPerAddon: SERVICE_CREDITS_PER_ADDON,
+    },
   },
 
   // ══════════════════════════════════════════════════════════════════════════
   // SERVICES
   // ══════════════════════════════════════════════════════════════════════════
 
-  /** PCC Filing (Sindh Only). Executive included; Basic & Premium upgrade-only. */
+  /**
+   * PCC Filing (Sindh Only) — credit-pool model:
+   *  - Executive: unlimited (no credits consumed).
+   *  - Each $25 add-on purchase: +1 credit, on ANY tier.
+   */
   pcc_filing: {
-    free: lockedBuy(ADDON.pcc, "executive"),
-    basic: lockedBuy(ADDON.pcc, "executive"),
-    premium: lockedBuy(ADDON.pcc, "executive"),
+    free: { ...lockedBuy(ADDON.pcc, "executive"), creditsPerAddon: SERVICE_CREDITS_PER_ADDON },
+    basic: { ...lockedBuy(ADDON.pcc, "executive"), creditsPerAddon: SERVICE_CREDITS_PER_ADDON },
+    premium: { ...lockedBuy(ADDON.pcc, "executive"), creditsPerAddon: SERVICE_CREDITS_PER_ADDON },
     executive: full(),
   },
 
-  /** Document Translation. Executive: 2 included; others add-on. */
+  /**
+   * Document Translation — credit-pool model:
+   *  - Executive: unlimited (was limited(2) — matrix says Unlimited).
+   *  - Each $25 add-on purchase: +1 credit, on ANY tier.
+   */
   document_translation: {
-    free: lockedBuy(ADDON.translate, "executive"),
-    basic: lockedBuy(ADDON.translate, "executive"),
-    premium: lockedBuy(ADDON.translate, "executive"),
-    executive: limited(2, ADDON.translate),
+    free: {
+      ...lockedBuy(ADDON.translate, "executive"),
+      creditsPerAddon: SERVICE_CREDITS_PER_ADDON,
+    },
+    basic: {
+      ...lockedBuy(ADDON.translate, "executive"),
+      creditsPerAddon: SERVICE_CREDITS_PER_ADDON,
+    },
+    premium: {
+      ...lockedBuy(ADDON.translate, "executive"),
+      creditsPerAddon: SERVICE_CREDITS_PER_ADDON,
+    },
+    executive: full(),
   },
 
   /**
@@ -574,6 +625,11 @@ export function getEntitlement(feature: string, tier: PlanTier): FeatureEntitlem
       upgradeTarget: "basic",
     }
   );
+}
+
+/** True when the tier has unlimited access to the feature (no credit counting). */
+export function isUnlimited(feature: string, tier: PlanTier): boolean {
+  return getEntitlement(feature, tier).state === "full";
 }
 
 /** True if the tier has any meaningful access to the feature (not locked or preview-only). */
