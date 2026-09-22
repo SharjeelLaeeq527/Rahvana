@@ -460,10 +460,7 @@ export default function PassportPhotoTool({
         {/* Result */}
         {result && (
           <section ref={resultRef} className="mt-12 w-full max-w-2xl">
-            <ResultGate
-              feature="photo_booth"
-              isLocked={resultLocked}
-            >
+            <ResultGate feature="photo_booth" isLocked={resultLocked}>
               <div
                 className="rounded-2xl p-4 sm:p-6"
                 style={{
