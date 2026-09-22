@@ -16,8 +16,8 @@ import {
   UserPlus,
   Check,
   RefreshCw,
-  Sparkles,
-  Trash2,
+  Pencil,
+  X,
 } from "lucide-react";
 import { useCandidate } from "@/app/context/CandidateContext";
 import type { CandidateProfile, CandidateRelation } from "@/types/candidate";
@@ -85,10 +85,33 @@ export function CandidateSwitcherTray({
     setActiveCandidateId,
     activeCandidate,
     isMultiCandidate,
-    removeCandidate,
+    updateCandidate,
   } = useCandidate();
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+  // Inline name editing
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+
+  const startEdit = (candidate: CandidateProfile) => {
+    setEditingId(candidate.id);
+    // Seed with the current name (fall back to empty so the placeholder shows).
+    setEditName(
+      candidate.fullName && candidate.fullName !== candidate.relation ? candidate.fullName : ""
+    );
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditName("");
+  };
+
+  const saveEdit = (candidateId: string) => {
+    const trimmed = editName.trim();
+    updateCandidate(candidateId, { fullName: trimmed });
+    cancelEdit();
+  };
 
   const visaCategory = activeCandidate.visaCategory || "IR-5";
   const isIr5 = visaCategory.toUpperCase().includes("IR-5") || visaCategory.toUpperCase().includes("IR5");
@@ -145,76 +168,103 @@ export function CandidateSwitcherTray({
           const Icon = RELATION_ICONS[candidate.relation] || Users;
           const style = COLOR_STYLES[candidate.colorTag || "teal"] || COLOR_STYLES.teal;
 
+          const isEditing = editingId === candidate.id;
+
           return (
             <div
               key={candidate.id}
-              className={`group/candidate relative flex items-center w-full rounded-lg transition-all ${
+              className={`w-full flex items-center justify-between p-2 rounded-lg text-left transition-all ${
                 isActive
                   ? `${style.bg} ${style.border} border shadow-xs ring-1 ${style.ring}`
                   : "hover:bg-muted/60 border border-transparent"
               }`}
             >
+              {/* Selectable area (switch candidate). Disabled while editing this row. */}
               <button
                 type="button"
-                onClick={() => handleSelectCandidate(candidate.id)}
-                className="flex items-center justify-between p-2 flex-1 min-w-0 text-left cursor-pointer"
+                onClick={() => !isEditing && handleSelectCandidate(candidate.id)}
+                className="flex items-center gap-2.5 min-w-0 flex-1 text-left"
               >
-                <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                  {/* Avatar Icon */}
-                  <div
-                    className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
-                      isActive ? "bg-white dark:bg-slate-900 shadow-xs" : "bg-muted"
-                    } ${style.text}`}
-                  >
-                    <Icon className="w-3.5 h-3.5" />
-                  </div>
-
-                  {/* Candidate Information */}
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-xs font-bold text-foreground truncate">
-                        {candidate.fullName && candidate.fullName !== candidate.relation
-                          ? `${candidate.label}: ${candidate.fullName}`
-                          : candidate.label}
-                      </span>
-                      {candidate.isPreview && (
-                        <span className="px-1.5 py-0.2 rounded text-[9px] font-bold uppercase tracking-wider bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-400">
-                          Preview
-                        </span>
-                      )}
-                    </div>
-                    <div className="text-[10px] text-muted-foreground truncate">
-                      {candidate.visaCategory} · {candidate.relation}
-                    </div>
-                  </div>
+                {/* Avatar Icon */}
+                <div
+                  className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
+                    isActive ? "bg-white dark:bg-slate-900 shadow-xs" : "bg-muted"
+                  } ${style.text}`}
+                >
+                  <Icon className="w-3.5 h-3.5" />
                 </div>
 
-                {/* Active checkmark */}
-                {isActive && (
-                  <div className="w-4 h-4 rounded-full bg-primary text-white flex items-center justify-center shrink-0 ml-1.5 shadow-xs">
-                    <Check className="w-2.5 h-2.5 stroke-[3]" />
-                  </div>
-                )}
+                {/* Candidate Information */}
+                <div className="min-w-0 flex-1">
+                  {isEditing ? (
+                    <input
+                      autoFocus
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      onClick={(e) => e.stopPropagation()}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") saveEdit(candidate.id);
+                        if (e.key === "Escape") cancelEdit();
+                      }}
+                      placeholder={`${candidate.relation}'s full name`}
+                      className="w-full rounded-md border border-input bg-background px-2 py-1 text-xs font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                    />
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-bold text-foreground truncate">
+                          {candidate.fullName && candidate.fullName !== candidate.relation
+                            ? `${candidate.label}: ${candidate.fullName}`
+                            : candidate.label}
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-muted-foreground truncate">
+                        {candidate.visaCategory}
+                      </div>
+                    </>
+                  )}
+                </div>
               </button>
 
-              {/* Delete Candidate Button (available when more than 1 candidate exists) */}
-              {candidates.length > 1 && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    if (confirm(`Are you sure you want to delete ${candidate.label}?`)) {
-                      removeCandidate(candidate.id);
-                    }
-                  }}
-                  className="p-1.5 mr-1.5 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition-all opacity-70 group-hover/candidate:opacity-100 shrink-0 cursor-pointer"
-                  title={`Delete ${candidate.label}`}
-                  aria-label={`Delete ${candidate.label}`}
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              )}
+              {/* Right-side controls */}
+              <div className="flex items-center gap-1 shrink-0 ml-2">
+                {isEditing ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => saveEdit(candidate.id)}
+                      title="Save name"
+                      className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center shadow-xs hover:bg-primary/90"
+                    >
+                      <Check className="w-3 h-3 stroke-[3]" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={cancelEdit}
+                      title="Cancel"
+                      className="w-6 h-6 rounded-full bg-muted text-muted-foreground flex items-center justify-center hover:bg-muted/70"
+                    >
+                      <X className="w-3 h-3 stroke-[3]" />
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => startEdit(candidate)}
+                      title="Edit name"
+                      className="w-6 h-6 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground flex items-center justify-center transition-colors"
+                    >
+                      <Pencil className="w-3 h-3" />
+                    </button>
+                    {isActive && (
+                      <div className="w-4 h-4 rounded-full bg-primary text-white flex items-center justify-center shadow-xs">
+                        <Check className="w-2.5 h-2.5 stroke-[3]" />
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
             </div>
           );
         })}
@@ -231,7 +281,7 @@ export function CandidateSwitcherTray({
           <span>
             {isIr5
               ? candidates.length === 1
-                ? "+ Add 2nd Parent (Preview)"
+                ? "+ Add 2nd Parent"
                 : "+ Add Parent Profile"
               : isIr2
                 ? "+ Add Child Profile"

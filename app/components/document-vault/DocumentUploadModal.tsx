@@ -24,6 +24,8 @@ import {
   fetchUserJourneysCached,
   isSameJourneyType,
 } from "@/lib/document-vault/journey-mapping";
+import { isDocumentShareableAcrossCandidates } from "@/lib/document-vault/candidate-sharing";
+import { getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
 
 interface DocumentUploadModalProps {
   open: boolean;
@@ -131,10 +133,30 @@ export function DocumentUploadModal({
   }, [open, userJourneys, activeJourneyId, currentJourneyId]);
 
   const otherJourneys = useMemo(() => {
+    const activeJourney = effectiveUserJourneys.find((j) => j.id === effectiveActiveJourneyId);
+    const activeBase = activeJourney ? getBaseVisaCategory(activeJourney.journey_type) : null;
+
     return effectiveUserJourneys.filter((j) => {
       if (j.id === effectiveActiveJourneyId) return false;
-      if (isSameJourneyType(j.journey_type, effectiveActiveJourneyId)) return false;
-      return isDocumentApplicableToJourney(documentDef.id, documentDef.name, j.journey_type);
+      // Compare journey TYPE to the active journey's TYPE (effectiveActiveJourneyId is a
+      // journey UUID, so passing it here was a permanent no-op).
+      if (isSameJourneyType(j.journey_type, activeJourney?.journey_type)) return false;
+
+      // Only offer OTHER candidates within the SAME case (same base visa category). A
+      // different-category journey - notably IR-1, which is a separate single-beneficiary
+      // journey - is NEVER a candidate share target. The candidate system is isolated from
+      // IR-1 by design.
+      if (!activeBase || getBaseVisaCategory(j.journey_type) !== activeBase) return false;
+
+      if (!isDocumentApplicableToJourney(documentDef.id, documentDef.name, j.journey_type))
+        return false;
+
+      // Between sibling candidates (e.g. the other parent) only offer documents that are
+      // shareable across candidates; parent-specific docs (passport, CNIC, birth, medical,
+      // ...) are never offered.
+      if (!isDocumentShareableAcrossCandidates(documentDef)) return false;
+
+      return true;
     });
   }, [effectiveUserJourneys, effectiveActiveJourneyId, documentDef]);
 
@@ -144,7 +166,9 @@ export function DocumentUploadModal({
 
   useEffect(() => {
     if (open) {
-      setSharedJourneyIds(otherJourneys.map((j) => j.id));
+      // Opt-in by design: nothing pre-selected. The user must explicitly tick a target to
+      // share this document with another candidate/journey.
+      setSharedJourneyIds([]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, otherJourneysKey]);

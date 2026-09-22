@@ -38,6 +38,8 @@ import {
   fetchUserJourneysCached,
   isSameJourneyType,
 } from "@/lib/document-vault/journey-mapping";
+import { isDocumentShareableAcrossCandidates } from "@/lib/document-vault/candidate-sharing";
+import { getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
 import { msg, E, errorCode } from "@/lib/errors";
 import { getOcrConfig, type OcrTarget } from "@/lib/document-ocr/registry";
 import { resizeImageIfNeeded } from "@/lib/document-ocr/clientImage";
@@ -116,9 +118,16 @@ export function MultipleDocumentUploadModal({
   const [sharedJourneyIds, setSharedJourneyIds] = useState<string[]>([]);
 
   const otherJourneys = useMemo(() => {
+    // Compare journey TYPE to the active journey's TYPE (activeJourneyId is a journey UUID,
+    // so passing it to isSameJourneyType was a permanent no-op).
+    const activeJourney = userJourneys.find((x) => x.id === activeJourneyId);
+    const activeBase = activeJourney ? getBaseVisaCategory(activeJourney.journey_type) : null;
     return userJourneys.filter((j) => {
       if (j.id === activeJourneyId) return false;
-      if (isSameJourneyType(j.journey_type, activeJourneyId)) return false;
+      if (isSameJourneyType(j.journey_type, activeJourney?.journey_type)) return false;
+      // Same base visa category only - IR-1 (a separate single-beneficiary journey) is never
+      // offered as a candidate share target; the candidate system stays isolated from IR-1.
+      if (!activeBase || getBaseVisaCategory(j.journey_type) !== activeBase) return false;
       return true;
     });
   }, [userJourneys, activeJourneyId]);
@@ -126,18 +135,35 @@ export function MultipleDocumentUploadModal({
   const [manuallyUncheckedIds, setManuallyUncheckedIds] = useState<string[]>([]);
 
   const visibleOtherJourneys = useMemo(() => {
+    const activeJourney = userJourneys.find((x) => x.id === activeJourneyId);
+    const activeBase = activeJourney ? getBaseVisaCategory(activeJourney.journey_type) : null;
+
+    // Applicable to share to journey j, honoring the sibling-candidate rule: between two
+    // candidates in the same case (same base visa category, e.g. two parents) only shareable
+    // documents are offered; parent-specific docs (passport, CNIC, birth, medical...) are not.
+    const shareApplicable = (j: any, defId: string, typeName: string) => {
+      if (!isDocumentApplicableToJourney(defId, typeName, j.journey_type)) return false;
+      const isSibling = !!activeBase && getBaseVisaCategory(j.journey_type) === activeBase;
+      if (isSibling) {
+        const def = ALL_DOCUMENTS.find((d) => d.id === defId);
+        if (!def || !isDocumentShareableAcrossCandidates(def)) return false;
+      }
+      return true;
+    };
+
     return otherJourneys.filter((j) => {
-      return pendingUploads.some((p) => {
-        if (!p.type) {
-          return isDocumentApplicableToJourney(categoryId, documentName, j.journey_type);
-        }
-        const targetId = p.type === OTHER_OPTION && p.customName
-          ? "dynamic-OTHER"
-          : mapDocumentNameToId(p.type);
-        return isDocumentApplicableToJourney(targetId, p.type, j.journey_type);
-      }) || isDocumentApplicableToJourney(categoryId, documentName, j.journey_type);
+      return (
+        pendingUploads.some((p) => {
+          if (!p.type) {
+            return shareApplicable(j, categoryId, documentName);
+          }
+          const targetId =
+            p.type === OTHER_OPTION && p.customName ? "dynamic-OTHER" : mapDocumentNameToId(p.type);
+          return shareApplicable(j, targetId, p.type);
+        }) || shareApplicable(j, categoryId, documentName)
+      );
     });
-  }, [otherJourneys, pendingUploads, categoryId, documentName]);
+  }, [otherJourneys, pendingUploads, categoryId, documentName, userJourneys, activeJourneyId]);
 
   useEffect(() => {
     if (!open) return;
@@ -202,16 +228,14 @@ export function MultipleDocumentUploadModal({
       setManuallyUncheckedIds([]);
       return;
     }
+    // Opt-in by design: never auto-select a target. Keep only the targets the user has
+    // explicitly ticked that are still visible.
     setSharedJourneyIds((prev) => {
       const visibleIds = visibleOtherJourneys.map((j) => j.id);
-      // Keep only those that are currently visible
-      const currentFiltered = prev.filter((id) => visibleIds.includes(id));
-      // Add any visible journeys that are NOT manually unchecked and NOT already checked
-      const newToCheck = visibleIds.filter((id) => !currentFiltered.includes(id) && !manuallyUncheckedIds.includes(id));
-      return [...currentFiltered, ...newToCheck];
+      return prev.filter((id) => visibleIds.includes(id));
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, visibleOtherJourneysKey, manuallyUncheckedIds]);
+  }, [open, visibleOtherJourneysKey]);
 
   // ── Inline OCR auto-fill (passport) ──
   // When one of the uploaded items is a passport (e.g. the petitioner picks
@@ -652,10 +676,26 @@ export function MultipleDocumentUploadModal({
         if (activeJourneyId) {
           formData.append("journeyId", activeJourneyId);
         }
+        const activeJourneyForShare = userJourneys.find((j) => j.id === activeJourneyId);
+        const activeShareBase = activeJourneyForShare
+          ? getBaseVisaCategory(activeJourneyForShare.journey_type)
+          : null;
         const applicableSharedIds = sharedJourneyIds.filter((targetId) => {
           const targetJourney = userJourneys.find((j) => j.id === targetId);
           if (!targetJourney) return false;
-          return isDocumentApplicableToJourney(specificDefId, uploadItem.type, targetJourney.journey_type);
+          if (
+            !isDocumentApplicableToJourney(specificDefId, uploadItem.type, targetJourney.journey_type)
+          )
+            return false;
+          // Sibling candidate (same base visa category, e.g. the other parent): only share
+          // documents that are shareable across candidates.
+          const isSibling =
+            !!activeShareBase && getBaseVisaCategory(targetJourney.journey_type) === activeShareBase;
+          if (isSibling) {
+            const def = ALL_DOCUMENTS.find((d) => d.id === specificDefId);
+            if (!def || !isDocumentShareableAcrossCandidates(def)) return false;
+          }
+          return true;
         });
 
         if (applicableSharedIds.length > 0) {

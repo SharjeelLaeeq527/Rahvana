@@ -92,11 +92,14 @@ export function getDefaultCandidatesForVisa(
   const now = new Date().toISOString();
 
   if (normCategory.includes("IR-5") || normCategory.includes("IR5")) {
-    const mother: CandidateProfile = {
+    // The primary parent is NOT assumed to be Mother/Father - the petitioner may be
+    // sponsoring a step-parent or adoptive parent. Keep it generic ("Candidate 1") with
+    // an unspecified relation; the user picks the exact relation only when they choose to.
+    const primary: CandidateProfile = {
       id: "candidate-1",
-      label: "Candidate 1 (Mother)",
-      relation: "Mother",
-      fullName: "Mother",
+      label: "Candidate 1",
+      relation: "Other",
+      fullName: "",
       visaCategory: "IR-5",
       tier: userTier,
       isPrimary: true,
@@ -106,11 +109,11 @@ export function getDefaultCandidatesForVisa(
     };
 
     if (bothParents) {
-      const father: CandidateProfile = {
+      const secondParent: CandidateProfile = {
         id: "candidate-2",
-        label: "Candidate 2 (Father)",
-        relation: "Father",
-        fullName: "Father",
+        label: "Candidate 2",
+        relation: "Other",
+        fullName: "",
         visaCategory: "IR-5",
         tier: userTier,
         isPrimary: false,
@@ -118,19 +121,19 @@ export function getDefaultCandidatesForVisa(
         createdAt: now,
         colorTag: "teal",
       };
-      return [mother, father];
+      return [primary, secondParent];
     }
 
-    return [mother];
+    return [primary];
   }
 
   if (normCategory.includes("IR-2") || normCategory.includes("IR2")) {
     return [
       {
         id: "candidate-1",
-        label: "Candidate 1 (Child)",
+        label: "Candidate 1",
         relation: "Child",
-        fullName: "Child 1",
+        fullName: "",
         visaCategory: "IR-2",
         tier: userTier,
         isPrimary: true,
@@ -145,9 +148,9 @@ export function getDefaultCandidatesForVisa(
   return [
     {
       id: "candidate-1",
-      label: "Candidate 1 (Spouse)",
+      label: "Candidate 1",
       relation: "Spouse",
-      fullName: "Spouse",
+      fullName: "",
       visaCategory: visaCategory || "IR-1",
       tier: userTier,
       isPrimary: true,
@@ -198,14 +201,6 @@ export function createNewCandidate(
 ): CandidateProfile {
   const nextNum = existingCandidates.length + 1;
   const relation = params.relation;
-  const relationLabel =
-    relation === "Mother"
-      ? "Mother"
-      : relation === "Father"
-        ? "Father"
-        : relation === "Child"
-          ? `Child ${nextNum}`
-          : relation;
 
   const colorTags: Array<CandidateProfile["colorTag"]> = [
     "teal",
@@ -224,9 +219,11 @@ export function createNewCandidate(
 
   return {
     id: `candidate-${nextNum}`,
-    label: `Candidate ${nextNum} (${relationLabel})`,
+    // Generic, numbered label. The user-chosen relation is stored on `relation` and shown
+    // separately; the actual name (if any) goes in `fullName` when the user enters it.
+    label: `Candidate ${nextNum}`,
     relation,
-    fullName: params.fullName || relationLabel,
+    fullName: params.fullName || "",
     visaCategory,
     tier: params.tier || (params.isPreview ?? true ? "free" : "free"),
     isPrimary: existingCandidates.length === 0,

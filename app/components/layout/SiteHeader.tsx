@@ -56,8 +56,10 @@ import { NAV_DATA } from "./navigationData";
 import { ConfirmationModal } from "../shared/ConfirmationModal";
 import { requestNavigation } from "@/lib/guides/navigationGuardStore";
 import { ir1journeyHref, ir5journeyHref } from "@/lib/constants/routes";
-import { ActiveCandidateBadge } from "@/app/components/candidate/ActiveCandidateBadge";
 import { CandidateSwitcherTray } from "@/app/components/candidate/CandidateSwitcherTray";
+import { useCandidate } from "@/app/context/CandidateContext";
+import { fetchUserJourneysCached, getCachedUserJourneys } from "@/lib/document-vault/journey-mapping";
+import { getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
 
 interface HeaderProps {
   activeSection?: string;
@@ -472,6 +474,52 @@ export function SiteHeader({
   }, [pathname]);
   const { profile, isLoading, user: authUser } = useAuth();
   const resolvedUser = user ?? authUser;
+
+  // ── Candidate switcher visibility (app-wide, but ONLY for IR-5/IR-2) ───────
+  // The candidate switcher is a whole-journey feature (one account, multiple beneficiary
+  // journeys), so it lives in the global header - but it must NEVER appear for IR-1, which
+  // is a separate single-beneficiary journey. We gate on the user's ACTUAL journeys (the
+  // reliable signal): show it only when the account actually has an IR-5/IR-2 journey. We do
+  // NOT fall back to isMultiCandidate/defaulted candidates - that is exactly what leaked the
+  // tray onto IR-1 accounts before.
+  // Active candidate is shown as a small badge on the header bar (so the user can see which
+  // beneficiary/journey is active without opening the profile tray).
+  const { activeCandidate } = useCandidate();
+  const [hasCandidateJourney, setHasCandidateJourney] = useState(false);
+  // IMPORTANT: key this on the user ID, NOT the user object. AuthContext re-emits a fresh
+  // user object on every auth event, so depending on `resolvedUser` would re-run this effect
+  // constantly - each re-run's cleanup cancels the in-flight fetch before it can set state, so
+  // the switcher would never appear. See the "Auth user-object re-ref wipes state" pitfall.
+  const resolvedUserId = resolvedUser?.id ?? null;
+  useEffect(() => {
+    if (!resolvedUserId) {
+      setHasCandidateJourney(false);
+      return;
+    }
+    let cancelled = false;
+    // Seed synchronously from the shared cache if the vault/roadmap already populated it.
+    const cached = getCachedUserJourneys();
+    if (cached && cached.length > 0) {
+      setHasCandidateJourney(
+        cached.some((j) => ["IR-5", "IR-2"].includes(getBaseVisaCategory(j?.journey_type)))
+      );
+    }
+    fetchUserJourneysCached()
+      .then((journeys) => {
+        if (cancelled) return;
+        const has = (journeys || []).some((j) =>
+          ["IR-5", "IR-2"].includes(getBaseVisaCategory(j?.journey_type))
+        );
+        setHasCandidateJourney(has);
+      })
+      .catch(() => {
+        /* non-fatal - just keep the switcher hidden */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [resolvedUserId]);
+  const showCandidateSwitcher = hasCandidateJourney;
 
   const fetchNotifications = useCallback(async () => {
     try {
@@ -1664,9 +1712,26 @@ export function SiteHeader({
             <div className="h-10 w-22 animate-pulse rounded-lg bg-[#0d7377]/10" />
           ) : user ? (
             <div className="flex items-center gap-2">
-              <ActiveCandidateBadge
-                onClick={() => setActiveMenu(activeMenu === "profile" ? null : "profile")}
-              />
+              {/* Active-candidate badge on the header bar (IR-5/IR-2 accounts only) so the
+                  user always sees which beneficiary/journey is active without opening the
+                  profile tray. Clicking it opens the tray to switch. Never shown for IR-1. */}
+              {showCandidateSwitcher && activeCandidate && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (menuTimeoutRef.current) clearTimeout(menuTimeoutRef.current);
+                    setActiveMenu(activeMenu === "profile" ? null : "profile");
+                  }}
+                  title="Switch beneficiary profile"
+                  className="hidden sm:flex items-center gap-1.5 max-w-[170px] rounded-full border border-[#0d7377]/25 bg-[#0d7377]/10 px-2.5 py-1 text-xs font-semibold text-[#0d7377] hover:bg-[#0d7377]/20 transition-colors"
+                >
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
+                  <span className="truncate">
+                    {activeCandidate.fullName || activeCandidate.label}
+                  </span>
+                </button>
+              )}
               <div
                 className="relative"
                 ref={profileRef}
@@ -1746,8 +1811,11 @@ export function SiteHeader({
                         </p>
                       </div>
 
-                      {/* Candidate Switcher Tray */}
+                    {/* Candidate switcher: app-wide (whole-journey feature), shown only for
+                        IR-5/IR-2 accounts. Never rendered for IR-1 (kept fully separate). */}
+                    {showCandidateSwitcher && (
                       <CandidateSwitcherTray onCandidateSwitched={() => setActiveMenu(null)} />
+                    )}
 
                     {/* Section 1 */}
                     <div className="border-border border-b py-2">

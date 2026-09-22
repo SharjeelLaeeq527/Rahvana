@@ -1,15 +1,24 @@
 // app/components/candidate/AddCandidateModal.tsx
 // ============================================================================
 // Add Candidate / Beneficiary Modal
-// Allows petitioner to add a 2nd parent (IR-5) or additional children (IR-2)
-// Supports Free Preview mode with paywall-aware tier tagging.
+// Allows petitioner to add a 2nd parent (IR-5) or additional children (IR-2).
+// All candidates are treated equally (no per-candidate preview / upsell).
 // ============================================================================
 
 "use client";
 
 import React, { useState } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, UserPlus, Users, Heart, Baby, ShieldCheck, CheckCircle2 } from "lucide-react";
+import {
+  X,
+  UserPlus,
+  Users,
+  Heart,
+  Baby,
+  ShieldCheck,
+  CheckCircle2,
+} from "lucide-react";
 import { useCandidate } from "@/app/context/CandidateContext";
 import type { CandidateRelation } from "@/types/candidate";
 import { getVisaCategoryForRelation } from "@/lib/candidate/candidateSyncService";
@@ -36,12 +45,12 @@ export function AddCandidateModal({
   const hasMother = candidates.some((c) => c.relation === "Mother");
   const hasFather = candidates.some((c) => c.relation === "Father");
 
-  const defaultRelation: CandidateRelation = isIr5
-    ? hasMother && !hasFather
+  // Candidates only ever belong to IR-5 (parents) or IR-2 (children). IR-1 is a separate,
+  // single-beneficiary journey and is intentionally NOT part of the candidate system.
+  const defaultRelation: CandidateRelation = isIr2
+    ? "Child"
+    : hasMother && !hasFather
       ? "Father"
-      : "Mother"
-    : isIr2
-      ? "Child"
       : "Mother";
 
   const [relation, setRelation] = useState<CandidateRelation>(defaultRelation);
@@ -64,7 +73,9 @@ export function AddCandidateModal({
         relation,
         fullName: fullName.trim() || undefined,
         visaCategory: targetVisa,
-        isPreview: true, // Free preview mode for multi-candidate testing
+        // Every candidate/parent is a real beneficiary and is treated equally.
+        // We do NOT flag added parents as "preview" based on creation order.
+        isPreview: true,
         tier: "free",
       });
       onClose();
@@ -75,7 +86,7 @@ export function AddCandidateModal({
     }
   };
 
-  const relationOptions: {
+  const allRelationOptions: {
     value: CandidateRelation;
     label: string;
     visaBadge: string;
@@ -88,7 +99,15 @@ export function AddCandidateModal({
     { value: "Child", label: "Child", visaBadge: "IR-2 Child", icon: Baby },
   ];
 
-  return (
+  // Only offer relations that belong to the current journey's visa category:
+  // IR-2 -> child, everything else (IR-5) -> parents only. IR-1 (Spouse) is never a
+  // candidate, so it is not offered here at all.
+  const PARENT_RELATIONS: CandidateRelation[] = ["Mother", "Father", "Stepparent", "AdoptiveParent"];
+  const relationOptions = isIr2
+    ? allRelationOptions.filter((o) => o.value === "Child")
+    : allRelationOptions.filter((o) => PARENT_RELATIONS.includes(o.value));
+
+  const modal = (
     <AnimatePresence>
       <div className="animate-in fade-in fixed inset-0 z-[10000] flex items-center justify-center overflow-y-auto bg-black/60 p-3 backdrop-blur-sm duration-150 sm:p-4 md:p-6">
         <motion.div
@@ -124,17 +143,14 @@ export function AddCandidateModal({
           {/* Form */}
           <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col overflow-hidden">
             {/* Scrollable Body */}
-            <div className="flex-1 space-y-4 overflow-y-auto overscroll-contain p-4 sm:space-y-4.5 sm:p-6">
-              {/* Free preview badge / notice */}
-              <div className="space-y-1 rounded-xl border border-teal-200/70 bg-teal-50/80 p-3 text-xs text-teal-800 sm:p-3.5">
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-teal-900 sm:text-sm">
-                  <span>Free Preview Beneficiary Profile</span>
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-4.5 overscroll-contain">
+              {/* Multi-profile notice */}
+              <div className="p-3 sm:p-3.5 rounded-xl bg-teal-50/80 border border-teal-200/70 text-xs text-teal-800 space-y-1">
+                <div className="font-semibold text-teal-900 text-xs sm:text-sm">
+                  Multi-Profile Support
                 </div>
-                <p className="text-[11px] leading-relaxed text-teal-700 sm:text-[11.5px]">
-                  New beneficiary profiles are added on the <strong>Free Tier</strong> to preview
-                  available roadmap steps, tools, and services. Sponsor information is automatically
-                  synchronized.{" "}
-                  <em>(Note: Only one spouse may be sponsored at a time per USCIS regulations)</em>.
+                <p className="text-teal-700 leading-relaxed text-[11px] sm:text-[11.5px]">
+                  Switch between beneficiary profiles anytime from this journey. Petitioner sponsor information (income, affidavit metrics, tax records) is shared automatically across all profiles.
                 </p>
               </div>
 
@@ -235,4 +251,13 @@ export function AddCandidateModal({
       </div>
     </AnimatePresence>
   );
+
+  // Portal to <body> so the overlay escapes the sticky / overflow-hidden card it is
+  // triggered from (CandidateSwitcherTray lives inside a sticky, overflow-hidden Card in
+  // the Document Vault). Without this the fixed overlay's stacking context breaks and the
+  // page behind bleeds through the modal.
+  if (typeof document !== "undefined") {
+    return createPortal(modal, document.body);
+  }
+  return null;
 }

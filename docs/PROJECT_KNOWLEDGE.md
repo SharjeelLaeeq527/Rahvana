@@ -336,7 +336,47 @@ personalization by visa type / sponsor structure / country
 (`personalization-engine.ts`), expiration tracking, Zustand store (`store.ts`), client +
 server storage clients (`storage-client.ts`, `storage-server.ts`, `storage-database.ts`),
 `journey-mapping.ts`, `flag-registry.ts`, and `useInitDocumentVault.ts` (prefetch on
-dashboard mount). Vault files are AES-256-GCM encrypted with a **per-user** key
+dashboard mount).
+
+**Multi-candidate (IR-5 / IR-2).** A single petitioner can sponsor several beneficiaries
+(IR-5 = Mother + Father; IR-2 = multiple children). This is modeled as **one journey per
+candidate**, coordinated by a central `CandidateContext` (`app/context/CandidateContext.tsx`,
+provided in `app/layout.tsx`). Candidates live on the `MasterProfile`
+(`profile.candidates: CandidateProfile[]` + `activeCandidateId`; see `types/candidate.ts`),
+and each candidate maps to a distinct `journey_type` via
+`getCandidateJourneyKey(baseType, candidateId)` in `lib/candidate/candidateSyncService.ts`
+(`ir5` for candidate-1, `ir5_candidate-2` for candidate-2, ...), so the existing
+`UNIQUE(user_id, journey_type)` constraint holds without a schema change. Sponsor/petitioner
+data is auto-shared across candidates (`SHARED_PETITIONER_FIELDS`) while beneficiary data is
+isolated (`CANDIDATE_SPECIFIC_FIELDS`). The vault, roadmap, tools and forms all scope by the
+active candidate's journey (via `useCandidate()` + `journey_id`); the vault therefore reuses
+the existing per-`journey_id` scoping (no `candidate_id` column). UI: `CandidateSwitcherTray`
+(switch / add / rename) is a **whole-journey feature rendered in the global `SiteHeader`
+profile dropdown** (one account, multiple beneficiary journeys), NOT a vault-only widget. It
+is gated on the account's **actual journeys**: it shows only when the user has an IR-5/IR-2
+journey (`fetchUserJourneysCached` + `getBaseVisaCategory`) or already has more than one
+candidate - so it **never appears for IR-1**, which is a separate single-beneficiary journey
+kept fully outside the candidate system. (Gating on the journeys, not on the defaulted
+`activeCandidate.visaCategory`, avoids the old leak where a defaulted IR-5 candidate showed the
+tray for IR-1 users. The in-card copies previously on the vault page / `RoadmapLayoutEngine`
+were removed; the vault page keeps only a small "whose vault" context chip.) The header bar
+also shows a small **active-candidate badge** (same gate) so the active beneficiary is visible
+without opening the tray; clicking it opens the tray.
+`AddCandidateModal` opens from the tray and offers **only IR-5 parent relations (Mother /
+Father / Stepparent / Adoptive Parent) or IR-2 Child - never IR-1 Spouse** (a candidate can
+never be IR-1). Full design: `docs/multi-candidate-desciption.md`. **Cross-candidate document
+sharing** (e.g. a petitioner doc used for both parents) rides the existing **cross-journey**
+share (`shareWithJourneyIds`). Both upload modals default the share targets to **unchecked
+(opt-in)** and only offer **other candidates within the SAME base visa category** (siblings);
+a different-category journey - notably IR-1 - is never offered as a share target, keeping IR-1
+isolated. Between siblings, only documents that pass `isDocumentShareableAcrossCandidates`
+(`lib/document-vault/candidate-sharing.ts`: petitioner/joint-sponsor/household docs shareable by
+default, any BENEFICIARY doc parent-specific, explicit `shareableAcrossCandidates` override on a
+`DocumentDefinition`) are offered - so parent-specific docs (passport, CNIC, birth, medical) are
+never offered between parents.
+`DELETE /api/documents/[id]` reference-counts `storage_path` before removing the blob so
+deleting one shared copy never orphans the file for the other candidate's journey.
+Vault files are AES-256-GCM encrypted with a **per-user** key
 (`file-encryption.ts`, `SHA-256(PORTAL_WALLET_SECRET + ":" + userId)`, `RVLT` magic
 header) — this per-user derivation is unique to vault files (see 23).
 
@@ -515,6 +555,11 @@ migrations (`create_{journeys,chapters,steps,case_data}_table.sql`).
 | `chapters` | Stage subdivisions of a journey | `journey_id`, `chapter_key`, `chapter_number`, `status`, `display_order`, `is_visible`, `visible_when` (JSONB) |
 | `steps` | Granular action items | `chapter_id`, `step_key`, `step_type`, `tool_integration`, `dependencies` (JSONB), `visible_when` (JSONB), `status`, `substatus`, `is_required`, `metadata` |
 | `case_data` | Flexible key-value case facts | `journey_id`, `data_key`, `data_value` (JSONB), `source`, `is_verified`, `version`, `previous_value` (audit) |
+
+> **Multi-candidate (IR-5/IR-2) uses NO new DB columns.** Each candidate is a separate
+> `journeys` row with its own `journey_type` (`ir5`, `ir5_candidate-2`, ...); documents stay
+> scoped by the existing `journey_id`. Candidate rosters live on `user_profiles.profile_details`
+> (`profile.candidates`), not in a dedicated table. See 4.7 and `docs/multi-candidate-desciption.md`.
 
 **Supporting journey tables** — `journey_documents` (+ `journey_id` on documents),
 `tool_sessions`, `journey_portal_records` (**no passwords**), `journey_appointments`,
