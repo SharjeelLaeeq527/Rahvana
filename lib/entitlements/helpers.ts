@@ -9,10 +9,10 @@ import {
 /**
  * Resolves the effective entitlement for a feature, taking purchased add-ons
  * into account:
- *  - Credit-pool add-ons (`creditsPerAddon`, e.g. Photo Booth): each entry in
- *    the purchase ledger grants `creditsPerAddon` credits on top of the tier's
- *    included credits, so the feature resolves to `limited(plan + purchased)`.
- *    The `feature_usage` counter enforces how many of that pool are spent.
+ *  - Credit-pool add-ons (`creditsPerAddon`, e.g. Photo Booth, Consultation):
+ *    each entry in the purchase ledger grants `creditsPerAddon` credits on top
+ *    of the tier's included credits, so the feature resolves to
+ *    `limited(plan + purchased)`.
  *  - Everything else: if the tier would lock the feature as `locked_buy` but
  *    the user has already purchased that add-on, returns `{ state: 'full' }`.
  */
@@ -24,24 +24,45 @@ export function getEffectiveEntitlement(
   const e = getEntitlement(feature, tier);
   if (!e.addon) return e;
 
-  // The add-on ledger stores duplicate ids for duplicate purchases —
-  // count occurrences, don't dedupe (see lib/payments/addon-purchase-ledger.ts).
-  const purchaseCount = purchasedAddons.filter((id) => id === e.addon!.id).length;
-  if (purchaseCount === 0) return e;
-
-  if (e.creditsPerAddon && (e.state === "locked_buy" || e.state === "limited")) {
-    const planCredits = e.state === "limited" ? (e.limit ?? 0) : 0;
-    return {
-      ...e,
-      state: "limited",
-      limit: planCredits + e.creditsPerAddon * purchaseCount,
-    };
+  const pools = getCreditPools(feature, tier, purchasedAddons);
+  if (pools && pools.purchasedCredits > 0 && (e.state === "locked_buy" || e.state === "limited")) {
+    return { ...e, state: "limited", limit: pools.planCredits + pools.purchasedCredits };
   }
 
-  if (e.state === "locked_buy") {
+  if (e.state === "locked_buy" && purchasedAddons.includes(e.addon.id)) {
     return { state: "full" };
   }
   return e;
+}
+
+/**
+ * feature_usage key for the *purchased-credits* counter of a pool feature.
+ * The plan-included counter keeps the bare `feature` key (backwards compatible).
+ */
+export const addonPoolKey = (feature: string): string => `${feature}:addon`;
+
+/**
+ * Splits a credit-pool feature's grant into its two independent wallets:
+ *  - planCredits:       included by the tier (e.g. Executive's 2 consultations)
+ *  - purchasedCredits:  SERVICE/PHOTOBOOTH_CREDITS_PER_ADDON × ledger entries
+ * Returns null for features that are not credit pools (no `creditsPerAddon`).
+ */
+export function getCreditPools(
+  feature: string,
+  tier: PlanTier,
+  purchasedAddons: string[] = []
+): { planCredits: number; purchasedCredits: number } | null {
+  const e = getEntitlement(feature, tier);
+  if (!e.addon || !e.creditsPerAddon) return null;
+  if (e.state !== "locked_buy" && e.state !== "limited") return null;
+
+  // The add-on ledger stores duplicate ids for duplicate purchases —
+  // count occurrences, don't dedupe (see lib/payments/addon-purchase-ledger.ts).
+  const purchaseCount = purchasedAddons.filter((id) => id === e.addon!.id).length;
+  return {
+    planCredits: e.state === "limited" ? (e.limit ?? 0) : 0,
+    purchasedCredits: e.creditsPerAddon * purchaseCount,
+  };
 }
 
 /** True when the user can take the primary action on a feature. */

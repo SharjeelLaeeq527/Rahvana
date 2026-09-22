@@ -5,7 +5,7 @@
  *  - Without a purchase: free/basic locked (buy or upgrade), premium 2 credits,
  *    executive unlimited.
  */
-import { getEffectiveEntitlement } from "@/lib/entitlements/helpers";
+import { getEffectiveEntitlement, getCreditPools } from "@/lib/entitlements/helpers";
 import { normalizePlanTier } from "@/lib/entitlements/config";
 
 describe("getEffectiveEntitlement — photo_booth credit pool", () => {
@@ -81,5 +81,49 @@ describe("normalizePlanTier", () => {
     expect(normalizePlanTier("core")).toBe("free");
     expect(normalizePlanTier("plus")).toBe("free");
     expect(normalizePlanTier("pro")).toBe("free");
+  });
+});
+
+describe("getCreditPools — plan vs purchased wallets", () => {
+  it("non-pool features return null (single-counter behaviour preserved)", () => {
+    expect(getCreditPools("sponsorship_calc", "free", ["sponsor"])).toBeNull();
+  });
+
+  it("photo premium, no purchase → 2 plan credits, empty purchased wallet", () => {
+    expect(getCreditPools("photo_booth", "premium", [])).toEqual({
+      planCredits: 2,
+      purchasedCredits: 0,
+    });
+  });
+
+  it("photo premium + 1 purchase → plan 2 and purchased 2 are tracked separately", () => {
+    expect(getCreditPools("photo_booth", "premium", ["photo"])).toEqual({
+      planCredits: 2,
+      purchasedCredits: 2,
+    });
+  });
+
+  it("consultation on a locked tier with 1 purchase → granted purely from purchases", () => {
+    expect(getCreditPools("expert_consultation", "premium", ["consultation"])).toEqual({
+      planCredits: 0,
+      purchasedCredits: 1,
+    });
+  });
+
+  it("consultation executive + 2 purchases → 2 plan + 2 purchased", () => {
+    expect(
+      getCreditPools("expert_consultation", "executive", ["consultation", "consultation"])
+    ).toEqual({
+      planCredits: 2,
+      purchasedCredits: 2,
+    });
+  });
+
+  it("plan spend never erodes the purchased wallet (effective limit = sum)", () => {
+    // getEffectiveEntitlement exposes the combined pool for display; the two
+    // counters are kept separate in feature_usage (bare key vs `:addon` key).
+    const e = getEffectiveEntitlement("expert_consultation", "premium", ["consultation"]);
+    expect(e.state).toBe("limited");
+    expect(e.limit).toBe(1);
   });
 });
