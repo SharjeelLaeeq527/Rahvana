@@ -387,7 +387,7 @@ export const ADDONS = [
     kind: "services",
     title: "Expert Consultation",
     price: 99,
-    unit: "per 30 min",
+    unit: "for 1 credit",
     copy: "Targeted 30-minute video session with a specialist for situation-specific guidance on your case.",
     note: "Scheduled within 3 business days",
   },

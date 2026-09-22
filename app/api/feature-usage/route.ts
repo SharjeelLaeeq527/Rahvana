@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { E, msg } from "@/lib/errors";
 import { checkFeatureUsage } from "@/lib/usage/checkFeatureUsage";
 import { type PlanTier, normalizePlanTier } from "@/lib/entitlements/config";
-import { getEffectiveEntitlement } from "@/lib/entitlements/helpers";
+import { getEffectiveEntitlement, getCreditPools, addonPoolKey } from "@/lib/entitlements/helpers";
 
 // GET /api/feature-usage?feature=xyz - Check feature usage for the authenticated user
 export async function GET(request: Request) {
@@ -127,6 +127,60 @@ export async function POST(request: Request) {
 
     // LIMITED access → enforce limit
     if (entitlement.state === "limited") {
+      // Credit-pool features keep two independent counters: plan spend lives on
+      // the bare key, paid add-on spend on `${feature}:addon`. Consume plan
+      // credits first so purchased credits are never eroded by plan usage.
+      const pools = getCreditPools(feature, userTier, purchasedAddons);
+
+      if (pools) {
+        // Zero-sized pools are skipped: the atomic RPC inserts before enforcing,
+        // so it must never be called with p_limit = 0.
+        const attempts = [
+          ...(pools.planCredits > 0 ? [{ key: feature, limit: pools.planCredits }] : []),
+          ...(pools.purchasedCredits > 0
+            ? [{ key: addonPoolKey(feature), limit: pools.purchasedCredits }]
+            : []),
+        ];
+
+        for (const attempt of attempts) {
+          const { data: result, error } = await supabase.rpc("increment_feature_usage_atomic", {
+            p_user_id: user.id,
+            p_feature_key: attempt.key,
+            p_limit: attempt.limit,
+          });
+
+          if (error) {
+            console.error("Usage increment error:", error);
+            return NextResponse.json(
+              { success: false, message: msg(E.AUTH_UNEXPECTED_ERROR) },
+              { status: 500 }
+            );
+          }
+
+          if (result?.allowed) {
+            // Report the combined pool state so the UI stays consistent
+            const usage = await checkFeatureUsage(user.id, feature, userTier, purchasedAddons);
+            return NextResponse.json({
+              success: true,
+              allowed: true,
+              used: usage.used,
+              limit: usage.limit,
+              remaining: usage.remaining,
+            });
+          }
+        }
+
+        // Every wallet exhausted → buy more / upgrade
+        const usage = await checkFeatureUsage(user.id, feature, userTier, purchasedAddons);
+        return NextResponse.json({
+          success: true,
+          allowed: false,
+          used: usage.used,
+          limit: usage.limit,
+          remaining: 0,
+        });
+      }
+
       const limit = entitlement.limit ?? 0;
 
       // Atomic upsert

@@ -164,11 +164,12 @@ const ConsultationBookingPageContent = () => {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [showConsultationUpgradeModal, setShowConsultationUpgradeModal] = useState(false);
   const [remainingConsultations, setRemainingConsultations] = useState<number | null>(null);
+  const [consultationCreditLimit, setConsultationCreditLimit] = useState<number>(2);
+
   const [consultationCreditsLoading, setConsultationCreditsLoading] = useState(true);
   const { tier } = usePlan();
   const { user, isLoading: authLoading } = useAuth();
   const { checkAccess, consumeAccess } = useFeatureAccess();
-  const hasExecutiveAccess = tier === "executive";
   const { showToast } = useToast();
   const [useCreditIfAvailable, setUseCreditIfAvailable] = useState<boolean>(true);
 
@@ -520,6 +521,9 @@ const ConsultationBookingPageContent = () => {
       if (!isMounted) return;
 
       const usage = access.data?.data?.usage;
+      if (access.allowed && usage?.limit !== undefined) {
+        setConsultationCreditLimit(usage.limit);
+      }
       if (access.allowed && usage?.remaining !== undefined) {
         setRemainingConsultations(usage.remaining);
       } else if (access.allowed && usage?.limit !== undefined) {
@@ -671,8 +675,9 @@ const ConsultationBookingPageContent = () => {
       return;
     }
 
-    const hasCredit =
-      tier === "executive" && remainingConsultations !== null && remainingConsultations > 0;
+    // Credits come from the pool (Executive's 2 included + any $99 add-on purchases on any tier)
+    const hasCredit = remainingConsultations !== null && remainingConsultations > 0;
+
     const shouldConsumeCredit = hasCredit && useCreditIfAvailable;
 
     setLoading(true);
@@ -1042,9 +1047,9 @@ const ConsultationBookingPageContent = () => {
       case 1:
         return (
           <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="mb-2 block text-sm font-medium text-gray-700">
                   Issue Category *
                 </label>
                 <CustomDropdown
@@ -1068,9 +1073,9 @@ const ConsultationBookingPageContent = () => {
                 )}
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Case Stage *</label>
+                <label className="mb-2 block text-sm font-medium text-gray-700">Case Stage *</label>
                 <CustomDropdown
                   value={formData.case_stage}
                   onChange={(value) => {
@@ -1092,7 +1097,7 @@ const ConsultationBookingPageContent = () => {
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="mb-2 block text-sm font-medium text-gray-700">
                   Embassy / Consulate
                 </label>
                 <CustomDropdown
@@ -1103,7 +1108,7 @@ const ConsultationBookingPageContent = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Urgency *</label>
+                <label className="mb-2 block text-sm font-medium text-gray-700">Urgency *</label>
                 <CustomDropdown
                   value={formData.urgency}
                   onChange={(value) => {
@@ -1128,11 +1133,11 @@ const ConsultationBookingPageContent = () => {
       case 2:
         return (
           <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
+                <label className="mb-2 block text-sm font-medium text-gray-700">Full Name *</label>
                 <div className="relative">
-                  <User className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+                  <User className="absolute top-3.5 left-3 h-5 w-5 text-gray-400" />
                   <input
                     type="text"
                     value={formData.full_name}
@@ -1153,7 +1158,7 @@ const ConsultationBookingPageContent = () => {
                         });
                       }
                     }}
-                    className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-teal-500 transition ${
+                    className={`w-full rounded-lg border py-3 pr-4 pl-10 transition focus:ring-2 focus:ring-teal-500 ${
                       errors.full_name ? "border-red-500" : "border-gray-300"
                     }`}
                     placeholder="John Doe"
@@ -1165,11 +1170,11 @@ const ConsultationBookingPageContent = () => {
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="mb-2 block text-sm font-medium text-gray-700">
                   Email Address *
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+                  <Mail className="absolute top-3.5 left-3 h-5 w-5 text-gray-400" />
                   <input
                     type="email"
                     value={formData.email}
@@ -1190,7 +1195,7 @@ const ConsultationBookingPageContent = () => {
                         });
                       }
                     }}
-                    className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-teal-500 transition ${
+                    className={`w-full rounded-lg border py-3 pr-4 pl-10 transition focus:ring-2 focus:ring-teal-500 ${
                       errors.email ? "border-red-500" : "border-gray-300"
                     }`}
                     placeholder="john@example.com"
@@ -1200,9 +1205,9 @@ const ConsultationBookingPageContent = () => {
                 {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="mb-2 block text-sm font-medium text-gray-700">
                   WhatsApp Phone *
                 </label>
                 <PhoneInput
@@ -1227,7 +1232,7 @@ const ConsultationBookingPageContent = () => {
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Language *</label>
+                <label className="mb-2 block text-sm font-medium text-gray-700">Language *</label>
                 <CustomDropdown
                   value={formData.preferred_language}
                   onChange={(value) => {
@@ -1250,7 +1255,7 @@ const ConsultationBookingPageContent = () => {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="mb-2 block text-sm font-medium text-gray-700">
                 Attachments (Optional)
               </label>
               <div
@@ -1258,7 +1263,7 @@ const ConsultationBookingPageContent = () => {
                 onDragOver={handleDropZoneDragOver}
                 onDragLeave={handleDropZoneDragLeave}
                 onDrop={handleDropZoneDrop}
-                className={`border-2 border-dashed rounded-2xl p-8 transition-all group cursor-pointer text-center block ${
+                className={`group block cursor-pointer rounded-2xl border-2 border-dashed p-8 text-center transition-all ${
                   isDraggingFiles
                     ? "border-teal-500 bg-teal-50/60"
                     : "border-gray-200 hover:border-teal-400 hover:bg-teal-50/30"
@@ -1272,11 +1277,11 @@ const ConsultationBookingPageContent = () => {
                   className="hidden"
                   accept=".pdf,.jpg,.jpeg,.png,.gif"
                 />
-                <div className="bg-gray-100 group-hover:bg-teal-100 transition-colors w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 transition-colors group-hover:bg-teal-100">
                   <FileText className="h-6 w-6 text-gray-400 group-hover:text-teal-600" />
                 </div>
                 <p className="text-sm font-bold text-gray-700">Click to upload or drag and drop</p>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="mt-1 text-xs text-gray-500">
                   Notices, letters, or forms relevant to your case
                 </p>
               </div>
@@ -1285,13 +1290,13 @@ const ConsultationBookingPageContent = () => {
                   {attachments.map((file, index) => (
                     <div
                       key={index}
-                      className="flex items-center justify-between bg-gray-100 p-3 rounded-lg text-sm"
+                      className="flex items-center justify-between rounded-lg bg-gray-100 p-3 text-sm"
                     >
                       <span>{file.name}</span>
                       <Button
                         variant="ghost"
                         onClick={() => removeAttachment(index)}
-                        className="p-1 h-auto text-red-500 hover:bg-red-50"
+                        className="h-auto p-1 text-red-500 hover:bg-red-50"
                       >
                         <CloseIcon className="h-4 w-4" />
                       </Button>
@@ -1301,7 +1306,7 @@ const ConsultationBookingPageContent = () => {
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="mb-2 block text-sm font-medium text-gray-700">
                 Detailed Case Summary *
               </label>
               <textarea
@@ -1324,7 +1329,7 @@ const ConsultationBookingPageContent = () => {
                   }
                 }}
                 rows={5}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-teal-500 transition min-h-30 ${
+                className={`min-h-30 w-full rounded-lg border px-4 py-3 transition focus:ring-2 focus:ring-teal-500 ${
                   errors.case_summary ? "border-red-500" : "border-gray-300"
                 }`}
                 placeholder="Tell us about your visa status, any RFE/221g received, and specific questions you have..."
@@ -1334,9 +1339,9 @@ const ConsultationBookingPageContent = () => {
                 <p className="mt-1 text-sm text-red-600">{errors.case_summary}</p>
               )}
             </div>
-            <div className="bg-teal-50/50 border border-teal-100 p-5 rounded-2xl">
-              <label className="flex items-start gap-3 cursor-pointer group">
-                <div className="relative flex items-center h-5 mt-0.5">
+            <div className="rounded-2xl border border-teal-100 bg-teal-50/50 p-5">
+              <label className="group flex cursor-pointer items-start gap-3">
+                <div className="relative mt-0.5 flex h-5 items-center">
                   <input
                     type="checkbox"
                     required
@@ -1352,12 +1357,12 @@ const ConsultationBookingPageContent = () => {
                         });
                       }
                     }}
-                    className={`w-4 h-4 text-teal-600 rounded focus:ring-teal-500 cursor-pointer ${
+                    className={`h-4 w-4 cursor-pointer rounded text-teal-600 focus:ring-teal-500 ${
                       errors.consent ? "border-red-500" : "border-gray-300"
                     }`}
                   />
                 </div>
-                <span className="text-xs text-gray-600 leading-relaxed font-medium group-hover:text-teal-900 transition-colors">
+                <span className="text-xs leading-relaxed font-medium text-gray-600 transition-colors group-hover:text-teal-900">
                   I consent to being contacted via email and WhatsApp. I understand this
                   consultation provides general guidance and does not constitute legal advice.
                 </span>
@@ -1424,15 +1429,15 @@ const ConsultationBookingPageContent = () => {
         return (
           <div className="space-y-6">
             {/* Header info bar */}
-            <div className="bg-teal-50/50 border border-teal-100 p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+            <div className="flex flex-col justify-between gap-3 rounded-xl border border-teal-100 bg-teal-50/50 p-4 shadow-xs sm:flex-row sm:items-center">
               <div className="flex items-center gap-3">
-                <Info className="h-5 w-5 text-teal-600 mt-0.5" />
-                <p className="text-sm text-teal-800 font-medium">
+                <Info className="mt-0.5 h-5 w-5 text-teal-600" />
+                <p className="text-sm font-medium text-teal-800">
                   Select your preferred consultation slot using the Calendar below.
                 </p>
               </div>
-              <div className="flex justify-end items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-teal-100/60 text-teal-900 rounded-full text-xs font-bold">
+              <div className="flex items-center justify-end gap-2">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-teal-100/60 px-3 py-1.5 text-xs font-bold text-teal-900">
                   <Globe className="h-3.5 w-3.5 text-teal-700" />
                   Timezone: {Intl.DateTimeFormat().resolvedOptions().timeZone}
                 </span>
@@ -1440,21 +1445,21 @@ const ConsultationBookingPageContent = () => {
             </div>
 
             {/* Google Calendar Controls Toolbar */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border border-gray-200 bg-gray-50/50 p-4 rounded-2xl">
+            <div className="flex flex-col justify-between gap-4 rounded-2xl border border-gray-200 bg-gray-50/50 p-4 md:flex-row md:items-center">
               {/* Left Side: Navigation Controls */}
-              <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setCurrentCalendarDate(new Date())}
-                  className="px-4 py-2 border border-gray-300 rounded-xl text-xs font-extrabold text-gray-700 bg-white hover:bg-gray-50 transition cursor-pointer shadow-sm hover:shadow-md hover:border-gray-400 active:scale-95 flex items-center justify-center min-h-10"
+                  className="flex min-h-10 cursor-pointer items-center justify-center rounded-xl border border-gray-300 bg-white px-4 py-2 text-xs font-extrabold text-gray-700 shadow-sm transition hover:border-gray-400 hover:bg-gray-50 hover:shadow-md active:scale-95"
                 >
                   Today
                 </button>
-                <div className="flex items-center border border-gray-300 rounded-xl bg-white shadow-sm overflow-hidden min-h-10">
+                <div className="flex min-h-10 items-center overflow-hidden rounded-xl border border-gray-300 bg-white shadow-sm">
                   <button
                     type="button"
                     onClick={handlePrevDate}
-                    className="p-2.5 hover:bg-gray-50 border-r border-gray-200 text-gray-600 transition cursor-pointer flex items-center justify-center"
+                    className="flex cursor-pointer items-center justify-center border-r border-gray-200 p-2.5 text-gray-600 transition hover:bg-gray-50"
                     title="Previous"
                   >
                     <ChevronLeft className="h-4 w-4" />
@@ -1462,13 +1467,13 @@ const ConsultationBookingPageContent = () => {
                   <button
                     type="button"
                     onClick={handleNextDate}
-                    className="p-2.5 hover:bg-gray-50 text-gray-600 transition cursor-pointer flex items-center justify-center"
+                    className="flex cursor-pointer items-center justify-center p-2.5 text-gray-600 transition hover:bg-gray-50"
                     title="Next"
                   >
                     <ChevronRight className="h-4 w-4" />
                   </button>
                 </div>
-                <h3 className="text-base sm:text-lg font-black text-gray-800 ml-2 select-none tracking-tight">
+                <h3 className="ml-2 text-base font-black tracking-tight text-gray-800 select-none sm:text-lg">
                   {calendarView === "day" && getDayLabel(currentCalendarDate)}
                   {calendarView === "week" && getWeekRangeLabel(currentCalendarDate)}
                   {calendarView === "month" && getMonthLabel(currentCalendarDate)}
@@ -1479,7 +1484,7 @@ const ConsultationBookingPageContent = () => {
               {/* Right Side: View Filter Dropdown */}
               <div className="flex flex-wrap items-center gap-3">
                 {/* View Dropdown Dropdown (Using Project's CustomDropdown) */}
-                <div className="min-w-32 select-none z-50">
+                <div className="z-50 min-w-32 select-none">
                   <CustomDropdown
                     value={calendarView}
                     onChange={(val) => setCalendarView(val as any)}
@@ -1500,28 +1505,28 @@ const ConsultationBookingPageContent = () => {
               <div>
                 {/* 1. WEEK VIEW */}
                 {calendarView === "week" && (
-                  <div className="relative border border-gray-200 rounded-3xl bg-white overflow-x-auto shadow-xs select-none">
+                  <div className="relative overflow-x-auto rounded-3xl border border-gray-200 bg-white shadow-xs select-none">
                     <div className="min-w-[800px]">
                       {/* Header Row */}
                       <div className="flex border-b border-gray-200 bg-gray-50/70 py-1">
                         {/* Spacing for Left Hour Labels column */}
-                        <div className="w-18 border-r border-gray-100 flex-shrink-0" />
+                        <div className="w-18 flex-shrink-0 border-r border-gray-100" />
 
                         {/* 7 columns */}
-                        <div className="flex-1 grid grid-cols-7">
+                        <div className="grid flex-1 grid-cols-7">
                           {weekDates.map((date, idx) => {
                             const active = isToday(date);
                             return (
                               <div
                                 key={idx}
-                                className="py-2.5 text-center border-r border-gray-100 last:border-r-0 flex flex-col items-center justify-center"
+                                className="flex flex-col items-center justify-center border-r border-gray-100 py-2.5 text-center last:border-r-0"
                               >
-                                <span className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">
+                                <span className="text-[10px] font-extrabold tracking-widest text-gray-400 uppercase">
                                   {date.toLocaleDateString(undefined, { weekday: "short" })}
                                 </span>
                                 <span
                                   className={cn(
-                                    "text-sm font-black mt-1.5 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300",
+                                    "mt-1.5 flex h-8 w-8 items-center justify-center rounded-full text-sm font-black transition-all duration-300",
                                     active
                                       ? "bg-teal-600 text-white shadow-md shadow-teal-100"
                                       : "text-gray-700"
@@ -1538,20 +1543,20 @@ const ConsultationBookingPageContent = () => {
                       {/* Scrollable Timeline Grid Container */}
                       <div
                         ref={scrollContainerRef}
-                        className="flex relative overflow-y-auto border-t border-gray-100 scrollbar-thin scrollbar-thumb-gray-200 rounded-b-[22px]"
+                        className="relative flex scrollbar-thin scrollbar-thumb-gray-200 overflow-y-auto rounded-b-[22px] border-t border-gray-100"
                         style={{ height: "500px" }}
                       >
                         {/* 24 hours * 80px height = 1920px vertical height */}
                         <div
-                          className="flex flex-1 relative min-w-[800px]"
+                          className="relative flex min-w-[800px] flex-1"
                           style={{ height: "1920px" }}
                         >
                           {/* Side Hour Labels Column */}
-                          <div className="w-18 border-r border-gray-100 flex flex-col select-none relative z-10 bg-white/95 backdrop-blur-xs">
+                          <div className="relative z-10 flex w-18 flex-col border-r border-gray-100 bg-white/95 backdrop-blur-xs select-none">
                             {hoursRange.map((hour) => (
                               <div
                                 key={hour}
-                                className="relative h-20 flex items-center justify-end pr-3 select-none"
+                                className="relative flex h-20 items-center justify-end pr-3 select-none"
                               >
                                 {hour === 0 && (
                                   <span className="absolute top-0 right-3 text-[9px] font-bold text-gray-400">
@@ -1559,7 +1564,7 @@ const ConsultationBookingPageContent = () => {
                                   </span>
                                 )}
                                 {hour < 23 && (
-                                  <span className="absolute bottom-0 right-3 text-[9px] font-bold text-gray-400 transform translate-y-1/2">
+                                  <span className="absolute right-3 bottom-0 translate-y-1/2 transform text-[9px] font-bold text-gray-400">
                                     {formatHour(hour + 1)}
                                   </span>
                                 )}
@@ -1568,9 +1573,9 @@ const ConsultationBookingPageContent = () => {
                           </div>
 
                           {/* Days Grid Columns */}
-                          <div className="flex-1 grid grid-cols-7 relative">
+                          <div className="relative grid flex-1 grid-cols-7">
                             {/* Horizontal background hour gridlines */}
-                            <div className="absolute inset-0 flex flex-col pointer-events-none">
+                            <div className="pointer-events-none absolute inset-0 flex flex-col">
                               {hoursRange.map((hour) => (
                                 <div
                                   key={hour}
@@ -1591,7 +1596,7 @@ const ConsultationBookingPageContent = () => {
                                   className="relative h-full border-r border-gray-100 last:border-r-0"
                                 >
                                   {isToday(colDate) && (
-                                    <div className="absolute inset-0 bg-teal-500/3 pointer-events-none" />
+                                    <div className="pointer-events-none absolute inset-0 bg-teal-500/3" />
                                   )}
 
                                   {daySlots.map((slot) => {
@@ -1627,34 +1632,34 @@ const ConsultationBookingPageContent = () => {
                                         }}
                                         style={{ top: pos.top, height: pos.height }}
                                         className={cn(
-                                          "absolute left-1 right-1 rounded-2xl border px-3 py-0.5 transition-all duration-300 shadow-xs flex flex-col justify-center overflow-hidden select-none z-20 min-h-[36px]",
+                                          "absolute right-1 left-1 z-20 flex min-h-[36px] flex-col justify-center overflow-hidden rounded-2xl border px-3 py-0.5 shadow-xs transition-all duration-300 select-none",
                                           isSelectable
                                             ? "cursor-pointer hover:scale-102 hover:shadow-md"
                                             : "pointer-events-none opacity-60 grayscale",
                                           isSelectedPrimary
-                                            ? "bg-teal-600 border-teal-700 text-white z-30 ring-2 ring-teal-200"
+                                            ? "z-30 border-teal-700 bg-teal-600 text-white ring-2 ring-teal-200"
                                             : isSelectable
-                                              ? "bg-teal-50/50 border-teal-200 text-teal-800 hover:bg-teal-100/70 hover:border-teal-300"
+                                              ? "border-teal-200 bg-teal-50/50 text-teal-800 hover:border-teal-300 hover:bg-teal-100/70"
                                               : isCancelled
-                                                ? "bg-red-50 border-red-200 text-red-800 z-30 animate-pulse"
+                                                ? "z-30 animate-pulse border-red-200 bg-red-50 text-red-800"
                                                 : !slot.available
                                                   ? isPast
-                                                    ? "bg-purple-50/60 border-purple-150 text-purple-500"
-                                                    : "bg-purple-50 border-purple-200 text-purple-800"
-                                                  : "bg-gray-100/40 border-gray-150 text-gray-400"
+                                                    ? "border-purple-150 bg-purple-50/60 text-purple-500"
+                                                    : "border-purple-200 bg-purple-50 text-purple-800"
+                                                  : "border-gray-150 bg-gray-100/40 text-gray-400"
                                         )}
                                         title={`${slot.formattedTime} - ${isSelectedPrimary ? "Selected" : isCancelled ? "Canceled" : !slot.available ? (isPast ? "Completed" : "Booked") : isPast ? "Passed" : "Click to Select"}`}
                                       >
                                         <div className="flex flex-col justify-center">
                                           <span
                                             className={cn(
-                                              "text-[9px] font-black uppercase tracking-wider block leading-tight",
+                                              "block text-[9px] leading-tight font-black tracking-wider uppercase",
                                               isSelectedPrimary
                                                 ? "text-white/90"
                                                 : isSelectable
                                                   ? "text-teal-700"
                                                   : isCancelled
-                                                    ? "text-red-700 font-extrabold"
+                                                    ? "font-extrabold text-red-700"
                                                     : !slot.available
                                                       ? isPast
                                                         ? "text-purple-500/80"
@@ -1674,7 +1679,7 @@ const ConsultationBookingPageContent = () => {
                                                     ? "Passed"
                                                     : "Available"}
                                           </span>
-                                          <span className="text-[10px] font-black block mt-0.5 leading-tight">
+                                          <span className="mt-0.5 block text-[10px] leading-tight font-black">
                                             {slot.date.toLocaleTimeString([], {
                                               hour: "2-digit",
                                               minute: "2-digit",
@@ -1696,12 +1701,12 @@ const ConsultationBookingPageContent = () => {
 
                 {/* 2. DAY VIEW */}
                 {calendarView === "day" && (
-                  <div className="relative border border-gray-200 rounded-3xl bg-white shadow-xs overflow-hidden select-none">
+                  <div className="relative overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-xs select-none">
                     {/* Day View Header */}
-                    <div className="flex border-b border-gray-200 bg-gray-50/70 py-4 px-6 items-center gap-4">
+                    <div className="flex items-center gap-4 border-b border-gray-200 bg-gray-50/70 px-6 py-4">
                       <span
                         className={cn(
-                          "text-xl font-black w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300",
+                          "flex h-12 w-12 items-center justify-center rounded-full text-xl font-black transition-all duration-300",
                           isToday(currentCalendarDate)
                             ? "bg-teal-600 text-white shadow-md shadow-teal-100"
                             : "bg-gray-200 text-gray-800"
@@ -1710,10 +1715,10 @@ const ConsultationBookingPageContent = () => {
                         {currentCalendarDate.getDate()}
                       </span>
                       <div>
-                        <h4 className="font-black text-gray-800 text-lg uppercase tracking-wide">
+                        <h4 className="text-lg font-black tracking-wide text-gray-800 uppercase">
                           {currentCalendarDate.toLocaleDateString(undefined, { weekday: "long" })}
                         </h4>
-                        <p className="text-xs text-gray-500 font-extrabold">
+                        <p className="text-xs font-extrabold text-gray-500">
                           {currentCalendarDate.toLocaleDateString(undefined, {
                             month: "long",
                             year: "numeric",
@@ -1725,17 +1730,17 @@ const ConsultationBookingPageContent = () => {
                     {/* Day view timeline body */}
                     <div
                       ref={scrollContainerRef}
-                      className="flex relative overflow-y-auto border-t border-gray-100 scrollbar-thin scrollbar-thumb-gray-200 rounded-b-[22px]"
+                      className="relative flex scrollbar-thin scrollbar-thumb-gray-200 overflow-y-auto rounded-b-[22px] border-t border-gray-100"
                       style={{ height: "500px" }}
                     >
                       {/* 24 hours * 80px height = 1920px vertical height */}
-                      <div className="flex flex-1 relative w-full" style={{ height: "1920px" }}>
+                      <div className="relative flex w-full flex-1" style={{ height: "1920px" }}>
                         {/* Hours column */}
-                        <div className="w-18 border-r border-gray-100 flex flex-col select-none relative z-10 bg-white/95 backdrop-blur-xs">
+                        <div className="relative z-10 flex w-18 flex-col border-r border-gray-100 bg-white/95 backdrop-blur-xs select-none">
                           {hoursRange.map((hour) => (
                             <div
                               key={hour}
-                              className="relative h-20 flex items-center justify-end pr-3 select-none"
+                              className="relative flex h-20 items-center justify-end pr-3 select-none"
                             >
                               {hour === 0 && (
                                 <span className="absolute top-0 right-3 text-[9px] font-semibold text-gray-400">
@@ -1743,7 +1748,7 @@ const ConsultationBookingPageContent = () => {
                                 </span>
                               )}
                               {hour < 23 && (
-                                <span className="absolute bottom-0 right-3 text-[9px] font-semibold text-gray-400 transform translate-y-1/2">
+                                <span className="absolute right-3 bottom-0 translate-y-1/2 transform text-[9px] font-semibold text-gray-400">
                                   {formatHour(hour + 1)}
                                 </span>
                               )}
@@ -1752,9 +1757,9 @@ const ConsultationBookingPageContent = () => {
                         </div>
 
                         {/* Single Day Container Grid */}
-                        <div className="flex-1 relative">
+                        <div className="relative flex-1">
                           {/* Horizontal background hour gridlines */}
-                          <div className="absolute inset-0 flex flex-col pointer-events-none">
+                          <div className="pointer-events-none absolute inset-0 flex flex-col">
                             {hoursRange.map((hour) => (
                               <div
                                 key={hour}
@@ -1799,33 +1804,33 @@ const ConsultationBookingPageContent = () => {
                                     }}
                                     style={{ top: pos.top, height: pos.height }}
                                     className={cn(
-                                      "absolute left-4 right-4 rounded-2xl border px-4 py-0.5 transition-all duration-300 shadow-xs flex items-center justify-between z-20 select-none min-h-[36px]",
+                                      "absolute right-4 left-4 z-20 flex min-h-[36px] items-center justify-between rounded-2xl border px-4 py-0.5 shadow-xs transition-all duration-300 select-none",
                                       isSelectable
                                         ? "cursor-pointer hover:scale-101 hover:shadow-md"
                                         : "pointer-events-none opacity-60 grayscale",
                                       isSelectedPrimary
-                                        ? "bg-teal-600 border-teal-700 text-white z-30 ring-2 ring-teal-200"
+                                        ? "z-30 border-teal-700 bg-teal-600 text-white ring-2 ring-teal-200"
                                         : isSelectable
-                                          ? "bg-teal-50/50 border-teal-200 text-teal-800 hover:bg-teal-100/70 hover:border-teal-300"
+                                          ? "border-teal-200 bg-teal-50/50 text-teal-800 hover:border-teal-300 hover:bg-teal-100/70"
                                           : isCancelled
-                                            ? "bg-red-50 border-red-200 text-red-800 z-30 animate-pulse"
+                                            ? "z-30 animate-pulse border-red-200 bg-red-50 text-red-800"
                                             : !slot.available
                                               ? isPast
-                                                ? "bg-purple-50/60 border-purple-150 text-purple-500"
-                                                : "bg-purple-50 border-purple-200 text-purple-800"
-                                              : "bg-gray-100/40 border-gray-150 text-gray-400"
+                                                ? "border-purple-150 bg-purple-50/60 text-purple-500"
+                                                : "border-purple-200 bg-purple-50 text-purple-800"
+                                              : "border-gray-150 bg-gray-100/40 text-gray-400"
                                     )}
                                   >
                                     <div className="flex items-center gap-2">
                                       <div
                                         className={cn(
-                                          "text-[9px] font-black uppercase tracking-wider",
+                                          "text-[9px] font-black tracking-wider uppercase",
                                           isSelectedPrimary
                                             ? "text-white/90"
                                             : isSelectable
                                               ? "text-teal-700"
                                               : isCancelled
-                                                ? "text-red-700 font-extrabold"
+                                                ? "font-extrabold text-red-700"
                                                 : !slot.available
                                                   ? isPast
                                                     ? "text-purple-500/80"
@@ -1855,14 +1860,14 @@ const ConsultationBookingPageContent = () => {
 
                                     <span
                                       className={cn(
-                                        "text-[9px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full select-none border transition-all duration-300",
+                                        "rounded-full border px-2.5 py-0.5 text-[9px] font-black tracking-wider uppercase transition-all duration-300 select-none",
                                         isSelectedPrimary
-                                          ? "bg-white/20 border-white/30 text-white"
+                                          ? "border-white/30 bg-white/20 text-white"
                                           : isSelectable
-                                            ? "bg-white border-teal-200/60 text-teal-700 hover:border-teal-400 hover:bg-teal-50"
+                                            ? "border-teal-200/60 bg-white text-teal-700 hover:border-teal-400 hover:bg-teal-50"
                                             : isCancelled
-                                              ? "bg-red-100 border-red-200 text-red-700 font-extrabold"
-                                              : "bg-gray-50 border-gray-200 text-gray-400 opacity-60 pointer-events-none"
+                                              ? "border-red-200 bg-red-100 font-extrabold text-red-700"
+                                              : "pointer-events-none border-gray-200 bg-gray-50 text-gray-400 opacity-60"
                                       )}
                                     >
                                       {isPast && slot.available
@@ -1887,13 +1892,13 @@ const ConsultationBookingPageContent = () => {
 
                 {/* 3. MONTH VIEW */}
                 {calendarView === "month" && (
-                  <div className="border border-gray-200 rounded-3xl bg-white overflow-hidden shadow-xs select-none">
+                  <div className="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-xs select-none">
                     {/* Days of week labels */}
                     <div className="grid grid-cols-7 border-b border-gray-200 bg-gray-50/70">
                       {daysOfWeek.map((day) => (
                         <div
                           key={day}
-                          className="py-3 text-center text-xs font-extrabold text-gray-400 uppercase tracking-widest"
+                          className="py-3 text-center text-xs font-extrabold tracking-widest text-gray-400 uppercase"
                         >
                           {day}
                         </div>
@@ -1911,15 +1916,15 @@ const ConsultationBookingPageContent = () => {
                           <div
                             key={idx}
                             className={cn(
-                              "min-h-24 p-2 transition-colors relative flex flex-col justify-between border-gray-100",
+                              "relative flex min-h-24 flex-col justify-between border-gray-100 p-2 transition-colors",
                               !isCurrentMonth ? "bg-gray-100/40" : "bg-white",
                               active && "bg-teal-500/3"
                             )}
                           >
                             {/* Day number cell top */}
-                            <div className="flex justify-between items-center mb-1">
+                            <div className="mb-1 flex items-center justify-between">
                               {active ? (
-                                <span className="text-xs font-black text-white bg-teal-600 w-6 h-6 rounded-full flex items-center justify-center shadow-xs">
+                                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-teal-600 text-xs font-black text-white shadow-xs">
                                   {date.getDate()}
                                 </span>
                               ) : (
@@ -1934,14 +1939,14 @@ const ConsultationBookingPageContent = () => {
                               )}
 
                               {daySlots.length > 0 && (
-                                <span className="text-[9px] font-black uppercase bg-teal-50 text-teal-800 border border-teal-100 px-1.5 py-0.5 rounded-md">
+                                <span className="rounded-md border border-teal-100 bg-teal-50 px-1.5 py-0.5 text-[9px] font-black text-teal-800 uppercase">
                                   {daySlots.length} slot{daySlots.length > 1 ? "s" : ""}
                                 </span>
                               )}
                             </div>
 
                             {/* Inner Day Slots badge items list */}
-                            <div className="flex-1 flex flex-col gap-1 overflow-y-auto mt-1 max-h-16 scrollbar-none">
+                            <div className="mt-1 flex max-h-16 flex-1 scrollbar-none flex-col gap-1 overflow-y-auto">
                               {daySlots.map((slot) => {
                                 const isSelectedPrimary =
                                   formData.selected_slot?.getTime() === slot.date.getTime();
@@ -1973,21 +1978,21 @@ const ConsultationBookingPageContent = () => {
                                       }
                                     }}
                                     className={cn(
-                                      "text-[9px] px-2 py-1 rounded-md font-bold truncate transition border flex items-center justify-between shadow-xs select-none",
+                                      "flex items-center justify-between truncate rounded-md border px-2 py-1 text-[9px] font-bold shadow-xs transition select-none",
                                       isSelectable
                                         ? "cursor-pointer"
                                         : "pointer-events-none opacity-60 grayscale",
                                       isSelectedPrimary
-                                        ? "bg-teal-600 border-teal-700 text-white font-black"
+                                        ? "border-teal-700 bg-teal-600 font-black text-white"
                                         : isSelectable
-                                          ? "bg-teal-50/50 border-teal-100 text-teal-800 hover:bg-teal-100 hover:border-teal-200"
+                                          ? "border-teal-100 bg-teal-50/50 text-teal-800 hover:border-teal-200 hover:bg-teal-100"
                                           : isCancelled
-                                            ? "bg-red-50 border-red-200 text-red-800"
+                                            ? "border-red-200 bg-red-50 text-red-800"
                                             : !slot.available
                                               ? isPast
-                                                ? "bg-purple-50/60 border-purple-150 text-purple-500"
-                                                : "bg-purple-50 border-purple-200 text-purple-800"
-                                              : "bg-gray-100/40 border-gray-150 text-gray-400"
+                                                ? "border-purple-150 bg-purple-50/60 text-purple-500"
+                                                : "border-purple-200 bg-purple-50 text-purple-800"
+                                              : "border-gray-150 bg-gray-100/40 text-gray-400"
                                     )}
                                     title={`${slot.formattedTime} - ${isSelectedPrimary ? "Selected" : isCancelled ? "Canceled" : !slot.available ? (isPast ? "Completed" : "Booked") : isPast ? "Passed" : "Click to Select"}`}
                                   >
@@ -2014,7 +2019,7 @@ const ConsultationBookingPageContent = () => {
 
                 {/* 4. YEAR VIEW */}
                 {calendarView === "year" && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 select-none bg-gray-50/30 p-4 border border-gray-200 rounded-3xl">
+                  <div className="grid grid-cols-1 gap-6 rounded-3xl border border-gray-200 bg-gray-50/30 p-4 select-none sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                     {Array.from({ length: 12 }).map((_, monthIdx) => {
                       const monthDate = new Date(currentCalendarDate.getFullYear(), monthIdx, 1);
                       const days = getDaysInMonthForYearView(
@@ -2025,27 +2030,27 @@ const ConsultationBookingPageContent = () => {
                       return (
                         <div
                           key={monthIdx}
-                          className="bg-white border border-gray-200 rounded-2xl p-4 shadow-2xs flex flex-col hover:shadow-md transition-all duration-300 hover:border-teal-100"
+                          className="flex flex-col rounded-2xl border border-gray-200 bg-white p-4 shadow-2xs transition-all duration-300 hover:border-teal-100 hover:shadow-md"
                         >
                           <h4
                             onClick={() => {
                               setCurrentCalendarDate(monthDate);
                               setCalendarView("month");
                             }}
-                            className="text-xs font-black text-gray-800 uppercase tracking-widest mb-3 cursor-pointer hover:text-teal-600 transition text-center pb-1.5 border-b border-gray-100"
+                            className="mb-3 cursor-pointer border-b border-gray-100 pb-1.5 text-center text-xs font-black tracking-widest text-gray-800 uppercase transition hover:text-teal-600"
                           >
                             {monthDate.toLocaleDateString(undefined, { month: "long" })}
                           </h4>
 
                           {/* Days of week mini labels */}
-                          <div className="grid grid-cols-7 text-[8px] font-extrabold text-gray-400 text-center mb-1">
+                          <div className="mb-1 grid grid-cols-7 text-center text-[8px] font-extrabold text-gray-400">
                             {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => (
                               <div key={i}>{d}</div>
                             ))}
                           </div>
 
                           {/* Days grid layout */}
-                          <div className="grid grid-cols-7 gap-y-1 gap-x-0.5 text-center flex-1">
+                          <div className="grid flex-1 grid-cols-7 gap-x-0.5 gap-y-1 text-center">
                             {days.map((date, idx) => {
                               const isCurrentMonth = date.getMonth() === monthIdx;
                               const hasSlots = visibleSlots.some((slot) =>
@@ -2062,13 +2067,13 @@ const ConsultationBookingPageContent = () => {
                                     setCalendarView("day");
                                   }}
                                   className={cn(
-                                    "text-[9px] font-black h-4.5 w-4.5 rounded-full flex items-center justify-center mx-auto cursor-pointer transition select-none",
+                                    "mx-auto flex h-4.5 w-4.5 cursor-pointer items-center justify-center rounded-full text-[9px] font-black transition select-none",
                                     !isCurrentMonth
-                                      ? "text-gray-200 pointer-events-none bg-transparent"
+                                      ? "pointer-events-none bg-transparent text-gray-200"
                                       : active
                                         ? "bg-teal-600 text-white shadow-xs"
                                         : hasSlots
-                                          ? "bg-teal-50 text-teal-800 border border-teal-200/50 hover:bg-teal-100 font-black"
+                                          ? "border border-teal-200/50 bg-teal-50 font-black text-teal-800 hover:bg-teal-100"
                                           : "text-gray-500 hover:bg-gray-100"
                                   )}
                                   title={
@@ -2089,12 +2094,12 @@ const ConsultationBookingPageContent = () => {
                 )}
               </div>
             ) : (
-              <div className="text-center py-20 border-2 border-dashed border-gray-200 rounded-3xl bg-white select-none">
-                <Calendar className="h-14 w-14 text-gray-300 mx-auto mb-4 animate-bounce duration-1000" />
+              <div className="rounded-3xl border-2 border-dashed border-gray-200 bg-white py-20 text-center select-none">
+                <Calendar className="mx-auto mb-4 h-14 w-14 animate-bounce text-gray-300 duration-1000" />
                 <h4 className="text-base font-black text-gray-800">
                   No consultation slots are currently available.
                 </h4>
-                <p className="text-xs text-gray-400 mt-1 max-w-sm mx-auto leading-relaxed">
+                <p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-gray-400">
                   Please check back later or contact support if you need assistance scheduling your
                   session.
                 </p>
@@ -2103,33 +2108,33 @@ const ConsultationBookingPageContent = () => {
 
             {/* Step error indicators */}
             {errors.selected_slot && (
-              <p className="mt-4 text-sm text-red-600 text-center font-bold animate-pulse">
+              <p className="mt-4 animate-pulse text-center text-sm font-bold text-red-600">
                 {errors.selected_slot}
               </p>
             )}
 
             {/* Visual Selected Summary cards below the calendar */}
             {formData.selected_slot && (
-              <div className="bg-slate-50 border border-slate-200/80 p-5 rounded-3xl space-y-4 shadow-2xs">
-                <h4 className="text-xs font-black uppercase text-slate-500 tracking-wider">
+              <div className="space-y-4 rounded-3xl border border-slate-200/80 bg-slate-50 p-5 shadow-2xs">
+                <h4 className="text-xs font-black tracking-wider text-slate-500 uppercase">
                   Your Booking Selection
                 </h4>
 
                 <div className="max-w-md">
                   {/* Primary Selection Summary Card */}
-                  <div className="bg-white rounded-xl p-4 shadow-sm flex items-center justify-between gap-2 border-l-4 border-teal-500">
+                  <div className="flex items-center justify-between gap-2 rounded-xl border-l-4 border-teal-500 bg-white p-4 shadow-sm">
                     <div>
-                      <span className="text-[10px] font-black uppercase tracking-wider text-teal-600 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-100">
+                      <span className="rounded-full border border-teal-100 bg-teal-50 px-2 py-0.5 text-[10px] font-black tracking-wider text-teal-600 uppercase">
                         Selected Slot
                       </span>
-                      <h5 className="font-extrabold text-sm text-gray-800 mt-1.5">
+                      <h5 className="mt-1.5 text-sm font-extrabold text-gray-800">
                         {formData.selected_slot.toLocaleDateString(undefined, {
                           weekday: "short",
                           month: "short",
                           day: "numeric",
                         })}
                       </h5>
-                      <p className="text-xs text-gray-500 font-bold mt-0.5">
+                      <p className="mt-0.5 text-xs font-bold text-gray-500">
                         {visibleSlots.find(
                           (s) => s.date.getTime() === formData.selected_slot?.getTime()
                         )?.formattedTime || ""}
@@ -2138,7 +2143,7 @@ const ConsultationBookingPageContent = () => {
                     <button
                       type="button"
                       onClick={() => handleInputChange("selected_slot", null)}
-                      className="text-slate-400 hover:text-red-500 p-1 cursor-pointer transition"
+                      className="cursor-pointer p-1 text-slate-400 transition hover:text-red-500"
                       title="Remove Selection"
                     >
                       <CloseIcon className="h-4.5 w-4.5" />
@@ -2180,24 +2185,23 @@ const ConsultationBookingPageContent = () => {
           availableSlots.find((s) => s.date.getTime() === formData.selected_slot?.getTime())
             ?.formattedTime || "";
 
-        const hasCredit =
-          tier === "executive" && remainingConsultations !== null && remainingConsultations > 0;
+        const hasCredit = remainingConsultations !== null && remainingConsultations > 0;
 
         return (
-          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-300">
+          <div className="animate-in fade-in slide-in-from-bottom-4 space-y-8 duration-300">
             {/* Heading / Premium Badge */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-linear-to-r from-slate-900 to-slate-800 p-6 rounded-2xl text-white shadow-xl">
+            <div className="flex flex-col items-start justify-between gap-4 rounded-2xl bg-linear-to-r from-slate-900 to-slate-800 p-6 text-white shadow-xl sm:flex-row sm:items-center">
               <div>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-teal-500/20 text-teal-300 rounded-full text-xs font-bold uppercase tracking-wider mb-2 border border-teal-500/30">
+                <span className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-teal-500/30 bg-teal-500/20 px-3 py-1 text-xs font-bold tracking-wider text-teal-300 uppercase">
                   <ShoppingBag className="h-3.5 w-3.5" />
                   Order Review
                 </span>
                 <h3 className="text-xl font-bold">Review your Consultation Details</h3>
-                <p className="text-slate-400 text-xs mt-1 font-light">
+                <p className="mt-1 text-xs font-light text-slate-400">
                   Confirm details and complete booking.
                 </p>
               </div>
-              <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-xl backdrop-blur-md border border-white/10">
+              <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/10 px-4 py-2 backdrop-blur-md">
                 {tier !== "free" ? (
                   <span
                     aria-hidden="true"
@@ -2209,73 +2213,73 @@ const ConsultationBookingPageContent = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-5">
               {/* Order breakdown */}
-              <div className="md:col-span-3 space-y-6">
+              <div className="space-y-6 md:col-span-3">
                 {/* Summary Card */}
-                <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition">
-                  <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 border-b pb-2 flex items-center gap-2">
+                <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm transition hover:shadow-md">
+                  <h4 className="mb-4 flex items-center gap-2 border-b pb-2 text-sm font-bold tracking-wider text-slate-900 uppercase">
                     <FileText className="h-4 w-4 text-teal-600" />
                     Consultation Summary
                   </h4>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
-                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-tight">
+                      <p className="text-xs font-semibold tracking-tight text-slate-400 uppercase">
                         Issue / Subject
                       </p>
-                      <p className="text-sm font-bold text-slate-800 mt-1">{selectedIssue}</p>
+                      <p className="mt-1 text-sm font-bold text-slate-800">{selectedIssue}</p>
                     </div>
                     <div>
-                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-tight">
+                      <p className="text-xs font-semibold tracking-tight text-slate-400 uppercase">
                         Visa Stage
                       </p>
-                      <p className="text-sm font-bold text-slate-800 mt-1">{selectedStage}</p>
+                      <p className="mt-1 text-sm font-bold text-slate-800">{selectedStage}</p>
                     </div>
                     <div>
-                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-tight">
+                      <p className="text-xs font-semibold tracking-tight text-slate-400 uppercase">
                         Urgency Priority
                       </p>
                       <span
                         className={cn(
-                          "inline-block text-[11px] font-bold px-2 py-0.5 rounded mt-1.5",
+                          "mt-1.5 inline-block rounded px-2 py-0.5 text-[11px] font-bold",
                           formData.urgency.startsWith("urgent")
-                            ? "bg-red-50 text-red-600 border border-red-100"
-                            : "bg-slate-50 text-slate-600 border border-slate-100"
+                            ? "border border-red-100 bg-red-50 text-red-600"
+                            : "border border-slate-100 bg-slate-50 text-slate-600"
                         )}
                       >
                         {selectedUrgency}
                       </span>
                     </div>
                     <div>
-                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-tight">
+                      <p className="text-xs font-semibold tracking-tight text-slate-400 uppercase">
                         Language Preference
                       </p>
-                      <p className="text-sm font-bold text-slate-800 mt-1">
+                      <p className="mt-1 text-sm font-bold text-slate-800">
                         {formData.preferred_language}
                       </p>
                     </div>
                     {formData.embassy_consulate && (
                       <div>
-                        <p className="text-xs font-semibold text-slate-400 uppercase tracking-tight">
+                        <p className="text-xs font-semibold tracking-tight text-slate-400 uppercase">
                           Embassy / Consulate
                         </p>
-                        <p className="text-sm font-bold text-slate-800 mt-1">{selectedEmbassy}</p>
+                        <p className="mt-1 text-sm font-bold text-slate-800">{selectedEmbassy}</p>
                       </div>
                     )}
                   </div>
 
-                  <div className="mt-6 pt-5 border-t border-slate-100">
-                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-tight">
+                  <div className="mt-6 border-t border-slate-100 pt-5">
+                    <p className="text-xs font-semibold tracking-tight text-slate-400 uppercase">
                       Selected Slot
                     </p>
-                    <div className="mt-2 flex items-center gap-3 bg-teal-50/50 border border-teal-100/50 p-4 rounded-xl">
-                      <div className="bg-teal-600 text-white rounded-lg p-2 flex items-center justify-center">
+                    <div className="mt-2 flex items-center gap-3 rounded-xl border border-teal-100/50 bg-teal-50/50 p-4">
+                      <div className="flex items-center justify-center rounded-lg bg-teal-600 p-2 text-white">
                         <Calendar className="h-5 w-5" />
                       </div>
                       <div>
                         <p className="text-sm font-bold text-slate-900">{formattedDate}</p>
-                        <p className="text-xs font-bold text-teal-700 mt-0.5">{slotTime}</p>
+                        <p className="mt-0.5 text-xs font-bold text-teal-700">{slotTime}</p>
                       </div>
                     </div>
                   </div>
@@ -2294,33 +2298,33 @@ const ConsultationBookingPageContent = () => {
               </div>
 
               {/* Shopping Cart Summary & Payment Choice */}
-              <div className="md:col-span-2 space-y-6">
-                <div className="bg-slate-50/55 border border-slate-200/60 rounded-2xl p-6 shadow-sm flex flex-col justify-between h-full">
+              <div className="space-y-6 md:col-span-2">
+                <div className="flex h-full flex-col justify-between rounded-2xl border border-slate-200/60 bg-slate-50/55 p-6 shadow-sm">
                   <div>
-                    <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 border-b pb-2 flex items-center gap-2">
+                    <h4 className="mb-4 flex items-center gap-2 border-b pb-2 text-sm font-bold tracking-wider text-slate-900 uppercase">
                       <ShoppingBag className="h-4 w-4 text-teal-600" />
                       Price Breakdown
                     </h4>
 
                     {/* Order line items */}
                     <div className="space-y-4">
-                      <div className="flex justify-between items-center text-sm">
-                        <span className="text-slate-600 font-medium">1x Expert Consultation</span>
-                        <span className="text-slate-800 font-bold">$99.00</span>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="font-medium text-slate-600">1x Expert Consultation</span>
+                        <span className="font-bold text-slate-800">$99.00</span>
                       </div>
 
                       {/* Plan Discounts / Benefits */}
                       {hasCredit && useCreditIfAvailable ? (
-                        <div className="flex justify-between items-center text-sm text-green-600">
-                          <span className="font-semibold flex items-center gap-1">
+                        <div className="flex items-center justify-between text-sm text-green-600">
+                          <span className="flex items-center gap-1 font-semibold">
                             <Sparkles className="h-3.5 w-3.5 animate-pulse" />
-                            Executive Credit Applied
+                            Consultation Credit Applied
                           </span>
                           <span className="font-bold">-$99.00</span>
                         </div>
                       ) : null}
 
-                      <div className="border-t border-slate-200 pt-4 mt-2 flex justify-between items-center">
+                      <div className="mt-2 flex items-center justify-between border-t border-slate-200 pt-4">
                         <span className="text-base font-bold text-slate-900">Total Due</span>
                         <span className="text-xl font-black text-slate-900">
                           {hasCredit && useCreditIfAvailable ? "$0.00" : "$99.00"}
@@ -2329,17 +2333,15 @@ const ConsultationBookingPageContent = () => {
                     </div>
 
                     {/* Show available credits message */}
-                    {tier === "executive" && (
-                      <div className="mt-5 p-3 rounded-xl bg-amber-50 border border-amber-100 flex items-center gap-2">
-                        <Crown className="h-4 w-4 text-amber-500 flex-shrink-0" />
+                    {remainingConsultations !== null && (
+                      <div className="mt-5 flex items-center gap-2 rounded-xl border border-amber-100 bg-amber-50 p-3">
+                        <Crown className="h-4 w-4 flex-shrink-0 text-amber-500" />
                         <span className="text-[11px] font-bold text-amber-800">
-                          {remainingConsultations !== null
-                            ? useCreditIfAvailable
-                              ? remainingConsultations === 1
-                                ? "0 Executive Consultation credits left"
-                                : `${remainingConsultations - 1} Executive Consultation credits left`
-                              : `${remainingConsultations} Executive Consultation credits left`
-                            : "Executive credits active."}
+                          {remainingConsultations === 0
+                            ? "No consultation credits left — pay $99 for this booking or buy an add-on."
+                            : useCreditIfAvailable
+                              ? `${Math.max(remainingConsultations - 1, 0)} consultation credits left after this booking`
+                              : `${remainingConsultations} consultation credits left`}
                         </span>
                       </div>
                     )}
@@ -2347,8 +2349,8 @@ const ConsultationBookingPageContent = () => {
 
                   {/* Credit Choice Selection if credits are available */}
                   {hasCredit && (
-                    <div className="mt-6 pt-5 border-t border-slate-200">
-                      <p className="text-xs font-bold text-slate-900 uppercase tracking-wide mb-3">
+                    <div className="mt-6 border-t border-slate-200 pt-5">
+                      <p className="mb-3 text-xs font-bold tracking-wide text-slate-900 uppercase">
                         Redemption Method
                       </p>
 
@@ -2360,7 +2362,7 @@ const ConsultationBookingPageContent = () => {
                             setUseCreditIfAvailable(true);
                           }}
                           className={cn(
-                            "flex items-center justify-between p-3.5 rounded-xl border-2 cursor-pointer transition-all duration-200",
+                            "flex cursor-pointer items-center justify-between rounded-xl border-2 p-3.5 transition-all duration-200",
                             useCreditIfAvailable
                               ? "border-teal-600 bg-teal-50/50 shadow-xs"
                               : "border-slate-200 hover:border-slate-300"
@@ -2369,7 +2371,7 @@ const ConsultationBookingPageContent = () => {
                           <div className="flex items-center gap-3">
                             <div
                               className={cn(
-                                "h-4 w-4 rounded-full border flex items-center justify-center",
+                                "flex h-4 w-4 items-center justify-center rounded-full border",
                                 useCreditIfAvailable
                                   ? "border-teal-600 bg-teal-600"
                                   : "border-slate-300"
@@ -2383,7 +2385,7 @@ const ConsultationBookingPageContent = () => {
                               <p className="text-xs font-bold text-slate-900">
                                 Use Plan Credit (Free)
                               </p>
-                              <p className="text-[10px] text-teal-700 font-medium mt-0.5">
+                              <p className="mt-0.5 text-[10px] font-medium text-teal-700">
                                 Consume 1 credit (
                                 {useCreditIfAvailable
                                   ? `${remainingConsultations - 1} left after booking`
@@ -2407,7 +2409,7 @@ const ConsultationBookingPageContent = () => {
                             setUseCreditIfAvailable(false);
                           }}
                           className={cn(
-                            "flex items-center justify-between p-3.5 rounded-xl border-2 cursor-pointer transition-all duration-200",
+                            "flex cursor-pointer items-center justify-between rounded-xl border-2 p-3.5 transition-all duration-200",
                             !useCreditIfAvailable
                               ? "border-teal-600 bg-teal-50/50 shadow-xs"
                               : "border-slate-200 hover:border-slate-300"
@@ -2416,7 +2418,7 @@ const ConsultationBookingPageContent = () => {
                           <div className="flex items-center gap-3">
                             <div
                               className={cn(
-                                "h-4 w-4 rounded-full border flex items-center justify-center",
+                                "flex h-4 w-4 items-center justify-center rounded-full border",
                                 !useCreditIfAvailable
                                   ? "border-teal-600 bg-teal-600"
                                   : "border-slate-300"
@@ -2430,7 +2432,7 @@ const ConsultationBookingPageContent = () => {
                               <p className="text-xs font-bold text-slate-900">
                                 Pay with Card ($99)
                               </p>
-                              <p className="text-[10px] text-slate-500 mt-0.5">
+                              <p className="mt-0.5 text-[10px] text-slate-500">
                                 Save your credits for future use
                               </p>
                             </div>
@@ -2448,11 +2450,11 @@ const ConsultationBookingPageContent = () => {
 
                   {/* Show Checkout badge if paying */}
                   {(!hasCredit || !useCreditIfAvailable) && (
-                    <div className="mt-5 p-4 rounded-xl bg-teal-50 border border-teal-100 flex items-start gap-3">
-                      <CreditCard className="h-5 w-5 text-teal-600 flex-shrink-0 mt-0.5" />
+                    <div className="mt-5 flex items-start gap-3 rounded-xl border border-teal-100 bg-teal-50 p-4">
+                      <CreditCard className="mt-0.5 h-5 w-5 flex-shrink-0 text-teal-600" />
                       <div>
                         <p className="text-xs font-bold text-teal-800">Secure Card Checkout</p>
-                        <p className="text-[11px] text-teal-700/80 mt-0.5 leading-relaxed">
+                        <p className="mt-0.5 text-[11px] leading-relaxed text-teal-700/80">
                           Payment is processed securely via Stripe. All major credit and debit cards
                           accepted.
                         </p>
@@ -2472,31 +2474,31 @@ const ConsultationBookingPageContent = () => {
 
   if (activeView === ("requests" as "booking" | "requests")) {
     return (
-      <div className="bg-gray-50 pb-12 pt-[55px]">
-        <div className="bg-linear-to-r from-teal-800 to-teal-600 text-white py-12 mb-10 shadow-lg relative overflow-hidden">
-          <div className="w-full px-4 relative z-10">
-            <div className="flex justify-between items-center mb-4">
+      <div className="bg-gray-50 pt-[55px] pb-12">
+        <div className="relative mb-10 overflow-hidden bg-linear-to-r from-teal-800 to-teal-600 py-12 text-white shadow-lg">
+          <div className="relative z-10 w-full px-4">
+            <div className="mb-4 flex items-center justify-between">
               <h1 className="text-3xl font-black tracking-tight">
                 My <span className="text-teal-200">Requests</span>
               </h1>
               <Button
                 onClick={() => setActiveView("booking")}
                 variant="outline"
-                className="text-white border-white/30 bg-white/10 hover:bg-white/20"
+                className="border-white/30 bg-white/10 text-white hover:bg-white/20"
               >
                 New Request
               </Button>
             </div>
-            <p className="text-teal-50 font-light">
+            <p className="font-light text-teal-50">
               Track and manage your existing consultation requests.
             </p>
           </div>
-          <Globe className="absolute -right-20 -top-20 h-64 w-64 text-white/5 transform -rotate-12" />
+          <Globe className="absolute -top-20 -right-20 h-64 w-64 -rotate-12 transform text-white/5" />
         </div>
 
-        <div className="w-full mx-auto px-4">
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden min-h-100">
-            <div className="p-6 border-b bg-gray-50 flex flex-col sm:flex-row gap-4 justify-between items-center">
+        <div className="mx-auto w-full px-4">
+          <div className="min-h-100 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl">
+            <div className="flex flex-col items-center justify-between gap-4 border-b bg-gray-50 p-6 sm:flex-row">
               <div className="relative w-full sm:max-w-md">
                 <input
                   type="text"
@@ -2504,13 +2506,13 @@ const ConsultationBookingPageContent = () => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && fetchUserBookings(searchQuery)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 transition text-sm"
+                  className="w-full rounded-lg border border-gray-300 py-2 pr-4 pl-10 text-sm transition focus:ring-2 focus:ring-teal-500"
                 />
-                <Globe className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                <Globe className="absolute top-2.5 left-3 h-4 w-4 text-gray-400" />
               </div>
               <Button
                 onClick={() => fetchUserBookings(searchQuery)}
-                className="bg-teal-600 text-sm py-2"
+                className="bg-teal-600 py-2 text-sm"
               >
                 Search
               </Button>
@@ -2522,10 +2524,10 @@ const ConsultationBookingPageContent = () => {
                   <Loader size="md" />
                 </div>
               ) : userBookings.length === 0 ? (
-                <div className="text-center py-20">
-                  <Calendar className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                <div className="py-20 text-center">
+                  <Calendar className="mx-auto mb-4 h-16 w-16 text-gray-300" />
                   <h3 className="text-lg font-medium text-gray-900">No requests found</h3>
-                  <p className="text-gray-500 mt-1">
+                  <p className="mt-1 text-gray-500">
                     We couldn&#39;t find any requests matching your criteria.
                   </p>
                 </div>
@@ -2534,17 +2536,17 @@ const ConsultationBookingPageContent = () => {
                   {userBookings.map((booking: Booking) => (
                     <div
                       key={booking.id}
-                      className="border border-gray-100 rounded-2xl p-5 hover:border-teal-200 hover:shadow-md transition bg-white flex flex-col gap-4"
+                      className="flex flex-col gap-4 rounded-2xl border border-gray-100 bg-white p-5 transition hover:border-teal-200 hover:shadow-md"
                     >
                       {/* Top Header Row */}
-                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-gray-100 pb-3">
+                      <div className="flex flex-col items-start justify-between gap-2 border-b border-gray-100 pb-3 sm:flex-row sm:items-center">
                         <div className="flex items-center gap-2">
-                          <span className="font-mono text-xs font-bold text-teal-700 bg-teal-50 px-2.5 py-1 rounded-md">
+                          <span className="rounded-md bg-teal-50 px-2.5 py-1 font-mono text-xs font-bold text-teal-700">
                             {booking.reference_id}
                           </span>
                           <span
                             className={cn(
-                              "text-[10px] uppercase font-black px-2.5 py-1 rounded-md flex items-center gap-1",
+                              "flex items-center gap-1 rounded-md px-2.5 py-1 text-[10px] font-black uppercase",
                               booking.status === "confirmed"
                                 ? "bg-green-100 text-green-700"
                                 : booking.status === "pending_approval"
@@ -2559,7 +2561,7 @@ const ConsultationBookingPageContent = () => {
                         </div>
                         <div className="flex items-center gap-1.5 text-xs text-gray-500">
                           <span className="font-medium text-gray-400">Requested Date:</span>
-                          <span className="font-semibold text-gray-750 bg-gray-50 px-2 py-0.5 rounded">
+                          <span className="text-gray-750 rounded bg-gray-50 px-2 py-0.5 font-semibold">
                             {new Date(booking.selected_slot).toLocaleString(undefined, {
                               month: "short",
                               day: "numeric",
@@ -2573,13 +2575,13 @@ const ConsultationBookingPageContent = () => {
                       {/* Content Row */}
                       <div className="space-y-3">
                         <div className="space-y-1">
-                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                          <p className="text-[10px] font-bold tracking-wider text-gray-400 uppercase">
                             Applicant
                           </p>
-                          <h4 className="font-extrabold text-base text-gray-900 leading-tight">
+                          <h4 className="text-base leading-tight font-extrabold text-gray-900">
                             {booking.full_name}
                           </h4>
-                          <p className="text-xs text-gray-500 mt-1">
+                          <p className="mt-1 text-xs text-gray-500">
                             Case Stage:{" "}
                             <span className="font-semibold text-gray-700">
                               {booking.visa_category} • {booking.issue_category}
@@ -2596,8 +2598,8 @@ const ConsultationBookingPageContent = () => {
                       {booking.status === "alternatives_proposed" &&
                         booking.alternate_slots &&
                         booking.alternate_slots.length > 0 && (
-                          <div className="mt-1 p-4 bg-purple-50 rounded-xl border border-purple-100">
-                            <p className="text-[10px] font-black uppercase text-purple-750 mb-2">
+                          <div className="mt-1 rounded-xl border border-purple-100 bg-purple-50 p-4">
+                            <p className="text-purple-750 mb-2 text-[10px] font-black uppercase">
                               Alternative Slots Proposed by Admin:
                             </p>
                             <div className="flex flex-wrap gap-2">
@@ -2608,7 +2610,7 @@ const ConsultationBookingPageContent = () => {
                                     handleAcceptAlternative(booking.id, new Date(slot))
                                   }
                                   variant="outline"
-                                  className="text-[10px] py-1.5 px-3 h-auto bg-white hover:bg-purple-650 hover:text-white hover:border-purple-650 transition-colors border-purple-200 text-purple-755 font-semibold"
+                                  className="hover:bg-purple-650 hover:border-purple-650 text-purple-755 h-auto border-purple-200 bg-white px-3 py-1.5 text-[10px] font-semibold transition-colors hover:text-white"
                                 >
                                   {new Date(slot).toLocaleDateString(undefined, {
                                     month: "short",
@@ -2637,14 +2639,14 @@ const ConsultationBookingPageContent = () => {
 
   if (showConfirmation) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden text-center">
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
+        <div className="w-full max-w-md overflow-hidden rounded-2xl bg-white text-center shadow-xl">
           <div className="bg-teal-600 py-10">
-            <CheckCircle className="h-20 w-20 text-white mx-auto" />
+            <CheckCircle className="mx-auto h-20 w-20 text-white" />
           </div>
           <div className="p-8">
-            <h2 className="text-2xl font-bold mb-2">Request Received!</h2>
-            <p className="text-gray-600 mb-6">
+            <h2 className="mb-2 text-2xl font-bold">Request Received!</h2>
+            <p className="mb-6 text-gray-600">
               Your reference ID is:{" "}
               <span className="font-mono font-bold text-teal-700">{referenceId}</span>
             </p>
@@ -2664,9 +2666,9 @@ const ConsultationBookingPageContent = () => {
 
   if (authLoading) {
     return (
-      <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#fafcff] overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-[100px] pointer-events-none -translate-y-1/2 translate-x-1/3" />
-        <div className="absolute bottom-0 left-0 w-80 h-80 bg-purple-500/5 rounded-full blur-[80px] pointer-events-none translate-y-1/2 -translate-x-1/3" />
+      <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center overflow-hidden bg-[#fafcff]">
+        <div className="bg-primary/5 pointer-events-none absolute top-0 right-0 h-96 w-96 translate-x-1/3 -translate-y-1/2 rounded-full blur-[100px]" />
+        <div className="pointer-events-none absolute bottom-0 left-0 h-80 w-80 -translate-x-1/3 translate-y-1/2 rounded-full bg-purple-500/5 blur-[80px]" />
         <Loader size="lg" text="Loading profile..." />
       </div>
     );
@@ -2685,37 +2687,38 @@ const ConsultationBookingPageContent = () => {
   }
 
   return (
-    <div className="bg-gray-50 pb-12 pt-[55px]">
-      <div className="bg-linear-to-r from-teal-800 to-teal-600 text-white py-16 mb-10 relative overflow-hidden">
-        <div className="w-full px-4 relative z-10">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div className="bg-gray-50 pt-[55px] pb-12">
+      <div className="relative mb-10 overflow-hidden bg-linear-to-r from-teal-800 to-teal-600 py-16 text-white">
+        <div className="relative z-10 w-full px-4">
+          <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
             <div>
-              <h1 className="text-4xl md:text-5xl font-black mb-4">
+              <h1 className="mb-4 text-4xl font-black md:text-5xl">
                 Book <span className="text-teal-200">Expert Consultation</span>
               </h1>
-              <p className="text-xl text-teal-50 max-w-2xl font-light">
+              <p className="max-w-2xl text-xl font-light text-teal-50">
                 Personalized guidance for your U.S. immigration journey.
               </p>
-              {tier === "executive" && (
+              {remainingConsultations !== null && (
                 <div className="mt-5 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white ring-1 ring-white/20 backdrop-blur-sm">
                   <Crown className="h-4 w-4 text-amber-200" />
                   {consultationCreditsLoading ? (
                     <span>Loading consultation credits...</span>
-                  ) : remainingConsultations !== null ? (
+                  ) : (
                     <span>
                       Remaining consultation credits:{" "}
-                      {currentStep === 4 && useCreditIfAvailable
+                      {currentStep === 4 &&
+                      useCreditIfAvailable &&
+                      remainingConsultations !== null &&
+                      remainingConsultations > 0
                         ? remainingConsultations - 1
                         : remainingConsultations}
-                      /2
+                      /{consultationCreditLimit}
                     </span>
-                  ) : (
-                    <span>Consultation credits unavailable</span>
                   )}
                 </div>
               )}
             </div>
-            <div className="flex flex-col items-start md:items-end gap-4 shrink-0">
+            <div className="flex shrink-0 flex-col items-start gap-4 md:items-end">
               <QuickAccessButton
                 item={{
                   id: "book-a-consultation",
@@ -2723,7 +2726,7 @@ const ConsultationBookingPageContent = () => {
                   href: "/book-consultation",
                   icon_name: "Briefcase",
                 }}
-                className="!text-white !border-white/25 hover:!bg-white/20 focus-visible:ring-white/50"
+                className="!border-white/25 !text-white hover:!bg-white/20 focus-visible:ring-white/50"
               />
               <div className="flex gap-3">
                 <Button
@@ -2731,10 +2734,10 @@ const ConsultationBookingPageContent = () => {
                     setActiveView("booking");
                   }}
                   className={cn(
-                    "px-6 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2",
+                    "flex items-center gap-2 rounded-full px-6 py-2 text-sm font-bold transition-all",
                     activeView === ("booking" as "booking" | "requests")
                       ? "bg-white text-teal-800 shadow-lg"
-                      : "bg-white/10 text-white hover:bg-white/20 border border-white/20"
+                      : "border border-white/20 bg-white/10 text-white hover:bg-white/20"
                   )}
                 >
                   Book New
@@ -2742,10 +2745,10 @@ const ConsultationBookingPageContent = () => {
                 <Button
                   onClick={() => setActiveView("requests")}
                   className={cn(
-                    "px-6 py-2 rounded-full text-sm font-bold transition-all",
+                    "rounded-full px-6 py-2 text-sm font-bold transition-all",
                     activeView === ("requests" as "booking" | "requests")
                       ? "bg-white text-teal-800 shadow-lg"
-                      : "bg-white/10 text-white hover:bg-white/20 border border-white/20"
+                      : "border border-white/20 bg-white/10 text-white hover:bg-white/20"
                   )}
                 >
                   My Requests
@@ -2757,15 +2760,15 @@ const ConsultationBookingPageContent = () => {
         <Globe className="absolute -right-20 -bottom-20 h-80 w-80 text-white/5" />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 relative z-20">
+      <div className="relative z-20 mx-auto max-w-7xl px-4">
         {activeView === "booking" && (
-          <div className="bg-white rounded-3xl shadow-2xl border border-teal-100 overflow-hidden slide-up">
+          <div className="slide-up overflow-hidden rounded-3xl border border-teal-100 bg-white shadow-2xl">
             {/* Improved Progress Tracker — metro-line stepper */}
-            <div className="bg-gray-50/50 border-b border-gray-100 px-3 py-6 sm:p-8">
-              <div className="flex items-start justify-between max-w-2xl mx-auto relative">
+            <div className="border-b border-gray-100 bg-gray-50/50 px-3 py-6 sm:p-8">
+              <div className="relative mx-auto flex max-w-2xl items-start justify-between">
                 {/* Connecting rail — inset so it runs exactly dot-to-dot
                     (first/last station centers sit at 12.5% / 87.5% of the row) */}
-                <div className="absolute top-4 sm:top-5 left-[12.5%] right-[12.5%] h-0.5 bg-gray-200 -z-10">
+                <div className="absolute top-4 right-[12.5%] left-[12.5%] -z-10 h-0.5 bg-gray-200 sm:top-5">
                   <div
                     className="h-full bg-teal-600 transition-all duration-500"
                     style={{ width: `${((currentStep - 1) / 3) * 100}%` }}
@@ -2786,8 +2789,8 @@ const ConsultationBookingPageContent = () => {
                       className={cn(
                         "flex h-8 w-8 items-center justify-center rounded-full border-2 transition-all duration-300 sm:h-10 sm:w-10",
                         currentStep >= item.step
-                          ? "bg-teal-600 border-teal-600 text-white shadow-lg shadow-teal-200"
-                          : "bg-white border-gray-200 text-gray-400"
+                          ? "border-teal-600 bg-teal-600 text-white shadow-lg shadow-teal-200"
+                          : "border-gray-200 bg-white text-gray-400"
                       )}
                     >
                       {currentStep > item.step ? (
@@ -2798,7 +2801,7 @@ const ConsultationBookingPageContent = () => {
                     </div>
                     <span
                       className={cn(
-                        "text-center text-[10px] font-bold uppercase leading-tight tracking-tight sm:text-xs",
+                        "text-center text-[10px] leading-tight font-bold tracking-tight uppercase sm:text-xs",
                         currentStep >= item.step ? "text-teal-900" : "text-gray-400"
                       )}
                     >
@@ -2811,14 +2814,14 @@ const ConsultationBookingPageContent = () => {
 
             <form onSubmit={handleSubmit} className="p-4 sm:p-8 md:p-12">
               <div>{renderStepContent()}</div>
-              <div className="mt-4 px-4 py-3 sm:px-8 sm:py-5 bg-gray-50 border-t flex justify-between items-center gap-4">
+              <div className="mt-4 flex items-center justify-between gap-4 border-t bg-gray-50 px-4 py-3 sm:px-8 sm:py-5">
                 <Button
                   key="prev-btn"
                   type="button"
                   variant="ghost"
                   onClick={prevStep}
                   disabled={currentStep === 1}
-                  className="bg-teal-600 hover:bg-teal-700 text-xs sm:text-sm gap-1 sm:gap-2 px-2 sm:px-4 text-white"
+                  className="gap-1 bg-teal-600 px-2 text-xs text-white hover:bg-teal-700 sm:gap-2 sm:px-4 sm:text-sm"
                 >
                   <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4" /> Previous
                 </Button>
@@ -2827,7 +2830,7 @@ const ConsultationBookingPageContent = () => {
                     key="next-btn"
                     type="button"
                     onClick={handleNext}
-                    className="bg-teal-600 hover:bg-teal-700 text-xs sm:text-sm gap-1 sm:gap-2 px-4 sm:px-8"
+                    className="gap-1 bg-teal-600 px-4 text-xs hover:bg-teal-700 sm:gap-2 sm:px-8 sm:text-sm"
                   >
                     Next <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
                   </Button>
@@ -2836,7 +2839,7 @@ const ConsultationBookingPageContent = () => {
                     key="submit-btn"
                     type="submit"
                     disabled={!formData.selected_slot || loading}
-                    className="bg-teal-600 hover:bg-teal-700 text-xs sm:text-sm gap-1 sm:gap-2 px-2 sm:px-8"
+                    className="gap-1 bg-teal-600 px-2 text-xs hover:bg-teal-700 sm:gap-2 sm:px-8 sm:text-sm"
                   >
                     {loading
                       ? "Processing..."
@@ -2874,10 +2877,10 @@ export default function ConsultationBookingPage() {
   return (
     <React.Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="flex min-h-screen items-center justify-center bg-gray-50">
           <div className="flex flex-col items-center gap-4">
-            <div className="w-12 h-12 border-4 border-teal-600 border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-gray-500 font-medium">Loading Booking System...</p>
+            <div className="h-12 w-12 animate-spin rounded-full border-4 border-teal-600 border-t-transparent"></div>
+            <p className="font-medium text-gray-500">Loading Booking System...</p>
           </div>
         </div>
       }
@@ -2932,19 +2935,19 @@ const Button: React.FC<ButtonProps> = ({
 function CollapsibleAdminNotes({ notes }: { notes: string }) {
   const [isOpen, setIsOpen] = useState(false);
   return (
-    <div className="mt-2 border border-teal-100 rounded-lg overflow-hidden">
+    <div className="mt-2 overflow-hidden rounded-lg border border-teal-100">
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between px-3 py-2 bg-teal-50/70 hover:bg-teal-50 text-xs font-bold text-teal-800 transition-colors focus:outline-none"
+        className="flex w-full items-center justify-between bg-teal-50/70 px-3 py-2 text-xs font-bold text-teal-800 transition-colors hover:bg-teal-50 focus:outline-none"
       >
         <span>Admin Note</span>
         <ChevronDown
-          className={`w-3.5 h-3.5 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+          className={`h-3.5 w-3.5 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
         />
       </button>
       {isOpen && (
-        <div className="px-3 py-2.5 bg-white text-xs text-slate-700 border-t border-teal-50 leading-relaxed">
+        <div className="border-t border-teal-50 bg-white px-3 py-2.5 text-xs leading-relaxed text-slate-700">
           {notes}
         </div>
       )}
