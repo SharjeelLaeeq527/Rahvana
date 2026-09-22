@@ -54,6 +54,12 @@ export interface FeatureEntitlement {
   addon?: AddonInfo;
   upgradeTarget?: PlanTier;
   hint?: string;
+  /**
+   * Credit-pool add-ons: each purchase of `addon` grants this many tool
+   * credits on top of the plan's included credits (instead of the default
+   * "purchased add-on → full access" behaviour). See `getEffectiveEntitlement`.
+   */
+  creditsPerAddon?: number;
 }
 
 type TierMap = Record<PlanTier, FeatureEntitlement>;
@@ -75,6 +81,9 @@ const limited = (count: number, addon?: AddonInfo): FeatureEntitlement => ({
   limit: count,
   addon,
 });
+
+/** Credits granted per Photo Booth add-on purchase (stacks on plan credits). */
+export const PHOTOBOOTH_CREDITS_PER_ADDON = 2;
 
 /** Must upgrade — no add-on option. */
 const lockedUpgrade = (target: PlanTier = "premium"): FeatureEntitlement => ({
@@ -102,7 +111,7 @@ export const ADDON: Record<string, AddonInfo> = {
     id: "photo",
     name: "Photo Booth Credits",
     price: 15,
-    unit: "per photo",
+    unit: "for 2 credits",
   },
   sponsor: {
     id: "sponsor",
@@ -371,13 +380,25 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
   },
 
   /**
-   * Photo Booth passport photo tool.
-   * Basic: buy credits. Premium: 2 credits included. Executive: unlimited.
+   * Photo Booth passport photo tool — credit-pool model:
+   *  - Each `photo` add-on purchase grants PHOTOBOOTH_CREDITS_PER_ADDON
+   *    credits on ANY tier (plan-independent) and stacks with plan credits.
+   *  - Premium includes 2 credits; Executive is unlimited.
+   *  - Without a purchase: Free & Basic must buy credits or upgrade.
    */
   photo_booth: {
-    free: lockedBuy(ADDON.photo, "premium"),
-    basic: lockedBuy(ADDON.photo, "premium"),
-    premium: limited(2, ADDON.photo),
+    free: {
+      ...lockedBuy(ADDON.photo, "premium"),
+      creditsPerAddon: PHOTOBOOTH_CREDITS_PER_ADDON,
+    },
+    basic: {
+      ...lockedBuy(ADDON.photo, "premium"),
+      creditsPerAddon: PHOTOBOOTH_CREDITS_PER_ADDON,
+    },
+    premium: {
+      ...limited(2, ADDON.photo),
+      creditsPerAddon: PHOTOBOOTH_CREDITS_PER_ADDON,
+    },
     executive: full(),
   },
 

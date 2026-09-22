@@ -322,11 +322,11 @@ export default function PassportPhotoTool({
                     ? "Checking your remaining credits..."
                     : remainingCredits !== null
                       ? remainingCredits > 0
-                        ? `${remainingCredits} premium credit${remainingCredits === 1 ? "" : "s"} remaining`
+                        ? `${remainingCredits} photo credit${remainingCredits === 1 ? "" : "s"} remaining`
                         : tier === "premium"
-                          ? "No credits left. Click to upgrade to Executive."
-                          : "No credits left. Upgrade required."
-                      : "Upgrade required for premium photo credits"}
+                          ? "No credits left. Buy more credits or upgrade to Executive."
+                          : "No credits left. Buy more credits or upgrade to unlock."
+                      : "Photo Booth is not included in your plan — buy credits or upgrade."}
                 </p>
               </div>
               <div
@@ -344,9 +344,7 @@ export default function PassportPhotoTool({
                   : remainingCredits !== null
                     ? remainingCredits > 0
                       ? `${remainingCredits} left`
-                      : tier === "premium"
-                        ? "No credits left"
-                        : "Locked"
+                      : "No credits left"
                     : "Locked"}
               </div>
             </div>
@@ -505,6 +503,13 @@ export default function PassportPhotoTool({
           feature={"photo_booth"}
           onClose={() => setShowUpgradeModal(false)}
           onConfirm={(action: "upgrade" | "addon", target?: string) => {
+            if (action === "addon") {
+              // Add-on ids are NOT plan ids — land on the pricing page's Tools
+              // tab with this add-on pre-added to the order summary.
+              const addonId = typeof target === "string" ? target : "photo";
+              window.location.href = `/pricing?mode=tools&addons=${encodeURIComponent(addonId)}`;
+              return;
+            }
             // Redirect to pricing page with the selected plan pre-selected
             const plan = typeof target === "string" ? target : "premium";
             window.location.href = `/pricing?plan=${plan}`;
