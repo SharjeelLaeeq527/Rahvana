@@ -108,17 +108,16 @@ export async function POST(request: Request) {
       console.warn("[candidate/delete] Non-fatal cleanup warning for user_guides:", err);
     }
 
-    return NextResponse.json({
-      success: true,
-      message: `Candidate ${candidateId} deleted successfully.`,
-      candidates: updatedCandidates,
-      activeCandidateId: nextActiveId,
-    });
-  } catch (error) {
-    console.error("[candidate/delete] Unexpected error:", error);
-    return NextResponse.json({ error: msg(E.AUTH_UNEXPECTED_ERROR) }, { status: 500 });
-  }
-}
+    // 6. Clean up the candidate's own journey rows. Each candidate maps to a journey_type
+    // carrying the candidate suffix (e.g. "ir5_candidate-2" / "ir5_candidate2"), so match on
+    // that suffix. candidate-1 (the base journey) is already blocked above, so this only ever
+    // removes secondary candidates' journeys - never the primary base journey. Leaving them
+    // behind would also keep the SiteHeader switcher visible (its gate counts journeys).
+    try {
+      const cleanCandId = candidateId.toLowerCase().replace(/[^a-z0-9]/g, "");
+      await supabase
+        .from("journeys")
+        .delete()
         .eq("user_id", user.id)
         .or(`journey_type.ilike.%_${candidateId}%,journey_type.ilike.%_${cleanCandId}%`);
     } catch (err) {
@@ -128,7 +127,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       message: `Candidate ${candidateId} deleted successfully.`,
-      candidates: finalCandidates,
+      candidates: updatedCandidates,
       activeCandidateId: nextActiveId,
     });
   } catch (error) {

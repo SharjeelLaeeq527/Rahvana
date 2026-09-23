@@ -254,6 +254,26 @@ source). Add-ons come from
 (`JOURNEY_LOCK_DAYS = 14`) locks a journey 14 days after `metadata.ceacIssuedAt`
 (distinct from entitlement gating).
 
+**Per-journey (per-category) tier resolution.** Entitlements resolve against the **active
+journey's category**, not just the account. `PlanContext` reads BOTH
+`user_profiles.subscription_tier` (`accountTier`) AND every `journeys.subscription_tier` in
+parallel, building a `journeyTiers` map keyed by base category
+(`getBaseVisaCategory(journey_type)` -> tier), and exposes it. The effective `realTier` for the
+active journey is: the `journeyTiers[activeCategory]` when present; else, if ANY journey has an
+explicit tier, an **unpurchased category resolves to `free`** (so an IR-1 candidate added on an
+IR-5-purchased account stays free/preview until IR-1 is bought - the existing Stripe flow, no
+new billing); else the legacy `accountTier` (single-journey / pre-`subscription_tier`-column
+accounts are never regressed). The active category comes from
+`candidateCtx.activeCandidate.visaCategory` / `activeJourneyBase`; `maxActiveJourneyTier` stays
+the account summary. This is the existing per-journey `journeys.subscription_tier` column
+(`20260917` migration) that `stripe/verify-session` already writes - no new entitlement or
+payment architecture. Verified by `__tests__/candidate/candidate-entitlements.test.ts` (IR-5
+premium + IR-1 unpurchased -> locked; buy IR-1 -> unlocks; no journey tiers -> account
+fallback). One caveat to watch: if a paying account's active candidate is a stale DEFAULTED
+category (e.g. an IR-1 account whose `profile.visaType` is unset defaults the candidate to
+IR-5), the active category can be wrong; the defaulted-fallback neutralization in
+`CandidateContext` mitigates this but relies on the profile carrying the real category.
+
 ### 4.4 Auto-fill (`lib/autoFill/*`)
 
 Bidirectional mapping between the **MasterProfile** and any USCIS form.
@@ -350,7 +370,15 @@ and each candidate maps to a distinct `journey_type` via
 data is auto-shared across candidates (`SHARED_PETITIONER_FIELDS`) while beneficiary data is
 isolated (`CANDIDATE_SPECIFIC_FIELDS`). The vault, roadmap, tools and forms all scope by the
 active candidate's journey (via `useCandidate()` + `journey_id`); the vault therefore reuses
-the existing per-`journey_id` scoping (no `candidate_id` column). `CandidateContext` also
+the existing per-`journey_id` scoping (no `candidate_id` column). **Tools are journey-aware:**
+case-status (`uscis_case_history` tags `_candidateId`/`_candidateName`), interview-prep, the
+221g planner and the Sponsorship (I-864) calculator all resolve the active journey/candidate
+from context so their state/results switch with the candidate (shared petitioner inputs stay
+shared). **Candidate deletion** is `POST /api/candidate/delete`: it removes the candidate from
+`profile_details.candidates`, resets `activeCandidateId`, and cleans up that candidate's
+`user_guides` and **its suffixed `journeys` rows** (so a deleted candidate does not leave an
+orphaned journey that would keep the switcher's 2+ gate satisfied); candidate-1 (the base
+journey) can never be deleted. `CandidateContext` also
 exposes the canonical scope of the active journey: **`activeJourneyBase`** (e.g. "IR-1",
 "IR-5") and **`activeJourneyKey`** (the `journey_type` key, `getCandidateJourneyKey(active
 candidate.visaCategory, id)`), derived from the active candidate's own `visaCategory` (not an
@@ -535,7 +563,14 @@ into `user_profiles.profile_details`** so tools share one profile.
   (`usePDFStore`), progress tree (`lib/progress-tree-store.ts`), guides nav-guard.
 - **Journey state:** `useWizard` (optimistic local + Supabase) is authoritative for the
   active journey.
-- **Form drafts:** localStorage + backend (`visa_forms_draft` table) for multi-step forms.
+- **Form drafts:** localStorage + backend (`visa_forms_draft` table) for multi-step forms,
+  **scoped by the active journey key** (`MultiStepForm` uses `useCandidate().activeJourneyKey`
+  as `draftJourneyKey`; the localStorage backup key, the hydration key, and the
+  `visa-forms/[formCode]/progress` reads/writes are all journey-keyed). Reads fall back to a
+  legacy `"global"` draft when no journey-specific one exists (backward compatible). The form's
+  beneficiary fields are also overridden from the active `CandidateProfile`
+  (`fullName`/`name`/`dateOfBirth`/`placeOfBirth`/`passportNumber`/`cnic`) so each candidate's
+  form pre-fills the right person.
 
 ---
 
@@ -621,6 +656,7 @@ Python backend. Highlights:
 | `stripe/*` | `checkout`, `verify-session` (idempotent self-heal & source of truth), `webhook`, `portal` | Stripe |
 | `plan/*` | `plan/reconcile` (never-downgrade tier self-heal) | Supabase |
 | `journeys|chapters|steps|case_data` | journey CRUD, `journeys/initialize` (combined load + bg step-sync), `case_data/validate` | Supabase, journey engines |
+| `candidate/*` | `candidate/delete` (remove candidate from `profile_details.candidates` + cleanup its `user_guides` and suffixed `journeys` rows; candidate-1 protected) | Supabase |
 | `journey/*` | `journey/marriage-check` (singular; distinct from `journeys`) | Supabase |
 | `documents/*` | upload (validate + encrypt + compress), download/preview/export, `config`, `mark-read`, `extract-{passport,cnic,birth,marriage,divorce}` | Supabase Storage, Python, Gemini |
 | `upload/*` | generic authenticated file upload tied to an appointment | Supabase Storage |

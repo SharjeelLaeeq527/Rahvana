@@ -142,6 +142,8 @@ export async function POST(req: NextRequest) {
 
     // The useful details may be inside a "case_status" object, or the whole response may be the status.
     // This line picks whichever one actually holds the data.
+    const caseStatus = caseData?.case_status ?? caseData;
+
     // Extract optional candidate association for multi-beneficiary scoping
     const candidateId = body?.candidateId || null;
     const candidateName = body?.candidateName || null;

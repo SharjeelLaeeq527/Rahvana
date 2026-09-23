@@ -426,31 +426,20 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
         if (activeCandidate.fullName) {
           candBeneficiary.fullName = activeCandidate.fullName;
         }
-        if (activeCandidate.firstName) {
+        // Structured name is on the candidate's `name` (PersonName), not flat first/last fields.
+        const candName = activeCandidate.name;
+        if (candName?.first || candName?.middle || candName?.last) {
           candBeneficiary.name = {
             ...((candBeneficiary.name as Record<string, unknown>) || {}),
-            first: activeCandidate.firstName,
-          };
-        }
-        if (activeCandidate.middleName) {
-          candBeneficiary.name = {
-            ...((candBeneficiary.name as Record<string, unknown>) || {}),
-            middle: activeCandidate.middleName,
-          };
-        }
-        if (activeCandidate.lastName) {
-          candBeneficiary.name = {
-            ...((candBeneficiary.name as Record<string, unknown>) || {}),
-            last: activeCandidate.lastName,
+            ...(candName?.first ? { first: candName.first } : {}),
+            ...(candName?.middle ? { middle: candName.middle } : {}),
+            ...(candName?.last ? { last: candName.last } : {}),
           };
         }
         if (activeCandidate.dateOfBirth) candBeneficiary.dateOfBirth = activeCandidate.dateOfBirth;
         if (activeCandidate.placeOfBirth) candBeneficiary.placeOfBirth = activeCandidate.placeOfBirth;
         if (activeCandidate.passportNumber) candBeneficiary.passportNumber = activeCandidate.passportNumber;
-        if (activeCandidate.passportCountry) candBeneficiary.passportCountry = activeCandidate.passportCountry;
-        if (activeCandidate.passportIssueDate) candBeneficiary.passportIssueDate = activeCandidate.passportIssueDate;
-        if (activeCandidate.passportExpiry) candBeneficiary.passportExpiry = activeCandidate.passportExpiry;
-        if (activeCandidate.nationalId) candBeneficiary.cnic = activeCandidate.nationalId;
+        if (activeCandidate.cnic) candBeneficiary.cnic = activeCandidate.cnic;
 
         profileForOverride.beneficiary = candBeneficiary;
       }
@@ -874,7 +863,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
         showToast(
           "Free Preview: You've reached the 15-question limit. Redirecting to review page...",
           "info",
-          6000
+          { duration: 6000 }
         );
         setView("review");
         return;
@@ -1038,7 +1027,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
           showToast(
             "Free Preview: You've reached the 15-question limit. Please unlock the tool or upgrade to access new questions.",
             "info",
-            5000
+            { duration: 5000 }
           );
           setView("review");
           return;
@@ -1069,7 +1058,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
           showToast(
             "Free Preview: You've reached the 15-question limit. Please unlock the tool or upgrade to access new sections.",
             "info",
-            5000
+            { duration: 5000 }
           );
           setView("review");
           return;
