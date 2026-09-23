@@ -27,7 +27,6 @@ import {
   isSameJourneyType,
 } from "@/lib/document-vault/journey-mapping";
 import { isDocumentShareableAcrossCandidates } from "@/lib/document-vault/candidate-sharing";
-import { getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
 
 interface DocumentUploadModalProps {
   open: boolean;
@@ -136,7 +135,6 @@ export function DocumentUploadModal({
 
   const otherJourneys = useMemo(() => {
     const activeJourney = effectiveUserJourneys.find((j) => j.id === effectiveActiveJourneyId);
-    const activeBase = activeJourney ? getBaseVisaCategory(activeJourney.journey_type) : null;
 
     // Collapse duplicate journey rows to one entry per distinct journey_type BEFORE the
     // per-row filter (the filter only compares each row to the ACTIVE journey, so two rows
@@ -149,22 +147,22 @@ export function DocumentUploadModal({
       // journey UUID, so passing it here was a permanent no-op).
       if (isSameJourneyType(j.journey_type, activeJourney?.journey_type)) return false;
 
-      // Only offer OTHER candidates within the SAME case (same base visa category). A
-      // different-category journey - notably IR-1, which is a separate single-beneficiary
-      // journey - is NEVER a candidate share target. The candidate system is isolated from
-      // IR-1 by design.
-      if (!activeBase || getBaseVisaCategory(j.journey_type) !== activeBase) return false;
-
+      // Offer EVERY other journey on the account, ACROSS categories (e.g. an IR-1 spouse
+      // journey and an IR-5 parent journey on the same petitioner). Two rules decide whether
+      // this specific document is offered to a given target journey:
+      //   1. It must be a petitioner/sponsor-side document (isDocumentShareableAcrossCandidates)
+      //      - a genuinely-same document. Beneficiary-specific docs (passport, CNIC, birth,
+      //      medical...) differ per person and are never offered.
+      //   2. It must actually apply to the TARGET journey's category
+      //      (isDocumentApplicableToJourney) - so we never offer a doc to a journey that does
+      //      not use it.
+      if (!isDocumentShareableAcrossCandidates(documentDef)) return false;
       if (!isDocumentApplicableToJourney(documentDef.id, documentDef.name, j.journey_type))
         return false;
 
-      // Between sibling candidates (e.g. the other parent) only offer documents that are
-      // shareable across candidates; parent-specific docs (passport, CNIC, birth, medical,
-      // ...) are never offered.
-      if (!isDocumentShareableAcrossCandidates(documentDef)) return false;
-
       return true;
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [effectiveUserJourneys, effectiveActiveJourneyId, documentDef]);
 
   const [sharedJourneyIds, setSharedJourneyIds] = useState<string[]>([]);
@@ -173,9 +171,11 @@ export function DocumentUploadModal({
 
   useEffect(() => {
     if (open) {
-      // Opt-in by design: nothing pre-selected. The user must explicitly tick a target to
-      // share this document with another candidate/journey.
-      setSharedJourneyIds([]);
+      // Checked by default (opt-out): a genuinely-same petitioner document (e.g. the
+      // petitioner's passport or citizenship proof) is pre-selected for every applicable
+      // journey so the petitioner does not have to re-upload the same file separately for
+      // each visa category. The user can untick any target they do not want.
+      setSharedJourneyIds(otherJourneys.map((j) => j.id));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, otherJourneysKey]);
@@ -938,8 +938,9 @@ export function DocumentUploadModal({
                   Cross-share this document
                 </label>
                 <p className="mb-1 text-[11px] leading-normal text-slate-500">
-                  Select which of your other active immigration journeys should also receive this
-                  uploaded file:
+                  This is a shared petitioner document, so it is added to your other journeys
+                  below by default. That way you do not have to upload the same file again for
+                  each visa category. Untick any journey you do not want it added to:
                 </p>
                 <div className="space-y-2.5 pt-1">
                   {otherJourneys.map((j) => {

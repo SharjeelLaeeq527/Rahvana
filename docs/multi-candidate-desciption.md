@@ -244,18 +244,26 @@ Interactive modal for adding a 2nd parent (IR-5) or additional children (IR-2):
 - Ensured uploaded documents attach `effectiveActiveJourneyId`, tagging files with the active candidate's journey in Supabase storage and database.
 
 #### 17. Cross-candidate sharing, delete safety, and scoping robustness `[document-vault]`
-- **Cross-candidate document sharing** rides the existing **cross-journey** share
-  (`shareWithJourneyIds`), since each candidate is its own journey. Both upload modals
-  (`DocumentUploadModal`, `MultipleDocumentUploadModal`) default share targets to
-  **unchecked (opt-in)** and only offer **other candidates within the SAME base visa
-  category** (siblings, via `getBaseVisaCategory`). A different-category journey - notably
-  **IR-1** - is never offered as a share target, so IR-1 stays fully isolated from the
-  candidate system. Between siblings, only documents passing
-  `isDocumentShareableAcrossCandidates` (`lib/document-vault/candidate-sharing.ts`) are
-  offered: petitioner / joint-sponsor / household docs are shareable by default, any
-  BENEFICIARY-role doc is candidate-specific (passport, CNIC, birth, medical are never
-  offered between parents), and an explicit `shareableAcrossCandidates` flag on a
-  `DocumentDefinition` overrides.
+- **Cross-candidate / cross-journey document sharing** rides the existing **cross-journey**
+  share (`shareWithJourneyIds`), since each candidate is its own journey. The rule is
+  **category-AGNOSTIC**: both upload modals (`DocumentUploadModal`,
+  `MultipleDocumentUploadModal`) offer **every other journey on the account, across
+  categories** - a sibling candidate (the other parent) AND a different-category journey
+  (e.g. the same petitioner's **IR-1** spouse journey). IR-1 is a normal share target now,
+  no longer isolated. Which specific document is offered to a given target is decided by two
+  rules: (1) `isDocumentShareableAcrossCandidates`
+  (`lib/document-vault/candidate-sharing.ts`) - petitioner / joint-sponsor / household docs
+  shareable by default, any BENEFICIARY-role doc is person-specific (passport, CNIC, birth,
+  medical are never offered to ANY other journey), explicit `shareableAcrossCandidates`
+  override on a `DocumentDefinition`; and (2) `isDocumentApplicableToJourney` - the doc must
+  apply to the TARGET journey's visa category. Share targets are **checked by DEFAULT
+  (opt-out)** so a shared petitioner document (e.g. the petitioner's passport or citizenship
+  proof) is not re-uploaded separately per visa category; the user can untick any target
+  (the multi-upload modal remembers manual unticks via `manuallyUncheckedIds`). **The upload
+  route re-enforces both rules server-side** (`app/api/documents/upload/route.ts`): it
+  RLS-scopes to the user's own journeys and drops any share target that is not the user's
+  journey, is not a shareable doc, or does not apply to the target category - the client
+  list is never trusted.
 - **Cross-share list clarity (both upload modals).** The "Cross-share this document" list
   shows **one row per distinct `journey_type`** (`dedupeJourneysByType`) - duplicate journey
   rows never render twice. Because two siblings can share the same base category (e.g. two

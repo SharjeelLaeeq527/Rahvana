@@ -205,6 +205,18 @@ describe("Multi-Candidate Profile Management & Sync Engine", () => {
       expect(getBaseVisaCategory("ir-2")).toBe("IR-2");
       expect(getBaseVisaCategory("ir2_candidate3")).toBe("IR-2");
     });
+
+    it("returns explicit UNKNOWN for empty/null/unresolvable input (decision 5, NOT IR-5)", () => {
+      // The old behavior silently returned "IR-5" here, masking a missing/mis-mapped
+      // journey_type. It must now surface as UNKNOWN.
+      expect(getBaseVisaCategory("")).toBe("UNKNOWN");
+      expect(getBaseVisaCategory(null)).toBe("UNKNOWN");
+      expect(getBaseVisaCategory(undefined)).toBe("UNKNOWN");
+      // A string that cleans to nothing (only separators) is also unresolvable.
+      expect(getBaseVisaCategory("_")).toBe("UNKNOWN");
+      // None of these should ever be silently IR-5.
+      expect(getBaseVisaCategory("")).not.toBe("IR-5");
+    });
   });
 
   describe("getCandidateJourneyKey", () => {

@@ -9,6 +9,7 @@ import {
   BellOff,
   ChevronDown,
   User as UserIcon,
+  UserPlus as UserPlusIcon,
   LogOut,
   Zap,
   Briefcase,
@@ -57,9 +58,13 @@ import { ConfirmationModal } from "../shared/ConfirmationModal";
 import { requestNavigation } from "@/lib/guides/navigationGuardStore";
 import { ir1journeyHref, ir5journeyHref } from "@/lib/constants/routes";
 import { CandidateSwitcherTray } from "@/app/components/candidate/CandidateSwitcherTray";
+import { AddCandidateModal } from "@/app/components/candidate/AddCandidateModal";
 import { useCandidate } from "@/app/context/CandidateContext";
-import { fetchUserJourneysCached, getCachedUserJourneys } from "@/lib/document-vault/journey-mapping";
-import { getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
+import {
+  fetchUserJourneysCached,
+  getCachedUserJourneys,
+  dedupeJourneysByType,
+} from "@/lib/document-vault/journey-mapping";
 
 interface HeaderProps {
   activeSection?: string;
@@ -475,17 +480,17 @@ export function SiteHeader({
   const { profile, isLoading, user: authUser } = useAuth();
   const resolvedUser = user ?? authUser;
 
-  // ── Candidate switcher visibility (app-wide, but ONLY for IR-5/IR-2) ───────
+  // ── Candidate switcher visibility (app-wide, category-AGNOSTIC) ────────────
   // The candidate switcher is a whole-journey feature (one account, multiple beneficiary
-  // journeys), so it lives in the global header - but it must NEVER appear for IR-1, which
-  // is a separate single-beneficiary journey. We gate on the user's ACTUAL journeys (the
-  // reliable signal): show it only when the account actually has an IR-5/IR-2 journey. We do
-  // NOT fall back to isMultiCandidate/defaulted candidates - that is exactly what leaked the
-  // tray onto IR-1 accounts before.
-  // Active candidate is shown as a small badge on the header bar (so the user can see which
-  // beneficiary/journey is active without opening the profile tray).
-  const { activeCandidate } = useCandidate();
-  const [hasCandidateJourney, setHasCandidateJourney] = useState(false);
+  // journeys), so it lives in the global header. Decision 2: it appears ONLY when the account
+  // genuinely has 2+ candidates/journeys - IR-1 included, no longer isolated. A
+  // single-candidate account shows NO switcher tray (just its normal profile) and reaches
+  // "+ Add Candidate" from the profile-dropdown entry below.
+  // We count REAL signals only (never defaulted candidates): the candidate roster length
+  // (isMultiCandidate) OR the number of distinct journeys actually on the account.
+  const { activeCandidate, isMultiCandidate } = useCandidate();
+  const [journeyCount, setJourneyCount] = useState(0);
+  const [addCandidateOpen, setAddCandidateOpen] = useState(false);
   // IMPORTANT: key this on the user ID, NOT the user object. AuthContext re-emits a fresh
   // user object on every auth event, so depending on `resolvedUser` would re-run this effect
   // constantly - each re-run's cleanup cancels the in-flight fetch before it can set state, so
@@ -493,24 +498,19 @@ export function SiteHeader({
   const resolvedUserId = resolvedUser?.id ?? null;
   useEffect(() => {
     if (!resolvedUserId) {
-      setHasCandidateJourney(false);
+      setJourneyCount(0);
       return;
     }
     let cancelled = false;
     // Seed synchronously from the shared cache if the vault/roadmap already populated it.
     const cached = getCachedUserJourneys();
     if (cached && cached.length > 0) {
-      setHasCandidateJourney(
-        cached.some((j) => ["IR-5", "IR-2"].includes(getBaseVisaCategory(j?.journey_type)))
-      );
+      setJourneyCount(dedupeJourneysByType(cached).length);
     }
     fetchUserJourneysCached()
       .then((journeys) => {
         if (cancelled) return;
-        const has = (journeys || []).some((j) =>
-          ["IR-5", "IR-2"].includes(getBaseVisaCategory(j?.journey_type))
-        );
-        setHasCandidateJourney(has);
+        setJourneyCount(dedupeJourneysByType(journeys || []).length);
       })
       .catch(() => {
         /* non-fatal - just keep the switcher hidden */
@@ -519,7 +519,7 @@ export function SiteHeader({
       cancelled = true;
     };
   }, [resolvedUserId]);
-  const showCandidateSwitcher = hasCandidateJourney;
+  const showCandidateSwitcher = isMultiCandidate || journeyCount >= 2;
 
   const fetchNotifications = useCallback(async () => {
     try {
@@ -1712,9 +1712,10 @@ export function SiteHeader({
             <div className="h-10 w-22 animate-pulse rounded-lg bg-[#0d7377]/10" />
           ) : user ? (
             <div className="flex items-center gap-2">
-              {/* Active-candidate badge on the header bar (IR-5/IR-2 accounts only) so the
-                  user always sees which beneficiary/journey is active without opening the
-                  profile tray. Clicking it opens the tray to switch. Never shown for IR-1. */}
+              {/* Active-candidate badge on the header bar (any category, shown only once the
+                  account has 2+ candidates/journeys) so the user always sees which
+                  beneficiary/journey is active without opening the profile tray. Clicking it
+                  opens the tray to switch. */}
               {showCandidateSwitcher && activeCandidate && (
                 <button
                   type="button"
@@ -1811,10 +1812,26 @@ export function SiteHeader({
                         </p>
                       </div>
 
-                    {/* Candidate switcher: app-wide (whole-journey feature), shown only for
-                        IR-5/IR-2 accounts. Never rendered for IR-1 (kept fully separate). */}
-                    {showCandidateSwitcher && (
+                    {/* Candidate switcher: app-wide (whole-journey feature). Shown only when the
+                        account has 2+ candidates/journeys (decision 2), category-agnostic. */}
+                    {showCandidateSwitcher ? (
                       <CandidateSwitcherTray onCandidateSwitched={() => setActiveMenu(null)} />
+                    ) : (
+                      // Single-candidate account: no switcher tray, but "+ Add Candidate" must
+                      // stay reachable so a single-journey user can start a second candidate.
+                      <div className="border-border bg-muted/20 border-b px-3 py-2.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveMenu(null);
+                            setAddCandidateOpen(true);
+                          }}
+                          className="text-primary border-primary/30 hover:bg-primary/5 flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed px-3 py-1.5 text-xs font-semibold transition-colors"
+                        >
+                          <UserPlusIcon className="h-3.5 w-3.5" />
+                          <span>+ Add Candidate</span>
+                        </button>
+                      </div>
                     )}
 
                     {/* Section 1 */}
@@ -1889,6 +1906,16 @@ export function SiteHeader({
         )}
         </div>
       </div>
+
+      {/* Add Candidate modal - launched from the profile-dropdown entry shown for
+          single-candidate accounts (portals to <body>, so placement here is fine). */}
+      {user && (
+        <AddCandidateModal
+          isOpen={addCandidateOpen}
+          onClose={() => setAddCandidateOpen(false)}
+          visaCategory={activeCandidate?.visaCategory}
+        />
+      )}
 
       {/* ------------------------------------------------------------------ */}
       {/* Mobile Sidebar Overlay */}

@@ -1,6 +1,10 @@
 import { ALL_DOCUMENTS } from "./document-definitions";
 import { VisaCategory, ScenarioFlags } from "./types";
-import { getBaseVisaCategory, getCandidateJourneyKey } from "@/lib/candidate/candidateSyncService";
+import {
+  getBaseVisaCategory,
+  getCandidateJourneyKey,
+  UNKNOWN_VISA_CATEGORY,
+} from "@/lib/candidate/candidateSyncService";
 
 export { getBaseVisaCategory };
 
@@ -378,6 +382,9 @@ export const FRIENDLY_JOURNEY_NAMES: Record<string, string> = {
 export function getFriendlyJourneyName(journeyType: string, defaultName?: string): string {
   if (!journeyType) return defaultName || "Immigration Journey";
   const baseVisa = getBaseVisaCategory(journeyType);
+  // Unresolvable category: fall back to the provided journey name / a neutral label rather
+  // than rendering "UNKNOWN Journey".
+  if (baseVisa === UNKNOWN_VISA_CATEGORY) return defaultName || "Immigration Journey";
   const key = baseVisa.toLowerCase().replace(/[^a-z0-9]/g, "");
   return FRIENDLY_JOURNEY_NAMES[key] || defaultName || `${baseVisa} Journey`;
 }
@@ -467,7 +474,11 @@ export const JOURNEY_TYPE_TO_VISA: Record<string, string> = {
 
 export function journeyTypeToVisaCategory(journeyType: string): VisaCategory | null {
   if (!journeyType) return null;
-  return getBaseVisaCategory(journeyType) || null;
+  const base = getBaseVisaCategory(journeyType);
+  // Treat an unresolved category as "no category" (null) so isDocumentApplicableToJourney
+  // stays permissive (shows all docs) for a journey we cannot classify, rather than matching
+  // it against applicableVisas and hiding everything.
+  return base === UNKNOWN_VISA_CATEGORY ? null : base;
 }
 
 export function isSameJourneyType(typeA?: string | null, typeB?: string | null): boolean {
