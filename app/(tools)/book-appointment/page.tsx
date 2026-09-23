@@ -2895,6 +2895,32 @@ export default function WilcareAppointmentForm() {
             />
           </div>
 
+          {/* Credit visibility (mirrors Photo Booth / Consultation credit bars) */}
+          {isUnlimited("medical_booking", tier) ? (
+            <div className="mt-4 flex justify-center">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-bold text-amber-800">
+                <Crown className="h-3.5 w-3.5" />
+                Executive — unlimited medical bookings
+              </span>
+            </div>
+          ) : creditsLoading ? null : (
+            <div className="mt-4 flex justify-center">
+              {remainingCredits !== null && remainingCredits > 0 ? (
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-bold text-teal-800">
+                  <Sparkles className="h-3.5 w-3.5" />
+                  {remainingCredits} appointment {remainingCredits === 1 ? "credit" : "credits"}{" "}
+                  available
+                </span>
+              ) : (
+                <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-semibold text-gray-600">
+                  {remainingCredits === 0
+                    ? "No appointment credits left — $5 per booking"
+                    : "No appointment credits — $5 per booking"}
+                </span>
+              )}
+            </div>
+          )}
+
           {step > 1 && step < 10 && step !== 9 && !isIOM && (
             <div className="mt-6">
               <div className="mb-2 flex justify-between px-1 text-[10px] text-slate-600 sm:px-0 sm:text-xs">
