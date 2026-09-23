@@ -78,7 +78,7 @@ const TIER_HIGHLIGHTS: Record<PlanTier, string[]> = {
     "Checklist engine for your case",
     "Portal wallet (save credentials securely)",
     // "Visa bulletin monitor",
-    "PDF toolkit, Snap & Sign, DQ status check",
+    "PDF toolkit, DQ status check",
     "Basic interview prep",
   ],
   premium: [
