@@ -104,7 +104,7 @@ export const defaultPlans: PlanData[] = [
     92,
     "Choose Executive",
     false,
-    "Full-suite support for when things get complicated. Expert reviews, 221(g) planning, and more.",
+    "Full-suite support for when things get complicated. 221(g) planning, and more.",
     [
       "Everything in Premium",
       "Case Strength Analyzer",
@@ -179,7 +179,7 @@ export const CR2Plans: PlanData[] = [
     75,
     "Choose Executive",
     false,
-    "Full-suite support for when things get complicated. Expert reviews, 221(g) planning, and more.",
+    "Full-suite support for when things get complicated. 221(g) planning, and more.",
     [
       "Everything in Premium",
       "Case Strength Analyzer",

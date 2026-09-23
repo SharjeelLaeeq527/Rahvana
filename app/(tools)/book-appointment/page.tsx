@@ -13,6 +13,8 @@ import { useLanguage } from "@/app/context/LanguageContext";
 import { useUserProfile } from "@/app/context/UserProfileContext";
 import { mapProfileToGenericForm, mapFormToProfile } from "@/lib/autoFill/mapper";
 import { usePlan } from "@/app/context/PlanContext";
+import { useFeatureAccess } from "@/lib/usage/useFeatureAccess";
+import { isUnlimited } from "@/lib/entitlements/config";
 import { Crown, CreditCard, ShoppingBag, Sparkles } from "lucide-react";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
@@ -92,23 +94,23 @@ const LocationStep = ({
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-6">
+      <h2 className="mb-6 text-xl font-bold text-slate-900 sm:text-2xl">
         {t("bookAppointment.locationStep.title")}
       </h2>
-      <p className="text-slate-600 mb-8">{t("bookAppointment.locationStep.subtitle")}</p>
+      <p className="mb-8 text-slate-600">{t("bookAppointment.locationStep.subtitle")}</p>
 
       <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <button
             type="button"
-            className={`p-4 sm:p-6 border-2 rounded-xl text-center transition-all ${
+            className={`rounded-xl border-2 p-4 text-center transition-all sm:p-6 ${
               formData.location === "karachi"
                 ? "border-teal-600 bg-teal-50"
                 : "border-gray-200 hover:border-teal-400"
             }`}
             onClick={() => onLocationChange("karachi")}
           >
-            <h3 className="font-semibold text-lg mb-2">
+            <h3 className="mb-2 text-lg font-semibold">
               {t("bookAppointment.locationStep.karachi")}
             </h3>
             <p className="text-sm text-slate-600">
@@ -118,14 +120,14 @@ const LocationStep = ({
 
           <button
             type="button"
-            className={`p-4 sm:p-6 border-2 rounded-xl text-center transition-all ${
+            className={`rounded-xl border-2 p-4 text-center transition-all sm:p-6 ${
               formData.location === "lahore"
                 ? "border-teal-600 bg-teal-50"
                 : "border-gray-200 hover:border-teal-400"
             }`}
             onClick={() => onLocationChange("lahore")}
           >
-            <h3 className="font-semibold text-lg mb-2">
+            <h3 className="mb-2 text-lg font-semibold">
               {t("bookAppointment.locationStep.lahore")}
             </h3>
             <p className="text-sm text-slate-600">
@@ -135,14 +137,14 @@ const LocationStep = ({
 
           <button
             type="button"
-            className={`p-4 sm:p-6 border-2 rounded-xl text-center transition-all ${
+            className={`rounded-xl border-2 p-4 text-center transition-all sm:p-6 ${
               formData.location === "islamabad"
                 ? "border-teal-600 bg-teal-50"
                 : "border-gray-200 hover:border-teal-400"
             }`}
             onClick={() => onLocationChange("islamabad")}
           >
-            <h3 className="font-semibold text-lg mb-2">
+            <h3 className="mb-2 text-lg font-semibold">
               {t("bookAppointment.locationStep.islamabad")}
             </h3>
             <p className="text-sm text-slate-600">
@@ -152,21 +154,21 @@ const LocationStep = ({
         </div>
 
         {formData.location === "islamabad" && (
-          <div className="space-y-4 p-4 sm:p-6 bg-blue-50 border border-blue-200 rounded-lg">
-            <h3 className="font-semibold text-lg text-slate-900">
+          <div className="space-y-4 rounded-lg border border-blue-200 bg-blue-50 p-4 sm:p-6">
+            <h3 className="text-lg font-semibold text-slate-900">
               {t("bookAppointment.locationStep.selectProviderTitle")}
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <button
                 type="button"
-                className={`p-4 border-2 rounded-lg text-center transition-all ${
+                className={`rounded-lg border-2 p-4 text-center transition-all ${
                   formData.islamabadProvider === "amc"
                     ? "border-blue-600 bg-blue-100"
                     : "border-gray-300 hover:border-blue-400"
                 }`}
                 onClick={() => onProviderChange("amc")}
               >
-                <h4 className="font-semibold mb-1">{t("bookAppointment.locationStep.amc")}</h4>
+                <h4 className="mb-1 font-semibold">{t("bookAppointment.locationStep.amc")}</h4>
                 <p className="text-xs text-slate-600">
                   {t("bookAppointment.locationStep.amcDesc")}
                 </p>
@@ -174,14 +176,14 @@ const LocationStep = ({
 
               <button
                 type="button"
-                className={`p-4 border-2 rounded-lg text-center transition-all ${
+                className={`rounded-lg border-2 p-4 text-center transition-all ${
                   formData.islamabadProvider === "iom"
                     ? "border-blue-600 bg-blue-100"
                     : "border-gray-300 hover:border-blue-400"
                 }`}
                 onClick={() => onProviderChange("iom")}
               >
-                <h4 className="font-semibold mb-1">{t("bookAppointment.locationStep.iom")}</h4>
+                <h4 className="mb-1 font-semibold">{t("bookAppointment.locationStep.iom")}</h4>
                 <p className="text-xs text-slate-600">
                   {t("bookAppointment.locationStep.iomDesc")}
                 </p>
@@ -191,13 +193,13 @@ const LocationStep = ({
         )}
 
         {error && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
             {error}
           </div>
         )}
 
         <div className="flex justify-end pt-4">
-          <Button onClick={onNext} className="bg-teal-600 hover:bg-teal-700 text-white">
+          <Button onClick={onNext} className="bg-teal-600 text-white hover:bg-teal-700">
             {t("bookAppointment.locationStep.nextBtn")}
           </Button>
         </div>
@@ -233,19 +235,19 @@ const BasicInfoStep = ({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2 mb-6">
-        <div className="bg-teal-600 text-white px-3 py-1 rounded font-semibold">
+      <div className="mb-6 flex items-center gap-2">
+        <div className="rounded bg-teal-600 px-3 py-1 font-semibold text-white">
           {isAMC
             ? t("bookAppointment.basicInfoStep.amcBadge")
             : t("bookAppointment.basicInfoStep.hiBadge")}
         </div>
-        <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
+        <h2 className="text-xl font-bold text-slate-900 sm:text-2xl">
           {t("bookAppointment.basicInfoStep.title")}
         </h2>
       </div>
 
       <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {isAMC && (
             <>
               <div className="space-y-2">
@@ -450,7 +452,7 @@ const BasicInfoStep = ({
         </div>
 
         {error && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
             {error}
           </div>
         )}
@@ -459,11 +461,11 @@ const BasicInfoStep = ({
           <Button
             onClick={onBack}
             variant="outline"
-            className="bg-teal-600 hover:bg-teal-700 text-white hover:text-white"
+            className="bg-teal-600 text-white hover:bg-teal-700 hover:text-white"
           >
             {t("bookAppointment.basicInfoStep.prevBtn")}
           </Button>
-          <Button onClick={onNext} className="bg-teal-600 hover:bg-teal-700 text-white">
+          <Button onClick={onNext} className="bg-teal-600 text-white hover:bg-teal-700">
             {t("bookAppointment.basicInfoStep.nextBtn")}
           </Button>
         </div>
@@ -481,12 +483,10 @@ interface ApplicantInfoProps {
 const ApplicantInfo = ({ applicant, index, onChange }: ApplicantInfoProps) => {
   const { t } = useLanguage();
   return (
-    <div className="border border-gray-200 rounded-lg p-4 sm:p-6 mb-6 bg-gray-50">
-      <h3 className="text-lg font-semibold text-slate-900 mb-4">
-        Applicant {index + 1}
-      </h3>
+    <div className="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-4 sm:p-6">
+      <h3 className="mb-4 text-lg font-semibold text-slate-900">Applicant {index + 1}</h3>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor={`applicant-${index}-surname`}>
             {t("bookAppointment.personalInfoStep.surname")}
@@ -566,23 +566,23 @@ const PersonalInfoStep = ({
   const { t } = useLanguage();
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2 mb-6">
-        <div className="bg-teal-600 text-white px-3 py-1 rounded font-semibold">
+      <div className="mb-6 flex items-center gap-2">
+        <div className="rounded bg-teal-600 px-3 py-1 font-semibold text-white">
           {t("bookAppointment.personalInfoStep.badge")}
         </div>
-        <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
+        <h2 className="text-xl font-bold text-slate-900 sm:text-2xl">
           {t("bookAppointment.personalInfoStep.title")}
         </h2>
       </div>
 
       <div className="space-y-6">
         {/* Primary applicant information */}
-        <div className="border border-blue-200 rounded-lg p-4 sm:p-6 bg-blue-50">
-          <h3 className="text-lg font-semibold text-slate-900 mb-4">
+        <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 sm:p-6">
+          <h3 className="mb-4 text-lg font-semibold text-slate-900">
             {t("bookAppointment.personalInfoStep.primaryApplicantTitle")}
           </h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="surname">{t("bookAppointment.personalInfoStep.surname")}</Label>
               <Input
@@ -638,7 +638,7 @@ const PersonalInfoStep = ({
         {/* Additional applicants if any */}
         {parseInt(formData.numberOfApplicants) > 1 && (
           <div>
-            <h3 className="text-lg font-semibold text-slate-900 mb-4">
+            <h3 className="mb-4 text-lg font-semibold text-slate-900">
               {t("bookAppointment.personalInfoStep.additionalApplicantsTitle")}
             </h3>
             {formData.applicants.map((applicant, index) => (
@@ -653,7 +653,7 @@ const PersonalInfoStep = ({
         )}
 
         {error && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
             {error}
           </div>
         )}
@@ -662,11 +662,11 @@ const PersonalInfoStep = ({
           <Button
             onClick={onBack}
             variant="outline"
-            className="bg-teal-600 hover:bg-teal-700 text-white"
+            className="bg-teal-600 text-white hover:bg-teal-700"
           >
             {t("bookAppointment.personalInfoStep.prevBtn")}
           </Button>
-          <Button onClick={onNext} className="bg-teal-600 hover:bg-teal-700 text-white">
+          <Button onClick={onNext} className="bg-teal-600 text-white hover:bg-teal-700">
             {t("bookAppointment.personalInfoStep.nextBtn")}
           </Button>
         </div>
@@ -690,12 +690,10 @@ const ApplicantPassportInfo = ({
 }: ApplicantPassportInfoProps) => {
   const { t } = useLanguage();
   return (
-    <div className="border border-gray-200 rounded-lg p-4 sm:p-6 mb-6 bg-gray-50">
-      <h3 className="text-lg font-semibold text-slate-900 mb-4">
-        Applicant {index + 1}
-      </h3>
+    <div className="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-4 sm:p-6">
+      <h3 className="mb-4 text-lg font-semibold text-slate-900">Applicant {index + 1}</h3>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor={`applicant-${index}-passportNumber`}>
             {t("bookAppointment.passportDetailsStep.passportNumber")}
@@ -786,23 +784,23 @@ const PassportDetailsStep = ({
   const { t } = useLanguage();
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2 mb-6">
-        <div className="bg-teal-600 text-white px-3 py-1 rounded font-semibold">
+      <div className="mb-6 flex items-center gap-2">
+        <div className="rounded bg-teal-600 px-3 py-1 font-semibold text-white">
           {t("bookAppointment.passportDetailsStep.badge")}
         </div>
-        <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
+        <h2 className="text-xl font-bold text-slate-900 sm:text-2xl">
           {t("bookAppointment.passportDetailsStep.title")}
         </h2>
       </div>
 
       <div className="space-y-6">
         {/* Primary applicant passport details */}
-        <div className="border border-blue-200 rounded-lg p-4 sm:p-6 bg-blue-50">
-          <h3 className="text-lg font-semibold text-slate-900 mb-4">
+        <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 sm:p-6">
+          <h3 className="mb-4 text-lg font-semibold text-slate-900">
             {t("bookAppointment.passportDetailsStep.primaryApplicantTitle")}
           </h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="passportNumber">
                 {t("bookAppointment.passportDetailsStep.passportNumber")}
@@ -875,7 +873,7 @@ const PassportDetailsStep = ({
         {/* Additional applicants if any */}
         {parseInt(formData.numberOfApplicants) > 1 && (
           <div>
-            <h3 className="text-lg font-semibold text-slate-900 mb-4">
+            <h3 className="mb-4 text-lg font-semibold text-slate-900">
               {t("bookAppointment.passportDetailsStep.additionalApplicantsTitle")}
             </h3>
             {formData.applicants.map((applicant, index) => (
@@ -891,7 +889,7 @@ const PassportDetailsStep = ({
         )}
 
         {error && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
             {error}
           </div>
         )}
@@ -900,11 +898,11 @@ const PassportDetailsStep = ({
           <Button
             onClick={onBack}
             variant="outline"
-            className="bg-teal-600 hover:bg-teal-700 text-white"
+            className="bg-teal-600 text-white hover:bg-teal-700"
           >
             {t("bookAppointment.passportDetailsStep.prevBtn")}
           </Button>
-          <Button onClick={onNext} className="bg-teal-600 hover:bg-teal-700 text-white">
+          <Button onClick={onNext} className="bg-teal-600 text-white hover:bg-teal-700">
             {t("bookAppointment.passportDetailsStep.nextBtn")}
           </Button>
         </div>
@@ -925,17 +923,17 @@ const DocumentsStep = ({ formData, error, onFileChange, onNext, onBack }: Docume
   const { t } = useLanguage();
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2 mb-6">
-        <div className="bg-teal-600 text-white px-3 py-1 rounded font-semibold">
+      <div className="mb-6 flex items-center gap-2">
+        <div className="rounded bg-teal-600 px-3 py-1 font-semibold text-white">
           {t("bookAppointment.documentsStep.badge")}
         </div>
-        <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
+        <h2 className="text-xl font-bold text-slate-900 sm:text-2xl">
           {t("bookAppointment.documentsStep.title")}
         </h2>
       </div>
 
       <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div className="space-y-2">
             <Label>{t("bookAppointment.documentsStep.surname")}</Label>
             <Input value={formData.surname} disabled className="bg-gray-50" />
@@ -951,9 +949,9 @@ const DocumentsStep = ({ formData, error, onFileChange, onNext, onBack }: Docume
           <Label>{t("bookAppointment.documentsStep.scannedPassport")}</Label>
           <label
             htmlFor="scannedPassport"
-            className="flex flex-col items-center justify-center w-full cursor-pointer h-24 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 hover:bg-teal-50 hover:border-teal-500 hover:text-teal-600 transition-colors text-slate-500"
+            className="flex h-24 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 text-slate-500 transition-colors hover:border-teal-500 hover:bg-teal-50 hover:text-teal-600"
           >
-            <svg className="w-6 h-6 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="mb-2 h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -974,8 +972,8 @@ const DocumentsStep = ({ formData, error, onFileChange, onNext, onBack }: Docume
             className="hidden"
           />
           {formData.scannedPassport && (
-            <p className="text-sm text-green-600 flex items-center gap-2">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <p className="flex items-center gap-2 text-sm text-green-600">
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -995,9 +993,9 @@ const DocumentsStep = ({ formData, error, onFileChange, onNext, onBack }: Docume
           <Label>{t("bookAppointment.documentsStep.k1Letter")}</Label>
           <label
             htmlFor="kOneLetter"
-            className="flex flex-col items-center justify-center w-full cursor-pointer h-24 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 hover:bg-teal-50 hover:border-teal-500 hover:text-teal-600 transition-colors text-slate-500"
+            className="flex h-24 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 text-slate-500 transition-colors hover:border-teal-500 hover:bg-teal-50 hover:text-teal-600"
           >
-            <svg className="w-6 h-6 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="mb-2 h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -1018,8 +1016,8 @@ const DocumentsStep = ({ formData, error, onFileChange, onNext, onBack }: Docume
             className="hidden"
           />
           {formData.kOneLetter && (
-            <p className="text-sm text-green-600 flex items-center gap-2">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <p className="flex items-center gap-2 text-sm text-green-600">
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -1039,9 +1037,9 @@ const DocumentsStep = ({ formData, error, onFileChange, onNext, onBack }: Docume
           <Label>{t("bookAppointment.documentsStep.appointmentLetter")}</Label>
           <label
             htmlFor="appointmentConfirmationLetter"
-            className="flex flex-col items-center justify-center w-full cursor-pointer h-24 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 hover:bg-teal-50 hover:border-teal-500 hover:text-teal-600 transition-colors text-slate-500"
+            className="flex h-24 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 text-slate-500 transition-colors hover:border-teal-500 hover:bg-teal-50 hover:text-teal-600"
           >
-            <svg className="w-6 h-6 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="mb-2 h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -1062,8 +1060,8 @@ const DocumentsStep = ({ formData, error, onFileChange, onNext, onBack }: Docume
             className="hidden"
           />
           {formData.appointmentConfirmationLetter && (
-            <p className="text-sm text-green-600 flex items-center gap-2">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <p className="flex items-center gap-2 text-sm text-green-600">
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -1080,7 +1078,7 @@ const DocumentsStep = ({ formData, error, onFileChange, onNext, onBack }: Docume
         </div>
 
         {error && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
             {error}
           </div>
         )}
@@ -1089,11 +1087,11 @@ const DocumentsStep = ({ formData, error, onFileChange, onNext, onBack }: Docume
           <Button
             onClick={onBack}
             variant="outline"
-            className="bg-teal-600 hover:bg-teal-700 text-white"
+            className="bg-teal-600 text-white hover:bg-teal-700"
           >
             {t("bookAppointment.documentsStep.prevBtn")}
           </Button>
-          <Button onClick={onNext} className="bg-teal-600 hover:bg-teal-700 text-white">
+          <Button onClick={onNext} className="bg-teal-600 text-white hover:bg-teal-700">
             {t("bookAppointment.documentsStep.nextBtn")}
           </Button>
         </div>
@@ -1124,23 +1122,23 @@ const ScheduleStep = ({
   const { t } = useLanguage();
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2 mb-6">
-        <div className="bg-teal-600 text-white px-3 py-1 rounded font-semibold">
+      <div className="mb-6 flex items-center gap-2">
+        <div className="rounded bg-teal-600 px-3 py-1 font-semibold text-white">
           {t("bookAppointment.scheduleStep.badge")}
         </div>
-        <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
+        <h2 className="text-xl font-bold text-slate-900 sm:text-2xl">
           {t("bookAppointment.scheduleStep.title")}
         </h2>
       </div>
 
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-        <p className="font-semibold text-lg">
+      <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4">
+        <p className="text-lg font-semibold">
           {formData.surname}, {formData.givenName}
         </p>
       </div>
 
       <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="estimatedCharges">{t("bookAppointment.scheduleStep.estCharges")}</Label>
             <Input
@@ -1187,7 +1185,7 @@ const ScheduleStep = ({
         </div>
 
         {error && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
             {error}
           </div>
         )}
@@ -1196,14 +1194,14 @@ const ScheduleStep = ({
           <Button
             onClick={onBack}
             variant="outline"
-            className="bg-teal-600 hover:bg-teal-700 text-white"
+            className="bg-teal-600 text-white hover:bg-teal-700"
           >
             {t("bookAppointment.scheduleStep.prevBtn")}
           </Button>
           <Button
             onClick={onSubmit}
             disabled={loading}
-            className="bg-teal-600 hover:bg-teal-700 text-white"
+            className="bg-teal-600 text-white hover:bg-teal-700"
           >
             {loading
               ? t("bookAppointment.scheduleStep.submitting")
@@ -1241,20 +1239,20 @@ const ReviewStep = ({
   if (isIOM) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center gap-2 mb-6">
-          <div className="bg-teal-600 text-white px-3 py-1 rounded font-semibold">
+        <div className="mb-6 flex items-center gap-2">
+          <div className="rounded bg-teal-600 px-3 py-1 font-semibold text-white">
             {t("bookAppointment.reviewStep.badge")}
           </div>
-          <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
+          <h2 className="text-xl font-bold text-slate-900 sm:text-2xl">
             {t("bookAppointment.reviewStep.title")}
           </h2>
         </div>
 
         <div className="space-y-6">
-          <div className="bg-slate-50 rounded-lg p-4 sm:p-6">
-            <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+          <div className="rounded-lg bg-slate-50 p-4 sm:p-6">
+            <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-slate-900">
               <svg
-                className="w-5 h-5 text-teal-600"
+                className="h-5 w-5 text-teal-600"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -1274,7 +1272,7 @@ const ReviewStep = ({
               </svg>
               {t("bookAppointment.reviewStep.locationSection")}
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <p className="text-sm text-slate-600">
                   {t("bookAppointment.reviewStep.selectedCentre")}
@@ -1289,10 +1287,10 @@ const ReviewStep = ({
             </div>
           </div>
 
-          <div className="bg-slate-50 rounded-lg p-4 sm:p-6">
-            <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+          <div className="rounded-lg bg-slate-50 p-4 sm:p-6">
+            <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-slate-900">
               <svg
-                className="w-5 h-5 text-teal-600"
+                className="h-5 w-5 text-teal-600"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -1306,7 +1304,7 @@ const ReviewStep = ({
               </svg>
               {t("bookAppointment.reviewStep.basicInfoSection")}
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <p className="text-sm text-slate-600">{t("bookAppointment.reviewStep.fullName")}</p>
                 <p className="font-medium">{formData.fullName}</p>
@@ -1357,7 +1355,7 @@ const ReviewStep = ({
           </div>
 
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
               {error}
             </div>
           )}
@@ -1366,14 +1364,14 @@ const ReviewStep = ({
             <Button
               onClick={onBack}
               variant="outline"
-              className="bg-teal-600 hover:bg-teal-700 text-white"
+              className="bg-teal-600 text-white hover:bg-teal-700"
             >
               {t("bookAppointment.reviewStep.backToEditBtn")}
             </Button>
             <Button
               onClick={onSubmit}
               disabled={loading}
-              className="bg-teal-600 hover:bg-teal-700 text-white"
+              className="bg-teal-600 text-white hover:bg-teal-700"
             >
               {loading
                 ? t("bookAppointment.reviewStep.submitting")
@@ -1387,20 +1385,20 @@ const ReviewStep = ({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2 mb-6">
-        <div className="bg-teal-600 text-white px-3 py-1 rounded font-semibold">
+      <div className="mb-6 flex items-center gap-2">
+        <div className="rounded bg-teal-600 px-3 py-1 font-semibold text-white">
           {t("bookAppointment.reviewStep.badge")}
         </div>
-        <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
+        <h2 className="text-xl font-bold text-slate-900 sm:text-2xl">
           {t("bookAppointment.reviewStep.title")}
         </h2>
       </div>
 
       <div className="space-y-6">
-        <div className="bg-slate-50 rounded-lg p-4 sm:p-6">
-          <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+        <div className="rounded-lg bg-slate-50 p-4 sm:p-6">
+          <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-slate-900">
             <svg
-              className="w-5 h-5 text-teal-600"
+              className="h-5 w-5 text-teal-600"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -1420,7 +1418,7 @@ const ReviewStep = ({
             </svg>
             {t("bookAppointment.reviewStep.locationSection")}
           </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <p className="text-sm text-slate-600">
                 {t("bookAppointment.reviewStep.selectedCentre")}
@@ -1437,10 +1435,10 @@ const ReviewStep = ({
           </div>
         </div>
 
-        <div className="bg-slate-50 rounded-lg p-4 sm:p-6">
-          <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+        <div className="rounded-lg bg-slate-50 p-4 sm:p-6">
+          <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-slate-900">
             <svg
-              className="w-5 h-5 text-teal-600"
+              className="h-5 w-5 text-teal-600"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -1454,7 +1452,7 @@ const ReviewStep = ({
             </svg>
             {t("bookAppointment.reviewStep.basicInfoSection")}
           </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <p className="text-sm text-slate-600">
                 {t("bookAppointment.reviewStep.primaryContact")}
@@ -1527,10 +1525,10 @@ const ReviewStep = ({
           </div>
         </div>
 
-        <div className="bg-slate-50 rounded-lg p-4 sm:p-6">
-          <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+        <div className="rounded-lg bg-slate-50 p-4 sm:p-6">
+          <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-slate-900">
             <svg
-              className="w-5 h-5 text-teal-600"
+              className="h-5 w-5 text-teal-600"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -1546,11 +1544,11 @@ const ReviewStep = ({
           </h3>
           <div className="space-y-6">
             {/* Primary applicant */}
-            <div className="border border-blue-200 rounded-lg p-4 bg-blue-50">
-              <h4 className="font-semibold text-slate-900 mb-3">
+            <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+              <h4 className="mb-3 font-semibold text-slate-900">
                 {t("bookAppointment.reviewStep.primaryApplicant")}
               </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <p className="text-sm text-slate-600">
                     {t("bookAppointment.reviewStep.surname")}
@@ -1583,18 +1581,16 @@ const ReviewStep = ({
             {/* Additional applicants if any */}
             {parseInt(formData.numberOfApplicants) > 1 && formData.applicants.length > 0 && (
               <div>
-                <h4 className="font-semibold text-slate-900 mb-3">
+                <h4 className="mb-3 font-semibold text-slate-900">
                   {t("bookAppointment.reviewStep.additionalApplicants")}
                 </h4>
                 {formData.applicants.map((applicant, index) => (
                   <div
                     key={applicant.id}
-                    className="border border-gray-200 rounded-lg p-4 mb-4 bg-gray-50"
+                    className="mb-4 rounded-lg border border-gray-200 bg-gray-50 p-4"
                   >
-                    <h5 className="font-semibold text-slate-900 mb-2">
-                      Applicant {index + 1}
-                    </h5>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <h5 className="mb-2 font-semibold text-slate-900">Applicant {index + 1}</h5>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div>
                         <p className="text-sm text-slate-600">
                           {t("bookAppointment.reviewStep.surname")}
@@ -1631,10 +1627,10 @@ const ReviewStep = ({
           </div>
         </div>
 
-        <div className="bg-slate-50 rounded-lg p-4 sm:p-6">
-          <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+        <div className="rounded-lg bg-slate-50 p-4 sm:p-6">
+          <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-slate-900">
             <svg
-              className="w-5 h-5 text-teal-600"
+              className="h-5 w-5 text-teal-600"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -1650,11 +1646,11 @@ const ReviewStep = ({
           </h3>
           <div className="space-y-6">
             {/* Primary applicant */}
-            <div className="border border-blue-200 rounded-lg p-4 bg-blue-50">
-              <h4 className="font-semibold text-slate-900 mb-3">
+            <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+              <h4 className="mb-3 font-semibold text-slate-900">
                 {t("bookAppointment.reviewStep.primaryApplicant")}
               </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <p className="text-sm text-slate-600">
                     {t("bookAppointment.reviewStep.passportNumber")}
@@ -1703,18 +1699,16 @@ const ReviewStep = ({
             {/* Additional applicants if any */}
             {parseInt(formData.numberOfApplicants) > 1 && formData.applicants.length > 0 && (
               <div>
-                <h4 className="font-semibold text-slate-900 mb-3">
+                <h4 className="mb-3 font-semibold text-slate-900">
                   {t("bookAppointment.reviewStep.additionalApplicants")}
                 </h4>
                 {formData.applicants.map((applicant, index) => (
                   <div
                     key={applicant.id}
-                    className="border border-gray-200 rounded-lg p-4 mb-4 bg-gray-50"
+                    className="mb-4 rounded-lg border border-gray-200 bg-gray-50 p-4"
                   >
-                    <h5 className="font-semibold text-slate-900 mb-2">
-                      Applicant {index + 1}
-                    </h5>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <h5 className="mb-2 font-semibold text-slate-900">Applicant {index + 1}</h5>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div>
                         <p className="text-sm text-slate-600">
                           {t("bookAppointment.reviewStep.passportNumber")}
@@ -1763,10 +1757,10 @@ const ReviewStep = ({
           </div>
         </div>
 
-        <div className="bg-slate-50 rounded-lg p-4 sm:p-6">
-          <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+        <div className="rounded-lg bg-slate-50 p-4 sm:p-6">
+          <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-slate-900">
             <svg
-              className="w-5 h-5 text-teal-600"
+              className="h-5 w-5 text-teal-600"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -1781,7 +1775,7 @@ const ReviewStep = ({
             {t("bookAppointment.reviewStep.uploadedDocsSection")}
           </h3>
           <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 bg-white rounded border">
+            <div className="flex items-center justify-between rounded border bg-white p-3">
               <span className="text-sm text-slate-600">
                 {t("bookAppointment.reviewStep.scannedPassport")}
               </span>
@@ -1791,7 +1785,7 @@ const ReviewStep = ({
                   : t("bookAppointment.reviewStep.notUploaded")}
               </span>
             </div>
-            <div className="flex items-center justify-between p-3 bg-white rounded border">
+            <div className="flex items-center justify-between rounded border bg-white p-3">
               <span className="text-sm text-slate-600">
                 {t("bookAppointment.reviewStep.k1Letter")}
               </span>
@@ -1801,7 +1795,7 @@ const ReviewStep = ({
                   : t("bookAppointment.reviewStep.notUploaded")}
               </span>
             </div>
-            <div className="flex items-center justify-between p-3 bg-white rounded border">
+            <div className="flex items-center justify-between rounded border bg-white p-3">
               <span className="text-sm text-slate-600">
                 {t("bookAppointment.reviewStep.appointmentConfirmation")}
               </span>
@@ -1814,10 +1808,10 @@ const ReviewStep = ({
           </div>
         </div>
 
-        <div className="bg-slate-50 rounded-lg p-4 sm:p-6">
-          <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+        <div className="rounded-lg bg-slate-50 p-4 sm:p-6">
+          <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-slate-900">
             <svg
-              className="w-5 h-5 text-teal-600"
+              className="h-5 w-5 text-teal-600"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -1831,7 +1825,7 @@ const ReviewStep = ({
             </svg>
             {t("bookAppointment.reviewStep.appointmentScheduleSection")}
           </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {formData.estimatedCharges && (
               <div>
                 <p className="text-sm text-slate-600">
@@ -1860,7 +1854,7 @@ const ReviewStep = ({
         </div>
 
         {error && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
             {error}
           </div>
         )}
@@ -1869,14 +1863,14 @@ const ReviewStep = ({
           <Button
             onClick={onBack}
             variant="outline"
-            className="bg-teal-600 hover:bg-teal-700 text-white"
+            className="bg-teal-600 text-white hover:bg-teal-700"
           >
             {t("bookAppointment.reviewStep.backToEditBtn")}
           </Button>
           <Button
             onClick={onSubmit}
             disabled={loading}
-            className="bg-teal-600 hover:bg-teal-700 text-white"
+            className="bg-teal-600 text-white hover:bg-teal-700"
           >
             {loading
               ? t("bookAppointment.reviewStep.submitting")
@@ -1905,6 +1899,8 @@ interface CheckoutStepProps {
   error: string | null;
   loading: boolean;
   tier: string;
+  remainingCredits: number | null;
+  creditsLoading: boolean;
   isAMC: boolean;
   isIOM: boolean;
   onBack: () => void;
@@ -1917,6 +1913,8 @@ const CheckoutStep = ({
   error,
   loading,
   tier,
+  remainingCredits,
+  creditsLoading,
   isAMC,
   isIOM,
   onBack,
@@ -1925,19 +1923,20 @@ const CheckoutStep = ({
 }: CheckoutStepProps) => {
   const { t } = useLanguage();
   const isExecutive = tier === "executive";
+  const hasCredit = !isExecutive && remainingCredits !== null && remainingCredits > 0;
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2 mb-6">
-        <div className="bg-teal-600 text-white px-3 py-1 rounded font-semibold">Checkout</div>
-        <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Payment &amp; Confirmation</h2>
+      <div className="mb-6 flex items-center gap-2">
+        <div className="rounded bg-teal-600 px-3 py-1 font-semibold text-white">Checkout</div>
+        <h2 className="text-xl font-bold text-slate-900 sm:text-2xl">Payment &amp; Confirmation</h2>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-5">
         {/* Left column: Booking summary */}
-        <div className="md:col-span-3 space-y-4">
-          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5">
-            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-tight">
+        <div className="space-y-4 md:col-span-3">
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+            <h4 className="text-xs font-bold tracking-tight text-slate-400 uppercase">
               Booking Summary
             </h4>
             <div className="mt-3 space-y-2">
@@ -1948,12 +1947,12 @@ const CheckoutStep = ({
               )}
               <p className="text-xs text-slate-500">
                 Center:{" "}
-                <span className="capitalize font-medium text-slate-700">{formData.location}</span>
+                <span className="font-medium text-slate-700 capitalize">{formData.location}</span>
                 {formData.location === "islamabad" && formData.islamabadProvider && (
                   <>
                     {" "}
                     -{" "}
-                    <span className="uppercase font-medium text-slate-700">
+                    <span className="font-medium text-slate-700 uppercase">
                       {formData.islamabadProvider}
                     </span>
                   </>
@@ -1976,13 +1975,13 @@ const CheckoutStep = ({
             </div>
           </div>
 
-          <div className="bg-slate-50 rounded-2xl p-5 border border-slate-200/60 flex items-start gap-3">
-            <CreditCard className="h-5 w-5 text-teal-600 flex-shrink-0 mt-0.5" />
+          <div className="flex items-start gap-3 rounded-2xl border border-slate-200/60 bg-slate-50 p-5">
+            <CreditCard className="mt-0.5 h-5 w-5 flex-shrink-0 text-teal-600" />
             <div>
-              <h5 className="text-xs font-bold text-slate-900 uppercase tracking-wide">
+              <h5 className="text-xs font-bold tracking-wide text-slate-900 uppercase">
                 Secure Transaction
               </h5>
-              <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+              <p className="mt-1 text-xs leading-relaxed text-slate-500">
                 Your details are handled securely. One-time card payments are processed securely via
                 Stripe.
               </p>
@@ -1992,22 +1991,22 @@ const CheckoutStep = ({
 
         {/* Right column: Cart breakdown */}
         <div className="md:col-span-2">
-          <div className="bg-slate-50/55 border border-slate-200 rounded-2xl p-6 flex flex-col justify-between h-full">
+          <div className="flex h-full flex-col justify-between rounded-2xl border border-slate-200 bg-slate-50/55 p-6">
             <div>
-              <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 border-b pb-2 flex items-center gap-2">
+              <h4 className="mb-4 flex items-center gap-2 border-b pb-2 text-sm font-bold tracking-wider text-slate-900 uppercase">
                 <ShoppingBag className="h-4 w-4 text-teal-600" />
                 Price Breakdown
               </h4>
 
               <div className="space-y-4">
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-600 font-medium">1x Medical Exam Booking</span>
-                  <span className="text-slate-800 font-bold">$5.00</span>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="font-medium text-slate-600">1x Medical Exam Booking</span>
+                  <span className="font-bold text-slate-800">$5.00</span>
                 </div>
 
                 {isExecutive && (
-                  <div className="flex justify-between items-center text-sm text-green-600">
-                    <span className="font-semibold flex items-center gap-1">
+                  <div className="flex items-center justify-between text-sm text-green-600">
+                    <span className="flex items-center gap-1 font-semibold">
                       <Sparkles className="h-3.5 w-3.5" />
                       Executive Tier Discount
                     </span>
@@ -2015,48 +2014,76 @@ const CheckoutStep = ({
                   </div>
                 )}
 
-                <div className="border-t border-slate-200 pt-4 mt-2 flex justify-between items-center">
+                {hasCredit && (
+                  <div className="flex items-center justify-between text-sm text-green-600">
+                    <span className="flex items-center gap-1 font-semibold">
+                      <Sparkles className="h-3.5 w-3.5" />
+                      Appointment Credit
+                    </span>
+                    <span className="font-bold">-$5.00</span>
+                  </div>
+                )}
+
+                <div className="mt-2 flex items-center justify-between border-t border-slate-200 pt-4">
                   <span className="text-base font-bold text-slate-900">Total Due</span>
                   <span className="text-xl font-black text-slate-900">
-                    {isExecutive ? "$0.00" : "$5.00"}
+                    {isExecutive || hasCredit ? "$0.00" : "$5.00"}
                   </span>
                 </div>
               </div>
 
-              {isExecutive && (
-                <div className="mt-5 p-3 rounded-xl bg-amber-50 border border-amber-100 flex items-center gap-2">
-                  <Crown className="h-4 w-4 text-amber-500 flex-shrink-0" />
+              {isExecutive ? (
+                <div className="mt-5 flex items-center gap-2 rounded-xl border border-amber-100 bg-amber-50 p-3">
+                  <Crown className="h-4 w-4 flex-shrink-0 text-amber-500" />
                   <span className="text-[11px] font-bold text-amber-800">
                     Free booking included with Executive plan.
                   </span>
                 </div>
-              )}
+              ) : hasCredit ? (
+                <div className="mt-5 flex items-center gap-2 rounded-xl border border-amber-100 bg-amber-50 p-3">
+                  <Crown className="h-4 w-4 flex-shrink-0 text-amber-500" />
+                  <span className="text-[11px] font-bold text-amber-800">
+                    1 of your {remainingCredits} appointment credit
+                    {remainingCredits === 1 ? "" : "s"} will be applied — no payment needed.
+                  </span>
+                </div>
+              ) : !creditsLoading ? (
+                <div className="mt-5 rounded-xl border border-slate-200 bg-slate-100 p-3">
+                  <span className="text-[11px] font-bold text-slate-600">
+                    {remainingCredits === 0
+                      ? "No appointment credits left — a one-time $5 fee applies at secure checkout."
+                      : "A one-time $5 fee applies at secure checkout. Buy the appointment add-on to book free with credits next time."}
+                  </span>
+                </div>
+              ) : null}
             </div>
 
             {error && (
-              <div className="p-3 mt-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+              <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
                 {error}
               </div>
             )}
 
-            <div className="flex justify-between pt-6 mt-6 border-t border-slate-200">
+            <div className="mt-6 flex justify-between border-t border-slate-200 pt-6">
               <Button
                 onClick={onBack}
                 variant="outline"
-                className="bg-teal-600 hover:bg-teal-700 text-white"
+                className="bg-teal-600 text-white hover:bg-teal-700"
               >
                 Back
               </Button>
               <Button
                 onClick={onSubmit}
                 disabled={loading}
-                className="bg-teal-600 hover:bg-teal-700 text-white"
+                className="bg-teal-600 text-white hover:bg-teal-700"
               >
                 {loading
                   ? "Processing..."
                   : isExecutive
                     ? "Confirm Booking (Free)"
-                    : "Proceed to Payment ($5)"}
+                    : hasCredit
+                      ? "Confirm Booking (Free)"
+                      : "Proceed to Payment ($5)"}
               </Button>
             </div>
           </div>
@@ -2073,10 +2100,10 @@ interface SuccessStepProps {
 const SuccessStep = ({ onReset }: SuccessStepProps) => {
   const { t } = useLanguage();
   return (
-    <div className="text-center py-12">
-      <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+    <div className="py-12 text-center">
+      <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
         <svg
-          className="w-10 h-10 text-green-600"
+          className="h-10 w-10 text-green-600"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -2089,12 +2116,12 @@ const SuccessStep = ({ onReset }: SuccessStepProps) => {
           ></path>
         </svg>
       </div>
-      <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-4">
+      <h2 className="mb-4 text-xl font-bold text-slate-900 sm:text-2xl">
         {t("bookAppointment.successStep.title")}
       </h2>
-      <p className="text-slate-600 mb-8">{t("bookAppointment.successStep.desc")}</p>
+      <p className="mb-8 text-slate-600">{t("bookAppointment.successStep.desc")}</p>
       <div className="flex justify-center gap-4">
-        <Button onClick={onReset} className="bg-teal-600 hover:bg-teal-700 text-white">
+        <Button onClick={onReset} className="bg-teal-600 text-white hover:bg-teal-700">
           {t("bookAppointment.successStep.bookAnotherBtn")}
         </Button>
       </div>
@@ -2146,6 +2173,38 @@ export default function WilcareAppointmentForm() {
   const { t } = useLanguage();
   const { profile, isProfileLoading, updateProfile } = useUserProfile();
   const { tier } = usePlan();
+  const { checkAccess, consumeAccess } = useFeatureAccess();
+
+  // Purchased appointment-credit balance, surfaced on the checkout step.
+  // null = no credit pool for this user (locked tiers without add-on); Executive is unlimited.
+  const [remainingCredits, setRemainingCredits] = useState<number | null>(null);
+  const [creditsLoading, setCreditsLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadCredits = async () => {
+      if (isUnlimited("medical_booking", tier)) {
+        setRemainingCredits(null);
+        setCreditsLoading(false);
+        return;
+      }
+      setCreditsLoading(true);
+      const access = await checkAccess("medical_booking");
+      if (!isMounted) return;
+      const usage = access.data?.data?.usage;
+      setRemainingCredits(
+        access.allowed && usage?.remaining !== undefined ? usage.remaining : null
+      );
+      setCreditsLoading(false);
+    };
+
+    void loadCredits();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [checkAccess, tier]);
 
   const saveProgressToProfile = (currentFormData = formData) => {
     if (!user) return;
@@ -2543,39 +2602,75 @@ export default function WilcareAppointmentForm() {
         }
       }
 
-      // If user is not Executive tier, redirect them to Stripe checkout!
-      const isExecutive = tier === "executive";
-      if (!isExecutive && user?.id) {
-        try {
-          const stripeRes = await fetch("/api/stripe/checkout", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              appointmentId: appointmentId,
-            }),
-          });
+      // Credit model: Executive = unlimited; anyone else must hold a purchased
+      // $5 credit (checked server-side via /api/feature-usage). No access at all → existing pay-as-you-go $5 checkout (fulfills this request).
+      let usedCredit = false;
+      if (!isUnlimited("medical_booking", tier)) {
+        const access = await checkAccess("medical_booking");
+        const usage = access.data?.data?.usage;
+        const hasCredit = access.allowed && usage?.allowed === true;
 
-          const stripeData = await stripeRes.json();
+        if (!hasCredit) {
+          try {
+            const stripeRes = await fetch("/api/stripe/checkout", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                appointmentId: appointmentId,
+              }),
+            });
 
-          if (!stripeRes.ok) {
-            throw new Error(stripeData.error || "Failed to create checkout session");
+            const stripeData = await stripeRes.json();
+
+            if (!stripeRes.ok) {
+              throw new Error(stripeData.error || "Failed to create checkout session");
+            }
+
+            if (stripeData.url) {
+              window.location.href = stripeData.url;
+              return; // Redirecting to Stripe
+            } else {
+              throw new Error("No checkout URL returned");
+            }
+          } catch (stripeErr: unknown) {
+            console.error("Checkout redirection failed:", stripeErr);
+            setError(
+              stripeErr instanceof Error ? stripeErr.message : "Checkout redirection failed"
+            );
+            setLoading(false);
+            return;
           }
+        }
 
-          if (stripeData.url) {
-            window.location.href = stripeData.url;
-            return; // Redirecting to Stripe
-          } else {
-            throw new Error("No checkout URL returned");
+        // Consume exactly one credit now that the booking is proceeding.
+        const reservation = await consumeAccess("medical_booking");
+        if (!reservation.allowed || reservation.data?.allowed === false) {
+          // Raced with another tab / pool drained between check and consume —
+          // fall back to the pay-as-you-go checkout instead of a silent freebie.
+          try {
+            const stripeRes = await fetch("/api/stripe/checkout", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ appointmentId: appointmentId }),
+            });
+            const stripeData = await stripeRes.json();
+            if (stripeData.url) {
+              window.location.href = stripeData.url;
+              return;
+            }
+          } catch (fallbackErr) {
+            console.error("Credit fallback checkout failed:", fallbackErr);
+            setError("Could not consume your appointment credit. Please try again.");
+            setLoading(false);
+            return;
           }
-        } catch (stripeErr: any) {
-          console.error("Checkout redirection failed:", stripeErr);
-          setError(stripeErr.message || "Checkout redirection failed");
-          setLoading(false);
-          return;
+        }
+        usedCredit = true;
+        if (reservation.data?.remaining !== undefined) {
+          setRemainingCredits(reservation.data.remaining);
         }
       }
+      void usedCredit; // available for a future "credit applied" toast
 
       setStep(10);
     } catch (err: unknown) {
@@ -2673,7 +2768,9 @@ export default function WilcareAppointmentForm() {
             isWilcare={isWilcare}
             onChange={handleInputChange}
             onSelectChange={handleSelectChange}
-            onPhoneChange={(value) => setFormData((prev) => ({ ...prev, primaryContact: value || "" }))}
+            onPhoneChange={(value) =>
+              setFormData((prev) => ({ ...prev, primaryContact: value || "" }))
+            }
             onNext={handleNextStep}
             onBack={handleGoBack}
           />
@@ -2744,6 +2841,8 @@ export default function WilcareAppointmentForm() {
             error={error}
             loading={loading}
             tier={tier}
+            remainingCredits={remainingCredits}
+            creditsLoading={creditsLoading}
             isAMC={isAMC}
             isIOM={isIOM}
             onBack={handleGoBack}
@@ -2765,7 +2864,9 @@ export default function WilcareAppointmentForm() {
             onSelectChange={(name) => (value) => {
               setFormData((prev) => ({ ...prev, [name]: value }));
             }}
-            onPhoneChange={(value) => setFormData((prev) => ({ ...prev, contactNumber: value || "" }))}
+            onPhoneChange={(value) =>
+              setFormData((prev) => ({ ...prev, contactNumber: value || "" }))
+            }
             onNext={handleNextStep}
             onBack={handleGoBack}
           />
@@ -2776,14 +2877,14 @@ export default function WilcareAppointmentForm() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 site-main-px site-main-py mt-[55px]">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-6 sm:mb-8 text-center">
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">
+    <div className="site-main-px site-main-py mt-[55px] min-h-screen bg-slate-50">
+      <div className="mx-auto max-w-4xl">
+        <div className="mb-6 text-center sm:mb-8">
+          <h1 className="mb-2 text-2xl font-bold text-slate-900 sm:text-3xl">
             {t("bookAppointment.title")}
           </h1>
-          <p className="text-slate-600 text-sm sm:text-base">{t("bookAppointment.description")}</p>
-          <div className="flex justify-center mt-4">
+          <p className="text-sm text-slate-600 sm:text-base">{t("bookAppointment.description")}</p>
+          <div className="mt-4 flex justify-center">
             <QuickAccessButton
               item={{
                 id: "service-book-medical-appointment",
@@ -2794,9 +2895,35 @@ export default function WilcareAppointmentForm() {
             />
           </div>
 
+          {/* Credit visibility (mirrors Photo Booth / Consultation credit bars) */}
+          {isUnlimited("medical_booking", tier) ? (
+            <div className="mt-4 flex justify-center">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-bold text-amber-800">
+                <Crown className="h-3.5 w-3.5" />
+                Executive — unlimited medical bookings
+              </span>
+            </div>
+          ) : creditsLoading ? null : (
+            <div className="mt-4 flex justify-center">
+              {remainingCredits !== null && remainingCredits > 0 ? (
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-bold text-teal-800">
+                  <Sparkles className="h-3.5 w-3.5" />
+                  {remainingCredits} appointment {remainingCredits === 1 ? "credit" : "credits"}{" "}
+                  available
+                </span>
+              ) : (
+                <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-semibold text-gray-600">
+                  {remainingCredits === 0
+                    ? "No appointment credits left — $5 per booking"
+                    : "No appointment credits — $5 per booking"}
+                </span>
+              )}
+            </div>
+          )}
+
           {step > 1 && step < 10 && step !== 9 && !isIOM && (
             <div className="mt-6">
-              <div className="flex justify-between text-[10px] sm:text-xs text-slate-600 mb-2 px-1 sm:px-0">
+              <div className="mb-2 flex justify-between px-1 text-[10px] text-slate-600 sm:px-0 sm:text-xs">
                 <span>{t("bookAppointment.progressSteps.location")}</span>
                 <span>
                   {isAMC
@@ -2809,9 +2936,9 @@ export default function WilcareAppointmentForm() {
                 <span>{t("bookAppointment.progressSteps.when")}</span>
                 <span>{step === 8 ? "Checkout" : "Review"}</span>
               </div>
-              <div className="w-full h-2 bg-slate-200 rounded-full">
+              <div className="h-2 w-full rounded-full bg-slate-200">
                 <div
-                  className="h-full bg-teal-600 rounded-full transition-all duration-300"
+                  className="h-full rounded-full bg-teal-600 transition-all duration-300"
                   style={{ width: `${((step - 1) / 7) * 100}%` }}
                 ></div>
               </div>
@@ -2819,15 +2946,15 @@ export default function WilcareAppointmentForm() {
           )}
           {isIOM && (step === 9 || step === 7 || step === 8) && (
             <div className="mt-6">
-              <div className="flex justify-between text-xs text-slate-600 mb-2">
+              <div className="mb-2 flex justify-between text-xs text-slate-600">
                 <span>{t("bookAppointment.progressSteps.location")}</span>
                 <span>{t("bookAppointment.progressSteps.iomInfo")}</span>
                 <span>{t("bookAppointment.progressSteps.review")}</span>
                 <span>Checkout</span>
               </div>
-              <div className="w-full h-2 bg-slate-200 rounded-full">
+              <div className="h-2 w-full rounded-full bg-slate-200">
                 <div
-                  className="h-full bg-teal-600 rounded-full transition-all duration-300"
+                  className="h-full rounded-full bg-teal-600 transition-all duration-300"
                   style={{
                     width: `${step === 9 ? 33 : step === 7 ? 66 : 100}%`,
                   }}
@@ -2837,7 +2964,7 @@ export default function WilcareAppointmentForm() {
           )}
         </div>
 
-        <Card className="p-4 sm:p-8 bg-white shadow-lg border-0">{renderStep()}</Card>
+        <Card className="border-0 bg-white p-4 shadow-lg sm:p-8">{renderStep()}</Card>
       </div>
     </div>
   );
