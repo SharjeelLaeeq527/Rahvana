@@ -32,6 +32,8 @@ import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import {
   mapDocumentNameToId,
   getFriendlyJourneyName,
+  getCandidateJourneyTag,
+  dedupeJourneysByType,
   isDocumentApplicableToJourney,
   getCachedUserJourneys,
   setCachedUserJourneys,
@@ -39,7 +41,6 @@ import {
   isSameJourneyType,
 } from "@/lib/document-vault/journey-mapping";
 import { isDocumentShareableAcrossCandidates } from "@/lib/document-vault/candidate-sharing";
-import { getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
 import { msg, E, errorCode } from "@/lib/errors";
 import { getOcrConfig, type OcrTarget } from "@/lib/document-ocr/registry";
 import { resizeImageIfNeeded } from "@/lib/document-ocr/clientImage";
@@ -121,13 +122,13 @@ export function MultipleDocumentUploadModal({
     // Compare journey TYPE to the active journey's TYPE (activeJourneyId is a journey UUID,
     // so passing it to isSameJourneyType was a permanent no-op).
     const activeJourney = userJourneys.find((x) => x.id === activeJourneyId);
-    const activeBase = activeJourney ? getBaseVisaCategory(activeJourney.journey_type) : null;
-    return userJourneys.filter((j) => {
+    // One entry per distinct journey_type - collapse any duplicate journey rows first.
+    // Offer EVERY other journey on the account, across categories (IR-1 spouse + IR-5 parent
+    // on the same petitioner). Which specific documents are actually offered to each target is
+    // decided per-document in `visibleOtherJourneys` (shareable + applicable).
+    return dedupeJourneysByType(userJourneys).filter((j) => {
       if (j.id === activeJourneyId) return false;
       if (isSameJourneyType(j.journey_type, activeJourney?.journey_type)) return false;
-      // Same base visa category only - IR-1 (a separate single-beneficiary journey) is never
-      // offered as a candidate share target; the candidate system stays isolated from IR-1.
-      if (!activeBase || getBaseVisaCategory(j.journey_type) !== activeBase) return false;
       return true;
     });
   }, [userJourneys, activeJourneyId]);
@@ -135,19 +136,16 @@ export function MultipleDocumentUploadModal({
   const [manuallyUncheckedIds, setManuallyUncheckedIds] = useState<string[]>([]);
 
   const visibleOtherJourneys = useMemo(() => {
-    const activeJourney = userJourneys.find((x) => x.id === activeJourneyId);
-    const activeBase = activeJourney ? getBaseVisaCategory(activeJourney.journey_type) : null;
-
-    // Applicable to share to journey j, honoring the sibling-candidate rule: between two
-    // candidates in the same case (same base visa category, e.g. two parents) only shareable
-    // documents are offered; parent-specific docs (passport, CNIC, birth, medical...) are not.
+    // A document is offered to target journey j only when BOTH hold:
+    //   1. It is a petitioner/sponsor-side document (isDocumentShareableAcrossCandidates) - a
+    //      genuinely-same document. Beneficiary-specific docs (passport, CNIC, birth,
+    //      medical...) differ per person and are never offered, whether the target is a
+    //      sibling candidate or a different-category journey.
+    //   2. It actually applies to the target journey's category (isDocumentApplicableToJourney).
     const shareApplicable = (j: any, defId: string, typeName: string) => {
       if (!isDocumentApplicableToJourney(defId, typeName, j.journey_type)) return false;
-      const isSibling = !!activeBase && getBaseVisaCategory(j.journey_type) === activeBase;
-      if (isSibling) {
-        const def = ALL_DOCUMENTS.find((d) => d.id === defId);
-        if (!def || !isDocumentShareableAcrossCandidates(def)) return false;
-      }
+      const def = ALL_DOCUMENTS.find((d) => d.id === defId);
+      if (!def || !isDocumentShareableAcrossCandidates(def)) return false;
       return true;
     };
 
@@ -228,14 +226,15 @@ export function MultipleDocumentUploadModal({
       setManuallyUncheckedIds([]);
       return;
     }
-    // Opt-in by design: never auto-select a target. Keep only the targets the user has
-    // explicitly ticked that are still visible.
-    setSharedJourneyIds((prev) => {
-      const visibleIds = visibleOtherJourneys.map((j) => j.id);
-      return prev.filter((id) => visibleIds.includes(id));
-    });
+    // Checked by default (opt-out): every applicable target journey is pre-selected so a
+    // shared petitioner document is not re-uploaded per visa category. A target the user has
+    // explicitly unticked (manuallyUncheckedIds) stays unticked even as the visible set
+    // changes.
+    setSharedJourneyIds(
+      visibleOtherJourneys.map((j) => j.id).filter((id) => !manuallyUncheckedIds.includes(id))
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, visibleOtherJourneysKey]);
+  }, [open, visibleOtherJourneysKey, manuallyUncheckedIds]);
 
   // ── Inline OCR auto-fill (passport) ──
   // When one of the uploaded items is a passport (e.g. the petitioner picks
@@ -676,10 +675,6 @@ export function MultipleDocumentUploadModal({
         if (activeJourneyId) {
           formData.append("journeyId", activeJourneyId);
         }
-        const activeJourneyForShare = userJourneys.find((j) => j.id === activeJourneyId);
-        const activeShareBase = activeJourneyForShare
-          ? getBaseVisaCategory(activeJourneyForShare.journey_type)
-          : null;
         const applicableSharedIds = sharedJourneyIds.filter((targetId) => {
           const targetJourney = userJourneys.find((j) => j.id === targetId);
           if (!targetJourney) return false;
@@ -687,14 +682,11 @@ export function MultipleDocumentUploadModal({
             !isDocumentApplicableToJourney(specificDefId, uploadItem.type, targetJourney.journey_type)
           )
             return false;
-          // Sibling candidate (same base visa category, e.g. the other parent): only share
-          // documents that are shareable across candidates.
-          const isSibling =
-            !!activeShareBase && getBaseVisaCategory(targetJourney.journey_type) === activeShareBase;
-          if (isSibling) {
-            const def = ALL_DOCUMENTS.find((d) => d.id === specificDefId);
-            if (!def || !isDocumentShareableAcrossCandidates(def)) return false;
-          }
+          // Only share genuinely-same petitioner/sponsor documents, regardless of whether the
+          // target is a sibling candidate or a different-category journey. Beneficiary-specific
+          // docs are never cross-shared.
+          const def = ALL_DOCUMENTS.find((d) => d.id === specificDefId);
+          if (!def || !isDocumentShareableAcrossCandidates(def)) return false;
           return true;
         });
 
@@ -1322,11 +1314,16 @@ export function MultipleDocumentUploadModal({
                 Cross-share these documents
               </label>
               <p className="text-[11px] text-slate-500 leading-normal mb-1">
-                Select which of your other active immigration journeys should also receive these uploaded files:
+                Shared petitioner documents are added to your other journeys below by default, so
+                you do not have to upload the same files again for each visa category. Untick any
+                journey you do not want them added to:
               </p>
               <div className="space-y-2.5">
                 {visibleOtherJourneys.map((j) => {
                   const isChecked = sharedJourneyIds.includes(j.id);
+                  // Disambiguate same-category siblings (e.g. two IR-5 parents): which
+                  // candidate this is, plus the user-set name when present.
+                  const candidateTag = getCandidateJourneyTag(j.journey_type, profile?.candidates);
                   return (
                     <div
                       key={j.id}
@@ -1341,14 +1338,14 @@ export function MultipleDocumentUploadModal({
                           setManuallyUncheckedIds(manuallyUncheckedIds.filter((id) => id !== j.id));
                         }
                       }}
-                      className={`flex items-center justify-between p-3.5 rounded-xl border cursor-pointer select-none transition-all duration-300 ${
+                      className={`flex items-center justify-between gap-2 p-3.5 rounded-xl border cursor-pointer select-none transition-all duration-300 ${
                         isChecked
                           ? "bg-primary/5 border-primary shadow-xs"
                           : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
                       }`}
                     >
-                      <div className="flex items-center gap-3">
-                        <div className={`w-5 h-5 rounded-md flex items-center justify-center border transition-all duration-300 ${
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className={`w-5 h-5 shrink-0 rounded-md flex items-center justify-center border transition-all duration-300 ${
                           isChecked
                             ? "bg-primary border-primary text-white scale-100"
                             : "border-slate-300 dark:border-slate-700 bg-transparent"
@@ -1359,14 +1356,21 @@ export function MultipleDocumentUploadModal({
                             </svg>
                           )}
                         </div>
-                        <span className={`text-xs font-bold transition-colors ${
-                          isChecked ? "text-slate-900 dark:text-white" : "text-slate-600 dark:text-slate-400"
-                        }`}>
-                          {getFriendlyJourneyName(j.journey_type, j.journey_name)}
-                        </span>
+                        <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+                          <span className={`text-xs font-bold transition-colors ${
+                            isChecked ? "text-slate-900 dark:text-white" : "text-slate-600 dark:text-slate-400"
+                          }`}>
+                            {getFriendlyJourneyName(j.journey_type, j.journey_name)}
+                          </span>
+                          {candidateTag && (
+                            <span className="rounded-md border border-slate-200 bg-slate-100 px-2 py-0.5 text-[10px] font-bold tracking-wide text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                              {candidateTag}
+                            </span>
+                          )}
+                        </div>
                       </div>
                       {isChecked && (
-                        <span className="text-[10px] font-black uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded-md animate-in fade-in zoom-in-95 duration-200">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded-md shrink-0 animate-in fade-in zoom-in-95 duration-200">
                           Shared
                         </span>
                       )}

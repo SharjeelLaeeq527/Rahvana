@@ -350,32 +350,52 @@ and each candidate maps to a distinct `journey_type` via
 data is auto-shared across candidates (`SHARED_PETITIONER_FIELDS`) while beneficiary data is
 isolated (`CANDIDATE_SPECIFIC_FIELDS`). The vault, roadmap, tools and forms all scope by the
 active candidate's journey (via `useCandidate()` + `journey_id`); the vault therefore reuses
-the existing per-`journey_id` scoping (no `candidate_id` column). UI: `CandidateSwitcherTray`
-(switch / add / rename) is a **whole-journey feature rendered in the global `SiteHeader`
-profile dropdown** (one account, multiple beneficiary journeys), NOT a vault-only widget. It
-is gated on the account's **actual journeys**: it shows only when the user has an IR-5/IR-2
-journey (`fetchUserJourneysCached` + `getBaseVisaCategory`) or already has more than one
-candidate - so it **never appears for IR-1**, which is a separate single-beneficiary journey
-kept fully outside the candidate system. (Gating on the journeys, not on the defaulted
-`activeCandidate.visaCategory`, avoids the old leak where a defaulted IR-5 candidate showed the
-tray for IR-1 users. The in-card copies previously on the vault page / `RoadmapLayoutEngine`
-were removed; the vault page keeps only a small "whose vault" context chip.) The header bar
-also shows a small **active-candidate badge** (same gate) so the active beneficiary is visible
-without opening the tray; clicking it opens the tray.
-`AddCandidateModal` opens from the tray and offers **only IR-5 parent relations (Mother /
-Father / Stepparent / Adoptive Parent) or IR-2 Child - never IR-1 Spouse** (a candidate can
-never be IR-1). Full design: `docs/multi-candidate-desciption.md`. **Cross-candidate document
-sharing** (e.g. a petitioner doc used for both parents) rides the existing **cross-journey**
-share (`shareWithJourneyIds`). Both upload modals default the share targets to **unchecked
-(opt-in)** and only offer **other candidates within the SAME base visa category** (siblings);
-a different-category journey - notably IR-1 - is never offered as a share target, keeping IR-1
-isolated. Between siblings, only documents that pass `isDocumentShareableAcrossCandidates`
-(`lib/document-vault/candidate-sharing.ts`: petitioner/joint-sponsor/household docs shareable by
-default, any BENEFICIARY doc parent-specific, explicit `shareableAcrossCandidates` override on a
-`DocumentDefinition`) are offered - so parent-specific docs (passport, CNIC, birth, medical) are
-never offered between parents.
+the existing per-`journey_id` scoping (no `candidate_id` column). `CandidateContext` also
+exposes the canonical scope of the active journey: **`activeJourneyBase`** (e.g. "IR-1",
+"IR-5") and **`activeJourneyKey`** (the `journey_type` key, `getCandidateJourneyKey(active
+candidate.visaCategory, id)`), derived from the active candidate's own `visaCategory` (not an
+ambient `journey_type`). UI: `CandidateSwitcherTray` (switch / add / rename) is a
+**whole-journey feature rendered in the global `SiteHeader` profile dropdown** (one account,
+multiple beneficiary journeys), NOT a vault-only widget. The switcher is **category-agnostic**
+(decision 2): it shows only when the account genuinely has **2+ candidates/journeys** -
+`isMultiCandidate` (candidate roster length > 1) OR `dedupeJourneysByType(fetchUserJourneysCached()).length >= 2`.
+IR-1 is a normal candidate/journey here, no longer isolated. A **single-candidate account
+shows NO switcher tray** (just its normal profile); "+ Add Candidate" stays reachable from a
+dropdown entry rendered in that same profile menu (opens `AddCandidateModal`), so a
+single-journey user can still start a second candidate. Counting real candidates/journeys
+(never the defaulted `activeCandidate.visaCategory`) avoids the old leak where a defaulted
+IR-5 candidate showed the tray for IR-1 users. The header bar also shows a small
+**active-candidate badge** (same 2+ gate) so the active beneficiary is visible without opening
+the tray; clicking it opens the tray.
+`AddCandidateModal` is **category-agnostic** (Phase 4): it offers every relation - Mother /
+Father / Stepparent / Adoptive Parent (IR-5), Child (IR-2), and **Spouse (IR-1)** - deriving
+the visa category via `getVisaCategoryForRelation`. The only cardinality rule is USCIS's "one
+spouse at a time": a second Spouse is blocked (Spouse hidden once one exists, and
+`CandidateContext.addCandidate` throws) but this never blocks displaying/switching the one
+spouse. A cross-category candidate's journey row + config are created lazily by `initialize`
+on the URL that the switcher navigates to (URL base is authoritative for the category,
+`candidate_id` selects within it; deliberately NOT candidate-authoritative, because a defaulted
+candidate's `visaCategory` can be a stale IR-5 and would mislabel IR-1 accounts). Full design:
+`docs/multi-candidate-desciption.md`. **Cross-candidate document
+sharing** (e.g. a petitioner doc used for both parents, OR the petitioner's passport reused on
+both an IR-1 and an IR-5 journey) rides the existing **cross-journey** share
+(`shareWithJourneyIds`). The rule is **category-AGNOSTIC**: both upload modals offer **every
+other journey on the account, across categories** (IR-1 is a normal share target now, NOT
+isolated). Which specific document is offered to a given target is decided by two rules:
+(1) `isDocumentShareableAcrossCandidates` (`lib/document-vault/candidate-sharing.ts`:
+petitioner/joint-sponsor/household docs shareable by default, any BENEFICIARY doc
+person-specific, explicit `shareableAcrossCandidates` override on a `DocumentDefinition`) - so
+only genuinely-same petitioner/sponsor documents are ever offered, and person-specific docs
+(passport, CNIC, birth, medical) are never offered to any other journey; and
+(2) `isDocumentApplicableToJourney` - the doc must apply to the TARGET journey's visa category.
+The share targets are **checked by DEFAULT (opt-out)** so a shared petitioner document is not
+re-uploaded per category; the user can untick any target (the multi-upload modal remembers
+manual unticks via `manuallyUncheckedIds`). **The upload route re-enforces both rules
+server-side** (`app/api/documents/upload/route.ts`): it looks up the user's own journeys
+(RLS-scoped) and drops any `shareWithJourneyIds` entry that is not the user's journey, is not a
+shareable doc, or does not apply to the target category - the client list is never trusted.
 `DELETE /api/documents/[id]` reference-counts `storage_path` before removing the blob so
-deleting one shared copy never orphans the file for the other candidate's journey.
+deleting one shared copy never orphans the file for the other journey.
 Vault files are AES-256-GCM encrypted with a **per-user** key
 (`file-encryption.ts`, `SHA-256(PORTAL_WALLET_SECRET + ":" + userId)`, `RVLT` magic
 header) — this per-user derivation is unique to vault files (see 23).

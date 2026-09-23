@@ -116,8 +116,6 @@ export function CandidateSwitcherTray({
   };
 
   const visaCategory = activeCandidate.visaCategory || "IR-5";
-  const isIr5 = visaCategory.toUpperCase().includes("IR-5") || visaCategory.toUpperCase().includes("IR5");
-  const isIr2 = visaCategory.toUpperCase().includes("IR-2") || visaCategory.toUpperCase().includes("IR2");
 
   const handleSelectCandidate = (candidateId: string) => {
     setActiveCandidateId(candidateId);
@@ -127,12 +125,11 @@ export function CandidateSwitcherTray({
     const target = candidates.find((c) => c.id === candidateId);
     if (target && typeof window !== "undefined") {
       const currentPath = window.location.pathname;
+      // Any journey roadmap route (category-agnostic). When switching to a candidate of a
+      // different category, navigate to that category's roadmap so the URL, active candidate,
+      // and loaded journey stay in sync.
       const isRoadmapRoute =
-        currentPath.includes("/visa-category/ir1-journey") ||
-        currentPath.includes("/visa-category/ir5-journey") ||
-        currentPath.includes("/ir-1-roadmap") ||
-        currentPath.includes("/visa-category/ir-1") ||
-        currentPath.includes("/visa-category/ir-5");
+        currentPath.includes("/visa-category/") || currentPath.includes("-roadmap");
 
       if (isRoadmapRoute) {
         const targetRoute = getJourneyHrefByType(target.visaCategory);
@@ -295,7 +292,8 @@ export function CandidateSwitcherTray({
         })}
       </div>
 
-      {/* Add Candidate (for IR-5 2nd parent or IR-2 children) */}
+      {/* Add Candidate - category-agnostic entry (a candidate is a person/beneficiary; the
+          journey is the system's result). The modal picks the exact relation/category. */}
       <div className="mt-2 pt-1.5 border-t border-border/50">
         <button
           type="button"
@@ -303,15 +301,7 @@ export function CandidateSwitcherTray({
           className="w-full flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-semibold text-primary hover:bg-primary/5 transition-colors border border-dashed border-primary/30"
         >
           <UserPlus className="w-3.5 h-3.5" />
-          <span>
-            {isIr5
-              ? candidates.length === 1
-                ? "+ Add 2nd Parent"
-                : "+ Add Parent Profile"
-              : isIr2
-                ? "+ Add Child Profile"
-                : "+ Add Beneficiary"}
-          </span>
+          <span>+ Add Candidate</span>
         </button>
       </div>
 

@@ -24,6 +24,8 @@ import {
   getDefaultCandidatesForVisa,
   createNewCandidate,
   getVisaCategoryForRelation,
+  getBaseVisaCategory,
+  getCandidateJourneyKey,
 } from "@/lib/candidate/candidateSyncService";
 import { useToast } from "@/app/components/shared/ToastProvider";
 
@@ -59,6 +61,20 @@ interface CandidateContextType {
 
   /** Whether the account currently has more than one candidate profile */
   isMultiCandidate: boolean;
+
+  /**
+   * Base visa category of the ACTIVE candidate's journey (e.g. "IR-1", "IR-5"). Category
+   * configures the journey; this is the canonical, category-agnostic base for scoping
+   * roadmap/forms/tools/documents to the active journey.
+   */
+  activeJourneyBase: string;
+
+  /**
+   * DB `journey_type` key for the ACTIVE candidate (candidate-1 -> base root like "ir5" /
+   * "ir1"; later candidates -> "ir5_candidate-2", ...). This is the canonical scope key that
+   * every module keys off when the active candidate switches.
+   */
+  activeJourneyKey: string;
 
   /**
    * Effective tier of the active candidate.
@@ -202,10 +218,12 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
       isPreview?: boolean;
       tier?: CandidateTier;
     }): CandidateProfile => {
-      // Guard: USCIS permits only one spouse to be sponsored at a time
+      // Guard: USCIS permits only one spouse to be sponsored at a time. Block only a SECOND
+      // spouse - adding the first Spouse candidate (IR-1) is allowed, and this never blocks
+      // displaying or switching to an existing spouse candidate.
       if (
-        params.relation === "Spouse" ||
-        candidatesRef.current.some((c) => c.relation === "Spouse" && params.relation === "Spouse")
+        params.relation === "Spouse" &&
+        candidatesRef.current.some((c) => c.relation === "Spouse")
       ) {
         showToast("Only one spouse can be sponsored at a time.", "error");
         throw new Error("Only one spouse can be sponsored at a time.");
@@ -222,7 +240,8 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
         relation: params.relation,
         fullName: params.fullName,
         visaCategory: derivedVisa,
-        isPreview: params.isPreview ?? true,
+        // No per-candidate preview: every candidate is a full, equal beneficiary.
+        isPreview: params.isPreview ?? false,
         tier: params.tier ?? "free",
       });
 
@@ -334,17 +353,20 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
     return (
       found ||
       candidates[0] || {
+        // Last-resort fallback (candidates is normally never empty). Do NOT hardcode an
+        // IR-5/Mother assumption - that is the old leak that made IR-1 accounts look like
+        // IR-5. Derive the category from the profile and keep the relation neutral.
         id: "candidate-1",
         label: "Candidate 1",
-        relation: "Mother" as const,
-        fullName: "Beneficiary 1",
-        visaCategory: "IR-5",
+        relation: "Other" as const,
+        fullName: "",
+        visaCategory: (profile?.visaCategory || profile?.visaType || "IR-1") as string,
         tier: "free" as const,
         isPrimary: true,
         createdAt: new Date().toISOString(),
       }
     );
-  }, [candidates, activeCandidateId]);
+  }, [candidates, activeCandidateId, profile?.visaCategory, profile?.visaType]);
 
   const activeCandidateTier: CandidateTier = useMemo(() => {
     if (activeCandidate.isPreview || activeCandidate.tier === "free") {
@@ -354,6 +376,18 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
   }, [activeCandidate]);
 
   const isMultiCandidate = candidates.length > 1;
+
+  // Canonical scope for the active journey (category-agnostic). Derived from the active
+  // candidate's own visaCategory (NOT an ambient journey_type) so a cross-category candidate
+  // maps to the right config/journey row.
+  const activeJourneyBase = useMemo(
+    () => getBaseVisaCategory(activeCandidate.visaCategory),
+    [activeCandidate.visaCategory]
+  );
+  const activeJourneyKey = useMemo(
+    () => getCandidateJourneyKey(activeCandidate.visaCategory, activeCandidateId),
+    [activeCandidate.visaCategory, activeCandidateId]
+  );
 
   const value = useMemo(
     () => ({
@@ -365,6 +399,8 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
       updateCandidate,
       removeCandidate,
       isMultiCandidate,
+      activeJourneyBase,
+      activeJourneyKey,
       activeCandidateTier,
     }),
     [
@@ -376,6 +412,8 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
       updateCandidate,
       removeCandidate,
       isMultiCandidate,
+      activeJourneyBase,
+      activeJourneyKey,
       activeCandidateTier,
     ]
   );

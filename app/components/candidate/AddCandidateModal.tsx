@@ -36,22 +36,15 @@ export function AddCandidateModal({
 }: AddCandidateModalProps) {
   const { addCandidate, candidates } = useCandidate();
 
-  const isIr5 =
-    visaCategory.toUpperCase().includes("IR-5") || visaCategory.toUpperCase().includes("IR5");
-  const isIr2 =
-    visaCategory.toUpperCase().includes("IR-2") || visaCategory.toUpperCase().includes("IR2");
-
-  // Determine smart default relation (Spouse cannot be added as multi-candidate beneficiary)
+  // A petitioner can sponsor across categories (a parent AND a spouse AND a child), so every
+  // relation is offered. The ONLY cardinality rule is USCIS's "one spouse at a time": a second
+  // Spouse can never be added, so Spouse is hidden once a spouse candidate already exists.
+  const hasSpouse = candidates.some((c) => c.relation === "Spouse");
   const hasMother = candidates.some((c) => c.relation === "Mother");
   const hasFather = candidates.some((c) => c.relation === "Father");
 
-  // Candidates only ever belong to IR-5 (parents) or IR-2 (children). IR-1 is a separate,
-  // single-beneficiary journey and is intentionally NOT part of the candidate system.
-  const defaultRelation: CandidateRelation = isIr2
-    ? "Child"
-    : hasMother && !hasFather
-      ? "Father"
-      : "Mother";
+  // Smart default relation: fill the missing parent first, else Mother.
+  const defaultRelation: CandidateRelation = hasMother && !hasFather ? "Father" : "Mother";
 
   const [relation, setRelation] = useState<CandidateRelation>(defaultRelation);
   const [fullName, setFullName] = useState("");
@@ -61,8 +54,9 @@ export function AddCandidateModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (relation === "Spouse") {
-      // USCIS permits only one spouse to be sponsored at a time
+    // Guard against a second spouse (belt-and-suspenders; Spouse is hidden when one exists,
+    // and CandidateContext.addCandidate throws too).
+    if (relation === "Spouse" && hasSpouse) {
       return;
     }
     setIsSubmitting(true);
@@ -75,7 +69,7 @@ export function AddCandidateModal({
         visaCategory: targetVisa,
         // Every candidate/parent is a real beneficiary and is treated equally.
         // We do NOT flag added parents as "preview" based on creation order.
-        isPreview: true,
+        isPreview: false,
         tier: "free",
       });
       onClose();
@@ -97,15 +91,13 @@ export function AddCandidateModal({
     { value: "Stepparent", label: "Stepparent", visaBadge: "IR-5 Parent", icon: Users },
     { value: "AdoptiveParent", label: "Adoptive Parent", visaBadge: "IR-5 Parent", icon: Heart },
     { value: "Child", label: "Child", visaBadge: "IR-2 Child", icon: Baby },
+    { value: "Spouse", label: "Spouse", visaBadge: "IR-1 Spouse", icon: Heart },
   ];
 
-  // Only offer relations that belong to the current journey's visa category:
-  // IR-2 -> child, everything else (IR-5) -> parents only. IR-1 (Spouse) is never a
-  // candidate, so it is not offered here at all.
-  const PARENT_RELATIONS: CandidateRelation[] = ["Mother", "Father", "Stepparent", "AdoptiveParent"];
-  const relationOptions = isIr2
-    ? allRelationOptions.filter((o) => o.value === "Child")
-    : allRelationOptions.filter((o) => PARENT_RELATIONS.includes(o.value));
+  // Category-agnostic: offer every relation (the exact visa category is derived from the
+  // relation via getVisaCategoryForRelation). The only exclusion is a SECOND spouse - USCIS
+  // permits only one spouse at a time - so Spouse is dropped once one already exists.
+  const relationOptions = allRelationOptions.filter((o) => !(o.value === "Spouse" && hasSpouse));
 
   const modal = (
     <AnimatePresence>

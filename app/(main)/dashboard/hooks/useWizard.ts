@@ -692,7 +692,10 @@ export function useWizard(options: UseWizardOptions = {}) {
       },
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId, journeyId, activeRoadmap]); // STABLE DEPENDENCIES
+  }, [userId, journeyId, activeRoadmap, effectiveCandidateId]); // STABLE DEPENDENCIES
+  // ^ effectiveCandidateId MUST be here: the actions close over it (cache-bust refetch posts
+  //   candidate_id: effectiveCandidateId). Without it, switching the active candidate left the
+  //   actions bound to the previous candidate, so refetches/writes hit the wrong journey.
 
   return { state, actions, isLoaded, hasExistingProgress, isSyncing, error };
 }

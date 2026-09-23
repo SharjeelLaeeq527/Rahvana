@@ -225,13 +225,14 @@ export default function DocumentVaultPage() {
     [userJourneys]
   );
 
-  // Candidate (Mother/Father) switching only applies to multi-candidate categories (IR-5,
-  // and future IR-2). Never for IR-1. Gate purely on the ACTIVE JOURNEY's type so the
-  // candidate default on the profile can never leak the switcher into an IR-1 vault.
+  // Candidate switching is category-AGNOSTIC now (decision 2): any account can have multiple
+  // candidates/journeys, including IR-1. This flag just means "the active journey is a
+  // recognized candidate-capable journey"; the "whose vault" chip below is still additionally
+  // gated on isMultiCandidate, so it only appears once there are genuinely 2+ candidates.
   const isCandidateJourney = useMemo(() => {
     if (!activeJourney?.journey_type) return false;
     const base = getBaseVisaCategory(activeJourney.journey_type);
-    return base === "IR-5" || base === "IR-2";
+    return ["IR-5", "IR-2", "IR-1", "CR-1"].includes(base);
   }, [activeJourney]);
 
   const journeyRoadmapHref = useMemo(() => {
