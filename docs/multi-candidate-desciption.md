@@ -435,12 +435,29 @@ Interactive modal for adding a 2nd parent (IR-5) or additional children (IR-2):
 
 ---
 
+### J. Phase D: Per-Journey Entitlement Resolution & Cross-Category Access Control
+
+#### 26. PlanContext Dynamic Tier Resolution (`app/context/PlanContext.tsx`)
+- Fetches per-journey subscription tiers (`journeys.subscription_tier`) in parallel with the user profile summary (`user_profiles.subscription_tier`).
+- Dynamically resolves `realTier` and `tier` based on the active candidate's visa category (e.g. `IR-5` vs `IR-1`):
+  - If user purchased `IR-5` Premium, active `IR-5` candidate (Mother or Father) resolves to `premium`.
+  - If user adds an `IR-1` candidate (unpurchased), active `IR-1` candidate resolves to `free` (preview features only; premium locked).
+  - When `IR-1` is subsequently purchased, `IR-1` unlocks to `premium`.
+- Fallback for legacy single-journey accounts: if no per-journey tier records exist, falls back gracefully to `user_profiles.subscription_tier`.
+- Supports `devOverride` and candidate preview controls (`activeCandidate.isPreview` / `activeCandidateTier: "free"`).
+
+#### 27. Upgrade Modal Category Awareness (`app/components/entitlements/UpgradeModal.tsx`)
+- Automatically tags checkout requests with the active candidate's visa category (`visaCategory: activeCandidate.visaCategory`) so Stripe checkout attaches payments to the correct journey.
+
+---
+
 ## 5. Automated Tests
 
 Unit test suites:
 - [__tests__/candidate/candidate-sync.test.ts](file:///d:/arachnie_work/updated_work/__tests__/candidate/candidate-sync.test.ts) (21 tests)
 - [__tests__/candidate/candidate-guides.test.ts](file:///d:/arachnie_work/updated_work/__tests__/candidate/candidate-guides.test.ts) (14 tests)
 - [__tests__/candidate/candidate-tools.test.ts](file:///d:/arachnie_work/updated_work/__tests__/candidate/candidate-tools.test.ts) (16 tests)
+- [__tests__/candidate/candidate-entitlements.test.ts](file:///d:/arachnie_work/updated_work/__tests__/candidate/candidate-entitlements.test.ts) (7 tests)
 
 ### Test Coverage Summary:
 - **Default Profile Generation**: Verified generic default profiles for IR-5 (single and both), IR-2, and IR-1 - generic "Candidate N" labels, empty `fullName`, and no assumed parent relation.
@@ -452,6 +469,7 @@ Unit test suites:
 - **Guide Save Lifecycle**: Verified that new sessions default to `saved: false`, the save button is visible until clicked, unsaved guides are excluded from My Guides / Resources progress cards, and progress persists across page refresh.
 - **Phase 2 Tools Scoping**: Verified interview prep session isolation, 221(g) action planner namespacing, sponsorship calculator household computation & state isolation, and USCIS case status receipt tagging & filtering.
 - **Phase C Forms Draft Isolation**: Verified storage key generation per form and candidate journey key, draft payload isolation between Candidate 1 (Mother) and Candidate 2 (Father), legacy `"global"` fallback resolution, and dynamic hydration key generation on candidate switch.
+- **Phase D Per-Journey Entitlement Resolution**: Verified cross-category tier scoping (IR-5 Premium vs unpurchased IR-1 Free/Locked), post-purchase multi-category unlocks, backward compatibility with legacy accounts, and candidate preview / dev override enforcement.
 
-**Total Test Suite Result**: **51 / 51 tests passing** (0 regressions).
+**Total Test Suite Result**: **58 / 58 tests passing** (0 regressions).
 
