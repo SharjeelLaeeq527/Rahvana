@@ -2651,6 +2651,7 @@ footer.querySelector(".footer-page").textContent = String(p);
                     id="beneficiaryName"
                     value={formData.beneficiaryName}
                     onChange={(e) => handleField("beneficiaryName", e.target.value)}
+                    placeholder="e.g. Candidate 1 (Mother)"
                   />
                 </div>
               </div>

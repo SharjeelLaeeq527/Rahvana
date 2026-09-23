@@ -48,12 +48,22 @@ export default function TwentyTwoOneGActionPlanner() {
     if (profile.caseNumber) {
       savedData.caseNumber = profile.caseNumber;
     }
-    if (activeCandidate.fullName) {
-      savedData.beneficiaryName = activeCandidate.fullName;
-    } else if (profile.fullName) {
-      savedData.beneficiaryName = profile.fullName;
-    } else if (profile.name?.first) {
-      savedData.beneficiaryName = `${profile.name.first} ${profile.name.last || ""}`.trim();
+    // Resolve user-friendly beneficiary name (e.g. "Candidate 1 (Mother)" or "Candidate 2 (Father)")
+    const candidateDefaultName =
+      activeCandidate.fullName && activeCandidate.fullName.trim()
+        ? activeCandidate.fullName.trim()
+        : activeCandidate.relation && activeCandidate.relation !== "Other"
+        ? `${activeCandidate.label || "Candidate"} (${activeCandidate.relation})`
+        : activeCandidate.label || "Candidate 1";
+
+    const currentBeneficiary =
+      typeof savedData.beneficiaryName === "string" ? savedData.beneficiaryName.trim() : "";
+    const isIdTypeOrEmpty = !currentBeneficiary || /^candidate[-_]\d+$/i.test(currentBeneficiary);
+
+    if (isIdTypeOrEmpty) {
+      savedData.beneficiaryName = candidateDefaultName;
+    } else if (activeCandidate.fullName && activeCandidate.fullName.trim()) {
+      savedData.beneficiaryName = activeCandidate.fullName.trim();
     }
     if (profile.passportNumber) {
       savedData.passportNumber = profile.passportNumber;
