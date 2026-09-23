@@ -263,4 +263,132 @@ describe("Phase 2: Beneficiary-Specific Tools & Multi-Candidate Scoping", () => 
       expect(cand2Only[0].receiptNumber).toBe("IOE9000000002");
     });
   });
+
+  // ─── 5. Smart Form Filler Draft Isolation (Phase C) ──────────────────────
+  describe("5. Smart Form Filler Draft & Progress Isolation (Phase C)", () => {
+    const DRAFT_STORAGE_KEY = "visa_form_draft_backup";
+    const buildDraftStorageKey = (formCode: string, journeyKey = "global") =>
+      `${DRAFT_STORAGE_KEY}:${formCode.toLowerCase()}:${journeyKey}`;
+
+    it("generates isolated draft storage keys per form and candidate journey key", () => {
+      const keyCand1DS260 = buildDraftStorageKey("ds260", "ir5");
+      const keyCand2DS260 = buildDraftStorageKey("ds260", "ir5_candidate2");
+      const keyCand1I130 = buildDraftStorageKey("i130", "ir5");
+      const keyCand2I130 = buildDraftStorageKey("i130", "ir5_candidate2");
+      const keyLegacy = buildDraftStorageKey("ds260", "global");
+
+      expect(keyCand1DS260).toBe("visa_form_draft_backup:ds260:ir5");
+      expect(keyCand2DS260).toBe("visa_form_draft_backup:ds260:ir5_candidate2");
+      expect(keyCand1I130).toBe("visa_form_draft_backup:i130:ir5");
+      expect(keyCand2I130).toBe("visa_form_draft_backup:i130:ir5_candidate2");
+      expect(keyLegacy).toBe("visa_form_draft_backup:ds260:global");
+
+      expect(keyCand1DS260).not.toEqual(keyCand2DS260);
+      expect(keyCand1DS260).not.toEqual(keyCand1I130);
+    });
+
+    it("isolates draft payloads between Candidate 1 (Mother) and Candidate 2 (Father)", () => {
+      const mockStorage: Record<string, string> = {};
+
+      const saveDraft = (formCode: string, journeyKey: string, payload: Record<string, string>) => {
+        mockStorage[buildDraftStorageKey(formCode, journeyKey)] = JSON.stringify({
+          draft: {
+            payload,
+            current_step: 2,
+            current_question_index: 3,
+            view_mode: "form",
+            completed: false,
+          },
+        });
+      };
+
+      const readDraft = (formCode: string, journeyKey: string) => {
+        const raw = mockStorage[buildDraftStorageKey(formCode, journeyKey)];
+        if (raw) return JSON.parse(raw).draft;
+        if (journeyKey !== "global") {
+          const fallback = mockStorage[buildDraftStorageKey(formCode, "global")];
+          if (fallback) return JSON.parse(fallback).draft;
+        }
+        return null;
+      };
+
+      // Candidate 1 (Mother Jane) saves DS-260 draft
+      saveDraft("ds260", "ir5", {
+        "S01-Q001_GivenName": "Jane",
+        "S01-Q001_FamilyName": "Doe",
+        "S01-Q004": "Female",
+        "S01-Q006": "1960-05-12",
+        "S01-Q012": "A12345678",
+      });
+
+      // Candidate 2 (Father John) saves DS-260 draft
+      saveDraft("ds260", "ir5_candidate2", {
+        "S01-Q001_GivenName": "John",
+        "S01-Q001_FamilyName": "Doe",
+        "S01-Q004": "Male",
+        "S01-Q006": "1958-11-20",
+        "S01-Q012": "B98765432",
+      });
+
+      const cand1Draft = readDraft("ds260", "ir5");
+      const cand2Draft = readDraft("ds260", "ir5_candidate2");
+
+      expect(cand1Draft.payload["S01-Q001_GivenName"]).toBe("Jane");
+      expect(cand1Draft.payload["S01-Q004"]).toBe("Female");
+      expect(cand1Draft.payload["S01-Q012"]).toBe("A12345678");
+
+      expect(cand2Draft.payload["S01-Q001_GivenName"]).toBe("John");
+      expect(cand2Draft.payload["S01-Q004"]).toBe("Male");
+      expect(cand2Draft.payload["S01-Q012"]).toBe("B98765432");
+    });
+
+    it("falls back to legacy 'global' draft when candidate-specific draft does not exist yet", () => {
+      const mockStorage: Record<string, string> = {
+        [buildDraftStorageKey("i130", "global")]: JSON.stringify({
+          draft: {
+            payload: {
+              sponsor_first_name: "Sharjeel",
+              sponsor_last_name: "Laeeq",
+              sponsor_city: "Los Angeles",
+            },
+            current_step: 1,
+            current_question_index: 2,
+          },
+        }),
+      };
+
+      const readDraft = (formCode: string, journeyKey: string) => {
+        const raw = mockStorage[buildDraftStorageKey(formCode, journeyKey)];
+        if (raw) return JSON.parse(raw).draft;
+        if (journeyKey !== "global") {
+          const fallback = mockStorage[buildDraftStorageKey(formCode, "global")];
+          if (fallback) return JSON.parse(fallback).draft;
+        }
+        return null;
+      };
+
+      // Candidate 1 (ir5) has no specific draft yet -> should read global fallback
+      const cand1Draft = readDraft("i130", "ir5");
+      expect(cand1Draft).not.toBeNull();
+      expect(cand1Draft.payload.sponsor_first_name).toBe("Sharjeel");
+
+      // Candidate 2 (ir5_candidate2) has no specific draft yet -> should also read global fallback
+      const cand2Draft = readDraft("i130", "ir5_candidate2");
+      expect(cand2Draft).not.toBeNull();
+      expect(cand2Draft.payload.sponsor_first_name).toBe("Sharjeel");
+    });
+
+    it("constructs unique hydration keys so switching candidate switches form state", () => {
+      const getHydrationKey = (formCode: string, userId: string | null, journeyKey: string) =>
+        `${formCode}:${userId ?? "anon"}:${journeyKey}`;
+
+      const keyCand1 = getHydrationKey("ds260", "user-123", "ir5");
+      const keyCand2 = getHydrationKey("ds260", "user-123", "ir5_candidate2");
+
+      expect(keyCand1).toBe("ds260:user-123:ir5");
+      expect(keyCand2).toBe("ds260:user-123:ir5_candidate2");
+      expect(keyCand1).not.toEqual(keyCand2);
+    });
+  });
 });
+

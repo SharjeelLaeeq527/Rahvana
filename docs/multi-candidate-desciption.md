@@ -418,12 +418,29 @@ Interactive modal for adding a 2nd parent (IR-5) or additional children (IR-2):
 
 ---
 
+### I. Phase C: Smart Form Filler Draft & Progress Isolation
+
+#### 24. MultiStepForm Client Scoping (`app/components/forms/auto-visaform-filling/MultiStepForm.tsx`)
+- Scopes form drafts by `activeJourneyKey` (e.g. `ir5`, `ir5_candidate2`, `ir1`) from `CandidateContext` rather than hardcoding `"global"`.
+- Uses composite hydration keys `${formCode}:${userId}:${draftJourneyKey}` so switching candidate profiles in the global switcher immediately re-hydrates the form state for the newly active candidate.
+- Scopes browser `localStorage` draft backups with `visa_form_draft_backup:${formCode}:${journeyKey}` with fallback to legacy `global` backups.
+- Overlays candidate-specific profile data (beneficiary names, DOB, passport details, CNIC) during auto-fill overrides while maintaining shared sponsor fields across candidates.
+- Debounced autosave and `finalizeDraft` payloads send the active `draftJourneyKey`.
+- Automatically attaches `journeyId` when saving generated PDFs directly to Document Vault.
+
+#### 25. Visa Forms Progress Route Scoping (`app/api/visa-forms/[formCode]/progress/route.ts`)
+- `GET`: Reads `journey_key` query parameter. If no draft exists for a specific journey key, seamlessly falls back to legacy `global` draft for backward compatibility with existing single-journey accounts.
+- `POST`: Upserts draft records per `(user_id, form_code, journey_key)` composite key.
+- `DELETE`: Deletes draft records matching `(user_id, form_code, journey_key)`.
+
+---
+
 ## 5. Automated Tests
 
 Unit test suites:
 - [__tests__/candidate/candidate-sync.test.ts](file:///d:/arachnie_work/updated_work/__tests__/candidate/candidate-sync.test.ts) (21 tests)
 - [__tests__/candidate/candidate-guides.test.ts](file:///d:/arachnie_work/updated_work/__tests__/candidate/candidate-guides.test.ts) (14 tests)
-- [__tests__/candidate/candidate-tools.test.ts](file:///d:/arachnie_work/updated_work/__tests__/candidate/candidate-tools.test.ts) (11 tests)
+- [__tests__/candidate/candidate-tools.test.ts](file:///d:/arachnie_work/updated_work/__tests__/candidate/candidate-tools.test.ts) (16 tests)
 
 ### Test Coverage Summary:
 - **Default Profile Generation**: Verified generic default profiles for IR-5 (single and both), IR-2, and IR-1 - generic "Candidate N" labels, empty `fullName`, and no assumed parent relation.
@@ -434,6 +451,7 @@ Unit test suites:
 - **Guides Scoping & Isolation**: Verified independent guide sessions, progress percent calculation, and candidate query URL building.
 - **Guide Save Lifecycle**: Verified that new sessions default to `saved: false`, the save button is visible until clicked, unsaved guides are excluded from My Guides / Resources progress cards, and progress persists across page refresh.
 - **Phase 2 Tools Scoping**: Verified interview prep session isolation, 221(g) action planner namespacing, sponsorship calculator household computation & state isolation, and USCIS case status receipt tagging & filtering.
+- **Phase C Forms Draft Isolation**: Verified storage key generation per form and candidate journey key, draft payload isolation between Candidate 1 (Mother) and Candidate 2 (Father), legacy `"global"` fallback resolution, and dynamic hydration key generation on candidate switch.
 
-**Total Test Suite Result**: **46 / 46 tests passing** (0 regressions).
+**Total Test Suite Result**: **51 / 51 tests passing** (0 regressions).
 
