@@ -21,6 +21,8 @@ import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import type { InterviewFormData } from "@/app/components/interview-prep/types";
 import { ResultGate } from "@/app/components/entitlements/ResultGate";
 import { useToast } from "@/app/components/shared/ToastProvider";
+import { useCandidate } from "@/app/context/CandidateContext";
+import { Users } from "lucide-react";
 
 import type { DynamicQuestionnaire } from "@/data/interview-categories/schema";
 import { E, msg } from "@/lib/errors";
@@ -104,6 +106,60 @@ export default function InterviewPreparation() {
   const { user } = useAuth();
   const { profile, isProfileLoading, updateProfile } = useUserProfile();
   const { showToast } = useToast();
+  const { activeCandidate, activeCandidateId, isMultiCandidate } = useCandidate();
+
+  const getSessionIdKey = (cId: string) => `interviewPrepSessionId_${cId}`;
+  const getSessionSourceKey = (cId: string) => `interviewPrepSessionSource_${cId}`;
+  const getSessionJourneyKey = (cId: string) => `interviewPrepJourneyId_${cId}`;
+
+  const getStoredSessionId = (cId: string) => {
+    if (typeof window === "undefined") return null;
+    return (
+      localStorage.getItem(getSessionIdKey(cId)) ||
+      (cId === "candidate-1" ? localStorage.getItem("interviewPrepSessionId") : null)
+    );
+  };
+
+  const getStoredSessionSource = (cId: string) => {
+    if (typeof window === "undefined") return null;
+    return (
+      (localStorage.getItem(getSessionSourceKey(cId)) as "journey" | "tool" | null) ||
+      (cId === "candidate-1"
+        ? (localStorage.getItem("interviewPrepSessionSource") as "journey" | "tool" | null)
+        : null)
+    );
+  };
+
+  const setStoredSession = (
+    cId: string,
+    sid: string,
+    source: "journey" | "tool",
+    jId?: string | null
+  ) => {
+    if (typeof window === "undefined") return;
+    localStorage.setItem(getSessionIdKey(cId), sid);
+    localStorage.setItem(getSessionSourceKey(cId), source);
+    if (jId) {
+      localStorage.setItem(getSessionJourneyKey(cId), jId);
+    }
+    if (cId === "candidate-1") {
+      localStorage.setItem("interviewPrepSessionId", sid);
+      localStorage.setItem("interviewPrepSessionSource", source);
+      if (jId) localStorage.setItem("interviewPrepJourneyId", jId);
+    }
+  };
+
+  const clearStoredSession = (cId: string) => {
+    if (typeof window === "undefined") return;
+    localStorage.removeItem(getSessionIdKey(cId));
+    localStorage.removeItem(getSessionSourceKey(cId));
+    localStorage.removeItem(getSessionJourneyKey(cId));
+    if (cId === "candidate-1") {
+      localStorage.removeItem("interviewPrepSessionId");
+      localStorage.removeItem("interviewPrepSessionSource");
+      localStorage.removeItem("interviewPrepJourneyId");
+    }
+  };
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -274,7 +330,7 @@ export default function InterviewPreparation() {
       const category = getCategoryFn(categorySlug);
 
       if (!category && availableCategories.length > 0) {
-        localStorage.removeItem("interviewPrepSessionId");
+        clearStoredSession(activeCandidateId);
         return;
       }
 
@@ -366,12 +422,13 @@ export default function InterviewPreparation() {
           setSessionSource("journey");
           setIsJourneySession(true);
 
-          // Store in localStorage for persistence
-          localStorage.setItem("interviewPrepSessionId", journeyData.session.id);
-          localStorage.setItem("interviewPrepSessionSource", "journey");
-          if (journeyData.journey_id) {
-            localStorage.setItem("interviewPrepJourneyId", journeyData.journey_id);
-          }
+          // Store in candidate-scoped storage for persistence
+          setStoredSession(
+            activeCandidateId,
+            journeyData.session.id,
+            "journey",
+            journeyData.journey_id
+          );
 
           // Load category data and restore session state
           const categorySlug = journeyData.session.category_slug || "ir-1-spouse";
@@ -474,12 +531,9 @@ export default function InterviewPreparation() {
           }
         }
 
-        // Check for saved session in localStorage first (current browser/session)
-        const savedSessionId = localStorage.getItem("interviewPrepSessionId");
-        const savedSessionSource = localStorage.getItem("interviewPrepSessionSource") as
-          | "journey"
-          | "tool"
-          | null;
+        // Check for saved session in candidate-scoped storage first (current browser/session)
+        const savedSessionId = getStoredSessionId(activeCandidateId);
+        const savedSessionSource = getStoredSessionSource(activeCandidateId);
 
         if (savedSessionId && step === 0) {
           const response = await fetch(`/api/interview-prep/sessions/${savedSessionId}`);
@@ -502,9 +556,7 @@ export default function InterviewPreparation() {
             setSessionRestorationAttempted(true);
             return;
           } else {
-            localStorage.removeItem("interviewPrepSessionId");
-            localStorage.removeItem("interviewPrepSessionSource");
-            localStorage.removeItem("interviewPrepJourneyId");
+            clearStoredSession(activeCandidateId);
           }
         }
 
@@ -808,11 +860,12 @@ export default function InterviewPreparation() {
           setIsJourneySession(true);
           setJourneyId(existingSession.journey_id || null);
 
-          localStorage.setItem("interviewPrepSessionId", existingSession.id);
-          localStorage.setItem("interviewPrepSessionSource", "journey");
-          if (existingSession.journey_id) {
-            localStorage.setItem("interviewPrepJourneyId", existingSession.journey_id);
-          }
+          setStoredSession(
+            activeCandidateId,
+            existingSession.id,
+            "journey",
+            existingSession.journey_id
+          );
 
           const existCatDataResponse = await fetch(
             `/api/interview-prep?category_slug=${categorySlug}`
@@ -848,9 +901,8 @@ export default function InterviewPreparation() {
       setSessionSource("tool");
       setIsJourneySession(false);
 
-      // Store session info in localStorage
-      localStorage.setItem("interviewPrepSessionId", newSessionId);
-      localStorage.setItem("interviewPrepSessionSource", "tool");
+      // Store session info in candidate-scoped storage
+      setStoredSession(activeCandidateId, newSessionId, "tool");
 
       // Load questionnaire
       const catDataResponse = await fetch(`/api/interview-prep?category_slug=${categorySlug}`);
@@ -969,8 +1021,8 @@ export default function InterviewPreparation() {
           console.error("Failed to mark session as completed");
         }
 
-        // Remove the session from localStorage since it's now completed
-        localStorage.removeItem("interviewPrepSessionId");
+        // Remove the session from candidate-scoped storage since it's now completed
+        clearStoredSession(activeCandidateId);
 
         // Increment step to show results on the same page
         setStep((prev) => prev + 1);
@@ -1327,6 +1379,14 @@ export default function InterviewPreparation() {
         <>
           <div className="site-main-px site-main-py mt-12">
             <div className="text-center mb-8">
+              {isMultiCandidate && (
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs font-semibold text-primary mb-3">
+                  <Users className="w-3.5 h-3.5" />
+                  <span>
+                    Beneficiary: {activeCandidate.fullName || activeCandidate.label} ({activeCandidate.relation})
+                  </span>
+                </div>
+              )}
               <h1 className="text-3xl font-bold text-slate-900 mb-2">Interview Preparation Tool</h1>
               <p className="text-slate-600">
                 {selectedCategory
@@ -1365,7 +1425,7 @@ export default function InterviewPreparation() {
                 try {
                   setLoading(true);
                   setLoadingMessage("Restoring your interview session...");
-                  localStorage.setItem("interviewPrepSessionId", pendingRestoreSession.id);
+                  setStoredSession(activeCandidateId, pendingRestoreSession.id, "tool");
 
                   await restoreSessionData(pendingRestoreSession, (categorySlug: string) => {
                     const category = availableCategories.find(

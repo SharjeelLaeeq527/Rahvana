@@ -197,6 +197,12 @@ interface SponsorshipCalculatorToolProps {
   // shown read-only (the user is not asked to re-enter it). Defaults to false
   // (standalone), where a required state selector is shown.
   lockState?: boolean;
+  candidateInfo?: {
+    id?: string;
+    name?: string;
+    relation?: string;
+    visaCategory?: string;
+  };
 }
 
 export default function SponsorshipCalculatorTool({
@@ -205,6 +211,7 @@ export default function SponsorshipCalculatorTool({
   initialData,
   onSave,
   lockState = false,
+  candidateInfo,
 }: SponsorshipCalculatorToolProps) {
   const [stepIdx, setStepIdx] = useState(0);
   const [expandedOptions, setExpandedOptions] = useState<Record<string, boolean>>({});
@@ -219,6 +226,7 @@ export default function SponsorshipCalculatorTool({
       document.body.style.overflow = "";
     };
   }, [isOpen]);
+
   const [data, setData] = useState({
     state: initialData?.state || "",
     sponsorStatus: initialData?.sponsorStatus || "",
@@ -243,6 +251,36 @@ export default function SponsorshipCalculatorTool({
     isWidow: initialData?.isWidow || false,
     isSpecialImmigrant: initialData?.isSpecialImmigrant || false,
   });
+
+  // Sync state if initialData changes while open or re-opened
+  React.useEffect(() => {
+    if (initialData) {
+      setData((prev) => ({
+        ...prev,
+        state: initialData.state ?? prev.state,
+        sponsorStatus: initialData.sponsorStatus ?? prev.sponsorStatus,
+        isMilitary: initialData.isMilitary ?? prev.isMilitary,
+        isMarried: initialData.isMarried ?? prev.isMarried,
+        relationshipToApplicant: initialData.relationshipToApplicant ?? prev.relationshipToApplicant,
+        numberOfChildren: initialData.numberOfChildren ?? prev.numberOfChildren,
+        taxDependents: initialData.taxDependents ?? prev.taxDependents,
+        hasPreviousSponsorship: initialData.hasPreviousSponsorship ?? prev.hasPreviousSponsorship,
+        previousSponsoredCount: initialData.previousSponsoredCount ?? prev.previousSponsoredCount,
+        currentSponsoredApplicant: initialData.currentSponsoredApplicant ?? prev.currentSponsoredApplicant,
+        currentSponsoredSpouse: initialData.currentSponsoredSpouse ?? prev.currentSponsoredSpouse,
+        currentSponsoredChildren: initialData.currentSponsoredChildren ?? prev.currentSponsoredChildren,
+        agi: initialData.agi ?? prev.agi,
+        currentAnnualIncome: initialData.currentAnnualIncome ?? prev.currentAnnualIncome,
+        householdMembers: initialData.householdMembers ?? prev.householdMembers,
+        jointSponsors: initialData.jointSponsors ?? prev.jointSponsors,
+        assetValue: initialData.assetValue ?? prev.assetValue,
+        sponsorDeceased: initialData.sponsorDeceased ?? prev.sponsorDeceased,
+        isVAWA: initialData.isVAWA ?? prev.isVAWA,
+        isWidow: initialData.isWidow ?? prev.isWidow,
+        isSpecialImmigrant: initialData.isSpecialImmigrant ?? prev.isSpecialImmigrant,
+      }));
+    }
+  }, [initialData]);
 
   if (!isOpen) return null;
 
@@ -335,6 +373,12 @@ export default function SponsorshipCalculatorTool({
         >
           <X size={16} strokeWidth={2} />
         </button>
+        {candidateInfo?.name && (
+          <div className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-teal-50 border border-teal-200 text-[11px] font-semibold text-teal-800 shrink-0">
+            <Users className="w-3 h-3 text-teal-600" />
+            <span>Beneficiary: {candidateInfo.name} {candidateInfo.relation ? `(${candidateInfo.relation})` : ""}</span>
+          </div>
+        )}
         <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
           <div
             className="h-full bg-linear-to-r transition-all duration-500"
@@ -367,11 +411,19 @@ export default function SponsorshipCalculatorTool({
             if (step === 0) {
               return (
                 <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                  <div
-                    className="text-[11px] font-semibold tracking-widest uppercase mb-4"
-                    style={{ color: COLORS.primary }}
-                  >
-                    Sponsorship Calculator · Step 1 of 11
+                  <div className="flex items-center justify-between gap-2 mb-4">
+                    <div
+                      className="text-[11px] font-semibold tracking-widest uppercase"
+                      style={{ color: COLORS.primary }}
+                    >
+                      Sponsorship Calculator · Step 1 of 11
+                    </div>
+                    {candidateInfo?.name && (
+                      <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-teal-50 border border-teal-200 text-[10px] font-semibold text-teal-800">
+                        <Users className="w-2.5 h-2.5 text-teal-600" />
+                        <span>{candidateInfo.name}</span>
+                      </div>
+                    )}
                   </div>
                   <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-2 leading-[1.3]">
                     Welcome to the Sponsorship Calculator

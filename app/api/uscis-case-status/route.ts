@@ -142,7 +142,15 @@ export async function POST(req: NextRequest) {
 
     // The useful details may be inside a "case_status" object, or the whole response may be the status.
     // This line picks whichever one actually holds the data.
-    const caseStatus = caseData?.case_status ?? caseData;
+    // Extract optional candidate association for multi-beneficiary scoping
+    const candidateId = body?.candidateId || null;
+    const candidateName = body?.candidateName || null;
+
+    const rawDataToSave = {
+      ...caseStatus,
+      ...(candidateId ? { _candidateId: candidateId } : {}),
+      ...(candidateName ? { _candidateName: candidateName } : {}),
+    };
 
     // Save (or update) this lookup in our database so the user has a history of their checks.
     // "upsert" means: insert a new row, or update the existing row if this user already
@@ -159,7 +167,7 @@ export async function POST(req: NextRequest) {
           ? new Date(caseStatus.modifiedDate).toISOString()
           : null,
         checked_at: new Date().toISOString(),
-        raw_data: caseStatus,
+        raw_data: rawDataToSave,
       },
       {
         // If a row already exists for this user + receipt number, update it instead of adding a duplicate.

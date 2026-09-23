@@ -368,11 +368,36 @@ Interactive modal for adding a 2nd parent (IR-5) or additional children (IR-2):
 
 ---
 
+### H. Phase 2: Beneficiary-Specific Tools Scoping & Isolation
+
+#### 20. Interview Prep (`app/(tools)/interview-prep`)
+- Scopes mock interview sessions, session storage keys, and question evaluation under `interviewPrepSessionId_${candidateId}` and `interviewPrepSessionSource_${candidateId}` (with fallback for legacy unscoped keys for `candidate-1`).
+- Renders active beneficiary pill badge in the header so petitioner always knows which beneficiary's mock session is active.
+- Preserves answers and feedback scorecards independently across candidates.
+
+#### 21. 221(g) Action Planner (`app/(tools)/(visa)/221g-action-planner`)
+- Scopes refusal questionnaire intake, refusal subcategories, and action checklists under `profile.actionPlanner_${candidateId}` (with fallback for `profile.actionPlanner` on `candidate-1`).
+- Autofills active beneficiary's civil fields (beneficiary name, consular post, visa category, case number, DQ date) while keeping petitioner sponsor data in sync.
+- Displays active beneficiary badge in header and reflects candidate identity in generated action plans and export packets.
+
+#### 22. Sponsorship Calculator / Affidavit of Support (`app/(tools)/affidavit-support-calculator`)
+- Keeps calculation inputs, household sizing, poverty guidelines comparison, and eligible forms isolated per active candidate profile.
+- Saves results to `sponsorshipCalc_${candidateId}` in local storage and `profile.sponsorshipCalculator_${candidateId}` (with `candidate-1` backward compatibility).
+- Automatically sets initial relationship flags based on beneficiary relation (e.g. spouse vs parent/other) without mixing household state.
+
+#### 23. USCIS Case Status Tracker (`app/(tools)/case-status`)
+- Tags tracked receipt numbers with active beneficiary metadata (`_candidateId`, `_candidateName`) in `raw_data` when querying `POST /api/uscis-case-status`.
+- Features candidate-specific search history filter tabs ("All" vs "Active Beneficiary") and candidate pill tags on each history row.
+- Offers 1-click receipt auto-fill from profile and displays candidate association directly on the case status result view.
+
+---
+
 ## 5. Automated Tests
 
 Unit test suites:
 - [__tests__/candidate/candidate-sync.test.ts](file:///d:/arachnie_work/updated_work/__tests__/candidate/candidate-sync.test.ts) (21 tests)
-- [__tests__/candidate/candidate-guides.test.ts](file:///d:/arachnie_work/updated_work/__tests__/candidate/candidate-guides.test.ts) (11 tests)
+- [__tests__/candidate/candidate-guides.test.ts](file:///d:/arachnie_work/updated_work/__tests__/candidate/candidate-guides.test.ts) (14 tests)
+- [__tests__/candidate/candidate-tools.test.ts](file:///d:/arachnie_work/updated_work/__tests__/candidate/candidate-tools.test.ts) (11 tests)
 
 ### Test Coverage Summary:
 - **Default Profile Generation**: Verified generic default profiles for IR-5 (single and both), IR-2, and IR-1 - generic "Candidate N" labels, empty `fullName`, and no assumed parent relation.
@@ -382,6 +407,7 @@ Unit test suites:
 - **Document Vault Scoping**: Verified independent journey key derivation and vault isolation for IR-5 parents and multi-child IR-2 cases.
 - **Guides Scoping & Isolation**: Verified independent guide sessions, progress percent calculation, and candidate query URL building.
 - **Guide Save Lifecycle**: Verified that new sessions default to `saved: false`, the save button is visible until clicked, unsaved guides are excluded from My Guides / Resources progress cards, and progress persists across page refresh.
+- **Phase 2 Tools Scoping**: Verified interview prep session isolation, 221(g) action planner namespacing, sponsorship calculator household computation & state isolation, and USCIS case status receipt tagging & filtering.
 
-**Total Test Suite Result**: **32 / 32 tests passing** (0 regressions).
+**Total Test Suite Result**: **46 / 46 tests passing** (0 regressions).
 
