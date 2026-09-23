@@ -78,6 +78,10 @@ export default function PassportPhotoTool({
   const [, setProcessingStep] = useState<string>("");
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [remainingCredits, setRemainingCredits] = useState<number | null>(null);
+  /** Whether the *current* result should be blurred — snapshot taken at generation
+   *  time, not the live balance (spending the last credit must still unlock the
+   *  photo that credit just paid for). */
+  const [resultLocked, setResultLocked] = useState(false);
   const [creditStatusLoading, setCreditStatusLoading] = useState(true);
 
   const { checkAccess, consumeAccess } = useFeatureAccess();
@@ -127,6 +131,7 @@ export default function PassportPhotoTool({
     setFile(null);
     setPreview(null);
     setResult(null);
+    setResultLocked(false);
     setError(null);
     setProcessingStep("");
   };
@@ -150,6 +155,7 @@ export default function PassportPhotoTool({
     setFile(uploadedFile);
     setPreview(URL.createObjectURL(uploadedFile));
     setResult(null);
+    setResultLocked(false);
     setError(null);
   };
 
@@ -175,6 +181,7 @@ export default function PassportPhotoTool({
     setProcessingStep(t("passportPhoto.steps.uploading"));
 
     // Verify and consume credit if the user has limited credits, blocking if exhausted
+    let creditPaid = false;
     try {
       const access = await checkAccess("photo_booth");
       if (!access.allowed || access.data?.data?.usage?.allowed === false) {
@@ -191,6 +198,7 @@ export default function PassportPhotoTool({
         setShowUpgradeModal(true);
         return;
       }
+      creditPaid = true;
 
       if (tier === "executive") {
         setRemainingCredits(null);
@@ -224,6 +232,9 @@ export default function PassportPhotoTool({
       setProcessingStep(t("passportPhoto.steps.finalizing"));
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
+      // Only blur when this generation did NOT pay (fail-open path above); never
+      // penalize the user for the credit they just spent on this very result.
+      setResultLocked(tier !== "executive" && !creditPaid);
       setResult(url);
       setProcessingStep("");
       if (onResult) onResult(url);
@@ -322,11 +333,11 @@ export default function PassportPhotoTool({
                     ? "Checking your remaining credits..."
                     : remainingCredits !== null
                       ? remainingCredits > 0
-                        ? `${remainingCredits} premium credit${remainingCredits === 1 ? "" : "s"} remaining`
+                        ? `${remainingCredits} photo credit${remainingCredits === 1 ? "" : "s"} remaining`
                         : tier === "premium"
-                          ? "No credits left. Click to upgrade to Executive."
-                          : "No credits left. Upgrade required."
-                      : "Upgrade required for premium photo credits"}
+                          ? "No credits left. Buy more credits or upgrade to Executive."
+                          : "No credits left. Buy more credits or upgrade to unlock."
+                      : "Photo Booth is not included in your plan — buy credits or upgrade."}
                 </p>
               </div>
               <div
@@ -344,9 +355,7 @@ export default function PassportPhotoTool({
                   : remainingCredits !== null
                     ? remainingCredits > 0
                       ? `${remainingCredits} left`
-                      : tier === "premium"
-                        ? "No credits left"
-                        : "Locked"
+                      : "No credits left"
                     : "Locked"}
               </div>
             </div>
@@ -451,10 +460,7 @@ export default function PassportPhotoTool({
         {/* Result */}
         {result && (
           <section ref={resultRef} className="mt-12 w-full max-w-2xl">
-            <ResultGate
-              feature="photo_booth"
-              isLocked={tier !== "executive" && remainingCredits !== null && remainingCredits <= 0}
-            >
+            <ResultGate feature="photo_booth" isLocked={resultLocked}>
               <div
                 className="rounded-2xl p-4 sm:p-6"
                 style={{
@@ -505,6 +511,13 @@ export default function PassportPhotoTool({
           feature={"photo_booth"}
           onClose={() => setShowUpgradeModal(false)}
           onConfirm={(action: "upgrade" | "addon", target?: string) => {
+            if (action === "addon") {
+              // Add-on ids are NOT plan ids — land on the pricing page's Tools
+              // tab with this add-on pre-added to the order summary.
+              const addonId = typeof target === "string" ? target : "photo";
+              window.location.href = `/pricing?mode=tools&addons=${encodeURIComponent(addonId)}`;
+              return;
+            }
             // Redirect to pricing page with the selected plan pre-selected
             const plan = typeof target === "string" ? target : "premium";
             window.location.href = `/pricing?plan=${plan}`;

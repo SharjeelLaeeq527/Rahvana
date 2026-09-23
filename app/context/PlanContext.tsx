@@ -8,6 +8,7 @@ import {
   PlanTier,
   getEntitlement,
   isAccessible,
+  normalizePlanTier,
   FeatureEntitlement,
 } from "@/lib/entitlements/config";
 import {
@@ -52,21 +53,8 @@ interface PlanContextValue {
 
 const PlanContext = createContext<PlanContextValue | null>(null);
 
-const DB_TIER_MAP: Record<string, PlanTier> = {
-  core: "basic",
-  plus: "premium",
-  pro: "executive",
-  basic: "basic",
-  premium: "premium",
-  executive: "executive",
-  free: "free",
-};
-
-/** Normalizes both account and journey tier values stored by older/current DB schemas. */
-export function normalizePlanTier(raw: string | null | undefined): PlanTier {
-  if (!raw) return "free";
-  return DB_TIER_MAP[raw.toLowerCase()] ?? "free";
-}
+/** Kept as a re-export for existing importers; the implementation lives in lib/entitlements/config. */
+export { normalizePlanTier };
 
 // Defensive plan reconciliation is expensive (reads `payments` + calls Stripe on
 // every run). It only needs to run occasionally to self-heal a missed webhook —

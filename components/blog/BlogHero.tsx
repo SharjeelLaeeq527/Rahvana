@@ -1,14 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 
 export default function BlogHero() {
   const [query, setQuery] = useState("");
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
+  const syncToBlogSearch = (val: string) => {
     const searchInput = document.getElementById("blog-search-input") as HTMLInputElement | null;
     if (searchInput) {
       const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
@@ -16,12 +15,43 @@ export default function BlogHero() {
         "value"
       )?.set;
       if (nativeInputValueSetter) {
-        nativeInputValueSetter.call(searchInput, query);
+        nativeInputValueSetter.call(searchInput, val);
       } else {
-        searchInput.value = query;
+        searchInput.value = val;
       }
       searchInput.dispatchEvent(new Event("input", { bubbles: true }));
     }
+  };
+
+  useEffect(() => {
+    const onSearchCleared = () => {
+      setQuery("");
+    };
+    window.addEventListener("blog-search-cleared", onSearchCleared);
+    return () => {
+      window.removeEventListener("blog-search-cleared", onSearchCleared);
+    };
+  }, []);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setQuery(val);
+
+    if (val.trim().length > 2) {
+      syncToBlogSearch(val.trim());
+    } else {
+      syncToBlogSearch("");
+    }
+  };
+
+  const handleClear = () => {
+    setQuery("");
+    syncToBlogSearch("");
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    syncToBlogSearch(query.trim());
 
     const targetSection = document.getElementById("articles-section");
     if (targetSection) {
@@ -73,10 +103,20 @@ export default function BlogHero() {
                 <input
                   type="text"
                   value={query}
-                  onChange={(e) => setQuery(e.target.value)}
+                  onChange={handleInputChange}
                   placeholder="Search guides, documents, interviews..."
                   className="text-foreground w-full bg-transparent px-5 py-3 text-sm placeholder:text-slate-400 focus:outline-none sm:text-base dark:placeholder:text-slate-500"
                 />
+                {query && (
+                  <button
+                    type="button"
+                    onClick={handleClear}
+                    className="text-muted-foreground hover:text-foreground mr-1 rounded-full p-1.5 transition-colors"
+                    aria-label="Clear search input"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
                 <button
                   type="submit"
                   className="bg-primary hover:bg-primary/70 dark:bg-primary/50 dark:hover:bg-primary/40 flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white shadow-md transition-all hover:shadow-lg"

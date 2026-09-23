@@ -394,12 +394,12 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
       "Families needing multiple compliant photos",
     ],
     outcomes: [
-      "One compliant photo output per credit",
+      "2 credits per purchase — each credit produces one compliant photo output",
       "Country-correct dimensions (US/UK/India/Canada or custom)",
       "No studio visit required",
     ],
     faqs: [
-      ["What counts as one credit?", "Each credit produces one compliant photo output."],
+      ["How many credits do I get?", "Every Photo Booth purchase grants 2 credits, on any plan — each credit produces one compliant photo output."],
       ["What photo should I upload?", "A clear, well-lit, front-facing photo with your full face visible works best."],
       ["Will it definitely be accepted?", "It outputs to the standard size for your selected country and shows the requirements checklist, but always double-check your specific post's instructions before submitting."],
     ],
