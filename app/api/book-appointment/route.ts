@@ -87,6 +87,9 @@ export async function POST(req: NextRequest) {
       status: string;
       case_number?: string;
       user_id?: string | null;
+      candidate_id?: string | null;
+      candidate_role?: string | null;
+      candidate_name?: string | null;
     }
 
     // Prepare appointment data for database insertion
@@ -134,6 +137,9 @@ export async function POST(req: NextRequest) {
       original_passport: formData.originalPassport || null,
       status: "pending",
       user_id: currentUserId,
+      candidate_id: formData.candidateId || formData.candidate_id || null,
+      candidate_role: formData.candidateRole || formData.candidate_role || null,
+      candidate_name: formData.candidateName || formData.candidate_name || null,
     };
 
     // Only add case_number if it exists

@@ -1338,6 +1338,14 @@ export function SiteHeader({
                                         )}
                                       </div>
                                       <div className="min-w-0 flex-1">
+                                        {(n.candidate_role || n.candidate_name) && (
+                                          <span className="mb-1 inline-flex items-center gap-1 rounded-full border border-teal-500/20 bg-teal-500/10 px-2 py-0.5 text-[9px] font-bold tracking-wider text-teal-700 uppercase dark:text-teal-300">
+                                            <span className="h-1.5 w-1.5 rounded-full bg-teal-600 dark:bg-teal-400" />
+                                            {n.candidate_name && n.candidate_name !== n.candidate_role
+                                              ? `${n.candidate_role || "Beneficiary"}: ${n.candidate_name}`
+                                              : n.candidate_role || "Beneficiary"}
+                                          </span>
+                                        )}
                                         <div className="flex items-start justify-between gap-2">
                                           <p
                                             className={`text-foreground text-[12px] ${isRead ? "font-medium opacity-70" : "font-bold"}`}

@@ -128,7 +128,10 @@ export async function POST(request: Request) {
 
     if (upsertError) {
       console.error("[profile/complete] Upsert error:", upsertError);
-      return NextResponse.json({ error: "Failed to save profile" }, { status: 500 });
+      return NextResponse.json(
+        { error: upsertError.message || "Failed to save profile" },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({ success: true, message: "Profile saved securely" });

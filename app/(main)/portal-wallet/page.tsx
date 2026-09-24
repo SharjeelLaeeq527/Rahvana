@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
-import { Shield, ChevronDown, Check } from "lucide-react";
+import { Shield } from "lucide-react";
 import { Loader } from "@/components/ui/spinner";
 import { E, msg } from "@/lib/errors";
 import PortalCard from "./components/PortalCard";
@@ -299,8 +299,6 @@ const PortalWallet: React.FC = () => {
     return data.value || "";
   };
 
-  const [candidateDropdownOpen, setCandidateDropdownOpen] = useState(false);
-
   let candidateCtx;
   try {
     // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -308,16 +306,16 @@ const PortalWallet: React.FC = () => {
   } catch {
     candidateCtx = undefined;
   }
-  const { candidates = [], activeCandidate, setActiveCandidateId } = candidateCtx || {};
+  const { candidates = [], activeCandidate } = candidateCtx || {};
 
-  // Deterministic palette per candidate index
+  // Curated candidate color palettes (Clean & matte, no glow)
   const CANDIDATE_COLORS = [
-    { bg: "#e6f7f4", text: "#0d7377", ring: "#b8dfe0", dot: "#0d7377" },
-    { bg: "#eef2ff", text: "#4f46e5", ring: "#c7d2fe", dot: "#4f46e5" },
-    { bg: "#fef3c7", text: "#b45309", ring: "#fde68a", dot: "#d97706" },
-    { bg: "#fce7f3", text: "#be185d", ring: "#fbcfe8", dot: "#db2777" },
-    { bg: "#f0fdf4", text: "#15803d", ring: "#bbf7d0", dot: "#16a34a" },
-    { bg: "#fff7ed", text: "#c2410c", ring: "#fed7aa", dot: "#ea580c" },
+    { bg: "#f0fdfa", avatarBg: "#e6f7f4", text: "#0d7377", ring: "#b8e6e2" },
+    { bg: "#f5f7ff", avatarBg: "#eef2ff", text: "#4338ca", ring: "#c7d2fe" },
+    { bg: "#fffdf5", avatarBg: "#fef3c7", text: "#b45309", ring: "#fde68a" },
+    { bg: "#fff5f7", avatarBg: "#fce7f3", text: "#be185d", ring: "#fbcfe8" },
+    { bg: "#f0fdf4", avatarBg: "#dcfce7", text: "#15803d", ring: "#bbf7d0" },
+    { bg: "#fff7ed", avatarBg: "#ffedd5", text: "#c2410c", ring: "#fed7aa" },
   ];
   const getCandidateColor = (idx: number) => CANDIDATE_COLORS[idx % CANDIDATE_COLORS.length];
 
@@ -350,148 +348,44 @@ const PortalWallet: React.FC = () => {
             Securely manage credentials and portal case access.
           </p>
 
-          {/* Candidate Selector */}
-          {activeCandidate && candidates.length > 0 && (() => {
+          {/* Candidate Plate (Multi-candidate only - Static badge for privacy) */}
+          {activeCandidate && candidates.length > 1 && (() => {
             const activeIdx = candidates.findIndex((c) => c.id === activeCandidate.id);
-            const activeColor = getCandidateColor(activeIdx);
+            const activeColor = getCandidateColor(activeIdx >= 0 ? activeIdx : 0);
             const activeDisplay = formatCandidateDisplayName(activeCandidate);
             const activeRole = formatCandidateSubtitle(activeCandidate);
             const showActiveRole = !!activeRole;
 
             const SilhouetteSVG = ({ color }: { color: typeof activeColor }) => (
-              <svg viewBox="0 0 36 36" width="36" height="36" fill="none">
-                <circle cx="18" cy="13" r="6.5" fill={color.text} opacity="0.85" />
-                <path d="M5 34c0-7.18 5.82-13 13-13s13 5.82 13 13" fill={color.text} opacity="0.85" />
+              <svg viewBox="0 0 36 36" width="34" height="34" fill="none">
+                <circle cx="18" cy="12.5" r="6" fill={color.text} opacity="0.9" />
+                <path d="M6 32c0-6.63 5.37-12 12-12s12 5.37 12 12" fill={color.text} opacity="0.9" />
               </svg>
             );
 
             return (
-              <div className="relative mt-5" style={{ width: 260 }}>
-                {/* ── Trigger ── */}
-                <button
-                  onClick={() => setCandidateDropdownOpen((o) => !o)}
-                  className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left transition-all duration-200"
-                  style={{
-                    background: "#ffffff",
-                    border: `1.5px solid ${activeColor.ring}`,
-                    boxShadow: `0 4px 16px ${activeColor.dot}22, 0 1px 3px rgba(0,0,0,0.05)`,
-                  }}
+              <div
+                className="mt-5 flex w-[260px] items-center gap-3.5 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left shadow-xs"
+              >
+                {/* Silhouette Avatar */}
+                <span
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl overflow-hidden"
+                  style={{ background: activeColor.avatarBg }}
                 >
-                  {/* Avatar */}
-                  <span
-                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl overflow-hidden"
-                    style={{ background: activeColor.bg }}
-                  >
-                    <SilhouetteSVG color={activeColor} />
-                  </span>
+                  <SilhouetteSVG color={activeColor} />
+                </span>
 
-                  {/* Name + role */}
-                  <span className="flex flex-1 flex-col items-start min-w-0">
-                    <span className="text-[13px] font-bold leading-tight truncate w-full" style={{ color: "#0a1128" }}>
-                      {activeDisplay}
-                    </span>
+                {/* Name + Role */}
+                <div className="flex flex-1 flex-col items-start min-w-0 pr-1 text-left">
+                  <span className="text-[13.5px] font-bold leading-tight tracking-tight text-[#0a1128] truncate w-full">
+                    {activeDisplay}
+                  </span>
                   {showActiveRole && (
-                      <span className="text-[11px] font-medium leading-tight mt-0.5" style={{ color: activeColor.text }}>
-                        {activeRole}
-                      </span>
-                    )}
-                  </span>
-
-                  <ChevronDown
-                    size={15}
-                    style={{
-                      color: activeColor.text,
-                      transform: candidateDropdownOpen ? "rotate(180deg)" : "rotate(0deg)",
-                      transition: "transform 0.22s ease",
-                      flexShrink: 0,
-                    }}
-                  />
-                </button>
-
-                {/* ── Dropdown ── */}
-                {candidateDropdownOpen && (
-                  <>
-                    <div className="fixed inset-0 z-10" onClick={() => setCandidateDropdownOpen(false)} />
-                    <div
-                      className="absolute z-20 overflow-hidden rounded-2xl"
-                      style={{
-                        top: "calc(100% + 8px)",
-                        left: 0,
-                        width: 260,
-                        background: "#ffffff",
-                        border: "1px solid #e4eaf0",
-                        boxShadow: "0 16px 48px rgba(10,17,40,0.14), 0 4px 12px rgba(10,17,40,0.06)",
-                      }}
-                    >
-                      {/* Panel header */}
-                      <div className="px-4 pt-3 pb-2" style={{ borderBottom: "1px solid #f0f4f8" }}>
-                        <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "#a0aab8" }}>
-                          Switch Candidate
-                        </p>
-                      </div>
-
-                      <div className="py-1.5">
-                        {candidates.map((c, idx) => {
-                          const color = getCandidateColor(idx);
-                          const name = formatCandidateDisplayName(c);
-                          const role = formatCandidateSubtitle(c);
-                          const showRole = !!role;
-                          const isActive = activeCandidate.id === c.id;
-                          return (
-                            <button
-                              key={c.id}
-                              onClick={() => {
-                                setActiveCandidateId?.(c.id);
-                                setCandidateDropdownOpen(false);
-                              }}
-                              className="relative flex w-full items-center gap-3 px-4 py-2.5 text-left transition-all duration-150"
-                              style={{ background: isActive ? color.bg : "transparent" }}
-                              onMouseEnter={(e) => {
-                                if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = "#f7f9fb";
-                              }}
-                              onMouseLeave={(e) => {
-                                if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = "transparent";
-                              }}
-                            >
-                              {/* Active left bar */}
-                              {isActive && (
-                                <span
-                                  className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full"
-                                  style={{ background: color.dot }}
-                                />
-                              )}
-
-                              {/* Avatar */}
-                              <span
-                                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl overflow-hidden"
-                                style={{ background: color.bg, border: isActive ? `1.5px solid ${color.ring}` : "1.5px solid transparent" }}
-                              >
-                                <SilhouetteSVG color={color} />
-                              </span>
-
-                              {/* Name + role */}
-                              <span className="flex flex-1 flex-col items-start min-w-0">
-                                <span
-                                  className="text-[13px] font-semibold leading-tight truncate w-full"
-                                  style={{ color: isActive ? color.text : "#0a1128" }}
-                                >
-                                  {name}
-                                </span>
-                                {showRole && (
-                                  <span className="text-[11px] leading-tight mt-0.5" style={{ color: isActive ? color.text : "#a0aab8" }}>
-                                    {role}
-                                  </span>
-                                )}
-                              </span>
-
-                              {isActive && <Check size={13} style={{ color: color.dot, flexShrink: 0 }} />}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </>
-                )}
+                    <span className="text-[11.5px] font-semibold leading-tight mt-0.5" style={{ color: activeColor.text }}>
+                      {activeRole}
+                    </span>
+                  )}
+                </div>
               </div>
             );
           })()}
