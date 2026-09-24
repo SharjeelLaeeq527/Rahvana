@@ -151,9 +151,27 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Validate required fields
-    if (!file || !documentDefId || !role || !personName) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    // Validate required fields — Document Vault is strictly tied to an active journey
+    if (!file || !documentDefId || !role || !personName || !journeyId) {
+      return NextResponse.json(
+        { error: "Missing required fields: Document Vault uploads strictly require an active journey." },
+        { status: 400 }
+      );
+    }
+
+    // Verify journey exists and belongs to the authenticated user
+    const { data: journeyRow, error: journeyError } = await supabase
+      .from("journeys")
+      .select("id")
+      .eq("id", journeyId)
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (journeyError || !journeyRow) {
+      return NextResponse.json(
+        { error: "Invalid journey. Document Vault is strictly tied to an active journey." },
+        { status: 403 }
+      );
     }
 
     // Fast reject on declared MIME/extension (keep — cheap first pass)

@@ -19,9 +19,11 @@ import {
   ShieldCheck,
   CheckCircle2,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useCandidate } from "@/app/context/CandidateContext";
 import type { CandidateRelation } from "@/types/candidate";
-import { getVisaCategoryForRelation } from "@/lib/candidate/candidateSyncService";
+import { getVisaCategoryForRelation, getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
+import { getJourneyHrefByType } from "@/lib/constants/routes";
 
 interface AddCandidateModalProps {
   isOpen: boolean;
@@ -35,11 +37,15 @@ export function AddCandidateModal({
   visaCategory = "IR-5",
 }: AddCandidateModalProps) {
   const { addCandidate, candidates } = useCandidate();
+  const router = useRouter();
 
   // A petitioner can sponsor across categories (a parent AND a spouse AND a child), so every
   // relation is offered. The ONLY cardinality rule is USCIS's "one spouse at a time": a second
   // Spouse can never be added, so Spouse is hidden once a spouse candidate already exists.
-  const hasSpouse = candidates.some((c) => c.relation === "Spouse");
+  // Check both relation AND visa category to catch all IR-1 variants.
+  const hasSpouse = candidates.some(
+    (c) => c.relation === "Spouse" || getBaseVisaCategory(c.visaCategory) === "IR-1"
+  );
   const hasMother = candidates.some((c) => c.relation === "Mother");
   const hasFather = candidates.some((c) => c.relation === "Father");
 
@@ -84,6 +90,15 @@ export function AddCandidateModal({
         tier: "free",
       });
       onClose();
+
+      // Navigate to the new candidate's journey when it belongs to a different category than
+      // the page we are on (e.g. adding a Spouse/IR-1 while viewing an IR-5 journey). The URL
+      // is authoritative for the category (PROJECT_KNOWLEDGE 4.7), so we move the URL here on
+      // an explicit add instead of letting the journey page auto-redirect off the candidate.
+      const targetRoute = getJourneyHrefByType(targetVisa);
+      if (targetRoute && typeof window !== "undefined" && !window.location.pathname.includes(targetRoute)) {
+        router.push(targetRoute);
+      }
     } catch (err) {
       console.error("[AddCandidateModal] Error adding candidate:", err);
     } finally {

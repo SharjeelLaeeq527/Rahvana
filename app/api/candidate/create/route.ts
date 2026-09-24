@@ -3,13 +3,17 @@
 // Create / Upsert Candidate Profile API
 // Saves candidate profile directly to user_profiles.profile_details.candidates
 // and ensures corresponding candidate journey row is initialized in Supabase.
+//
+// Business Rules:
+//  - A petitioner can only have ONE active IR-1 (Spouse) journey at a time.
+//  - Multiple IR-5 (Parent) journeys are allowed (e.g. Mother + Father).
 // ============================================================================
 
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { E, msg } from "@/lib/errors";
 import type { CandidateProfile } from "@/types/candidate";
-import { getCandidateJourneyKey } from "@/lib/candidate/candidateSyncService";
+import { getCandidateJourneyKey, getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
 
 export async function POST(request: Request) {
   try {
@@ -49,6 +53,23 @@ export async function POST(request: Request) {
 
     const profileDetails = (profileRow?.profile_details || {}) as Record<string, unknown>;
     const currentCandidates = (profileDetails.candidates || []) as CandidateProfile[];
+
+    // 2b. Business rule: only ONE Spouse/IR-1 candidate allowed per petitioner.
+    // Block a NEW Spouse candidate if one already exists (belt-and-suspenders with
+    // the client-side guard in CandidateContext.addCandidate).
+    const candidateVisaBase = getBaseVisaCategory(candidate.visaCategory);
+    const isNewCandidate = !currentCandidates.some((c) => c.id === candidate.id);
+    if (isNewCandidate && candidateVisaBase === "IR-1") {
+      const existingSpouse = currentCandidates.find(
+        (c) => c.relation === "Spouse" || getBaseVisaCategory(c.visaCategory) === "IR-1"
+      );
+      if (existingSpouse) {
+        return NextResponse.json(
+          { error: "Only one spouse (IR-1) can be sponsored at a time. A spouse candidate already exists." },
+          { status: 409 }
+        );
+      }
+    }
 
     // 3. Upsert candidate into candidates array
     const existingIndex = currentCandidates.findIndex((c) => c.id === candidate.id);
@@ -101,24 +122,54 @@ export async function POST(request: Request) {
     }
 
     // 5. Ensure journey record exists for candidate (if candidate-2+)
+    //    Business rule: IR-1 is strictly single — never create a second IR-1 journey row.
     try {
       const journeyKey = getCandidateJourneyKey(candidate.visaCategory || "IR-5", candidate.id);
-      if (candidate.id !== "candidate-1") {
-        const { data: existingJourney } = await supabase
-          .from("journeys")
-          .select("id")
-          .eq("user_id", user.id)
-          .eq("journey_type", journeyKey)
-          .maybeSingle();
+      const journeyVisaBase = getBaseVisaCategory(journeyKey);
 
-        if (!existingJourney) {
-          await supabase.from("journeys").insert({
-            user_id: user.id,
-            journey_type: journeyKey,
-            status: "in_progress",
-            filing_method: "online",
-            sponsor_structure: "individual",
-          });
+      if (candidate.id !== "candidate-1") {
+        // For IR-1 (Spouse): verify no IR-1 journey exists before creating.
+        // An IR-1 is strictly 1-per-petitioner; unlike IR-5, there is no "second spouse".
+        if (journeyVisaBase === "IR-1") {
+          const { data: existingIr1 } = await supabase
+            .from("journeys")
+            .select("id")
+            .eq("user_id", user.id)
+            .ilike("journey_type", "ir1%")
+            .limit(1);
+
+          if (existingIr1 && existingIr1.length > 0) {
+            console.warn(
+              `[candidate/create] Blocked duplicate IR-1 journey for user ${user.id}. Existing: ${existingIr1[0].id}`
+            );
+            // Skip journey creation but still return success (candidate profile was saved above)
+          } else {
+            await supabase.from("journeys").insert({
+              user_id: user.id,
+              journey_type: journeyKey,
+              status: "in_progress",
+              filing_method: "online",
+              sponsor_structure: "individual",
+            });
+          }
+        } else {
+          // Non-IR-1 categories (IR-5, IR-2, etc.) — allow multiple journey rows
+          const { data: existingJourney } = await supabase
+            .from("journeys")
+            .select("id")
+            .eq("user_id", user.id)
+            .eq("journey_type", journeyKey)
+            .maybeSingle();
+
+          if (!existingJourney) {
+            await supabase.from("journeys").insert({
+              user_id: user.id,
+              journey_type: journeyKey,
+              status: "in_progress",
+              filing_method: "online",
+              sponsor_structure: "individual",
+            });
+          }
         }
       }
     } catch (err) {

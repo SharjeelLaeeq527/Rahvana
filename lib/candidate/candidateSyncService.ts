@@ -84,7 +84,7 @@ export const CANDIDATE_SPECIFIC_FIELDS: ReadonlyArray<string> = [
  * Generates default candidate profiles for a visa category.
  */
 export function getDefaultCandidatesForVisa(
-  visaCategory: string = "IR-5",
+  visaCategory: string = "IR-1",
   userTier: CandidateTier = "free",
   bothParents: boolean = false
 ): CandidateProfile[] {
@@ -182,7 +182,7 @@ export function getVisaCategoryForRelation(
     case "Child":
       return "IR-2";
     default:
-      return fallbackVisa || "IR-5";
+      return fallbackVisa || "IR-1";
   }
 }
 

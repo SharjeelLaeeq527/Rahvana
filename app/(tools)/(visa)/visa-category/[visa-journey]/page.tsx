@@ -23,7 +23,6 @@ function resolveJourneyData(visaJourney: string): any | null {
   return JOURNEY_DATA_MAP[visaJourney] ?? null;
 }
 import { useAuth } from "@/app/context/AuthContext";
-import { useCandidate } from "@/app/context/CandidateContext";
 import { useWizard, type WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useParams, useRouter } from "next/navigation";
@@ -97,21 +96,16 @@ export default function IR1JourneyPage() {
   // link cannot open IR-5. Hooks are declared before any early return to keep a
   // stable hook order across renders.
   const router = useRouter();
-  const { activeCandidate } = useCandidate();
   const isIr5Route = visaJourneyParam === "ir-5" || visaJourneyParam === "ir5-journey";
 
-  // Automatically align journey roadmap URL if active candidate belongs to a different visa type
-  useEffect(() => {
-    if (!activeCandidate?.visaCategory) return;
-    const candidateVisaNorm = activeCandidate.visaCategory.toLowerCase().replace(/[^a-z0-9]/g, "");
-    const currentParamNorm = visaJourneyParam.toLowerCase().replace(/[^a-z0-9]/g, "");
-
-    if (currentParamNorm.startsWith("ir1") && candidateVisaNorm === "ir5") {
-      router.push("/visa-category/ir5-journey");
-    } else if (currentParamNorm.startsWith("ir5") && (candidateVisaNorm === "ir1" || candidateVisaNorm === "cr1")) {
-      router.push("/visa-category/ir1-journey");
-    }
-  }, [activeCandidate?.id, activeCandidate?.visaCategory, visaJourneyParam, router]);
+  // The journey URL is AUTHORITATIVE for the category (PROJECT_KNOWLEDGE 4.7: "URL base is
+  // authoritative ... deliberately NOT candidate-authoritative"). We deliberately do NOT
+  // auto-push the URL to follow the active candidate's visaCategory here. The primary
+  // candidate's category DEFAULTS to "IR-5" when profile.visaType is unset
+  // (getDefaultCandidatesForVisa), so a candidate-authoritative redirect bounced the user off
+  // ir1-journey to ir5-journey and made it impossible to switch back to IR-1. Navigation on an
+  // explicit switch is owned solely by CandidateSwitcherTray; adding a candidate navigates from
+  // AddCandidateModal. Keeping the URL authoritative here removes the bounce.
 
   useEffect(() => {
     if (isIr5Route && !IR5_ENABLED) {

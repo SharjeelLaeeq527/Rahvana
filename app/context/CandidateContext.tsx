@@ -30,7 +30,14 @@ import {
 import { useToast } from "@/app/components/shared/ToastProvider";
 
 const ACTIVE_CANDIDATE_STORAGE_KEY = "rahvana_active_candidate_id";
-const CANDIDATES_STORAGE_KEY = "rahvana_candidates_roster";
+const CANDIDATES_STORAGE_KEY_PREFIX = "rahvana_candidates_roster";
+// User-scoped cache key. A bare global key let one account's cached roster surface for
+// a different user on a shared browser (User A logs out, User B logs in and, before B's
+// profile resolves - or if B has no candidates yet - the memo falls back to A's cache).
+// Scoping by user id keeps each account's roster isolated; guests fall back to the prefix.
+function candidatesStorageKey(userId: string | undefined | null): string {
+  return userId ? `${CANDIDATES_STORAGE_KEY_PREFIX}_${userId}` : CANDIDATES_STORAGE_KEY_PREFIX;
+}
 
 interface CandidateContextType {
   /** Array of all candidate profiles associated with the account */
@@ -143,14 +150,15 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
       });
       candidatesRef.current = normalized;
       try {
-        localStorage.setItem(CANDIDATES_STORAGE_KEY, JSON.stringify(normalized));
+        localStorage.setItem(candidatesStorageKey(user?.id), JSON.stringify(normalized));
       } catch {}
       return normalized;
     }
 
     // Try loading cached roster from localStorage (persists for guest mode or before profile fetch resolves)
     try {
-      const cached = typeof window !== "undefined" ? localStorage.getItem(CANDIDATES_STORAGE_KEY) : null;
+      const cached =
+        typeof window !== "undefined" ? localStorage.getItem(candidatesStorageKey(user?.id)) : null;
       if (cached) {
         const parsed = JSON.parse(cached);
         if (Array.isArray(parsed) && parsed.length > 0) {
@@ -161,11 +169,11 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
     } catch {}
 
     // Default fallback candidate
-    const visa = profile?.visaType || profile?.visaCategory || "IR-5";
+    const visa = profile?.visaType || profile?.visaCategory || "IR-1";
     const defaults = getDefaultCandidatesForVisa(visa, "free", false);
     candidatesRef.current = defaults;
     return defaults;
-  }, [profile?.candidates, profile?.visaType, profile?.visaCategory]);
+  }, [profile?.candidates, profile?.visaType, profile?.visaCategory, user?.id]);
 
   // ── Restore activeCandidateId from profile / localStorage (ONCE) ─────────
   // Hydrate the active candidate a single time from profile/session. After that, an
@@ -237,19 +245,23 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
       // Guard: USCIS permits only one spouse to be sponsored at a time. Block only a SECOND
       // spouse - adding the first Spouse candidate (IR-1) is allowed, and this never blocks
       // displaying or switching to an existing spouse candidate.
-      if (
-        params.relation === "Spouse" &&
-        candidatesRef.current.some((c) => c.relation === "Spouse")
-      ) {
-        showToast("Only one spouse can be sponsored at a time.", "error");
-        throw new Error("Only one spouse can be sponsored at a time.");
+      // Also guard by visa category (IR-1) to catch edge cases.
+      const derivedVisaForGuard =
+        params.visaCategory || getVisaCategoryForRelation(params.relation, "IR-1");
+      const isIR1 = getBaseVisaCategory(derivedVisaForGuard) === "IR-1";
+      const hasExistingSpouse = candidatesRef.current.some(
+        (c) => c.relation === "Spouse" || getBaseVisaCategory(c.visaCategory) === "IR-1"
+      );
+      if ((params.relation === "Spouse" || isIR1) && hasExistingSpouse) {
+        showToast("Only one spouse (IR-1) can be sponsored at a time.", "error");
+        throw new Error("Only one spouse (IR-1) can be sponsored at a time.");
       }
 
       const derivedVisa =
         params.visaCategory ||
         getVisaCategoryForRelation(
           params.relation,
-          profile?.visaCategory || profile?.visaType || "IR-5"
+          profile?.visaCategory || profile?.visaType || "IR-1"
         );
 
       const newCand = createNewCandidate(candidatesRef.current, {
@@ -265,7 +277,7 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
       candidatesRef.current = updated;
 
       try {
-        localStorage.setItem(CANDIDATES_STORAGE_KEY, JSON.stringify(updated));
+        localStorage.setItem(candidatesStorageKey(user?.id), JSON.stringify(updated));
       } catch {}
 
       if (user?.id) {
@@ -313,7 +325,7 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
       candidatesRef.current = updated;
 
       try {
-        localStorage.setItem(CANDIDATES_STORAGE_KEY, JSON.stringify(updated));
+        localStorage.setItem(candidatesStorageKey(user?.id), JSON.stringify(updated));
       } catch {}
 
       if (user?.id) {
@@ -347,7 +359,7 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
       candidatesRef.current = updated;
 
       try {
-        localStorage.setItem(CANDIDATES_STORAGE_KEY, JSON.stringify(updated));
+        localStorage.setItem(candidatesStorageKey(user?.id), JSON.stringify(updated));
       } catch {}
 
       const nextActiveId = activeCandidateId === id ? updated[0].id : activeCandidateId;

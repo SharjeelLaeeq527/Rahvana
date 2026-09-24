@@ -438,6 +438,32 @@ export function getCandidateJourneyTag(
 }
 
 /**
+ * Resolves the dynamic display name for a Document Vault card corresponding to a journey.
+ * If the candidate has a user-saved fullName, returns that name.
+ * If no name is set, falls back to a placeholder like "Candidate 1" or "Candidate 2" based on their order.
+ */
+export function getCandidateDisplayNameForJourney(
+  journeyType: string,
+  candidates?: CandidateLike[] | null
+): string {
+  const cand = getCandidateForJourneyType(journeyType, candidates);
+  if (cand) {
+    const trimmedName = (cand.fullName || "").trim();
+    const DEFAULT_NAME_RE = /^(mother|father|child|spouse|stepparent|adoptive ?parent)\s*\d*$/i;
+    if (trimmedName && !DEFAULT_NAME_RE.test(trimmedName)) {
+      return trimmedName;
+    }
+    const num = (cand.id || "").replace(/[^0-9]/g, "") || "1";
+    return cand.label || `Candidate ${num}`;
+  }
+
+  // Fallback from journey_type string if candidate not in roster
+  const match = (journeyType || "").toLowerCase().match(/candidate[-_]?(\d+)/);
+  const num = match ? match[1] : "1";
+  return `Candidate ${num}`;
+}
+
+/**
  * De-duplicate a list of journeys by normalized `journey_type`, keeping the first
  * occurrence of each type. Guards the cross-share list against duplicate journey rows
  * (the per-row filter only compares each journey to the ACTIVE one, never to its
