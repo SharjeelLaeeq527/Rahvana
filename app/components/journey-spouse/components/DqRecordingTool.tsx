@@ -14,6 +14,8 @@ interface DqRecordingToolProps {
     setDqCategory: (value: string) => void;
     dqCountry: string;
     setDqCountry: (value: string) => void;
+    dqPost?: string;
+    setDqPost?: (value: string) => void;
   };
   actions: {
     updateMetadata: (data: Record<string, unknown>) => void | Promise<void>;

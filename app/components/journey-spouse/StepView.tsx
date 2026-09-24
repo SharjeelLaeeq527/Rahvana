@@ -426,6 +426,7 @@ export const StepView: React.FC<StepViewProps> = ({
     doc: any | null;
     title?: string;
     subtitle?: string;
+    hasGuide?: boolean;
     onReadGuide?: () => void;
     onUpload?: () => void;
   }>({

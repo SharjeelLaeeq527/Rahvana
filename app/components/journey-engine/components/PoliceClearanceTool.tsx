@@ -18,10 +18,11 @@ interface PoliceClearanceToolProps {
     setPccReceived: (v: boolean) => void;
     pccData: {
       receipt: string;
-      submissionDate: string;
-      expectedDate: string;
-      authority: string;
-      district: string;
+      submissionDate?: string;
+      expectedDate?: string;
+      authority?: string;
+      district?: string;
+      [key: string]: any;
     };
     setPccData: (v: any) => void;
     isPccOverlayOpen: boolean;

@@ -17,7 +17,9 @@ export interface RoadmapStep {
     | "tool"
     | "action"
     | "docs"
+    | "guide"
     | "filing";
+  chips?: any[];
   tool_integration?: string | null;
   dependencies: string[];
   visible_when: Record<string, string | number | boolean | string[] | null>;
