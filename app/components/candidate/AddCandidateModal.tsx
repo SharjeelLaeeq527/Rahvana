@@ -7,7 +7,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -49,17 +49,6 @@ export function AddCandidateModal({
   const [relation, setRelation] = useState<CandidateRelation>(defaultRelation);
   const [fullName, setFullName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const prevIsOpenRef = React.useRef(isOpen);
-  useEffect(() => {
-    // Only reset state on transition from closed to open
-    if (isOpen && !prevIsOpenRef.current) {
-      setRelation(defaultRelation);
-      setFullName("");
-      setIsSubmitting(false);
-    }
-    prevIsOpenRef.current = isOpen;
-  }, [isOpen, defaultRelation]);
 
   if (!isOpen) return null;
 
@@ -112,25 +101,12 @@ export function AddCandidateModal({
 
   const modal = (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[10000] flex items-center justify-center overflow-y-auto p-3 sm:p-4 md:p-6">
-        {/* Isolated Backdrop Overlay */}
-        <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
-          onClick={(e) => {
-            e.stopPropagation();
-            onClose();
-          }}
-          aria-hidden="true"
-        />
-
-        {/* Modal Card */}
+      <div className="animate-in fade-in fixed inset-0 z-[10000] flex items-center justify-center overflow-y-auto bg-black/60 p-3 backdrop-blur-sm duration-150 sm:p-4 md:p-6">
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
-          onClick={(e) => e.stopPropagation()}
-          onMouseDown={(e) => e.stopPropagation()}
-          className="relative z-10 my-auto flex max-h-[calc(100dvh-2rem)] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl sm:max-h-[85vh] md:max-w-md"
+          className="relative my-auto flex max-h-[calc(100dvh-2rem)] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl sm:max-h-[85vh] md:max-w-md"
         >
           {/* Header */}
           <div className="flex shrink-0 items-center justify-between border-b border-slate-100 bg-gradient-to-br from-[#0d7377]/10 via-[#0d7377]/5 to-transparent px-5 py-3.5 sm:px-6 sm:py-4">
@@ -183,14 +159,7 @@ export function AddCandidateModal({
                       <button
                         key={opt.value}
                         type="button"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setRelation(opt.value);
-                        }}
-                        onMouseDown={(e) => {
-                          e.stopPropagation();
-                        }}
+                        onClick={() => setRelation(opt.value)}
                         className={`flex flex-col items-start gap-1 rounded-xl border p-2.5 text-left text-xs font-semibold transition-all sm:p-3 ${
                           isSelected
                             ? "border-[#0d7377] bg-[#0d7377]/5 text-[#0d7377] ring-1 ring-[#0d7377]"

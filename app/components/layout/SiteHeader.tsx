@@ -399,9 +399,6 @@ export function SiteHeader({
   const profileRef = useRef<HTMLDivElement>(null);
 
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
-  const [addCandidateOpen, setAddCandidateOpen] = useState(false);
-  const [journeyCount, setJourneyCount] = useState(0);
-  const { activeCandidate, isMultiCandidate } = useCandidate();
   const menuTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [arrowOffset, setArrowOffset] = useState(40);
 
@@ -447,9 +444,6 @@ export function SiteHeader({
       }
       // Mega Menus or Profile Menu
       if (activeMenu) {
-        if (addCandidateOpen) {
-          return;
-        }
         if (activeMenu === "profile") {
           if (profileRef.current && !profileRef.current.contains(target)) {
             setActiveMenu(null);
@@ -465,7 +459,7 @@ export function SiteHeader({
     };
     document.addEventListener("mousedown", handleOutsideClick);
     return () => document.removeEventListener("mousedown", handleOutsideClick);
-  }, [activeMenu, addCandidateOpen]);
+  }, [activeMenu]);
 
   // Open profile menu on global event
   useEffect(() => {
@@ -494,6 +488,9 @@ export function SiteHeader({
   // "+ Add Candidate" from the profile-dropdown entry below.
   // We count REAL signals only (never defaulted candidates): the candidate roster length
   // (isMultiCandidate) OR the number of distinct journeys actually on the account.
+  const { activeCandidate, isMultiCandidate } = useCandidate();
+  const [journeyCount, setJourneyCount] = useState(0);
+  const [addCandidateOpen, setAddCandidateOpen] = useState(false);
   // IMPORTANT: key this on the user ID, NOT the user object. AuthContext re-emits a fresh
   // user object on every auth event, so depending on `resolvedUser` would re-run this effect
   // constantly - each re-run's cleanup cancels the in-flight fetch before it can set state, so
@@ -1818,13 +1815,7 @@ export function SiteHeader({
                     {/* Candidate switcher: app-wide (whole-journey feature). Shown only when the
                         account has 2+ candidates/journeys (decision 2), category-agnostic. */}
                     {showCandidateSwitcher ? (
-                      <CandidateSwitcherTray
-                        onCandidateSwitched={() => setActiveMenu(null)}
-                        onAddCandidate={() => {
-                          setActiveMenu(null);
-                          setAddCandidateOpen(true);
-                        }}
-                      />
+                      <CandidateSwitcherTray onCandidateSwitched={() => setActiveMenu(null)} />
                     ) : (
                       // Single-candidate account: no switcher tray, but "+ Add Candidate" must
                       // stay reachable so a single-journey user can start a second candidate.
@@ -1916,8 +1907,9 @@ export function SiteHeader({
         </div>
       </div>
 
-      {/* Add Candidate modal - launched from the profile-dropdown entry (portals to <body>) */}
-      {resolvedUser && (
+      {/* Add Candidate modal - launched from the profile-dropdown entry shown for
+          single-candidate accounts (portals to <body>, so placement here is fine). */}
+      {user && (
         <AddCandidateModal
           isOpen={addCandidateOpen}
           onClose={() => setAddCandidateOpen(false)}
