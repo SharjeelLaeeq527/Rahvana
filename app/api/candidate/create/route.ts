@@ -9,7 +9,8 @@ import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { E, msg } from "@/lib/errors";
 import type { CandidateProfile } from "@/types/candidate";
-import { getCandidateJourneyKey } from "@/lib/candidate/candidateSyncService";
+import { getCandidateJourneyKey, getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
+import { journeyService } from "@/lib/journey/service";
 
 export async function POST(request: Request) {
   try {
@@ -100,8 +101,10 @@ export async function POST(request: Request) {
       }
     }
 
-    // 5. Ensure journey record exists for candidate (if candidate-2+)
+    // 5. Ensure journey record exists with full chapters and steps for candidate (if candidate-2+)
     try {
+      const baseVisa = getBaseVisaCategory(candidate.visaCategory || "IR-5");
+      const configType = baseVisa.toLowerCase();
       const journeyKey = getCandidateJourneyKey(candidate.visaCategory || "IR-5", candidate.id);
       if (candidate.id !== "candidate-1") {
         const { data: existingJourney } = await supabase
@@ -112,13 +115,14 @@ export async function POST(request: Request) {
           .maybeSingle();
 
         if (!existingJourney) {
-          await supabase.from("journeys").insert({
-            user_id: user.id,
-            journey_type: journeyKey,
-            status: "in_progress",
-            filing_method: "online",
-            sponsor_structure: "individual",
-          });
+          const configPath = `data/visa-category/${configType}.json`;
+          await journeyService.createJourneyFromConfig(
+            configPath,
+            {
+              journey_type: journeyKey,
+            },
+            { supabase, user }
+          );
         }
       }
     } catch (err) {

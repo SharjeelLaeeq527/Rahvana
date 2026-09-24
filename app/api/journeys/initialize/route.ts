@@ -32,29 +32,45 @@ function configTypeFromJourneyType(journeyType: string) {
   return base.toLowerCase();
 }
 
-// Runs AFTER response is sent — never blocks the user
-async function syncStepsBackground(journeyId: string, configType: string) {
+// Runs to ensure all chapters and steps from the config JSON exist in the DB
+async function syncChaptersAndSteps(
+  journeyId: string,
+  configType: string,
+  dbClient?: { supabase: any; user: any }
+) {
   try {
     const rawJSON = ConfigLoader.loadJourneyJSON(`data/visa-category/${configType}.json`);
     const [existingChapters, existingSteps] = await Promise.all([
-      db.getChaptersForJourneyDB(journeyId),
-      db.getStepsForJourneyDB(journeyId),
+      db.getChaptersForJourneyDB(journeyId, undefined, dbClient),
+      db.getStepsForJourneyDB(journeyId, undefined, dbClient),
     ]);
     const existingKeys = new Set(existingSteps.map((s) => s.step_key));
+    const chaptersInput = ConfigLoader.transformChaptersInput(rawJSON.chapters);
 
-    for (const rawChapter of rawJSON.chapters) {
-      const dbChapter = existingChapters.find((ch) => ch.chapter_key === rawChapter.chapter_key);
-      if (!dbChapter) continue;
+    for (let i = 0; i < rawJSON.chapters.length; i++) {
+      const rawChapter = rawJSON.chapters[i];
+      let dbChapter = existingChapters.find((ch) => ch.chapter_key === rawChapter.chapter_key);
+
+      if (!dbChapter) {
+        try {
+          dbChapter = await db.createChapterDB(journeyId, chaptersInput[i], dbClient);
+        } catch (chapterErr) {
+          console.error(`[initialize] Failed to create chapter ${rawChapter.chapter_key}:`, chapterErr);
+          continue;
+        }
+      }
 
       const stepsInput = ConfigLoader.transformStepsInput(rawChapter.steps, rawChapter.chapter_key);
       const newSteps = stepsInput.filter((s) => !existingKeys.has(s.step_key));
 
-      if (newSteps.length > 0) {
-        await db.createStepsBatchDB(dbChapter.id, newSteps).catch(() => {});
+      if (newSteps.length > 0 && dbChapter) {
+        await db.createStepsBatchDB(dbChapter.id, newSteps, dbClient).catch((err) => {
+          console.error(`[initialize] Failed to batch create steps for chapter ${rawChapter.chapter_key}:`, err);
+        });
       }
     }
-  } catch {
-    // sync is non-critical — ignore errors
+  } catch (err) {
+    console.error(`[initialize] syncChaptersAndSteps error for ${configType}:`, err);
   }
 }
 
@@ -146,15 +162,21 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // ── Schedule sync AFTER response — does not block the user ───────────────
-    after(() => syncStepsBackground(journeyId, configType));
-
     // ── Fetch all needed data in parallel ─────────────────────────────────────
-    const [journeyRow, stepsRows, caseDataRows] = await Promise.all([
+    let [journeyRow, stepsRows, caseDataRows] = await Promise.all([
       db.getJourneyDB(journeyId, dbClient),
       db.getStepsForJourneyDB(journeyId, undefined, dbClient),
       db.getCaseDataForJourneyDB(journeyId, undefined, dbClient),
     ]);
+
+    // If journey existed but has 0 steps or missing chapters, sync synchronously so client gets full stepMap
+    if (!stepsRows || stepsRows.length === 0) {
+      await syncChaptersAndSteps(journeyId, configType, dbClient);
+      stepsRows = await db.getStepsForJourneyDB(journeyId, undefined, dbClient);
+    } else {
+      // Otherwise schedule non-blocking background sync for any newly added steps
+      after(() => syncChaptersAndSteps(journeyId, configType, dbClient));
+    }
 
     // Decrypt sensitive fields in case_data before returning to client
     if (caseDataRows) {
