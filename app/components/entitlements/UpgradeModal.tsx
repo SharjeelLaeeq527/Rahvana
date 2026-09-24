@@ -79,7 +79,7 @@ const TIER_HIGHLIGHTS: Record<PlanTier, string[]> = {
     "Checklist engine for your case",
     "Portal wallet (save credentials securely)",
     // "Visa bulletin monitor",
-    "PDF toolkit, Snap & Sign, DQ status check",
+    "PDF toolkit, DQ status check",
     "Basic interview prep",
   ],
   premium: [
@@ -98,10 +98,10 @@ const TIER_HIGHLIGHTS: Record<PlanTier, string[]> = {
     "Everything in Premium",
     "221(g) Action Planner",
     "Mock interview sessions",
-    "Expert case review, 2 sessions included",
+    // "Expert case review, 2 sessions included",
     "Expert consultation calls, 2 sessions included",
     "PCC filing assistance (Sindh only)",
-    "Document translation, 2 documents included",
+    "Document translation, unlimited",
   ],
 };
 

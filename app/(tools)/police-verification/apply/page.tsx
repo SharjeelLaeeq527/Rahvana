@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -29,6 +29,8 @@ import { useAuth } from "@/app/context/AuthContext";
 import { Loader } from "@/components/ui/spinner";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { usePlan } from "@/app/context/PlanContext";
+import { useFeatureAccess } from "@/lib/usage/useFeatureAccess";
+import { isUnlimited } from "@/lib/entitlements/config";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { E, msg } from "@/lib/errors";
 import { Button } from "@/components/ui/button";
@@ -83,7 +85,10 @@ interface CheckoutStepProps {
   formData: any;
   error: string | null;
   loading: boolean;
-  canUsePccFiling: boolean;
+  isUnlimitedAccess: boolean;
+  hasCredit: boolean;
+  remainingCredits: number | null;
+  creditsLoading: boolean;
   onBack: () => void;
   onSubmit: (e: React.FormEvent) => void;
 }
@@ -92,10 +97,14 @@ const CheckoutStep = ({
   formData,
   error,
   loading,
-  canUsePccFiling,
+  isUnlimitedAccess,
+  hasCredit,
+  remainingCredits,
+  creditsLoading,
   onBack,
   onSubmit,
 }: CheckoutStepProps) => {
+  const freeFiling = isUnlimitedAccess || hasCredit;
   return (
     <div className="space-y-6 md:space-y-8">
       <div className="mb-6 flex flex-col items-start gap-2 md:flex-row md:items-center">
@@ -156,11 +165,21 @@ const CheckoutStep = ({
                   <span className="font-bold text-gray-800">$25.00</span>
                 </div>
 
-                {canUsePccFiling && (
+                {isUnlimitedAccess && (
                   <div className="flex items-center justify-between text-sm text-green-600">
                     <span className="flex items-center gap-1 font-semibold">
                       <Sparkles className="h-3.5 w-3.5" />
-                      Plan Benefit
+                      Executive Tier Discount
+                    </span>
+                    <span className="font-bold">-$25.00</span>
+                  </div>
+                )}
+
+                {hasCredit && (
+                  <div className="flex items-center justify-between text-sm text-green-600">
+                    <span className="flex items-center gap-1 font-semibold">
+                      <Sparkles className="h-3.5 w-3.5" />
+                      PCC Filing Credit
                     </span>
                     <span className="font-bold">-$25.00</span>
                   </div>
@@ -169,19 +188,36 @@ const CheckoutStep = ({
                 <div className="mt-2 flex items-center justify-between border-t border-gray-200 pt-4">
                   <span className="text-base font-bold text-gray-900">Total Due</span>
                   <span className="text-xl font-black text-gray-900">
-                    {canUsePccFiling ? "$0.00" : "$25.00"}
+                    {freeFiling ? "$0.00" : "$25.00"}
                   </span>
                 </div>
               </div>
 
-              {canUsePccFiling && (
+              {isUnlimitedAccess ? (
                 <div className="mt-5 flex items-center gap-2 rounded-xl border border-amber-100 bg-amber-50 p-3">
                   <Crown className="h-4 w-4 flex-shrink-0 text-amber-500" />
                   <span className="text-[11px] font-bold text-amber-800">
-                    PCC filing included with your plan.
+                    PCC filing is included free with your Executive plan.
                   </span>
                 </div>
-              )}
+              ) : hasCredit ? (
+                <div className="mt-5 flex items-center gap-2 rounded-xl border border-amber-100 bg-amber-50 p-3">
+                  <Crown className="h-4 w-4 flex-shrink-0 text-amber-500" />
+                  <span className="text-[11px] font-bold text-amber-800">
+                    1 of your {remainingCredits} PCC filing{" "}
+                    {remainingCredits === 1 ? "credit" : "credits"} will be applied — no payment
+                    needed.
+                  </span>
+                </div>
+              ) : !creditsLoading ? (
+                <div className="mt-5 rounded-xl border border-gray-200 bg-gray-50 p-3">
+                  <span className="text-[11px] font-bold text-gray-600">
+                    {remainingCredits === 0
+                      ? "No filing credits left — a one-time $25 fee applies at secure checkout."
+                      : "A one-time $25 fee applies at secure checkout. Buy the PCC filing add-on to file free with credits next time."}
+                  </span>
+                </div>
+              ) : null}
             </div>
 
             {error && (
@@ -206,9 +242,11 @@ const CheckoutStep = ({
               >
                 {loading
                   ? "Processing..."
-                  : canUsePccFiling
+                  : isUnlimitedAccess
                     ? "Confirm Request (Free)"
-                    : "Proceed to Payment ($25)"}
+                    : hasCredit
+                      ? "Confirm Request (Free)"
+                      : "Proceed to Payment ($25)"}
               </button>
             </div>
           </div>
@@ -233,9 +271,44 @@ function PoliceApplyContent() {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const plan = usePlan();
+  const { tier } = plan;
+  const { checkAccess, consumeAccess } = useFeatureAccess();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const isLocked = !plan.isLoading && !plan.canUse("pcc_filing");
   const [referenceId, setReferenceId] = useState("");
+
+  // Purchased PCC-credit balance, surfaced in the header and on the checkout step.
+  // null = no credit pool (locked tiers without add-on); Executive is unlimited.
+  const [remainingPccCredits, setRemainingPccCredits] = useState<number | null>(null);
+  const [pccCreditsLoading, setPccCreditsLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadCredits = async () => {
+      if (isUnlimited("pcc_filing", tier)) {
+        setRemainingPccCredits(null);
+        setPccCreditsLoading(false);
+        return;
+      }
+      setPccCreditsLoading(true);
+      const access = await checkAccess("pcc_filing");
+      if (!isMounted) return;
+      const usage = access.data?.data?.usage;
+      setRemainingPccCredits(
+        access.allowed && usage?.remaining !== undefined ? usage.remaining : null
+      );
+      setPccCreditsLoading(false);
+    };
+
+    void loadCredits();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [checkAccess, tier]);
+
+  const hasPccCredit = remainingPccCredits !== null && remainingPccCredits > 0;
 
   const [formData, setFormData] = useState({
     purpose: "Immigration",
@@ -569,8 +642,13 @@ function PoliceApplyContent() {
 
       await Promise.all(uploadPromises);
 
-      const canUsePccFiling = plan.canUse("pcc_filing");
-      // 3. Check entitlement
+      // Server-side balance check (canUse() only reflects pool size, not the remaining balance — a purchaser who used their credit must pay again).
+      const pccAccess = isUnlimited("pcc_filing", tier)
+        ? { allowed: true }
+        : await checkAccess("pcc_filing");
+      const canUsePccFiling =
+        pccAccess.allowed &&
+        (isUnlimited("pcc_filing", tier) || (pccAccess.data?.data?.usage?.allowed ?? false));
       if (!canUsePccFiling && user?.id) {
         const stripeRes = await fetch("/api/stripe/checkout", {
           method: "POST",
@@ -597,8 +675,28 @@ function PoliceApplyContent() {
         throw new Error("No checkout URL returned");
       }
 
-      // Free entitlement flow
-      // showToast(`Application submitted successfully (${requestId})`, "success", 10000);
+      // Free path: Executive (unlimited) or consuming one purchased credit.
+      if (!isUnlimited("pcc_filing", tier)) {
+        const reservation = await consumeAccess("pcc_filing");
+        if (!reservation.allowed || reservation.data?.allowed === false) {
+          // Raced with another tab — send them to pay instead of a silent freebie.
+          const stripeRes = await fetch("/api/stripe/checkout", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ policeVerificationId: id, userId: user?.id }),
+          });
+          const stripeData = await stripeRes.json();
+          if (stripeData.url) {
+            window.location.href = stripeData.url;
+            return;
+          }
+          setCheckoutError("Could not consume your PCC credit. Please try again.");
+          return;
+        }
+        if (reservation.data?.remaining !== undefined) {
+          setRemainingPccCredits(reservation.data.remaining);
+        }
+      }
 
       setCurrentStep(5); // Success Step
     } catch (err) {
@@ -652,8 +750,13 @@ function PoliceApplyContent() {
 
         await Promise.all(fileUploadPromises);
 
-        // 3. If user doesn't have pcc_filing entitlement, redirect to Stripe checkout
-        const canUsePccFiling = plan.canUse("pcc_filing");
+        // 3. Server-side credit check — redirect to Stripe only when no credit balance remains (or the tier isn't Executive-unlimited).
+        const pccAccess = isUnlimited("pcc_filing", tier)
+          ? { allowed: true }
+          : await checkAccess("pcc_filing");
+        const canUsePccFiling =
+          pccAccess.allowed &&
+          (isUnlimited("pcc_filing", tier) || (pccAccess.data?.data?.usage?.allowed ?? false));
         if (!canUsePccFiling && user?.id) {
           try {
             const stripeRes = await fetch("/api/stripe/checkout", {
@@ -687,8 +790,28 @@ function PoliceApplyContent() {
           }
         }
 
-        // If user has pcc_filing entitlement, show success directly
+        // If user has pcc_filing entitlement (or a credit), consume + show success.
+        if (!isUnlimited("pcc_filing", tier)) {
+          const reservation = await consumeAccess("pcc_filing");
+          if (!reservation.allowed || reservation.data?.allowed === false) {
+            const stripeRes = await fetch("/api/stripe/checkout", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ policeVerificationId: id, userId: user?.id }),
+            });
+            const stripeData = await stripeRes.json();
+            if (stripeData.url) {
+              window.location.href = stripeData.url;
+              return;
+            }
+            throw new Error("Could not consume your PCC credit. Please try again.");
+          }
+          if (reservation.data?.remaining !== undefined) {
+            setRemainingPccCredits(reservation.data.remaining);
+          }
+        }
         showToast(msg(E.POLICE_SUBMIT_SUCCESS, { requestId }), "success");
+
         setCurrentStep(4); // Move to success step
       } catch (error) {
         console.error(error);
@@ -739,6 +862,25 @@ function PoliceApplyContent() {
               />
             </div>
             <div className="flex shrink-0 items-center gap-2">
+            {!plan.isLoading &&
+                (isUnlimited("pcc_filing", tier) ? (
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-bold whitespace-nowrap text-amber-800">
+                    <Crown className="h-3.5 w-3.5" />
+                    Executive — unlimited PCC filings
+                  </span>
+                ) : pccCreditsLoading ? null : hasPccCredit ? (
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-bold whitespace-nowrap text-teal-800">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    {remainingPccCredits} PCC filing{" "}
+                    {remainingPccCredits === 1 ? "credit" : "credits"} available
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-semibold whitespace-nowrap text-gray-600">
+                    {remainingPccCredits === 0
+                      ? "No filing credits left — $25 per request"
+                      : "No filing credits — $25 per request"}
+                  </span>
+                ))}
               {[1, 2, 3, 4].map((s) => (
                 <div
                   key={s}
@@ -1872,7 +2014,10 @@ function PoliceApplyContent() {
                   formData={formData}
                   error={checkoutError}
                   loading={checkoutLoading}
-                  canUsePccFiling={plan.canUse("pcc_filing")}
+                  isUnlimitedAccess={isUnlimited("pcc_filing", tier)}
+                  hasCredit={hasPccCredit}
+                  remainingCredits={remainingPccCredits}
+                  creditsLoading={pccCreditsLoading}
                   onBack={() => setCurrentStep(3)}
                   onSubmit={(e) => {
                     e.preventDefault();
