@@ -3043,6 +3043,9 @@ const PARENT_DOCS: DocumentDefinition[] = [
     required: false,
     multipleFilesAllowed: false,
     validityType: "none",
+    // Same physical document for both parents, so allow cross-candidate sharing even though
+    // the BENEFICIARY role would otherwise mark it parent-specific.
+    shareableAcrossCandidates: true,
     requiredWhen: {
       scenarioFlags: { relationship_type: "father_married" },
     },

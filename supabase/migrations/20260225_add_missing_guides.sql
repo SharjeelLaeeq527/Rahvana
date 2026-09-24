@@ -8,5 +8,8 @@ INSERT INTO guides (slug, title, description) VALUES
 ('employment-certificate-guide', 'Employment Certificate Guide', 'Guide for employment certificates and verifiable experience letters.'),
 ('police-certificate', 'Police Certificate Guide', 'Guide for obtaining Police Character Certificates.'),
 ('visa-strength-guide', 'Visa Strength Guide', 'Guide to strengthen your overall visa application profile.'),
-('police-verification-guide', 'Police Verification Guide', 'Guide for obtaining Police Character Certificates.')
+('police-verification-guide', 'Police Verification Guide', 'Guide for obtaining Police Character Certificates.'),
+('step-parent-guide', 'Step-Parent Guide', 'USCIS roadmap for sponsoring step-parents, marriage rules, and document requirements.'),
+('adoptive-parent-guide', 'Adoptive Parent & Guardianship Guide', 'USCIS adoption criteria, 2-year custody rule, and legal guardianship vs. U.S. adoption.'),
+('adoption-guide', 'Adoptive Parent & Guardianship Guide', 'USCIS adoption criteria, 2-year custody rule, and legal guardianship vs. U.S. adoption.')
 ON CONFLICT (slug) DO NOTHING;

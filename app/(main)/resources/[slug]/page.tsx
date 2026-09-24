@@ -2,7 +2,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
-import { ADDONS, SERVICE_FLOW_HREF, getResourceLaunchHref } from "@/app/(main)/pricing/data/pricing";
+import {
+  ADDONS,
+  SERVICE_FLOW_HREF,
+  getResourceLaunchHref,
+} from "@/app/(main)/pricing/data/pricing";
 import {
   RESOURCE_DETAILS,
   RESOURCE_SLUGS,
@@ -10,6 +14,7 @@ import {
 } from "@/app/(main)/pricing/data/resourceDetails";
 import ResourceGallery from "./ResourceGallery";
 import AddToOrderButton from "./AddToOrderButton";
+import BottomCta from "./BottomCta";
 import ResourceLaunchButton from "@/components/pricing/ResourceLaunchButton";
 import ReviewForm from "@/components/resources/ReviewForm";
 import { getApprovedReviews, getReviewStats } from "@/lib/reviews/data-access";
@@ -94,8 +99,7 @@ export default async function ResourceDetailPage({
 
   // Services aren't added to the cart — they route to a guided flow page that
   // collects info and handles payment at checkout (e.g. /book-consultation).
-  const serviceFlowHref =
-    addon.kind === "services" ? SERVICE_FLOW_HREF[slug] : undefined;
+  const serviceFlowHref = addon.kind === "services" ? SERVICE_FLOW_HREF[slug] : undefined;
   const launchHref = getResourceLaunchHref(slug, addon.kind);
 
   const related = detail.related
@@ -103,10 +107,7 @@ export default async function ResourceDetailPage({
     .filter((r) => r.detail && r.addon);
 
   // Real, approved reviews only — no seeded or sample data.
-  const [dbReviews, dbStats] = await Promise.all([
-    getApprovedReviews(slug),
-    getReviewStats(slug),
-  ]);
+  const [dbReviews, dbStats] = await Promise.all([getApprovedReviews(slug), getReviewStats(slug)]);
 
   const displayCount = dbStats.count;
   const displayRating = dbStats.average;
@@ -129,21 +130,17 @@ export default async function ResourceDetailPage({
   }));
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto max-w-[1100px] px-5 pb-28 pt-[88px] sm:px-8 lg:px-10">
+    <div className="bg-background text-foreground min-h-screen">
+      <div className="mx-auto max-w-[1100px] px-5 pt-[88px] pb-28 sm:px-8 lg:px-10">
         {/* Breadcrumb */}
-        <nav className="mb-8 text-[13px] text-muted-foreground">
+        <nav className="text-muted-foreground mb-8 text-[13px]">
           <Link
             href={`/pricing?mode=${addon.kind}`}
-            className="transition-colors hover:text-foreground"
+            className="hover:text-foreground transition-colors"
           >
-            {addon.kind === "services"
-              ? "Services"
-              : addon.kind === "guides"
-                ? "Guides"
-                : "Tools"}
+            {addon.kind === "services" ? "Services" : addon.kind === "guides" ? "Guides" : "Tools"}
           </Link>
-          <span className="px-2 text-border">/</span>
+          <span className="text-border px-2">/</span>
           <span className="text-foreground">{addon.title}</span>
         </nav>
 
@@ -152,7 +149,7 @@ export default async function ResourceDetailPage({
           <div className="animate-fade-up flex flex-col justify-center">
             {detail.badge && (
               <span
-                className="mb-5 text-[11px] font-semibold uppercase tracking-[0.18em]"
+                className="mb-5 text-[11px] font-semibold tracking-[0.18em] uppercase"
                 style={{ color: TEAL }}
               >
                 {detail.badge}
@@ -160,12 +157,12 @@ export default async function ResourceDetailPage({
             )}
 
             <h1
-              className="text-[34px] leading-[1.08] tracking-[-0.01em] text-foreground sm:text-[46px]"
+              className="text-foreground text-[34px] leading-[1.08] tracking-[-0.01em] sm:text-[46px]"
               style={{ fontFamily: SERIF }}
             >
               {addon.title}
             </h1>
-            <p className="mt-4 max-w-xl text-[16px] leading-relaxed text-muted-foreground sm:text-[17px]">
+            <p className="text-muted-foreground mt-4 max-w-xl text-[16px] leading-relaxed sm:text-[17px]">
               {detail.tagline}
             </p>
 
@@ -173,11 +170,11 @@ export default async function ResourceDetailPage({
             {hasReviews ? (
               <div className="mt-5 flex items-center gap-2.5 text-[13.5px]">
                 <Stars value={displayRating} />
-                <span className="font-semibold text-foreground">{displayRating.toFixed(1)}</span>
+                <span className="text-foreground font-semibold">{displayRating.toFixed(1)}</span>
                 <span className="text-muted-foreground">· {displayCount} reviews</span>
               </div>
             ) : (
-              <p className="mt-5 text-[13px] text-muted-foreground">No reviews yet</p>
+              <p className="text-muted-foreground mt-5 text-[13px]">No reviews yet</p>
             )}
 
             {/* Price */}
@@ -188,9 +185,9 @@ export default async function ResourceDetailPage({
               >
                 ${addon.price}
               </span>
-              <span className="text-[14px] text-muted-foreground">{addon.unit}</span>
+              <span className="text-muted-foreground text-[14px]">{addon.unit}</span>
             </div>
-            {addon.note && <p className="mt-2 text-[13px] text-muted-foreground">{addon.note}</p>}
+            {addon.note && <p className="text-muted-foreground mt-2 text-[13px]">{addon.note}</p>}
 
             {/* CTAs */}
             <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
@@ -209,8 +206,9 @@ export default async function ResourceDetailPage({
               <ResourceLaunchButton href={launchHref} kind={addon.kind} />
             </div>
 
-            <p className="mt-7 text-[12.5px] text-muted-foreground">
-              No full plan required &nbsp;·&nbsp; Secure checkout &nbsp;·&nbsp; Built around your case
+            <p className="text-muted-foreground mt-7 text-[12.5px]">
+              No full plan required &nbsp;·&nbsp; Secure checkout &nbsp;·&nbsp; Built around your
+              case
             </p>
           </div>
 
@@ -229,7 +227,7 @@ export default async function ResourceDetailPage({
           <SectionHeading>Overview</SectionHeading>
           <div className="mt-6 space-y-4">
             {detail.overview.map((p, i) => (
-              <p key={i} className="text-[15.5px] leading-[1.75] text-foreground/75">
+              <p key={i} className="text-foreground/75 text-[15.5px] leading-[1.75]">
                 {p}
               </p>
             ))}
@@ -242,8 +240,8 @@ export default async function ResourceDetailPage({
           <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
             {detail.highlights.map((h, i) => (
               <div key={i} className="rounded-[16px] p-6" style={{ backgroundColor: PURPLE_TINT }}>
-                <h3 className="text-[15.5px] font-semibold text-foreground">{h.title}</h3>
-                <p className="mt-1.5 text-[14px] leading-relaxed text-muted-foreground">{h.text}</p>
+                <h3 className="text-foreground text-[15.5px] font-semibold">{h.title}</h3>
+                <p className="text-muted-foreground mt-1.5 text-[14px] leading-relaxed">{h.text}</p>
               </div>
             ))}
           </div>
@@ -261,8 +259,10 @@ export default async function ResourceDetailPage({
                 >
                   {String(i + 1).padStart(2, "0")}
                 </span>
-                <h3 className="mt-4 text-[15px] font-semibold text-foreground">{s.title}</h3>
-                <p className="mt-1.5 text-[13.5px] leading-relaxed text-muted-foreground">{s.text}</p>
+                <h3 className="text-foreground mt-4 text-[15px] font-semibold">{s.title}</h3>
+                <p className="text-muted-foreground mt-1.5 text-[13.5px] leading-relaxed">
+                  {s.text}
+                </p>
               </div>
             ))}
           </div>
@@ -274,7 +274,7 @@ export default async function ResourceDetailPage({
             <SectionHeading color={TEAL_DARK}>Who it&apos;s for</SectionHeading>
             <ul className="mt-6 space-y-3.5">
               {detail.audience.map((a, i) => (
-                <li key={i} className="flex gap-3 text-[14.5px] text-foreground/80">
+                <li key={i} className="text-foreground/80 flex gap-3 text-[14.5px]">
                   <Dot color={TEAL} />
                   <span>{a}</span>
                 </li>
@@ -285,7 +285,7 @@ export default async function ResourceDetailPage({
             <SectionHeading color={GREEN}>What you get</SectionHeading>
             <ul className="mt-6 space-y-3.5">
               {detail.outcomes.map((o, i) => (
-                <li key={i} className="flex gap-3 text-[14.5px] text-foreground/85">
+                <li key={i} className="text-foreground/85 flex gap-3 text-[14.5px]">
                   <Dot color={GREEN} />
                   <span>{o}</span>
                 </li>
@@ -297,19 +297,19 @@ export default async function ResourceDetailPage({
         {/* ── FAQ ───────────────────────────────────────────────────────────── */}
         <section className="mt-24 max-w-2xl">
           <SectionHeading>Questions</SectionHeading>
-          <div className="mt-6 divide-y divide-border border-y border-border">
+          <div className="divide-border border-border mt-6 divide-y border-y">
             {detail.faqs.map(([q, a], i) => (
               <details key={i} className="group">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-4 text-[14.5px] font-medium text-foreground">
+                <summary className="text-foreground flex cursor-pointer list-none items-center justify-between gap-4 py-4 text-[14.5px] font-medium">
                   {q}
                   <span
-                    className="text-[18px] font-normal leading-none transition-transform duration-200 group-open:rotate-45"
+                    className="text-[18px] leading-none font-normal transition-transform duration-200 group-open:rotate-45"
                     style={{ color: TEAL }}
                   >
                     +
                   </span>
                 </summary>
-                <p className="pb-5 text-[14px] leading-[1.7] text-muted-foreground">{a}</p>
+                <p className="text-muted-foreground pb-5 text-[14px] leading-[1.7]">{a}</p>
               </details>
             ))}
           </div>
@@ -322,37 +322,44 @@ export default async function ResourceDetailPage({
             {/* Summary + distribution */}
             <div className="h-fit lg:sticky lg:top-24">
               {hasReviews ? (
-              <>
-              <div className="flex items-baseline gap-2">
-                <span className="text-[44px] leading-none text-foreground" style={{ fontFamily: SERIF }}>
-                  {displayRating.toFixed(1)}
-                </span>
-                <span className="text-[13px] text-muted-foreground">out of 5</span>
-              </div>
-              <div className="mt-3">
-                <Stars value={displayRating} size={17} />
-              </div>
-              <p className="mt-2 text-[13px] text-muted-foreground">Based on {displayCount} reviews</p>
-
-              <div className="mt-6 space-y-2">
-                {distribution.map((b) => (
-                  <div key={b.star} className="flex items-center gap-3">
-                    <span className="w-3 text-[12px] tabular-nums text-muted-foreground">{b.star}</span>
-                    <span className="relative h-[7px] flex-1 overflow-hidden rounded-full bg-muted">
-                      <span
-                        className="absolute inset-y-0 left-0 rounded-full"
-                        style={{ width: `${b.pct}%`, backgroundColor: GOLD }}
-                      />
+                <>
+                  <div className="flex items-baseline gap-2">
+                    <span
+                      className="text-foreground text-[44px] leading-none"
+                      style={{ fontFamily: SERIF }}
+                    >
+                      {displayRating.toFixed(1)}
                     </span>
-                    <span className="w-9 text-right text-[12px] tabular-nums text-muted-foreground">
-                      {b.pct}%
-                    </span>
+                    <span className="text-muted-foreground text-[13px]">out of 5</span>
                   </div>
-                ))}
-              </div>
-              </>
+                  <div className="mt-3">
+                    <Stars value={displayRating} size={17} />
+                  </div>
+                  <p className="text-muted-foreground mt-2 text-[13px]">
+                    Based on {displayCount} reviews
+                  </p>
+
+                  <div className="mt-6 space-y-2">
+                    {distribution.map((b) => (
+                      <div key={b.star} className="flex items-center gap-3">
+                        <span className="text-muted-foreground w-3 text-[12px] tabular-nums">
+                          {b.star}
+                        </span>
+                        <span className="bg-muted relative h-[7px] flex-1 overflow-hidden rounded-full">
+                          <span
+                            className="absolute inset-y-0 left-0 rounded-full"
+                            style={{ width: `${b.pct}%`, backgroundColor: GOLD }}
+                          />
+                        </span>
+                        <span className="text-muted-foreground w-9 text-right text-[12px] tabular-nums">
+                          {b.pct}%
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </>
               ) : (
-                <p className="text-[14px] leading-relaxed text-muted-foreground">
+                <p className="text-muted-foreground text-[14px] leading-relaxed">
                   Be the first to share your experience.
                 </p>
               )}
@@ -363,12 +370,12 @@ export default async function ResourceDetailPage({
             {/* Feed */}
             <div className="space-y-5">
               {displayReviews.length === 0 && (
-                <p className="text-[14px] leading-relaxed text-muted-foreground">
+                <p className="text-muted-foreground text-[14px] leading-relaxed">
                   No reviews yet. Once verified customers leave reviews, they&apos;ll appear here.
                 </p>
               )}
               {displayReviews.map((r, i) => (
-                <figure key={i} className="border-t border-border pt-6 first:border-t-0 first:pt-0">
+                <figure key={i} className="border-border border-t pt-6 first:border-t-0 first:pt-0">
                   <div className="flex items-start justify-between gap-3">
                     <figcaption className="flex items-center gap-3">
                       <span
@@ -378,9 +385,13 @@ export default async function ResourceDetailPage({
                         {r.name.charAt(0)}
                       </span>
                       <span className="leading-tight">
-                        <span className="block text-[14px] font-semibold text-foreground">{r.name}</span>
+                        <span className="text-foreground block text-[14px] font-semibold">
+                          {r.name}
+                        </span>
                         {r.location && (
-                          <span className="block text-[12px] text-muted-foreground">{r.location}</span>
+                          <span className="text-muted-foreground block text-[12px]">
+                            {r.location}
+                          </span>
                         )}
                       </span>
                     </figcaption>
@@ -393,7 +404,7 @@ export default async function ResourceDetailPage({
                   <div className="mt-3">
                     <Stars value={r.rating} size={13} />
                   </div>
-                  <blockquote className="mt-2.5 text-[14.5px] leading-relaxed text-foreground/80">
+                  <blockquote className="text-foreground/80 mt-2.5 text-[14.5px] leading-relaxed">
                     {r.quote}
                   </blockquote>
                 </figure>
@@ -414,8 +425,10 @@ export default async function ResourceDetailPage({
                   <Link
                     key={r.slug}
                     href={`/resources/${r.slug}`}
-                    className="group flex flex-col rounded-[18px] bg-card p-6 transition-all duration-300 hover:-translate-y-[3px]"
-                    style={{ boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 12px 28px -22px rgba(0,0,0,0.3)" }}
+                    className="group bg-card flex flex-col rounded-[18px] p-6 transition-all duration-300 hover:-translate-y-[3px]"
+                    style={{
+                      boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 12px 28px -22px rgba(0,0,0,0.3)",
+                    }}
                   >
                     <span
                       aria-hidden
@@ -425,11 +438,13 @@ export default async function ResourceDetailPage({
                       <RIcon className="h-[22px] w-[22px]" strokeWidth={1.75} />
                     </span>
                     <span
-                      className="mb-4 mt-3 block h-[2px] w-7 rounded-full transition-all duration-300 group-hover:w-12"
+                      className="mt-3 mb-4 block h-[2px] w-7 rounded-full transition-all duration-300 group-hover:w-12"
                       style={{ backgroundColor: rt.accent }}
                     />
-                    <h3 className="text-[15.5px] font-semibold text-foreground">{r.addon!.title}</h3>
-                    <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-muted-foreground">
+                    <h3 className="text-foreground text-[15.5px] font-semibold">
+                      {r.addon!.title}
+                    </h3>
+                    <p className="text-muted-foreground mt-2 line-clamp-2 text-[13px] leading-relaxed">
                       {r.detail!.tagline}
                     </p>
                     <span
@@ -446,37 +461,18 @@ export default async function ResourceDetailPage({
         )}
 
         {/* ── Bottom CTA ────────────────────────────────────────────────────── */}
-        <section
-          className="mt-24 flex flex-col items-start justify-between gap-6 rounded-[22px] p-9 sm:flex-row sm:items-center"
-          style={{ backgroundColor: TEAL_DARK }}
-        >
-          <div>
-            <h2 className="text-[24px] leading-tight text-white" style={{ fontFamily: SERIF }}>
-              {serviceFlowHref
-                ? `Ready to start ${addon.title}?`
-                : `Add ${addon.title} to your order`}
-            </h2>
-            <p className="mt-1.5 text-[14px] text-white/70">
-              {serviceFlowHref
-                ? "Give us your details, then check out at the end."
-                : "No full journey plan required."}
-            </p>
-          </div>
-          <Link
-            href={
-              serviceFlowHref ?? `/pricing?mode=${addon.kind}&addons=${encodeURIComponent(slug)}`
-            }
-            className="inline-flex shrink-0 items-center justify-center rounded-full bg-white px-7 py-3.5 text-[15px] font-semibold transition-transform duration-200 hover:-translate-y-0.5"
-            style={{ color: TEAL_DARK }}
-          >
-            {serviceFlowHref ? `Add ${addon.title} info to checkout →` : `Add to order · $${addon.price}`}
-          </Link>
-        </section>
+        <BottomCta
+          slug={slug}
+          title={addon.title}
+          price={addon.price}
+          kind={addon.kind}
+          serviceFlowHref={serviceFlowHref}
+        />
 
         <div className="mt-10">
           <Link
             href={`/pricing?mode=${addon.kind}`}
-            className="text-[13.5px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+            className="text-muted-foreground hover:text-foreground text-[13.5px] font-medium transition-colors"
           >
             ← Back to all
           </Link>
@@ -512,16 +508,10 @@ function Dot({ color = TEAL }: { color?: string }) {
   );
 }
 
-function SectionHeading({
-  children,
-  color,
-}: {
-  children: React.ReactNode;
-  color?: string;
-}) {
+function SectionHeading({ children, color }: { children: React.ReactNode; color?: string }) {
   return (
     <h2
-      className="text-[22px] leading-none text-foreground sm:text-[26px]"
+      className="text-foreground text-[22px] leading-none sm:text-[26px]"
       style={{ fontFamily: SERIF, color }}
     >
       {children}

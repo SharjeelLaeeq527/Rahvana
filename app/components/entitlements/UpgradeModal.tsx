@@ -6,6 +6,7 @@ import { createPortal } from "react-dom";
 import { X, Check, Zap, ShoppingCart, Loader2, BookOpen, Mic } from "lucide-react";
 import { usePlan } from "@/app/context/PlanContext";
 import { useAuth } from "@/app/context/AuthContext";
+import { useCandidate } from "@/app/context/CandidateContext";
 import { getDetailsHref } from "@/lib/entitlements/resourceLinks";
 import {
   getEntitlement,
@@ -226,6 +227,7 @@ const scrollbarHideStyle: React.CSSProperties = {
 
 export function UpgradeModal({ feature, onClose, onConfirm, interviewMode }: UpgradeModalProps) {
   const { tier: currentTier } = usePlan();
+  const { activeCandidate } = useCandidate();
   const e = getEntitlement(feature, currentTier);
   const detailsHref = getDetailsHref(feature);
 
@@ -276,6 +278,7 @@ export function UpgradeModal({ feature, onClose, onConfirm, interviewMode }: Upg
         currentTier: currentTier !== "free" ? currentTier : undefined,
         productTier: action === "upgrade" ? target : undefined,
         addons: action === "addon" ? [target] : undefined,
+        visaCategory: activeCandidate?.visaCategory || undefined,
       };
 
       console.log("[Checkout] Sending payload:", JSON.stringify(payload));

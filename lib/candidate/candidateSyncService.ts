@@ -92,11 +92,14 @@ export function getDefaultCandidatesForVisa(
   const now = new Date().toISOString();
 
   if (normCategory.includes("IR-5") || normCategory.includes("IR5")) {
-    const mother: CandidateProfile = {
+    // The primary parent is NOT assumed to be Mother/Father - the petitioner may be
+    // sponsoring a step-parent or adoptive parent. Keep it generic ("Candidate 1") with
+    // an unspecified relation; the user picks the exact relation only when they choose to.
+    const primary: CandidateProfile = {
       id: "candidate-1",
-      label: "Candidate 1 (Mother)",
-      relation: "Mother",
-      fullName: "Mother",
+      label: "Candidate 1",
+      relation: "Other",
+      fullName: "",
       visaCategory: "IR-5",
       tier: userTier,
       isPrimary: true,
@@ -106,11 +109,11 @@ export function getDefaultCandidatesForVisa(
     };
 
     if (bothParents) {
-      const father: CandidateProfile = {
+      const secondParent: CandidateProfile = {
         id: "candidate-2",
-        label: "Candidate 2 (Father)",
-        relation: "Father",
-        fullName: "Father",
+        label: "Candidate 2",
+        relation: "Other",
+        fullName: "",
         visaCategory: "IR-5",
         tier: userTier,
         isPrimary: false,
@@ -118,19 +121,19 @@ export function getDefaultCandidatesForVisa(
         createdAt: now,
         colorTag: "teal",
       };
-      return [mother, father];
+      return [primary, secondParent];
     }
 
-    return [mother];
+    return [primary];
   }
 
   if (normCategory.includes("IR-2") || normCategory.includes("IR2")) {
     return [
       {
         id: "candidate-1",
-        label: "Candidate 1 (Child)",
+        label: "Candidate 1",
         relation: "Child",
-        fullName: "Child 1",
+        fullName: "",
         visaCategory: "IR-2",
         tier: userTier,
         isPrimary: true,
@@ -145,9 +148,9 @@ export function getDefaultCandidatesForVisa(
   return [
     {
       id: "candidate-1",
-      label: "Candidate 1 (Spouse)",
+      label: "Candidate 1",
       relation: "Spouse",
-      fullName: "Spouse",
+      fullName: "",
       visaCategory: visaCategory || "IR-1",
       tier: userTier,
       isPrimary: true,
@@ -198,14 +201,6 @@ export function createNewCandidate(
 ): CandidateProfile {
   const nextNum = existingCandidates.length + 1;
   const relation = params.relation;
-  const relationLabel =
-    relation === "Mother"
-      ? "Mother"
-      : relation === "Father"
-        ? "Father"
-        : relation === "Child"
-          ? `Child ${nextNum}`
-          : relation;
 
   const colorTags: Array<CandidateProfile["colorTag"]> = [
     "teal",
@@ -224,12 +219,15 @@ export function createNewCandidate(
 
   return {
     id: `candidate-${nextNum}`,
-    label: `Candidate ${nextNum} (${relationLabel})`,
+    // Generic, numbered label. The user-chosen relation is stored on `relation` and shown
+    // separately; the actual name (if any) goes in `fullName` when the user enters it.
+    label: `Candidate ${nextNum}`,
     relation,
-    fullName: params.fullName || relationLabel,
+    fullName: params.fullName || "",
     visaCategory,
-    tier: params.tier || (params.isPreview ? "free" : existingCandidates[0]?.tier || "free"),
+    tier: params.tier || "free",
     isPrimary: existingCandidates.length === 0,
+    // No per-candidate preview: added candidates are full, equal beneficiaries.
     isPreview: params.isPreview ?? false,
     createdAt: new Date().toISOString(),
     colorTag,
@@ -237,11 +235,22 @@ export function createNewCandidate(
 }
 
 /**
+ * Explicit "could not resolve a visa category" sentinel (decision 5). `getBaseVisaCategory`
+ * returns this for empty/null/unresolvable input instead of silently defaulting to IR-5, so a
+ * mis-mapped or missing `journey_type` surfaces as UNKNOWN rather than masquerading as a real
+ * parent journey. Callers that need a concrete category must guard against it explicitly.
+ * (Cast once here, matching the existing `as VisaCategory` style in this file.)
+ */
+export const UNKNOWN_VISA_CATEGORY = "UNKNOWN" as VisaCategory;
+
+/**
  * Extracts base visa category ("IR-5", "IR-1", "IR-2", "CR-1", etc.)
  * from any raw journey type, candidate key, or compound string.
+ * Returns UNKNOWN_VISA_CATEGORY when the input is empty/null or cleans to nothing - it does
+ * NOT default to IR-5 (decision 5, explicit unknown).
  */
 export function getBaseVisaCategory(journeyTypeOrVisa?: string | null): VisaCategory {
-  if (!journeyTypeOrVisa) return "IR-5";
+  if (!journeyTypeOrVisa) return UNKNOWN_VISA_CATEGORY;
   const cleaned = journeyTypeOrVisa.split("_")[0].split(":")[0].trim();
   const normalized = cleaned.toLowerCase().replace(/[^a-z0-9]/g, "");
   if (normalized.startsWith("ir5")) return "IR-5";
@@ -250,12 +259,12 @@ export function getBaseVisaCategory(journeyTypeOrVisa?: string | null): VisaCate
   if (normalized.startsWith("cr1")) return "CR-1";
   if (normalized.startsWith("cr2")) return "CR-2";
   if (normalized === "f1") return "F-1 Student Visa";
-  
+
   if (/^[a-zA-Z]+[0-9]+$/.test(cleaned)) {
     const formatted = cleaned.replace(/^([a-zA-Z]+)([0-9]+)$/, "$1-$2").toUpperCase();
     return formatted as VisaCategory;
   }
-  return (cleaned.toUpperCase() as VisaCategory) || "IR-5";
+  return (cleaned.toUpperCase() as VisaCategory) || UNKNOWN_VISA_CATEGORY;
 }
 
 /**

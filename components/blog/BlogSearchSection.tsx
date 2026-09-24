@@ -251,7 +251,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                     href={`/blog/${featuredArticle.slug}`}
                     className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center gap-2 rounded-full px-6 py-2.5 text-xs font-semibold shadow-sm transition sm:text-sm"
                   >
-                    <span>Read Guide</span>
+                    <span>Read Blog</span>
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 </div>
@@ -314,7 +314,10 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
               Showing results for: <strong>&ldquo;{searchQuery}&rdquo;</strong>
             </span>
             <button
-              onClick={() => setSearchQuery("")}
+              onClick={() => {
+                setSearchQuery("");
+                window.dispatchEvent(new CustomEvent("blog-search-cleared"));
+              }}
               className="flex items-center gap-1 font-semibold hover:underline"
             >
               <X className="h-3.5 w-3.5" />
@@ -335,6 +338,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                 onClick={() => {
                   setSearchQuery("");
                   setSelectedCategory("All");
+                  window.dispatchEvent(new CustomEvent("blog-search-cleared"));
                 }}
                 className="bg-primary text-primary-foreground hover:bg-primary/90 mt-4 inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold transition"
               >
@@ -418,7 +422,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                             )}
 
                             <span className="bg-primary text-primary-foreground group-hover:bg-primary/90 inline-flex items-center gap-1.5 rounded-xl px-5 py-2.5 text-xs font-semibold transition">
-                              <span>Read Full Guide</span>
+                              <span>Read Blog</span>
                               <ArrowRight className="h-4 w-4" />
                             </span>
                           </div>
@@ -484,7 +488,8 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                               <span className="text-muted-foreground">{art.updatedAt || ""}</span>
 
                               <span className="text-primary flex items-center gap-1 font-semibold transition-transform group-hover:translate-x-0.5">
-                                Read Article →
+                                Read Blog
+                                <ArrowRight className="h-3.5 w-3.5" />
                               </span>
                             </div>
                           </Link>
@@ -566,7 +571,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                             {art.author?.name || "Rahvana"}
                           </span>
                           <span className="bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground inline-flex items-center gap-1 rounded-xl px-3.5 py-1.5 text-xs font-semibold transition">
-                            <span>Read</span>
+                            <span>Read Blog</span>
                             <ArrowRight className="h-3.5 w-3.5" />
                           </span>
                         </div>
@@ -635,7 +640,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                       </div>
 
                       <span className="bg-primary text-primary-foreground group-hover:bg-primary/90 inline-flex shrink-0 items-center gap-1.5 self-end rounded-full px-4 py-2 text-xs font-semibold shadow-sm transition sm:self-center">
-                        <span>Read Guide</span>
+                        <span>Read Blog</span>
                         <ArrowRight className="h-3.5 w-3.5" />
                       </span>
                     </Link>
@@ -673,7 +678,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                       </div>
 
                       <span className="text-primary inline-flex shrink-0 items-center gap-1 text-xs font-semibold group-hover:underline">
-                        <span>Read Article</span>
+                        <span>Read Blog</span>
                         <ArrowRight className="h-3.5 w-3.5" />
                       </span>
                     </Link>

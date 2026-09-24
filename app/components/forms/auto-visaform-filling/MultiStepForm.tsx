@@ -12,6 +12,7 @@ import type { Field as ConfigField } from "@/lib/formConfig/types";
 import { ChevronLeft, ChevronRight, Check, Sparkles, FileText, Lock } from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
 import { useUserProfile } from "@/app/context/UserProfileContext";
+import { useCandidate } from "@/app/context/CandidateContext";
 import { autoFillForm, mapFormToProfile } from "@/lib/autoFill/mapper";
 import { getFormFieldOverrides, firstProfileValue } from "@/lib/autoFill/formOverrides";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
@@ -61,10 +62,19 @@ const readDraftBackup = (formCode: string, journeyKey = "global") => {
 
   try {
     const raw = window.localStorage.getItem(buildDraftStorageKey(formCode, journeyKey));
-    if (!raw) return null;
-
-    const parsed = JSON.parse(raw) as { draft?: FormProgressDraft };
-    return parsed.draft ?? null;
+    if (raw) {
+      const parsed = JSON.parse(raw) as { draft?: FormProgressDraft };
+      if (parsed?.draft) return parsed.draft;
+    }
+    // Fallback to legacy global backup if candidate-specific doesn't exist
+    if (journeyKey !== "global") {
+      const fallbackRaw = window.localStorage.getItem(buildDraftStorageKey(formCode, "global"));
+      if (fallbackRaw) {
+        const parsed = JSON.parse(fallbackRaw) as { draft?: FormProgressDraft };
+        return parsed?.draft ?? null;
+      }
+    }
+    return null;
   } catch {
     return null;
   }
@@ -154,7 +164,8 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   const [cameFromIntro, setCameFromIntro] = useState(false);
   const savedScrollPosition = useRef<number>(0);
   const hasShownInitialIntro = useRef(false);
-  const draftJourneyKey = "global";
+  const { activeJourneyKey, activeCandidate } = useCandidate();
+  const draftJourneyKey = activeJourneyKey || "global";
   const { user, isLoading: isAuthLoading } = useAuth();
   const {
     profile: userProfile,
@@ -216,13 +227,15 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     if (!isClient || !config || isAuthLoading) return;
 
     const userId = user?.id ?? null;
-    const hydrationKey = `${formCode}:${userId ?? "anon"}`;
+    const hydrationKey = `${formCode}:${userId ?? "anon"}:${draftJourneyKey}`;
     if (hydratedKeyRef.current === hydrationKey) return;
     // Claim the key synchronously (before any await) so a concurrent re-render
     // or React StrictMode double-invoke can't kick off a second hydration.
     hydratedKeyRef.current = hydrationKey;
 
     let isMounted = true;
+    setDraftLoaded(false);
+    setProfileLoaded(false);
 
     const initializeForm = async () => {
       try {
@@ -352,7 +365,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     // new reference on every auth re-emit, which used to re-run this whole
     // initializer and wipe the form. The ref guard above enforces once-per-key.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isClient, config, user?.id, formCode, isAuthLoading]);
+  }, [isClient, config, user?.id, formCode, isAuthLoading, draftJourneyKey]);
 
   // ============ SESSION VALIDATION ============
   useEffect(() => {
@@ -402,7 +415,35 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       // in the form — a previously-saved draft, or a wrong-person value the global
       // mapper filled (I-130A / DS-260 "you" = beneficiary, not petitioner). We only
       // overwrite when the profile actually has a value, so we never blank a field.
-      const profileForOverride = userProfile as unknown as Record<string, unknown>;
+      const profileForOverride: Record<string, unknown> = {
+        ...(userProfile as unknown as Record<string, unknown>),
+      };
+
+      if (activeCandidate) {
+        const candBeneficiary: Record<string, unknown> = {
+          ...((profileForOverride.beneficiary as Record<string, unknown>) || {}),
+        };
+        if (activeCandidate.fullName) {
+          candBeneficiary.fullName = activeCandidate.fullName;
+        }
+        // Structured name is on the candidate's `name` (PersonName), not flat first/last fields.
+        const candName = activeCandidate.name;
+        if (candName?.first || candName?.middle || candName?.last) {
+          candBeneficiary.name = {
+            ...((candBeneficiary.name as Record<string, unknown>) || {}),
+            ...(candName?.first ? { first: candName.first } : {}),
+            ...(candName?.middle ? { middle: candName.middle } : {}),
+            ...(candName?.last ? { last: candName.last } : {}),
+          };
+        }
+        if (activeCandidate.dateOfBirth) candBeneficiary.dateOfBirth = activeCandidate.dateOfBirth;
+        if (activeCandidate.placeOfBirth) candBeneficiary.placeOfBirth = activeCandidate.placeOfBirth;
+        if (activeCandidate.passportNumber) candBeneficiary.passportNumber = activeCandidate.passportNumber;
+        if (activeCandidate.cnic) candBeneficiary.cnic = activeCandidate.cnic;
+
+        profileForOverride.beneficiary = candBeneficiary;
+      }
+
       for (const [formKey, paths] of Object.entries(overrides)) {
         const val = firstProfileValue(profileForOverride, paths);
         if (val) merged[formKey] = val;
@@ -411,7 +452,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       return merged;
     });
     setProfileLoaded(true);
-  }, [userProfile, isContextProfileLoading, profileLoaded, draftLoaded]);
+  }, [userProfile, isContextProfileLoading, profileLoaded, draftLoaded, activeCandidate, formCode]);
 
   const sections = useMemo(() => {
     if (!config) return [];
@@ -669,7 +710,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
             current_question_index: currentQuestionIndex,
             view_mode: view,
             progressive_sub_question_indices: progressiveSubQuestionIndices,
-            journey_key: "global",
+            journey_key: draftJourneyKey,
             config_version: "v1",
             completed: false,
           }),
@@ -725,6 +766,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     view,
     progressiveSubQuestionIndices,
     draftStatus,
+    draftJourneyKey,
   ]);
 
   const finalizeDraft = useCallback(async () => {
@@ -744,7 +786,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
           current_question_index: currentQuestionIndex,
           view_mode: "review",
           progressive_sub_question_indices: progressiveSubQuestionIndices,
-          journey_key: "global",
+          journey_key: draftJourneyKey,
           config_version: "v1",
           completed: true,
         }),
@@ -790,6 +832,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     currentStep,
     currentQuestionIndex,
     progressiveSubQuestionIndices,
+    draftJourneyKey,
     userProfile,
     updateProfile,
   ]);
@@ -820,7 +863,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
         showToast(
           "Free Preview: You've reached the 15-question limit. Redirecting to review page...",
           "info",
-          6000
+          { duration: 6000 }
         );
         setView("review");
         return;
@@ -984,7 +1027,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
           showToast(
             "Free Preview: You've reached the 15-question limit. Please unlock the tool or upgrade to access new questions.",
             "info",
-            5000
+            { duration: 5000 }
           );
           setView("review");
           return;
@@ -1015,7 +1058,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
           showToast(
             "Free Preview: You've reached the 15-question limit. Please unlock the tool or upgrade to access new sections.",
             "info",
-            5000
+            { duration: 5000 }
           );
           setView("review");
           return;
@@ -1303,12 +1346,15 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
       formDataUpload.append("role", role);
       formDataUpload.append("caseId", vaultConfig.caseId || "CASE");
+      if (draftJourneyKey && draftJourneyKey !== "global") {
+        formDataUpload.append("journeyId", draftJourneyKey);
+      }
 
       let personName = "Unknown";
       if (role === "PETITIONER" && vaultConfig.petitionerName) {
         personName = vaultConfig.petitionerName;
-      } else if (role === "BENEFICIARY" && vaultConfig.beneficiaryName) {
-        personName = vaultConfig.beneficiaryName;
+      } else if (role === "BENEFICIARY") {
+        personName = activeCandidate?.fullName || vaultConfig.beneficiaryName || "Beneficiary";
       } else if (role === "HOUSEHOLD_MEMBER" && vaultConfig.jointSponsorName) {
         personName = vaultConfig.jointSponsorName;
       }

@@ -28,15 +28,10 @@ export function ActiveCandidateBadge({
 }) {
   const { activeCandidate, isMultiCandidate } = useCandidate();
 
-  // If user only has single default spouse candidate on standard IR-1, don't crowd navbar
-  const isFamilyCategory =
-    activeCandidate.visaCategory.toUpperCase().includes("IR-5") ||
-    activeCandidate.visaCategory.toUpperCase().includes("IR5") ||
-    activeCandidate.visaCategory.toUpperCase().includes("IR-2") ||
-    activeCandidate.visaCategory.toUpperCase().includes("IR2") ||
-    isMultiCandidate;
-
-  if (!isFamilyCategory) return null;
+  // Category-agnostic (decision 2): the badge is a multi-candidate affordance, not an
+  // IR-5/IR-2-only one. Only show it once the account genuinely has more than one candidate,
+  // so a single-journey account (IR-1 or otherwise) is never crowded with it.
+  if (!isMultiCandidate) return null;
 
   const Icon = RELATION_ICONS[activeCandidate.relation] || Users;
   const shortLabel =

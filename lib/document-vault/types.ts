@@ -121,6 +121,13 @@ export interface DocumentDefinition {
   // Dynamic Category Support
   isDynamicCategory?: boolean; // If true, this document acts as a container for multiple sub-documents
   suggestions?: string[]; // List of suggested document types/names for this dynamic category
+
+  // Cross-candidate sharing (multi-candidate journeys, e.g. IR-5 two parents).
+  // When the share target is a SIBLING candidate (another parent in the same case), only
+  // documents that are shareable are offered. Eligibility defaults to a role-based rule in
+  // lib/document-vault/candidate-sharing.ts; this optional flag overrides that default in
+  // either direction (config-driven, so the UI never hardcodes document names).
+  shareableAcrossCandidates?: boolean;
 }
 
 export interface DocumentWizardStep {

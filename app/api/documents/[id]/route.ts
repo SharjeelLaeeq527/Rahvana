@@ -63,25 +63,35 @@ export async function DELETE(
       return NextResponse.json({ error: "Document not found" }, { status: 404 });
     }
 
-    // Delete files from Supabase Storage (using service role)
-    const storageSupabase = createClientJs(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+    // Reference-count the physical file BEFORE deleting the metadata row. A shared
+    // document (e.g. a petitioner doc cross-shared to another candidate's journey) has
+    // multiple rows pointing at the SAME storage_path. We must only remove the blob when
+    // no OTHER row still references it, otherwise we orphan the file for the others.
+    const sharingRows = await dbStorage.getDocumentsByStoragePath(document.storagePath, user.id);
+    const otherRowsReferenceBlob = sharingRows.some((d) => d.id !== documentId);
 
-    const filesToDelete = [document.storagePath];
-    if (document.hasCompressedVersion && document.compressedStoragePath) {
-      filesToDelete.push(document.compressedStoragePath);
-    }
-
-    await storageSupabase.storage.from("document-vault").remove(filesToDelete);
-
-    // Delete metadata
+    // Delete this metadata row first.
     await dbStorage.deleteDocument(documentId, user.id);
+
+    // Remove the physical file(s) only when nothing else points at them.
+    if (!otherRowsReferenceBlob) {
+      const storageSupabase = createClientJs(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
+
+      const filesToDelete = [document.storagePath];
+      if (document.hasCompressedVersion && document.compressedStoragePath) {
+        filesToDelete.push(document.compressedStoragePath);
+      }
+
+      await storageSupabase.storage.from("document-vault").remove(filesToDelete);
+    }
 
     return NextResponse.json({
       success: true,
       message: "Document deleted successfully",
+      fileRemoved: !otherRowsReferenceBlob,
     });
   } catch (error) {
     console.error("Delete document error:", error);

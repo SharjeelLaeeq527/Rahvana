@@ -1,13 +1,14 @@
 // app/components/candidate/AddCandidateModal.tsx
 // ============================================================================
 // Add Candidate / Beneficiary Modal
-// Allows petitioner to add a 2nd parent (IR-5) or additional children (IR-2)
-// Supports Free Preview mode with paywall-aware tier tagging.
+// Allows petitioner to add a 2nd parent (IR-5) or additional children (IR-2).
+// All candidates are treated equally (no per-candidate preview / upsell).
 // ============================================================================
 
 "use client";
 
 import React, { useState } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -15,7 +16,6 @@ import {
   Users,
   Heart,
   Baby,
-  Sparkles,
   ShieldCheck,
   CheckCircle2,
 } from "lucide-react";
@@ -36,20 +36,15 @@ export function AddCandidateModal({
 }: AddCandidateModalProps) {
   const { addCandidate, candidates } = useCandidate();
 
-  const isIr5 = visaCategory.toUpperCase().includes("IR-5") || visaCategory.toUpperCase().includes("IR5");
-  const isIr2 = visaCategory.toUpperCase().includes("IR-2") || visaCategory.toUpperCase().includes("IR2");
-
-  // Determine smart default relation
+  // A petitioner can sponsor across categories (a parent AND a spouse AND a child), so every
+  // relation is offered. The ONLY cardinality rule is USCIS's "one spouse at a time": a second
+  // Spouse can never be added, so Spouse is hidden once a spouse candidate already exists.
+  const hasSpouse = candidates.some((c) => c.relation === "Spouse");
   const hasMother = candidates.some((c) => c.relation === "Mother");
   const hasFather = candidates.some((c) => c.relation === "Father");
 
-  const defaultRelation: CandidateRelation = isIr5
-    ? hasMother && !hasFather
-      ? "Father"
-      : "Mother"
-    : isIr2
-      ? "Child"
-      : "Mother";
+  // Smart default relation: fill the missing parent first, else Mother.
+  const defaultRelation: CandidateRelation = hasMother && !hasFather ? "Father" : "Mother";
 
   const [relation, setRelation] = useState<CandidateRelation>(defaultRelation);
   const [fullName, setFullName] = useState("");
@@ -59,6 +54,11 @@ export function AddCandidateModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // Guard against a second spouse (belt-and-suspenders; Spouse is hidden when one exists,
+    // and CandidateContext.addCandidate throws too).
+    if (relation === "Spouse" && hasSpouse) {
+      return;
+    }
     setIsSubmitting(true);
 
     try {
@@ -67,7 +67,9 @@ export function AddCandidateModal({
         relation,
         fullName: fullName.trim() || undefined,
         visaCategory: targetVisa,
-        isPreview: true, // Free preview mode for testing
+        // Every candidate/parent is a real beneficiary and is treated equally.
+        // We do NOT flag added parents as "preview" based on creation order.
+        isPreview: false,
         tier: "free",
       });
       onClose();
@@ -78,7 +80,7 @@ export function AddCandidateModal({
     }
   };
 
-  const relationOptions: {
+  const allRelationOptions: {
     value: CandidateRelation;
     label: string;
     visaBadge: string;
@@ -88,62 +90,65 @@ export function AddCandidateModal({
     { value: "Father", label: "Father", visaBadge: "IR-5 Parent", icon: Users },
     { value: "Stepparent", label: "Stepparent", visaBadge: "IR-5 Parent", icon: Users },
     { value: "AdoptiveParent", label: "Adoptive Parent", visaBadge: "IR-5 Parent", icon: Heart },
-    { value: "Spouse", label: "Spouse", visaBadge: "IR-1 Spouse", icon: Heart },
     { value: "Child", label: "Child", visaBadge: "IR-2 Child", icon: Baby },
+    { value: "Spouse", label: "Spouse", visaBadge: "IR-1 Spouse", icon: Heart },
   ];
 
-  return (
+  // Category-agnostic: offer every relation (the exact visa category is derived from the
+  // relation via getVisaCategoryForRelation). The only exclusion is a SECOND spouse - USCIS
+  // permits only one spouse at a time - so Spouse is dropped once one already exists.
+  const relationOptions = allRelationOptions.filter((o) => !(o.value === "Spouse" && hasSpouse));
+
+  const modal = (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[10000] flex items-center justify-center p-3 sm:p-4 md:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150 overflow-y-auto">
+      <div className="animate-in fade-in fixed inset-0 z-[10000] flex items-center justify-center overflow-y-auto bg-black/60 p-3 backdrop-blur-sm duration-150 sm:p-4 md:p-6">
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
-          className="relative flex flex-col w-full max-w-lg md:max-w-md max-h-[calc(100dvh-2rem)] sm:max-h-[85vh] bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden my-auto"
+          className="relative my-auto flex max-h-[calc(100dvh-2rem)] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl sm:max-h-[85vh] md:max-w-md"
         >
           {/* Header */}
-          <div className="shrink-0 bg-gradient-to-br from-[#0d7377]/10 via-[#0d7377]/5 to-transparent px-5 sm:px-6 py-3.5 sm:py-4 border-b border-slate-100 flex items-center justify-between">
+          <div className="flex shrink-0 items-center justify-between border-b border-slate-100 bg-gradient-to-br from-[#0d7377]/10 via-[#0d7377]/5 to-transparent px-5 py-3.5 sm:px-6 sm:py-4">
             <div className="flex items-center gap-2.5 sm:gap-3">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#0d7377] text-white flex items-center justify-center shadow-md shadow-[#0d7377]/20 shrink-0">
-                <UserPlus className="w-4 h-4 sm:w-5 sm:h-5" />
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#0d7377] text-white shadow-md shadow-[#0d7377]/20 sm:h-10 sm:w-10">
+                <UserPlus className="h-4 w-4 sm:h-5 sm:w-5" />
               </div>
               <div>
-                <h3 className="text-sm sm:text-base font-bold text-slate-800">
+                <h3 className="text-sm font-bold text-slate-800 sm:text-base">
                   Add Beneficiary Profile
                 </h3>
-                <p className="text-[11px] sm:text-xs text-slate-500">
+                <p className="text-[11px] text-slate-500 sm:text-xs">
                   Multi-profile petitioner support
                 </p>
               </div>
             </div>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+              className="rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
               aria-label="Close modal"
             >
-              <X className="w-4 h-4" />
+              <X className="h-4 w-4" />
             </button>
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+          <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col overflow-hidden">
             {/* Scrollable Body */}
             <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-4.5 overscroll-contain">
-              {/* Free preview badge / notice */}
+              {/* Multi-profile notice */}
               <div className="p-3 sm:p-3.5 rounded-xl bg-teal-50/80 border border-teal-200/70 text-xs text-teal-800 space-y-1">
-                <div className="flex items-center gap-1.5 font-semibold text-teal-900 text-xs sm:text-sm">
-                  <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-teal-600 shrink-0" />
-                  <span>Multi-Profile Preview Experience</span>
+                <div className="font-semibold text-teal-900 text-xs sm:text-sm">
+                  Multi-Profile Support
                 </div>
                 <p className="text-teal-700 leading-relaxed text-[11px] sm:text-[11.5px]">
-                  You can switch between candidate profiles right from the header tray.
-                  Petitioner sponsor information (income, affidavit metrics, tax records) will be automatically synced.
+                  Switch between beneficiary profiles anytime from this journey. Petitioner sponsor information (income, affidavit metrics, tax records) is shared automatically across all profiles.
                 </p>
               </div>
 
               {/* Relation selector */}
               <div>
-                <label className="block text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5 sm:mb-2">
+                <label className="mb-1.5 block text-[11px] font-bold tracking-wider text-slate-600 uppercase sm:mb-2 sm:text-xs">
                   Relationship to Petitioner
                 </label>
                 <div className="grid grid-cols-2 gap-2">
@@ -155,19 +160,25 @@ export function AddCandidateModal({
                         key={opt.value}
                         type="button"
                         onClick={() => setRelation(opt.value)}
-                        className={`flex flex-col items-start gap-1 p-2.5 sm:p-3 rounded-xl border text-left text-xs font-semibold transition-all ${
+                        className={`flex flex-col items-start gap-1 rounded-xl border p-2.5 text-left text-xs font-semibold transition-all sm:p-3 ${
                           isSelected
                             ? "border-[#0d7377] bg-[#0d7377]/5 text-[#0d7377] ring-1 ring-[#0d7377]"
-                            : "border-slate-200 hover:bg-slate-50 text-slate-700"
+                            : "border-slate-200 text-slate-700 hover:bg-slate-50"
                         }`}
                       >
-                        <div className="flex items-center gap-1.5 sm:gap-2 w-full">
-                          <Icon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 ${isSelected ? "text-[#0d7377]" : "text-slate-400"}`} />
+                        <div className="flex w-full items-center gap-1.5 sm:gap-2">
+                          <Icon
+                            className={`h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4 ${isSelected ? "text-[#0d7377]" : "text-slate-400"}`}
+                          />
                           <span className="truncate">{opt.label}</span>
                         </div>
-                        <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-md ${
-                          isSelected ? "bg-[#0d7377]/15 text-[#0d7377]" : "bg-slate-100 text-slate-500"
-                        }`}>
+                        <span
+                          className={`rounded-md px-1.5 py-0.5 text-[10px] font-medium ${
+                            isSelected
+                              ? "bg-[#0d7377]/15 text-[#0d7377]"
+                              : "bg-slate-100 text-slate-500"
+                          }`}
+                        >
                           {opt.visaBadge}
                         </span>
                       </button>
@@ -178,44 +189,51 @@ export function AddCandidateModal({
 
               {/* Candidate full name */}
               <div>
-                <label className="block text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-600 mb-1 sm:mb-1.5">
-                  Beneficiary Full Name <span className="text-slate-400 font-normal">(Optional)</span>
+                <label className="mb-1 block text-[11px] font-bold tracking-wider text-slate-600 uppercase sm:mb-1.5 sm:text-xs">
+                  Beneficiary Full Name{" "}
+                  <span className="font-normal text-slate-400">(Optional)</span>
                 </label>
                 <input
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  placeholder={relation === "Mother" ? "e.g. Fatima Bibi" : relation === "Father" ? "e.g. Mohammad Ali" : "e.g. Full Name"}
-                  className="w-full px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 transition-all"
+                  placeholder={
+                    relation === "Mother"
+                      ? "e.g. Fatima Bibi"
+                      : relation === "Father"
+                        ? "e.g. Mohammad Ali"
+                        : "e.g. Full Name"
+                  }
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs text-slate-800 transition-all placeholder:text-slate-400 focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 focus:outline-none sm:px-3.5 sm:py-2.5 sm:text-sm"
                 />
               </div>
 
               {/* Feature highlights */}
               <div className="space-y-1.5 pt-0.5">
-                <div className="flex items-center gap-2 text-[11px] sm:text-xs text-slate-600">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <div className="flex items-center gap-2 text-[11px] text-slate-600 sm:text-xs">
+                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-600" />
                   <span>Separate roadmap milestones & checklist tracking</span>
                 </div>
-                <div className="flex items-center gap-2 text-[11px] sm:text-xs text-slate-600">
-                  <ShieldCheck className="w-3.5 h-3.5 text-teal-600 shrink-0" />
+                <div className="flex items-center gap-2 text-[11px] text-slate-600 sm:text-xs">
+                  <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-teal-600" />
                   <span>Independent DS-260, medical exam, and interview prep</span>
                 </div>
               </div>
             </div>
 
             {/* Actions Footer */}
-            <div className="shrink-0 flex items-center justify-end gap-2.5 sm:gap-3 px-5 sm:px-6 py-3 sm:py-3.5 bg-slate-50/90 border-t border-slate-100">
+            <div className="flex shrink-0 items-center justify-end gap-2.5 border-t border-slate-100 bg-slate-50/90 px-5 py-3 sm:gap-3 sm:px-6 sm:py-3.5">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-3.5 sm:px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-200/70 rounded-lg transition-colors"
+                className="rounded-lg px-3.5 py-2 text-xs font-semibold text-slate-600 transition-colors hover:bg-slate-200/70 hover:text-slate-800 sm:px-4"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-4 sm:px-5 py-2 sm:py-2.5 text-xs font-bold text-white bg-[#0d7377] hover:bg-[#0a5c5f] rounded-lg shadow-sm shadow-[#0d7377]/20 transition-all disabled:opacity-50"
+                className="rounded-lg bg-[#0d7377] px-4 py-2 text-xs font-bold text-white shadow-sm shadow-[#0d7377]/20 transition-all hover:bg-[#0a5c5f] disabled:opacity-50 sm:px-5 sm:py-2.5"
               >
                 {isSubmitting ? "Creating..." : "Create Candidate Profile"}
               </button>
@@ -225,4 +243,13 @@ export function AddCandidateModal({
       </div>
     </AnimatePresence>
   );
+
+  // Portal to <body> so the overlay escapes the sticky / overflow-hidden card it is
+  // triggered from (CandidateSwitcherTray lives inside a sticky, overflow-hidden Card in
+  // the Document Vault). Without this the fixed overlay's stacking context breaks and the
+  // page behind bleeds through the modal.
+  if (typeof document !== "undefined") {
+    return createPortal(modal, document.body);
+  }
+  return null;
 }

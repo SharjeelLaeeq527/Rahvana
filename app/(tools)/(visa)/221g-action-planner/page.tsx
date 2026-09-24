@@ -4,7 +4,9 @@ import { useState, useEffect } from "react";
 import CombinedIntakeFormWrapper from "./components/CombinedIntakeFormWrapper";
 import { FormData, FormSelections } from "./types/221g";
 import { useUserProfile } from "@/app/context/UserProfileContext";
+import { useCandidate } from "@/app/context/CandidateContext";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
+import { Users } from "lucide-react";
 
 export default function TwentyTwoOneGActionPlanner() {
   const [formData, setFormData] = useState<FormData | null>(null);
@@ -14,21 +16,26 @@ export default function TwentyTwoOneGActionPlanner() {
   const [smartModeEnabled, setSmartModeEnabled] = useState(true);
 
   const { profile, isProfileLoading, updateProfile } = useUserProfile();
+  const { activeCandidate, activeCandidateId, isMultiCandidate } = useCandidate();
 
-  // Restore session from profile (now reads from context instead of direct Supabase)
+  // Restore session from candidate-scoped profile data
   useEffect(() => {
     if (isProfileLoading || !profile) return;
 
     let savedData: Record<string, unknown> = {};
     let savedSelections = null;
 
-    if (profile.actionPlanner?.questionnaire) {
-      savedData = { ...(profile.actionPlanner.questionnaire.formData as unknown as FormData) };
-      savedSelections = profile.actionPlanner.questionnaire
+    const candidatePlanner =
+      (profile as any)[`actionPlanner_${activeCandidateId}`] ||
+      (activeCandidateId === "candidate-1" ? profile.actionPlanner : null);
+
+    if (candidatePlanner?.questionnaire) {
+      savedData = { ...(candidatePlanner.questionnaire.formData as unknown as FormData) };
+      savedSelections = candidatePlanner.questionnaire
         .selectedItems as unknown as FormSelections;
     }
 
-    // Prioritize standard fields from central profile if present
+    // Prioritize standard fields from candidate / central profile if present
     if (profile.interviewDate) {
       savedData.interviewDate = profile.interviewDate;
     }
@@ -41,10 +48,22 @@ export default function TwentyTwoOneGActionPlanner() {
     if (profile.caseNumber) {
       savedData.caseNumber = profile.caseNumber;
     }
-    if (profile.fullName) {
-      savedData.beneficiaryName = profile.fullName;
-    } else if (profile.name?.first) {
-      savedData.beneficiaryName = `${profile.name.first} ${profile.name.last || ""}`.trim();
+    // Resolve user-friendly beneficiary name (e.g. "Candidate 1 (Mother)" or "Candidate 2 (Father)")
+    const candidateDefaultName =
+      activeCandidate.fullName && activeCandidate.fullName.trim()
+        ? activeCandidate.fullName.trim()
+        : activeCandidate.relation && activeCandidate.relation !== "Other"
+        ? `${activeCandidate.label || "Candidate"} (${activeCandidate.relation})`
+        : activeCandidate.label || "Candidate 1";
+
+    const currentBeneficiary =
+      typeof savedData.beneficiaryName === "string" ? savedData.beneficiaryName.trim() : "";
+    const isIdTypeOrEmpty = !currentBeneficiary || /^candidate[-_]\d+$/i.test(currentBeneficiary);
+
+    if (isIdTypeOrEmpty) {
+      savedData.beneficiaryName = candidateDefaultName;
+    } else if (activeCandidate.fullName && activeCandidate.fullName.trim()) {
+      savedData.beneficiaryName = activeCandidate.fullName.trim();
     }
     if (profile.passportNumber) {
       savedData.passportNumber = profile.passportNumber;
@@ -52,10 +71,9 @@ export default function TwentyTwoOneGActionPlanner() {
     if (profile.dateOfBirth) {
       savedData.dateOfBirth = profile.dateOfBirth;
     }
-    if (!savedData.visaCategory && profile.visaCategory) {
-      savedData.visaCategory = profile.visaCategory;
-    } else if (!savedData.visaCategory && profile.visaType) {
-      savedData.visaCategory = profile.visaType;
+    const candidateVisa = activeCandidate.visaCategory || profile.visaCategory || profile.visaType;
+    if (candidateVisa) {
+      savedData.visaCategory = candidateVisa;
     }
     // New cross-chapter autofill fields
     if (profile.interviewOutcome) {
@@ -80,7 +98,7 @@ export default function TwentyTwoOneGActionPlanner() {
     if (savedSelections) {
       setInitialSelections(savedSelections);
     }
-  }, [profile, isProfileLoading]);
+  }, [profile, isProfileLoading, activeCandidateId, activeCandidate]);
 
   const handleSubmit = (data: FormData, selectedItems: FormSelections = {}) => {
     setFormData(data);
@@ -99,10 +117,13 @@ export default function TwentyTwoOneGActionPlanner() {
       interviewDate: formData.interviewDate,
     };
 
-    // Use context's updateProfile to save both specific namespace and standard fields
+    const actionPlannerKey = `actionPlanner_${activeCandidateId}`;
+
+    // Use context's updateProfile to save both candidate-specific namespace and standard fields
     updateProfile(
       {
-        actionPlanner: actionPlannerData,
+        [actionPlannerKey]: actionPlannerData,
+        ...(activeCandidateId === "candidate-1" ? { actionPlanner: actionPlannerData } : {}),
         interviewDate: formData.interviewDate || undefined,
         interviewLocation: formData.consularPost || undefined,
         caseStatus: formData.ceacStatus || undefined,
@@ -119,16 +140,24 @@ export default function TwentyTwoOneGActionPlanner() {
   return (
     <div className="w-full site-main-px site-main-py mt-10">
       <div className="mb-5 rounded-2xl border border-slate-200 px-4 py-4 md:px-6 md:py-5">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">
-          Visa Response Toolkit
-        </p>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">
+            Visa Response Toolkit
+          </p>
+          {isMultiCandidate && (
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-teal-50 border border-teal-200 text-[11px] font-semibold text-teal-800">
+              <Users className="w-3 h-3 text-teal-600" />
+              <span>Beneficiary: {activeCandidate.fullName || activeCandidate.label} ({activeCandidate.relation})</span>
+            </div>
+          )}
+        </div>
         <div className="mt-1 flex items-start justify-between gap-3">
           <div>
             <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 md:text-3xl">
               221(g) Action Planner
             </h1>
             <p className="mt-1 text-sm text-slate-600">
-              Build and export a structured 221(g) response packet step by step.
+              Build and export a structured 221(g) response packet step by step for {activeCandidate.fullName || activeCandidate.label}.
             </p>
           </div>
           <QuickAccessButton

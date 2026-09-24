@@ -254,6 +254,26 @@ source). Add-ons come from
 (`JOURNEY_LOCK_DAYS = 14`) locks a journey 14 days after `metadata.ceacIssuedAt`
 (distinct from entitlement gating).
 
+**Per-journey (per-category) tier resolution.** Entitlements resolve against the **active
+journey's category**, not just the account. `PlanContext` reads BOTH
+`user_profiles.subscription_tier` (`accountTier`) AND every `journeys.subscription_tier` in
+parallel, building a `journeyTiers` map keyed by base category
+(`getBaseVisaCategory(journey_type)` -> tier), and exposes it. The effective `realTier` for the
+active journey is: the `journeyTiers[activeCategory]` when present; else, if ANY journey has an
+explicit tier, an **unpurchased category resolves to `free`** (so an IR-1 candidate added on an
+IR-5-purchased account stays free/preview until IR-1 is bought - the existing Stripe flow, no
+new billing); else the legacy `accountTier` (single-journey / pre-`subscription_tier`-column
+accounts are never regressed). The active category comes from
+`candidateCtx.activeCandidate.visaCategory` / `activeJourneyBase`; `maxActiveJourneyTier` stays
+the account summary. This is the existing per-journey `journeys.subscription_tier` column
+(`20260917` migration) that `stripe/verify-session` already writes - no new entitlement or
+payment architecture. Verified by `__tests__/candidate/candidate-entitlements.test.ts` (IR-5
+premium + IR-1 unpurchased -> locked; buy IR-1 -> unlocks; no journey tiers -> account
+fallback). One caveat to watch: if a paying account's active candidate is a stale DEFAULTED
+category (e.g. an IR-1 account whose `profile.visaType` is unset defaults the candidate to
+IR-5), the active category can be wrong; the defaulted-fallback neutralization in
+`CandidateContext` mitigates this but relies on the profile carrying the real category.
+
 ### 4.4 Auto-fill (`lib/autoFill/*`)
 
 Bidirectional mapping between the **MasterProfile** and any USCIS form.
@@ -336,7 +356,75 @@ personalization by visa type / sponsor structure / country
 (`personalization-engine.ts`), expiration tracking, Zustand store (`store.ts`), client +
 server storage clients (`storage-client.ts`, `storage-server.ts`, `storage-database.ts`),
 `journey-mapping.ts`, `flag-registry.ts`, and `useInitDocumentVault.ts` (prefetch on
-dashboard mount). Vault files are AES-256-GCM encrypted with a **per-user** key
+dashboard mount).
+
+**Multi-candidate (IR-5 / IR-2).** A single petitioner can sponsor several beneficiaries
+(IR-5 = Mother + Father; IR-2 = multiple children). This is modeled as **one journey per
+candidate**, coordinated by a central `CandidateContext` (`app/context/CandidateContext.tsx`,
+provided in `app/layout.tsx`). Candidates live on the `MasterProfile`
+(`profile.candidates: CandidateProfile[]` + `activeCandidateId`; see `types/candidate.ts`),
+and each candidate maps to a distinct `journey_type` via
+`getCandidateJourneyKey(baseType, candidateId)` in `lib/candidate/candidateSyncService.ts`
+(`ir5` for candidate-1, `ir5_candidate-2` for candidate-2, ...), so the existing
+`UNIQUE(user_id, journey_type)` constraint holds without a schema change. Sponsor/petitioner
+data is auto-shared across candidates (`SHARED_PETITIONER_FIELDS`) while beneficiary data is
+isolated (`CANDIDATE_SPECIFIC_FIELDS`). The vault, roadmap, tools and forms all scope by the
+active candidate's journey (via `useCandidate()` + `journey_id`); the vault therefore reuses
+the existing per-`journey_id` scoping (no `candidate_id` column). **Tools are journey-aware:**
+case-status (`uscis_case_history` tags `_candidateId`/`_candidateName`), interview-prep, the
+221g planner and the Sponsorship (I-864) calculator all resolve the active journey/candidate
+from context so their state/results switch with the candidate (shared petitioner inputs stay
+shared). **Candidate deletion** is `POST /api/candidate/delete`: it removes the candidate from
+`profile_details.candidates`, resets `activeCandidateId`, and cleans up that candidate's
+`user_guides` and **its suffixed `journeys` rows** (so a deleted candidate does not leave an
+orphaned journey that would keep the switcher's 2+ gate satisfied); candidate-1 (the base
+journey) can never be deleted. `CandidateContext` also
+exposes the canonical scope of the active journey: **`activeJourneyBase`** (e.g. "IR-1",
+"IR-5") and **`activeJourneyKey`** (the `journey_type` key, `getCandidateJourneyKey(active
+candidate.visaCategory, id)`), derived from the active candidate's own `visaCategory` (not an
+ambient `journey_type`). UI: `CandidateSwitcherTray` (switch / add / rename) is a
+**whole-journey feature rendered in the global `SiteHeader` profile dropdown** (one account,
+multiple beneficiary journeys), NOT a vault-only widget. The switcher is **category-agnostic**
+(decision 2): it shows only when the account genuinely has **2+ candidates/journeys** -
+`isMultiCandidate` (candidate roster length > 1) OR `dedupeJourneysByType(fetchUserJourneysCached()).length >= 2`.
+IR-1 is a normal candidate/journey here, no longer isolated. A **single-candidate account
+shows NO switcher tray** (just its normal profile); "+ Add Candidate" stays reachable from a
+dropdown entry rendered in that same profile menu (opens `AddCandidateModal`), so a
+single-journey user can still start a second candidate. Counting real candidates/journeys
+(never the defaulted `activeCandidate.visaCategory`) avoids the old leak where a defaulted
+IR-5 candidate showed the tray for IR-1 users. The header bar also shows a small
+**active-candidate badge** (same 2+ gate) so the active beneficiary is visible without opening
+the tray; clicking it opens the tray.
+`AddCandidateModal` is **category-agnostic** (Phase 4): it offers every relation - Mother /
+Father / Stepparent / Adoptive Parent (IR-5), Child (IR-2), and **Spouse (IR-1)** - deriving
+the visa category via `getVisaCategoryForRelation`. The only cardinality rule is USCIS's "one
+spouse at a time": a second Spouse is blocked (Spouse hidden once one exists, and
+`CandidateContext.addCandidate` throws) but this never blocks displaying/switching the one
+spouse. A cross-category candidate's journey row + config are created lazily by `initialize`
+on the URL that the switcher navigates to (URL base is authoritative for the category,
+`candidate_id` selects within it; deliberately NOT candidate-authoritative, because a defaulted
+candidate's `visaCategory` can be a stale IR-5 and would mislabel IR-1 accounts). Full design:
+`docs/multi-candidate-desciption.md`. **Cross-candidate document
+sharing** (e.g. a petitioner doc used for both parents, OR the petitioner's passport reused on
+both an IR-1 and an IR-5 journey) rides the existing **cross-journey** share
+(`shareWithJourneyIds`). The rule is **category-AGNOSTIC**: both upload modals offer **every
+other journey on the account, across categories** (IR-1 is a normal share target now, NOT
+isolated). Which specific document is offered to a given target is decided by two rules:
+(1) `isDocumentShareableAcrossCandidates` (`lib/document-vault/candidate-sharing.ts`:
+petitioner/joint-sponsor/household docs shareable by default, any BENEFICIARY doc
+person-specific, explicit `shareableAcrossCandidates` override on a `DocumentDefinition`) - so
+only genuinely-same petitioner/sponsor documents are ever offered, and person-specific docs
+(passport, CNIC, birth, medical) are never offered to any other journey; and
+(2) `isDocumentApplicableToJourney` - the doc must apply to the TARGET journey's visa category.
+The share targets are **checked by DEFAULT (opt-out)** so a shared petitioner document is not
+re-uploaded per category; the user can untick any target (the multi-upload modal remembers
+manual unticks via `manuallyUncheckedIds`). **The upload route re-enforces both rules
+server-side** (`app/api/documents/upload/route.ts`): it looks up the user's own journeys
+(RLS-scoped) and drops any `shareWithJourneyIds` entry that is not the user's journey, is not a
+shareable doc, or does not apply to the target category - the client list is never trusted.
+`DELETE /api/documents/[id]` reference-counts `storage_path` before removing the blob so
+deleting one shared copy never orphans the file for the other journey.
+Vault files are AES-256-GCM encrypted with a **per-user** key
 (`file-encryption.ts`, `SHA-256(PORTAL_WALLET_SECRET + ":" + userId)`, `RVLT` magic
 header) — this per-user derivation is unique to vault files (see 23).
 
@@ -475,7 +563,14 @@ into `user_profiles.profile_details`** so tools share one profile.
   (`usePDFStore`), progress tree (`lib/progress-tree-store.ts`), guides nav-guard.
 - **Journey state:** `useWizard` (optimistic local + Supabase) is authoritative for the
   active journey.
-- **Form drafts:** localStorage + backend (`visa_forms_draft` table) for multi-step forms.
+- **Form drafts:** localStorage + backend (`visa_forms_draft` table) for multi-step forms,
+  **scoped by the active journey key** (`MultiStepForm` uses `useCandidate().activeJourneyKey`
+  as `draftJourneyKey`; the localStorage backup key, the hydration key, and the
+  `visa-forms/[formCode]/progress` reads/writes are all journey-keyed). Reads fall back to a
+  legacy `"global"` draft when no journey-specific one exists (backward compatible). The form's
+  beneficiary fields are also overridden from the active `CandidateProfile`
+  (`fullName`/`name`/`dateOfBirth`/`placeOfBirth`/`passportNumber`/`cnic`) so each candidate's
+  form pre-fills the right person.
 
 ---
 
@@ -515,6 +610,11 @@ migrations (`create_{journeys,chapters,steps,case_data}_table.sql`).
 | `chapters` | Stage subdivisions of a journey | `journey_id`, `chapter_key`, `chapter_number`, `status`, `display_order`, `is_visible`, `visible_when` (JSONB) |
 | `steps` | Granular action items | `chapter_id`, `step_key`, `step_type`, `tool_integration`, `dependencies` (JSONB), `visible_when` (JSONB), `status`, `substatus`, `is_required`, `metadata` |
 | `case_data` | Flexible key-value case facts | `journey_id`, `data_key`, `data_value` (JSONB), `source`, `is_verified`, `version`, `previous_value` (audit) |
+
+> **Multi-candidate (IR-5/IR-2) uses NO new DB columns.** Each candidate is a separate
+> `journeys` row with its own `journey_type` (`ir5`, `ir5_candidate-2`, ...); documents stay
+> scoped by the existing `journey_id`. Candidate rosters live on `user_profiles.profile_details`
+> (`profile.candidates`), not in a dedicated table. See 4.7 and `docs/multi-candidate-desciption.md`.
 
 **Supporting journey tables** — `journey_documents` (+ `journey_id` on documents),
 `tool_sessions`, `journey_portal_records` (**no passwords**), `journey_appointments`,
@@ -556,6 +656,7 @@ Python backend. Highlights:
 | `stripe/*` | `checkout`, `verify-session` (idempotent self-heal & source of truth), `webhook`, `portal` | Stripe |
 | `plan/*` | `plan/reconcile` (never-downgrade tier self-heal) | Supabase |
 | `journeys|chapters|steps|case_data` | journey CRUD, `journeys/initialize` (combined load + bg step-sync), `case_data/validate` | Supabase, journey engines |
+| `candidate/*` | `candidate/delete` (remove candidate from `profile_details.candidates` + cleanup its `user_guides` and suffixed `journeys` rows; candidate-1 protected) | Supabase |
 | `journey/*` | `journey/marriage-check` (singular; distinct from `journeys`) | Supabase |
 | `documents/*` | upload (validate + encrypt + compress), download/preview/export, `config`, `mark-read`, `extract-{passport,cnic,birth,marriage,divorce}` | Supabase Storage, Python, Gemini |
 | `upload/*` | generic authenticated file upload tied to an appointment | Supabase Storage |

@@ -278,6 +278,8 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
 
       {/* ── Main Content ── */}
       <main className="roadmap-main">
+        {/* Candidate switcher now lives in the global SiteHeader (app-wide, IR-5/IR-2 only),
+            so it is not duplicated on the dashboard. */}
         {view === "dashboard" && (
           <DashboardView
             data={data}

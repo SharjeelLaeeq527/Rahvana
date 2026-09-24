@@ -57,7 +57,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Plus, Info, LayoutTemplate } from "lucide-react";
 import { useWizard } from "@/app/(main)/dashboard/hooks/useWizard";
 import { useCandidate } from "@/app/context/CandidateContext";
-import { getJourneyKeyForCandidate } from "@/lib/candidate/candidateSyncService";
+import { getJourneyKeyForCandidate, getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
 import Link from "next/link";
 import Image from "next/image";
 import { PageGate } from "@/app/components/entitlements/PageGate";
@@ -73,6 +73,37 @@ import {
 
 // Session-storage key for persisted journey choice (Case 3)
 const SESSION_KEY = "doc_vault_active_journey";
+
+// The journey picker shows ONE card per base visa category (IR-1, IR-5, ...). Candidate-scoped
+// journeys (e.g. ir5_candidate-2) are NOT separate vaults in the picker - once a category is
+// opened, the header candidate switcher moves between candidates. This also collapses any stray
+// duplicate or leftover candidate rows (e.g. an old ir1_candidate-2 from when Spouse could be
+// added as a candidate) into a single card, preferring the base (non-candidate) journey.
+function dedupeJourneysByBaseCategory(journeys: Journey[]): Journey[] {
+  const byBase = new Map<string, Journey>();
+  for (const j of journeys) {
+    if (!j?.journey_type) continue;
+    const base = getBaseVisaCategory(j.journey_type);
+    const existing = byBase.get(base);
+    if (!existing) {
+      byBase.set(base, j);
+      continue;
+    }
+    const jIsCandidate = j.journey_type.toLowerCase().includes("candidate");
+    const existingIsCandidate = existing.journey_type.toLowerCase().includes("candidate");
+    // Prefer the base (non-candidate / primary) journey as the category's representative;
+    // otherwise prefer an in-progress one.
+    if (existingIsCandidate && !jIsCandidate) byBase.set(base, j);
+    else if (
+      existingIsCandidate === jIsCandidate &&
+      existing.status !== "in_progress" &&
+      j.status === "in_progress"
+    ) {
+      byBase.set(base, j);
+    }
+  }
+  return Array.from(byBase.values());
+}
 
 export default function DocumentVaultPage() {
   const { showToast } = useToast();
@@ -166,6 +197,14 @@ export default function DocumentVaultPage() {
    */
   const journeyGateEvaluated = useRef(false);
 
+  /**
+   * Tracks the last candidate we auto-resolved to a journey. The candidate->journey sync
+   * effect must only run when the CANDIDATE changes, otherwise "Back to Journeys"
+   * (which sets activeJourneyId to null) is instantly undone by the effect re-selecting the
+   * candidate's journey.
+   */
+  const lastResolvedCandidateRef = useRef<string | null>(null);
+
   const { activeCandidate, activeCandidateId, isMultiCandidate, candidates } = useCandidate();
 
   // Derive active candidate journey key
@@ -178,6 +217,23 @@ export default function DocumentVaultPage() {
   const activeJourney = useMemo(() => {
     return userJourneys.find((j) => j.id === activeJourneyId) ?? null;
   }, [userJourneys, activeJourneyId]);
+
+  // One entry per base visa category for the journey picker (IR-1, IR-5, ...). Collapses
+  // candidate-scoped and stray duplicate journey rows so IR-1 can never show as two/many cards.
+  const dedupedUserJourneys = useMemo(
+    () => dedupeJourneysByBaseCategory(userJourneys),
+    [userJourneys]
+  );
+
+  // Candidate switching is category-AGNOSTIC now (decision 2): any account can have multiple
+  // candidates/journeys, including IR-1. This flag just means "the active journey is a
+  // recognized candidate-capable journey"; the "whose vault" chip below is still additionally
+  // gated on isMultiCandidate, so it only appears once there are genuinely 2+ candidates.
+  const isCandidateJourney = useMemo(() => {
+    if (!activeJourney?.journey_type) return false;
+    const base = getBaseVisaCategory(activeJourney.journey_type);
+    return ["IR-5", "IR-2", "IR-1", "CR-1"].includes(base);
+  }, [activeJourney]);
 
   const journeyRoadmapHref = useMemo(() => {
     const type = activeJourney?.journey_type?.toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -319,16 +375,21 @@ export default function DocumentVaultPage() {
         setUserJourneys(journeys);
         setCachedUserJourneys(journeys);
 
+        // Collapse candidate/duplicate rows to distinct base categories so the picker only
+        // appears when the user genuinely has more than one KIND of journey (e.g. IR-1 + IR-5).
+        const distinctBases = dedupeJourneysByBaseCategory(journeys);
+
         if (journeys.length === 0) {
           // ── Case 1: No journey at all ──────────────────────────────────
           setNoJourneyModalOpen(true);
           setJourneyGateReady(true);
-        } else if (journeys.length === 1) {
-          // ── Case 2: Exactly one journey — auto-configure ───────────────
-          setActiveJourneyId(journeys[0].id);
+        } else if (distinctBases.length === 1) {
+          // ── Case 2: One base category (even if it has multiple candidate journeys) —
+          //    auto-select its representative; the header switcher handles candidates. ──
+          setActiveJourneyId(distinctBases[0].id);
           setJourneyGateReady(true);
         } else {
-          // ── Case 3: Multiple journeys — check session storage ──────────
+          // ── Case 3: Multiple distinct categories — check session storage ──────────
           const saved = typeof window !== "undefined" ? sessionStorage.getItem(SESSION_KEY) : null;
           if (saved && journeys.some((j) => j.id === saved)) {
             setActiveJourneyId(saved);
@@ -467,32 +528,61 @@ export default function DocumentVaultPage() {
   useEffect(() => {
     if (!userJourneys || userJourneys.length === 0 || !activeCandidate) return;
 
+    // Only react to an actual CANDIDATE change. Without this guard, clicking
+    // "Back to Journeys" (which sets activeJourneyId to null) would be instantly
+    // reverted here, and picking a different journey folder would bounce back.
+    if (activeCandidateId === lastResolvedCandidateRef.current) return;
+
     const visaCategory = activeCandidate.visaCategory || "IR-5";
     const candidateJourneyKey = getJourneyKeyForCandidate(visaCategory, activeCandidate.id);
     const normCandidateKey = candidateJourneyKey.toLowerCase().replace(/[-:_]/g, "");
     const normBaseKey = visaCategory.toLowerCase().replace(/[-:_]/g, "");
 
     const matched = userJourneys.find((j) => {
+      // Never match a journey from a different visa category. Without this, the primary
+      // candidate's loose fallback below would wrongly grab an unrelated journey (e.g. an
+      // IR-1 journey), making Mother's IR-5 vault show "IR-1". Normalize both sides so
+      // "IR-5" / "IR5" / "ir-5" all compare equal.
+      if (getBaseVisaCategory(j.journey_type) !== getBaseVisaCategory(visaCategory)) return false;
+
       const normJ = j.journey_type.toLowerCase().replace(/[-:_]/g, "");
       if (activeCandidate.isPrimary) {
+        // The primary candidate owns the base journey (e.g. "ir5"), which is never
+        // candidate-scoped. Any journey_type containing "candidate" belongs to a sibling
+        // (candidate-2, candidate-3, ... candidate-N), so exclude all of them regardless of
+        // number - hardcoding candidate2/3/4 leaked a 5th+ candidate's journey to the primary.
         return (
           normJ === normBaseKey ||
           normJ === normCandidateKey ||
-          (!normJ.includes("candidate2") && !normJ.includes("candidate3") && !normJ.includes("candidate4"))
+          !normJ.includes("candidate")
         );
       }
       return normJ === normCandidateKey || (normJ.includes(normCandidateKey) && !normJ.includes("candidate1"));
     });
 
-    if (matched && matched.id !== activeJourneyId) {
-      setActiveJourneyId(matched.id);
-      if (typeof window !== "undefined") {
-        sessionStorage.setItem(SESSION_KEY, matched.id);
+    // Only mark this candidate resolved once we actually found a journey for it, so a
+    // late-arriving journey (e.g. a freshly created 2nd-parent journey) is still picked up.
+    if (matched) {
+      lastResolvedCandidateRef.current = activeCandidateId;
+      if (matched.id !== activeJourneyId) {
+        setActiveJourneyId(matched.id);
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem(SESSION_KEY, matched.id);
+        }
       }
-    } else if (!matched && wizard.state.backendId && wizard.state.backendId !== activeJourneyId) {
-      setActiveJourneyId(wizard.state.backendId);
-      if (typeof window !== "undefined") {
-        sessionStorage.setItem(SESSION_KEY, wizard.state.backendId);
+    } else if (wizard.state.backendId) {
+      // No journey for this candidate is in userJourneys yet (e.g. a freshly added parent
+      // whose journey row is still being created). Fall back to the candidate-scoped
+      // wizard's backendId, but do NOT pin lastResolvedCandidateRef here: pinning froze the
+      // candidate on whatever backendId existed at switch time (often the PREVIOUS
+      // candidate's journey), permanently blocking the correct journey from being adopted
+      // once it appears. Leaving it unpinned lets this effect re-run as wizard.state.backendId
+      // converges to this candidate's journey and, later, as userJourneys gains the real row.
+      if (wizard.state.backendId !== activeJourneyId) {
+        setActiveJourneyId(wizard.state.backendId);
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem(SESSION_KEY, wizard.state.backendId);
+        }
       }
     }
   }, [activeCandidateId, activeCandidate, userJourneys, activeJourneyId, wizard.state.backendId]);
@@ -885,7 +975,7 @@ export default function DocumentVaultPage() {
     );
   }
 
-  if (userJourneys.length > 1 && !activeJourneyId) {
+  if (dedupedUserJourneys.length > 1 && !activeJourneyId) {
     return (
       <div className="bg-slate-50/50 dark:bg-slate-950/50 mt-[55px] min-h-[calc(100vh-55px)] py-12 px-6">
         <div className="container mx-auto max-w-5xl">
@@ -902,7 +992,7 @@ export default function DocumentVaultPage() {
 
           {/* Grid of Folders / Journey Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {userJourneys.map((journey) => {
+            {dedupedUserJourneys.map((journey) => {
               const visaCategory = journeyTypeToVisaCategory(journey.journey_type);
               const isActive = journey.status === "in_progress";
 
@@ -1015,7 +1105,7 @@ export default function DocumentVaultPage() {
               <div className="site-main-px py-4">
                 <div className="flex flex-row items-start justify-between gap-4 md:items-center">
                   <div className="flex items-center gap-4 min-w-0 flex-1">
-                    {userJourneys.length > 1 && activeJourneyId ? (
+                    {dedupedUserJourneys.length > 1 && activeJourneyId ? (
                       <Button
                         variant="ghost"
                         onClick={() => {
@@ -1050,21 +1140,15 @@ export default function DocumentVaultPage() {
                                 )
                               : `${activeCandidate?.visaCategory || "IR-5"} Journey`}
                         </Badge>
-                        {isMultiCandidate && activeCandidate && (
+                        {isCandidateJourney && isMultiCandidate && activeCandidate && (
                           <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                            <span>{activeCandidate.relation}:</span>
+                            {activeCandidate.relation && activeCandidate.relation !== "Other" && (
+                              <span>{activeCandidate.relation}:</span>
+                            )}
                             <span className="font-bold text-slate-900 dark:text-white">
                               {activeCandidate.fullName || activeCandidate.label}
                             </span>
-                            {activeCandidate.isPreview && (
-                              <Badge
-                                variant="outline"
-                                className="text-[10px] px-1.5 py-0 border-amber-400 text-amber-600 bg-amber-50 dark:bg-amber-950/40"
-                              >
-                                Preview
-                              </Badge>
-                            )}
                           </div>
                         )}
                         <span className="text-xs text-slate-500 font-medium">
@@ -1086,6 +1170,10 @@ export default function DocumentVaultPage() {
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                 {/* Left Side: Stats & Configuration */}
                 <div className="lg:col-span-3 space-y-6 lg:sticky lg:top-24">
+                  {/* Candidate switcher lives in the global SiteHeader (app-wide, IR-5/IR-2
+                      only) - it is intentionally NOT duplicated here. The header chip above
+                      still shows whose vault is active. */}
+
                   {/* Professional Stats Card */}
                   <Card className="overflow-hidden border-none shadow-xl bg-linear-to-br from-primary via-primary/95 to-primary/90 text-white p-0">
                     <div className="p-6">

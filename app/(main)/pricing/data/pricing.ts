@@ -331,9 +331,9 @@ export const ADDONS = [
     kind: "tools",
     title: "Photo Booth",
     price: 15,
-    unit: "per photo",
+    unit: "for 2 credits",
     copy: "Make a fully compliant biometric passport or visa photo in minutes, no studio visit needed.",
-    note: "One compliant photo output per credit",
+    note: "2 compliant photo outputs per purchase, on any plan",
   },
   {
     id: "smart",
@@ -362,15 +362,16 @@ export const ADDONS = [
     copy: "Merge, edit, compress and convert your PDFs in one place, get every document into the exact format the embassy expects.",
     note: "Included free with Basic, Premium & Executive",
   },
-  {
-    id: "snap",
-    kind: "tools",
-    title: "Snap & Sign",
-    price: 5,
-    unit: "per signature",
-    copy: "Snap a photo of your handwritten signature and get a clean, background-free digital signature ready to drop into your forms.",
-    note: "Included free with Basic, Premium & Executive",
-  },
+  // Snap & Sign is available for free to users.
+  // {
+  //   id: "snap",
+  //   kind: "tools",
+  //   title: "Snap & Sign",
+  //   price: 5,
+  //   unit: "per signature",
+  //   copy: "Snap a photo of your handwritten signature and get a clean, background-free digital signature ready to drop into your forms.",
+  //   note: "Included free with Basic, Premium & Executive",
+  // },
   // Temporarily disabled — service not currently offered.
   // {
   //   id: "doc-review",
@@ -386,7 +387,7 @@ export const ADDONS = [
     kind: "services",
     title: "Expert Consultation",
     price: 99,
-    unit: "per 30 min",
+    unit: "for 1 credit",
     copy: "Targeted 30-minute video session with a specialist for situation-specific guidance on your case.",
     note: "Scheduled within 3 business days",
   },

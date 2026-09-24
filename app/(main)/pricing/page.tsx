@@ -23,6 +23,7 @@ import {
   ArrowRight,
   ArrowUpRight,
   ShoppingCart,
+  X,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { E, msg, errorCode } from "@/lib/errors";
@@ -638,8 +639,8 @@ function PricingContent() {
     [visa]
   );
   const selectedJourneyTier = visa.toLowerCase().includes("5")
-    ? journeyTiers.ir5 ?? "free"
-    : journeyTiers.ir1 ?? "free";
+    ? (journeyTiers.ir5 ?? "free")
+    : (journeyTiers.ir1 ?? "free");
   const activePlans = activeVisaCategory.plans;
   const paidPlans = activePlans.filter((p) => p.id !== "free");
   const currentPlanData = activePlans.find((p) => p.id === selectedPlan) || activePlans[2];
@@ -852,6 +853,8 @@ function PricingContent() {
     }
     try {
       sessionStorage.setItem(CART_STORAGE_KEY, JSON.stringify(Array.from(selectedAddons)));
+      // Let other routes (e.g. resource detail CTAs) re-read the cart instantly.
+      window.dispatchEvent(new Event("rahvana-cart-change"));
     } catch {
       /* sessionStorage unavailable — non-fatal */
     }
@@ -882,7 +885,9 @@ function PricingContent() {
           .eq("user_id", uid);
         setJourneyTiers(
           (journeys || []).reduce<Record<string, string>>((tiers, journey) => {
-            const key = String(journey.journey_type || "").toLowerCase().includes("5")
+            const key = String(journey.journey_type || "")
+              .toLowerCase()
+              .includes("5")
               ? "ir5"
               : "ir1";
             tiers[key] = journey.subscription_tier || "free";
@@ -1179,19 +1184,19 @@ function PricingContent() {
                   {/* Hero copy */}
                   <div>
                     <div className="flex gap-3">
-                  <div className="mb-6 flex items-center justify-between gap-3">
-              <button
-                className="text-muted-foreground hover:text-foreground inline-flex cursor-pointer items-center gap-1.5 border-0 bg-transparent p-0 text-[13.5px] font-medium transition-colors"
-                onClick={() => {
-                  setIsChangingJourney(true);
-                  window.scrollTo({ top: 0 });
-                }}
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Back to Journeys
-              </button>
-            </div>
-                    <div className={eyebrow}>Journey Plans</div>
+                      <div className="mb-6 flex items-center justify-between gap-3">
+                        <button
+                          className="text-muted-foreground hover:text-foreground inline-flex cursor-pointer items-center gap-1.5 border-0 bg-transparent p-0 text-[13.5px] font-medium transition-colors"
+                          onClick={() => {
+                            setIsChangingJourney(true);
+                            window.scrollTo({ top: 0 });
+                          }}
+                        >
+                          <ArrowLeft className="h-4 w-4" />
+                          Back to Journeys
+                        </button>
+                      </div>
+                      <div className={eyebrow}>Journey Plans</div>
                     </div>
 
                     <h1 className="page-heading m-0">Choose your Rahvana journey plan</h1>
@@ -1204,7 +1209,7 @@ function PricingContent() {
 
                 {/* Compare plans */}
                 <div className="mt-4 -ml-3">
-                  <div className="flex flex-wrap items-center justify-start ml-2 gap-2 md:flex-row md:flex-nowrap">
+                  <div className="ml-2 flex flex-wrap items-center justify-start gap-2 md:flex-row md:flex-nowrap">
                     <button
                       type="button"
                       className={`${secBtn} shrink-0`}
@@ -1922,11 +1927,18 @@ function PricingContent() {
                       <div className="shrink-0 text-right">
                         <strong>${a.price}</strong>
                         <button
+                          type="button"
                           disabled={isAnyCheckoutLoading}
-                          className={`text-muted-foreground ml-2 transition-colors ${isAnyCheckoutLoading ? "cursor-not-allowed opacity-30" : "cursor-pointer hover:text-red-500"} text-[11px]`}
+                          aria-label={`Remove ${a.title}`}
+                          title={`Remove ${a.title}`}
+                          className={`ml-2 inline-flex items-center justify-center rounded-md p-1 transition-colors ${
+                            isAnyCheckoutLoading
+                              ? "cursor-not-allowed opacity-30"
+                              : "text-muted-foreground cursor-pointer hover:bg-red-50 hover:text-red-500"
+                          }`}
                           onClick={() => toggleAddon(a.id)}
                         >
-                          ✕
+                          <X className="h-3.5 w-3.5" strokeWidth={2} />
                         </button>
                       </div>
                     </div>

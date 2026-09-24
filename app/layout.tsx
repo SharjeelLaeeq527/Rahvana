@@ -184,9 +184,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </Script>
         <ToastProvider>
           <AuthProvider>
-            <PlanProvider>
-              <UserProfileProvider>
-                <CandidateProvider>
+            <UserProfileProvider>
+              <CandidateProvider>
+                <PlanProvider>
                   <QuickAccessProvider>
                     <LanguageProvider>
                       {/* <ThemeProvider
@@ -204,9 +204,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   </QuickAccessProvider>
                   <PlanTierDevToggle />
                   {/* DEV ONLY — uncomment for local testing */}
-                </CandidateProvider>
-              </UserProfileProvider>
-            </PlanProvider>
+                </PlanProvider>
+              </CandidateProvider>
+            </UserProfileProvider>
           </AuthProvider>
         </ToastProvider>
         <Analytics />
