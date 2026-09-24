@@ -81,6 +81,7 @@ import { useUserProfile } from "@/app/context/UserProfileContext";
 import PassportPhotoTool from "@/components/tools/PassportPhotoTool";
 import DocumentTranslationTool from "@/components/tools/DocumentTranslationTool";
 import { usePortalWallet } from "./hooks/usePortalWallet";
+import { useCandidate } from "@/app/context/CandidateContext";
 import { useFilingQuiz } from "./hooks/useFilingQuiz";
 import { useSponsorship } from "./hooks/useSponsorship";
 import { DocActionModal } from "./components/DocActionModal";
@@ -481,6 +482,15 @@ export const StepView: React.FC<StepViewProps> = ({
   }, [sId, currentStep, actions, state.metadata]);
 
   // --- 1. Extracted Hooks for State Management ---
+  let candidateCtx;
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    candidateCtx = useCandidate();
+  } catch {
+    candidateCtx = undefined;
+  }
+  const activeCandidateId = candidateCtx?.activeCandidateId || null;
+
   const {
     uscisCredentials,
     ceacCredentials,
@@ -502,7 +512,7 @@ export const StepView: React.FC<StepViewProps> = ({
     isSubmittingCreds,
     showDeleteConfirmation,
     setShowDeleteConfirmation,
-  } = usePortalWallet({ sId, isCompleted, actions });
+  } = usePortalWallet({ sId, isCompleted, actions, candidateId: activeCandidateId });
 
   const {
     showQuiz,

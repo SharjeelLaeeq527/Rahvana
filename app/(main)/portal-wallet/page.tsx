@@ -107,6 +107,16 @@ const portals: {
 ];
 
 const PortalWallet: React.FC = () => {
+  let candidateCtx;
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    candidateCtx = useCandidate();
+  } catch {
+    candidateCtx = undefined;
+  }
+  const { candidates = [], activeCandidate } = candidateCtx || {};
+  const activeCandidateId = activeCandidate?.id || null;
+
   const [loading, setLoading] = useState(true);
   const [credentials, setCredentials] = useState<Credential[]>([]);
   const [formModal, setFormModal] = useState<{
@@ -127,15 +137,17 @@ const PortalWallet: React.FC = () => {
 
   const fetchCredentials = useCallback(async () => {
     try {
-      const res = await fetch(API_BASE);
+      const qs = activeCandidateId ? `?candidateId=${encodeURIComponent(activeCandidateId)}` : "";
+      const res = await fetch(`${API_BASE}${qs}`);
       const data = await res.json();
       if (data.credentials) setCredentials(data.credentials);
+      else setCredentials([]);
     } catch (err) {
       console.error("Failed to fetch credentials:", err);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [activeCandidateId]);
 
   useEffect(() => {
     fetchCredentials();
@@ -152,7 +164,7 @@ const PortalWallet: React.FC = () => {
       const res = await fetch(API_BASE, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, candidateId: activeCandidateId }),
       });
       if (!res.ok) throw new Error("Failed to save");
       showToast("Credentials saved successfully!", "success");
@@ -171,7 +183,8 @@ const PortalWallet: React.FC = () => {
     setProcessingPortal(portalType);
 
     try {
-      const res = await fetch(`${API_BASE}/${portalType}/delete`, {
+      const qs = activeCandidateId ? `?candidateId=${encodeURIComponent(activeCandidateId)}` : "";
+      const res = await fetch(`${API_BASE}/${portalType}/delete${qs}`, {
         method: "DELETE",
       });
 
@@ -200,6 +213,7 @@ const PortalWallet: React.FC = () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         credentialId,
+        candidateId: activeCandidateId,
         portalType: cred?.portal_type,
         type: "password",
       }),
@@ -224,6 +238,7 @@ const PortalWallet: React.FC = () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         credentialId,
+        candidateId: activeCandidateId,
         portalType: cred?.portal_type,
         type: "nvc_case_number",
       }),
@@ -248,6 +263,7 @@ const PortalWallet: React.FC = () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         credentialId,
+        candidateId: activeCandidateId,
         portalType: cred?.portal_type,
         type: "nvc_invoice_id",
       }),
@@ -272,6 +288,7 @@ const PortalWallet: React.FC = () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         credentialId,
+        candidateId: activeCandidateId,
         portalType: cred?.portal_type,
         type: "answer",
         questionId,
@@ -298,15 +315,6 @@ const PortalWallet: React.FC = () => {
 
     return data.value || "";
   };
-
-  let candidateCtx;
-  try {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    candidateCtx = useCandidate();
-  } catch {
-    candidateCtx = undefined;
-  }
-  const { candidates = [], activeCandidate } = candidateCtx || {};
 
   // Curated candidate color palettes (Clean & matte, no glow)
   const CANDIDATE_COLORS = [

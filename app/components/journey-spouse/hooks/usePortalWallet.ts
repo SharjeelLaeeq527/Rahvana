@@ -1,7 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { E, msg } from "@/lib/errors";
-import { useCandidate } from "@/app/context/CandidateContext";
 
 export interface SecurityQuestion {
   id: string;
@@ -22,24 +21,16 @@ export interface PortalCredential {
 interface UsePortalWalletProps {
   sId: string;
   isCompleted: boolean;
+  candidateId: string | null;   // active candidate — passed from StepView
   actions: {
     toggleComplete: (id: string) => void;
     updateMetadata: (data: Record<string, unknown>) => void;
   };
 }
 
-export const usePortalWallet = ({ sId, isCompleted, actions }: UsePortalWalletProps) => {
+export const usePortalWallet = ({ sId, isCompleted, actions, candidateId }: UsePortalWalletProps) => {
   const { showToast } = useToast();
 
-  // Read active candidate so credentials are scoped per candidate
-  let activeCandidateId: string | null = null;
-  try {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const candidateCtx = useCandidate();
-    activeCandidateId = candidateCtx?.activeCandidateId ?? null;
-  } catch {
-    // CandidateContext not available (e.g. outside journey) — use null (global scope)
-  }
   const [uscisCredentials, setUscisCredentials] = useState<PortalCredential | null>(null);
   const [ceacCredentials, setCeacCredentials] = useState<PortalCredential | null>(null);
   const [courierCredentials, setCourierCredentials] = useState<PortalCredential | null>(null);
@@ -54,7 +45,7 @@ export const usePortalWallet = ({ sId, isCompleted, actions }: UsePortalWalletPr
 
   const fetchCredentials = useCallback(async () => {
     try {
-      const qs = activeCandidateId ? `?candidateId=${encodeURIComponent(activeCandidateId)}` : "";
+      const qs = candidateId ? `?candidateId=${encodeURIComponent(candidateId)}` : "";
       const res = await fetch(`/api/portal-wallet${qs}`);
       const data = await res.json();
       if (data.credentials) {
@@ -74,7 +65,7 @@ export const usePortalWallet = ({ sId, isCompleted, actions }: UsePortalWalletPr
     } catch (err) {
       console.error("Failed to fetch credentials:", err);
     }
-  }, [activeCandidateId]);
+  }, [candidateId]);
 
   useEffect(() => {
     fetchCredentials();
@@ -93,7 +84,7 @@ export const usePortalWallet = ({ sId, isCompleted, actions }: UsePortalWalletPr
       const res = await fetch("/api/portal-wallet", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, candidateId: activeCandidateId }),
+        body: JSON.stringify({ ...data, candidateId }),
       });
       if (!res.ok) throw new Error("Failed to save");
       showToast(msg(E.CREDENTIAL_SAVE_SUCCESS), "success");
@@ -102,7 +93,7 @@ export const usePortalWallet = ({ sId, isCompleted, actions }: UsePortalWalletPr
 
       if (data.portalType === "NVC") {
         try {
-        const qs = activeCandidateId ? `?candidateId=${encodeURIComponent(activeCandidateId)}` : "";
+        const qs = candidateId ? `?candidateId=${encodeURIComponent(candidateId)}` : "";
           const res = await fetch(`/api/portal-wallet${qs}`);
           const wallet = await res.json();
           const nvcCreds = wallet.credentials?.find(
@@ -165,7 +156,7 @@ export const usePortalWallet = ({ sId, isCompleted, actions }: UsePortalWalletPr
   const handleDeleteCredentials = async (portalType: string) => {
     setIsSubmittingCreds(true);
     try {
-      const qs = activeCandidateId ? `?candidateId=${encodeURIComponent(activeCandidateId)}` : "";
+      const qs = candidateId ? `?candidateId=${encodeURIComponent(candidateId)}` : "";
       const res = await fetch(`/api/portal-wallet/${portalType}/delete${qs}`, {
         method: "DELETE",
       });

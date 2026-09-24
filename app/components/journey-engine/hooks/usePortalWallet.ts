@@ -21,13 +21,14 @@ export interface PortalCredential {
 interface UsePortalWalletProps {
   sId: string;
   isCompleted: boolean;
+  candidateId?: string | null;
   actions: {
     toggleComplete: (id: string) => void;
     updateMetadata: (data: Record<string, unknown>) => void;
   };
 }
 
-export const usePortalWallet = ({ sId, isCompleted, actions }: UsePortalWalletProps) => {
+export const usePortalWallet = ({ sId, isCompleted, actions, candidateId }: UsePortalWalletProps) => {
   const { showToast } = useToast();
   const [uscisCredentials, setUscisCredentials] = useState<PortalCredential | null>(null);
   const [ceacCredentials, setCeacCredentials] = useState<PortalCredential | null>(null);
@@ -43,7 +44,8 @@ export const usePortalWallet = ({ sId, isCompleted, actions }: UsePortalWalletPr
 
   const fetchCredentials = useCallback(async () => {
     try {
-      const res = await fetch("/api/portal-wallet");
+      const qs = candidateId ? `?candidateId=${encodeURIComponent(candidateId)}` : "";
+      const res = await fetch(`/api/portal-wallet${qs}`);
       const data = await res.json();
       if (data.credentials) {
         const uscis = data.credentials.find(
@@ -58,11 +60,15 @@ export const usePortalWallet = ({ sId, isCompleted, actions }: UsePortalWalletPr
         setUscisCredentials(uscis || null);
         setCeacCredentials(ceac || null);
         setCourierCredentials(courier || null);
+      } else {
+        setUscisCredentials(null);
+        setCeacCredentials(null);
+        setCourierCredentials(null);
       }
     } catch (err) {
       console.error("Failed to fetch credentials:", err);
     }
-  }, []);
+  }, [candidateId]);
 
   useEffect(() => {
     fetchCredentials();
@@ -81,7 +87,7 @@ export const usePortalWallet = ({ sId, isCompleted, actions }: UsePortalWalletPr
       const res = await fetch("/api/portal-wallet", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, candidateId }),
       });
       if (!res.ok) throw new Error("Failed to save");
       showToast(msg(E.CREDENTIAL_SAVE_SUCCESS), "success");
@@ -90,7 +96,8 @@ export const usePortalWallet = ({ sId, isCompleted, actions }: UsePortalWalletPr
 
       if (data.portalType === "NVC") {
         try {
-          const res = await fetch("/api/portal-wallet");
+          const qs = candidateId ? `?candidateId=${encodeURIComponent(candidateId)}` : "";
+          const res = await fetch(`/api/portal-wallet${qs}`);
           const wallet = await res.json();
           const nvcCreds = wallet.credentials?.find(
             (c: any) => c.portal_type?.toUpperCase() === "NVC"
@@ -126,6 +133,7 @@ export const usePortalWallet = ({ sId, isCompleted, actions }: UsePortalWalletPr
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         credentialId,
+        candidateId,
         portalType: walletPortalType,
         type: "password",
       }),
@@ -140,6 +148,7 @@ export const usePortalWallet = ({ sId, isCompleted, actions }: UsePortalWalletPr
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         credentialId,
+        candidateId,
         portalType: walletPortalType,
         type: "answer",
         questionId,
@@ -152,7 +161,8 @@ export const usePortalWallet = ({ sId, isCompleted, actions }: UsePortalWalletPr
   const handleDeleteCredentials = async (portalType: string) => {
     setIsSubmittingCreds(true);
     try {
-      const res = await fetch(`/api/portal-wallet/${portalType}/delete`, {
+      const qs = candidateId ? `?candidateId=${encodeURIComponent(candidateId)}` : "";
+      const res = await fetch(`/api/portal-wallet/${portalType}/delete${qs}`, {
         method: "DELETE",
       });
       if (!res.ok) throw new Error("Failed to delete");

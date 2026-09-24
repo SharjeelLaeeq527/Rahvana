@@ -31,6 +31,7 @@ interface CredentialFormModalProps {
   icon?: React.ReactNode;
   mode: "add" | "edit";
   initialData?: {
+    id?: string;
     username: string;
     password: string;
     nvcCaseNumber?: string;
@@ -103,7 +104,11 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
             const res = await fetch("/api/portal-wallet/reveal", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ portalType, type: "full_edit" }),
+              body: JSON.stringify({
+                credentialId: initialData?.id,
+                portalType,
+                type: "full_edit",
+              }),
             });
             const data = await res.json();
             if (isMounted && data) {
