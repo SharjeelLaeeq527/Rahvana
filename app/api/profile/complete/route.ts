@@ -116,18 +116,37 @@ export async function POST(request: Request) {
     // ── 4. Encrypt sensitive fields ───────────────────────────────────────────
     const encryptedDetails = encryptProfileDetails(profileDetails);
 
-    // ── 5. Upsert into user_profiles ──────────────────────────────────────────
-    const { error: upsertError } = await supabase.from("user_profiles").upsert(
-      {
-        id: user.id,
-        profile_details: encryptedDetails, // encrypted blob
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "id" }
-    );
+    // ── 5. Save into user_profiles ────────────────────────────────────────────
+    const { data: existingProfile } = await supabase
+      .from("user_profiles")
+      .select("id")
+      .eq("id", user.id)
+      .maybeSingle();
 
-    if (upsertError) {
-      console.error("[profile/complete] Upsert error:", upsertError);
+    let saveError;
+    if (existingProfile) {
+      const { error } = await supabase
+        .from("user_profiles")
+        .update({
+          profile_details: encryptedDetails,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", user.id);
+      saveError = error;
+    } else {
+      const { error } = await supabase.from("user_profiles").insert({
+        id: user.id,
+        subscription_tier: "core",
+        subscription_status: "active",
+        profile_details: encryptedDetails,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+      saveError = error;
+    }
+
+    if (saveError) {
+      console.error("[profile/complete] Save error:", saveError);
       return NextResponse.json({ error: "Failed to save profile" }, { status: 500 });
     }
 

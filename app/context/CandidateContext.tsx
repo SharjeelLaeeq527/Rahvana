@@ -30,6 +30,7 @@ import {
 import { useToast } from "@/app/components/shared/ToastProvider";
 
 const ACTIVE_CANDIDATE_STORAGE_KEY = "rahvana_active_candidate_id";
+const CANDIDATES_STORAGE_KEY = "rahvana_candidates_roster";
 
 interface CandidateContextType {
   /** Array of all candidate profiles associated with the account */
@@ -141,8 +142,23 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
         return next;
       });
       candidatesRef.current = normalized;
+      try {
+        localStorage.setItem(CANDIDATES_STORAGE_KEY, JSON.stringify(normalized));
+      } catch {}
       return normalized;
     }
+
+    // Try loading cached roster from localStorage (persists for guest mode or before profile fetch resolves)
+    try {
+      const cached = typeof window !== "undefined" ? localStorage.getItem(CANDIDATES_STORAGE_KEY) : null;
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          candidatesRef.current = parsed;
+          return parsed;
+        }
+      }
+    } catch {}
 
     // Default fallback candidate
     const visa = profile?.visaType || profile?.visaCategory || "IR-5";
@@ -199,7 +215,7 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (user?.id && !isProfileLoading) {
-        updateProfile({ activeCandidateId: id }, { silent: true });
+        updateProfile({ activeCandidateId: id }, { silent: true, localOnly: true });
       }
 
       showToast(`Switched active profile to ${target.label}`, "info", {
@@ -248,14 +264,33 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
       const updated = [...candidatesRef.current, newCand];
       candidatesRef.current = updated;
 
+      try {
+        localStorage.setItem(CANDIDATES_STORAGE_KEY, JSON.stringify(updated));
+      } catch {}
+
       if (user?.id) {
         updateProfile(
           {
             candidates: updated,
             activeCandidateId: newCand.id,
           },
-          { silent: false, immediate: true }
+          { silent: true, localOnly: true }
         );
+
+        fetch("/api/candidate/create", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ candidate: newCand, activeCandidateId: newCand.id }),
+        })
+          .then(async (res) => {
+            if (!res.ok) {
+              const err = await res.json().catch(() => ({}));
+              console.error("[CandidateContext] Server candidate creation error:", err);
+            }
+          })
+          .catch((err) => {
+            console.error("[CandidateContext] Network error creating candidate:", err);
+          });
       }
 
       setActiveCandidateIdState(newCand.id);
@@ -277,8 +312,23 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
       const updated = candidatesRef.current.map((c) => (c.id === id ? { ...c, ...updates } : c));
       candidatesRef.current = updated;
 
+      try {
+        localStorage.setItem(CANDIDATES_STORAGE_KEY, JSON.stringify(updated));
+      } catch {}
+
       if (user?.id) {
-        updateProfile({ candidates: updated }, { silent: true });
+        updateProfile({ candidates: updated }, { silent: true, localOnly: true });
+
+        const updatedCand = updated.find((c) => c.id === id);
+        if (updatedCand) {
+          fetch("/api/candidate/create", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ candidate: updatedCand }),
+          }).catch((err) => {
+            console.error("[CandidateContext] Network error updating candidate:", err);
+          });
+        }
       }
     },
     [user?.id, updateProfile]
@@ -295,6 +345,10 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
       const target = candidatesRef.current.find((c) => c.id === id);
       const updated = candidatesRef.current.filter((c) => c.id !== id);
       candidatesRef.current = updated;
+
+      try {
+        localStorage.setItem(CANDIDATES_STORAGE_KEY, JSON.stringify(updated));
+      } catch {}
 
       const nextActiveId = activeCandidateId === id ? updated[0].id : activeCandidateId;
       setActiveCandidateIdState(nextActiveId);
@@ -321,7 +375,7 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
           candidates: updated,
           activeCandidateId: nextActiveId,
         },
-        { silent: true }
+        { silent: true, localOnly: true }
       );
 
       // If user is authenticated, call the server-side delete API

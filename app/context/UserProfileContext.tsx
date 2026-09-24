@@ -48,7 +48,7 @@ interface UserProfileContextType {
    */
   updateProfile: (
     partial: Partial<MasterProfile>,
-    options?: { silent?: boolean; immediate?: boolean }
+    options?: { silent?: boolean; immediate?: boolean; localOnly?: boolean }
   ) => void;
 
   /**
@@ -191,7 +191,10 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
   // ── Update profile (optimistic merge + debounced save) ──────────────────
 
   const updateProfile = useCallback(
-    (partial: Partial<MasterProfile>, options?: { silent?: boolean; immediate?: boolean }) => {
+    (
+      partial: Partial<MasterProfile>,
+      options?: { silent?: boolean; immediate?: boolean; localOnly?: boolean }
+    ) => {
       if (!user?.id) return;
 
       // Optimistic local merge
@@ -201,6 +204,12 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
         profileRef.current = merged;
         return merged;
       });
+
+      // If localOnly is requested (e.g. candidate state mutations managed by dedicated APIs),
+      // do not schedule a save back to /api/profile/complete.
+      if (options?.localOnly) {
+        return;
+      }
 
       // Cancel existing debounce timer
       if (debounceTimerRef.current) {
