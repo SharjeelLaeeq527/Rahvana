@@ -98,6 +98,7 @@ export default function DocumentVaultPage() {
     refreshDocumentStatuses,
     refreshNotifications,
     reloadDocuments,
+    deleteDocument,
     addDynamicSlot,
     renameDynamicSlot,
     deleteDynamicSlot,
@@ -177,7 +178,8 @@ export default function DocumentVaultPage() {
    */
   const lastResolvedCandidateRef = useRef<string | null>(null);
 
-  const { activeCandidate, activeCandidateId, isMultiCandidate, candidates } = useCandidate();
+  const { activeCandidate, activeCandidateId, isMultiCandidate, candidates, setActiveCandidateId } =
+    useCandidate();
 
   // Derive active candidate journey key
   const activeCandidateJourneyKey = useMemo(() => {
@@ -410,9 +412,15 @@ export default function DocumentVaultPage() {
   useEffect(() => {
     if (!activeJourneyId || !journeyGateReady || !user) return;
     const activeJourney = userJourneys.find((j) => j.id === activeJourneyId);
+    // Canonicalize the category to the exact form the document engine matches on ("IR-1",
+    // "IR-5", ...). A raw candidate value like "IR1"/"ir-1" would fail the engine's exact
+    // `applicableVisas.includes(...)` check and collapse the required list to zero docs, so
+    // both the journey type AND the candidate fallback go through journeyTypeToVisaCategory.
     const visaCategory =
       (activeJourney ? journeyTypeToVisaCategory(activeJourney.journey_type) : null) ||
-      (activeCandidate?.visaCategory as VisaCategory) ||
+      (activeCandidate?.visaCategory
+        ? journeyTypeToVisaCategory(activeCandidate.visaCategory)
+        : null) ||
       "IR-5";
 
     // Retrieve questionnaire answers from journey metadata if available
@@ -768,17 +776,10 @@ export default function DocumentVaultPage() {
         id: "delete-doc",
       });
 
-      const response = await fetch(`/api/documents/${selectedDeleteId}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        throw new Error("Delete failed");
-      }
-
-      if (user) {
-        await initialize(user.id, t);
-      }
+      // Optimistic store delete: removes the row from state and refreshes statuses/
+      // notifications in place. Avoids the old full initialize(user.id) re-fetch, which
+      // reset the whole vault and felt like a page refresh.
+      await deleteDocument(selectedDeleteId);
 
       showToast(t("documentVaultPage.page.messages.deleted"), "success", {
         id: "delete-doc",

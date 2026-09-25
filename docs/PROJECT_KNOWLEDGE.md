@@ -1020,6 +1020,25 @@ External: Stripe . Resend . EasyPost . Gemini . USCIS . GA4 . Sheets . OCR.space
   for which active steps are completed. Do NOT switch this back to counting DB rows /
   hardcoded per-filing-method totals (the historical bug: IR-1 over-counted from stale
   rows, IR-5 under-counted from un-seeded rows).
+- **Vault `config.visaCategory` must be the EXACT canonical form (`"IR-1"`, `"IR-5"`, not
+  `"IR1"`/`"ir-1"`).** The personalization engine (`lib/document-vault/personalization-engine.ts`)
+  matches `doc.applicableVisas.includes(visaCategory)` by exact string; a non-canonical value
+  silently collapses the required/optional list to ~zero docs (symptom: "IR-1 required
+  documents not showing" in the vault's Required tab). The vault page
+  (`app/(tools)/document-vault/page.tsx`) therefore canonicalizes via
+  `journeyTypeToVisaCategory(...)` for BOTH the active journey type and the candidate fallback
+  before writing config. Never feed a raw candidate `visaCategory` straight into vault config.
+- **`dedupeJourneysByType` / `isSameJourneyType` key on canonical identity** (base category +
+  candidate number, `lib/document-vault/journey-mapping.ts`), NOT the raw normalized
+  `journey_type`. This collapses variant rows of the same journey (`ir5` / `ir5-journey` /
+  `IR-5`) into one while keeping distinct candidates (`ir5` vs `ir5_candidate-2`) apart. It
+  drives the cross-share list, the vault card grid, and the SiteHeader switcher's 2+ gate;
+  before this, variant rows rendered the same category twice in the upload modal's
+  "Cross-share this document" list.
+- **Vault document delete is optimistic via the store** (`useDocumentVaultStore.deleteDocument`),
+  which removes the row from state and refreshes statuses/notifications in place. Do NOT delete
+  by re-running `initialize(userId)` (it re-fetches the whole vault and feels like a page
+  refresh).
 - **Two encryption schemes** — global key for portal-wallet/profile fields
   (`lib/encryption.ts`), per-user key for vault files
   (`document-vault/file-encryption.ts`). Don't assume per-user everywhere.
