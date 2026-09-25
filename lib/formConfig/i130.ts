@@ -57,6 +57,13 @@ export const formId = "i130";
 export const formTitle = "Form I-130";
 export const formSubtitle = "Petition for Alien Relative";
 
+/**
+ * Free/Basic preview: the walkthrough ends after this question (inclusive) —
+ * "What is your middle name?". Position-based, so conditional branches
+ * (A-Number/USCIS account/SSN follow-ups) and profile auto-fill can't shift it.
+ */
+export const freePreviewUntilKey = "middle_name";
+
 export const formFields: Field[] = [
   // ============================================
   // PART 1. RELATIONSHIP
@@ -463,7 +470,8 @@ export const formFields: Field[] = [
       {
         key: "address_history_note",
         pdfKey: "N/A",
-        label: "Let's add the address where you physically live (this is different from your mailing address).",
+        label:
+          "Let's add the address where you physically live (this is different from your mailing address).",
         type: "hidden",
         section: "Address History",
         condition: (d) => d.same_mailing_address === "No",
@@ -2920,7 +2928,8 @@ export const formFields: Field[] = [
   },
   {
     key: "beneficiary_p2_familyName",
-    label: "What is the next family member's Last Name (Family Name)? (Leave blank if there are no more)",
+    label:
+      "What is the next family member's Last Name (Family Name)? (Leave blank if there are no more)",
     type: "text",
     section: "Information About Beneficiary (Continued)",
     pdfKey: "Pt4Line34a_FamilyName",
@@ -2975,7 +2984,8 @@ export const formFields: Field[] = [
   },
   {
     key: "beneficiary_p3_familyName",
-    label: "What is the next family member's Last Name (Family Name)? (Leave blank if there are no more)",
+    label:
+      "What is the next family member's Last Name (Family Name)? (Leave blank if there are no more)",
     type: "text",
     section: "Information About Beneficiary (Continued)",
     pdfKey: "Pt4Line38a_FamilyName",
@@ -3030,7 +3040,8 @@ export const formFields: Field[] = [
   },
   {
     key: "beneficiary_p4_familyName",
-    label: "What is the next family member's Last Name (Family Name)? (Leave blank if there are no more)",
+    label:
+      "What is the next family member's Last Name (Family Name)? (Leave blank if there are no more)",
     type: "text",
     section: "Information About Beneficiary (Continued)",
     pdfKey: "Pt4Line42a_FamilyName",
@@ -3085,7 +3096,8 @@ export const formFields: Field[] = [
   },
   {
     key: "beneficiary_p5_familyName",
-    label: "What is the next family member's Last Name (Family Name)? (Leave blank if there are no more)",
+    label:
+      "What is the next family member's Last Name (Family Name)? (Leave blank if there are no more)",
     type: "text",
     section: "Information About Beneficiary (Continued)",
     pdfKey: "Pt4Line46a_FamilyName",
@@ -5127,6 +5139,7 @@ export const i130Config = {
   formFields,
   sectionIntroMessages,
   overflowFields,
+  freePreviewUntilKey,
 };
 
 export default i130Config;
