@@ -14,6 +14,7 @@ import { NextResponse } from "next/server";
 import { E, msg } from "@/lib/errors";
 import type { CandidateProfile } from "@/types/candidate";
 import { getCandidateJourneyKey, getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
+import { journeyService } from "@/lib/journey/service";
 
 export async function POST(request: Request) {
   try {
@@ -121,16 +122,21 @@ export async function POST(request: Request) {
       }
     }
 
-    // 5. Ensure journey record exists for candidate (if candidate-2+)
+    // 5. Ensure a full journey (chapters + steps) exists for the candidate (candidate-2+ only).
     //    Business rule: IR-1 is strictly single — never create a second IR-1 journey row.
     try {
+      const baseVisa = getBaseVisaCategory(candidate.visaCategory || "IR-5");
+      const configType = baseVisa.toLowerCase();
       const journeyKey = getCandidateJourneyKey(candidate.visaCategory || "IR-5", candidate.id);
       const journeyVisaBase = getBaseVisaCategory(journeyKey);
+      const configPath = `data/visa-category/${configType}.json`;
 
+      // Only candidate-2+ needs a journey created here; candidate-1 owns the base journey,
+      // which is seeded on its own dashboard route.
       if (candidate.id !== "candidate-1") {
-        // For IR-1 (Spouse): verify no IR-1 journey exists before creating.
-        // An IR-1 is strictly 1-per-petitioner; unlike IR-5, there is no "second spouse".
         if (journeyVisaBase === "IR-1") {
+          // IR-1 (Spouse) is strictly 1-per-petitioner; unlike IR-5 there is no "second
+          // spouse". Never create a duplicate IR-1 journey row.
           const { data: existingIr1 } = await supabase
             .from("journeys")
             .select("id")
@@ -144,16 +150,15 @@ export async function POST(request: Request) {
             );
             // Skip journey creation but still return success (candidate profile was saved above)
           } else {
-            await supabase.from("journeys").insert({
-              user_id: user.id,
-              journey_type: journeyKey,
-              status: "in_progress",
-              filing_method: "online",
-              sponsor_structure: "individual",
-            });
+            // Seed a FULL journey (chapters + steps) from the JSON config, not a bare row.
+            await journeyService.createJourneyFromConfig(
+              configPath,
+              { journey_type: journeyKey },
+              { supabase, user }
+            );
           }
         } else {
-          // Non-IR-1 categories (IR-5, IR-2, etc.) — allow multiple journey rows
+          // Non-IR-1 categories (IR-5, IR-2, etc.) — allow multiple journey rows.
           const { data: existingJourney } = await supabase
             .from("journeys")
             .select("id")
@@ -162,13 +167,12 @@ export async function POST(request: Request) {
             .maybeSingle();
 
           if (!existingJourney) {
-            await supabase.from("journeys").insert({
-              user_id: user.id,
-              journey_type: journeyKey,
-              status: "in_progress",
-              filing_method: "online",
-              sponsor_structure: "individual",
-            });
+            // Seed a FULL journey (chapters + steps) from the JSON config, not a bare row.
+            await journeyService.createJourneyFromConfig(
+              configPath,
+              { journey_type: journeyKey },
+              { supabase, user }
+            );
           }
         }
       }
