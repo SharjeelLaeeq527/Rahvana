@@ -5,6 +5,7 @@ import { Upload, AlertCircle, CheckCircle, X, FileText, Lock } from "lucide-reac
 import SuccessState from "@/app/components/document-translation/SuccessState";
 import { AuthRequiredModal } from "@/app/components/shared/AuthRequiredModal";
 import { useAuth } from "@/app/context/AuthContext";
+import { useCandidate } from "@/app/context/CandidateContext";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { usePlan } from "@/app/context/PlanContext";
 import { useFeatureAccess } from "@/lib/usage/useFeatureAccess";
@@ -44,6 +45,7 @@ export default function DocumentTranslationTool({
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   const { isAuthenticated } = useAuth();
+  const { activeCandidate, activeCandidateId } = useCandidate();
   const { t } = useLanguage();
   const plan = usePlan();
   const { checkAccess, consumeAccess } = useFeatureAccess();
@@ -133,6 +135,8 @@ export default function DocumentTranslationTool({
       const formData = new FormData();
       formData.append("file", file);
       formData.append("documentType", documentType);
+      formData.append("candidateId", activeCandidateId || "candidate-1");
+      formData.append("candidateName", activeCandidate.fullName || activeCandidate.label || "");
       if (userNotes) {
         formData.append("userNotes", userNotes);
       }
@@ -196,6 +200,8 @@ export default function DocumentTranslationTool({
 
       requestData.append("file", file);
       requestData.append("documentType", documentType);
+      requestData.append("candidateId", activeCandidateId || "candidate-1");
+      requestData.append("candidateName", activeCandidate.fullName || activeCandidate.label || "");
 
       if (userNotes) {
         requestData.append("userNotes", userNotes);

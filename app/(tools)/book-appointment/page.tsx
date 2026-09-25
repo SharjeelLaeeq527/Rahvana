@@ -9,6 +9,7 @@ import { ResultGate } from "@/app/components/entitlements/ResultGate";
 import { Label } from "@/components/ui/label";
 import IOMInfoStep from "./components/IOMInfoStep";
 import { useAuth } from "@/app/context/AuthContext";
+import { useCandidate } from "@/app/context/CandidateContext";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { useUserProfile } from "@/app/context/UserProfileContext";
 import { mapProfileToGenericForm, mapFormToProfile } from "@/lib/autoFill/mapper";
@@ -2170,6 +2171,7 @@ export default function WilcareAppointmentForm() {
   const [error, setError] = useState<string | null>(null);
   const [profileLoaded, setProfileLoaded] = useState(false);
   const { user } = useAuth();
+  const { activeCandidate, activeCandidateId, isMultiCandidate } = useCandidate();
   const { t } = useLanguage();
   const { profile, isProfileLoading, updateProfile } = useUserProfile();
   const { tier } = usePlan();
@@ -2234,9 +2236,9 @@ export default function WilcareAppointmentForm() {
     }
   };
 
-  // Auto-fill profile data (from central context)
+  // Auto-fill profile data (prioritizing active candidate biographics)
   useEffect(() => {
-    if (isProfileLoading || profileLoaded || !profile) return;
+    if (isProfileLoading || !profile) return;
 
     // Map profile data to form structure
     const mappedData = mapProfileToGenericForm(profile, {
@@ -2257,12 +2259,36 @@ export default function WilcareAppointmentForm() {
       visaCategory: formData.visaCategory || formData.visaType,
     });
 
+    const givenName =
+      activeCandidate.name?.first ||
+      (activeCandidate.fullName ? activeCandidate.fullName.split(" ")[0] : mappedData.givenName || "");
+    const surname =
+      activeCandidate.name?.last ||
+      (activeCandidate.fullName ? activeCandidate.fullName.split(" ").slice(1).join(" ") : mappedData.surname || "");
+    const fullName =
+      activeCandidate.fullName ||
+      (mappedData.givenName && mappedData.surname
+        ? `${mappedData.givenName} ${mappedData.surname}`.trim()
+        : mappedData.fullName || "");
+    const passportNumber = activeCandidate.passportNumber || mappedData.passportNumber || "";
+    const dateOfBirth = activeCandidate.dateOfBirth || mappedData.dateOfBirth || "";
+    const caseNumber = activeCandidate.caseNumber || mappedData.caseNumber || "";
+    const visaCategory = activeCandidate.visaCategory || mappedData.visaCategory || mappedData.visaType || "IR-5";
+
     setFormData((prev) => ({
       ...prev,
       ...mappedData,
+      givenName: prev.givenName || givenName,
+      surname: prev.surname || surname,
+      fullName: prev.fullName || fullName,
+      passportNumber: prev.passportNumber || passportNumber,
+      dateOfBirth: prev.dateOfBirth || dateOfBirth,
+      caseNumber: prev.caseNumber || caseNumber,
+      visaType: prev.visaType || visaCategory,
+      visaCategory: prev.visaCategory || visaCategory,
     }));
     setProfileLoaded(true);
-  }, [profile, isProfileLoading, profileLoaded, formData]);
+  }, [profile, isProfileLoading, activeCandidate]);
 
   const isAMC = formData.location === "islamabad" && formData.islamabadProvider === "amc";
   const isIOM = formData.location === "islamabad" && formData.islamabadProvider === "iom";
@@ -2528,6 +2554,11 @@ export default function WilcareAppointmentForm() {
         },
         body: JSON.stringify({
           ...formData,
+          candidate_id: activeCandidateId || "candidate-1",
+          candidate_name:
+            activeCandidate.fullName ||
+            activeCandidate.label ||
+            `${formData.givenName} ${formData.surname}`.trim(),
           // Exclude file objects from the initial request
           scannedPassport: undefined,
           kOneLetter: undefined,
@@ -2884,6 +2915,26 @@ export default function WilcareAppointmentForm() {
             {t("bookAppointment.title")}
           </h1>
           <p className="text-sm text-slate-600 sm:text-base">{t("bookAppointment.description")}</p>
+          {/* Active Candidate context indicator (Global Switcher reactive) */}
+          {isMultiCandidate && (
+            <div className="mt-3 flex justify-center">
+              <div className="inline-flex items-center gap-2 rounded-full border border-teal-200 bg-teal-50/90 px-3 py-1 text-xs font-semibold text-teal-800 shadow-sm backdrop-blur-sm">
+                <span className="inline-block h-2 w-2 rounded-full bg-teal-500 animate-pulse" />
+                <span>
+                  Booking for Beneficiary:{" "}
+                  <strong className="text-teal-900">
+                    {activeCandidate.label || "Beneficiary"} (
+                    {activeCandidate.fullName ||
+                      (formData.givenName && formData.surname
+                        ? `${formData.givenName} ${formData.surname}`.trim()
+                        : "Primary Candidate")}
+                    )
+                  </strong>
+                </span>
+              </div>
+            </div>
+          )}
+
           <div className="mt-4 flex justify-center">
             <QuickAccessButton
               item={{

@@ -134,6 +134,7 @@ export async function POST(req: NextRequest) {
       original_passport: formData.originalPassport || null,
       status: "pending",
       user_id: currentUserId,
+      admin_notes: formData.candidate_id ? `[Candidate: ${formData.candidate_id}] ${formData.candidate_name || ''}`.trim() : "",
     };
 
     // Only add case_number if it exists

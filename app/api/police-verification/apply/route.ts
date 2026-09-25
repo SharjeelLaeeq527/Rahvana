@@ -124,6 +124,7 @@ export async function POST(req: NextRequest) {
 
       request_id: requestId,
       status: "pending",
+      admin_notes: body.candidate_id ? `[Candidate: ${body.candidate_id}] ${body.candidate_name || ''}`.trim() : "",
     };
 
     const { data, error } = await supabase

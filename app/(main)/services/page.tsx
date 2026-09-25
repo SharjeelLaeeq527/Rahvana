@@ -23,6 +23,7 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/compone
 import { Loader } from "@/components/ui/spinner";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 import { useQuickAccess } from "@/app/context/QuickAccessContext";
+import { useCandidate } from "@/app/context/CandidateContext";
 
 // --- Types ---
 interface Service {
@@ -122,6 +123,8 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedModalType, setSelectedModalType] = useState<"pcc" | "medical" | null>(null);
 
+  const { activeCandidate, activeCandidateId, isMultiCandidate } = useCandidate();
+
   useEffect(() => {
     if (!user) {
       setLoadingStatus(false);
@@ -130,7 +133,11 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
 
     const fetchServicesStatus = async () => {
       try {
-        const res = await fetch("/api/user-dashboard/services-status");
+        setLoadingStatus(true);
+        const url = activeCandidateId
+          ? `/api/user-dashboard/services-status?candidateId=${encodeURIComponent(activeCandidateId)}`
+          : "/api/user-dashboard/services-status";
+        const res = await fetch(url);
         if (!res.ok) throw new Error("Failed to fetch services status");
         const data = await res.json();
         setPccRequests(data.pccRequests || []);
@@ -145,7 +152,7 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
     };
 
     fetchServicesStatus();
-  }, [user]);
+  }, [user, activeCandidateId]);
 
   const getActiveBookingData = (serviceId: string) => {
     if (!user) return null;
@@ -443,7 +450,7 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
       <div className="w-full site-main-px site-main-py">
         {/* Hero Section — hidden in the embedded "My Resources" view */}
         {!isEmbedded && (
-          <section className={`text-center mb-5 md:mb-10 pt-1`}>
+          <section className={`text-center mb-4 md:mb-6 pt-1`}>
             <h1 className="text-3xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-linear-to-r from-foreground to-muted-foreground animate-fade-up">
               {t("pages.services.heroTitle")}
             </h1>
@@ -451,6 +458,22 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
               {t("pages.services.heroDescription")}
             </p>
           </section>
+        )}
+
+        {/* Active Candidate Context Indicator (Global Switcher reactive) */}
+        {isMultiCandidate && (
+          <div className="mb-6 flex justify-center">
+            <div className="inline-flex items-center gap-2 rounded-full border border-teal-200 bg-teal-50/90 dark:border-teal-900/60 dark:bg-teal-950/40 px-3.5 py-1.5 text-xs font-semibold text-teal-800 dark:text-teal-300 shadow-sm backdrop-blur-sm">
+              <span className="inline-block h-2 w-2 rounded-full bg-teal-500 animate-pulse" />
+              <span>
+                Showing service requests & applications for:{" "}
+                <strong className="text-teal-950 dark:text-teal-100">
+                  {activeCandidate.label || "Beneficiary"} (
+                  {activeCandidate.fullName || "Primary Candidate"})
+                </strong>
+              </span>
+            </div>
+          </div>
         )}
 
         {/* Search Bar */}
@@ -665,16 +688,24 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
           {selectedModalType === "pcc" ? (
             <>
               {/* Static Header */}
-              <div className="flex items-center gap-3 border-b border-gray-100 px-6 py-5 shrink-0 pr-12">
-                <Shield className="h-6 w-6 text-teal-650 flex-shrink-0" />
-                <div>
-                  <DialogTitle className="text-xl font-bold text-gray-900">
-                    Sindh PCC Requests
-                  </DialogTitle>
-                  <DialogDescription className="text-sm text-gray-500 mt-1">
-                    Track the status of your Police Character Certificate filing for Sindh.
-                  </DialogDescription>
+              <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5 shrink-0 pr-12">
+                <div className="flex items-center gap-3">
+                  <Shield className="h-6 w-6 text-teal-650 flex-shrink-0" />
+                  <div>
+                    <DialogTitle className="text-xl font-bold text-gray-900">
+                      Sindh PCC Requests
+                    </DialogTitle>
+                    <DialogDescription className="text-sm text-gray-500 mt-1">
+                      Track the status of your Police Character Certificate filing for Sindh.
+                    </DialogDescription>
+                  </div>
                 </div>
+                {isMultiCandidate && (
+                  <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-teal-50 border border-teal-200 px-2.5 py-1 text-xs font-semibold text-teal-800">
+                    <span className="h-1.5 w-1.5 rounded-full bg-teal-500" />
+                    {activeCandidate.label || "Beneficiary"}: {activeCandidate.fullName || "Primary"}
+                  </span>
+                )}
               </div>
 
               {/* Scrollable Content */}
@@ -756,16 +787,24 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
           ) : (
             <>
               {/* Static Header */}
-              <div className="flex items-center gap-3 border-b border-gray-100 px-6 py-5 shrink-0 pr-12">
-                <Calendar className="h-6 w-6 text-emerald-600 flex-shrink-0" />
-                <div>
-                  <DialogTitle className="text-xl font-bold text-gray-900">
-                    Medical Appointments
-                  </DialogTitle>
-                  <DialogDescription className="text-sm text-gray-500 mt-1">
-                    Manage and view the status of your booked medical examinations.
-                  </DialogDescription>
+              <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5 shrink-0 pr-12">
+                <div className="flex items-center gap-3">
+                  <Calendar className="h-6 w-6 text-emerald-600 flex-shrink-0" />
+                  <div>
+                    <DialogTitle className="text-xl font-bold text-gray-900">
+                      Medical Appointments
+                    </DialogTitle>
+                    <DialogDescription className="text-sm text-gray-500 mt-1">
+                      Manage and view the status of your booked medical examinations.
+                    </DialogDescription>
+                  </div>
                 </div>
+                {isMultiCandidate && (
+                  <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-1 text-xs font-semibold text-emerald-800">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                    {activeCandidate.label || "Beneficiary"}: {activeCandidate.fullName || "Primary"}
+                  </span>
+                )}
               </div>
 
               {/* Scrollable Content */}
