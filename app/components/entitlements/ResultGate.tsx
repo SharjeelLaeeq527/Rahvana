@@ -15,6 +15,8 @@ interface ResultGateProps {
   title?: string;
   /** Optional override for the lock-card description. */
   description?: string;
+  /** Optional override for the small value line under the description. */
+  hint?: string;
   /**
    * How strongly to blur the content underneath.
    * @default "md"
@@ -47,6 +49,7 @@ export function ResultGate({
   children,
   title,
   description,
+  hint: hintOverride,
   blurStrength = "md",
   minHeight = "300px",
   isLocked,
@@ -57,10 +60,7 @@ export function ResultGate({
   /* ── Loading state ─────────────────────────────────────────────────────── */
   if (plan.isLoading) {
     return (
-      <div
-        className="flex items-center justify-center"
-        style={{ minHeight }}
-      >
+      <div className="flex items-center justify-center" style={{ minHeight }}>
         <Loader size="md" text="Verifying access..." />
       </div>
     );
@@ -71,16 +71,14 @@ export function ResultGate({
 
   /* ── Locked — blur children + floating upgrade card ─────────────────────── */
   const blurClass =
-    blurStrength === "sm"
-      ? "blur-sm"
-      : blurStrength === "lg"
-        ? "blur-lg"
-        : "blur-md";
+    blurStrength === "sm" ? "blur-sm" : blurStrength === "lg" ? "blur-lg" : "blur-md";
 
   const cta = plan.upgradeCTA(feature) || "Upgrade to Unlock";
-  const hint =
-    plan.lockHint(feature) || "Upgrade your plan to view your results.";
-  const targetTier = plan.entitlement(feature)?.upgradeTarget;
+  const hint = hintOverride || plan.lockHint(feature) || "Upgrade your plan to view your results.";
+  const ent = plan.entitlement(feature);
+  const targetTier = ent?.upgradeTarget;
+  // Only mention a one-time add-on when the feature actually has one.
+  const canBuyAddon = (ent?.state === "locked_buy" || ent?.state === "limited") && !!ent?.addon;
 
   /* Tier-aware color palette (matches PageGate.tsx) */
   const tierColors =
@@ -114,76 +112,67 @@ export function ResultGate({
   return (
     <div className="relative" style={{ minHeight }}>
       {/* UpgradeModal (rendered at root so it can portal above everything) */}
-      {showModal && (
-        <UpgradeModal
-          feature={feature}
-          onClose={() => setShowModal(false)}
-        />
-      )}
+      {showModal && <UpgradeModal feature={feature} onClose={() => setShowModal(false)} />}
 
       {/* Blurred, non-interactive children */}
-      <div
-        className={`${blurClass} opacity-40 pointer-events-none select-none`}
-        aria-hidden="true"
-      >
+      <div className={`${blurClass} pointer-events-none opacity-40 select-none`} aria-hidden="true">
         {children}
       </div>
 
       {/* Floating upgrade card */}
-      <div className="absolute inset-0 flex items-center justify-center z-10 p-4">
-        <div className="w-full max-w-sm bg-white border border-[#d0e4f7] rounded-[20px] shadow-[0_20px_60px_rgba(12,27,51,0.12)] p-7 text-center animate-in zoom-in-95 duration-400">
+      <div className="absolute inset-0 z-10 flex items-center justify-center p-4">
+        <div className="animate-in zoom-in-95 w-full max-w-sm rounded-[20px] border border-[#d0e4f7] bg-white p-7 text-center shadow-[0_20px_60px_rgba(12,27,51,0.12)] duration-400">
           {/* Tier icon badge */}
-          <div className="flex justify-center mb-5">
+          <div className="mb-5 flex justify-center">
             <div
-              className={`w-14 h-14 rounded-2xl flex items-center justify-center border ${tierColors.bg}`}
+              className={`flex h-14 w-14 items-center justify-center rounded-2xl border ${tierColors.bg}`}
             >
               {tierIconClass ? (
-                <span
-                  className={`plan-icon ${tierIconClass}`}
-                  style={{ width: 40, height: 40 }}
-                />
+                <span className={`plan-icon ${tierIconClass}`} style={{ width: 40, height: 40 }} />
               ) : (
-                <Lock
-                  size={28}
-                  strokeWidth={2}
-                  className={tierColors.icon}
-                />
+                <Lock size={28} strokeWidth={2} className={tierColors.icon} />
               )}
             </div>
           </div>
 
-          {/* "Access Restricted" pill */}
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-widest border mb-4 shadow-sm bg-slate-50 text-slate-500 border-slate-200">
+          {/* "Results ready" pill — reward framing, not punishment */}
+          <div className="mb-4 inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-bold tracking-widest text-slate-500 uppercase shadow-sm">
             <Lock size={11} strokeWidth={2.5} />
-            <span>Results Locked</span>
+            <span>Results Ready</span>
           </div>
 
           {/* Title */}
-          <h2 className="text-xl font-black text-[#0c1b33] mb-2 leading-tight">
-            {title || "Upgrade to View Results"}
+          <h2 className="mb-2 text-xl leading-tight font-black text-[#0c1b33]">
+            {title || "Unlock Your Results with a Plan Upgrade"}
           </h2>
 
           {/* Description */}
-          <p className="text-[13px] text-[#6b8097] leading-relaxed mb-3">
+          <p className="mb-3 text-[13px] leading-relaxed text-[#6b8097]">
             {description ||
-              "You've completed all steps, upgrade your plan to unlock your personalised results."}
+              "You've completed every step — your personalised results are waiting. Upgrading your plan unlocks them instantly, plus every tool behind them."}
           </p>
 
           {/* Hint */}
-          <p className="text-[11px] text-[#9aa5b1] mb-5">{hint}</p>
+          <p className="mb-5 text-[11px] text-[#9aa5b1]">{hint}</p>
 
           {/* CTA */}
           <button
             onClick={() => setShowModal(true)}
-            className={`w-full py-3 rounded-xl text-[14px] font-bold text-white shadow-md transition-all flex items-center justify-center gap-2 group ${tierColors.btn}`}
+            className={`group flex w-full items-center justify-center gap-2 rounded-xl py-3 text-[14px] font-bold text-white shadow-md transition-all ${tierColors.btn}`}
           >
             {cta}
             <ArrowRight
               size={15}
               strokeWidth={2.5}
-              className="group-hover:translate-x-1 transition-transform"
+              className="transition-transform group-hover:translate-x-1"
             />
           </button>
+
+          {canBuyAddon && (
+            <p className="mt-3 text-[11px] text-[#9aa5b1]">
+              Just need this result? A one-time add-on is also available.
+            </p>
+          )}
         </div>
       </div>
     </div>

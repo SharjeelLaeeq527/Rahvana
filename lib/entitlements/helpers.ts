@@ -99,10 +99,11 @@ export function lockHint(feature: string, tier: PlanTier, purchasedAddons: strin
     case "locked_buy":
       if (e.addon) {
         const upgradeName = e.upgradeTarget ? TIER_NAMES[e.upgradeTarget] : null;
-        const addonLabel = `Add ${e.addon.name} for $${e.addon.price}`;
+        // Upgrade-first framing: the plan is the recommended path; the
+        // one-time add-on is mentioned as the fallback, never the headline.
         return upgradeName && e.upgradeTarget !== tier
-          ? `${addonLabel} or upgrade to ${upgradeName}`
-          : addonLabel;
+          ? `Included in the ${upgradeName} plan — or add ${e.addon.name} once for $${e.addon.price}`
+          : `Add ${e.addon.name} once for $${e.addon.price}`;
       }
       return "Available as an add-on";
 
@@ -139,8 +140,12 @@ export function upgradeCTA(
 ): string | null {
   const e = getEffectiveEntitlement(feature, tier, purchasedAddons);
   switch (e.state) {
-    case "locked_buy":
+    case "locked_buy": {
+      // Upgrade-first CTA: "Add X" only when no upgrade path exists.
+      const target = e.upgradeTarget;
+      if (target && target !== tier) return `Upgrade to ${TIER_NAMES[target]}`;
       return e.addon ? `Add ${e.addon.name}` : "Unlock";
+    }
     case "locked_upgrade": {
       const target = e.upgradeTarget ?? "premium";
       return `Upgrade to ${TIER_NAMES[target]}`;
