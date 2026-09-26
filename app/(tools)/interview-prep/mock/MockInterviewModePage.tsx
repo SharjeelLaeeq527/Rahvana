@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { usePlan } from "@/app/context/PlanContext";
+import { hasPurchasedAddon } from "@/lib/entitlements/helpers";
 import { useVoiceEngine } from "@/lib/interview-prep/useVoiceEngine";
 import { useQuestionSpeech } from "@/lib/interview-prep/useQuestionSpeech";
 import {
@@ -67,7 +68,11 @@ export function MockInterviewModePage({
   const plan = usePlan();
   const isExecutiveTier = plan.tier === "executive";
   const isFreeTier = plan.tier === "free";
-  const sessionDurationSeconds = isExecutiveTier ? EXECUTIVE_TOTAL_SECONDS : 3 * 60;
+  // Buying the Interview Prep add-on (any category) unlocks the full mock
+  // interview experience regardless of the account-wide plan.
+  const boughtInterviewPrep = hasPurchasedAddon(plan.purchasedAddons, "interview-prep");
+  const isFullMockExperience = isExecutiveTier || boughtInterviewPrep;
+  const sessionDurationSeconds = isFullMockExperience ? EXECUTIVE_TOTAL_SECONDS : 3 * 60;
 
   const interviewQuestions = useMemo(() => {
     // Base: filter applicable and sort by explicit order (fallback 9999)
@@ -145,10 +150,10 @@ export function MockInterviewModePage({
       .filter(Boolean) as typeof base;
     base.splice(commonInsertAt, 0, ...commonItems);
 
-    const questionLimit = isExecutiveTier ? base.length : 5;
+    const questionLimit = isFullMockExperience ? base.length : 5;
 
     return base.slice(0, questionLimit);
-  }, [isExecutiveTier, questions]);
+  }, [isFullMockExperience, questions]);
 
   const [phase, setPhase] = useState<"intro" | "opening" | "running" | "closing" | "completed">(
     "intro"
@@ -760,14 +765,14 @@ export function MockInterviewModePage({
                 Mock Interview Mode
               </h2>
               <p className="mx-auto max-w-md text-base leading-relaxed text-slate-600 sm:text-lg">
-                {isExecutiveTier
+                {isFullMockExperience
                   ? "Step into a focused, distraction-free environment and rehearse with realistic pacing and live voice transcription."
                   : "Try a short mock interview preview before you upgrade to the full executive experience."}
               </p>
             </div>
 
             <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-3">
-              {(isExecutiveTier
+              {(isFullMockExperience
                 ? [
                     {
                       icon: Clock,
@@ -841,9 +846,9 @@ export function MockInterviewModePage({
             <div className="mb-8 rounded-xl border border-[#0d7377]/15 bg-[#e8f6f6]/60 p-4">
               <p className="text-sm leading-relaxed text-slate-700">
                 <span className="font-semibold text-[#0d7377]">
-                  {isExecutiveTier ? "Heads up, " : "Preview note, "}{" "}
+                  {isFullMockExperience ? "Heads up, " : "Preview note, "}{" "}
                 </span>
-                {isExecutiveTier
+                {isFullMockExperience
                   ? "this mode uses your existing prepared questions. The session will enter fullscreen and listen for your voice."
                   : "this is a short preview. Upgrade to Executive for full-length interviews."}
               </p>
@@ -1223,8 +1228,8 @@ export function MockInterviewModePage({
                 Mock Interview Mode
               </h2>
               <p className="mt-1 text-[9px] tracking-[0.18em] text-slate-500 uppercase md:text-[11px]">
-                {isExecutiveTier
-                  ? `Executive session • ${interviewQuestions.length} questions`
+                {isFullMockExperience
+                  ? `Full session • ${interviewQuestions.length} questions`
                   : `Preview session • ${interviewQuestions.length} questions`}
               </p>
             </div>
@@ -1246,7 +1251,7 @@ export function MockInterviewModePage({
               />
 
               <span className="hidden md:inline">
-                {isExecutiveTier ? "Session Timer" : "Preview Timer"}
+                {isFullMockExperience ? "Session Timer" : "Preview Timer"}
               </span>
 
               <div

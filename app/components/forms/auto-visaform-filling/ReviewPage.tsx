@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { DEFAULT_FREE_QUESTION_LIMIT } from "./useFreePreview";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Field } from "@/lib/formConfig/types";
 import {
@@ -121,6 +122,8 @@ interface ReviewPageProps {
   isDownloading?: boolean;
   isSavingToVault?: boolean;
   isFreePreview?: boolean;
+  /** Per-form preview allowance (from the form config) shown in the free-preview banner. */
+  freePreviewLimit?: number;
   onUpgradeClick?: () => void;
 }
 
@@ -136,6 +139,7 @@ export function ReviewPage({
   isDownloading,
   isSavingToVault,
   isFreePreview = false,
+  freePreviewLimit = DEFAULT_FREE_QUESTION_LIMIT,
   onUpgradeClick,
 }: ReviewPageProps) {
   const { t } = useLanguage();
@@ -189,12 +193,12 @@ export function ReviewPage({
             </div>
             <div>
               <h4 className="text-sm font-bold text-amber-900">
-                Free Preview Mode (10 Questions Limit)
+                Free Preview Mode ({freePreviewLimit} Questions Limit)
               </h4>
               <p className="mt-1 text-xs leading-relaxed text-amber-800/85">
-                You are currently in Free Preview mode. You can fill up to 10 questions and
-                print/preview the <strong>first page</strong> of your completed PDF to test the
-                tool.
+                You are currently in Free Preview mode. You can fill up to {freePreviewLimit}{" "}
+                questions and print/preview the <strong>first page</strong> of your completed PDF to
+                test the tool.
               </p>
             </div>
           </div>
