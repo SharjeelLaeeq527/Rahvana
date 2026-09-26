@@ -13,10 +13,14 @@ import {
   PenLine,
   BookOpen,
   Scale,
+  Lock,
 } from "lucide-react";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 import { IR5_ENABLED } from "@/lib/feature-flags";
 import { CfrExplanationModal } from "@/app/components/shared/CfrExplanationModal";
+import { ExpandableTooltip } from "@/app/components/shared/ExpandableTooltip";
+import { usePlan } from "@/app/context/PlanContext";
+import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 
 interface VisaForm {
   id?: string;
@@ -559,15 +563,7 @@ const VISA_FORMS: VisaForm[] = [
     journeys: ["IR1-CR1", "IR5", "K1", "AOS", "Naturalization"],
     stage: "USCIS Filing",
     category: ["Financial"],
-    keywords: [
-      "credit card",
-      "payment",
-      "fee",
-      "filing fee",
-      "authorization",
-      "debit card",
-      "pay",
-    ],
+    keywords: ["credit card", "payment", "fee", "filing fee", "authorization", "debit card", "pay"],
     type: "pdf",
     officialLink: "https://www.uscis.gov/sites/default/files/document/forms/g-1450.pdf",
     description:
@@ -677,6 +673,16 @@ export default function VisaFormSelector() {
   const filterPopoverRef = useRef<HTMLDivElement>(null);
   const filterButtonRef = useRef<HTMLButtonElement>(null);
 
+  // Plan gating: Free & Basic can only *start* the I-130 preview form in the
+  // Smart Form Filler; Premium & Executive start every form in the library.
+  const plan = usePlan();
+  const hasFullFormAccess = plan.canUse("smart_form_filler");
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const PREVIEW_FORM_CODE = "i130";
+  const normalizeCode = (formCode: string) => formCode.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+  const isFormLocked = (formCode: string) =>
+    !hasFullFormAccess && normalizeCode(formCode) !== PREVIEW_FORM_CODE;
+
   const renderFormDescription = (text: string) => {
     if (!text || !text.includes("31 C.F.R. Part 208")) {
       return text;
@@ -691,7 +697,7 @@ export default function VisaFormSelector() {
             e.stopPropagation();
             setIsCfrModalOpen(true);
           }}
-          className="text-blue-600 font-bold underline hover:text-blue-800 transition-colors inline-flex items-center gap-0.5 cursor-pointer mx-0.5"
+          className="mx-0.5 inline-flex cursor-pointer items-center gap-0.5 font-bold text-blue-600 underline transition-colors hover:text-blue-800"
           title="Click to view explanation of 31 C.F.R. Part 208"
         >
           31 C.F.R. Part 208
@@ -723,8 +729,13 @@ export default function VisaFormSelector() {
   }, [isFilterPopoverOpen]);
 
   const handleStartForm = (formCode: string): void => {
-    const normalized = formCode.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
-    window.location.href = `/visa-forms/${normalized}/wizard`;
+    // Free & Basic: only the I-130 preview is startable — other forms prompt
+    // an upgrade. Premium & Executive (and anyone who bought the add-on) pass.
+    if (isFormLocked(formCode)) {
+      setShowUpgradeModal(true);
+      return;
+    }
+    window.location.href = `/visa-forms/${normalizeCode(formCode)}/wizard`;
   };
 
   const toggleFilter = (type: "agency" | "category", value: string) => {
@@ -794,21 +805,21 @@ export default function VisaFormSelector() {
   });
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-primary/10 via-white to-primary/5 mt-10">
+    <div className="from-primary/10 to-primary/5 mt-10 min-h-screen bg-linear-to-br via-white">
       <div className="site-main-px site-main-py">
         {/* Header */}
-        <div className="text-center mb-8 md:mb-12">
-          <div className="inline-flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-primary/10 rounded-full mb-4">
-            <FileText className="w-6 h-6 md:w-8 md:h-8 text-primary/90" />
+        <div className="mb-8 text-center md:mb-12">
+          <div className="bg-primary/10 mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full md:h-16 md:w-16">
+            <FileText className="text-primary/90 h-6 w-6 md:h-8 md:w-8" />
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
+          <h1 className="mb-3 text-3xl font-bold text-gray-900 md:text-4xl">
             Immigration Forms Library
           </h1>
-          <p className="text-lg md:text-xl text-gray-600 mb-2 max-w-3xl mx-auto">
+          <p className="mx-auto mb-2 max-w-3xl text-lg text-gray-600 md:text-xl">
             Browse all forms organized by your journey stage, or search instantly to find exactly
             what you need.
           </p>
-          <div className="flex justify-center mt-4">
+          <div className="mt-4 flex justify-center">
             <QuickAccessButton
               item={{
                 id: "form-forge",
@@ -823,6 +834,18 @@ export default function VisaFormSelector() {
             step
           </p> */}
         </div>
+
+        {/* Free & Basic preview disclaimer */}
+        {!hasFullFormAccess && (
+          <div className="mx-auto max-w-3xl">
+            <ExpandableTooltip
+              icon={"i"}
+              defaultOpen={false}
+              title="Free Preview: Smart Form Filler is available on the I-130"
+              message="On the Free and Basic plans you can test the auto-fill experience on the I-130 form only: answer a few questions, review your answers, and preview the first page of the completed PDF. Upgrade to Premium or Executive to start every form in the library and download complete, multi-page PDFs."
+            />
+          </div>
+        )}
 
         {/* Info Banner */}
         {/* <div className="bg-primary/5 border border-primary/20 rounded-xl p-6 mb-10">
@@ -857,22 +880,22 @@ export default function VisaFormSelector() {
         {/* Search & View Toggle Section */}
 
         {/* Content Grid */}
-        <div className="max-w-7xl mx-auto">
+        <div className="mx-auto max-w-7xl">
           {/* Main Content */}
           <main className="min-w-0">
             {/* Search & Tabs (Moved Inside Main Content) */}
             <div className="mb-8 md:mb-10">
-              <div className="flex flex-row gap-4 mb-6">
+              <div className="mb-6 flex flex-row gap-4">
                 <div className="relative flex-1">
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-                    <Search className="w-4 h-4" />
+                  <div className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-gray-400">
+                    <Search className="h-4 w-4" />
                   </div>
                   <input
                     type="text"
                     suppressHydrationWarning
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 sm:py-4 border border-gray-200 rounded-xl text-sm focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 outline-none transition-all shadow-sm"
+                    className="w-full rounded-xl border border-gray-200 py-3 pr-4 pl-10 text-sm shadow-sm transition-all outline-none focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 sm:py-4"
                     placeholder="Search forms..."
                   />
                 </div>
@@ -880,9 +903,9 @@ export default function VisaFormSelector() {
                   <button
                     ref={filterButtonRef}
                     onClick={() => setIsFilterPopoverOpen(!isFilterPopoverOpen)}
-                    className="flex items-center justify-center gap-2 px-4 sm:px-6 py-3 sm:py-4 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:border-[#0d7377] hover:text-[#0d7377] transition-all shadow-sm"
+                    className="flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 shadow-sm transition-all hover:border-[#0d7377] hover:text-[#0d7377] sm:px-6 sm:py-4"
                   >
-                    <Filter className="w-4 h-4" />
+                    <Filter className="h-4 w-4" />
 
                     {/* Hide on mobile, show on sm+ */}
                     <span className="hidden sm:inline">Filters</span>
@@ -890,7 +913,7 @@ export default function VisaFormSelector() {
                     {(activeFilters.agency.length > 0 ||
                       activeFilters.category.length > 0 ||
                       currentJourney) && (
-                      <span className="bg-[#0d7377] text-white text-[10px] font-bold px-2 py-0.5 rounded-full ml-1">
+                      <span className="ml-1 rounded-full bg-[#0d7377] px-2 py-0.5 text-[10px] font-bold text-white">
                         {activeFilters.agency.length +
                           activeFilters.category.length +
                           (currentJourney ? 1 : 0)}
@@ -902,24 +925,24 @@ export default function VisaFormSelector() {
                   {isFilterPopoverOpen && (
                     <div
                       ref={filterPopoverRef}
-                      className="absolute top-full right-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-200 z-50 w-80 max-h-[500px] overflow-y-auto"
+                      className="absolute top-full right-0 z-50 mt-2 max-h-[500px] w-80 overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-xl"
                     >
                       {/* Header */}
-                      <div className="p-4 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white">
+                      <div className="sticky top-0 flex items-center justify-between border-b border-gray-100 bg-white p-4">
                         <h3 className="font-semibold text-gray-900">Filter Forms</h3>
                         <button
                           onClick={() => setIsFilterPopoverOpen(false)}
-                          className="text-gray-600 hover:text-gray-900 transition-colors"
+                          className="text-gray-600 transition-colors hover:text-gray-900"
                         >
-                          <X className="w-4 h-4" />
+                          <X className="h-4 w-4" />
                         </button>
                       </div>
 
                       {/* Filter Content */}
-                      <div className="p-4 space-y-4">
+                      <div className="space-y-4 p-4">
                         {/* Journey Filter */}
                         <div>
-                          <label className="block text-xs font-semibold text-gray-900 mb-2 uppercase tracking-wide">
+                          <label className="mb-2 block text-xs font-semibold tracking-wide text-gray-900 uppercase">
                             Visa Journey
                           </label>
                           <div className="flex flex-col gap-2">
@@ -941,10 +964,10 @@ export default function VisaFormSelector() {
                                     setCurrentStage("USCIS Filing");
                                   }
                                 }}
-                                className={`w-full text-left px-3 py-2 text-sm border rounded-lg transition-all duration-200 ${
+                                className={`w-full rounded-lg border px-3 py-2 text-left text-sm transition-all duration-200 ${
                                   currentJourney === journey.id
-                                    ? "bg-[#0d7377] text-white border-[#0d7377]"
-                                    : "bg-white text-gray-600 border-gray-200 hover:border-[#0d7377] hover:text-[#0d7377]"
+                                    ? "border-[#0d7377] bg-[#0d7377] text-white"
+                                    : "border-gray-200 bg-white text-gray-600 hover:border-[#0d7377] hover:text-[#0d7377]"
                                 }`}
                               >
                                 {journey.label}
@@ -954,8 +977,8 @@ export default function VisaFormSelector() {
                         </div>
 
                         {/* Agency Filter */}
-                        <div className="pt-4 border-t border-gray-100">
-                          <label className="block text-xs font-semibold text-gray-900 mb-2 uppercase tracking-wide">
+                        <div className="border-t border-gray-100 pt-4">
+                          <label className="mb-2 block text-xs font-semibold tracking-wide text-gray-900 uppercase">
                             Agency
                           </label>
                           <div className="flex flex-col gap-2">
@@ -963,10 +986,10 @@ export default function VisaFormSelector() {
                               <button
                                 key={agency}
                                 onClick={() => toggleFilter("agency", agency)}
-                                className={`w-full text-left px-3 py-2 text-sm border rounded-lg transition-all duration-200 ${
+                                className={`w-full rounded-lg border px-3 py-2 text-left text-sm transition-all duration-200 ${
                                   activeFilters.agency.includes(agency)
-                                    ? "bg-[#0d7377] text-white border-[#0d7377]"
-                                    : "bg-white text-gray-600 border-gray-200 hover:border-[#0d7377] hover:text-[#0d7377]"
+                                    ? "border-[#0d7377] bg-[#0d7377] text-white"
+                                    : "border-gray-200 bg-white text-gray-600 hover:border-[#0d7377] hover:text-[#0d7377]"
                                 }`}
                               >
                                 {agency}
@@ -976,8 +999,8 @@ export default function VisaFormSelector() {
                         </div>
 
                         {/* Category Filter */}
-                        <div className="pt-4 border-t border-gray-100">
-                          <label className="block text-xs font-semibold text-gray-900 mb-2 uppercase tracking-wide">
+                        <div className="border-t border-gray-100 pt-4">
+                          <label className="mb-2 block text-xs font-semibold tracking-wide text-gray-900 uppercase">
                             Category
                           </label>
                           <div className="flex flex-col gap-2">
@@ -985,10 +1008,10 @@ export default function VisaFormSelector() {
                               <button
                                 key={category}
                                 onClick={() => toggleFilter("category", category)}
-                                className={`w-full text-left px-3 py-2 text-sm border rounded-lg transition-all duration-200 ${
+                                className={`w-full rounded-lg border px-3 py-2 text-left text-sm transition-all duration-200 ${
                                   activeFilters.category.includes(category)
-                                    ? "bg-[#0d7377] text-white border-[#0d7377]"
-                                    : "bg-white text-gray-600 border-gray-200 hover:border-[#0d7377] hover:text-[#0d7377]"
+                                    ? "border-[#0d7377] bg-[#0d7377] text-white"
+                                    : "border-gray-200 bg-white text-gray-600 hover:border-[#0d7377] hover:text-[#0d7377]"
                                 }`}
                               >
                                 {category}
@@ -999,7 +1022,7 @@ export default function VisaFormSelector() {
                       </div>
 
                       {/* Footer */}
-                      <div className="px-4 py-3 border-t border-gray-100 space-y-3 sticky bottom-0 bg-gray-50">
+                      <div className="sticky bottom-0 space-y-3 border-t border-gray-100 bg-gray-50 px-4 py-3">
                         <div className="flex gap-2">
                           {(activeFilters.agency.length > 0 ||
                             activeFilters.category.length > 0 ||
@@ -1009,19 +1032,19 @@ export default function VisaFormSelector() {
                                 clearFilters();
                                 setCurrentJourney("");
                               }}
-                              className="flex-1 text-sm text-white bg-[#0d7377] hover:bg-[#0a5a5d] font-medium transition-colors py-2 px-3 rounded-lg"
+                              className="flex-1 rounded-lg bg-[#0d7377] px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-[#0a5a5d]"
                             >
                               Reset
                             </button>
                           )}
                           <button
                             onClick={() => setIsFilterPopoverOpen(false)}
-                            className="flex-1 text-sm text-gray-700 bg-gray-200 hover:bg-gray-300 font-medium transition-colors py-2 px-3 rounded-lg"
+                            className="flex-1 rounded-lg bg-gray-200 px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-300"
                           >
                             Done
                           </button>
                         </div>
-                        <div className="text-xs text-gray-600 text-center">
+                        <div className="text-center text-xs text-gray-600">
                           Showing{" "}
                           <span className="font-semibold text-gray-900">
                             {filteredForms.length}
@@ -1038,10 +1061,10 @@ export default function VisaFormSelector() {
                 <button
                   onClick={() => handleViewChange("journey")}
                   suppressHydrationWarning
-                  className={`flex-1 py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg font-semibold text-sm transition-all border-2 ${
+                  className={`flex-1 rounded-lg border-2 px-4 py-2.5 text-sm font-semibold transition-all sm:px-6 sm:py-3 ${
                     currentView === "journey"
-                      ? "bg-[#0d7377] border-[#0d7377] text-white"
-                      : "bg-white border-gray-200 text-gray-500 hover:border-[#0d7377] hover:text-[#0d7377]"
+                      ? "border-[#0d7377] bg-[#0d7377] text-white"
+                      : "border-gray-200 bg-white text-gray-500 hover:border-[#0d7377] hover:text-[#0d7377]"
                   }`}
                 >
                   Journey View
@@ -1049,10 +1072,10 @@ export default function VisaFormSelector() {
                 <button
                   onClick={() => handleViewChange("all")}
                   suppressHydrationWarning
-                  className={`flex-1 py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg font-semibold text-sm transition-all border-2 ${
+                  className={`flex-1 rounded-lg border-2 px-4 py-2.5 text-sm font-semibold transition-all sm:px-6 sm:py-3 ${
                     currentView === "all"
-                      ? "bg-[#0d7377] border-[#0d7377] text-white"
-                      : "bg-white border-gray-200 text-gray-500 hover:border-[#0d7377] hover:text-[#0d7377]"
+                      ? "border-[#0d7377] bg-[#0d7377] text-white"
+                      : "border-gray-200 bg-white text-gray-500 hover:border-[#0d7377] hover:text-[#0d7377]"
                   }`}
                 >
                   All Forms
@@ -1064,11 +1087,11 @@ export default function VisaFormSelector() {
             {currentView === "journey" && (
               <div className="mb-8 md:mb-10">
                 {/* Metro Map */}
-                <div className="relative overflow-x-auto pb-4 mb-6 md:mb-8 custom-scrollbar">
-                  <div className="min-w-[600px] md:min-w-175 px-4">
+                <div className="custom-scrollbar relative mb-6 overflow-x-auto pb-4 md:mb-8">
+                  <div className="min-w-[600px] px-4 md:min-w-175">
                     <div className="relative flex justify-between pt-4">
                       {/* Connection Line */}
-                      <div className="absolute top-[26px] left-0 right-0 h-1 bg-gray-200 rounded-full w-full" />
+                      <div className="absolute top-[26px] right-0 left-0 h-1 w-full rounded-full bg-gray-200" />
 
                       {[
                         {
@@ -1113,19 +1136,19 @@ export default function VisaFormSelector() {
                             onClick={() =>
                               setCurrentStage(currentStage === stage.id ? "" : stage.id)
                             }
-                            className="flex flex-col items-center group relative flex-1"
+                            className="group relative flex flex-1 flex-col items-center"
                           >
                             <div
-                              className={`w-6 h-6 rounded-full border-4 z-10 transition-all duration-300 mb-3 ${
+                              className={`z-10 mb-3 h-6 w-6 rounded-full border-4 transition-all duration-300 ${
                                 isActive
-                                  ? "bg-[#0d7377] border-[#0d7377] scale-125"
-                                  : "bg-white border-gray-200 group-hover:border-[#0d7377]"
+                                  ? "scale-125 border-[#0d7377] bg-[#0d7377]"
+                                  : "border-gray-200 bg-white group-hover:border-[#0d7377]"
                               }`}
                             />
 
-                            <div className="text-center flex flex-col items-center">
+                            <div className="flex flex-col items-center text-center">
                               <div
-                                className={`text-sm font-bold mb-0.5 ${
+                                className={`mb-0.5 text-sm font-bold ${
                                   isActive
                                     ? "text-gray-900"
                                     : "text-gray-500 group-hover:text-gray-700"
@@ -1133,8 +1156,8 @@ export default function VisaFormSelector() {
                               >
                                 {stage.label}
                               </div>
-                              <div className="text-xs text-gray-400 mb-2">{stage.desc}</div>
-                              <div className="bg-teal-50 text-teal-700 text-xs font-semibold px-3 py-1 rounded-md">
+                              <div className="mb-2 text-xs text-gray-400">{stage.desc}</div>
+                              <div className="rounded-md bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-700">
                                 {count} forms
                               </div>
                             </div>
@@ -1148,38 +1171,38 @@ export default function VisaFormSelector() {
             )}
 
             {/* Forms Grid */}
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-12">
+            <div className="mb-12 grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
               {filteredForms.length > 0 ? (
                 filteredForms.map((form) => {
                   return (
                     <div
                       key={form.code}
-                      className="group relative bg-white rounded-2xl shadow-sm hover:shadow-xl hover:shadow-teal-900/5 hover:-translate-y-1 transition-all duration-300 border border-gray-200 overflow-hidden flex flex-col h-auto min-h-[370px] lg:h-[340px] lg:min-h-0"
+                      className="group relative flex h-auto min-h-[370px] flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-teal-900/5 lg:h-[340px] lg:min-h-0"
                     >
                       {/* Top Accent Line */}
-                      <div className="absolute top-0 left-0 right-10 h-1 bg-linear-to-r from-[#0d7377] to-teal-400 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
+                      <div className="absolute top-0 right-10 left-0 h-1 origin-left scale-x-0 transform bg-linear-to-r from-[#0d7377] to-teal-400 transition-transform duration-500 group-hover:scale-x-100" />
 
                       {/* Folded Corner Effect */}
-                      <div className="absolute top-0 right-0 w-10 h-10 overflow-hidden">
-                        <div className="absolute top-0 right-0 w-0 h-0 border-t-40 border-l-40 border-t-gray-50 border-l-transparent drop-shadow-sm group-hover:border-t-gray-50 transition-colors duration-300 z-10" />
-                        <div className="absolute top-0 right-0 w-0 h-0 border-t-40 border-l-40 border-t-gray-50 border-l-gray-50 shadow-md" />
+                      <div className="absolute top-0 right-0 h-10 w-10 overflow-hidden">
+                        <div className="absolute top-0 right-0 z-10 h-0 w-0 border-t-40 border-l-40 border-t-gray-50 border-l-transparent drop-shadow-sm transition-colors duration-300 group-hover:border-t-gray-50" />
+                        <div className="absolute top-0 right-0 h-0 w-0 border-t-40 border-l-40 border-t-gray-50 border-l-gray-50 shadow-md" />
                       </div>
 
-                      <div className="p-7 flex flex-col flex-1 relative">
+                      <div className="relative flex flex-1 flex-col p-7">
                         {/* Header */}
-                        <div className="flex justify-between items-start mb-5 mr-8">
+                        <div className="mr-8 mb-5 flex items-start justify-between">
                           <div>
-                            <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight group-hover:text-[#0d7377] transition-colors">
+                            <h2 className="text-3xl font-extrabold tracking-tight text-gray-900 transition-colors group-hover:text-[#0d7377]">
                               {form.code}
                             </h2>
-                            <span className="inline-block mt-1 px-2 py-0.5 bg-gray-100 text-gray-600 text-[10px] font-bold uppercase tracking-wider rounded-md">
+                            <span className="mt-1 inline-block rounded-md bg-gray-100 px-2 py-0.5 text-[10px] font-bold tracking-wider text-gray-600 uppercase">
                               {form.agency}
                             </span>
                           </div>
 
                           {/* Status Badge */}
                           <div
-                            className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${
+                            className={`rounded-full px-3 py-1 text-xs font-bold tracking-wide uppercase ${
                               form.type === "online"
                                 ? "bg-blue-50 text-blue-700"
                                 : "bg-teal-50 text-teal-700"
@@ -1190,52 +1213,63 @@ export default function VisaFormSelector() {
                         </div>
 
                         {/* Content */}
-                        <div className="flex-1 min-h-0">
+                        <div className="min-h-0 flex-1">
                           <h3
-                            className="text-lg font-bold text-gray-800 leading-snug mb-3 group-hover:text-[#0d7377] transition-colors line-clamp-2 lg:line-clamp-1 lg:truncate"
+                            className="mb-3 line-clamp-2 text-lg leading-snug font-bold text-gray-800 transition-colors group-hover:text-[#0d7377] lg:line-clamp-1 lg:truncate"
                             title={form.name}
                           >
                             {form.name}
                           </h3>
                           <p
-                            className="text-sm text-gray-500 leading-relaxed lg:line-clamp-2"
+                            className="text-sm leading-relaxed text-gray-500 lg:line-clamp-2"
                             title={form.description}
                           >
                             {form.description}
                           </p>
                           {form.expiryDate && (
-                            <div className="mt-3 inline-flex items-center gap-1.5 text-xs text-amber-600 bg-amber-50/70 border border-amber-200/50 px-2.5 py-1 rounded-lg font-medium">
-                              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                            <div className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-amber-200/50 bg-amber-50/70 px-2.5 py-1 text-xs font-medium text-amber-600">
+                              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-500"></span>
                               Valid till {form.expiryDate}
                             </div>
                           )}
                         </div>
 
                         {/* Footer (Static) */}
-                        <div className="mt-4 pt-4 border-t border-gray-50 hidden lg:flex items-center justify-between text-xs font-medium text-gray-400 group-hover:opacity-0 transition-opacity duration-200 delay-100">
+                        <div className="mt-4 hidden items-center justify-between border-t border-gray-50 pt-4 text-xs font-medium text-gray-400 transition-opacity delay-100 duration-200 group-hover:opacity-0 lg:flex">
                           <span className="flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-gray-300"></span>
+                            <span className="h-1.5 w-1.5 rounded-full bg-gray-300"></span>
                             {form.stage}
                           </span>
                           {form.category && form.category[0] && <span>{form.category[0]}</span>}
                         </div>
 
                         {/* Hover Overlay Actions */}
-                        <div className="relative lg:absolute lg:inset-x-0 lg:bottom-0 p-4 lg:p-6 border-t border-gray-100 bg-white/95 lg:backdrop-blur-[2px] translate-y-0 lg:translate-y-full lg:group-hover:translate-y-0 transition-transform duration-300 ease-out flex flex-col gap-3 z-10 mt-auto mx-[-1.75rem] mb-[-1.75rem] lg:mx-0 lg:mb-0">
+                        <div className="relative z-10 mx-[-1.75rem] mt-auto mb-[-1.75rem] flex translate-y-0 flex-col gap-3 border-t border-gray-100 bg-white/95 p-4 transition-transform duration-300 ease-out lg:absolute lg:inset-x-0 lg:bottom-0 lg:mx-0 lg:mb-0 lg:translate-y-full lg:p-6 lg:backdrop-blur-[2px] lg:group-hover:translate-y-0">
                           <div className="flex gap-3">
                             <button
                               onClick={() => setSelectedForm(form)}
                               suppressHydrationWarning
-                              className="flex-1 bg-[#0d7377] text-white font-bold py-3 px-4 rounded-xl hover:bg-[#0a5a5d] transition-all shadow-sm hover:shadow-lg active:scale-95 text-sm flex items-center justify-center gap-2"
+                              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#0d7377] px-4 py-3 text-sm font-bold text-white shadow-sm transition-all hover:bg-[#0a5a5d] hover:shadow-lg active:scale-95"
                             >
                               Preview
                             </button>
                             <button
                               onClick={() => handleStartForm(form.code)}
                               suppressHydrationWarning
-                              className="flex-1 bg-white border-2 border-gray-100 text-gray-700 font-bold py-3 px-4 rounded-xl hover:border-[#0d7377] hover:text-[#0d7377] transition-all shadow-sm hover:shadow-md active:scale-95 text-sm flex items-center justify-center gap-2"
+                              className={`flex flex-1 items-center justify-center gap-2 rounded-xl border-2 px-4 py-3 text-sm font-bold shadow-sm transition-all active:scale-95 ${
+                                isFormLocked(form.code)
+                                  ? "border-amber-200 bg-white text-amber-700 hover:border-amber-400 hover:text-amber-800"
+                                  : "border-gray-100 bg-white text-gray-700 hover:border-[#0d7377] hover:text-[#0d7377] hover:shadow-md"
+                              }`}
                             >
-                              Start
+                              {isFormLocked(form.code) ? (
+                                <>
+                                  <Lock className="h-4 w-4 shrink-0" />
+                                  Upgrade
+                                </>
+                              ) : (
+                                "Start"
+                              )}
                             </button>
                           </div>
                         </div>
@@ -1245,14 +1279,14 @@ export default function VisaFormSelector() {
                 })
               ) : (
                 <div className="col-span-full py-16 text-center">
-                  <div className="flex justify-center mb-4">
-                    <FileText className="w-12 h-12 text-gray-300" />
+                  <div className="mb-4 flex justify-center">
+                    <FileText className="h-12 w-12 text-gray-300" />
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-1">No forms found</h3>
+                  <h3 className="mb-1 text-lg font-semibold text-gray-900">No forms found</h3>
                   <p className="text-gray-500">Try adjusting your filters to see more results</p>
                   <button
                     onClick={clearFilters}
-                    className="mt-4 text-[#007f8a] hover:underline font-medium"
+                    className="mt-4 font-medium text-[#007f8a] hover:underline"
                   >
                     Clear all filters
                   </button>
@@ -1261,7 +1295,7 @@ export default function VisaFormSelector() {
             </div>
 
             {/* Help Section */}
-            <div className="grid md:grid-cols-1 gap-6">
+            <div className="grid gap-6 md:grid-cols-1">
               {/* Process Guide */}
               {/* Process Guide */}
               {/* <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -1389,66 +1423,66 @@ export default function VisaFormSelector() {
               />
 
               {/* Modal */}
-              <div className="relative w-full max-w-5xl max-h-[95vh] sm:max-h-[90vh] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+              <div className="animate-in fade-in zoom-in-95 relative flex max-h-[95vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl duration-200 sm:max-h-[90vh]">
                 {/* Header */}
-                <div className="sticky top-0 bg-white/95 backdrop-blur-md px-5 sm:px-8 py-4 sm:py-6 border-b border-gray-200 flex justify-between items-center z-10 shrink-0">
-                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Form Details</h2>
+                <div className="sticky top-0 z-10 flex shrink-0 items-center justify-between border-b border-gray-200 bg-white/95 px-5 py-4 backdrop-blur-md sm:px-8 sm:py-6">
+                  <h2 className="text-xl font-bold text-gray-900 sm:text-2xl">Form Details</h2>
                   <button
                     onClick={() => setSelectedForm(null)}
-                    className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500 hover:text-gray-900"
+                    className="rounded-full p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
                   >
-                    <X className="w-5 h-5 sm:w-6 sm:h-6" />
+                    <X className="h-5 w-5 sm:h-6 sm:w-6" />
                   </button>
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto w-full">
-                  <div className="p-5 sm:p-8 space-y-6 sm:space-y-8 max-w-5xl mx-auto w-full">
+                <div className="w-full flex-1 overflow-y-auto">
+                  <div className="mx-auto w-full max-w-5xl space-y-6 p-5 sm:space-y-8 sm:p-8">
                     {/* Basic Info */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
+                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-8">
                       <div>
-                        <div className="text-xs sm:text-sm font-bold text-gray-500 uppercase tracking-wider mb-1 sm:mb-2">
+                        <div className="mb-1 text-xs font-bold tracking-wider text-gray-500 uppercase sm:mb-2 sm:text-sm">
                           Form Code
                         </div>
-                        <div className="text-2xl sm:text-3xl font-bold text-[#0d7377] font-mono">
+                        <div className="font-mono text-2xl font-bold text-[#0d7377] sm:text-3xl">
                           {selectedForm.code}
                         </div>
                       </div>
                       <div>
-                        <div className="text-xs sm:text-sm font-bold text-gray-500 uppercase tracking-wider mb-1 sm:mb-2">
+                        <div className="mb-1 text-xs font-bold tracking-wider text-gray-500 uppercase sm:mb-2 sm:text-sm">
                           Agency
                         </div>
-                        <div className="text-lg sm:text-xl text-gray-900 font-medium">
+                        <div className="text-lg font-medium text-gray-900 sm:text-xl">
                           {selectedForm.agency}
                         </div>
                       </div>
                     </div>
 
                     <div>
-                      <div className="text-xs sm:text-sm font-bold text-gray-500 uppercase tracking-wider mb-1 sm:mb-2">
+                      <div className="mb-1 text-xs font-bold tracking-wider text-gray-500 uppercase sm:mb-2 sm:text-sm">
                         Full Title
                       </div>
-                      <div className="text-lg sm:text-xl text-gray-900 leading-relaxed">
+                      <div className="text-lg leading-relaxed text-gray-900 sm:text-xl">
                         {selectedForm.name}
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
+                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-8">
                       <div>
-                        <div className="text-xs sm:text-sm font-bold text-gray-500 uppercase tracking-wider mb-1 sm:mb-2">
+                        <div className="mb-1 text-xs font-bold tracking-wider text-gray-500 uppercase sm:mb-2 sm:text-sm">
                           Journey Stage
                         </div>
-                        <div className="text-base sm:text-lg text-gray-900">
+                        <div className="text-base text-gray-900 sm:text-lg">
                           {selectedForm.stage}
                         </div>
                       </div>
                       {selectedForm.expiryDate && (
                         <div>
-                          <div className="text-xs sm:text-sm font-bold text-gray-500 uppercase tracking-wider mb-1 sm:mb-2">
+                          <div className="mb-1 text-xs font-bold tracking-wider text-gray-500 uppercase sm:mb-2 sm:text-sm">
                             Validation Status
                           </div>
-                          <div className="inline-flex items-center gap-1.5 text-sm text-amber-600 bg-amber-50/70 border border-amber-200/50 px-3 py-1.5 rounded-lg font-semibold">
-                            <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                          <div className="inline-flex items-center gap-1.5 rounded-lg border border-amber-200/50 bg-amber-50/70 px-3 py-1.5 text-sm font-semibold text-amber-600">
+                            <span className="h-2 w-2 animate-pulse rounded-full bg-amber-500"></span>
                             Valid till {selectedForm.expiryDate}
                           </div>
                         </div>
@@ -1457,14 +1491,14 @@ export default function VisaFormSelector() {
 
                     {/* Categories & Keywords */}
                     <div>
-                      <div className="text-xs sm:text-sm font-bold text-gray-500 uppercase tracking-wider mb-2 sm:mb-3">
+                      <div className="mb-2 text-xs font-bold tracking-wider text-gray-500 uppercase sm:mb-3 sm:text-sm">
                         Categories
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {selectedForm.category?.map((cat) => (
                           <span
                             key={cat}
-                            className="px-3 py-1 bg-[#e8f6f6] text-[#0a5a5d] rounded-md text-sm font-medium"
+                            className="rounded-md bg-[#e8f6f6] px-3 py-1 text-sm font-medium text-[#0a5a5d]"
                           >
                             {cat}
                           </span>
@@ -1473,14 +1507,14 @@ export default function VisaFormSelector() {
                     </div>
 
                     <div>
-                      <div className="text-xs sm:text-sm font-bold text-gray-500 uppercase tracking-wider mb-2 sm:mb-3">
+                      <div className="mb-2 text-xs font-bold tracking-wider text-gray-500 uppercase sm:mb-3 sm:text-sm">
                         Keywords
                       </div>
                       <div className="flex flex-wrap gap-1.5 sm:gap-2">
                         {selectedForm.keywords?.map((kw) => (
                           <span
                             key={kw}
-                            className="px-2 sm:px-3 py-1 bg-gray-100 text-gray-600 rounded-md text-xs sm:text-sm"
+                            className="rounded-md bg-gray-100 px-2 py-1 text-xs text-gray-600 sm:px-3 sm:text-sm"
                           >
                             {kw}
                           </span>
@@ -1489,13 +1523,13 @@ export default function VisaFormSelector() {
                     </div>
 
                     <div>
-                      <div className="text-xs sm:text-sm font-bold text-gray-500 uppercase tracking-wider mb-1 sm:mb-2">
+                      <div className="mb-1 text-xs font-bold tracking-wider text-gray-500 uppercase sm:mb-2 sm:text-sm">
                         Description & Notes
                       </div>
-                      <div className="text-sm sm:text-base text-gray-700 leading-relaxed bg-gray-50 p-4 sm:p-6 rounded-xl border border-gray-100">
+                      <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 text-sm leading-relaxed text-gray-700 sm:p-6 sm:text-base">
                         {renderFormDescription(selectedForm.description)}
                         {selectedForm.notes && (
-                          <p className="mt-4 pt-4 border-t border-gray-200 text-gray-600 italic">
+                          <p className="mt-4 border-t border-gray-200 pt-4 text-gray-600 italic">
                             {selectedForm.notes}
                           </p>
                         )}
@@ -1503,37 +1537,38 @@ export default function VisaFormSelector() {
 
                       {/* 31 C.F.R. Part 208 Special Callout for Form G-1651 */}
                       {selectedForm.code === "G-1651" && (
-                        <div className="mt-3 p-3.5 sm:p-4 bg-blue-50/70 border border-blue-200/70 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div className="mt-3 flex flex-col justify-between gap-3 rounded-xl border border-blue-200/70 bg-blue-50/70 p-3.5 sm:flex-row sm:items-center sm:p-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-700 shrink-0">
-                              <Scale className="w-4 h-4" />
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-700">
+                              <Scale className="h-4 w-4" />
                             </div>
                             <div>
                               <div className="text-xs font-bold text-blue-950">
                                 31 C.F.R. Part 208 Undue Hardship Regulation
                               </div>
-                              <div className="text-[11.5px] text-blue-800 leading-normal">
-                                Learn what qualifies as an infrastructure or personal barrier under Treasury rules
+                              <div className="text-[11.5px] leading-normal text-blue-800">
+                                Learn what qualifies as an infrastructure or personal barrier under
+                                Treasury rules
                               </div>
                             </div>
                           </div>
-                          <div className="flex items-center gap-2 shrink-0">
+                          <div className="flex shrink-0 items-center gap-2">
                             <button
                               type="button"
                               onClick={() => setIsCfrModalOpen(true)}
-                              className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-xs inline-flex items-center gap-1.5 cursor-pointer"
+                              className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-bold text-white shadow-xs transition-all hover:bg-blue-700"
                             >
-                              <BookOpen className="w-3.5 h-3.5" />
+                              <BookOpen className="h-3.5 w-3.5" />
                               <span>View Explanation</span>
                             </button>
                             <a
                               href="https://www.govinfo.gov/content/pkg/CFR-2025-title31-vol2/pdf/CFR-2025-title31-vol2-sec208-1.pdf"
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="px-3 py-1.5 rounded-lg bg-white border border-blue-200 text-blue-700 hover:bg-blue-50 text-xs font-semibold transition-all inline-flex items-center gap-1"
+                              className="inline-flex items-center gap-1 rounded-lg border border-blue-200 bg-white px-3 py-1.5 text-xs font-semibold text-blue-700 transition-all hover:bg-blue-50"
                             >
                               <span>GovInfo Citation</span>
-                              <ExternalLink className="w-3 h-3" />
+                              <ExternalLink className="h-3 w-3" />
                             </a>
                           </div>
                         </div>
@@ -1542,21 +1577,21 @@ export default function VisaFormSelector() {
 
                     {/* Hand-sign callout -> Snap & Sign tool */}
                     {selectedForm.requiresHandSign && (
-                      <div className="p-4 sm:p-6 bg-[#e8f6f6] border border-[#0d7377]/20 rounded-xl flex items-start gap-4">
-                        <PenLine className="w-6 h-6 text-[#0d7377] shrink-0 mt-1" />
+                      <div className="flex items-start gap-4 rounded-xl border border-[#0d7377]/20 bg-[#e8f6f6] p-4 sm:p-6">
+                        <PenLine className="mt-1 h-6 w-6 shrink-0 text-[#0d7377]" />
                         <div>
-                          <h4 className="text-base sm:text-lg font-bold text-[#0a5a5d] mb-1">
+                          <h4 className="mb-1 text-base font-bold text-[#0a5a5d] sm:text-lg">
                             This form needs a handwritten signature
                           </h4>
-                          <p className="text-sm sm:text-base text-gray-700 leading-relaxed">
+                          <p className="text-sm leading-relaxed text-gray-700 sm:text-base">
                             Print the form, sign it by hand, then capture your signature with our
                             Snap and Sign tool to add a clean digital copy to your document.
                           </p>
                           <a
                             href="/signature-image-processing"
-                            className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-[#0d7377] hover:bg-[#0a5a5d] text-white rounded-lg font-semibold text-sm shadow-sm transition-all"
+                            className="mt-3 inline-flex items-center gap-2 rounded-lg bg-[#0d7377] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[#0a5a5d]"
                           >
-                            <PenLine className="w-4 h-4 shrink-0" />
+                            <PenLine className="h-4 w-4 shrink-0" />
                             Open Snap and Sign
                           </a>
                         </div>
@@ -1565,10 +1600,10 @@ export default function VisaFormSelector() {
 
                     {/* PDF Preview or Online Callout */}
                     {selectedForm.type === "online" ? (
-                      <div className="p-6 bg-blue-50 border border-blue-100 rounded-xl flex items-start gap-4">
-                        <ExternalLink className="w-6 h-6 text-blue-600 shrink-0 mt-1" />
+                      <div className="flex items-start gap-4 rounded-xl border border-blue-100 bg-blue-50 p-6">
+                        <ExternalLink className="mt-1 h-6 w-6 shrink-0 text-blue-600" />
                         <div>
-                          <h4 className="text-lg font-bold text-blue-900 mb-2">Online Form</h4>
+                          <h4 className="mb-2 text-lg font-bold text-blue-900">Online Form</h4>
                           <p className="text-blue-800">
                             This form must be completed online and cannot be downloaded as a PDF.
                             Visit the official government website to access and submit this form.
@@ -1577,13 +1612,13 @@ export default function VisaFormSelector() {
                       </div>
                     ) : selectedForm.officialLink ? (
                       <div>
-                        <div className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">
+                        <div className="mb-3 text-sm font-bold tracking-wider text-gray-500 uppercase">
                           PDF Preview
                         </div>
-                        <div className="border border-gray-200 rounded-xl overflow-hidden h-[800px] shadow-sm bg-gray-50">
+                        <div className="h-[800px] overflow-hidden rounded-xl border border-gray-200 bg-gray-50 shadow-sm">
                           <iframe
                             src={selectedForm.officialLink}
-                            className="w-full h-full"
+                            className="h-full w-full"
                             title={`PDF Preview of ${selectedForm.code}`}
                           />
                         </div>
@@ -1591,19 +1626,19 @@ export default function VisaFormSelector() {
                     ) : null}
                   </div>
                   {/* Actions Footer */}
-                  <div className="p-4 sm:p-8 border-t border-gray-200 bg-gray-50 shrink-0">
-                    <div className="max-w-5xl mx-auto flex flex-col sm:flex-row flex-wrap gap-3">
-                      <button className="flex-1 w-full py-3 sm:py-4 bg-[#0d7377] hover:bg-[#0a5a5d] text-white rounded-xl font-bold text-sm lg:text-base shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2">
-                        <Plus className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
+                  <div className="shrink-0 border-t border-gray-200 bg-gray-50 p-4 sm:p-8">
+                    <div className="mx-auto flex max-w-5xl flex-col flex-wrap gap-3 sm:flex-row">
+                      <button className="flex w-full flex-1 items-center justify-center gap-2 rounded-xl bg-[#0d7377] py-3 text-sm font-bold text-white shadow-sm transition-all hover:bg-[#0a5a5d] hover:shadow-md sm:py-4 lg:text-base">
+                        <Plus className="h-4 w-4 shrink-0 sm:h-5 sm:w-5" />
                         <span className="truncate">Add to AutoFill Queue</span>
                       </button>
 
                       {selectedForm.officialLink && selectedForm.type !== "online" && (
                         <button
                           onClick={() => window.open(selectedForm.officialLink, "_blank")}
-                          className="flex-1 w-full py-3 sm:py-4 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 hover:border-teal-600 hover:text-teal-700 rounded-xl font-bold text-sm lg:text-base shadow-sm transition-all flex items-center justify-center gap-2"
+                          className="flex w-full flex-1 items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white py-3 text-sm font-bold text-gray-700 shadow-sm transition-all hover:border-teal-600 hover:bg-gray-50 hover:text-teal-700 sm:py-4 lg:text-base"
                         >
-                          <Download className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
+                          <Download className="h-4 w-4 shrink-0 sm:h-5 sm:w-5" />
                           <span className="truncate">Download PDF</span>
                         </button>
                       )}
@@ -1617,9 +1652,9 @@ export default function VisaFormSelector() {
                           });
                           setTimeout(() => setToast(null), 3000);
                         }}
-                        className="flex-1 w-full py-3 sm:py-4 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 hover:border-teal-600 hover:text-teal-700 rounded-xl font-bold text-sm lg:text-base shadow-sm transition-all flex items-center justify-center gap-2"
+                        className="flex w-full flex-1 items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white py-3 text-sm font-bold text-gray-700 shadow-sm transition-all hover:border-teal-600 hover:bg-gray-50 hover:text-teal-700 sm:py-4 lg:text-base"
                       >
-                        <Copy className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
+                        <Copy className="h-4 w-4 shrink-0 sm:h-5 sm:w-5" />
                         <span className="truncate">Copy Form Code</span>
                       </button>
                     </div>
@@ -1632,22 +1667,23 @@ export default function VisaFormSelector() {
 
         {/* Toast Notification */}
         {toast && (
-          <div className="fixed bottom-8 right-8 z-200 animate-in slide-in-from-bottom-5 fade-in duration-300">
+          <div className="animate-in slide-in-from-bottom-5 fade-in fixed right-8 bottom-8 z-200 duration-300">
             <div
-              className={`flex items-center gap-2 px-6 py-4 rounded-xl shadow-2xl font-semibold text-white transform transition-all ${
+              className={`flex transform items-center gap-2 rounded-xl px-6 py-4 font-semibold text-white shadow-2xl transition-all ${
                 toast.type === "success" ? "bg-[#0d7377]" : "bg-blue-600"
               }`}
             >
-              <CheckCircle className="w-5 h-5" />
+              <CheckCircle className="h-5 w-5" />
               {toast.message}
             </div>
           </div>
         )}
 
-        <CfrExplanationModal
-          open={isCfrModalOpen}
-          onOpenChange={setIsCfrModalOpen}
-        />
+        <CfrExplanationModal open={isCfrModalOpen} onOpenChange={setIsCfrModalOpen} />
+
+        {showUpgradeModal && (
+          <UpgradeModal feature="smart_form_filler" onClose={() => setShowUpgradeModal(false)} />
+        )}
       </div>
     </div>
   );
