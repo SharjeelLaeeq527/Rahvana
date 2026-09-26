@@ -13,6 +13,7 @@ import {
 import confetti from "canvas-confetti";
 import { Zap } from "lucide-react";
 import { usePlan } from "@/app/context/PlanContext";
+import { hasPurchasedAddon } from "@/lib/entitlements/helpers";
 import { Loader } from "@/components/ui/spinner";
 import {
   computeQuestionCooldowns,
@@ -215,8 +216,13 @@ export const RapidFireModePage = ({
   const isFreeTier = plan.tier === "free";
   const isBasicTier = plan.tier === "basic";
 
+  // Buying the Interview Prep add-on (any category) unlocks the full Rapid
+  // Fire experience regardless of the account-wide plan.
+  const boughtInterviewPrep = hasPurchasedAddon(plan.purchasedAddons, "interview-prep");
+
   // Free and Basic tiers get limited 5 questions per round
-  const questionsPerRound = isFreeTier || isBasicTier ? 5 : QUESTIONS_PER_ROUND;
+  const questionsPerRound =
+    (isFreeTier || isBasicTier) && !boughtInterviewPrep ? 5 : QUESTIONS_PER_ROUND;
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(10);
   const [score, setScore] = useState(0);
@@ -918,7 +924,7 @@ export const RapidFireModePage = ({
                       );
                     })}
                   </div>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-x-5 gap-y-3 max-w-3xl mx-auto text-sm text-slate-600">
+                  <div className="mx-auto grid max-w-3xl grid-cols-2 gap-x-5 gap-y-3 text-sm text-slate-600 md:grid-cols-4">
                     <div className="flex items-center gap-2">
                       <div className="h-3 w-3 shrink-0 rounded-sm bg-green-500" />
                       <span>Covered Well</span>
@@ -980,7 +986,7 @@ export const RapidFireModePage = ({
                               <span className="rounded-full bg-[#f3ede7] px-2 py-1 text-xs font-semibold text-[#9c6f38]">
                                 {reviewQuestion.category}
                               </span>
-                              <span className="hidden md:block rounded-full bg-[#89a4a0]/10 px-2 py-1 text-xs font-medium text-[#89a4a0]">
+                              <span className="hidden rounded-full bg-[#89a4a0]/10 px-2 py-1 text-xs font-medium text-[#89a4a0] md:block">
                                 Review Mode
                               </span>
                             </div>

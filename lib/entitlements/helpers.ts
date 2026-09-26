@@ -7,12 +7,33 @@ import {
 } from "@/lib/entitlements/config";
 
 /**
+ * True when the purchase ledger contains the add-on — either the bare id
+ * ("interview-prep") or any category variant of it
+ * ("interview-prep:ir-5-parent" counts as "interview-prep").
+ */
+export function hasPurchasedAddon(purchasedAddons: string[], addonId: string): boolean {
+  return purchasedAddons.some((id) => id === addonId || id.startsWith(`${addonId}:`));
+}
+
+/**
+ * Add-ons whose purchase grants FULL access to an entire tool, overriding the
+ * mode-level demo caps that would otherwise apply to the user's plan tier
+ * (e.g. Rapid Fire's limited(5) on Basic). Keyed by add-on id; ids must stay
+ * in sync with the ADDON constants in lib/entitlements/config.ts.
+ */
+const ADDON_FULL_ACCESS_GRANTS: Record<string, string[]> = {
+  "interview-prep": ["basic_interview_prep", "interview_rapid_fire", "mock_interview"],
+};
+
+/**
  * Resolves the effective entitlement for a feature, taking purchased add-ons
  * into account:
  *  - Credit-pool add-ons (`creditsPerAddon`, e.g. Photo Booth, Consultation):
  *    each entry in the purchase ledger grants `creditsPerAddon` credits on top
  *    of the tier's included credits, so the feature resolves to
  *    `limited(plan + purchased)`.
+ *  - Tool grants (ADDON_FULL_ACCESS_GRANTS): buying the tool standalone unlocks
+ *    every mode of it at `full`, whatever the plan tier says.
  *  - Everything else: if the tier would lock the feature as `locked_buy` but
  *    the user has already purchased that add-on, returns `{ state: 'full' }`.
  */
@@ -22,6 +43,16 @@ export function getEffectiveEntitlement(
   purchasedAddons: string[] = []
 ): FeatureEntitlement {
   const e = getEntitlement(feature, tier);
+
+  // A standalone tool purchase overrides every cap inside that tool — checked
+  // before the `!e.addon` early-return because demo tiers (limited(5)) carry
+  // no addon reference at all.
+  for (const [addonId, features] of Object.entries(ADDON_FULL_ACCESS_GRANTS)) {
+    if (features.includes(feature) && hasPurchasedAddon(purchasedAddons, addonId)) {
+      return { state: "full" };
+    }
+  }
+
   if (!e.addon) return e;
 
   const pools = getCreditPools(feature, tier, purchasedAddons);
@@ -29,7 +60,7 @@ export function getEffectiveEntitlement(
     return { ...e, state: "limited", limit: pools.planCredits + pools.purchasedCredits };
   }
 
-  if (e.state === "locked_buy" && purchasedAddons.includes(e.addon.id)) {
+  if (e.state === "locked_buy" && hasPurchasedAddon(purchasedAddons, e.addon.id)) {
     return { state: "full" };
   }
   return e;
