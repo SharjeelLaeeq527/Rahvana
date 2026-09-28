@@ -17,7 +17,10 @@ import { Button } from "@/components/ui/button";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 
-interface DocumentTranslationToolProps {
+import type { ToolModeProps } from "@/types/tool-mode";
+import { useResolveToolMode } from "@/lib/hooks/useResolveToolMode";
+
+interface DocumentTranslationToolProps extends ToolModeProps {
   showHeader?: boolean;
   showRequirements?: boolean;
   showRequestsLink?: boolean;
@@ -31,7 +34,13 @@ export default function DocumentTranslationTool({
   showRequestsLink = true,
   className = "",
   onSuccess,
+  mode: propMode,
+  journeyContext: propContext,
 }: DocumentTranslationToolProps) {
+  const { isJourney } = useResolveToolMode({
+    mode: propMode,
+    journeyContext: propContext,
+  });
   const [file, setFile] = useState<File | null>(null);
   const [documentType, setDocumentType] = useState<string>("");
   const [userNotes, setUserNotes] = useState("");

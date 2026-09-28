@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
+import type { ToolModeProps } from "@/types/tool-mode";
+import { useResolveToolMode } from "@/lib/hooks/useResolveToolMode";
 import { ResultGate } from "@/app/components/entitlements/ResultGate";
 import {
   X,
@@ -188,11 +190,11 @@ export const getSponsorshipResult = (d: any) => {
   };
 };
 
-interface SponsorshipCalculatorToolProps {
+interface SponsorshipCalculatorToolProps extends ToolModeProps {
   isOpen: boolean;
   onClose: () => void;
   initialData?: any;
-  onSave: (result: any) => void;
+  onSave?: (result: any) => void;
   // When true, the sponsor state was supplied by the Journey/profile and is
   // shown read-only (the user is not asked to re-enter it). Defaults to false
   // (standalone), where a required state selector is shown.
@@ -212,7 +214,13 @@ export default function SponsorshipCalculatorTool({
   onSave,
   lockState = false,
   candidateInfo,
+  mode: propMode,
+  journeyContext: propContext,
 }: SponsorshipCalculatorToolProps) {
+  const { isJourney } = useResolveToolMode({
+    mode: propMode,
+    journeyContext: propContext,
+  });
   const [stepIdx, setStepIdx] = useState(0);
   const [expandedOptions, setExpandedOptions] = useState<Record<string, boolean>>({});
 
@@ -1423,11 +1431,11 @@ export default function SponsorshipCalculatorTool({
                         <ArrowLeft size={14} /> Edit Info
                       </button>
                       <button 
-                        onClick={() => onSave(result)} 
+                        onClick={() => onSave?.(result)} 
                         style={{ backgroundColor: COLORS.primary }}
                         className="flex-1 p-[14px_22px] text-white rounded-[10px] text-[15px] font-semibold shadow-lg transition-all hover:opacity-90 hover:-translate-y-px flex items-center justify-center gap-2"
                       >
-                        Complete & Save Plan <ArrowRight size={14} />
+                        {isJourney ? "Complete & Save to Roadmap" : "Complete & Save Calculation"} <ArrowRight size={14} />
                       </button>
                     </div>
                   </div>

@@ -108,20 +108,25 @@ export default function InterviewPreparation() {
   const { showToast } = useToast();
   const { activeCandidate, activeCandidateId, isMultiCandidate } = useCandidate();
 
+  const STANDALONE_SESSION_KEY = "standalone_interview_prep_session_id";
   const getSessionIdKey = (cId: string) => `interviewPrepSessionId_${cId}`;
   const getSessionSourceKey = (cId: string) => `interviewPrepSessionSource_${cId}`;
   const getSessionJourneyKey = (cId: string) => `interviewPrepJourneyId_${cId}`;
 
-  const getStoredSessionId = (cId: string) => {
+  const getStoredSessionId = (cId: string, isJourney: boolean = false) => {
     if (typeof window === "undefined") return null;
+    if (!isJourney) {
+      return localStorage.getItem(STANDALONE_SESSION_KEY);
+    }
     return (
       localStorage.getItem(getSessionIdKey(cId)) ||
       (cId === "candidate-1" ? localStorage.getItem("interviewPrepSessionId") : null)
     );
   };
 
-  const getStoredSessionSource = (cId: string) => {
+  const getStoredSessionSource = (cId: string, isJourney: boolean = false) => {
     if (typeof window === "undefined") return null;
+    if (!isJourney) return "tool";
     return (
       (localStorage.getItem(getSessionSourceKey(cId)) as "journey" | "tool" | null) ||
       (cId === "candidate-1"
@@ -137,6 +142,10 @@ export default function InterviewPreparation() {
     jId?: string | null
   ) => {
     if (typeof window === "undefined") return;
+    if (source === "tool" && !jId) {
+      localStorage.setItem(STANDALONE_SESSION_KEY, sid);
+      return;
+    }
     localStorage.setItem(getSessionIdKey(cId), sid);
     localStorage.setItem(getSessionSourceKey(cId), source);
     if (jId) {
@@ -149,8 +158,12 @@ export default function InterviewPreparation() {
     }
   };
 
-  const clearStoredSession = (cId: string) => {
+  const clearStoredSession = (cId: string, isJourney: boolean = false) => {
     if (typeof window === "undefined") return;
+    if (!isJourney) {
+      localStorage.removeItem(STANDALONE_SESSION_KEY);
+      return;
+    }
     localStorage.removeItem(getSessionIdKey(cId));
     localStorage.removeItem(getSessionSourceKey(cId));
     localStorage.removeItem(getSessionJourneyKey(cId));

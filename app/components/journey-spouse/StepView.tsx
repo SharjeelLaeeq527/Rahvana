@@ -4479,7 +4479,7 @@ export const StepView: React.FC<StepViewProps> = ({
               <div className="flex w-full flex-col">
                 {selectedGuideId === "doc_passport_photos" ? (
                   <div className="mb-4">
-                    <PassportPhotoTool showHeader={false} showRequirements={true} />
+                    <PassportPhotoTool showHeader={false} showRequirements={true} mode="journey" />
                   </div>
                 ) : selectedGuideId === "doc_translations" ? (
                   <div className="mb-4">
@@ -4487,6 +4487,7 @@ export const StepView: React.FC<StepViewProps> = ({
                       showHeader={false}
                       showRequirements={true}
                       showRequestsLink={false}
+                      mode="journey"
                     />
                   </div>
                 ) : (

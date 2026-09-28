@@ -12,9 +12,12 @@ import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 import FileUpload from "@/app/components/shared/FileUpload";
 import { Loader } from "../ui/spinner";
 
+import type { ToolModeProps } from "@/types/tool-mode";
+import { useResolveToolMode } from "@/lib/hooks/useResolveToolMode";
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
 
-interface PassportPhotoToolProps {
+interface PassportPhotoToolProps extends ToolModeProps {
   showHeader?: boolean;
   showRequirements?: boolean;
   className?: string;
@@ -26,7 +29,13 @@ export default function PassportPhotoTool({
   showRequirements = true,
   className = "",
   onResult,
+  mode: propMode,
+  journeyContext: propContext,
 }: PassportPhotoToolProps) {
+  const { isJourney } = useResolveToolMode({
+    mode: propMode,
+    journeyContext: propContext,
+  });
   const { t } = useLanguage();
   const { tier } = usePlan();
 
