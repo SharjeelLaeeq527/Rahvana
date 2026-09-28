@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Instagram, Facebook, Linkedin, ArrowRight, Youtube } from "lucide-react";
+import { FaTiktok } from "react-icons/fa";
 import { useLanguage } from "../../context/LanguageContext";
 import { ir1journeyHref, ir5journeyHref } from "@/lib/constants/routes";
 import { IR5_ENABLED } from "@/lib/feature-flags";
@@ -227,6 +228,17 @@ export default function Footer() {
               >
                 <Linkedin size={18} className="transition-transform group-hover:scale-110" />
                 <span className="hidden sm:inline">LinkedIn</span>
+              </Link>
+              <Link
+                href="https://www.tiktok.com/@rahvana.co?_r=1&_t=ZS-9A6QsqF6HP3"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="TikTok"
+                title="TikTok"
+                className="group flex items-center gap-2 text-slate-400 transition-colors hover:text-white"
+              >
+                <FaTiktok size={22} className="transition-transform group-hover:scale-110" />
+                <span className="hidden sm:inline">TikTok</span>
               </Link>
             </nav>
           </div>

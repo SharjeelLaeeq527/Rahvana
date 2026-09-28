@@ -2,6 +2,7 @@
 
 import React, { useState, useRef } from "react";
 import { Send, MessageSquare, Instagram, Linkedin, Facebook, Youtube } from "lucide-react";
+import { FaTiktok } from "react-icons/fa";
 import { Loader } from "@/components/ui/spinner";
 import { submitContactForm } from "./contact-action";
 import { useLanguage } from "../../context/LanguageContext";
@@ -84,7 +85,7 @@ export default function GetInTouch() {
             <h3 className="text-foreground mb-6 text-xl font-semibold">
               {t("homePage.contactSection.followUs") || "Follow Us"}
             </h3>
-            <div className="flex w-full items-center justify-center gap-2.5 sm:gap-3.5 flex-wrap sm:flex-nowrap">
+            <div className="flex w-full flex-wrap items-center justify-center gap-2.5 sm:flex-nowrap sm:gap-3.5">
               <SocialCard
                 icon={<Instagram size={24} />}
                 href="https://www.instagram.com/rahvana.co?igsh=NTc4MTIwNjQ2YQ%3D%3D&utm_source=qr"
@@ -114,6 +115,12 @@ export default function GetInTouch() {
                 href="https://www.facebook.com/profile.php?id=61587967827317&mibextid=wwXIfr"
                 target="_blank"
                 ariaLabel="Follow us on Facebook"
+              />
+              <SocialCard
+                icon={<FaTiktok size={24} />}
+                href="https://www.tiktok.com/@rahvana.co?_r=1&_t=ZS-9A6QsqF6HP3"
+                target="_blank"
+                ariaLabel="Follow us on TikTok"
               />
             </div>
           </div>
@@ -236,7 +243,7 @@ function SocialCard({
       href={href}
       target={target}
       rel={target === "_blank" ? "noopener noreferrer" : undefined}
-      className="bg-muted/30 border-border text-primary hover:bg-primary hover:text-primary-foreground hover:border-primary group flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-2xl border no-underline transition-all hover:-translate-y-1 hover:shadow-lg shrink-0"
+      className="bg-muted/30 border-border text-primary hover:bg-primary hover:text-primary-foreground hover:border-primary group flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border no-underline transition-all hover:-translate-y-1 hover:shadow-lg sm:h-16 sm:w-16"
       aria-label={ariaLabel}
     >
       <div className="transition-transform duration-300 group-hover:scale-110">{icon}</div>
