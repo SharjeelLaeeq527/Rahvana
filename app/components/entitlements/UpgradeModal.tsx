@@ -224,6 +224,57 @@ const scrollbarHideStyle: React.CSSProperties = {
   msOverflowStyle: "none",
 };
 
+/**
+ * Per-resource "why the plan is worth it" pitches, keyed by add-on id.
+ * Rendered after "Recommended: Upgrade to {Plan} —" so the modal explains the
+ * plan's ongoing value instead of just stating the resource is included.
+ * Keep each pitch short (it sits in the header) and benefit-focused.
+ */
+const UPGRADE_PITCH: Record<string, string> = {
+  smart: "fill unlimited eligible forms across your case, not just this one.",
+  "interview-prep": "unlock Prep, Rapid Fire, and Mock with the full question bank.",
+  "221g": "turn a 221(g) notice into a complete recovery plan with expert-backed tools.",
+  medical: "get this appointment plus the advanced tools you'll need throughout your journey.",
+  translate: "translate every document your case needs, whenever a new requirement comes up.",
+  photo: "keep photo credits ready for retakes and new filings.",
+  sponsor: "re-check your sponsorship anytime your income or household changes.",
+  "doc-review": "get expert reviews included plus the tools to act on the feedback.",
+  consultation: "get consultation sessions included plus every tool to prepare for them.",
+  pcc: "get guided PCC filing plus the document tools around it.",
+  "civil-guid": "unlock every civil document guide plus the tools that organize them.",
+  "pdf-tool-kit": "handle every PDF task in your case, not just this one.",
+};
+
+/**
+ * Per-resource opportunity cost — what stays unavailable when buying only the
+ * resource. Honest limitations only: one-time resources (e.g. medical booking)
+ * must NOT get artificial urgency or implied recurring usage.
+ */
+const MISSING_OUT: Record<string, string> = {
+  smart:
+    "You'll get this form only — additional forms may each need a separate purchase. Higher plans include unlimited eligible forms.",
+  "interview-prep":
+    "Covers this interview prep, one time. Plans add timed drills, mock sessions, and the rest of your toolkit.",
+  "221g":
+    "One planner for this refusal. Translation, sponsorship calculator, and document tools remain locked.",
+  medical:
+    "Books this appointment only. No plan tools are added — this purchase simply unlocks this resource.",
+  translate:
+    "Covers one document. Most cases need several — each extra document is another purchase.",
+  photo: "2 credits, one time. Later retakes and new applications each require another purchase.",
+  sponsor:
+    "One calculation. Income and household facts change during the journey — plans include re-checks.",
+  "doc-review":
+    "One review, one time. Expert sessions and the tools to act on the feedback stay unavailable.",
+  consultation:
+    "One session, one time. Interview prep tools and every other plan benefit stay unavailable.",
+  pcc: "Support for this one filing request. Other Executive tools remain locked.",
+  "civil-guid":
+    "This guide only. Other civil document guides and the tools that use them remain locked.",
+  "pdf-tool-kit":
+    "One-time toolkit access. Basic and above includes the PDF toolkit for every case document.",
+};
+
 export function UpgradeModal({ feature, onClose, onConfirm, interviewMode }: UpgradeModalProps) {
   const { tier: currentTier } = usePlan();
   const e = getEntitlement(feature, currentTier);
@@ -393,7 +444,6 @@ export function UpgradeModal({ feature, onClose, onConfirm, interviewMode }: Upg
     const addon = e.addon;
     const planStyle = TIER_STYLE[selectedTier];
     const planPrice = TIER_PRICES[selectedTier];
-    const addonStyle = TIER_STYLE["executive"];
 
     // Tier-aware badge: which plans actually include this feature
     // (e.g. "Executive Feature", "Premium & Executive Feature").
@@ -418,7 +468,7 @@ export function UpgradeModal({ feature, onClose, onConfirm, interviewMode }: Upg
             onClick={onClose}
             className="absolute top-3.5 right-3.5 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-black/10 transition-colors hover:bg-black/20"
           >
-            <X size={14} strokeWidth={2.5} className="text-[#3a2800]" />
+            <X size={14} strokeWidth={2.5} className="text-primary/70" />
           </button>
 
           {/* Light primary header */}
@@ -434,10 +484,11 @@ export function UpgradeModal({ feature, onClose, onConfirm, interviewMode }: Upg
               </div>
             </div>
             <p className="text-primary/80 text-[12px] font-medium">
-              {/* Upgrade-first framing; the add-on is never presented as an equal alternative */}
-              {selectedTier === "executive"
-                ? `Recommended: Upgrade to Executive for the ${addon.name} plus advanced tools and support.`
-                : `Recommended: Upgrade to ${TIER_NAMES[selectedTier]} to unlock ${addon.name} plus the tools you'll need throughout your journey.`}
+              {/* Upgrade-first framing: explain why the plan helps, not just that the resource is included */}
+              {`Recommended: Upgrade to ${TIER_NAMES[selectedTier]} — ${
+                UPGRADE_PITCH[addon.id] ??
+                `get ${addon.name} plus the tools you'll need throughout your journey.`
+              }`}
             </p>
           </div>
 
@@ -616,35 +667,32 @@ export function UpgradeModal({ feature, onClose, onConfirm, interviewMode }: Upg
               </div>
             )}
 
-            {/* Buy individually */}
-            <div
-              className={`rounded-2xl ${addonStyle.featureBg} border ${addonStyle.badgeBorder} p-4`}
-            >
-              <p
-                className={`text-[10px] font-bold tracking-widest uppercase ${addonStyle.badgeText} mb-2`}
-              >
-                Just need {addon.name}?
+            {/* Buy individually — intentionally neutral: it must not borrow any
+                plan tier's palette (previously executive gold), so the two
+                purchase paths read as primary vs secondary at a glance. */}
+            <div className="rounded-2xl border border-dashed border-neutral-300 bg-neutral-50 p-4">
+              <p className="mb-2 text-[10px] font-bold tracking-widest text-neutral-500 uppercase">
+                Buying this tool only?
               </p>
               <div className="mb-1 flex items-baseline gap-1.5">
-                <span className={`text-[28px] font-black ${addonStyle.priceText} leading-none`}>
+                <span className="text-[28px] leading-none font-black text-neutral-800">
                   ${addon.price}
                 </span>
                 {addon.unit && (
-                  <span className={`text-[12px] ${addonStyle.badgeText} font-medium opacity-60`}>
+                  <span className="text-[12px] font-medium text-neutral-500 opacity-70">
                     · {addon.unit}
                   </span>
                 )}
               </div>
-              <p className={`text-[11px] ${addonStyle.badgeText} mb-3 opacity-50`}>
-                {selectedTier === "executive"
-                  ? `Get ${addon.name} only. Advanced tools and Executive benefits remain locked.`
-                  : `Get ${addon.name} only. Your other ${TIER_NAMES[selectedTier]} tools remain locked.`}
+              <p className="mb-3 text-[11px] leading-snug text-neutral-500">
+                {MISSING_OUT[addon.id] ??
+                  `Get ${addon.name} only. Your other ${TIER_NAMES[selectedTier]} tools and benefits remain locked.`}
               </p>
 
               <button
                 disabled={isAddonProcessing || isUpgradeProcessing}
                 onClick={() => handleCheckout("addon", addon.id, setIsAddonProcessing)}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-amber-600 py-2.5 text-[13px] font-bold text-white shadow-sm transition-colors hover:bg-amber-500 active:bg-amber-700 disabled:opacity-60"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-neutral-700 py-2.5 text-[13px] font-bold text-white shadow-sm transition-colors hover:bg-neutral-600 active:bg-neutral-800 disabled:opacity-60"
               >
                 {isAddonProcessing ? (
                   <Loader2 size={14} className="animate-spin" />
