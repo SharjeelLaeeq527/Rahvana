@@ -184,7 +184,7 @@ export function ReviewPage({
   const totalCount = sections.length;
   return (
     <div className="space-y-6">
-      {/* Free Preview Banner */}
+      {/* Demo Mode Banner (Free/Basic I-130 demo) */}
       {isFreePreview && (
         <div className="animate-in fade-in slide-in-from-top-4 flex flex-col justify-between gap-4 rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 p-5 shadow-sm duration-300 sm:flex-row sm:items-center">
           <div className="flex items-start gap-3.5">
@@ -193,12 +193,12 @@ export function ReviewPage({
             </div>
             <div>
               <h4 className="text-sm font-bold text-amber-900">
-                Free Preview Mode ({freePreviewLimit} Questions Limit)
+                I-130 Demo Mode ({freePreviewLimit}-Question Limit)
               </h4>
               <p className="mt-1 text-xs leading-relaxed text-amber-800/85">
-                You are currently in Free Preview mode. You can fill up to {freePreviewLimit}{" "}
-                questions and print/preview the <strong>first page</strong> of your completed PDF to
-                test the tool.
+                You&apos;re using the demo available on Free and Basic plans. You can fill up to{" "}
+                {freePreviewLimit} questions and print/preview the <strong>first page</strong> of
+                your completed PDF to test the tool.
               </p>
             </div>
           </div>
@@ -484,7 +484,7 @@ export function ReviewPage({
               <>
                 {isPreviewing ? "Previewing..." : "Preview Page 1"}
                 <span className="ml-1 rounded bg-amber-500 px-1.5 py-0.5 text-[9px] font-extrabold tracking-wide text-white uppercase">
-                  Free
+                  Demo
                 </span>
               </>
             ) : isPreviewing ? (
@@ -506,7 +506,7 @@ export function ReviewPage({
               <>
                 {isDownloading ? "Downloading..." : "Download Page 1"}
                 <span className="ml-1 rounded bg-amber-500 px-1.5 py-0.5 text-[9px] font-extrabold tracking-wide text-white uppercase">
-                  Free
+                  Demo
                 </span>
               </>
             ) : isDownloading ? (

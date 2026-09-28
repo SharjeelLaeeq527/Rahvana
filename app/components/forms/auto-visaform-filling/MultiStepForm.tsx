@@ -860,11 +860,9 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       const isNextFieldEmpty = !fieldHasAnswer(nextField, formData);
 
       if ((hasReachedLimit || atOrPastAnchor(currentField?.key)) && isNextFieldEmpty) {
-        showToast(
-          "Free Preview: You've reached the free preview limit. Redirecting to the review page...",
-          "info",
-          { duration: 6000 }
-        );
+        showToast("Demo limit reached — redirecting you to the review page...", "info", {
+          duration: 6000,
+        });
         setView("review");
         return;
       }
@@ -1002,7 +1000,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
       if (isTargetEmpty && (hasReachedLimit || pastAnchor(targetField?.key))) {
         showToast(
-          "Free Preview: You've reached the free preview limit. Please unlock the tool or upgrade to access more questions.",
+          "Demo limit reached. Upgrade to Premium or Executive to answer more questions.",
           "info",
           { duration: 5000 }
         );
@@ -1031,7 +1029,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
       if (!hasAnyAnswered && (hasReachedLimit || stepPastAnchor(step - 1))) {
         showToast(
-          "Free Preview: You've reached the free preview limit. Please unlock the tool or upgrade to access new sections.",
+          "Demo limit reached. Upgrade to Premium or Executive to access new sections.",
           "info",
           { duration: 5000 }
         );
