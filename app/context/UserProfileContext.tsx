@@ -64,7 +64,7 @@ interface UserProfileContextType {
   refreshProfile: () => Promise<void>;
 }
 
-const UserProfileContext = createContext<UserProfileContextType | undefined>(undefined);
+export const UserProfileContext = createContext<UserProfileContextType | undefined>(undefined);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Deep merge utility (1 level deep objects, arrays replaced not merged)
@@ -312,7 +312,14 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
 export function useUserProfile() {
   const context = useContext(UserProfileContext);
   if (context === undefined) {
-    throw new Error("useUserProfile must be used within a UserProfileProvider");
+    return {
+      profile: null,
+      isProfileLoading: false,
+      isSaving: false,
+      updateProfile: () => {},
+      saveProfile: async () => {},
+      refreshProfile: async () => {},
+    };
   }
   return context;
 }

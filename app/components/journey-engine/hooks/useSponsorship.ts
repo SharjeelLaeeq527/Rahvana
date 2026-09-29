@@ -16,7 +16,8 @@ export const useSponsorship = ({ metadata }: UseSponsorshipProps) => {
   );
 
   const [isSponsorshipCalcOpen, setIsSponsorshipCalcOpen] = useState(false);
-  const sponsorshipResult = (metadata.sponsorshipResult as any) || null;
+  const sponsorshipResult = (metadata?.sponsorshipResult as any) || null;
+  const sponsorshipDraft = (metadata?.sponsorshipDraft as any) || null;
 
   return {
     jsCount,
@@ -30,5 +31,6 @@ export const useSponsorship = ({ metadata }: UseSponsorshipProps) => {
     isSponsorshipCalcOpen,
     setIsSponsorshipCalcOpen,
     sponsorshipResult,
+    sponsorshipDraft,
   };
 };

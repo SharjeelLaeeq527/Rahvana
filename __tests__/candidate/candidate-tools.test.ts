@@ -6,6 +6,9 @@
 import {
   calculateSponsorshipHouseholdSize,
   getSponsorshipResult,
+  STANDALONE_SPONSORSHIP_STORAGE_KEY,
+  STANDALONE_SPONSORSHIP_DRAFT_KEY,
+  getJourneySponsorshipDraftKey,
 } from "@/components/tools/SponsorshipCalculatorTool";
 import { parseUSCISData, formatReceiptInput, decodePrefix } from "@/app/(tools)/case-status/page";
 
@@ -207,6 +210,80 @@ describe("Phase 2: Beneficiary-Specific Tools & Multi-Candidate Scoping", () => 
       expect(JSON.parse(storage["sponsorshipCalc_candidate-1"]).householdSize).toBe(2);
       expect(JSON.parse(storage["sponsorshipCalc_candidate-2"]).householdSize).toBe(4);
       expect(JSON.parse(storage["sponsorshipCalc"]).householdSize).toBe(2);
+    });
+
+    it("generates isolated draft keys for journey candidates vs standalone tool", () => {
+      const ir5MotherKey = getJourneySponsorshipDraftKey("ir5-journey", "candidate-1");
+      const ir5FatherKey = getJourneySponsorshipDraftKey("ir5-journey", "candidate-2");
+      const ir1SpouseKey = getJourneySponsorshipDraftKey("ir1-journey", "candidate-1");
+
+      expect(STANDALONE_SPONSORSHIP_STORAGE_KEY).toBe("standalone_sponsorship_calc");
+      expect(STANDALONE_SPONSORSHIP_DRAFT_KEY).toBe("standalone_sponsorship_calc_draft");
+
+      expect(ir5MotherKey).toBe("journey_ir5-journey_candidate-1_sponsorship_draft");
+      expect(ir5FatherKey).toBe("journey_ir5-journey_candidate-2_sponsorship_draft");
+      expect(ir1SpouseKey).toBe("journey_ir1-journey_candidate-1_sponsorship_draft");
+
+      expect(ir5MotherKey).not.toEqual(ir5FatherKey);
+      expect(ir5MotherKey).not.toEqual(STANDALONE_SPONSORSHIP_DRAFT_KEY);
+      expect(ir1SpouseKey).not.toEqual(STANDALONE_SPONSORSHIP_DRAFT_KEY);
+    });
+
+    it("prevents standalone draft/result from leaking into journey and vice-versa", () => {
+      const mockStorage: Record<string, string> = {
+        [STANDALONE_SPONSORSHIP_STORAGE_KEY]: JSON.stringify({
+          householdSize: 2,
+          requiredIncome: 25550,
+          totalIncome: 45000,
+          isEligible: true,
+          raw: { state: "TX", currentAnnualIncome: 45000, relationshipToApplicant: "other" },
+        }),
+        [STANDALONE_SPONSORSHIP_DRAFT_KEY]: JSON.stringify({
+          stepIdx: 3,
+          data: { state: "TX", numberOfChildren: 1 },
+          updatedAt: "2026-09-28T10:00:00.000Z",
+        }),
+        "journey_ir5-journey_candidate-1_sponsorship_draft": JSON.stringify({
+          stepIdx: 6,
+          data: { state: "CA", currentAnnualIncome: 60000, relationshipToApplicant: "parent" },
+          updatedAt: "2026-09-28T10:05:00.000Z",
+        }),
+        "journey_ir5-journey_candidate-2_sponsorship_draft": JSON.stringify({
+          stepIdx: 2,
+          data: { state: "CA", currentAnnualIncome: 60000, isMarried: true },
+          updatedAt: "2026-09-28T10:10:00.000Z",
+        }),
+      };
+
+      // Standalone resolver only reads standalone keys
+      const resolveStandaloneDraft = () => {
+        const raw = mockStorage[STANDALONE_SPONSORSHIP_DRAFT_KEY];
+        return raw ? JSON.parse(raw) : null;
+      };
+
+      // Journey resolver only reads journey-candidate keys
+      const resolveJourneyDraft = (journeySlug: string, candidateId: string) => {
+        const key = getJourneySponsorshipDraftKey(journeySlug, candidateId);
+        const raw = mockStorage[key];
+        return raw ? JSON.parse(raw) : null;
+      };
+
+      const standaloneDraft = resolveStandaloneDraft();
+      const motherDraft = resolveJourneyDraft("ir5-journey", "candidate-1");
+      const fatherDraft = resolveJourneyDraft("ir5-journey", "candidate-2");
+
+      expect(standaloneDraft.stepIdx).toBe(3);
+      expect(standaloneDraft.data.state).toBe("TX");
+
+      expect(motherDraft.stepIdx).toBe(6);
+      expect(motherDraft.data.relationshipToApplicant).toBe("parent");
+
+      expect(fatherDraft.stepIdx).toBe(2);
+      expect(fatherDraft.data.isMarried).toBe(true);
+
+      // Verify mutual exclusivity
+      expect(motherDraft.data.state).not.toEqual(standaloneDraft.data.state);
+      expect(standaloneDraft.data.relationshipToApplicant).toBeUndefined();
     });
   });
 

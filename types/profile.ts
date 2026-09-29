@@ -330,6 +330,12 @@ export interface MasterProfile {
   isVAWA?: boolean;
   isWidow?: boolean;
   isSpecialImmigrant?: boolean;
+  standaloneSponsorshipDraft?: {
+    stepIdx: number;
+    data: any;
+    updatedAt: string;
+  };
+  standaloneSponsorshipCalc?: any;
 
   // Visa Eligibility Tool Specifics
   visaEligibility?: {

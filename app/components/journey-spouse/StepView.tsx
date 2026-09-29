@@ -606,6 +606,7 @@ export const StepView: React.FC<StepViewProps> = ({
     isSponsorshipCalcOpen,
     setIsSponsorshipCalcOpen,
     sponsorshipResult,
+    sponsorshipDraft,
   } = useSponsorship({ metadata: state.metadata });
 
   // --- 2. Remaining Local State ---
@@ -4190,19 +4191,34 @@ export const StepView: React.FC<StepViewProps> = ({
 
       {/* Sponsorship Calculator Tool Overlay */}
       <SponsorshipCalculatorTool
+        mode="journey"
+        journeyContext={{
+          journeySlug: "ir1-journey",
+          journeyCategory: "IR-1",
+          candidateId: (state as any).candidateId || "candidate-1",
+          backendId: (state as any).backendId || null,
+        }}
         isOpen={isSponsorshipCalcOpen}
         onClose={() => setIsSponsorshipCalcOpen(false)}
         initialData={{
-          ...(sponsorshipResult?.raw || {}),
+          ...(sponsorshipDraft?.data || sponsorshipResult?.raw || {}),
           // Auto-supply the sponsor's state from the profile so the user is not
           // asked to re-enter it. Prior saved input wins if present.
-          state: sponsorshipResult?.raw?.state || profile?.sponsor?.address?.state || "",
+          state:
+            sponsorshipDraft?.data?.state ||
+            sponsorshipResult?.raw?.state ||
+            profile?.sponsor?.address?.state ||
+            "",
         }}
+        initialStep={sponsorshipDraft?.stepIdx ?? (sponsorshipResult ? 10 : 0)}
         // Lock (show read-only) only when we actually have a sponsor state;
         // otherwise fall back to asking the user.
         lockState={Boolean(profile?.sponsor?.address?.state)}
+        onProgressChange={(draft) => {
+          actions.updateMetadata({ sponsorshipDraft: draft });
+        }}
         onSave={(result: any) => {
-          actions.updateMetadata({ sponsorshipResult: result });
+          actions.updateMetadata({ sponsorshipResult: result, sponsorshipDraft: null });
           setIsSponsorshipCalcOpen(false);
           if (!isCompleted) actions.toggleComplete("step_2_5");
         }}

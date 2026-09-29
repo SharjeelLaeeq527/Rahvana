@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import type { ToolModeProps } from "@/types/tool-mode";
 import { useResolveToolMode } from "@/lib/hooks/useResolveToolMode";
+import { useUserProfile } from "@/app/context/UserProfileContext";
 import { ResultGate } from "@/app/components/entitlements/ResultGate";
 import {
   X,
@@ -22,6 +23,7 @@ import {
   AlertTriangle,
   ChevronDown,
   ChevronUp,
+  RotateCcw,
 } from "lucide-react";
 import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
@@ -190,11 +192,55 @@ export const getSponsorshipResult = (d: any) => {
   };
 };
 
-interface SponsorshipCalculatorToolProps extends ToolModeProps {
+export const STANDALONE_SPONSORSHIP_STORAGE_KEY = "standalone_sponsorship_calc";
+export const STANDALONE_SPONSORSHIP_DRAFT_KEY = "standalone_sponsorship_calc_draft";
+
+export const getJourneySponsorshipDraftKey = (
+  journeySlug: string,
+  candidateId: string = "candidate-1"
+) => {
+  const normSlug = journeySlug || "journey";
+  const normCand = candidateId || "candidate-1";
+  return `journey_${normSlug}_${normCand}_sponsorship_draft`;
+};
+
+export interface SponsorshipFormData {
+  state: string;
+  sponsorStatus: string;
+  isMilitary: boolean | null;
+  isMarried: boolean | null;
+  relationshipToApplicant: string;
+  numberOfChildren: number;
+  taxDependents: number;
+  hasPreviousSponsorship: boolean | null;
+  previousSponsoredCount: number;
+  currentSponsoredApplicant: boolean;
+  currentSponsoredSpouse: boolean;
+  currentSponsoredChildren: number;
+  agi: number;
+  currentAnnualIncome: number;
+  householdMembers: Array<{ id: string; relationship: string; annualIncome: number }>;
+  jointSponsors: Array<{ id: string; name: string; relationship: string; annualIncome: number }>;
+  assetValue: number;
+  sponsorDeceased: boolean;
+  isVAWA: boolean;
+  isWidow: boolean;
+  isSpecialImmigrant: boolean;
+}
+
+export interface SponsorshipCalculatorDraft {
+  stepIdx: number;
+  data: SponsorshipFormData;
+  updatedAt: string;
+}
+
+export interface SponsorshipCalculatorToolProps extends ToolModeProps {
   isOpen: boolean;
   onClose: () => void;
   initialData?: any;
+  initialStep?: number;
   onSave?: (result: any) => void;
+  onProgressChange?: (draft: SponsorshipCalculatorDraft) => void;
   // When true, the sponsor state was supplied by the Journey/profile and is
   // shown read-only (the user is not asked to re-enter it). Defaults to false
   // (standalone), where a required state selector is shown.
@@ -207,21 +253,125 @@ interface SponsorshipCalculatorToolProps extends ToolModeProps {
   };
 }
 
+const getDefaultFormData = (initial?: any): SponsorshipFormData => ({
+  state: initial?.state || "",
+  sponsorStatus: initial?.sponsorStatus || "",
+  isMilitary: initial?.isMilitary ?? null,
+  isMarried: initial?.isMarried ?? null,
+  relationshipToApplicant: initial?.relationshipToApplicant || "",
+  numberOfChildren: initial?.numberOfChildren || 0,
+  taxDependents: initial?.taxDependents || 0,
+  hasPreviousSponsorship: initial?.hasPreviousSponsorship ?? null,
+  previousSponsoredCount: initial?.previousSponsoredCount || 0,
+  currentSponsoredApplicant: true,
+  currentSponsoredSpouse: initial?.currentSponsoredSpouse || false,
+  currentSponsoredChildren: initial?.currentSponsoredChildren || 0,
+  agi: initial?.agi || 0,
+  currentAnnualIncome: initial?.currentAnnualIncome || 0,
+  householdMembers: initial?.householdMembers || [],
+  jointSponsors: initial?.jointSponsors || [],
+  // Advanced Options
+  assetValue: initial?.assetValue || 0,
+  sponsorDeceased: initial?.sponsorDeceased || false,
+  isVAWA: initial?.isVAWA || false,
+  isWidow: initial?.isWidow || false,
+  isSpecialImmigrant: initial?.isSpecialImmigrant || false,
+});
+
 export default function SponsorshipCalculatorTool({
   isOpen,
   onClose,
   initialData,
+  initialStep,
   onSave,
+  onProgressChange,
   lockState = false,
   candidateInfo,
   mode: propMode,
   journeyContext: propContext,
 }: SponsorshipCalculatorToolProps) {
-  const { isJourney } = useResolveToolMode({
+  const { isJourney, journeyContext } = useResolveToolMode({
     mode: propMode,
     journeyContext: propContext,
   });
-  const [stepIdx, setStepIdx] = useState(0);
+
+  const { profile, updateProfile } = useUserProfile();
+
+  const effectiveDraftKey = React.useMemo(() => {
+    if (isJourney && journeyContext?.journeySlug) {
+      return getJourneySponsorshipDraftKey(journeyContext.journeySlug, journeyContext.candidateId);
+    }
+    return STANDALONE_SPONSORSHIP_DRAFT_KEY;
+  }, [isJourney, journeyContext]);
+
+  // Synchronously compute initial state on first mount to prevent race conditions
+  const getInitialState = React.useCallback((): { step: number; formData: SponsorshipFormData } => {
+    // 1. If explicit initialData passed with keys
+    if (initialData && Object.keys(initialData).length > 0) {
+      return {
+        step: typeof initialStep === "number" ? initialStep : 0,
+        formData: getDefaultFormData(initialData),
+      };
+    }
+
+    // 2. Try loading isolated draft from localStorage
+    if (typeof window !== "undefined") {
+      try {
+        const draftJson = localStorage.getItem(effectiveDraftKey);
+        if (draftJson) {
+          const draft: SponsorshipCalculatorDraft = JSON.parse(draftJson);
+          if (draft && draft.data) {
+            return {
+              step:
+                typeof initialStep === "number"
+                  ? initialStep
+                  : typeof draft.stepIdx === "number"
+                    ? draft.stepIdx
+                    : 0,
+              formData: getDefaultFormData(draft.data),
+            };
+          }
+        }
+      } catch (e) {
+        console.warn("Could not parse sponsorship calculator draft:", e);
+      }
+
+      // 3. If standalone and user is logged in, check profile DB
+      if (!isJourney && profile?.standaloneSponsorshipDraft?.data) {
+        return {
+          step:
+            typeof initialStep === "number"
+              ? initialStep
+              : (profile.standaloneSponsorshipDraft.stepIdx ?? 0),
+          formData: getDefaultFormData(profile.standaloneSponsorshipDraft.data),
+        };
+      }
+
+      // 4. If standalone and saved result exists, restore raw data
+      if (!isJourney) {
+        try {
+          const cachedStandalone = localStorage.getItem(STANDALONE_SPONSORSHIP_STORAGE_KEY);
+          if (cachedStandalone) {
+            const parsed = JSON.parse(cachedStandalone);
+            if (parsed?.raw) {
+              return {
+                step: typeof initialStep === "number" ? initialStep : 10,
+                formData: getDefaultFormData(parsed.raw),
+              };
+            }
+          }
+        } catch (e) {}
+      }
+    }
+
+    return {
+      step: typeof initialStep === "number" ? initialStep : 0,
+      formData: getDefaultFormData(initialData),
+    };
+  }, [initialData, initialStep, effectiveDraftKey, isJourney, profile]);
+
+  const [stepIdx, setStepIdx] = useState<number>(() => getInitialState().step);
+  const [data, setData] = useState<SponsorshipFormData>(() => getInitialState().formData);
   const [expandedOptions, setExpandedOptions] = useState<Record<string, boolean>>({});
 
   React.useEffect(() => {
@@ -235,60 +385,102 @@ export default function SponsorshipCalculatorTool({
     };
   }, [isOpen]);
 
-  const [data, setData] = useState({
-    state: initialData?.state || "",
-    sponsorStatus: initialData?.sponsorStatus || "",
-    isMilitary: initialData?.isMilitary ?? null,
-    isMarried: initialData?.isMarried ?? null,
-    relationshipToApplicant: initialData?.relationshipToApplicant || "",
-    numberOfChildren: initialData?.numberOfChildren || 0,
-    taxDependents: initialData?.taxDependents || 0,
-    hasPreviousSponsorship: initialData?.hasPreviousSponsorship ?? null,
-    previousSponsoredCount: initialData?.previousSponsoredCount || 0,
-    currentSponsoredApplicant: true,
-    currentSponsoredSpouse: initialData?.currentSponsoredSpouse || false,
-    currentSponsoredChildren: initialData?.currentSponsoredChildren || 0,
-    agi: initialData?.agi || 0,
-    currentAnnualIncome: initialData?.currentAnnualIncome || 0,
-    householdMembers: initialData?.householdMembers || [],
-    jointSponsors: initialData?.jointSponsors || [],
-    // Advanced Options
-    assetValue: initialData?.assetValue || 0,
-    sponsorDeceased: initialData?.sponsorDeceased || false,
-    isVAWA: initialData?.isVAWA || false,
-    isWidow: initialData?.isWidow || false,
-    isSpecialImmigrant: initialData?.isSpecialImmigrant || false,
-  });
+  const prevInitialDataRef = React.useRef<string>(JSON.stringify(initialData || {}));
+  const prevIsOpenRef = React.useRef<boolean>(isOpen);
+  const lastSavedSnapshotRef = React.useRef<string>("");
 
-  // Sync state if initialData changes while open or re-opened
+  // Sync state only if initialData actually changed or when modal opens
   React.useEffect(() => {
-    if (initialData) {
-      setData((prev) => ({
-        ...prev,
-        state: initialData.state ?? prev.state,
-        sponsorStatus: initialData.sponsorStatus ?? prev.sponsorStatus,
-        isMilitary: initialData.isMilitary ?? prev.isMilitary,
-        isMarried: initialData.isMarried ?? prev.isMarried,
-        relationshipToApplicant: initialData.relationshipToApplicant ?? prev.relationshipToApplicant,
-        numberOfChildren: initialData.numberOfChildren ?? prev.numberOfChildren,
-        taxDependents: initialData.taxDependents ?? prev.taxDependents,
-        hasPreviousSponsorship: initialData.hasPreviousSponsorship ?? prev.hasPreviousSponsorship,
-        previousSponsoredCount: initialData.previousSponsoredCount ?? prev.previousSponsoredCount,
-        currentSponsoredApplicant: initialData.currentSponsoredApplicant ?? prev.currentSponsoredApplicant,
-        currentSponsoredSpouse: initialData.currentSponsoredSpouse ?? prev.currentSponsoredSpouse,
-        currentSponsoredChildren: initialData.currentSponsoredChildren ?? prev.currentSponsoredChildren,
-        agi: initialData.agi ?? prev.agi,
-        currentAnnualIncome: initialData.currentAnnualIncome ?? prev.currentAnnualIncome,
-        householdMembers: initialData.householdMembers ?? prev.householdMembers,
-        jointSponsors: initialData.jointSponsors ?? prev.jointSponsors,
-        assetValue: initialData.assetValue ?? prev.assetValue,
-        sponsorDeceased: initialData.sponsorDeceased ?? prev.sponsorDeceased,
-        isVAWA: initialData.isVAWA ?? prev.isVAWA,
-        isWidow: initialData.isWidow ?? prev.isWidow,
-        isSpecialImmigrant: initialData.isSpecialImmigrant ?? prev.isSpecialImmigrant,
-      }));
+    const isOpening = isOpen && !prevIsOpenRef.current;
+    prevIsOpenRef.current = isOpen;
+
+    if (!isOpen) return;
+
+    const currentInitStr = JSON.stringify(initialData || {});
+    if (isOpening || (currentInitStr !== prevInitialDataRef.current && Object.keys(initialData || {}).length > 0)) {
+      prevInitialDataRef.current = currentInitStr;
+      if (initialData && Object.keys(initialData).length > 0) {
+        setData((prev) => ({
+          ...prev,
+          ...getDefaultFormData(initialData),
+          state: initialData.state ?? prev.state,
+        }));
+        if (typeof initialStep === "number") {
+          setStepIdx(initialStep);
+        }
+      }
     }
-  }, [initialData]);
+  }, [isOpen, initialData, initialStep]);
+
+  // Auto-save draft progress on changes while open (guarded by snapshot comparison)
+  React.useEffect(() => {
+    if (!isOpen) return;
+
+    const currentSnapshot = JSON.stringify({ stepIdx, data });
+    if (lastSavedSnapshotRef.current === currentSnapshot) return;
+    lastSavedSnapshotRef.current = currentSnapshot;
+
+    const draftPayload: SponsorshipCalculatorDraft = {
+      stepIdx,
+      data,
+      updatedAt: new Date().toISOString(),
+    };
+
+    try {
+      localStorage.setItem(effectiveDraftKey, JSON.stringify(draftPayload));
+      onProgressChange?.(draftPayload);
+
+      // Save to Supabase user_profiles if in standalone mode and user is logged in
+      if (!isJourney && updateProfile) {
+        updateProfile({ standaloneSponsorshipDraft: draftPayload }, { silent: true });
+      }
+    } catch (e) {
+      console.warn("Error auto-saving sponsorship draft:", e);
+    }
+  }, [isOpen, stepIdx, data, effectiveDraftKey, onProgressChange, isJourney, updateProfile]);
+
+  const handleResetProgress = () => {
+    try {
+      localStorage.removeItem(effectiveDraftKey);
+      if (!isJourney && updateProfile) {
+        updateProfile({
+          standaloneSponsorshipDraft: undefined,
+        }, { silent: true });
+      }
+    } catch {}
+    const defaultData = getDefaultFormData(lockState ? { state: data.state } : undefined);
+    setData(defaultData);
+    setStepIdx(0);
+    onProgressChange?.({
+      stepIdx: 0,
+      data: defaultData,
+      updatedAt: new Date().toISOString(),
+    });
+  };
+
+  const handleCompleteSave = () => {
+    const finalResult = getSponsorshipResult(data);
+    try {
+      // Clear draft once completed
+      localStorage.removeItem(effectiveDraftKey);
+
+      // In standalone mode, persist to standalone storage and database
+      if (!isJourney) {
+        localStorage.setItem(STANDALONE_SPONSORSHIP_STORAGE_KEY, JSON.stringify(finalResult));
+        localStorage.removeItem(STANDALONE_SPONSORSHIP_DRAFT_KEY);
+        if (updateProfile) {
+          updateProfile({
+            standaloneSponsorshipCalc: finalResult,
+            standaloneSponsorshipDraft: undefined,
+          }, { silent: true });
+        }
+      }
+    } catch (e) {
+      console.warn("Error finalizing sponsorship storage:", e);
+    }
+
+    onSave?.(finalResult);
+  };
 
   if (!isOpen) return null;
 
@@ -399,6 +591,13 @@ export default function SponsorshipCalculatorTool({
         <div className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap shrink-0">
           {stepIdx + 1} / 11
         </div>
+        <button
+          onClick={handleResetProgress}
+          title="Reset progress and start over"
+          className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors flex items-center justify-center cursor-pointer border-none text-xs"
+        >
+          <RotateCcw size={13} />
+        </button>
         <QuickAccessButton
           item={{
             id: "sponsorship-calculator",
@@ -1431,7 +1630,7 @@ export default function SponsorshipCalculatorTool({
                         <ArrowLeft size={14} /> Edit Info
                       </button>
                       <button 
-                        onClick={() => onSave?.(result)} 
+                        onClick={handleCompleteSave} 
                         style={{ backgroundColor: COLORS.primary }}
                         className="flex-1 p-[14px_22px] text-white rounded-[10px] text-[15px] font-semibold shadow-lg transition-all hover:opacity-90 hover:-translate-y-px flex items-center justify-center gap-2"
                       >
