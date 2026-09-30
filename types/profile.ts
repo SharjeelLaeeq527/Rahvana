@@ -338,6 +338,7 @@ export interface MasterProfile {
   standaloneSponsorshipCalc?: any;
   standalone221gDraft?: import("@/app/(tools)/(visa)/221g-action-planner/types/221g").TwentyTwoOneGDraft;
   standalone221gResult?: import("@/app/(tools)/(visa)/221g-action-planner/types/221g").TwentyTwoOneGResult;
+  standalonePassportPhotos?: import("./passport-photo").PassportPhotoItem[];
 
   // Visa Eligibility Tool Specifics
   visaEligibility?: {

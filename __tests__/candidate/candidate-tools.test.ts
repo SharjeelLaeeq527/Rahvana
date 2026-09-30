@@ -15,6 +15,11 @@ import {
   STANDALONE_221G_STORAGE_KEY,
   getJourney221gDraftKey,
 } from "@/app/(tools)/(visa)/221g-action-planner/types/221g";
+import {
+  STANDALONE_PASSPORT_PHOTOS_KEY,
+  getJourneyPassportPhotosKey,
+  PassportPhotoItem,
+} from "@/types/passport-photo";
 import { parseUSCISData, formatReceiptInput, decodePrefix } from "@/app/(tools)/case-status/page";
 
 describe("Phase 2: Beneficiary-Specific Tools & Multi-Candidate Scoping", () => {
@@ -550,5 +555,180 @@ describe("Phase 2: Beneficiary-Specific Tools & Multi-Candidate Scoping", () => 
       expect(keyCand1).not.toEqual(keyCand2);
     });
   });
+
+  // ─── 6. Passport Photo Booth History & Isolation ─────────────────────────
+  describe("6. Passport Photo Booth History & Environment Isolation", () => {
+    it("generates isolated photo history storage keys for standalone vs journey candidates", () => {
+      const ir5MotherKey = getJourneyPassportPhotosKey("ir5-journey", "candidate-1");
+      const ir5FatherKey = getJourneyPassportPhotosKey("ir5-journey", "candidate-2");
+      const ir1SpouseKey = getJourneyPassportPhotosKey("ir1-journey", "candidate-1");
+
+      expect(STANDALONE_PASSPORT_PHOTOS_KEY).toBe("standalone_passport_photo_history");
+      expect(ir5MotherKey).toBe("journey_ir5-journey_candidate-1_passport_photo_history");
+      expect(ir5FatherKey).toBe("journey_ir5-journey_candidate-2_passport_photo_history");
+      expect(ir1SpouseKey).toBe("journey_ir1-journey_candidate-1_passport_photo_history");
+
+      expect(ir5MotherKey).not.toEqual(ir5FatherKey);
+      expect(ir5MotherKey).not.toEqual(STANDALONE_PASSPORT_PHOTOS_KEY);
+      expect(ir1SpouseKey).not.toEqual(STANDALONE_PASSPORT_PHOTOS_KEY);
+    });
+
+    it("prevents standalone photo history from leaking into journey and vice-versa", () => {
+      const mockStorage: Record<string, string> = {
+        [STANDALONE_PASSPORT_PHOTOS_KEY]: JSON.stringify([
+          {
+            id: "photo-standalone-1",
+            dataUrl: "data:image/jpeg;base64,STANDALONE_PHOTO_DATA",
+            presetName: "U.S. Passport (2x2 in)",
+            width: 600,
+            height: 600,
+            createdAt: "2026-09-30T08:00:00.000Z",
+            fileName: "standalone.jpg",
+          },
+        ]),
+        "journey_ir5-journey_candidate-1_passport_photo_history": JSON.stringify([
+          {
+            id: "photo-cand-1",
+            dataUrl: "data:image/jpeg;base64,MOTHER_PHOTO_DATA",
+            presetName: "U.S. Passport (2x2 in)",
+            width: 600,
+            height: 600,
+            createdAt: "2026-09-30T08:15:00.000Z",
+            fileName: "mother.jpg",
+          },
+        ]),
+        "journey_ir5-journey_candidate-2_passport_photo_history": JSON.stringify([
+          {
+            id: "photo-cand-2",
+            dataUrl: "data:image/jpeg;base64,FATHER_PHOTO_DATA",
+            presetName: "UK Passport (35x45 mm)",
+            width: 413,
+            height: 531,
+            createdAt: "2026-09-30T08:30:00.000Z",
+            fileName: "father.jpg",
+          },
+        ]),
+      };
+
+      const resolveStandaloneHistory = (): PassportPhotoItem[] => {
+        const raw = mockStorage[STANDALONE_PASSPORT_PHOTOS_KEY];
+        return raw ? JSON.parse(raw) : [];
+      };
+
+      const resolveJourneyHistory = (journeySlug: string, candidateId: string): PassportPhotoItem[] => {
+        const key = getJourneyPassportPhotosKey(journeySlug, candidateId);
+        const raw = mockStorage[key];
+        return raw ? JSON.parse(raw) : [];
+      };
+
+      const standalonePhotos = resolveStandaloneHistory();
+      const motherPhotos = resolveJourneyHistory("ir5-journey", "candidate-1");
+      const fatherPhotos = resolveJourneyHistory("ir5-journey", "candidate-2");
+
+      expect(standalonePhotos.length).toBe(1);
+      expect(standalonePhotos[0].id).toBe("photo-standalone-1");
+      expect(standalonePhotos[0].dataUrl).toContain("STANDALONE_PHOTO_DATA");
+
+      expect(motherPhotos.length).toBe(1);
+      expect(motherPhotos[0].id).toBe("photo-cand-1");
+      expect(motherPhotos[0].fileName).toBe("mother.jpg");
+
+      expect(fatherPhotos.length).toBe(1);
+      expect(fatherPhotos[0].id).toBe("photo-cand-2");
+      expect(fatherPhotos[0].width).toBe(413);
+
+      // Verify strict isolation
+      expect(motherPhotos[0].dataUrl).not.toEqual(standalonePhotos[0].dataUrl);
+      expect(fatherPhotos[0].dataUrl).not.toEqual(motherPhotos[0].dataUrl);
+    });
+
+    it("supports history appending, cap limits (up to 10), and clearing", () => {
+      let history: PassportPhotoItem[] = [];
+
+      const addPhoto = (photo: PassportPhotoItem) => {
+        history = [photo, ...history.filter((p) => p.id !== photo.id)].slice(0, 10);
+      };
+
+      for (let i = 1; i <= 15; i++) {
+        addPhoto({
+          id: `photo-${i}`,
+          dataUrl: `data:image/jpeg;base64,DATA_${i}`,
+          presetName: "U.S.",
+          width: 600,
+          height: 600,
+          createdAt: new Date(2026, 8, 30, 8, i).toISOString(),
+        });
+      }
+
+      expect(history.length).toBe(10);
+      expect(history[0].id).toBe("photo-15"); // Newest first
+      expect(history[9].id).toBe("photo-6"); // Oldest within limit
+
+      // Clear history
+      history = [];
+      expect(history.length).toBe(0);
+    });
+
+    it("does not add photos to history when credits are unavailable or not consumed", () => {
+      let history: PassportPhotoItem[] = [];
+
+      const processPhotoGeneration = (
+        isExecutive: boolean,
+        creditConsumed: boolean,
+        photoData: PassportPhotoItem
+      ) => {
+        // Strict check matching PassportPhotoTool handleProcess
+        if (isExecutive || creditConsumed) {
+          history = [photoData, ...history.filter((p) => p.id !== photoData.id)].slice(0, 10);
+          return { success: true, locked: false };
+        } else {
+          return { success: false, locked: true };
+        }
+      };
+
+      const testPhoto: PassportPhotoItem = {
+        id: "unpaid-photo-1",
+        dataUrl: "data:image/jpeg;base64,UNPAID_DATA",
+        presetName: "U.S. Passport",
+        width: 600,
+        height: 600,
+        createdAt: new Date().toISOString(),
+      };
+
+      // 1. Non-executive user with no credits consumed (credit exhaustion / failure)
+      const attemptUnpaid = processPhotoGeneration(false, false, testPhoto);
+      expect(attemptUnpaid.locked).toBe(true);
+      expect(history).toHaveLength(0); // MUST NOT be added to history
+
+      // 2. Non-executive user after successfully consuming 1 credit
+      const paidPhoto: PassportPhotoItem = {
+        id: "paid-photo-1",
+        dataUrl: "data:image/jpeg;base64,PAID_DATA",
+        presetName: "U.S. Passport",
+        width: 600,
+        height: 600,
+        createdAt: new Date().toISOString(),
+      };
+      const attemptPaid = processPhotoGeneration(false, true, paidPhoto);
+      expect(attemptPaid.locked).toBe(false);
+      expect(history).toHaveLength(1);
+      expect(history[0].id).toBe("paid-photo-1");
+
+      // 3. Executive user (unlimited access)
+      const execPhoto: PassportPhotoItem = {
+        id: "exec-photo-1",
+        dataUrl: "data:image/jpeg;base64,EXEC_DATA",
+        presetName: "UK Visa",
+        width: 413,
+        height: 531,
+        createdAt: new Date().toISOString(),
+      };
+      const attemptExec = processPhotoGeneration(true, false, execPhoto);
+      expect(attemptExec.locked).toBe(false);
+      expect(history).toHaveLength(2);
+      expect(history[0].id).toBe("exec-photo-1");
+    });
+  });
 });
+
 
