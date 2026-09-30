@@ -10,6 +10,11 @@ import {
   STANDALONE_SPONSORSHIP_DRAFT_KEY,
   getJourneySponsorshipDraftKey,
 } from "@/components/tools/SponsorshipCalculatorTool";
+import {
+  STANDALONE_221G_DRAFT_KEY,
+  STANDALONE_221G_STORAGE_KEY,
+  getJourney221gDraftKey,
+} from "@/app/(tools)/(visa)/221g-action-planner/types/221g";
 import { parseUSCISData, formatReceiptInput, decodePrefix } from "@/app/(tools)/case-status/page";
 
 describe("Phase 2: Beneficiary-Specific Tools & Multi-Candidate Scoping", () => {
@@ -71,7 +76,7 @@ describe("Phase 2: Beneficiary-Specific Tools & Multi-Candidate Scoping", () => 
   });
 
   // ─── 2. 221(g) Action Planner Isolation ──────────────────────────────────
-  describe("2. 221(g) Action Planner Candidate Isolation", () => {
+  describe("2. 221(g) Action Planner Candidate & Draft Isolation", () => {
     it("namespaces 221(g) action plans per candidate in profile", () => {
       const mockProfile: any = {
         actionPlanner_candidate_1: {
@@ -133,6 +138,84 @@ describe("Phase 2: Beneficiary-Specific Tools & Multi-Candidate Scoping", () => 
 
       expect(getCandidateActionPlanner(legacyProfile, "candidate-1")?.questionnaire.formData.beneficiaryName).toBe("Spouse Jane");
       expect(getCandidateActionPlanner(legacyProfile, "candidate-2")).toBeNull();
+    });
+
+    it("generates isolated draft storage keys for standalone vs journey candidates", () => {
+      const ir5MotherKey = getJourney221gDraftKey("ir5-journey", "candidate-1");
+      const ir5FatherKey = getJourney221gDraftKey("ir5-journey", "candidate-2");
+      const ir1SpouseKey = getJourney221gDraftKey("ir1-journey", "candidate-1");
+
+      expect(STANDALONE_221G_STORAGE_KEY).toBe("standalone_221g_planner_result");
+      expect(STANDALONE_221G_DRAFT_KEY).toBe("standalone_221g_planner_draft");
+
+      expect(ir5MotherKey).toBe("journey_ir5-journey_candidate-1_221g_draft");
+      expect(ir5FatherKey).toBe("journey_ir5-journey_candidate-2_221g_draft");
+      expect(ir1SpouseKey).toBe("journey_ir1-journey_candidate-1_221g_draft");
+
+      expect(ir5MotherKey).not.toEqual(ir5FatherKey);
+      expect(ir5MotherKey).not.toEqual(STANDALONE_221G_DRAFT_KEY);
+      expect(ir1SpouseKey).not.toEqual(STANDALONE_221G_DRAFT_KEY);
+    });
+
+    it("prevents standalone 221(g) draft/result from leaking into journey and vice-versa", () => {
+      const mockStorage: Record<string, string> = {
+        [STANDALONE_221G_STORAGE_KEY]: JSON.stringify({
+          actionPlan: "# Action Plan Standalone",
+          checklist: "# Checklist Standalone",
+          formData: { caseNumber: "ISL2024111111", visaCategory: "B-1/B-2" },
+          selectedItems: { passport: true },
+          updatedAt: "2026-09-29T10:00:00.000Z",
+        }),
+        [STANDALONE_221G_DRAFT_KEY]: JSON.stringify({
+          currentStep: 2,
+          formData: { caseNumber: "ISL2024111111", consularPost: "Islamabad" },
+          selectedItems: { police_certificate: true },
+          updatedAt: "2026-09-29T10:05:00.000Z",
+        }),
+        "journey_ir5-journey_candidate-1_221g_draft": JSON.stringify({
+          currentStep: 3,
+          formData: { caseNumber: "ISL2024222222", consularPost: "Islamabad", beneficiaryName: "Mother Jane" },
+          selectedItems: { nadra_birth_cert: true },
+          updatedAt: "2026-09-29T10:10:00.000Z",
+        }),
+        "journey_ir5-journey_candidate-2_221g_draft": JSON.stringify({
+          currentStep: 1,
+          formData: { caseNumber: "ISL2024333333", consularPost: "Islamabad", beneficiaryName: "Father John" },
+          selectedItems: { i864_affidavit: true },
+          updatedAt: "2026-09-29T10:15:00.000Z",
+        }),
+      };
+
+      const resolveStandaloneDraft = () => {
+        const raw = mockStorage[STANDALONE_221G_DRAFT_KEY];
+        return raw ? JSON.parse(raw) : null;
+      };
+
+      const resolveJourneyDraft = (journeySlug: string, candidateId: string) => {
+        const key = getJourney221gDraftKey(journeySlug, candidateId);
+        const raw = mockStorage[key];
+        return raw ? JSON.parse(raw) : null;
+      };
+
+      const standaloneDraft = resolveStandaloneDraft();
+      const motherDraft = resolveJourneyDraft("ir5-journey", "candidate-1");
+      const fatherDraft = resolveJourneyDraft("ir5-journey", "candidate-2");
+
+      expect(standaloneDraft.currentStep).toBe(2);
+      expect(standaloneDraft.formData.caseNumber).toBe("ISL2024111111");
+      expect(standaloneDraft.selectedItems.police_certificate).toBe(true);
+
+      expect(motherDraft.currentStep).toBe(3);
+      expect(motherDraft.formData.beneficiaryName).toBe("Mother Jane");
+      expect(motherDraft.selectedItems.nadra_birth_cert).toBe(true);
+
+      expect(fatherDraft.currentStep).toBe(1);
+      expect(fatherDraft.formData.beneficiaryName).toBe("Father John");
+      expect(fatherDraft.selectedItems.i864_affidavit).toBe(true);
+
+      // Verify strict isolation
+      expect(motherDraft.formData.caseNumber).not.toEqual(standaloneDraft.formData.caseNumber);
+      expect(standaloneDraft.formData.beneficiaryName).toBeUndefined();
     });
   });
 
