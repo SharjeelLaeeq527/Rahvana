@@ -2,7 +2,14 @@
 
 import React, { useState } from "react";
 import { Lock, ArrowRight } from "lucide-react";
-import { usePlan } from "@/app/context/PlanContext";
+import { usePlan, normalizePlanTier } from "@/app/context/PlanContext";
+import type { PlanTier } from "@/lib/entitlements/config";
+import {
+  canUse,
+  upgradeCTA,
+  lockHint,
+  getEffectiveEntitlement,
+} from "@/lib/entitlements/helpers";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { Loader } from "@/components/ui/spinner";
 
@@ -29,6 +36,10 @@ interface ResultGateProps {
    * Optional custom override to force the gate into a locked/blurred state.
    */
   isLocked?: boolean;
+  /**
+   * Optional explicit plan tier override (e.g. from Journey plan tier).
+   */
+  planTier?: PlanTier | string;
 }
 
 /**
@@ -50,6 +61,7 @@ export function ResultGate({
   blurStrength = "md",
   minHeight = "300px",
   isLocked,
+  planTier,
 }: ResultGateProps) {
   const plan = usePlan();
   const [showModal, setShowModal] = useState(false);
@@ -66,8 +78,16 @@ export function ResultGate({
     );
   }
 
+  const effectivePlanTier = planTier ? normalizePlanTier(planTier) : plan.tier;
+
+  // Accessible evaluation:
+  // 1. If isLocked is explicitly false -> unlocked
+  // 2. If isLocked is explicitly true -> locked
+  // 3. Otherwise, check if the effective tier canUse the feature
+  const isAccessible = isLocked === false || (isLocked === undefined && canUse(feature, effectivePlanTier, plan.purchasedAddons));
+
   /* ── Accessible — render normally ───────────────────────────────────────── */
-  if (plan.canUse(feature) && !isLocked) return <>{children}</>;
+  if (isAccessible && isLocked !== true) return <>{children}</>;
 
   /* ── Locked — blur children + floating upgrade card ─────────────────────── */
   const blurClass =
@@ -77,10 +97,10 @@ export function ResultGate({
         ? "blur-lg"
         : "blur-md";
 
-  const cta = plan.upgradeCTA(feature) || "Upgrade to Unlock";
+  const cta = upgradeCTA(feature, effectivePlanTier, plan.purchasedAddons) || "Upgrade to Unlock";
   const hint =
-    plan.lockHint(feature) || "Upgrade your plan to view your results.";
-  const targetTier = plan.entitlement(feature)?.upgradeTarget;
+    lockHint(feature, effectivePlanTier, plan.purchasedAddons) || "Upgrade your plan to view your results.";
+  const targetTier = getEffectiveEntitlement(feature, effectivePlanTier, plan.purchasedAddons)?.upgradeTarget;
 
   /* Tier-aware color palette (matches PageGate.tsx) */
   const tierColors =

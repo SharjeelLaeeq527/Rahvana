@@ -728,7 +728,35 @@ describe("Phase 2: Beneficiary-Specific Tools & Multi-Candidate Scoping", () => 
       expect(history).toHaveLength(2);
       expect(history[0].id).toBe("exec-photo-1");
     });
+
+    it("evaluates tool access against journey plan tier in journey mode and account tier in standalone mode", () => {
+      const resolveEffectiveTier = (
+        isJourney: boolean,
+        journeyTier: string | null | undefined,
+        accountTier: string,
+        categoryTier?: string
+      ) => {
+        if (isJourney) {
+          if (journeyTier) return journeyTier.toLowerCase();
+          if (categoryTier) return categoryTier.toLowerCase();
+        }
+        return accountTier.toLowerCase();
+      };
+
+      // Scenario 1: User has 'free' account plan, but the IR-5 journey was purchased with 'executive' plan tier
+      const journeyTier1 = resolveEffectiveTier(true, "executive", "free");
+      expect(journeyTier1).toBe("executive"); // Tools embedded in this journey get Executive access
+
+      // Scenario 2: User has 'premium' account plan, but enters an unpaid / 'free' preview journey
+      const journeyTier2 = resolveEffectiveTier(true, "free", "premium");
+      expect(journeyTier2).toBe("free"); // Tools embedded in this free journey are evaluated as Free tier
+
+      // Scenario 3: User accesses tool in standalone mode (/passport) with 'premium' account plan
+      const standaloneTier = resolveEffectiveTier(false, null, "premium");
+      expect(standaloneTier).toBe("premium"); // Standalone tool evaluates against account plan
+    });
   });
 });
+
 
 

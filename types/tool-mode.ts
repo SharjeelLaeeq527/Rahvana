@@ -18,6 +18,8 @@ export interface JourneyToolContext {
   candidateId: string;
   /** Backend journey UUID if available */
   backendId?: string | null;
+  /** Plan tier for this specific journey instance (e.g. "free", "basic", "premium", "executive") */
+  subscriptionTier?: string | null;
 }
 
 export interface ToolModeProps {
@@ -30,4 +32,6 @@ export interface ToolModeProps {
   mode?: ToolMode;
   /** Context supplied when embedded in a journey */
   journeyContext?: JourneyToolContext;
+  /** Journey's specific subscription tier (e.g. state.subscriptionTier) */
+  journeyTier?: string | null;
 }

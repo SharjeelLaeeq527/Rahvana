@@ -16,10 +16,13 @@ export function useResolveToolMode(props?: ToolModeProps): {
   mode: ToolMode;
   isJourney: boolean;
   journeyContext: JourneyToolContext | null;
+  journeyTier: string | null;
 } {
   const env = useJourneyEnvironment();
 
   return useMemo(() => {
+    const rawTier = props?.journeyTier ?? props?.journeyContext?.subscriptionTier ?? null;
+
     // 1. Explicit prop override takes precedence
     if (props?.mode) {
       const isJourney = props.mode === "journey";
@@ -28,10 +31,11 @@ export function useResolveToolMode(props?: ToolModeProps): {
             journeySlug: env.journeySlug || "",
             journeyCategory: env.journeyCategory || "",
             candidateId: env.candidateId || "candidate-1",
+            subscriptionTier: rawTier,
           }
         : null;
 
-      return { mode: props.mode, isJourney, journeyContext };
+      return { mode: props.mode, isJourney, journeyContext, journeyTier: rawTier };
     }
 
     // 2. Auto-detect from JourneyEnvironmentContext
@@ -43,7 +47,9 @@ export function useResolveToolMode(props?: ToolModeProps): {
           journeySlug: env.journeySlug,
           journeyCategory: env.journeyCategory || "",
           candidateId: env.candidateId || "candidate-1",
+          subscriptionTier: rawTier,
         },
+        journeyTier: rawTier,
       };
     }
 
@@ -52,6 +58,7 @@ export function useResolveToolMode(props?: ToolModeProps): {
       mode: "standalone" as ToolMode,
       isJourney: false,
       journeyContext: null,
+      journeyTier: null,
     };
-  }, [props?.mode, props?.journeyContext, env]);
+  }, [props?.mode, props?.journeyContext, props?.journeyTier, env]);
 }

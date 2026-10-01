@@ -18,7 +18,8 @@ import {
 import { useLanguage } from "@/app/context/LanguageContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { useFeatureAccess } from "@/lib/usage/useFeatureAccess";
-import { usePlan } from "@/app/context/PlanContext";
+import { usePlan, normalizePlanTier } from "@/app/context/PlanContext";
+import type { PlanTier } from "@/lib/entitlements/config";
 import { ResultGate } from "@/app/components/entitlements/ResultGate";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
@@ -44,6 +45,7 @@ interface PassportPhotoToolProps extends ToolModeProps {
   className?: string;
   onResult?: (url: string) => void;
   onHistoryChange?: (history: PassportPhotoItem[]) => void;
+  journeyTier?: string | null;
 }
 
 export default function PassportPhotoTool({
@@ -54,17 +56,33 @@ export default function PassportPhotoTool({
   onHistoryChange,
   mode: propMode,
   journeyContext: propContext,
+  journeyTier: propJourneyTier,
 }: PassportPhotoToolProps) {
-  const { isJourney, journeyContext } = useResolveToolMode({
+  const { isJourney, journeyContext, journeyTier } = useResolveToolMode({
     mode: propMode,
     journeyContext: propContext,
+    journeyTier: propJourneyTier,
   });
   const { t } = useLanguage();
-  const { tier } = usePlan();
+  const accountPlan = usePlan();
   const { profile, updateProfile } = useUserProfile();
   const { showToast } = useToast();
 
   const [mounted, setMounted] = useState(false);
+
+  // Determine effective plan tier: in journey mode, evaluate against the specific journey's tier (matching RoadmapLayoutEngine), otherwise account tier
+  const rawJourneyTier = propJourneyTier ?? journeyTier ?? journeyContext?.subscriptionTier;
+  const effectiveTier: PlanTier = useMemo(() => {
+    if (isJourney) {
+      if (rawJourneyTier) {
+        return normalizePlanTier(rawJourneyTier);
+      }
+      if (journeyContext?.journeyCategory && accountPlan.journeyTiers[journeyContext.journeyCategory]) {
+        return accountPlan.journeyTiers[journeyContext.journeyCategory];
+      }
+    }
+    return accountPlan.tier;
+  }, [isJourney, rawJourneyTier, journeyContext, accountPlan.journeyTiers, accountPlan.tier]);
 
   // Determine storage key for this specific mode/environment
   const effectiveHistoryKey = useMemo(() => {
@@ -181,14 +199,19 @@ export default function PassportPhotoTool({
     let isMounted = true;
 
     const loadCredits = async () => {
+      // If journey (or account) is on executive tier, access is unlimited
+      if (effectiveTier === "executive") {
+        setRemainingCredits(null);
+        setCreditStatusLoading(false);
+        return;
+      }
+
       setCreditStatusLoading(true);
       const access = await checkAccess("photo_booth");
       if (!isMounted) return;
 
       const usage = access.data?.data?.usage;
-      if (tier === "executive") {
-        setRemainingCredits(null);
-      } else if (access.allowed && usage?.remaining !== undefined) {
+      if (access.allowed && usage?.remaining !== undefined) {
         setRemainingCredits(usage.remaining);
       } else if (access.allowed && usage?.limit !== undefined) {
         setRemainingCredits(usage.limit);
@@ -204,7 +227,7 @@ export default function PassportPhotoTool({
     return () => {
       isMounted = false;
     };
-  }, [checkAccess, tier]);
+  }, [checkAccess, effectiveTier]);
 
   // Reset current upload form
   const reset = () => {
@@ -247,7 +270,7 @@ export default function PassportPhotoTool({
   const handleProcess = async () => {
     if (!file) return;
 
-    if (tier !== "executive" && (remainingCredits === null || remainingCredits <= 0)) {
+    if (effectiveTier !== "executive" && (remainingCredits === null || remainingCredits <= 0)) {
       setShowUpgradeModal(true);
       return;
     }
@@ -258,7 +281,7 @@ export default function PassportPhotoTool({
 
     // Verify and consume credit if the user has available credits, blocking if unavailable
     let creditPaid = false;
-    const isUnlimited = tier === "executive";
+    const isUnlimited = effectiveTier === "executive";
 
     if (!isUnlimited) {
       try {
@@ -552,7 +575,7 @@ export default function PassportPhotoTool({
         )}
 
         {/* Credit Status */}
-        {tier !== "executive" && (
+        {effectiveTier !== "executive" && (
           <section className="mb-6 w-full max-w-2xl">
             <div
               onClick={() => setShowUpgradeModal(true)}
@@ -567,7 +590,7 @@ export default function PassportPhotoTool({
                     : remainingCredits !== null
                       ? remainingCredits > 0
                         ? `${remainingCredits} photo credit${remainingCredits === 1 ? "" : "s"} remaining`
-                        : tier === "premium"
+                        : effectiveTier === "premium"
                           ? "No credits left. Buy more credits or upgrade to Executive."
                           : "No credits left. Buy more credits or upgrade to unlock."
                       : "Photo Booth is not included in your plan — buy credits or upgrade."}
@@ -660,7 +683,7 @@ export default function PassportPhotoTool({
             )}
 
             {/* Process Button */}
-            {tier !== "executive" && (remainingCredits === null || remainingCredits <= 0) ? (
+            {effectiveTier !== "executive" && (remainingCredits === null || remainingCredits <= 0) ? (
               <button
                 type="button"
                 onClick={() => setShowUpgradeModal(true)}
@@ -668,7 +691,7 @@ export default function PassportPhotoTool({
                 title="Credits required to generate photo"
               >
                 <Lock className="h-5 w-5" />
-                <span>{tier === "premium" ? "Upgrade to Executive" : "Upgrade to continue"}</span>
+                <span>{effectiveTier === "premium" ? "Upgrade to Executive" : "Upgrade to continue"}</span>
               </button>
             ) : (
               <button
@@ -702,7 +725,7 @@ export default function PassportPhotoTool({
             ref={resultRef}
             className="animate-in fade-in mt-8 w-full max-w-2xl duration-500"
           >
-            <ResultGate feature="photo_booth" isLocked={resultLocked}>
+            <ResultGate feature="photo_booth" isLocked={resultLocked} planTier={effectiveTier}>
               <div
                 className="rounded-2xl border border-[#0d7377]/30 bg-white/90 p-5 shadow-xl backdrop-blur-md sm:p-7"
                 style={{

@@ -4192,11 +4192,13 @@ export const StepView: React.FC<StepViewProps> = ({
       {/* Sponsorship Calculator Tool Overlay */}
       <SponsorshipCalculatorTool
         mode="journey"
+        journeyTier={state?.subscriptionTier ?? (state as any)?.subscription_tier}
         journeyContext={{
           journeySlug: "ir1-journey",
           journeyCategory: "IR-1",
           candidateId: (state as any).candidateId || "candidate-1",
           backendId: (state as any).backendId || null,
+          subscriptionTier: state?.subscriptionTier ?? (state as any)?.subscription_tier,
         }}
         isOpen={isSponsorshipCalcOpen}
         onClose={() => setIsSponsorshipCalcOpen(false)}
@@ -4495,7 +4497,18 @@ export const StepView: React.FC<StepViewProps> = ({
               <div className="flex w-full flex-col">
                 {selectedGuideId === "doc_passport_photos" ? (
                   <div className="mb-4">
-                    <PassportPhotoTool showHeader={false} showRequirements={true} mode="journey" />
+                    <PassportPhotoTool
+                      showHeader={false}
+                      showRequirements={true}
+                      mode="journey"
+                      journeyTier={state?.subscriptionTier ?? (state as any)?.subscription_tier}
+                      journeyContext={{
+                        journeySlug: "ir1-journey",
+                        journeyCategory: "IR-1",
+                        candidateId: "candidate-1",
+                        subscriptionTier: state?.subscriptionTier ?? (state as any)?.subscription_tier,
+                      }}
+                    />
                   </div>
                 ) : selectedGuideId === "doc_translations" ? (
                   <div className="mb-4">
