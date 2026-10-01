@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import type { ToolModeProps } from "@/types/tool-mode";
 import { useResolveToolMode } from "@/lib/hooks/useResolveToolMode";
 import { useUserProfile } from "@/app/context/UserProfileContext";
+import { usePlan, normalizePlanTier } from "@/app/context/PlanContext";
+import type { PlanTier } from "@/lib/entitlements/config";
 import { ResultGate } from "@/app/components/entitlements/ResultGate";
 import {
   X,
@@ -251,6 +253,7 @@ export interface SponsorshipCalculatorToolProps extends ToolModeProps {
     relation?: string;
     visaCategory?: string;
   };
+  journeyTier?: string | null;
 }
 
 const getDefaultFormData = (initial?: any): SponsorshipFormData => ({
@@ -289,13 +292,30 @@ export default function SponsorshipCalculatorTool({
   candidateInfo,
   mode: propMode,
   journeyContext: propContext,
+  journeyTier: propJourneyTier,
 }: SponsorshipCalculatorToolProps) {
-  const { isJourney, journeyContext } = useResolveToolMode({
+  const { isJourney, journeyContext, journeyTier } = useResolveToolMode({
     mode: propMode,
     journeyContext: propContext,
+    journeyTier: propJourneyTier,
   });
 
+  const accountPlan = usePlan();
   const { profile, updateProfile } = useUserProfile();
+
+  // Determine effective plan tier: in journey mode, evaluate against the specific journey's tier (matching RoadmapLayoutEngine), otherwise account tier
+  const rawJourneyTier = propJourneyTier ?? journeyTier ?? journeyContext?.subscriptionTier;
+  const effectiveTier: PlanTier = useMemo(() => {
+    if (isJourney) {
+      if (rawJourneyTier) {
+        return normalizePlanTier(rawJourneyTier);
+      }
+      if (journeyContext?.journeyCategory && accountPlan.journeyTiers[journeyContext.journeyCategory]) {
+        return accountPlan.journeyTiers[journeyContext.journeyCategory];
+      }
+    }
+    return accountPlan.tier;
+  }, [isJourney, rawJourneyTier, journeyContext, accountPlan.journeyTiers, accountPlan.tier]);
 
   const effectiveDraftKey = React.useMemo(() => {
     if (isJourney && journeyContext?.journeySlug) {
@@ -1286,7 +1306,7 @@ export default function SponsorshipCalculatorTool({
 
             if (step === 7) {
               return (
-                <ResultGate feature="sponsorship_calc">
+                <ResultGate feature="sponsorship_calc" planTier={effectiveTier}>
                   <div className="animate-in fade-in slide-in-from-right-4 duration-300">
                     <div className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center" style={{ color: COLORS.primary }}>Step 8 of 11</div>
                     <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6 text-center">Initial Status</h2>
@@ -1367,7 +1387,7 @@ export default function SponsorshipCalculatorTool({
 
             if (step === 8) {
               return (
-                <ResultGate feature="sponsorship_calc">
+                <ResultGate feature="sponsorship_calc" planTier={effectiveTier}>
                   <div className="animate-in fade-in slide-in-from-right-4 duration-300">
                     <div className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center" style={{ color: stepColor }}>Step 9 of 11</div>
                     <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6 text-center">Support Resources</h2>
@@ -1472,7 +1492,7 @@ export default function SponsorshipCalculatorTool({
 
             if (step === 9) {
               return (
-                <ResultGate feature="sponsorship_calc">
+                <ResultGate feature="sponsorship_calc" planTier={effectiveTier}>
                   <div className="animate-in fade-in slide-in-from-right-4 duration-300">
                     <div className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center" style={{ color: COLORS.primary }}>Step 10 of 11</div>
                     <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6 text-center">Alternative Options</h2>
@@ -1569,7 +1589,7 @@ export default function SponsorshipCalculatorTool({
 
             if (step === 10) {
               return (
-                <ResultGate feature="sponsorship_calc">
+                <ResultGate feature="sponsorship_calc" planTier={effectiveTier}>
                   <div className="animate-in fade-in slide-in-from-right-4 duration-300">
                     <div className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center" style={{ color: COLORS.primary }}>Step 11 of 11</div>
                     <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6 text-center">Final Sponsorship Plan</h2>

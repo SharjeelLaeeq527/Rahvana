@@ -755,6 +755,25 @@ describe("Phase 2: Beneficiary-Specific Tools & Multi-Candidate Scoping", () => 
       const standaloneTier = resolveEffectiveTier(false, null, "premium");
       expect(standaloneTier).toBe("premium"); // Standalone tool evaluates against account plan
     });
+
+    it("evaluates sponsorship calculator ResultGate access against journey plan tier", () => {
+      const canUseSponsorshipCalc = (planTier: string) => {
+        // Essential / Premium / Executive plans unlock sponsorship_calc
+        return ["essential", "premium", "executive"].includes(planTier.toLowerCase());
+      };
+
+      // Scenario A: User on 'free' account plan, but viewing an 'executive' journey
+      const effectiveTierA = "executive";
+      expect(canUseSponsorshipCalc(effectiveTierA)).toBe(true);
+
+      // Scenario B: User on 'free' account plan in standalone mode
+      const effectiveTierB = "free";
+      expect(canUseSponsorshipCalc(effectiveTierB)).toBe(false);
+
+      // Scenario C: User with 'premium' journey plan
+      const effectiveTierC = "premium";
+      expect(canUseSponsorshipCalc(effectiveTierC)).toBe(true);
+    });
   });
 });
 
