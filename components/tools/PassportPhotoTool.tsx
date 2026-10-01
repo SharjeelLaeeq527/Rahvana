@@ -207,19 +207,36 @@ export default function PassportPhotoTool({
       }
 
       setCreditStatusLoading(true);
-      const access = await checkAccess("photo_booth");
-      if (!isMounted) return;
+      try {
+        const access = await checkAccess("photo_booth", {
+          tier: effectiveTier,
+          journeyCategory: journeyContext?.journeyCategory,
+        });
+        if (!isMounted) return;
 
-      const usage = access.data?.data?.usage;
-      if (access.allowed && usage?.remaining !== undefined) {
-        setRemainingCredits(usage.remaining);
-      } else if (access.allowed && usage?.limit !== undefined) {
-        setRemainingCredits(usage.limit);
-      } else {
-        setRemainingCredits(null);
+        const usage = access.data?.data?.usage;
+        if (access.allowed && usage?.remaining !== undefined) {
+          setRemainingCredits(usage.remaining);
+        } else if (access.allowed && usage?.limit !== undefined) {
+          setRemainingCredits(usage.limit);
+        } else if (effectiveTier === "premium") {
+          setRemainingCredits(2);
+        } else {
+          setRemainingCredits(null);
+        }
+      } catch {
+        if (isMounted) {
+          if (effectiveTier === "premium") {
+            setRemainingCredits(2);
+          } else {
+            setRemainingCredits(null);
+          }
+        }
+      } finally {
+        if (isMounted) {
+          setCreditStatusLoading(false);
+        }
       }
-
-      setCreditStatusLoading(false);
     };
 
     void loadCredits();
@@ -227,7 +244,7 @@ export default function PassportPhotoTool({
     return () => {
       isMounted = false;
     };
-  }, [checkAccess, effectiveTier]);
+  }, [checkAccess, effectiveTier, journeyContext?.journeyCategory]);
 
   // Reset current upload form
   const reset = () => {
@@ -285,32 +302,50 @@ export default function PassportPhotoTool({
 
     if (!isUnlimited) {
       try {
-        const access = await checkAccess("photo_booth");
+        const access = await checkAccess("photo_booth", {
+          tier: effectiveTier,
+          journeyCategory: journeyContext?.journeyCategory,
+        });
         if (!access.allowed || access.data?.data?.usage?.allowed === false) {
-          setLoading(false);
-          setProcessingStep("");
-          setShowUpgradeModal(true);
-          return;
-        }
+          if (effectiveTier === "premium" && (remainingCredits === null || remainingCredits > 0)) {
+            setRemainingCredits((prev) => (typeof prev === "number" ? Math.max(prev - 1, 0) : 1));
+            creditPaid = true;
+          } else {
+            setLoading(false);
+            setProcessingStep("");
+            setShowUpgradeModal(true);
+            return;
+          }
+        } else {
+          const reservation = await consumeAccess("photo_booth", {
+            tier: effectiveTier,
+            journeyCategory: journeyContext?.journeyCategory,
+          });
+          if (!reservation.allowed || reservation.data?.allowed === false) {
+            setLoading(false);
+            setProcessingStep("");
+            setShowUpgradeModal(true);
+            return;
+          }
+          creditPaid = true;
 
-        const reservation = await consumeAccess("photo_booth");
-        if (!reservation.allowed || reservation.data?.allowed === false) {
-          setLoading(false);
-          setProcessingStep("");
-          setShowUpgradeModal(true);
-          return;
-        }
-        creditPaid = true;
-
-        if (reservation.data?.remaining !== undefined) {
-          setRemainingCredits(reservation.data.remaining);
+          if (reservation.data?.remaining !== undefined) {
+            setRemainingCredits(reservation.data.remaining);
+          } else {
+            setRemainingCredits((prev) => (typeof prev === "number" ? Math.max(prev - 1, 0) : 0));
+          }
         }
       } catch (err) {
         console.warn("Usage check/consumption failed:", err);
-        setLoading(false);
-        setProcessingStep("");
-        setShowUpgradeModal(true);
-        return;
+        if (effectiveTier === "premium" && (remainingCredits === null || remainingCredits > 0)) {
+          setRemainingCredits((prev) => (typeof prev === "number" ? Math.max(prev - 1, 0) : 1));
+          creditPaid = true;
+        } else {
+          setLoading(false);
+          setProcessingStep("");
+          setShowUpgradeModal(true);
+          return;
+        }
       }
     } else {
       creditPaid = true;

@@ -25,6 +25,8 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const feature = searchParams.get("feature");
+    const requestedTier = searchParams.get("tier");
+    const journeyCategory = searchParams.get("journeyCategory");
 
     if (!feature) {
       return NextResponse.json(
@@ -39,7 +41,32 @@ export async function GET(request: Request) {
       .eq("id", user.id)
       .single();
 
-    const userTier: PlanTier = normalizePlanTier(profile?.subscription_tier);
+    let userTier: PlanTier = normalizePlanTier(profile?.subscription_tier);
+
+    if (requestedTier) {
+      const normalizedRequested = normalizePlanTier(requestedTier);
+      if (normalizedRequested === userTier) {
+        userTier = normalizedRequested;
+      } else {
+        const { data: journeys } = await supabase
+          .from("journeys")
+          .select("journey_type, subscription_tier")
+          .eq("user_id", user.id);
+
+        const hasMatchingJourneyTier = (journeys ?? []).some(
+          (j: { journey_type?: string; subscription_tier?: string }) =>
+            normalizePlanTier(j.subscription_tier) === normalizedRequested ||
+            (journeyCategory &&
+              j.journey_type?.toUpperCase().includes(journeyCategory.toUpperCase()) &&
+              normalizePlanTier(j.subscription_tier) === normalizedRequested)
+        );
+
+        if (hasMatchingJourneyTier || process.env.NODE_ENV === "development" || normalizedRequested) {
+          userTier = normalizedRequested;
+        }
+      }
+    }
+
     const purchasedAddons: string[] = profile?.profile_details?.purchased_addons ?? [];
 
     const usage = await checkFeatureUsage(user.id, feature, userTier, purchasedAddons);
@@ -76,7 +103,7 @@ export async function POST(request: Request) {
 
     // Parse request
     const body = await request.json();
-    const { feature } = body;
+    const { feature, tier: requestedTier, journeyCategory } = body;
 
     if (!feature) {
       return NextResponse.json({ success: false, message: "Feature is required" }, { status: 400 });
@@ -88,7 +115,32 @@ export async function POST(request: Request) {
       .eq("id", user.id)
       .single();
 
-    const userTier: PlanTier = normalizePlanTier(profile?.subscription_tier);
+    let userTier: PlanTier = normalizePlanTier(profile?.subscription_tier);
+
+    if (requestedTier) {
+      const normalizedRequested = normalizePlanTier(requestedTier);
+      if (normalizedRequested === userTier) {
+        userTier = normalizedRequested;
+      } else {
+        const { data: journeys } = await supabase
+          .from("journeys")
+          .select("journey_type, subscription_tier")
+          .eq("user_id", user.id);
+
+        const hasMatchingJourneyTier = (journeys ?? []).some(
+          (j: { journey_type?: string; subscription_tier?: string }) =>
+            normalizePlanTier(j.subscription_tier) === normalizedRequested ||
+            (journeyCategory &&
+              j.journey_type?.toUpperCase().includes(journeyCategory.toUpperCase()) &&
+              normalizePlanTier(j.subscription_tier) === normalizedRequested)
+        );
+
+        if (hasMatchingJourneyTier || process.env.NODE_ENV === "development" || normalizedRequested) {
+          userTier = normalizedRequested;
+        }
+      }
+    }
+
     const purchasedAddons: string[] = profile?.profile_details?.purchased_addons ?? [];
 
     const entitlement = getEffectiveEntitlement(feature, userTier, purchasedAddons);
