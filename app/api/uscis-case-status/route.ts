@@ -118,23 +118,29 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // If USCIS did not return a successful response, figure out why and reply accordingly.
     if (!caseRes.ok) {
-      // 404 means USCIS has no case with this receipt number.
-      if (caseRes.status === 404) {
-        return NextResponse.json({ error: msg(E.USCIS_NO_CASE_FOUND) }, { status: 404 });
-      }
-
-      // 401 means our token was rejected. Throw away the saved token so the next request gets a new one.
+      const errorBody = await caseRes.json().catch(() => null);
+    
+      console.error("USCIS Case API Error:", {
+        status: caseRes.status,
+        body: errorBody,
+      });
+    
       if (caseRes.status === 401) {
         cachedToken = null;
-        return NextResponse.json({ error: msg(E.USCIS_AUTH_FAILED) }, { status: 401 });
       }
-
-      // Any other error: log the details and pass the same status code back to the caller.
-      const errorBody = await caseRes.text();
-      console.error("USCIS Case API Error:", caseRes.status, errorBody);
-      return NextResponse.json({ error: msg(E.USCIS_SERVICE_ERROR) }, { status: caseRes.status });
+    
+      return NextResponse.json(
+        {
+          error: {
+            code: errorBody?.code ?? caseRes.status,
+            message:
+              errorBody?.message ??
+              "USCIS returned an error while processing the request.",
+          },
+        },
+        { status: caseRes.status }
+      );
     }
 
     // Read the successful response from USCIS.
@@ -151,7 +157,7 @@ export async function POST(req: NextRequest) {
       {
         user_id: user.id,
         receipt_number: normalized,
-        status: caseStatus.current_case_status_en ?? null,
+        status: caseStatus.current_case_status_text_en ?? null,
         description: caseStatus.current_case_status_desc_en ?? null,
         form_type: caseStatus.formType ?? null,
         // Convert the "modified date" from USCIS into a standard date format, if it exists.
