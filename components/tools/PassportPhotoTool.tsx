@@ -77,7 +77,10 @@ export default function PassportPhotoTool({
       if (rawJourneyTier) {
         return normalizePlanTier(rawJourneyTier);
       }
-      if (journeyContext?.journeyCategory && accountPlan.journeyTiers[journeyContext.journeyCategory]) {
+      if (
+        journeyContext?.journeyCategory &&
+        accountPlan.journeyTiers[journeyContext.journeyCategory]
+      ) {
         return accountPlan.journeyTiers[journeyContext.journeyCategory];
       }
     }
@@ -512,7 +515,7 @@ export default function PassportPhotoTool({
               title="View saved photo history"
             >
               <Clock className="h-3.5 w-3.5 text-[#0d7377]" />
-              <span>Photo History</span>
+              <span>My Album</span>
               {mounted && history.length > 0 && (
                 <span className="rounded-full bg-[#0d7377] px-1.5 py-0.5 text-[10px] leading-none font-bold text-white">
                   {history.length}
@@ -718,7 +721,8 @@ export default function PassportPhotoTool({
             )}
 
             {/* Process Button */}
-            {effectiveTier !== "executive" && (remainingCredits === null || remainingCredits <= 0) ? (
+            {effectiveTier !== "executive" &&
+            (remainingCredits === null || remainingCredits <= 0) ? (
               <button
                 type="button"
                 onClick={() => setShowUpgradeModal(true)}
@@ -726,7 +730,9 @@ export default function PassportPhotoTool({
                 title="Credits required to generate photo"
               >
                 <Lock className="h-5 w-5" />
-                <span>{effectiveTier === "premium" ? "Upgrade to Executive" : "Upgrade to continue"}</span>
+                <span>
+                  {effectiveTier === "premium" ? "Upgrade to Executive" : "Upgrade to continue"}
+                </span>
               </button>
             ) : (
               <button

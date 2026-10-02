@@ -3344,7 +3344,12 @@ export const StepView: React.FC<StepViewProps> = ({
                                                 subtitle: doc.subtitle,
                                                 hasGuide: hasDocGuide,
                                                 onReadGuide: () => {
-                                                  if (doc.guideUrl && doc.guideUrl !== "/guides") {
+                                                  const isInternalTool =
+                                                    doc.id === "doc_passport_photos" ||
+                                                    doc.id === "doc_translations" ||
+                                                    (doc.id && inlineGuideData[doc.id]?.sourceType === "internal");
+
+                                                  if (!isInternalTool && doc.guideUrl && doc.guideUrl !== "/guides") {
                                                     window.open(doc.guideUrl, "_blank");
                                                     if (actions.updateDocumentStatus && doc.id) {
                                                       actions.updateDocumentStatus(
@@ -3759,7 +3764,12 @@ export const StepView: React.FC<StepViewProps> = ({
                               subtitle: item.sub,
                               hasGuide: hasDocGuide,
                               onReadGuide: () => {
-                                if (item.guideUrl && item.guideUrl !== "/guides") {
+                                const isInternalTool =
+                                  item.id === "doc_passport_photos" ||
+                                  item.id === "doc_translations" ||
+                                  (item.id && inlineGuideData[item.id]?.sourceType === "internal");
+
+                                if (!isInternalTool && item.guideUrl && item.guideUrl !== "/guides") {
                                   window.open(item.guideUrl, "_blank");
                                   if (actions.updateDocumentStatus && item.id)
                                     actions.updateDocumentStatus(item.id, "reviewed");

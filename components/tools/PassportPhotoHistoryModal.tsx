@@ -56,7 +56,7 @@ export function PassportPhotoHistoryModal({
                 </div>
                 <div>
                   <DialogTitle className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                    <span>Saved Photo History</span>
+                    <span>My Photo Album</span>
                     <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#0d7377]/10 text-[#0d7377] border border-[#0d7377]/20">
                       {history.length} {history.length === 1 ? "photo" : "photos"}
                     </span>
