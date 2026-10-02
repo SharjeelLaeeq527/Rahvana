@@ -17,7 +17,8 @@ import {
 // Path of the portal's document-submit endpoint for our registered app.
 // The portal issues this with your app credentials (per the demo checklist);
 // until it is configured we fail gracefully instead of guessing a URL.
-const DOC_SUBMIT_PATH = process.env.USCIS_DOC_SUBMIT_PATH ?? "";
+// const DOC_SUBMIT_PATH = process.env.USCIS_DOC_SUBMIT_PATH ?? "";
+const DOC_SUBMIT_PATH = "";
 
 /** Forward a USCIS portal error (4xx/5xx) as a clean, structured 4xx to the UI. */
 async function portalErrorResponse(res: Response): Promise<NextResponse> {
@@ -27,8 +28,7 @@ async function portalErrorResponse(res: Response): Promise<NextResponse> {
     {
       error: {
         code: body?.code ?? res.status,
-        message:
-          body?.message ?? "USCIS returned an error while processing the document upload.",
+        message: body?.message ?? "USCIS returned an error while processing the document upload.",
       },
     },
     { status }
@@ -75,9 +75,12 @@ export async function POST(req: NextRequest) {
       payload = buildUscisDocumentPayload(input);
     } catch (err) {
       if (err instanceof UscisDocumentError) {
-        return NextResponse.json({ error: { code: err.status, message: err.message } }, {
-          status: err.status,
-        });
+        return NextResponse.json(
+          { error: { code: err.status, message: err.message } },
+          {
+            status: err.status,
+          }
+        );
       }
       throw err;
     }
