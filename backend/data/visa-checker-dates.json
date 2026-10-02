@@ -1,71 +1,71 @@
 {
-  "month": "2026-09",
+  "month": "2026-10",
   "finalActionDates": {
     "family": {
       "F1": {
         "All": "22JAN20",
         "China": "22JAN20",
         "India": "22JAN20",
-        "Mexico": "01JAN08",
-        "Philippines": "01MAY13"
+        "Mexico": "08SEP08",
+        "Philippines": "01NOV13"
       },
       "F2A": {
-        "All": "22AUG26",
-        "China": "22AUG26",
-        "India": "22AUG26",
-        "Mexico": "22AUG25",
-        "Philippines": "22AUG26"
+        "All": "22SEP26",
+        "China": "22SEP26",
+        "India": "22SEP26",
+        "Mexico": "22MAR26",
+        "Philippines": "22SEP26"
       },
       "F2B": {
         "All": "22AUG19",
         "China": "22AUG19",
         "India": "22AUG19",
-        "Mexico": "15FEB09",
-        "Philippines": "01JUN13"
+        "Mexico": "15MAY10",
+        "Philippines": "01OCT13"
       },
       "F3": {
         "All": "22OCT14",
         "China": "22OCT14",
         "India": "22OCT14",
         "Mexico": "01JUL01",
-        "Philippines": "22FEB06"
+        "Philippines": "22JUL06"
       },
       "F4": {
         "All": "22OCT11",
         "China": "22OCT11",
-        "India": "01NOV06",
-        "Mexico": "08APR01",
-        "Philippines": "22AUG07"
+        "India": "15DEC06",
+        "Mexico": "22APR01",
+        "Philippines": "15MAY08"
       }
     },
     "employment": {
       "EB-1": {
         "All": "C",
         "China": "01JUL23",
-        "India": "15OCT22",
+        "India": "01FEB23",
         "Mexico": "C",
         "Philippines": "C"
       },
       "EB-2": {
-        "All": "C",
-        "China": "01SEP21",
-        "India": "U",
-        "Mexico": "C",
-        "Philippines": "C"
+        "All": "01JAN25",
+        "China": "01OCT21",
+        "India": "01NOV13",
+        "Mexico": "01JAN25",
+        "Philippines": "01JAN25"
       },
       "EB-3": {
-        "All": "01SEP24",
-        "China": "01JAN22",
+        "All": "15MAY24",
+        "China": "08JAN22",
         "India": "01JAN14",
-        "Mexico": "01SEP24",
-        "Philippines": "01AUG23"
+        "Mexico": "15MAY24",
+        "Philippines": "15AUG23"
       },
       "EB-3 Other Workers": {
-        "All": "01APR22",
-        "China": "01MAY19",
+        "All": "01JAN22",
+        "China": "01OCT19",
         "India": "01JAN14",
-        "Mexico": "01APR22",
-        "Philippines": "01DEC21"
+        "Mexico": "01JAN22",
+        "Philippines": "01JAN22"
       },
       "EB-4": {
         "All": "15DEC22",
@@ -84,7 +84,7 @@
       "EB-5 Unreserved": {
         "All": "C",
         "China": "01DEC16",
-        "India": "U",
+        "India": "01DEC23",
         "Mexico": "C",
         "Philippines": "C"
       },
@@ -131,70 +131,70 @@
         "All": "01SEP19",
         "China": "01SEP19",
         "India": "01SEP19",
-        "Mexico": "15MAY10",
-        "Philippines": "01OCT13"
+        "Mexico": "22MAR11",
+        "Philippines": "01OCT14"
       },
       "F3": {
         "All": "01NOV14",
         "China": "01NOV14",
         "India": "01NOV14",
-        "Mexico": "15JUL01",
-        "Philippines": "08AUG06"
+        "Mexico": "01DEC02",
+        "Philippines": "22OCT06"
       },
       "F4": {
         "All": "01NOV11",
         "China": "01NOV11",
-        "India": "15DEC06",
+        "India": "01FEB07",
         "Mexico": "30APR01",
-        "Philippines": "22MAR08"
+        "Philippines": "22MAR09"
       }
     },
     "employment": {
       "EB-1": {
         "All": "C",
-        "China": "01DEC23",
-        "India": "01DEC23",
+        "China": "01JUL24",
+        "India": "01JUL24",
         "Mexico": "C",
         "Philippines": "C"
       },
       "EB-2": {
-        "All": "C",
-        "China": "01JAN22",
+        "All": "15MAR26",
+        "China": "01JAN23",
         "India": "15JAN15",
-        "Mexico": "C",
-        "Philippines": "C"
+        "Mexico": "15MAR26",
+        "Philippines": "15MAR26"
       },
       "EB-3": {
-        "All": "C",
-        "China": "08JAN22",
+        "All": "01AUG24",
+        "China": "01APR24",
         "India": "15JAN15",
-        "Mexico": "C",
+        "Mexico": "01AUG24",
         "Philippines": "01JAN24"
       },
       "EB-3 Other Workers": {
-        "All": "01AUG22",
-        "China": "01OCT19",
+        "All": "01JUN22",
+        "China": "01OCT20",
         "India": "15JAN15",
-        "Mexico": "01AUG22",
-        "Philippines": "01AUG22"
+        "Mexico": "01JUN22",
+        "Philippines": "01JUN22"
       },
       "EB-4": {
-        "All": "01JAN23",
-        "China": "01JAN23",
-        "India": "01JAN23",
-        "Mexico": "01JAN23",
-        "Philippines": "01JAN23"
+        "All": "01JAN25",
+        "China": "01JAN25",
+        "India": "01JAN25",
+        "Mexico": "01JAN25",
+        "Philippines": "01JAN25"
       },
       "EB-4 Certain Religious Workers": {
-        "All": "01JAN23",
-        "China": "01JAN23",
-        "India": "01JAN23",
-        "Mexico": "01JAN23",
-        "Philippines": "01JAN23"
+        "All": "01JAN25",
+        "China": "01JAN25",
+        "India": "01JAN25",
+        "Mexico": "01JAN25",
+        "Philippines": "01JAN25"
       },
       "EB-5 Unreserved": {
         "All": "C",
-        "China": "01MAR17",
+        "China": "01MAR21",
         "India": "01MAY24",
         "Mexico": "C",
         "Philippines": "C"
