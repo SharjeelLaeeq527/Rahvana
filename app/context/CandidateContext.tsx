@@ -30,6 +30,29 @@ import {
 import { useToast } from "@/app/components/shared/ToastProvider";
 
 const ACTIVE_CANDIDATE_STORAGE_KEY = "rahvana_active_candidate_id";
+// localStorage key for candidate list safety-net (keyed by user-id to avoid
+// cross-account bleed when the same browser switches accounts).
+const candidateStorageKey = (userId: string) => `rahvana_candidates_${userId}`;
+
+function readCandidatesFromStorage(userId: string): CandidateProfile[] | null {
+  try {
+    const raw = localStorage.getItem(candidateStorageKey(userId));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as CandidateProfile[];
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeCandidatesToStorage(userId: string, candidates: CandidateProfile[]) {
+  try {
+    localStorage.setItem(candidateStorageKey(userId), JSON.stringify(candidates));
+  } catch {
+    /* non-fatal — storage quota or private mode */
+  }
+}
+
 
 interface CandidateContextType {
   /** Array of all candidate profiles associated with the account */
@@ -94,8 +117,13 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
   const [activeCandidateId, setActiveCandidateIdState] = useState<string>("candidate-1");
   const candidatesRef = useRef<CandidateProfile[]>([]);
 
+  // Track whether we've already re-synced the localStorage backup to the server
+  // after a profile load that was missing candidates (avoids infinite loops).
+  const didResyncRef = useRef(false);
+
   // ── Derive or initialize candidates ───────────────────────────────────────
   const candidates: CandidateProfile[] = useMemo(() => {
+    // DB-backed candidates — normalize and use if present.
     if (profile?.candidates && Array.isArray(profile.candidates) && profile.candidates.length > 0) {
       // Normalize legacy candidate data so older accounts pick up the current rules
       // without a re-add or DB migration:
@@ -144,12 +172,23 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
       return normalized;
     }
 
-    // Default fallback candidate
+    // ── Safety net: restore from localStorage if DB is empty ─────────────────
+    // Covers three failure modes: aborted save on navigation, token-refresh race
+    // where user?.id was null when addCandidate ran, and transient fetch errors.
+    if (user?.id && !isProfileLoading) {
+      const stored = readCandidatesFromStorage(user.id);
+      if (stored && stored.length > 0) {
+        candidatesRef.current = stored;
+        return stored;
+      }
+    }
+
+    // Default fallback — single candidate derived from the journey type.
     const visa = profile?.visaType || profile?.visaCategory || "IR-5";
     const defaults = getDefaultCandidatesForVisa(visa, "free", false);
     candidatesRef.current = defaults;
     return defaults;
-  }, [profile?.candidates, profile?.visaType, profile?.visaCategory]);
+  }, [profile?.candidates, profile?.visaType, profile?.visaCategory, user?.id, isProfileLoading]);
 
   // ── Restore activeCandidateId from profile / localStorage (ONCE) ─────────
   // Hydrate the active candidate a single time from profile/session. After that, an
@@ -184,6 +223,25 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
       // sessionStorage unavailable — non-fatal
     }
   }, [profile?.activeCandidateId, candidates, activeCandidateId, isProfileLoading]);
+
+  // ── Re-sync localStorage backup → DB when candidates were restored from storage
+  // If the DB profile came back without candidates but localStorage had them,
+  // push them back to the server NOW (once, when profile finishes loading).
+  useEffect(() => {
+    if (isProfileLoading || didResyncRef.current) return;
+    if (!user?.id) return;
+    // If profile has no candidates but we're serving from localStorage,
+    // re-sync the localStorage copy back to the DB.
+    const profileHasCandidates =
+      profile?.candidates && Array.isArray(profile.candidates) && profile.candidates.length > 0;
+    if (!profileHasCandidates && candidatesRef.current.length > 0) {
+      didResyncRef.current = true;
+      updateProfile(
+        { candidates: candidatesRef.current, activeCandidateId },
+        { silent: true, immediate: true }
+      );
+    }
+  }, [isProfileLoading, user?.id, profile?.candidates, activeCandidateId, updateProfile]);
 
   // ── Set active candidate ──────────────────────────────────────────────────
   const setActiveCandidateId = useCallback(
@@ -248,7 +306,10 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
       const updated = [...candidatesRef.current, newCand];
       candidatesRef.current = updated;
 
+      // Mirror to localStorage FIRST — this is the safety net that survives
+      // aborted fetches, token refresh races, and page unloads.
       if (user?.id) {
+        writeCandidatesToStorage(user.id, updated);
         updateProfile(
           {
             candidates: updated,
@@ -278,6 +339,7 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
       candidatesRef.current = updated;
 
       if (user?.id) {
+        writeCandidatesToStorage(user.id, updated);
         updateProfile({ candidates: updated }, { silent: true });
       }
     },
@@ -301,6 +363,8 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
 
       try {
         sessionStorage.setItem(ACTIVE_CANDIDATE_STORAGE_KEY, nextActiveId);
+        // Mirror updated candidate list to localStorage immediately.
+        if (user?.id) writeCandidatesToStorage(user.id, updated);
         // Clean up candidate-scoped local storage keys
         localStorage.removeItem(`rahvana_guide_sessions_${id}`);
         const keysToRemove: string[] = [];

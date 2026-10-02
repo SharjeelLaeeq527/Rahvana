@@ -138,7 +138,9 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
     try {
       setIsProfileLoading(true);
 
-      const response = await fetch("/api/profile");
+      const response = await fetch("/api/profile", {
+        signal: AbortSignal.timeout(8000),
+      });
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
         throw new Error(data.error || "Failed to fetch profile");
@@ -150,8 +152,10 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
       } else {
         setProfile(null);
       }
-    } catch (err) {
-      console.error("[UserProfileContext] Unexpected error fetching profile:", err);
+    } catch (err: any) {
+      if (err?.name !== "AbortError" && err?.name !== "TimeoutError") {
+        console.warn("[UserProfileContext] Fetch profile note:", err?.message || err);
+      }
       // Keep any previously-loaded profile on a transient fetch error (e.g. a
       // dev-server hiccup). Nulling it here would blank dependent UI such as the
       // Ch.1 Step 4 consistency baseline right after the user saved their DOB.

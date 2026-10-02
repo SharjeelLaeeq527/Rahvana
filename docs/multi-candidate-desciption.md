@@ -439,11 +439,13 @@ Interactive modal for adding a 2nd parent (IR-5) or additional children (IR-2):
 
 ### I. Phase C: Smart Form Filler Draft & Progress Isolation
 
-#### 24. MultiStepForm Client Scoping (`app/components/forms/auto-visaform-filling/MultiStepForm.tsx`)
+#### 24. MultiStepForm Client Scoping & Beneficiary Spotlight (`app/components/forms/auto-visaform-filling/MultiStepForm.tsx`, `FormStep.tsx`, `ReviewPage.tsx`)
 - Scopes form drafts by `activeJourneyKey` (e.g. `ir5`, `ir5_candidate2`, `ir1`) from `CandidateContext` rather than hardcoding `"global"`.
 - Uses composite hydration keys `${formCode}:${userId}:${draftJourneyKey}` so switching candidate profiles in the global switcher immediately re-hydrates the form state for the newly active candidate.
 - Scopes browser `localStorage` draft backups with `visa_form_draft_backup:${formCode}:${journeyKey}` with fallback to legacy `global` backups.
-- Overlays candidate-specific profile data (beneficiary names, DOB, passport details, CNIC) during auto-fill overrides while maintaining shared sponsor fields across candidates.
+- **Beneficiary Spotlight UX**: Replaces alarming caution badges with calm, elegant Beneficiary Focus indicators (`Beneficiary Details • Candidate Name`) and supportive guidance callouts on all candidate-distinct fields (Names, DOB, Place of Birth, Passport #, CNIC, Relationship, Marital Status).
+- **Identity-Safe Smart Inheritance**: Auto-syncs shared sponsor/petitioner and household fields from Candidate 1 while isolating Candidate 1's distinct identity data and automatically mapping Candidate 2's profile data.
+- **Interactive Review & Audit Page**: Features a dedicated Beneficiary Spotlight checklist, smart view filter tabs (All Steps / Beneficiary Focus / Sponsor Shared), per-section verification actions, and non-intimidating, clear attestation checkboxes.
 - Debounced autosave and `finalizeDraft` payloads send the active `draftJourneyKey`.
 - Automatically attaches `journeyId` when saving generated PDFs directly to Document Vault.
 

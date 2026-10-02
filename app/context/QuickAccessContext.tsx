@@ -32,6 +32,27 @@ interface QuickAccessContextType {
   isInQuickAccess: (id: string) => boolean;
 }
 
+const LOCAL_STORAGE_KEY = "rahvana_quick_access_items";
+
+const readLocalBackup = (): QuickAccessItem[] => {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(LOCAL_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+};
+
+const writeLocalBackup = (items: QuickAccessItem[]) => {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(items));
+  } catch {
+    // Ignore storage quota errors
+  }
+};
+
 // ─── Context ─────────────────────────────────────────────────────────────────
 
 const QuickAccessContext = createContext<QuickAccessContextType>({
@@ -51,12 +72,22 @@ export function QuickAccessProvider({ children }: { children: React.ReactNode })
   // Prevent double-fetching on strict-mode double effects
   const fetchedForUser = useRef<string | null>(null);
 
+  // Initialize from local backup if available
+  useEffect(() => {
+    const local = readLocalBackup();
+    if (local.length > 0) {
+      setItems(local);
+    }
+  }, []);
+
   // ── Fetch all items on user login ──────────────────────────────────────────
   const fetchItems = useCallback(async () => {
     if (!user) return;
     setIsLoading(true);
     try {
-      const res = await fetch("/api/quick-access");
+      const res = await fetch("/api/quick-access", {
+        signal: AbortSignal.timeout(6000),
+      });
       if (res.ok) {
         const data = await res.json();
         // Map DB columns → QuickAccessItem shape
@@ -67,9 +98,13 @@ export function QuickAccessProvider({ children }: { children: React.ReactNode })
           icon_name: row.icon_name ?? undefined,
         }));
         setItems(mapped);
+        writeLocalBackup(mapped);
       }
-    } catch (err) {
-      console.error("[QuickAccessContext] fetchItems:", err);
+    } catch (err: any) {
+      // Gracefully handle network timeouts / offline mode without crashing
+      if (err?.name !== "AbortError" && err?.name !== "TimeoutError") {
+        console.warn("[QuickAccessContext] fetchItems fallback:", err?.message || err);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -93,23 +128,34 @@ export function QuickAccessProvider({ children }: { children: React.ReactNode })
     async (item: QuickAccessItem) => {
       if (!user) return;
       // Optimistic update
-      setItems((prev) =>
-        prev.some((i) => i.id === item.id) ? prev : [...prev, item]
-      );
+      setItems((prev) => {
+        const updated = prev.some((i) => i.id === item.id) ? prev : [...prev, item];
+        writeLocalBackup(updated);
+        return updated;
+      });
       try {
         const res = await fetch("/api/quick-access", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(item),
+          signal: AbortSignal.timeout(6000),
         });
         if (!res.ok) {
           // Roll back on failure
-          setItems((prev) => prev.filter((i) => i.id !== item.id));
-          console.error("[QuickAccessContext] addItem failed:", await res.text());
+          setItems((prev) => {
+            const reverted = prev.filter((i) => i.id !== item.id);
+            writeLocalBackup(reverted);
+            return reverted;
+          });
+          console.warn("[QuickAccessContext] addItem failed:", await res.text());
         }
       } catch (err) {
-        setItems((prev) => prev.filter((i) => i.id !== item.id));
-        console.error("[QuickAccessContext] addItem:", err);
+        setItems((prev) => {
+          const reverted = prev.filter((i) => i.id !== item.id);
+          writeLocalBackup(reverted);
+          return reverted;
+        });
+        console.warn("[QuickAccessContext] addItem error:", err);
       }
     },
     [user]
@@ -121,21 +167,28 @@ export function QuickAccessProvider({ children }: { children: React.ReactNode })
       if (!user) return;
       // Optimistic update
       const prev = items;
-      setItems((p) => p.filter((i) => i.id !== id));
+      setItems((p) => {
+        const updated = p.filter((i) => i.id !== id);
+        writeLocalBackup(updated);
+        return updated;
+      });
       try {
         const res = await fetch("/api/quick-access", {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ id }),
+          signal: AbortSignal.timeout(6000),
         });
         if (!res.ok) {
           // Roll back
           setItems(prev);
-          console.error("[QuickAccessContext] removeItem failed:", await res.text());
+          writeLocalBackup(prev);
+          console.warn("[QuickAccessContext] removeItem failed:", await res.text());
         }
       } catch (err) {
         setItems(prev);
-        console.error("[QuickAccessContext] removeItem:", err);
+        writeLocalBackup(prev);
+        console.warn("[QuickAccessContext] removeItem error:", err);
       }
     },
     [user, items]

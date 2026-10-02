@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Field } from "@/lib/formConfig/types";
+import type { CandidateProfile } from "@/types/candidate";
+import { getFieldCandidateScope } from "@/lib/formConfig/candidateScope";
 import {
-  CheckCircle,
+  CheckCircle2,
+  Circle,
   Edit3,
   ChevronDown,
   ChevronUp,
@@ -12,10 +15,15 @@ import {
   Download,
   Save,
   ArrowLeft,
-  FileCheck,
+  FileCheck2,
   Lock,
+  User,
+  ShieldCheck,
+  AlertTriangle,
 } from "lucide-react";
 import { useLanguage } from "@/app/context/LanguageContext";
+
+/* ─── helpers ─────────────────────────────────────────────────────────────── */
 
 const isFieldAnswered = (field: Field, formData: Record<string, string>): boolean => {
   if (field.type === "checkbox" && field.options) {
@@ -27,10 +35,10 @@ const isFieldAnswered = (field: Field, formData: Record<string, string>): boolea
 
 const getDisplayValue = (field: Field, formData: Record<string, string>): string => {
   if (field.type === "checkbox" && field.options) {
-    const selectedLabels = field.options
+    return field.options
       .filter((opt) => formData[opt.pdfKey || opt.value] === "Yes")
-      .map((opt) => opt.label);
-    return selectedLabels.join(", ");
+      .map((opt) => opt.label)
+      .join(", ");
   }
   return formData[field.key] ?? "";
 };
@@ -41,75 +49,138 @@ interface ReviewGroup {
   label: string;
   fields: Field[];
 }
-
 interface ReviewFieldItem {
   type: "field";
   key: string;
   label: string;
   field: Field;
 }
-
 type ReviewItem = ReviewGroup | ReviewFieldItem;
 
 const getReviewItems = (fields: Field[], formData: Record<string, string>): ReviewItem[] => {
   const items: ReviewItem[] = [];
-
   const processField = (field: Field) => {
-    if (field.condition && !field.condition(formData)) {
-      return;
-    }
-
+    if (field.condition && !field.condition(formData)) return;
     if (field.type === "hidden" && field.subQuestions && field.subQuestions.length > 0) {
-      // Gather visible subQuestions
       const visibleSubQuestions: Field[] = [];
       const collectSubs = (subField: Field) => {
-        if (subField.condition && !subField.condition(formData)) {
-          return;
-        }
-        if (subField.type !== "hidden" || subField.label) {
-          visibleSubQuestions.push(subField);
-        }
-        if (subField.subQuestions) {
-          subField.subQuestions.forEach((subQ) => {
-            collectSubs(subQ as unknown as Field);
-          });
-        }
+        if (subField.condition && !subField.condition(formData)) return;
+        if (subField.type !== "hidden" || subField.label) visibleSubQuestions.push(subField);
+        if (subField.subQuestions) subField.subQuestions.forEach((s) => collectSubs(s as unknown as Field));
       };
-
-      field.subQuestions.forEach((subQ) => {
-        collectSubs(subQ as unknown as Field);
-      });
-
-      if (visibleSubQuestions.length > 0) {
-        items.push({
-          type: "group",
-          key: field.key,
-          label: field.label,
-          fields: visibleSubQuestions,
-        });
-      }
+      field.subQuestions.forEach((s) => collectSubs(s as unknown as Field));
+      if (visibleSubQuestions.length > 0)
+        items.push({ type: "group", key: field.key, label: field.label, fields: visibleSubQuestions });
     } else if (field.type !== "hidden") {
-      items.push({
-        type: "field",
-        key: field.key,
-        label: field.label,
-        field,
-      });
+      items.push({ type: "field", key: field.key, label: field.label, field });
     } else if (field.label) {
-      items.push({
-        type: "field",
-        key: field.key,
-        label: field.label,
-        field,
-      });
+      items.push({ type: "field", key: field.key, label: field.label, field });
     }
   };
-
   fields.forEach(processField);
   return items;
 };
 
-interface ReviewPageProps {
+/* ─── FieldCard ─────────────────────────────────────────────────────────────*/
+
+interface FieldCardProps {
+  fieldKey: string;
+  label: string;
+  val: string;
+  hasVal: boolean;
+  isChecked: boolean;
+  isCandidateField: boolean;
+  candidateName: string;
+  onToggle: () => void;
+  size?: "sm" | "md";
+}
+
+function FieldCard({
+  label,
+  val,
+  hasVal,
+  isChecked,
+  isCandidateField,
+  candidateName,
+  onToggle,
+}: FieldCardProps) {
+  const cardStyles = isChecked
+    ? "bg-[#f0fbf6] border-[#a3e4c8] shadow-sm"
+    : !hasVal
+    ? "bg-amber-50/40 border-amber-200 shadow-sm"
+    : isCandidateField
+    ? "bg-sky-50/45 border-sky-200/90 shadow-sm"
+    : "bg-white border-slate-200 shadow-sm";
+
+  const btnStyles = isChecked
+    ? "bg-[#0d7857] text-white hover:bg-[#096245] shadow-xs"
+    : "bg-white text-slate-600 hover:bg-teal-50 hover:text-teal-700 border border-slate-200 shadow-2xs";
+
+  const chipStyles = isChecked
+    ? "bg-[#e6f7ef] text-[#09573c] font-medium border border-[#b2e8d2]"
+    : isCandidateField
+    ? "bg-sky-100/70 text-sky-950 font-medium border border-sky-200/70"
+    : "bg-slate-100 text-slate-800 border border-slate-200/50";
+
+  return (
+    <div
+      onClick={onToggle}
+      className={`p-4 rounded-xl border transition-all flex flex-col justify-between cursor-pointer hover:shadow-md ${cardStyles}`}
+    >
+      <div>
+        {/* Zone 1: pill (beneficiary only) */}
+        {isCandidateField && (
+          <div className="mb-2">
+            <span className="inline-flex items-center gap-1 text-[9px] font-bold text-[#0369a1] bg-[#e0f2fe] border border-[#7dd3fc] px-2 py-0.5 rounded-full tracking-wide uppercase shadow-2xs">
+              <User className="w-2.5 h-2.5 text-[#0284c7]" />
+              {candidateName}
+            </span>
+          </div>
+        )}
+
+        {/* Zone 2: label */}
+        <p className="text-xs font-semibold text-slate-700 leading-snug">
+          {label}
+        </p>
+      </div>
+
+      <div>
+        {/* Zone 3: value — clean breathing room before answer */}
+        <div className="pt-3 border-t border-slate-100/80 mt-3.5">
+          {hasVal ? (
+            <span title={val} className={`text-xs font-medium px-2.5 py-1 rounded-md block truncate ${chipStyles}`}>
+              {val}
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-md bg-amber-100/90 text-amber-800 border border-amber-200">
+              <AlertTriangle className="w-2.5 h-2.5 shrink-0 text-amber-600" />
+              Not provided
+            </span>
+          )}
+        </div>
+
+        {/* Zone 4: verify button — full width, pinned bottom */}
+        <div className="pt-2.5">
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onToggle(); }}
+            className={`w-full inline-flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${btnStyles}`}
+          >
+            {isChecked ? (
+              <><CheckCircle2 className="w-3.5 h-3.5" strokeWidth={2.5} />Verified</>
+            ) : (
+              <><Circle className="w-3.5 h-3.5 text-slate-400" />Verify</>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── props ────────────────────────────────────────────────────────────────── */
+
+export interface ReviewPageProps {
   formData: Record<string, string>;
   sections: { title: string; fields: Field[] }[];
   onEditStep: (step: number) => void;
@@ -122,7 +193,11 @@ interface ReviewPageProps {
   isSavingToVault?: boolean;
   isFreePreview?: boolean;
   onUpgradeClick?: () => void;
+  formCode?: string;
+  activeCandidate?: CandidateProfile | null;
 }
+
+/* ─── component ─────────────────────────────────────────────────────────────*/
 
 export function ReviewPage({
   formData,
@@ -137,351 +212,518 @@ export function ReviewPage({
   isSavingToVault,
   isFreePreview = false,
   onUpgradeClick,
+  formCode = "i130",
+  activeCandidate,
 }: ReviewPageProps) {
   const { t } = useLanguage();
-  const [expandedSections, setExpandedSections] = useState<Set<number>>(
-    new Set([0]) // First section expanded by default
-  );
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
-  const toggleSection = (idx: number) => {
-    setExpandedSections((prev) => {
+  const [verifiedFields, setVerifiedFields] = useState<Set<string>>(new Set());
+  const [collapsedSections, setCollapsedSections] = useState<Set<number>>(new Set());
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  const [filterMode, setFilterMode] = useState<"all" | "beneficiary" | "unanswered" | "unverified">("all");
+
+  // Extract all fields per section to calculate total & progress
+  const sectionFieldMap = useMemo(() => {
+    return sections.map((section, idx) => {
+      const reviewItems = getReviewItems(section.fields, formData);
+      const allFields: Field[] = [];
+      reviewItems.forEach((item) => {
+        if (item.type === "group") allFields.push(...item.fields);
+        else allFields.push(item.field);
+      });
+      return {
+        sectionIdx: idx,
+        section,
+        reviewItems,
+        allFields,
+        fieldKeys: allFields.map((f) => f.key),
+      };
+    });
+  }, [sections, formData]);
+
+  const totalAnswerCount = useMemo(() => {
+    return sectionFieldMap.reduce((acc, curr) => acc + curr.allFields.length, 0);
+  }, [sectionFieldMap]);
+
+  const verifiedAnswerCount = useMemo(() => {
+    let count = 0;
+    sectionFieldMap.forEach((item) => {
+      item.allFields.forEach((f) => {
+        if (verifiedFields.has(f.key)) count++;
+      });
+    });
+    return count;
+  }, [sectionFieldMap, verifiedFields]);
+
+  const beneficiaryFieldCount = useMemo(() => {
+    if (!activeCandidate) return 0;
+    let count = 0;
+    sectionFieldMap.forEach((item) => {
+      item.allFields.forEach((f) => {
+        if (getFieldCandidateScope(formCode, f, item.section.title) === "candidate_distinct") {
+          count++;
+        }
+      });
+    });
+    return count;
+  }, [sectionFieldMap, formCode, activeCandidate]);
+
+  const unansweredFieldCount = useMemo(() => {
+    let count = 0;
+    sectionFieldMap.forEach((item) => {
+      item.allFields.forEach((f) => {
+        if (!isFieldAnswered(f, formData)) count++;
+      });
+    });
+    return count;
+  }, [sectionFieldMap, formData]);
+
+  const unverifiedFieldCount = totalAnswerCount - verifiedAnswerCount;
+  const progressPercent =
+    totalAnswerCount > 0 ? Math.round((verifiedAnswerCount / totalAnswerCount) * 100) : 0;
+  const allConfirmed = totalAnswerCount > 0 && verifiedAnswerCount === totalAnswerCount;
+
+  const candidateName = useMemo(() => {
+    if (!activeCandidate) return "Beneficiary";
+    if (activeCandidate.fullName) return activeCandidate.fullName.split(" ")[0];
+
+    const firstNameKeys = [
+      "pt4_beneficiary_first",
+      "beneficiary_first_name",
+      "ds260_first_name",
+      "applicant_first_name",
+      "immigrant_first_name",
+    ];
+    for (const k of firstNameKeys) {
+      const v = formData[k]?.trim();
+      if (v) return v;
+    }
+
+    if (activeCandidate.label)
+      return activeCandidate.label
+        .replace(/candidate\s*(\d+)?/i, (_: string, n: string) => (n ? `Beneficiary ${n}` : "Beneficiary"))
+        .trim();
+    return "Beneficiary";
+  }, [activeCandidate, formData]);
+
+  const candidateRelation = useMemo(() => {
+    const r = activeCandidate?.relation?.trim().toLowerCase() ?? "";
+    const map: Record<string, string> = {
+      spouse: "Spouse", wife: "Wife", husband: "Husband",
+      child: "Child", son: "Son", daughter: "Daughter",
+      mother: "Mother", father: "Father", parent: "Parent",
+      brother: "Brother", sister: "Sister", other: "",
+    };
+    return r in map ? map[r] : (activeCandidate?.relation ?? "");
+  }, [activeCandidate]);
+
+  const toggleFieldVerified = (fieldKey: string) => {
+    setVerifiedFields((prev) => {
       const next = new Set(prev);
-      if (next.has(idx)) next.delete(idx);
-      else next.add(idx);
+      if (next.has(fieldKey)) {
+        next.delete(fieldKey);
+      } else {
+        next.add(fieldKey);
+      }
       return next;
+    });
+  };
+
+  const toggleSectionCollapse = (idx: number) => {
+    setCollapsedSections((prev) => {
+      const n = new Set(prev);
+      if (n.has(idx)) n.delete(idx); else n.add(idx);
+      return n;
     });
   };
 
   const toggleGroup = (key: string) => {
     setExpandedGroups((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
+      const n = new Set(prev);
+      if (n.has(key)) n.delete(key); else n.add(key);
+      return n;
     });
   };
 
-  const completedCount = sections.filter((section) => {
-    const reviewItems = getReviewItems(section.fields, formData);
-    const visibleFieldItems: Field[] = [];
-    reviewItems.forEach((item) => {
-      if (item.type === "group") {
-        visibleFieldItems.push(...item.fields);
-      } else {
-        visibleFieldItems.push(item.field);
-      }
-    });
-    return (
-      visibleFieldItems.length > 0 && visibleFieldItems.some((f) => isFieldAnswered(f, formData))
-    );
-  }).length;
-
-  const totalCount = sections.length;
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 w-full pb-20">
+
       {/* Free Preview Banner */}
       {isFreePreview && (
-        <div className="animate-in fade-in slide-in-from-top-4 flex flex-col justify-between gap-4 rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 p-5 shadow-sm duration-300 sm:flex-row sm:items-center">
-          <div className="flex items-start gap-3.5">
-            <div className="shrink-0 rounded-xl bg-amber-100/80 p-2.5 text-amber-700">
-              <Lock size={20} className="stroke-[2.5]" />
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="rounded-xl bg-amber-500 p-2 text-white shrink-0">
+              <Lock size={15} />
             </div>
             <div>
-              <h4 className="text-sm font-bold text-amber-900">
-                Free Preview Mode (10 Questions Limit)
-              </h4>
-              <p className="mt-1 text-xs leading-relaxed text-amber-800/85">
-                You are currently in Free Preview mode. You can fill up to 10 questions and
-                print/preview the <strong>first page</strong> of your completed PDF to test the
-                tool.
-              </p>
+              <p className="text-sm font-bold text-amber-950">Free Preview Active</p>
+              <p className="text-xs text-amber-700 mt-0.5">You can audit and test-print Page 1 of your completed form PDF.</p>
             </div>
           </div>
           <button
             onClick={onUpgradeClick}
-            className="flex shrink-0 items-center gap-1.5 rounded-lg bg-gradient-to-r from-amber-600 to-amber-500 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition-all duration-150 hover:from-amber-700 hover:to-amber-600 active:scale-[0.98]"
+            className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-sm transition-all shrink-0 cursor-pointer"
           >
             Unlock Full PDF
           </button>
         </div>
       )}
 
-      {/* Header with Stats */}
-      <div
-        className="rounded-2xl border-2 p-6 md:p-8"
-        style={{
-          background: "linear-gradient(135deg, #0d7377 0%, #14a0a6 100%)",
-          borderColor: "rgba(13, 115, 119, 0.2)",
-          boxShadow: "0 8px 30px -8px rgba(13, 115, 119, 0.3)",
-        }}
-      >
-        <div className="mb-6 flex items-start justify-between">
+      {/* Hero Header */}
+      <div className="rounded-2xl border border-slate-200 bg-white px-6 py-6 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-5">
           <div className="flex items-start gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
-              <FileCheck className="h-7 w-7 text-white" />
+            <div className="h-11 w-11 rounded-xl bg-teal-50 border border-teal-200 flex items-center justify-center text-[#0d7377] shrink-0 mt-0.5">
+              <FileCheck2 className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="mb-2 text-2xl font-bold text-white md:text-3xl">
-                Review Your Information
-              </h2>
-              <p className="text-sm text-white/90 md:text-base">
-                Everything looks good! Please review each section before finalizing.
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <h1 className="text-xl font-bold text-slate-900">Form Review &amp; Confirmation</h1>
+                {activeCandidate && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-[#e0f2fe] text-[#0369a1] border border-[#7dd3fc]">
+                    <User className="w-3 h-3 text-[#0284c7]" />
+                    {candidateName}{candidateRelation ? ` · ${candidateRelation}` : ""}
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-slate-400 mt-1">
+                Audit each response below. Click any card or use the Verify button to confirm details before exporting.
               </p>
             </div>
           </div>
+
+          {allConfirmed && (
+            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl self-start shadow-sm whitespace-nowrap">
+              <ShieldCheck className="w-4 h-4" />
+              All Verified · Ready to Export
+            </span>
+          )}
         </div>
 
-        {/* Progress Stats */}
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-          <div className="rounded-xl bg-white/10 p-4 backdrop-blur-sm">
-            <div className="mb-1 text-3xl font-bold text-white">{completedCount}</div>
-            <div className="text-sm text-white/80">Sections Completed</div>
+        {/* Progress bar */}
+        <div className="mb-5">
+          <div className="flex items-center justify-between text-xs font-semibold mb-2 text-slate-500">
+            <span>{verifiedAnswerCount} of {totalAnswerCount} answers verified</span>
+            <span className={allConfirmed ? "text-emerald-600 font-bold" : "text-[#0d7377]"}>{progressPercent}%</span>
           </div>
-          <div className="rounded-xl bg-white/10 p-4 backdrop-blur-sm">
-            <div className="mb-1 text-3xl font-bold text-white">{totalCount}</div>
-            <div className="text-sm text-white/80">Total Sections</div>
+          <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+            <motion.div
+              className="h-full rounded-full"
+              style={{ backgroundColor: allConfirmed ? "#16a34a" : "#0d7377" }}
+              initial={{ width: 0 }}
+              animate={{ width: `${progressPercent}%` }}
+              transition={{ duration: 0.35, ease: "easeOut" }}
+            />
           </div>
-          <div className="col-span-2 rounded-xl bg-white/10 p-4 backdrop-blur-sm md:col-span-1">
-            <div className="mb-1 text-3xl font-bold text-white">
-              {Math.round((completedCount / totalCount) * 100)}%
-            </div>
-            <div className="text-sm text-white/80">Completion Rate</div>
-          </div>
+        </div>
+
+        {/* Focus Filter Pills */}
+        <div className="flex items-center gap-2 flex-wrap pt-4 border-t border-slate-100">
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mr-0.5">Focus</span>
+
+          <button
+            type="button"
+            onClick={() => setFilterMode("all")}
+            className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+              filterMode === "all" ? "bg-slate-800 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+            }`}
+          >
+            All Fields ({totalAnswerCount})
+          </button>
+
+          {beneficiaryFieldCount > 0 && (
+            <button
+              type="button"
+              onClick={() => setFilterMode("beneficiary")}
+              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                filterMode === "beneficiary"
+                  ? "bg-[#0284c7] text-white shadow-xs"
+                  : "bg-[#e0f2fe] text-[#0369a1] border border-[#7dd3fc] hover:bg-[#bae6fd]"
+              }`}
+            >
+              <User className="w-3 h-3" />
+              Beneficiary Only ({beneficiaryFieldCount})
+            </button>
+          )}
+
+          {unansweredFieldCount > 0 && (
+            <button
+              type="button"
+              onClick={() => setFilterMode("unanswered")}
+              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                filterMode === "unanswered"
+                  ? "bg-amber-500 text-white"
+                  : "bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100"
+              }`}
+            >
+              <AlertTriangle className="w-3 h-3" />
+              Not Provided ({unansweredFieldCount})
+            </button>
+          )}
+
+          {unverifiedFieldCount > 0 && (
+            <button
+              type="button"
+              onClick={() => setFilterMode("unverified")}
+              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                filterMode === "unverified"
+                  ? "bg-slate-700 text-white"
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              }`}
+            >
+              Pending ({unverifiedFieldCount})
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Accordion Sections */}
-      <div className="space-y-3">
-        {sections.map((section, idx) => {
-          const stepNum = idx + 1;
-          const reviewItems = getReviewItems(section.fields, formData);
-          const visibleFieldItems: Field[] = [];
-          reviewItems.forEach((item) => {
-            if (item.type === "group") {
-              visibleFieldItems.push(...item.fields);
-            } else {
-              visibleFieldItems.push(item.field);
-            }
+      {/* Section Cards */}
+      <div className="space-y-6">
+        {sectionFieldMap.map(({ section, reviewItems, allFields, sectionIdx }) => {
+          const stepNum = sectionIdx + 1;
+          const total = allFields.length;
+          const answeredFields = allFields.filter((f) => isFieldAnswered(f, formData)).length;
+          const unanswered = total - answeredFields;
+          const verifiedCount = allFields.filter((f) => verifiedFields.has(f.key)).length;
+          const isSectionComplete = total > 0 && verifiedCount === total;
+          const isCollapsed = collapsedSections.has(sectionIdx);
+
+          const filteredReviewItems = reviewItems.filter((item) => {
+            if (filterMode === "all") return true;
+            const checkField = (f: Field) => {
+              const isCandidate = getFieldCandidateScope(formCode, f, section.title) === "candidate_distinct";
+              const isAnswered = isFieldAnswered(f, formData);
+              const isVerified = verifiedFields.has(f.key);
+              if (filterMode === "beneficiary") return isCandidate;
+              if (filterMode === "unanswered") return !isAnswered;
+              if (filterMode === "unverified") return !isVerified;
+              return true;
+            };
+            if (item.type === "group") return item.fields.some(checkField);
+            return checkField(item.field);
           });
-          const totalFields = visibleFieldItems.length;
-          const answeredFields = visibleFieldItems.filter((f) =>
-            isFieldAnswered(f, formData)
-          ).length;
-          const hasData = answeredFields > 0;
-          const isExpanded = expandedSections.has(idx);
+
+          if (filterMode !== "all" && filteredReviewItems.length === 0) return null;
 
           return (
-            <motion.div
-              key={`${section.title}-${idx}`}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.05 }}
-              className="overflow-hidden rounded-xl border-2 transition-all hover:shadow-lg"
-              style={{
-                borderColor: isExpanded ? "rgba(13, 115, 119, 0.3)" : "rgba(0, 0, 0, 0.08)",
-                backgroundColor: isExpanded ? "#ffffff" : "#fafafa",
-              }}
+            <div
+              key={`sec-${sectionIdx}`}
+              className="rounded-2xl border bg-white overflow-hidden shadow-sm transition-all"
+              style={{ borderColor: isSectionComplete ? "#a3e4c8" : "#e2e8f0" }}
             >
               {/* Section Header */}
               <div
-                className="flex cursor-pointer items-center gap-4 px-5 py-4 transition-colors hover:bg-[#e8f6f6]/50 md:px-6"
-                onClick={() => toggleSection(idx)}
+                onClick={() => toggleSectionCollapse(sectionIdx)}
+                className={`px-5 py-4 border-b flex items-center justify-between gap-3 cursor-pointer transition-colors ${
+                  isSectionComplete
+                    ? "bg-[#f0fbf6] border-[#a3e4c8]"
+                    : "bg-slate-50/50 border-slate-100 hover:bg-slate-50"
+                }`}
               >
-                <div
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
-                  style={{
-                    background: hasData
-                      ? "linear-gradient(135deg, #0d7377 0%, #14a0a6 100%)"
-                      : "#e8f6f6",
-                    color: hasData ? "#fff" : "#0a5a5d",
-                  }}
-                >
-                  {hasData ? (
-                    <CheckCircle className="h-5 w-5" />
-                  ) : (
-                    <span className="text-sm font-bold">{stepNum}</span>
-                  )}
-                </div>
-
-                <div className="min-w-0 flex-1">
-                  <h3 className="truncate text-base font-bold text-gray-900 md:text-lg">
-                    Step {stepNum}: {section.title}
-                  </h3>
-                  <p className="mt-0.5 text-xs text-gray-600 md:text-sm">
-                    {answeredFields} of {totalFields} fields completed
-                  </p>
-                </div>
-
-                <div className="flex shrink-0 items-center gap-2">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onEditStep(stepNum);
-                    }}
-                    className="flex items-center gap-2 rounded-lg bg-[#0d7377] px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-[#0a5a5d]"
+                <div className="flex items-center gap-3 min-w-0">
+                  <span
+                    className={`w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center shrink-0 ${
+                      isSectionComplete ? "bg-[#0d7857] text-white" : "bg-[#0d7377] text-white"
+                    }`}
                   >
-                    <Edit3 className="h-4 w-4" />
+                    {isSectionComplete ? "✓" : stepNum}
+                  </span>
+                  <div className="min-w-0">
+                    <h2 className="text-sm sm:text-base font-bold text-slate-800 truncate">{section.title}</h2>
+                    <p className="text-xs text-slate-400 mt-0.5 flex items-center gap-2">
+                      <span>{verifiedCount} of {total} verified</span>
+                      {unanswered > 0 && (
+                        <span className="inline-flex items-center gap-1 text-amber-600 font-semibold">
+                          <AlertTriangle className="w-3 h-3" />
+                          {unanswered} not provided
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); onEditStep(stepNum); }}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-[#0d7377] bg-white hover:bg-teal-50 border border-slate-200 transition-colors cursor-pointer"
+                  >
+                    <Edit3 className="w-3.5 h-3.5" />
                     Edit
                   </button>
-                  {isExpanded ? (
-                    <ChevronUp className="h-5 w-5 text-gray-400" />
-                  ) : (
-                    <ChevronDown className="h-5 w-5 text-gray-400" />
-                  )}
+                  <div className="p-1 text-slate-400">
+                    {isCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+                  </div>
                 </div>
               </div>
 
-              {/* Section Content */}
-              <AnimatePresence>
-                {isExpanded && (
+              {/* Section Body */}
+              <AnimatePresence initial={false}>
+                {!isCollapsed && (
                   <motion.div
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: "auto", opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="overflow-hidden"
+                    transition={{ duration: 0.2 }}
+                    className="p-5 sm:p-6 space-y-5 bg-slate-50/20"
                   >
-                    <div className="border-t border-gray-100 px-5 pb-5 md:px-6">
-                      <div className="space-y-3 pt-4">
-                        {reviewItems.map((item, itemIdx) => {
-                          if (item.type === "group") {
-                            const isGroupExpanded = expandedGroups.has(item.key);
-                            const groupAnsweredCount = item.fields.filter((f) =>
-                              isFieldAnswered(f, formData)
-                            ).length;
-                            const groupTotalCount = item.fields.length;
+                    {/* Nested Groups */}
+                    {filteredReviewItems
+                      .filter((item): item is ReviewGroup => item.type === "group")
+                      .map((item, itemIdx) => {
+                        const isGroupExpanded = expandedGroups.has(item.key);
+                        const groupFields = item.fields.filter((f) => {
+                          if (filterMode === "all") return true;
+                          const isCandidate = getFieldCandidateScope(formCode, f, section.title) === "candidate_distinct";
+                          const isAnswered = isFieldAnswered(f, formData);
+                          const isVerified = verifiedFields.has(f.key);
+                          if (filterMode === "beneficiary") return isCandidate;
+                          if (filterMode === "unanswered") return !isAnswered;
+                          if (filterMode === "unverified") return !isVerified;
+                          return true;
+                        });
+                        const groupVerifiedCount = groupFields.filter((f) => verifiedFields.has(f.key)).length;
 
-                            return (
-                              <div
-                                key={item.key || `group-${itemIdx}`}
-                                className="my-2 overflow-hidden rounded-lg border border-gray-100 bg-white shadow-sm"
-                              >
-                                {/* Group Header */}
-                                <div
-                                  onClick={() => toggleGroup(item.key)}
-                                  className="flex cursor-pointer items-center justify-between bg-[#e8f6f6]/30 px-4 py-3 transition-colors hover:bg-[#e8f6f6]/60"
-                                >
-                                  <div className="flex flex-col">
-                                    <span className="text-sm font-bold text-[#0d7377]">
-                                      {item.label}
-                                    </span>
-                                    <span className="mt-0.5 text-[11px] font-medium text-gray-500">
-                                      {groupAnsweredCount} of {groupTotalCount} fields completed
-                                    </span>
-                                  </div>
-                                  <div className="flex items-center gap-1.5 text-gray-400">
-                                    {isGroupExpanded ? (
-                                      <ChevronUp className="h-4 w-4" />
-                                    ) : (
-                                      <ChevronDown className="h-4 w-4" />
-                                    )}
-                                  </div>
-                                </div>
-
-                                {/* Group Content */}
-                                <AnimatePresence>
-                                  {isGroupExpanded && (
-                                    <motion.div
-                                      initial={{ height: 0, opacity: 0 }}
-                                      animate={{ height: "auto", opacity: 1 }}
-                                      exit={{ height: 0, opacity: 0 }}
-                                      className="overflow-hidden bg-[#fafdfc]"
-                                    >
-                                      <div className="space-y-3 border-t border-gray-100/50 px-4 py-3">
-                                        {item.fields.map((field, fieldIdx) => {
-                                          const value = getDisplayValue(field, formData);
-                                          const hasValue = value && value !== "";
-
-                                          return (
-                                            <div
-                                              key={field.key || `subfield-${fieldIdx}`}
-                                              className="flex flex-col gap-2 border-b border-gray-50 pb-2.5 last:border-b-0 last:pb-0 sm:flex-row sm:items-start sm:justify-between"
-                                            >
-                                              <span className="text-gray-650 flex-1 pl-2 text-sm font-semibold">
-                                                {field.label}
-                                              </span>
-                                              <span
-                                                className="max-w-xs rounded-md px-2.5 py-1 text-right text-sm font-medium text-gray-900"
-                                                style={{
-                                                  backgroundColor: hasValue ? "#e8f6f6" : "#f5f5f5",
-                                                  color: hasValue ? "#0a5a5d" : "#9ca3af",
-                                                }}
-                                              >
-                                                {hasValue ? (
-                                                  value
-                                                ) : (
-                                                  <span className="italic">Not provided</span>
-                                                )}
-                                              </span>
-                                            </div>
-                                          );
-                                        })}
-                                      </div>
-                                    </motion.div>
-                                  )}
-                                </AnimatePresence>
-                              </div>
-                            );
-                          }
-
-                          const field = item.field;
-                          const value = getDisplayValue(field, formData);
-                          const hasValue = value && value !== "";
-
-                          return (
+                        return (
+                          <div key={item.key || `grp-${itemIdx}`} className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
                             <div
-                              key={field.key || `field-${itemIdx}`}
-                              className="flex flex-col gap-2 border-b border-gray-50 pb-3 last:border-b-0 sm:flex-row sm:items-start sm:justify-between"
+                              onClick={() => toggleGroup(item.key)}
+                              className="flex items-center justify-between px-4 py-3.5 cursor-pointer bg-slate-50 hover:bg-slate-100/70 transition-colors border-b border-slate-100"
                             >
-                              <span className="flex-1 text-sm font-semibold text-gray-700">
-                                {field.label}
-                              </span>
-                              <span
-                                className="max-w-xs rounded-lg px-3 py-1.5 text-right text-sm font-medium text-gray-900"
-                                style={{
-                                  backgroundColor: hasValue ? "#e8f6f6" : "#f5f5f5",
-                                  color: hasValue ? "#0a5a5d" : "#9ca3af",
-                                }}
-                              >
-                                {hasValue ? value : <span className="italic">Not provided</span>}
-                              </span>
+                              <div className="flex items-center gap-2.5">
+                                <span className="text-sm font-semibold text-slate-800">{item.label}</span>
+                                <span className="text-[11px] text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
+                                  {groupVerifiedCount}/{groupFields.length} verified
+                                </span>
+                              </div>
+                              {isGroupExpanded ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
                             </div>
-                          );
-                        })}
+
+                            <AnimatePresence initial={false}>
+                              {isGroupExpanded && (
+                                <motion.div
+                                  initial={{ height: 0 }}
+                                  animate={{ height: "auto" }}
+                                  exit={{ height: 0 }}
+                                  className="overflow-hidden"
+                                >
+                                  <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                    {groupFields.map((f, fIdx) => {
+                                      const val = getDisplayValue(f, formData);
+                                      const hasVal = !!(val && val.trim() !== "");
+                                      const isChecked = verifiedFields.has(f.key);
+                                      const isCandidateField =
+                                        !!activeCandidate &&
+                                        getFieldCandidateScope(formCode, f, section.title) === "candidate_distinct";
+                                      return (
+                                        <FieldCard
+                                          key={f.key || `gf-${fIdx}`}
+                                          fieldKey={f.key}
+                                          label={f.label}
+                                          val={val}
+                                          hasVal={hasVal}
+                                          isChecked={isChecked}
+                                          isCandidateField={isCandidateField}
+                                          candidateName={candidateName}
+                                          onToggle={() => toggleFieldVerified(f.key)}
+                                          size="sm"
+                                        />
+                                      );
+                                    })}
+                                  </div>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
+                        );
+                      })}
+
+                    {/* Standalone Field Grid */}
+                    {filteredReviewItems.filter((item): item is ReviewFieldItem => item.type === "field").length > 0 && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {filteredReviewItems
+                          .filter((item): item is ReviewFieldItem => item.type === "field")
+                          .map((item, itemIdx) => {
+                            const field = item.field;
+                            const val = getDisplayValue(field, formData);
+                            const hasVal = !!(val && val.trim() !== "");
+                            const isChecked = verifiedFields.has(field.key);
+                            const isCandidateField =
+                              !!activeCandidate &&
+                              getFieldCandidateScope(formCode, field, section.title) === "candidate_distinct";
+                            return (
+                              <FieldCard
+                                key={field.key || `f-${itemIdx}`}
+                                fieldKey={field.key}
+                                label={field.label}
+                                val={val}
+                                hasVal={hasVal}
+                                isChecked={isChecked}
+                                isCandidateField={isCandidateField}
+                                candidateName={candidateName}
+                                onToggle={() => toggleFieldVerified(field.key)}
+                                size="md"
+                              />
+                            );
+                          })}
                       </div>
-                    </div>
+                    )}
                   </motion.div>
                 )}
               </AnimatePresence>
-            </motion.div>
+            </div>
           );
         })}
       </div>
 
-      {/* Action Buttons - Sticky Footer */}
+      {/* All Confirmed Banner */}
+      <AnimatePresence>
+        {allConfirmed && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="rounded-2xl px-5 py-5 flex items-center gap-4 bg-[#f0fbf6] border border-[#a3e4c8] shadow-sm"
+          >
+            <ShieldCheck className="w-7 h-7 text-[#0d7857] shrink-0" strokeWidth={2.2} />
+            <div>
+              <p className="text-sm font-bold text-[#09573c]">Every Answer Audited &amp; Confirmed</p>
+              <p className="text-xs text-[#0d7857] mt-0.5">
+                Your form is 100% verified. You can now preview, download, or save your completed packet.
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Sticky Bottom Action Bar */}
       <div
-        className="sticky bottom-0 -mx-4 mt-8 border-t border-gray-200 bg-white/95 px-4 py-4 backdrop-blur-sm md:-mx-8 md:px-8"
-        style={{
-          boxShadow: "0 -4px 20px rgba(0,0,0,0.05)",
-        }}
+        className="sticky bottom-0 -mx-3 mt-8 border-t border-slate-200 bg-white/95 px-4 py-4 backdrop-blur-md md:-mx-6 md:px-6 z-30"
+        style={{ boxShadow: "0 -4px 20px rgba(0,0,0,0.05)" }}
       >
-        {/* 2 × 2 Button Grid */}
-        <div className="grid grid-cols-2 gap-3">
-          {/* Preview */}
+        {!allConfirmed && (
+          <div className="mb-3 flex items-center gap-2.5 rounded-xl bg-amber-50 border border-amber-200 px-4 py-2.5 max-w-5xl mx-auto">
+            <AlertTriangle className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+            <p className="text-xs text-amber-800">
+              Verify remaining{" "}
+              <span className="font-bold text-amber-900">{totalAnswerCount - verifiedAnswerCount}</span>{" "}
+              answer{totalAnswerCount - verifiedAnswerCount !== 1 ? "s" : ""} to unlock export options.
+            </p>
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-5xl mx-auto">
           <button
             onClick={onPreviewPDF}
-            disabled={isPreviewing || isDownloading || isSavingToVault}
-            className="flex items-center justify-center gap-2 rounded-xl bg-gray-700 px-4 py-3 text-sm font-semibold text-white transition-all hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={!allConfirmed || isPreviewing || isDownloading || isSavingToVault}
+            className="flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-white transition-all disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
+            style={{ background: allConfirmed ? "#334155" : "#94a3b8" }}
           >
             <Eye className="h-4 w-4 shrink-0" />
-
             {isFreePreview ? (
               <>
                 {isPreviewing ? "Previewing..." : "Preview Page 1"}
-                <span className="ml-1 rounded bg-amber-500 px-1.5 py-0.5 text-[9px] font-extrabold tracking-wide text-white uppercase">
-                  Free
-                </span>
+                <span className="ml-1 rounded bg-amber-500 px-1.5 py-0.5 text-[9px] font-extrabold tracking-wide text-white uppercase">Free</span>
               </>
             ) : isPreviewing ? (
               "Previewing..."
@@ -490,59 +732,48 @@ export function ReviewPage({
             )}
           </button>
 
-          {/* Download */}
           <button
             onClick={onDownloadPDF}
-            disabled={isPreviewing || isDownloading || isSavingToVault}
-            className="flex items-center justify-center gap-2 rounded-xl bg-gray-700 px-4 py-3 text-sm font-semibold text-white transition-all hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={!allConfirmed || isPreviewing || isDownloading || isSavingToVault}
+            className="flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-white transition-all disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
+            style={{ background: allConfirmed ? "#1e293b" : "#94a3b8" }}
           >
             <Download className="h-4 w-4 shrink-0" />
-
             {isFreePreview ? (
               <>
                 {isDownloading ? "Downloading..." : "Download Page 1"}
-                <span className="ml-1 rounded bg-amber-500 px-1.5 py-0.5 text-[9px] font-extrabold tracking-wide text-white uppercase">
-                  Free
-                </span>
+                <span className="ml-1 rounded bg-amber-500 px-1.5 py-0.5 text-[9px] font-extrabold tracking-wide text-white uppercase">Free</span>
               </>
             ) : isDownloading ? (
-              "Downloading..."
+              "Download PDF"
             ) : (
               "Download PDF"
             )}
           </button>
 
-          {/* Back */}
           <button
             onClick={onBackToForm}
-            className="flex items-center justify-center gap-2 rounded-xl bg-gray-100 px-4 py-3 text-sm font-semibold text-gray-800 transition-all hover:bg-gray-200"
+            className="flex items-center justify-center gap-2 rounded-xl bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-800 transition-all hover:bg-slate-200 cursor-pointer"
           >
             <ArrowLeft className="h-4 w-4 shrink-0" />
             Back to Form
           </button>
 
-          {/* Save */}
           <button
             onClick={isFreePreview ? onUpgradeClick : onSaveToVault}
-            disabled={!isFreePreview && (isPreviewing || isDownloading || isSavingToVault)}
-            className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#0d7377] to-[#14a0a6] px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-[#0d7377]/20 transition-all hover:from-[#0a5a5d] hover:to-[#0d7377] disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={(!allConfirmed && !isFreePreview) || (!isFreePreview && (isPreviewing || isDownloading || isSavingToVault))}
+            className="flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
+            style={{
+              backgroundColor: allConfirmed || isFreePreview ? "#0d7377" : "#94a3b8",
+              boxShadow: allConfirmed ? "0 4px 14px rgba(13,115,119,0.25)" : "none",
+            }}
           >
-            {isFreePreview ? (
-              <Lock className="h-4 w-4 shrink-0" />
-            ) : (
-              <Save className="h-4 w-4 shrink-0" />
-            )}
-
-            {isFreePreview
-              ? "Unlock Save to Vault"
-              : isSavingToVault
-                ? "Saving..."
-                : "Save to Vault"}
+            {isFreePreview ? <Lock className="h-4 w-4 shrink-0" /> : <Save className="h-4 w-4 shrink-0" />}
+            {isFreePreview ? "Unlock Save to Vault" : isSavingToVault ? "Saving..." : "Save to Vault"}
           </button>
         </div>
 
-        {/* Security Note */}
-        <div className="mt-4 flex items-center justify-center gap-1 text-center text-[10px] font-semibold text-slate-500">
+        <div className="mt-3 flex items-center justify-center gap-1 text-center text-[10px] font-semibold text-slate-500">
           <Lock className="h-3 w-3 shrink-0 text-emerald-600" />
           <span>{t("documentVaultPage.components.uploadModal.securityNotice")}</span>
         </div>

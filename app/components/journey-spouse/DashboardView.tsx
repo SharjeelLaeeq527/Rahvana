@@ -11,6 +11,7 @@ import { useCandidate } from "@/app/context/CandidateContext";
 import WaitingStateCard from "./WaitingStateCard";
 import { JourneyRiskCard } from "./components/JourneyRiskCard";
 import { DocCaseStrengthMeter } from "./components/DocCaseStrengthMeter";
+import { GuidePageOverlay } from "@/app/components/shared/GuidePageOverlay";
 import { Phase2Modal } from "./components/Phase2Modal";
 import { EvidenceQuestionnaireModal } from "./components/EvidenceQuestionnaireModal";
 import { CaseStatusHero } from "./components/CaseStatusHero";
@@ -87,6 +88,7 @@ export function DashboardView({
   const plan = useJourneyPlan(state);
   const effectiveTier = plan.tier;
   const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
+  const [guideOverlayUrl, setGuideOverlayUrl] = useState<string | null>(null);
 
   // Pull uploaded docs from vault for DocCaseStrengthMeter
   const { uploadedDocuments } = useDocumentVaultStore();
@@ -1206,6 +1208,7 @@ export function DashboardView({
                     contextLabel="Chapter 1 · Step 2"
                     stepName="Petition Readiness"
                     defaultCollapsed={true}
+                    onOpenGuide={setGuideOverlayUrl}
                   />
                 )}
               </div>
@@ -1873,6 +1876,12 @@ export function DashboardView({
         onClose={() => setShowEvidenceQuestionnaireModal(false)}
         responses={questionnaireResponses}
         onSave={handleQuestionnaireSave}
+      />
+
+      {/* ── In-Journey Guide Overlay ── */}
+      <GuidePageOverlay
+        guideUrl={guideOverlayUrl}
+        onClose={() => setGuideOverlayUrl(null)}
       />
     </div>
   );

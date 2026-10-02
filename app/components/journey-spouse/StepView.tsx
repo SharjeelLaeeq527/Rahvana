@@ -3,6 +3,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
+import { GuidePageOverlay } from "@/app/components/shared/GuidePageOverlay";
 import { E, msg } from "@/lib/errors";
 import {
   ArrowLeft,
@@ -359,6 +360,7 @@ export const StepView: React.FC<StepViewProps> = ({
   onSelectChapter,
   onSelectStep,
 }) => {
+  const [guideOverlayUrl, setGuideOverlayUrl] = useState<string | null>(null);
   // Top-level step/chapter detection logic for use throughout the file
   const chapters = data.chapters || (data as any).stages;
   const currentChapter = chapters?.[state.currentStage];
@@ -3318,6 +3320,7 @@ export const StepView: React.FC<StepViewProps> = ({
                           contextLabel="Case Strength"
                           stepName="Petition Readiness"
                           defaultCollapsed={false}
+                          onOpenGuide={setGuideOverlayUrl}
                         />
                       </FloatingSidePanel>
 
@@ -3339,6 +3342,7 @@ export const StepView: React.FC<StepViewProps> = ({
                           contextLabel="Case Strength"
                           stepName="Petition Readiness"
                           defaultCollapsed={true}
+                          onOpenGuide={setGuideOverlayUrl}
                         />
                       </div>
                     </>
@@ -3429,7 +3433,7 @@ export const StepView: React.FC<StepViewProps> = ({
                                                 hasGuide: hasDocGuide,
                                                 onReadGuide: () => {
                                                   if (doc.guideUrl && doc.guideUrl !== "/guides") {
-                                                    window.open(doc.guideUrl, "_blank");
+                                                    setGuideOverlayUrl(doc.guideUrl);
                                                     if (actions.updateDocumentStatus && doc.id) {
                                                       actions.updateDocumentStatus(
                                                         doc.id,
@@ -3844,7 +3848,7 @@ export const StepView: React.FC<StepViewProps> = ({
                               hasGuide: hasDocGuide,
                               onReadGuide: () => {
                                 if (item.guideUrl && item.guideUrl !== "/guides") {
-                                  window.open(item.guideUrl, "_blank");
+                                  setGuideOverlayUrl(item.guideUrl);
                                   if (actions.updateDocumentStatus && item.id)
                                     actions.updateDocumentStatus(item.id, "reviewed");
                                 } else {
@@ -5443,6 +5447,10 @@ export const StepView: React.FC<StepViewProps> = ({
           }}
         />
       )}
+      <GuidePageOverlay
+        guideUrl={guideOverlayUrl}
+        onClose={() => setGuideOverlayUrl(null)}
+      />
     </div>
   );
 };

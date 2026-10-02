@@ -3,13 +3,14 @@
 
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { getFormConfig } from "@/lib/formConfig";
+import { getFormConfig, extractInheritableCandidateData } from "@/lib/formConfig";
+import { getCandidateJourneyKey, getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
 import { Header } from "./Header";
 import { ProgressFooter } from "./ProgressFooter";
 import { FormStep } from "./FormStep";
 import { ReviewPage } from "./ReviewPage";
 import type { Field as ConfigField } from "@/lib/formConfig/types";
-import { ChevronLeft, ChevronRight, Check, Sparkles, FileText, Lock } from "lucide-react";
+import { ChevronLeft, ChevronRight, Check, FileText, Lock } from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
 import { useUserProfile } from "@/app/context/UserProfileContext";
 import { useCandidate } from "@/app/context/CandidateContext";
@@ -164,7 +165,13 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   const [cameFromIntro, setCameFromIntro] = useState(false);
   const savedScrollPosition = useRef<number>(0);
   const hasShownInitialIntro = useRef(false);
-  const { activeJourneyKey, activeCandidate } = useCandidate();
+  const {
+    activeJourneyKey,
+    activeCandidate,
+    candidates,
+    setActiveCandidateId,
+    isMultiCandidate,
+  } = useCandidate();
   const draftJourneyKey = activeJourneyKey || "global";
   const { user, isLoading: isAuthLoading } = useAuth();
   const {
@@ -183,6 +190,11 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   const [isNavigating, setIsNavigating] = useState(false);
   const [isAutoSaving, setIsAutoSaving] = useState(false);
   const [draftStatus, setDraftStatus] = useState<"draft" | "completed">("draft");
+  const [inheritedInfo, setInheritedInfo] = useState<{
+    isInherited: boolean;
+    count: number;
+    sourceName: string;
+  } | null>(null);
   // Mirror of draftStatus for reads inside dependency-free callbacks (handleChange).
   const draftStatusRef = useRef(draftStatus);
   useEffect(() => {
@@ -263,6 +275,89 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
           draftData = readDraftBackup(formCode, draftJourneyKey);
         }
 
+        let inheritedPayload: Record<string, string> | null = null;
+
+        // If no existing draft for this candidate, attempt to inherit data from any sibling candidate.
+        // Same-journey siblings (same visa category base) get a full clone — all fields are copied
+        // and the user just corrects the candidate-distinct ones (DOB, passport, name etc.).
+        // Cross-journey siblings only share petitioner/household fields.
+        if (!draftData) {
+          const activeBase = getBaseVisaCategory(activeCandidate?.visaCategory || "");
+          const siblingCandidates = (candidates || []).filter(
+            (c) => c.id !== activeCandidate?.id
+          );
+
+          // If no structured candidates found or standard candidate-1 fallback
+          const candidateKeysToCheck: { key: string; name: string; sameJourney: boolean }[] = [];
+          if (siblingCandidates.length > 0) {
+            siblingCandidates.forEach((s) => {
+              const sKey = getCandidateJourneyKey(s.visaCategory, s.id);
+              const sName = s.fullName || s.label || s.name?.first || "Another Candidate";
+              const sameJourney = getBaseVisaCategory(s.visaCategory) === activeBase;
+              candidateKeysToCheck.push({ key: sKey, name: sName, sameJourney });
+            });
+          } else {
+            // Fallbacks — can't determine visa category, treat as cross-journey (partial inherit)
+            if (draftJourneyKey !== "candidate-1" && draftJourneyKey !== "global") {
+              candidateKeysToCheck.push({ key: "candidate-1", name: "Candidate 1", sameJourney: false });
+              candidateKeysToCheck.push({ key: "global", name: "Primary Candidate", sameJourney: false });
+            } else {
+              candidateKeysToCheck.push({ key: "ir5_candidate-2", name: "Candidate 2", sameJourney: false });
+            }
+          }
+
+          for (const candInfo of candidateKeysToCheck) {
+            let siblingDraft: FormProgressDraft | null = null;
+            if (user) {
+              try {
+                const sRes = await fetch(
+                  `/api/visa-forms/${formCode}/progress?journey_key=${candInfo.key}`,
+                  { signal: AbortSignal.timeout(3000) }
+                );
+                if (sRes.ok) {
+                  const sData = (await sRes.json()) as FormProgressResponse;
+                  siblingDraft = sData.draft;
+                }
+              } catch {
+                // Ignore network issues for fallback inheritance
+              }
+            }
+            if (!siblingDraft) {
+              siblingDraft = readDraftBackup(formCode, candInfo.key);
+            }
+
+            if (siblingDraft?.payload && Object.keys(siblingDraft.payload).length > 0) {
+              const { inheritedData, inheritedKeys } = extractInheritableCandidateData(
+                formCode,
+                config.formFields,
+                siblingDraft.payload,
+                activeCandidate
+                  ? {
+                      fullName: activeCandidate.fullName,
+                      name: activeCandidate.name,
+                      dateOfBirth: activeCandidate.dateOfBirth,
+                      placeOfBirth: activeCandidate.placeOfBirth,
+                      passportNumber: activeCandidate.passportNumber,
+                      cnic: activeCandidate.cnic,
+                    }
+                  : undefined,
+                { sameJourney: candInfo.sameJourney }
+              );
+              if (inheritedKeys.length > 0) {
+                inheritedPayload = inheritedData;
+                if (isMounted) {
+                  setInheritedInfo({
+                    isInherited: true,
+                    count: inheritedKeys.length,
+                    sourceName: candInfo.name,
+                  });
+                }
+                break; // Inherited from first valid sibling
+              }
+            }
+          }
+        }
+
         if (!isMounted) return;
 
         // Build sections for validation
@@ -330,9 +425,13 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
             setLastSavedAt(draftData.last_saved_at || null);
           }
         } else {
-          // Fresh form initialization
+          // Fresh form initialization (or pre-filled with Candidate 1 shared data)
+          const initialData = {
+            ...config.getInitialFormData(),
+            ...(inheritedPayload || {}),
+          };
           if (isMounted) {
-            setFormData(config.getInitialFormData());
+            setFormData(initialData);
             setCurrentStep(1);
             setCurrentQuestionIndex(0);
             setView("form");
@@ -1663,6 +1762,10 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
         showMenu={view === "form"}
         isAutoSaving={isAutoSaving}
         lastSavedAt={lastSavedAt}
+        activeCandidate={activeCandidate}
+        candidates={candidates}
+        onSelectCandidate={(id) => setActiveCandidateId(id)}
+        isMultiCandidate={isMultiCandidate}
       />
 
       {/* Mobile Bottom Tray */}
@@ -1839,6 +1942,37 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                         transition={{ duration: 0.3, ease: "easeOut" }}
                         className="space-y-6"
                       >
+                        {inheritedInfo?.isInherited && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="flex items-start justify-between gap-3 rounded-xl border border-teal-200 bg-linear-to-r from-teal-50 to-emerald-50/50 p-3.5 shadow-xs"
+                          >
+                            <div className="flex items-start gap-2.5">
+                              <div className="rounded-lg bg-teal-100 p-1.5 text-teal-800 shrink-0 mt-0.5">
+                                <FileText className="h-4 w-4" />
+                              </div>
+                              <div>
+                                <p className="text-xs font-bold text-teal-950">
+                                  Smart Pre-Fill Active ({inheritedInfo.count} fields copied)
+                                </p>
+                                <p className="text-[11px] text-teal-800 leading-relaxed mt-0.5">
+                                  Shared petitioner and household answers were automatically populated from{" "}
+                                  <strong>{inheritedInfo.sourceName}</strong>. Candidate-distinct details (Name, DOB,
+                                  Passport #) are marked with caution badges for individual review.
+                                </p>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setInheritedInfo(null)}
+                              className="text-xs font-semibold text-teal-700 hover:text-teal-900 shrink-0 px-2 py-1 rounded hover:bg-teal-100/60"
+                            >
+                              Dismiss
+                            </button>
+                          </motion.div>
+                        )}
+
                         <FormStep
                           stepNumber={currentStep}
                           sectionTitle={currentSection.title}
@@ -1849,6 +1983,8 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                           currentQuestionIndex={currentQuestionIndex}
                           navigationDirection={navigationDirection}
                           progressiveSubQuestionIndices={progressiveSubQuestionIndices}
+                          formCode={formCode}
+                          activeCandidate={activeCandidate}
                         />
 
                         {/* Navigation Buttons */}
@@ -1901,7 +2037,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
               {view === "review" && (
                 <div
-                  className="animated-border rounded-2xl border-2 bg-white p-4 md:p-8"
+                  className="animated-border rounded-2xl border-2 bg-white px-4 py-5 md:px-8 md:py-7 -mx-2 md:-mx-8 lg:-mx-16"
                   style={{
                     boxShadow:
                       "0 1px 3px rgba(0,0,0,0.03), 0 12px 40px -16px rgba(13,115,119,0.12)",
@@ -1920,6 +2056,8 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                     isSavingToVault={isSavingToVault}
                     isFreePreview={isFreePreview}
                     onUpgradeClick={() => setShowUpgradeModal(true)}
+                    formCode={formCode}
+                    activeCandidate={activeCandidate}
                   />
                 </div>
               )}
