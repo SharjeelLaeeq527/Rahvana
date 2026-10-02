@@ -1,10 +1,13 @@
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { E, msg } from "@/lib/errors";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const { searchParams } = new URL(req.url);
+    const candidateId = searchParams.get("candidateId");
+
     // 1. Authenticate user session
     const authClient = await createClient();
 
@@ -71,21 +74,81 @@ export async function GET() {
     }
 
     // Filter PCC requests for Sindh specifically (allowing empty/Unknown for test data)
-    const sindhPccRequests = (pccData || []).filter(
-      (req: any) =>
-        !req.province ||
-        req.province.toLowerCase() === "sindh" ||
-        req.province.toLowerCase() === "unknown"
+    let sindhPccRequests = (pccData || []).filter(
+      (item: any) =>
+        !item.province ||
+        item.province.toLowerCase() === "sindh" ||
+        item.province.toLowerCase() === "unknown"
     );
+
+    let medicalAppointments = appointmentsData || [];
+    let translationDocuments = translationsData || [];
+    let consultationBookings = consultationData || [];
+
+    // Filter by candidateId if provided
+    if (candidateId) {
+      sindhPccRequests = sindhPccRequests.filter((item: any) => {
+        const directId = item.candidate_id;
+        const metaId = item.metadata?.candidate_id;
+        const notesTag =
+          typeof item.admin_notes === "string" &&
+          item.admin_notes.includes(`[Candidate: ${candidateId}]`);
+        if (directId) return directId === candidateId;
+        if (metaId) return metaId === candidateId;
+        if (notesTag) return true;
+        // Fallback for legacy items without candidate tagging -> assign to candidate-1
+        if (
+          candidateId === "candidate-1" &&
+          !directId &&
+          !metaId &&
+          (!item.admin_notes || !item.admin_notes.includes("[Candidate: "))
+        ) {
+          return true;
+        }
+        return false;
+      });
+
+      medicalAppointments = medicalAppointments.filter((item: any) => {
+        const directId = item.candidate_id;
+        const metaId = item.metadata?.candidate_id;
+        const notesTag =
+          typeof item.admin_notes === "string" &&
+          item.admin_notes.includes(`[Candidate: ${candidateId}]`);
+        if (directId) return directId === candidateId;
+        if (metaId) return metaId === candidateId;
+        if (notesTag) return true;
+        if (
+          candidateId === "candidate-1" &&
+          !directId &&
+          !metaId &&
+          (!item.admin_notes || !item.admin_notes.includes("[Candidate: "))
+        ) {
+          return true;
+        }
+        return false;
+      });
+
+      translationDocuments = translationDocuments.filter((item: any) => {
+        const directId = item.candidate_id;
+        const metaId = item.metadata?.candidate_id;
+        if (directId) return directId === candidateId;
+        if (metaId) return metaId === candidateId;
+        if (candidateId === "candidate-1" && !directId && !metaId) {
+          return true;
+        }
+        return false;
+      });
+    }
 
     return NextResponse.json({
       pccRequests: sindhPccRequests,
-      medicalAppointments: appointmentsData || [],
-      consultationBookings: consultationData || [],
-      translationDocuments: translationsData || [],
+      medicalAppointments,
+      consultationBookings,
+      translationDocuments,
     });
   } catch (error) {
     console.error("Services status fetch error:", error);
     return NextResponse.json({ error: "Failed to fetch services status" }, { status: 500 });
   }
 }
+

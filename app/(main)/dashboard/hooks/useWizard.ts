@@ -473,16 +473,47 @@ export function useWizard(options: UseWizardOptions = {}) {
           return;
         }
 
-        if (!currentState.stepMap[stepKey]) {
-          console.warn(
-            "[useWizard] toggleComplete: stepKey not found in stepMap, attempting sync..."
-          );
-          // (Rest of the sync logic skipped for brevity, but would use functional updates)
-          showToast(msg(E.DASH_JOURNEY_STEP_LOCKED), "error");
-          return;
-        }
+        let stepUuid = currentState.stepMap[stepKey];
 
-        const stepUuid = currentState.stepMap[stepKey];
+        if (!stepUuid) {
+          console.warn(
+            `[useWizard] toggleComplete: stepKey "${stepKey}" not found in stepMap, attempting sync...`
+          );
+          try {
+            setIsSyncing(true);
+            const res = await fetch("/api/journeys/initialize", {
+              method: "POST",
+              headers: { "Content-Type": "application/json", "x-cache-bust": "1" },
+              body: JSON.stringify({
+                journey_type: journeyId,
+                candidate_id: effectiveCandidateId,
+              }),
+            });
+            if (res.ok) {
+              const { data } = await res.json();
+              if (data?.steps) {
+                const refreshedMap: Record<string, string> = {};
+                data.steps.forEach((s: any) => {
+                  refreshedMap[s.step_key] = s.id;
+                });
+                setState((prev) => ({
+                  ...prev,
+                  stepMap: { ...prev.stepMap, ...refreshedMap },
+                }));
+                stepUuid = refreshedMap[stepKey];
+              }
+            }
+          } catch (syncErr) {
+            console.error("[useWizard] auto-heal stepMap error:", syncErr);
+          } finally {
+            setIsSyncing(false);
+          }
+
+          if (!stepUuid) {
+            showToast(msg(E.DASH_CLOUD_SYNC_FAILED), "error");
+            return;
+          }
+        }
 
         // Optimistic update
         setState((prev) => {

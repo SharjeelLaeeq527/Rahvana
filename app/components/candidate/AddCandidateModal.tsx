@@ -7,7 +7,7 @@
 
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -19,9 +19,11 @@ import {
   ShieldCheck,
   CheckCircle2,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useCandidate } from "@/app/context/CandidateContext";
 import type { CandidateRelation } from "@/types/candidate";
-import { getVisaCategoryForRelation } from "@/lib/candidate/candidateSyncService";
+import { getVisaCategoryForRelation, getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
+import { getJourneyHrefByType } from "@/lib/constants/routes";
 
 interface AddCandidateModalProps {
   isOpen: boolean;
@@ -35,11 +37,15 @@ export function AddCandidateModal({
   visaCategory = "IR-5",
 }: AddCandidateModalProps) {
   const { addCandidate, candidates } = useCandidate();
+  const router = useRouter();
 
   // A petitioner can sponsor across categories (a parent AND a spouse AND a child), so every
   // relation is offered. The ONLY cardinality rule is USCIS's "one spouse at a time": a second
   // Spouse can never be added, so Spouse is hidden once a spouse candidate already exists.
-  const hasSpouse = candidates.some((c) => c.relation === "Spouse");
+  // Check both relation AND visa category to catch all IR-1 variants.
+  const hasSpouse = candidates.some(
+    (c) => c.relation === "Spouse" || getBaseVisaCategory(c.visaCategory) === "IR-1"
+  );
   const hasMother = candidates.some((c) => c.relation === "Mother");
   const hasFather = candidates.some((c) => c.relation === "Father");
 
@@ -49,6 +55,17 @@ export function AddCandidateModal({
   const [relation, setRelation] = useState<CandidateRelation>(defaultRelation);
   const [fullName, setFullName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const prevIsOpenRef = React.useRef(isOpen);
+  useEffect(() => {
+    // Only reset state on transition from closed to open
+    if (isOpen && !prevIsOpenRef.current) {
+      setRelation(defaultRelation);
+      setFullName("");
+      setIsSubmitting(false);
+    }
+    prevIsOpenRef.current = isOpen;
+  }, [isOpen, defaultRelation]);
 
   if (!isOpen) return null;
 
@@ -73,6 +90,15 @@ export function AddCandidateModal({
         tier: "free",
       });
       onClose();
+
+      // Navigate to the new candidate's journey when it belongs to a different category than
+      // the page we are on (e.g. adding a Spouse/IR-1 while viewing an IR-5 journey). The URL
+      // is authoritative for the category (PROJECT_KNOWLEDGE 4.7), so we move the URL here on
+      // an explicit add instead of letting the journey page auto-redirect off the candidate.
+      const targetRoute = getJourneyHrefByType(targetVisa);
+      if (targetRoute && typeof window !== "undefined" && !window.location.pathname.includes(targetRoute)) {
+        router.push(targetRoute);
+      }
     } catch (err) {
       console.error("[AddCandidateModal] Error adding candidate:", err);
     } finally {
@@ -101,12 +127,25 @@ export function AddCandidateModal({
 
   const modal = (
     <AnimatePresence>
-      <div className="animate-in fade-in fixed inset-0 z-[10000] flex items-center justify-center overflow-y-auto bg-black/60 p-3 backdrop-blur-sm duration-150 sm:p-4 md:p-6">
+      <div className="fixed inset-0 z-[10000] flex items-center justify-center overflow-y-auto p-3 sm:p-4 md:p-6">
+        {/* Isolated Backdrop Overlay */}
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+          onClick={(e) => {
+            e.stopPropagation();
+            onClose();
+          }}
+          aria-hidden="true"
+        />
+
+        {/* Modal Card */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
-          className="relative my-auto flex max-h-[calc(100dvh-2rem)] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl sm:max-h-[85vh] md:max-w-md"
+          onClick={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
+          className="relative z-10 my-auto flex max-h-[calc(100dvh-2rem)] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl sm:max-h-[85vh] md:max-w-md"
         >
           {/* Header */}
           <div className="flex shrink-0 items-center justify-between border-b border-slate-100 bg-gradient-to-br from-[#0d7377]/10 via-[#0d7377]/5 to-transparent px-5 py-3.5 sm:px-6 sm:py-4">
@@ -159,7 +198,14 @@ export function AddCandidateModal({
                       <button
                         key={opt.value}
                         type="button"
-                        onClick={() => setRelation(opt.value)}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setRelation(opt.value);
+                        }}
+                        onMouseDown={(e) => {
+                          e.stopPropagation();
+                        }}
                         className={`flex flex-col items-start gap-1 rounded-xl border p-2.5 text-left text-xs font-semibold transition-all sm:p-3 ${
                           isSelected
                             ? "border-[#0d7377] bg-[#0d7377]/5 text-[#0d7377] ring-1 ring-[#0d7377]"

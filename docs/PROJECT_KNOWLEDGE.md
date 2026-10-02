@@ -374,7 +374,19 @@ the existing per-`journey_id` scoping (no `candidate_id` column). **Tools are jo
 case-status (`uscis_case_history` tags `_candidateId`/`_candidateName`), interview-prep, the
 221g planner and the Sponsorship (I-864) calculator all resolve the active journey/candidate
 from context so their state/results switch with the candidate (shared petitioner inputs stay
-shared). **Candidate deletion** is `POST /api/candidate/delete`: it removes the candidate from
+shared). **Candidate persistence (this was a real bug - do not regress).** Candidate roster
+writes do NOT ride the debounced full-profile save. That path could drop
+`profile_details.candidates` when a racing profile save serialized stale local state, so a
+newly added candidate vanished on refresh. Instead `CandidateContext.addCandidate` /
+`updateCandidate` call **`POST /api/candidate/create`** - a server-side read-modify-write that
+upserts the candidate into `profile_details.candidates` (authoritative merge, never trusts a
+whole client blob) and lazily inserts the candidate's suffixed `journeys` row for
+candidate-2+. The in-context `updateProfile(..., { localOnly: true })` then updates local state
+ONLY (no `/api/profile/complete` POST), and a **user-scoped** `localStorage` roster cache
+(`rahvana_candidates_roster_<userId>`) bridges the pre-profile-load window. The cache key is
+keyed by user id on purpose: a bare global key leaked one account's roster to another user on a
+shared browser. `POST /api/profile/complete` and `/api/profile/merge` now do an explicit
+update-if-exists / insert-if-missing (not a blind `upsert`, which was part of the drop). **Candidate deletion** is `POST /api/candidate/delete`: it removes the candidate from
 `profile_details.candidates`, resets `activeCandidateId`, and cleans up that candidate's
 `user_guides` and **its suffixed `journeys` rows** (so a deleted candidate does not leave an
 orphaned journey that would keep the switcher's 2+ gate satisfied); candidate-1 (the base
@@ -403,8 +415,15 @@ spouse at a time": a second Spouse is blocked (Spouse hidden once one exists, an
 spouse. A cross-category candidate's journey row + config are created lazily by `initialize`
 on the URL that the switcher navigates to (URL base is authoritative for the category,
 `candidate_id` selects within it; deliberately NOT candidate-authoritative, because a defaulted
-candidate's `visaCategory` can be a stale IR-5 and would mislabel IR-1 accounts). Full design:
-`docs/multi-candidate-desciption.md`. **Cross-candidate document
+candidate's `visaCategory` can be a stale IR-5 and would mislabel IR-1 accounts). **The journey
+page (`[visa-journey]/page.tsx`) must NOT auto-redirect the URL to follow the active candidate's
+`visaCategory`** - it did once, and because the primary candidate's category DEFAULTS to `IR-5`
+when `profile.visaType` is unset (`getDefaultCandidatesForVisa`), that redirect bounced the user
+off `ir1-journey` to `ir5-journey` and made it impossible to switch back to IR-1 (regression: "IR-1
+auto-jumps to IR-5"). Navigation on an explicit switch is owned solely by `CandidateSwitcherTray`;
+`AddCandidateModal` navigates to the new candidate's journey after an add (both push the URL from
+the chosen category via `getJourneyHrefByType`). Keep the URL authoritative on the page. Full
+design: `docs/multi-candidate-desciption.md`. **Cross-candidate document
 sharing** (e.g. a petitioner doc used for both parents, OR the petitioner's passport reused on
 both an IR-1 and an IR-5 journey) rides the existing **cross-journey** share
 (`shareWithJourneyIds`). The rule is **category-AGNOSTIC**: both upload modals offer **every
@@ -656,7 +675,7 @@ Python backend. Highlights:
 | `stripe/*` | `checkout`, `verify-session` (idempotent self-heal & source of truth), `webhook`, `portal` | Stripe |
 | `plan/*` | `plan/reconcile` (never-downgrade tier self-heal) | Supabase |
 | `journeys|chapters|steps|case_data` | journey CRUD, `journeys/initialize` (combined load + bg step-sync), `case_data/validate` | Supabase, journey engines |
-| `candidate/*` | `candidate/delete` (remove candidate from `profile_details.candidates` + cleanup its `user_guides` and suffixed `journeys` rows; candidate-1 protected) | Supabase |
+| `candidate/*` | `candidate/create` (server-side upsert candidate into `profile_details.candidates` + lazy-insert its suffixed `journeys` row; the authoritative save path so candidates survive refresh), `candidate/delete` (remove candidate from `profile_details.candidates` + cleanup its `user_guides` and suffixed `journeys` rows; candidate-1 protected) | Supabase |
 | `journey/*` | `journey/marriage-check` (singular; distinct from `journeys`) | Supabase |
 | `documents/*` | upload (validate + encrypt + compress), download/preview/export, `config`, `mark-read`, `extract-{passport,cnic,birth,marriage,divorce}` | Supabase Storage, Python, Gemini |
 | `upload/*` | generic authenticated file upload tied to an appointment | Supabase Storage |
@@ -1001,6 +1020,25 @@ External: Stripe . Resend . EasyPost . Gemini . USCIS . GA4 . Sheets . OCR.space
   for which active steps are completed. Do NOT switch this back to counting DB rows /
   hardcoded per-filing-method totals (the historical bug: IR-1 over-counted from stale
   rows, IR-5 under-counted from un-seeded rows).
+- **Vault `config.visaCategory` must be the EXACT canonical form (`"IR-1"`, `"IR-5"`, not
+  `"IR1"`/`"ir-1"`).** The personalization engine (`lib/document-vault/personalization-engine.ts`)
+  matches `doc.applicableVisas.includes(visaCategory)` by exact string; a non-canonical value
+  silently collapses the required/optional list to ~zero docs (symptom: "IR-1 required
+  documents not showing" in the vault's Required tab). The vault page
+  (`app/(tools)/document-vault/page.tsx`) therefore canonicalizes via
+  `journeyTypeToVisaCategory(...)` for BOTH the active journey type and the candidate fallback
+  before writing config. Never feed a raw candidate `visaCategory` straight into vault config.
+- **`dedupeJourneysByType` / `isSameJourneyType` key on canonical identity** (base category +
+  candidate number, `lib/document-vault/journey-mapping.ts`), NOT the raw normalized
+  `journey_type`. This collapses variant rows of the same journey (`ir5` / `ir5-journey` /
+  `IR-5`) into one while keeping distinct candidates (`ir5` vs `ir5_candidate-2`) apart. It
+  drives the cross-share list, the vault card grid, and the SiteHeader switcher's 2+ gate;
+  before this, variant rows rendered the same category twice in the upload modal's
+  "Cross-share this document" list.
+- **Vault document delete is optimistic via the store** (`useDocumentVaultStore.deleteDocument`),
+  which removes the row from state and refreshes statuses/notifications in place. Do NOT delete
+  by re-running `initialize(userId)` (it re-fetches the whole vault and feels like a page
+  refresh).
 - **Two encryption schemes** — global key for portal-wallet/profile fields
   (`lib/encryption.ts`), per-user key for vault files
   (`document-vault/file-encryption.ts`). Don't assume per-user everywhere.

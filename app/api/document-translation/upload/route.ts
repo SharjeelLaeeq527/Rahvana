@@ -88,6 +88,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: msg(E.UPLOAD_PROCESSING_FAILED) }, { status: 500 });
     }
 
+    const candidateId = (formData.get("candidateId") as string) || (formData.get("candidate_id") as string) || "candidate-1";
+    const candidateName = (formData.get("candidateName") as string) || (formData.get("candidate_name") as string) || "";
+
     // Create database record
     const { data: document, error: dbError } = await supabase
       .from("translation_documents")
@@ -106,6 +109,8 @@ export async function POST(request: NextRequest) {
         metadata: {
           upload_ip: request.headers.get("x-forwarded-for") || "unknown",
           user_agent: request.headers.get("user-agent") || "unknown",
+          candidate_id: candidateId,
+          candidate_name: candidateName,
         },
       })
       .select()

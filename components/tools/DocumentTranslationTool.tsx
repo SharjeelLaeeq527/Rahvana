@@ -5,6 +5,7 @@ import { Upload, AlertCircle, CheckCircle, X, FileText, Lock } from "lucide-reac
 import SuccessState from "@/app/components/document-translation/SuccessState";
 import { AuthRequiredModal } from "@/app/components/shared/AuthRequiredModal";
 import { useAuth } from "@/app/context/AuthContext";
+import { useCandidate } from "@/app/context/CandidateContext";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { usePlan } from "@/app/context/PlanContext";
 import { useFeatureAccess } from "@/lib/usage/useFeatureAccess";
@@ -16,7 +17,10 @@ import { Button } from "@/components/ui/button";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 
-interface DocumentTranslationToolProps {
+import type { ToolModeProps } from "@/types/tool-mode";
+import { useResolveToolMode } from "@/lib/hooks/useResolveToolMode";
+
+interface DocumentTranslationToolProps extends ToolModeProps {
   showHeader?: boolean;
   showRequirements?: boolean;
   showRequestsLink?: boolean;
@@ -30,7 +34,13 @@ export default function DocumentTranslationTool({
   showRequestsLink = true,
   className = "",
   onSuccess,
+  mode: propMode,
+  journeyContext: propContext,
 }: DocumentTranslationToolProps) {
+  const { isJourney } = useResolveToolMode({
+    mode: propMode,
+    journeyContext: propContext,
+  });
   const [file, setFile] = useState<File | null>(null);
   const [documentType, setDocumentType] = useState<string>("");
   const [userNotes, setUserNotes] = useState("");
@@ -44,6 +54,7 @@ export default function DocumentTranslationTool({
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   const { isAuthenticated } = useAuth();
+  const { activeCandidate, activeCandidateId } = useCandidate();
   const { t } = useLanguage();
   const plan = usePlan();
   const { checkAccess, consumeAccess } = useFeatureAccess();
@@ -133,6 +144,8 @@ export default function DocumentTranslationTool({
       const formData = new FormData();
       formData.append("file", file);
       formData.append("documentType", documentType);
+      formData.append("candidateId", activeCandidateId || "candidate-1");
+      formData.append("candidateName", activeCandidate.fullName || activeCandidate.label || "");
       if (userNotes) {
         formData.append("userNotes", userNotes);
       }
@@ -196,6 +209,8 @@ export default function DocumentTranslationTool({
 
       requestData.append("file", file);
       requestData.append("documentType", documentType);
+      requestData.append("candidateId", activeCandidateId || "candidate-1");
+      requestData.append("candidateName", activeCandidate.fullName || activeCandidate.label || "");
 
       if (userNotes) {
         requestData.append("userNotes", userNotes);

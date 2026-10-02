@@ -30,29 +30,14 @@ import {
 import { useToast } from "@/app/components/shared/ToastProvider";
 
 const ACTIVE_CANDIDATE_STORAGE_KEY = "rahvana_active_candidate_id";
-// localStorage key for candidate list safety-net (keyed by user-id to avoid
-// cross-account bleed when the same browser switches accounts).
-const candidateStorageKey = (userId: string) => `rahvana_candidates_${userId}`;
-
-function readCandidatesFromStorage(userId: string): CandidateProfile[] | null {
-  try {
-    const raw = localStorage.getItem(candidateStorageKey(userId));
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as CandidateProfile[];
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed : null;
-  } catch {
-    return null;
-  }
+const CANDIDATES_STORAGE_KEY_PREFIX = "rahvana_candidates_roster";
+// User-scoped cache key. A bare global key let one account's cached roster surface for
+// a different user on a shared browser (User A logs out, User B logs in and, before B's
+// profile resolves - or if B has no candidates yet - the memo falls back to A's cache).
+// Scoping by user id keeps each account's roster isolated; guests fall back to the prefix.
+function candidatesStorageKey(userId: string | undefined | null): string {
+  return userId ? `${CANDIDATES_STORAGE_KEY_PREFIX}_${userId}` : CANDIDATES_STORAGE_KEY_PREFIX;
 }
-
-function writeCandidatesToStorage(userId: string, candidates: CandidateProfile[]) {
-  try {
-    localStorage.setItem(candidateStorageKey(userId), JSON.stringify(candidates));
-  } catch {
-    /* non-fatal — storage quota or private mode */
-  }
-}
-
 
 interface CandidateContextType {
   /** Array of all candidate profiles associated with the account */
@@ -169,9 +154,27 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
         return next;
       });
       candidatesRef.current = normalized;
+      try {
+        localStorage.setItem(candidatesStorageKey(user?.id), JSON.stringify(normalized));
+      } catch {}
       return normalized;
     }
 
+    // Try loading cached roster from localStorage (persists for guest mode or before profile fetch resolves)
+    try {
+      const cached =
+        typeof window !== "undefined" ? localStorage.getItem(candidatesStorageKey(user?.id)) : null;
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          candidatesRef.current = parsed;
+          return parsed;
+        }
+      }
+    } catch {}
+
+    // Default fallback candidate
+    const visa = profile?.visaType || profile?.visaCategory || "IR-1";
     // ── Safety net: restore from localStorage if DB is empty ─────────────────
     // Covers three failure modes: aborted save on navigation, token-refresh race
     // where user?.id was null when addCandidate ran, and transient fetch errors.
@@ -188,7 +191,7 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
     const defaults = getDefaultCandidatesForVisa(visa, "free", false);
     candidatesRef.current = defaults;
     return defaults;
-  }, [profile?.candidates, profile?.visaType, profile?.visaCategory, user?.id, isProfileLoading]);
+  }, [profile?.candidates, profile?.visaType, profile?.visaCategory, user?.id]);
 
   // ── Restore activeCandidateId from profile / localStorage (ONCE) ─────────
   // Hydrate the active candidate a single time from profile/session. After that, an
@@ -257,7 +260,7 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (user?.id && !isProfileLoading) {
-        updateProfile({ activeCandidateId: id }, { silent: true });
+        updateProfile({ activeCandidateId: id }, { silent: true, localOnly: true });
       }
 
       showToast(`Switched active profile to ${target.label}`, "info", {
@@ -279,19 +282,23 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
       // Guard: USCIS permits only one spouse to be sponsored at a time. Block only a SECOND
       // spouse - adding the first Spouse candidate (IR-1) is allowed, and this never blocks
       // displaying or switching to an existing spouse candidate.
-      if (
-        params.relation === "Spouse" &&
-        candidatesRef.current.some((c) => c.relation === "Spouse")
-      ) {
-        showToast("Only one spouse can be sponsored at a time.", "error");
-        throw new Error("Only one spouse can be sponsored at a time.");
+      // Also guard by visa category (IR-1) to catch edge cases.
+      const derivedVisaForGuard =
+        params.visaCategory || getVisaCategoryForRelation(params.relation, "IR-1");
+      const isIR1 = getBaseVisaCategory(derivedVisaForGuard) === "IR-1";
+      const hasExistingSpouse = candidatesRef.current.some(
+        (c) => c.relation === "Spouse" || getBaseVisaCategory(c.visaCategory) === "IR-1"
+      );
+      if ((params.relation === "Spouse" || isIR1) && hasExistingSpouse) {
+        showToast("Only one spouse (IR-1) can be sponsored at a time.", "error");
+        throw new Error("Only one spouse (IR-1) can be sponsored at a time.");
       }
 
       const derivedVisa =
         params.visaCategory ||
         getVisaCategoryForRelation(
           params.relation,
-          profile?.visaCategory || profile?.visaType || "IR-5"
+          profile?.visaCategory || profile?.visaType || "IR-1"
         );
 
       const newCand = createNewCandidate(candidatesRef.current, {
@@ -306,8 +313,10 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
       const updated = [...candidatesRef.current, newCand];
       candidatesRef.current = updated;
 
-      // Mirror to localStorage FIRST — this is the safety net that survives
-      // aborted fetches, token refresh races, and page unloads.
+      try {
+        localStorage.setItem(candidatesStorageKey(user?.id), JSON.stringify(updated));
+      } catch {}
+
       if (user?.id) {
         writeCandidatesToStorage(user.id, updated);
         updateProfile(
@@ -315,8 +324,23 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
             candidates: updated,
             activeCandidateId: newCand.id,
           },
-          { silent: false, immediate: true }
+          { silent: true, localOnly: true }
         );
+
+        fetch("/api/candidate/create", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ candidate: newCand, activeCandidateId: newCand.id }),
+        })
+          .then(async (res) => {
+            if (!res.ok) {
+              const err = await res.json().catch(() => ({}));
+              console.error("[CandidateContext] Server candidate creation error:", err);
+            }
+          })
+          .catch((err) => {
+            console.error("[CandidateContext] Network error creating candidate:", err);
+          });
       }
 
       setActiveCandidateIdState(newCand.id);
@@ -338,9 +362,24 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
       const updated = candidatesRef.current.map((c) => (c.id === id ? { ...c, ...updates } : c));
       candidatesRef.current = updated;
 
+      try {
+        localStorage.setItem(candidatesStorageKey(user?.id), JSON.stringify(updated));
+      } catch {}
+
       if (user?.id) {
         writeCandidatesToStorage(user.id, updated);
-        updateProfile({ candidates: updated }, { silent: true });
+        updateProfile({ candidates: updated }, { silent: true, localOnly: true });
+
+        const updatedCand = updated.find((c) => c.id === id);
+        if (updatedCand) {
+          fetch("/api/candidate/create", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ candidate: updatedCand }),
+          }).catch((err) => {
+            console.error("[CandidateContext] Network error updating candidate:", err);
+          });
+        }
       }
     },
     [user?.id, updateProfile]
@@ -357,6 +396,10 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
       const target = candidatesRef.current.find((c) => c.id === id);
       const updated = candidatesRef.current.filter((c) => c.id !== id);
       candidatesRef.current = updated;
+
+      try {
+        localStorage.setItem(candidatesStorageKey(user?.id), JSON.stringify(updated));
+      } catch {}
 
       const nextActiveId = activeCandidateId === id ? updated[0].id : activeCandidateId;
       setActiveCandidateIdState(nextActiveId);
@@ -385,7 +428,7 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
           candidates: updated,
           activeCandidateId: nextActiveId,
         },
-        { silent: true }
+        { silent: true, localOnly: true }
       );
 
       // If user is authenticated, call the server-side delete API

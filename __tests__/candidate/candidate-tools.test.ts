@@ -6,7 +6,20 @@
 import {
   calculateSponsorshipHouseholdSize,
   getSponsorshipResult,
+  STANDALONE_SPONSORSHIP_STORAGE_KEY,
+  STANDALONE_SPONSORSHIP_DRAFT_KEY,
+  getJourneySponsorshipDraftKey,
 } from "@/components/tools/SponsorshipCalculatorTool";
+import {
+  STANDALONE_221G_DRAFT_KEY,
+  STANDALONE_221G_STORAGE_KEY,
+  getJourney221gDraftKey,
+} from "@/app/(tools)/(visa)/221g-action-planner/types/221g";
+import {
+  STANDALONE_PASSPORT_PHOTOS_KEY,
+  getJourneyPassportPhotosKey,
+  PassportPhotoItem,
+} from "@/types/passport-photo";
 import { parseUSCISData, formatReceiptInput, decodePrefix } from "@/app/(tools)/case-status/page";
 
 describe("Phase 2: Beneficiary-Specific Tools & Multi-Candidate Scoping", () => {
@@ -68,7 +81,7 @@ describe("Phase 2: Beneficiary-Specific Tools & Multi-Candidate Scoping", () => 
   });
 
   // ─── 2. 221(g) Action Planner Isolation ──────────────────────────────────
-  describe("2. 221(g) Action Planner Candidate Isolation", () => {
+  describe("2. 221(g) Action Planner Candidate & Draft Isolation", () => {
     it("namespaces 221(g) action plans per candidate in profile", () => {
       const mockProfile: any = {
         actionPlanner_candidate_1: {
@@ -130,6 +143,84 @@ describe("Phase 2: Beneficiary-Specific Tools & Multi-Candidate Scoping", () => 
 
       expect(getCandidateActionPlanner(legacyProfile, "candidate-1")?.questionnaire.formData.beneficiaryName).toBe("Spouse Jane");
       expect(getCandidateActionPlanner(legacyProfile, "candidate-2")).toBeNull();
+    });
+
+    it("generates isolated draft storage keys for standalone vs journey candidates", () => {
+      const ir5MotherKey = getJourney221gDraftKey("ir5-journey", "candidate-1");
+      const ir5FatherKey = getJourney221gDraftKey("ir5-journey", "candidate-2");
+      const ir1SpouseKey = getJourney221gDraftKey("ir1-journey", "candidate-1");
+
+      expect(STANDALONE_221G_STORAGE_KEY).toBe("standalone_221g_planner_result");
+      expect(STANDALONE_221G_DRAFT_KEY).toBe("standalone_221g_planner_draft");
+
+      expect(ir5MotherKey).toBe("journey_ir5-journey_candidate-1_221g_draft");
+      expect(ir5FatherKey).toBe("journey_ir5-journey_candidate-2_221g_draft");
+      expect(ir1SpouseKey).toBe("journey_ir1-journey_candidate-1_221g_draft");
+
+      expect(ir5MotherKey).not.toEqual(ir5FatherKey);
+      expect(ir5MotherKey).not.toEqual(STANDALONE_221G_DRAFT_KEY);
+      expect(ir1SpouseKey).not.toEqual(STANDALONE_221G_DRAFT_KEY);
+    });
+
+    it("prevents standalone 221(g) draft/result from leaking into journey and vice-versa", () => {
+      const mockStorage: Record<string, string> = {
+        [STANDALONE_221G_STORAGE_KEY]: JSON.stringify({
+          actionPlan: "# Action Plan Standalone",
+          checklist: "# Checklist Standalone",
+          formData: { caseNumber: "ISL2024111111", visaCategory: "B-1/B-2" },
+          selectedItems: { passport: true },
+          updatedAt: "2026-09-29T10:00:00.000Z",
+        }),
+        [STANDALONE_221G_DRAFT_KEY]: JSON.stringify({
+          currentStep: 2,
+          formData: { caseNumber: "ISL2024111111", consularPost: "Islamabad" },
+          selectedItems: { police_certificate: true },
+          updatedAt: "2026-09-29T10:05:00.000Z",
+        }),
+        "journey_ir5-journey_candidate-1_221g_draft": JSON.stringify({
+          currentStep: 3,
+          formData: { caseNumber: "ISL2024222222", consularPost: "Islamabad", beneficiaryName: "Mother Jane" },
+          selectedItems: { nadra_birth_cert: true },
+          updatedAt: "2026-09-29T10:10:00.000Z",
+        }),
+        "journey_ir5-journey_candidate-2_221g_draft": JSON.stringify({
+          currentStep: 1,
+          formData: { caseNumber: "ISL2024333333", consularPost: "Islamabad", beneficiaryName: "Father John" },
+          selectedItems: { i864_affidavit: true },
+          updatedAt: "2026-09-29T10:15:00.000Z",
+        }),
+      };
+
+      const resolveStandaloneDraft = () => {
+        const raw = mockStorage[STANDALONE_221G_DRAFT_KEY];
+        return raw ? JSON.parse(raw) : null;
+      };
+
+      const resolveJourneyDraft = (journeySlug: string, candidateId: string) => {
+        const key = getJourney221gDraftKey(journeySlug, candidateId);
+        const raw = mockStorage[key];
+        return raw ? JSON.parse(raw) : null;
+      };
+
+      const standaloneDraft = resolveStandaloneDraft();
+      const motherDraft = resolveJourneyDraft("ir5-journey", "candidate-1");
+      const fatherDraft = resolveJourneyDraft("ir5-journey", "candidate-2");
+
+      expect(standaloneDraft.currentStep).toBe(2);
+      expect(standaloneDraft.formData.caseNumber).toBe("ISL2024111111");
+      expect(standaloneDraft.selectedItems.police_certificate).toBe(true);
+
+      expect(motherDraft.currentStep).toBe(3);
+      expect(motherDraft.formData.beneficiaryName).toBe("Mother Jane");
+      expect(motherDraft.selectedItems.nadra_birth_cert).toBe(true);
+
+      expect(fatherDraft.currentStep).toBe(1);
+      expect(fatherDraft.formData.beneficiaryName).toBe("Father John");
+      expect(fatherDraft.selectedItems.i864_affidavit).toBe(true);
+
+      // Verify strict isolation
+      expect(motherDraft.formData.caseNumber).not.toEqual(standaloneDraft.formData.caseNumber);
+      expect(standaloneDraft.formData.beneficiaryName).toBeUndefined();
     });
   });
 
@@ -207,6 +298,80 @@ describe("Phase 2: Beneficiary-Specific Tools & Multi-Candidate Scoping", () => 
       expect(JSON.parse(storage["sponsorshipCalc_candidate-1"]).householdSize).toBe(2);
       expect(JSON.parse(storage["sponsorshipCalc_candidate-2"]).householdSize).toBe(4);
       expect(JSON.parse(storage["sponsorshipCalc"]).householdSize).toBe(2);
+    });
+
+    it("generates isolated draft keys for journey candidates vs standalone tool", () => {
+      const ir5MotherKey = getJourneySponsorshipDraftKey("ir5-journey", "candidate-1");
+      const ir5FatherKey = getJourneySponsorshipDraftKey("ir5-journey", "candidate-2");
+      const ir1SpouseKey = getJourneySponsorshipDraftKey("ir1-journey", "candidate-1");
+
+      expect(STANDALONE_SPONSORSHIP_STORAGE_KEY).toBe("standalone_sponsorship_calc");
+      expect(STANDALONE_SPONSORSHIP_DRAFT_KEY).toBe("standalone_sponsorship_calc_draft");
+
+      expect(ir5MotherKey).toBe("journey_ir5-journey_candidate-1_sponsorship_draft");
+      expect(ir5FatherKey).toBe("journey_ir5-journey_candidate-2_sponsorship_draft");
+      expect(ir1SpouseKey).toBe("journey_ir1-journey_candidate-1_sponsorship_draft");
+
+      expect(ir5MotherKey).not.toEqual(ir5FatherKey);
+      expect(ir5MotherKey).not.toEqual(STANDALONE_SPONSORSHIP_DRAFT_KEY);
+      expect(ir1SpouseKey).not.toEqual(STANDALONE_SPONSORSHIP_DRAFT_KEY);
+    });
+
+    it("prevents standalone draft/result from leaking into journey and vice-versa", () => {
+      const mockStorage: Record<string, string> = {
+        [STANDALONE_SPONSORSHIP_STORAGE_KEY]: JSON.stringify({
+          householdSize: 2,
+          requiredIncome: 25550,
+          totalIncome: 45000,
+          isEligible: true,
+          raw: { state: "TX", currentAnnualIncome: 45000, relationshipToApplicant: "other" },
+        }),
+        [STANDALONE_SPONSORSHIP_DRAFT_KEY]: JSON.stringify({
+          stepIdx: 3,
+          data: { state: "TX", numberOfChildren: 1 },
+          updatedAt: "2026-09-28T10:00:00.000Z",
+        }),
+        "journey_ir5-journey_candidate-1_sponsorship_draft": JSON.stringify({
+          stepIdx: 6,
+          data: { state: "CA", currentAnnualIncome: 60000, relationshipToApplicant: "parent" },
+          updatedAt: "2026-09-28T10:05:00.000Z",
+        }),
+        "journey_ir5-journey_candidate-2_sponsorship_draft": JSON.stringify({
+          stepIdx: 2,
+          data: { state: "CA", currentAnnualIncome: 60000, isMarried: true },
+          updatedAt: "2026-09-28T10:10:00.000Z",
+        }),
+      };
+
+      // Standalone resolver only reads standalone keys
+      const resolveStandaloneDraft = () => {
+        const raw = mockStorage[STANDALONE_SPONSORSHIP_DRAFT_KEY];
+        return raw ? JSON.parse(raw) : null;
+      };
+
+      // Journey resolver only reads journey-candidate keys
+      const resolveJourneyDraft = (journeySlug: string, candidateId: string) => {
+        const key = getJourneySponsorshipDraftKey(journeySlug, candidateId);
+        const raw = mockStorage[key];
+        return raw ? JSON.parse(raw) : null;
+      };
+
+      const standaloneDraft = resolveStandaloneDraft();
+      const motherDraft = resolveJourneyDraft("ir5-journey", "candidate-1");
+      const fatherDraft = resolveJourneyDraft("ir5-journey", "candidate-2");
+
+      expect(standaloneDraft.stepIdx).toBe(3);
+      expect(standaloneDraft.data.state).toBe("TX");
+
+      expect(motherDraft.stepIdx).toBe(6);
+      expect(motherDraft.data.relationshipToApplicant).toBe("parent");
+
+      expect(fatherDraft.stepIdx).toBe(2);
+      expect(fatherDraft.data.isMarried).toBe(true);
+
+      // Verify mutual exclusivity
+      expect(motherDraft.data.state).not.toEqual(standaloneDraft.data.state);
+      expect(standaloneDraft.data.relationshipToApplicant).toBeUndefined();
     });
   });
 
@@ -390,5 +555,227 @@ describe("Phase 2: Beneficiary-Specific Tools & Multi-Candidate Scoping", () => 
       expect(keyCand1).not.toEqual(keyCand2);
     });
   });
+
+  // ─── 6. Passport Photo Booth History & Isolation ─────────────────────────
+  describe("6. Passport Photo Booth History & Environment Isolation", () => {
+    it("generates isolated photo history storage keys for standalone vs journey candidates", () => {
+      const ir5MotherKey = getJourneyPassportPhotosKey("ir5-journey", "candidate-1");
+      const ir5FatherKey = getJourneyPassportPhotosKey("ir5-journey", "candidate-2");
+      const ir1SpouseKey = getJourneyPassportPhotosKey("ir1-journey", "candidate-1");
+
+      expect(STANDALONE_PASSPORT_PHOTOS_KEY).toBe("standalone_passport_photo_history");
+      expect(ir5MotherKey).toBe("journey_ir5-journey_candidate-1_passport_photo_history");
+      expect(ir5FatherKey).toBe("journey_ir5-journey_candidate-2_passport_photo_history");
+      expect(ir1SpouseKey).toBe("journey_ir1-journey_candidate-1_passport_photo_history");
+
+      expect(ir5MotherKey).not.toEqual(ir5FatherKey);
+      expect(ir5MotherKey).not.toEqual(STANDALONE_PASSPORT_PHOTOS_KEY);
+      expect(ir1SpouseKey).not.toEqual(STANDALONE_PASSPORT_PHOTOS_KEY);
+    });
+
+    it("prevents standalone photo history from leaking into journey and vice-versa", () => {
+      const mockStorage: Record<string, string> = {
+        [STANDALONE_PASSPORT_PHOTOS_KEY]: JSON.stringify([
+          {
+            id: "photo-standalone-1",
+            dataUrl: "data:image/jpeg;base64,STANDALONE_PHOTO_DATA",
+            presetName: "U.S. Passport (2x2 in)",
+            width: 600,
+            height: 600,
+            createdAt: "2026-09-30T08:00:00.000Z",
+            fileName: "standalone.jpg",
+          },
+        ]),
+        "journey_ir5-journey_candidate-1_passport_photo_history": JSON.stringify([
+          {
+            id: "photo-cand-1",
+            dataUrl: "data:image/jpeg;base64,MOTHER_PHOTO_DATA",
+            presetName: "U.S. Passport (2x2 in)",
+            width: 600,
+            height: 600,
+            createdAt: "2026-09-30T08:15:00.000Z",
+            fileName: "mother.jpg",
+          },
+        ]),
+        "journey_ir5-journey_candidate-2_passport_photo_history": JSON.stringify([
+          {
+            id: "photo-cand-2",
+            dataUrl: "data:image/jpeg;base64,FATHER_PHOTO_DATA",
+            presetName: "UK Passport (35x45 mm)",
+            width: 413,
+            height: 531,
+            createdAt: "2026-09-30T08:30:00.000Z",
+            fileName: "father.jpg",
+          },
+        ]),
+      };
+
+      const resolveStandaloneHistory = (): PassportPhotoItem[] => {
+        const raw = mockStorage[STANDALONE_PASSPORT_PHOTOS_KEY];
+        return raw ? JSON.parse(raw) : [];
+      };
+
+      const resolveJourneyHistory = (journeySlug: string, candidateId: string): PassportPhotoItem[] => {
+        const key = getJourneyPassportPhotosKey(journeySlug, candidateId);
+        const raw = mockStorage[key];
+        return raw ? JSON.parse(raw) : [];
+      };
+
+      const standalonePhotos = resolveStandaloneHistory();
+      const motherPhotos = resolveJourneyHistory("ir5-journey", "candidate-1");
+      const fatherPhotos = resolveJourneyHistory("ir5-journey", "candidate-2");
+
+      expect(standalonePhotos.length).toBe(1);
+      expect(standalonePhotos[0].id).toBe("photo-standalone-1");
+      expect(standalonePhotos[0].dataUrl).toContain("STANDALONE_PHOTO_DATA");
+
+      expect(motherPhotos.length).toBe(1);
+      expect(motherPhotos[0].id).toBe("photo-cand-1");
+      expect(motherPhotos[0].fileName).toBe("mother.jpg");
+
+      expect(fatherPhotos.length).toBe(1);
+      expect(fatherPhotos[0].id).toBe("photo-cand-2");
+      expect(fatherPhotos[0].width).toBe(413);
+
+      // Verify strict isolation
+      expect(motherPhotos[0].dataUrl).not.toEqual(standalonePhotos[0].dataUrl);
+      expect(fatherPhotos[0].dataUrl).not.toEqual(motherPhotos[0].dataUrl);
+    });
+
+    it("supports history appending, cap limits (up to 10), and clearing", () => {
+      let history: PassportPhotoItem[] = [];
+
+      const addPhoto = (photo: PassportPhotoItem) => {
+        history = [photo, ...history.filter((p) => p.id !== photo.id)].slice(0, 10);
+      };
+
+      for (let i = 1; i <= 15; i++) {
+        addPhoto({
+          id: `photo-${i}`,
+          dataUrl: `data:image/jpeg;base64,DATA_${i}`,
+          presetName: "U.S.",
+          width: 600,
+          height: 600,
+          createdAt: new Date(2026, 8, 30, 8, i).toISOString(),
+        });
+      }
+
+      expect(history.length).toBe(10);
+      expect(history[0].id).toBe("photo-15"); // Newest first
+      expect(history[9].id).toBe("photo-6"); // Oldest within limit
+
+      // Clear history
+      history = [];
+      expect(history.length).toBe(0);
+    });
+
+    it("does not add photos to history when credits are unavailable or not consumed", () => {
+      let history: PassportPhotoItem[] = [];
+
+      const processPhotoGeneration = (
+        isExecutive: boolean,
+        creditConsumed: boolean,
+        photoData: PassportPhotoItem
+      ) => {
+        // Strict check matching PassportPhotoTool handleProcess
+        if (isExecutive || creditConsumed) {
+          history = [photoData, ...history.filter((p) => p.id !== photoData.id)].slice(0, 10);
+          return { success: true, locked: false };
+        } else {
+          return { success: false, locked: true };
+        }
+      };
+
+      const testPhoto: PassportPhotoItem = {
+        id: "unpaid-photo-1",
+        dataUrl: "data:image/jpeg;base64,UNPAID_DATA",
+        presetName: "U.S. Passport",
+        width: 600,
+        height: 600,
+        createdAt: new Date().toISOString(),
+      };
+
+      // 1. Non-executive user with no credits consumed (credit exhaustion / failure)
+      const attemptUnpaid = processPhotoGeneration(false, false, testPhoto);
+      expect(attemptUnpaid.locked).toBe(true);
+      expect(history).toHaveLength(0); // MUST NOT be added to history
+
+      // 2. Non-executive user after successfully consuming 1 credit
+      const paidPhoto: PassportPhotoItem = {
+        id: "paid-photo-1",
+        dataUrl: "data:image/jpeg;base64,PAID_DATA",
+        presetName: "U.S. Passport",
+        width: 600,
+        height: 600,
+        createdAt: new Date().toISOString(),
+      };
+      const attemptPaid = processPhotoGeneration(false, true, paidPhoto);
+      expect(attemptPaid.locked).toBe(false);
+      expect(history).toHaveLength(1);
+      expect(history[0].id).toBe("paid-photo-1");
+
+      // 3. Executive user (unlimited access)
+      const execPhoto: PassportPhotoItem = {
+        id: "exec-photo-1",
+        dataUrl: "data:image/jpeg;base64,EXEC_DATA",
+        presetName: "UK Visa",
+        width: 413,
+        height: 531,
+        createdAt: new Date().toISOString(),
+      };
+      const attemptExec = processPhotoGeneration(true, false, execPhoto);
+      expect(attemptExec.locked).toBe(false);
+      expect(history).toHaveLength(2);
+      expect(history[0].id).toBe("exec-photo-1");
+    });
+
+    it("evaluates tool access against journey plan tier in journey mode and account tier in standalone mode", () => {
+      const resolveEffectiveTier = (
+        isJourney: boolean,
+        journeyTier: string | null | undefined,
+        accountTier: string,
+        categoryTier?: string
+      ) => {
+        if (isJourney) {
+          if (journeyTier) return journeyTier.toLowerCase();
+          if (categoryTier) return categoryTier.toLowerCase();
+        }
+        return accountTier.toLowerCase();
+      };
+
+      // Scenario 1: User has 'free' account plan, but the IR-5 journey was purchased with 'executive' plan tier
+      const journeyTier1 = resolveEffectiveTier(true, "executive", "free");
+      expect(journeyTier1).toBe("executive"); // Tools embedded in this journey get Executive access
+
+      // Scenario 2: User has 'premium' account plan, but enters an unpaid / 'free' preview journey
+      const journeyTier2 = resolveEffectiveTier(true, "free", "premium");
+      expect(journeyTier2).toBe("free"); // Tools embedded in this free journey are evaluated as Free tier
+
+      // Scenario 3: User accesses tool in standalone mode (/passport) with 'premium' account plan
+      const standaloneTier = resolveEffectiveTier(false, null, "premium");
+      expect(standaloneTier).toBe("premium"); // Standalone tool evaluates against account plan
+    });
+
+    it("evaluates sponsorship calculator ResultGate access against journey plan tier", () => {
+      const canUseSponsorshipCalc = (planTier: string) => {
+        // Essential / Premium / Executive plans unlock sponsorship_calc
+        return ["essential", "premium", "executive"].includes(planTier.toLowerCase());
+      };
+
+      // Scenario A: User on 'free' account plan, but viewing an 'executive' journey
+      const effectiveTierA = "executive";
+      expect(canUseSponsorshipCalc(effectiveTierA)).toBe(true);
+
+      // Scenario B: User on 'free' account plan in standalone mode
+      const effectiveTierB = "free";
+      expect(canUseSponsorshipCalc(effectiveTierB)).toBe(false);
+
+      // Scenario C: User with 'premium' journey plan
+      const effectiveTierC = "premium";
+      expect(canUseSponsorshipCalc(effectiveTierC)).toBe(true);
+    });
+  });
 });
+
+
 

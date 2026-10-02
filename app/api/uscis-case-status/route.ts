@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { E, msg } from "@/lib/errors";
 
-// This route talks to the official USCIS "Torch" API to look up a case status.
+
 // There are two USCIS servers: a test one (sandbox) and the real one (production).
 // We pick the real server only when USCIS_ENV is set to "production", otherwise we use the test server.
 const IS_PRODUCTION = process.env.USCIS_ENV === "production";

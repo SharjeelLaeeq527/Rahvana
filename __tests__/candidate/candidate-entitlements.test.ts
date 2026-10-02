@@ -10,6 +10,7 @@ import {
 import { normalizePlanTier, PlanTier } from "@/lib/entitlements/config";
 import { canUse, isLocked, getEffectiveEntitlement } from "@/lib/entitlements/helpers";
 
+
 describe("Phase D: Per-Journey Entitlement Resolution & Cross-Category Access Control", () => {
   // Helper simulating PlanContext tier resolution
   function resolveEffectiveTier({

@@ -76,8 +76,10 @@ const COLOR_STYLES: Record<string, { bg: string; text: string; ring: string; bor
 
 export function CandidateSwitcherTray({
   onCandidateSwitched,
+  onAddCandidate,
 }: {
   onCandidateSwitched?: () => void;
+  onAddCandidate?: () => void;
 }) {
   const router = useRouter();
   const {
@@ -133,7 +135,9 @@ export function CandidateSwitcherTray({
 
       if (isRoadmapRoute) {
         const targetRoute = getJourneyHrefByType(target.visaCategory);
-        if (targetRoute && !currentPath.includes(targetRoute)) {
+        const normCurrent = currentPath.replace(/\/+$/, "");
+        const normTarget = targetRoute.replace(/\/+$/, "");
+        if (targetRoute && normCurrent !== normTarget) {
           router.push(targetRoute);
         }
       }
@@ -297,7 +301,13 @@ export function CandidateSwitcherTray({
       <div className="mt-2 pt-1.5 border-t border-border/50">
         <button
           type="button"
-          onClick={() => setIsAddModalOpen(true)}
+          onClick={() => {
+            if (onAddCandidate) {
+              onAddCandidate();
+            } else {
+              setIsAddModalOpen(true);
+            }
+          }}
           className="w-full flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-semibold text-primary hover:bg-primary/5 transition-colors border border-dashed border-primary/30"
         >
           <UserPlus className="w-3.5 h-3.5" />
@@ -305,12 +315,14 @@ export function CandidateSwitcherTray({
         </button>
       </div>
 
-      {/* Add Candidate Modal */}
-      <AddCandidateModal
-        isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-        visaCategory={visaCategory}
-      />
+      {/* Add Candidate Modal (fallback when parent does not control modal lifecycle) */}
+      {!onAddCandidate && (
+        <AddCandidateModal
+          isOpen={isAddModalOpen}
+          onClose={() => setIsAddModalOpen(false)}
+          visaCategory={visaCategory}
+        />
+      )}
     </div>
   );
 }

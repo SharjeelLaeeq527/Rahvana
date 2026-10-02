@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { IR5_ENABLED } from "@/lib/feature-flags";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,11 +17,20 @@ import {
   ChevronDown,
   Search,
   FileDown,
+  RotateCcw,
 } from "lucide-react";
 // import { Checkbox } from "@/components/ui/checkbox";
 import Actual221GFormChecker from "./Actual221GFormChecker";
 import { NarrativeModal } from "./NarrativeModal";
-import { FormData, FormSelections } from "../types/221g";
+import {
+  FormData,
+  FormSelections,
+  TwentyTwoOneGDraft,
+  TwentyTwoOneGResult,
+  STANDALONE_221G_DRAFT_KEY,
+  STANDALONE_221G_STORAGE_KEY,
+  getJourney221gDraftKey,
+} from "../types/221g";
 import { classifySituation } from "../utils/classifier";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { useAuth } from "@/app/context/AuthContext";
@@ -29,13 +38,23 @@ import { save221gCase } from "@/lib/supabase/twentyTwoOneG";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { ResultGate } from "@/app/components/entitlements/ResultGate";
 import { escapeHtml } from "@/lib/security/sanitize";
+import type { ToolModeProps } from "@/types/tool-mode";
+import { useResolveToolMode } from "@/lib/hooks/useResolveToolMode";
+import { useUserProfile } from "@/app/context/UserProfileContext";
 
-interface CombinedIntakeFormProps {
-  onSubmit: (data: FormData, selectedItems: FormSelections) => void;
+interface CombinedIntakeFormProps extends ToolModeProps {
+  onSubmit?: (data: FormData, selectedItems: FormSelections) => void;
   onSaveToProfile?: () => Promise<void>;
   initialData?: FormData | null;
   initialSelections?: FormSelections | null;
+  initialStep?: number;
+  initialOutputs?: {
+    actionPlan: string;
+    checklist: string;
+  } | null;
   smartModeEnabled?: boolean;
+  onProgressChange?: (draft: TwentyTwoOneGDraft) => void;
+  onReset?: () => void;
 }
 
 // Steps matching the reference HTML wizard
@@ -346,19 +365,138 @@ export default function CombinedIntakeForm({
   // onSaveToProfile,
   initialData,
   initialSelections,
+  initialStep,
+  initialOutputs,
   smartModeEnabled = false,
+  mode: propMode,
+  journeyContext: propContext,
+  onProgressChange,
+  onReset,
 }: CombinedIntakeFormProps) {
-  const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState<FormData>(initialData ?? EMPTY_FORM);
+  const { isJourney, journeyContext } = useResolveToolMode({
+    mode: propMode,
+    journeyContext: propContext,
+  });
+
+  const { profile, updateProfile } = useUserProfile();
+
+  const effectiveDraftKey = useMemo(() => {
+    if (isJourney && journeyContext?.journeySlug) {
+      return getJourney221gDraftKey(journeyContext.journeySlug, journeyContext.candidateId);
+    }
+    return STANDALONE_221G_DRAFT_KEY;
+  }, [isJourney, journeyContext]);
+
+  // Synchronously compute initial state on first mount to prevent race conditions & hydration loss
+  const getInitialState = useCallback((): {
+    step: number;
+    formData: FormData;
+    selectedItems: FormSelections;
+    outputs: { actionPlan: string; checklist: string } | null;
+  } => {
+    // 1. If explicit props passed with data
+    if (
+      (initialData && Object.keys(initialData).length > 0) ||
+      (initialSelections && Object.keys(initialSelections).length > 0)
+    ) {
+      return {
+        step: typeof initialStep === "number" ? initialStep : 1,
+        formData: { ...EMPTY_FORM, ...(initialData || {}) },
+        selectedItems: initialSelections || {},
+        outputs: initialOutputs || null,
+      };
+    }
+
+    // 2. Try loading isolated draft from localStorage
+    if (typeof window !== "undefined") {
+      try {
+        const draftJson = localStorage.getItem(effectiveDraftKey);
+        if (draftJson) {
+          const draft: TwentyTwoOneGDraft = JSON.parse(draftJson);
+          if (draft && (draft.formData || draft.selectedItems)) {
+            return {
+              step:
+                typeof initialStep === "number"
+                  ? initialStep
+                  : typeof draft.currentStep === "number"
+                    ? draft.currentStep
+                    : 1,
+              formData: { ...EMPTY_FORM, ...(draft.formData || {}) },
+              selectedItems: draft.selectedItems || {},
+              outputs: draft.outputs || null,
+            };
+          }
+        }
+      } catch (e) {
+        console.warn("Could not parse 221g draft from localStorage:", e);
+      }
+
+      // 3. If standalone and user is logged in, check profile DB
+      if (!isJourney && profile?.standalone221gDraft?.formData) {
+        const draft = profile.standalone221gDraft;
+        return {
+          step:
+            typeof initialStep === "number"
+              ? initialStep
+              : (draft.currentStep ?? 1),
+          formData: { ...EMPTY_FORM, ...(draft.formData || {}) },
+          selectedItems: draft.selectedItems || {},
+          outputs: draft.outputs || null,
+        };
+      }
+
+      // 4. If standalone and completed result exists, restore
+      if (!isJourney) {
+        try {
+          const cachedResult = localStorage.getItem(STANDALONE_221G_STORAGE_KEY);
+          if (cachedResult) {
+            const parsed: TwentyTwoOneGResult = JSON.parse(cachedResult);
+            if (parsed?.formData) {
+              return {
+                step: typeof initialStep === "number" ? initialStep : 4,
+                formData: { ...EMPTY_FORM, ...(parsed.formData || {}) },
+                selectedItems: parsed.selectedItems || {},
+                outputs: {
+                  actionPlan: parsed.actionPlan || "",
+                  checklist: parsed.checklist || "",
+                },
+              };
+            }
+          } else if (profile?.standalone221gResult?.formData) {
+            const res = profile.standalone221gResult;
+            return {
+              step: typeof initialStep === "number" ? initialStep : 4,
+              formData: { ...EMPTY_FORM, ...(res.formData || {}) },
+              selectedItems: res.selectedItems || {},
+              outputs: {
+                actionPlan: res.actionPlan || "",
+                checklist: res.checklist || "",
+              },
+            };
+          }
+        } catch (e) {}
+      }
+    }
+
+    return {
+      step: typeof initialStep === "number" ? initialStep : 1,
+      formData: { ...EMPTY_FORM, ...(initialData || {}) },
+      selectedItems: initialSelections || {},
+      outputs: initialOutputs || null,
+    };
+  }, [initialData, initialSelections, initialStep, initialOutputs, effectiveDraftKey, isJourney, profile]);
+
+  const [currentStep, setCurrentStep] = useState<number>(() => getInitialState().step);
+  const [formData, setFormData] = useState<FormData>(() => getInitialState().formData);
   const [selected221gItems, setSelected221gItems] = useState<FormSelections>(
-    initialSelections ?? {}
+    () => getInitialState().selectedItems
   );
 
   const [outputs, setOutputs] = useState<{
     actionPlan: string;
     checklist: string;
     // coverLetter: string;
-  } | null>(null);
+  } | null>(() => getInitialState().outputs);
 
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
@@ -382,46 +520,62 @@ export default function CombinedIntakeForm({
     }
   }, []);
 
-  // Auto-save logic
+  const lastSavedSnapshotRef = useRef<string>("");
+
+  // Auto-save draft progress on changes (guarded by serialized snapshot comparison)
   useEffect(() => {
-    const autoSave = async () => {
-      console.log("autoSave checking conditions:", {
-        hasUser: !!user,
-        caseNumber: formData.caseNumber,
-        beneficiaryName: formData.beneficiaryName,
-      });
+    const currentSnapshot = JSON.stringify({
+      currentStep,
+      formData,
+      selected221gItems,
+      outputs,
+    });
+    if (lastSavedSnapshotRef.current === currentSnapshot) return;
+    lastSavedSnapshotRef.current = currentSnapshot;
 
-      if (!user) {
-        console.log("autoSave skipped: no user");
-        return;
-      }
-      if (
-        !formData.visaType &&
-        !formData.visaCategory &&
-        !formData.interviewDate &&
-        !formData.consularPost
-      ) {
-        console.log("autoSave skipped: basic case details missing");
-        return;
-      }
-
-      try {
-        setSaveStatus("saving");
-        console.log("Calling save221gCase...");
-        await save221gCase(user.id, formData, selected221gItems);
-        console.log("save221gCase succeeded!");
-        setSaveStatus("saved");
-        // Reset save status after 3 seconds
-        setTimeout(() => setSaveStatus("idle"), 3000);
-      } catch (err) {
-        console.error("Auto-save failed", err);
-        setSaveStatus("error");
-      }
+    const draftPayload: TwentyTwoOneGDraft = {
+      currentStep,
+      formData,
+      selectedItems: selected221gItems,
+      outputs,
+      updatedAt: new Date().toISOString(),
     };
 
-    const timeoutId = setTimeout(autoSave, 2000); // Debounce save
-    return () => clearTimeout(timeoutId);
-  }, [user, formData, selected221gItems]);
+    try {
+      localStorage.setItem(effectiveDraftKey, JSON.stringify(draftPayload));
+      onProgressChange?.(draftPayload);
+
+      // Save to Supabase user_profiles if in standalone mode and user is logged in
+      if (!isJourney && updateProfile) {
+        updateProfile({ standalone221gDraft: draftPayload }, { silent: true });
+      }
+
+      // Also auto-save to user_221g_cases table if user is authenticated and has basic details
+      if (
+        user &&
+        (formData.visaType ||
+          formData.visaCategory ||
+          formData.interviewDate ||
+          formData.consularPost)
+      ) {
+        save221gCase(user.id, formData, selected221gItems).catch((err) => {
+          console.warn("Background save221gCase error:", err);
+        });
+      }
+    } catch (e) {
+      console.warn("Error auto-saving 221g draft:", e);
+    }
+  }, [
+    currentStep,
+    formData,
+    selected221gItems,
+    outputs,
+    effectiveDraftKey,
+    onProgressChange,
+    isJourney,
+    updateProfile,
+    user,
+  ]);
 
   // Close embassy dropdown when clicking outside
   useEffect(() => {
@@ -472,14 +626,74 @@ export default function CombinedIntakeForm({
     const packetChecklist = generatePacketChecklist();
     // const coverLetter = generateCoverLetter();
 
-    setOutputs({
+    const newOutputs = {
       actionPlan,
       checklist: packetChecklist,
       // coverLetter,
-    });
+    };
 
+    setOutputs(newOutputs);
     setCurrentStep(4);
-    onSubmit(formData, selected221gItems);
+    onSubmit?.(formData, selected221gItems);
+
+    const resultPayload: TwentyTwoOneGResult = {
+      actionPlan,
+      checklist: packetChecklist,
+      formData,
+      selectedItems: selected221gItems,
+      updatedAt: new Date().toISOString(),
+    };
+
+    try {
+      // Clear draft once complete
+      localStorage.removeItem(effectiveDraftKey);
+
+      // In standalone mode, persist final result to standalone keys
+      if (!isJourney) {
+        localStorage.setItem(STANDALONE_221G_STORAGE_KEY, JSON.stringify(resultPayload));
+        localStorage.removeItem(STANDALONE_221G_DRAFT_KEY);
+        if (updateProfile) {
+          updateProfile(
+            {
+              standalone221gResult: resultPayload,
+              standalone221gDraft: undefined,
+            },
+            { silent: true }
+          );
+        }
+      }
+    } catch (e) {
+      console.warn("Error persisting 221g completed result:", e);
+    }
+  };
+
+  const resetWizard = () => {
+    try {
+      localStorage.removeItem(effectiveDraftKey);
+      if (!isJourney) {
+        localStorage.removeItem(STANDALONE_221G_STORAGE_KEY);
+        localStorage.removeItem(STANDALONE_221G_DRAFT_KEY);
+        if (updateProfile) {
+          updateProfile(
+            {
+              standalone221gDraft: undefined,
+              standalone221gResult: undefined,
+            },
+            { silent: true }
+          );
+        }
+      }
+    } catch (e) {
+      console.warn("Error clearing 221g progress:", e);
+    }
+
+    setFormData(EMPTY_FORM);
+    setSelected221gItems({});
+    setOutputs(null);
+    setCurrentStep(1);
+    setShowResetModal(false);
+    onReset?.();
+    showToast("221(g) Action Planner reset successfully.", "info");
   };
 
   const selectedBooleanKeys = Object.entries(selected221gItems)
@@ -524,14 +738,6 @@ export default function CombinedIntakeForm({
   useEffect(() => {
     setCaseNumberError(formData.caseNumber ? validateCaseNumber(formData.caseNumber) : null);
   }, [formData.caseNumber]);
-
-  const resetWizard = () => {
-    setFormData(EMPTY_FORM);
-    setSelected221gItems({});
-    setOutputs(null);
-    setCurrentStep(1);
-    setShowResetModal(false);
-  };
 
   const formatDate = (d: string) => {
     if (!d) return "-";
@@ -2445,15 +2651,27 @@ footer.querySelector(".footer-page").textContent = String(p);
         <div className="min-w-0 flex-1">
           <ProgressIndicator />
         </div>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => setShowWelcome(true)}
-          className="self-start border-slate-300 text-slate-700 hover:bg-slate-100"
-        >
-          <CircleHelp className="mr-2 h-4 w-4" />
-          What&apos;s this?
-        </Button>
+        <div className="flex items-center gap-2 self-start">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setShowResetModal(true)}
+            className="border-slate-300 text-slate-600 hover:text-red-600 hover:border-red-300 hover:bg-red-50 text-xs"
+            title="Clear and reset 221(g) planner"
+          >
+            <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
+            Start Over
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setShowWelcome(true)}
+            className="border-slate-300 text-slate-700 hover:bg-slate-100 text-xs"
+          >
+            <CircleHelp className="mr-1.5 h-3.5 w-3.5" />
+            What&apos;s this?
+          </Button>
+        </div>
       </div>
       <div className="bg-card rounded-2xl border border-border shadow-2xl overflow-hidden">
         <div className="p-6 md:p-10">

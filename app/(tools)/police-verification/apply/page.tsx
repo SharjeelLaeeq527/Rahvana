@@ -26,6 +26,8 @@ import {
   Crown,
 } from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
+import { useCandidate } from "@/app/context/CandidateContext";
+import { useUserProfile } from "@/app/context/UserProfileContext";
 import { Loader } from "@/components/ui/spinner";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { usePlan } from "@/app/context/PlanContext";
@@ -264,6 +266,8 @@ function PoliceApplyContent() {
   // const searchParams = useSearchParams();
   const router = useRouter();
   const { user } = useAuth();
+  const { activeCandidate, activeCandidateId, isMultiCandidate } = useCandidate();
+  const { profile } = useUserProfile();
   const { showToast } = useToast();
   // const province = searchParams.get("province") || "";
   const [currentStep, setCurrentStep] = useState(1);
@@ -347,6 +351,33 @@ function PoliceApplyContent() {
     witness2Contact: "",
     witness2Address: "",
   });
+
+  // Auto-fill active candidate biographics
+  useEffect(() => {
+    setFormData((prev) => ({
+      ...prev,
+      fullName:
+        activeCandidate.fullName ||
+        (profile?.name?.first ? `${profile.name.first} ${profile.name.last || ""}`.trim() : prev.fullName),
+      cnic: activeCandidate.cnic || profile?.cnic || prev.cnic,
+      passport: activeCandidate.passportNumber || profile?.passportNumber || prev.passport,
+      passportIssue: profile?.passportIssueDate || prev.passportIssue,
+      passportExpiry: profile?.passportExpiry || prev.passportExpiry,
+      dob: activeCandidate.dateOfBirth || profile?.dateOfBirth || prev.dob,
+      email: prev.email || profile?.sponsor?.email || user?.email || "",
+      mobile: prev.mobile || profile?.phone || profile?.sponsor?.phone || "",
+      address:
+        prev.address ||
+        (profile?.currentAddress
+          ? `${profile.currentAddress.street || ""}, ${profile.currentAddress.city || ""}`.trim()
+          : ""),
+      fatherName:
+        prev.fatherName ||
+        (profile?.father?.name?.first
+          ? `${profile.father.name.first} ${profile.father.name.last || ""}`.trim()
+          : ""),
+    }));
+  }, [activeCandidate, profile, user]);
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
@@ -606,6 +637,8 @@ function PoliceApplyContent() {
       const payload = {
         ...formData,
         userId: user?.id,
+        candidate_id: activeCandidateId || "candidate-1",
+        candidate_name: activeCandidate.fullName || activeCandidate.label || "",
       };
 
       const response = await fetch("/api/police-verification/apply", {
@@ -716,6 +749,8 @@ function PoliceApplyContent() {
         const payload = {
           ...formData,
           userId: user?.id,
+          candidate_id: activeCandidateId || "candidate-1",
+          candidate_name: activeCandidate.fullName || activeCandidate.label || "",
         };
 
         const response = await fetch("/api/police-verification/apply", {
@@ -852,6 +887,14 @@ function PoliceApplyContent() {
                 {/* {province} */}
                 Sindh Police Verification Form
               </h1>
+              {isMultiCandidate && (
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-teal-50 border border-teal-200 text-teal-800 rounded-full text-xs font-medium">
+                  <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
+                  <span>
+                    Applying for: <strong>{activeCandidate.fullName ? `${activeCandidate.fullName} (${activeCandidate.label})` : activeCandidate.label}</strong>
+                  </span>
+                </div>
+              )}
               <QuickAccessButton
                 item={{
                   id: "service-pcc-filing-service-—-sindh",

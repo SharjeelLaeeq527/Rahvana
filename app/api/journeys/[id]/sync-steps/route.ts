@@ -13,19 +13,11 @@ import { ConfigLoader } from "@/lib/journey/config-loader";
 import { E, msg } from "@/lib/errors";
 import * as db from "@/lib/journey/data-access";
 
-function normType(t: string) {
-  return t.toLowerCase().replace(/-/g, "");
-}
+import { getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
 
 function configTypeFromJourneyType(journeyType: string) {
-  const normalized = normType(journeyType);
-
-  const map: Record<string, string> = {
-    ir1: "ir-1",
-    ir5: "ir-5",
-  };
-
-  return map[normalized] ?? journeyType.toLowerCase();
+  const base = getBaseVisaCategory(journeyType);
+  return base.toLowerCase();
 }
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -49,17 +41,22 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     // Get all existing steps from DB (by step_key)
     const existingSteps = await db.getStepsForJourneyDB(journeyId);
     const existingStepKeys = new Set(existingSteps.map((s) => s.step_key));
+    const chaptersInput = ConfigLoader.transformChaptersInput(rawJSON.chapters);
 
     let newStepsAdded = 0;
     const addedKeys: string[] = [];
 
     for (let ci = 0; ci < rawJSON.chapters.length; ci++) {
       const rawChapter = rawJSON.chapters[ci];
-      const dbChapter = existingChapters.find((ch) => ch.chapter_key === rawChapter.chapter_key);
+      let dbChapter = existingChapters.find((ch) => ch.chapter_key === rawChapter.chapter_key);
 
       if (!dbChapter) {
-        console.warn(`[sync-steps] Chapter ${rawChapter.chapter_key} not found in DB, skipping`);
-        continue;
+        try {
+          dbChapter = await db.createChapterDB(journeyId, chaptersInput[ci]);
+        } catch (chapterErr) {
+          console.error(`[sync-steps] Failed to create chapter ${rawChapter.chapter_key}:`, chapterErr);
+          continue;
+        }
       }
 
       const stepsInput = ConfigLoader.transformStepsInput(rawChapter.steps, rawChapter.chapter_key);

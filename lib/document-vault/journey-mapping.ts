@@ -438,10 +438,58 @@ export function getCandidateJourneyTag(
 }
 
 /**
- * De-duplicate a list of journeys by normalized `journey_type`, keeping the first
- * occurrence of each type. Guards the cross-share list against duplicate journey rows
- * (the per-row filter only compares each journey to the ACTIVE one, never to its
- * siblings, so without this two rows of the same type would both render).
+ * Resolves the dynamic display name for a Document Vault card corresponding to a journey.
+ * If the candidate has a user-saved fullName, returns that name.
+ * If no name is set, falls back to a placeholder like "Candidate 1" or "Candidate 2" based on their order.
+ */
+export function getCandidateDisplayNameForJourney(
+  journeyType: string,
+  candidates?: CandidateLike[] | null
+): string {
+  const cand = getCandidateForJourneyType(journeyType, candidates);
+  if (cand) {
+    const trimmedName = (cand.fullName || "").trim();
+    const DEFAULT_NAME_RE = /^(mother|father|child|spouse|stepparent|adoptive ?parent)\s*\d*$/i;
+    if (trimmedName && !DEFAULT_NAME_RE.test(trimmedName)) {
+      return trimmedName;
+    }
+    const num = (cand.id || "").replace(/[^0-9]/g, "") || "1";
+    return cand.label || `Candidate ${num}`;
+  }
+
+  // Fallback from journey_type string if candidate not in roster
+  const match = (journeyType || "").toLowerCase().match(/candidate[-_]?(\d+)/);
+  const num = match ? match[1] : "1";
+  return `Candidate ${num}`;
+}
+
+/**
+ * Canonical de-dupe key for a journey: base visa category + candidate number.
+ *
+ * A raw string compare (`ir5` vs `ir5-journey` vs `IR-5`) leaves near-duplicate rows of the
+ * SAME journey intact, so the same category renders twice (e.g. in the cross-share list).
+ * Collapsing on the base category fixes that, while the candidate number keeps genuinely
+ * distinct siblings apart (`ir5` = candidate-1, `ir5_candidate-2` = candidate-2 stay separate).
+ * Unknown categories (student visas, etc.) fall back to the old normalized-string key.
+ */
+function journeyDedupeKey(journeyType?: string | null): string {
+  const raw = journeyType || "";
+  const base = getBaseVisaCategory(raw);
+  const candMatch = raw.toLowerCase().match(/candidate[-_ ]?(\d+)/);
+  const cand = candMatch ? candMatch[1] : "";
+  const baseKey =
+    base === UNKNOWN_VISA_CATEGORY
+      ? raw.toLowerCase().replace(/[^a-z0-9]/g, "")
+      : base.toLowerCase().replace(/[^a-z0-9]/g, "");
+  return `${baseKey}#${cand}`;
+}
+
+/**
+ * De-duplicate a list of journeys by their canonical journey identity (base category +
+ * candidate number), keeping the first occurrence. Guards the cross-share list and the vault
+ * card grid against duplicate/variant journey rows (the per-row filter only compares each
+ * journey to the ACTIVE one, never to its siblings, so without this two rows of the same
+ * journey would both render).
  */
 export function dedupeJourneysByType<T extends { journey_type?: string | null }>(
   journeys: T[]
@@ -449,9 +497,9 @@ export function dedupeJourneysByType<T extends { journey_type?: string | null }>
   const seen = new Set<string>();
   const out: T[] = [];
   for (const j of journeys) {
-    const norm = (j.journey_type || "").toLowerCase().replace(/[^a-z0-9]/g, "");
-    if (seen.has(norm)) continue;
-    seen.add(norm);
+    const key = journeyDedupeKey(j.journey_type);
+    if (seen.has(key)) continue;
+    seen.add(key);
     out.push(j);
   }
   return out;
@@ -483,9 +531,11 @@ export function journeyTypeToVisaCategory(journeyType: string): VisaCategory | n
 
 export function isSameJourneyType(typeA?: string | null, typeB?: string | null): boolean {
   if (!typeA || !typeB) return false;
-  const normA = typeA.toLowerCase().replace(/[^a-z0-9]/g, "");
-  const normB = typeB.toLowerCase().replace(/[^a-z0-9]/g, "");
-  return normA === normB && normA.length > 0;
+  // Compare canonical journey identity (base category + candidate number) so variants of the
+  // same journey ("ir5" / "ir5-journey" / "IR-5") count as equal, while distinct candidates
+  // ("ir5" vs "ir5_candidate-2") stay different. Keeps the active journey (and any duplicate
+  // row of it) out of the cross-share list.
+  return journeyDedupeKey(typeA) === journeyDedupeKey(typeB);
 }
 
 export function isDocumentApplicableToJourney(

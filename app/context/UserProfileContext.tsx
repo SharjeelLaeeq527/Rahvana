@@ -48,7 +48,7 @@ interface UserProfileContextType {
    */
   updateProfile: (
     partial: Partial<MasterProfile>,
-    options?: { silent?: boolean; immediate?: boolean }
+    options?: { silent?: boolean; immediate?: boolean; localOnly?: boolean }
   ) => void;
 
   /**
@@ -64,7 +64,7 @@ interface UserProfileContextType {
   refreshProfile: () => Promise<void>;
 }
 
-const UserProfileContext = createContext<UserProfileContextType | undefined>(undefined);
+export const UserProfileContext = createContext<UserProfileContextType | undefined>(undefined);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Deep merge utility (1 level deep objects, arrays replaced not merged)
@@ -198,7 +198,10 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
   // ── Update profile (optimistic merge + debounced save) ──────────────────
 
   const updateProfile = useCallback(
-    (partial: Partial<MasterProfile>, options?: { silent?: boolean; immediate?: boolean }) => {
+    (
+      partial: Partial<MasterProfile>,
+      options?: { silent?: boolean; immediate?: boolean; localOnly?: boolean }
+    ) => {
       if (!user?.id) return;
 
       // Optimistic local merge
@@ -208,6 +211,12 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
         profileRef.current = merged;
         return merged;
       });
+
+      // If localOnly is requested (e.g. candidate state mutations managed by dedicated APIs),
+      // do not schedule a save back to /api/profile/complete.
+      if (options?.localOnly) {
+        return;
+      }
 
       // Cancel existing debounce timer
       if (debounceTimerRef.current) {
@@ -310,7 +319,14 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
 export function useUserProfile() {
   const context = useContext(UserProfileContext);
   if (context === undefined) {
-    throw new Error("useUserProfile must be used within a UserProfileProvider");
+    return {
+      profile: null,
+      isProfileLoading: false,
+      isSaving: false,
+      updateProfile: () => {},
+      saveProfile: async () => {},
+      refreshProfile: async () => {},
+    };
   }
   return context;
 }
