@@ -21,7 +21,6 @@ import { FilterPanel } from "@/app/components/shared/FilterPanel";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { NarrativeModal } from "../../(visa)/221g-action-planner/components/NarrativeModal";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
-import { vision } from "googleapis/build/src/apis/vision";
 
 type SessionStatus = "COMPLETED" | "IN_PROGRESS" | "NOT_STARTED";
 type TimeFilter = "all" | "today" | "week" | "month";

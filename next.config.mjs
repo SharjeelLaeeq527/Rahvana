@@ -1,5 +1,5 @@
-import path from 'path';
-import { fileURLToPath } from 'url';
+import path from "path";
+import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -91,29 +91,28 @@ const nextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-          
+
               // Scripts
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://js.stripe.com https://www.googletagmanager.com",
-          
               // Workers (required by canvas-confetti)
               "worker-src 'self' blob:",
               "child-src 'self' blob:",
-          
+
               // Styles
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-          
+
               // Fonts
               "font-src 'self' https://fonts.gstatic.com data:",
-          
+
               // Images
-              "img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com https://www.googletagmanager.com https://*.google-analytics.com",
-          
+              "img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com https://*.google-analytics.com https://*.googletagmanager.com",
+
               // API/WebSocket connections
               "connect-src 'self' https://*.supabase.co https://*.stripe.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://rahvana-1.onrender.com wss://*.supabase.co http://localhost:8000 http://127.0.0.1:8000 ws://localhost:8000 ws://127.0.0.1:8000 https://api.geoapify.com",
-          
+
               // Frames
               "frame-src 'self' https://js.stripe.com https://*.uscis.gov https://*.state.gov https://*.cbp.dhs.gov https://*.ssa.gov",
-          
+
               "object-src 'none'",
               "base-uri 'self'",
               "form-action 'self'",
@@ -169,7 +168,7 @@ const nextConfig = {
   turbopack: {
     root: __dirname,
     resolveAlias: {
-      canvas: path.join(__dirname, 'lib/mock-canvas.js'),
+      canvas: path.join(__dirname, "lib/mock-canvas.js"),
     },
   },
 
