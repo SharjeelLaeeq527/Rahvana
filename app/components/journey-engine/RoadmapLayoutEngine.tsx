@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo, Suspense } from "react";
 import { RoadmapDataV3 } from "./types";
 import { DashboardView } from "./DashboardView";
+import { EmbeddedToolContainer } from "./EmbeddedToolContainer";
 import { JourneyPlanBadge } from "@/app/components/shared/JourneyPlanBadge";
 import { ChapterView } from "./ChapterView";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
@@ -52,6 +53,7 @@ type ViewType = "dashboard" | "chapter" | "step";
 export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLayoutEngineProps) {
   const [view, setView] = useState<ViewType>("dashboard");
   const [selectedChapterIdx, setSelectedChapterIdx] = useState<number>(0);
+  const [activeToolKey, setActiveToolKey] = useState<string | null>(null);
 
   // Resolve the case-strength profile ONCE from the journey's category. Every
   // case-strength surface (dashboard alerts, per-step health panel) gets this
@@ -176,9 +178,9 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
       <nav className="sticky top-15 z-40 flex h-[52px] shrink-0 items-center gap-3 border-b border-[#d0e4f7] bg-white px-5">
         {/* Dynamic Back / Logo */}
         <div className="flex items-center gap-3">
-          {view !== "dashboard" && (
+          {(view !== "dashboard" || activeToolKey) && (
             <button
-              onClick={handleBack}
+              onClick={activeToolKey ? () => setActiveToolKey(null) : handleBack}
               className="hover:text-primary flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-[#d0e4f7] text-[#6b8097] transition-all hover:bg-[#f4f7fb] active:scale-95"
               title="Back"
             >
@@ -190,15 +192,33 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
         {/* Breadcrumbs */}
         <ol className="breadcrumbs" aria-label="Navigation">
           <li>
-            <button className="breadcrumb-item breadcrumb-link" onClick={handleBackToDashboard}>
+            <button
+              className={`breadcrumb-item ${view === "dashboard" && !activeToolKey ? "breadcrumb-current" : "breadcrumb-link"}`}
+              onClick={activeToolKey ? () => setActiveToolKey(null) : view !== "dashboard" ? handleBackToDashboard : undefined}
+              disabled={view === "dashboard" && !activeToolKey}
+            >
               <LayoutDashboard size={12} strokeWidth={3} aria-hidden="true" />
-              <span className={`bc-text${view !== "dashboard" ? "bc-text--dashboard" : ""}`}>
+              <span className={`bc-text${view !== "dashboard" || activeToolKey ? " bc-text--dashboard" : ""}`}>
                 Dashboard
               </span>
             </button>
           </li>
 
-          {(view === "chapter" || view === "step") && (
+          {activeToolKey && (
+            <li className="breadcrumb-sep-item">
+              <ChevronRight
+                size={10}
+                className="breadcrumb-sep"
+                strokeWidth={3}
+                aria-hidden="true"
+              />
+              <span className="breadcrumb-item breadcrumb-current">
+                <span className="bc-text">{activeToolKey.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}</span>
+              </span>
+            </li>
+          )}
+
+          {!activeToolKey && (view === "chapter" || view === "step") && (
             <li className="breadcrumb-sep-item">
               <ChevronRight
                 size={10}
@@ -216,7 +236,7 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
             </li>
           )}
 
-          {view === "step" && currentStepDisplayNum !== null && (
+          {!activeToolKey && view === "step" && currentStepDisplayNum !== null && (
             <li className="breadcrumb-sep-item">
               <ChevronRight
                 size={10}
@@ -237,7 +257,17 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
 
         {/* Right-side toolbar */}
         <div className="nav-actions">
-          {view === "step" && (
+          {activeToolKey && (
+            <button
+              onClick={() => setActiveToolKey(null)}
+              className="reset-btn"
+              title="Close Tool and Return to Dashboard"
+              aria-label="Close Tool"
+            >
+              <X size={14} />
+            </button>
+          )}
+          {view === "step" && !activeToolKey && (
             <button
             onClick={handleToggleComplete}
             className={`complete-btn ${
@@ -256,7 +286,7 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
           </button>
           )}
           {/* DEV ONLY — reset button */}
-          {isDevelopment && (
+          {isDevelopment && !activeToolKey && (
             <button
               onClick={async () => {
                 if (
@@ -278,47 +308,61 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
 
       {/* ── Main Content ── */}
       <main className="roadmap-main">
-        {/* Candidate switcher now lives in the global SiteHeader (app-wide, IR-5/IR-2 only),
-            so it is not duplicated on the dashboard. */}
-        {view === "dashboard" && (
-          <DashboardView
+        {/* If a tool was launched from the App Group folder, render it embedded */}
+        {activeToolKey ? (
+          <EmbeddedToolContainer
+            toolKey={activeToolKey}
+            onClose={() => setActiveToolKey(null)}
             data={data}
             state={state}
-            registry={csProfile.stepCheckers}
-            consistency={csProfile.consistency}
-            evidence={csProfile.evidence}
-            onSelectChapter={handleSelectChapter}
-            onSelectStep={handleSelectStep}
-            actions={{
-              setCurrentStep: actions.setCurrentStep,
-              setStage: actions.setStage,
-              updateMetadata: actions.updateMetadata,
-            }}
+            actions={actions}
           />
-        )}
+        ) : (
+          <>
+            {/* Candidate switcher now lives in the global SiteHeader (app-wide, IR-5/IR-2 only),
+                so it is not duplicated on the dashboard. */}
+            {view === "dashboard" && (
+              <DashboardView
+                data={data}
+                state={state}
+                registry={csProfile.stepCheckers}
+                consistency={csProfile.consistency}
+                evidence={csProfile.evidence}
+                onSelectChapter={handleSelectChapter}
+                onSelectStep={handleSelectStep}
+                onLaunchTool={(toolKey) => setActiveToolKey(toolKey)}
+                actions={{
+                  setCurrentStep: actions.setCurrentStep,
+                  setStage: actions.setStage,
+                  updateMetadata: actions.updateMetadata,
+                }}
+              />
+            )}
 
-        {view === "chapter" && (
-          <ChapterView
-            data={data}
-            chapterIdx={selectedChapterIdx}
-            state={state}
-            onBack={handleBackToDashboard}
-            onSelectStep={handleSelectStep}
-          />
-        )}
+            {view === "chapter" && (
+              <ChapterView
+                data={data}
+                chapterIdx={selectedChapterIdx}
+                state={state}
+                onBack={handleBackToDashboard}
+                onSelectStep={handleSelectStep}
+              />
+            )}
 
-        {view === "step" && (
-          <Suspense fallback={<StepSkeleton />}>
-            <LazyStepView
-              data={data}
-              state={state}
-              registry={csProfile.stepCheckers}
-              onBack={handleBackToChapter}
-              onSelectChapter={handleSelectChapter}
-              onSelectStep={handleSelectStep}
-              actions={actions}
-            />
-          </Suspense>
+            {view === "step" && (
+              <Suspense fallback={<StepSkeleton />}>
+                <LazyStepView
+                  data={data}
+                  state={state}
+                  registry={csProfile.stepCheckers}
+                  onBack={handleBackToChapter}
+                  onSelectChapter={handleSelectChapter}
+                  onSelectStep={handleSelectStep}
+                  actions={actions}
+                />
+              </Suspense>
+            )}
+          </>
         )}
       </main>
 
