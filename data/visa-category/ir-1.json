@@ -5657,9 +5657,20 @@
           ],
           "tool_data": {
             "id": "step_3_1",
-            "type": "medical_exam",
-            "title": "Schedule Medical Examination",
-            "subtitle": "Every immigrant visa applicant must complete a medical exam with an embassy-approved physician before their interview."
+            "type": "medical_booking",
+            "title": "Book Medical Appointment",
+            "subtitle": "Schedule your panel-physician medical exam with Rahvana's done-for-you booking service.",
+            "launch_module": {
+              "label": "Medical Appointment Service",
+              "title": "Book your panel-physician medical exam",
+              "icon": "calculator",
+              "buttonText": "Start Booking Service",
+              "features": [
+                "Pick an approved panel physician (Karachi / Lahore / Islamabad)",
+                "Submit your details once — Rahvana confirms the slot",
+                "Reminder pinned to your dashboard until the visit"
+              ]
+            }
           },
           "citations": [
             {
@@ -5710,8 +5721,22 @@
             "Keep original for interview"
           ],
           "tool_data": {
-            "type": "police_clearance",
-            "disclaimer": "Rahvana's application submission service is available for Sindh only. Rahvana submits the application but the user must collect the certificate. Always verify PCC requirements with your consulate."
+            "id": "step_3_3",
+            "type": "pcc_filing",
+            "title": "Apply for Police Character Certificate",
+            "subtitle": "Submit your Police Character Certificate application through Rahvana's done-for-you filing service.",
+            "disclaimer": "Rahvana's application submission service is available for Sindh only. Rahvana submits the application but the user must collect the certificate. Always verify PCC requirements with your consulate.",
+            "launch_module": {
+              "label": "Police Character Certificate (Sindh)",
+              "title": "Apply for your Police Character Certificate",
+              "icon": "shield-check",
+              "buttonText": "Start PCC Filing Service",
+              "features": [
+                "Rahvana submits your PCC application on your behalf",
+                "Available for applicants in Sindh",
+                "Track your application and certificate collection status"
+              ]
+            }
           }
         },
         {

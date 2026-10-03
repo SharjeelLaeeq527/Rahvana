@@ -8,6 +8,12 @@ export type JourneyServiceRecord = {
   savedAt: string; // ISO timestamp when the request was created from the journey
   referenceDate?: string; // appointment / application date (YYYY-MM-DD) or ISO
   referenceId?: string; // appointmentId / policeVerificationId returned by the API
+  /** Request lifecycle status (e.g. "requested"). */
+  status?: string;
+  /** Booking city / filing district. */
+  location?: string;
+  /** Medical appointment time slot (e.g. "09:30 AM"). */
+  timeSlot?: string;
 };
 
 /** True when an existing journey request is still "live" (date not yet passed). */
