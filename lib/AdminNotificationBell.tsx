@@ -202,9 +202,14 @@ export function AdminNotificationBell({ adminUserId }: AdminNotificationBellProp
                         className={`flex-1 min-w-0 ${notification.status === "read" ? "opacity-50" : "opacity-100"}`}
                       >
                         <div className="flex items-start justify-between gap-2">
-                          {/* <h5 className="text-[13px] font-bold text-slate-900 leading-tight truncate">
-                            {notification.title || "System Alert"}
-                          </h5> */}
+                          {(notification.candidate_role || notification.candidate_name) && (
+                            <span className="mb-1 inline-flex items-center gap-1 rounded-full border border-teal-500/20 bg-teal-50 px-2 py-0.5 text-[9px] font-bold tracking-wider text-teal-700 uppercase">
+                              <span className="h-1.5 w-1.5 rounded-full bg-teal-600" />
+                              {notification.candidate_name && notification.candidate_name !== notification.candidate_role
+                                ? `${notification.candidate_role || "Beneficiary"}: ${notification.candidate_name}`
+                                : notification.candidate_role || "Beneficiary"}
+                            </span>
+                          )}
                           {notification.status === "unread" && (
                             <button
                               onClick={(e) => {

@@ -27,6 +27,9 @@ export interface Notification {
   id: string;
   user_id: string;
   journey_id: string;
+  candidate_id?: string;
+  candidate_name?: string;
+  candidate_role?: string;
   type: NotificationType;
   priority: NotificationPriority;
   title: string;
@@ -42,6 +45,9 @@ export interface Notification {
 export interface CreateNotificationBody {
   user_id: string;
   journey_id: string;
+  candidate_id?: string;
+  candidate_name?: string;
+  candidate_role?: string;
   type: NotificationType;
   priority?: NotificationPriority;
   title: string;

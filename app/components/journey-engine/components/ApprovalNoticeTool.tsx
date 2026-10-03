@@ -15,6 +15,7 @@ import { E, msg } from "@/lib/errors";
 import { ZoomableGuideImage } from "@/app/components/shared/ZoomableGuideImage";
 
 interface ApprovalNoticeToolProps {
+  tool?: any;
   state: any;
   actions: any;
   approvalState: {

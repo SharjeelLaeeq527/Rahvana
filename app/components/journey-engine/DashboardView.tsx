@@ -13,6 +13,7 @@ import {
   getActiveStepsForStage,
 } from "./journeyHelpers";
 import APTrackingTool from "./APTrackingTool";
+import { useCandidate } from "@/app/context/CandidateContext";
 import WaitingStateCard from "./WaitingStateCard";
 // import { JourneyRiskCard } from "./components/JourneyRiskCard";
 import { DocCaseStrengthMeter } from "./components/DocCaseStrengthMeter";
@@ -1027,6 +1028,15 @@ export function DashboardView({
     return false;
   }).length;
 
+  let candidateCtx;
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    candidateCtx = useCandidate();
+  } catch {
+    candidateCtx = undefined;
+  }
+  const activeCandidateId = candidateCtx?.activeCandidateId || null;
+
   const [nvcCaseNum, setNvcCaseNum] = useState<string | undefined>(undefined);
   const [nvcInvoice, setNvcInvoice] = useState<string | undefined>(undefined);
   const [nvcLoading, setNvcLoading] = useState(true);
@@ -1042,7 +1052,7 @@ export function DashboardView({
         const res = await fetch("/api/portal-wallet/reveal", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ portalType, type: "all_details" }),
+          body: JSON.stringify({ portalType, type: "all_details", candidateId: activeCandidateId }),
         });
         const data = await res.json();
         if (!cancelled && data.details) {
@@ -1061,7 +1071,7 @@ export function DashboardView({
     return () => {
       cancelled = true;
     };
-  }, [state.metadata.portalType]);
+  }, [state.metadata.portalType, activeCandidateId]);
 
   const [receiptRecord, setReceiptRecord] = useState<ReceiptRecord | null | undefined>(undefined);
   useEffect(() => {

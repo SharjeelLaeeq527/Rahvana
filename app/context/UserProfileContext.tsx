@@ -177,11 +177,14 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
 
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
-        throw new Error(data.error || "Failed to save profile");
+        const detailedMsg = data.fieldErrors && typeof data.fieldErrors === "object"
+          ? `Validation error: ${Object.entries(data.fieldErrors).map(([k, v]) => `${k} (${v})`).join(", ")}`
+          : (data.error || "Failed to save profile");
+        throw new Error(detailedMsg);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("[UserProfileContext] Error saving profile:", err);
-      showToast("Failed to save your information. Please try again.", "error");
+      showToast(err?.message || "Failed to save your information. Please try again.", "error");
       throw err; // Rethrow to prevent subsequent success toast
     } finally {
       setIsSaving(false);

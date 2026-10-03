@@ -2,10 +2,11 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Eye, EyeOff } from "lucide-react";
+import { X, Eye, EyeOff, ShieldCheck } from "lucide-react";
 import securityQuestionsData from "../../../../data/portal-wallet-security-questions-questionnaire.json";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
+import { useCandidate } from "@/app/context/CandidateContext";
 
 type PortalType = "USCIS" | "NVC" | "COURIER";
 
@@ -30,6 +31,7 @@ interface CredentialFormModalProps {
   icon?: React.ReactNode;
   mode: "add" | "edit";
   initialData?: {
+    id?: string;
     username: string;
     password: string;
     nvcCaseNumber?: string;
@@ -102,7 +104,11 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
             const res = await fetch("/api/portal-wallet/reveal", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ portalType, type: "full_edit" }),
+              body: JSON.stringify({
+                credentialId: initialData?.id,
+                portalType,
+                type: "full_edit",
+              }),
             });
             const data = await res.json();
             if (isMounted && data) {
@@ -216,6 +222,15 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
 
   const modalRef = useRef<HTMLDivElement>(null);
 
+  let candidateCtx;
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    candidateCtx = useCandidate();
+  } catch {
+    candidateCtx = undefined;
+  }
+  const activeCandidate = candidateCtx?.activeCandidate;
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -244,17 +259,33 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
               <X size={16} />
             </button>
 
-            <div className="px-5 sm:px-6 pt-5 sm:pt-6 pb-4 border-b border-border bg-gradient-to-b from-[#0d7377]/5 to-transparent">
+            <div className="px-5 sm:px-6 pt-5 sm:pt-6 pb-4 border-b border-slate-100 bg-white">
               <div className="flex items-center gap-3 pr-10">
-                <div className="w-11 h-11 rounded-2xl bg-[#0d7377]/10 flex items-center justify-center text-[#0d7377] shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center text-[#0d7377] shrink-0 border border-teal-100">
                   {icon}
                 </div>
                 <div className="min-w-0">
-                  <h2 className="text-base sm:text-lg font-bold text-foreground leading-tight">
-                    {mode === "add" ? "Add" : "Edit"} {portalType} Credentials
-                  </h2>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Your data is encrypted and stored securely.
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h2 className="text-base sm:text-lg font-bold text-[#0f172a] leading-tight">
+                      {mode === "add" ? "Add" : "Edit"} {portalType} Credentials
+                    </h2>
+                    {activeCandidate && (
+                      <span
+                        className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10.5px] font-semibold"
+                        style={{
+                          background: "linear-gradient(135deg, #f0faf9, #e6f7f4)",
+                          color: "#0d7377",
+                          border: "1px solid #b8dfe0",
+                        }}
+                      >
+                        {activeCandidate.fullName && activeCandidate.fullName !== activeCandidate.relation
+                          ? activeCandidate.fullName
+                          : activeCandidate.label || activeCandidate.relation}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[12px] text-slate-500 mt-1">
+                    Encrypted and stored securely in your portal vault.
                   </p>
                 </div>
               </div>

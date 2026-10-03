@@ -83,6 +83,7 @@ import { useUserProfile } from "@/app/context/UserProfileContext";
 import PassportPhotoTool from "@/components/tools/PassportPhotoTool";
 import DocumentTranslationTool from "@/components/tools/DocumentTranslationTool";
 import { usePortalWallet } from "./hooks/usePortalWallet";
+import { useCandidate } from "@/app/context/CandidateContext";
 import { useFilingQuiz } from "./hooks/useFilingQuiz";
 import { useSponsorship } from "./hooks/useSponsorship";
 import { DocActionModal } from "./components/DocActionModal";
@@ -393,6 +394,14 @@ export const StepView: React.FC<StepViewProps> = ({
   // Add Evidence Note modal state
 
   const { user } = useAuth();
+  // Candidate context — safely called at component level (no try/catch needed here)
+  let activeCandidateId: string | null = null;
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const candidateCtx = useCandidate();
+    activeCandidateId = candidateCtx?.activeCandidateId ?? null;
+  } catch { /* not inside CandidateProvider — single-candidate journey */ }
+
   const {
     openUploadModal,
     uploadModalOpen,
@@ -417,6 +426,7 @@ export const StepView: React.FC<StepViewProps> = ({
     doc: any | null;
     title?: string;
     subtitle?: string;
+    hasGuide?: boolean;
     onReadGuide?: () => void;
     onUpload?: () => void;
   }>({
@@ -571,7 +581,7 @@ export const StepView: React.FC<StepViewProps> = ({
     isSubmittingCreds,
     showDeleteConfirmation,
     setShowDeleteConfirmation,
-  } = usePortalWallet({ sId, isCompleted, actions });
+  } = usePortalWallet({ sId, isCompleted, actions, candidateId: activeCandidateId });
 
   const {
     showQuiz,

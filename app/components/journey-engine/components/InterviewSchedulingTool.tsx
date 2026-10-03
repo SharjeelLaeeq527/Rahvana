@@ -7,6 +7,7 @@ interface InterviewSchedulingToolProps {
   state: any;
   actions: any;
   guard: () => boolean;
+  metadata?: any;
 }
 
 export const InterviewSchedulingTool: React.FC<InterviewSchedulingToolProps> = ({

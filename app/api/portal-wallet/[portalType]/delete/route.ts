@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { E, msg } from "@/lib/errors";
 
-export async function DELETE(req: Request, context: { params: Promise<{ portalType: string }> }) {
+export async function DELETE(req: NextRequest, context: { params: Promise<{ portalType: string }> }) {
   try {
     const supabase = await createClient();
 
@@ -16,18 +16,26 @@ export async function DELETE(req: Request, context: { params: Promise<{ portalTy
     }
 
     const { portalType } = await context.params;
+    const candidateId = req.nextUrl.searchParams.get("candidateId") || null;
 
     if (!portalType) {
       return NextResponse.json({ error: "portalType is required" }, { status: 400 });
     }
 
-    // First fetch credential to get ID
-    const { data: credential, error: fetchError } = await supabase
+    // First fetch credential to get ID — scoped by candidate
+    let fetchQuery = supabase
       .from("portal_wallet_credentials")
       .select("id")
       .eq("user_id", user.id)
-      .eq("portal_type", portalType)
-      .single();
+      .eq("portal_type", portalType);
+
+    if (candidateId) {
+      fetchQuery = fetchQuery.eq("candidate_id", candidateId);
+    } else {
+      fetchQuery = fetchQuery.is("candidate_id", null);
+    }
+
+    const { data: credential, error: fetchError } = await fetchQuery.single();
 
     if (fetchError || !credential) {
       return NextResponse.json({ error: "Credential not found" }, { status: 404 });
