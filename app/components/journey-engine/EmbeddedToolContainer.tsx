@@ -4,40 +4,41 @@ import React, { Suspense } from "react";
 import { Sparkles } from "lucide-react";
 import { useJourneyEnvironment } from "@/app/context/JourneyEnvironmentContext";
 import { useCandidate } from "@/app/context/CandidateContext";
+import { usePlan } from "@/app/context/PlanContext";
+import { useDocumentVaultStore } from "@/lib/document-vault/store";
+import { getEffectiveDocDef } from "@/app/components/journey-engine/StepView";
+import { DocActionModal } from "./components/DocActionModal";
+import { DocumentUploadModal } from "@/app/components/document-vault/DocumentUploadModal";
 
 // Lazy-load mode-aware tool components
 const SponsorshipCalculatorTool = React.lazy(
   () => import("@/components/tools/SponsorshipCalculatorTool")
 );
-const PassportPhotoTool = React.lazy(
-  () => import("@/components/tools/PassportPhotoTool")
-);
-const PassportOcrTool = React.lazy(
-  () => import("@/components/tools/PassportOcrTool")
-);
+const PassportPhotoTool = React.lazy(() => import("@/components/tools/PassportPhotoTool"));
+const PassportOcrTool = React.lazy(() => import("@/components/tools/PassportOcrTool"));
 const DocumentTranslationTool = React.lazy(
   () => import("@/components/tools/DocumentTranslationTool")
 );
-const InterviewPrepTool = React.lazy(
-  () => import("./components/InterviewPrepTool").then((m) => ({ default: m.InterviewPrepTool }))
+const InterviewPrepTool = React.lazy(() =>
+  import("./components/InterviewPrepTool").then((m) => ({ default: m.InterviewPrepTool }))
 );
-const Input221gTool = React.lazy(
-  () => import("./components/Input221gTool").then((m) => ({ default: m.Input221gTool }))
+const Input221gTool = React.lazy(() =>
+  import("./components/Input221gTool").then((m) => ({ default: m.Input221gTool }))
 );
-const Respond221gTool = React.lazy(
-  () => import("./components/Respond221gTool").then((m) => ({ default: m.Respond221gTool }))
+const Respond221gTool = React.lazy(() =>
+  import("./components/Respond221gTool").then((m) => ({ default: m.Respond221gTool }))
 );
-const MedicalExamTool = React.lazy(
-  () => import("./components/MedicalExamTool").then((m) => ({ default: m.MedicalExamTool }))
+const MedicalExamTool = React.lazy(() =>
+  import("./components/MedicalExamTool").then((m) => ({ default: m.MedicalExamTool }))
 );
-const PoliceClearanceTool = React.lazy(
-  () => import("./components/PoliceClearanceTool").then((m) => ({ default: m.PoliceClearanceTool }))
+const PoliceClearanceTool = React.lazy(() =>
+  import("./components/PoliceClearanceTool").then((m) => ({ default: m.PoliceClearanceTool }))
 );
-const MedicalExamGuideTool = React.lazy(
-  () => import("./components/MedicalExamGuideTool").then((m) => ({ default: m.MedicalExamGuideTool }))
+const MedicalExamGuideTool = React.lazy(() =>
+  import("./components/MedicalExamGuideTool").then((m) => ({ default: m.MedicalExamGuideTool }))
 );
-const InterviewDayTool = React.lazy(
-  () => import("./components/InterviewDayTool").then((m) => ({ default: m.InterviewDayTool }))
+const InterviewDayTool = React.lazy(() =>
+  import("./components/InterviewDayTool").then((m) => ({ default: m.InterviewDayTool }))
 );
 
 interface EmbeddedToolContainerProps {
@@ -62,9 +63,44 @@ function ToolSkeleton() {
   );
 }
 
-function Journey221gEmbeddedTool({ state, actions }: { state: any; actions: any }) {
+function Journey221gEmbeddedTool({
+  state,
+  actions,
+  journeyContext,
+}: {
+  state: any;
+  actions: any;
+  journeyContext: any;
+}) {
   const hasSavedSelections = Boolean(state?.metadata?.twentyTwoOneGSelections);
   const [isEditing, setIsEditing] = React.useState(!hasSavedSelections);
+
+  const plan = usePlan();
+  const {
+    openUploadModal,
+    uploadModalOpen,
+    closeUploadModal,
+    selectedDocumentDefId,
+    reloadDocuments,
+  } = useDocumentVaultStore();
+
+  const [activeUploadId, setActiveUploadId] = React.useState<string | null>(null);
+  const [activeUploadType, setActiveUploadType] = React.useState<"doc" | "hh" | "financial" | null>(
+    null
+  );
+  const [upgradeModalFeature, setUpgradeModalFeature] = React.useState<string | null>(null);
+
+  const [docActionModal, setDocActionModal] = React.useState<{
+    isOpen: boolean;
+    doc: any | null;
+    title?: string;
+    subtitle?: string;
+    onReadGuide?: () => void;
+    onUpload?: () => void;
+  }>({
+    isOpen: false,
+    doc: null,
+  });
 
   return (
     <div className="flex flex-col gap-6">
@@ -75,7 +111,8 @@ function Journey221gEmbeddedTool({ state, actions }: { state: any; actions: any 
               221(g) Refusal Worksheet
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Select the refusal reasons marked on your 221(g) slip to generate your custom action plan and document checklist.
+              Select the refusal reasons marked on your 221(g) slip to generate your custom action
+              plan and document checklist.
             </p>
           </div>
           <Input221gTool
@@ -91,8 +128,8 @@ function Journey221gEmbeddedTool({ state, actions }: { state: any; actions: any 
           />
         </div>
       ) : (
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-between rounded-xl bg-slate-50 p-4 border border-slate-200 dark:bg-slate-800 dark:border-slate-700">
+        <div className="flex flex-col gap-4 pt-3">
+          <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800">
             <div>
               <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
                 Action Plan generated for your logged 221(g) requirements
@@ -110,9 +147,43 @@ function Journey221gEmbeddedTool({ state, actions }: { state: any; actions: any 
               tool={{ type: "respond_221g" }}
               state={state || {}}
               actions={actions || {}}
+              setDocActionModal={setDocActionModal}
+              openUploadModal={openUploadModal}
+              setActiveUploadId={setActiveUploadId}
+              setActiveUploadType={setActiveUploadType}
             />
           </div>
         </div>
+      )}
+
+      {/* DocActionModal integration for checklist item clicks */}
+      {docActionModal.isOpen && (
+        <DocActionModal
+          isOpen={docActionModal.isOpen}
+          onClose={() => setDocActionModal({ ...docActionModal, isOpen: false })}
+          docActionModal={docActionModal}
+          setDocActionModal={setDocActionModal}
+          plan={plan}
+          docActionUpgradeFeature={upgradeModalFeature}
+          setDocActionUpgradeFeature={setUpgradeModalFeature}
+          sId="step_3_12"
+        />
+      )}
+
+      {/* DocumentUploadModal integration */}
+      {uploadModalOpen && selectedDocumentDefId && getEffectiveDocDef(selectedDocumentDefId) && (
+        <DocumentUploadModal
+          open={uploadModalOpen}
+          onClose={closeUploadModal}
+          documentDef={getEffectiveDocDef(selectedDocumentDefId)!}
+          activeJourneyId={state?.backendId || journeyContext?.journeyId || null}
+          onUploadComplete={async () => {
+            await reloadDocuments();
+            if (activeUploadId && actions?.updateDocumentStatus) {
+              await actions.updateDocumentStatus(activeUploadId, "reviewed");
+            }
+          }}
+        />
       )}
     </div>
   );
@@ -184,7 +255,13 @@ export function EmbeddedToolContainer({
         );
 
       case "action_221g":
-        return <Journey221gEmbeddedTool state={state} actions={actions} />;
+        return (
+          <Journey221gEmbeddedTool
+            state={state}
+            actions={actions}
+            journeyContext={journeyContext}
+          />
+        );
 
       case "medical_appointment":
         return (
@@ -229,7 +306,7 @@ export function EmbeddedToolContainer({
   };
 
   return (
-    <div className="w-full animate-in fade-in duration-200">
+    <div className="animate-in fade-in w-full duration-200">
       <Suspense fallback={<ToolSkeleton />}>{renderToolComponent()}</Suspense>
     </div>
   );
