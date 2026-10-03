@@ -1436,7 +1436,7 @@ export function DashboardView({
 
               {/* Journey Toolbox & Services App Groups */}
               {onLaunchTool && (
-                <AppGroupGrid onLaunchTool={onLaunchTool} className="my-1" />
+                <AppGroupGrid onLaunchTool={onLaunchTool} state={state} className="my-1" />
               )}
 
               {/* Accordions */}
