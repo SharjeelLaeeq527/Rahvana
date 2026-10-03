@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { IR5_ENABLED } from "@/lib/feature-flags";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,11 +17,20 @@ import {
   ChevronDown,
   Search,
   FileDown,
+  RotateCcw,
 } from "lucide-react";
 // import { Checkbox } from "@/components/ui/checkbox";
 import Actual221GFormChecker from "./Actual221GFormChecker";
 import { NarrativeModal } from "./NarrativeModal";
-import { FormData, FormSelections } from "../types/221g";
+import {
+  FormData,
+  FormSelections,
+  TwentyTwoOneGDraft,
+  TwentyTwoOneGResult,
+  STANDALONE_221G_DRAFT_KEY,
+  STANDALONE_221G_STORAGE_KEY,
+  getJourney221gDraftKey,
+} from "../types/221g";
 import { classifySituation } from "../utils/classifier";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { useAuth } from "@/app/context/AuthContext";
@@ -29,13 +38,23 @@ import { save221gCase } from "@/lib/supabase/twentyTwoOneG";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { ResultGate } from "@/app/components/entitlements/ResultGate";
 import { escapeHtml } from "@/lib/security/sanitize";
+import type { ToolModeProps } from "@/types/tool-mode";
+import { useResolveToolMode } from "@/lib/hooks/useResolveToolMode";
+import { useUserProfile } from "@/app/context/UserProfileContext";
 
-interface CombinedIntakeFormProps {
-  onSubmit: (data: FormData, selectedItems: FormSelections) => void;
+interface CombinedIntakeFormProps extends ToolModeProps {
+  onSubmit?: (data: FormData, selectedItems: FormSelections) => void;
   onSaveToProfile?: () => Promise<void>;
   initialData?: FormData | null;
   initialSelections?: FormSelections | null;
+  initialStep?: number;
+  initialOutputs?: {
+    actionPlan: string;
+    checklist: string;
+  } | null;
   smartModeEnabled?: boolean;
+  onProgressChange?: (draft: TwentyTwoOneGDraft) => void;
+  onReset?: () => void;
 }
 
 // Steps matching the reference HTML wizard
@@ -346,19 +365,138 @@ export default function CombinedIntakeForm({
   // onSaveToProfile,
   initialData,
   initialSelections,
+  initialStep,
+  initialOutputs,
   smartModeEnabled = false,
+  mode: propMode,
+  journeyContext: propContext,
+  onProgressChange,
+  onReset,
 }: CombinedIntakeFormProps) {
-  const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState<FormData>(initialData ?? EMPTY_FORM);
+  const { isJourney, journeyContext } = useResolveToolMode({
+    mode: propMode,
+    journeyContext: propContext,
+  });
+
+  const { profile, updateProfile } = useUserProfile();
+
+  const effectiveDraftKey = useMemo(() => {
+    if (isJourney && journeyContext?.journeySlug) {
+      return getJourney221gDraftKey(journeyContext.journeySlug, journeyContext.candidateId);
+    }
+    return STANDALONE_221G_DRAFT_KEY;
+  }, [isJourney, journeyContext]);
+
+  // Synchronously compute initial state on first mount to prevent race conditions & hydration loss
+  const getInitialState = useCallback((): {
+    step: number;
+    formData: FormData;
+    selectedItems: FormSelections;
+    outputs: { actionPlan: string; checklist: string } | null;
+  } => {
+    // 1. If explicit props passed with data
+    if (
+      (initialData && Object.keys(initialData).length > 0) ||
+      (initialSelections && Object.keys(initialSelections).length > 0)
+    ) {
+      return {
+        step: typeof initialStep === "number" ? initialStep : 1,
+        formData: { ...EMPTY_FORM, ...(initialData || {}) },
+        selectedItems: initialSelections || {},
+        outputs: initialOutputs || null,
+      };
+    }
+
+    // 2. Try loading isolated draft from localStorage
+    if (typeof window !== "undefined") {
+      try {
+        const draftJson = localStorage.getItem(effectiveDraftKey);
+        if (draftJson) {
+          const draft: TwentyTwoOneGDraft = JSON.parse(draftJson);
+          if (draft && (draft.formData || draft.selectedItems)) {
+            return {
+              step:
+                typeof initialStep === "number"
+                  ? initialStep
+                  : typeof draft.currentStep === "number"
+                    ? draft.currentStep
+                    : 1,
+              formData: { ...EMPTY_FORM, ...(draft.formData || {}) },
+              selectedItems: draft.selectedItems || {},
+              outputs: draft.outputs || null,
+            };
+          }
+        }
+      } catch (e) {
+        console.warn("Could not parse 221g draft from localStorage:", e);
+      }
+
+      // 3. If standalone and user is logged in, check profile DB
+      if (!isJourney && profile?.standalone221gDraft?.formData) {
+        const draft = profile.standalone221gDraft;
+        return {
+          step:
+            typeof initialStep === "number"
+              ? initialStep
+              : (draft.currentStep ?? 1),
+          formData: { ...EMPTY_FORM, ...(draft.formData || {}) },
+          selectedItems: draft.selectedItems || {},
+          outputs: draft.outputs || null,
+        };
+      }
+
+      // 4. If standalone and completed result exists, restore
+      if (!isJourney) {
+        try {
+          const cachedResult = localStorage.getItem(STANDALONE_221G_STORAGE_KEY);
+          if (cachedResult) {
+            const parsed: TwentyTwoOneGResult = JSON.parse(cachedResult);
+            if (parsed?.formData) {
+              return {
+                step: typeof initialStep === "number" ? initialStep : 4,
+                formData: { ...EMPTY_FORM, ...(parsed.formData || {}) },
+                selectedItems: parsed.selectedItems || {},
+                outputs: {
+                  actionPlan: parsed.actionPlan || "",
+                  checklist: parsed.checklist || "",
+                },
+              };
+            }
+          } else if (profile?.standalone221gResult?.formData) {
+            const res = profile.standalone221gResult;
+            return {
+              step: typeof initialStep === "number" ? initialStep : 4,
+              formData: { ...EMPTY_FORM, ...(res.formData || {}) },
+              selectedItems: res.selectedItems || {},
+              outputs: {
+                actionPlan: res.actionPlan || "",
+                checklist: res.checklist || "",
+              },
+            };
+          }
+        } catch (e) {}
+      }
+    }
+
+    return {
+      step: typeof initialStep === "number" ? initialStep : 1,
+      formData: { ...EMPTY_FORM, ...(initialData || {}) },
+      selectedItems: initialSelections || {},
+      outputs: initialOutputs || null,
+    };
+  }, [initialData, initialSelections, initialStep, initialOutputs, effectiveDraftKey, isJourney, profile]);
+
+  const [currentStep, setCurrentStep] = useState<number>(() => getInitialState().step);
+  const [formData, setFormData] = useState<FormData>(() => getInitialState().formData);
   const [selected221gItems, setSelected221gItems] = useState<FormSelections>(
-    initialSelections ?? {}
+    () => getInitialState().selectedItems
   );
 
   const [outputs, setOutputs] = useState<{
     actionPlan: string;
     checklist: string;
     // coverLetter: string;
-  } | null>(null);
+  } | null>(() => getInitialState().outputs);
 
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
@@ -382,46 +520,62 @@ export default function CombinedIntakeForm({
     }
   }, []);
 
-  // Auto-save logic
+  const lastSavedSnapshotRef = useRef<string>("");
+
+  // Auto-save draft progress on changes (guarded by serialized snapshot comparison)
   useEffect(() => {
-    const autoSave = async () => {
-      console.log("autoSave checking conditions:", {
-        hasUser: !!user,
-        caseNumber: formData.caseNumber,
-        beneficiaryName: formData.beneficiaryName,
-      });
+    const currentSnapshot = JSON.stringify({
+      currentStep,
+      formData,
+      selected221gItems,
+      outputs,
+    });
+    if (lastSavedSnapshotRef.current === currentSnapshot) return;
+    lastSavedSnapshotRef.current = currentSnapshot;
 
-      if (!user) {
-        console.log("autoSave skipped: no user");
-        return;
-      }
-      if (
-        !formData.visaType &&
-        !formData.visaCategory &&
-        !formData.interviewDate &&
-        !formData.consularPost
-      ) {
-        console.log("autoSave skipped: basic case details missing");
-        return;
-      }
-
-      try {
-        setSaveStatus("saving");
-        console.log("Calling save221gCase...");
-        await save221gCase(user.id, formData, selected221gItems);
-        console.log("save221gCase succeeded!");
-        setSaveStatus("saved");
-        // Reset save status after 3 seconds
-        setTimeout(() => setSaveStatus("idle"), 3000);
-      } catch (err) {
-        console.error("Auto-save failed", err);
-        setSaveStatus("error");
-      }
+    const draftPayload: TwentyTwoOneGDraft = {
+      currentStep,
+      formData,
+      selectedItems: selected221gItems,
+      outputs,
+      updatedAt: new Date().toISOString(),
     };
 
-    const timeoutId = setTimeout(autoSave, 2000); // Debounce save
-    return () => clearTimeout(timeoutId);
-  }, [user, formData, selected221gItems]);
+    try {
+      localStorage.setItem(effectiveDraftKey, JSON.stringify(draftPayload));
+      onProgressChange?.(draftPayload);
+
+      // Save to Supabase user_profiles if in standalone mode and user is logged in
+      if (!isJourney && updateProfile) {
+        updateProfile({ standalone221gDraft: draftPayload }, { silent: true });
+      }
+
+      // Also auto-save to user_221g_cases table if user is authenticated and has basic details
+      if (
+        user &&
+        (formData.visaType ||
+          formData.visaCategory ||
+          formData.interviewDate ||
+          formData.consularPost)
+      ) {
+        save221gCase(user.id, formData, selected221gItems).catch((err) => {
+          console.warn("Background save221gCase error:", err);
+        });
+      }
+    } catch (e) {
+      console.warn("Error auto-saving 221g draft:", e);
+    }
+  }, [
+    currentStep,
+    formData,
+    selected221gItems,
+    outputs,
+    effectiveDraftKey,
+    onProgressChange,
+    isJourney,
+    updateProfile,
+    user,
+  ]);
 
   // Close embassy dropdown when clicking outside
   useEffect(() => {
@@ -472,14 +626,74 @@ export default function CombinedIntakeForm({
     const packetChecklist = generatePacketChecklist();
     // const coverLetter = generateCoverLetter();
 
-    setOutputs({
+    const newOutputs = {
       actionPlan,
       checklist: packetChecklist,
       // coverLetter,
-    });
+    };
 
+    setOutputs(newOutputs);
     setCurrentStep(4);
-    onSubmit(formData, selected221gItems);
+    onSubmit?.(formData, selected221gItems);
+
+    const resultPayload: TwentyTwoOneGResult = {
+      actionPlan,
+      checklist: packetChecklist,
+      formData,
+      selectedItems: selected221gItems,
+      updatedAt: new Date().toISOString(),
+    };
+
+    try {
+      // Clear draft once complete
+      localStorage.removeItem(effectiveDraftKey);
+
+      // In standalone mode, persist final result to standalone keys
+      if (!isJourney) {
+        localStorage.setItem(STANDALONE_221G_STORAGE_KEY, JSON.stringify(resultPayload));
+        localStorage.removeItem(STANDALONE_221G_DRAFT_KEY);
+        if (updateProfile) {
+          updateProfile(
+            {
+              standalone221gResult: resultPayload,
+              standalone221gDraft: undefined,
+            },
+            { silent: true }
+          );
+        }
+      }
+    } catch (e) {
+      console.warn("Error persisting 221g completed result:", e);
+    }
+  };
+
+  const resetWizard = () => {
+    try {
+      localStorage.removeItem(effectiveDraftKey);
+      if (!isJourney) {
+        localStorage.removeItem(STANDALONE_221G_STORAGE_KEY);
+        localStorage.removeItem(STANDALONE_221G_DRAFT_KEY);
+        if (updateProfile) {
+          updateProfile(
+            {
+              standalone221gDraft: undefined,
+              standalone221gResult: undefined,
+            },
+            { silent: true }
+          );
+        }
+      }
+    } catch (e) {
+      console.warn("Error clearing 221g progress:", e);
+    }
+
+    setFormData(EMPTY_FORM);
+    setSelected221gItems({});
+    setOutputs(null);
+    setCurrentStep(1);
+    setShowResetModal(false);
+    onReset?.();
+    showToast("221(g) Action Planner reset successfully.", "info");
   };
 
   const selectedBooleanKeys = Object.entries(selected221gItems)
@@ -524,14 +738,6 @@ export default function CombinedIntakeForm({
   useEffect(() => {
     setCaseNumberError(formData.caseNumber ? validateCaseNumber(formData.caseNumber) : null);
   }, [formData.caseNumber]);
-
-  const resetWizard = () => {
-    setFormData(EMPTY_FORM);
-    setSelected221gItems({});
-    setOutputs(null);
-    setCurrentStep(1);
-    setShowResetModal(false);
-  };
 
   const formatDate = (d: string) => {
     if (!d) return "-";
@@ -1226,21 +1432,20 @@ export default function CombinedIntakeForm({
   // ──────────────────────────────────────────────
   // Progress Indicator
   // ──────────────────────────────────────────────
-  
+
   const ProgressIndicator = () => (
-    <div className="flex items-center justify-between mb-8 px-1 sm:px-2 max-w-2xl mx-auto">
+    <div className="mx-auto mb-8 flex max-w-2xl items-center justify-between px-1 sm:px-2">
       {STEPS.map((step, idx) => (
-        <div key={step.id} className="flex items-center flex-1 last:flex-none">
+        <div key={step.id} className="flex flex-1 items-center last:flex-none">
           <div className="flex flex-col items-center">
             <div
-              className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-all duration-300 sm:h-10 sm:w-10 sm:text-sm
-                ${
-                  currentStep === step.id
-                    ? "bg-primary text-white scale-110 shadow-md ring-4 ring-primary/20"
-                    : currentStep > step.id
-                      ? "bg-teal-600 text-white"
-                      : "bg-muted text-muted-foreground"
-                }`}
+              className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-all duration-300 sm:h-10 sm:w-10 sm:text-sm ${
+                currentStep === step.id
+                  ? "bg-primary ring-primary/20 scale-110 text-white shadow-md ring-4"
+                  : currentStep > step.id
+                    ? "bg-teal-600 text-white"
+                    : "bg-muted text-muted-foreground"
+              }`}
             >
               {currentStep > step.id ? (
                 <svg
@@ -1261,7 +1466,7 @@ export default function CombinedIntakeForm({
               )}
             </div>
             <span
-              className={`mt-1.5 max-w-[64px] text-center text-[10px] font-medium leading-tight sm:max-w-[80px] md:text-xs ${
+              className={`mt-1.5 max-w-[64px] text-center text-[10px] leading-tight font-medium sm:max-w-[80px] md:text-xs ${
                 currentStep === step.id ? "text-primary font-bold" : "text-muted-foreground"
               }`}
             >
@@ -1270,7 +1475,7 @@ export default function CombinedIntakeForm({
           </div>
           {idx < STEPS.length - 1 && (
             <div
-              className={`h-0.5 flex-1 mx-1 mb-5 rounded transition-colors duration-300 sm:mx-2 ${
+              className={`mx-1 mb-5 h-0.5 flex-1 rounded transition-colors duration-300 sm:mx-2 ${
                 currentStep > step.id ? "bg-teal-600/50" : "bg-border"
               }`}
             />
@@ -1353,36 +1558,36 @@ export default function CombinedIntakeForm({
       switch (provider) {
         case "Beneficiary":
           return (
-            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800 border border-indigo-200">
+            <span className="inline-flex items-center rounded border border-indigo-200 bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-800">
               Beneficiary
             </span>
           );
         case "Petitioner":
           return (
-            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200">
+            <span className="inline-flex items-center rounded border border-emerald-200 bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800">
               Petitioner
             </span>
           );
         case "Petitioner & Beneficiary":
           return (
-            <div className="flex flex-col gap-1 items-start">
-              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200">
+            <div className="flex flex-col items-start gap-1">
+              <span className="inline-flex items-center rounded border border-emerald-200 bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800">
                 Petitioner
               </span>
-              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800 border border-indigo-200">
+              <span className="inline-flex items-center rounded border border-indigo-200 bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-800">
                 Beneficiary
               </span>
             </div>
           );
         case "Household Member":
           return (
-            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200">
+            <span className="inline-flex items-center rounded border border-purple-200 bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-800">
               Household Member
             </span>
           );
         case "Joint Sponsor":
           return (
-            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800 border border-amber-200">
+            <span className="inline-flex items-center rounded border border-amber-200 bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
               Joint Sponsor
             </span>
           );
@@ -1394,10 +1599,10 @@ export default function CombinedIntakeForm({
     return (
       <div className="space-y-6">
         <div className="border-b pb-4 text-center">
-          <div className="inline-block p-1 px-3 bg-teal-100 text-teal-800 rounded-full text-xs font-bold mb-2 tracking-wide uppercase">
+          <div className="mb-2 inline-block rounded-full bg-teal-100 p-1 px-3 text-xs font-bold tracking-wide text-teal-800 uppercase">
             Almost there!
           </div>
-          <h2 className="text-2xl font-bold text-foreground">Review & Generate</h2>
+          <h2 className="text-foreground text-2xl font-bold">Review & Generate</h2>
           <p className="text-muted-foreground mt-1 text-sm">
             Review your case details and generate your personalised action plan.
           </p>
@@ -1405,17 +1610,17 @@ export default function CombinedIntakeForm({
 
         <div className="space-y-8">
           <section>
-            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs">
+            <h3 className="mb-3 flex items-center gap-2 text-lg font-semibold">
+              <span className="bg-primary/10 text-primary flex h-6 w-6 items-center justify-center rounded-full text-xs">
                 A
               </span>
               Case Basics
             </h3>
-            <div className="border rounded-lg overflow-hidden bg-muted/30">
+            <div className="bg-muted/30 overflow-hidden rounded-lg border">
               <table className="w-full text-sm">
                 <tbody>
                   <tr className="border-b last:border-0">
-                    <th className="text-left p-3 bg-muted/50 font-medium w-40">Visa Category</th>
+                    <th className="bg-muted/50 w-40 p-3 text-left font-medium">Visa Category</th>
                     <td className="p-3">
                       {formData.visaCategory === "other"
                         ? formData.visaTypeOther
@@ -1423,16 +1628,16 @@ export default function CombinedIntakeForm({
                     </td>
                   </tr>
                   <tr className="border-b last:border-0">
-                    <th className="text-left p-3 bg-muted/50 font-medium">Interview Date</th>
+                    <th className="bg-muted/50 p-3 text-left font-medium">Interview Date</th>
                     <td className="p-3">{formatDate(formData.interviewDate)}</td>
                   </tr>
                   <tr className="border-b last:border-0">
-                    <th className="text-left p-3 bg-muted/50 font-medium">Consular Post</th>
+                    <th className="bg-muted/50 p-3 text-left font-medium">Consular Post</th>
                     <td className="p-3">{formData.consularPost}</td>
                   </tr>
                   {formData.caseNumber && (
                     <tr className="border-b last:border-0">
-                      <th className="text-left p-3 bg-muted/50 font-medium">Case Number</th>
+                      <th className="bg-muted/50 p-3 text-left font-medium">Case Number</th>
                       <td className="p-3 font-mono">{formData.caseNumber}</td>
                     </tr>
                   )}
@@ -1442,42 +1647,42 @@ export default function CombinedIntakeForm({
           </section>
 
           <section>
-            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs">
+            <h3 className="mb-3 flex items-center gap-2 text-lg font-semibold">
+              <span className="bg-primary/10 text-primary flex h-6 w-6 items-center justify-center rounded-full text-xs">
                 B
               </span>
               Requested Documents ({selectedCount})
             </h3>
             {selectedCount === 0 ? (
-              <div className="p-6 border-2 border-dashed rounded-lg text-center text-muted-foreground">
+              <div className="text-muted-foreground rounded-lg border-2 border-dashed p-6 text-center">
                 No documents selected. Go back to choose items from your letter.
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="flex flex-wrap items-center gap-2 text-sm bg-muted/20 p-3 rounded-lg border border-border">
-                  <span className="font-semibold text-slate-700 flex items-center gap-1">
-                    <Info className="w-4 h-4 text-slate-500" /> Legend:
+                <div className="bg-muted/20 border-border flex flex-wrap items-center gap-2 rounded-lg border p-3 text-sm">
+                  <span className="flex items-center gap-1 font-semibold text-slate-700">
+                    <Info className="h-4 w-4 text-slate-500" /> Legend:
                   </span>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800 border border-indigo-200">
+                  <span className="inline-flex items-center rounded border border-indigo-200 bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-800">
                     Beneficiary
                   </span>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200">
+                  <span className="inline-flex items-center rounded border border-emerald-200 bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800">
                     Petitioner
                   </span>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800 border border-amber-200">
+                  <span className="inline-flex items-center rounded border border-amber-200 bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
                     Joint Sponsor
                   </span>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200">
+                  <span className="inline-flex items-center rounded border border-purple-200 bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-800">
                     Household Member
                   </span>
                 </div>
-                <div className="border rounded-lg overflow-hidden bg-muted/30">
+                <div className="bg-muted/30 overflow-hidden rounded-lg border">
                   <table className="w-full text-sm">
                     <thead className="bg-muted/50 border-b">
                       <tr>
-                        <th className="text-left p-3 font-semibold">Document</th>
-                        <th className="text-left p-3 font-semibold">Who Provides</th>
-                        <th className="text-left p-3 font-semibold">Method</th>
+                        <th className="p-3 text-left font-semibold">Document</th>
+                        <th className="p-3 text-left font-semibold">Who Provides</th>
+                        <th className="p-3 text-left font-semibold">Method</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y">
@@ -1512,8 +1717,8 @@ export default function CombinedIntakeForm({
 
           {smartModeEnabled && smartClassification && smartClassification.length > 0 && (
             <section className="space-y-4">
-              <h3 className="text-lg font-semibold mb-1 flex items-center gap-2">
-                <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs">
+              <h3 className="mb-1 flex items-center gap-2 text-lg font-semibold">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-xs text-emerald-700">
                   S
                 </span>
                 Smart Insights
@@ -1538,13 +1743,13 @@ export default function CombinedIntakeForm({
           )}
         </div>
 
-        <div className="flex gap-3 pt-6 border-t font-semibold">
+        <div className="flex gap-3 border-t pt-6 font-semibold">
           <Button variant="outline" onClick={goBack}>
             Back to Checklist
           </Button>
           <Button
             onClick={handleGenerate}
-            className="ml-auto bg-teal-600 hover:bg-teal-700 shadow-teal-900/10 shadow-lg"
+            className="ml-auto bg-teal-600 shadow-lg shadow-teal-900/10 hover:bg-teal-700"
             disabled={selectedCount === 0 && !selected221gItems.admin_processing}
           >
             Generate Action Plan & Documents
@@ -2060,7 +2265,7 @@ footer.querySelector(".footer-page").textContent = String(p);
           nodes.push(
             <h1
               key={i}
-              className="text-2xl font-bold mb-4 mt-6 pb-2 border-b border-slate-200 text-slate-900"
+              className="mt-6 mb-4 border-b border-slate-200 pb-2 text-2xl font-bold text-slate-900"
             >
               {line.substring(2)}
             </h1>
@@ -2070,7 +2275,7 @@ footer.querySelector(".footer-page").textContent = String(p);
         }
         if (line.startsWith("## ")) {
           nodes.push(
-            <h2 key={i} className="text-xl font-bold mb-3 mt-6 text-teal-700">
+            <h2 key={i} className="mt-6 mb-3 text-xl font-bold text-teal-700">
               {line.substring(3)}
             </h2>
           );
@@ -2079,7 +2284,7 @@ footer.querySelector(".footer-page").textContent = String(p);
         }
         if (line.startsWith("### ")) {
           nodes.push(
-            <h3 key={i} className="text-base font-bold mb-2 mt-4 text-slate-800">
+            <h3 key={i} className="mt-4 mb-2 text-base font-bold text-slate-800">
               {line.substring(4)}
             </h3>
           );
@@ -2110,14 +2315,14 @@ footer.querySelector(".footer-page").textContent = String(p);
             j++;
           }
           nodes.push(
-            <div key={i} className="my-4 border border-slate-200 rounded-lg overflow-hidden">
-              <table className="w-full text-sm text-left">
+            <div key={i} className="my-4 overflow-hidden rounded-lg border border-slate-200">
+              <table className="w-full text-left text-sm">
                 <thead className="bg-slate-50">
                   <tr>
                     {headerCells.map((c, k) => (
                       <th
                         key={k}
-                        className="px-4 py-3 font-semibold text-slate-700 border-r last:border-r-0 border-slate-200"
+                        className="border-r border-slate-200 px-4 py-3 font-semibold text-slate-700 last:border-r-0"
                       >
                         {renderInlineBold(c)}
                       </th>
@@ -2130,7 +2335,7 @@ footer.querySelector(".footer-page").textContent = String(p);
                       {row.map((c, k) => (
                         <td
                           key={k}
-                          className="px-4 py-2.5 text-slate-600 border-r last:border-r-0 border-slate-100"
+                          className="border-r border-slate-100 px-4 py-2.5 text-slate-600 last:border-r-0"
                         >
                           {renderInlineBold(c)}
                         </td>
@@ -2155,15 +2360,15 @@ footer.querySelector(".footer-page").textContent = String(p);
           const label = line.substring(2);
           if (isChecklist) {
             nodes.push(
-              <label key={i} className="flex items-center gap-3 mb-2 cursor-pointer group">
+              <label key={i} className="group mb-2 flex cursor-pointer items-center gap-3">
                 <input
                   type="checkbox"
                   checked={!!checkedItems[idx]}
                   onChange={() => toggleCheck(idx)}
-                  className="w-4 h-4 rounded accent-teal-600 cursor-pointer"
+                  className="h-4 w-4 cursor-pointer rounded accent-teal-600"
                 />
                 <span
-                  className={`text-sm leading-snug transition-colors ${checkedItems[idx] ? "line-through text-slate-400" : "text-slate-700"}`}
+                  className={`text-sm leading-snug transition-colors ${checkedItems[idx] ? "text-slate-400 line-through" : "text-slate-700"}`}
                 >
                   {label}
                 </span>
@@ -2171,9 +2376,9 @@ footer.querySelector(".footer-page").textContent = String(p);
             );
           } else {
             nodes.push(
-              <div key={i} className="flex items-start gap-2 mb-2">
-                <span className="text-slate-400 mt-0.5">&#9744;</span>
-                <span className="text-sm text-slate-700 leading-snug">{label}</span>
+              <div key={i} className="mb-2 flex items-start gap-2">
+                <span className="mt-0.5 text-slate-400">&#9744;</span>
+                <span className="text-sm leading-snug text-slate-700">{label}</span>
               </div>
             );
           }
@@ -2185,7 +2390,7 @@ footer.querySelector(".footer-page").textContent = String(p);
         if (line.startsWith("* ") || line.startsWith("- ")) {
           const txt = line.substring(2).trim();
           nodes.push(
-            <li key={i} className="ml-5 mb-1.5 text-slate-700 text-sm list-disc">
+            <li key={i} className="mb-1.5 ml-5 list-disc text-sm text-slate-700">
               {renderInlineBold(txt)}
             </li>
           );
@@ -2199,7 +2404,7 @@ footer.querySelector(".footer-page").textContent = String(p);
           nodes.push(
             <li
               key={i}
-              className="ml-5 mb-1.5 text-slate-700 text-sm"
+              className="mb-1.5 ml-5 text-sm text-slate-700"
               style={{ listStyleType: "decimal" }}
             >
               {renderInlineBold(txt)}
@@ -2212,7 +2417,7 @@ footer.querySelector(".footer-page").textContent = String(p);
         // ── Full-line bold (**text**)
         if (line.match(/^\*\*(.*?)\*\*$/)) {
           nodes.push(
-            <p key={i} className="font-bold text-slate-900 text-sm mt-3 mb-1">
+            <p key={i} className="mt-3 mb-1 text-sm font-bold text-slate-900">
               {line.replace(/\*\*/g, "")}
             </p>
           );
@@ -2229,7 +2434,7 @@ footer.querySelector(".footer-page").textContent = String(p);
 
         // ── Default paragraph (with inline bold handling)
         nodes.push(
-          <p key={i} className="text-sm text-slate-700 mb-1.5 leading-relaxed">
+          <p key={i} className="mb-1.5 text-sm leading-relaxed text-slate-700">
             {renderInlineBold(line)}
           </p>
         );
@@ -2259,7 +2464,7 @@ footer.querySelector(".footer-page").textContent = String(p);
               return (
                 <span
                   key={j}
-                  className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium bg-indigo-100 text-indigo-800 border border-indigo-200 mx-0.5"
+                  className="mx-0.5 inline-flex items-center rounded border border-indigo-200 bg-indigo-100 px-1.5 py-0.5 text-[11px] font-medium text-indigo-800"
                 >
                   Beneficiary
                 </span>
@@ -2269,7 +2474,7 @@ footer.querySelector(".footer-page").textContent = String(p);
               return (
                 <span
                   key={j}
-                  className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium bg-emerald-100 text-emerald-800 border border-emerald-200 mx-0.5"
+                  className="mx-0.5 inline-flex items-center rounded border border-emerald-200 bg-emerald-100 px-1.5 py-0.5 text-[11px] font-medium text-emerald-800"
                 >
                   Petitioner
                 </span>
@@ -2277,11 +2482,11 @@ footer.querySelector(".footer-page").textContent = String(p);
             }
             if (p === "Petitioner & Beneficiary") {
               return (
-                <span key={j} className="inline-flex items-center gap-1 mx-0.5">
-                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium bg-emerald-100 text-emerald-800 border border-emerald-200">
+                <span key={j} className="mx-0.5 inline-flex items-center gap-1">
+                  <span className="inline-flex items-center rounded border border-emerald-200 bg-emerald-100 px-1.5 py-0.5 text-[11px] font-medium text-emerald-800">
                     Petitioner
                   </span>
-                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium bg-indigo-100 text-indigo-800 border border-indigo-200">
+                  <span className="inline-flex items-center rounded border border-indigo-200 bg-indigo-100 px-1.5 py-0.5 text-[11px] font-medium text-indigo-800">
                     Beneficiary
                   </span>
                 </span>
@@ -2291,7 +2496,7 @@ footer.querySelector(".footer-page").textContent = String(p);
               return (
                 <span
                   key={j}
-                  className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium bg-purple-100 text-purple-800 border border-purple-200 mx-0.5"
+                  className="mx-0.5 inline-flex items-center rounded border border-purple-200 bg-purple-100 px-1.5 py-0.5 text-[11px] font-medium text-purple-800"
                 >
                   Household Member
                 </span>
@@ -2301,7 +2506,7 @@ footer.querySelector(".footer-page").textContent = String(p);
               return (
                 <span
                   key={j}
-                  className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium bg-amber-100 text-amber-800 border border-amber-200 mx-0.5"
+                  className="mx-0.5 inline-flex items-center rounded border border-amber-200 bg-amber-100 px-1.5 py-0.5 text-[11px] font-medium text-amber-800"
                 >
                   Joint Sponsor
                 </span>
@@ -2415,7 +2620,7 @@ footer.querySelector(".footer-page").textContent = String(p);
           })}
         </Tabs>
 
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm italic text-amber-900">
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 italic">
           <strong>Important:</strong> These documents are generated from your inputs. Always follow
           your embassy&apos;s 221(g) letter if instructions differ.
         </div>
@@ -2427,7 +2632,7 @@ footer.querySelector(".footer-page").textContent = String(p);
           <Button
             variant="outline"
             onClick={() => setShowResetModal(true)}
-            className="border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 hover:text-red-700 transition-colors"
+            className="border-red-300 text-red-600 transition-colors hover:border-red-400 hover:bg-red-50 hover:text-red-700"
           >
             Start Over
           </Button>
@@ -2445,29 +2650,41 @@ footer.querySelector(".footer-page").textContent = String(p);
         <div className="min-w-0 flex-1">
           <ProgressIndicator />
         </div>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => setShowWelcome(true)}
-          className="self-start border-slate-300 text-slate-700 hover:bg-slate-100"
-        >
-          <CircleHelp className="mr-2 h-4 w-4" />
-          What&apos;s this?
-        </Button>
+        <div className="flex items-center gap-2 self-start">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setShowResetModal(true)}
+            className="border-slate-300 text-slate-600 hover:text-red-600 hover:border-red-300 hover:bg-red-50 text-xs"
+            title="Clear and reset 221(g) planner"
+          >
+            <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
+            Start Over
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setShowWelcome(true)}
+            className="border-slate-300 text-slate-700 hover:bg-slate-100 text-xs"
+          >
+            <CircleHelp className="mr-1.5 h-3.5 w-3.5" />
+            What&apos;s this?
+          </Button>
+        </div>
       </div>
-      <div className="bg-card rounded-2xl border border-border shadow-2xl overflow-hidden">
+      <div className="bg-card border-border overflow-hidden rounded-2xl border shadow-2xl">
         <div className="p-6 md:p-10">
           {/* ── Step 1: Case Basics (inlined to prevent re-mount focus loss) ── */}
           {currentStep === 1 && (
             <div className="space-y-6">
               <div className="border-b pb-4">
-                <h2 className="text-2xl font-bold text-foreground">Case Basics</h2>
+                <h2 className="text-foreground text-2xl font-bold">Case Basics</h2>
                 <p className="text-muted-foreground mt-1 text-sm">
                   Provide your basic case information to personalise your action plan.
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="visaType">Visa Type *</Label>
                   <CustomDropdown
@@ -2503,7 +2720,7 @@ footer.querySelector(".footer-page").textContent = String(p);
                 </div>
               )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="interviewDate">Interview Date *</Label>
                   <Input
@@ -2531,7 +2748,7 @@ footer.querySelector(".footer-page").textContent = String(p);
                 <Label htmlFor="consularPost">Consular Post / Embassy Location *</Label>
                 <div className="relative" ref={embassyRef}>
                   <div className="relative">
-                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                    <MapPin className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
                     <Input
                       id="consularPost"
                       autoComplete="off"
@@ -2539,20 +2756,20 @@ footer.querySelector(".footer-page").textContent = String(p);
                       onChange={(e) => handleEmbassyInputChange(e.target.value)}
                       onFocus={() => setShowEmbassySuggestions(true)}
                       placeholder="Search embassy or country"
-                      className="pl-9 pr-9"
+                      className="pr-9 pl-9"
                     />
                     <ChevronDown
-                      className={`absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground transition-transform ${showEmbassySuggestions ? "rotate-180" : ""}`}
+                      className={`text-muted-foreground absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 transition-transform ${showEmbassySuggestions ? "rotate-180" : ""}`}
                     />
                   </div>
 
                   {showEmbassySuggestions && (
-                    <div className="absolute z-50 mt-1 w-full rounded-xl border border-border bg-popover shadow-xl overflow-hidden">
+                    <div className="border-border bg-popover absolute z-50 mt-1 w-full overflow-hidden rounded-xl border shadow-xl">
                       {/* Search hint */}
                       {embassySearchText && (
-                        <div className="flex items-center gap-2 px-3 py-2 border-b border-border bg-muted/40">
-                          <Search className="h-3.5 w-3.5 text-muted-foreground" />
-                          <span className="text-xs text-muted-foreground">
+                        <div className="border-border bg-muted/40 flex items-center gap-2 border-b px-3 py-2">
+                          <Search className="text-muted-foreground h-3.5 w-3.5" />
+                          <span className="text-muted-foreground text-xs">
                             Showing results for &ldquo;{embassySearchText}
                             &rdquo;
                           </span>
@@ -2560,8 +2777,8 @@ footer.querySelector(".footer-page").textContent = String(p);
                       )}
                       <div className="max-h-64 overflow-y-auto">
                         {filteredEmbassies.length === 0 ? (
-                          <div className="px-4 py-6 text-center text-sm text-muted-foreground">
-                            <MapPin className="h-6 w-6 mx-auto mb-2 opacity-40" />
+                          <div className="text-muted-foreground px-4 py-6 text-center text-sm">
+                            <MapPin className="mx-auto mb-2 h-6 w-6 opacity-40" />
                             No embassy found. You can type a custom location.
                           </div>
                         ) : (
@@ -2573,14 +2790,14 @@ footer.querySelector(".footer-page").textContent = String(p);
                             });
                             return Object.entries(grouped).map(([country, items]) => (
                               <div key={country}>
-                                <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground bg-muted/50 sticky top-0">
+                                <div className="text-muted-foreground bg-muted/50 sticky top-0 px-3 py-1.5 text-[10px] font-bold tracking-widest uppercase">
                                   {country}
                                 </div>
                                 {items.map((embassy) => (
                                   <button
                                     key={embassy.value}
                                     type="button"
-                                    className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left transition-colors hover:bg-primary/5 focus:bg-primary/5 focus:outline-none ${
+                                    className={`hover:bg-primary/5 focus:bg-primary/5 flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors focus:outline-none ${
                                       formData.consularPost === embassy.value
                                         ? "bg-primary/10 text-primary font-semibold"
                                         : "text-foreground"
@@ -2590,10 +2807,10 @@ footer.querySelector(".footer-page").textContent = String(p);
                                       handleEmbassySelect(embassy.value);
                                     }}
                                   >
-                                    <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                                    <MapPin className="text-muted-foreground h-3.5 w-3.5 shrink-0" />
                                     {embassy.label}
                                     {formData.consularPost === embassy.value && (
-                                      <span className="ml-auto text-primary text-xs">✓</span>
+                                      <span className="text-primary ml-auto text-xs">✓</span>
                                     )}
                                   </button>
                                 ))}
@@ -2607,10 +2824,10 @@ footer.querySelector(".footer-page").textContent = String(p);
                         !EMBASSY_OPTIONS.find(
                           (e) => e.value.toLowerCase() === embassySearchText.toLowerCase()
                         ) && (
-                          <div className="border-t border-border">
+                          <div className="border-border border-t">
                             <button
                               type="button"
-                              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left text-muted-foreground hover:bg-muted/50 transition-colors"
+                              className="text-muted-foreground hover:bg-muted/50 flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors"
                               onMouseDown={(e) => {
                                 e.preventDefault();
                                 handleEmbassySelect(embassySearchText);
@@ -2626,7 +2843,7 @@ footer.querySelector(".footer-page").textContent = String(p);
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="caseNumber">Case Number (optional)</Label>
                   <Input
@@ -2637,8 +2854,8 @@ footer.querySelector(".footer-page").textContent = String(p);
                     placeholder="e.g. ISL2024123456"
                   />
                   {caseNumberError && (
-                    <p className="text-xs text-red-600 flex items-center gap-1 mt-1">
-                      <span className="inline-block w-3.5 h-3.5 rounded-full bg-red-100 text-red-600 text-center leading-[14px] font-bold text-[10px]">
+                    <p className="mt-1 flex items-center gap-1 text-xs text-red-600">
+                      <span className="inline-block h-3.5 w-3.5 rounded-full bg-red-100 text-center text-[10px] leading-[14px] font-bold text-red-600">
                         !
                       </span>
                       {caseNumberError}
@@ -2656,7 +2873,7 @@ footer.querySelector(".footer-page").textContent = String(p);
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="passportNumber">Passport Number (optional)</Label>
                   <Input
@@ -2686,8 +2903,8 @@ footer.querySelector(".footer-page").textContent = String(p);
                     className={dobError ? "border-red-500 focus-visible:ring-red-400" : ""}
                   />
                   {dobError && (
-                    <p className="text-xs text-red-600 flex items-center gap-1 mt-1">
-                      <span className="inline-block w-3.5 h-3.5 rounded-full bg-red-100 text-red-600 text-center leading-[14px] font-bold text-[10px]">
+                    <p className="mt-1 flex items-center gap-1 text-xs text-red-600">
+                      <span className="inline-block h-3.5 w-3.5 rounded-full bg-red-100 text-center text-[10px] leading-[14px] font-bold text-red-600">
                         !
                       </span>
                       {dobError}
@@ -2696,7 +2913,7 @@ footer.querySelector(".footer-page").textContent = String(p);
                 </div>
               </div>
 
-              <div className="flex justify-end pt-4 border-t">
+              <div className="flex justify-end border-t pt-4">
                 <Button
                   onClick={goNext}
                   disabled={
@@ -2724,13 +2941,13 @@ footer.querySelector(".footer-page").textContent = String(p);
                 consularPost={formData.consularPost}
                 visaType={formData.visaType}
               />
-              <div className="flex gap-3 pt-4 border-t">
+              <div className="flex gap-3 border-t pt-4">
                 <Button variant="outline" onClick={goBack}>
                   ← Back
                 </Button>
                 <Button
                   onClick={goNext}
-                  className="ml-auto bg-primary hover:bg-primary/90 shadow-lg"
+                  className="bg-primary hover:bg-primary/90 ml-auto shadow-lg"
                   disabled={Object.values(selected221gItems).filter((v) => Boolean(v)).length === 0}
                 >
                   Continue to Review →
@@ -2746,8 +2963,9 @@ footer.querySelector(".footer-page").textContent = String(p);
           {currentStep === 3 && (
             <ResultGate
               feature="action_221g"
-              title="Review & Generate Locked"
-              description="Upgrade to Executive to review your 221(g) case response details, next steps, and generate your custom document packet."
+              title="Unlock Your Full 221(g) Results"
+              description="Upgrade to Executive to review your case response details, next steps, and generate your custom document packet."
+              hint="Included with Executive, along with advanced tools and support."
             >
               <StepReviewGenerate />
             </ResultGate>
@@ -2755,8 +2973,9 @@ footer.querySelector(".footer-page").textContent = String(p);
           {currentStep === 4 && (
             <ResultGate
               feature="action_221g"
-              title="Action Packet Ready"
+              title="Your Action Packet Is Ready"
               description="Upgrade to Executive to download, print, or copy your personalized 221(g) response plan and document packet checklist."
+              hint="Included with Executive, along with advanced tools and support."
             >
               <StepExportPacket />
             </ResultGate>

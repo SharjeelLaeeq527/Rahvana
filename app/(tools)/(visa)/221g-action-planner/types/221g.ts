@@ -1,5 +1,12 @@
 // types/221g.ts
 
+export const STANDALONE_221G_DRAFT_KEY = "standalone_221g_planner_draft";
+export const STANDALONE_221G_STORAGE_KEY = "standalone_221g_planner_result";
+
+export function getJourney221gDraftKey(journeySlug: string, candidateId?: string): string {
+  return `journey_${journeySlug}_${candidateId || "primary"}_221g_draft`;
+}
+
 export interface FormSelections {
   admin_processing?: boolean;
   passport?: boolean;
@@ -62,4 +69,23 @@ export interface FormData {
   beneficiaryName: string;
   passportNumber: string;
   dateOfBirth: string; // beneficiary DOB (YYYY-MM-DD)
+}
+
+export interface TwentyTwoOneGDraft {
+  currentStep: number;
+  formData: FormData;
+  selectedItems: FormSelections;
+  outputs?: {
+    actionPlan: string;
+    checklist: string;
+  } | null;
+  updatedAt: string;
+}
+
+export interface TwentyTwoOneGResult {
+  actionPlan: string;
+  checklist: string;
+  formData: FormData;
+  selectedItems: FormSelections;
+  updatedAt: string;
 }

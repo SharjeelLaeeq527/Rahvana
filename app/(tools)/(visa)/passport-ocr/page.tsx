@@ -17,7 +17,7 @@ export default function PassportOcrPage() {
           confirm before anything is saved.
         </p>
       </div>
-      <PassportOcrTool />
+      <PassportOcrTool mode="standalone" />
     </div>
   );
 }

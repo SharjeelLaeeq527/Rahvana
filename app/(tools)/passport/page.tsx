@@ -18,7 +18,7 @@ export default function PassportPhoto() {
         style={{ backgroundColor: "rgba(255,255,255,0.6)" }}
       />
       <div className="relative z-10">
-        <PassportPhotoTool />
+        <PassportPhotoTool mode="standalone" />
       </div>
     </div>
   );
