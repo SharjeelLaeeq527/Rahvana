@@ -129,6 +129,8 @@ export async function POST(req: NextRequest) {
       candidate_id?: string | null;
       candidate_role?: string | null;
       candidate_name?: string | null;
+      source?: string | null;
+      journey_slug?: string | null;
     }
 
     // Prepare appointment data for database insertion
@@ -180,6 +182,9 @@ export async function POST(req: NextRequest) {
       candidate_id: formData.candidateId || formData.candidate_id || null,
       candidate_role: formData.candidateRole || formData.candidate_role || null,
       candidate_name: formData.candidateName || formData.candidate_name || null,
+      // Origin tagging: 'journey' rows are hidden from standalone My Resources.
+      source: formData.source === "journey" ? "journey" : "standalone",
+      journey_slug: formData.journey_slug || null,
     };
 
     // Only add case_number if it exists
