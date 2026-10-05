@@ -21,6 +21,7 @@ const DocumentTranslationTool = React.lazy(
 );
 const PdfToolkitTool = React.lazy(() => import("@/components/tools/PdfToolkitTool"));
 const SnapAndSignTool = React.lazy(() => import("@/components/tools/SnapAndSignTool"));
+const DqStatusCheckTool = React.lazy(() => import("@/components/tools/DqStatusCheckTool"));
 const InterviewPrepTool = React.lazy(() =>
   import("./components/InterviewPrepTool").then((m) => ({ default: m.InterviewPrepTool }))
 );
@@ -505,7 +506,18 @@ export function EmbeddedToolContainer({
             />
           </div>
         );
-        
+
+      case "dq_status_check":
+        return (
+          <div className="mx-auto w-full max-w-7xl px-4 pt-4 sm:px-6 sm:pt-6 lg:px-8">
+            <DqStatusCheckTool
+              showHeader={false}
+              mode="journey"
+              journeyContext={journeyContext}
+              journeyTier={effectiveJourneyTier}
+            />
+          </div>
+        );
 
       case "visa_forms":
         return (
