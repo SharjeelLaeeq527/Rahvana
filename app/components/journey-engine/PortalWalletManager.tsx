@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
+import { ShieldCheck, X, User } from "lucide-react";
 import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
-import { ShieldCheck, X } from "lucide-react";
+import { useCandidate } from "@/app/context/CandidateContext";
 
 interface PortalCredential {
   id: string;
@@ -33,6 +34,15 @@ export const CeacCredsModal: React.FC<CeacCredsModalProps> = ({
   const [invoiceId, setInvoiceId] = useState(initialData?.nvc_invoice_id || "");
   const [email, setEmail] = useState(initialData?.username || "");
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  let candidateCtx;
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    candidateCtx = useCandidate();
+  } catch {
+    candidateCtx = undefined;
+  }
+  const activeCandidate = candidateCtx?.activeCandidate;
 
   useEffect(() => {
     if (isOpen) {
@@ -87,7 +97,11 @@ export const CeacCredsModal: React.FC<CeacCredsModalProps> = ({
             <h2 className="text-[22px] leading-tight font-black text-[#0c1b33]">
               CEAC Access Details
             </h2>
-            <p className="mt-1 text-[13px] text-[#6b8097]">Stored in your Rahvana Portal Wallet</p>
+            <p className="mt-1 text-[13px] text-[#6b8097]">
+              {activeCandidate
+                ? `Active Candidate: ${activeCandidate.fullName || activeCandidate.label} (${activeCandidate.relation})`
+                : "Stored in your Rahvana Portal Wallet"}
+            </p>
           </div>
           <button
             onClick={onClose}
@@ -156,17 +170,12 @@ export const CeacCredsModal: React.FC<CeacCredsModalProps> = ({
             </div>
           </div>
 
-          {/* <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] p-3 mb-[18px] flex gap-2.5">
-            <ShieldCheck
-              size={14}
-              className="text-[#8a6200] shrink-0 mt-0.5"
-              strokeWidth={2}
-            />
-            <p className="text-[12px] text-[#8a6200] leading-normal font-sans">
-              Your details are stored locally on your device for this session.
-              To manage or update them permanently, use your full Portal Wallet.
+          <div className="mb-5 flex items-start gap-2.5 rounded-[10px] border border-[#b3d4ff] bg-[#eff6ff] p-3 text-left">
+            <ShieldCheck size={16} className="mt-0.5 shrink-0 text-[#1d4ed8]" strokeWidth={2} />
+            <p className="font-sans text-[12px] leading-relaxed text-[#1e40af]">
+              <strong>Candidate Case Credentials:</strong> {activeCandidate ? `Saved specifically for ${activeCandidate.fullName || activeCandidate.label} (${activeCandidate.relation}).` : "Saved per candidate profile."} Portal credentials and case numbers are isolated per candidate.
             </p>
-          </div> */}
+          </div>
 
           <button
             onClick={handleSave}
@@ -181,15 +190,53 @@ export const CeacCredsModal: React.FC<CeacCredsModalProps> = ({
   );
 };
 
+export interface SubprofileApplicant {
+  id: string;
+  name: string;
+  relationship?: string;
+  isPrincipal?: boolean;
+}
+
 interface NvcFeeModalProps {
   isOpen: boolean;
   onClose: () => void;
   data: any;
   onSave: (newData: any) => void;
+  applicants?: SubprofileApplicant[];
 }
 
-export const NvcFeeModal: React.FC<NvcFeeModalProps> = ({ isOpen, onClose, data, onSave }) => {
+export const NvcFeeModal: React.FC<NvcFeeModalProps> = ({
+  isOpen,
+  onClose,
+  data,
+  onSave,
+  applicants = [],
+}) => {
+  let candidateCtx;
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    candidateCtx = useCandidate();
+  } catch {
+    candidateCtx = undefined;
+  }
+
+  const effectiveApplicants: SubprofileApplicant[] = useMemo(() => {
+    if (applicants && applicants.length > 0) return applicants;
+    if (candidateCtx?.candidates && candidateCtx.candidates.length > 0) {
+      return candidateCtx.candidates.map((c) => ({
+        id: c.id,
+        name: c.fullName || c.label,
+        relationship: c.relation,
+        isPrincipal: c.isPrimary,
+      }));
+    }
+    return [];
+  }, [applicants, candidateCtx?.candidates]);
+
   const [localData, setLocalData] = useState(data);
+  const [selectedApplicantId, setSelectedApplicantId] = useState<string>(
+    effectiveApplicants[0]?.id || "principal"
+  );
 
   useEffect(() => {
     if (isOpen) {
@@ -203,10 +250,15 @@ export const NvcFeeModal: React.FC<NvcFeeModalProps> = ({ isOpen, onClose, data,
               : data.aos,
         iv: data.iv === "Not Started" ? "Not paid" : data.iv === "Pending" ? "In process" : data.iv,
       });
+      if (effectiveApplicants.length > 0) {
+        setSelectedApplicantId(effectiveApplicants[0].id);
+      }
     }
-  }, [isOpen, data]);
+  }, [isOpen, data, effectiveApplicants]);
 
   if (!isOpen) return null;
+
+  const currentApplicant = effectiveApplicants.find((a) => a.id === selectedApplicantId);
 
   return (
     <div className="fixed inset-0 z-300 flex items-center justify-center p-5">
@@ -221,6 +273,9 @@ export const NvcFeeModal: React.FC<NvcFeeModalProps> = ({ isOpen, onClose, data,
               <h3 className="text-[22px] leading-tight font-black text-[#0c1b33]">
                 NVC Fee Payment Status
               </h3>
+              <p className="mt-1 text-[13px] text-[#6b8097]">
+                Track Household AOS &amp; Individual IV Visa Fees
+              </p>
             </div>
             <button
               onClick={onClose}
@@ -232,11 +287,42 @@ export const NvcFeeModal: React.FC<NvcFeeModalProps> = ({ isOpen, onClose, data,
 
           <div className="p-[0_24px_24px]">
             <div className="mb-[20px] h-px bg-[#d0e4f7]" />
+
+            {/* Subprofile selector if multiple applicants exist */}
+            {effectiveApplicants.length > 1 && (
+              <div className="mb-5 flex flex-col gap-1.5">
+                <label className="text-[12px] font-semibold tracking-[0.04em] text-[#6b8097] uppercase">
+                  Select Applicant (Subprofile)
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {effectiveApplicants.map((app) => (
+                    <button
+                      key={app.id}
+                      type="button"
+                      onClick={() => setSelectedApplicantId(app.id)}
+                      className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
+                        selectedApplicantId === app.id
+                          ? "bg-[#0c1b33] text-white shadow-sm"
+                          : "border border-[#d0e4f7] bg-[#f8fafc] text-[#475569] hover:bg-[#eef4ff]"
+                      }`}
+                    >
+                      {app.name} {app.isPrincipal ? "(Principal)" : `(${app.relationship || "Derivative"})`}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="flex flex-col gap-[14px]">
               <div className="flex flex-col gap-[5px]">
-                <label className="text-[12px] font-semibold tracking-[0.04em] text-[#6b8097] uppercase">
-                  Affidavit of Support Fee
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="text-[12px] font-semibold tracking-[0.04em] text-[#6b8097] uppercase">
+                    Affidavit of Support Fee ($120)
+                  </label>
+                  <span className="rounded bg-[#f0f4f9] px-2 py-0.5 text-[10px] font-medium text-[#4b6382]">
+                    Household (Shared)
+                  </span>
+                </div>
                 <CustomDropdown
                   value={localData.aos}
                   onChange={(value) => setLocalData({ ...localData, aos: value })}
@@ -252,9 +338,14 @@ export const NvcFeeModal: React.FC<NvcFeeModalProps> = ({ isOpen, onClose, data,
               </div>
 
               <div className="flex flex-col gap-[5px]">
-                <label className="text-[12px] font-semibold tracking-[0.04em] text-[#6b8097] uppercase">
-                  Immigrant Visa Fee
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="text-[12px] font-semibold tracking-[0.04em] text-[#6b8097] uppercase">
+                    Immigrant Visa Fee ($325)
+                  </label>
+                  <span className="rounded bg-[#eff6ff] px-2 py-0.5 text-[10px] font-medium text-[#1d4ed8]">
+                    {currentApplicant ? `${currentApplicant.name}` : "Per Applicant"}
+                  </span>
+                </div>
                 <CustomDropdown
                   value={localData.iv}
                   onChange={(value) => setLocalData({ ...localData, iv: value })}

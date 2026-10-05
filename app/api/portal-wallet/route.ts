@@ -20,12 +20,15 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
-    const { data, error } = await supabase
+    const candidateId = request.nextUrl.searchParams.get("candidateId") || null;
+
+    let query = supabase
       .from("portal_wallet_credentials")
       .select(
         `
         id,
         portal_type,
+        candidate_id,
         username,
         nvc_case_number,
         nvc_invoice_id,
@@ -39,6 +42,12 @@ export async function GET(request: NextRequest) {
       )
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
+
+    if (candidateId) {
+      query = query.eq("candidate_id", candidateId);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error("Error fetching credentials:", error);
@@ -106,19 +115,26 @@ export async function POST(req: Request) {
 
     const body = await req.json();
 
-    const { portalType, username, password, securityQuestions, nvcCaseNumber, nvcInvoiceId } = body;
+    const { portalType, username, password, securityQuestions, nvcCaseNumber, nvcInvoiceId, candidateId = null } = body;
 
     if (!portalType) {
       return NextResponse.json({ error: "Portal type required" }, { status: 400 });
       return NextResponse.json({ error: msg(E.PORTAL_WALLET_FETCH_FAILED) }, { status: 400 });
     }
 
-    const { data: existingCred } = await supabase
+    let existingQuery = supabase
       .from("portal_wallet_credentials")
       .select("encrypted_password")
       .eq("user_id", user.id)
-      .eq("portal_type", portalType)
-      .single();
+      .eq("portal_type", portalType);
+
+    if (candidateId) {
+      existingQuery = existingQuery.eq("candidate_id", candidateId);
+    } else {
+      existingQuery = existingQuery.is("candidate_id", null);
+    }
+
+    const { data: existingCred } = await existingQuery.single();
 
     if (portalType === "NVC") {
       if (!nvcCaseNumber || !nvcInvoiceId) {
@@ -147,13 +163,14 @@ export async function POST(req: Request) {
       .upsert(
         {
           user_id: user.id,
+          candidate_id: candidateId,
           portal_type: portalType,
           username: username || null,
           encrypted_password: encryptedPassword,
           nvc_case_number: encryptedCaseNumber,
           nvc_invoice_id: encryptedInvoiceId,
         },
-        { onConflict: "user_id,portal_type" }
+        { onConflict: "user_id,candidate_id,portal_type" }
       )
       .select()
       .single();

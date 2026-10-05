@@ -7,6 +7,7 @@ import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { getJourneyLockStatus } from "@/lib/journey-lock";
 import { getNextBestAction, getStageProgress, isStageUnlocked } from "./journeyHelpers";
 import APTrackingTool from "./APTrackingTool";
+import { useCandidate } from "@/app/context/CandidateContext";
 import WaitingStateCard from "./WaitingStateCard";
 import { JourneyRiskCard } from "./components/JourneyRiskCard";
 import { DocCaseStrengthMeter } from "./components/DocCaseStrengthMeter";
@@ -55,6 +56,7 @@ import { getActiveStepsForStage } from "./journeyHelpers";
 import { getStepLockStatus, getModalFeatureForTier } from "@/lib/entitlements/hardLockRules";
 import { E, msg } from "@/lib/errors";
 import VisaTicker from "@/app/components/home-page/VisaTicker";
+import { AppGroupGrid } from "@/app/components/journey-engine/AppGroupGrid";
 import {
   buildVisaTickerProps,
   fetchReceiptForJourney,
@@ -66,6 +68,7 @@ interface DashboardViewProps {
   state: WizardState;
   onSelectChapter: (idx: number) => void;
   onSelectStep?: (cIdx: number, sIdx: number) => void;
+  onLaunchTool?: (componentKey: string) => void;
   actions: {
     setCurrentStep: (idx: number) => void;
     setStage: (idx: number) => void;
@@ -81,6 +84,7 @@ export function DashboardView({
   state,
   onSelectChapter,
   onSelectStep,
+  onLaunchTool,
   actions,
 }: DashboardViewProps) {
   const plan = useJourneyPlan(state);
@@ -919,6 +923,15 @@ export function DashboardView({
     return false;
   }).length;
 
+  let candidateCtx;
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    candidateCtx = useCandidate();
+  } catch {
+    candidateCtx = undefined;
+  }
+  const activeCandidateId = candidateCtx?.activeCandidateId || null;
+
   const [nvcCaseNum, setNvcCaseNum] = useState<string | undefined>(undefined);
   const [nvcInvoice, setNvcInvoice] = useState<string | undefined>(undefined);
   const [nvcLoading, setNvcLoading] = useState(true);
@@ -934,7 +947,7 @@ export function DashboardView({
         const res = await fetch("/api/portal-wallet/reveal", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ portalType, type: "all_details" }),
+          body: JSON.stringify({ portalType, type: "all_details", candidateId: activeCandidateId }),
         });
         const data = await res.json();
         if (!cancelled && data.details) {
@@ -953,7 +966,7 @@ export function DashboardView({
     return () => {
       cancelled = true;
     };
-  }, [state.metadata.portalType]);
+  }, [state.metadata.portalType, activeCandidateId]);
 
   const [receiptRecord, setReceiptRecord] = useState<ReceiptRecord | null | undefined>(undefined);
   useEffect(() => {
@@ -1325,6 +1338,12 @@ export function DashboardView({
                     );
                   })}
               </div>
+
+              {/* Journey Toolbox & Services App Groups */}
+              {onLaunchTool && (
+                <AppGroupGrid onLaunchTool={onLaunchTool} state={state} className="my-1" />
+              )}
+
               {/* Accordions */}
               <div className="bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-sm">
                 {/* Case Details */}

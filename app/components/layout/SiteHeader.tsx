@@ -9,7 +9,6 @@ import {
   BellOff,
   ChevronDown,
   User as UserIcon,
-  UserPlus as UserPlusIcon,
   LogOut,
   Zap,
   Briefcase,
@@ -46,6 +45,7 @@ import {
   // PinOff,
   List,
   LayoutGrid,
+  Compass,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuickAccess } from "@/app/context/QuickAccessContext";
@@ -57,14 +57,8 @@ import { NAV_DATA } from "./navigationData";
 import { ConfirmationModal } from "../shared/ConfirmationModal";
 import { requestNavigation } from "@/lib/guides/navigationGuardStore";
 import { ir1journeyHref, ir5journeyHref } from "@/lib/constants/routes";
-import { CandidateSwitcherTray } from "@/app/components/candidate/CandidateSwitcherTray";
-import { AddCandidateModal } from "@/app/components/candidate/AddCandidateModal";
 import { useCandidate } from "@/app/context/CandidateContext";
-import {
-  fetchUserJourneysCached,
-  getCachedUserJourneys,
-  dedupeJourneysByType,
-} from "@/lib/document-vault/journey-mapping";
+import { useJourneyEnvironment } from "@/app/context/JourneyEnvironmentContext";
 
 interface HeaderProps {
   activeSection?: string;
@@ -283,6 +277,26 @@ function formatNotifTime(value?: string | number | Date | null): string {
   });
 }
 
+function getJourneyDisplayTitle(
+  category?: string | null,
+  slug?: string | null,
+  path?: string | null
+): string {
+  const identifier = (category || slug || (path ? path.split("/")[2] : "") || "").toLowerCase();
+  if (identifier.includes("ir-5") || identifier.includes("ir5")) return "IR-5 Parent Visa Roadmap";
+  if (
+    identifier.includes("ir-1") ||
+    identifier.includes("ir1") ||
+    identifier.includes("cr-1") ||
+    identifier.includes("cr1")
+  )
+    return "IR-1 / CR-1 Spouse Visa Roadmap";
+  if (identifier.includes("f-1") || identifier.includes("f1")) return "F-1 Student Visa Roadmap";
+  if (identifier.includes("germany")) return "Germany Student Visa Roadmap";
+  if (category) return `${category} Visa Roadmap`;
+  return "Active Visa Journey";
+}
+
 export function SiteHeader({
   activeSection,
   onNavigate,
@@ -343,6 +357,12 @@ export function SiteHeader({
   };
 
   const pathname = usePathname();
+  const { isInsideJourney, journeyCategory, journeySlug } = useJourneyEnvironment();
+  const isJourneyPath = pathname
+    ? /^\/visa-category\/(?:[a-z0-9-]+-journey|ir-1|ir-5|ir-2|f-1|germany-student)/.test(pathname)
+    : false;
+  const isJourneyEnvironment = isInsideJourney || isJourneyPath;
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
   const [confirmSignOutOpen, setConfirmSignOutOpen] = useState(false);
@@ -399,9 +419,7 @@ export function SiteHeader({
   const profileRef = useRef<HTMLDivElement>(null);
 
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
-  const [addCandidateOpen, setAddCandidateOpen] = useState(false);
-  const [journeyCount, setJourneyCount] = useState(0);
-  const { activeCandidate, isMultiCandidate } = useCandidate();
+  const { activeCandidate } = useCandidate();
   const menuTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [arrowOffset, setArrowOffset] = useState(40);
 
@@ -447,9 +465,6 @@ export function SiteHeader({
       }
       // Mega Menus or Profile Menu
       if (activeMenu) {
-        if (addCandidateOpen) {
-          return;
-        }
         if (activeMenu === "profile") {
           if (profileRef.current && !profileRef.current.contains(target)) {
             setActiveMenu(null);
@@ -465,7 +480,7 @@ export function SiteHeader({
     };
     document.addEventListener("mousedown", handleOutsideClick);
     return () => document.removeEventListener("mousedown", handleOutsideClick);
-  }, [activeMenu, addCandidateOpen]);
+  }, [activeMenu]);
 
   // Open profile menu on global event
   useEffect(() => {
@@ -485,44 +500,6 @@ export function SiteHeader({
   }, [pathname]);
   const { profile, isLoading, user: authUser } = useAuth();
   const resolvedUser = user ?? authUser;
-
-  // ── Candidate switcher visibility (app-wide, category-AGNOSTIC) ────────────
-  // The candidate switcher is a whole-journey feature (one account, multiple beneficiary
-  // journeys), so it lives in the global header. Decision 2: it appears ONLY when the account
-  // genuinely has 2+ candidates/journeys - IR-1 included, no longer isolated. A
-  // single-candidate account shows NO switcher tray (just its normal profile) and reaches
-  // "+ Add Candidate" from the profile-dropdown entry below.
-  // We count REAL signals only (never defaulted candidates): the candidate roster length
-  // (isMultiCandidate) OR the number of distinct journeys actually on the account.
-  // IMPORTANT: key this on the user ID, NOT the user object. AuthContext re-emits a fresh
-  // user object on every auth event, so depending on `resolvedUser` would re-run this effect
-  // constantly - each re-run's cleanup cancels the in-flight fetch before it can set state, so
-  // the switcher would never appear. See the "Auth user-object re-ref wipes state" pitfall.
-  const resolvedUserId = resolvedUser?.id ?? null;
-  useEffect(() => {
-    if (!resolvedUserId) {
-      setJourneyCount(0);
-      return;
-    }
-    let cancelled = false;
-    // Seed synchronously from the shared cache if the vault/roadmap already populated it.
-    const cached = getCachedUserJourneys();
-    if (cached && cached.length > 0) {
-      setJourneyCount(dedupeJourneysByType(cached).length);
-    }
-    fetchUserJourneysCached()
-      .then((journeys) => {
-        if (cancelled) return;
-        setJourneyCount(dedupeJourneysByType(journeys || []).length);
-      })
-      .catch(() => {
-        /* non-fatal - just keep the switcher hidden */
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [resolvedUserId]);
-  const showCandidateSwitcher = isMultiCandidate || journeyCount >= 2;
 
   const fetchNotifications = useCallback(async () => {
     try {
@@ -928,280 +905,180 @@ export function SiteHeader({
             </svg>
           </Link>
 
-          <nav className="hidden items-center gap-1 lg:flex">
-            <div className="relative pt-2 pb-0">
-              <Link
-                href={journeyButtonHref}
-                onClick={(e) => handleNav(journeyNavigationId, e)}
-                className={`block rounded-lg px-4 py-2 text-sm font-semibold transition-all ${
-                  isHomeHeroState
-                    ? isActive(journeyNavigationId, journeyButtonHref)
-                      ? "bg-muted text-[#0d7377]"
-                      : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
-                    : isHomeHeroP2State || isHomepageHeroState
-                      ? "text-[#0d7377] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
-                      : isActive(journeyNavigationId, journeyButtonHref)
-                        ? "bg-muted text-[#0d7377]"
-                        : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
-                }`}
-              >
-                {journeyButtonText}
-              </Link>
-            </div>
-
-            {/* 
-<div
-  ref={(el) => { navRefs.current["journeys"] = el; }}
-  className="relative pt-2 pb-0"
-  onMouseEnter={() => handleMenuEnter("journeys")}
-  onMouseLeave={handleMenuLeave}
->
-  <HydrationSafeButton
-    className={`flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg transition-all cursor-pointer ${
-      isActive("journeys") || activeMenu === "journeys"
-        ? isHomeHeroState
-          ? "bg-white/20 text-white"
-          : "bg-muted text-[#0d7377]"
-        : isHomeHeroState
-          ? "text-white/90 hover:bg-white/15 hover:text-white"
-          : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
-    }`}
-  >
-    Explore Journeys
-    <ChevronDown
-      className={`h-4 w-4 transition-transform duration-300 ${
-        activeMenu === "journeys" ? "rotate-180" : ""
-      }`}
-    />
-  </HydrationSafeButton>
-
-  {activeMenu === "journeys" && (
-    <span className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full bg-primary" />
-  )}
-</div>
-*/}
-
-            {/* Resources */}
-            <div
-              ref={(el) => {
-                navRefs.current["resources"] = el;
-              }}
-              className="relative pt-2 pb-0"
-              onMouseEnter={() => handleMenuEnter("resources")}
-              onMouseLeave={handleMenuLeave}
-            >
-              <HydrationSafeButton
-                className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold transition-all ${
-                  isHomeHeroState
-                    ? isActive("resources") || activeMenu === "resources"
-                      ? "bg-muted text-[#0d7377]"
-                      : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
-                    : isHomeHeroP2State || isHomepageHeroState
-                      ? "text-[#3fb8bc] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
-                      : isActive("resources") || activeMenu === "resources"
-                        ? "bg-muted text-[#0d7377]"
-                        : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
-                }`}
-              >
-                My Resources
-                <ChevronDown
-                  className={`h-4 w-4 transition-transform duration-300 ${activeMenu === "resources" ? "rotate-180" : ""}`}
-                />
-              </HydrationSafeButton>
-              {/* Active indicator bar */}
-              {activeMenu === "resources" && (
-                <span className="bg-primary absolute right-3 bottom-0 left-3 h-0.5 rounded-full" />
-              )}
-            </div>
-
-            {/* Commented out - Tools, Guides, Services - Now under Resources */}
-            {/*
-            <div
-              ref={(el) => {
-                navRefs.current["tools"] = el;
-              }}
-              className="relative pt-2 pb-0"
-              onMouseEnter={() => handleMenuEnter("tools")}
-              onMouseLeave={handleMenuLeave}
-            >
-              <HydrationSafeButton
-                className={`flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg transition-all cursor-pointer ${
-                  isActive("tools", "/tools") || activeMenu === "tools"
-                    ? isHomeHeroState
-                      ? "bg-white/20 text-white"
-                      : "bg-muted text-[#0d7377]"
-                    : isHomeHeroState
-                      ? "text-white/90 hover:bg-white/15 hover:text-white"
-                      : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
-                }`}
-              >
-                Toolbox
-                <ChevronDown
-                  className={`h-4 w-4 transition-transform duration-300 ${activeMenu === "tools" ? "rotate-180" : ""}`}
-                />
-              </HydrationSafeButton>
-              {activeMenu === "tools" && (
-                <span className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full bg-primary" />
-              )}
-            </div>
-
-            <div
-              ref={(el) => {
-                navRefs.current["guides"] = el;
-              }}
-              className="relative pt-2 pb-0"
-              onMouseEnter={() => handleMenuEnter("guides")}
-              onMouseLeave={handleMenuLeave}
-            >
-              <HydrationSafeButton
-                className={`flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg transition-all cursor-pointer ${
-                  isActive("guides") || activeMenu === "guides"
-                    ? isHomeHeroState
-                      ? "bg-white/20 text-white"
-                      : "bg-muted text-[#0d7377]"
-                    : isHomeHeroState
-                      ? "text-white/90 hover:bg-white/15 hover:text-white"
-                      : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
-                }`}
-              >
-                Guides
-                <ChevronDown
-                  className={`h-4 w-4 transition-transform duration-300 ${activeMenu === "guides" ? "rotate-180" : ""}`}
-                />
-              </HydrationSafeButton>
-              {activeMenu === "guides" && (
-                <span className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full bg-primary" />
-              )}
-            </div>
-
-            <div
-              ref={(el) => {
-                navRefs.current["services"] = el;
-              }}
-              className="relative pt-2 pb-0"
-              onMouseEnter={() => handleMenuEnter("services")}
-              onMouseLeave={handleMenuLeave}
-            >
-              <HydrationSafeButton
-                className={`flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg transition-all cursor-pointer ${
-                  isActive("services", "/services") || activeMenu === "services"
-                    ? isHomeHeroState
-                      ? "bg-white/20 text-white"
-                      : "bg-muted text-[#0d7377]"
-                    : isHomeHeroState
-                      ? "text-white/90 hover:bg-white/15 hover:text-white"
-                      : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
-                }`}
-              >
-                Services
-                <ChevronDown
-                  className={`h-4 w-4 transition-transform duration-300 ${activeMenu === "services" ? "rotate-180" : ""}`}
-                />
-              </HydrationSafeButton>
-              {activeMenu === "services" && (
-                <span className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full bg-primary" />
-              )}
-            </div>
-            */}
-            <div className="relative pt-2 pb-0">
-              <Link
-                href="/blog"
-                onClick={(e) => handleNav("blog", e)}
-                className={`block rounded-lg px-4 py-2 text-sm font-semibold transition-all ${
-                  isHomeHeroState
-                    ? isActive("blog", "/blog")
-                      ? "bg-muted text-[#0d7377]"
-                      : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
-                    : isHomeHeroP2State || isHomepageHeroState
-                      ? "text-[#3fb8bc] hover:bg-[#0d7377]/8 hover:text-[#0d7377]"
-                      : isActive("blog", "/blog")
-                        ? "bg-muted text-[#0d7377]"
-                        : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
-                }`}
-              >
-                Blog
-              </Link>
-            </div>
-            <div className="relative pt-2 pb-0">
-              <Link
-                href="/about"
-                onClick={(e) => handleNav("about", e)}
-                className={`block rounded-lg px-4 py-2 text-sm font-semibold transition-all ${
-                  isHomeHeroState
-                    ? isActive("about", "/about")
-                      ? "bg-muted text-[#0d7377]"
-                      : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
-                    : isHomeHeroP2State || isHomepageHeroState
-                      ? "text-[#3fb8bc] hover:bg-[#0d7377]/8 hover:text-[#0d7377]"
-                      : isActive("about", "/about")
-                        ? "bg-muted text-[#0d7377]"
-                        : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
-                }`}
-              >
-                About
-              </Link>
-            </div>
-
-            <div className="relative pt-2 pb-0">
-              <Link
-                href="/pricing"
-                onClick={(e) => handleNav("pricing", e)}
-                className={`block rounded-lg px-4 py-2 text-sm font-semibold transition-all ${
-                  isHomeHeroState
-                    ? isActive("pricing", "/pricing")
-                      ? "bg-muted text-[#0d7377]"
-                      : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
-                    : isHomeHeroP2State || isHomepageHeroState
-                      ? "text-[#3fb8bc] hover:bg-[#0d7377]/8 hover:text-[#0d7377]"
-                      : isActive("pricing", "/pricing")
-                        ? "bg-muted text-[#0d7377]"
-                        : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
-                }`}
-              >
-                Pricing
-              </Link>
-            </div>
-            {pathname === "/" && (
+          {isJourneyEnvironment ? (
+            <nav className="hidden items-center gap-3 lg:flex">
+              {/* Active Journey Indicator Badge */}
+              <div className="flex items-center gap-2.5 rounded-full border border-teal-500/25 bg-teal-50/75 px-3.5 py-1.5 shadow-xs backdrop-blur-md dark:border-teal-400/20 dark:bg-teal-950/40">
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#0d7377] text-white shadow-xs">
+                  <Compass className="h-3.5 w-3.5 animate-pulse" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xs leading-tight font-bold text-slate-900 dark:text-slate-100">
+                    {getJourneyDisplayTitle(journeyCategory, journeySlug, pathname)}
+                  </span>
+                  {activeCandidate && (activeCandidate.fullName || activeCandidate.label) && (
+                    <span className="text-[10px] leading-tight font-medium text-teal-700 dark:text-teal-400">
+                      {activeCandidate.fullName || activeCandidate.label}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </nav>
+          ) : (
+            <nav className="hidden items-center gap-1 lg:flex">
               <div className="relative pt-2 pb-0">
                 <Link
-                  href="/#faq"
-                  onClick={(e) => handleNav("faq", e)}
+                  href={journeyButtonHref}
+                  onClick={(e) => handleNav(journeyNavigationId, e)}
                   className={`block rounded-lg px-4 py-2 text-sm font-semibold transition-all ${
                     isHomeHeroState
-                      ? isActive("faq")
+                      ? isActive(journeyNavigationId, journeyButtonHref)
                         ? "bg-muted text-[#0d7377]"
                         : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                       : isHomeHeroP2State || isHomepageHeroState
-                        ? "text-[#3fb8bc] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
-                        : isActive("faq")
+                        ? "text-[#0d7377] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
+                        : isActive(journeyNavigationId, journeyButtonHref)
                           ? "bg-muted text-[#0d7377]"
                           : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                   }`}
                 >
-                  FAQ
+                  {journeyButtonText}
                 </Link>
               </div>
-            )}
-            <div className="relative pt-2 pb-0">
-              <Link
-                href="/#contact"
-                onClick={(e) => handleNav("contact", e)}
-                className={`block rounded-lg px-4 py-2 text-sm font-semibold transition-all ${
-                  isHomeHeroState
-                    ? isActive("contact")
-                      ? "bg-muted text-[#0d7377]"
-                      : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
-                    : isHomeHeroP2State || isHomepageHeroState
-                      ? "text-[#3fb8bc] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
-                      : isActive("contact")
+
+              {/* Resources */}
+              <div
+                ref={(el) => {
+                  navRefs.current["resources"] = el;
+                }}
+                className="relative pt-2 pb-0"
+                onMouseEnter={() => handleMenuEnter("resources")}
+                onMouseLeave={handleMenuLeave}
+              >
+                <HydrationSafeButton
+                  className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold transition-all ${
+                    isHomeHeroState
+                      ? isActive("resources") || activeMenu === "resources"
                         ? "bg-muted text-[#0d7377]"
                         : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
-                }`}
-              >
-                Contact
-              </Link>
-            </div>
-          </nav>
+                      : isHomeHeroP2State || isHomepageHeroState
+                        ? "text-[#3fb8bc] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
+                        : isActive("resources") || activeMenu === "resources"
+                          ? "bg-muted text-[#0d7377]"
+                          : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                  }`}
+                >
+                  My Resources
+                  <ChevronDown
+                    className={`h-4 w-4 transition-transform duration-300 ${activeMenu === "resources" ? "rotate-180" : ""}`}
+                  />
+                </HydrationSafeButton>
+                {/* Active indicator bar */}
+                {activeMenu === "resources" && (
+                  <span className="bg-primary absolute right-3 bottom-0 left-3 h-0.5 rounded-full" />
+                )}
+              </div>
+
+              <div className="relative pt-2 pb-0">
+                <Link
+                  href="/blog"
+                  onClick={(e) => handleNav("blog", e)}
+                  className={`block rounded-lg px-4 py-2 text-sm font-semibold transition-all ${
+                    isHomeHeroState
+                      ? isActive("blog", "/blog")
+                        ? "bg-muted text-[#0d7377]"
+                        : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                      : isHomeHeroP2State || isHomepageHeroState
+                        ? "text-[#3fb8bc] hover:bg-[#0d7377]/8 hover:text-[#0d7377]"
+                        : isActive("blog", "/blog")
+                          ? "bg-muted text-[#0d7377]"
+                          : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                  }`}
+                >
+                  Blog
+                </Link>
+              </div>
+              <div className="relative pt-2 pb-0">
+                <Link
+                  href="/about"
+                  onClick={(e) => handleNav("about", e)}
+                  className={`block rounded-lg px-4 py-2 text-sm font-semibold transition-all ${
+                    isHomeHeroState
+                      ? isActive("about", "/about")
+                        ? "bg-muted text-[#0d7377]"
+                        : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                      : isHomeHeroP2State || isHomepageHeroState
+                        ? "text-[#3fb8bc] hover:bg-[#0d7377]/8 hover:text-[#0d7377]"
+                        : isActive("about", "/about")
+                          ? "bg-muted text-[#0d7377]"
+                          : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                  }`}
+                >
+                  About
+                </Link>
+              </div>
+
+              <div className="relative pt-2 pb-0">
+                <Link
+                  href="/pricing"
+                  onClick={(e) => handleNav("pricing", e)}
+                  className={`block rounded-lg px-4 py-2 text-sm font-semibold transition-all ${
+                    isHomeHeroState
+                      ? isActive("pricing", "/pricing")
+                        ? "bg-muted text-[#0d7377]"
+                        : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                      : isHomeHeroP2State || isHomepageHeroState
+                        ? "text-[#3fb8bc] hover:bg-[#0d7377]/8 hover:text-[#0d7377]"
+                        : isActive("pricing", "/pricing")
+                          ? "bg-muted text-[#0d7377]"
+                          : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                  }`}
+                >
+                  Pricing
+                </Link>
+              </div>
+              {pathname === "/" && (
+                <div className="relative pt-2 pb-0">
+                  <Link
+                    href="/#faq"
+                    onClick={(e) => handleNav("faq", e)}
+                    className={`block rounded-lg px-4 py-2 text-sm font-semibold transition-all ${
+                      isHomeHeroState
+                        ? isActive("faq")
+                          ? "bg-muted text-[#0d7377]"
+                          : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                        : isHomeHeroP2State || isHomepageHeroState
+                          ? "text-[#3fb8bc] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
+                          : isActive("faq")
+                            ? "bg-muted text-[#0d7377]"
+                            : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                    }`}
+                  >
+                    FAQ
+                  </Link>
+                </div>
+              )}
+              <div className="relative pt-2 pb-0">
+                <Link
+                  href="/#contact"
+                  onClick={(e) => handleNav("contact", e)}
+                  className={`block rounded-lg px-4 py-2 text-sm font-semibold transition-all ${
+                    isHomeHeroState
+                      ? isActive("contact")
+                        ? "bg-muted text-[#0d7377]"
+                        : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                      : isHomeHeroP2State || isHomepageHeroState
+                        ? "text-[#3fb8bc] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
+                        : isActive("contact")
+                          ? "bg-muted text-[#0d7377]"
+                          : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                  }`}
+                >
+                  Contact
+                </Link>
+              </div>
+            </nav>
+          )}
         </div>
 
         {/* --- GLOBAL MEGAMENU PLACEMENT --- */}
@@ -1260,7 +1137,6 @@ export function SiteHeader({
               </div>
             </motion.div>
           )}
-      
         </div>
 
         {/* Right side – Search + Login */}
@@ -1389,6 +1265,14 @@ export function SiteHeader({
                                         )}
                                       </div>
                                       <div className="min-w-0 flex-1">
+                                        {(n.candidate_role || n.candidate_name) && (
+                                          <span className="mb-1 inline-flex items-center gap-1 rounded-full border border-teal-500/20 bg-teal-500/10 px-2 py-0.5 text-[9px] font-bold tracking-wider text-teal-700 uppercase dark:text-teal-300">
+                                            <span className="h-1.5 w-1.5 rounded-full bg-teal-600 dark:bg-teal-400" />
+                                            {n.candidate_name && n.candidate_name !== n.candidate_role
+                                              ? `${n.candidate_role || "Beneficiary"}: ${n.candidate_name}`
+                                              : n.candidate_role || "Beneficiary"}
+                                          </span>
+                                        )}
                                         <div className="flex items-start justify-between gap-2">
                                           <p
                                             className={`text-foreground text-[12px] ${isRead ? "font-medium opacity-70" : "font-bold"}`}
@@ -1715,27 +1599,6 @@ export function SiteHeader({
             <div className="h-10 w-22 animate-pulse rounded-lg bg-[#0d7377]/10" />
           ) : user ? (
             <div className="flex items-center gap-2">
-              {/* Active-candidate badge on the header bar (any category, shown only once the
-                  account has 2+ candidates/journeys) so the user always sees which
-                  beneficiary/journey is active without opening the profile tray. Clicking it
-                  opens the tray to switch. */}
-              {showCandidateSwitcher && activeCandidate && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (menuTimeoutRef.current) clearTimeout(menuTimeoutRef.current);
-                    setActiveMenu(activeMenu === "profile" ? null : "profile");
-                  }}
-                  title="Switch beneficiary profile"
-                  className="hidden sm:flex items-center gap-1.5 max-w-[170px] rounded-full border border-[#0d7377]/25 bg-[#0d7377]/10 px-2.5 py-1 text-xs font-semibold text-[#0d7377] hover:bg-[#0d7377]/20 transition-colors"
-                >
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
-                  <span className="truncate">
-                    {activeCandidate.fullName || activeCandidate.label}
-                  </span>
-                </button>
-              )}
               <div
                 className="relative"
                 ref={profileRef}
@@ -1815,115 +1678,78 @@ export function SiteHeader({
                         </p>
                       </div>
 
-                    {/* Candidate switcher: app-wide (whole-journey feature). Shown only when the
-                        account has 2+ candidates/journeys (decision 2), category-agnostic. */}
-                    {showCandidateSwitcher ? (
-                      <CandidateSwitcherTray
-                        onCandidateSwitched={() => setActiveMenu(null)}
-                        onAddCandidate={() => {
-                          setActiveMenu(null);
-                          setAddCandidateOpen(true);
-                        }}
-                      />
-                    ) : (
-                      // Single-candidate account: no switcher tray, but "+ Add Candidate" must
-                      // stay reachable so a single-journey user can start a second candidate.
-                      <div className="border-border bg-muted/20 border-b px-3 py-2.5">
+                      {/* Section 1 */}
+                      <div className="border-border border-b py-2">
                         <button
-                          type="button"
-                          onClick={() => {
-                            setActiveMenu(null);
-                            setAddCandidateOpen(true);
-                          }}
-                          className="text-primary border-primary/30 hover:bg-primary/5 flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed px-3 py-1.5 text-xs font-semibold transition-colors"
+                          onClick={() => handleNav("profile")}
+                          className="text-muted-foreground hover:bg-muted flex w-full items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors hover:text-teal-700"
                         >
-                          <UserPlusIcon className="h-3.5 w-3.5" />
-                          <span>+ Add Candidate</span>
+                          <UserIcon className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+                          My Profile
+                        </button>
+                        <button
+                          onClick={() => handleNav("my-journeys")}
+                          className="text-muted-foreground hover:bg-muted flex w-full items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors hover:text-teal-700"
+                        >
+                          <Map className="h-4 w-4 text-cyan-600 dark:text-cyan-400" />
+                          My Journeys
+                        </button>
+                        <button
+                          onClick={() => handleNav("document-vault")}
+                          className="text-muted-foreground hover:bg-muted flex w-full items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors hover:text-teal-700"
+                        >
+                          <FolderLock className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                          Document Vault
+                        </button>
+                        <button
+                          onClick={() => handleNav("portal-wallet")}
+                          className="text-muted-foreground hover:bg-muted flex w-full items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors hover:text-teal-700"
+                        >
+                          <LockIcon className="h-4 w-4 text-indigo-500 dark:text-indigo-400" />
+                          Portal Wallet
                         </button>
                       </div>
-                    )}
 
-                    {/* Section 1 */}
-                    <div className="border-border border-b py-2">
-                      <button
-                        onClick={() => handleNav("profile")}
-                        className="text-muted-foreground hover:bg-muted flex w-full items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors hover:text-teal-700"
-                      >
-                        <UserIcon className="h-4 w-4 text-violet-600 dark:text-violet-400" />
-                        My Profile
-                      </button>
-                      <button
-                        onClick={() => handleNav("my-journeys")}
-                        className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-teal-700 transition-colors text-sm font-medium"
-                      >
-                        <Map className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
-                        My Journeys
-                      </button>
-                      <button
-                        onClick={() => handleNav("document-vault")}
-                        className="text-muted-foreground hover:bg-muted flex w-full items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors hover:text-teal-700"
-                      >
-                        <FolderLock className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                        Document Vault
-                      </button>
-                      <button
-                        onClick={() => handleNav("portal-wallet")}
-                        className="text-muted-foreground hover:bg-muted flex w-full items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors hover:text-teal-700"
-                      >
-                        <LockIcon className="h-4 w-4 text-indigo-500 dark:text-indigo-400" />
-                        Portal Wallet
-                      </button>
-                    </div>
+                      {/* Section 2 */}
+                      <div className="border-border border-b py-2">
+                        <button
+                          onClick={() => handleNav("settings")}
+                          className="text-muted-foreground hover:bg-muted flex w-full items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors hover:text-teal-700"
+                        >
+                          <Settings className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+                          Account Settings
+                        </button>
+                      </div>
 
-                    {/* Section 2 */}
-                    <div className="border-border border-b py-2">
-                      <button
-                        onClick={() => handleNav("settings")}
-                        className="text-muted-foreground hover:bg-muted flex w-full items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors hover:text-teal-700"
-                      >
-                        <Settings className="h-4 w-4 text-slate-500 dark:text-slate-400" />
-                        Account Settings
-                      </button>
-                    </div>
-
-                    {/* Footer - Sign Out */}
-                    <div className="py-2">
-                      <button
-                        onClick={() => setConfirmSignOutOpen(true)}
-                        className="flex w-full items-center gap-3 px-5 py-2.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:hover:bg-red-900/10"
-                      >
-                        <LogOut className="h-4 w-4" />
-                        Sign Out
-                      </button>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                      {/* Footer - Sign Out */}
+                      <div className="py-2">
+                        <button
+                          onClick={() => setConfirmSignOutOpen(true)}
+                          className="flex w-full items-center gap-3 px-5 py-2.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:hover:bg-red-900/10"
+                        >
+                          <LogOut className="h-4 w-4" />
+                          Sign Out
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
-          </div>
-        ) : (
-          <HydrationSafeButton
-            onClick={() => onToggleAuth?.()}
-            className={`rounded-lg px-6 py-2 font-semibold shadow-md transition-all ${
-              isHomeHeroState
-                ? "bg-white/50 text-[#6d9a9b] hover:bg-white/65"
-                : "bg-primary hover:bg-primary/90 text-white"
-            }`}
-          >
-            LOGIN
-          </HydrationSafeButton>
-        )}
+          ) : (
+            <HydrationSafeButton
+              onClick={() => onToggleAuth?.()}
+              className={`rounded-lg px-6 py-2 font-semibold shadow-md transition-all ${
+                isHomeHeroState
+                  ? "bg-white/50 text-[#6d9a9b] hover:bg-white/65"
+                  : "bg-primary hover:bg-primary/90 text-white"
+              }`}
+            >
+              LOGIN
+            </HydrationSafeButton>
+          )}
         </div>
       </div>
-
-      {/* Add Candidate modal - launched from the profile-dropdown entry (portals to <body>) */}
-      {resolvedUser && (
-        <AddCandidateModal
-          isOpen={addCandidateOpen}
-          onClose={() => setAddCandidateOpen(false)}
-          visaCategory={activeCandidate?.visaCategory}
-        />
-      )}
 
       {/* ------------------------------------------------------------------ */}
       {/* Mobile Sidebar Overlay */}
@@ -1983,126 +1809,89 @@ export function SiteHeader({
 
           <div className="flex-1 overflow-y-auto py-4">
             <nav className="flex flex-col gap-1 px-4">
-              {/* Explore Journey Link */}
-              <Link
-                href={journeyButtonHref}
-                onClick={(e) => handleNav(journeyNavigationId, e)}
-                className={`block rounded-lg px-4 py-2 text-sm font-semibold transition-all ${
-                  isHomeHeroState
-                    ? isActive(journeyNavigationId, journeyButtonHref)
-                      ? "bg-muted text-[#0d7377]"
-                      : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
-                    : isHomeHeroP2State || isHomepageHeroState
-                      ? "text-[#0d7377] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
-                      : isActive(journeyNavigationId, journeyButtonHref)
-                        ? "bg-muted text-[#0d7377]"
-                        : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <Briefcase className="h-5 w-5 text-[#0d7377]" />
-                  <span className="font-bold">{journeyButtonText}</span>
-                </div>
-              </Link>
-
-              {/* Resources Section - Mobile */}
-              <div className="mt-2">
-                <HydrationSafeButton
-                  onClick={() => {
-                    setExpandedSections((prev) =>
-                      prev.includes("resources")
-                        ? prev.filter((s) => s !== "resources")
-                        : [...prev, "resources"]
-                    );
-                  }}
-                  className="text-muted-foreground hover:bg-muted flex w-full cursor-pointer items-center justify-between rounded-xl px-4 py-3 transition-all"
-                >
-                  <div className="flex items-center gap-3">
-                    <ToolCase className="h-5 w-5 text-[#db8090] dark:text-[#db8090]" />
-                    <span className="font-bold">My Resources</span>
-                  </div>
-                  <ChevronDown
-                    className={`h-4 w-4 transition-transform duration-400 ${
-                      expandedSections.includes("resources") ? "rotate-180" : ""
-                    }`}
-                  />
-                </HydrationSafeButton>
-
-                <AnimatePresence initial={false}>
-                  {expandedSections.includes("resources") && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2, ease: "easeInOut" }}
-                      className="overflow-hidden"
-                    >
-                      <div className="mt-1 ml-9 flex flex-col gap-2 border-l-2 border-slate-100 py-2 pl-4">
-                        <Link
-                          href="/resources?tab=toolbox"
-                          onClick={() => setIsMenuOpen(false)}
-                          className="block rounded-md px-2 py-2 text-sm text-slate-600 transition-all hover:bg-slate-50 hover:text-[#0d7377]"
-                        >
-                          My Tools
-                        </Link>
-                        <Link
-                          href="/resources?tab=services"
-                          onClick={() => setIsMenuOpen(false)}
-                          className="block rounded-md px-2 py-2 text-sm text-slate-600 transition-all hover:bg-slate-50 hover:text-[#0d7377]"
-                        >
-                          My Services
-                        </Link>
-                        <Link
-                          href="/resources?tab=guides"
-                          onClick={() => setIsMenuOpen(false)}
-                          className="block rounded-md px-2 py-2 text-sm text-slate-600 transition-all hover:bg-slate-50 hover:text-[#0d7377]"
-                        >
-                          My Guides
-                        </Link>
+              {isJourneyEnvironment ? (
+                <div className="flex flex-col gap-3 pt-1">
+                  {/* Active Journey Card */}
+                  <div className="rounded-xl border border-teal-500/30 bg-teal-50/70 p-4 dark:border-teal-400/20 dark:bg-teal-950/30">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#0d7377] text-white shadow-xs">
+                        <Compass className="h-5 w-5 animate-pulse" />
                       </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+                      <div className="flex min-w-0 flex-col">
+                        <span className="text-[11px] font-semibold tracking-wider text-teal-700 uppercase dark:text-teal-400">
+                          Active Journey
+                        </span>
+                        <span className="truncate text-sm font-bold text-slate-900 dark:text-slate-100">
+                          {getJourneyDisplayTitle(journeyCategory, journeySlug, pathname)}
+                        </span>
+                        {activeCandidate && (activeCandidate.fullName || activeCandidate.label) && (
+                          <span className="truncate text-xs text-slate-600 dark:text-slate-400">
+                            Candidate: {activeCandidate.fullName || activeCandidate.label}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
 
-              {/* Dynamic Mobile Menu Sections */}
-              {Object.values(NAV_DATA).map((section) => {
-                // Skip journeys and tools, guides, services sections
-                if (
-                  section.id === "journeys" ||
-                  section.id === "tools" ||
-                  section.id === "guides" ||
-                  section.id === "services"
-                ) {
-                  return null;
-                }
-                return (
-                  <div key={section.id} className="mt-2">
+                  {/* Standalone Toolbox Quick Link */}
+                  <Link
+                    href="/resources?tab=toolbox"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-100 dark:text-slate-200"
+                  >
+                    <Wrench className="h-5 w-5 text-[#0d7377]" />
+                    <span>Standalone Toolbox</span>
+                  </Link>
+                </div>
+              ) : (
+                <>
+                  {/* Explore Journey Link */}
+                  <Link
+                    href={journeyButtonHref}
+                    onClick={(e) => handleNav(journeyNavigationId, e)}
+                    className={`block rounded-lg px-4 py-2 text-sm font-semibold transition-all ${
+                      isHomeHeroState
+                        ? isActive(journeyNavigationId, journeyButtonHref)
+                          ? "bg-muted text-[#0d7377]"
+                          : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                        : isHomeHeroP2State || isHomepageHeroState
+                          ? "text-[#0d7377] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
+                          : isActive(journeyNavigationId, journeyButtonHref)
+                            ? "bg-muted text-[#0d7377]"
+                            : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Briefcase className="h-5 w-5 text-[#0d7377]" />
+                      <span className="font-bold">{journeyButtonText}</span>
+                    </div>
+                  </Link>
+
+                  {/* Resources Section - Mobile */}
+                  <div className="mt-2">
                     <HydrationSafeButton
                       onClick={() => {
                         setExpandedSections((prev) =>
-                          prev.includes(section.id)
-                            ? prev.filter((s) => s !== section.id)
-                            : [...prev, section.id]
+                          prev.includes("resources")
+                            ? prev.filter((s) => s !== "resources")
+                            : [...prev, "resources"]
                         );
                       }}
                       className="text-muted-foreground hover:bg-muted flex w-full cursor-pointer items-center justify-between rounded-xl px-4 py-3 transition-all"
                     >
                       <div className="flex items-center gap-3">
-                        {MOBILE_ICONS[section.id] || (
-                          <Briefcase className="h-5 w-5 text-[#0d7377]" />
-                        )}
-                        <span className="font-bold">{section.label}</span>
+                        <ToolCase className="h-5 w-5 text-[#db8090] dark:text-[#db8090]" />
+                        <span className="font-bold">My Resources</span>
                       </div>
                       <ChevronDown
                         className={`h-4 w-4 transition-transform duration-400 ${
-                          expandedSections.includes(section.id) ? "rotate-180" : ""
+                          expandedSections.includes("resources") ? "rotate-180" : ""
                         }`}
                       />
                     </HydrationSafeButton>
 
                     <AnimatePresence initial={false}>
-                      {expandedSections.includes(section.id) && (
+                      {expandedSections.includes("resources") && (
                         <motion.div
                           initial={{ height: 0, opacity: 0 }}
                           animate={{ height: "auto", opacity: 1 }}
@@ -2110,21 +1899,116 @@ export function SiteHeader({
                           transition={{ duration: 0.2, ease: "easeInOut" }}
                           className="overflow-hidden"
                         >
-                          <div className="mt-1 ml-9 flex flex-col gap-4 border-l-2 border-slate-100 py-2 pl-4">
-                            {section.tabs.map((tab) => (
-                              <div key={tab.id} className="flex flex-col gap-2">
-                                {/* Tab Label */}
-                                <div className="text-sm font-semibold text-slate-900">
-                                  {tab.label}
-                                </div>
+                          <div className="mt-1 ml-9 flex flex-col gap-2 border-l-2 border-slate-100 py-2 pl-4">
+                            <Link
+                              href="/resources?tab=toolbox"
+                              onClick={() => setIsMenuOpen(false)}
+                              className="block rounded-md px-2 py-2 text-sm text-slate-600 transition-all hover:bg-slate-50 hover:text-[#0d7377]"
+                            >
+                              My Tools
+                            </Link>
+                            <Link
+                              href="/resources?tab=services"
+                              onClick={() => setIsMenuOpen(false)}
+                              className="block rounded-md px-2 py-2 text-sm text-slate-600 transition-all hover:bg-slate-50 hover:text-[#0d7377]"
+                            >
+                              My Services
+                            </Link>
+                            <Link
+                              href="/resources?tab=guides"
+                              onClick={() => setIsMenuOpen(false)}
+                              className="block rounded-md px-2 py-2 text-sm text-slate-600 transition-all hover:bg-slate-50 hover:text-[#0d7377]"
+                            >
+                              My Guides
+                            </Link>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
 
-                                {/* Render Categories if present */}
-                                {tab.categories?.map((cat, idx) => (
-                                  <div key={idx} className="flex flex-col gap-1">
-                                    <div className="mb-1 text-xs font-bold tracking-wider text-slate-500 uppercase">
-                                      {cat.label}
+                  {/* Dynamic Mobile Menu Sections */}
+                  {Object.values(NAV_DATA).map((section) => {
+                    // Skip journeys and tools, guides, services sections
+                    if (
+                      section.id === "journeys" ||
+                      section.id === "tools" ||
+                      section.id === "guides" ||
+                      section.id === "services"
+                    ) {
+                      return null;
+                    }
+                    return (
+                      <div key={section.id} className="mt-2">
+                        <HydrationSafeButton
+                          onClick={() => {
+                            setExpandedSections((prev) =>
+                              prev.includes(section.id)
+                                ? prev.filter((s) => s !== section.id)
+                                : [...prev, section.id]
+                            );
+                          }}
+                          className="text-muted-foreground hover:bg-muted flex w-full cursor-pointer items-center justify-between rounded-xl px-4 py-3 transition-all"
+                        >
+                          <div className="flex items-center gap-3">
+                            {MOBILE_ICONS[section.id] || (
+                              <Briefcase className="h-5 w-5 text-[#0d7377]" />
+                            )}
+                            <span className="font-bold">{section.label}</span>
+                          </div>
+                          <ChevronDown
+                            className={`h-4 w-4 transition-transform duration-400 ${
+                              expandedSections.includes(section.id) ? "rotate-180" : ""
+                            }`}
+                          />
+                        </HydrationSafeButton>
+
+                        <AnimatePresence initial={false}>
+                          {expandedSections.includes(section.id) && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.2, ease: "easeInOut" }}
+                              className="overflow-hidden"
+                            >
+                              <div className="mt-1 ml-9 flex flex-col gap-4 border-l-2 border-slate-100 py-2 pl-4">
+                                {section.tabs.map((tab) => (
+                                  <div key={tab.id} className="flex flex-col gap-2">
+                                    {/* Tab Label */}
+                                    <div className="text-sm font-semibold text-slate-900">
+                                      {tab.label}
                                     </div>
-                                    {cat.items.map((item, i) => (
+
+                                    {/* Render Categories if present */}
+                                    {tab.categories?.map((cat, idx) => (
+                                      <div key={idx} className="flex flex-col gap-1">
+                                        <div className="mb-1 text-xs font-bold tracking-wider text-slate-500 uppercase">
+                                          {cat.label}
+                                        </div>
+                                        {cat.items.map((item, i) => (
+                                          <Link
+                                            key={i}
+                                            href={item.href}
+                                            onClick={handleLinkClick}
+                                            className={`block rounded-md px-2 py-2 text-sm transition-all ${
+                                              item.disabled
+                                                ? "cursor-not-allowed text-slate-400"
+                                                : isActive(item.title, item.href)
+                                                  ? "bg-[#0d7377]/10 font-semibold text-[#0d7377]"
+                                                  : "text-slate-600 hover:bg-slate-50 hover:text-[#0d7377]"
+                                            }`}
+                                          >
+                                            <span className="flex items-center gap-2">
+                                              {item.title}
+                                            </span>
+                                          </Link>
+                                        ))}
+                                      </div>
+                                    ))}
+
+                                    {/* Render Direct Items if present */}
+                                    {tab.items?.map((item, i) => (
                                       <Link
                                         key={i}
                                         href={item.href}
@@ -2139,132 +2023,89 @@ export function SiteHeader({
                                       >
                                         <span className="flex items-center gap-2">
                                           {item.title}
-                                          {/* {item.badge && (
-                                        <span
-                                          className={`text-[10px] px-1.5 py-0.5 rounded-full ${
-                                            item.badge === "Live"
-                                              ? "bg-green-100 text-green-700"
-                                              : "bg-blue-100 text-blue-700"
-                                          }`}
-                                        >
-                                          {item.badge}
-                                        </span>
-                                      )} */}
                                         </span>
                                       </Link>
                                     ))}
                                   </div>
                                 ))}
 
-                                {/* Render Direct Items if present */}
-                                {tab.items?.map((item, i) => (
+                                {/* Footer Link */}
+                                {section.footerLink && (
                                   <Link
-                                    key={i}
-                                    href={item.href}
+                                    href={section.footerLink.href}
                                     onClick={handleLinkClick}
-                                    className={`block rounded-md px-2 py-2 text-sm transition-all ${
-                                      item.disabled
-                                        ? "cursor-not-allowed text-slate-400"
-                                        : isActive(item.title, item.href)
-                                          ? "bg-[#0d7377]/10 font-semibold text-[#0d7377]"
-                                          : "text-slate-600 hover:bg-slate-50 hover:text-[#0d7377]"
-                                    }`}
+                                    className="mt-2 flex items-center gap-1 px-2 text-sm font-semibold text-[#0d7377] hover:underline"
                                   >
-                                    <span className="flex items-center gap-2">
-                                      {item.title}
-                                      {/* {item.badge && (
-                                    <span
-                                      className={`text-[10px] px-1.5 py-0.5 rounded-full ${
-                                        item.badge === "Live"
-                                          ? "bg-green-100 text-green-700"
-                                          : "bg-blue-100 text-blue-700"
-                                      }`}
-                                    >
-                                      {item.badge}
-                                    </span>
-                                  )} */}
-                                    </span>
+                                    {section.footerLink.label} &rarr;
                                   </Link>
-                                ))}
+                                )}
                               </div>
-                            ))}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    );
+                  })}
 
-                            {/* Footer Link */}
-                            {section.footerLink && (
-                              <Link
-                                href={section.footerLink.href}
-                                onClick={handleLinkClick}
-                                className="mt-2 flex items-center gap-1 px-2 text-sm font-semibold text-[#0d7377] hover:underline"
-                              >
-                                {section.footerLink.label} &rarr;
-                              </Link>
-                            )}
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                );
-              })}
-
-              {/* <div className="mt-4 px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-400">General</div> */}
-              <HydrationSafeButton
-                onClick={() => handleNav("blog")}
-                className={`flex items-center gap-3 rounded-xl px-4 py-3 text-left transition-all ${
-                  isActive("blog")
-                    ? "bg-[#0d7377]/10 text-[#0d7377]"
-                    : "text-muted-foreground hover:bg-muted"
-                }`}
-              >
-                <FileText className="h-5 w-5 text-cyan-500 dark:text-cyan-400" />
-                <span className="font-bold">Blog</span>
-              </HydrationSafeButton>
-              <HydrationSafeButton
-                onClick={() => handleNav("about")}
-                className={`flex items-center gap-3 rounded-xl px-4 py-3 text-left transition-all ${
-                  isActive("about")
-                    ? "bg-[#0d7377]/10 text-[#0d7377]"
-                    : "text-muted-foreground hover:bg-muted"
-                }`}
-              >
-                <Info className="h-5 w-5 text-indigo-500 dark:text-indigo-400" />
-                <span className="font-bold">About</span>
-              </HydrationSafeButton>
-              <HydrationSafeButton
-                onClick={() => handleNav("pricing")}
-                className={`flex items-center gap-3 rounded-xl px-4 py-3 text-left transition-all ${
-                  isActive("pricing")
-                    ? "bg-[#0d7377]/10 text-[#0d7377]"
-                    : "text-muted-foreground hover:bg-muted"
-                }`}
-              >
-                <CreditCard className="h-5 w-5 text-amber-500 dark:text-amber-400" />
-                <span className="font-bold">Pricing</span>
-              </HydrationSafeButton>
-              {pathname === "/" && (
-                <HydrationSafeButton
-                  onClick={() => handleNav("faq")}
-                  className={`flex items-center gap-3 rounded-xl px-4 py-3 text-left transition-all ${
-                    isActive("faq")
-                      ? "bg-[#0d7377]/10 text-[#0d7377]"
-                      : "text-muted-foreground hover:bg-muted"
-                  }`}
-                >
-                  <HelpCircleIcon className="text- h-5 w-5 text-cyan-500 dark:text-cyan-400" />
-                  <span className="font-bold">FAQ</span>
-                </HydrationSafeButton>
+                  <HydrationSafeButton
+                    onClick={() => handleNav("blog")}
+                    className={`flex items-center gap-3 rounded-xl px-4 py-3 text-left transition-all ${
+                      isActive("blog")
+                        ? "bg-[#0d7377]/10 text-[#0d7377]"
+                        : "text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    <FileText className="h-5 w-5 text-cyan-500 dark:text-cyan-400" />
+                    <span className="font-bold">Blog</span>
+                  </HydrationSafeButton>
+                  <HydrationSafeButton
+                    onClick={() => handleNav("about")}
+                    className={`flex items-center gap-3 rounded-xl px-4 py-3 text-left transition-all ${
+                      isActive("about")
+                        ? "bg-[#0d7377]/10 text-[#0d7377]"
+                        : "text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    <Info className="h-5 w-5 text-indigo-500 dark:text-indigo-400" />
+                    <span className="font-bold">About</span>
+                  </HydrationSafeButton>
+                  <HydrationSafeButton
+                    onClick={() => handleNav("pricing")}
+                    className={`flex items-center gap-3 rounded-xl px-4 py-3 text-left transition-all ${
+                      isActive("pricing")
+                        ? "bg-[#0d7377]/10 text-[#0d7377]"
+                        : "text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    <CreditCard className="h-5 w-5 text-amber-500 dark:text-amber-400" />
+                    <span className="font-bold">Pricing</span>
+                  </HydrationSafeButton>
+                  {pathname === "/" && (
+                    <HydrationSafeButton
+                      onClick={() => handleNav("faq")}
+                      className={`flex items-center gap-3 rounded-xl px-4 py-3 text-left transition-all ${
+                        isActive("faq")
+                          ? "bg-[#0d7377]/10 text-[#0d7377]"
+                          : "text-muted-foreground hover:bg-muted"
+                      }`}
+                    >
+                      <HelpCircleIcon className="text- h-5 w-5 text-cyan-500 dark:text-cyan-400" />
+                      <span className="font-bold">FAQ</span>
+                    </HydrationSafeButton>
+                  )}
+                  <HydrationSafeButton
+                    onClick={() => handleNav("contact")}
+                    className={`flex items-center gap-3 rounded-xl px-4 py-3 text-left transition-all ${
+                      isActive("contact")
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    <Mail className="h-5 w-5 text-[#0d7377]" />
+                    <span className="font-bold">Contact</span>
+                  </HydrationSafeButton>
+                </>
               )}
-              <HydrationSafeButton
-                onClick={() => handleNav("contact")}
-                className={`flex items-center gap-3 rounded-xl px-4 py-3 text-left transition-all ${
-                  isActive("contact")
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-muted"
-                }`}
-              >
-                <Mail className="h-5 w-5 text-[#0d7377]" />
-                <span className="font-bold">Contact</span>
-              </HydrationSafeButton>
             </nav>
           </div>
 

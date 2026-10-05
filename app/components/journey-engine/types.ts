@@ -17,7 +17,9 @@ export interface RoadmapStepV3 {
     | "tool"
     | "action"
     | "docs"
+    | "guide"
     | "filing";
+  chips?: any[];
   tool_integration?: string | null;
   dependencies: string[];
   visible_when: Record<string, string | number | boolean | string[] | null>;
@@ -180,6 +182,12 @@ export interface TutorialStepV3 {
     type: "img" | "video";
     src?: string;
   };
+  video?: string;
+  screenshot?: string;
+  ss_label?: string;
+  ss_headline?: string;
+  ss_desc?: string;
+  ss_highlight?: string;
   videoMeta?: {
     poster?: string;
   };
@@ -188,15 +196,16 @@ export interface TutorialStepV3 {
     label?: string;
     placeholder?: string;
     isPassword?: boolean;
+    [key: string]: any;
   }>;
   note: string | null;
   // Household/visual step additions:
   vlabel?: string;
   visual?: string;
-  // Compatibility:
-  ss_headline?: string;
-  ss_desc?: string;
+  [key: string]: any;
 }
+
+export type TutorialStepData = TutorialStepV3;
 
 export interface ToolDataV3 {
   type: string;
@@ -304,6 +313,7 @@ export interface RoadmapDataV3 {
   disclaimer?: string;
   // Dynamic Guide and Tutorial Data:
   inline_guide_data?: Record<string, InlineGuideEntryV3>;
+  household_guide_content?: any;
   uscis_tutorial_steps?: TutorialStepV3[];
   household_tutorial_steps?: TutorialStepV3[];
   submission_tutorial_steps?: TutorialStepV3[];

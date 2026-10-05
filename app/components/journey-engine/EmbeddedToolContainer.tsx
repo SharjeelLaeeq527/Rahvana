@@ -1,0 +1,571 @@
+"use client";
+
+import React, { Suspense } from "react";
+import { MessageSquare, Files, PenTool, FileEdit, BookOpen, Wrench } from "lucide-react";
+import { useJourneyEnvironment } from "@/app/context/JourneyEnvironmentContext";
+import { useCandidate } from "@/app/context/CandidateContext";
+import { usePlan } from "@/app/context/PlanContext";
+import { useDocumentVaultStore } from "@/lib/document-vault/store";
+import { getEffectiveDocDef } from "@/app/components/journey-engine/StepView";
+import { DocActionModal } from "./components/DocActionModal";
+import { DocumentUploadModal } from "@/app/components/document-vault/DocumentUploadModal";
+
+// Lazy-load mode-aware tool components
+const SponsorshipCalculatorTool = React.lazy(
+  () => import("@/components/tools/SponsorshipCalculatorTool")
+);
+const PassportPhotoTool = React.lazy(() => import("@/components/tools/PassportPhotoTool"));
+// const PassportOcrTool = React.lazy(() => import("@/components/tools/PassportOcrTool"));
+const DocumentTranslationTool = React.lazy(
+  () => import("@/components/tools/DocumentTranslationTool")
+);
+const PdfToolkitTool = React.lazy(() => import("@/components/tools/PdfToolkitTool"));
+const SnapAndSignTool = React.lazy(() => import("@/components/tools/SnapAndSignTool"));
+const DqStatusCheckTool = React.lazy(() => import("@/components/tools/DqStatusCheckTool"));
+const InterviewPrepTool = React.lazy(() =>
+  import("./components/InterviewPrepTool").then((m) => ({ default: m.InterviewPrepTool }))
+);
+const Input221gTool = React.lazy(() =>
+  import("./components/Input221gTool").then((m) => ({ default: m.Input221gTool }))
+);
+const Respond221gTool = React.lazy(() =>
+  import("./components/Respond221gTool").then((m) => ({ default: m.Respond221gTool }))
+);
+// const MedicalExamTool = React.lazy(() =>
+//   import("./components/MedicalExamTool").then((m) => ({ default: m.MedicalExamTool }))
+// );
+// const PoliceClearanceTool = React.lazy(() =>
+//   import("./components/PoliceClearanceTool").then((m) => ({ default: m.PoliceClearanceTool }))
+// );
+// const MedicalExamGuideTool = React.lazy(() =>
+//   import("./components/MedicalExamGuideTool").then((m) => ({ default: m.MedicalExamGuideTool }))
+// );
+// const InterviewDayTool = React.lazy(() =>
+//   import("./components/InterviewDayTool").then((m) => ({ default: m.InterviewDayTool }))
+// );
+// const PolioCertificateTool = React.lazy(() =>
+//   import("./components/PolioCertificateTool").then((m) => ({ default: m.PolioCertificateTool }))
+// );
+// const DqRecordingTool = React.lazy(() =>
+//   import("./components/DqRecordingTool").then((m) => ({ default: m.DqRecordingTool }))
+// );
+
+import { SafeHtml } from "@/app/components/shared/SafeHTML";
+
+interface EmbeddedToolContainerProps {
+  toolKey: string;
+  onClose?: () => void;
+  data?: unknown;
+  state?: unknown;
+  actions?: unknown;
+  journeyTier?: string;
+}
+
+function ToolSkeleton() {
+  return (
+    <div className="flex w-full animate-pulse flex-col gap-6 p-8">
+      <div className="h-8 w-64 rounded-lg bg-slate-200" />
+      <div className="h-4 w-96 rounded bg-slate-100" />
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div className="h-64 rounded-2xl bg-slate-100" />
+        <div className="h-64 rounded-2xl bg-slate-100" />
+      </div>
+    </div>
+  );
+}
+
+function InlineCivilGuideViewer({ guideKey, data }: { guideKey: string; data: any }) {
+  const guideMap: Record<string, string> = {
+    passport_guide: "doc_passport",
+    cnic_guide: "doc_cnic",
+    birth_certificate_guide: "doc_birth_cert",
+    frc_guide: "doc_frc",
+    marriage_guide: "doc_nikah_nama",
+    pcc_guide: "doc_police_cert",
+  };
+
+  const guideId = guideMap[guideKey] || guideKey;
+  const guideEntry = data?.inline_guide_data?.[guideId];
+
+  if (!guideEntry) {
+    return (
+      <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-xs sm:p-12 dark:border-slate-800 dark:bg-slate-900">
+        <BookOpen className="mx-auto mb-3 h-10 w-10 text-[#0d7377]" />
+        <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+          Official Civil Document Guide
+        </h3>
+        <p className="mx-auto mt-2 max-w-md text-sm text-slate-600 dark:text-slate-400">
+          Detailed issuing authority, validity rules, and submission checklist for this document.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs sm:p-8 dark:border-slate-800 dark:bg-slate-900">
+      <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-sky-500/20 bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700 dark:bg-sky-950/40 dark:text-sky-300">
+        <span className="h-1.5 w-1.5 rounded-full bg-sky-500" />
+        <span>Rahvana Official Guide</span>
+      </div>
+
+      <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100">{guideEntry.title}</h2>
+      {guideEntry.sub && (
+        <p className="mt-1 mb-6 text-sm text-slate-600 dark:text-slate-400">{guideEntry.sub}</p>
+      )}
+
+      <div className="mt-6 flex flex-col gap-4">
+        {guideEntry.sections?.map((section: any, idx: number) => (
+          <div
+            key={idx}
+            className="rounded-2xl border border-slate-100 bg-slate-50/70 p-5 dark:border-slate-800 dark:bg-slate-800/50"
+          >
+            <div className="mb-2 text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+              {section.title}
+            </div>
+            <SafeHtml
+              className="prose prose-sm max-w-none text-slate-700 dark:text-slate-300"
+              html={section.htmlContent || section.body}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function Journey221gEmbeddedTool({
+  state,
+  actions,
+  journeyContext,
+}: {
+  state: any;
+  actions: any;
+  journeyContext: any;
+}) {
+  const hasSavedSelections = Boolean(state?.metadata?.twentyTwoOneGSelections);
+  const [isEditing, setIsEditing] = React.useState(!hasSavedSelections);
+
+  const plan = usePlan();
+  const {
+    openUploadModal,
+    uploadModalOpen,
+    closeUploadModal,
+    selectedDocumentDefId,
+    reloadDocuments,
+  } = useDocumentVaultStore();
+
+  const [activeUploadId, setActiveUploadId] = React.useState<string | null>(null);
+  const [activeUploadType, setActiveUploadType] = React.useState<"doc" | "hh" | "financial" | null>(
+    null
+  );
+  const [upgradeModalFeature, setUpgradeModalFeature] = React.useState<string | null>(null);
+
+  const [docActionModal, setDocActionModal] = React.useState<{
+    isOpen: boolean;
+    doc: any | null;
+    title?: string;
+    subtitle?: string;
+    onReadGuide?: () => void;
+    onUpload?: () => void;
+  }>({
+    isOpen: false,
+    doc: null,
+  });
+
+  return (
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 sm:px-6 lg:px-8">
+      {isEditing || !hasSavedSelections ? (
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+          <div className="mb-4">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+              221(g) Refusal Worksheet
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Select the refusal reasons marked on your 221(g) slip to generate your custom action
+              plan and document checklist.
+            </p>
+          </div>
+          <Input221gTool
+            tool={{ type: "input_221g" }}
+            state={state || {}}
+            actions={{
+              ...actions,
+              updateMetadata: (updates: any) => {
+                actions?.updateMetadata?.(updates);
+                setIsEditing(false);
+              },
+            }}
+          />
+        </div>
+      ) : (
+        <div className="flex flex-col gap-4 pt-3">
+          <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800">
+            <div>
+              <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                Action Plan generated for your logged 221(g) requirements
+              </span>
+            </div>
+            <button
+              onClick={() => setIsEditing(true)}
+              className="text-xs font-bold text-[#0d7377] hover:underline dark:text-teal-400"
+            >
+              Edit 221(g) Selections
+            </button>
+          </div>
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+            <Respond221gTool
+              tool={{ type: "respond_221g" }}
+              state={state || {}}
+              actions={actions || {}}
+              setDocActionModal={setDocActionModal}
+              openUploadModal={openUploadModal}
+              setActiveUploadId={setActiveUploadId}
+              setActiveUploadType={setActiveUploadType}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* DocActionModal integration for checklist item clicks */}
+      {docActionModal.isOpen && (
+        <DocActionModal
+          isOpen={docActionModal.isOpen}
+          onClose={() => setDocActionModal({ ...docActionModal, isOpen: false })}
+          docActionModal={docActionModal}
+          setDocActionModal={setDocActionModal}
+          plan={plan}
+          docActionUpgradeFeature={upgradeModalFeature}
+          setDocActionUpgradeFeature={setUpgradeModalFeature}
+          sId="step_3_12"
+        />
+      )}
+
+      {/* DocumentUploadModal integration */}
+      {uploadModalOpen && selectedDocumentDefId && getEffectiveDocDef(selectedDocumentDefId) && (
+        <DocumentUploadModal
+          open={uploadModalOpen}
+          onClose={closeUploadModal}
+          documentDef={getEffectiveDocDef(selectedDocumentDefId)!}
+          activeJourneyId={state?.backendId || journeyContext?.journeyId || null}
+          onUploadComplete={async () => {
+            await reloadDocuments();
+            if (activeUploadId && actions?.updateDocumentStatus) {
+              await actions.updateDocumentStatus(activeUploadId, "reviewed");
+            }
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
+import { useJourneyPlan } from "@/app/context/useJourneyPlan";
+import { TOOL_FEATURE_MAP } from "@/lib/constants/journey-app-groups";
+import { Lock, ArrowRight } from "lucide-react";
+
+function LockedToolGate({
+  featureKey,
+  targetTier,
+  lockHint,
+  ctaText,
+  toolTitle,
+}: {
+  featureKey: string;
+  targetTier: string | null;
+  lockHint: string;
+  ctaText: string | null;
+  toolTitle?: string;
+}) {
+  const [showUpgrade, setShowUpgrade] = React.useState(false);
+  const tierIconClass = targetTier ? `plan-icon--${targetTier}` : "plan-icon--premium";
+
+  return (
+    <>
+      {showUpgrade && <UpgradeModal feature={featureKey} onClose={() => setShowUpgrade(false)} />}
+      <div className="flex w-full flex-col items-center justify-center rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-xs sm:p-12 dark:border-slate-800 dark:bg-slate-900">
+        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400">
+          <Lock className="h-8 w-8" />
+        </div>
+
+        {targetTier && (
+          <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-amber-500/20 bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
+            <span className={`plan-icon ${tierIconClass} scale-110`} aria-hidden="true" />
+            <span className="uppercase">{targetTier} Plan Required</span>
+          </div>
+        )}
+
+        <h3 className="text-xl font-bold text-slate-900 sm:text-2xl dark:text-slate-100">
+          {toolTitle || "Tool"} is locked on your current plan
+        </h3>
+
+        <p className="mt-2 max-w-md text-sm text-slate-600 dark:text-slate-400">
+          {lockHint ||
+            "Upgrade your journey plan to unlock full access to this tool, official guides, and verified candidate auto-saving."}
+        </p>
+
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+          <button
+            onClick={() => setShowUpgrade(true)}
+            className="inline-flex items-center gap-2 rounded-xl bg-[#0d7377] px-6 py-3 text-sm font-bold text-white shadow-md transition-all hover:bg-[#095457] hover:shadow-lg active:scale-98"
+          >
+            <span>{ctaText || "Upgrade Plan"}</span>
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+export function EmbeddedToolContainer({
+  toolKey,
+  state,
+  actions,
+  journeyTier = "free",
+  data,
+  onClose,
+}: EmbeddedToolContainerProps) {
+  const { journeySlug, candidateId } = useJourneyEnvironment();
+  const { activeCandidate } = useCandidate();
+
+  const resolvedState = state as
+    | {
+        backendId?: string;
+        candidateId?: string;
+        subscriptionTier?: string;
+        subscription_tier?: string;
+        metadata?: any;
+      }
+    | undefined;
+
+  const effectiveJourneyTier =
+    resolvedState?.subscriptionTier ?? resolvedState?.subscription_tier ?? journeyTier ?? "free";
+
+  const plan = useJourneyPlan(resolvedState || { subscriptionTier: effectiveJourneyTier });
+  const featureKey = TOOL_FEATURE_MAP[toolKey];
+  const isToolLocked = featureKey ? plan.isLocked(featureKey) : false;
+
+  const journeyCategory = (data as any)?.journey_type || "IR-5";
+  const resolvedSlug = (data as any)?.journey_type
+    ? `${String((data as any).journey_type).toLowerCase()}-journey`
+    : journeySlug || "ir5-journey";
+
+  const resolvedCandidateId =
+    (state as any)?.candidateId ||
+    resolvedState?.candidateId ||
+    candidateId ||
+    activeCandidate?.id ||
+    "candidate-1";
+
+  const resolvedBackendId = (state as any)?.backendId || resolvedState?.backendId || null;
+
+  const journeyContext = {
+    journeySlug: resolvedSlug,
+    journeyCategory,
+    journeyId: resolvedBackendId || resolvedSlug || "journey",
+    candidateId: resolvedCandidateId,
+    backendId: resolvedBackendId,
+    subscriptionTier: effectiveJourneyTier,
+  };
+
+  const renderToolComponent = () => {
+    if (isToolLocked && featureKey) {
+      const targetTier = plan.entitlement(featureKey)?.upgradeTarget || null;
+      const lockHint = plan.lockHint(featureKey);
+      const ctaText = plan.upgradeCTA(featureKey);
+      const toolTitle = toolKey.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+
+      return (
+        <LockedToolGate
+          featureKey={featureKey}
+          targetTier={targetTier}
+          lockHint={lockHint}
+          ctaText={ctaText}
+          toolTitle={toolTitle}
+        />
+      );
+    }
+
+    switch (toolKey) {
+      case "sponsorship_calculator":
+        return (
+          <SponsorshipCalculatorTool
+            isOpen={true}
+            onClose={onClose}
+            mode="journey"
+            journeyContext={journeyContext}
+            journeyTier={effectiveJourneyTier}
+            initialData={{
+              ...((state as any)?.metadata?.sponsorshipResult?.raw || {}),
+            }}
+          />
+        );
+
+      case "passport_photo":
+        return (
+          <PassportPhotoTool
+            showHeader={false}
+            showRequirements={true}
+            mode="journey"
+            journeyContext={journeyContext}
+            journeyTier={effectiveJourneyTier}
+          />
+        );
+
+      case "doc_translation":
+        return (
+          <DocumentTranslationTool
+            showHeader={false}
+            showRequirements={true}
+            showRequestsLink={false}
+            mode="journey"
+            journeyContext={journeyContext}
+            journeyTier={effectiveJourneyTier}
+          />
+        );
+
+      // case "interview_prep":
+      //   return (
+
+      //   );
+
+      case "action_221g":
+        return (
+          <Journey221gEmbeddedTool
+            state={state}
+            actions={actions}
+            journeyContext={journeyContext}
+          />
+        );
+
+      // case "medical_appointment":
+      //   return (
+
+      //   );
+
+      case "police_verification":
+      case "pcc_guide":
+      case "polio_vaccination_guide":
+      case "passport_guide":
+      case "cnic_guide":
+      case "birth_certificate_guide":
+      case "frc_guide":
+      case "marriage_guide":
+        return <InlineCivilGuideViewer guideKey={toolKey} data={data} />;
+
+      case "expert_consultation":
+        return (
+          <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-xs sm:p-12 dark:border-slate-800 dark:bg-slate-900">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400">
+              <MessageSquare className="h-8 w-8" />
+            </div>
+            <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-amber-500/20 bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
+              <span>Journey Service</span>
+            </div>
+            <h3 className="text-xl font-bold text-slate-900 sm:text-2xl dark:text-slate-100">
+              1-on-1 Expert Consultation
+            </h3>
+            <p className="mx-auto mt-2 max-w-md text-sm text-slate-600 dark:text-slate-400">
+              Schedule a private strategy session with a dedicated Rahvana immigration consultant to
+              review your case documents and interview preparation.
+            </p>
+            <div className="mt-6">
+              <button
+                onClick={() => window.open("/expert-consultation", "_blank")}
+                className="inline-flex items-center gap-2 rounded-xl bg-[#0d7377] px-6 py-3 text-sm font-bold text-white shadow-md transition-all hover:bg-[#095457] hover:shadow-lg active:scale-98"
+              >
+                <span>Book Consultation Session</span>
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        );
+
+      case "pdf_toolkit":
+        return (
+          <div className="mx-auto w-full max-w-7xl px-4 pt-4 sm:px-6 sm:pt-6 lg:px-8">
+            <PdfToolkitTool
+              showHeader={false}
+              mode="journey"
+              journeyContext={journeyContext}
+              journeyTier={effectiveJourneyTier}
+            />
+          </div>
+        );
+
+      case "snap_and_sign":
+        return (
+          <div className="mx-auto w-full max-w-7xl px-4 pt-4 sm:px-6 sm:pt-6 lg:px-8">
+            <SnapAndSignTool
+              showHeader={false}
+              showTips={true}
+              mode="journey"
+              journeyContext={journeyContext}
+              journeyTier={effectiveJourneyTier}
+            />
+          </div>
+        );
+
+      case "dq_status_check":
+        return (
+          <div className="mx-auto w-full max-w-7xl px-4 pt-4 sm:px-6 sm:pt-6 lg:px-8">
+            <DqStatusCheckTool
+              showHeader={false}
+              mode="journey"
+              journeyContext={journeyContext}
+              journeyTier={effectiveJourneyTier}
+            />
+          </div>
+        );
+
+      case "visa_forms":
+        return (
+          <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-xs sm:p-12 dark:border-slate-800 dark:bg-slate-900">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-teal-500/10 text-[#0d7377] dark:bg-teal-950/40 dark:text-teal-400">
+              <FileEdit className="h-8 w-8" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-900 sm:text-2xl dark:text-slate-100">
+              Smart Form Filler
+            </h3>
+            <p className="mx-auto mt-2 max-w-md text-sm text-slate-600 dark:text-slate-400">
+              Auto-fill your official forms and generate ready-to-sign PDF packets mapped to your
+              candidate data.
+            </p>
+            <div className="mt-6">
+              <button
+                onClick={() => window.open("/smart-form-filler", "_blank")}
+                className="inline-flex items-center gap-2 rounded-xl bg-[#0d7377] px-6 py-3 text-sm font-bold text-white shadow-md transition-all hover:bg-[#095457] hover:shadow-lg active:scale-98"
+              >
+                <span>Open Smart Form Filler</span>
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        );
+
+      default:
+        return (
+          <div className="rounded-2xl border border-teal-500/20 bg-teal-50/50 p-8 text-center">
+            <Wrench className="mx-auto mb-3 h-10 w-10 text-[#0d7377]" />
+            <h3 className="text-lg font-bold text-slate-900">Journey Tool</h3>
+            <p className="mt-1 text-sm text-slate-600">
+              This tool is active in your journey environment and saves progress automatically.
+            </p>
+          </div>
+        );
+    }
+  };
+
+  const isDocTranslation = toolKey === "doc_translation" || toolKey === "document_translation";
+
+  return (
+    <div
+      className={`animate-in fade-in w-full pb-10 duration-200 ${
+        isDocTranslation ? "pt-10" : "pt-4 sm:pt-6"
+      }`}
+    >
+      <Suspense fallback={<ToolSkeleton />}>{renderToolComponent()}</Suspense>
+    </div>
+  );
+}

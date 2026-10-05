@@ -51,9 +51,9 @@ import {
   RoadmapDataV3,
   QuestSuiteV3,
   TutorialStepV3,
+  TutorialStepData,
   DocumentGatheringItemV3,
-  // ActionCardV3,
-  // DocumentGatheringItemV3,
+  ActionCardV3,
 } from "./types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { getAllActiveSteps, getStageProgress } from "./journeyHelpers";
@@ -81,6 +81,7 @@ import { useUserProfile } from "@/app/context/UserProfileContext";
 import PassportPhotoTool from "@/components/tools/PassportPhotoTool";
 import DocumentTranslationTool from "@/components/tools/DocumentTranslationTool";
 import { usePortalWallet } from "./hooks/usePortalWallet";
+import { useCandidate } from "@/app/context/CandidateContext";
 import { useFilingQuiz } from "./hooks/useFilingQuiz";
 import { useSponsorship } from "./hooks/useSponsorship";
 import { DocActionModal } from "./components/DocActionModal";
@@ -376,6 +377,7 @@ export const StepView: React.FC<StepViewProps> = ({
     doc: any | null;
     title?: string;
     subtitle?: string;
+    hasGuide?: boolean;
     onReadGuide?: () => void;
     onUpload?: () => void;
   }>({
@@ -497,6 +499,15 @@ export const StepView: React.FC<StepViewProps> = ({
   }, [sId, currentStep, actions, state.metadata]);
 
   // --- 1. Extracted Hooks for State Management ---
+  let candidateCtx;
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    candidateCtx = useCandidate();
+  } catch {
+    candidateCtx = undefined;
+  }
+  const activeCandidateId = candidateCtx?.activeCandidateId || null;
+
   const {
     uscisCredentials,
     ceacCredentials,
@@ -518,7 +529,7 @@ export const StepView: React.FC<StepViewProps> = ({
     isSubmittingCreds,
     showDeleteConfirmation,
     setShowDeleteConfirmation,
-  } = usePortalWallet({ sId, isCompleted, actions });
+  } = usePortalWallet({ sId, isCompleted, actions, candidateId: activeCandidateId });
 
   const {
     showQuiz,
@@ -1715,7 +1726,7 @@ export const StepView: React.FC<StepViewProps> = ({
                       title: item.title,
                       subtitle: item.sub,
                       onReadGuide: () => {
-                        setSelectedGatheringItem(item as unknown as DocumentGatheringItem);
+                        setSelectedGatheringItem(item as unknown as DocumentGatheringItemV3);
                         setIsGatheringGuideOpen(true);
                         if (
                           !gatheringStatus[item.id] ||
@@ -2828,7 +2839,7 @@ export const StepView: React.FC<StepViewProps> = ({
           {/* ACTION CARDS ROW (Step 3 SPECIFIC) */}
           {tool.action_cards && (
             <div className="mb-4 grid grid-cols-1 gap-[12px] sm:grid-cols-2">
-              {tool.action_cards.map((card: ActionCard) => (
+              {tool.action_cards.map((card: ActionCardV3) => (
                 <button
                   key={card.id}
                   onClick={() => {
@@ -5135,11 +5146,11 @@ export const StepView: React.FC<StepViewProps> = ({
                       {/* Content Area — aspectRatio only, no minHeight */}
                       <div className="relative w-full bg-[#f8f9fb]" style={{ aspectRatio: "4/3" }}>
                         {(currentTutStep as TutorialStepV3).media?.src ? (
-                          (currentTutStep as TutorialStepV3).media.type === "img" ? (
+                          (currentTutStep as TutorialStepV3).media?.type === "img" ? (
                             <ZoomableGuideImage
-                              key={(currentTutStep as TutorialStepV3).media.src}
-                              src={(currentTutStep as TutorialStepV3).media.src!}
-                              alt={(currentTutStep as TutorialStepV3).screenTitle}
+                              key={(currentTutStep as TutorialStepV3).media?.src}
+                              src={(currentTutStep as TutorialStepV3).media?.src || ""}
+                              alt={(currentTutStep as TutorialStepV3).screenTitle || "Tutorial image"}
                               fill
                               sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 580px"
                               quality={95}
@@ -5147,10 +5158,10 @@ export const StepView: React.FC<StepViewProps> = ({
                             />
                           ) : (
                             <TutorialVideo
-                              key={(currentTutStep as TutorialStepV3).media.src}
-                              src={(currentTutStep as TutorialStepV3).media.src!}
+                              key={(currentTutStep as TutorialStepV3).media?.src}
+                              src={(currentTutStep as TutorialStepV3).media?.src || ""}
                               poster={(currentTutStep as TutorialStepV3).videoMeta?.poster}
-                              alt={(currentTutStep as TutorialStepV3).screenTitle}
+                              alt={(currentTutStep as TutorialStepV3).screenTitle || "Tutorial video"}
                             />
                           )
                         ) : (

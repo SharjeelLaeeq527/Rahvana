@@ -1,13 +1,5 @@
 export type FieldType =
-  | "text"
-  | "radio"
-  | "checkbox"
-  | "date"
-  | "hidden"
-  | "select"
-  | "combo"
-  | "textarea"
-  | "dropdown";
+  "text" | "radio" | "checkbox" | "date" | "hidden" | "select" | "combo" | "textarea" | "dropdown";
 
 export type Field = {
   key: string;
@@ -35,9 +27,7 @@ export type Field = {
   example?: string;
   originalLabel?: string;
   /** Nested sub-questions (e.g., 4a, 4b, 4c) rendered in same card */
-  subQuestions?: (Omit<Field, "section"> & {
-    condition?: (data: Record<string, string>) => boolean;
-  })[];
+  subQuestions?: Field[];
   pattern?: string;
   inputMode?: "none" | "text" | "decimal" | "numeric" | "tel" | "search" | "email" | "url";
   keyboardType?: "urdu" | "arabic";
@@ -64,4 +54,19 @@ export type FormConfig = {
   getInitialFormData: () => Record<string, string>;
   sectionIntroMessages?: Record<string, { greeting: string; message: string }>;
   overflowFields?: OverflowFieldConfig[];
+  /**
+   * How many questions a Free/Basic user may answer in this form before the
+   * preview locks and redirects to the review page. Falls back to
+   * DEFAULT_FREE_QUESTION_LIMIT (see auto-visaform-filling/useFreePreview.ts)
+   * when omitted. Ignored when `freePreviewUntilKey` is set.
+   */
+  freePreviewLimit?: number;
+  /**
+   * Position-based preview allowance for Free/Basic: the preview ends once
+   * every visible question up to and including the field with this key is
+   * answered (e.g. "middle_name" = last question of the free walkthrough).
+   * Preferred over `freePreviewLimit` — immune to conditional branches and
+   * profile auto-fill. Takes precedence when both are set.
+   */
+  freePreviewUntilKey?: string;
 };

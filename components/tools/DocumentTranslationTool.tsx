@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { Upload, AlertCircle, CheckCircle, X, FileText, Lock } from "lucide-react";
 import SuccessState from "@/app/components/document-translation/SuccessState";
 import { AuthRequiredModal } from "@/app/components/shared/AuthRequiredModal";
 import { useAuth } from "@/app/context/AuthContext";
 import { useCandidate } from "@/app/context/CandidateContext";
 import { useLanguage } from "@/app/context/LanguageContext";
-import { usePlan } from "@/app/context/PlanContext";
+import { usePlan, normalizePlanTier } from "@/app/context/PlanContext";
+import type { PlanTier } from "@/lib/entitlements/config";
 import { useFeatureAccess } from "@/lib/usage/useFeatureAccess";
 import { isUnlimited } from "@/lib/entitlements/config";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
@@ -26,6 +27,7 @@ interface DocumentTranslationToolProps extends ToolModeProps {
   showRequestsLink?: boolean;
   className?: string;
   onSuccess?: (data: any) => void;
+  journeyTier?: string | null;
 }
 
 export default function DocumentTranslationTool({
@@ -36,10 +38,12 @@ export default function DocumentTranslationTool({
   onSuccess,
   mode: propMode,
   journeyContext: propContext,
+  journeyTier: propJourneyTier,
 }: DocumentTranslationToolProps) {
-  const { isJourney } = useResolveToolMode({
+  const { isJourney, journeyContext, journeyTier } = useResolveToolMode({
     mode: propMode,
     journeyContext: propContext,
+    journeyTier: propJourneyTier,
   });
   const [file, setFile] = useState<File | null>(null);
   const [documentType, setDocumentType] = useState<string>("");
@@ -60,6 +64,23 @@ export default function DocumentTranslationTool({
   const { checkAccess, consumeAccess } = useFeatureAccess();
   const { user } = useAuth();
 
+  // Determine effective plan tier: in journey mode, evaluate against the specific journey's tier, otherwise account tier
+  const rawJourneyTier = propJourneyTier ?? journeyTier ?? journeyContext?.subscriptionTier;
+  const effectiveTier: PlanTier = React.useMemo(() => {
+    if (isJourney) {
+      if (rawJourneyTier) {
+        return normalizePlanTier(rawJourneyTier);
+      }
+      if (
+        journeyContext?.journeyCategory &&
+        plan.journeyTiers[journeyContext.journeyCategory]
+      ) {
+        return plan.journeyTiers[journeyContext.journeyCategory];
+      }
+    }
+    return plan.tier;
+  }, [isJourney, rawJourneyTier, journeyContext, plan.journeyTiers, plan.tier]);
+
   // Credit balance (mirrors Medical / PCC): plan.canUse() reflects pool
   // existence, not remaining balance — displays read the server usage counter.
   const [remainingCredits, setRemainingCredits] = useState<number | null>(null);
@@ -71,7 +92,7 @@ export default function DocumentTranslationTool({
       setCreditsLoading(false);
       return;
     }
-    if (isUnlimited("document_translation", plan.tier)) {
+    if (isUnlimited("document_translation", effectiveTier)) {
       setCreditsLoading(false);
       return;
     }
@@ -87,7 +108,7 @@ export default function DocumentTranslationTool({
     return () => {
       cancelled = true;
     };
-  }, [isAuthenticated, user?.id, plan.tier, checkAccess]);
+  }, [isAuthenticated, user?.id, effectiveTier, checkAccess]);
   // const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   // const isLocked = !plan.isLoading && !plan.canUse("document_translation");
 
@@ -780,7 +801,7 @@ export default function DocumentTranslationTool({
             userNotes={userNotes}
             error={checkoutError}
             loading={checkoutLoading}
-            isUnlimitedAccess={isUnlimited("document_translation", plan.tier)}
+            isUnlimitedAccess={isUnlimited("document_translation", effectiveTier)}
             hasCredit={remainingCredits !== null && remainingCredits > 0}
             remainingCredits={remainingCredits}
             creditsLoading={creditsLoading}

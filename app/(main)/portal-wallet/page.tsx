@@ -10,6 +10,38 @@ import CredentialFormModal from "./components/CredentialFormModal";
 import ViewCredentialModal from "./components/ViewCredentialModal";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { useToast } from "@/app/components/shared/ToastProvider";
+import { useCandidate } from "@/app/context/CandidateContext";
+
+/**
+ * Parses "Candidate 1 (Mother)" -> { name: "Candidate 1", role: "Mother" }
+ */
+const parseCandidateLabel = (label?: string, relation?: string) => {
+  if (!label) return { name: relation || "Candidate", role: relation || "" };
+  const match = label.match(/^(.+?)\s*\(([^)]+)\)\s*$/);
+  if (match) return { name: match[1].trim(), role: match[2].trim() };
+  return { name: label.trim(), role: relation || "" };
+};
+
+/**
+ * Always returns the base label "Candidate 1", "Candidate 2", etc.
+ * If they have a real personal name, that goes in the subtitle instead.
+ */
+const formatCandidateDisplayName = (c?: { fullName?: string; label?: string; relation?: string }) => {
+  if (!c) return "Candidate";
+  return parseCandidateLabel(c.label, c.relation).name;
+};
+
+/**
+ * Returns the subtitle: the user's real name if entered, otherwise the relation role.
+ */
+const formatCandidateSubtitle = (c?: { fullName?: string; label?: string; relation?: string }) => {
+  if (!c) return "";
+  const { role } = parseCandidateLabel(c.label, c.relation);
+  const full = c.fullName?.trim();
+  // Use fullName only if it's a real personal name (not the auto-assigned relation word)
+  if (full && full !== c.relation && full !== role) return full;
+  return role;
+};
 
 type PortalType = "USCIS" | "NVC" | "COURIER";
 
@@ -75,6 +107,16 @@ const portals: {
 ];
 
 const PortalWallet: React.FC = () => {
+  let candidateCtx;
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    candidateCtx = useCandidate();
+  } catch {
+    candidateCtx = undefined;
+  }
+  const { candidates = [], activeCandidate } = candidateCtx || {};
+  const activeCandidateId = activeCandidate?.id || null;
+
   const [loading, setLoading] = useState(true);
   const [credentials, setCredentials] = useState<Credential[]>([]);
   const [formModal, setFormModal] = useState<{
@@ -95,16 +137,17 @@ const PortalWallet: React.FC = () => {
 
   const fetchCredentials = useCallback(async () => {
     try {
-      const res = await fetch(API_BASE);
+      const qs = activeCandidateId ? `?candidateId=${encodeURIComponent(activeCandidateId)}` : "";
+      const res = await fetch(`${API_BASE}${qs}`);
       const data = await res.json();
       if (data.credentials) setCredentials(data.credentials);
-      console.log("Fetched credentials:", data.credentials);
+      else setCredentials([]);
     } catch (err) {
       console.error("Failed to fetch credentials:", err);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [activeCandidateId]);
 
   useEffect(() => {
     fetchCredentials();
@@ -121,7 +164,7 @@ const PortalWallet: React.FC = () => {
       const res = await fetch(API_BASE, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, candidateId: activeCandidateId }),
       });
       if (!res.ok) throw new Error("Failed to save");
       showToast("Credentials saved successfully!", "success");
@@ -135,16 +178,13 @@ const PortalWallet: React.FC = () => {
     }
   };
 
-  const handleDelete = async () => {
-    setShowConfirmation(true);
-  };
-
   const confirmDelete = async (portalType: PortalType) => {
     setIsSubmitting(true);
     setProcessingPortal(portalType);
 
     try {
-      const res = await fetch(`${API_BASE}/${portalType}/delete`, {
+      const qs = activeCandidateId ? `?candidateId=${encodeURIComponent(activeCandidateId)}` : "";
+      const res = await fetch(`${API_BASE}/${portalType}/delete${qs}`, {
         method: "DELETE",
       });
 
@@ -173,6 +213,7 @@ const PortalWallet: React.FC = () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         credentialId,
+        candidateId: activeCandidateId,
         portalType: cred?.portal_type,
         type: "password",
       }),
@@ -197,6 +238,7 @@ const PortalWallet: React.FC = () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         credentialId,
+        candidateId: activeCandidateId,
         portalType: cred?.portal_type,
         type: "nvc_case_number",
       }),
@@ -221,6 +263,7 @@ const PortalWallet: React.FC = () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         credentialId,
+        candidateId: activeCandidateId,
         portalType: cred?.portal_type,
         type: "nvc_invoice_id",
       }),
@@ -245,6 +288,7 @@ const PortalWallet: React.FC = () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         credentialId,
+        candidateId: activeCandidateId,
         portalType: cred?.portal_type,
         type: "answer",
         questionId,
@@ -272,6 +316,17 @@ const PortalWallet: React.FC = () => {
     return data.value || "";
   };
 
+  // Curated candidate color palettes (Clean & matte, no glow)
+  const CANDIDATE_COLORS = [
+    { bg: "#f0fdfa", avatarBg: "#e6f7f4", text: "#0d7377", ring: "#b8e6e2" },
+    { bg: "#f5f7ff", avatarBg: "#eef2ff", text: "#4338ca", ring: "#c7d2fe" },
+    { bg: "#fffdf5", avatarBg: "#fef3c7", text: "#b45309", ring: "#fde68a" },
+    { bg: "#fff5f7", avatarBg: "#fce7f3", text: "#be185d", ring: "#fbcfe8" },
+    { bg: "#f0fdf4", avatarBg: "#dcfce7", text: "#15803d", ring: "#bbf7d0" },
+    { bg: "#fff7ed", avatarBg: "#ffedd5", text: "#c2410c", ring: "#fed7aa" },
+  ];
+  const getCandidateColor = (idx: number) => CANDIDATE_COLORS[idx % CANDIDATE_COLORS.length];
+
   const activeCredential = getCredential(viewModal.portalType);
   const formCredential = getCredential(formModal.portalType);
 
@@ -288,14 +343,60 @@ const PortalWallet: React.FC = () => {
     <div className="min-h-screen bg-[#f8fafa]">
       <div className="site-main-px site-main-py mt-14 w-full">
         {/* Header */}
-        <div className="mb-10 text-center">
-          <h1 className="mb-2 text-[28px] font-bold text-[#0a1128]">
-            Portal Wallet - Your Secure Credential Vault
+        <div className="mb-10 flex flex-col items-center text-center">
+          <div className="inline-flex items-center gap-2 rounded-full border border-[#0c1b33]/10 bg-white px-3.5 py-1 text-[11px] font-semibold tracking-wider text-[#0c1b33] uppercase shadow-xs">
+            <Shield size={12} className="text-[#0d7377]" />
+            Encrypted Credential Vault
+          </div>
+
+          <h1 className="mt-3 text-[30px] font-extrabold tracking-tight text-[#0c1b33] sm:text-[34px]">
+            Portal Wallet
           </h1>
-          <p className="mx-auto max-w-lg text-[15px] text-[#67737e]">
-            Store, manage, and quickly access your immigration portal logins, encrypted and
-            protected.
+          <p className="mt-1.5 max-w-md text-[14px] leading-relaxed text-[#64748b]">
+            Securely manage credentials and portal case access.
           </p>
+
+          {/* Candidate Plate (Multi-candidate only - Static badge for privacy) */}
+          {activeCandidate && candidates.length > 1 && (() => {
+            const activeIdx = candidates.findIndex((c) => c.id === activeCandidate.id);
+            const activeColor = getCandidateColor(activeIdx >= 0 ? activeIdx : 0);
+            const activeDisplay = formatCandidateDisplayName(activeCandidate);
+            const activeRole = formatCandidateSubtitle(activeCandidate);
+            const showActiveRole = !!activeRole;
+
+            const SilhouetteSVG = ({ color }: { color: typeof activeColor }) => (
+              <svg viewBox="0 0 36 36" width="34" height="34" fill="none">
+                <circle cx="18" cy="12.5" r="6" fill={color.text} opacity="0.9" />
+                <path d="M6 32c0-6.63 5.37-12 12-12s12 5.37 12 12" fill={color.text} opacity="0.9" />
+              </svg>
+            );
+
+            return (
+              <div
+                className="mt-5 flex w-[260px] items-center gap-3.5 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left shadow-xs"
+              >
+                {/* Silhouette Avatar */}
+                <span
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl overflow-hidden"
+                  style={{ background: activeColor.avatarBg }}
+                >
+                  <SilhouetteSVG color={activeColor} />
+                </span>
+
+                {/* Name + Role */}
+                <div className="flex flex-1 flex-col items-start min-w-0 pr-1 text-left">
+                  <span className="text-[13.5px] font-bold leading-tight tracking-tight text-[#0a1128] truncate w-full">
+                    {activeDisplay}
+                  </span>
+                  {showActiveRole && (
+                    <span className="text-[11.5px] font-semibold leading-tight mt-0.5" style={{ color: activeColor.text }}>
+                      {activeRole}
+                    </span>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
         </div>
 
         {/* Portal Cards */}
@@ -390,7 +491,6 @@ const PortalWallet: React.FC = () => {
         onRevealInvoiceId={handleRevealNVCInvoiceID}
         onEdit={() => {
           setViewModal({ open: false, portalType: viewModal.portalType });
-
           setFormModal({
             open: true,
             portalType: viewModal.portalType,
