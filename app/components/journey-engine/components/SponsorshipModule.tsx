@@ -1,7 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Calculator, Scale, ArrowRight } from "lucide-react";
+import { ToolPageOverlay } from "@/app/components/shared/ToolPageOverlay";
 
 interface SponsorshipModuleProps {
   sponsorshipResult: any;
@@ -16,6 +17,16 @@ export const SponsorshipModule: React.FC<SponsorshipModuleProps> = ({
   tool,
   guard,
 }) => {
+  const [toolHref, setToolHref] = useState<string | null>(null);
+
+  const openFormHref = (url: string) => {
+    if (!url) return;
+    if (url.startsWith("http://") || url.startsWith("https://")) {
+      window.open(url, "_blank", "noopener,noreferrer");
+    } else {
+      setToolHref(url);
+    }
+  };
   return (
     <div className="w-full">
       {/* Launch Module */}
@@ -133,7 +144,7 @@ export const SponsorshipModule: React.FC<SponsorshipModuleProps> = ({
                     key={i}
                     onClick={() => {
                       if (guard && !guard()) return;
-                      window.open(f.url, "_blank", "noopener,noreferrer");
+                      if (f.url) openFormHref(f.url);
                     }}
                     className="group flex items-center justify-between p-4 bg-white border border-[#d0e4f7] rounded-xl hover:border-[#3b7dd8] transition-all cursor-pointer shadow-sm"
                   >
@@ -152,7 +163,7 @@ export const SponsorshipModule: React.FC<SponsorshipModuleProps> = ({
                         onClick={(e) => {
                           e.stopPropagation();
                           if (guard && !guard()) return;
-                          window.open(`/visa-forms/${visaId}/wizard`, "_blank");
+                          openFormHref(`/visa-forms/${visaId}/wizard`);
                         }}
                         className="inline-flex items-center justify-center gap-[6px] px-3.5 py-2 bg-primary text-white border-none rounded-[10px] text-xs font-bold cursor-pointer transition-all hover:bg-primary/90 hover:-translate-y-0.5 active:translate-y-0 shadow-[0_4px_12px_rgba(59,125,216,0.25)]"
                       >
@@ -174,6 +185,10 @@ export const SponsorshipModule: React.FC<SponsorshipModuleProps> = ({
           </div>
         )}
       </div>
+      <ToolPageOverlay
+        toolHref={toolHref}
+        onClose={() => setToolHref(null)}
+      />
     </div>
   );
 };

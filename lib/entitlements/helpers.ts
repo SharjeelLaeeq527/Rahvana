@@ -2,9 +2,12 @@ import {
   PlanTier,
   FeatureEntitlement,
   getEntitlement,
+  isAccessible,
   TIER_NAMES,
   TIER_PRICES,
 } from "@/lib/entitlements/config";
+
+export { isAccessible };
 
 /**
  * Resolves the effective entitlement for a feature, taking purchased add-ons

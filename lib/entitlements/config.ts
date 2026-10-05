@@ -335,12 +335,11 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
   },
 
   /**
-   * Interview Prep tool. Paid: free & basic must buy the $200 Interview Prep
-   * add-on (or upgrade to Premium); Premium & Executive include it.
+   * Interview Prep tool. Included in all three paid plans (Basic, Premium, Executive).
    */
   basic_interview_prep: {
-    free: lockedBuy(ADDON.interviewPrep, "premium"),
-    basic: lockedBuy(ADDON.interviewPrep, "premium"),
+    free: lockedUpgrade("basic"),
+    basic: full(),
     premium: full(),
     executive: full(),
   },
@@ -364,20 +363,19 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
 
   /**
    * Case Strength Analyzer tool.
-   * Executive-only — no longer sold as a standalone add-on and not included in
-   * Premium. Free / Basic / Premium must upgrade to Executive to unlock.
+   * Included in Premium and Executive plans. Free / Basic can purchase add-on or upgrade.
    */
   case_strength: {
-    free: lockedUpgrade("executive"),
-    basic: lockedUpgrade("executive"),
-    premium: lockedUpgrade("executive"),
+    free: lockedBuy(ADDON.caseStrength, "premium"),
+    basic: lockedBuy(ADDON.caseStrength, "premium"),
+    premium: full(),
     executive: full(),
   },
 
-  /** Interview Prep — Rapid Fire Mode. */
+  /** Interview Prep — Rapid Fire Mode: Premium and Executive only. */
   interview_rapid_fire: {
-    free: full(),
-    basic: limited(5),
+    free: lockedUpgrade("premium"),
+    basic: lockedUpgrade("premium"),
     premium: full(),
     executive: full(),
   },
@@ -516,13 +514,12 @@ export const ENTITLEMENTS: Record<string, TierMap> = {
   },
 
   /**
-   * Interview Prep — Mock Interview.
-   * Executive: full access. Premium & Basic: 5-question demo. Free: 5-question demo.
+   * Interview Prep — Mock Interview: Executive only.
    */
   mock_interview: {
-    free: full(),
-    basic: limited(5),
-    premium: limited(5),
+    free: lockedUpgrade("executive"),
+    basic: lockedUpgrade("executive"),
+    premium: lockedUpgrade("executive"),
     executive: full(),
   },
 

@@ -4,6 +4,7 @@
 
 import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { GuidePageOverlay } from "@/app/components/shared/GuidePageOverlay";
+import { ToolPageOverlay } from "@/app/components/shared/ToolPageOverlay";
 import { E, msg } from "@/lib/errors";
 import {
   ArrowLeft,
@@ -361,6 +362,17 @@ export const StepView: React.FC<StepViewProps> = ({
   onSelectStep,
 }) => {
   const [guideOverlayUrl, setGuideOverlayUrl] = useState<string | null>(null);
+  const [toolOverlayHref, setToolOverlayHref] = useState<string | null>(null);
+
+  /** Opens internal tool hrefs inline; falls back to new tab for external URLs. */
+  const openToolHref = (href: string) => {
+    if (!href) return;
+    if (href.startsWith("http://") || href.startsWith("https://")) {
+      window.open(href, "_blank", "noopener,noreferrer");
+    } else {
+      setToolOverlayHref(href);
+    }
+  };
   // Top-level step/chapter detection logic for use throughout the file
   const chapters = data.chapters || (data as any).stages;
   const currentChapter = chapters?.[state.currentStage];
@@ -2167,7 +2179,7 @@ export const StepView: React.FC<StepViewProps> = ({
                         onClick={() => {
                           if (!stepEntitlement.guard()) return;
                           if (tool.launch_module.href) {
-                            window.open(tool.launch_module.href, "_blank", "noopener,noreferrer");
+                            openToolHref(tool.launch_module.href);
                             setIsLaunched(true);
                           }
                         }}
@@ -2862,7 +2874,7 @@ export const StepView: React.FC<StepViewProps> = ({
                       setIsTutorialOpen(true);
                     } else if (card.href) {
                       if (!stepEntitlement.guard()) return;
-                      window.open(card.href, "_blank", "noopener,noreferrer");
+                      openToolHref(card.href);
                     }
                   }}
                   className="group hover:border-primary flex cursor-pointer flex-col rounded-[16px] border-[1.5px] border-[#d0e4f7] bg-white p-[20px] text-left transition-all select-none hover:-translate-y-px hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)]"
@@ -5480,6 +5492,12 @@ export const StepView: React.FC<StepViewProps> = ({
       <GuidePageOverlay
         guideUrl={guideOverlayUrl}
         onClose={() => setGuideOverlayUrl(null)}
+        plan={plan}
+      />
+      <ToolPageOverlay
+        toolHref={toolOverlayHref}
+        onClose={() => setToolOverlayHref(null)}
+        plan={plan}
       />
     </div>
   );

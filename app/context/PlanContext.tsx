@@ -21,7 +21,7 @@ import {
 } from "@/lib/entitlements/helpers";
 import { getBaseVisaCategory, UNKNOWN_VISA_CATEGORY } from "@/lib/candidate/candidateSyncService";
 
-interface PlanContextValue {
+export interface PlanContextValue {
   /** The real tier from DB for the active journey/category (unaffected by dev override). */
   realTier: PlanTier;
   /** Effective tier for the active journey — devOverride when set, otherwise realTier. */
@@ -54,7 +54,7 @@ interface PlanContextValue {
   upgradeCTA: (feature: string) => string | null;
 }
 
-const PlanContext = createContext<PlanContextValue | null>(null);
+export const PlanContext = createContext<PlanContextValue | null>(null);
 
 /** Kept as a re-export for existing importers; the implementation lives in lib/entitlements/config. */
 export { normalizePlanTier };

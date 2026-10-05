@@ -173,21 +173,8 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
       }
     } catch {}
 
-    // Default fallback candidate
-    const visa = profile?.visaType || profile?.visaCategory || "IR-1";
-    // ── Safety net: restore from localStorage if DB is empty ─────────────────
-    // Covers three failure modes: aborted save on navigation, token-refresh race
-    // where user?.id was null when addCandidate ran, and transient fetch errors.
-    if (user?.id && !isProfileLoading) {
-      const stored = readCandidatesFromStorage(user.id);
-      if (stored && stored.length > 0) {
-        candidatesRef.current = stored;
-        return stored;
-      }
-    }
-
     // Default fallback — single candidate derived from the journey type.
-    const visa = profile?.visaType || profile?.visaCategory || "IR-5";
+    const visa = profile?.visaType || profile?.visaCategory || "IR-1";
     const defaults = getDefaultCandidatesForVisa(visa, "free", false);
     candidatesRef.current = defaults;
     return defaults;

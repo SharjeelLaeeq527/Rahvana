@@ -1882,6 +1882,7 @@ export function DashboardView({
       <GuidePageOverlay
         guideUrl={guideOverlayUrl}
         onClose={() => setGuideOverlayUrl(null)}
+        plan={plan}
       />
     </div>
   );

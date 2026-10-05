@@ -83,10 +83,12 @@ import ScenarioSelectionModal from "./components/ScenarioSelectionModal";
 import VisaCategoryTooltip from "./components/VisaCategoryToolTip";
 import RoadmapLayoutSpouse from "@/app/components/journey-spouse/RoadmapLayoutSpouse";
 import RoadmapLayoutEngine from "@/app/components/journey-engine/RoadmapLayoutEngine";
+import { useCandidate } from "@/app/context/CandidateContext";
 
 export default function IR1JourneyPage() {
   const { user } = useAuth();
   const userId = user?.id ?? null;
+  const { activeCandidate } = useCandidate();
   const { t, language } = useLanguage();
   const params = useParams();
   const visaJourneyParam = (params?.["visa-journey"] as string) || "ir-1";
