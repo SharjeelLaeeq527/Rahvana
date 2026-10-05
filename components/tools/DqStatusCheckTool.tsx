@@ -12,7 +12,6 @@ import {
   Info,
   Loader2,
   Landmark,
-  Lock,
 } from "lucide-react";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { usePlan, normalizePlanTier } from "@/app/context/PlanContext";
