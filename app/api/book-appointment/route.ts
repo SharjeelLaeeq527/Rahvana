@@ -38,7 +38,9 @@ export async function POST(req: NextRequest) {
           },
         }
       );
-      const { data: { user } } = await authClient.auth.getUser();
+      const {
+        data: { user },
+      } = await authClient.auth.getUser();
       currentUserId = user?.id ?? null;
     } catch {
       // Auth is optional for appointment booking
@@ -52,6 +54,43 @@ export async function POST(req: NextRequest) {
       hasApplicants: !!formData.applicants,
       applicantsLength: formData.applicants?.length,
     });
+
+    // Validate preferred appointment date
+    if (formData.preferredAppointmentDate) {
+      const selectedDateString = String(formData.preferredAppointmentDate);
+
+      // Expected format: YYYY-MM-DD
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(selectedDateString)) {
+        return Response.json(
+          { error: "Please provide a valid preferred appointment date." },
+          { status: 400 }
+        );
+      }
+
+      // Get today's date in Pakistan (YYYY-MM-DD)
+      const pakistanToday = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Karachi",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }).format(new Date());
+
+      // Date must be tomorrow or later
+      const today = new Date(`${pakistanToday}T00:00:00`);
+      const selectedDate = new Date(`${selectedDateString}T00:00:00`);
+
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      if (selectedDate < tomorrow) {
+        return Response.json(
+          {
+            error: "Preferred appointment date must be tomorrow or a future date.",
+          },
+          { status: 400 }
+        );
+      }
+    }
 
     // Extract the full name from given name and surname
     const fullName = `${formData.givenName} ${formData.surname}`;
@@ -134,7 +173,9 @@ export async function POST(req: NextRequest) {
       original_passport: formData.originalPassport || null,
       status: "pending",
       user_id: currentUserId,
-      admin_notes: formData.candidate_id ? `[Candidate: ${formData.candidate_id}] ${formData.candidate_name || ''}`.trim() : "",
+      admin_notes: formData.candidate_id
+        ? `[Candidate: ${formData.candidate_id}] ${formData.candidate_name || ""}`.trim()
+        : "",
     };
 
     // Only add case_number if it exists

@@ -104,6 +104,22 @@ interface LocationStepProps {
   onNext: () => void;
 }
 
+const getPakistanTomorrow = () => {
+  const now = new Date();
+
+  const pakistanToday = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Karachi",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(now);
+
+  const tomorrow = new Date(`${pakistanToday}T00:00:00`);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  return tomorrow.toISOString().split("T")[0];
+};
+
 const LocationStep = ({
   formData,
   error,
@@ -1179,6 +1195,7 @@ const ScheduleStep = ({
               id="preferredAppointmentDate"
               name="preferredAppointmentDate"
               type="date"
+              min={getPakistanTomorrow()}
               value={formData.preferredAppointmentDate}
               onChange={onChange}
             />
@@ -2600,6 +2617,7 @@ export default function MedicalAppointmentTool({
     saveProgressToProfile();
     setLoading(true);
     setError(null);
+
     try {
       // First, submit appointment data to API to get the appointment ID
       const appointmentResponse = await fetch("/api/book-appointment", {
