@@ -9,7 +9,6 @@ import {
   BellOff,
   ChevronDown,
   User as UserIcon,
-  UserPlus as UserPlusIcon,
   LogOut,
   Zap,
   Briefcase,
@@ -58,15 +57,8 @@ import { NAV_DATA } from "./navigationData";
 import { ConfirmationModal } from "../shared/ConfirmationModal";
 import { requestNavigation } from "@/lib/guides/navigationGuardStore";
 import { ir1journeyHref, ir5journeyHref } from "@/lib/constants/routes";
-import { CandidateSwitcherTray } from "@/app/components/candidate/CandidateSwitcherTray";
-import { AddCandidateModal } from "@/app/components/candidate/AddCandidateModal";
 import { useCandidate } from "@/app/context/CandidateContext";
 import { useJourneyEnvironment } from "@/app/context/JourneyEnvironmentContext";
-import {
-  fetchUserJourneysCached,
-  getCachedUserJourneys,
-  dedupeJourneysByType,
-} from "@/lib/document-vault/journey-mapping";
 
 interface HeaderProps {
   activeSection?: string;
@@ -427,9 +419,7 @@ export function SiteHeader({
   const profileRef = useRef<HTMLDivElement>(null);
 
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
-  const [addCandidateOpen, setAddCandidateOpen] = useState(false);
-  const [journeyCount, setJourneyCount] = useState(0);
-  const { activeCandidate, isMultiCandidate } = useCandidate();
+  const { activeCandidate } = useCandidate();
   const menuTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [arrowOffset, setArrowOffset] = useState(40);
 
@@ -475,9 +465,6 @@ export function SiteHeader({
       }
       // Mega Menus or Profile Menu
       if (activeMenu) {
-        if (addCandidateOpen) {
-          return;
-        }
         if (activeMenu === "profile") {
           if (profileRef.current && !profileRef.current.contains(target)) {
             setActiveMenu(null);
@@ -493,7 +480,7 @@ export function SiteHeader({
     };
     document.addEventListener("mousedown", handleOutsideClick);
     return () => document.removeEventListener("mousedown", handleOutsideClick);
-  }, [activeMenu, addCandidateOpen]);
+  }, [activeMenu]);
 
   // Open profile menu on global event
   useEffect(() => {
@@ -513,44 +500,6 @@ export function SiteHeader({
   }, [pathname]);
   const { profile, isLoading, user: authUser } = useAuth();
   const resolvedUser = user ?? authUser;
-
-  // ── Candidate switcher visibility (app-wide, category-AGNOSTIC) ────────────
-  // The candidate switcher is a whole-journey feature (one account, multiple beneficiary
-  // journeys), so it lives in the global header. Decision 2: it appears ONLY when the account
-  // genuinely has 2+ candidates/journeys - IR-1 included, no longer isolated. A
-  // single-candidate account shows NO switcher tray (just its normal profile) and reaches
-  // "+ Add Candidate" from the profile-dropdown entry below.
-  // We count REAL signals only (never defaulted candidates): the candidate roster length
-  // (isMultiCandidate) OR the number of distinct journeys actually on the account.
-  // IMPORTANT: key this on the user ID, NOT the user object. AuthContext re-emits a fresh
-  // user object on every auth event, so depending on `resolvedUser` would re-run this effect
-  // constantly - each re-run's cleanup cancels the in-flight fetch before it can set state, so
-  // the switcher would never appear. See the "Auth user-object re-ref wipes state" pitfall.
-  const resolvedUserId = resolvedUser?.id ?? null;
-  useEffect(() => {
-    if (!resolvedUserId) {
-      setJourneyCount(0);
-      return;
-    }
-    let cancelled = false;
-    // Seed synchronously from the shared cache if the vault/roadmap already populated it.
-    const cached = getCachedUserJourneys();
-    if (cached && cached.length > 0) {
-      setJourneyCount(dedupeJourneysByType(cached).length);
-    }
-    fetchUserJourneysCached()
-      .then((journeys) => {
-        if (cancelled) return;
-        setJourneyCount(dedupeJourneysByType(journeys || []).length);
-      })
-      .catch(() => {
-        /* non-fatal - just keep the switcher hidden */
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [resolvedUserId]);
-  const showCandidateSwitcher = isMultiCandidate || journeyCount >= 2;
 
   const fetchNotifications = useCallback(async () => {
     try {
@@ -1650,27 +1599,6 @@ export function SiteHeader({
             <div className="h-10 w-22 animate-pulse rounded-lg bg-[#0d7377]/10" />
           ) : user ? (
             <div className="flex items-center gap-2">
-              {/* Active-candidate badge on the header bar (any category, shown only once the
-                  account has 2+ candidates/journeys) so the user always sees which
-                  beneficiary/journey is active without opening the profile tray. Clicking it
-                  opens the tray to switch. */}
-              {showCandidateSwitcher && activeCandidate && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (menuTimeoutRef.current) clearTimeout(menuTimeoutRef.current);
-                    setActiveMenu(activeMenu === "profile" ? null : "profile");
-                  }}
-                  title="Switch beneficiary profile"
-                  className="hidden max-w-[170px] items-center gap-1.5 rounded-full border border-[#0d7377]/25 bg-[#0d7377]/10 px-2.5 py-1 text-xs font-semibold text-[#0d7377] transition-colors hover:bg-[#0d7377]/20 sm:flex"
-                >
-                  <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
-                  <span className="truncate">
-                    {activeCandidate.fullName || activeCandidate.label}
-                  </span>
-                </button>
-              )}
               <div
                 className="relative"
                 ref={profileRef}
@@ -1750,34 +1678,6 @@ export function SiteHeader({
                         </p>
                       </div>
 
-                      {/* Candidate switcher: app-wide (whole-journey feature). Shown only when the
-                        account has 2+ candidates/journeys (decision 2), category-agnostic. */}
-                      {showCandidateSwitcher ? (
-                        <CandidateSwitcherTray
-                          onCandidateSwitched={() => setActiveMenu(null)}
-                          onAddCandidate={() => {
-                            setActiveMenu(null);
-                            setAddCandidateOpen(true);
-                          }}
-                        />
-                      ) : (
-                        // Single-candidate account: no switcher tray, but "+ Add Candidate" must
-                        // stay reachable so a single-journey user can start a second candidate.
-                        <div className="border-border bg-muted/20 border-b px-3 py-2.5">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setActiveMenu(null);
-                              setAddCandidateOpen(true);
-                            }}
-                            className="text-primary border-primary/30 hover:bg-primary/5 flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed px-3 py-1.5 text-xs font-semibold transition-colors"
-                          >
-                            <UserPlusIcon className="h-3.5 w-3.5" />
-                            <span>+ Add Candidate</span>
-                          </button>
-                        </div>
-                      )}
-
                       {/* Section 1 */}
                       <div className="border-border border-b py-2">
                         <button
@@ -1850,15 +1750,6 @@ export function SiteHeader({
           )}
         </div>
       </div>
-
-      {/* Add Candidate modal - launched from the profile-dropdown entry (portals to <body>) */}
-      {resolvedUser && (
-        <AddCandidateModal
-          isOpen={addCandidateOpen}
-          onClose={() => setAddCandidateOpen(false)}
-          visaCategory={activeCandidate?.visaCategory}
-        />
-      )}
 
       {/* ------------------------------------------------------------------ */}
       {/* Mobile Sidebar Overlay */}
