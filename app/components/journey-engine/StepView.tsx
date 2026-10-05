@@ -152,6 +152,15 @@ import RegisterReceiptStep from "./components/RegisterReceiptStep";
 import TrackCaseStatusStep from "./components/TrackCaseStatusStep";
 import { FinancialChecklistTool } from "./components/FinancialChecklistTool";
 import SponsorshipCalculatorTool from "./components/SponsorshipCalculatorTool";
+import { MedicalBookingModule } from "./components/MedicalBookingModule";
+import { PccFilingModule } from "./components/PccFilingModule";
+import MedicalAppointmentTool from "./components/MedicalAppointmentTool";
+import PccFilingTool from "./components/PccFilingTool";
+import {
+  isJourneyRequestLocked,
+  isPccRequestLocked,
+  type JourneyServiceRecord,
+} from "@/lib/journey/toolModeGuards";
 import { ApUpdateModal } from "./PortalWalletManager";
 import { HouseholdSponsorshipTool } from "./components/HouseholdSponsorshipTool";
 import { DocumentQuestionnaire } from "@/app/components/questionnaire/DocumentQuestionnaire";
@@ -290,6 +299,13 @@ export const StepView: React.FC<StepViewProps> = ({
   const isChapter2 = sId.startsWith("step_2_");
   const isChapter3 = sId.startsWith("step_3_");
   const isIr5Journey = data.journey_type?.toUpperCase() === "IR5";
+  // Journey identity for tool overlays — derived from data.journey_type (e.g. "IR5" →
+  // category "IR-5", slug "ir5-journey") instead of a hardcoded IR-1 value.
+  const journeyTypeToken = (data.journey_type || "IR5").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  const toolJourneyCategory = journeyTypeToken.startsWith("IR")
+    ? `IR-${journeyTypeToken.slice(2)}`
+    : journeyTypeToken;
+  const toolJourneySlug = `${journeyTypeToken.toLowerCase()}-journey`;
   const isUscisAccountStep = sId === "step_1_6" || (isIr5Journey && sId === "step_1_5");
   const inlineGuideData = data.inline_guide_data || {};
   // ── Step-level entitlement gating ──────────────────────────────────────────
@@ -539,6 +555,9 @@ export const StepView: React.FC<StepViewProps> = ({
     sponsorshipResult,
     sponsorshipDraft,
   } = useSponsorship({ metadata: state.metadata });
+
+  const [isMedicalBookingOpen, setIsMedicalBookingOpen] = useState(false);
+  const [isPccFilingOpen, setIsPccFilingOpen] = useState(false);
 
   // --- 2. Remaining Local State ---
   const [isLaunched, setIsLaunched] = useState(false);
@@ -1238,7 +1257,7 @@ export const StepView: React.FC<StepViewProps> = ({
         />
 
         {/* Page Shell */}
-        <div className="flex w-full max-w-[680px] flex-col px-4 sm:px-6 md:px-8 pt-5 pb-10 md:pt-8">
+        <div className="flex w-full max-w-[680px] flex-col px-4 pt-5 pb-10 sm:px-6 md:px-8 md:pt-8">
           {/* Step Header */}
           <StepHeader
             stepNumber={localIdx + 1}
@@ -1354,6 +1373,58 @@ export const StepView: React.FC<StepViewProps> = ({
               guard={stepEntitlement.guard}
             />
           )}
+
+          {/* MEDICAL BOOKING TOOL RENDERING */}
+          {tool.type === "medical_booking" &&
+            (() => {
+              const record = (state.metadata?.medicalBooking as JourneyServiceRecord) ?? null;
+
+              const locked = isJourneyRequestLocked(record);
+
+              return (
+                <MedicalBookingModule
+                  tool={tool}
+                  record={record}
+                  locked={locked}
+                  onOpen={() => {
+                    if (locked) return; // one active booking per journey
+                    if (!stepEntitlement.guard()) return; // journey-tier access gate (no credits)
+                    setIsMedicalBookingOpen(true);
+                  }}
+                />
+              );
+            })()}
+
+          {/* PCC FILING TOOL RENDERING */}
+          {tool.type === "pcc_filing" &&
+            (() => {
+              const record = (state.metadata?.pccFiling as JourneyServiceRecord) ?? null;
+
+              const locked = isPccRequestLocked(record);
+
+              return (
+                <PccFilingModule
+                  tool={tool}
+                  record={record}
+                  locked={locked}
+                  onOpen={() => {
+                    if (locked) return; // one active PCC application per journey
+                    if (!stepEntitlement.guard()) return; // journey-tier access gate (no credits)
+                    setIsPccFilingOpen(true);
+                  }}
+                  onMarkReceived={() => {
+                    if (!record) return;
+                    actions.updateMetadata({
+                      pccFiling: {
+                        ...record,
+                        status: "received",
+                        receivedAt: new Date().toISOString().slice(0, 10),
+                      },
+                    });
+                  }}
+                />
+              );
+            })()}
 
           {/* DQ RECORDING TOOL RENDERING */}
           {tool.type === "dq_recording" && (
@@ -1682,14 +1753,10 @@ export const StepView: React.FC<StepViewProps> = ({
               );
             })()}
 
-{/* DOCUMENT CHECKLIST (Step 3.7 SPECIFIC) */}
-{tool.type === "document_checklist" && (
-  <DocumentChecklistTool
-    journeyId={journeyId}
-    journeyType={data.journey_type}
-  />
-)}
-
+          {/* DOCUMENT CHECKLIST (Step 3.7 SPECIFIC) */}
+          {tool.type === "document_checklist" && (
+            <DocumentChecklistTool journeyId={journeyId} journeyType={data.journey_type} />
+          )}
 
           {/* ATTEND MEDICAL EXAM (Step 3.5 SPECIFIC) */}
           {tool.type === "medical_exam_guide" && (
@@ -1856,6 +1923,8 @@ export const StepView: React.FC<StepViewProps> = ({
           {/* PRIMARY LAUNCH MODULE */}
           {tool.launch_module &&
             tool.type !== "sponsorship_calculator" &&
+            tool.type !== "medical_booking" &&
+            tool.type !== "pcc_filing" &&
             tool.type !== "submission_review" &&
             tool.type !== "interview_prep" &&
             tool.type !== "interview_day" &&
@@ -1945,7 +2014,7 @@ export const StepView: React.FC<StepViewProps> = ({
                         {tool.fee_block.details.map((d: string, i: number) => (
                           <div
                             key={i}
-                            className="flex items-start gap-[8px] text-[12px] font-medium leading-[1.45] text-white/85"
+                            className="flex items-start gap-[8px] text-[12px] leading-[1.45] font-medium text-white/85"
                           >
                             <div className="mt-[5px] h-[4px] w-[4px] shrink-0 rounded-full bg-[rgba(200,170,100,0.7)]" />
                             <span>{d}</span>
@@ -1983,14 +2052,10 @@ export const StepView: React.FC<StepViewProps> = ({
                           }
                         >
                           <div className="mt-[1px] flex h-[20px] w-[20px] shrink-0 items-center justify-center rounded-full border border-emerald-500/40 bg-emerald-500/20">
-                            <Check
-                              size={12}
-                              strokeWidth={2.5}
-                              className="text-emerald-400"
-                            />
+                            <Check size={12} strokeWidth={2.5} className="text-emerald-400" />
                           </div>
                           <div
-                            className={`text-[12px] font-medium leading-[1.45] sm:text-[13px] ${
+                            className={`text-[12px] leading-[1.45] font-medium sm:text-[13px] ${
                               isChapter1
                                 ? "text-[var(--rv-ch1-text)]"
                                 : isChapter2
@@ -2061,7 +2126,7 @@ export const StepView: React.FC<StepViewProps> = ({
                         {tool.upload_requirements?.map((req: string, i: number) => (
                           <div
                             key={i}
-                            className="flex items-start gap-2.5 text-[12px] font-medium leading-[1.45] text-white/85 sm:gap-[10px] sm:text-[13px]"
+                            className="flex items-start gap-2.5 text-[12px] leading-[1.45] font-medium text-white/85 sm:gap-[10px] sm:text-[13px]"
                           >
                             <div className="mt-[5px] h-[4px] w-[4px] shrink-0 rounded-full bg-[var(--rv-launch-blue)]/60" />
                             <span>{req}</span>
@@ -2800,9 +2865,7 @@ export const StepView: React.FC<StepViewProps> = ({
             </div>
           )}
           {/* Disclaimer */}
-          <p
-            className="mt-2.5 sm:mt-5 pt-1 text-center text-[11.5px] leading-[1.65] text-[#6b8097]"
-          >
+          <p className="mt-2.5 pt-1 text-center text-[11.5px] leading-[1.65] text-[#6b8097] sm:mt-5">
             {tool.disclaimer ||
               "Rahvana provides structured guidance only. This is not legal advice, always verify with official sources."}
           </p>
@@ -3347,9 +3410,15 @@ export const StepView: React.FC<StepViewProps> = ({
                                                   const isInternalTool =
                                                     doc.id === "doc_passport_photos" ||
                                                     doc.id === "doc_translations" ||
-                                                    (doc.id && inlineGuideData[doc.id]?.sourceType === "internal");
+                                                    (doc.id &&
+                                                      inlineGuideData[doc.id]?.sourceType ===
+                                                        "internal");
 
-                                                  if (!isInternalTool && doc.guideUrl && doc.guideUrl !== "/guides") {
+                                                  if (
+                                                    !isInternalTool &&
+                                                    doc.guideUrl &&
+                                                    doc.guideUrl !== "/guides"
+                                                  ) {
                                                     window.open(doc.guideUrl, "_blank");
                                                     if (actions.updateDocumentStatus && doc.id) {
                                                       actions.updateDocumentStatus(
@@ -3769,7 +3838,11 @@ export const StepView: React.FC<StepViewProps> = ({
                                   item.id === "doc_translations" ||
                                   (item.id && inlineGuideData[item.id]?.sourceType === "internal");
 
-                                if (!isInternalTool && item.guideUrl && item.guideUrl !== "/guides") {
+                                if (
+                                  !isInternalTool &&
+                                  item.guideUrl &&
+                                  item.guideUrl !== "/guides"
+                                ) {
                                   window.open(item.guideUrl, "_blank");
                                   if (actions.updateDocumentStatus && item.id)
                                     actions.updateDocumentStatus(item.id, "reviewed");
@@ -3836,7 +3909,7 @@ export const StepView: React.FC<StepViewProps> = ({
               </>
             ) : currentStep.step_type === "filing" ? (
               <div className="animate-in fade-in slide-in-from-bottom-6 flex w-full flex-col items-center duration-1000">
-                <div className="flex w-full max-w-[680px] flex-col px-4 sm:px-6 md:px-8 pt-5 pb-10 md:pt-8">
+                <div className="flex w-full max-w-[680px] flex-col px-4 pt-5 pb-10 sm:px-6 md:px-8 md:pt-8">
                   <h1 className="mt-0 mb-1 text-[clamp(28px,4vw,36px)] leading-[1.15] font-bold tracking-tight text-[#0c1b33]">
                     {currentStep.step_name}
                   </h1>
@@ -3855,7 +3928,7 @@ export const StepView: React.FC<StepViewProps> = ({
 
                   {isLocked ? (
                     <div
-                      className={`animate-in zoom-in-95 mb-2.5 sm:mb-[20px] flex items-center gap-[16px] rounded-[14px] border-2 border-transparent p-[18px_16px] sm:p-[22px_20px] duration-300 ${state.metadata.filingMethod === "online" ? "border-[#0a4330] bg-[#0e5c42]" : "border-[#1e1348] bg-[#2e1f72]"}`}
+                      className={`animate-in zoom-in-95 mb-2.5 flex items-center gap-[16px] rounded-[14px] border-2 border-transparent p-[18px_16px] duration-300 sm:mb-[20px] sm:p-[22px_20px] ${state.metadata.filingMethod === "online" ? "border-[#0a4330] bg-[#0e5c42]" : "border-[#1e1348] bg-[#2e1f72]"}`}
                     >
                       <div
                         className={`flex h-[44px] w-[44px] shrink-0 items-center justify-center rounded-full text-[18px] font-bold ${state.metadata.filingMethod === "online" ? "bg-[#6dddb8] text-[#0e5c42]" : "bg-[#a89af5] text-[#2e1f72]"}`}
@@ -3978,7 +4051,7 @@ export const StepView: React.FC<StepViewProps> = ({
                         })}
                       </div>
 
-                      <div className="mb-3 sm:mb-[28px] flex flex-col gap-[10px]">
+                      <div className="mb-3 flex flex-col gap-[10px] sm:mb-[28px]">
                         <button
                           onClick={() => handleConfirmation(state.metadata.filingMethod as string)}
                           className={`w-full transform rounded-[14px] p-[15px_24px] text-[15px] font-semibold text-white shadow-sm transition-all duration-[0.24s] ${!state.metadata.filingMethod ? "hidden" : "block"} ${
@@ -4001,18 +4074,18 @@ export const StepView: React.FC<StepViewProps> = ({
                             setQuizAnswers({});
                             setQuizResult(null);
                           }}
-                          className="hover:border-primary hover:text-primary hover:bg-primary/[0.08] group flex self-center max-w-full items-center justify-center gap-2 sm:gap-[9px] rounded-[12px] sm:rounded-[14px] border-[1.5px] border-[#d0e4f7] bg-white sm:bg-transparent px-4 py-2.5 sm:px-6 sm:py-3 text-[12.5px] sm:text-[14px] font-medium text-[#3a4f63] transition-all active:scale-[0.99]"
+                          className="hover:border-primary hover:text-primary hover:bg-primary/[0.08] group flex max-w-full items-center justify-center gap-2 self-center rounded-[12px] border-[1.5px] border-[#d0e4f7] bg-white px-4 py-2.5 text-[12.5px] font-medium text-[#3a4f63] transition-all active:scale-[0.99] sm:gap-[9px] sm:rounded-[14px] sm:bg-transparent sm:px-6 sm:py-3 sm:text-[14px]"
                         >
-                          <div
-                            className="flex h-[18px] w-[18px] sm:h-[20px] sm:w-[20px] shrink-0 items-center justify-center rounded-full border-[1.5px] border-current text-[10px] sm:text-[11px] font-bold"
-                          >
+                          <div className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border-[1.5px] border-current text-[10px] font-bold sm:h-[20px] sm:w-[20px] sm:text-[11px]">
                             ?
                           </div>
-                          <span className="text-center leading-snug">Not sure? Help me choose the right method</span>
+                          <span className="text-center leading-snug">
+                            Not sure? Help me choose the right method
+                          </span>
                         </button>
                       </div>
 
-                      <p className="m-0 mt-2.5 sm:mt-4 rounded-[9px] bg-[#e8f1fb] p-[12px_16px] text-[12px] leading-[1.6] text-[#6b8097]">
+                      <p className="m-0 mt-2.5 rounded-[9px] bg-[#e8f1fb] p-[12px_16px] text-[12px] leading-[1.6] text-[#6b8097] sm:mt-4">
                         {currentStep.filing_data?.footerNote ||
                           "Fees as of March 2026 per the USCIS G-1055 fee schedule. Processing time is the same for both methods. Always verify at uscis.gov before filing."}
                       </p>
@@ -4020,7 +4093,7 @@ export const StepView: React.FC<StepViewProps> = ({
                   )}
 
                   {currentStep.tool_data?.disclaimer && (
-                    <div className="m-0 mt-2.5 sm:mt-4 rounded-[9px] bg-[#e8f1fb] p-[12px_16px] text-[12px] leading-[1.6] text-[#6b8097]">
+                    <div className="m-0 mt-2.5 rounded-[9px] bg-[#e8f1fb] p-[12px_16px] text-[12px] leading-[1.6] text-[#6b8097] sm:mt-4">
                       <span>{currentStep.tool_data.disclaimer}</span>
                     </div>
                   )}
@@ -4129,7 +4202,9 @@ export const StepView: React.FC<StepViewProps> = ({
         mode="journey"
         journeyTier={state?.subscriptionTier ?? (state as any)?.subscription_tier}
         journeyContext={{
-          journeySlug: data.journey_type ? `${data.journey_type.toLowerCase()}-journey` : "ir5-journey",
+          journeySlug: data.journey_type
+            ? `${data.journey_type.toLowerCase()}-journey`
+            : "ir5-journey",
           journeyCategory: data.journey_type || "IR-5",
           candidateId: (state as any).candidateId || "candidate-1",
           backendId: (state as any).backendId || null,
@@ -4158,6 +4233,46 @@ export const StepView: React.FC<StepViewProps> = ({
           actions.updateMetadata({ sponsorshipResult: result, sponsorshipDraft: null });
           setIsSponsorshipCalcOpen(false);
           if (!isCompleted) actions.toggleComplete("step_2_5");
+        }}
+      />
+
+      {/* Medical Appointment Booking Tool Overlay */}
+      <MedicalAppointmentTool
+        isOpen={isMedicalBookingOpen}
+        onClose={() => setIsMedicalBookingOpen(false)}
+        mode="journey"
+        journeyTier={state?.subscriptionTier ?? (state as any)?.subscription_tier}
+        journeyContext={{
+          journeySlug: toolJourneySlug,
+          journeyCategory: toolJourneyCategory,
+          candidateId: (state as any).candidateId || "candidate-1",
+          backendId: (state as any).backendId || null,
+          subscriptionTier: state?.subscriptionTier ?? (state as any)?.subscription_tier,
+        }}
+        onSave={(record) => {
+          actions.updateMetadata({ medicalBooking: record });
+          setIsMedicalBookingOpen(false);
+          if (!isCompleted) actions.toggleComplete(sId); // sId = current step key ("step_3_1")
+        }}
+      />
+
+      {/* Police Character Certificate Filing Tool Overlay */}
+      <PccFilingTool
+        isOpen={isPccFilingOpen}
+        onClose={() => setIsPccFilingOpen(false)}
+        mode="journey"
+        journeyTier={state?.subscriptionTier ?? (state as any)?.subscription_tier}
+        journeyContext={{
+          journeySlug: toolJourneySlug,
+          journeyCategory: toolJourneyCategory,
+          candidateId: (state as any).candidateId || "candidate-1",
+          backendId: (state as any).backendId || null,
+          subscriptionTier: state?.subscriptionTier ?? (state as any)?.subscription_tier,
+        }}
+        onSave={(record) => {
+          actions.updateMetadata({ pccFiling: record });
+          setIsPccFilingOpen(false);
+          if (!isCompleted) actions.toggleComplete(sId); // sId = "step_3_3"
         }}
       />
 
@@ -4306,26 +4421,23 @@ export const StepView: React.FC<StepViewProps> = ({
       {isCitationsModalOpen && (
         <div className="animate-in fade-in fixed inset-0 z-300 flex items-center justify-center bg-black/40 p-5 backdrop-blur-xs duration-200">
           <div className="animate-in slide-in-from-bottom-4 w-full max-w-[500px] rounded-[16px] bg-white shadow-[0_24px_80px_rgba(12,27,51,0.32),0_4px_20px_rgba(12,27,51,0.16)] duration-300">
-            <div className="mb-2 sm:mb-2 flex items-center justify-between gap-3 p-4 sm:p-5 pb-0 sm:pb-0">
+            <div className="mb-2 flex items-center justify-between gap-3 p-4 pb-0 sm:mb-2 sm:p-5 sm:pb-0">
               <div className="flex items-center gap-2.5">
-                <Book
-                  className="text-primary h-5 w-5 shrink-0"
-                  strokeWidth={2.5}
-                />
-                <h2 className="text-[17px] sm:text-[20px] font-bold leading-snug text-[#0c1b33]">
+                <Book className="text-primary h-5 w-5 shrink-0" strokeWidth={2.5} />
+                <h2 className="text-[17px] leading-snug font-bold text-[#0c1b33] sm:text-[20px]">
                   Official References &amp; Citations
                 </h2>
               </div>
               <button
                 onClick={() => setIsCitationsModalOpen(false)}
-                className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border-none bg-[#f4f7fb] text-[#3a4f63] outline-none transition-all hover:bg-[#d0e4f7] hover:text-[#0c1b33] active:scale-95"
+                className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border-none bg-[#f4f7fb] text-[#3a4f63] transition-all outline-none hover:bg-[#d0e4f7] hover:text-[#0c1b33] active:scale-95"
               >
                 <X size={14} />
               </button>
             </div>
 
-            <div className="p-4 sm:p-5 pt-0">
-              <div className="mb-3 sm:mb-3 h-px bg-[#d0e4f7]" />
+            <div className="p-4 pt-0 sm:p-5">
+              <div className="mb-3 h-px bg-[#d0e4f7] sm:mb-3" />
               <div className="flex max-h-[60vh] flex-col gap-3 overflow-y-auto pr-1">
                 {(getCitations() || []).map((cite: any, index: number) => (
                   <a
@@ -4441,11 +4553,14 @@ export const StepView: React.FC<StepViewProps> = ({
                       mode="journey"
                       journeyTier={state?.subscriptionTier ?? (state as any)?.subscription_tier}
                       journeyContext={{
-                        journeySlug: data.journey_type ? `${data.journey_type.toLowerCase()}-journey` : "ir5-journey",
+                        journeySlug: data.journey_type
+                          ? `${data.journey_type.toLowerCase()}-journey`
+                          : "ir5-journey",
                         journeyCategory: data.journey_type || "IR-5",
                         candidateId: (state as any)?.candidateId || "candidate-1",
                         backendId: (state as any)?.backendId || null,
-                        subscriptionTier: state?.subscriptionTier ?? (state as any)?.subscription_tier,
+                        subscriptionTier:
+                          state?.subscriptionTier ?? (state as any)?.subscription_tier,
                       }}
                     />
                   </div>
@@ -4625,13 +4740,13 @@ export const StepView: React.FC<StepViewProps> = ({
             return (
               <div className="animate-in slide-in-from-bottom-[18px] fixed inset-0 z-[120] flex flex-col bg-[#fafcff] duration-[0.28s] ease-in-out">
                 {/* Tutorial Topbar */}
-                <div className="flex h-[54px] sm:h-[72px] shrink-0 items-center gap-3 sm:gap-4 border-b border-[#d0e4f7] bg-[#fafcff] px-3.5 sm:px-6">
+                <div className="flex h-[54px] shrink-0 items-center gap-3 border-b border-[#d0e4f7] bg-[#fafcff] px-3.5 sm:h-[72px] sm:gap-4 sm:px-6">
                   <button
                     onClick={() => {
                       setIsTutorialOpen(false);
                       setUseCeacGuideData(false);
                     }}
-                    className="hover:bg-primary/30 flex h-8 w-8 sm:h-9 sm:w-9 cursor-pointer items-center justify-center rounded-full border-none bg-[#f4f7fb] text-[#3a4f63] transition-all"
+                    className="hover:bg-primary/30 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-none bg-[#f4f7fb] text-[#3a4f63] transition-all sm:h-9 sm:w-9"
                   >
                     <X size={16} strokeWidth={2} />
                   </button>
@@ -4664,9 +4779,9 @@ export const StepView: React.FC<StepViewProps> = ({
                       {currentTutStep.heading}
                     </h2>
                     <SafeHtml
-  className="mb-5 text-[14px] leading-[1.7] text-[#3a4f63]"
-  html={currentTutStep.instruction}
-/>
+                      className="mb-5 text-[14px] leading-[1.7] text-[#3a4f63]"
+                      html={currentTutStep.instruction}
+                    />
 
                     {branchChoiceActive && (currentTutStep as any).choiceOptions && (
                       <div className="mb-5">
@@ -4837,14 +4952,14 @@ export const StepView: React.FC<StepViewProps> = ({
           return (
             <div className="animate-in slide-in-from-bottom-[18px] fixed inset-0 z-[120] flex flex-col bg-[#fafcff] bg-white duration-[0.28s] ease-in-out">
               {/* Tutorial Topbar */}
-              <div className="flex h-[54px] sm:h-[72px] shrink-0 items-center gap-3 sm:gap-4 border-b border-[#d0e4f7] bg-[#fafcff] px-3.5 sm:px-6">
+              <div className="flex h-[54px] shrink-0 items-center gap-3 border-b border-[#d0e4f7] bg-[#fafcff] px-3.5 sm:h-[72px] sm:gap-4 sm:px-6">
                 <button
                   onClick={() => {
                     setIsTutorialOpen(false);
                     setTutorialPath(null);
                     setUseCeacGuideData(false);
                   }}
-                  className="hover:bg-primary/30 flex h-8 w-8 sm:h-9 sm:w-9 cursor-pointer items-center justify-center rounded-full border-none bg-[#f4f7fb] text-[#3a4f63] transition-all"
+                  className="hover:bg-primary/30 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-none bg-[#f4f7fb] text-[#3a4f63] transition-all sm:h-9 sm:w-9"
                 >
                   <X size={16} strokeWidth={2} />
                 </button>
@@ -4873,9 +4988,9 @@ export const StepView: React.FC<StepViewProps> = ({
                     {currentTutStep.heading}
                   </h2>
                   <SafeHtml
-  className="mb-5 text-[14px] leading-[1.7] text-[#3a4f63]"
-  html={currentTutStep.instruction}
-/>
+                    className="mb-5 text-[14px] leading-[1.7] text-[#3a4f63]"
+                    html={currentTutStep.instruction}
+                  />
 
                   {/* Screenshot Block */}
                   {isDynamic ? (
@@ -5188,9 +5303,9 @@ export const StepView: React.FC<StepViewProps> = ({
                       {sec.t}
                     </div>
                     <SafeHtml
-  className="prose-sm text-[13px] leading-[1.7] break-words text-[#3a4f63] sm:text-[14px]"
-  html={sec.c}
-/>
+                      className="prose-sm text-[13px] leading-[1.7] break-words text-[#3a4f63] sm:text-[14px]"
+                      html={sec.c}
+                    />
                   </div>
                 ))}
               </div>

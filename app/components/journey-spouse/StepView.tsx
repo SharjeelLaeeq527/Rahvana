@@ -153,12 +153,21 @@ import { GuideStepRenderer, AwaitingDecisionTool } from "./components/GuideStepR
 import { NoticeTriageTool } from "./components/NoticeTriageTool";
 import { FinancialChecklistTool } from "./components/FinancialChecklistTool";
 import SponsorshipCalculatorTool from "./components/SponsorshipCalculatorTool";
+import { MedicalBookingModule } from "./components/MedicalBookingModule";
+import { PccFilingModule } from "./components/PccFilingModule";
+import MedicalAppointmentTool from "./components/MedicalAppointmentTool";
+import PccFilingTool from "./components/PccFilingTool";
+import {
+  isJourneyRequestLocked,
+  isPccRequestLocked,
+  type JourneyServiceRecord,
+} from "@/lib/journey/toolModeGuards";
 import { ApUpdateModal } from "./PortalWalletManager";
 import { HouseholdSponsorshipTool } from "./components/HouseholdSponsorshipTool";
 import { DocumentQuestionnaire } from "@/app/components/questionnaire/DocumentQuestionnaire";
 import { QuestRenderer } from "./QuestRenderer";
 import { ActionStepRenderer } from "./ActionStepRenderer";
-import {DocumentChecklistTool} from "@/app/components/journey-engine/components/DocumentChecklistTool";
+import { DocumentChecklistTool } from "@/app/components/journey-engine/components/DocumentChecklistTool";
 import { SafeHtml } from "../shared/SafeHTML";
 
 const STEP_CITATIONS: Record<string, { text: string; link: string }[]> = {
@@ -608,6 +617,9 @@ export const StepView: React.FC<StepViewProps> = ({
     sponsorshipResult,
     sponsorshipDraft,
   } = useSponsorship({ metadata: state.metadata });
+
+  const [isMedicalBookingOpen, setIsMedicalBookingOpen] = useState(false);
+  const [isPccFilingOpen, setIsPccFilingOpen] = useState(false);
 
   // --- 2. Remaining Local State ---
   const [isLaunched, setIsLaunched] = useState(false);
@@ -1415,6 +1427,58 @@ export const StepView: React.FC<StepViewProps> = ({
             />
           )}
 
+          {/* MEDICAL BOOKING TOOL RENDERING */}
+          {tool.type === "medical_booking" &&
+            (() => {
+              const record = (state.metadata?.medicalBooking as JourneyServiceRecord) ?? null;
+
+              const locked = isJourneyRequestLocked(record);
+
+              return (
+                <MedicalBookingModule
+                  tool={tool}
+                  record={record}
+                  locked={locked}
+                  onOpen={() => {
+                    if (locked) return; // one active booking per journey
+                    if (!stepEntitlement.guard()) return; // journey-tier access gate (no credits)
+                    setIsMedicalBookingOpen(true);
+                  }}
+                />
+              );
+            })()}
+
+          {/* PCC FILING TOOL RENDERING */}
+          {tool.type === "pcc_filing" &&
+            (() => {
+              const record = (state.metadata?.pccFiling as JourneyServiceRecord) ?? null;
+
+              const locked = isPccRequestLocked(record);
+
+              return (
+                <PccFilingModule
+                  tool={tool}
+                  record={record}
+                  locked={locked}
+                  onOpen={() => {
+                    if (locked) return; // one active PCC application per journey
+                    if (!stepEntitlement.guard()) return; // journey-tier access gate (no credits)
+                    setIsPccFilingOpen(true);
+                  }}
+                  onMarkReceived={() => {
+                    if (!record) return;
+                    actions.updateMetadata({
+                      pccFiling: {
+                        ...record,
+                        status: "received",
+                        receivedAt: new Date().toISOString().slice(0, 10),
+                      },
+                    });
+                  }}
+                />
+              );
+            })()}
+
           {/* DQ RECORDING TOOL RENDERING */}
           {tool.type === "dq_recording" && (
             <DqRecordingTool
@@ -1766,11 +1830,8 @@ export const StepView: React.FC<StepViewProps> = ({
 
           {/* DOCUMENT CHECKLIST (Step 3.7 SPECIFIC) */}
           {tool.type === "document_checklist" && (
-  <DocumentChecklistTool
-    journeyId={journeyId}
-    journeyType={data.journey_type}
-  />
-)}
+            <DocumentChecklistTool journeyId={journeyId} journeyType={data.journey_type} />
+          )}
 
           {/* ATTEND MEDICAL EXAM (Step 3.5 SPECIFIC) */}
           {tool.type === "medical_exam_guide" && (
@@ -1937,6 +1998,8 @@ export const StepView: React.FC<StepViewProps> = ({
           {/* PRIMARY LAUNCH MODULE */}
           {tool.launch_module &&
             tool.type !== "sponsorship_calculator" &&
+            tool.type !== "medical_booking" &&
+            tool.type !== "pcc_filing" &&
             tool.type !== "submission_review" &&
             tool.type !== "interview_prep" &&
             tool.type !== "interview_day" &&
@@ -4226,6 +4289,46 @@ export const StepView: React.FC<StepViewProps> = ({
         }}
       />
 
+      {/* Medical Appointment Booking Tool Overlay */}
+      <MedicalAppointmentTool
+        isOpen={isMedicalBookingOpen}
+        onClose={() => setIsMedicalBookingOpen(false)}
+        mode="journey"
+        journeyTier={state?.subscriptionTier ?? (state as any)?.subscription_tier}
+        journeyContext={{
+          journeySlug: "ir1-journey", // engine: `${data.journey_type.toLowerCase()}-journey` (fallback "ir5-journey")
+          journeyCategory: "IR-1", // engine: data.journey_type || "IR-5"
+          candidateId: (state as any).candidateId || "candidate-1",
+          backendId: (state as any).backendId || null,
+          subscriptionTier: state?.subscriptionTier ?? (state as any)?.subscription_tier,
+        }}
+        onSave={(record) => {
+          actions.updateMetadata({ medicalBooking: record });
+          setIsMedicalBookingOpen(false);
+          if (!isCompleted) actions.toggleComplete(sId); // sId = current step key ("step_3_1")
+        }}
+      />
+
+      {/* Police Character Certificate Filing Tool Overlay */}
+      <PccFilingTool
+        isOpen={isPccFilingOpen}
+        onClose={() => setIsPccFilingOpen(false)}
+        mode="journey"
+        journeyTier={state?.subscriptionTier ?? (state as any)?.subscription_tier}
+        journeyContext={{
+          journeySlug: "ir1-journey",
+          journeyCategory: "IR-1",
+          candidateId: (state as any).candidateId || "candidate-1",
+          backendId: (state as any).backendId || null,
+          subscriptionTier: state?.subscriptionTier ?? (state as any)?.subscription_tier,
+        }}
+        onSave={(record) => {
+          actions.updateMetadata({ pccFiling: record });
+          setIsPccFilingOpen(false);
+          if (!isCompleted) actions.toggleComplete(sId); // sId = "step_3_3"
+        }}
+      />
+
       {/* Global Modals */}
       <CredentialFormModal
         isOpen={isWalletFormOpen}
@@ -4506,7 +4609,8 @@ export const StepView: React.FC<StepViewProps> = ({
                         journeySlug: "ir1-journey",
                         journeyCategory: "IR-1",
                         candidateId: "candidate-1",
-                        subscriptionTier: state?.subscriptionTier ?? (state as any)?.subscription_tier,
+                        subscriptionTier:
+                          state?.subscriptionTier ?? (state as any)?.subscription_tier,
                       }}
                     />
                   </div>
