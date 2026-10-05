@@ -20,6 +20,7 @@ const DocumentTranslationTool = React.lazy(
   () => import("@/components/tools/DocumentTranslationTool")
 );
 const PdfToolkitTool = React.lazy(() => import("@/components/tools/PdfToolkitTool"));
+const SnapAndSignTool = React.lazy(() => import("@/components/tools/SnapAndSignTool"));
 const InterviewPrepTool = React.lazy(() =>
   import("./components/InterviewPrepTool").then((m) => ({ default: m.InterviewPrepTool }))
 );
@@ -494,27 +495,17 @@ export function EmbeddedToolContainer({
 
       case "snap_and_sign":
         return (
-          <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-xs sm:p-12 dark:border-slate-800 dark:bg-slate-900">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-teal-500/10 text-[#0d7377] dark:bg-teal-950/40 dark:text-teal-400">
-              <PenTool className="h-8 w-8" />
-            </div>
-            <h3 className="text-xl font-bold text-slate-900 sm:text-2xl dark:text-slate-100">
-              Snap &amp; Sign
-            </h3>
-            <p className="mx-auto mt-2 max-w-md text-sm text-slate-600 dark:text-slate-400">
-              Create and apply crisp digital signatures to your immigration forms and affidavits.
-            </p>
-            <div className="mt-6">
-              <button
-                onClick={() => window.open("/snap-and-sign", "_blank")}
-                className="inline-flex items-center gap-2 rounded-xl bg-[#0d7377] px-6 py-3 text-sm font-bold text-white shadow-md transition-all hover:bg-[#095457] hover:shadow-lg active:scale-98"
-              >
-                <span>Open Snap &amp; Sign</span>
-                <ArrowRight className="h-4 w-4" />
-              </button>
-            </div>
+          <div className="mx-auto w-full max-w-7xl px-4 pt-4 sm:px-6 sm:pt-6 lg:px-8">
+            <SnapAndSignTool
+              showHeader={false}
+              showTips={true}
+              mode="journey"
+              journeyContext={journeyContext}
+              journeyTier={effectiveJourneyTier}
+            />
           </div>
         );
+        
 
       case "visa_forms":
         return (
