@@ -19,6 +19,7 @@ const PassportPhotoTool = React.lazy(() => import("@/components/tools/PassportPh
 const DocumentTranslationTool = React.lazy(
   () => import("@/components/tools/DocumentTranslationTool")
 );
+const PdfToolkitTool = React.lazy(() => import("@/components/tools/PdfToolkitTool"));
 const InterviewPrepTool = React.lazy(() =>
   import("./components/InterviewPrepTool").then((m) => ({ default: m.InterviewPrepTool }))
 );
@@ -71,13 +72,7 @@ function ToolSkeleton() {
   );
 }
 
-function InlineCivilGuideViewer({
-  guideKey,
-  data,
-}: {
-  guideKey: string;
-  data: any;
-}) {
+function InlineCivilGuideViewer({ guideKey, data }: { guideKey: string; data: any }) {
   const guideMap: Record<string, string> = {
     passport_guide: "doc_passport",
     cnic_guide: "doc_cnic",
@@ -92,7 +87,7 @@ function InlineCivilGuideViewer({
 
   if (!guideEntry) {
     return (
-      <div className="rounded-3xl border border-slate-200 bg-white p-8 sm:p-12 text-center shadow-xs dark:border-slate-800 dark:bg-slate-900">
+      <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-xs sm:p-12 dark:border-slate-800 dark:bg-slate-900">
         <BookOpen className="mx-auto mb-3 h-10 w-10 text-[#0d7377]" />
         <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
           Official Civil Document Guide
@@ -105,7 +100,7 @@ function InlineCivilGuideViewer({
   }
 
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs sm:p-8 dark:border-slate-800 dark:bg-slate-900">
       <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-sky-500/20 bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700 dark:bg-sky-950/40 dark:text-sky-300">
         <span className="h-1.5 w-1.5 rounded-full bg-sky-500" />
         <span>Rahvana Official Guide</span>
@@ -176,7 +171,7 @@ function Journey221gEmbeddedTool({
   });
 
   return (
-    <div className="flex flex-col gap-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 sm:px-6 lg:px-8">
       {isEditing || !hasSavedSelections ? (
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
           <div className="mb-4">
@@ -285,10 +280,8 @@ function LockedToolGate({
 
   return (
     <>
-      {showUpgrade && (
-        <UpgradeModal feature={featureKey} onClose={() => setShowUpgrade(false)} />
-      )}
-      <div className="flex w-full flex-col items-center justify-center rounded-3xl border border-slate-200 bg-white p-8 sm:p-12 text-center shadow-xs dark:border-slate-800 dark:bg-slate-900">
+      {showUpgrade && <UpgradeModal feature={featureKey} onClose={() => setShowUpgrade(false)} />}
+      <div className="flex w-full flex-col items-center justify-center rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-xs sm:p-12 dark:border-slate-800 dark:bg-slate-900">
         <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400">
           <Lock className="h-8 w-8" />
         </div>
@@ -345,10 +338,7 @@ export function EmbeddedToolContainer({
     | undefined;
 
   const effectiveJourneyTier =
-    resolvedState?.subscriptionTier ??
-    resolvedState?.subscription_tier ??
-    journeyTier ??
-    "free";
+    resolvedState?.subscriptionTier ?? resolvedState?.subscription_tier ?? journeyTier ?? "free";
 
   const plan = useJourneyPlan(resolvedState || { subscriptionTier: effectiveJourneyTier });
   const featureKey = TOOL_FEATURE_MAP[toolKey];
@@ -366,10 +356,7 @@ export function EmbeddedToolContainer({
     activeCandidate?.id ||
     "candidate-1";
 
-  const resolvedBackendId =
-    (state as any)?.backendId ||
-    resolvedState?.backendId ||
-    null;
+  const resolvedBackendId = (state as any)?.backendId || resolvedState?.backendId || null;
 
   const journeyContext = {
     journeySlug: resolvedSlug,
@@ -385,9 +372,7 @@ export function EmbeddedToolContainer({
       const targetTier = plan.entitlement(featureKey)?.upgradeTarget || null;
       const lockHint = plan.lockHint(featureKey);
       const ctaText = plan.upgradeCTA(featureKey);
-      const toolTitle = toolKey
-        .replace(/_/g, " ")
-        .replace(/\b\w/g, (c) => c.toUpperCase());
+      const toolTitle = toolKey.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
       return (
         <LockedToolGate
@@ -440,7 +425,7 @@ export function EmbeddedToolContainer({
 
       // case "interview_prep":
       //   return (
-          
+
       //   );
 
       case "action_221g":
@@ -454,7 +439,7 @@ export function EmbeddedToolContainer({
 
       // case "medical_appointment":
       //   return (
-          
+
       //   );
 
       case "police_verification":
@@ -469,7 +454,7 @@ export function EmbeddedToolContainer({
 
       case "expert_consultation":
         return (
-          <div className="rounded-3xl border border-slate-200 bg-white p-8 sm:p-12 text-center shadow-xs dark:border-slate-800 dark:bg-slate-900">
+          <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-xs sm:p-12 dark:border-slate-800 dark:bg-slate-900">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400">
               <MessageSquare className="h-8 w-8" />
             </div>
@@ -480,7 +465,8 @@ export function EmbeddedToolContainer({
               1-on-1 Expert Consultation
             </h3>
             <p className="mx-auto mt-2 max-w-md text-sm text-slate-600 dark:text-slate-400">
-              Schedule a private strategy session with a dedicated Rahvana immigration consultant to review your case documents and interview preparation.
+              Schedule a private strategy session with a dedicated Rahvana immigration consultant to
+              review your case documents and interview preparation.
             </p>
             <div className="mt-6">
               <button
@@ -496,31 +482,19 @@ export function EmbeddedToolContainer({
 
       case "pdf_toolkit":
         return (
-          <div className="rounded-3xl border border-slate-200 bg-white p-8 sm:p-12 text-center shadow-xs dark:border-slate-800 dark:bg-slate-900">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-teal-500/10 text-[#0d7377] dark:bg-teal-950/40 dark:text-teal-400">
-              <Files className="h-8 w-8" />
-            </div>
-            <h3 className="text-xl font-bold text-slate-900 sm:text-2xl dark:text-slate-100">
-              PDF Toolkit for Journey Documents
-            </h3>
-            <p className="mx-auto mt-2 max-w-md text-sm text-slate-600 dark:text-slate-400">
-              Merge, compress, rotate, and optimize your civil and financial evidence for CEAC and USCIS upload.
-            </p>
-            <div className="mt-6">
-              <button
-                onClick={() => window.open("/pdf-toolkit", "_blank")}
-                className="inline-flex items-center gap-2 rounded-xl bg-[#0d7377] px-6 py-3 text-sm font-bold text-white shadow-md transition-all hover:bg-[#095457] hover:shadow-lg active:scale-98"
-              >
-                <span>Open PDF Tool Kit</span>
-                <ArrowRight className="h-4 w-4" />
-              </button>
-            </div>
+          <div className="mx-auto w-full max-w-7xl px-4 pt-4 sm:px-6 sm:pt-6 lg:px-8">
+            <PdfToolkitTool
+              showHeader={false}
+              mode="journey"
+              journeyContext={journeyContext}
+              journeyTier={effectiveJourneyTier}
+            />
           </div>
         );
 
       case "snap_and_sign":
         return (
-          <div className="rounded-3xl border border-slate-200 bg-white p-8 sm:p-12 text-center shadow-xs dark:border-slate-800 dark:bg-slate-900">
+          <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-xs sm:p-12 dark:border-slate-800 dark:bg-slate-900">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-teal-500/10 text-[#0d7377] dark:bg-teal-950/40 dark:text-teal-400">
               <PenTool className="h-8 w-8" />
             </div>
@@ -544,7 +518,7 @@ export function EmbeddedToolContainer({
 
       case "visa_forms":
         return (
-          <div className="rounded-3xl border border-slate-200 bg-white p-8 sm:p-12 text-center shadow-xs dark:border-slate-800 dark:bg-slate-900">
+          <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-xs sm:p-12 dark:border-slate-800 dark:bg-slate-900">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-teal-500/10 text-[#0d7377] dark:bg-teal-950/40 dark:text-teal-400">
               <FileEdit className="h-8 w-8" />
             </div>
@@ -552,7 +526,8 @@ export function EmbeddedToolContainer({
               Smart Form Filler
             </h3>
             <p className="mx-auto mt-2 max-w-md text-sm text-slate-600 dark:text-slate-400">
-              Auto-fill your official forms and generate ready-to-sign PDF packets mapped to your candidate data.
+              Auto-fill your official forms and generate ready-to-sign PDF packets mapped to your
+              candidate data.
             </p>
             <div className="mt-6">
               <button
@@ -579,8 +554,7 @@ export function EmbeddedToolContainer({
     }
   };
 
-  const isDocTranslation =
-    toolKey === "doc_translation" || toolKey === "document_translation";
+  const isDocTranslation = toolKey === "doc_translation" || toolKey === "document_translation";
 
   return (
     <div
