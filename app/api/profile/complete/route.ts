@@ -108,15 +108,46 @@ export async function POST(request: Request) {
     // client — enforce the identical rules here before anything is written.
     const fieldErrors = validateProfile(profileDetails as unknown as MasterProfile);
     if (Object.keys(fieldErrors).length > 0) {
-      return NextResponse.json(
-        { error: "Validation failed", fieldErrors },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Validation failed", fieldErrors }, { status: 400 });
     }
 
     // ── 4. Encrypt sensitive fields ───────────────────────────────────────────
     const encryptedDetails = encryptProfileDetails(profileDetails);
 
+    // ── 5. Save into user_profiles ────────────────────────────────────────────
+    // const { data: existingProfile } = await supabase
+    //   .from("user_profiles")
+    //   .select("id")
+    //   .eq("id", user.id)
+    //   .maybeSingle();
+
+    // let saveError;
+    // if (existingProfile) {
+    //   const { error } = await supabase
+    //     .from("user_profiles")
+    //     .update({
+    //       profile_details: encryptedDetails,
+    //       updated_at: new Date().toISOString(),
+    //     })
+    //     .eq("id", user.id);
+    //   saveError = error;
+    // } else {
+    //   const { error } = await supabase.from("user_profiles").insert({
+    //     id: user.id,
+    //     subscription_tier: "core",
+    //     subscription_status: "active",
+    //     profile_details: encryptedDetails,
+    //     created_at: new Date().toISOString(),
+    //     updated_at: new Date().toISOString(),
+    //   });
+    //   saveError = error;
+    // }
+
+    // if (saveError) {
+    //   console.error("[profile/complete] Save error:", saveError);
+    //   return NextResponse.json({ error: "Failed to save profile" }, { status: 500 });
+
+    // ── 5. Upsert into user_profiles ──────────────────────────────────────────
     // ── 5. Save into user_profiles ────────────────────────────────────────────
     // Use the service-role client so the upsert runs as `service_role`, not
     // `authenticated`. The trigger guard_user_profile_billing only blocks

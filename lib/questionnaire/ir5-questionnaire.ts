@@ -245,7 +245,7 @@ export const IR5_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
       subtitle:
         "Complete English translations of every submitted non-English document",
       tag: "both",
-      guideUrl: "/document-translation",
+      guideUrl: "/guides",
       icon: "Globe",
       group: "Required if Applicable",
       required: false,
@@ -291,7 +291,7 @@ export const IR5_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
       subtitle:
         "Needed later for medical and immigrant visa processing, not for the standard online I-130 evidence packet",
       tag: "beneficiary",
-      guideUrl: "/passport",
+      guideUrl: "/guides",
       icon: "Camera",
       group: "Gather Now for Later",
       required: false,

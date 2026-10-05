@@ -15,7 +15,6 @@ import { ExpandableTooltip } from "@/app/components/shared/ExpandableTooltip";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { usePlan } from "@/app/context/PlanContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
-import { getEntitlement } from "@/lib/entitlements/config";
 import { InterviewModeTabs } from "@/app/components/interview-prep/InterviewModeTabs";
 import { MobileBottomSheet } from "@/app/components/shared/table/MobileBottomSheet";
 
@@ -61,36 +60,41 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
 
   const plan = usePlan();
 
+  // Buying the Interview Prep add-on (any category) unlocks the full tool for
+  // every plan tier — plan.entitlement() resolves purchases to "full".
+  const prepFullAccess = plan.entitlement("basic_interview_prep").state === "full";
+  // Free-plan users without the add-on see the AI Answer Builder as a locked
+  // teaser; a category purchase removes the lock (full access, any plan).
+  const prepLockedForFreeUser = plan.tier === "free" && !prepFullAccess;
+
   const canSeePrepQuestion = useCallback(
     (question: GeneratedQuestion) => {
-      if (plan.tier === "free") {
+      if (prepLockedForFreeUser) {
         return question.tier === "free";
       }
 
       return true;
     },
-    [plan.tier]
+    [prepLockedForFreeUser]
   );
 
   const canAccessRapidFire = (): boolean => {
-    const entitlement = getEntitlement("interview_rapid_fire", plan.tier);
+    const entitlement = plan.entitlement("interview_rapid_fire");
     return entitlement.state === "full" || entitlement.state === "limited";
   };
 
   const canAccessMockInterview = (): boolean => {
-    const entitlement = getEntitlement("mock_interview", plan.tier);
+    const entitlement = plan.entitlement("mock_interview");
     return entitlement.state === "full" || entitlement.state === "limited";
   };
 
   // Check if tier has limited access (should only see free-tier questions)
   const hasLimitedRapidFire = (): boolean => {
-    const entitlement = getEntitlement("interview_rapid_fire", plan.tier);
-    return entitlement.state === "limited";
+    return plan.entitlement("interview_rapid_fire").state === "limited";
   };
 
   const hasLimitedMockInterview = (): boolean => {
-    const entitlement = getEntitlement("mock_interview", plan.tier);
-    return entitlement.state === "limited";
+    return plan.entitlement("mock_interview").state === "limited";
   };
 
   // Filter questions for rapid fire mode - limited tiers only see free-tier questions
@@ -99,7 +103,8 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
       return questionsList.filter((q) => q.tier === "free");
     }
     return questionsList;
-  }, [questionsList, plan.tier]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [questionsList, plan.tier, plan.purchasedAddons]);
 
   // Filter questions for mock mode - limited tiers only see free-tier questions
   const mockInterviewQuestions = useMemo(() => {
@@ -107,7 +112,8 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
       return questionsList.filter((q) => q.tier === "free");
     }
     return questionsList;
-  }, [questionsList, plan.tier]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [questionsList, plan.tier, plan.purchasedAddons]);
 
   // Shuffle algorithm
   const shuffleQuestions = (questions: GeneratedQuestion[]): GeneratedQuestion[] => {
@@ -446,7 +452,7 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
                   type="button"
                   onClick={handleShuffle}
                   aria-label="Shuffle questions"
-                  className="flex px-4 py-1 gap-2 items-center justify-center rounded-lg bg-[#6b5b7b] text-white shadow-[0_4px_16px_-4px_rgba(107,91,123,0.35)] transition-all duration-200 hover:bg-[#5a4a6a] active:scale-95"
+                  className="flex items-center justify-center gap-2 rounded-lg bg-[#6b5b7b] px-4 py-1 text-white shadow-[0_4px_16px_-4px_rgba(107,91,123,0.35)] transition-all duration-200 hover:bg-[#5a4a6a] active:scale-95"
                 >
                   <Shuffle className="h-4 w-4" />
                   Shuffle
@@ -772,7 +778,7 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
                                     e.preventDefault();
                                     e.stopPropagation();
 
-                                    if (plan.tier === "free") {
+                                    if (prepLockedForFreeUser) {
                                       setShowPrepUpgradeModal(true);
                                       return;
                                     }
@@ -785,7 +791,7 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
                                 </Button>
                               </div>
 
-                              {plan.tier === "free" && (
+                              {prepLockedForFreeUser && (
                                 <>
                                   <div className="pointer-events-none absolute -top-2 -right-4 z-20">
                                     <Image

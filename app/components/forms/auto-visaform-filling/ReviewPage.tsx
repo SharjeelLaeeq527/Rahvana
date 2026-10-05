@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { DEFAULT_FREE_QUESTION_LIMIT } from "./useFreePreview";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Field } from "@/lib/formConfig/types";
 import type { CandidateProfile } from "@/types/candidate";
@@ -192,6 +193,8 @@ export interface ReviewPageProps {
   isDownloading?: boolean;
   isSavingToVault?: boolean;
   isFreePreview?: boolean;
+  /** Per-form preview allowance (from the form config) shown in the free-preview banner. */
+  freePreviewLimit?: number;
   onUpgradeClick?: () => void;
   formCode?: string;
   activeCandidate?: CandidateProfile | null;
@@ -211,6 +214,7 @@ export function ReviewPage({
   isDownloading,
   isSavingToVault,
   isFreePreview = false,
+  freePreviewLimit = DEFAULT_FREE_QUESTION_LIMIT,
   onUpgradeClick,
   formCode = "i130",
   activeCandidate,
@@ -356,8 +360,14 @@ export function ReviewPage({
               <Lock size={15} />
             </div>
             <div>
-              <p className="text-sm font-bold text-amber-950">Free Preview Active</p>
-              <p className="text-xs text-amber-700 mt-0.5">You can audit and test-print Page 1 of your completed form PDF.</p>
+              <h4 className="text-sm font-bold text-amber-900">
+                I-130 Demo Mode ({freePreviewLimit}-Question Limit)
+              </h4>
+              <p className="mt-1 text-xs leading-relaxed text-amber-800/85">
+                You&apos;re using the demo available on Free and Basic plans. You can fill up to{" "}
+                {freePreviewLimit} questions and print/preview the <strong>first page</strong> of
+                your completed PDF to test the tool.
+              </p>
             </div>
           </div>
           <button
@@ -723,7 +733,9 @@ export function ReviewPage({
             {isFreePreview ? (
               <>
                 {isPreviewing ? "Previewing..." : "Preview Page 1"}
-                <span className="ml-1 rounded bg-amber-500 px-1.5 py-0.5 text-[9px] font-extrabold tracking-wide text-white uppercase">Free</span>
+                <span className="ml-1 rounded bg-amber-500 px-1.5 py-0.5 text-[9px] font-extrabold tracking-wide text-white uppercase">
+                  Demo
+                </span>
               </>
             ) : isPreviewing ? (
               "Previewing..."
@@ -742,7 +754,9 @@ export function ReviewPage({
             {isFreePreview ? (
               <>
                 {isDownloading ? "Downloading..." : "Download Page 1"}
-                <span className="ml-1 rounded bg-amber-500 px-1.5 py-0.5 text-[9px] font-extrabold tracking-wide text-white uppercase">Free</span>
+                <span className="ml-1 rounded bg-amber-500 px-1.5 py-0.5 text-[9px] font-extrabold tracking-wide text-white uppercase">
+                  Demo
+                </span>
               </>
             ) : isDownloading ? (
               "Download PDF"

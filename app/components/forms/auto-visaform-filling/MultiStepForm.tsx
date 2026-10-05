@@ -118,6 +118,23 @@ const FORM_ID_MAPPING: Record<string, string> = {
 
 type ViewType = "form" | "review";
 
+/**
+ * True when a card counts as answered: its own key has a value, its checkbox
+ * options hold a "Yes", or any (nested) sub-question is filled — hidden group
+ * cards like full_name_group carry their answers in sub-questions only.
+ */
+const fieldHasAnswer = (
+  f: ConfigField | null | undefined,
+  data: Record<string, string>
+): boolean => {
+  if (!f) return false;
+  if ((data[f.key] ?? "").trim() !== "") return true;
+  if (f.type === "checkbox" && f.options?.some((opt) => data[opt.pdfKey || opt.value] === "Yes")) {
+    return true;
+  }
+  return (f.subQuestions ?? []).some((sub) => fieldHasAnswer(sub as ConfigField, data));
+};
+
 type MultiStepFormProps = {
   formCode: string;
 };
@@ -146,11 +163,14 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
   const config = useMemo(() => getFormConfig(formCode), [formCode]);
 
-  const { isFreePreview, filledFieldsCount } = useFreePreview({
-    canUseSmartFormFiller: plan.canUse("smart_form_filler"),
-    formFields: config?.formFields || [],
-    formData,
-  });
+  const { isFreePreview, hasReachedLimit, limit, atOrPastAnchor, pastAnchor, stepPastAnchor } =
+    useFreePreview({
+      canUseSmartFormFiller: plan.canUse("smart_form_filler"),
+      formFields: config?.formFields || [],
+      formData,
+      configuredLimit: config?.freePreviewLimit,
+      untilKey: config?.freePreviewUntilKey,
+    });
   const [view, setView] = useState<ViewType>("form");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
@@ -941,33 +961,33 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     setNavigationDirection("next");
 
     // If user is locked out, check if warning needs to be displayed after every 10 questions
-    if (isFreePreview) {
-      let nextField = null;
-      if (currentQuestionIndex < visibleFields.length - 1) {
-        nextField = visibleFields[currentQuestionIndex + 1];
-      } else if (currentStep < totalSteps) {
-        const nextSection = sections[currentStep];
-        if (nextSection) {
-          const nextVisible = nextSection.fields.filter(
-            (f) => !f.condition || f.condition(formData)
-          );
-          nextField = nextVisible[0];
-        }
-      }
+    // if (isFreePreview) {
+    //   let nextField = null;
+    //   if (currentQuestionIndex < visibleFields.length - 1) {
+    //     nextField = visibleFields[currentQuestionIndex + 1];
+    //   } else if (currentStep < totalSteps) {
+    //     const nextSection = sections[currentStep];
+    //     if (nextSection) {
+    //       const nextVisible = nextSection.fields.filter(
+    //         (f) => !f.condition || f.condition(formData)
+    //       );
+    //       nextField = nextVisible[0];
+    //     }
+    //   }
 
-      const isNextFieldEmpty =
-        !nextField || !formData[nextField.key] || formData[nextField.key].trim() === "";
+    //   const isNextFieldEmpty =
+    //     !nextField || !formData[nextField.key] || formData[nextField.key].trim() === "";
 
-      if (filledFieldsCount >= 15 && isNextFieldEmpty) {
-        showToast(
-          "Free Preview: You've reached the 15-question limit. Redirecting to review page...",
-          "info",
-          { duration: 6000 }
-        );
-        setView("review");
-        return;
-      }
-    }
+    //   if (filledFieldsCount >= 15 && isNextFieldEmpty) {
+    //     showToast(
+    //       "Free Preview: You've reached the 15-question limit. Redirecting to review page...",
+    //       "info",
+    //       { duration: 6000 }
+    //     );
+    //     setView("review");
+    //     return;
+    //   }
+    // }
 
     const currentField = visibleFields[currentQuestionIndex];
     if (currentField) {
@@ -986,6 +1006,35 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
           ...prev,
           [currentField.key]: currentSubCount + 1,
         }));
+        return;
+      }
+    }
+
+    // Free-preview boundary — checked only once the current card's sub-questions
+    // are done, and triggered by flow POSITION (at/past the anchor card) as well
+    // as by full completion, so optional blanks (e.g. an empty middle name)
+    // can't keep the preview open indefinitely.
+    if (isFreePreview) {
+      let nextField = null;
+      if (currentQuestionIndex < visibleFields.length - 1) {
+        nextField = visibleFields[currentQuestionIndex + 1];
+      } else if (currentStep < totalSteps) {
+        const nextSection = sections[currentStep];
+        if (nextSection) {
+          const nextVisible = nextSection.fields.filter(
+            (f) => !f.condition || f.condition(formData)
+          );
+          nextField = nextVisible[0];
+        }
+      }
+
+      const isNextFieldEmpty = !fieldHasAnswer(nextField, formData);
+
+      if ((hasReachedLimit || atOrPastAnchor(currentField?.key)) && isNextFieldEmpty) {
+        showToast("Demo limit reached — redirecting you to the review page...", "info", {
+          duration: 6000,
+        });
+        setView("review");
         return;
       }
     }
@@ -1113,24 +1162,21 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
   const handleJumpToQuestion = useCallback(
     (stepIdx: number, questionIdx: number) => {
-      if (isFreePreview && filledFieldsCount >= 15) {
-        const targetSection = sections[stepIdx];
-        const targetField = targetSection?.fields.filter(
-          (f) => !f.condition || f.condition(formData)
-        )[questionIdx];
+      const targetSection = sections[stepIdx];
+      const targetField = targetSection?.fields.filter(
+        (f) => !f.condition || f.condition(formData)
+      )[questionIdx];
 
-        const isTargetEmpty =
-          !targetField || !formData[targetField.key] || formData[targetField.key].trim() === "";
+      const isTargetEmpty = !fieldHasAnswer(targetField, formData);
 
-        if (isTargetEmpty) {
-          showToast(
-            "Free Preview: You've reached the 15-question limit. Please unlock the tool or upgrade to access new questions.",
-            "info",
-            { duration: 5000 }
-          );
-          setView("review");
-          return;
-        }
+      if (isTargetEmpty && (hasReachedLimit || pastAnchor(targetField?.key))) {
+        showToast(
+          "Demo limit reached. Upgrade to Premium or Executive to answer more questions.",
+          "info",
+          { duration: 5000 }
+        );
+        setView("review");
+        return;
       }
       const targetStep = stepIdx + 1;
       if (currentStep === targetStep) {
@@ -1142,31 +1188,29 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       setView("form");
       setIsDrawerOpen(false);
     },
-    [isFreePreview, filledFieldsCount, sections, formData, currentStep, showToast]
+    [hasReachedLimit, pastAnchor, limit, sections, formData, currentStep, showToast]
   );
 
   const handleGoToStep = useCallback(
     (step: number) => {
-      if (isFreePreview && filledFieldsCount >= 15) {
-        const targetSection = sections[step - 1];
-        const hasAnyAnswered = targetSection?.fields.some(
-          (f) => formData[f.key] && formData[f.key].trim() !== ""
-        );
+      const targetSection = sections[step - 1];
+      const hasAnyAnswered = targetSection?.fields.some(
+        (f) => formData[f.key] && formData[f.key].trim() !== ""
+      );
 
-        if (!hasAnyAnswered) {
-          showToast(
-            "Free Preview: You've reached the 15-question limit. Please unlock the tool or upgrade to access new sections.",
-            "info",
-            { duration: 5000 }
-          );
-          setView("review");
-          return;
-        }
+      if (!hasAnyAnswered && (hasReachedLimit || stepPastAnchor(step - 1))) {
+        showToast(
+          "Demo limit reached. Upgrade to Premium or Executive to access new sections.",
+          "info",
+          { duration: 5000 }
+        );
+        setView("review");
+        return;
       }
       setCurrentStep(step);
       setView("form");
     },
-    [isFreePreview, filledFieldsCount, sections, formData]
+    [hasReachedLimit, stepPastAnchor, limit, sections, formData]
   );
 
   const handleEditStep = useCallback((step: number) => {
@@ -2055,6 +2099,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                     isDownloading={isDownloading}
                     isSavingToVault={isSavingToVault}
                     isFreePreview={isFreePreview}
+                    freePreviewLimit={limit}
                     onUpgradeClick={() => setShowUpgradeModal(true)}
                     formCode={formCode}
                     activeCandidate={activeCandidate}

@@ -57,6 +57,7 @@ import { getActiveStepsForStage } from "./journeyHelpers";
 import { getStepLockStatus, getModalFeatureForTier } from "@/lib/entitlements/hardLockRules";
 import { E, msg } from "@/lib/errors";
 import VisaTicker from "@/app/components/home-page/VisaTicker";
+import { AppGroupGrid } from "@/app/components/journey-engine/AppGroupGrid";
 import {
   buildVisaTickerProps,
   fetchReceiptForJourney,
@@ -68,6 +69,7 @@ interface DashboardViewProps {
   state: WizardState;
   onSelectChapter: (idx: number) => void;
   onSelectStep?: (cIdx: number, sIdx: number) => void;
+  onLaunchTool?: (componentKey: string) => void;
   actions: {
     setCurrentStep: (idx: number) => void;
     setStage: (idx: number) => void;
@@ -83,6 +85,7 @@ export function DashboardView({
   state,
   onSelectChapter,
   onSelectStep,
+  onLaunchTool,
   actions,
 }: DashboardViewProps) {
   const plan = useJourneyPlan(state);
@@ -1338,6 +1341,12 @@ export function DashboardView({
                     );
                   })}
               </div>
+
+              {/* Journey Toolbox & Services App Groups */}
+              {onLaunchTool && (
+                <AppGroupGrid onLaunchTool={onLaunchTool} state={state} className="my-1" />
+              )}
+
               {/* Accordions */}
               <div className="bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-sm">
                 {/* Case Details */}
