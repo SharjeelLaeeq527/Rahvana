@@ -51,8 +51,8 @@ export async function GET(request: NextRequest, { params }: { params: { formCode
       return NextResponse.json({ error: msg(E.AUTH_UNEXPECTED_ERROR) }, { status: 500 });
     }
 
-    // Fallback: If no draft exists for this specific journey_key, and journeyKey is not 'global', check for a legacy 'global' draft
-    if (!data && journeyKey !== "global") {
+    // Fallback: If no draft exists for this specific journey_key, and journeyKey is not 'global' and not 'standalone', check for a legacy 'global' draft
+    if (!data && journeyKey !== "global" && journeyKey !== "standalone") {
       const fallback = await supabase
         .from("visa_forms_draft")
         .select("*")

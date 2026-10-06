@@ -12,6 +12,7 @@ import {
   X,
   AlertTriangle,
   Scale,
+  ShieldAlert
 } from "lucide-react";
 
 interface CfrExplanationModalProps {

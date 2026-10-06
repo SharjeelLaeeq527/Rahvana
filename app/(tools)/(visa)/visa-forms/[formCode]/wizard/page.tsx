@@ -32,7 +32,7 @@ export default function FormWizardPage({ params }: Props) {
 
   return (
     <main className="min-h-screen">
-      <MultiStepForm formCode={normalizedCode} />
+      <MultiStepForm formCode={normalizedCode} mode="standalone" />
     </main>
   );
 }

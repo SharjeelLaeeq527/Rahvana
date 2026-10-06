@@ -18,6 +18,12 @@ interface HeaderProps {
   candidates?: CandidateProfile[];
   onSelectCandidate?: (id: string) => void;
   isMultiCandidate?: boolean;
+  /** True when the form is running outside a journey (standalone route). Hides journey-specific UI. */
+  isStandalone?: boolean;
+  /** True when rendered inside an embedded container (e.g. journey step panel). */
+  isEmbedded?: boolean;
+  /** Called when the user clicks the close / back button in embedded mode. */
+  onClose?: () => void;
 }
 
 export function Header({
@@ -31,6 +37,9 @@ export function Header({
   candidates,
   onSelectCandidate,
   isMultiCandidate = false,
+  isStandalone = false,
+  isEmbedded = false,
+  onClose,
 }: HeaderProps) {
   const [isCandidateDropdownOpen, setIsCandidateDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -68,15 +77,28 @@ export function Header({
               </button>
             )}
 
-            {/* Back to Journey Link */}
-            <Link
-              href="/journey"
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-[#0d7377] hover:bg-teal-50/80 border border-slate-200 transition-all shrink-0"
-              title="Return to your main journey dashboard"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Journey</span>
-            </Link>
+            {/* Back / Close button — journey mode shows a link back to journey, standalone/embedded shows a close button if provided */}
+            {!isStandalone && (
+              <Link
+                href="/journey"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-[#0d7377] hover:bg-teal-50/80 border border-slate-200 transition-all shrink-0"
+                title="Return to your main journey dashboard"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Journey</span>
+              </Link>
+            )}
+            {isStandalone && isEmbedded && onClose && (
+              <button
+                type="button"
+                onClick={onClose}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-[#0d7377] hover:bg-teal-50/80 border border-slate-200 transition-all shrink-0"
+                title="Close"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Back</span>
+              </button>
+            )}
 
             {/* Icon */}
             <div

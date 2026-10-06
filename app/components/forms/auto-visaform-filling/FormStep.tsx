@@ -209,6 +209,7 @@ interface FormStepProps {
   progressiveSubQuestionIndices?: Record<string, number>;
   formCode?: string;
   activeCandidate?: any;
+  journeyCategory?: string | null;
 }
 
 export function FormStep({
@@ -221,6 +222,7 @@ export function FormStep({
   progressiveSubQuestionIndices = {},
   formCode = "i130",
   activeCandidate,
+  journeyCategory,
 }: FormStepProps) {
   const [isClient, setIsClient] = useState(false);
   const [activeKeyboardField, setActiveKeyboardField] = useState<string | null>(null);
@@ -452,10 +454,31 @@ export function FormStep({
       );
     }
     if (field.type === "radio") {
+      let options = (field.options as RadioOption[]) || [];
+
+      // In journey mode for I-130 relationship, restrict options to the specific journey category
+      if (formCode === "i130" && field.key === "relationship") {
+        const cat = (journeyCategory || activeCandidate?.visaCategory || "").toUpperCase();
+        if (cat.includes("IR-5") || cat.includes("IR5")) {
+          options = options.filter((o) => o.value === "Parent");
+        } else if (
+          cat.includes("IR-1") ||
+          cat.includes("CR-1") ||
+          cat.includes("IR1") ||
+          cat.includes("CR1")
+        ) {
+          options = options.filter((o) => o.value === "Spouse");
+        } else if (cat.includes("IR-2") || cat.includes("IR2")) {
+          options = options.filter((o) => o.value === "Child");
+        } else if (cat.includes("F-4") || cat.includes("F4")) {
+          options = options.filter((o) => o.value === "BrotherSister");
+        }
+      }
+
       return (
         <RadioGroup
           name={field.key}
-          options={(field.options as RadioOption[]) || []}
+          options={options}
           value={formData[field.key] ?? ""}
           onChange={onInputChange}
           theme={inputTheme}

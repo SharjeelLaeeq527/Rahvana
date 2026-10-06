@@ -339,7 +339,12 @@ function extractFormCode(href: string | null): string | null {
         <div className="min-h-screen w-full">
           <PlanContext.Provider value={effectivePlan}>
             <main className="min-h-screen">
-              <DynamicMultiStepForm formCode={detectedFormCode} />
+              <DynamicMultiStepForm
+                formCode={detectedFormCode}
+                onClose={onClose}
+                isEmbedded={true}
+                {...(extraProps || {})}
+              />
             </main>
           </PlanContext.Provider>
         </div>
