@@ -102,8 +102,13 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
   const [activeCandidateId, setActiveCandidateIdState] = useState<string>("candidate-1");
   const candidatesRef = useRef<CandidateProfile[]>([]);
 
+  // Track whether we've already re-synced the localStorage backup to the server
+  // after a profile load that was missing candidates (avoids infinite loops).
+  const didResyncRef = useRef(false);
+
   // ── Derive or initialize candidates ───────────────────────────────────────
   const candidates: CandidateProfile[] = useMemo(() => {
+    // DB-backed candidates — normalize and use if present.
     if (profile?.candidates && Array.isArray(profile.candidates) && profile.candidates.length > 0) {
       // Normalize legacy candidate data so older accounts pick up the current rules
       // without a re-add or DB migration:
@@ -168,7 +173,7 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
       }
     } catch {}
 
-    // Default fallback candidate
+    // Default fallback — single candidate derived from the journey type.
     const visa = profile?.visaType || profile?.visaCategory || "IR-1";
     const defaults = getDefaultCandidatesForVisa(visa, "free", false);
     candidatesRef.current = defaults;
@@ -208,6 +213,25 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
       // sessionStorage unavailable — non-fatal
     }
   }, [profile?.activeCandidateId, candidates, activeCandidateId, isProfileLoading]);
+
+  // ── Re-sync localStorage backup → DB when candidates were restored from storage
+  // If the DB profile came back without candidates but localStorage had them,
+  // push them back to the server NOW (once, when profile finishes loading).
+  useEffect(() => {
+    if (isProfileLoading || didResyncRef.current) return;
+    if (!user?.id) return;
+    // If profile has no candidates but we're serving from localStorage,
+    // re-sync the localStorage copy back to the DB.
+    const profileHasCandidates =
+      profile?.candidates && Array.isArray(profile.candidates) && profile.candidates.length > 0;
+    if (!profileHasCandidates && candidatesRef.current.length > 0) {
+      didResyncRef.current = true;
+      updateProfile(
+        { candidates: candidatesRef.current, activeCandidateId },
+        { silent: true, immediate: true }
+      );
+    }
+  }, [isProfileLoading, user?.id, profile?.candidates, activeCandidateId, updateProfile]);
 
   // ── Set active candidate ──────────────────────────────────────────────────
   const setActiveCandidateId = useCallback(
@@ -281,6 +305,7 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
       } catch {}
 
       if (user?.id) {
+        writeCandidatesToStorage(user.id, updated);
         updateProfile(
           {
             candidates: updated,
@@ -329,6 +354,7 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
       } catch {}
 
       if (user?.id) {
+        writeCandidatesToStorage(user.id, updated);
         updateProfile({ candidates: updated }, { silent: true, localOnly: true });
 
         const updatedCand = updated.find((c) => c.id === id);
@@ -367,6 +393,8 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
 
       try {
         sessionStorage.setItem(ACTIVE_CANDIDATE_STORAGE_KEY, nextActiveId);
+        // Mirror updated candidate list to localStorage immediately.
+        if (user?.id) writeCandidatesToStorage(user.id, updated);
         // Clean up candidate-scoped local storage keys
         localStorage.removeItem(`rahvana_guide_sessions_${id}`);
         const keysToRemove: string[] = [];

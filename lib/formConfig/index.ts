@@ -33,8 +33,10 @@ const configs: Record<string, FormConfig> = {
   g1651,
 };
 
-// Function to get the form config based on the form code
 export const getFormConfig = (formCode: string): FormConfig | null => {
   const normalized = formCode.toLowerCase().replace(/[^a-z0-9]/g, "");
   return configs[normalized] || null;
 };
+
+export * from "./candidateScope";
+export * from "./types";

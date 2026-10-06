@@ -17,10 +17,14 @@ import {
   Crown,
   X,
   BookOpen,
+  FileText,
+  Wand2,
+  ArrowRight,
 } from "lucide-react";
 // import { InterviewOutcomeTool } from "./components/InterviewOutcomeTool";
 // import { Input221gTool } from "./components/Input221gTool";
 import { useStepEntitlement } from "./useStepEntitlement";
+import { ToolPageOverlay } from "@/app/components/shared/ToolPageOverlay";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { CfrExplanationModal } from "@/app/components/shared/CfrExplanationModal";
 import { useWizard } from "@/app/(main)/dashboard/hooks/useWizard";
@@ -272,6 +276,17 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
 
   // Responsive: track viewport width for conditional inline styles
   const [isMobile, setIsMobile] = useState(false);
+  const plan = useJourneyPlan(state);
+  const [toolOverlayHref, setToolOverlayHref] = useState<string | null>(null);
+
+  const openToolHref = (href: string) => {
+    if (!href) return;
+    if (href.startsWith("http://") || href.startsWith("https://")) {
+      window.open(href, "_blank", "noopener,noreferrer");
+    } else {
+      setToolOverlayHref(href);
+    }
+  };
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 640);
     check();
@@ -624,6 +639,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
 
   const filteredSteps = getFilteredGuideSteps();
   const guideProgress = (guideStep + 1) / (filteredSteps?.length || 1);
+
 
   // Determine if info-cards section should use 2 cols or 1 col
   const hasSecondCard = actionData.dropdown_card || actionData.mailing_card;
@@ -1574,7 +1590,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                 onClick={() => {
                   if (!stepEntitlement.guard()) return;
                   if (actionData.cta_button?.href) {
-                    window.open(actionData.cta_button.href, "_blank");
+                    openToolHref(actionData.cta_button.href);
                   }
                 }}
                 style={{
@@ -1800,6 +1816,8 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                     </span>
                   </button>
                 )}
+
+
 
                 <div style={{ marginTop: "16px", display: "flex", justifyContent: "flex-end" }}>
                   <button
@@ -2088,6 +2106,133 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
             )}
           </section>
 
+          {/* Form launchers are contextual — extracted to sit horizontally below the Info Cards Row */}
+          {/* G-1450: shown only when card payment selected */}
+          {selectedDropdown && selectedDropdown.includes("G-1450") && (
+            <div
+              style={{
+                marginTop: "12px",
+                padding: "13px 15px",
+                background: "#fefce8",
+                border: "1px solid #fde68a",
+                borderRadius: "12px",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
+                <div>
+                  <div style={{ fontSize: "12.5px", fontWeight: 700, color: COLORS.navy }}>
+                    Form G-1450
+                  </div>
+                  <div style={{ fontSize: "11.5px", color: COLORS.muted, marginTop: "1px" }}>
+                    Required for credit / debit / prepaid card payments to USCIS
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { if (!stepEntitlement.guard()) return; openToolHref("/visa-forms/g1450/wizard"); }}
+                  style={{ display: "inline-flex", alignItems: "center", gap: "5px", padding: "6px 14px", background: "var(--rv-ch1)", color: "#fff", border: "none", borderRadius: "8px", fontSize: "12px", fontWeight: 700, cursor: "pointer", flexShrink: 0, transition: "opacity 0.15s", whiteSpace: "nowrap" }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.opacity = "0.85"; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = "1"; }}
+                >
+                  <Wand2 size={13} /><span>Fill out form</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* G-1650: shown only when ACH payment selected */}
+          {selectedDropdown && selectedDropdown.includes("G-1650") && (
+            <div
+              style={{
+                marginTop: "12px",
+                padding: "13px 15px",
+                background: "#fefce8",
+                border: "1px solid #fde68a",
+                borderRadius: "12px",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
+                <div>
+                  <div style={{ fontSize: "12.5px", fontWeight: 700, color: COLORS.navy }}>
+                    Form G-1650
+                  </div>
+                  <div style={{ fontSize: "11.5px", color: COLORS.muted, marginTop: "1px" }}>
+                    Required for bank transfers (ACH / direct debit) to USCIS
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { if (!stepEntitlement.guard()) return; openToolHref("/visa-forms/g1650/wizard"); }}
+                  style={{ display: "inline-flex", alignItems: "center", gap: "5px", padding: "6px 14px", background: "var(--rv-ch1)", color: "#fff", border: "none", borderRadius: "8px", fontSize: "12px", fontWeight: 700, cursor: "pointer", flexShrink: 0, transition: "opacity 0.15s", whiteSpace: "nowrap" }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.opacity = "0.85"; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = "1"; }}
+                >
+                  <Wand2 size={13} /><span>Fill out form</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* G-1651: prompt to scroll to eligibility section */}
+          {selectedDropdown && selectedDropdown.includes("G-1651") && (
+            <div
+              style={{
+                marginTop: "12px",
+                padding: "11px 14px",
+                background: "#fefce8",
+                border: "1px solid #fde68a",
+                borderRadius: "12px",
+                display: "flex",
+                alignItems: "flex-start",
+                gap: "9px",
+              }}
+            >
+              <AlertCircle size={15} style={{ flexShrink: 0, color: "var(--rv-ch1-dark)", marginTop: "2px" }} />
+              <span style={{ fontSize: "12.5px", color: COLORS.ink, lineHeight: 1.55 }}>
+                Form G-1651 is only for people who genuinely can&apos;t pay online.{" "}
+                <button
+                  type="button"
+                  onClick={() => { g1651RequirementsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }); }}
+                  style={{ background: "none", border: "none", padding: 0, color: "var(--rv-ch1-dark)", fontWeight: 700, textDecoration: "underline", textUnderlineOffset: "2px", cursor: "pointer", fontSize: "inherit", fontFamily: "inherit" }}
+                >
+                  Check if you qualify below ↓
+                </button>
+              </span>
+            </div>
+          )}
+
+          {/* I-912: shown only when fee waiver selected (commented out for now) */}
+          {/*
+          {selectedDropdown && selectedDropdown.includes("I-912") && (
+            <div
+              style={{
+                marginTop: "12px",
+                padding: "13px 15px",
+                background: "#fefce8",
+                border: "1px solid #fde68a",
+                borderRadius: "12px",
+              }}
+            >
+              <div style={{ fontSize: "12.5px", fontWeight: 700, color: COLORS.navy, marginBottom: "3px" }}>
+                Form I-912 · Request for Fee Waiver
+              </div>
+              <div style={{ fontSize: "12px", color: COLORS.ink, lineHeight: 1.55, marginBottom: "10px" }}>
+                Only available to applicants at or below 150% of the Federal Poverty Level. If eligible, file Form I-912{" "}
+                <strong>instead of</strong> any payment form — do not submit both.
+              </div>
+              <button
+                type="button"
+                onClick={() => { if (!stepEntitlement.guard()) return; openToolHref("/visa-forms/i912/wizard"); }}
+                style={{ display: "inline-flex", alignItems: "center", gap: "5px", padding: "6px 14px", background: "var(--rv-ch1)", color: "#fff", border: "none", borderRadius: "8px", fontSize: "12px", fontWeight: 700, cursor: "pointer", transition: "opacity 0.15s", whiteSpace: "nowrap" }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.opacity = "0.85"; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = "1"; }}
+              >
+                <Wand2 size={13} /><span>Launch I-912 Auto-Filler</span>
+              </button>
+            </div>
+          )}
+          */}
+
           {/* Status Message (for dropdown or mailing) */}
           {statusSaved && (actionData.dropdown_card || actionData.mailing_card) && (
             <section
@@ -2300,12 +2445,12 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                     width: "36px",
                     height: "36px",
                     borderRadius: "12px",
-                    background: "var(--rv-ch1-soft)",
-                    border: "1px solid rgba(130, 132, 191, 0.3)",
+                    background: "#f1f5f9",
+                    border: "1px solid #e2e8f0",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    color: "var(--rv-ch1-dark)",
+                    color: COLORS.muted,
                     flexShrink: 0,
                   }}
                 >
@@ -2315,14 +2460,14 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   <div
                     style={{
                       fontSize: "11px",
-                      fontWeight: 800,
-                      letterSpacing: ".1em",
+                      fontWeight: 700,
+                      letterSpacing: ".06em",
                       textTransform: "uppercase",
-                      color: "var(--rv-ch1-dark)",
+                      color: COLORS.muted,
                       marginBottom: "2px",
                     }}
                   >
-                    USCIS Eligibility Requirements
+                    Who can use this form?
                   </div>
                   <h3
                     style={{
@@ -2342,46 +2487,43 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
-                  fontSize: "12.5px",
+                  fontSize: "12px",
                   fontWeight: 600,
-                  color: "var(--rv-ch1-dark)",
-                  background: "var(--rv-ch1-soft)",
-                  padding: "7px 14px",
+                  color: COLORS.muted,
+                  background: "#f8fafc",
+                  padding: "6px 12px",
                   borderRadius: "10px",
-                  border: "1px solid rgba(130, 132, 191, 0.3)",
+                  border: "1px solid #e2e8f0",
                   display: "inline-flex",
                   alignItems: "center",
-                  gap: "6px",
+                  gap: "5px",
                   textDecoration: "none",
                   transition: "background 0.2s",
                 }}
               >
-                Official Form G-1651 on uscis.gov &rarr;
+                Form G-1651 on uscis.gov &rarr;
               </a>
             </div>
 
             <div
               style={{
                 background: "#f8fafc",
-                borderRadius: "14px",
+                borderRadius: "12px",
                 border: "1px solid #e2e8f0",
-                padding: "12px 16px",
-                marginBottom: "14px",
+                padding: "11px 14px",
+                marginBottom: "12px",
               }}
             >
               <p
                 style={{
-                  fontSize: "13.5px",
+                  fontSize: "13px",
                   lineHeight: 1.6,
-                  color: "#1e293b",
+                  color: COLORS.ink,
                   margin: 0,
                 }}
               >
-                To request an exemption, you must{" "}
-                <strong>
-                  certify that electronic payment and collection methods are not possible
-                </strong>{" "}
-                and you meet <strong>1 or more</strong> of the following requirements:
+                You can use this form if paying online is genuinely not possible for you, and
+                you match <strong>at least one</strong> of the situations below:
               </p>
             </div>
 
@@ -2408,9 +2550,8 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                     width: "22px",
                     height: "22px",
                     borderRadius: "50%",
-                    background: "var(--rv-ch1-soft)",
-                    color: "var(--rv-ch1-dark)",
-                    border: "1px solid rgba(130, 132, 191, 0.25)",
+                    background: "#e2e8f0",
+                    color: COLORS.ink,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -2422,8 +2563,8 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                 >
                   1
                 </span>
-                <span style={{ fontSize: "13px", lineHeight: 1.55, color: "#334155" }}>
-                  You do not have access to banking services or electronic payment systems.
+                <span style={{ fontSize: "13px", lineHeight: 1.55, color: COLORS.ink }}>
+                  You do not have a bank account, credit card, debit card, or any other practical means to access online payment methods.
                 </span>
               </div>
 
@@ -2442,9 +2583,8 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                     width: "22px",
                     height: "22px",
                     borderRadius: "50%",
-                    background: "var(--rv-ch1-soft)",
-                    color: "var(--rv-ch1-dark)",
-                    border: "1px solid rgba(130, 132, 191, 0.25)",
+                    background: "#e2e8f0",
+                    color: COLORS.ink,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -2457,8 +2597,8 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                   2
                 </span>
                 <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                  <span style={{ fontSize: "13px", lineHeight: 1.55, color: "#334155" }}>
-                    Electronic disbursement would cause you undue hardship, as discussed in{" "}
+                  <span style={{ fontSize: "13px", lineHeight: 1.55, color: COLORS.ink }}>
+                    Paying online would create a real hardship for you — see{" "}
                     <button
                       type="button"
                       onClick={() => setIsCfrModalOpen(true)}
@@ -2479,7 +2619,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                       }}
                       title="Click to view explanation of 31 C.F.R. Part 208"
                     >
-                      31 C.F.R. Part 208
+                      what counts as hardship
                     </button>
                     .
                   </span>
@@ -2502,7 +2642,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                       }}
                     >
                       <BookOpen size={12} />
-                      <span>View hardship explanation</span>
+                      <span>See what qualifies</span>
                     </button>
                     <a
                       href="https://www.govinfo.gov/content/pkg/CFR-2025-title31-vol2/pdf/CFR-2025-title31-vol2-sec208-1.pdf"
@@ -2538,9 +2678,8 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                     width: "22px",
                     height: "22px",
                     borderRadius: "50%",
-                    background: "var(--rv-ch1-soft)",
-                    color: "var(--rv-ch1-dark)",
-                    border: "1px solid rgba(130, 132, 191, 0.25)",
+                    background: "#e2e8f0",
+                    color: COLORS.ink,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -2552,9 +2691,8 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                 >
                   3
                 </span>
-                <span style={{ fontSize: "13px", lineHeight: 1.55, color: "#334155" }}>
-                  Non-electronic transactions are necessary or desirable for national security or
-                  law enforcement reasons.
+                <span style={{ fontSize: "13px", lineHeight: 1.55, color: COLORS.ink }}>
+                  Your situation involves national security or law enforcement needs.
                 </span>
               </div>
 
@@ -2573,9 +2711,8 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                     width: "22px",
                     height: "22px",
                     borderRadius: "50%",
-                    background: "var(--rv-ch1-soft)",
-                    color: "var(--rv-ch1-dark)",
-                    border: "1px solid rgba(130, 132, 191, 0.25)",
+                    background: "#e2e8f0",
+                    color: COLORS.ink,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -2587,31 +2724,59 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                 >
                   4
                 </span>
-                <span style={{ fontSize: "13px", lineHeight: 1.55, color: "#334155" }}>
-                  There are other circumstances as determined by the Secretary of the Treasury, as
-                  reflected in regulations or other guidance.
+                <span style={{ fontSize: "13px", lineHeight: 1.55, color: COLORS.ink }}>
+                  You have a special waiver or situation officially approved by the U.S. Treasury Department.
                 </span>
               </div>
             </div>
 
+            {/* G-1651 fill-out prompt */}
             <div
               style={{
+                marginBottom: "12px",
+                padding: "13px 15px",
+                background: "#eff6ff",
+                border: "1px solid #bfdbfe",
+                borderRadius: "12px",
                 display: "flex",
                 alignItems: "center",
-                gap: "10px",
-                padding: "11px 15px",
-                borderRadius: "12px",
-                background: "var(--rv-ch1-soft)",
-                border: "1px solid rgba(130, 132, 191, 0.3)",
-                fontSize: "12.5px",
-                color: "var(--rv-ch1-dark)",
+                justifyContent: "space-between",
+                gap: "12px",
+                flexWrap: "wrap",
               }}
             >
-              <span>
-                <strong>Packet Assembly Note:</strong> If eligible for fee exemption, place
-                completed <strong>Form G-1651</strong> at the very front of the mailing packet
-                (before Form I-130).
-              </span>
+              <div>
+                <div style={{ fontSize: "12.5px", fontWeight: 700, color: COLORS.navy }}>
+                  Fill out Form G-1651
+                </div>
+                <div style={{ fontSize: "11.5px", color: COLORS.muted, marginTop: "1px" }}>
+                  If you match one of the situations above, use our tool to complete it
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => { if (!stepEntitlement.guard()) return; openToolHref("/visa-forms/g1651/wizard"); }}
+                style={{ display: "inline-flex", alignItems: "center", gap: "5px", padding: "6px 14px", background: "var(--rv-ch1)", color: "#fff", border: "none", borderRadius: "8px", fontSize: "12px", fontWeight: 700, cursor: "pointer", flexShrink: 0, transition: "opacity 0.15s", whiteSpace: "nowrap" }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.opacity = "0.85"; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = "1"; }}
+              >
+                <Wand2 size={13} /><span>Fill out form</span>
+              </button>
+            </div>
+
+            <div
+              style={{
+                padding: "10px 14px",
+                borderRadius: "10px",
+                background: "#f8fafc",
+                border: "1px solid #e2e8f0",
+                fontSize: "12px",
+                color: COLORS.muted,
+                lineHeight: 1.55,
+              }}
+            >
+              If you qualify, place your completed <strong style={{ color: COLORS.ink }}>Form G-1651</strong> at
+              the very front of your mailing packet, before Form I-130.
             </div>
           </section>
         )}
@@ -2924,6 +3089,12 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
       <CfrExplanationModal
         open={isCfrModalOpen}
         onOpenChange={setIsCfrModalOpen}
+      />
+
+      <ToolPageOverlay
+        toolHref={toolOverlayHref}
+        onClose={() => setToolOverlayHref(null)}
+        plan={plan}
       />
 
       <style>{`

@@ -137,7 +137,7 @@ export async function POST(req: NextRequest) {
       original_passport: formData.originalPassport || null,
       status: "pending",
       user_id: currentUserId,
-      // admin_notes: formData.candidate_id ? `[Candidate: ${formData.candidate_id}] ${formData.candidate_name || ''}`.trim() : "",
+      admin_notes: formData.candidate_id ? `[Candidate: ${formData.candidate_id}] ${formData.candidate_name || ''}`.trim() : "",
       candidate_id: formData.candidateId || formData.candidate_id || null,
       candidate_role: formData.candidateRole || formData.candidate_role || null,
       candidate_name: formData.candidateName || formData.candidate_name || null,

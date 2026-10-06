@@ -2,9 +2,12 @@ import {
   PlanTier,
   FeatureEntitlement,
   getEntitlement,
+  isAccessible,
   TIER_NAMES,
   TIER_PRICES,
 } from "@/lib/entitlements/config";
+
+export { isAccessible };
 
 /**
  * True when the purchase ledger contains the add-on — either the bare id

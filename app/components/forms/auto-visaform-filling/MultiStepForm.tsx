@@ -3,13 +3,14 @@
 
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { getFormConfig } from "@/lib/formConfig";
+import { getFormConfig, extractInheritableCandidateData } from "@/lib/formConfig";
+import { getCandidateJourneyKey, getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
 import { Header } from "./Header";
 import { ProgressFooter } from "./ProgressFooter";
 import { FormStep } from "./FormStep";
 import { ReviewPage } from "./ReviewPage";
 import type { Field as ConfigField } from "@/lib/formConfig/types";
-import { ChevronLeft, ChevronRight, Check, Sparkles, FileText, Lock } from "lucide-react";
+import { ChevronLeft, ChevronRight, Check, FileText, Lock } from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
 import { useUserProfile } from "@/app/context/UserProfileContext";
 import { useCandidate } from "@/app/context/CandidateContext";
@@ -26,6 +27,8 @@ import { usePlan } from "@/app/context/PlanContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { useFreePreview } from "./useFreePreview";
 import { MobileBottomSheet } from "@/app/components/shared/table/MobileBottomSheet";
+import { useResolveToolMode } from "@/lib/hooks/useResolveToolMode";
+import type { ToolMode, JourneyToolContext, ToolModeProps } from "@/types/tool-mode";
 
 // ============ TYPE DEFINITIONS ============
 interface FormProgressDraft {
@@ -66,8 +69,9 @@ const readDraftBackup = (formCode: string, journeyKey = "global") => {
       const parsed = JSON.parse(raw) as { draft?: FormProgressDraft };
       if (parsed?.draft) return parsed.draft;
     }
-    // Fallback to legacy global backup if candidate-specific doesn't exist
-    if (journeyKey !== "global") {
+    // Fallback to legacy global backup only for journey candidate keys — never for
+    // "global" itself (avoids double-read) or "standalone" (must stay isolated).
+    if (journeyKey !== "global" && journeyKey !== "standalone") {
       const fallbackRaw = window.localStorage.getItem(buildDraftStorageKey(formCode, "global"));
       if (fallbackRaw) {
         const parsed = JSON.parse(fallbackRaw) as { draft?: FormProgressDraft };
@@ -134,9 +138,11 @@ const fieldHasAnswer = (
   return (f.subQuestions ?? []).some((sub) => fieldHasAnswer(sub as ConfigField, data));
 };
 
-type MultiStepFormProps = {
+export interface MultiStepFormProps extends ToolModeProps {
   formCode: string;
-};
+  onClose?: () => void;
+  isEmbedded?: boolean;
+}
 
 const getLastAnsweredIndex = (fields: ConfigField[], data: Record<string, string>) => {
   let lastIndex = 0;
@@ -153,7 +159,20 @@ const getLastAnsweredIndex = (fields: ConfigField[], data: Record<string, string
   return lastIndex;
 };
 
-export function MultiStepForm({ formCode }: MultiStepFormProps) {
+export function MultiStepForm({
+  formCode,
+  mode: propMode,
+  journeyContext: propJourneyContext,
+  journeyTier: propJourneyTier,
+  onClose,
+  isEmbedded = false,
+}: MultiStepFormProps) {
+  const { isJourney, journeyContext } = useResolveToolMode({
+    mode: propMode,
+    journeyContext: propJourneyContext,
+    journeyTier: propJourneyTier,
+  });
+
   const plan = usePlan();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
@@ -164,7 +183,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
   const { isFreePreview, hasReachedLimit, limit, atOrPastAnchor, pastAnchor, stepPastAnchor } =
     useFreePreview({
-      canUseSmartFormFiller: plan.canUse("smart_form_filler"),
+      canUseSmartFormFiller: isJourney ? true : plan.canUse("smart_form_filler"),
       formFields: config?.formFields || [],
       formData,
       configuredLimit: config?.freePreviewLimit,
@@ -184,8 +203,18 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   const [cameFromIntro, setCameFromIntro] = useState(false);
   const savedScrollPosition = useRef<number>(0);
   const hasShownInitialIntro = useRef(false);
-  const { activeJourneyKey, activeCandidate } = useCandidate();
-  const draftJourneyKey = activeJourneyKey || "global";
+  const candidateCtx = useCandidate();
+  // Isolate candidate details strictly to Journey mode
+  const activeCandidate = isJourney ? candidateCtx.activeCandidate : null;
+  const candidates = isJourney ? candidateCtx.candidates : [];
+  const setActiveCandidateId = candidateCtx.setActiveCandidateId;
+  const isMultiCandidate = isJourney ? candidateCtx.isMultiCandidate : false;
+
+  const draftJourneyKey = isJourney
+    ? (journeyContext?.candidateId
+        ? getCandidateJourneyKey(journeyContext.journeyCategory, journeyContext.candidateId)
+        : (candidateCtx.activeJourneyKey || "candidate-1"))
+    : "standalone";
   const { user, isLoading: isAuthLoading } = useAuth();
   const {
     profile: userProfile,
@@ -203,6 +232,11 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   const [isNavigating, setIsNavigating] = useState(false);
   const [isAutoSaving, setIsAutoSaving] = useState(false);
   const [draftStatus, setDraftStatus] = useState<"draft" | "completed">("draft");
+  const [inheritedInfo, setInheritedInfo] = useState<{
+    isInherited: boolean;
+    count: number;
+    sourceName: string;
+  } | null>(null);
   // Mirror of draftStatus for reads inside dependency-free callbacks (handleChange).
   const draftStatusRef = useRef(draftStatus);
   useEffect(() => {
@@ -283,6 +317,89 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
           draftData = readDraftBackup(formCode, draftJourneyKey);
         }
 
+        let inheritedPayload: Record<string, string> | null = null;
+
+        // If no existing draft for this candidate, attempt to inherit data from any sibling candidate (JOURNEY mode only).
+        // Same-journey siblings (same visa category base) get a full clone — all fields are copied
+        // and the user just corrects the candidate-distinct ones (DOB, passport, name etc.).
+        // Cross-journey siblings only share petitioner/household fields.
+        if (isJourney && !draftData) {
+          const activeBase = getBaseVisaCategory(activeCandidate?.visaCategory || "");
+          const siblingCandidates = (candidates || []).filter(
+            (c) => c.id !== activeCandidate?.id
+          );
+
+          // If no structured candidates found or standard candidate-1 fallback
+          const candidateKeysToCheck: { key: string; name: string; sameJourney: boolean }[] = [];
+          if (siblingCandidates.length > 0) {
+            siblingCandidates.forEach((s) => {
+              const sKey = getCandidateJourneyKey(s.visaCategory, s.id);
+              const sName = s.fullName || s.label || s.name?.first || "Another Candidate";
+              const sameJourney = getBaseVisaCategory(s.visaCategory) === activeBase;
+              candidateKeysToCheck.push({ key: sKey, name: sName, sameJourney });
+            });
+          } else {
+            // Fallbacks — can't determine visa category, treat as cross-journey (partial inherit)
+            if (draftJourneyKey !== "candidate-1" && draftJourneyKey !== "global") {
+              candidateKeysToCheck.push({ key: "candidate-1", name: "Candidate 1", sameJourney: false });
+              candidateKeysToCheck.push({ key: "global", name: "Primary Candidate", sameJourney: false });
+            } else {
+              candidateKeysToCheck.push({ key: "ir5_candidate-2", name: "Candidate 2", sameJourney: false });
+            }
+          }
+
+          for (const candInfo of candidateKeysToCheck) {
+            let siblingDraft: FormProgressDraft | null = null;
+            if (user) {
+              try {
+                const sRes = await fetch(
+                  `/api/visa-forms/${formCode}/progress?journey_key=${candInfo.key}`,
+                  { signal: AbortSignal.timeout(3000) }
+                );
+                if (sRes.ok) {
+                  const sData = (await sRes.json()) as FormProgressResponse;
+                  siblingDraft = sData.draft;
+                }
+              } catch {
+                // Ignore network issues for fallback inheritance
+              }
+            }
+            if (!siblingDraft) {
+              siblingDraft = readDraftBackup(formCode, candInfo.key);
+            }
+
+            if (siblingDraft?.payload && Object.keys(siblingDraft.payload).length > 0) {
+              const { inheritedData, inheritedKeys } = extractInheritableCandidateData(
+                formCode,
+                config.formFields,
+                siblingDraft.payload,
+                activeCandidate
+                  ? {
+                      fullName: activeCandidate.fullName,
+                      name: activeCandidate.name,
+                      dateOfBirth: activeCandidate.dateOfBirth,
+                      placeOfBirth: activeCandidate.placeOfBirth,
+                      passportNumber: activeCandidate.passportNumber,
+                      cnic: activeCandidate.cnic,
+                    }
+                  : undefined,
+                { sameJourney: candInfo.sameJourney }
+              );
+              if (inheritedKeys.length > 0) {
+                inheritedPayload = inheritedData;
+                if (isMounted) {
+                  setInheritedInfo({
+                    isInherited: true,
+                    count: inheritedKeys.length,
+                    sourceName: candInfo.name,
+                  });
+                }
+                break; // Inherited from first valid sibling
+              }
+            }
+          }
+        }
+
         if (!isMounted) return;
 
         // Build sections for validation
@@ -340,24 +457,87 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
             validatedPayload[key] = value;
           });
 
+          // Journey-mode I-130: auto-seed the relationship from the visa category.
+          // Also skip straight to question index 1 (the next question after relationship)
+          // when on the first section — the relationship is locked by journey context
+          // and the user never needs to choose it.
+          let journeySkippedRelationship = false;
+          if (isJourney && formCode === "i130") {
+            const cat = (journeyContext?.journeyCategory || activeCandidate?.visaCategory || "").toUpperCase();
+            let defaultRel: string | null = null;
+            if (cat.includes("IR-5") || cat.includes("IR5")) defaultRel = "Parent";
+            else if (
+              cat.includes("IR-1") ||
+              cat.includes("CR-1") ||
+              cat.includes("IR1") ||
+              cat.includes("CR1")
+            )
+              defaultRel = "Spouse";
+            else if (cat.includes("IR-2") || cat.includes("IR2")) defaultRel = "Child";
+            else if (cat.includes("F-4") || cat.includes("F4")) defaultRel = "BrotherSister";
+
+            if (defaultRel) {
+              validatedPayload.relationship = defaultRel;
+              journeySkippedRelationship = true;
+            }
+          }
+
           if (isMounted) {
             setFormData(validatedPayload);
             setCurrentStep(validStep);
-            setCurrentQuestionIndex(validQuestionIndex);
+            // If we auto-seeded relationship and we're still on step 1 question 0,
+            // advance past the locked relationship card.
+            const resolvedQuestionIndex =
+              journeySkippedRelationship && validStep === 1 && validQuestionIndex === 0
+                ? 1
+                : validQuestionIndex;
+            setCurrentQuestionIndex(resolvedQuestionIndex);
             setView((draftData.view_mode || "form") as ViewType);
             setDraftStatus(draftData.completed ? "completed" : "draft");
             setProgressiveSubQuestionIndices(draftData.progressive_sub_question_indices || {});
             setLastSavedAt(draftData.last_saved_at || null);
           }
         } else {
-          // Fresh form initialization
+          // Fresh form initialization (or pre-filled with Candidate 1 shared data)
+          const initialData = {
+            ...config.getInitialFormData(),
+            ...(inheritedPayload || {}),
+          };
+          const initialSubs: Record<string, number> = {};
+
+          // Journey-mode I-130: auto-seed the relationship from the visa category and
+          // skip straight past the locked relationship card (start at question index 1).
+          let freshJourneySkippedRelationship = false;
+          if (isJourney && formCode === "i130") {
+            const cat = (journeyContext?.journeyCategory || activeCandidate?.visaCategory || "").toUpperCase();
+            let defaultRel: string | null = null;
+            if (cat.includes("IR-5") || cat.includes("IR5")) defaultRel = "Parent";
+            else if (
+              cat.includes("IR-1") ||
+              cat.includes("CR-1") ||
+              cat.includes("IR1") ||
+              cat.includes("CR1")
+            )
+              defaultRel = "Spouse";
+            else if (cat.includes("IR-2") || cat.includes("IR2")) defaultRel = "Child";
+            else if (cat.includes("F-4") || cat.includes("F4")) defaultRel = "BrotherSister";
+
+            if (defaultRel) {
+              initialData.relationship = defaultRel;
+              freshJourneySkippedRelationship = true;
+              // No need to pre-open relationship sub-questions progressively —
+              // the user starts at the NEXT question (index 1) entirely.
+            }
+          }
+
           if (isMounted) {
-            setFormData(config.getInitialFormData());
+            setFormData(initialData);
             setCurrentStep(1);
-            setCurrentQuestionIndex(0);
+            // Skip the locked relationship card in journey mode.
+            setCurrentQuestionIndex(freshJourneySkippedRelationship ? 1 : 0);
             setView("form");
             setDraftStatus("draft");
-            setProgressiveSubQuestionIndices({});
+            setProgressiveSubQuestionIndices(initialSubs);
             setLastSavedAt(null);
           }
         }
@@ -1006,6 +1186,27 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
     if (currentQuestionIndex > 0) {
       const prevIndex = currentQuestionIndex - 1;
+
+      // Journey I-130: relationship is auto-seeded and skipped — never navigate back to it.
+      const isLockedRelationshipCard =
+        isJourney &&
+        formCode === "i130" &&
+        prevIndex === 0 &&
+        currentStep === 1 &&
+        visibleFields[0]?.key === "relationship" &&
+        !!formData.relationship;
+
+      if (isLockedRelationshipCard) {
+        // Already at the first meaningful question — go back to section intro or
+        // previous step instead of showing the locked relationship card.
+        if (cameFromIntro) {
+          setShowSectionIntro(true);
+          setIntroVisible(true);
+          setCameFromIntro(false);
+        }
+        return;
+      }
+
       const prevField = visibleFields[prevIndex];
       if (prevField?.subQuestions && prevField.subQuestions.length > 0) {
         const applicablePrev = prevField.subQuestions.filter(
@@ -1707,6 +1908,13 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
         showMenu={view === "form"}
         isAutoSaving={isAutoSaving}
         lastSavedAt={lastSavedAt}
+        activeCandidate={activeCandidate}
+        candidates={candidates}
+        onSelectCandidate={(id) => setActiveCandidateId(id)}
+        isMultiCandidate={isMultiCandidate}
+        isStandalone={!isJourney}
+        isEmbedded={isEmbedded}
+        onClose={onClose}
       />
 
       {/* Mobile Bottom Tray */}
@@ -1883,6 +2091,37 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                         transition={{ duration: 0.3, ease: "easeOut" }}
                         className="space-y-6"
                       >
+                        {inheritedInfo?.isInherited && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="flex items-start justify-between gap-3 rounded-xl border border-teal-200 bg-linear-to-r from-teal-50 to-emerald-50/50 p-3.5 shadow-xs"
+                          >
+                            <div className="flex items-start gap-2.5">
+                              <div className="rounded-lg bg-teal-100 p-1.5 text-teal-800 shrink-0 mt-0.5">
+                                <FileText className="h-4 w-4" />
+                              </div>
+                              <div>
+                                <p className="text-xs font-bold text-teal-950">
+                                  Smart Pre-Fill Active ({inheritedInfo.count} fields copied)
+                                </p>
+                                <p className="text-[11px] text-teal-800 leading-relaxed mt-0.5">
+                                  Shared petitioner and household answers were automatically populated from{" "}
+                                  <strong>{inheritedInfo.sourceName}</strong>. Candidate-distinct details (Name, DOB,
+                                  Passport #) are marked with caution badges for individual review.
+                                </p>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setInheritedInfo(null)}
+                              className="text-xs font-semibold text-teal-700 hover:text-teal-900 shrink-0 px-2 py-1 rounded hover:bg-teal-100/60"
+                            >
+                              Dismiss
+                            </button>
+                          </motion.div>
+                        )}
+
                         <FormStep
                           stepNumber={currentStep}
                           sectionTitle={currentSection.title}
@@ -1893,6 +2132,8 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                           currentQuestionIndex={currentQuestionIndex}
                           navigationDirection={navigationDirection}
                           progressiveSubQuestionIndices={progressiveSubQuestionIndices}
+                          formCode={formCode}
+                          activeCandidate={activeCandidate}
                         />
 
                         {/* Navigation Buttons */}
@@ -1945,7 +2186,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
               {view === "review" && (
                 <div
-                  className="animated-border rounded-2xl border-2 bg-white p-4 md:p-8"
+                  className="animated-border rounded-2xl border-2 bg-white px-4 py-5 md:px-8 md:py-7 -mx-2 md:-mx-8 lg:-mx-16"
                   style={{
                     boxShadow:
                       "0 1px 3px rgba(0,0,0,0.03), 0 12px 40px -16px rgba(13,115,119,0.12)",
@@ -1965,6 +2206,8 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                     isFreePreview={isFreePreview}
                     freePreviewLimit={limit}
                     onUpgradeClick={() => setShowUpgradeModal(true)}
+                    formCode={formCode}
+                    activeCandidate={activeCandidate}
                   />
                 </div>
               )}

@@ -83,10 +83,12 @@ import ScenarioSelectionModal from "./components/ScenarioSelectionModal";
 import VisaCategoryTooltip from "./components/VisaCategoryToolTip";
 import RoadmapLayoutSpouse from "@/app/components/journey-spouse/RoadmapLayoutSpouse";
 import RoadmapLayoutEngine from "@/app/components/journey-engine/RoadmapLayoutEngine";
+import { useCandidate } from "@/app/context/CandidateContext";
 
 export default function IR1JourneyPage() {
   const { user } = useAuth();
   const userId = user?.id ?? null;
+  const { activeCandidate } = useCandidate();
   const { t, language } = useLanguage();
   const params = useParams();
   const visaJourneyParam = (params?.["visa-journey"] as string) || "ir-1";
@@ -153,6 +155,11 @@ export default function IR1JourneyPage() {
   const isSignedIn = !!user;
   const [journeyDecisionMade, setJourneyDecisionMade] = useState(false);
   const [startFreshModalOpen, setStartFreshModalOpen] = useState(false);
+
+  // Reset decision state when active candidate changes so fresh candidate journeys start properly
+  useEffect(() => {
+    setJourneyDecisionMade(false);
+  }, [activeCandidate?.id]);
 
   const showDecisionScreen = isLoaded && isSignedIn && hasExistingProgress && !journeyDecisionMade;
 
@@ -260,7 +267,14 @@ export default function IR1JourneyPage() {
 
   // IR-1/CR-1 keep the dedicated (legacy) spouse UI.
   if (visaJourney === "ir-1" || visaJourney === "cr-1") {
-    return <RoadmapLayoutSpouse data={roadmapData} state={state} actions={actions as any} />;
+    return (
+      <RoadmapLayoutSpouse
+        key={`${visaJourney}_${activeCandidate?.id || "default"}`}
+        data={roadmapData}
+        state={state}
+        actions={actions as any}
+      />
+    );
   }
 
   // Any JSON-driven journey (chapters-schema) renders through the generic engine —
@@ -268,7 +282,14 @@ export default function IR1JourneyPage() {
   // NO routing change needed. Old-schema journeys (f-1, germany: `stages`/no `chapters`)
   // fall through to the legacy UI below.
   if (Array.isArray((roadmapData as any).chapters)) {
-    return <RoadmapLayoutEngine data={roadmapData as any} state={state} actions={actions as any} />;
+    return (
+      <RoadmapLayoutEngine
+        key={`${visaJourney}_${activeCandidate?.id || "default"}`}
+        data={roadmapData as any}
+        state={state}
+        actions={actions as any}
+      />
+    );
   }
 
   // Fallback for old-schema journeys (Old UI)

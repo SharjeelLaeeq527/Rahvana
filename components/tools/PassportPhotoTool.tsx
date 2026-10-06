@@ -502,12 +502,7 @@ export default function PassportPhotoTool({
       <div className="relative z-10 flex w-full flex-col items-center px-4 pt-1 pb-4 sm:py-6">
         {/* Top Control Bar for when showHeader is false */}
         {!showHeader && (
-          <div className="mb-4 flex w-full max-w-2xl items-center justify-between">
-            <div className="inline-flex items-center gap-1.5 rounded-full border border-[#0d7377]/20 bg-[#0d7377]/10 px-3 py-1 text-xs font-semibold text-[#0d7377]">
-              <Camera className="h-3.5 w-3.5" />
-              <span>{isJourney ? "Journey Photo Tool" : "Standalone Tool"}</span>
-            </div>
-
+          <div className="mb-4 flex w-full max-w-2xl items-center justify-end">
             <button
               type="button"
               onClick={() => setShowHistoryModal(true)}
@@ -528,13 +523,8 @@ export default function PassportPhotoTool({
         {/* Header */}
         {showHeader && (
           <header className="mb-4 w-full max-w-2xl text-center sm:mb-8 md:mb-10">
-            {/* Top Bar with Mode Badge & Top-Right History Button */}
-            <div className="mb-3 flex w-full items-center justify-between">
-              <div className="inline-flex items-center gap-1.5 rounded-full border border-[#0d7377]/20 bg-[#0d7377]/10 px-3 py-1 text-xs font-semibold text-[#0d7377]">
-                <Camera className="h-3.5 w-3.5" />
-                <span>{isJourney ? "Journey Photo Tool" : "Standalone Tool"}</span>
-              </div>
-
+            {/* Top Bar with Top-Right History Button */}
+            <div className="mb-3 flex w-full items-center justify-end">
               <button
                 type="button"
                 onClick={() => setShowHistoryModal(true)}
