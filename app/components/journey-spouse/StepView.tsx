@@ -163,6 +163,7 @@ import {
   isPccRequestLocked,
   type JourneyServiceRecord,
 } from "@/lib/journey/toolModeGuards";
+import { useJourneyServiceStatus, patchPccReceived } from "@/lib/journey/useJourneyServiceStatus";
 import { ApUpdateModal } from "./PortalWalletManager";
 import { HouseholdSponsorshipTool } from "./components/HouseholdSponsorshipTool";
 import { DocumentQuestionnaire } from "@/app/components/questionnaire/DocumentQuestionnaire";
@@ -376,6 +377,23 @@ export const StepView: React.FC<StepViewProps> = ({
   const isChapter1 = sId.startsWith("step_1_");
   const isChapter2 = sId.startsWith("step_2_");
   const isChapter3 = sId.startsWith("step_3_");
+  // Journey identity for service tool overlays — derived from data.journey_type
+  // (spouse defaults to IR-1) instead of a hardcoded value.
+  const journeyTypeToken = (data.journey_type || "IR1").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  const toolJourneyCategory = journeyTypeToken.startsWith("IR")
+    ? `IR-${journeyTypeToken.slice(2)}`
+    : journeyTypeToken || "IR-1";
+  const toolJourneySlug = `${journeyTypeToken.toLowerCase()}-journey`;
+  // ── Server-synced Medical / PCC service status ──────────────────────────────
+  // The step summary card reflects the LIVE journey request, so deleting it in the
+  // backend clears the card instead of showing ghost info.
+  const serviceStatus = useJourneyServiceStatus({
+    journeySlug: toolJourneySlug,
+    candidateId: (state as any)?.candidateId || "candidate-1",
+    medicalMetadata: (state.metadata?.medicalBooking as JourneyServiceRecord) ?? null,
+    pccMetadata: (state.metadata?.pccFiling as JourneyServiceRecord) ?? null,
+    updateMetadata: actions?.updateMetadata,
+  });
   // ── Step-level entitlement gating ──────────────────────────────────────────
   const plan = useJourneyPlan(state);
   const effectiveTier = plan.tier;
@@ -409,7 +427,9 @@ export const StepView: React.FC<StepViewProps> = ({
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const candidateCtx = useCandidate();
     activeCandidateId = candidateCtx?.activeCandidateId ?? null;
-  } catch { /* not inside CandidateProvider — single-candidate journey */ }
+  } catch {
+    /* not inside CandidateProvider — single-candidate journey */
+  }
 
   const {
     openUploadModal,
@@ -1440,7 +1460,11 @@ export const StepView: React.FC<StepViewProps> = ({
           {/* MEDICAL BOOKING TOOL RENDERING */}
           {tool.type === "medical_booking" &&
             (() => {
-              const record = (state.metadata?.medicalBooking as JourneyServiceRecord) ?? null;
+              const record =
+                serviceStatus.medicalRecord ??
+                (serviceStatus.loading
+                  ? ((state.metadata?.medicalBooking as JourneyServiceRecord) ?? null)
+                  : null);
 
               const locked = isJourneyRequestLocked(record);
 
@@ -1461,7 +1485,11 @@ export const StepView: React.FC<StepViewProps> = ({
           {/* PCC FILING TOOL RENDERING */}
           {tool.type === "pcc_filing" &&
             (() => {
-              const record = (state.metadata?.pccFiling as JourneyServiceRecord) ?? null;
+              const record =
+                serviceStatus.pccRecord ??
+                (serviceStatus.loading
+                  ? ((state.metadata?.pccFiling as JourneyServiceRecord) ?? null)
+                  : null);
 
               const locked = isPccRequestLocked(record);
 
@@ -1477,13 +1505,16 @@ export const StepView: React.FC<StepViewProps> = ({
                   }}
                   onMarkReceived={() => {
                     if (!record) return;
+                    const receivedAt = new Date().toISOString().slice(0, 10);
                     actions.updateMetadata({
-                      pccFiling: {
-                        ...record,
-                        status: "received",
-                        receivedAt: new Date().toISOString().slice(0, 10),
-                      },
+                      pccFiling: { ...record, status: "received", receivedAt },
                     });
+                    // Persist to the live journey request server-side (best-effort).
+                    if (serviceStatus.activePccRow?.id) {
+                      patchPccReceived(serviceStatus.activePccRow.id, receivedAt).then(() =>
+                        serviceStatus.refetch()
+                      );
+                    }
                   }}
                 />
               );
@@ -4302,19 +4333,24 @@ export const StepView: React.FC<StepViewProps> = ({
       {/* Medical Appointment Booking Tool Overlay */}
       <MedicalAppointmentTool
         isOpen={isMedicalBookingOpen}
-        onClose={() => setIsMedicalBookingOpen(false)}
+        onClose={() => {
+          setIsMedicalBookingOpen(false);
+          serviceStatus.refetch(); // pick up any create/delete changes made while open
+        }}
         mode="journey"
         journeyTier={state?.subscriptionTier ?? (state as any)?.subscription_tier}
         journeyContext={{
-          journeySlug: "ir1-journey", // engine: `${data.journey_type.toLowerCase()}-journey` (fallback "ir5-journey")
-          journeyCategory: "IR-1", // engine: data.journey_type || "IR-5"
+          journeySlug: toolJourneySlug,
+          journeyCategory: toolJourneyCategory,
           candidateId: (state as any).candidateId || "candidate-1",
           backendId: (state as any).backendId || null,
           subscriptionTier: state?.subscriptionTier ?? (state as any)?.subscription_tier,
         }}
+        existingRequests={serviceStatus.medicalRows}
         onSave={(record) => {
           actions.updateMetadata({ medicalBooking: record });
           setIsMedicalBookingOpen(false);
+          serviceStatus.refetch();
           if (!isCompleted) actions.toggleComplete(sId); // sId = current step key ("step_3_1")
         }}
       />
@@ -4322,19 +4358,24 @@ export const StepView: React.FC<StepViewProps> = ({
       {/* Police Character Certificate Filing Tool Overlay */}
       <PccFilingTool
         isOpen={isPccFilingOpen}
-        onClose={() => setIsPccFilingOpen(false)}
+        onClose={() => {
+          setIsPccFilingOpen(false);
+          serviceStatus.refetch(); // pick up any create/delete changes made while open
+        }}
         mode="journey"
         journeyTier={state?.subscriptionTier ?? (state as any)?.subscription_tier}
         journeyContext={{
-          journeySlug: "ir1-journey",
-          journeyCategory: "IR-1",
+          journeySlug: toolJourneySlug,
+          journeyCategory: toolJourneyCategory,
           candidateId: (state as any).candidateId || "candidate-1",
           backendId: (state as any).backendId || null,
           subscriptionTier: state?.subscriptionTier ?? (state as any)?.subscription_tier,
         }}
+        existingRequests={serviceStatus.pccRows}
         onSave={(record) => {
           actions.updateMetadata({ pccFiling: record });
           setIsPccFilingOpen(false);
+          serviceStatus.refetch();
           if (!isCompleted) actions.toggleComplete(sId); // sId = "step_3_3"
         }}
       />

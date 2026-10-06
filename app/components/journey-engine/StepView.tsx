@@ -162,6 +162,7 @@ import {
   isPccRequestLocked,
   type JourneyServiceRecord,
 } from "@/lib/journey/toolModeGuards";
+import { useJourneyServiceStatus, patchPccReceived } from "@/lib/journey/useJourneyServiceStatus";
 import { ApUpdateModal } from "./PortalWalletManager";
 import { HouseholdSponsorshipTool } from "./components/HouseholdSponsorshipTool";
 import { DocumentQuestionnaire } from "@/app/components/questionnaire/DocumentQuestionnaire";
@@ -309,6 +310,17 @@ export const StepView: React.FC<StepViewProps> = ({
   const toolJourneySlug = `${journeyTypeToken.toLowerCase()}-journey`;
   const isUscisAccountStep = sId === "step_1_6" || (isIr5Journey && sId === "step_1_5");
   const inlineGuideData = data.inline_guide_data || {};
+
+  // ── Server-synced Medical / PCC service status ──────────────────────────────
+  // The step summary card reflects the LIVE journey request (not just local metadata),
+  // so deleting a request in the backend clears the card instead of showing ghost info.
+  const serviceStatus = useJourneyServiceStatus({
+    journeySlug: toolJourneySlug,
+    candidateId: (state as any)?.candidateId || "candidate-1",
+    medicalMetadata: (state.metadata?.medicalBooking as JourneyServiceRecord) ?? null,
+    pccMetadata: (state.metadata?.pccFiling as JourneyServiceRecord) ?? null,
+    updateMetadata: actions?.updateMetadata,
+  });
   // ── Step-level entitlement gating ──────────────────────────────────────────
   const plan = useJourneyPlan(state);
   const effectiveTier = plan.tier;
@@ -1388,7 +1400,11 @@ export const StepView: React.FC<StepViewProps> = ({
           {/* MEDICAL BOOKING TOOL RENDERING */}
           {tool.type === "medical_booking" &&
             (() => {
-              const record = (state.metadata?.medicalBooking as JourneyServiceRecord) ?? null;
+              const record =
+                serviceStatus.medicalRecord ??
+                (serviceStatus.loading
+                  ? ((state.metadata?.medicalBooking as JourneyServiceRecord) ?? null)
+                  : null);
 
               const locked = isJourneyRequestLocked(record);
 
@@ -1409,7 +1425,11 @@ export const StepView: React.FC<StepViewProps> = ({
           {/* PCC FILING TOOL RENDERING */}
           {tool.type === "pcc_filing" &&
             (() => {
-              const record = (state.metadata?.pccFiling as JourneyServiceRecord) ?? null;
+              const record =
+                serviceStatus.pccRecord ??
+                (serviceStatus.loading
+                  ? ((state.metadata?.pccFiling as JourneyServiceRecord) ?? null)
+                  : null);
 
               const locked = isPccRequestLocked(record);
 
@@ -1425,13 +1445,16 @@ export const StepView: React.FC<StepViewProps> = ({
                   }}
                   onMarkReceived={() => {
                     if (!record) return;
+                    const receivedAt = new Date().toISOString().slice(0, 10);
                     actions.updateMetadata({
-                      pccFiling: {
-                        ...record,
-                        status: "received",
-                        receivedAt: new Date().toISOString().slice(0, 10),
-                      },
+                      pccFiling: { ...record, status: "received", receivedAt },
                     });
+                    // Persist to the live journey request server-side (best-effort).
+                    if (serviceStatus.activePccRow?.id) {
+                      patchPccReceived(serviceStatus.activePccRow.id, receivedAt).then(() =>
+                        serviceStatus.refetch()
+                      );
+                    }
                   }}
                 />
               );
@@ -4250,7 +4273,10 @@ export const StepView: React.FC<StepViewProps> = ({
       {/* Medical Appointment Booking Tool Overlay */}
       <MedicalAppointmentTool
         isOpen={isMedicalBookingOpen}
-        onClose={() => setIsMedicalBookingOpen(false)}
+        onClose={() => {
+          setIsMedicalBookingOpen(false);
+          serviceStatus.refetch(); // pick up any create/delete changes made while open
+        }}
         mode="journey"
         journeyTier={state?.subscriptionTier ?? (state as any)?.subscription_tier}
         journeyContext={{
@@ -4260,9 +4286,11 @@ export const StepView: React.FC<StepViewProps> = ({
           backendId: (state as any).backendId || null,
           subscriptionTier: state?.subscriptionTier ?? (state as any)?.subscription_tier,
         }}
+        existingRequests={serviceStatus.medicalRows}
         onSave={(record) => {
           actions.updateMetadata({ medicalBooking: record });
           setIsMedicalBookingOpen(false);
+          serviceStatus.refetch();
           if (!isCompleted) actions.toggleComplete(sId); // sId = current step key ("step_3_1")
         }}
       />
@@ -4270,7 +4298,10 @@ export const StepView: React.FC<StepViewProps> = ({
       {/* Police Character Certificate Filing Tool Overlay */}
       <PccFilingTool
         isOpen={isPccFilingOpen}
-        onClose={() => setIsPccFilingOpen(false)}
+        onClose={() => {
+          setIsPccFilingOpen(false);
+          serviceStatus.refetch(); // pick up any create/delete changes made while open
+        }}
         mode="journey"
         journeyTier={state?.subscriptionTier ?? (state as any)?.subscription_tier}
         journeyContext={{
@@ -4280,9 +4311,11 @@ export const StepView: React.FC<StepViewProps> = ({
           backendId: (state as any).backendId || null,
           subscriptionTier: state?.subscriptionTier ?? (state as any)?.subscription_tier,
         }}
+        existingRequests={serviceStatus.pccRows}
         onSave={(record) => {
           actions.updateMetadata({ pccFiling: record });
           setIsPccFilingOpen(false);
+          serviceStatus.refetch();
           if (!isCompleted) actions.toggleComplete(sId); // sId = "step_3_3"
         }}
       />
@@ -5150,7 +5183,9 @@ export const StepView: React.FC<StepViewProps> = ({
                             <ZoomableGuideImage
                               key={(currentTutStep as TutorialStepV3).media?.src}
                               src={(currentTutStep as TutorialStepV3).media?.src || ""}
-                              alt={(currentTutStep as TutorialStepV3).screenTitle || "Tutorial image"}
+                              alt={
+                                (currentTutStep as TutorialStepV3).screenTitle || "Tutorial image"
+                              }
                               fill
                               sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 580px"
                               quality={95}
@@ -5161,7 +5196,9 @@ export const StepView: React.FC<StepViewProps> = ({
                               key={(currentTutStep as TutorialStepV3).media?.src}
                               src={(currentTutStep as TutorialStepV3).media?.src || ""}
                               poster={(currentTutStep as TutorialStepV3).videoMeta?.poster}
-                              alt={(currentTutStep as TutorialStepV3).screenTitle || "Tutorial video"}
+                              alt={
+                                (currentTutStep as TutorialStepV3).screenTitle || "Tutorial video"
+                              }
                             />
                           )
                         ) : (
