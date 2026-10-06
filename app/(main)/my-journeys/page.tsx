@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, CheckCircle2, Clock3, Plus, Route, Users } from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
 import { useCandidate } from "@/app/context/CandidateContext";
+import { useUserProfile } from "@/app/context/UserProfileContext";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { JourneyProgressRecord, listUserJourneys } from "@/lib/journey/journeyProgressService";
 import { getCandidateJourneyKey, getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
@@ -193,9 +194,11 @@ const getJourneyStatus = (journey: JourneyProgressRecord, progress: number) => {
 
 export default function MyJourneysPage() {
   const { user, isLoading: authLoading } = useAuth();
+  const { profile } = useUserProfile();
   const { showToast } = useToast();
   const router = useRouter();
-  const { candidates, setActiveCandidateId, activeCandidateId, isMultiCandidate } = useCandidate();
+  const { candidates, setActiveCandidateId, activeCandidateId, activeCandidate, isMultiCandidate } =
+    useCandidate();
 
   const [journeys, setJourneys] = useState<JourneyProgressRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -293,83 +296,106 @@ export default function MyJourneysPage() {
       activity: string;
     }> = [];
 
-    const candidateKeyMatched = new Set<string>();
+    // Track processed canonical category IDs to guarantee each visa category gets exactly 1 parent card
+    const processedCanonicals = new Set<string>();
 
-    // 1. Map candidate profiles to individual journeys
-    candidates.forEach((cand) => {
-      const visaCategory = cand.visaCategory || "IR-5";
-      const baseCategory = getBaseVisaCategory(visaCategory);
-      const candidateKey = getCandidateJourneyKey(visaCategory, cand.id);
-      const cleanKey = candidateKey.toLowerCase().replace(/[^a-z0-9]/g, "");
+    // ── 1. Handle Multi-Candidate Visas (IR-5) as ONE Parent Card ─────────────
+    if (IR5_ENABLED) {
+      const ir5Candidates = candidates.filter((c) => {
+        const cat = getBaseVisaCategory(c.visaCategory || "IR-5");
+        return cat === "IR-5";
+      });
 
-      // Find matching DB journey
-      const matchingJourney = journeys.find((j) => {
-        const cleanJ = (j.journey_id || "").toLowerCase().replace(/[^a-z0-9]/g, "");
-        if (cleanJ === cleanKey) return true;
-        // Legacy candidate 1 match (e.g. "ir5" vs "ir-5")
-        if (cand.id === "candidate-1") {
-          const cleanBase = baseCategory.toLowerCase().replace(/[^a-z0-9]/g, "");
-          if (cleanJ === cleanBase || cleanJ === `ir${cleanBase}`) return true;
+      const ir5DbJourneys = journeys.filter((j) => {
+        const cat = getBaseVisaCategory(j.journey_id);
+        return cat === "IR-5";
+      });
+
+      // User has IR-5 if they have IR-5 candidates, IR-5 DB journeys, or profile has IR-5
+      const profileVisa = profile?.visaType || profile?.visaCategory;
+      const hasIr5 =
+        ir5Candidates.length > 0 ||
+        ir5DbJourneys.length > 0 ||
+        getBaseVisaCategory(profileVisa) === "IR-5";
+
+      if (hasIr5) {
+        processedCanonicals.add("ir5");
+
+        // Find active candidate's journey or the most progressed IR-5 journey
+        const activeIr5Cand = ir5Candidates.find((c) => c.id === activeCandidateId);
+        const activeIr5Key = activeIr5Cand
+          ? getCandidateJourneyKey("IR-5", activeIr5Cand.id).toLowerCase().replace(/[^a-z0-9]/g, "")
+          : null;
+
+        const activeDbJourney =
+          (activeIr5Key &&
+            ir5DbJourneys.find(
+              (j) => (j.journey_id || "").toLowerCase().replace(/[^a-z0-9]/g, "") === activeIr5Key
+            )) ||
+          ir5DbJourneys[0];
+
+        const progress = activeDbJourney ? getProgressPercent(activeDbJourney) : 0;
+        const completedSteps = activeDbJourney ? getCompletedSteps(activeDbJourney) : 0;
+        const totalSteps = activeDbJourney ? getTotalSteps(activeDbJourney) : 28;
+        const status = activeDbJourney
+          ? getJourneyStatus(activeDbJourney, progress)
+          : {
+              label: "Draft",
+              className: "border-white/25 bg-slate-900/55 text-white backdrop-blur-md",
+              dotClassName: "bg-slate-300",
+            };
+
+        const meta = resolveJourneyMeta("IR-5");
+
+        // Determine highest tier among IR-5 candidates/journeys
+        const tierHierarchy: Record<string, number> = {
+          executive: 3,
+          premium: 2,
+          basic: 1,
+          free: 0,
+        };
+        let highestTier = "free";
+        for (const c of ir5Candidates) {
+          const t = (c.tier || "free").toLowerCase();
+          if ((tierHierarchy[t] ?? 0) > (tierHierarchy[highestTier] ?? 0)) highestTier = t;
         }
-        return false;
-      });
+        for (const j of ir5DbJourneys) {
+          const t = (j.subscription_tier || "free").toLowerCase();
+          if ((tierHierarchy[t] ?? 0) > (tierHierarchy[highestTier] ?? 0)) highestTier = t;
+        }
 
-      if (matchingJourney) {
-        candidateKeyMatched.add(matchingJourney.id);
+        const isIr5Active =
+          activeCandidate && getBaseVisaCategory(activeCandidate.visaCategory || "IR-5") === "IR-5";
+
+        result.push({
+          id: activeDbJourney?.id || "parent_ir5_journey",
+          journey: activeDbJourney,
+          progress,
+          completedSteps,
+          totalSteps,
+          meta: {
+            ...meta,
+            isCurrentActive: Boolean(isIr5Active),
+          },
+          status,
+          subscriptionTier: highestTier,
+          activity: activeDbJourney ? getActivityLabel(activeDbJourney) : "Not started",
+        });
       }
+    }
 
-      // Progress & steps
-      const progress = matchingJourney ? getProgressPercent(matchingJourney) : 0;
-      const completedSteps = matchingJourney ? getCompletedSteps(matchingJourney) : 0;
-      const totalSteps = matchingJourney ? getTotalSteps(matchingJourney) : 10;
-      const status = matchingJourney
-        ? getJourneyStatus(matchingJourney, progress)
-        : {
-            label: "Draft",
-            className: "border-white/25 bg-slate-900/55 text-white backdrop-blur-md",
-            dotClassName: "bg-slate-300",
-          };
-
-      const baseMeta = resolveJourneyMeta(visaCategory);
-      const candLabel = cand.fullName || cand.label;
-      const relationLabel = cand.relation && cand.relation !== "Other" ? cand.relation : "";
-
-      const title =
-        isMultiCandidate || cand.fullName
-          ? `${candLabel}${relationLabel && !candLabel.includes(relationLabel) ? ` (${relationLabel})` : ""} — ${baseMeta.name}`
-          : baseMeta.name;
-
-      // If IR5 is gated and this candidate has IR5, skip
-      if (!IR5_ENABLED && baseCategory === "IR-5") {
-        return;
-      }
-
-      result.push({
-        id: matchingJourney?.id || `candidate_${cand.id}`,
-        journey: matchingJourney,
-        progress,
-        completedSteps,
-        totalSteps,
-        meta: {
-          ...baseMeta,
-          name: title,
-          route: getJourneyHrefByType(visaCategory),
-          candidateId: cand.id,
-          candidateBadge: isMultiCandidate || cand.fullName ? candLabel : undefined,
-          candidateRelation: relationLabel || undefined,
-          isCurrentActive: cand.id === activeCandidateId,
-        },
-        status,
-        subscriptionTier: cand.tier || matchingJourney?.subscription_tier || "free",
-        activity: matchingJourney ? getActivityLabel(matchingJourney) : "Not started",
-      });
-    });
-
-    // 2. Include any remaining standalone journeys from DB that didn't match candidates (e.g. F-1 student journey)
+    // ── 2. Handle DB-backed Journeys (IR-1, F-1, etc.) ─────────────────────────
     journeys.forEach((j) => {
-      if (candidateKeyMatched.has(j.id)) return;
       const canonical = normalizeJourneyId(j.journey_id);
-      if (!IR5_ENABLED && (canonical === "ir5" || canonical.startsWith("ir5_"))) return;
+      const baseCategory = getBaseVisaCategory(j.journey_id);
+      const canonicalKey =
+        baseCategory === "IR-5" ? "ir5" : baseCategory === "IR-1" ? "ir1" : canonical;
+
+      // Skip if already processed (e.g. IR-5 handled above)
+      if (processedCanonicals.has(canonicalKey)) return;
+      if (!IR5_ENABLED && canonicalKey === "ir5") return;
+
+      processedCanonicals.add(canonicalKey);
 
       const progress = getProgressPercent(j);
       const completedSteps = getCompletedSteps(j);
@@ -377,21 +403,73 @@ export default function MyJourneysPage() {
       const meta = resolveJourneyMeta(j.journey_id);
       const status = getJourneyStatus(j, progress);
 
+      const isCurrentActive =
+        baseCategory === "IR-1"
+          ? activeCandidate && getBaseVisaCategory(activeCandidate.visaCategory) === "IR-1"
+          : true;
+
       result.push({
         id: j.id,
         journey: j,
         progress,
         completedSteps,
         totalSteps,
-        meta,
+        meta: {
+          ...meta,
+          isCurrentActive: Boolean(isCurrentActive),
+        },
         status,
         subscriptionTier: j.subscription_tier || "free",
         activity: getActivityLabel(j),
       });
     });
 
+    // ── 3. Fallback for Profile-declared Visa if no DB journey exists yet ───────
+    const profileVisa = profile?.visaType || profile?.visaCategory;
+    if (profileVisa) {
+      const baseCategory = getBaseVisaCategory(profileVisa);
+      const canonicalKey =
+        baseCategory === "IR-5"
+          ? "ir5"
+          : baseCategory === "IR-1"
+          ? "ir1"
+          : profileVisa.toLowerCase();
+
+      if (!processedCanonicals.has(canonicalKey)) {
+        if (IR5_ENABLED || canonicalKey !== "ir5") {
+          processedCanonicals.add(canonicalKey);
+          const meta = resolveJourneyMeta(profileVisa);
+          result.push({
+            id: `profile_${canonicalKey}`,
+            progress: 0,
+            completedSteps: 0,
+            totalSteps: canonicalKey === "ir1" ? 29 : 10,
+            meta: {
+              ...meta,
+              isCurrentActive: false,
+            },
+            status: {
+              label: "Draft",
+              className: "border-white/25 bg-slate-900/55 text-white backdrop-blur-md",
+              dotClassName: "bg-slate-300",
+            },
+            subscriptionTier: profile?.subscriptionTier || "free",
+            activity: "Not started",
+          });
+        }
+      }
+    }
+
     return result;
-  }, [candidates, journeys, activeCandidateId, isMultiCandidate]);
+  }, [
+    candidates,
+    journeys,
+    activeCandidateId,
+    activeCandidate,
+    profile?.visaType,
+    profile?.visaCategory,
+    profile?.subscriptionTier,
+  ]);
 
   const startNewJourney = () => {
     router.push("/visa-category");
