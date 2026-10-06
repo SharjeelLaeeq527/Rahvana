@@ -7,6 +7,10 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const candidateId = searchParams.get("candidateId");
+    // scope=journey → only requests created from inside a journey (for the journey step card /
+    // embedded service views). Default → standalone only (My Resources), i.e. journey rows hidden.
+    const scope = searchParams.get("scope");
+    const journeySlug = searchParams.get("journeySlug");
 
     // 1. Authenticate user session
     const authClient = await createClient();
@@ -83,7 +87,23 @@ export async function GET(req: NextRequest) {
 
     let medicalAppointments = appointmentsData || [];
     let translationDocuments = translationsData || [];
-    let consultationBookings = consultationData || [];
+    const consultationBookings = consultationData || [];
+
+    // Origin split: journey-scoped rows vs standalone rows. Legacy rows without a
+    // source are treated as standalone so My Resources keeps showing them.
+    if (scope === "journey") {
+      sindhPccRequests = sindhPccRequests.filter(
+        (item: any) =>
+          item.source === "journey" && (!journeySlug || item.journey_slug === journeySlug)
+      );
+      medicalAppointments = medicalAppointments.filter(
+        (item: any) =>
+          item.source === "journey" && (!journeySlug || item.journey_slug === journeySlug)
+      );
+    } else {
+      sindhPccRequests = sindhPccRequests.filter((item: any) => item.source !== "journey");
+      medicalAppointments = medicalAppointments.filter((item: any) => item.source !== "journey");
+    }
 
     // Filter by candidateId if provided
     if (candidateId) {
@@ -151,4 +171,3 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Failed to fetch services status" }, { status: 500 });
   }
 }
-
