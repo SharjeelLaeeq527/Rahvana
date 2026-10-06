@@ -1039,6 +1039,12 @@ External: Stripe . Resend . EasyPost . Gemini . USCIS . GA4 . Sheets . OCR.space
   which removes the row from state and refreshes statuses/notifications in place. Do NOT delete
   by re-running `initialize(userId)` (it re-fetches the whole vault and feels like a page
   refresh).
+- **Modal scroll lock is global.** `app/components/shared/ModalScrollLock.tsx` (mounted once in
+  `app/layout.tsx`) locks `<html>` scroll whenever a visible, interactive, full-viewport
+  `.fixed` element with z-index > 0 is on screen (detected via MutationObserver, so nested
+  modals can't unlock early). New modals need no per-component `body.style.overflow` code;
+  just keep the overlay `fixed inset-0` with a positive z-index, and make card max-height +
+  overlay padding fit within `100dvh` or the overlay itself will scroll slightly.
 - **Two encryption schemes** — global key for portal-wallet/profile fields
   (`lib/encryption.ts`), per-user key for vault files
   (`document-vault/file-encryption.ts`). Don't assume per-user everywhere.
