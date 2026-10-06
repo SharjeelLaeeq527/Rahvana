@@ -193,7 +193,6 @@ const getJourneyStatus = (journey: JourneyProgressRecord, progress: number) => {
 
 export default function MyJourneysPage() {
   const { user, isLoading: authLoading } = useAuth();
-  const { candidates } = useCandidate();
   const { showToast } = useToast();
   const router = useRouter();
   const { candidates, setActiveCandidateId, activeCandidateId, isMultiCandidate } = useCandidate();

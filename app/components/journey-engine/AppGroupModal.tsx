@@ -112,17 +112,17 @@ export function AppGroupModal({ group, isOpen, onClose, onLaunchItem, state }: A
         />
       )}
 
-      <div className="fixed inset-0 z-[100000] overflow-y-auto">
+      <div className="fixed inset-0 z-[100000] overflow-y-auto overscroll-contain">
         {/* Backdrop */}
         <div
           className="animate-in fade-in fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity duration-200"
           onClick={onClose}
         />
 
-        {/* Centering Wrapper with top/bottom padding to prevent any top cut-off */}
-        <div className="flex min-h-full items-center justify-center p-4 py-10 sm:p-6 sm:py-16">
+        {/* Padding + card max-h must total <= 100dvh, otherwise the overlay itself scrolls a little */}
+        <div className="flex min-h-full items-center justify-center p-4 sm:p-6">
           {/* Modal Card */}
-          <div className="animate-in zoom-in-95 relative z-10 flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl duration-200 dark:border-slate-800 dark:bg-slate-900">
+          <div className="animate-in zoom-in-95 relative z-10 flex max-h-[85dvh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl duration-200 dark:border-slate-800 dark:bg-slate-900">
             {/* ── Header ── */}
             <div className="flex shrink-0 items-center justify-between border-b border-slate-100 p-5 sm:p-6 dark:border-slate-800">
               <div className="flex items-center gap-3.5">
@@ -164,7 +164,7 @@ export function AppGroupModal({ group, isOpen, onClose, onLaunchItem, state }: A
             </div>
 
             {/* ── Items Grid / List ── */}
-            <div className="flex-1 overflow-y-auto p-6">
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-6">
               {filteredItems.length === 0 ? (
                 <div className="py-12 text-center">
                   <p className="text-sm font-medium text-slate-500">
