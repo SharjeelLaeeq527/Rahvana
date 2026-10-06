@@ -35,6 +35,11 @@ const Input221gTool = React.lazy(() =>
 const Respond221gTool = React.lazy(() =>
   import("./components/Respond221gTool").then((m) => ({ default: m.Respond221gTool }))
 );
+const MultiStepForm = React.lazy(() =>
+  import("@/app/components/forms/auto-visaform-filling/MultiStepForm").then((m) => ({
+    default: m.MultiStepForm,
+  }))
+);
 // const MedicalExamTool = React.lazy(() =>
 //   import("./components/MedicalExamTool").then((m) => ({ default: m.MedicalExamTool }))
 // );
@@ -259,6 +264,93 @@ function Journey221gEmbeddedTool({
           }}
         />
       )}
+    </div>
+  );
+}
+
+function JourneyVisaFormsEmbeddedTool({
+  journeyContext,
+  effectiveJourneyTier,
+  initialFormCode,
+  onClose,
+}: {
+  journeyContext: any;
+  effectiveJourneyTier: string;
+  initialFormCode?: string;
+  onClose?: () => void;
+}) {
+  const category = (journeyContext?.journeyCategory || "").toUpperCase();
+  const availableForms = React.useMemo(() => {
+    if (category.includes("IR-1") || category.includes("CR-1")) {
+      return [
+        { code: "i130", label: "I-130", title: "Petition for Alien Relative" },
+        { code: "i130a", label: "I-130A", title: "Supplemental Info for Spouse Beneficiary" },
+        { code: "ds260", label: "DS-260", title: "Online Immigrant Visa Application" },
+        { code: "i864", label: "I-864", title: "Affidavit of Support" },
+        { code: "i864ez", label: "I-864EZ", title: "Affidavit of Support (Short Form)" },
+        { code: "i864a", label: "I-864A", title: "Contract Between Sponsor & Household Member" },
+        { code: "g1450", label: "G-1450", title: "Credit Card Payment Authorization" },
+      ];
+    }
+    if (category.includes("IR-5")) {
+      return [
+        { code: "i130", label: "I-130", title: "Petition for Alien Relative (Parent)" },
+        { code: "ds260", label: "DS-260", title: "Online Immigrant Visa Application" },
+        { code: "i864", label: "I-864", title: "Affidavit of Support" },
+        { code: "i864ez", label: "I-864EZ", title: "Affidavit of Support (Short Form)" },
+        { code: "i864a", label: "I-864A", title: "Contract Between Sponsor & Household Member" },
+        { code: "g1450", label: "G-1450", title: "Credit Card Payment Authorization" },
+      ];
+    }
+    return [
+      { code: "i130", label: "I-130", title: "Petition for Alien Relative" },
+      { code: "ds260", label: "DS-260", title: "Online Immigrant Visa Application" },
+      { code: "i864", label: "I-864", title: "Affidavit of Support" },
+      { code: "g1450", label: "G-1450", title: "Credit Card Payment Authorization" },
+    ];
+  }, [category]);
+
+  const [selectedForm, setSelectedForm] = React.useState<string>(
+    initialFormCode || availableForms[0]?.code || "i130"
+  );
+
+  return (
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-2 sm:px-4">
+      {/* Form Picker Tabs */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1">
+        <span className="text-xs font-bold text-slate-500 uppercase tracking-wider shrink-0 mr-1">
+          Visa Form:
+        </span>
+        {availableForms.map((form) => {
+          const isSelected = selectedForm === form.code;
+          return (
+            <button
+              key={form.code}
+              onClick={() => setSelectedForm(form.code)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
+                isSelected
+                  ? "bg-[#0d7377] text-white shadow-xs"
+                  : "bg-white border border-slate-200 text-slate-700 hover:border-teal-300 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200"
+              }`}
+              title={form.title}
+            >
+              <span>{form.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-xs dark:border-slate-800 dark:bg-slate-900">
+        <MultiStepForm
+          key={selectedForm}
+          formCode={selectedForm}
+          mode="journey"
+          journeyContext={journeyContext}
+          journeyTier={effectiveJourneyTier}
+          isEmbedded={true}
+          onClose={onClose}
+        />
+      </div>
     </div>
   );
 }
@@ -618,27 +710,12 @@ export function EmbeddedToolContainer({
 
       case "visa_forms":
         return (
-          <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-xs sm:p-12 dark:border-slate-800 dark:bg-slate-900">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-teal-500/10 text-[#0d7377] dark:bg-teal-950/40 dark:text-teal-400">
-              <FileEdit className="h-8 w-8" />
-            </div>
-            <h3 className="text-xl font-bold text-slate-900 sm:text-2xl dark:text-slate-100">
-              Smart Form Filler
-            </h3>
-            <p className="mx-auto mt-2 max-w-md text-sm text-slate-600 dark:text-slate-400">
-              Auto-fill your official forms and generate ready-to-sign PDF packets mapped to your
-              candidate data.
-            </p>
-            <div className="mt-6">
-              <button
-                onClick={() => window.open("/smart-form-filler", "_blank")}
-                className="inline-flex items-center gap-2 rounded-xl bg-[#0d7377] px-6 py-3 text-sm font-bold text-white shadow-md transition-all hover:bg-[#095457] hover:shadow-lg active:scale-98"
-              >
-                <span>Open Smart Form Filler</span>
-                <ArrowRight className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
+          <JourneyVisaFormsEmbeddedTool
+            journeyContext={journeyContext}
+            effectiveJourneyTier={effectiveJourneyTier}
+            initialFormCode={(data as any)?.formCode || (data as any)?.form_id || "i130"}
+            onClose={onClose}
+          />
         );
 
       default:

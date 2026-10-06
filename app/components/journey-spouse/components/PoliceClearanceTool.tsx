@@ -7,6 +7,7 @@ import { POLICE_CLEARANCE_DATA } from "../PoliceClearanceData";
 import { useJourneyPlan } from "@/app/context/useJourneyPlan";
 import { E, msg } from "@/lib/errors";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
+import { ToolPageOverlay } from "@/app/components/shared/ToolPageOverlay";
 
 interface PoliceClearanceToolProps {
   state: any;
@@ -65,6 +66,7 @@ export const PoliceClearanceTool: React.FC<PoliceClearanceToolProps> = ({
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const { tier } = useJourneyPlan(state);
   const [showUpgradeModal, setShowUpgradeModal] = React.useState(false);
+  const [toolHref, setToolHref] = React.useState<string | null>(null);
 
   const validatePccField = (id: string, value: string) => {
     if (!value) return "";
@@ -345,7 +347,7 @@ export const PoliceClearanceTool: React.FC<PoliceClearanceToolProps> = ({
                       if (tier !== "executive") {
                         setShowUpgradeModal(true);
                       } else {
-                        window.open("/police-verification/apply?province=Sindh", "_blank");
+                        setToolHref("/police-verification/apply?province=Sindh");
                       }
                     }}
                     className="relative w-full bg-primary text-white py-4 rounded-xl font-bold hover:bg-primary/90 transition-colors mb-4"
@@ -389,6 +391,10 @@ export const PoliceClearanceTool: React.FC<PoliceClearanceToolProps> = ({
       {showUpgradeModal && (
         <UpgradeModal feature="Executive PCC Filing" onClose={() => setShowUpgradeModal(false)} />
       )}
+      <ToolPageOverlay
+        toolHref={toolHref}
+        onClose={() => setToolHref(null)}
+      />
     </div>
   );
 };

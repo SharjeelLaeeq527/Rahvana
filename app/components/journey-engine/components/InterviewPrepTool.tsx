@@ -1,7 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { MessageSquare, ExternalLink } from "lucide-react";
+import { ToolPageOverlay } from "@/app/components/shared/ToolPageOverlay";
 
 interface InterviewPrepToolProps {
   tool: any;
@@ -18,6 +19,8 @@ export const InterviewPrepTool: React.FC<InterviewPrepToolProps> = ({
   guard,
   journeyId,
 }) => {
+  const [toolHref, setToolHref] = useState<string | null>(null);
+
   return (
     <div className="flex flex-col mt-4">
       {/* Launcher Card (Large) */}
@@ -57,12 +60,11 @@ export const InterviewPrepTool: React.FC<InterviewPrepToolProps> = ({
             onClick={() => {
               if (guard && !guard()) return;
               setIsPrepLaunched(true);
-              // Build URL with journey_id if available
               const baseUrl = "/interview-prep";
               const url = journeyId ? `${baseUrl}?journey_id=${journeyId}` : baseUrl;
-              window.open(url, "_blank", "noopener,noreferrer");
+              setToolHref(url);
             }}
-            className="w-full p-4 bg-[#3b7dd8] text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[#3b7dd8] transition-all shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:-translate-y-0.5 active:translate-y-0"
+            className="w-full p-4 bg-[#3b7dd8] text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[#3b7dd8] transition-all shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
           >
             <span>Launch Interview Prep Tool</span>
             <ExternalLink size={15} strokeWidth={2.5} />
@@ -102,6 +104,12 @@ export const InterviewPrepTool: React.FC<InterviewPrepToolProps> = ({
           ))}
         </div>
       )}
+
+      {/* Tool Overlay */}
+      <ToolPageOverlay
+        toolHref={toolHref}
+        onClose={() => setToolHref(null)}
+      />
     </div>
   );
 };

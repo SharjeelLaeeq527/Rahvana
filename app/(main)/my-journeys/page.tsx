@@ -4,10 +4,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, CheckCircle2, Clock3, Plus, Route } from "lucide-react";
+import { ArrowRight, CheckCircle2, Clock3, Plus, Route, Users } from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
+import { useCandidate } from "@/app/context/CandidateContext";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { JourneyProgressRecord, listUserJourneys } from "@/lib/journey/journeyProgressService";
+import { getCandidateJourneyKey, getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
 import { getJourneyHrefByType, ir1journeyHref, ir5journeyHref } from "@/lib/constants/routes";
 import { IR5_ENABLED } from "@/lib/feature-flags";
 import { Loader } from "@/components/ui/spinner";
@@ -15,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { JourneyPlanBadge } from "@/app/components/shared/JourneyPlanBadge";
+import { CandidateProfileLauncherModal } from "./components/CandidateProfileLauncherModal";
 
 const JOURNEY_ALIASES: Record<string, string> = {
   "ir-1": "ir1",
@@ -60,12 +63,15 @@ const JOURNEY_META: Record<string, JourneyMeta> = {
 
 const resolveJourneyMeta = (rawId: string): JourneyMeta & { canonicalId: string } => {
   const canonical = normalizeJourneyId(rawId);
-  const meta = JOURNEY_META[canonical];
+  const baseVisa = getBaseVisaCategory(rawId);
+  const baseCanonical = baseVisa === "IR-5" ? "ir5" : baseVisa === "IR-1" ? "ir1" : canonical;
+
+  const meta = JOURNEY_META[baseCanonical] || JOURNEY_META[canonical];
 
   if (meta) {
     return {
       ...meta,
-      canonicalId: canonical,
+      canonicalId: baseCanonical,
     };
   }
 
@@ -187,12 +193,26 @@ const getJourneyStatus = (journey: JourneyProgressRecord, progress: number) => {
 
 export default function MyJourneysPage() {
   const { user, isLoading: authLoading } = useAuth();
+  const { candidates } = useCandidate();
   const { showToast } = useToast();
   const router = useRouter();
+  const { candidates, setActiveCandidateId, activeCandidateId, isMultiCandidate } = useCandidate();
 
   const [journeys, setJourneys] = useState<JourneyProgressRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasFetched, setHasFetched] = useState(false);
+
+  const [launcherModal, setLauncherModal] = useState<{
+    isOpen: boolean;
+    journeyCode: string;
+    journeyName: string;
+    journeyRoute: string;
+  }>({
+    isOpen: false,
+    journeyCode: "IR-5",
+    journeyName: "IR-5 Parents Visa",
+    journeyRoute: ir5journeyHref,
+  });
 
   const isMounted = useRef(true);
 
@@ -218,26 +238,7 @@ export default function MyJourneysPage() {
         return;
       }
 
-      const seen = new Set<string>();
-
-      const unique = data.filter((journey) => {
-        const canonical = normalizeJourneyId(journey.journey_id);
-
-        if (seen.has(canonical)) {
-          return false;
-        }
-
-        seen.add(canonical);
-        return true;
-      });
-
-      // IR-5 is hidden on production (see lib/feature-flags): drop any existing
-      // IR-5 journey so it cannot be re-opened while the category is gated.
-      const gated = IR5_ENABLED
-        ? unique
-        : unique.filter((journey) => normalizeJourneyId(journey.journey_id) !== "ir5");
-
-      setJourneys(gated);
+      setJourneys(data || []);
     } catch (error) {
       console.error("Error fetching journeys:", error);
 
@@ -270,35 +271,150 @@ export default function MyJourneysPage() {
     }
   }, [user, user?.id, authLoading, router, fetchJourneys, hasFetched]);
 
-  const visibleJourneys = useMemo(
-    () =>
-      journeys.map((journey) => {
-        const progress = getProgressPercent(journey);
-        const completedSteps = getCompletedSteps(journey);
-        const totalSteps = getTotalSteps(journey);
-        const meta = resolveJourneyMeta(journey.journey_id);
-        const status = getJourneyStatus(journey, progress);
+  const visibleJourneys = useMemo(() => {
+    const result: Array<{
+      id: string;
+      journey?: JourneyProgressRecord;
+      progress: number;
+      completedSteps: number;
+      totalSteps: number;
+      meta: JourneyMeta & {
+        canonicalId: string;
+        candidateId?: string;
+        candidateBadge?: string;
+        candidateRelation?: string;
+        isCurrentActive?: boolean;
+      };
+      status: {
+        label: string;
+        className: string;
+        dotClassName: string;
+      };
+      subscriptionTier: string;
+      activity: string;
+    }> = [];
 
-        return {
-          journey,
-          progress,
-          completedSteps,
-          totalSteps,
-          meta,
-          status,
-          subscriptionTier: journey.subscription_tier || "free",
-          activity: getActivityLabel(journey),
-        };
-      }),
-    [journeys]
-  );
+    const candidateKeyMatched = new Set<string>();
+
+    // 1. Map candidate profiles to individual journeys
+    candidates.forEach((cand) => {
+      const visaCategory = cand.visaCategory || "IR-5";
+      const baseCategory = getBaseVisaCategory(visaCategory);
+      const candidateKey = getCandidateJourneyKey(visaCategory, cand.id);
+      const cleanKey = candidateKey.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+      // Find matching DB journey
+      const matchingJourney = journeys.find((j) => {
+        const cleanJ = (j.journey_id || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+        if (cleanJ === cleanKey) return true;
+        // Legacy candidate 1 match (e.g. "ir5" vs "ir-5")
+        if (cand.id === "candidate-1") {
+          const cleanBase = baseCategory.toLowerCase().replace(/[^a-z0-9]/g, "");
+          if (cleanJ === cleanBase || cleanJ === `ir${cleanBase}`) return true;
+        }
+        return false;
+      });
+
+      if (matchingJourney) {
+        candidateKeyMatched.add(matchingJourney.id);
+      }
+
+      // Progress & steps
+      const progress = matchingJourney ? getProgressPercent(matchingJourney) : 0;
+      const completedSteps = matchingJourney ? getCompletedSteps(matchingJourney) : 0;
+      const totalSteps = matchingJourney ? getTotalSteps(matchingJourney) : 10;
+      const status = matchingJourney
+        ? getJourneyStatus(matchingJourney, progress)
+        : {
+            label: "Draft",
+            className: "border-white/25 bg-slate-900/55 text-white backdrop-blur-md",
+            dotClassName: "bg-slate-300",
+          };
+
+      const baseMeta = resolveJourneyMeta(visaCategory);
+      const candLabel = cand.fullName || cand.label;
+      const relationLabel = cand.relation && cand.relation !== "Other" ? cand.relation : "";
+
+      const title =
+        isMultiCandidate || cand.fullName
+          ? `${candLabel}${relationLabel && !candLabel.includes(relationLabel) ? ` (${relationLabel})` : ""} — ${baseMeta.name}`
+          : baseMeta.name;
+
+      // If IR5 is gated and this candidate has IR5, skip
+      if (!IR5_ENABLED && baseCategory === "IR-5") {
+        return;
+      }
+
+      result.push({
+        id: matchingJourney?.id || `candidate_${cand.id}`,
+        journey: matchingJourney,
+        progress,
+        completedSteps,
+        totalSteps,
+        meta: {
+          ...baseMeta,
+          name: title,
+          route: getJourneyHrefByType(visaCategory),
+          candidateId: cand.id,
+          candidateBadge: isMultiCandidate || cand.fullName ? candLabel : undefined,
+          candidateRelation: relationLabel || undefined,
+          isCurrentActive: cand.id === activeCandidateId,
+        },
+        status,
+        subscriptionTier: cand.tier || matchingJourney?.subscription_tier || "free",
+        activity: matchingJourney ? getActivityLabel(matchingJourney) : "Not started",
+      });
+    });
+
+    // 2. Include any remaining standalone journeys from DB that didn't match candidates (e.g. F-1 student journey)
+    journeys.forEach((j) => {
+      if (candidateKeyMatched.has(j.id)) return;
+      const canonical = normalizeJourneyId(j.journey_id);
+      if (!IR5_ENABLED && (canonical === "ir5" || canonical.startsWith("ir5_"))) return;
+
+      const progress = getProgressPercent(j);
+      const completedSteps = getCompletedSteps(j);
+      const totalSteps = getTotalSteps(j);
+      const meta = resolveJourneyMeta(j.journey_id);
+      const status = getJourneyStatus(j, progress);
+
+      result.push({
+        id: j.id,
+        journey: j,
+        progress,
+        completedSteps,
+        totalSteps,
+        meta,
+        status,
+        subscriptionTier: j.subscription_tier || "free",
+        activity: getActivityLabel(j),
+      });
+    });
+
+    return result;
+  }, [candidates, journeys, activeCandidateId, isMultiCandidate]);
 
   const startNewJourney = () => {
     router.push("/visa-category");
   };
 
-  const handleOpenJourney = (route: string) => {
-    router.push(route);
+  const handleOpenJourney = (meta: JourneyMeta & { canonicalId: string }) => {
+    const isMultiCandidateCategory =
+      meta.canonicalId === "ir5" ||
+      meta.code.toUpperCase().includes("IR-5") ||
+      meta.code.toUpperCase().includes("IR5");
+
+    if (isMultiCandidateCategory) {
+      setLauncherModal({
+        isOpen: true,
+        journeyCode: meta.code,
+        journeyName: meta.name,
+        journeyRoute: meta.route,
+      });
+      return;
+    }
+
+    router.push(meta.route);
   };
 
   if (authLoading) {
@@ -374,11 +490,11 @@ export default function MyJourneysPage() {
                   <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
                     {visibleJourneys.map(
                       (
-                        { journey, progress, completedSteps, totalSteps, meta, status, subscriptionTier, activity },
+                        { id, progress, completedSteps, totalSteps, meta, status, subscriptionTier, activity },
                         index
                       ) => (
                         <motion.div
-                          key={journey.id}
+                          key={id}
                           layout
                           initial={{
                             opacity: 0,
@@ -407,7 +523,17 @@ export default function MyJourneysPage() {
                             status={status}
                             subscriptionTier={subscriptionTier}
                             activity={activity}
-                            onOpen={() => handleOpenJourney(meta.route)}
+                            isMultiCandidate={
+                              meta.canonicalId === "ir5" ||
+                              meta.code.toUpperCase().includes("IR-5") ||
+                              meta.code.toUpperCase().includes("IR5")
+                            }
+                            candidateCount={
+                              candidates.filter((c) =>
+                                (c.visaCategory || "").toUpperCase().includes("IR-5")
+                              ).length || candidates.length
+                            }
+                            onOpen={() => handleOpenJourney(meta)}
                           />
                         </motion.div>
                       )
@@ -418,6 +544,16 @@ export default function MyJourneysPage() {
             )}
           </div>
         </section>
+
+        {/* Netflix-style Candidate Profile Launcher Modal */}
+        <CandidateProfileLauncherModal
+          isOpen={launcherModal.isOpen}
+          onClose={() => setLauncherModal((prev) => ({ ...prev, isOpen: false }))}
+          journeyCode={launcherModal.journeyCode}
+          journeyName={launcherModal.journeyName}
+          journeyRoute={launcherModal.journeyRoute}
+          candidates={candidates}
+        />
       </div>
     </main>
   );
@@ -427,7 +563,13 @@ interface JourneyCardProps {
   progress: number;
   completedSteps: number;
   totalSteps: number;
-  meta: JourneyMeta & { canonicalId: string };
+  meta: JourneyMeta & {
+    canonicalId: string;
+    candidateId?: string;
+    candidateBadge?: string;
+    candidateRelation?: string;
+    isCurrentActive?: boolean;
+  };
   status: {
     label: string;
     className: string;
@@ -435,6 +577,8 @@ interface JourneyCardProps {
   };
   subscriptionTier?: string;
   activity: string;
+  candidateCount?: number;
+  isMultiCandidate?: boolean;
   onOpen: () => void;
 }
 
@@ -446,6 +590,8 @@ function JourneyCard({
   status,
   subscriptionTier = "free",
   activity,
+  candidateCount,
+  isMultiCandidate,
   onOpen,
 }: JourneyCardProps) {
   return (
@@ -460,7 +606,11 @@ function JourneyCard({
           onOpen();
         }
       }}
-      className="relative flex h-full cursor-pointer flex-col overflow-hidden rounded-3xl border border-white/80 bg-white/75 p-0 shadow-[0_18px_55px_rgba(15,61,63,0.08)] backdrop-blur-xl transition-all duration-500 hover:-translate-y-1.5 hover:border-[#14a0a6]/30 hover:shadow-[0_28px_70px_rgba(13,115,119,0.16)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14a0a6]/50"
+      className={`relative flex h-full cursor-pointer flex-col overflow-hidden rounded-3xl border bg-white/75 p-0 backdrop-blur-xl transition-all duration-500 hover:-translate-y-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14a0a6]/50 ${
+        meta.isCurrentActive
+          ? "border-[#0d7377]/40 shadow-[0_20px_60px_rgba(13,115,119,0.18)] ring-2 ring-[#0d7377]/20"
+          : "border-white/80 shadow-[0_18px_55px_rgba(15,61,63,0.08)] hover:border-[#14a0a6]/30 hover:shadow-[0_28px_70px_rgba(13,115,119,0.16)]"
+      }`}
     >
       {/* Image */}
       <div className="relative h-44 overflow-hidden bg-[#dbeeee]">
@@ -478,11 +628,27 @@ function JourneyCard({
 
         {/* Image badges */}
         <div className="absolute left-4 right-4 top-4 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1.5">
+          <div className="flex flex-wrap items-center gap-1.5">
             <Badge className="rounded-full border border-white/25 bg-white/90 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-[#0a5a5d] shadow-lg shadow-slate-950/10 backdrop-blur-md hover:bg-white">
               {meta.code}
             </Badge>
+            {meta.candidateBadge && (
+              <Badge className="rounded-full border border-teal-200/50 bg-[#0d7377]/90 text-white px-2.5 py-0.5 text-[11px] font-medium shadow-md backdrop-blur-md">
+                {meta.candidateBadge}
+              </Badge>
+            )}
+            {meta.isCurrentActive && (
+              <Badge className="rounded-full border border-emerald-400/40 bg-emerald-600/90 text-white px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase shadow-md backdrop-blur-md">
+                Active
+              </Badge>
+            )}
             <JourneyPlanBadge tier={subscriptionTier} />
+            {isMultiCandidate && candidateCount && candidateCount > 0 ? (
+              <Badge className="rounded-full border border-teal-300/40 bg-slate-950/70 px-2.5 py-1 text-[10px] font-semibold text-teal-300 shadow-lg backdrop-blur-md hover:bg-slate-950/80">
+                <Users className="mr-1 h-3 w-3 text-teal-300" />
+                {candidateCount} {candidateCount === 1 ? "Profile" : "Profiles"}
+              </Badge>
+            ) : null}
           </div>
 
           <Badge
@@ -499,7 +665,7 @@ function JourneyCard({
             Immigration pathway
           </p>
 
-          <h2 className="text-xl font-semibold tracking-[-0.02em] text-white md:text-[1.35rem]">
+          <h2 className="text-xl font-semibold tracking-[-0.02em] text-white md:text-[1.35rem] line-clamp-1">
             {meta.name}
           </h2>
         </div>
