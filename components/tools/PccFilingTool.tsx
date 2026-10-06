@@ -45,6 +45,7 @@ import type { ToolModeProps } from "@/types/tool-mode";
 import { useResolveToolMode } from "@/lib/hooks/useResolveToolMode";
 import { normalizePlanTier } from "@/app/context/PlanContext";
 import type { PlanTier } from "@/lib/entitlements/config";
+import PccRequestCard, { type PccRequestRow } from "@/components/services/PccRequestCard";
 
 export interface PccFilingToolProps extends ToolModeProps {
   /** Journey overlay control. Standalone page omits these → renders inline full-page. */
@@ -60,6 +61,14 @@ export interface PccFilingToolProps extends ToolModeProps {
   /** Pre-fill from a previously saved journey request. */
   initialData?: Record<string, unknown>;
   candidateInfo?: { id?: string; name?: string; relation?: string; visaCategory?: string };
+  /** Existing requests surfaced on the journey intro screen (My-Resources-style cards). */
+  existingRequests?: PccRequestRow[];
+  /** Journey mode only: block a new filing while an active request / validity window remains. */
+  locked?: boolean;
+  /** Human-readable reason shown on the intro when `locked` is true. */
+  lockHint?: string;
+  /** Journey mode only: initial services-status fetch is still in flight. */
+  statusLoading?: boolean;
 }
 
 const purposeOptions = [
@@ -288,6 +297,10 @@ function PoliceApplyContent({
   onClose,
   onSave,
   initialData,
+  existingRequests,
+  locked,
+  lockHint,
+  statusLoading,
   mode: propMode,
   journeyContext: propContext,
   journeyTier: propJourneyTier,
@@ -690,6 +703,10 @@ function PoliceApplyContent({
         userId: user?.id,
         candidate_id: activeCandidateId || "candidate-1",
         candidate_name: activeCandidate.fullName || activeCandidate.label || "",
+        // Origin tag: journey-embedded requests are kept out of standalone My Resources.
+        ...(isJourney
+          ? { source: "journey", journey_slug: journeyContext?.journeySlug || null }
+          : { source: "standalone" }),
       };
 
       const response = await fetch("/api/police-verification/apply", {
@@ -815,6 +832,10 @@ function PoliceApplyContent({
           userId: user?.id,
           candidate_id: activeCandidateId || "candidate-1",
           candidate_name: activeCandidate.fullName || activeCandidate.label || "",
+          // Origin tag: journey-embedded requests are kept out of standalone My Resources.
+          ...(isJourney
+            ? { source: "journey", journey_slug: journeyContext?.journeySlug || null }
+            : { source: "standalone" }),
         };
 
         const response = await fetch("/api/police-verification/apply", {
@@ -1011,12 +1032,70 @@ function PoliceApplyContent({
             This service is available for Sindh residents only. Rahvana will handle the application
             submission. You must still pick up the certificate yourself when ready.
           </p>
-          <button
-            onClick={() => setStarted(true)}
-            className="w-full cursor-pointer rounded-xl bg-teal-700 py-3.5 font-bold text-white transition-colors hover:bg-teal-800"
-          >
-            Apply for PCC
-          </button>
+          {existingRequests && existingRequests.length > 0 && (
+            <div className="mb-8">
+              <div className="mb-2 text-[11px] font-bold tracking-widest text-teal-700 uppercase">
+                Your PCC Requests
+              </div>
+              <div className="space-y-4">
+                {existingRequests.map((req) => (
+                  <PccRequestCard key={req.id} req={req} />
+                ))}
+              </div>
+            </div>
+          )}
+          {statusLoading ? (
+            <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3.5">
+              <svg
+                className="h-4 w-4 animate-spin text-[#0d7377]"
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden="true"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"
+                />
+              </svg>
+              <span className="text-sm text-slate-600">Checking your existing PCC requests…</span>
+            </div>
+          ) : locked ? (
+            <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3.5">
+              <svg
+                className="mt-0.5 h-4 w-4 shrink-0 text-amber-600"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <rect x="3" y="11" width="18" height="11" rx="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+              <div className="text-sm leading-relaxed text-amber-900">
+                {lockHint ||
+                  "You already have an active PCC request. You can file another once it completes and its 6-month validity passes."}
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={() => setStarted(true)}
+              className="w-full cursor-pointer rounded-xl bg-teal-700 py-3.5 font-bold text-white transition-colors hover:bg-teal-800"
+            >
+              Apply for PCC
+            </button>
+          )}
         </div>
       </div>
     );
@@ -1031,7 +1110,7 @@ function PoliceApplyContent({
       }
     >
       {isJourney && (
-        <div className="sticky top-0 z-50 isolate flex h-[64px] items-center gap-3 border-b border-[#d0e4f7] bg-white px-4 sm:gap-4 sm:px-6 mb-4">
+        <div className="sticky top-0 isolate z-50 mb-4 flex h-[64px] items-center gap-3 border-b border-[#d0e4f7] bg-white px-4 sm:gap-4 sm:px-6">
           {/* Close (left) */}
           <button
             onClick={onClose}

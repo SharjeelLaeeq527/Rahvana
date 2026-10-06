@@ -30,12 +30,14 @@ export const PccFilingModule: React.FC<PccFilingModuleProps> = ({
   const validUntil = pccExpiryDate(record);
 
   // Disabled-tile hint: a received PCC is valid for six months; before that it is in progress.
+  // Written as a full sentence so the amber lock banner explains *why* a second
+  // filing is blocked, not just the state label.
   const lockedHint = isReceived
     ? validUntil
-      ? `Valid until ${validUntil}`
-      : "Certificate received"
+      ? `Your certificate is valid until ${validUntil} (6 months from receipt). You can file a new request after it expires.`
+      : "Certificate received — you can file a new request after the 6-month validity window passes."
     : record
-      ? "Application in progress"
+      ? "Your PCC application is still in progress. You can file another once you receive it and its 6-month validity passes."
       : undefined;
 
   // Post-submit lifecycle: pending banner → "mark as received" → document-vault card.

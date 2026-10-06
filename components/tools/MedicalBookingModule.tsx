@@ -21,6 +21,11 @@ export const MedicalBookingModule: React.FC<MedicalBookingModuleProps> = ({
   onOpen,
 }) => {
   const d = MEDICAL_EXAM_DATA;
+  // Explicit, human-readable reason for the lock, so users know why a second
+  // booking is blocked (rather than the small default "Active until {date}" text).
+  const lockedHint = record?.referenceDate
+    ? `An appointment is already scheduled for ${record.referenceDate}. You can book another once that date has passed.`
+    : "You already have an active medical appointment. You can book another once its appointment date passes.";
   return (
     <JourneyServiceModule
       chips={d.chips}
@@ -30,6 +35,7 @@ export const MedicalBookingModule: React.FC<MedicalBookingModuleProps> = ({
       disclaimer={d.disclaimer}
       record={record}
       locked={locked}
+      lockedHint={lockedHint}
       onOpen={onOpen}
       summaryTitle="Your Medical Appointment"
       summaryRows={[

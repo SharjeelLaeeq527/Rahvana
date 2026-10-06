@@ -19,6 +19,9 @@ import { useCandidate } from "@/app/context/CandidateContext";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { useUserProfile } from "@/app/context/UserProfileContext";
 import { mapProfileToGenericForm, mapFormToProfile } from "@/lib/autoFill/mapper";
+import MedicalAppointmentCard, {
+  type MedicalAppointmentRow,
+} from "@/components/services/MedicalAppointmentCard";
 import { Crown, CreditCard, ShoppingBag, Sparkles, X } from "lucide-react";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
@@ -45,6 +48,14 @@ export interface MedicalAppointmentToolProps extends ToolModeProps {
   /** Pre-fill from a previously saved journey request. */
   initialData?: Record<string, unknown>;
   candidateInfo?: { id?: string; name?: string; relation?: string; visaCategory?: string };
+  /** Existing bookings surfaced on the journey intro screen (My-Resources-style cards). */
+  existingRequests?: MedicalAppointmentRow[];
+  /** Journey mode only: block a new booking while an active appointment date hasn't passed. */
+  locked?: boolean;
+  /** Human-readable reason shown on the intro when `locked` is true. */
+  lockHint?: string;
+  /** Journey mode only: initial services-status fetch is still in flight. */
+  statusLoading?: boolean;
 }
 
 interface Applicant {
@@ -2172,6 +2183,10 @@ export default function MedicalAppointmentTool({
   onClose,
   onSave,
   initialData,
+  existingRequests,
+  locked,
+  lockHint,
+  statusLoading,
   mode: propMode,
   journeyContext: propContext,
   journeyTier: propJourneyTier,
@@ -2632,6 +2647,10 @@ export default function MedicalAppointmentTool({
             activeCandidate.fullName ||
             activeCandidate.label ||
             `${formData.givenName} ${formData.surname}`.trim(),
+          // Origin tag: journey-embedded bookings are kept out of standalone My Resources.
+          ...(isJourney
+            ? { source: "journey", journey_slug: journeyContext?.journeySlug || null }
+            : { source: "standalone" }),
           // Exclude file objects from the initial request
           scannedPassport: undefined,
           kOneLetter: undefined,
@@ -3063,12 +3082,70 @@ export default function MedicalAppointmentTool({
               physician approved by your consulate. The service is available for Pakistan-based
               applicants.
             </div>
-            <button
-              onClick={() => setStarted(true)}
-              className="w-full cursor-pointer rounded-xl bg-teal-700 py-3.5 font-bold text-white transition-colors hover:bg-teal-800"
-            >
-              Start Booking Service
-            </button>
+            {existingRequests && existingRequests.length > 0 && (
+              <div className="mb-6">
+                <div className="mb-2 text-[11px] font-bold tracking-widest text-teal-700 uppercase">
+                  Your Appointments
+                </div>
+                <div className="space-y-4">
+                  {existingRequests.map((appointment) => (
+                    <MedicalAppointmentCard key={appointment.id} appointment={appointment} />
+                  ))}
+                </div>
+              </div>
+            )}
+            {statusLoading ? (
+              <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3.5">
+                <svg
+                  className="h-4 w-4 animate-spin text-[#0d7377]"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"
+                  />
+                </svg>
+                <span className="text-sm text-slate-600">Checking your existing appointments…</span>
+              </div>
+            ) : locked ? (
+              <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3.5">
+                <svg
+                  className="mt-0.5 h-4 w-4 shrink-0 text-amber-600"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <rect x="3" y="11" width="18" height="11" rx="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+                <div className="text-sm leading-relaxed text-amber-900">
+                  {lockHint ||
+                    "You already have an active medical appointment. You can book another once its appointment date passes."}
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setStarted(true)}
+                className="w-full cursor-pointer rounded-xl bg-teal-700 py-3.5 font-bold text-white transition-colors hover:bg-teal-800"
+              >
+                Start Booking Service
+              </button>
+            )}
           </div>
         </div>
       </div>

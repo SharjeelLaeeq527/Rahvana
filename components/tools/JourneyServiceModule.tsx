@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { ArrowRight, CheckCircle2, Lock } from "lucide-react";
 import type { JourneyServiceRecord } from "@/lib/journey/toolModeGuards";
 import { JourneyGuideOverlay, type JourneyGuideStep } from "./JourneyGuideOverlay";
 
@@ -102,7 +102,7 @@ export const JourneyServiceModule: React.FC<JourneyServiceModuleProps> = ({
                   {p.note && <div className="mt-2 text-[10px] text-white/40">{p.note}</div>}
                   {disabled && (lockedHint ?? record?.referenceDate) && (
                     <div className="mt-2 text-[10px] font-semibold text-teal-300">
-                      {lockedHint ?? `Active until ${record?.referenceDate}`}
+                      {`Active until ${record?.referenceDate}`}
                     </div>
                   )}
                 </button>
@@ -114,6 +114,18 @@ export const JourneyServiceModule: React.FC<JourneyServiceModuleProps> = ({
 
       {disclaimer && (
         <p className="mb-5 text-center text-[11.5px] leading-[1.65] text-[#6b8097]">{disclaimer}</p>
+      )}
+
+      {/* Prominent lock banner: explains *why* a second booking is blocked. Only shown
+          when the service path is locked AND we have a hint worth surfacing. Styled
+          to mirror the tool-intro lock banner so both surfaces share a visual language. */}
+      {locked && (lockedHint || record?.referenceDate) && (
+        <div className="mb-5 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3.5">
+          <Lock className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+          <div className="text-sm leading-relaxed text-amber-900">
+            {lockedHint ?? `Active until ${record?.referenceDate}`}
+          </div>
+        </div>
       )}
 
       {/* Summary card (Sponsorship style) */}
