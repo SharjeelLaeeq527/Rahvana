@@ -184,3 +184,32 @@ export const JOURNEY_APP_GROUPS: AppGroup[] = [
     ],
   },
 ];
+
+export const TOOL_FEATURE_MAP: Record<string, string | null> = {
+  // Tools
+  action_221g: "action_221g",
+  interview_prep: "basic_interview_prep",
+  sponsorship_calculator: "sponsorship_calc",
+  dq_status_check: "dq_status_check",
+  passport_photo: "photo_booth",
+  pdf_toolkit: "pdf_toolkit",
+  snap_and_sign: "snap_sign",
+  visa_forms: "smart_form_filler",
+  passport_ocr: "document_vault",
+
+  // Guides
+  passport_guide: "guide_passport",
+  cnic_guide: "guide_cnic",
+  birth_certificate_guide: "guide_birth_cert",
+  frc_guide: "guide_frc",
+  marriage_guide: "guide_nikah_nama",
+  pcc_guide: "guide_police",
+  polio_vaccination_guide: "polio_certificate",
+
+  // Services
+  expert_consultation: "expert_consultation",
+  police_verification: "pcc_filing",
+  medical_appointment: "medical_booking",
+  doc_translation: "document_translation",
+};
+

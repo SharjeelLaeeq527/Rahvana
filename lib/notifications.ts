@@ -22,7 +22,34 @@ const LOGO_IMAGE = `
   />
 `;
 
-function getEmailWrapperHtml(title: string, bodyHtml: string): string {
+export interface EmailCandidateContext {
+  role?: string;
+  name?: string;
+  label?: string;
+  candidateId?: string;
+}
+
+function getEmailWrapperHtml(
+  title: string,
+  bodyHtml: string,
+  candidate?: EmailCandidateContext
+): string {
+  const candidateBadgeHtml =
+    candidate && (candidate.role || candidate.name || candidate.label)
+      ? `
+        <div style="text-align:center; margin-bottom:20px;">
+          <div style="display:inline-block; background-color:#f0fdfa; border:1px solid #99f6e4; border-radius:999px; padding:6px 16px; font-size:13px; font-weight:600; color:#0d7377;">
+            <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background-color:#0d7377; margin-right:6px; vertical-align:middle;"></span>
+            Beneficiary: <strong>${
+              candidate.name && candidate.name !== candidate.role
+                ? `${candidate.name} (${candidate.role || candidate.label || "Candidate"})`
+                : candidate.role || candidate.label || "Candidate"
+            }</strong>
+          </div>
+        </div>
+      `
+      : "";
+
   return `
   <!DOCTYPE html>
   <html lang="en">
@@ -55,6 +82,8 @@ function getEmailWrapperHtml(title: string, bodyHtml: string): string {
                     ${LOGO_IMAGE}
                   </div>
                 </div>
+
+                ${candidateBadgeHtml}
 
                 <!-- Heading -->
                 <h1 style="margin:0 0 24px; font-size:24px; font-weight:700; color:#0d7377; text-align:center;">
@@ -95,6 +124,9 @@ interface AppointmentNotificationData {
   status: string;
   message?: string;
   adminNotes?: string;
+  candidateId?: string;
+  candidateName?: string;
+  candidateRole?: string;
 }
 
 export async function sendAppointmentNotification(data: AppointmentNotificationData) {
@@ -109,7 +141,25 @@ export async function sendAppointmentNotification(data: AppointmentNotificationD
       status,
       message,
       adminNotes,
+      candidateId,
+      candidateName,
+      candidateRole,
     } = data;
+
+    const candidateCtx: EmailCandidateContext | undefined =
+      candidateRole || candidateName || candidateId
+        ? {
+            candidateId,
+            name: candidateName,
+            role: candidateRole,
+          }
+        : undefined;
+
+    const candidatePrefix = candidateRole
+      ? `[${candidateRole}] `
+      : candidateName
+      ? `[${candidateName}] `
+      : "";
 
     // Format date nicely: "Wednesday, June 17, 2026"
     const formatAppointmentDate = (dateStr?: string) => {
@@ -155,7 +205,7 @@ export async function sendAppointmentNotification(data: AppointmentNotificationD
     let bodyHtml = "";
 
     if (status === "completed") {
-      subject = "Your Appointment Has Been Confirmed!";
+      subject = `${candidatePrefix}Your Appointment Has Been Confirmed!`;
       bodyHtml = `
         <p>Dear ${fullName},</p>
         <p>Your appointment request has been processed successfully. Here are the details:</p>
@@ -184,7 +234,7 @@ export async function sendAppointmentNotification(data: AppointmentNotificationD
         <p style="margin-top: 24px;">Best regards,<br/><strong>The Rahvana Team</strong></p>
       `;
     } else if (status === "in_progress") {
-      subject = "Your Appointment Request is Being Processed";
+      subject = `${candidatePrefix}Your Appointment Request is Being Processed`;
       bodyHtml = `
         <p>Dear ${fullName},</p>
         <p>Your appointment request is currently being processed by our team.</p>
@@ -211,7 +261,7 @@ export async function sendAppointmentNotification(data: AppointmentNotificationD
         <p style="margin-top: 24px;">Best regards,<br/><strong>The Rahvana Team</strong></p>
       `;
     } else if (status === "cancelled") {
-      subject = "Your Appointment Request Has Been Cancelled";
+      subject = `${candidatePrefix}Your Appointment Request Has Been Cancelled`;
       bodyHtml = `
         <p>Dear ${fullName},</p>
         <p>Your appointment request has been cancelled.</p>
@@ -237,7 +287,7 @@ export async function sendAppointmentNotification(data: AppointmentNotificationD
       `;
     }
 
-    const htmlContent = getEmailWrapperHtml(subject, bodyHtml);
+    const htmlContent = getEmailWrapperHtml(subject, bodyHtml, candidateCtx);
 
     if (!subject || !htmlContent) {
       console.error("Invalid notification data");
@@ -327,6 +377,9 @@ interface AppointmentDbRecord {
   status: string;
   appointment_type?: string | null;
   medical_website?: string | null;
+  candidate_id?: string | null;
+  candidate_name?: string | null;
+  candidate_role?: string | null;
 }
 
 /**
@@ -384,6 +437,9 @@ async function createInAppNotification(appointmentId: string, appointment: Appoi
 
     const { error } = await supabaseAdmin.from("app_notifications").insert({
       user_id: userId,
+      candidate_id: appointment.candidate_id || null,
+      candidate_role: appointment.candidate_role || null,
+      candidate_name: appointment.candidate_name || null,
       type: "appointment_status",
       title: content.title,
       body: content.body,
@@ -395,6 +451,8 @@ async function createInAppNotification(appointmentId: string, appointment: Appoi
         status: appointment.status,
         appointment_type: appointment.appointment_type,
         medical_website: appointment.medical_website,
+        candidate_id: appointment.candidate_id || null,
+        candidate_role: appointment.candidate_role || null,
       },
     });
 
@@ -450,6 +508,9 @@ export async function triggerAppointmentNotification(appointmentId: string) {
       appointmentTime: appointment.preferred_time,
       status: appointment.status,
       adminNotes: appointment.admin_notes,
+      candidateId: appointment.candidate_id || undefined,
+      candidateName: appointment.candidate_name || undefined,
+      candidateRole: appointment.candidate_role || undefined,
     };
 
     // Create in-app notification (non-blocking — don't let it fail the email)
@@ -465,12 +526,21 @@ export async function triggerAppointmentNotification(appointmentId: string) {
       appointment.status === "pending_confirmation" ||
       appointment.status === "pending"
     ) {
+      const candidateInfo = appointment.candidate_role
+        ? ` for ${appointment.candidate_role}${appointment.candidate_name ? ` (${appointment.candidate_name})` : ""}`
+        : "";
+
       await notifyAdmins(
         "admin_new_appointment",
         appointment.journey_id || undefined, // Handle potential null journey_id
-        `${appointment.full_name} has booked a medical appointment.`,
+        `${appointment.full_name} has booked a medical appointment${candidateInfo}.`,
         undefined,
-        "New Medical Appointment"
+        `New Medical Appointment${appointment.candidate_role ? ` (${appointment.candidate_role})` : ""}`,
+        {
+          candidateId: appointment.candidate_id || undefined,
+          candidateRole: appointment.candidate_role || undefined,
+          candidateName: appointment.candidate_name || undefined,
+        }
       );
     }
 
@@ -957,7 +1027,12 @@ export async function notifyAdmins(
   journeyId?: string,
   customBody?: string,
   customUrl?: string,
-  customTitle?: string
+  customTitle?: string,
+  candidateContext?: {
+    candidateId?: string;
+    candidateRole?: string;
+    candidateName?: string;
+  }
 ) {
   try {
     console.log(`🔔 notifyAdmins triggered for type: ${type}`);
@@ -987,6 +1062,9 @@ export async function notifyAdmins(
     const notifications = admins.map((admin) => ({
       user_id: admin.id,
       journey_id: journeyId || null,
+      candidate_id: candidateContext?.candidateId || null,
+      candidate_role: candidateContext?.candidateRole || null,
+      candidate_name: candidateContext?.candidateName || null,
       type,
       priority: template.priority,
       title: customTitle || template.title,
@@ -1302,6 +1380,9 @@ interface TranslationDbRecord {
   document_type?: string | null;
   version?: string | number | null;
   admin_notes?: string | null;
+  candidate_id?: string | null;
+  candidate_role?: string | null;
+  candidate_name?: string | null;
 }
 
 /**
@@ -1366,6 +1447,9 @@ async function createTranslationInAppNotification(
 
     const { error } = await supabaseAdmin.from("app_notifications").insert({
       user_id: userId,
+      candidate_id: document.candidate_id || null,
+      candidate_role: document.candidate_role || null,
+      candidate_name: document.candidate_name || null,
       type: "translation_status",
       title: content.title,
       body: content.body,
@@ -1377,6 +1461,8 @@ async function createTranslationInAppNotification(
         status: document.status,
         document_type: document.document_type,
         version: document.version,
+        candidate_id: document.candidate_id || null,
+        candidate_role: document.candidate_role || null,
       },
     });
 
@@ -1635,7 +1721,7 @@ export async function sendPoliceVerificationNotification(data: PoliceVerificatio
 
 function getPoliceVerificationNotificationContent(
   status: string,
-  requestId: string
+  requestId?: string | null
 ): InAppNotificationContent | null {
   const displayId = requestId || "PCC Request";
 
@@ -1682,6 +1768,9 @@ interface PoliceVerificationDbRecord {
   email?: string | null;
   status: string;
   request_id?: string | null;
+  candidate_id?: string | null;
+  candidate_role?: string | null;
+  candidate_name?: string | null;
 }
 
 async function createPoliceVerificationInAppNotification(id: string, request: PoliceVerificationDbRecord) {
@@ -1729,6 +1818,9 @@ async function createPoliceVerificationInAppNotification(id: string, request: Po
 
     const { error } = await supabaseAdmin.from("app_notifications").insert({
       user_id: userId,
+      candidate_id: request.candidate_id || null,
+      candidate_role: request.candidate_role || null,
+      candidate_name: request.candidate_name || null,
       type: "police_verification_status",
       title: content.title,
       body: content.body,
@@ -1739,6 +1831,8 @@ async function createPoliceVerificationInAppNotification(id: string, request: Po
         request_uuid: id,
         request_id: request.request_id,
         status: request.status,
+        candidate_id: request.candidate_id || null,
+        candidate_role: request.candidate_role || null,
       },
     });
 

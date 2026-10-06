@@ -3,6 +3,8 @@
 "use client";
 
 import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
+import { GuidePageOverlay } from "@/app/components/shared/GuidePageOverlay";
+import { ToolPageOverlay } from "@/app/components/shared/ToolPageOverlay";
 import { E, msg } from "@/lib/errors";
 import {
   ArrowLeft,
@@ -83,6 +85,7 @@ import { useUserProfile } from "@/app/context/UserProfileContext";
 import PassportPhotoTool from "@/components/tools/PassportPhotoTool";
 import DocumentTranslationTool from "@/components/tools/DocumentTranslationTool";
 import { usePortalWallet } from "./hooks/usePortalWallet";
+import { useCandidate } from "@/app/context/CandidateContext";
 import { useFilingQuiz } from "./hooks/useFilingQuiz";
 import { useSponsorship } from "./hooks/useSponsorship";
 import { DocActionModal } from "./components/DocActionModal";
@@ -358,6 +361,18 @@ export const StepView: React.FC<StepViewProps> = ({
   onSelectChapter,
   onSelectStep,
 }) => {
+  const [guideOverlayUrl, setGuideOverlayUrl] = useState<string | null>(null);
+  const [toolOverlayHref, setToolOverlayHref] = useState<string | null>(null);
+
+  /** Opens internal tool hrefs inline; falls back to new tab for external URLs. */
+  const openToolHref = (href: string) => {
+    if (!href) return;
+    if (href.startsWith("http://") || href.startsWith("https://")) {
+      window.open(href, "_blank", "noopener,noreferrer");
+    } else {
+      setToolOverlayHref(href);
+    }
+  };
   // Top-level step/chapter detection logic for use throughout the file
   const chapters = data.chapters || (data as any).stages;
   const currentChapter = chapters?.[state.currentStage];
@@ -393,6 +408,14 @@ export const StepView: React.FC<StepViewProps> = ({
   // Add Evidence Note modal state
 
   const { user } = useAuth();
+  // Candidate context — safely called at component level (no try/catch needed here)
+  let activeCandidateId: string | null = null;
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const candidateCtx = useCandidate();
+    activeCandidateId = candidateCtx?.activeCandidateId ?? null;
+  } catch { /* not inside CandidateProvider — single-candidate journey */ }
+
   const {
     openUploadModal,
     uploadModalOpen,
@@ -417,6 +440,7 @@ export const StepView: React.FC<StepViewProps> = ({
     doc: any | null;
     title?: string;
     subtitle?: string;
+    hasGuide?: boolean;
     onReadGuide?: () => void;
     onUpload?: () => void;
   }>({
@@ -571,7 +595,7 @@ export const StepView: React.FC<StepViewProps> = ({
     isSubmittingCreds,
     showDeleteConfirmation,
     setShowDeleteConfirmation,
-  } = usePortalWallet({ sId, isCompleted, actions });
+  } = usePortalWallet({ sId, isCompleted, actions, candidateId: activeCandidateId });
 
   const {
     showQuiz,
@@ -2155,7 +2179,7 @@ export const StepView: React.FC<StepViewProps> = ({
                         onClick={() => {
                           if (!stepEntitlement.guard()) return;
                           if (tool.launch_module.href) {
-                            window.open(tool.launch_module.href, "_blank", "noopener,noreferrer");
+                            openToolHref(tool.launch_module.href);
                             setIsLaunched(true);
                           }
                         }}
@@ -2850,7 +2874,7 @@ export const StepView: React.FC<StepViewProps> = ({
                       setIsTutorialOpen(true);
                     } else if (card.href) {
                       if (!stepEntitlement.guard()) return;
-                      window.open(card.href, "_blank", "noopener,noreferrer");
+                      openToolHref(card.href);
                     }
                   }}
                   className="group hover:border-primary flex cursor-pointer flex-col rounded-[16px] border-[1.5px] border-[#d0e4f7] bg-white p-[20px] text-left transition-all select-none hover:-translate-y-px hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)]"
@@ -3309,6 +3333,7 @@ export const StepView: React.FC<StepViewProps> = ({
                           contextLabel="Case Strength"
                           stepName="Petition Readiness"
                           defaultCollapsed={false}
+                          onOpenGuide={setGuideOverlayUrl}
                         />
                       </FloatingSidePanel>
 
@@ -3330,6 +3355,7 @@ export const StepView: React.FC<StepViewProps> = ({
                           contextLabel="Case Strength"
                           stepName="Petition Readiness"
                           defaultCollapsed={true}
+                          onOpenGuide={setGuideOverlayUrl}
                         />
                       </div>
                     </>
@@ -3420,7 +3446,7 @@ export const StepView: React.FC<StepViewProps> = ({
                                                 hasGuide: hasDocGuide,
                                                 onReadGuide: () => {
                                                   if (doc.guideUrl && doc.guideUrl !== "/guides") {
-                                                    window.open(doc.guideUrl, "_blank");
+                                                    setGuideOverlayUrl(doc.guideUrl);
                                                     if (actions.updateDocumentStatus && doc.id) {
                                                       actions.updateDocumentStatus(
                                                         doc.id,
@@ -3835,7 +3861,7 @@ export const StepView: React.FC<StepViewProps> = ({
                               hasGuide: hasDocGuide,
                               onReadGuide: () => {
                                 if (item.guideUrl && item.guideUrl !== "/guides") {
-                                  window.open(item.guideUrl, "_blank");
+                                  setGuideOverlayUrl(item.guideUrl);
                                   if (actions.updateDocumentStatus && item.id)
                                     actions.updateDocumentStatus(item.id, "reviewed");
                                 } else {
@@ -5463,6 +5489,16 @@ export const StepView: React.FC<StepViewProps> = ({
           }}
         />
       )}
+      <GuidePageOverlay
+        guideUrl={guideOverlayUrl}
+        onClose={() => setGuideOverlayUrl(null)}
+        plan={plan}
+      />
+      <ToolPageOverlay
+        toolHref={toolOverlayHref}
+        onClose={() => setToolOverlayHref(null)}
+        plan={plan}
+      />
     </div>
   );
 };

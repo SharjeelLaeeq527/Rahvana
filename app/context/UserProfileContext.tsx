@@ -138,7 +138,9 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
     try {
       setIsProfileLoading(true);
 
-      const response = await fetch("/api/profile");
+      const response = await fetch("/api/profile", {
+        signal: AbortSignal.timeout(8000),
+      });
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
         throw new Error(data.error || "Failed to fetch profile");
@@ -150,8 +152,10 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
       } else {
         setProfile(null);
       }
-    } catch (err) {
-      console.error("[UserProfileContext] Unexpected error fetching profile:", err);
+    } catch (err: any) {
+      if (err?.name !== "AbortError" && err?.name !== "TimeoutError") {
+        console.warn("[UserProfileContext] Fetch profile note:", err?.message || err);
+      }
       // Keep any previously-loaded profile on a transient fetch error (e.g. a
       // dev-server hiccup). Nulling it here would blank dependent UI such as the
       // Ch.1 Step 4 consistency baseline right after the user saved their DOB.
@@ -177,11 +181,14 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
 
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
-        throw new Error(data.error || "Failed to save profile");
+        const detailedMsg = data.fieldErrors && typeof data.fieldErrors === "object"
+          ? `Validation error: ${Object.entries(data.fieldErrors).map(([k, v]) => `${k} (${v})`).join(", ")}`
+          : (data.error || "Failed to save profile");
+        throw new Error(detailedMsg);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("[UserProfileContext] Error saving profile:", err);
-      showToast("Failed to save your information. Please try again.", "error");
+      showToast(err?.message || "Failed to save your information. Please try again.", "error");
       throw err; // Rethrow to prevent subsequent success toast
     } finally {
       setIsSaving(false);

@@ -136,11 +136,11 @@ export async function POST(req: Request) {
 
     const categoryName = categoryMap[visaCategory] || visaCategory;
 
-    // Exact city + category match
+    // Exact or partial city + category match
     const filtered = allData.filter((item) => {
-      const postMatch = item.Post
-        .toLowerCase()
-        .includes(city.toLowerCase());
+      const postMatch =
+        item.Post.toLowerCase().includes(city.toLowerCase()) ||
+        city.toLowerCase().includes(item.Post.toLowerCase());
 
       const categoryMatch = item["Visa Category"]
         .toLowerCase()

@@ -41,6 +41,8 @@ export interface DocCaseStrengthMeterProps {
   hasPriorMarriage?: boolean;
   /** If true the card starts collapsed (dashboard mode) and HIDES when nothing to flag */
   defaultCollapsed?: boolean;
+  /** Callback to open a guide without leaving the current journey page */
+  onOpenGuide?: (url: string) => void;
 }
 
 export function DocCaseStrengthMeter({
@@ -54,6 +56,7 @@ export function DocCaseStrengthMeter({
   contextLabel = "Documents",
   stepName,
   defaultCollapsed = false,
+  onOpenGuide,
 }: DocCaseStrengthMeterProps) {
   const [open, setOpen] = useState(!defaultCollapsed);
 
@@ -198,12 +201,22 @@ export function DocCaseStrengthMeter({
                         </div>
                       )}
                       {m.guideUrl && (
-                        <Link
-                          href={m.guideUrl}
-                          className="inline-flex items-center gap-1 mt-1 text-[10.5px] font-bold text-blue-700 hover:underline"
-                        >
-                          How to get this <ExternalLink size={9} />
-                        </Link>
+                        onOpenGuide ? (
+                          <button
+                            type="button"
+                            onClick={() => onOpenGuide(m.guideUrl!)}
+                            className="inline-flex items-center gap-1 mt-1 text-[10.5px] font-bold text-blue-700 hover:underline cursor-pointer text-left"
+                          >
+                            How to get this <ExternalLink size={9} />
+                          </button>
+                        ) : (
+                          <Link
+                            href={m.guideUrl}
+                            className="inline-flex items-center gap-1 mt-1 text-[10.5px] font-bold text-blue-700 hover:underline"
+                          >
+                            How to get this <ExternalLink size={9} />
+                          </Link>
+                        )
                       )}
                     </div>
                   </li>
@@ -264,12 +277,22 @@ export function DocCaseStrengthMeter({
                         </div>
                       )}
                       {d.guideUrl && (
-                        <Link
-                          href={d.guideUrl}
-                          className="inline-flex items-center gap-1 mt-1 text-[10.5px] font-bold text-blue-700 hover:underline"
-                        >
-                          Learn more <ExternalLink size={9} />
-                        </Link>
+                        onOpenGuide ? (
+                          <button
+                            type="button"
+                            onClick={() => onOpenGuide(d.guideUrl!)}
+                            className="inline-flex items-center gap-1 mt-1 text-[10.5px] font-bold text-blue-700 hover:underline cursor-pointer text-left"
+                          >
+                            Learn more <ExternalLink size={9} />
+                          </button>
+                        ) : (
+                          <Link
+                            href={d.guideUrl}
+                            className="inline-flex items-center gap-1 mt-1 text-[10.5px] font-bold text-blue-700 hover:underline"
+                          >
+                            Learn more <ExternalLink size={9} />
+                          </Link>
+                        )
                       )}
                     </div>
                   </li>

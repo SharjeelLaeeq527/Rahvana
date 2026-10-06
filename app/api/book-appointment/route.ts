@@ -87,6 +87,9 @@ export async function POST(req: NextRequest) {
       status: string;
       case_number?: string;
       user_id?: string | null;
+      candidate_id?: string | null;
+      candidate_role?: string | null;
+      candidate_name?: string | null;
     }
 
     // Prepare appointment data for database insertion
@@ -135,6 +138,9 @@ export async function POST(req: NextRequest) {
       status: "pending",
       user_id: currentUserId,
       admin_notes: formData.candidate_id ? `[Candidate: ${formData.candidate_id}] ${formData.candidate_name || ''}`.trim() : "",
+      candidate_id: formData.candidateId || formData.candidate_id || null,
+      candidate_role: formData.candidateRole || formData.candidate_role || null,
+      candidate_name: formData.candidateName || formData.candidate_name || null,
     };
 
     // Only add case_number if it exists

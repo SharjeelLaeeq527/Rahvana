@@ -31,7 +31,6 @@ import {
   Syringe,
   FileUp,
   ArrowRight,
-  Sparkles,
 } from "lucide-react";
 import { AppGroup } from "@/types/app-groups";
 import { JOURNEY_APP_GROUPS } from "@/lib/constants/journey-app-groups";
@@ -41,6 +40,7 @@ interface AppGroupGridProps {
   onLaunchTool: (componentKey: string) => void;
   groups?: AppGroup[];
   className?: string;
+  state?: any;
 }
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -78,6 +78,7 @@ export function AppGroupGrid({
   onLaunchTool,
   groups = JOURNEY_APP_GROUPS,
   className = "",
+  state,
 }: AppGroupGridProps) {
   const [selectedGroup, setSelectedGroup] = useState<AppGroup | null>(null);
 
@@ -86,9 +87,6 @@ export function AppGroupGrid({
       {/* ── Section Header ── */}
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          {/* <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-teal-500/10 text-[#0d7377] dark:bg-teal-950/40">
-            <Sparkles className="h-4 w-4" />
-          </div> */}
           <div>
             <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
               Journey Toolbox &amp; Services
@@ -176,6 +174,7 @@ export function AppGroupGrid({
         group={selectedGroup}
         isOpen={Boolean(selectedGroup)}
         onClose={() => setSelectedGroup(null)}
+        state={state}
         onLaunchItem={(componentKey) => {
           setSelectedGroup(null);
           onLaunchTool(componentKey);

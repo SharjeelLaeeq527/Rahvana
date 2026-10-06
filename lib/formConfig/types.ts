@@ -1,6 +1,11 @@
 export type FieldType =
   "text" | "radio" | "checkbox" | "date" | "hidden" | "select" | "combo" | "textarea" | "dropdown";
 
+export type FieldCandidateScope =
+  | "shared_petitioner"   // Auto-filled from petitioner / primary applicant across candidates
+  | "shared_household"    // Shared family/household info across filings (with verification prompt)
+  | "candidate_distinct"; // Unique to this candidate (names, DOB, passport, A#, medical, etc.)
+
 export type Field = {
   key: string;
   pdfKey: string;
@@ -26,6 +31,10 @@ export type Field = {
   /** Concrete example shown in a green info box */
   example?: string;
   originalLabel?: string;
+  /** Multi-candidate scoping classification */
+  candidateScope?: FieldCandidateScope;
+  /** High-attention verification tag (e.g. DOB, Passport #, Full Name) */
+  criticalReason?: string;
   /** Nested sub-questions (e.g., 4a, 4b, 4c) rendered in same card */
   subQuestions?: Field[];
   pattern?: string;

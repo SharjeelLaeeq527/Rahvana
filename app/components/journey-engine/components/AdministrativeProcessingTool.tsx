@@ -2,6 +2,7 @@ import React, { useState, useCallback } from "react";
 import { Info, Check, Calendar, Upload } from "lucide-react";
 import { ApUpdateModal } from "../PortalWalletManager";
 import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
+import { ToolPageOverlay } from "@/app/components/shared/ToolPageOverlay";
 
 interface ApDetails {
   received: boolean | null;
@@ -47,6 +48,7 @@ export const AdministrativeProcessingTool: React.FC<AdministrativeProcessingTool
   const [refusedPromptOpen, setRefusedPromptOpen] = useState(false);
   const [isApUpdateModalOpen, setIsApUpdateModalOpen] = useState(false);
   const [ceacApiLoading, setCeacApiLoading] = useState(false);
+  const [toolHref, setToolHref] = useState<string | null>(null);
 
   const apUpdateLog = state.metadata.apUpdateLog || [];
 
@@ -404,8 +406,8 @@ const explainer =
             specified.
           </div>
           <button
-            onClick={() => window.open("/document-vault", "_blank")}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#8a6200] text-white rounded-lg text-[13px] font-bold transition-all hover:opacity-90"
+            onClick={() => setToolHref("/document-vault")}
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#8a6200] text-white rounded-lg text-[13px] font-bold transition-all hover:opacity-90 cursor-pointer"
           >
             <Upload size={14} />
             <span>Save documents to Document Vault</span>
@@ -491,6 +493,10 @@ const explainer =
           </div>
         ))}
       </div>
+      <ToolPageOverlay
+        toolHref={toolHref}
+        onClose={() => setToolHref(null)}
+      />
     </div>
   );
 };
