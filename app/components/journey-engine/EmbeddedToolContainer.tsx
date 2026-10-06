@@ -22,6 +22,10 @@ const DocumentTranslationTool = React.lazy(
 const PdfToolkitTool = React.lazy(() => import("@/components/tools/PdfToolkitTool"));
 const SnapAndSignTool = React.lazy(() => import("@/components/tools/SnapAndSignTool"));
 const DqStatusCheckTool = React.lazy(() => import("@/components/tools/DqStatusCheckTool"));
+const MedicalAppointmentTool = React.lazy(
+  () => import("@/components/tools/MedicalAppointmentTool")
+);
+const PccFilingTool = React.lazy(() => import("@/components/tools/PccFilingTool"));
 const InterviewPrepTool = React.lazy(() =>
   import("./components/InterviewPrepTool").then((m) => ({ default: m.InterviewPrepTool }))
 );
@@ -354,6 +358,13 @@ function JourneyVisaFormsEmbeddedTool({
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { useJourneyPlan } from "@/app/context/useJourneyPlan";
 import { TOOL_FEATURE_MAP } from "@/lib/constants/journey-app-groups";
+import { useJourneyServiceStatus } from "@/lib/journey/useJourneyServiceStatus";
+import {
+  isJourneyRequestLocked,
+  isPccRequestLocked,
+  pccExpiryDate,
+  JourneyServiceRecord,
+} from "@/lib/journey/toolModeGuards";
 import { Lock, ArrowRight } from "lucide-react";
 
 function LockedToolGate({
@@ -438,9 +449,18 @@ export function EmbeddedToolContainer({
   const featureKey = TOOL_FEATURE_MAP[toolKey];
   const isToolLocked = featureKey ? plan.isLocked(featureKey) : false;
 
-  const journeyCategory = (data as any)?.journey_type || "IR-5";
-  const resolvedSlug = (data as any)?.journey_type
-    ? `${String((data as any).journey_type).toLowerCase()}-journey`
+  const journeyCategoryRaw = (data as { journey_type?: string })?.journey_type;
+  // Normalize to match the StepView overlays (e.g. "IR-5"/"IR5" → token "IR5" →
+  // category "IR-5", slug "ir5-journey"). A mismatch here would make the journey-
+  // scoped request query return nothing, so the service card wouldn't render.
+  const journeyTypeToken = String(journeyCategoryRaw || "IR5")
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "");
+  const journeyCategory = journeyTypeToken.startsWith("IR")
+    ? `IR-${journeyTypeToken.slice(2)}`
+    : journeyCategoryRaw || "IR-5";
+  const resolvedSlug = journeyCategoryRaw
+    ? `${journeyTypeToken.toLowerCase()}-journey`
     : journeySlug || "ir5-journey";
 
   const resolvedCandidateId =
@@ -459,6 +479,50 @@ export function EmbeddedToolContainer({
     candidateId: resolvedCandidateId,
     backendId: resolvedBackendId,
     subscriptionTier: effectiveJourneyTier,
+  };
+
+  // Journey-scoped service requests → surfaced as My-Resources-style cards on the
+  // embedded Medical/PCC intro screens, and used to lock re-booking while a request
+  // is still active (only fetched when one of those tools is open).
+  const isMedicalTool = toolKey === "medical_appointment";
+  const isPccTool = toolKey === "police_verification";
+  const isServiceTool = isMedicalTool || isPccTool;
+
+  const serviceStatus = useJourneyServiceStatus({
+    journeySlug: resolvedSlug,
+    candidateId: resolvedCandidateId,
+    medicalMetadata: (resolvedState?.metadata?.medicalBooking as JourneyServiceRecord) ?? null,
+    pccMetadata: (resolvedState?.metadata?.pccFiling as JourneyServiceRecord) ?? null,
+    updateMetadata: (actions as { updateMetadata?: (updates: Record<string, unknown>) => void })
+      ?.updateMetadata,
+    enabled: isServiceTool,
+  });
+
+  // Medical: locked until the scheduled appointment date passes. PCC: locked while
+  // in progress, then for the 6-month validity window after receipt.
+  // The tool intro uses `loading` to render a neutral "Checking…" placeholder,
+  // then swaps to either the amber lock banner (locked=true) or the CTA (locked=false).
+  const serviceLoading = serviceStatus.loading;
+  const medicalLocked = isJourneyRequestLocked(serviceStatus.medicalRecord);
+  const pccLocked = isPccRequestLocked(serviceStatus.pccRecord);
+  const pccValidUntil = pccExpiryDate(serviceStatus.pccRecord);
+
+  const medicalLockHint = serviceStatus.medicalRecord?.referenceDate
+    ? `An appointment is already scheduled for ${serviceStatus.medicalRecord.referenceDate}. You can book another once that date has passed.`
+    : "You already have an active medical appointment. You can book another once its appointment date passes.";
+
+  const pccLockHint =
+    serviceStatus.pccRecord?.status === "received"
+      ? `Your certificate is valid${pccValidUntil ? ` until ${pccValidUntil}` : ""} (6 months from receipt). You can file a new request after it expires.`
+      : "Your PCC application is still in progress. You can file another once you receive it and its 6-month validity passes.";
+
+  // Persist the newly-created request to journey metadata, then refresh the card list.
+  const saveServiceRecord = (key: "medicalBooking" | "pccFiling", record: unknown) => {
+    (actions as { updateMetadata?: (u: Record<string, unknown>) => void })?.updateMetadata?.({
+      [key]: record,
+    });
+    serviceStatus.refetch();
+    onClose?.();
   };
 
   const renderToolComponent = () => {
@@ -517,6 +581,40 @@ export function EmbeddedToolContainer({
           />
         );
 
+      case "medical_appointment":
+        return (
+          <MedicalAppointmentTool
+            isOpen={true}
+            onClose={onClose}
+            mode="journey"
+            journeyContext={journeyContext}
+            journeyTier={effectiveJourneyTier}
+            existingRequests={serviceStatus.medicalRows}
+            statusLoading={serviceLoading}
+            locked={medicalLocked}
+            lockHint={medicalLockHint}
+            initialData={(resolvedState?.metadata?.medicalBooking as Record<string, unknown>) || {}}
+            onSave={(record) => saveServiceRecord("medicalBooking", record)}
+          />
+        );
+
+      case "police_verification":
+        return (
+          <PccFilingTool
+            isOpen={true}
+            onClose={onClose}
+            mode="journey"
+            journeyContext={journeyContext}
+            journeyTier={effectiveJourneyTier}
+            existingRequests={serviceStatus.pccRows}
+            statusLoading={serviceLoading}
+            locked={pccLocked}
+            lockHint={pccLockHint}
+            initialData={(resolvedState?.metadata?.pccFiling as Record<string, unknown>) || {}}
+            onSave={(record) => saveServiceRecord("pccFiling", record)}
+          />
+        );
+
       // case "interview_prep":
       //   return (
 
@@ -536,7 +634,6 @@ export function EmbeddedToolContainer({
 
       //   );
 
-      case "police_verification":
       case "pcc_guide":
       case "polio_vaccination_guide":
       case "passport_guide":

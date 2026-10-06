@@ -35,11 +35,12 @@ import {
   Shield,
   Syringe,
   FileUp,
+  Info,
 } from "lucide-react";
 import { AppGroup } from "@/types/app-groups";
 import { TOOL_FEATURE_MAP } from "@/lib/constants/journey-app-groups";
 import { useJourneyPlan } from "@/app/context/useJourneyPlan";
-
+import { ExpandableTooltip } from "@/app/components/shared/ExpandableTooltip";
 import { JourneyPlanBadge } from "@/app/components/shared/JourneyPlanBadge";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 
@@ -80,6 +81,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   Shield,
   Syringe,
   FileUp,
+  Info,
 };
 
 export function AppGroupModal({ group, isOpen, onClose, onLaunchItem, state }: AppGroupModalProps) {
@@ -103,13 +105,12 @@ export function AppGroupModal({ group, isOpen, onClose, onLaunchItem, state }: A
       item.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const isServicesGroup = group.title.toLowerCase() === "services";
+
   const modalContent = (
     <>
       {upgradeFeature && (
-        <UpgradeModal
-          feature={upgradeFeature}
-          onClose={() => setUpgradeFeature(null)}
-        />
+        <UpgradeModal feature={upgradeFeature} onClose={() => setUpgradeFeature(null)} />
       )}
 
       <div className="fixed inset-0 z-[100000] overflow-y-auto overscroll-contain">
@@ -163,6 +164,17 @@ export function AppGroupModal({ group, isOpen, onClose, onLaunchItem, state }: A
               </div>
             </div>
 
+            {isServicesGroup && (
+              <div className="shrink-0 px-6 pt-3">
+                <ExpandableTooltip
+                  icon={<Info size={12} />}
+                  title="Scoped to this journey"
+                  message="Anything you request from this modal is tagged to this journey and only appears here. Requests you filed from the standalone service pages will not show up inside journey."
+                  defaultOpen={false}
+                />
+              </div>
+            )}
+
             {/* ── Items Grid / List ── */}
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-6">
               {filteredItems.length === 0 ? (
@@ -177,7 +189,9 @@ export function AppGroupModal({ group, isOpen, onClose, onLaunchItem, state }: A
                     const ItemIcon = ICON_MAP[item.iconName] || Wrench;
                     const featureKey = TOOL_FEATURE_MAP[item.componentKey];
                     const isLocked = featureKey ? plan.isLocked(featureKey) : false;
-                    const targetTier = featureKey ? plan.entitlement(featureKey)?.upgradeTarget : null;
+                    const targetTier = featureKey
+                      ? plan.entitlement(featureKey)?.upgradeTarget
+                      : null;
 
                     return (
                       <div
@@ -226,7 +240,9 @@ export function AppGroupModal({ group, isOpen, onClose, onLaunchItem, state }: A
                         <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-2.5 text-xs dark:border-slate-700/60">
                           <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
                             {isLocked ? (
-                              <span className="capitalize">{targetTier ? `${targetTier} Plan` : "Upgrade Required"}</span>
+                              <span className="capitalize">
+                                {targetTier ? `${targetTier} Plan` : "Upgrade Required"}
+                              </span>
                             ) : (
                               <span>Auto-saves in Journey</span>
                             )}
@@ -252,7 +268,10 @@ export function AppGroupModal({ group, isOpen, onClose, onLaunchItem, state }: A
                           ) : (
                             <span className="flex items-center gap-1 text-xs font-semibold text-[#0d7377] decoration-2 underline-offset-2 group-hover:underline dark:text-teal-400">
                               <span>Open Tool</span>
-                              <ArrowRight size={13} className="transition-transform group-hover:translate-x-0.5" />
+                              <ArrowRight
+                                size={13}
+                                className="transition-transform group-hover:translate-x-0.5"
+                              />
                             </span>
                           )}
                         </div>
