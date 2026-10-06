@@ -4,6 +4,7 @@ import React, { useState, useEffect, Suspense } from "react";
 import { RoadmapData } from "@/app/(tools)/(visa)/visa-category/[visa-journey]/components/types";
 import { DashboardView } from "./DashboardView";
 import { EmbeddedToolContainer } from "@/app/components/journey-engine/EmbeddedToolContainer";
+import { getAppGroupItemLabel } from "@/lib/constants/journey-app-groups";
 import { JourneyPlanBadge } from "@/app/components/shared/JourneyPlanBadge";
 import { ChapterView } from "./ChapterView";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
@@ -204,7 +205,7 @@ export default function RoadmapLayoutSpouse({ data, state, actions }: RoadmapLay
                 aria-hidden="true"
               />
               <span className="breadcrumb-item breadcrumb-current">
-                <span className="bc-text">{activeToolKey.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}</span>
+                <span className="bc-text">{getAppGroupItemLabel(activeToolKey)}</span>
               </span>
             </li>
           )}

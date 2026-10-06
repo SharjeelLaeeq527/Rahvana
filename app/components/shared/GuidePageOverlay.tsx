@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import dynamic from "next/dynamic";
 import { X, Loader2 } from "lucide-react";
 
@@ -19,6 +20,7 @@ import {
   upgradeCTA,
 } from "@/lib/entitlements/helpers";
 import { PlanTier, isAccessible } from "@/lib/entitlements/config";
+import { preloadGuideSession } from "@/lib/guides/useGuideSession";
 
 interface GuidePageOverlayProps {
   /** Relative URL of the guide page, e.g. "/guides/passport-guide" */
@@ -38,12 +40,12 @@ const ToolLoadingState = () => (
   </div>
 );
 
-const GuideLoadingState = () => (
-  <div className="min-h-screen flex flex-col items-center justify-center bg-[#f8fafc] gap-3">
-    <Loader2 size={32} className="text-primary animate-spin" />
-    <span className="text-xs font-medium text-slate-500">Loading guide...</span>
-  </div>
-);
+/**
+ * Guides are preloaded (see `preloadGuidePage`) before they are ever opened from the
+ * journey toolbox, so this should not paint. It is a blank surface rather than a
+ * spinner so a guide never flashes a loader on its way in.
+ */
+const GuideLoadingState = () => <div className="min-h-screen bg-[#f5f7fa]" />;
 
 // Map of slug -> dynamically imported Guide/Tool React component
 const GUIDE_COMPONENTS: Record<string, React.ComponentType<any>> = {
@@ -191,6 +193,72 @@ const GUIDE_COMPONENTS: Record<string, React.ComponentType<any>> = {
   }),
 };
 
+/**
+ * Same chunks as the guide entries above (webpack dedupes identical specifiers), so
+ * warming one here makes the matching `GUIDE_COMPONENTS` entry resolve without ever
+ * painting a loading state. Call it before the guide can be opened.
+ */
+const GUIDE_PRELOADERS: Record<string, () => Promise<unknown>> = {
+  "passport-guide": () => import("@/app/(tools)/guides/passport-guide/page"),
+  "cnic-guide": () => import("@/app/(tools)/guides/cnic-guide/page"),
+  "birth-certificate-guide": () => import("@/app/(tools)/guides/birth-certificate-guide/page"),
+  "frc-guide": () => import("@/app/(tools)/guides/frc-guide/page"),
+  "nikah-nama-guide": () => import("@/app/(tools)/guides/nikah-nama-guide/page"),
+  "police-verification-guide": () =>
+    import("@/app/(tools)/guides/police-verification-guide/page"),
+  "polio-vaccination-guide": () => import("@/app/(tools)/guides/polio-vaccination-guide/page"),
+};
+
+function slugFromHref(href: string | null): string {
+  if (!href) return "";
+  const clean = href.split("?")[0].replace(/\/$/, "");
+  const parts = clean.split("/").filter(Boolean);
+  if (parts.length === 0 || clean === "/guides") return "all-guides";
+  return parts[parts.length - 1];
+}
+
+/**
+ * Warms everything a guide blocks on - its JS chunk AND its saved progress - so opening
+ * it later renders on the first frame with no loading state. Safe to call repeatedly.
+ */
+export function preloadGuidePage(href: string | null, candidateId?: string): void {
+  const slug = slugFromHref(href);
+  const loader = GUIDE_PRELOADERS[slug];
+  if (!loader) return;
+  try {
+    void loader();
+    preloadGuideSession(slug, candidateId || "candidate-1");
+  } catch {
+    // preloading is best effort - the dynamic import on open still covers us
+  }
+}
+
+// ── DYNAMIC MULTI-STEP FORM ─────────────────────────────────────────────────
+const DynamicMultiStepForm = dynamic(
+  () =>
+    import("@/app/components/forms/auto-visaform-filling/MultiStepForm").then(
+      (mod) => mod.MultiStepForm
+    ),
+  {
+    loading: () => (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#f8fafc] gap-3">
+        <Loader2 size={32} className="text-primary animate-spin" />
+        <span className="text-xs font-medium text-slate-500">Loading form wizard...</span>
+      </div>
+    ),
+  }
+);
+
+function extractFormCode(href: string | null): string | null {
+  if (!href) return null;
+  const cleanHref = href.split("?")[0].replace(/\/$/, "");
+  const match = cleanHref.match(/^\/(?:visa-forms|forms)\/([a-zA-Z0-9_-]+)/);
+  if (!match) return null;
+  const rawCode = match[1].toLowerCase().replace(/[^a-z0-9]/g, "");
+  if (["page", "all", "directory", "wizard"].includes(rawCode)) return null;
+  return rawCode || null;
+}
+
 function getInlineGuideProps(slug: string): Record<string, unknown> {
   if (slug === "passport" || slug === "passport-photos" || slug === "photo-booth") {
     return { showHeader: true, mode: "journey" };
@@ -235,6 +303,9 @@ export const GuidePageOverlay: React.FC<GuidePageOverlayProps> = ({
     return accountPlan;
   }, [passedPlan, passedTier, accountPlan]);
 
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   // Lock body scroll while guide is open
   useEffect(() => {
     if (!guideUrl) return;
@@ -243,32 +314,6 @@ export const GuidePageOverlay: React.FC<GuidePageOverlayProps> = ({
       document.body.style.overflow = "";
     };
   }, [guideUrl]);
-
-// ── DYNAMIC MULTI-STEP FORM ─────────────────────────────────────────────────
-const DynamicMultiStepForm = dynamic(
-  () =>
-    import("@/app/components/forms/auto-visaform-filling/MultiStepForm").then(
-      (mod) => mod.MultiStepForm
-    ),
-  {
-    loading: () => (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#f8fafc] gap-3">
-        <Loader2 size={32} className="text-primary animate-spin" />
-        <span className="text-xs font-medium text-slate-500">Loading form wizard...</span>
-      </div>
-    ),
-  }
-);
-
-function extractFormCode(href: string | null): string | null {
-  if (!href) return null;
-  const cleanHref = href.split("?")[0].replace(/\/$/, "");
-  const match = cleanHref.match(/^\/(?:visa-forms|forms)\/([a-zA-Z0-9_-]+)/);
-  if (!match) return null;
-  const rawCode = match[1].toLowerCase().replace(/[^a-z0-9]/g, "");
-  if (["page", "all", "directory", "wizard"].includes(rawCode)) return null;
-  return rawCode || null;
-}
 
   // Close on Escape key
   useEffect(() => {
@@ -281,13 +326,7 @@ function extractFormCode(href: string | null): string | null {
 
   const detectedFormCode = useMemo(() => extractFormCode(guideUrl), [guideUrl]);
 
-  const slug = useMemo(() => {
-    if (!guideUrl) return "";
-    const clean = guideUrl.split("?")[0].replace(/\/$/, "");
-    const parts = clean.split("/").filter(Boolean);
-    if (parts.length === 0 || clean === "/guides") return "all-guides";
-    return parts[parts.length - 1];
-  }, [guideUrl]);
+  const slug = useMemo(() => slugFromHref(guideUrl), [guideUrl]);
 
   const isTool = useMemo(() => {
     if (detectedFormCode) return true;
@@ -343,7 +382,6 @@ function extractFormCode(href: string | null): string | null {
                 formCode={detectedFormCode}
                 onClose={onClose}
                 isEmbedded={true}
-                {...(extraProps || {})}
               />
             </main>
           </PlanContext.Provider>
@@ -354,6 +392,46 @@ function extractFormCode(href: string | null): string | null {
 
   const GuideComponent = GUIDE_COMPONENTS[slug];
   const inlineProps = getInlineGuideProps(slug);
+
+  /**
+   * A guide takes the whole screen, like a journey tool does: one slim bar with a
+   * single close button and nothing else. The site header, the journey nav and the
+   * guide's own wizard header are all out of the way, and no extra progress bar is
+   * added - every guide already shows its own "Step n of m" in its sidebar/footer.
+   * Portalled to <body> so no ancestor stacking context can trap it.
+   */
+  if (!isTool && GuideComponent) {
+    if (!mounted) return null;
+
+    return createPortal(
+      <div
+        className="animate-in slide-in-from-bottom-[18px] fixed inset-0 z-[9998] flex flex-col overflow-hidden bg-white font-sans duration-[0.28s] ease-in-out"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Guide View"
+      >
+        {/* Topbar - close only */}
+        <div className="flex h-16 shrink-0 items-center gap-4 border-b border-[#d0e4f7] bg-white px-6">
+          <button
+            onClick={onClose}
+            className="hover:bg-primary/10 focus:ring-primary flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-none bg-[#f4f7fb] text-[#3a4f63] transition-all outline-none focus:ring-2"
+            aria-label="Close guide"
+            title="Close (Esc)"
+          >
+            <X size={16} strokeWidth={2} />
+          </button>
+        </div>
+
+        {/* Body - the guide page, minus its own fixed wizard header and its header offset */}
+        <div className="flex-1 overflow-y-auto bg-[#f5f7fa] [&>div]:!min-h-[calc(100dvh-64px)] [&>div]:!pt-0 [&_header.fixed]:!hidden">
+          <PlanContext.Provider value={effectivePlan}>
+            <GuideComponent {...inlineProps} />
+          </PlanContext.Provider>
+        </div>
+      </div>,
+      document.body
+    );
+  }
 
   return (
     <div

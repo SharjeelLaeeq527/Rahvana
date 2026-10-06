@@ -213,3 +213,41 @@ export const TOOL_FEATURE_MAP: Record<string, string | null> = {
   doc_translation: "document_translation",
 };
 
+
+/**
+ * Guide/service app-group items that are real pages under `app/(tools)/...`.
+ * These are mounted in-place by `GuidePageOverlay` (no route change) instead of
+ * being rendered as an embedded tool, so the journey dashboard stays behind them
+ * exactly like a guide opened from a step.
+ */
+export const OVERLAY_PAGE_ROUTES: Record<string, string> = {
+  // Guides
+  passport_guide: "/guides/passport-guide",
+  cnic_guide: "/guides/cnic-guide",
+  birth_certificate_guide: "/guides/birth-certificate-guide",
+  frc_guide: "/guides/frc-guide",
+  marriage_guide: "/guides/nikah-nama-guide",
+  pcc_guide: "/guides/police-verification-guide",
+  polio_vaccination_guide: "/guides/polio-vaccination-guide",
+
+  // Services that have their own tool page
+  police_verification: "/police-verification",
+};
+
+/** Returns the in-place overlay route for a componentKey, or null if it has none. */
+export function getOverlayPageRoute(componentKey: string): string | null {
+  return OVERLAY_PAGE_ROUTES[componentKey] || null;
+}
+
+/**
+ * The label shown for a launched toolbox item (journey nav breadcrumb), taken from
+ * the app-group catalog so the breadcrumb matches the card the user clicked.
+ * Falls back to a title-cased componentKey for keys that are not in a group.
+ */
+export function getAppGroupItemLabel(componentKey: string): string {
+  for (const group of JOURNEY_APP_GROUPS) {
+    const item = group.items.find((i) => i.componentKey === componentKey);
+    if (item) return item.label;
+  }
+  return componentKey.replace(/_/g, " ").replace(/\w/g, (c) => c.toUpperCase());
+}

@@ -33,8 +33,10 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { AppGroup } from "@/types/app-groups";
-import { JOURNEY_APP_GROUPS } from "@/lib/constants/journey-app-groups";
+import { JOURNEY_APP_GROUPS, getOverlayPageRoute } from "@/lib/constants/journey-app-groups";
 import { AppGroupModal } from "./AppGroupModal";
+import { preloadGuidePage } from "@/app/components/shared/GuidePageOverlay";
+import { useCandidate } from "@/app/context/CandidateContext";
 
 interface AppGroupGridProps {
   onLaunchTool: (componentKey: string) => void;
@@ -81,6 +83,16 @@ export function AppGroupGrid({
   state,
 }: AppGroupGridProps) {
   const [selectedGroup, setSelectedGroup] = useState<AppGroup | null>(null);
+  const { activeCandidateId } = useCandidate();
+
+  // Warming starts on hover, before the folder is even open, so a guide clicked
+  // straight afterwards still has its chunk and its saved progress ready.
+  const warmGroup = (group: AppGroup) => {
+    const candidateId = activeCandidateId || "candidate-1";
+    group.items.forEach((item) =>
+      preloadGuidePage(getOverlayPageRoute(item.componentKey), candidateId)
+    );
+  };
 
   return (
     <section className={`w-full ${className}`}>
@@ -113,6 +125,8 @@ export function AppGroupGrid({
             <div
               key={group.id}
               onClick={() => setSelectedGroup(group)}
+              onMouseEnter={() => warmGroup(group)}
+              onFocus={() => warmGroup(group)}
               className="group relative flex cursor-pointer flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs transition-all hover:-translate-y-0.5 hover:border-[#0d7377]/40 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900"
             >
               <div>
@@ -177,6 +191,8 @@ export function AppGroupGrid({
         state={state}
         onLaunchItem={(componentKey) => {
           setSelectedGroup(null);
+          // Guides go through the SAME launch path as tools, so the journey nav
+          // keeps its back arrow + "Dashboard / <item>" breadcrumb + close button.
           onLaunchTool(componentKey);
         }}
       />

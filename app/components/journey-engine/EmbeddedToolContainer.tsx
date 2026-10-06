@@ -1,7 +1,7 @@
 "use client";
 
 import React, { Suspense } from "react";
-import { MessageSquare, Files, PenTool, FileEdit, BookOpen, Wrench } from "lucide-react";
+import { MessageSquare, Wrench } from "lucide-react";
 import { useJourneyEnvironment } from "@/app/context/JourneyEnvironmentContext";
 import { useCandidate } from "@/app/context/CandidateContext";
 import { usePlan } from "@/app/context/PlanContext";
@@ -55,7 +55,8 @@ const MultiStepForm = React.lazy(() =>
 //   import("./components/DqRecordingTool").then((m) => ({ default: m.DqRecordingTool }))
 // );
 
-import { SafeHtml } from "@/app/components/shared/SafeHTML";
+import { GuidePageOverlay } from "@/app/components/shared/GuidePageOverlay";
+import { getOverlayPageRoute } from "@/lib/constants/journey-app-groups";
 
 interface EmbeddedToolContainerProps {
   toolKey: string;
@@ -79,62 +80,33 @@ function ToolSkeleton() {
   );
 }
 
-function InlineCivilGuideViewer({ guideKey, data }: { guideKey: string; data: any }) {
-  const guideMap: Record<string, string> = {
-    passport_guide: "doc_passport",
-    cnic_guide: "doc_cnic",
-    birth_certificate_guide: "doc_birth_cert",
-    frc_guide: "doc_frc",
-    marriage_guide: "doc_nikah_nama",
-    pcc_guide: "doc_police_cert",
-  };
+/**
+ * Guides (and page-backed services) launched from the journey toolbox mount the
+ * REAL guide page via GuidePageOverlay: no route change, and for a guide that
+ * overlay is a full-screen shell with a single close button (no site header, no
+ * journey nav, no wizard header). Closing it returns to the journey dashboard.
+ */
+function InlineJourneyGuidePage({
+  toolKey,
+  journeyTier,
+  onClose,
+}: {
+  toolKey: string;
+  journeyTier: string;
+  onClose?: () => void;
+}) {
+  const route = getOverlayPageRoute(toolKey);
+  const [isOpen, setIsOpen] = React.useState(true);
 
-  const guideId = guideMap[guideKey] || guideKey;
-  const guideEntry = data?.inline_guide_data?.[guideId];
+  const handleClose = React.useCallback(() => {
+    setIsOpen(false);
+    onClose?.();
+  }, [onClose]);
 
-  if (!guideEntry) {
-    return (
-      <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-xs sm:p-12 dark:border-slate-800 dark:bg-slate-900">
-        <BookOpen className="mx-auto mb-3 h-10 w-10 text-[#0d7377]" />
-        <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-          Official Civil Document Guide
-        </h3>
-        <p className="mx-auto mt-2 max-w-md text-sm text-slate-600 dark:text-slate-400">
-          Detailed issuing authority, validity rules, and submission checklist for this document.
-        </p>
-      </div>
-    );
-  }
+  if (!route) return null;
 
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs sm:p-8 dark:border-slate-800 dark:bg-slate-900">
-      <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-sky-500/20 bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700 dark:bg-sky-950/40 dark:text-sky-300">
-        <span className="h-1.5 w-1.5 rounded-full bg-sky-500" />
-        <span>Rahvana Official Guide</span>
-      </div>
-
-      <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100">{guideEntry.title}</h2>
-      {guideEntry.sub && (
-        <p className="mt-1 mb-6 text-sm text-slate-600 dark:text-slate-400">{guideEntry.sub}</p>
-      )}
-
-      <div className="mt-6 flex flex-col gap-4">
-        {guideEntry.sections?.map((section: any, idx: number) => (
-          <div
-            key={idx}
-            className="rounded-2xl border border-slate-100 bg-slate-50/70 p-5 dark:border-slate-800 dark:bg-slate-800/50"
-          >
-            <div className="mb-2 text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-              {section.title}
-            </div>
-            <SafeHtml
-              className="prose prose-sm max-w-none text-slate-700 dark:text-slate-300"
-              html={section.htmlContent || section.body}
-            />
-          </div>
-        ))}
-      </div>
-    </div>
+    <GuidePageOverlay guideUrl={isOpen ? route : null} onClose={handleClose} tier={journeyTier} />
   );
 }
 
@@ -544,7 +516,13 @@ export function EmbeddedToolContainer({
       case "birth_certificate_guide":
       case "frc_guide":
       case "marriage_guide":
-        return <InlineCivilGuideViewer guideKey={toolKey} data={data} />;
+        return (
+          <InlineJourneyGuidePage
+            toolKey={toolKey}
+            journeyTier={effectiveJourneyTier}
+            onClose={onClose}
+          />
+        );
 
       case "expert_consultation":
         return (
