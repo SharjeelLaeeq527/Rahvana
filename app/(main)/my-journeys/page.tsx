@@ -4,8 +4,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, CheckCircle2, Clock3, Plus, Route } from "lucide-react";
+import { ArrowRight, CheckCircle2, Clock3, Plus, Route, Users } from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
+import { useCandidate } from "@/app/context/CandidateContext";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { JourneyProgressRecord, listUserJourneys } from "@/lib/journey/journeyProgressService";
 import { getJourneyHrefByType, ir1journeyHref, ir5journeyHref } from "@/lib/constants/routes";
@@ -15,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { JourneyPlanBadge } from "@/app/components/shared/JourneyPlanBadge";
+import { CandidateProfileLauncherModal } from "./components/CandidateProfileLauncherModal";
 
 const JOURNEY_ALIASES: Record<string, string> = {
   "ir-1": "ir1",
@@ -187,12 +189,25 @@ const getJourneyStatus = (journey: JourneyProgressRecord, progress: number) => {
 
 export default function MyJourneysPage() {
   const { user, isLoading: authLoading } = useAuth();
+  const { candidates } = useCandidate();
   const { showToast } = useToast();
   const router = useRouter();
 
   const [journeys, setJourneys] = useState<JourneyProgressRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasFetched, setHasFetched] = useState(false);
+
+  const [launcherModal, setLauncherModal] = useState<{
+    isOpen: boolean;
+    journeyCode: string;
+    journeyName: string;
+    journeyRoute: string;
+  }>({
+    isOpen: false,
+    journeyCode: "IR-5",
+    journeyName: "IR-5 Parents Visa",
+    journeyRoute: ir5journeyHref,
+  });
 
   const isMounted = useRef(true);
 
@@ -297,8 +312,23 @@ export default function MyJourneysPage() {
     router.push("/visa-category");
   };
 
-  const handleOpenJourney = (route: string) => {
-    router.push(route);
+  const handleOpenJourney = (meta: JourneyMeta & { canonicalId: string }) => {
+    const isMultiCandidateCategory =
+      meta.canonicalId === "ir5" ||
+      meta.code.toUpperCase().includes("IR-5") ||
+      meta.code.toUpperCase().includes("IR5");
+
+    if (isMultiCandidateCategory) {
+      setLauncherModal({
+        isOpen: true,
+        journeyCode: meta.code,
+        journeyName: meta.name,
+        journeyRoute: meta.route,
+      });
+      return;
+    }
+
+    router.push(meta.route);
   };
 
   if (authLoading) {
@@ -407,7 +437,17 @@ export default function MyJourneysPage() {
                             status={status}
                             subscriptionTier={subscriptionTier}
                             activity={activity}
-                            onOpen={() => handleOpenJourney(meta.route)}
+                            isMultiCandidate={
+                              meta.canonicalId === "ir5" ||
+                              meta.code.toUpperCase().includes("IR-5") ||
+                              meta.code.toUpperCase().includes("IR5")
+                            }
+                            candidateCount={
+                              candidates.filter((c) =>
+                                (c.visaCategory || "").toUpperCase().includes("IR-5")
+                              ).length || candidates.length
+                            }
+                            onOpen={() => handleOpenJourney(meta)}
                           />
                         </motion.div>
                       )
@@ -418,6 +458,16 @@ export default function MyJourneysPage() {
             )}
           </div>
         </section>
+
+        {/* Netflix-style Candidate Profile Launcher Modal */}
+        <CandidateProfileLauncherModal
+          isOpen={launcherModal.isOpen}
+          onClose={() => setLauncherModal((prev) => ({ ...prev, isOpen: false }))}
+          journeyCode={launcherModal.journeyCode}
+          journeyName={launcherModal.journeyName}
+          journeyRoute={launcherModal.journeyRoute}
+          candidates={candidates}
+        />
       </div>
     </main>
   );
@@ -435,6 +485,8 @@ interface JourneyCardProps {
   };
   subscriptionTier?: string;
   activity: string;
+  candidateCount?: number;
+  isMultiCandidate?: boolean;
   onOpen: () => void;
 }
 
@@ -446,6 +498,8 @@ function JourneyCard({
   status,
   subscriptionTier = "free",
   activity,
+  candidateCount,
+  isMultiCandidate,
   onOpen,
 }: JourneyCardProps) {
   return (
@@ -478,11 +532,17 @@ function JourneyCard({
 
         {/* Image badges */}
         <div className="absolute left-4 right-4 top-4 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1.5">
+          <div className="flex flex-wrap items-center gap-1.5">
             <Badge className="rounded-full border border-white/25 bg-white/90 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-[#0a5a5d] shadow-lg shadow-slate-950/10 backdrop-blur-md hover:bg-white">
               {meta.code}
             </Badge>
             <JourneyPlanBadge tier={subscriptionTier} />
+            {isMultiCandidate && candidateCount && candidateCount > 0 ? (
+              <Badge className="rounded-full border border-teal-300/40 bg-slate-950/70 px-2.5 py-1 text-[10px] font-semibold text-teal-300 shadow-lg backdrop-blur-md hover:bg-slate-950/80">
+                <Users className="mr-1 h-3 w-3 text-teal-300" />
+                {candidateCount} {candidateCount === 1 ? "Profile" : "Profiles"}
+              </Badge>
+            ) : null}
           </div>
 
           <Badge
