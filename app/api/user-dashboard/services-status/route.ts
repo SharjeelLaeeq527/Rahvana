@@ -87,7 +87,7 @@ export async function GET(req: NextRequest) {
 
     let medicalAppointments = appointmentsData || [];
     let translationDocuments = translationsData || [];
-    const consultationBookings = consultationData || [];
+    let consultationBookings = consultationData || [];
 
     // Origin split: journey-scoped rows vs standalone rows. Legacy rows without a
     // source are treated as standalone so My Resources keeps showing them.
@@ -100,9 +100,14 @@ export async function GET(req: NextRequest) {
         (item: any) =>
           item.source === "journey" && (!journeySlug || item.journey_slug === journeySlug)
       );
+      consultationBookings = consultationBookings.filter(
+        (item: any) =>
+          item.source === "journey" && (!journeySlug || item.journey_slug === journeySlug)
+      );
     } else {
       sindhPccRequests = sindhPccRequests.filter((item: any) => item.source !== "journey");
       medicalAppointments = medicalAppointments.filter((item: any) => item.source !== "journey");
+      consultationBookings = consultationBookings.filter((item: any) => item.source !== "journey");
     }
 
     // Filter by candidateId if provided
@@ -129,6 +134,26 @@ export async function GET(req: NextRequest) {
       });
 
       medicalAppointments = medicalAppointments.filter((item: any) => {
+        const directId = item.candidate_id;
+        const metaId = item.metadata?.candidate_id;
+        const notesTag =
+          typeof item.admin_notes === "string" &&
+          item.admin_notes.includes(`[Candidate: ${candidateId}]`);
+        if (directId) return directId === candidateId;
+        if (metaId) return metaId === candidateId;
+        if (notesTag) return true;
+        if (
+          candidateId === "candidate-1" &&
+          !directId &&
+          !metaId &&
+          (!item.admin_notes || !item.admin_notes.includes("[Candidate: "))
+        ) {
+          return true;
+        }
+        return false;
+      });
+
+      consultationBookings = consultationBookings.filter((item: any) => {
         const directId = item.candidate_id;
         const metaId = item.metadata?.candidate_id;
         const notesTag =

@@ -96,6 +96,11 @@ export async function POST(request: NextRequest) {
       payment_status: data.payment_status || "paid",
       status: data.status || "pending_approval",
       user_id: userId,
+      // Forward journey-scope tags from the client payload 
+      source: data.source ?? "standalone",
+      journey_slug: data.journey_slug ?? null,
+      candidate_id: data.candidateId ?? data.candidate_id ?? null,
+
     });
 
     // In a real app, you would send an email/SMS notification here
