@@ -3,6 +3,8 @@ import Image from "next/image";
 type JourneyPlanBadgeProps = {
   tier?: string | null;
   className?: string;
+  showLabel?: boolean;
+  iconOnly?: boolean;
 };
 
 const TIER_STYLES: Record<string, string> = {
@@ -22,19 +24,44 @@ const TIER_IMAGES: Record<string, string> = {
   free: "/icons/Free.png",
 };
 
-/** Compact, consistent plan marker for a specific journey—not the account plan. */
+/** Compact, consistent icon-only plan marker for a specific journey. */
 export function JourneyPlanBadge({
   tier,
   className = "",
+  showLabel = false,
+  iconOnly = true,
 }: JourneyPlanBadgeProps) {
   const normalizedTier = tier?.toLowerCase() || "free";
-  const label = normalizedTier === "free" ? "Free" : normalizedTier;
+  const label =
+    normalizedTier === "free"
+      ? "Free"
+      : normalizedTier.charAt(0).toUpperCase() + normalizedTier.slice(1);
   const style = TIER_STYLES[normalizedTier] ?? TIER_STYLES.free;
   const image = TIER_IMAGES[normalizedTier] ?? TIER_IMAGES.free;
+
+  if (iconOnly || !showLabel) {
+    return (
+      <span
+        className={`inline-flex h-7 w-7 items-center justify-center rounded-full border shadow-sm backdrop-blur-xl ${style} ${className}`}
+        title={`${label} Plan`}
+        aria-label={`${label} journey plan`}
+      >
+        <Image
+          src={image}
+          alt={`${label} plan`}
+          width={16}
+          height={16}
+          className="h-4 w-4 object-contain"
+          aria-hidden="true"
+        />
+      </span>
+    );
+  }
 
   return (
     <span
       className={`inline-flex h-7 items-center gap-1.5 rounded-full border px-2.5 text-[10px] font-bold tracking-[0.12em] uppercase shadow-sm backdrop-blur-xl ${style} ${className}`}
+      title={`${label} Plan`}
       aria-label={`${label} journey plan`}
     >
       <Image

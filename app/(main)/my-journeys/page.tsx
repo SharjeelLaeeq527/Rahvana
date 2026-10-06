@@ -193,7 +193,6 @@ const getJourneyStatus = (journey: JourneyProgressRecord, progress: number) => {
 
 export default function MyJourneysPage() {
   const { user, isLoading: authLoading } = useAuth();
-  const { candidates } = useCandidate();
   const { showToast } = useToast();
   const router = useRouter();
   const { candidates, setActiveCandidateId, activeCandidateId, isMultiCandidate } = useCandidate();
@@ -431,9 +430,9 @@ export default function MyJourneysPage() {
       <div className="pointer-events-none absolute inset-0">
         <div className="grid-bg absolute inset-0" />
 
-        <div className="absolute -left-44 -top-52 h-[520px] w-[520px] rounded-full bg-[#14a0a6]/10 blur-[130px]" />
+        <div className="absolute -top-52 -left-44 h-[520px] w-[520px] rounded-full bg-[#14a0a6]/10 blur-[130px]" />
 
-        <div className="absolute -right-52 top-36 h-[560px] w-[560px] rounded-full bg-[#32e0c4]/10 blur-[150px]" />
+        <div className="absolute top-36 -right-52 h-[560px] w-[560px] rounded-full bg-[#32e0c4]/10 blur-[150px]" />
 
         <div className="absolute bottom-0 left-1/3 h-[400px] w-[400px] rounded-full bg-[#0d7377]/5 blur-[130px]" />
 
@@ -446,7 +445,7 @@ export default function MyJourneysPage() {
           <div className="mx-auto max-w-7xl">
             <div className="flex flex-col justify-between gap-8 lg:flex-row lg:items-end">
               <div className="max-w-3xl">
-                <div className="mb-4 flex mt-6 md:mt-3 lg:mt-0 items-center gap-2 text-sm font-semibold text-[#0d7377]">
+                <div className="mt-6 mb-4 flex items-center gap-2 text-sm font-semibold text-[#0d7377] md:mt-3 lg:mt-0">
                   <span className="h-2 w-2 rounded-full bg-[#32e0c4] shadow-[0_0_0_5px_rgba(50,224,196,0.14)]" />
                   Your immigration dashboard
                 </div>
@@ -478,7 +477,7 @@ export default function MyJourneysPage() {
         </section>
 
         {/* Journey content */}
-        <section className="site-main-px pb-24 pt-10 md:pt-12">
+        <section className="site-main-px pt-10 pb-24 md:pt-12">
           <div className="mx-auto max-w-7xl">
             {loading && journeys.length === 0 ? (
               <JourneyCardsSkeleton />
@@ -490,7 +489,16 @@ export default function MyJourneysPage() {
                   <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
                     {visibleJourneys.map(
                       (
-                        { id, progress, completedSteps, totalSteps, meta, status, subscriptionTier, activity },
+                        {
+                          id,
+                          progress,
+                          completedSteps,
+                          totalSteps,
+                          meta,
+                          status,
+                          subscriptionTier,
+                          activity,
+                        },
                         index
                       ) => (
                         <motion.div
@@ -594,6 +602,11 @@ function JourneyCard({
   isMultiCandidate,
   onOpen,
 }: JourneyCardProps) {
+  const isActiveJourney =
+    meta.isCurrentActive !== undefined
+      ? Boolean(meta.isCurrentActive)
+      : status.label === "Active" || status.label === "Completed";
+
   return (
     <Card
       role="button"
@@ -606,43 +619,52 @@ function JourneyCard({
           onOpen();
         }
       }}
-      className={`relative flex h-full cursor-pointer flex-col overflow-hidden rounded-3xl border bg-white/75 p-0 backdrop-blur-xl transition-all duration-500 hover:-translate-y-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14a0a6]/50 ${
-        meta.isCurrentActive
-          ? "border-[#0d7377]/40 shadow-[0_20px_60px_rgba(13,115,119,0.18)] ring-2 ring-[#0d7377]/20"
-          : "border-white/80 shadow-[0_18px_55px_rgba(15,61,63,0.08)] hover:border-[#14a0a6]/30 hover:shadow-[0_28px_70px_rgba(13,115,119,0.16)]"
+      className={`group relative flex h-full cursor-pointer flex-col overflow-hidden rounded-3xl border p-0 backdrop-blur-xl transition-all duration-500 hover:-translate-y-1.5 focus-visible:ring-2 focus-visible:ring-[#14a0a6]/50 focus-visible:outline-none ${
+        isActiveJourney
+          ? meta.isCurrentActive
+            ? "border-[#0d7377]/40 bg-white/90 shadow-[0_20px_60px_rgba(13,115,119,0.18)] ring-2 ring-[#0d7377]/25 hover:border-[#0d7377]/60 hover:shadow-[0_28px_70px_rgba(13,115,119,0.24)]"
+            : "border-white/80 bg-white/75 shadow-[0_18px_55px_rgba(15,61,63,0.08)] hover:border-[#14a0a6]/30 hover:shadow-[0_28px_70px_rgba(13,115,119,0.16)]"
+          : "border-slate-200/70 bg-slate-100/60 opacity-60 grayscale-[0.75] shadow-xs hover:border-slate-300 hover:opacity-95 hover:grayscale-0 hover:shadow-[0_18px_50px_rgba(15,61,63,0.1)]"
       }`}
     >
       {/* Image */}
-      <div className="relative h-44 overflow-hidden bg-[#dbeeee]">
+      <div
+        className={`relative h-44 overflow-hidden ${
+          isActiveJourney ? "bg-[#dbeeee]" : "bg-slate-200"
+        }`}
+      >
         <Image
           src={meta.image}
           alt={`${meta.name} journey cover`}
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
-          className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]"
+          className={`object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06] ${
+            !isActiveJourney
+              ? "opacity-80 grayscale-[0.5] group-hover:opacity-100 group-hover:grayscale-0"
+              : ""
+          }`}
         />
 
-        <div className="absolute inset-0 bg-linear-to-t from-[#062f31]/90 via-[#083e41]/25 to-slate-950/10" />
+        <div
+          className={`absolute inset-0 transition-opacity duration-500 ${
+            isActiveJourney
+              ? "bg-linear-to-t from-[#062f31]/90 via-[#083e41]/25 to-slate-950/10"
+              : "bg-linear-to-t from-slate-950/85 via-slate-900/35 to-slate-950/15"
+          }`}
+        />
 
-        <div className="absolute inset-0 bg-linear-to-br from-[#0d7377]/15 via-transparent to-[#32e0c4]/10" />
+        <div
+          className={`absolute inset-0 transition-opacity duration-500 ${
+            isActiveJourney
+              ? "bg-linear-to-br from-[#0d7377]/15 via-transparent to-[#32e0c4]/10"
+              : "bg-transparent"
+          }`}
+        />
 
         {/* Image badges */}
-        <div className="absolute left-4 right-4 top-4 flex items-center justify-between gap-2">
+        <div className="absolute top-4 right-4 left-4 flex items-center justify-between gap-2">
           <div className="flex flex-wrap items-center gap-1.5">
-            <Badge className="rounded-full border border-white/25 bg-white/90 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-[#0a5a5d] shadow-lg shadow-slate-950/10 backdrop-blur-md hover:bg-white">
-              {meta.code}
-            </Badge>
-            {meta.candidateBadge && (
-              <Badge className="rounded-full border border-teal-200/50 bg-[#0d7377]/90 text-white px-2.5 py-0.5 text-[11px] font-medium shadow-md backdrop-blur-md">
-                {meta.candidateBadge}
-              </Badge>
-            )}
-            {meta.isCurrentActive && (
-              <Badge className="rounded-full border border-emerald-400/40 bg-emerald-600/90 text-white px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase shadow-md backdrop-blur-md">
-                Active
-              </Badge>
-            )}
-            <JourneyPlanBadge tier={subscriptionTier} />
+            <JourneyPlanBadge tier={subscriptionTier} iconOnly={true} />
             {isMultiCandidate && candidateCount && candidateCount > 0 ? (
               <Badge className="rounded-full border border-teal-300/40 bg-slate-950/70 px-2.5 py-1 text-[10px] font-semibold text-teal-300 shadow-lg backdrop-blur-md hover:bg-slate-950/80">
                 <Users className="mr-1 h-3 w-3 text-teal-300" />
@@ -650,22 +672,14 @@ function JourneyCard({
               </Badge>
             ) : null}
           </div>
-
-          <Badge
-            className={`rounded-full border px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] shadow-lg shadow-slate-950/10 backdrop-blur-md hover:${status.className} ${status.className}`}
-          >
-            <span className={`mr-2 h-1.5 w-1.5 rounded-full ${status.dotClassName}`} />
-            {status.label}
-          </Badge>
         </div>
 
         {/* Image title */}
         <div className="absolute inset-x-0 bottom-0 p-5">
-          <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#8ff5e6]">
-            Immigration pathway
-          </p>
-
-          <h2 className="text-xl font-semibold tracking-[-0.02em] text-white md:text-[1.35rem] line-clamp-1">
+          <h2
+            title={meta.name}
+            className="line-clamp-1 text-xl font-semibold tracking-[-0.02em] text-white md:text-[1.35rem]"
+          >
             {meta.name}
           </h2>
         </div>
@@ -673,7 +687,9 @@ function JourneyCard({
 
       <CardContent className="relative flex flex-1 flex-col px-4 py-2">
         {/* Decorative card glow */}
-        <div className="pointer-events-none absolute -right-16 -top-20 h-40 w-40 rounded-full bg-[#32e0c4]/8 blur-3xl" />
+        {isActiveJourney && (
+          <div className="pointer-events-none absolute -top-20 -right-16 h-40 w-40 rounded-full bg-[#32e0c4]/8 blur-3xl" />
+        )}
 
         <p className="relative line-clamp-2 min-h-[44px] text-sm leading-6 text-slate-600">
           {meta.description}
@@ -683,15 +699,25 @@ function JourneyCard({
         <div className="relative mt-4 rounded-[20px] border border-[#0d7377]/8 bg-linear-to-br from-[#f2fbfb] to-white px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
           <div className="flex items-end justify-between gap-4">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+              <p className="text-[10px] font-semibold tracking-[0.2em] text-slate-500 uppercase">
                 Overall progress
               </p>
 
               <div className="mt-1 flex items-baseline gap-1">
-                <span className="text-2xl font-bold tracking-[-0.04em] text-[#0a5a5d]">
+                <span
+                  className={`text-2xl font-bold tracking-[-0.04em] ${
+                    isActiveJourney ? "text-[#0a5a5d]" : "text-slate-600"
+                  }`}
+                >
                   {progress}
                 </span>
-                <span className="text-sm font-semibold text-[#0d7377]">%</span>
+                <span
+                  className={`text-sm font-semibold ${
+                    isActiveJourney ? "text-[#0d7377]" : "text-slate-500"
+                  }`}
+                >
+                  %
+                </span>
               </div>
             </div>
 
@@ -711,7 +737,11 @@ function JourneyCard({
                 duration: 0.8,
                 ease: [0.22, 1, 0.36, 1],
               }}
-              className="relative h-full rounded-full bg-linear-to-r from-[#0a5a5d] via-[#0d7377] to-[#32e0c4]"
+              className={`relative h-full rounded-full ${
+                isActiveJourney
+                  ? "bg-linear-to-r from-[#0a5a5d] via-[#0d7377] to-[#32e0c4]"
+                  : "bg-linear-to-r from-slate-400 to-slate-500"
+              }`}
             >
               <div className="absolute inset-0 bg-linear-to-b from-white/25 to-transparent" />
             </motion.div>
@@ -721,7 +751,13 @@ function JourneyCard({
         {/* Activity */}
         <div className="relative mt-4 flex items-center justify-between gap-3 border-t border-slate-100 pt-3">
           <div className="flex min-w-0 items-center gap-2.5 text-xs text-slate-500">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#e8f6f6] text-[#0d7377]">
+            <span
+              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
+                isActiveJourney
+                  ? "bg-[#e8f6f6] text-[#0d7377]"
+                  : "bg-slate-100 text-slate-500"
+              }`}
+            >
               {progress >= 100 ? (
                 <CheckCircle2 className="h-4 w-4" />
               ) : (
@@ -730,14 +766,20 @@ function JourneyCard({
             </span>
 
             <div className="min-w-0">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+              <p className="text-[10px] font-semibold tracking-[0.14em] text-slate-400 uppercase">
                 Last updated
               </p>
               <p className="truncate font-medium text-slate-600">{activity}</p>
             </div>
           </div>
 
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#0d7377] text-white shadow-[0_8px_20px_rgba(13,115,119,0.22)] transition-all duration-300 group-hover:translate-x-0.5 group-hover:bg-[#0a5a5d] group-hover:shadow-[0_10px_26px_rgba(13,115,119,0.3)]">
+          <span
+            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white transition-all duration-300 group-hover:translate-x-0.5 ${
+              isActiveJourney
+                ? "bg-[#0d7377] shadow-[0_8px_20px_rgba(13,115,119,0.22)] group-hover:bg-[#0a5a5d] group-hover:shadow-[0_10px_26px_rgba(13,115,119,0.3)]"
+                : "bg-slate-400 shadow-sm group-hover:bg-[#0d7377]"
+            }`}
+          >
             <ArrowRight className="h-4 w-4" />
           </span>
         </div>
@@ -750,9 +792,7 @@ interface EmptyJourneyStateProps {
   onStartJourney: () => void;
 }
 
-function EmptyJourneyState({
-  onStartJourney,
-}: EmptyJourneyStateProps) {
+function EmptyJourneyState({ onStartJourney }: EmptyJourneyStateProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 14 }}
@@ -765,7 +805,7 @@ function EmptyJourneyState({
       className="relative overflow-hidden rounded-[28px] border border-[#0d7377]/10 bg-white/85 shadow-[0_24px_70px_rgba(15,61,63,0.08)] backdrop-blur-xl"
     >
       {/* Subtle decorative glow */}
-      <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-[#32e0c4]/10 blur-3xl" />
+      <div className="pointer-events-none absolute -top-24 -right-20 h-64 w-64 rounded-full bg-[#32e0c4]/10 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-28 -left-20 h-64 w-64 rounded-full bg-[#0d7377]/5 blur-3xl" />
 
       <div className="relative flex flex-col items-center px-6 py-14 text-center sm:px-10 sm:py-16 lg:py-20">
@@ -776,7 +816,7 @@ function EmptyJourneyState({
 
         {/* Content */}
         <div className="mt-6 max-w-xl">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#0d7377]">
+          <p className="text-xs font-semibold tracking-[0.2em] text-[#0d7377] uppercase">
             No journeys yet
           </p>
 
@@ -785,8 +825,8 @@ function EmptyJourneyState({
           </h2>
 
           <p className="mx-auto mt-4 max-w-lg text-sm leading-7 text-slate-600 sm:text-base">
-            Select your visa category and receive a clear, step-by-step
-            roadmap for your immigration process.
+            Select your visa category and receive a clear, step-by-step roadmap for your immigration
+            process.
           </p>
         </div>
 
@@ -818,7 +858,7 @@ function JourneyCardsSkeleton() {
           <div className="relative h-52 overflow-hidden bg-slate-100">
             <div className="absolute inset-0 animate-pulse bg-linear-to-r from-slate-100 via-slate-50 to-slate-100" />
 
-            <div className="absolute left-4 right-4 top-4 flex justify-between">
+            <div className="absolute top-4 right-4 left-4 flex justify-between">
               <div className="h-7 w-16 animate-pulse rounded-full bg-white/70" />
               <div className="h-7 w-20 animate-pulse rounded-full bg-white/70" />
             </div>
