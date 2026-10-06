@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Search, ArrowRight, ChevronDown, X, Shield, Calendar } from "lucide-react";
+import { Search, ArrowRight, ChevronDown, X, Shield, Calendar, Info } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { NAV_DATA } from "@/app/components/layout/navigationData";
 import {
@@ -19,6 +19,7 @@ import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import AddResourceCard from "@/components/resources/AddResourceCard";
 import ResourceSectionHeader from "@/components/resources/ResourceSectionHeader";
 import StatCard from "@/app/components/shared/StatCard";
+import { ExpandableTooltip } from "@/app/components/shared/ExpandableTooltip";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Loader } from "@/components/ui/spinner";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
@@ -547,12 +548,24 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
           </div>
         )}
 
+        {/* Journey-scope explainer — embedded "My Resources" view only. Mirrors the
+            banner in EmbeddedToolContainer so both surfaces tell the same story. */}
+        {isEmbedded && (
+          <div className="-mt-8">
+            <ExpandableTooltip
+              icon={<Info size={12} />}
+              title="Requests filed inside a Journey"
+              message="Anything you book or file from within a journey (via its steps or toolbox) is tagged to that journey and only appears there. This tab lists requests you made directly, outside any journey."
+              defaultOpen={true}
+            />
+          </div>
+        )}
+
         {/* My Services — owned or with an active booking (embedded view only) */}
         {isEmbedded && (
           <ResourceSectionHeader
             title="My Services"
             subtitle="Services you've unlocked or already have an active request for."
-            className="-mt-16"
           />
         )}
 
