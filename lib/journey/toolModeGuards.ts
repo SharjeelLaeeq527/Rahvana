@@ -61,3 +61,18 @@ export function pccExpiryDate(record?: JourneyServiceRecord | null): string | un
   expiry.setMonth(expiry.getMonth() + PCC_VALIDITY_MONTHS);
   return expiry.toISOString().slice(0, 10);
 }
+
+/**
+ * Consultation re-request lock. Unlike Medical (date-only, midnight comparison) a
+ * consultation slot is a full ISO datetime — with the midnight rule a session that
+ * ended at 10:00 would still block rebooking until 23:59. Cancelled / rejected
+ * sessions never lock.
+ */
+export function isConsultationRequestLocked(record?: JourneyServiceRecord | null): boolean {
+  if (!record) return false;
+  if (record.status === "canceled" || record.status === "cancelled" || record.status === "rejected") {
+    return false;
+  }
+  if (!record.referenceDate) return true; // no slot known → stay locked until cleared
+  return new Date(record.referenceDate).getTime() >= Date.now(); // full timestamp compare
+}
