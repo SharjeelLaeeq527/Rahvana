@@ -162,6 +162,17 @@ import { QuestRenderer } from "./QuestRenderer";
 import { ActionStepRenderer } from "./ActionStepRenderer";
 import { DocumentChecklistTool } from "./components/DocumentChecklistTool";
 import { SafeHtml } from "../shared/SafeHTML";
+// Medical / PCC journey-module wiring (mirrors journey-spouse/StepView).
+import { MedicalBookingModule } from "./components/MedicalBookingModule";
+import { PccFilingModule } from "./components/PccFilingModule";
+import MedicalAppointmentTool from "./components/MedicalAppointmentTool";
+import PccFilingTool from "./components/PccFilingTool";
+import {
+  isJourneyRequestLocked,
+  isPccRequestLocked,
+  type JourneyServiceRecord,
+} from "@/lib/journey/toolModeGuards";
+import { useJourneyServiceStatus, patchPccReceived } from "@/lib/journey/useJourneyServiceStatus";
 
 /**
  * Find a vault document that matches an item, considering dynamic categories.
@@ -312,8 +323,27 @@ export const StepView: React.FC<StepViewProps> = ({
   const effectiveTier = plan.tier;
   const stepEntitlement = useStepEntitlement(sId, state);
 
+  // ── Server-synced Medical / PCC service status (mirrors journey-spouse/StepView) ──
+  // The step summary card reflects the LIVE journey request, so deleting it in the
+  // backend clears the card instead of showing ghost info.
+  const journeyTypeToken = (data.journey_type || "IR1").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  const toolJourneyCategory = journeyTypeToken.startsWith("IR")
+    ? `IR-${journeyTypeToken.slice(2)}`
+    : journeyTypeToken || "IR-1";
+  const toolJourneySlug = `${journeyTypeToken.toLowerCase()}-journey`;
+  const serviceStatus = useJourneyServiceStatus({
+    journeySlug: toolJourneySlug,
+    candidateId: (state as any)?.candidateId || "candidate-1",
+    medicalMetadata: (state.metadata?.medicalBooking as JourneyServiceRecord) ?? null,
+    pccMetadata: (state.metadata?.pccFiling as JourneyServiceRecord) ?? null,
+    updateMetadata: actions?.updateMetadata,
+  });
+
   const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
   const [isApUpdateModalOpen, setIsApUpdateModalOpen] = useState(false);
+  // Journey overlay visibility for the Medical booking / PCC filing tools.
+  const [isMedicalBookingOpen, setIsMedicalBookingOpen] = useState(false);
+  const [isPccFilingOpen, setIsPccFilingOpen] = useState(false);
 
   useEffect(() => {
     fetchUserJourneysCached().catch(() => {});
@@ -1874,9 +1904,75 @@ export const StepView: React.FC<StepViewProps> = ({
               );
             })()}
 
+          {/* MEDICAL BOOKING TOOL RENDERING — replaces generic launch_module tile.
+              Mirrors journey-spouse/StepView so the two journeys render the same
+              JourneyServiceModule card (Rahvana Service / Book Myself). */}
+          {tool.type === "medical_booking" &&
+            (() => {
+              const record =
+                serviceStatus.medicalRecord ??
+                (serviceStatus.loading
+                  ? ((state.metadata?.medicalBooking as JourneyServiceRecord) ?? null)
+                  : null);
+
+              const locked = isJourneyRequestLocked(record);
+
+              return (
+                <MedicalBookingModule
+                  tool={tool}
+                  record={record}
+                  locked={locked}
+                  onOpen={() => {
+                    if (locked) return; // one active booking per journey
+                    if (!stepEntitlement.guard()) return; // journey-tier access gate (no credits)
+                    setIsMedicalBookingOpen(true);
+                  }}
+                />
+              );
+            })()}
+
+          {/* PCC FILING TOOL RENDERING */}
+          {tool.type === "pcc_filing" &&
+            (() => {
+              const record =
+                serviceStatus.pccRecord ??
+                (serviceStatus.loading
+                  ? ((state.metadata?.pccFiling as JourneyServiceRecord) ?? null)
+                  : null);
+
+              const locked = isPccRequestLocked(record);
+
+              return (
+                <PccFilingModule
+                  tool={tool}
+                  record={record}
+                  locked={locked}
+                  onOpen={() => {
+                    if (locked) return; // one active PCC application per journey
+                    if (!stepEntitlement.guard()) return;
+                    setIsPccFilingOpen(true);
+                  }}
+                  onMarkReceived={() => {
+                    if (!record) return;
+                    const receivedAt = new Date().toISOString().slice(0, 10);
+                    actions.updateMetadata({
+                      pccFiling: { ...record, status: "received", receivedAt },
+                    });
+                    if (serviceStatus.activePccRow?.id) {
+                      patchPccReceived(serviceStatus.activePccRow.id, receivedAt).then(() =>
+                        serviceStatus.refetch()
+                      );
+                    }
+                  }}
+                />
+              );
+            })()}
+
           {/* PRIMARY LAUNCH MODULE */}
           {tool.launch_module &&
             tool.type !== "sponsorship_calculator" &&
+            tool.type !== "medical_booking" &&
+            tool.type !== "pcc_filing" &&
             tool.type !== "submission_review" &&
             tool.type !== "interview_prep" &&
             tool.type !== "interview_day" &&
@@ -4167,6 +4263,56 @@ export const StepView: React.FC<StepViewProps> = ({
           actions.updateMetadata({ sponsorshipResult: result, sponsorshipDraft: null });
           setIsSponsorshipCalcOpen(false);
           if (!isCompleted) actions.toggleComplete("step_2_5");
+        }}
+      />
+
+      {/* Medical Appointment Booking Tool Overlay (journey-scoped). */}
+      <MedicalAppointmentTool
+        isOpen={isMedicalBookingOpen}
+        onClose={() => {
+          setIsMedicalBookingOpen(false);
+          serviceStatus.refetch(); // pick up any create/delete changes made while open
+        }}
+        mode="journey"
+        journeyTier={state?.subscriptionTier ?? (state as any)?.subscription_tier}
+        journeyContext={{
+          journeySlug: toolJourneySlug,
+          journeyCategory: toolJourneyCategory,
+          candidateId: (state as any).candidateId || "candidate-1",
+          backendId: (state as any).backendId || null,
+          subscriptionTier: state?.subscriptionTier ?? (state as any)?.subscription_tier,
+        }}
+        existingRequests={serviceStatus.medicalRows}
+        onSave={(record) => {
+          actions.updateMetadata({ medicalBooking: record });
+          setIsMedicalBookingOpen(false);
+          serviceStatus.refetch();
+          if (!isCompleted) actions.toggleComplete(sId); // sId = current step key ("step_3_1")
+        }}
+      />
+
+      {/* Police Character Certificate Filing Tool Overlay (journey-scoped). */}
+      <PccFilingTool
+        isOpen={isPccFilingOpen}
+        onClose={() => {
+          setIsPccFilingOpen(false);
+          serviceStatus.refetch();
+        }}
+        mode="journey"
+        journeyTier={state?.subscriptionTier ?? (state as any)?.subscription_tier}
+        journeyContext={{
+          journeySlug: toolJourneySlug,
+          journeyCategory: toolJourneyCategory,
+          candidateId: (state as any).candidateId || "candidate-1",
+          backendId: (state as any).backendId || null,
+          subscriptionTier: state?.subscriptionTier ?? (state as any)?.subscription_tier,
+        }}
+        existingRequests={serviceStatus.pccRows}
+        onSave={(record) => {
+          actions.updateMetadata({ pccFiling: record });
+          setIsPccFilingOpen(false);
+          serviceStatus.refetch();
+          if (!isCompleted) actions.toggleComplete(sId); // sId = "step_3_3"
         }}
       />
 
