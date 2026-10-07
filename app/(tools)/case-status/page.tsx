@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Search,
   FileText,
@@ -12,6 +12,8 @@ import {
   Calendar,
   Info,
   ArrowUpCircle,
+  History,
+  Check,
   ExternalLink,
   RefreshCcw,
   Loader2,
@@ -19,15 +21,16 @@ import {
   Landmark,
   ShieldCheck,
   Trash2,
-  Users,
-  Sparkles,
+  AlertTriangle,
+  X,
+  FileUp,
 } from "lucide-react";
 import { useLanguage } from "@/app/context/LanguageContext";
+// import { ResultGate } from "@/app/components/entitlements/ResultGate";
 import { E, msg } from "@/lib/errors";
 import { useToast } from "@/app/components/shared/ToastProvider";
+import FileUpload from "@/app/components/shared/FileUpload";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
-import { useCandidate } from "@/app/context/CandidateContext";
-import { useUserProfile } from "@/app/context/UserProfileContext";
 
 /* ─── USCIS API Response Structure ──────────────────────────── */
 export interface USCISCaseStatus {
@@ -35,7 +38,7 @@ export interface USCISCaseStatus {
   formType?: string;
   submittedDate?: string;
   modifiedDate?: string;
-  current_case_status_en?: string;
+  current_case_status_text_en?: string;
   current_case_status_desc_en?: string;
   current_case_status_text_es?: string;
   current_case_status_desc_es?: string;
@@ -44,8 +47,11 @@ export interface USCISCaseStatus {
     completed_text_en?: string;
     completed_text_es?: string;
   }>;
-  _candidateId?: string | null;
-  _candidateName?: string | null;
+  hist_case_status?: Array<{
+    date?: string;
+    completed_text_en?: string;
+    completed_text_es?: string;
+  }>;
 }
 
 export interface CaseResult {
@@ -56,9 +62,8 @@ export interface CaseResult {
   formType: string;
   modifiedDate: string;
   nextSteps: Array<{ date?: string | undefined; text: string }>;
+  caseHistory: Array<{ date?: string | undefined; text: string }>;
   rawData: USCISCaseStatus;
-  candidateId?: string | null;
-  candidateName?: string | null;
 }
 
 interface USCISHistoryRecord {
@@ -198,12 +203,20 @@ export function decodePrefix(receipt: string) {
   };
 }
 
-export function parseUSCISData(
-  raw: USCISCaseStatus,
-  receiptNumber: string,
-  candidateMeta?: { candidateId?: string | null; candidateName?: string | null }
-): CaseResult {
-  const status = raw.current_case_status_en ?? "";
+// USCIS dates come as either ISO ("2023-09-05") or US ("09-05-2023 [hh:mm:ss]").
+// Normalize to a timestamp so history timelines sort correctly either way.
+function parseUSCISDate(d?: string): number {
+  if (!d) return 0;
+  const iso = /^\d{4}-\d{2}-\d{2}/.exec(d);
+  if (iso) return Date.parse(d) || 0;
+  const [mm, dd, rest] = d.split("-");
+  const yyyy = rest?.slice(0, 4);
+  if (mm && dd && yyyy) return Date.UTC(Number(yyyy), Number(mm) - 1, Number(dd));
+  return Date.parse(d) || 0;
+}
+
+export function parseUSCISData(raw: USCISCaseStatus, receiptNumber: string): CaseResult {
+  const status = raw.current_case_status_text_en ?? "";
   const description = raw.current_case_status_desc_en ?? "";
   const formType = raw.formType ?? "";
   const modifiedDate = raw.modifiedDate ?? raw.submittedDate ?? "";
@@ -213,6 +226,14 @@ export function parseUSCISData(
     text: s.completed_text_en ?? "",
   }));
 
+  // Past events, oldest first so the timeline reads down toward the present.
+  const caseHistory = (raw.hist_case_status ?? [])
+    .map((s) => ({
+      date: s.date,
+      text: s.completed_text_en ?? "",
+    }))
+    .sort((a, b) => parseUSCISDate(a.date) - parseUSCISDate(b.date));
+
   return {
     receiptNumber,
     checkedAt: new Date().toISOString(),
@@ -221,11 +242,16 @@ export function parseUSCISData(
     formType,
     modifiedDate,
     nextSteps,
+    caseHistory,
     rawData: raw,
-    candidateId: candidateMeta?.candidateId ?? raw._candidateId ?? null,
-    candidateName: candidateMeta?.candidateName ?? raw._candidateName ?? null,
   };
 }
+
+/* ─── Portal document upload — client-side mirror of the criteria enforced by
+    lib/uscis/documentUpload.ts (kept inline so Buffer never enters the bundle) ─── */
+const DOC_EXTENSIONS = ["pdf", "png", "jpg", "jpeg"];
+const DOC_NAME_PATTERN = /^[A-Za-z0-9 .()_-]+$/;
+const DOC_MAX_MB = 15;
 
 /* ─── Page Component ─────────────────────────────────────────── */
 export default function CaseStatusPage() {
@@ -235,12 +261,13 @@ export default function CaseStatusPage() {
   const [result, setResult] = useState<CaseResult | null>(null);
   const [history, setHistory] = useState<CaseResult[]>([]);
   const [showHistory, setShowHistory] = useState(false);
-  const [historyFilter, setHistoryFilter] = useState<"all" | "active">("all");
+  const [error, setError] = useState<{
+    code?: number;
+    message: string;
+  } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const { showToast } = useToast();
-  const { activeCandidate, activeCandidateId, isMultiCandidate } = useCandidate();
-  const { profile } = useUserProfile();
 
   const fetchHistory = useCallback(async () => {
     try {
@@ -252,20 +279,6 @@ export default function CaseStatusPage() {
 
       const historyItems: CaseResult[] = (json.data ?? []).map((item: USCISHistoryRecord) => {
         const raw = item.raw_data ?? {};
-        let cId = raw._candidateId || null;
-        let cName = raw._candidateName || null;
-
-        // Check local candidate association fallback if missing from DB raw
-        if (!cId && typeof window !== "undefined") {
-          try {
-            const local = localStorage.getItem(`receipt_candidate_${item.receipt_number}`);
-            if (local) {
-              const parsed = JSON.parse(local);
-              cId = parsed.id || null;
-              cName = parsed.name || null;
-            }
-          } catch {}
-        }
 
         return {
           receiptNumber: item.receipt_number,
@@ -278,9 +291,13 @@ export default function CaseStatusPage() {
             date: step.date,
             text: step.completed_text_en ?? "",
           })),
+          caseHistory: (raw.hist_case_status ?? [])
+            .map((step) => ({
+              date: step.date,
+              text: step.completed_text_en ?? "",
+            }))
+            .sort((a, b) => parseUSCISDate(a.date) - parseUSCISDate(b.date)),
           rawData: raw,
-          candidateId: cId,
-          candidateName: cName,
         };
       });
 
@@ -294,17 +311,8 @@ export default function CaseStatusPage() {
     fetchHistory();
   }, [fetchHistory]);
 
-  const beneficiaryName = activeCandidate?.fullName || activeCandidate?.label || "Beneficiary";
-  const beneficiaryRelation = activeCandidate?.relation ? ` (${activeCandidate.relation})` : "";
-
-  // Suggested receipt number from profile or active candidate if available
-  const suggestedReceipt = useMemo(() => {
-    if (activeCandidate?.receiptNumber) return activeCandidate.receiptNumber;
-    if (profile?.receiptNumber) return profile.receiptNumber;
-    return null;
-  }, [activeCandidate, profile]);
-
   const handleCheck = async () => {
+    setError(null);
     const normalized = receipt.trim().toUpperCase();
 
     if (!normalized) {
@@ -326,25 +334,11 @@ export default function CaseStatusPage() {
     setResult(null);
 
     try {
-      // Store local receipt-candidate mapping
-      try {
-        localStorage.setItem(
-          `receipt_candidate_${normalized}`,
-          JSON.stringify({
-            id: activeCandidateId,
-            name: beneficiaryName,
-            relation: activeCandidate?.relation,
-          })
-        );
-      } catch {}
-
       const res = await fetch("/api/uscis-case-status", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           receiptNumber: normalized,
-          candidateId: activeCandidateId,
-          candidateName: beneficiaryName,
         }),
       });
 
@@ -352,25 +346,34 @@ export default function CaseStatusPage() {
 
       // API / USCIS request failure
       if (!res.ok || json.error) {
-        console.error("Error fetching case status:", json.error ?? json);
-        showToast(msg(E.TOOL_CASE_FETCH_FAILED), "error");
+        console.error("USCIS Case Status Error:", json.error ?? json);
+
+        const errorCode = json.error?.code;
+        const errorMessage = json.error?.message || msg(E.TOOL_CASE_FETCH_FAILED);
+
+        setError({
+          code: errorCode,
+          message: errorMessage,
+        });
+
+        // showToast(errorMessage, "error");
+
         return;
       }
 
       const rawCaseStatus: USCISCaseStatus = json.data?.case_status ?? json.data ?? {};
 
-      const parsed = parseUSCISData(rawCaseStatus, json.receiptNumber ?? normalized, {
-        candidateId: activeCandidateId,
-        candidateName: beneficiaryName,
-      });
+      const parsed = parseUSCISData(rawCaseStatus, json.receiptNumber ?? normalized);
 
       setResult(parsed);
+      setError(null);
       await fetchHistory();
 
       // Success toast
-      showToast(`Case status retrieved for ${beneficiaryName}.`, "success");
+      showToast("Case status retrieved successfully.", "success");
     } catch (e) {
       console.error("Network error fetching case status:", e);
+
       showToast(msg(E.TOOL_CASE_FETCH_FAILED), "error");
     } finally {
       setLoading(false);
@@ -389,17 +392,94 @@ export default function CaseStatusPage() {
     inputRef.current?.focus();
   };
 
+  // ── Portal document submission (Base64-encoded JSON upload) ──
+  const [docFile, setDocFile] = useState<File | null>(null);
+  const [docBusy, setDocBusy] = useState(false);
+  const [docResult, setDocResult] = useState<{ ok: boolean; message: string } | null>(null);
+
+  const clearDoc = () => {
+    setDocFile(null);
+    setDocResult(null);
+  };
+
+  // Shared FileUpload contract: (fieldName, file | null). We pre-flight the
+  // portal criteria so obvious rejects never hit the network.
+  const handleDocFile = (_fieldName: string, uploaded: File | File[] | null) => {
+    setDocResult(null);
+    const file = Array.isArray(uploaded) ? (uploaded[0] ?? null) : uploaded;
+    if (!file) {
+      setDocFile(null);
+      return;
+    }
+    const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
+    if (!DOC_EXTENSIONS.includes(ext)) {
+      showToast("Only standard PDF, PNG, or JPEG files can be attached.", "error");
+      setDocFile(null);
+      return;
+    }
+    if (!DOC_NAME_PATTERN.test(file.name)) {
+      showToast(
+        "File name can only contain letters, numbers, spaces, periods, hyphens, underscores, and parentheses.",
+        "error"
+      );
+      setDocFile(null);
+      return;
+    }
+    if (file.size > DOC_MAX_MB * 1024 * 1024) {
+      showToast(`File is too large. Maximum size is ${DOC_MAX_MB} MB.`, "error");
+      setDocFile(null);
+      return;
+    }
+    setDocFile(file);
+  };
+
+  const handleDocSubmit = async () => {
+    if (!docFile) return;
+    setDocBusy(true);
+    setDocResult(null);
+
+    try {
+      const fileContent = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result).split(",")[1] ?? "");
+        reader.onerror = () => reject(new Error("Could not read the file."));
+        reader.readAsDataURL(docFile);
+      });
+
+      const res = await fetch("/api/uscis-case-status/documents", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fileName: docFile.name,
+          fileType: docFile.type,
+          fileContent,
+        }),
+      });
+
+      const json = await res.json().catch(() => null);
+
+      if (res.ok && json?.ok) {
+        setDocResult({
+          ok: true,
+          message: `"${json.fileName}" was encoded and submitted to the USCIS portal successfully.`,
+        });
+        clearDoc();
+      } else {
+        setDocResult({
+          ok: false,
+          message: json?.error?.message ?? "Document submission failed. Please try again.",
+        });
+      }
+    } catch (e) {
+      console.error("Document submission error:", e);
+      setDocResult({ ok: false, message: "Network error while submitting the document." });
+    } finally {
+      setDocBusy(false);
+    }
+  };
+
   const decoded = decodePrefix(receipt);
   const theme = result ? getStatusTheme(result.status) : null;
-
-  const filteredHistory = history.filter((h) => {
-    if (historyFilter === "all") return true;
-    return h.candidateId === activeCandidateId;
-  });
-
-  const activeCandidateHistoryCount = history.filter(
-    (h) => h.candidateId === activeCandidateId
-  ).length;
 
   return (
     <div className="guide-grid-bg mt-10 min-h-screen px-4 py-12 sm:px-6 lg:px-10 lg:py-16">
@@ -408,21 +488,12 @@ export default function CaseStatusPage() {
         <div className="min-w-0">
           {/* Header */}
           <header className="mb-9">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="inline-flex items-center gap-2 rounded-full border border-[#0d7377]/15 bg-[#E0F8FE] px-3 py-1.5 text-[11px] font-semibold tracking-[0.18em] text-[#157674] uppercase">
-                <span className="relative flex h-1.5 w-1.5">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#0d7377]/60" />
-                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#0d7377]" />
-                </span>
-                Live Status Tracker
-              </div>
-
-              {isMultiCandidate && (
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-50 border border-teal-200 text-xs font-semibold text-teal-800">
-                  <Users className="w-3.5 h-3.5 text-teal-600" />
-                  <span>Beneficiary: {beneficiaryName}{beneficiaryRelation}</span>
-                </div>
-              )}
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#0d7377]/15 bg-[#E0F8FE] px-3 py-1.5 text-[11px] font-semibold tracking-[0.18em] text-[#157674] uppercase">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#0d7377]/60" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#0d7377]" />
+              </span>
+              Live Status Tracker
             </div>
 
             <div className="mt-5 flex items-center justify-between gap-4">
@@ -442,7 +513,8 @@ export default function CaseStatusPage() {
             </div>
 
             <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-[#5f7777]">
-              Enter your 13-character receipt number for an instant case update for {beneficiaryName}. Track immigration milestones with official data in real-time.
+              Enter your 13-character receipt number for an instant case update. Track your
+              immigration progress with official data in real-time.
             </p>
           </header>
 
@@ -469,7 +541,7 @@ export default function CaseStatusPage() {
               )}
             </div>
 
-            {/* History (collapsible) */}
+            {/* History (collapsible, closed by default) */}
             {history.length > 0 && (
               <div
                 id="search-history"
@@ -479,40 +551,10 @@ export default function CaseStatusPage() {
               >
                 <div className="overflow-hidden">
                   <div className="rounded-2xl border border-[#c9dddd] bg-[#FFFFFF]">
-                    {/* Header bar with Candidate Filter */}
-                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#c9dddd] px-4 py-2.5">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-semibold tracking-[0.18em] text-[#5f7777] uppercase">
-                          Recent Searches
-                        </span>
-                        {isMultiCandidate && (
-                          <div className="inline-flex rounded-lg bg-slate-100 p-0.5 text-xs">
-                            <button
-                              type="button"
-                              onClick={() => setHistoryFilter("all")}
-                              className={`px-2 py-0.5 rounded-md font-medium text-[11px] transition-all ${
-                                historyFilter === "all"
-                                  ? "bg-white text-slate-900 shadow-xs"
-                                  : "text-slate-500 hover:text-slate-900"
-                              }`}
-                            >
-                              All ({history.length})
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setHistoryFilter("active")}
-                              className={`px-2 py-0.5 rounded-md font-medium text-[11px] transition-all ${
-                                historyFilter === "active"
-                                  ? "bg-white text-teal-800 shadow-xs"
-                                  : "text-slate-500 hover:text-slate-900"
-                              }`}
-                            >
-                              {beneficiaryName} ({activeCandidateHistoryCount})
-                            </button>
-                          </div>
-                        )}
-                      </div>
-
+                    <div className="flex items-center justify-between border-b border-[#c9dddd] px-4 py-2.5">
+                      <span className="text-[10px] font-semibold tracking-[0.18em] text-[#5f7777] uppercase">
+                        Recent Searches
+                      </span>
                       <button
                         type="button"
                         onClick={async () => {
@@ -538,49 +580,34 @@ export default function CaseStatusPage() {
                         <Trash2 className="h-3 w-3" /> Clear All
                       </button>
                     </div>
-
-                    {filteredHistory.length === 0 ? (
-                      <div className="p-4 text-center text-xs text-slate-400">
-                        No recent searches for {beneficiaryName}.
-                      </div>
-                    ) : (
-                      filteredHistory.map((h) => {
-                        const ht = getStatusTheme(h.status);
-                        return (
-                          <button
-                            type="button"
-                            key={`${h.receiptNumber}-${h.checkedAt}`}
-                            onClick={() => loadHistory(h)}
-                            className="group flex w-full items-center justify-between border-b border-[#c9dddd] px-4 py-3 text-left transition-colors last:border-0 hover:bg-[#f8fafc]"
-                          >
-                            <div className="flex items-center gap-3">
-                              <span className={`h-2 w-2 shrink-0 rounded-full ${ht.dot}`} />
-                              <div>
-                                <div className="flex items-center gap-2">
-                                  <p className="font-mono text-sm font-semibold tracking-wider text-[#183b3b] transition-colors group-hover:text-[#0d7377]">
-                                    {h.receiptNumber}
-                                  </p>
-                                  {h.candidateName && (
-                                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-100 text-[10px] font-medium text-slate-600">
-                                      <Users className="w-2.5 h-2.5 text-slate-400" />
-                                      {h.candidateName}
-                                    </span>
-                                  )}
-                                </div>
-                                <p className="text-[11px] text-[#5f7777]">
-                                  Checked {new Date(h.checkedAt).toLocaleDateString()}
-                                </p>
-                              </div>
+                    {history.map((h) => {
+                      const ht = getStatusTheme(h.status);
+                      return (
+                        <button
+                          type="button"
+                          key={h.receiptNumber}
+                          onClick={() => loadHistory(h)}
+                          className="group flex w-full items-center justify-between border-b border-[#c9dddd] px-4 py-3 text-left transition-colors last:border-0 hover:bg-[#ffffff]"
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className={`h-2 w-2 shrink-0 rounded-full ${ht.dot}`} />
+                            <div>
+                              <p className="font-mono text-sm font-semibold tracking-wider text-[#183b3b] transition-colors group-hover:text-[#0d7377]">
+                                {h.receiptNumber}
+                              </p>
+                              <p className="text-[11px] text-[#5f7777]">
+                                Checked {new Date(h.checkedAt).toLocaleDateString()}
+                              </p>
                             </div>
-                            <span
-                              className={`hidden rounded-full border px-2.5 py-1 text-[10px] font-semibold tracking-wider uppercase sm:inline-flex ${ht.bg} ${ht.color} ${ht.border}`}
-                            >
-                              {ht.label}
-                            </span>
-                          </button>
-                        );
-                      })
-                    )}
+                          </div>
+                          <span
+                            className={`hidden rounded-full border px-2.5 py-1 text-[10px] font-semibold tracking-wider uppercase sm:inline-flex ${ht.bg} ${ht.color} ${ht.border}`}
+                          >
+                            {ht.label}
+                          </span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -588,25 +615,12 @@ export default function CaseStatusPage() {
 
             <div className="mt-6 space-y-5">
               <div>
-                <div className="mb-2 flex items-center justify-between">
-                  <label
-                    htmlFor="receipt"
-                    className="block text-sm font-semibold text-[#183b3b]"
-                  >
-                    Receipt Number <span className="text-[#db8090]">*</span>
-                  </label>
-                  {suggestedReceipt && suggestedReceipt !== receipt && (
-                    <button
-                      type="button"
-                      onClick={() => setReceipt(suggestedReceipt)}
-                      className="inline-flex items-center gap-1 text-xs text-teal-700 hover:text-teal-900 font-medium transition-colors"
-                    >
-                      <Sparkles className="w-3 h-3 text-teal-600" />
-                      Use {suggestedReceipt}
-                    </button>
-                  )}
-                </div>
-
+                <label
+                  htmlFor="receipt"
+                  className="mb-2 block text-sm font-semibold text-[#183b3b]"
+                >
+                  Receipt Number <span className="text-[#db8090]">*</span>
+                </label>
                 <div className="group relative">
                   <FileText className="pointer-events-none absolute top-1/2 left-4 h-4.5 w-4.5 -translate-y-1/2 text-[#5f7777] transition-colors group-focus-within:text-[#0d7377]" />
                   <input
@@ -692,24 +706,17 @@ export default function CaseStatusPage() {
 
           {/* Results */}
           {result && theme && !loading && (
+            // <ResultGate feature="dq_status_check">
             <section className="mt-8 overflow-hidden rounded-3xl border border-[#0d7377]/10 bg-[#ffffff] shadow-[0_12px_32px_rgba(13,115,119,0.12)]">
               <div
                 className={`flex flex-col gap-4 border-b px-6 py-6 md:flex-row md:items-center md:justify-between md:px-8 ${theme.bg} ${theme.border}`}
               >
-                <div className="flex flex-wrap items-center gap-2">
-                  <span
-                    className={`inline-flex w-fit items-center gap-2 rounded-full border bg-[#ffffff]/70 px-3.5 py-1.5 text-xs font-semibold ${theme.color} ${theme.border}`}
-                  >
-                    <span className={`h-1.5 w-1.5 rounded-full ${theme.dot}`} />
-                    {theme.label}
-                  </span>
-                  {result.candidateName && (
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-teal-200 bg-white/80 px-3 py-1 text-xs font-medium text-teal-800">
-                      <Users className="h-3 w-3 text-teal-600" />
-                      Beneficiary: {result.candidateName}
-                    </span>
-                  )}
-                </div>
+                <span
+                  className={`inline-flex w-fit items-center gap-2 rounded-full border bg-[#ffffff]/70 px-3.5 py-1.5 text-xs font-semibold ${theme.color} ${theme.border}`}
+                >
+                  <span className={`h-1.5 w-1.5 rounded-full ${theme.dot}`} />
+                  {theme.label}
+                </span>
                 <div className="md:text-right">
                   <p className="text-[10px] font-semibold tracking-[0.18em] text-[#5f7777] uppercase">
                     Status Date
@@ -778,6 +785,34 @@ export default function CaseStatusPage() {
                   )}
                 </div>
 
+                {/* Case History — completed USCIS events (hist_case_status) */}
+                {result.caseHistory.length > 0 && (
+                  <div>
+                    <h4 className="mb-4 flex items-center gap-2 text-[10px] font-semibold tracking-[0.18em] text-[#5f7777] uppercase">
+                      <History className="h-3.5 w-3.5 text-[#0d7377]" /> Case History
+                    </h4>
+                    <ol className="relative space-y-3 border-l border-[#0d7377]/20 pl-6">
+                      {result.caseHistory.map((event, i) => (
+                        <li key={i} className="relative">
+                          <span className="absolute top-3.5 -left-[1.9rem] flex h-4 w-4 items-center justify-center rounded-full border border-[#0d7377]/25 bg-[#0d7377]">
+                            <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />
+                          </span>
+                          <div className="rounded-2xl border border-[#c9dddd] bg-[#ffffff] p-4 transition-colors hover:bg-[#edf5f4]/30">
+                            {event.date && (
+                              <p className="mb-1 text-[11px] font-semibold tracking-wider text-[#89a4a0] uppercase">
+                                {event.date}
+                              </p>
+                            )}
+                            <p className="text-[14px] leading-relaxed text-[#183b3b]/85">
+                              {event.text}
+                            </p>
+                          </div>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                )}
+
                 {/* Next Steps */}
                 {result.nextSteps.length > 0 && (
                   <div>
@@ -826,7 +861,163 @@ export default function CaseStatusPage() {
                 </div>
               </div>
             </section>
+            // </ResultGate>
           )}
+
+          {/* Error — styled to the page's card system (red-semantic, same anatomy as Results) */}
+          {error && (
+            <section
+              role="alert"
+              className="mt-8 overflow-hidden rounded-3xl border border-[#BE211A]/15 bg-[#ffffff] shadow-[0_12px_32px_rgba(190,33,26,0.08)]"
+            >
+              {/* Header strip */}
+              <div className="flex items-center justify-between gap-4 border-b border-[#BE211A]/15 bg-[#FBECEB] px-6 py-5 md:px-8">
+                <div className="flex items-center gap-3.5">
+                  <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#BE211A]/15 bg-[#ffffff] text-[#BE211A]">
+                    <AlertTriangle className="h-4 w-4" />
+                  </span>
+                  <div>
+                    <p className="text-[10px] font-semibold tracking-[0.18em] text-[#BE211A]/70 uppercase">
+                      Request Failed
+                    </p>
+                    <h3 className="mt-0.5 text-lg font-semibold tracking-tight text-[#183b3b]">
+                      USCIS Case Status Error
+                    </h3>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {/* {error.code && (
+                    <span className="hidden rounded-md border border-[#BE211A]/20 bg-[#ffffff]/70 px-2.5 py-1 font-mono text-[11px] font-semibold text-[#BE211A] tabular-nums sm:inline-flex">
+                      Error {error.code}
+                    </span>
+                  )} */}
+                  <button
+                    type="button"
+                    onClick={() => setError(null)}
+                    aria-label="Dismiss error"
+                    className="inline-flex h-7 w-7 items-center justify-center rounded-full text-[#BE211A]/60 transition-colors hover:bg-[#BE211A]/10 hover:text-[#BE211A]"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Body */}
+              <div className="space-y-5 p-6 md:p-8">
+                <div className="rounded-2xl border border-[#BE211A]/10 bg-[#FDF6F5] p-5">
+                  <p className="text-[10px] font-semibold tracking-[0.18em] text-[#5f7777] uppercase">
+                    Details
+                  </p>
+                  <p className="mt-2 text-[15px] leading-relaxed font-medium text-[#183b3b]/85">
+                    {error.message}
+                  </p>
+                  {error.code && (
+                    <p className="mt-2 font-mono text-[11px] tracking-wider text-[#BE211A]/80 sm:hidden">
+                      Error code: {error.code}
+                    </p>
+                  )}
+                </div>
+
+                {/* Footer Controls — same chip language as the results card */}
+                <div className="flex flex-wrap gap-3 border-t border-[#c9dddd] pt-6">
+                  <button
+                    type="button"
+                    onClick={handleCheck}
+                    disabled={loading || receipt.length < 13}
+                    className="inline-flex items-center gap-2 rounded-xl bg-[#0D7377] px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-[#0a5a5d] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-45"
+                  >
+                    <RefreshCw className="h-4 w-4" /> Try Again
+                  </button>
+                  <a
+                    href="https://egov.uscis.gov/casestatus/landing.do"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-xl border border-[#0d7377]/15 bg-[#0d7377]/5 px-5 py-2.5 text-sm font-semibold text-[#0d7377] transition-colors hover:bg-[#0d7377]/10 active:scale-[0.98]"
+                  >
+                    <ExternalLink className="h-4 w-4" /> Check on USCIS.gov
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => setError(null)}
+                    className="inline-flex items-center gap-2 rounded-xl border border-[#c9dddd] bg-[#edf5f4]/50 px-5 py-2.5 text-sm font-semibold text-[#5f7777] transition-colors hover:bg-[#edf5f4] active:scale-[0.98]"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              </div>
+            </section>
+          )}
+          {/* Attach a Document — USCIS portal encoded file upload
+          <section className="mt-8 rounded-3xl bg-[#ffffff] p-6 md:p-8">
+            <h2 className="text-lg font-semibold tracking-tight text-[#183b3b]">
+              Attach a Document
+            </h2>
+            <p className="mt-1 max-w-2xl text-sm leading-relaxed text-[#5f7777]">
+              Submit a supporting document for your case. The file is Base64-encoded and sent as
+              JSON, per the official USCIS Developer Portal upload specification.
+            </p>
+
+            File picker — shared uploader (drag & drop / browse / remove)
+            <div className="mt-5">
+              <FileUpload
+                fieldName="uscis-doc"
+                accept=".pdf,.png,.jpg,.jpeg"
+                multiple={false}
+                height="170px"
+                variant="default"
+                title="Drag & drop your document here"
+                description="or choose a file from your device"
+                buttonText="Browse files"
+                helperText={`PDF, PNG or JPEG · Max ${DOC_MAX_MB} MB · No password-protected files`}
+                onFileUpload={handleDocFile}
+              />
+            </div>
+
+            <div className="mt-5 flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={handleDocSubmit}
+                disabled={!docFile || docBusy}
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#0D7377] px-8 py-3.5 text-sm font-semibold tracking-wide text-white transition-all active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-45"
+              >
+                {docBusy ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" /> Submitting Document...
+                  </>
+                ) : (
+                  <>
+                    <FileUp className="h-4 w-4" /> Encode &amp; Submit Document
+                  </>
+                )}
+              </button>
+            </div>
+
+            Outcome banner — success/teal or failure/red, page card language
+            {docResult && (
+              <div
+                role="status"
+                className={`mt-5 flex items-start gap-3 rounded-2xl border p-4 ${
+                  docResult.ok
+                    ? "border-[#2f8f83]/20 bg-[#dff1ed]"
+                    : "border-[#BE211A]/15 bg-[#FBECEB]"
+                }`}
+              >
+                {docResult.ok ? (
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#2f8f83]" />
+                ) : (
+                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[#BE211A]" />
+                )}
+                <p
+                  className={`text-sm leading-relaxed font-medium ${
+                    docResult.ok ? "text-[#183b3b]" : "text-[#7a1712]"
+                  }`}
+                >
+                  {docResult.message}
+                </p>
+              </div>
+            )}
+          </section> */}
         </div>
 
         {/* ── Sidebar ─────────────────────────────────────── */}
@@ -874,7 +1065,8 @@ export default function CaseStatusPage() {
           <div className="flex items-start gap-3 rounded-3xl border border-[#c9dddd] bg-[#ffffff]/60 p-5">
             <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#89a4a0]" />
             <p className="text-xs leading-relaxed text-[#5f7777]">
-              Your case history is securely saved to your Rahvana account with candidate tags so you can track multiple petitions seamlessly.
+              Your case history is securely saved to your Rahvana account so you can access your
+              recent searches across devices.
             </p>
           </div>
         </aside>
