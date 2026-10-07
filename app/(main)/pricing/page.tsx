@@ -24,6 +24,11 @@ import {
   ArrowUpRight,
   ShoppingCart,
   X,
+  AlertTriangle,
+  CheckCircle2,
+  Minus,
+  Plus,
+  Heart,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { E, msg, errorCode } from "@/lib/errors";
@@ -36,6 +41,7 @@ import {
   type ExplorerJourneyCard as ExplorerJourneyCardType,
 } from "@/app/(tools)/(visa)/visa-category/data/journeys";
 import { useToast } from "@/app/components/shared/ToastProvider";
+import { useCandidate } from "@/app/context/CandidateContext";
 
 /* ===========================================================================
    TIER VISUAL CONFIG
@@ -614,6 +620,21 @@ function PricingContent() {
     searchParams.get("interview_category") || VISA_TO_INTERVIEW_CATEGORY[visa] || null;
 
   const { showToast } = useToast();
+  const { candidates } = useCandidate();
+
+  // Multi-parent sponsorship state for IR-5
+  const [parentCount, setParentCount] = useState<number>(() => {
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      const pParam = urlParams.get("parents") || urlParams.get("candidate_count");
+      if (pParam) {
+        const parsed = parseInt(pParam, 10);
+        if (!isNaN(parsed) && parsed >= 1) return parsed;
+      }
+    }
+    return 1;
+  });
+  const [isEligibilityConfirmed, setIsEligibilityConfirmed] = useState<boolean>(true);
 
   const checkoutAddonIds = useMemo(
     () =>
@@ -634,6 +655,28 @@ function PricingContent() {
   const [checkoutCanceled, setCheckoutCanceled] = useState(false);
 
   // Derived
+  const isIr5 = Boolean(
+    visa && (visa.toUpperCase().includes("IR-5") || visa.toUpperCase().includes("IR5"))
+  );
+  const parentMultiplier = isIr5 ? parentCount : 1;
+  const isIr1Purchased = Boolean(journeyTiers.ir1 && journeyTiers.ir1 !== "free");
+
+  // Auto-switch away from IR-1 if user already has an active purchased plan for it
+  useEffect(() => {
+    if (isIr1Purchased && (visa.includes("IR-1") || visa.includes("CR-1"))) {
+      setVisa("IR-5");
+    }
+  }, [isIr1Purchased, visa]);
+
+  // Reset eligibility confirmation when switching back to <= 2 parents
+  useEffect(() => {
+    if (parentCount <= 2) {
+      setIsEligibilityConfirmed(true);
+    } else {
+      setIsEligibilityConfirmed(false);
+    }
+  }, [parentCount]);
+
   const activeVisaCategory = useMemo(
     () => VISA_CATEGORIES.find((v) => v.id === visa) || VISA_CATEGORIES[0],
     [visa]
@@ -645,9 +688,11 @@ function PricingContent() {
   const paidPlans = activePlans.filter((p) => p.id !== "free");
   const currentPlanData = activePlans.find((p) => p.id === selectedPlan) || activePlans[2];
   const activeAddons = ADDONS.filter((addon) => isAddonSelected(addon.id));
-  const planDisplayPrice = (plan: PlanData) => plan.monthlyPrice;
+  const planDisplayPrice = (plan: PlanData) => plan.monthlyPrice * parentMultiplier;
   const summaryBase =
-    mode === "plans" && currentPlanData.id !== "free" ? currentPlanData.annualPrice : 0;
+    mode === "plans" && currentPlanData.id !== "free"
+      ? currentPlanData.annualPrice * parentMultiplier
+      : 0;
   const summaryAddonsTotal = activeAddons.reduce((s, a) => s + a.price, 0);
   const summaryTotal = summaryBase + summaryAddonsTotal;
 
@@ -689,6 +734,7 @@ function PricingContent() {
             visaCategory: visa,
             billing,
             userId: uid,
+            candidateCount: isIr5 ? parentCount : 1,
           }),
         });
         const data = await res.json();
@@ -731,6 +777,8 @@ function PricingContent() {
       requestedInterviewCategory,
       visa,
       billing,
+      isIr5,
+      parentCount,
       isProcessingAutoCheckout,
     ]
   );
@@ -796,6 +844,14 @@ function PricingContent() {
       setSelectedAddons((prev) => mergeAddonSelections(prev, urlAddons));
     }
     if (visaCat && AVAILABLE_VISA_IDS.includes(visaCat)) setVisa(visaCat);
+    const parentsParam = searchParams.get("parents") || searchParams.get("candidate_count");
+    if (parentsParam) {
+      const parsed = parseInt(parentsParam, 10);
+      if (!isNaN(parsed) && parsed >= 1) setParentCount(parsed);
+    }
+    if (searchParams.get("action") === "add_candidate") {
+      setParentCount((prev) => Math.max(prev, 2));
+    }
     // Restore the order-summary (review) step when deep-linked back to it.
     if (searchParams.get("step") === "review") setPurchaseStep("review");
     // Returning from a canceled Stripe checkout — show a non-blocking notice and
@@ -905,6 +961,9 @@ function PricingContent() {
   const secBtn =
     "px-4 py-[8px] rounded-full text-[13px] font-medium cursor-pointer transition-colors border border-border bg-card hover:bg-muted/40 text-foreground inline-flex items-center gap-2";
 
+  // Parent eligibility guard for > 2 parents
+  const isParentEligibilityBlocked = isIr5 && parentCount > 2 && !isEligibilityConfirmed;
+
   // Checkout button (shared)
   const checkoutBtn = (
     <div className="flex flex-col gap-1.5">
@@ -915,11 +974,29 @@ function PricingContent() {
         >
           Loading...
         </button>
+      ) : isParentEligibilityBlocked ? (
+        <button
+          type="button"
+          onClick={() => {
+            showToast(
+              "Please confirm legal eligibility for all additional parents before checkout.",
+              "error"
+            );
+            const disclaimerEl = document.getElementById("parent-eligibility-disclaimer");
+            if (disclaimerEl) {
+              disclaimerEl.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+          }}
+          className="w-full cursor-pointer rounded-full bg-amber-600 px-5 py-[11px] text-center text-[13.5px] font-semibold text-white shadow-sm transition-all hover:bg-amber-700"
+        >
+          Confirm Eligibility to Continue →
+        </button>
       ) : userId ? (
         <CheckoutButton
           productTier={mode === "plans" && selectedPlan !== "free" ? selectedPlan : undefined}
           addons={checkoutAddonIds}
           visaCategory={visa}
+          candidateCount={isIr5 ? parentCount : 1}
           userId={userId}
           onLoadingChange={setIsManualCheckoutLoading}
           className="bg-primary hover:bg-primary/90 w-full rounded-full px-5 py-[11px] text-center text-[14px] font-semibold text-white"
@@ -928,7 +1005,7 @@ function PricingContent() {
         </CheckoutButton>
       ) : (
         <Link
-          href={`/login?redirect=${encodeURIComponent(`/pricing?auto_checkout=true&plan=${selectedPlan}&addons=${checkoutAddonIds.join(",")}&visa=${encodeURIComponent(visa)}`)}`}
+          href={`/login?redirect=${encodeURIComponent(`/pricing?auto_checkout=true&plan=${selectedPlan}&addons=${checkoutAddonIds.join(",")}&visa=${encodeURIComponent(visa)}&candidate_count=${parentCount}`)}`}
           className="bg-primary hover:bg-primary/90 block w-full rounded-full px-5 py-[11px] text-center text-[14px] font-semibold text-white"
         >
           Sign in to Checkout →
@@ -971,11 +1048,29 @@ function PricingContent() {
     >
       Loading...
     </button>
+  ) : isParentEligibilityBlocked ? (
+    <button
+      type="button"
+      onClick={() => {
+        showToast(
+          "Please confirm legal eligibility for all additional parents before checkout.",
+          "error"
+        );
+        const disclaimerEl = document.getElementById("parent-eligibility-disclaimer");
+        if (disclaimerEl) {
+          disclaimerEl.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }}
+      className="w-full cursor-pointer rounded-full bg-amber-600 px-4 py-2.5 text-center text-[12.5px] font-semibold text-white"
+    >
+      Confirm Eligibility →
+    </button>
   ) : userId ? (
     <CheckoutButton
       productTier={mode === "plans" && selectedPlan !== "free" ? selectedPlan : undefined}
       addons={checkoutAddonIds}
       visaCategory={visa}
+      candidateCount={isIr5 ? parentCount : 1}
       userId={userId}
       onLoadingChange={setIsManualCheckoutLoading}
       className="bg-primary hover:bg-primary/90 w-full rounded-full px-4 py-2.5 text-center text-[13px] font-semibold text-white"
@@ -984,7 +1079,7 @@ function PricingContent() {
     </CheckoutButton>
   ) : (
     <Link
-      href={`/login?redirect=${encodeURIComponent(`/pricing?auto_checkout=true&plan=${selectedPlan}&addons=${checkoutAddonIds.join(",")}&visa=${encodeURIComponent(visa)}`)}`}
+      href={`/login?redirect=${encodeURIComponent(`/pricing?auto_checkout=true&plan=${selectedPlan}&addons=${checkoutAddonIds.join(",")}&visa=${encodeURIComponent(visa)}&candidate_count=${parentCount}`)}`}
       className="bg-primary hover:bg-primary/90 block w-full rounded-full px-4 py-2.5 text-center text-[13px] font-semibold text-white"
     >
       Sign in →
@@ -1127,9 +1222,38 @@ function PricingContent() {
                 guidance available for you.
               </p>
 
+              {/* Already purchased IR-1 notice */}
+              {isIr1Purchased && (
+                <div className="mt-5 flex flex-col gap-2.5 rounded-2xl border border-teal-200/90 bg-teal-50/80 p-4 text-xs text-teal-900 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <CheckCircle2 className="h-4 w-4 shrink-0 text-teal-600" />
+                    <span>
+                      You already have an active <strong>IR-1 Spouse Visa</strong> journey (
+                      <strong>{journeyTiers.ir1}</strong> plan).
+                    </span>
+                  </div>
+                  <Link
+                    href="/my-journeys"
+                    className="inline-flex items-center gap-1 font-semibold text-[#0d7377] hover:underline"
+                  >
+                    Go to My Journeys →
+                  </Link>
+                </div>
+              )}
+
               {/* Journey Cards */}
               <div className="mt-7 grid grid-cols-1 gap-5 md:grid-cols-3">
-                {EXPLORER_CARDS.map((card) => {
+                {EXPLORER_CARDS.filter((card) => {
+                  if (
+                    isIr1Purchased &&
+                    (card.code.includes("IR-1") ||
+                      card.code.includes("CR-1") ||
+                      card.slug === "ir-1")
+                  ) {
+                    return false;
+                  }
+                  return true;
+                }).map((card) => {
                   const isLive = card.status === "Live" && Boolean(card.href);
                   const isSelected = card.code === visa;
 
@@ -1259,6 +1383,215 @@ function PricingContent() {
           PLAN CARDS — FULL WIDTH
           ═════════════════════════════════════════════════════════════════ */}
               <div className={`${W}`}>
+                {/* IR-5 Multi-Parent Selector & Eligibility Disclaimer */}
+                {isIr5 && (
+                  <div className="mb-8 space-y-4">
+                    {/* Parent Selector Card */}
+                    <div className="border-border bg-card rounded-[22px] border p-5 shadow-sm sm:p-6">
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#0d7377]/10 text-[#0d7377]">
+                              <Users className="h-4 w-4" />
+                            </span>
+                            <h3 className="text-foreground text-[17px] font-bold">
+                              Beneficiary Parents Selection
+                            </h3>
+                            <span className="rounded-full bg-[#0d7377]/10 px-2.5 py-0.5 text-[11px] font-semibold text-[#0d7377]">
+                              IR-5 Visa
+                            </span>
+                          </div>
+                          <p className="text-muted-foreground mt-1 text-[13px]">
+                            How many parents are you petitioning for? Select biological, step, or
+                            adoptive parents.
+                          </p>
+                        </div>
+
+                        {/* Counter and presets */}
+                        <div className="flex flex-wrap items-center gap-2">
+                          {[1, 2, 3, 4].map((count) => (
+                            <button
+                              key={count}
+                              type="button"
+                              onClick={() => {
+                                setParentCount(count);
+                                if (count <= 2) {
+                                  setIsEligibilityConfirmed(true);
+                                }
+                              }}
+                              className={`rounded-xl px-3.5 py-2 text-[13px] font-semibold transition-all ${
+                                parentCount === count
+                                  ? "bg-[#0d7377] text-white shadow-sm ring-2 ring-[#0d7377]/20"
+                                  : "border-border bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground border"
+                              }`}
+                            >
+                              {count} {count === 1 ? "Parent" : "Parents"}
+                            </button>
+                          ))}
+
+                          {/* Stepper for 5+ or precise adjusting */}
+                          <div className="border-border bg-muted/20 flex items-center rounded-xl border p-1">
+                            <button
+                              type="button"
+                              disabled={parentCount <= 1}
+                              onClick={() => {
+                                const next = Math.max(1, parentCount - 1);
+                                setParentCount(next);
+                                if (next <= 2) setIsEligibilityConfirmed(true);
+                              }}
+                              className="text-muted-foreground hover:bg-card hover:text-foreground flex h-8 w-8 items-center justify-center rounded-lg disabled:opacity-30 disabled:hover:bg-transparent"
+                              title="Decrease parent count"
+                            >
+                              <Minus className="h-3.5 w-3.5" />
+                            </button>
+                            <span className="text-foreground min-w-[42px] px-2 text-center text-[13px] font-bold">
+                              {parentCount}
+                            </span>
+                            <button
+                              type="button"
+                              disabled={parentCount >= 8}
+                              onClick={() => {
+                                const next = Math.min(8, parentCount + 1);
+                                setParentCount(next);
+                                if (next > 2 && parentCount <= 2) {
+                                  setIsEligibilityConfirmed(false);
+                                }
+                              }}
+                              className="text-muted-foreground hover:bg-card hover:text-foreground flex h-8 w-8 items-center justify-center rounded-lg disabled:opacity-30 disabled:hover:bg-transparent"
+                              title="Increase parent count"
+                            >
+                              <Plus className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Dynamic multiplier note */}
+                      <div className="border-border/60 text-muted-foreground mt-4 flex flex-wrap items-center justify-between gap-2 border-t pt-3 text-[12px]">
+                        <div className="flex items-center gap-1.5">
+                          <Heart className="h-3.5 w-3.5 text-[#0d7377]" />
+                          <span>
+                            {parentCount === 1 ? (
+                              "Petitioning for 1 parent. Standard single-journey pricing applies."
+                            ) : (
+                              <>
+                                Petitioning for{" "}
+                                <strong className="text-foreground">{parentCount} parents</strong> (
+                                {parentCount}x journey plan). Plan pricing adjusts automatically.
+                              </>
+                            )}
+                          </span>
+                        </div>
+                        {parentCount > 2 && (
+                          <span className="font-medium text-amber-600 dark:text-amber-400">
+                            Requires step/adoptive parent eligibility confirmation
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Disclaimer when parentCount > 2 */}
+                    {parentCount > 2 && (
+                      <div
+                        id="parent-eligibility-disclaimer"
+                        className={`rounded-[22px] border p-5 transition-all duration-200 ${
+                          isEligibilityConfirmed
+                            ? "border-emerald-500/30 bg-emerald-500/5 text-emerald-950 dark:text-emerald-100"
+                            : "border-amber-500/40 bg-amber-500/10 text-amber-950 ring-2 ring-amber-500/20 dark:text-amber-100"
+                        }`}
+                      >
+                        <div className="flex items-start gap-3.5">
+                          <div
+                            className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ${
+                              isEligibilityConfirmed
+                                ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400"
+                                : "bg-amber-500/20 text-amber-600 dark:text-amber-400"
+                            }`}
+                          >
+                            {isEligibilityConfirmed ? (
+                              <CheckCircle2 className="h-5 w-5" />
+                            ) : (
+                              <AlertTriangle className="h-5 w-5" />
+                            )}
+                          </div>
+                          <div className="flex-1 space-y-2">
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                              <h4 className="text-[15px] font-bold">
+                                {isEligibilityConfirmed
+                                  ? "Eligibility Verified for All Beneficiary Parents"
+                                  : "Important: Confirm Stepparent / Adoptive Parent Eligibility"}
+                              </h4>
+                              <span
+                                className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
+                                  isEligibilityConfirmed
+                                    ? "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300"
+                                    : "bg-amber-500/20 text-amber-700 dark:text-amber-300"
+                                }`}
+                              >
+                                {parentCount} Parents Selected
+                              </span>
+                            </div>
+
+                            <p className="text-[13px] leading-relaxed opacity-90">
+                              Under USCIS regulations, you can petition for biological parents,
+                              stepparents, and adoptive parents. However, strict statutory criteria
+                              must be satisfied before filing Form I-130:
+                            </p>
+
+                            <div className="grid grid-cols-1 gap-2.5 pt-1 text-[12.5px] sm:grid-cols-2">
+                              <div className="bg-background/50 rounded-xl border border-black/5 p-3 dark:border-white/10">
+                                <strong className="text-foreground block text-[13px]">
+                                  Stepparents (INA § 101(b)(1)(B))
+                                </strong>
+                                <span className="text-muted-foreground mt-0.5 block">
+                                  The marriage between your biological parent and stepparent must
+                                  have occurred <strong>before you turned 18</strong>.
+                                </span>
+                              </div>
+                              <div className="bg-background/50 rounded-xl border border-black/5 p-3 dark:border-white/10">
+                                <strong className="text-foreground block text-[13px]">
+                                  Adoptive Parents (INA § 101(b)(1)(E))
+                                </strong>
+                                <span className="text-muted-foreground mt-0.5 block">
+                                  The adoption must have been legally finalized{" "}
+                                  <strong>before you turned 16</strong>, with at least 2 years of
+                                  legal custody.
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Checkbox confirmation */}
+                            <div className="mt-3 pt-2">
+                              <label className="flex cursor-pointer items-center gap-3 select-none">
+                                <input
+                                  type="checkbox"
+                                  checked={isEligibilityConfirmed}
+                                  onChange={(e) => setIsEligibilityConfirmed(e.target.checked)}
+                                  className="border-border h-4 w-4 shrink-0 rounded text-[#0d7377] focus:ring-[#0d7377]"
+                                />
+                                <span className="text-[13px] leading-snug font-medium">
+                                  I confirm that all beneficiary parents meet USCIS statutory
+                                  eligibility criteria before purchasing journey plan.
+                                </span>
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Separation / Isolation feature callout */}
+                    <div className="flex items-center gap-3 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 text-[12.5px] text-emerald-900 dark:text-emerald-200">
+                      <ShieldCheck className="h-5 w-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                      <span>
+                        <strong>100% Isolated Roadmaps & Document Vaults:</strong> Each parent
+                        receives their own dedicated journey roadmap, document checklist, and secure
+                        vault under your account.
+                      </span>
+                    </div>
+                  </div>
+                )}
+
                 {(() => {
                   const TIER_RANK: Record<string, number> = {
                     free: 0,
@@ -1356,7 +1689,13 @@ function PricingContent() {
 
                                 {/* Annual price */}
                                 <div className="text-muted-foreground text-[11px]">
-                                  ${plan.annualPrice} total
+                                  ${plan.annualPrice * parentMultiplier} total
+                                  {isIr5 && parentCount > 1 && (
+                                    <span>
+                                      {" "}
+                                      ({parentCount}x ${plan.annualPrice}/ea)
+                                    </span>
+                                  )}
                                 </div>
                               </div>
                             </div>
@@ -1411,6 +1750,20 @@ function PricingContent() {
                                 if (!visa) {
                                   showToast("Please select a visa category first.", "error");
 
+                                  return;
+                                }
+
+                                if (isIr5 && parentCount > 2 && !isEligibilityConfirmed) {
+                                  showToast(
+                                    "Please confirm legal eligibility for all beneficiary parents before proceeding.",
+                                    "error"
+                                  );
+                                  const el = document.getElementById(
+                                    "parent-eligibility-disclaimer"
+                                  );
+                                  if (el) {
+                                    el.scrollIntoView({ behavior: "smooth", block: "center" });
+                                  }
                                   return;
                                 }
 
@@ -1623,7 +1976,14 @@ function PricingContent() {
                           >
                             Selected Plan
                           </div>
-                          <div className="text-[20px] font-bold">{currentPlanData.name}</div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[20px] font-bold">{currentPlanData.name}</span>
+                            {isIr5 && parentCount > 1 && (
+                              <span className="rounded-full bg-[#0d7377]/10 px-2.5 py-0.5 text-[11px] font-semibold text-[#0d7377]">
+                                {parentCount} Parents
+                              </span>
+                            )}
+                          </div>
                           <p className="text-muted-foreground m-0 mt-0.5 text-[13px]">
                             {currentPlanData.tagline}
                           </p>
@@ -1633,15 +1993,42 @@ function PricingContent() {
                             ${planDisplayPrice(currentPlanData)}
                           </div>
                           <div className="text-muted-foreground text-[12px]">
-                            /mo · ${currentPlanData.annualPrice} total
+                            /mo · ${currentPlanData.annualPrice * parentMultiplier} total
+                            {isIr5 && parentCount > 1 && (
+                              <span> (${currentPlanData.annualPrice}/ea)</span>
+                            )}
                           </div>
                         </div>
                       </div>
+
+                      {/* If > 2 parents, show eligibility reminder in the plan card */}
+                      {isIr5 && parentCount > 2 && (
+                        <div className="border-border/80 bg-background/60 mt-4 rounded-xl border p-3 text-[12.5px]">
+                          <label className="flex cursor-pointer items-start gap-2.5 select-none">
+                            <input
+                              type="checkbox"
+                              checked={isEligibilityConfirmed}
+                              onChange={(e) => setIsEligibilityConfirmed(e.target.checked)}
+                              className="border-border mt-0.5 h-4 w-4 rounded text-[#0d7377] focus:ring-[#0d7377]"
+                            />
+                            <div>
+                              <span className="text-foreground font-semibold">
+                                Stepparent / Adoptive Parent Eligibility Confirmed
+                              </span>
+                              <p className="text-muted-foreground mt-0.5 text-[11.5px]">
+                                Stepparents married before petitioner turned 18; adoptions finalized
+                                before 16.
+                              </p>
+                            </div>
+                          </label>
+                        </div>
+                      )}
+
                       <button
                         className={`mt-3 text-[12.5px] font-medium ${tc.textAccent} cursor-pointer border-0 bg-transparent p-0`}
                         onClick={() => setPurchaseStep("browse")}
                       >
-                        Change plan →
+                        Change plan or parent count →
                       </button>
                     </div>
                   );
@@ -1804,6 +2191,15 @@ function PricingContent() {
                   <strong className="text-[12.5px]">{activeVisaCategory.label}</strong>
                 </div>
 
+                {isIr5 && (
+                  <div className="border-border flex justify-between gap-3 border-b border-dashed py-2.5 text-[13px]">
+                    <span className="text-muted-foreground">Beneficiaries</span>
+                    <strong className="text-[12.5px]">
+                      {parentCount} {parentCount === 1 ? "Parent" : "Parents"}
+                    </strong>
+                  </div>
+                )}
+
                 {currentPlanData.id !== "free" && (
                   <div className="border-border flex justify-between gap-3 border-b border-dashed py-2.5 text-[13px]">
                     <span className="text-muted-foreground">Plan</span>
@@ -1814,9 +2210,37 @@ function PricingContent() {
                         {currentPlanData.name}
                       </strong>
                       <span className="text-muted-foreground text-[11px]">
-                        ${currentPlanData.monthlyPrice}/mo · ${currentPlanData.annualPrice} total
+                        ${planDisplayPrice(currentPlanData)}/mo · $
+                        {currentPlanData.annualPrice * parentMultiplier} total
+                        {isIr5 && parentCount > 1 && (
+                          <span> (${currentPlanData.annualPrice}/ea)</span>
+                        )}
                       </span>
                     </div>
+                  </div>
+                )}
+
+                {isIr5 && parentCount > 2 && (
+                  <div className="border-border border-b border-dashed py-2.5">
+                    <label className="flex cursor-pointer items-center gap-2 text-[12px] select-none">
+                      <input
+                        type="checkbox"
+                        checked={isEligibilityConfirmed}
+                        onChange={(e) => setIsEligibilityConfirmed(e.target.checked)}
+                        className="border-border h-3.5 w-3.5 shrink-0 rounded text-[#0d7377] focus:ring-[#0d7377]"
+                      />
+                      <span
+                        className={
+                          isEligibilityConfirmed
+                            ? "font-medium text-emerald-600 dark:text-emerald-400"
+                            : "font-medium text-amber-600 dark:text-amber-400"
+                        }
+                      >
+                        {isEligibilityConfirmed
+                          ? "✓ Eligibility verified"
+                          : "Verify parent eligibility to proceed"}
+                      </span>
+                    </label>
                   </div>
                 )}
 
@@ -1848,7 +2272,7 @@ function PricingContent() {
 
                 <p className="text-muted-foreground bg-muted/40 border-border mt-3 mb-4 rounded-[12px] border border-dashed p-3 text-[11px] leading-relaxed">
                   Billed monthly at $
-                  {currentPlanData.id !== "free" ? currentPlanData.monthlyPrice : 0}
+                  {currentPlanData.id !== "free" ? planDisplayPrice(currentPlanData) : 0}
                   /mo. Add-ons are one-time. Government fees excluded.
                 </p>
 

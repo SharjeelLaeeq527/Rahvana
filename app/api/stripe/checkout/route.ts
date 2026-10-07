@@ -73,6 +73,7 @@ export async function POST(request: NextRequest) {
       documentTranslationId,
       addons,
       visaCategory,
+      candidateCount,
     } = body;
 
     if (Array.isArray(addons)) {
@@ -452,12 +453,21 @@ export async function POST(request: NextRequest) {
       // Tag the subscription itself (not just the checkout session) with the tier
       // so Stripe stays the source of truth: future checkouts and the safety
       // cleanup can read `subscription.metadata.tier` to know exactly what a live
+      const parsedCandidateCount =
+        candidateCount && !isNaN(Number(candidateCount)) && Number(candidateCount) >= 1
+          ? Math.floor(Number(candidateCount))
+          : 1;
+
+      // Tag the subscription itself (not just the checkout session) with the tier
+      // so Stripe stays the source of truth: future checkouts and the safety
+      // cleanup can read `subscription.metadata.tier` to know exactly what a live
       // sub represents, instead of guessing from price amounts.
       sessionParams.subscription_data = {
         metadata: {
           user_id: userId,
           tier: tierLower,
           visa_category: effectiveVisaCategory,
+          candidate_count: String(parsedCandidateCount),
         },
       };
 
@@ -504,7 +514,7 @@ export async function POST(request: NextRequest) {
       if (useRecurringId) {
         sessionParams.line_items!.push({
           price: product.recurringPriceId,
-          quantity: 1,
+          quantity: parsedCandidateCount,
         });
       } else {
         // Custom price (e.g. CR-2) — create dynamic recurring price
@@ -519,7 +529,7 @@ export async function POST(request: NextRequest) {
             unit_amount: Math.round(monthlyPrice * 100),
             recurring: { interval: "month" },
           },
-          quantity: 1,
+          quantity: parsedCandidateCount,
         });
       }
 
@@ -531,6 +541,7 @@ export async function POST(request: NextRequest) {
         product_id: productTier,
         product_name: product.name + (serverIsUpgrade ? " (Upgrade)" : ""),
         visa_category: effectiveVisaCategory,
+        candidate_count: String(parsedCandidateCount),
         is_upgrade: serverIsUpgrade ? "true" : "false",
         old_subscription_id: serverIsUpgrade ? oldSubscriptionId || "" : "",
       };
