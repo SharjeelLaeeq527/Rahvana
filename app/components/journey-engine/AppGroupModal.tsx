@@ -38,9 +38,11 @@ import {
   Info,
 } from "lucide-react";
 import { AppGroup } from "@/types/app-groups";
-import { TOOL_FEATURE_MAP } from "@/lib/constants/journey-app-groups";
+import { TOOL_FEATURE_MAP, getOverlayPageRoute } from "@/lib/constants/journey-app-groups";
+import { preloadGuidePage } from "@/app/components/shared/GuidePageOverlay";
 import { useJourneyPlan } from "@/app/context/useJourneyPlan";
 import { ExpandableTooltip } from "@/app/components/shared/ExpandableTooltip";
+import { useCandidate } from "@/app/context/CandidateContext";
 import { JourneyPlanBadge } from "@/app/components/shared/JourneyPlanBadge";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 
@@ -90,10 +92,21 @@ export function AppGroupModal({ group, isOpen, onClose, onLaunchItem, state }: A
   const [upgradeFeature, setUpgradeFeature] = useState<string | null>(null);
 
   const plan = useJourneyPlan(state);
+  const { activeCandidateId } = useCandidate();
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Warm the chunk AND the saved progress of every page-backed item (guides) as soon as
+  // the folder opens, so launching one renders instantly instead of hitting a loader.
+  useEffect(() => {
+    if (!isOpen || !group) return;
+    const candidateId = activeCandidateId || "candidate-1";
+    group.items.forEach((item) =>
+      preloadGuidePage(getOverlayPageRoute(item.componentKey), candidateId)
+    );
+  }, [isOpen, group, activeCandidateId]);
 
   if (!isOpen || !group || !mounted) return null;
 
