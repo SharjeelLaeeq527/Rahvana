@@ -5,7 +5,11 @@ import Link from "next/link";
 import { Clock, Download } from "lucide-react";
 import { JourneyServiceModule } from "./JourneyServiceModule";
 import { POLICE_CLEARANCE_DATA } from "@/app/components/journey-spouse/PoliceClearanceData";
-import { pccExpiryDate, type JourneyServiceRecord } from "@/lib/journey/toolModeGuards";
+import {
+  pccExpiryDate,
+  pccRenewalDate,
+  type JourneyServiceRecord,
+} from "@/lib/journey/toolModeGuards";
 
 interface PccFilingModuleProps {
   /** Roadmap tool_data (accepted for prop-compatibility; content is data-driven). */
@@ -28,16 +32,17 @@ export const PccFilingModule: React.FC<PccFilingModuleProps> = ({
   const d = POLICE_CLEARANCE_DATA;
   const isReceived = record?.status === "received";
   const validUntil = pccExpiryDate(record);
+  const renewalDate = pccRenewalDate(record);
 
-  // Disabled-tile hint: a received PCC is valid for six months; before that it is in progress.
-  // Written as a full sentence so the amber lock banner explains *why* a second
-  // filing is blocked, not just the state label.
+  // Disabled-tile hint: the certificate is legally valid for six months, but we unlock a
+  // renewal after four (a two-month safety margin). Written as a full sentence so the amber
+  // lock banner explains *why* a second filing is blocked, not just the state label.
   const lockedHint = isReceived
-    ? validUntil
-      ? `Your certificate is valid until ${validUntil} (6 months from receipt). You can file a new request after it expires.`
-      : "Certificate received — you can file a new request after the 6-month validity window passes."
+    ? renewalDate
+      ? `Your certificate is valid until ${validUntil}. You can file your next request from ${renewalDate} — we open renewals two months early so there is no gap.`
+      : "Certificate received — you can file a new request after the lock period ends."
     : record
-      ? "Your PCC application is still in progress. You can file another once you receive it and its 6-month validity passes."
+      ? "Your PCC application is still in progress. You can file another once you receive it and the lock period ends."
       : undefined;
 
   // Post-submit lifecycle: pending banner → "mark as received" → document-vault card.
@@ -53,7 +58,8 @@ export const PccFilingModule: React.FC<PccFilingModuleProps> = ({
         </p>
         {validUntil && (
           <p className="mt-2 text-[11.5px] font-medium text-emerald-700">
-            Valid until {validUntil} — start a new request after it expires.
+            Valid until {validUntil}
+            {renewalDate ? ` — you can file your next request from ${renewalDate}.` : "."}
           </p>
         )}
         <Link
@@ -102,6 +108,7 @@ export const PccFilingModule: React.FC<PccFilingModuleProps> = ({
       ]}
       summaryEmptyText="No application filed yet. Use Rahvana's filing service above to submit your Sindh Police Character Certificate application, or follow the self-service guide."
       lockedHint={lockedHint}
+      hideActiveUntilNote
       afterSummary={lifecycle}
     />
   );

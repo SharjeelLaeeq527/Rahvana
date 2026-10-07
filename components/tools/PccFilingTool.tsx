@@ -1159,7 +1159,7 @@ function PoliceApplyContent({
               Sindh Police Verification Form
             </h1>
             <p className="mt-1.5 text-sm text-slate-600">
-              Apply for your Police Character Certificate (PCC) for Sindh — takes about 3 minutes.
+              Apply for your Police Character Certificate (PCC) for Sindh.
             </p>
           </div>
         )}

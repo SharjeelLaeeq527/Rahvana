@@ -3076,12 +3076,6 @@ export default function MedicalAppointmentTool({
             booking service below to choose your location and preferred date.
           </p>
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 shadow-sm">
-            <div className="mb-1 font-bold text-slate-900">Rahvana Medical Booking Service</div>
-            <div className="mb-6 text-sm text-slate-500">
-              The Rahvana booking service helps you find and schedule an appointment with a
-              physician approved by your consulate. The service is available for Pakistan-based
-              applicants.
-            </div>
             {existingRequests && existingRequests.length > 0 && (
               <div className="mb-6">
                 <div className="mb-2 text-[11px] font-bold tracking-widest text-teal-700 uppercase">
