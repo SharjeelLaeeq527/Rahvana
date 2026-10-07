@@ -1,69 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { E, msg } from "@/lib/errors";
+import {
+  USCIS_BASE_URL,
+  getUscisAccessToken,
+  uscisPortalHeaders,
+  invalidateUscisToken,
+} from "@/lib/uscis/portalClient";
 
-
-// There are two USCIS servers: a test one (sandbox) and the real one (production).
-// We pick the real server only when USCIS_ENV is set to "production", otherwise we use the test server.
-const IS_PRODUCTION = process.env.USCIS_ENV === "production";
-const BASE_URL = IS_PRODUCTION ? "https://api.uscis.gov" : "https://api-int.uscis.gov";
-
-// USCIS gives us a temporary "access token" (like a short-lived password) to call their API.
-// We keep the last token here in memory so we don't have to ask for a new one on every request.
-// Note: on serverless this memory can reset on a cold start, which is fine - we just fetch a fresh one.
-let cachedToken: { token: string; expiresAt: number } | null = null;
-
-// Gets a valid USCIS access token: reuse the saved one if it is still good, otherwise fetch a new one.
-async function getAccessToken(): Promise<string> {
-  // If we already have a token and it will not expire in the next 60 seconds, reuse it.
-  // The 60-second buffer avoids using a token that dies mid-request.
-  if (cachedToken && Date.now() < cachedToken.expiresAt - 60_000) {
-    return cachedToken.token;
-  }
-
-  // Read our USCIS login credentials from environment variables (kept secret, not in the code).
-  const clientId = process.env.USCIS_CLIENT_ID;
-  const clientSecret = process.env.USCIS_CLIENT_SECRET;
-
-  // If the credentials were never set up, stop here with a clear error.
-  if (!clientId || !clientSecret) {
-    throw new Error("USCIS API credentials are not configured.");
-  }
-
-  // Ask USCIS for a fresh access token using our client id and secret (OAuth "client credentials" flow).
-  const tokenRes = await fetch(`${BASE_URL}/oauth/accesstoken?grant_type=client_credentials`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      demo_id: "3734",
-    },
-    body: new URLSearchParams({
-      grant_type: "client_credentials",
-      client_id: clientId,
-      client_secret: clientSecret,
-    }),
-  });
-
-  // If USCIS did not give us a token, log the reason and throw so the caller can handle it.
-  if (!tokenRes.ok) {
-    const errorText = await tokenRes.text();
-    console.error("USCIS Token Error:", errorText);
-    throw new Error(`Failed to obtain USCIS access token (${tokenRes.status})`);
-  }
-
-  // Read the token details from the response.
-  const tokenData = await tokenRes.json();
-  // USCIS tokens normally last 30 minutes (1800 seconds). If they do not tell us, assume 30 minutes.
-  const expiresIn = tokenData.expires_in ?? 1800;
-
-  // Save the new token and calculate the exact time it will expire (now + lifetime).
-  cachedToken = {
-    token: tokenData.access_token,
-    expiresAt: Date.now() + expiresIn * 1000,
-  };
-
-  return cachedToken.token;
-}
+// USCIS portal mechanics (OAuth2 client-credentials token, demo_id header,
+// sandbox/production base URL) live in lib/uscis/portalClient.ts and are
+// shared with the document-upload route.
 
 // Checks that a receipt number looks valid before we bother calling USCIS.
 // A valid receipt number is 3 uppercase letters followed by 10 digits (for example: EAC1234567890).
@@ -107,34 +54,46 @@ export async function POST(req: NextRequest) {
     }
 
     // Get a valid USCIS access token (reused from cache or freshly fetched).
-    const accessToken = await getAccessToken();
+    let accessToken = await getUscisAccessToken();
 
     // Ask USCIS for the current status of this case, sending our token to prove we are allowed.
-    const caseRes = await fetch(`${BASE_URL}/case-status/${normalized}`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        Accept: "application/json",
-        demo_id: "3734",
-      },
-    });
+    const fetchCaseStatus = (token: string) =>
+      fetch(`${USCIS_BASE_URL}/case-status/${normalized}`, {
+        headers: uscisPortalHeaders(token),
+      });
 
-    // If USCIS did not return a successful response, figure out why and reply accordingly.
+    let caseRes = await fetchCaseStatus(accessToken);
+
+    // Expired-token recovery: refresh once and retry transparently.
+    if (caseRes.status === 401) {
+      invalidateUscisToken();
+      accessToken = await getUscisAccessToken();
+      caseRes = await fetchCaseStatus(accessToken);
+    }
+
     if (!caseRes.ok) {
-      // 404 means USCIS has no case with this receipt number.
-      if (caseRes.status === 404) {
-        return NextResponse.json({ error: msg(E.USCIS_NO_CASE_FOUND) }, { status: 404 });
-      }
-
-      // 401 means our token was rejected. Throw away the saved token so the next request gets a new one.
+      const errorBody = await caseRes.json().catch(() => null);
+    
+      console.error("USCIS Case API Error:", {
+        status: caseRes.status,
+        body: errorBody,
+      });
+    
       if (caseRes.status === 401) {
-        cachedToken = null;
-        return NextResponse.json({ error: msg(E.USCIS_AUTH_FAILED) }, { status: 401 });
+        invalidateUscisToken();
       }
-
-      // Any other error: log the details and pass the same status code back to the caller.
-      const errorBody = await caseRes.text();
-      console.error("USCIS Case API Error:", caseRes.status, errorBody);
-      return NextResponse.json({ error: msg(E.USCIS_SERVICE_ERROR) }, { status: caseRes.status });
+    
+      return NextResponse.json(
+        {
+          error: {
+            code: errorBody?.code ?? caseRes.status,
+            message:
+              errorBody?.message ??
+              "USCIS returned an error while processing the request.",
+          },
+        },
+        { status: caseRes.status }
+      );
     }
 
     // Read the successful response from USCIS.
@@ -161,7 +120,7 @@ export async function POST(req: NextRequest) {
       {
         user_id: user.id,
         receipt_number: normalized,
-        status: caseStatus.current_case_status_en ?? null,
+        status: caseStatus.current_case_status_text_en ?? null,
         description: caseStatus.current_case_status_desc_en ?? null,
         form_type: caseStatus.formType ?? null,
         // Convert the "modified date" from USCIS into a standard date format, if it exists.
