@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Search, ArrowRight, ChevronDown, X, Shield, Calendar, Info } from "lucide-react";
+import { Search, ArrowRight, ChevronDown, X, Shield, Calendar, Info, Video } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { NAV_DATA } from "@/app/components/layout/navigationData";
 import {
@@ -29,6 +29,9 @@ import PccRequestCard, { type PccRequestRow } from "@/components/services/PccReq
 import MedicalAppointmentCard, {
   type MedicalAppointmentRow,
 } from "@/components/services/MedicalAppointmentCard";
+import ConsultationRequestCard, {
+  type ConsultationRow,
+} from "@/components/services/ConsultationRequestCard";
 
 // --- Types ---
 interface Service {
@@ -49,12 +52,8 @@ type PCCRequest = PccRequestRow;
 
 type MedicalAppointment = MedicalAppointmentRow;
 
-interface ConsultationBooking {
-  id: string;
-  selected_slot: string;
-  status: string;
-  created_at?: string;
-}
+// 7.11 — single source of truth for the row shape lives in the shared card component.
+type ConsultationBooking = ConsultationRow;
 
 interface TranslationDocument {
   id: string;
@@ -105,7 +104,9 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
   const [translationDocuments, setTranslationDocuments] = useState<TranslationDocument[]>([]);
   const [loadingStatus, setLoadingStatus] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedModalType, setSelectedModalType] = useState<"pcc" | "medical" | null>(null);
+  const [selectedModalType, setSelectedModalType] = useState<
+    "pcc" | "medical" | "consultation" | null
+  >(null);
 
   const { activeCandidate, activeCandidateId, isMultiCandidate } = useCandidate();
 
@@ -149,14 +150,16 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
           consultationBookings
             .filter(
               (b: ConsultationBooking) =>
-                new Date(b.selected_slot) >= now && b.status !== "canceled"
+                !!b.selected_slot &&
+                new Date(b.selected_slot as string) >= now &&
+                b.status !== "canceled"
             )
             .sort(
               (a: ConsultationBooking, b: ConsultationBooking) =>
-                new Date(a.selected_slot).getTime() - new Date(b.selected_slot).getTime()
+                new Date(a.selected_slot ?? 0).getTime() - new Date(b.selected_slot ?? 0).getTime()
             )[0] || consultationBookings[0];
 
-        const slotDate = upcoming ? new Date(upcoming.selected_slot) : null;
+        const slotDate = upcoming?.selected_slot ? new Date(upcoming.selected_slot) : null;
         const formattedDate = slotDate
           ? slotDate.toLocaleDateString(undefined, {
               weekday: "short",
@@ -193,6 +196,11 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
           count: consultationBookings.length,
           countLabel: consultationBookings.length === 1 ? "session booked" : "sessions booked",
           href: "/book-consultation?tab=requests",
+          extraContent: undefined as React.ReactNode,
+          onClick: () => {
+            setSelectedModalType("consultation");
+            setIsModalOpen(true);
+          },
           description: (
             <span className="block text-slate-600 dark:text-slate-300">
               Next session:{" "}
@@ -548,14 +556,13 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
           </div>
         )}
 
-        {/* Journey-scope explainer — embedded "My Resources" view only. Mirrors the
-            banner in EmbeddedToolContainer so both surfaces tell the same story. */}
+        {/* Journey-scope explainer — embedded "My Resources" view only. Mirrors the banner in EmbeddedToolContainer so both surfaces tell the same story. */}
         {isEmbedded && (
           <div className="-mt-8">
             <ExpandableTooltip
               icon={<Info size={12} />}
-              title="Requests filed inside a Journey"
-              message="Anything you book or file from within a journey (via its steps or toolbox) is tagged to that journey and only appears there. This tab lists requests you made directly, outside any journey."
+              title="Requests made from a Journey"
+              message="Requests you make while working on a Journey are saved there. This tab only shows requests you made outside of a Journey."
               defaultOpen={true}
             />
           </div>
@@ -732,6 +739,62 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
                   <div className="space-y-4">
                     {pccRequests.map((req) => (
                       <PccRequestCard key={req.id} req={req} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </>
+          ) : selectedModalType === "consultation" ? (
+            <>
+              {/* Static Header — same anatomy as the PCC / medical dialogs */}
+              <div className="flex shrink-0 items-center justify-between border-b border-gray-100 px-6 py-5 pr-12">
+                <div className="flex items-center gap-3">
+                  <Video className="h-6 w-6 flex-shrink-0 text-teal-600" />
+                  <div>
+                    <DialogTitle className="text-xl font-bold text-gray-900">
+                      Expert Consultations
+                    </DialogTitle>
+                    <DialogDescription className="mt-1 text-sm text-gray-500">
+                      Track the status of your booked expert consultation sessions.
+                    </DialogDescription>
+                  </div>
+                </div>
+                {isMultiCandidate && (
+                  <span className="hidden items-center gap-1.5 rounded-full border border-teal-200 bg-teal-50 px-2.5 py-1 text-xs font-semibold text-teal-800 sm:inline-flex">
+                    <span className="h-1.5 w-1.5 rounded-full bg-teal-500" />
+                    {activeCandidate.label || "Beneficiary"}:{" "}
+                    {activeCandidate.fullName || "Primary"}
+                  </span>
+                )}
+              </div>
+
+              {/* Scrollable Content */}
+              <div className="scrollbar-premium flex-1 overflow-y-auto px-6 py-5">
+                {loadingStatus ? (
+                  <div className="flex justify-center py-8">
+                    <Loader size="md" />
+                  </div>
+                ) : consultationBookings.length === 0 ? (
+                  <div className="py-8 text-center">
+                    <Video className="mx-auto mb-3 h-12 w-12 text-gray-300" />
+                    <p className="font-medium text-gray-600">No consultation bookings found</p>
+                    <p className="mt-1 mb-4 text-sm text-gray-400">
+                      You haven&apos;t booked an expert consultation yet.
+                    </p>
+                    <button
+                      onClick={() => {
+                        setIsModalOpen(false);
+                        router.push("/book-consultation");
+                      }}
+                      className="inline-flex cursor-pointer items-center justify-center rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-teal-700"
+                    >
+                      Book Consultation
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {consultationBookings.map((req) => (
+                      <ConsultationRequestCard key={req.id} req={req} />
                     ))}
                   </div>
                 )}

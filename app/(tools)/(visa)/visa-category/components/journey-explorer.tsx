@@ -96,14 +96,6 @@ export function JourneyExplorerPage() {
                   className="w-full border-0 bg-transparent p-0 text-sm text-[var(--rv-ink)] outline-none placeholder:text-[var(--rv-muted)]"
                 />
               </label>
-
-              <button
-                type="button"
-                className="inline-flex min-h-14 items-center justify-center gap-2 rounded-2xl bg-[var(--rahvana-primary)] px-6 text-sm font-semibold text-white transition duration-200 hover:-translate-y-0.5 hover:bg-[var(--rahvana-primary-dark)]"
-              >
-                Find Journey
-                <ArrowRight className="h-4 w-4" />
-              </button>
             </div>
           </motion.div>
 
@@ -158,7 +150,10 @@ export function JourneyExplorerPage() {
               viewport={{ once: true, margin: "-80px" }}
               transition={{ duration: 0.35, delay: Math.min(index * 0.05, 0.2) }}
             >
-              <ExplorerJourneyCard card={card} />
+              <ExplorerJourneyCard
+  card={card}
+  showStartJourney
+/>
             </motion.div>
           ))}
         </div>
