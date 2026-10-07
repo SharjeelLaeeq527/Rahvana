@@ -681,9 +681,10 @@ function JourneyCard({
   onOpen,
 }: JourneyCardProps) {
   const isActiveJourney =
-    meta.isCurrentActive !== undefined
-      ? Boolean(meta.isCurrentActive)
-      : status.label === "Active" || status.label === "Completed";
+    status.label === "Active" ||
+    status.label === "Completed" ||
+    status.label === "Paused" ||
+    progress > 0;
 
   return (
     <Card
@@ -741,15 +742,16 @@ function JourneyCard({
 
         {/* Image badges */}
         <div className="absolute top-4 right-4 left-4 flex items-center justify-between gap-2">
-          <div className="flex flex-wrap items-center gap-1.5">
+          <div className="flex items-center gap-1.5">
             <JourneyPlanBadge tier={subscriptionTier} iconOnly={true} />
-            {isMultiCandidate && candidateCount && candidateCount > 0 ? (
-              <Badge className="rounded-full border border-teal-300/40 bg-slate-950/70 px-2.5 py-1 text-[10px] font-semibold text-teal-300 shadow-lg backdrop-blur-md hover:bg-slate-950/80">
-                <Users className="mr-1 h-3 w-3 text-teal-300" />
-                {candidateCount} {candidateCount === 1 ? "Profile" : "Profiles"}
-              </Badge>
-            ) : null}
           </div>
+
+          {isMultiCandidate && candidateCount && candidateCount > 0 ? (
+            <Badge className="rounded-full border border-teal-300/40 bg-slate-950/70 px-2.5 py-1 text-[10px] font-semibold text-teal-300 shadow-lg backdrop-blur-md hover:bg-slate-950/80">
+              <Users className="mr-1 h-3 w-3 text-teal-300" />
+              {candidateCount} {candidateCount === 1 ? "Profile" : "Profiles"}
+            </Badge>
+          ) : null}
         </div>
 
         {/* Image title */}
