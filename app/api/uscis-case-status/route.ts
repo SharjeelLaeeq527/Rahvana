@@ -103,16 +103,6 @@ export async function POST(req: NextRequest) {
     // This line picks whichever one actually holds the data.
     const caseStatus = caseData?.case_status ?? caseData;
 
-    // Extract optional candidate association for multi-beneficiary scoping
-    const candidateId = body?.candidateId || null;
-    const candidateName = body?.candidateName || null;
-
-    const rawDataToSave = {
-      ...caseStatus,
-      ...(candidateId ? { _candidateId: candidateId } : {}),
-      ...(candidateName ? { _candidateName: candidateName } : {}),
-    };
-
     // Save (or update) this lookup in our database so the user has a history of their checks.
     // "upsert" means: insert a new row, or update the existing row if this user already
     // checked this same receipt number before (that is what onConflict controls).
@@ -128,7 +118,7 @@ export async function POST(req: NextRequest) {
           ? new Date(caseStatus.modifiedDate).toISOString()
           : null,
         checked_at: new Date().toISOString(),
-        raw_data: rawDataToSave,
+        raw_data: caseStatus,
       },
       {
         // If a row already exists for this user + receipt number, update it instead of adding a duplicate.
