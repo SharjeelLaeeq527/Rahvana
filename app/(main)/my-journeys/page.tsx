@@ -473,10 +473,8 @@ export default function MyJourneysPage() {
 
         const meta = resolveJourneyMeta("IR-5");
         const ir5Custom = profile?.journeyCustomizations?.["ir5"];
-        const defaultCandName =
-          activeIr5Cand?.customName || activeIr5Cand?.fullName || activeIr5Cand?.label || "Candidate";
-        const customName = ir5Custom?.name || defaultCandName;
-        const customImage = ir5Custom?.image || activeIr5Cand?.avatarUrl || meta.image;
+        const customName = ir5Custom?.name || meta.name;
+        const customImage = ir5Custom?.image || meta.image;
 
         const isIr5Active =
           activeCandidate && getBaseVisaCategory(activeCandidate.visaCategory || "IR-5") === "IR-5";
@@ -829,6 +827,7 @@ export default function MyJourneysPage() {
           journeyName={launcherModal.journeyName}
           journeyRoute={launcherModal.journeyRoute}
           candidates={candidates}
+          journeys={journeys}
         />
       </div>
     </main>
@@ -1023,7 +1022,11 @@ function JourneyCard({
 
         {/* Image badges and quick options menu */}
         <div className="absolute top-4 right-4 left-4 z-10 flex items-center justify-between gap-2">
-          <JourneyPlanBadge tier={subscriptionTier} iconOnly={true} />
+          {!(isMultiCandidate && candidateCount && candidateCount > 0) ? (
+            <JourneyPlanBadge tier={subscriptionTier} iconOnly={true} />
+          ) : (
+            <div />
+          )}
 
           <div className="flex items-center gap-1.5">
             {isMultiCandidate && candidateCount && candidateCount > 0 ? (
@@ -1178,58 +1181,79 @@ function JourneyCard({
           {meta.description}
         </p>
 
-        {/* Progress block */}
-        <div className="relative mt-4 rounded-[20px] border border-[#0d7377]/8 bg-linear-to-br from-[#f2fbfb] to-white px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
-          <div className="flex items-end justify-between gap-4">
-            <div>
-              <p className="text-[10px] font-semibold tracking-[0.2em] text-slate-500 uppercase">
-                Overall progress
-              </p>
+        {/* Progress block / Multi-Candidate Profile summary */}
+        {isMultiCandidate && candidateCount && candidateCount > 0 ? (
+          <div className="relative mt-4 flex items-center justify-between rounded-[20px] border border-[#0d7377]/10 bg-linear-to-br from-[#f2fbfb] to-white p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#e8f6f6] text-[#0d7377] shadow-xs">
+                <Users className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <p className="truncate text-xs font-bold text-slate-800">
+                  {candidateCount} Beneficiary {candidateCount === 1 ? "Profile" : "Profiles"}
+                </p>
+                <p className="mt-0.5 text-[11px] text-slate-500">
+                  Select a profile to view progress
+                </p>
+              </div>
+            </div>
+            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#0d7377]/10 px-2.5 py-1 text-[11px] font-semibold text-[#0d7377] transition-colors group-hover:bg-[#0d7377] group-hover:text-white">
+              Launch <ArrowRight className="h-3 w-3" />
+            </span>
+          </div>
+        ) : (
+          <div className="relative mt-4 rounded-[20px] border border-[#0d7377]/8 bg-linear-to-br from-[#f2fbfb] to-white px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <p className="text-[10px] font-semibold tracking-[0.2em] text-slate-500 uppercase">
+                  Overall progress
+                </p>
 
-              <div className="mt-1 flex items-baseline gap-1">
-                <span
-                  className={`text-2xl font-bold tracking-[-0.04em] ${
-                    isActiveJourney ? "text-[#0a5a5d]" : "text-slate-600"
-                  }`}
-                >
-                  {progress}
-                </span>
-                <span
-                  className={`text-sm font-semibold ${
-                    isActiveJourney ? "text-[#0d7377]" : "text-slate-500"
-                  }`}
-                >
-                  %
-                </span>
+                <div className="mt-1 flex items-baseline gap-1">
+                  <span
+                    className={`text-2xl font-bold tracking-[-0.04em] ${
+                      isActiveJourney ? "text-[#0a5a5d]" : "text-slate-600"
+                    }`}
+                  >
+                    {progress}
+                  </span>
+                  <span
+                    className={`text-sm font-semibold ${
+                      isActiveJourney ? "text-[#0d7377]" : "text-slate-500"
+                    }`}
+                  >
+                    %
+                  </span>
+                </div>
+              </div>
+
+              <div className="text-right">
+                <p className="text-xs font-medium text-slate-500">
+                  {completedSteps} of {totalSteps}
+                </p>
+                <p className="mt-0.5 text-[11px] text-slate-400">steps completed</p>
               </div>
             </div>
 
-            <div className="text-right">
-              <p className="text-xs font-medium text-slate-500">
-                {completedSteps} of {totalSteps}
-              </p>
-              <p className="mt-0.5 text-[11px] text-slate-400">steps completed</p>
+            <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-[#dceeed] shadow-inner">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${progress}%` }}
+                transition={{
+                  duration: 0.8,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+                className={`relative h-full rounded-full ${
+                  isActiveJourney
+                    ? "bg-linear-to-r from-[#0a5a5d] via-[#0d7377] to-[#32e0c4]"
+                    : "bg-linear-to-r from-slate-400 to-slate-500"
+                }`}
+              >
+                <div className="absolute inset-0 bg-linear-to-b from-white/25 to-transparent" />
+              </motion.div>
             </div>
           </div>
-
-          <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-[#dceeed] shadow-inner">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${progress}%` }}
-              transition={{
-                duration: 0.8,
-                ease: [0.22, 1, 0.36, 1],
-              }}
-              className={`relative h-full rounded-full ${
-                isActiveJourney
-                  ? "bg-linear-to-r from-[#0a5a5d] via-[#0d7377] to-[#32e0c4]"
-                  : "bg-linear-to-r from-slate-400 to-slate-500"
-              }`}
-            >
-              <div className="absolute inset-0 bg-linear-to-b from-white/25 to-transparent" />
-            </motion.div>
-          </div>
-        </div>
+        )}
 
         {/* Activity */}
         <div className="relative mt-4 flex items-center justify-between gap-3 border-t border-slate-100 pt-3">

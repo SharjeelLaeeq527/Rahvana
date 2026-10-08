@@ -11,6 +11,8 @@ import { useToast } from "@/app/components/shared/ToastProvider";
 import type { CandidateProfile } from "@/types/candidate";
 import { JourneyPlanBadge } from "@/app/components/shared/JourneyPlanBadge";
 import { uploadJourneyImage } from "@/lib/journey/imageUploadHelper";
+import { getCandidateJourneyKey } from "@/lib/candidate/candidateSyncService";
+import type { JourneyProgressRecord } from "@/lib/journey/journeyProgressService";
 
 interface CandidateProfileLauncherModalProps {
   isOpen: boolean;
@@ -19,6 +21,7 @@ interface CandidateProfileLauncherModalProps {
   journeyName?: string;
   journeyRoute: string;
   candidates?: CandidateProfile[];
+  journeys?: JourneyProgressRecord[];
 }
 
 const RAHVANA_AVATAR_THEMES = [
@@ -51,6 +54,7 @@ export function CandidateProfileLauncherModal({
   journeyName = "IR-5 Parents Visa",
   journeyRoute,
   candidates: propCandidates,
+  journeys,
 }: CandidateProfileLauncherModalProps) {
   const router = useRouter();
   const candidateCtx = useCandidate();
@@ -93,6 +97,32 @@ export function CandidateProfileLauncherModal({
   });
 
   const displayCandidates = relevantCandidates.length > 0 ? relevantCandidates : allCandidates;
+
+  const getCandidateProgress = (candidateId: string) => {
+    if (!journeys || journeys.length === 0) {
+      return { percent: 0, completed: 0, total: 28 };
+    }
+    const targetKey = getCandidateJourneyKey(journeyCode || "IR-5", candidateId)
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, "");
+
+    const match = journeys.find(
+      (j) => (j.journey_id || "").toLowerCase().replace(/[^a-z0-9]/g, "") === targetKey
+    );
+
+    if (!match) {
+      return { percent: 0, completed: 0, total: 28 };
+    }
+
+    const completed = match.completed_steps_count ?? match.completed_steps?.length ?? 0;
+    const total =
+      match.total_steps_count && match.total_steps_count > 0
+        ? match.total_steps_count
+        : Math.max(completed * 2, 28);
+    const percent = Math.max(0, Math.min(100, Math.round((completed / total) * 100)));
+
+    return { percent, completed, total };
+  };
 
   const handleSelectCandidate = (candidate: CandidateProfile) => {
     // If currently editing name, don't trigger selection
@@ -406,6 +436,30 @@ export function CandidateProfileLauncherModal({
                     <div className="mt-1.5">
                       <JourneyPlanBadge tier={candidate.tier || "free"} />
                     </div>
+
+                    {/* Candidate Roadmap Progress */}
+                    {(() => {
+                      const candProgress = getCandidateProgress(candidate.id);
+                      return (
+                        <div className="mt-3 w-28 sm:w-32 text-center">
+                          <div className="flex items-center justify-between text-[10px] font-semibold text-slate-500 dark:text-slate-400">
+                            <span>Progress</span>
+                            <span className="font-bold text-[#0d7377] dark:text-teal-400">
+                              {candProgress.percent}%
+                            </span>
+                          </div>
+                          <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-slate-200/90 dark:bg-slate-700">
+                            <div
+                              className="h-full rounded-full bg-linear-to-r from-[#0d7377] to-[#32e0c4] transition-all duration-500"
+                              style={{ width: `${candProgress.percent}%` }}
+                            />
+                          </div>
+                          <p className="mt-0.5 text-[9px] text-slate-400 dark:text-slate-500">
+                            {candProgress.completed} of {candProgress.total} steps
+                          </p>
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
               );
