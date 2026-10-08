@@ -119,6 +119,7 @@ export default function BookConsultationTool({
   statusLoading,
   locked,
   lockHint,
+  embedded,
   mode: propMode,
   journeyContext: propContext,
   journeyTier: propJourneyTier,
@@ -180,13 +181,13 @@ export default function BookConsultationTool({
   // Without this the page behind the fixed overlay scrolls on its own, producing a
   // second scrollbar next to the overlay's internal scroll region.
   useEffect(() => {
-    if (isJourney && isOpen) {
+    if (isJourney && isOpen && !embedded) {
       document.body.style.overflow = "hidden";
       return () => {
         document.body.style.overflow = "";
       };
     }
-  }, [isJourney, isOpen]);
+  }, [isJourney, isOpen, embedded]);
 
   const [userBookings, setUserBookings] = useState<Booking[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -2821,14 +2822,20 @@ export default function BookConsultationTool({
     <div
       className={
         isJourney
-          ? "animate-in slide-in-from-bottom-[18px] fixed inset-0 z-[150] flex flex-col overflow-hidden bg-white font-sans duration-[0.28s] ease-in-out"
+          ? embedded
+            ? started
+              ? "w-full bg-white font-sans"
+              : "w-full font-sans"
+            : "animate-in slide-in-from-bottom-[18px] fixed inset-0 z-[150] flex flex-col overflow-hidden bg-white font-sans duration-[0.28s] ease-in-out"
           : "bg-gray-50 pt-[55px] pb-12"
       }
     >
       {/* Journey topbar — mirrors Medical/PCC exactly (Close button + progress bar + step counter).
           Uses `shrink-0` (not `sticky`) because the outer wrapper is a flex column with
-          `overflow-hidden`; the scrollable region lives one level deeper. */}
-      {isJourney && (
+          `overflow-hidden`; the scrollable region lives one level deeper. In `embedded`
+          mode this topbar is dropped entirely and the RoadmapLayoutEngine breadcrumb
+          (Dashboard › Expert Consultation › ✕) provides close/back instead. */}
+      {isJourney && !embedded && (
         <div className="z-10 flex h-[64px] shrink-0 items-center gap-3 border-b border-[#d0e4f7] bg-white px-4 sm:gap-4 sm:px-6">
           <button
             onClick={onClose}
@@ -2930,7 +2937,7 @@ export default function BookConsultationTool({
           (fixed inset-0 flex-col + overflow-hidden outer means the outer doesn't
           scroll, so no double scroll with the wizard's internal calendar). In
           standalone mode this wrapper is a passthrough with no styling. */}
-      <div className={cn(isJourney && "min-h-0 flex-1 overflow-y-auto")}>
+      <div className={cn(isJourney && !embedded && "min-h-0 flex-1 overflow-y-auto")}>
         <div className={cn("relative z-20 mx-auto max-w-7xl px-4", isJourney && "py-6 sm:py-8")}>
           {/* Journey mode: intro header shown once the wizard has started. Placed inside the
               scrollable region so it scrolls away with the content (not pinned). */}
@@ -2949,7 +2956,17 @@ export default function BookConsultationTool({
           )}
 
           {activeView === "booking" && (
-            <div className="slide-up overflow-hidden rounded-3xl border border-teal-100 bg-white shadow-2xl">
+            <div
+              className={cn(
+                "slide-up overflow-hidden rounded-3xl",
+                // Journey intro step: transparent so the page shows through (matches
+                // Medical/PCC). Once the wizard starts (and in standalone) keep the
+                // framed white card.
+                isJourney && !started
+                  ? "bg-transparent"
+                  : "border border-teal-100 bg-white shadow-2xl"
+              )}
+            >
               {/* Improved Progress Tracker — metro-line stepper.
                 Journey mode: hidden on the intro screen (before `started`), shown once the
                 wizard is running so the metro line matches step 1..4 progress.
@@ -3013,7 +3030,7 @@ export default function BookConsultationTool({
                   else          → teal "Start Consultation Service" CTA that flips `started`.
                 Standalone mode skips this whole block (the wizard is revealed immediately). */}
               {isJourney && !started && (
-                <div className="mx-auto w-full max-w-2xl px-5 py-12">
+                <div className="mx-auto w-full max-w-2xl px-5 py-8">
                   <div className="mb-2 text-[11px] font-bold tracking-widest text-teal-700 uppercase">
                     Rahvana Consultation Service
                   </div>

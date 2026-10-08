@@ -2187,6 +2187,7 @@ export default function MedicalAppointmentTool({
   locked,
   lockHint,
   statusLoading,
+  embedded,
   mode: propMode,
   journeyContext: propContext,
   journeyTier: propJourneyTier,
@@ -3016,13 +3017,13 @@ export default function MedicalAppointmentTool({
 
   // Lock background scroll while the journey overlay is open (mirrors the Sponsorship overlay).
   useEffect(() => {
-    if (isJourney && isOpen) {
+    if (isJourney && isOpen && !embedded) {
       document.body.style.overflow = "hidden";
       return () => {
         document.body.style.overflow = "";
       };
     }
-  }, [isJourney, isOpen]);
+  }, [isJourney, isOpen, embedded]);
 
   // Each time the journey overlay opens, show the intro screen first.
   useEffect(() => {
@@ -3044,26 +3045,34 @@ export default function MedicalAppointmentTool({
   const showIntro = isJourney && !started && step < 10;
   if (showIntro) {
     return (
-      <div className="animate-in slide-in-from-bottom-[18px] fixed inset-0 z-[150] overflow-y-auto bg-white font-sans duration-[0.28s] ease-in-out">
-        <div className="sticky top-0 z-10 flex h-[64px] items-center gap-3 border-b border-[#d0e4f7] bg-white px-4 sm:gap-4 sm:px-6">
-          <button
-            onClick={onClose}
-            aria-label="Close"
-            className="hover:bg-primary/10 focus:ring-primary flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border-none bg-[#f4f7fb] text-[#3a4f63] transition-all outline-none focus:ring-2"
-          >
-            <X size={16} strokeWidth={2} />
-          </button>
-          <div className="flex-1" />
-          <QuickAccessButton
-            item={{
-              id: "service-book-medical-appointment",
-              title: "Book Medical Appointment",
-              href: "/book-appointment",
-              icon_name: "Clock",
-            }}
-            mode="icon"
-          />
-        </div>
+      <div
+        className={
+          embedded
+            ? "w-full font-sans"
+            : "animate-in slide-in-from-bottom-[18px] fixed inset-0 z-[150] overflow-y-auto bg-white font-sans duration-[0.28s] ease-in-out"
+        }
+      >
+        {!embedded && (
+          <div className="sticky top-0 z-10 flex h-[64px] items-center gap-3 border-b border-[#d0e4f7] bg-white px-4 sm:gap-4 sm:px-6">
+            <button
+              onClick={onClose}
+              aria-label="Close"
+              className="hover:bg-primary/10 focus:ring-primary flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border-none bg-[#f4f7fb] text-[#3a4f63] transition-all outline-none focus:ring-2"
+            >
+              <X size={16} strokeWidth={2} />
+            </button>
+            <div className="flex-1" />
+            <QuickAccessButton
+              item={{
+                id: "service-book-medical-appointment",
+                title: "Book Medical Appointment",
+                href: "/book-appointment",
+                icon_name: "Clock",
+              }}
+              mode="icon"
+            />
+          </div>
+        )}
         <div className="mx-auto w-full max-w-2xl px-5 py-12">
           <div className="mb-2 text-[11px] font-bold tracking-widest text-teal-700 uppercase">
             Rahvana Booking Service
@@ -3150,11 +3159,13 @@ export default function MedicalAppointmentTool({
     <div
       className={
         isJourney
-          ? "animate-in slide-in-from-bottom-[18px] fixed inset-0 z-[150] overflow-y-auto bg-slate-50 font-sans duration-[0.28s] ease-in-out"
+          ? embedded
+            ? "w-full bg-slate-50 font-sans"
+            : "animate-in slide-in-from-bottom-[18px] fixed inset-0 z-[150] overflow-y-auto bg-slate-50 font-sans duration-[0.28s] ease-in-out"
           : "site-main-px site-main-py mt-[55px] min-h-screen bg-slate-50"
       }
     >
-      {isJourney && (
+      {isJourney && !embedded && (
         <div className="sticky top-0 z-10 flex h-[64px] items-center gap-3 border-b border-[#d0e4f7] bg-white px-4 sm:gap-4 sm:px-6">
           {/* Close (left) */}
           <button
@@ -3254,7 +3265,7 @@ export default function MedicalAppointmentTool({
               </div>
             ))}
 
-          {step > 1 && step < 10 && step !== 9 && !isIOM && !isJourney && (
+          {step > 1 && step < 10 && step !== 9 && !isIOM && (!isJourney || embedded) && (
             <div className="mt-6">
               <div className="mb-2 flex justify-between px-1 text-[10px] text-slate-600 sm:px-0 sm:text-xs">
                 <span>{t("bookAppointment.progressSteps.location")}</span>
@@ -3277,7 +3288,7 @@ export default function MedicalAppointmentTool({
               </div>
             </div>
           )}
-          {isIOM && !isJourney && (step === 9 || step === 7 || step === 8) && (
+          {isIOM && (!isJourney || embedded) && (step === 9 || step === 7 || step === 8) && (
             <div className="mt-6">
               <div className="mb-2 flex justify-between text-xs text-slate-600">
                 <span>{t("bookAppointment.progressSteps.location")}</span>
