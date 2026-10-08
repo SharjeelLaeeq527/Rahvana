@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -21,6 +21,7 @@ import {
 import { useAuth } from "@/app/context/AuthContext";
 import { useCandidate } from "@/app/context/CandidateContext";
 import { useUserProfile } from "@/app/context/UserProfileContext";
+import { PlanContext } from "@/app/context/PlanContext";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { JourneyProgressRecord, listUserJourneys } from "@/lib/journey/journeyProgressService";
 import { getCandidateJourneyKey, getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
@@ -168,7 +169,11 @@ const getActivityLabel = (journey: JourneyProgressRecord) => {
   });
 };
 
-const getJourneyStatus = (journey: JourneyProgressRecord, progress: number) => {
+const getJourneyStatus = (
+  journey?: JourneyProgressRecord | null,
+  progress: number = 0,
+  tier?: string
+) => {
   if (progress >= 100) {
     return {
       label: "Completed",
@@ -177,21 +182,23 @@ const getJourneyStatus = (journey: JourneyProgressRecord, progress: number) => {
     };
   }
 
-  if (!journey.started || progress === 0) {
-    return {
-      label: "Draft",
-      className: "border-white/25 bg-slate-900/55 text-white backdrop-blur-md",
-      dotClassName: "bg-slate-300",
-    };
-  }
+  const normTier = (tier || journey?.subscription_tier || "free").toLowerCase();
+  const hasPaidTier = normTier !== "free";
+  const isExplicitlyActive =
+    journey?.status === "in_progress" ||
+    journey?.status === "active" ||
+    Boolean(journey?.started);
 
-  const rawUpdatedAt = journey.last_updated_at || journey.updated_at || journey.started_at;
+  const rawUpdatedAt =
+    journey?.last_updated_at || journey?.updated_at || journey?.started_at;
 
   const updatedAt = rawUpdatedAt ? new Date(rawUpdatedAt).getTime() : Number.NaN;
 
-  const isPaused = Number.isFinite(updatedAt) && Date.now() - updatedAt > 1000 * 60 * 60 * 24 * 10;
+  const isPaused =
+    Number.isFinite(updatedAt) &&
+    Date.now() - updatedAt > 1000 * 60 * 60 * 24 * 10;
 
-  if (isPaused) {
+  if (isPaused && progress > 0) {
     return {
       label: "Paused",
       className: "border-amber-300/40 bg-amber-500/90 text-white",
@@ -199,16 +206,26 @@ const getJourneyStatus = (journey: JourneyProgressRecord, progress: number) => {
     };
   }
 
+  // A journey is Active if it has a paid plan, is marked active/in_progress, or has progress
+  if (hasPaidTier || isExplicitlyActive || progress > 0) {
+    return {
+      label: "Active",
+      className: "border-[#5ce8d4]/30 bg-[#0d7377]/90 text-white",
+      dotClassName: "bg-[#70f1dd]",
+    };
+  }
+
   return {
-    label: "Active",
-    className: "border-[#5ce8d4]/30 bg-[#0d7377]/90 text-white",
-    dotClassName: "bg-[#70f1dd]",
+    label: "Draft",
+    className: "border-white/25 bg-slate-900/55 text-white backdrop-blur-md",
+    dotClassName: "bg-slate-300",
   };
 };
 
 export default function MyJourneysPage() {
   const { user, isLoading: authLoading } = useAuth();
   const { profile, updateProfile } = useUserProfile();
+  const planCtx = useContext(PlanContext);
   const { showToast } = useToast();
   const router = useRouter();
   const { candidates, setActiveCandidateId, activeCandidateId, activeCandidate, isMultiCandidate } =
@@ -377,38 +394,7 @@ export default function MyJourneysPage() {
       if (hasIr5) {
         processedCanonicals.add("ir5");
 
-        // Find active candidate's journey or the most progressed IR-5 journey
-        const activeIr5Cand = ir5Candidates.find((c) => c.id === activeCandidateId);
-        const activeIr5Key = activeIr5Cand
-          ? getCandidateJourneyKey("IR-5", activeIr5Cand.id).toLowerCase().replace(/[^a-z0-9]/g, "")
-          : null;
-
-        const activeDbJourney =
-          (activeIr5Key &&
-            ir5DbJourneys.find(
-              (j) => (j.journey_id || "").toLowerCase().replace(/[^a-z0-9]/g, "") === activeIr5Key
-            )) ||
-          ir5DbJourneys[0];
-
-        const progress = activeDbJourney ? getProgressPercent(activeDbJourney) : 0;
-        const completedSteps = activeDbJourney ? getCompletedSteps(activeDbJourney) : 0;
-        const totalSteps = activeDbJourney ? getTotalSteps(activeDbJourney) : 28;
-        const status = activeDbJourney
-          ? getJourneyStatus(activeDbJourney, progress)
-          : {
-              label: "Draft",
-              className: "border-white/25 bg-slate-900/55 text-white backdrop-blur-md",
-              dotClassName: "bg-slate-300",
-            };
-
-        const meta = resolveJourneyMeta("IR-5");
-        const ir5Custom = profile?.journeyCustomizations?.["ir5"];
-        const defaultCandName =
-          activeIr5Cand?.customName || activeIr5Cand?.fullName || activeIr5Cand?.label || "Candidate";
-        const customName = ir5Custom?.name || defaultCandName;
-        const customImage = ir5Custom?.image || activeIr5Cand?.avatarUrl || meta.image;
-
-        // Determine highest tier among IR-5 candidates/journeys
+        // Determine highest tier among IR-5 candidates, DB journeys, and PlanContext
         const tierHierarchy: Record<string, number> = {
           executive: 3,
           premium: 2,
@@ -416,14 +402,81 @@ export default function MyJourneysPage() {
           free: 0,
         };
         let highestTier = "free";
+        const considerTier = (t?: string | null) => {
+          if (!t) return;
+          const normalized = t.toLowerCase().trim();
+          if ((tierHierarchy[normalized] ?? -1) > (tierHierarchy[highestTier] ?? 0)) {
+            highestTier = normalized;
+          }
+        };
+
+        // 1. Check all candidates under this visa category
         for (const c of ir5Candidates) {
-          const t = (c.tier || "free").toLowerCase();
-          if ((tierHierarchy[t] ?? 0) > (tierHierarchy[highestTier] ?? 0)) highestTier = t;
+          considerTier(c.tier);
         }
+
+        // 2. Check all DB journey rows for IR-5
         for (const j of ir5DbJourneys) {
-          const t = (j.subscription_tier || "free").toLowerCase();
-          if ((tierHierarchy[t] ?? 0) > (tierHierarchy[highestTier] ?? 0)) highestTier = t;
+          considerTier(j.subscription_tier);
         }
+
+        // 3. Check PlanContext for category-specific or account-level plan
+        if (planCtx) {
+          considerTier(planCtx.journeyTiers?.["IR-5"]);
+          considerTier(planCtx.journeyTiers?.["ir5"]);
+          if (
+            ir5Candidates.some((c) => c.id === activeCandidateId) ||
+            getBaseVisaCategory(profileVisa) === "IR-5" ||
+            ir5Candidates.length > 0
+          ) {
+            considerTier(planCtx.maxActiveJourneyTier);
+            considerTier(planCtx.realTier);
+          }
+        }
+
+        // 4. Check profile details fallback
+        const profileAny = profile as any;
+        considerTier(profileAny?.subscriptionTier);
+        considerTier(profileAny?.subscription_tier);
+        considerTier(profileAny?.tier);
+        considerTier(profileAny?.active_plan);
+
+        // Find active candidate's journey or the most progressed IR-5 journey
+        const activeIr5Cand = ir5Candidates.find((c) => c.id === activeCandidateId);
+        const activeIr5Key = activeIr5Cand
+          ? getCandidateJourneyKey("IR-5", activeIr5Cand.id).toLowerCase().replace(/[^a-z0-9]/g, "")
+          : null;
+
+        const candDbJourney =
+          activeIr5Key
+            ? ir5DbJourneys.find(
+                (j) => (j.journey_id || "").toLowerCase().replace(/[^a-z0-9]/g, "") === activeIr5Key
+              )
+            : null;
+
+        const mostProgressedJourney = [...ir5DbJourneys].sort(
+          (a, b) => getProgressPercent(b) - getProgressPercent(a)
+        )[0];
+
+        // Prefer active candidate's journey if it has progress, otherwise most progressed, fallback to candidate journey or first DB journey
+        const activeDbJourney =
+          (candDbJourney && getProgressPercent(candDbJourney) > 0 ? candDbJourney : null) ||
+          mostProgressedJourney ||
+          candDbJourney ||
+          ir5DbJourneys[0];
+
+        const progress = activeDbJourney ? getProgressPercent(activeDbJourney) : 0;
+        const completedSteps = activeDbJourney ? getCompletedSteps(activeDbJourney) : 0;
+        const totalSteps = activeDbJourney ? getTotalSteps(activeDbJourney) : 28;
+
+        const status = getJourneyStatus(activeDbJourney, progress, highestTier);
+
+        const meta = resolveJourneyMeta("IR-5");
+        const ir5Custom = profile?.journeyCustomizations?.["ir5"];
+        const defaultCandName =
+          activeIr5Cand?.customName || activeIr5Cand?.fullName || activeIr5Cand?.label || "Candidate";
+        const customName = ir5Custom?.name || defaultCandName;
+        const customImage = ir5Custom?.image || activeIr5Cand?.avatarUrl || meta.image;
 
         const isIr5Active =
           activeCandidate && getBaseVisaCategory(activeCandidate.visaCategory || "IR-5") === "IR-5";
@@ -460,6 +513,27 @@ export default function MyJourneysPage() {
 
       processedCanonicals.add(canonicalKey);
 
+      const tierHierarchy: Record<string, number> = {
+        executive: 3,
+        premium: 2,
+        basic: 1,
+        free: 0,
+      };
+
+      let jTier = (j.subscription_tier || "free").toLowerCase();
+      if (planCtx?.journeyTiers?.[baseCategory]) {
+        const catTier = planCtx.journeyTiers[baseCategory].toLowerCase();
+        if ((tierHierarchy[catTier] ?? -1) > (tierHierarchy[jTier] ?? 0)) {
+          jTier = catTier;
+        }
+      }
+      if (planCtx?.realTier && baseCategory === activeCandidate?.visaCategory) {
+        const realTier = planCtx.realTier.toLowerCase();
+        if ((tierHierarchy[realTier] ?? -1) > (tierHierarchy[jTier] ?? 0)) {
+          jTier = realTier;
+        }
+      }
+
       const progress = getProgressPercent(j);
       const completedSteps = getCompletedSteps(j);
       const totalSteps = getTotalSteps(j);
@@ -476,7 +550,7 @@ export default function MyJourneysPage() {
         defaultCand?.customName || defaultCand?.fullName || defaultCand?.label || meta.name;
       const customName = jCustom?.name || defaultCandName;
       const customImage = jCustom?.image || defaultCand?.avatarUrl || meta.image;
-      const status = getJourneyStatus(j, progress);
+      const status = getJourneyStatus(j, progress, jTier);
 
       const isCurrentActive =
         baseCategory === "IR-1"
@@ -496,7 +570,7 @@ export default function MyJourneysPage() {
           isCurrentActive: Boolean(isCurrentActive),
         },
         status,
-        subscriptionTier: j.subscription_tier || "free",
+        subscriptionTier: jTier,
         activity: getActivityLabel(j),
       });
     });
@@ -528,6 +602,28 @@ export default function MyJourneysPage() {
           const customName = fbCustom?.name || defaultCandName;
           const customImage = fbCustom?.image || defaultCand?.avatarUrl || meta.image;
 
+          const tierHierarchy: Record<string, number> = {
+            executive: 3,
+            premium: 2,
+            basic: 1,
+            free: 0,
+          };
+          let fbTier = (profile?.subscriptionTier || "free").toLowerCase();
+          if (planCtx?.journeyTiers?.[baseCategory]) {
+            const catTier = planCtx.journeyTiers[baseCategory].toLowerCase();
+            if ((tierHierarchy[catTier] ?? -1) > (tierHierarchy[fbTier] ?? 0)) {
+              fbTier = catTier;
+            }
+          }
+          if (planCtx?.realTier) {
+            const rTier = planCtx.realTier.toLowerCase();
+            if ((tierHierarchy[rTier] ?? -1) > (tierHierarchy[fbTier] ?? 0)) {
+              fbTier = rTier;
+            }
+          }
+
+          const fbStatus = getJourneyStatus(null, 0, fbTier);
+
           result.push({
             id: `profile_${canonicalKey}`,
             progress: 0,
@@ -539,12 +635,8 @@ export default function MyJourneysPage() {
               image: customImage,
               isCurrentActive: false,
             },
-            status: {
-              label: "Draft",
-              className: "border-white/25 bg-slate-900/55 text-white backdrop-blur-md",
-              dotClassName: "bg-slate-300",
-            },
-            subscriptionTier: profile?.subscriptionTier || "free",
+            status: fbStatus,
+            subscriptionTier: fbTier,
             activity: "Not started",
           });
         }
@@ -557,10 +649,10 @@ export default function MyJourneysPage() {
     journeys,
     activeCandidateId,
     activeCandidate,
-    profile?.visaType,
-    profile?.visaCategory,
-    profile?.subscriptionTier,
-    profile?.journeyCustomizations,
+    profile,
+    planCtx?.journeyTiers,
+    planCtx?.maxActiveJourneyTier,
+    planCtx?.realTier,
   ]);
 
   const startNewJourney = () => {
@@ -784,11 +876,15 @@ function JourneyCard({
   onUpdateJourneyName,
   onUpdateJourneyImage,
 }: JourneyCardProps) {
+  const isPaid = subscriptionTier && subscriptionTier.toLowerCase() !== "free";
+  const hasCandidates = Boolean(isMultiCandidate && candidateCount && candidateCount > 0);
   const isActiveJourney =
     status.label === "Active" ||
     status.label === "Completed" ||
     status.label === "Paused" ||
-    progress > 0;
+    progress > 0 ||
+    isPaid ||
+    hasCandidates;
 
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(meta.name);
