@@ -4,16 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  X,
-  Plus,
-  User,
-  ShieldCheck,
-  Camera,
-  Pencil,
-  Check,
-  Loader2,
-} from "lucide-react";
+import { X, Plus, User, ShieldCheck, Camera, Pencil, Check, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCandidate } from "@/app/context/CandidateContext";
 import { useToast } from "@/app/components/shared/ToastProvider";
@@ -226,7 +217,7 @@ export function CandidateProfileLauncherModal({
           </div>
 
           {/* Profile Tiles Grid */}
-          <div className="mt-9 flex flex-wrap items-center justify-center gap-6 sm:gap-8 lg:gap-10">
+          <div className="mt-9 flex flex-wrap items-start justify-center gap-6 sm:gap-8 lg:gap-10">
             {displayCandidates.map((candidate, idx) => {
               const theme = RAHVANA_AVATAR_THEMES[idx % RAHVANA_AVATAR_THEMES.length];
               const displayName =
@@ -322,7 +313,7 @@ export function CandidateProfileLauncherModal({
                         e.stopPropagation();
                       }}
                       title="Upload or change photo"
-                      className="absolute right-1.5 bottom-1.5 flex h-7 w-7 items-center justify-center rounded-full border border-white/40 bg-slate-950/70 text-white shadow-md backdrop-blur-md transition-all duration-200 hover:scale-110 hover:bg-[#0d7377] hover:border-teal-300 dark:border-slate-700"
+                      className="absolute right-1.5 bottom-1.5 flex h-7 w-7 items-center justify-center rounded-full border border-white/40 bg-slate-950/70 text-white shadow-md backdrop-blur-md transition-all duration-200 hover:scale-110 hover:border-teal-300 hover:bg-[#0d7377] dark:border-slate-700"
                     >
                       <Camera className="h-3.5 w-3.5 text-teal-300" />
                     </button>
@@ -332,7 +323,7 @@ export function CandidateProfileLauncherModal({
                   <div className="mt-3 flex flex-col items-center text-center">
                     {isEditingThis ? (
                       <div
-                        className="flex items-center gap-1 mt-0.5"
+                        className="mt-0.5 flex items-center gap-1"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <input
@@ -399,7 +390,7 @@ export function CandidateProfileLauncherModal({
                           onMouseDown={(e) => e.stopPropagation()}
                           onPointerDown={(e) => e.stopPropagation()}
                           title="Change name"
-                          className="flex h-5 w-5 items-center justify-center rounded-full text-slate-400 opacity-60 transition-all hover:bg-slate-100 hover:opacity-100 hover:text-[#0d7377] dark:hover:bg-slate-800"
+                          className="flex h-5 w-5 items-center justify-center rounded-full text-slate-400 opacity-60 transition-all hover:bg-slate-100 hover:text-[#0d7377] hover:opacity-100 dark:hover:bg-slate-800"
                         >
                           <Pencil className="h-3 w-3" />
                         </button>
