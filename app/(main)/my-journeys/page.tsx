@@ -4,7 +4,19 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, CheckCircle2, Clock3, Plus, Route, Users } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle2,
+  Clock3,
+  Plus,
+  Route,
+  Users,
+  Camera,
+  Pencil,
+  Check,
+  X,
+  Loader2,
+} from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
 import { useCandidate } from "@/app/context/CandidateContext";
 import { useUserProfile } from "@/app/context/UserProfileContext";
@@ -19,6 +31,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { JourneyPlanBadge } from "@/app/components/shared/JourneyPlanBadge";
 import { CandidateProfileLauncherModal } from "./components/CandidateProfileLauncherModal";
+import { uploadJourneyImage } from "@/lib/journey/imageUploadHelper";
 
 const JOURNEY_ALIASES: Record<string, string> = {
   "ir-1": "ir1",
@@ -194,7 +207,7 @@ const getJourneyStatus = (journey: JourneyProgressRecord, progress: number) => {
 
 export default function MyJourneysPage() {
   const { user, isLoading: authLoading } = useAuth();
-  const { profile } = useUserProfile();
+  const { profile, updateProfile } = useUserProfile();
   const { showToast } = useToast();
   const router = useRouter();
   const { candidates, setActiveCandidateId, activeCandidateId, activeCandidate, isMultiCandidate } =
@@ -203,6 +216,48 @@ export default function MyJourneysPage() {
   const [journeys, setJourneys] = useState<JourneyProgressRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasFetched, setHasFetched] = useState(false);
+
+  const handleUpdateJourneyName = useCallback(
+    async (canonicalKey: string, newName: string) => {
+      const existing = profile?.journeyCustomizations || {};
+      const updated = {
+        ...existing,
+        [canonicalKey]: {
+          ...existing[canonicalKey],
+          name: newName,
+          updatedAt: new Date().toISOString(),
+        },
+      };
+      updateProfile({ journeyCustomizations: updated }, { immediate: true });
+      showToast("Journey name updated!", "success");
+    },
+    [profile?.journeyCustomizations, updateProfile, showToast]
+  );
+
+  const handleUpdateJourneyImage = useCallback(
+    async (canonicalKey: string, file: File) => {
+      try {
+        const { url } = await uploadJourneyImage(file, "journey", canonicalKey);
+        if (url) {
+          const existing = profile?.journeyCustomizations || {};
+          const updated = {
+            ...existing,
+            [canonicalKey]: {
+              ...existing[canonicalKey],
+              image: url,
+              updatedAt: new Date().toISOString(),
+            },
+          };
+          updateProfile({ journeyCustomizations: updated }, { immediate: true });
+          showToast("Journey cover photo updated!", "success");
+        }
+      } catch (err) {
+        console.error("Failed to upload journey image:", err);
+        showToast("Failed to upload image. Please try again.", "error");
+      }
+    },
+    [profile?.journeyCustomizations, updateProfile, showToast]
+  );
 
   const [launcherModal, setLauncherModal] = useState<{
     isOpen: boolean;
@@ -346,6 +401,11 @@ export default function MyJourneysPage() {
             };
 
         const meta = resolveJourneyMeta("IR-5");
+        const ir5Custom = profile?.journeyCustomizations?.["ir5"];
+        const defaultCandName =
+          activeIr5Cand?.customName || activeIr5Cand?.fullName || activeIr5Cand?.label || "Candidate";
+        const customName = ir5Custom?.name || defaultCandName;
+        const customImage = ir5Custom?.image || activeIr5Cand?.avatarUrl || meta.image;
 
         // Determine highest tier among IR-5 candidates/journeys
         const tierHierarchy: Record<string, number> = {
@@ -375,6 +435,8 @@ export default function MyJourneysPage() {
           totalSteps,
           meta: {
             ...meta,
+            name: customName,
+            image: customImage,
             isCurrentActive: Boolean(isIr5Active),
           },
           status,
@@ -401,6 +463,18 @@ export default function MyJourneysPage() {
       const completedSteps = getCompletedSteps(j);
       const totalSteps = getTotalSteps(j);
       const meta = resolveJourneyMeta(j.journey_id);
+      const jCustom =
+        profile?.journeyCustomizations?.[canonicalKey] ||
+        profile?.journeyCustomizations?.[canonical] ||
+        profile?.journeyCustomizations?.[j.journey_id];
+      const defaultCand =
+        activeCandidate && getBaseVisaCategory(activeCandidate.visaCategory) === baseCategory
+          ? activeCandidate
+          : null;
+      const defaultCandName =
+        defaultCand?.customName || defaultCand?.fullName || defaultCand?.label || meta.name;
+      const customName = jCustom?.name || defaultCandName;
+      const customImage = jCustom?.image || defaultCand?.avatarUrl || meta.image;
       const status = getJourneyStatus(j, progress);
 
       const isCurrentActive =
@@ -416,6 +490,8 @@ export default function MyJourneysPage() {
         totalSteps,
         meta: {
           ...meta,
+          name: customName,
+          image: customImage,
           isCurrentActive: Boolean(isCurrentActive),
         },
         status,
@@ -439,6 +515,18 @@ export default function MyJourneysPage() {
         if (IR5_ENABLED || canonicalKey !== "ir5") {
           processedCanonicals.add(canonicalKey);
           const meta = resolveJourneyMeta(profileVisa);
+          const fbCustom =
+            profile?.journeyCustomizations?.[canonicalKey] ||
+            profile?.journeyCustomizations?.[profileVisa.toLowerCase()];
+          const defaultCand =
+            activeCandidate && getBaseVisaCategory(activeCandidate.visaCategory) === baseCategory
+              ? activeCandidate
+              : null;
+          const defaultCandName =
+            defaultCand?.customName || defaultCand?.fullName || defaultCand?.label || meta.name;
+          const customName = fbCustom?.name || defaultCandName;
+          const customImage = fbCustom?.image || defaultCand?.avatarUrl || meta.image;
+
           result.push({
             id: `profile_${canonicalKey}`,
             progress: 0,
@@ -446,6 +534,8 @@ export default function MyJourneysPage() {
             totalSteps: canonicalKey === "ir1" ? 29 : 10,
             meta: {
               ...meta,
+              name: customName,
+              image: customImage,
               isCurrentActive: false,
             },
             status: {
@@ -469,6 +559,7 @@ export default function MyJourneysPage() {
     profile?.visaType,
     profile?.visaCategory,
     profile?.subscriptionTier,
+    profile?.journeyCustomizations,
   ]);
 
   const startNewJourney = () => {
@@ -620,6 +711,12 @@ export default function MyJourneysPage() {
                               ).length || candidates.length
                             }
                             onOpen={() => handleOpenJourney(meta)}
+                            onUpdateJourneyName={(newName) =>
+                              handleUpdateJourneyName(meta.canonicalId, newName)
+                            }
+                            onUpdateJourneyImage={(file) =>
+                              handleUpdateJourneyImage(meta.canonicalId, file)
+                            }
                           />
                         </motion.div>
                       )
@@ -655,6 +752,8 @@ interface JourneyCardProps {
     candidateBadge?: string;
     candidateRelation?: string;
     isCurrentActive?: boolean;
+    customName?: string;
+    customImage?: string;
   };
   status: {
     label: string;
@@ -666,6 +765,8 @@ interface JourneyCardProps {
   candidateCount?: number;
   isMultiCandidate?: boolean;
   onOpen: () => void;
+  onUpdateJourneyName?: (newName: string) => Promise<void> | void;
+  onUpdateJourneyImage?: (file: File) => Promise<void> | void;
 }
 
 function JourneyCard({
@@ -679,6 +780,8 @@ function JourneyCard({
   candidateCount,
   isMultiCandidate,
   onOpen,
+  onUpdateJourneyName,
+  onUpdateJourneyImage,
 }: JourneyCardProps) {
   const isActiveJourney =
     status.label === "Active" ||
@@ -686,16 +789,65 @@ function JourneyCard({
     status.label === "Paused" ||
     progress > 0;
 
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [nameInput, setNameInput] = useState(meta.name);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    setNameInput(meta.name);
+  }, [meta.name]);
+
+  const handleSaveName = async () => {
+    const trimmed = nameInput.trim();
+    if (!trimmed) {
+      setIsEditingName(false);
+      setNameInput(meta.name);
+      return;
+    }
+    setIsEditingName(false);
+    if (onUpdateJourneyName) {
+      await onUpdateJourneyName(trimmed);
+    }
+  };
+
+  const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploadingImage(true);
+    try {
+      if (onUpdateJourneyImage) {
+        await onUpdateJourneyImage(file);
+      }
+    } finally {
+      setIsUploadingImage(false);
+      e.target.value = "";
+    }
+  };
+
   return (
     <Card
       role="button"
       tabIndex={0}
       aria-label={`Open ${meta.name}`}
-      onClick={onOpen}
+      onClick={(e) => {
+        const target = e.target as HTMLElement | SVGElement | null;
+        if (
+          target?.closest?.("button") ||
+          target?.closest?.("input") ||
+          isEditingName ||
+          isUploadingImage
+        ) {
+          return;
+        }
+        onOpen();
+      }}
       onKeyDown={(event) => {
         if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          onOpen();
+          if (!isEditingName) {
+            event.preventDefault();
+            onOpen();
+          }
         }
       }}
       className={`group relative flex h-full cursor-pointer flex-col overflow-hidden rounded-3xl border p-0 backdrop-blur-xl transition-all duration-500 hover:-translate-y-1.5 focus-visible:ring-2 focus-visible:ring-[#14a0a6]/50 focus-visible:outline-none ${
@@ -706,6 +858,16 @@ function JourneyCard({
           : "border-slate-200/70 bg-slate-100/60 opacity-60 grayscale-[0.75] shadow-xs hover:border-slate-300 hover:opacity-95 hover:grayscale-0 hover:shadow-[0_18px_50px_rgba(15,61,63,0.1)]"
       }`}
     >
+      {/* Hidden File Input for Cover Photo */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        accept="image/png,image/jpeg,image/webp,image/gif"
+        className="hidden"
+        onClick={(e) => e.stopPropagation()}
+        onChange={handleImageFileChange}
+      />
+
       {/* Image */}
       <div
         className={`relative h-44 overflow-hidden ${
@@ -716,6 +878,7 @@ function JourneyCard({
           src={meta.image}
           alt={`${meta.name} journey cover`}
           fill
+          unoptimized={meta.image.startsWith("data:")}
           sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
           className={`object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06] ${
             !isActiveJourney
@@ -740,10 +903,33 @@ function JourneyCard({
           }`}
         />
 
-        {/* Image badges */}
-        <div className="absolute top-4 right-4 left-4 flex items-center justify-between gap-2">
+        {/* Upload Spinner Overlay */}
+        {isUploadingImage && (
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs">
+            <Loader2 className="h-7 w-7 animate-spin text-white" />
+          </div>
+        )}
+
+        {/* Image badges and upload button */}
+        <div className="absolute top-4 right-4 left-4 z-10 flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5">
             <JourneyPlanBadge tier={subscriptionTier} iconOnly={true} />
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                fileInputRef.current?.click();
+              }}
+              onMouseDown={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
+              disabled={isUploadingImage}
+              title="Change journey cover image"
+              className="flex items-center gap-1.5 rounded-full border border-white/30 bg-slate-950/70 px-2.5 py-1 text-[10px] font-semibold text-white shadow-lg backdrop-blur-md transition-all hover:scale-105 hover:border-teal-300 hover:bg-[#0d7377] active:scale-95 disabled:opacity-50"
+            >
+              <Camera className="h-3 w-3 text-teal-300" />
+              <span className="hidden sm:inline">Cover</span>
+            </button>
           </div>
 
           {isMultiCandidate && candidateCount && candidateCount > 0 ? (
@@ -754,14 +940,84 @@ function JourneyCard({
           ) : null}
         </div>
 
-        {/* Image title */}
-        <div className="absolute inset-x-0 bottom-0 p-5">
-          <h2
-            title={meta.name}
-            className="line-clamp-1 text-xl font-semibold tracking-[-0.02em] text-white md:text-[1.35rem]"
-          >
-            {meta.name}
-          </h2>
+        {/* Image title & rename option */}
+        <div className="absolute inset-x-0 bottom-0 z-10 p-5">
+          {isEditingName ? (
+            <div
+              className="flex items-center gap-1.5 rounded-xl border border-teal-400/40 bg-slate-950/85 p-1.5 shadow-lg backdrop-blur-md"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <input
+                type="text"
+                value={nameInput}
+                onChange={(e) => setNameInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleSaveName();
+                  } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    setIsEditingName(false);
+                  }
+                }}
+                placeholder="Journey name"
+                className="flex-1 rounded-lg border border-teal-400/30 bg-slate-900/90 px-2.5 py-1 text-sm font-semibold text-white placeholder-slate-400 focus:ring-2 focus:ring-teal-400/50 focus:outline-none"
+                autoFocus
+              />
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleSaveName();
+                }}
+                onMouseDown={(e) => e.stopPropagation()}
+                onPointerDown={(e) => e.stopPropagation()}
+                className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#0d7377] text-white transition-colors hover:bg-[#14a0a6]"
+                title="Save Name"
+              >
+                <Check className="h-3.5 w-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsEditingName(false);
+                }}
+                onMouseDown={(e) => e.stopPropagation()}
+                onPointerDown={(e) => e.stopPropagation()}
+                className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-700 text-slate-300 transition-colors hover:bg-slate-600"
+                title="Cancel"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between gap-2">
+              <h2
+                title={meta.name}
+                className="line-clamp-1 text-xl font-semibold tracking-[-0.02em] text-white md:text-[1.35rem]"
+              >
+                {meta.name}
+              </h2>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setNameInput(meta.name);
+                  setIsEditingName(true);
+                }}
+                onMouseDown={(e) => e.stopPropagation()}
+                onPointerDown={(e) => e.stopPropagation()}
+                title="Change journey name"
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/20 bg-slate-950/60 text-white/80 backdrop-blur-md transition-all hover:scale-110 hover:bg-white hover:text-slate-950 active:scale-95"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

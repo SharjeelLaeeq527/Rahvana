@@ -1,13 +1,25 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Plus, User, ShieldCheck, Sparkles, CheckCircle2 } from "lucide-react";
+import {
+  X,
+  Plus,
+  User,
+  ShieldCheck,
+  Camera,
+  Pencil,
+  Check,
+  Loader2,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCandidate } from "@/app/context/CandidateContext";
+import { useToast } from "@/app/components/shared/ToastProvider";
 import type { CandidateProfile } from "@/types/candidate";
 import { JourneyPlanBadge } from "@/app/components/shared/JourneyPlanBadge";
+import { uploadJourneyImage } from "@/lib/journey/imageUploadHelper";
 
 interface CandidateProfileLauncherModalProps {
   isOpen: boolean;
@@ -51,7 +63,16 @@ export function CandidateProfileLauncherModal({
 }: CandidateProfileLauncherModalProps) {
   const router = useRouter();
   const candidateCtx = useCandidate();
+  const { showToast } = useToast();
   const [mounted, setMounted] = useState(false);
+
+  // Candidate name editing state
+  const [editingCandidateId, setEditingCandidateId] = useState<string | null>(null);
+  const [candidateNameInput, setCandidateNameInput] = useState("");
+
+  // Candidate photo upload state
+  const [uploadingCandidateId, setUploadingCandidateId] = useState<string | null>(null);
+  const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   useEffect(() => {
     setMounted(true);
@@ -83,6 +104,9 @@ export function CandidateProfileLauncherModal({
   const displayCandidates = relevantCandidates.length > 0 ? relevantCandidates : allCandidates;
 
   const handleSelectCandidate = (candidate: CandidateProfile) => {
+    // If currently editing name, don't trigger selection
+    if (editingCandidateId === candidate.id) return;
+
     candidateCtx.setActiveCandidateId(candidate.id);
     onClose();
     router.push(journeyRoute);
@@ -91,6 +115,66 @@ export function CandidateProfileLauncherModal({
   const handleAddCandidate = () => {
     onClose();
     router.push(`/pricing?visa=${encodeURIComponent(journeyCode)}&action=add_candidate`);
+  };
+
+  const startEditCandidateName = (e: React.MouseEvent, candidate: CandidateProfile) => {
+    e.stopPropagation();
+    setEditingCandidateId(candidate.id);
+    setCandidateNameInput(candidate.customName || candidate.fullName || candidate.label || "");
+  };
+
+  const saveCandidateName = (candidateId: string) => {
+    const trimmed = candidateNameInput.trim();
+    if (!trimmed) {
+      setEditingCandidateId(null);
+      return;
+    }
+
+    candidateCtx.updateCandidate(candidateId, {
+      fullName: trimmed,
+      customName: trimmed,
+      label: trimmed,
+    });
+    setEditingCandidateId(null);
+    showToast("Candidate name updated!", "success");
+  };
+
+  const cancelEditCandidateName = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingCandidateId(null);
+    setCandidateNameInput("");
+  };
+
+  const handleTriggerPhotoUpload = (e: React.MouseEvent, candidateId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const input = fileInputRefs.current[candidateId];
+    if (input) {
+      input.click();
+    }
+  };
+
+  const handleCandidatePhotoChange = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    candidateId: string
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingCandidateId(candidateId);
+    try {
+      const { url } = await uploadJourneyImage(file, "candidate", candidateId);
+      if (url) {
+        candidateCtx.updateCandidate(candidateId, { avatarUrl: url });
+        showToast("Candidate photo updated!", "success");
+      }
+    } catch (err) {
+      console.error("[CandidateProfileLauncherModal] Photo upload error:", err);
+      showToast("Could not upload candidate photo.", "error");
+    } finally {
+      setUploadingCandidateId(null);
+      e.target.value = "";
+    }
   };
 
   const modalContent = (
@@ -145,53 +229,182 @@ export function CandidateProfileLauncherModal({
           <div className="mt-9 flex flex-wrap items-center justify-center gap-6 sm:gap-8 lg:gap-10">
             {displayCandidates.map((candidate, idx) => {
               const theme = RAHVANA_AVATAR_THEMES[idx % RAHVANA_AVATAR_THEMES.length];
-              const initials = (candidate.fullName || candidate.label || "P")
+              const displayName =
+                candidate.customName || candidate.fullName || candidate.label || "Candidate";
+              const initials = displayName
                 .split(" ")
                 .filter(Boolean)
                 .slice(0, 2)
                 .map((n) => n[0].toUpperCase())
                 .join("");
 
-              const isCurrentActive = candidateCtx.activeCandidateId === candidate.id;
+              const isEditingThis = editingCandidateId === candidate.id;
+              const isUploadingThis = uploadingCandidateId === candidate.id;
 
               return (
                 <div
                   key={candidate.id}
-                  onClick={() => handleSelectCandidate(candidate)}
+                  onClick={(e) => {
+                    const target = e.target as HTMLElement | SVGElement | null;
+                    if (
+                      target?.closest?.("button") ||
+                      target?.closest?.("input") ||
+                      editingCandidateId === candidate.id ||
+                      uploadingCandidateId === candidate.id
+                    ) {
+                      return;
+                    }
+                    handleSelectCandidate(candidate);
+                  }}
                   role="button"
                   tabIndex={0}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      handleSelectCandidate(candidate);
+                      if (!isEditingThis) {
+                        e.preventDefault();
+                        handleSelectCandidate(candidate);
+                      }
                     }
                   }}
                   className="group flex flex-col items-center focus:outline-none"
                 >
+                  {/* Hidden File Input for Avatar Upload */}
+                  <input
+                    type="file"
+                    ref={(el) => {
+                      fileInputRefs.current[candidate.id] = el;
+                    }}
+                    accept="image/png,image/jpeg,image/webp,image/gif"
+                    className="hidden"
+                    onClick={(e) => e.stopPropagation()}
+                    onChange={(e) => handleCandidatePhotoChange(e, candidate.id)}
+                  />
+
                   {/* Avatar Tile */}
                   <div
-                    className={`relative flex h-24 w-24 cursor-pointer items-center justify-center rounded-2xl bg-linear-to-br sm:h-28 sm:w-28 sm:rounded-3xl ${theme.bg} shadow-md transition-all duration-200 group-hover:scale-105 group-hover:ring-4 ${theme.ring} ${theme.shadow}`}
+                    className={`relative flex h-24 w-24 cursor-pointer items-center justify-center overflow-hidden rounded-2xl bg-linear-to-br sm:h-28 sm:w-28 sm:rounded-3xl ${theme.bg} shadow-md transition-all duration-200 group-hover:scale-105 group-hover:ring-4 ${theme.ring} ${theme.shadow}`}
                   >
-                    <span className="text-2xl font-black tracking-wider text-white sm:text-3xl">
-                      {initials || <User className="h-10 w-10 text-white/90" />}
-                    </span>
+                    {candidate.avatarUrl ? (
+                      <Image
+                        src={candidate.avatarUrl}
+                        alt={displayName}
+                        fill
+                        unoptimized={candidate.avatarUrl.startsWith("data:")}
+                        sizes="112px"
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                    ) : (
+                      <span className="text-2xl font-black tracking-wider text-white sm:text-3xl">
+                        {initials || <User className="h-10 w-10 text-white/90" />}
+                      </span>
+                    )}
 
-                    {/* Active Checkmark Badge */}
-                    {/* {isCurrentActive && (
-                      <div
-                        title="Currently Active"
-                        className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-emerald-500 text-white shadow-md dark:border-slate-900"
-                      >
-                        <CheckCircle2 className="h-3.5 w-3.5" />
+                    {/* Upload spinner */}
+                    {isUploadingThis && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs">
+                        <Loader2 className="h-6 w-6 animate-spin text-white" />
                       </div>
-                    )} */}
+                    )}
+
+                    {/* Camera Upload Badge Button */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleTriggerPhotoUpload(e, candidate.id);
+                      }}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }}
+                      onPointerDown={(e) => {
+                        e.stopPropagation();
+                      }}
+                      title="Upload or change photo"
+                      className="absolute right-1.5 bottom-1.5 flex h-7 w-7 items-center justify-center rounded-full border border-white/40 bg-slate-950/70 text-white shadow-md backdrop-blur-md transition-all duration-200 hover:scale-110 hover:bg-[#0d7377] hover:border-teal-300 dark:border-slate-700"
+                    >
+                      <Camera className="h-3.5 w-3.5 text-teal-300" />
+                    </button>
                   </div>
 
                   {/* Name & Relation Label */}
                   <div className="mt-3 flex flex-col items-center text-center">
-                    <span className="max-w-[130px] truncate text-xs font-bold text-slate-800 transition-colors group-hover:text-[#0d7377] sm:text-sm dark:text-slate-200 dark:group-hover:text-teal-400">
-                      {candidate.fullName || candidate.label}
-                    </span>
+                    {isEditingThis ? (
+                      <div
+                        className="flex items-center gap-1 mt-0.5"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <input
+                          type="text"
+                          value={candidateNameInput}
+                          onChange={(e) => setCandidateNameInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              saveCandidateName(candidate.id);
+                            } else if (e.key === "Escape") {
+                              e.preventDefault();
+                              setEditingCandidateId(null);
+                            }
+                          }}
+                          placeholder="Candidate Name"
+                          className="w-28 rounded-lg border border-teal-500/50 bg-white px-2 py-1 text-xs font-bold text-slate-800 shadow-xs focus:ring-2 focus:ring-[#0d7377]/40 focus:outline-none dark:bg-slate-800 dark:text-slate-100"
+                          autoFocus
+                        />
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            saveCandidateName(candidate.id);
+                          }}
+                          onMouseDown={(e) => e.stopPropagation()}
+                          onPointerDown={(e) => e.stopPropagation()}
+                          className="flex h-6 w-6 items-center justify-center rounded-md bg-[#0d7377] text-white hover:bg-[#0a5a5d]"
+                          title="Save"
+                        >
+                          <Check className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            cancelEditCandidateName(e);
+                          }}
+                          onMouseDown={(e) => e.stopPropagation()}
+                          onPointerDown={(e) => e.stopPropagation()}
+                          className="flex h-6 w-6 items-center justify-center rounded-md bg-slate-200 text-slate-600 hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-300"
+                          title="Cancel"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          title={displayName}
+                          className="max-w-[130px] truncate text-xs font-bold text-slate-800 transition-colors group-hover:text-[#0d7377] sm:text-sm dark:text-slate-200 dark:group-hover:text-teal-400"
+                        >
+                          {displayName}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            startEditCandidateName(e, candidate);
+                          }}
+                          onMouseDown={(e) => e.stopPropagation()}
+                          onPointerDown={(e) => e.stopPropagation()}
+                          title="Change name"
+                          className="flex h-5 w-5 items-center justify-center rounded-full text-slate-400 opacity-60 transition-all hover:bg-slate-100 hover:opacity-100 hover:text-[#0d7377] dark:hover:bg-slate-800"
+                        >
+                          <Pencil className="h-3 w-3" />
+                        </button>
+                      </div>
+                    )}
 
                     {candidate.relation && (
                       <span className="mt-0.5 text-[11px] font-medium text-[#0d7377] dark:text-teal-400">
