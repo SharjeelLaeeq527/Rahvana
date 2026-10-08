@@ -16,6 +16,7 @@ import {
   Check,
   X,
   Loader2,
+  MoreVertical,
 } from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
 import { useCandidate } from "@/app/context/CandidateContext";
@@ -792,11 +793,24 @@ function JourneyCard({
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(meta.name);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     setNameInput(meta.name);
   }, [meta.name]);
+
+  useEffect(() => {
+    if (!isMenuOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isMenuOpen]);
 
   const handleSaveName = async () => {
     const trimmed = nameInput.trim();
@@ -836,7 +850,8 @@ function JourneyCard({
           target?.closest?.("button") ||
           target?.closest?.("input") ||
           isEditingName ||
-          isUploadingImage
+          isUploadingImage ||
+          isMenuOpen
         ) {
           return;
         }
@@ -910,34 +925,87 @@ function JourneyCard({
           </div>
         )}
 
-        {/* Image badges and upload button */}
+        {/* Image badges and quick options menu */}
         <div className="absolute top-4 right-4 left-4 z-10 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1.5">
-            <JourneyPlanBadge tier={subscriptionTier} iconOnly={true} />
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                fileInputRef.current?.click();
-              }}
-              onMouseDown={(e) => e.stopPropagation()}
-              onPointerDown={(e) => e.stopPropagation()}
-              disabled={isUploadingImage}
-              title="Change journey cover image"
-              className="flex items-center gap-1.5 rounded-full border border-white/30 bg-slate-950/70 px-2.5 py-1 text-[10px] font-semibold text-white shadow-lg backdrop-blur-md transition-all hover:scale-105 hover:border-teal-300 hover:bg-[#0d7377] active:scale-95 disabled:opacity-50"
-            >
-              <Camera className="h-3 w-3 text-teal-300" />
-              <span className="hidden sm:inline">Cover</span>
-            </button>
-          </div>
+          <JourneyPlanBadge tier={subscriptionTier} iconOnly={true} />
 
-          {isMultiCandidate && candidateCount && candidateCount > 0 ? (
-            <Badge className="rounded-full border border-teal-300/40 bg-slate-950/70 px-2.5 py-1 text-[10px] font-semibold text-teal-300 shadow-lg backdrop-blur-md hover:bg-slate-950/80">
-              <Users className="mr-1 h-3 w-3 text-teal-300" />
-              {candidateCount} {candidateCount === 1 ? "Profile" : "Profiles"}
-            </Badge>
-          ) : null}
+          <div className="flex items-center gap-1.5">
+            {isMultiCandidate && candidateCount && candidateCount > 0 ? (
+              <Badge className="rounded-full border border-teal-300/40 bg-slate-950/70 px-2.5 py-1 text-[10px] font-semibold text-teal-300 shadow-lg backdrop-blur-md hover:bg-slate-950/80">
+                <Users className="mr-1 h-3 w-3 text-teal-300" />
+                {candidateCount} {candidateCount === 1 ? "Profile" : "Profiles"}
+              </Badge>
+            ) : null}
+
+            {/* Quick Actions Dropdown Menu */}
+            <div ref={menuRef} className="relative">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsMenuOpen((prev) => !prev);
+                }}
+                onMouseDown={(e) => e.stopPropagation()}
+                onPointerDown={(e) => e.stopPropagation()}
+                title="Journey options"
+                className={`flex h-7 w-7 items-center justify-center rounded-full border border-white/25 bg-slate-950/70 text-white shadow-lg backdrop-blur-md transition-all hover:scale-105 hover:border-teal-300 hover:bg-[#0d7377] active:scale-95 ${
+                  isMenuOpen
+                    ? "border-teal-300 bg-[#0d7377] opacity-100 ring-2 ring-teal-400/40"
+                    : "opacity-85 sm:opacity-0 sm:group-hover:opacity-100"
+                }`}
+              >
+                <MoreVertical className="h-3.5 w-3.5 text-teal-300" />
+              </button>
+
+              <AnimatePresence>
+                {isMenuOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.94, y: -4 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.94, y: -4 }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
+                    className="absolute right-0 top-full mt-1.5 z-30 min-w-[175px] rounded-2xl border border-white/20 bg-slate-950/95 p-1.5 shadow-2xl backdrop-blur-xl"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setIsMenuOpen(false);
+                        fileInputRef.current?.click();
+                      }}
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onPointerDown={(e) => e.stopPropagation()}
+                      disabled={isUploadingImage}
+                      className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-slate-200 transition-colors hover:bg-teal-500/20 hover:text-white disabled:opacity-50"
+                    >
+                      <Camera className="h-3.5 w-3.5 text-teal-300" />
+                      <span>Change cover</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setIsMenuOpen(false);
+                        setNameInput(meta.name);
+                        setIsEditingName(true);
+                      }}
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onPointerDown={(e) => e.stopPropagation()}
+                      className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-slate-200 transition-colors hover:bg-teal-500/20 hover:text-white"
+                    >
+                      <Pencil className="h-3.5 w-3.5 text-teal-300" />
+                      <span>Rename journey</span>
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
         </div>
 
         {/* Image title & rename option */}
@@ -994,29 +1062,12 @@ function JourneyCard({
               </button>
             </div>
           ) : (
-            <div className="flex items-center justify-between gap-2">
-              <h2
-                title={meta.name}
-                className="line-clamp-1 text-xl font-semibold tracking-[-0.02em] text-white md:text-[1.35rem]"
-              >
-                {meta.name}
-              </h2>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setNameInput(meta.name);
-                  setIsEditingName(true);
-                }}
-                onMouseDown={(e) => e.stopPropagation()}
-                onPointerDown={(e) => e.stopPropagation()}
-                title="Change journey name"
-                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/20 bg-slate-950/60 text-white/80 backdrop-blur-md transition-all hover:scale-110 hover:bg-white hover:text-slate-950 active:scale-95"
-              >
-                <Pencil className="h-3.5 w-3.5" />
-              </button>
-            </div>
+            <h2
+              title={meta.name}
+              className="line-clamp-1 text-xl font-semibold tracking-[-0.02em] text-white md:text-[1.35rem]"
+            >
+              {meta.name}
+            </h2>
           )}
         </div>
       </div>
