@@ -77,6 +77,18 @@ export function JourneyHeroImageCard({ journey }: { journey: JourneyDetailConten
   );
 }
 
+const STAGE_THEMES = [
+  {
+    metaBg: "bg-[#AFDBDB]/45",
+  },
+  {
+    metaBg: "bg-[#F4D9A6]/38",
+  },
+  {
+    metaBg: "bg-[#DB8090]/15",
+  },
+] as const;
+
 export function JourneyRoadmap({ steps }: { steps: JourneyStep[] }) {
   const timelineRef = useRef<HTMLDivElement | null>(null);
 
@@ -149,7 +161,11 @@ export function JourneyRoadmap({ steps }: { steps: JourneyStep[] }) {
               </div>
 
               {/* Step metadata */}
-              <div className="rounded-lg bg-[#AFDBDB]/45 p-4">
+              <div
+  className={`rounded-lg p-4 ${
+    STAGE_THEMES[index % STAGE_THEMES.length].metaBg
+  }`}
+>
                 <div className="grid gap-3">
                   <StageMeta icon={BadgeCheck} label="Typical duration" value={step.duration} />
 
