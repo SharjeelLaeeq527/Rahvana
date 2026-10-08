@@ -54,6 +54,14 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
   const [view, setView] = useState<ViewType>("dashboard");
   const [selectedChapterIdx, setSelectedChapterIdx] = useState<number>(0);
   const [activeToolKey, setActiveToolKey] = useState<string | null>(null);
+  // When a tool is launched from a specific roadmap step (e.g. the Medical/PCC module
+  // cards), remember that step so finishing the service can tick it off in the toolbox
+  // flow. Dashboard toolbox launches leave this null.
+  const [activeToolAutoCompleteStep, setActiveToolAutoCompleteStep] = useState<string | null>(null);
+  const launchTool = (toolKey: string, autoCompleteStepKey?: string | null) => {
+    setActiveToolAutoCompleteStep(autoCompleteStepKey ?? null);
+    setActiveToolKey(toolKey);
+  };
 
   // Resolve the case-strength profile ONCE from the journey's category. Every
   // case-strength surface (dashboard alerts, per-step health panel) gets this
@@ -194,11 +202,19 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
           <li>
             <button
               className={`breadcrumb-item ${view === "dashboard" && !activeToolKey ? "breadcrumb-current" : "breadcrumb-link"}`}
-              onClick={activeToolKey ? () => setActiveToolKey(null) : view !== "dashboard" ? handleBackToDashboard : undefined}
+              onClick={
+                activeToolKey
+                  ? () => setActiveToolKey(null)
+                  : view !== "dashboard"
+                    ? handleBackToDashboard
+                    : undefined
+              }
               disabled={view === "dashboard" && !activeToolKey}
             >
               <LayoutDashboard size={12} strokeWidth={3} aria-hidden="true" />
-              <span className={`bc-text${view !== "dashboard" || activeToolKey ? " bc-text--dashboard" : ""}`}>
+              <span
+                className={`bc-text${view !== "dashboard" || activeToolKey ? "bc-text--dashboard" : ""}`}
+              >
                 Dashboard
               </span>
             </button>
@@ -213,7 +229,9 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
                 aria-hidden="true"
               />
               <span className="breadcrumb-item breadcrumb-current">
-                <span className="bc-text">{activeToolKey.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}</span>
+                <span className="bc-text">
+                  {activeToolKey.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+                </span>
               </span>
             </li>
           )}
@@ -269,21 +287,17 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
           )}
           {view === "step" && !activeToolKey && (
             <button
-            onClick={handleToggleComplete}
-            className={`complete-btn ${
-              isStepDone ? "complete-btn--done" : "complete-btn--idle"
-            }`}
-            aria-pressed={!!isStepDone}
-            title={isStepDone ? "Completed" : "Mark complete"}
-          >
-            {/* Icon: visible on all screen sizes */}
-            <Check size={12} strokeWidth={3} aria-hidden="true" />
-          
-            {/* Text: hidden on mobile, visible from md */}
-            <span className="hidden md:inline">
-              {isStepDone ? "Done" : "Complete"}
-            </span>
-          </button>
+              onClick={handleToggleComplete}
+              className={`complete-btn ${isStepDone ? "complete-btn--done" : "complete-btn--idle"}`}
+              aria-pressed={!!isStepDone}
+              title={isStepDone ? "Completed" : "Mark complete"}
+            >
+              {/* Icon: visible on all screen sizes */}
+              <Check size={12} strokeWidth={3} aria-hidden="true" />
+
+              {/* Text: hidden on mobile, visible from md */}
+              <span className="hidden md:inline">{isStepDone ? "Done" : "Complete"}</span>
+            </button>
           )}
           {/* DEV ONLY — reset button */}
           {isDevelopment && !activeToolKey && (
@@ -313,6 +327,7 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
           <EmbeddedToolContainer
             toolKey={activeToolKey}
             onClose={() => setActiveToolKey(null)}
+            autoCompleteStepKey={activeToolAutoCompleteStep}
             data={data}
             state={state}
             actions={actions}
@@ -330,7 +345,7 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
                 evidence={csProfile.evidence}
                 onSelectChapter={handleSelectChapter}
                 onSelectStep={handleSelectStep}
-                onLaunchTool={(toolKey) => setActiveToolKey(toolKey)}
+                onLaunchTool={(toolKey) => launchTool(toolKey)}
                 actions={{
                   setCurrentStep: actions.setCurrentStep,
                   setStage: actions.setStage,
@@ -358,6 +373,7 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
                   onBack={handleBackToChapter}
                   onSelectChapter={handleSelectChapter}
                   onSelectStep={handleSelectStep}
+                  onLaunchTool={launchTool}
                   actions={actions}
                 />
               </Suspense>

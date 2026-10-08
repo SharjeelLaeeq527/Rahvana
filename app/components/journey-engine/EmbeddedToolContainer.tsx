@@ -81,6 +81,10 @@ interface EmbeddedToolContainerProps {
   state?: unknown;
   actions?: unknown;
   journeyTier?: string;
+  /** When the tool was launched from a specific roadmap step (e.g. the Medical/PCC
+   *  module cards), completing the service should also tick that step off. Passed by
+   *  RoadmapLayoutEngine when a step card launches a tool via the shared breadcrumb. */
+  autoCompleteStepKey?: string | null;
 }
 
 function ToolSkeleton() {
@@ -435,6 +439,7 @@ export function EmbeddedToolContainer({
   journeyTier = "free",
   data,
   onClose,
+  autoCompleteStepKey,
 }: EmbeddedToolContainerProps) {
   const { journeySlug, candidateId } = useJourneyEnvironment();
   const { activeCandidate } = useCandidate();
@@ -541,6 +546,18 @@ export function EmbeddedToolContainer({
     (actions as { updateMetadata?: (u: Record<string, unknown>) => void })?.updateMetadata?.({
       [key]: record,
     });
+    // When launched from a roadmap step, mark that step complete on successful save.
+    // Guard against re-toggling an already-complete step off (toggleComplete is a toggle).
+    if (autoCompleteStepKey) {
+      const alreadyComplete = (
+        state as { completedSteps?: Set<string> } | undefined
+      )?.completedSteps?.has?.(autoCompleteStepKey);
+      if (!alreadyComplete) {
+        (actions as { toggleComplete?: (id: string) => void })?.toggleComplete?.(
+          autoCompleteStepKey
+        );
+      }
+    }
     serviceStatus.refetch();
     onClose?.();
   };
@@ -569,6 +586,7 @@ export function EmbeddedToolContainer({
           <SponsorshipCalculatorTool
             isOpen={true}
             onClose={onClose}
+            embedded
             mode="journey"
             journeyContext={journeyContext}
             journeyTier={effectiveJourneyTier}
@@ -606,6 +624,7 @@ export function EmbeddedToolContainer({
           <MedicalAppointmentTool
             isOpen={true}
             onClose={onClose}
+            embedded
             mode="journey"
             journeyContext={journeyContext}
             journeyTier={effectiveJourneyTier}
@@ -623,6 +642,7 @@ export function EmbeddedToolContainer({
           <PccFilingTool
             isOpen={true}
             onClose={onClose}
+            embedded
             mode="journey"
             journeyContext={journeyContext}
             journeyTier={effectiveJourneyTier}
@@ -668,6 +688,7 @@ export function EmbeddedToolContainer({
           <BookConsultationTool
             isOpen={true}
             onClose={onClose}
+            embedded
             mode="journey"
             journeyContext={journeyContext}
             journeyTier={effectiveJourneyTier}
