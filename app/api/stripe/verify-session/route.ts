@@ -5,6 +5,7 @@ import { Resend } from "resend";
 import { consultationService } from "@/lib/services/consultationService";
 import { buildAddonPurchaseUpdate } from "@/lib/payments/addon-purchase-ledger";
 import { cancelDuplicateSubscriptions } from "@/lib/stripe/subscriptionCleanup";
+import { provisionCandidateJourneysAndVaults } from "@/lib/candidate/candidateProvisioningService";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -82,42 +83,19 @@ export async function GET(request: NextRequest) {
     // ── 3a. JOURNEY PLAN (subscription) ──────────────────────────────────────
     if (productType === "journey_plan" && productId && TIER_RANK[productId] > 0) {
       const visaCategoryMeta = session.metadata?.visa_category || "ir1";
+      const candidateCountMeta = parseInt(session.metadata?.candidate_count || "1", 10) || 1;
 
-      // Normalize visa category slug to match DB journey_type ('IR1' or 'IR5')
-      const normVisaType = visaCategoryMeta.toLowerCase().includes("5") ? "IR5" : "IR1";
-
-      // ── 1. Find or update the specific journey record ───────────────────────
-      // The purchased subscription belongs to the selected journey/visa category,
-      // not globally to the user profile.
-      const { data: targetJourney } = await supabase
-        .from("journeys")
-        .select("id, subscription_tier")
-        .eq("user_id", userId)
-        .ilike("journey_type", normVisaType)
-        .maybeSingle();
-
-      if (targetJourney) {
-        // Update the existing journey with the purchased plan tier.
-        await supabase
-          .from("journeys")
-          .update({
-            subscription_tier: productId,
-            stripe_subscription_id: (session.subscription as string) || undefined,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", targetJourney.id);
-      } else {
-        // Create the journey record if the user does not have one yet.
-        await supabase.from("journeys").insert({
-          user_id: userId,
-          journey_type: normVisaType,
-          filing_method: "online",
-          sponsor_structure: "individual",
-          subscription_tier: productId,
-          stripe_subscription_id: (session.subscription as string) || undefined,
-          status: "not_started",
-        });
-      }
+      // ── 1. Provision Candidates, Journeys, and Document Vaults ─────────────
+      // Automatically creates candidate profiles, seeds multi-candidate journeys
+      // (candidate-1, candidate-2, etc.), and initializes isolated document vaults.
+      await provisionCandidateJourneysAndVaults({
+        supabase,
+        userId,
+        visaCategory: visaCategoryMeta,
+        candidateCount: candidateCountMeta,
+        tier: productId,
+        stripeSubscriptionId: (session.subscription as string) || undefined,
+      });
 
       // ── 2. Compute highest active tier across all user journeys ─────────────
       // user_profiles.subscription_tier acts as an account-level summary.
@@ -136,6 +114,12 @@ export async function GET(request: NextRequest) {
         Object.keys(TIER_RANK).find((tier) => TIER_RANK[tier] === highestRank) || productId;
 
       // ── 3. Update user profile account-level summary ────────────────────────
+      const { data: latestProfile } = await supabase
+        .from("user_profiles")
+        .select("profile_details")
+        .eq("id", userId)
+        .maybeSingle();
+
       await supabase
         .from("user_profiles")
         .update({
@@ -144,7 +128,7 @@ export async function GET(request: NextRequest) {
           stripe_customer_id:
             (session.customer as string) || profile?.stripe_customer_id || undefined,
           profile_details: {
-            ...(profile?.profile_details || {}),
+            ...(latestProfile?.profile_details || profile?.profile_details || {}),
             active_plan: highestTierName,
             plan_purchase_date: new Date().toISOString(),
             activated_by: "verify-session",
