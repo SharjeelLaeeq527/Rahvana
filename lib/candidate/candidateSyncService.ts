@@ -268,6 +268,35 @@ export function getBaseVisaCategory(journeyTypeOrVisa?: string | null): VisaCate
 }
 
 /**
+ * Set of visa categories that support multiple beneficiaries/candidates.
+ * - IR-5: Multiple parents (Mother, Father, Stepparents, Adoptive parents)
+ * - IR-2 / CR-2: Multiple children
+ * - F-4: Multiple siblings
+ */
+export const MULTI_CANDIDATE_VISA_CATEGORIES: ReadonlySet<string> = new Set([
+  "IR-5",
+  "IR-2",
+  "CR-2",
+  "F-4",
+]);
+
+/**
+ * Checks whether a given visa category or journey type supports multiple candidates/beneficiaries.
+ */
+export function isMultiCandidateCategory(journeyTypeOrVisa?: string | null): boolean {
+  if (!journeyTypeOrVisa) return false;
+  const base = getBaseVisaCategory(journeyTypeOrVisa);
+  if (MULTI_CANDIDATE_VISA_CATEGORIES.has(base)) return true;
+  const norm = String(journeyTypeOrVisa).toLowerCase().replace(/[^a-z0-9]/g, "");
+  return (
+    norm.includes("ir5") ||
+    norm.includes("ir2") ||
+    norm.includes("cr2") ||
+    norm.includes("f4")
+  );
+}
+
+/**
  * Derives the database journey type key for a candidate.
  * Candidate 1 maps to the base root (e.g. "ir5", "ir1"),
  * while subsequent candidates map to "ir5_candidate2", "ir5_candidate3", etc.

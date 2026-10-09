@@ -24,7 +24,11 @@ import { useUserProfile } from "@/app/context/UserProfileContext";
 import { PlanContext } from "@/app/context/PlanContext";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { JourneyProgressRecord, listUserJourneys } from "@/lib/journey/journeyProgressService";
-import { getCandidateJourneyKey, getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
+import {
+  getCandidateJourneyKey,
+  getBaseVisaCategory,
+  isMultiCandidateCategory,
+} from "@/lib/candidate/candidateSyncService";
 import { getJourneyHrefByType, ir1journeyHref, ir5journeyHref } from "@/lib/constants/routes";
 import { IR5_ENABLED } from "@/lib/feature-flags";
 import { Loader } from "@/components/ui/spinner";
@@ -792,14 +796,20 @@ export default function MyJourneysPage() {
                             subscriptionTier={subscriptionTier}
                             activity={activity}
                             isMultiCandidate={
-                              meta.canonicalId === "ir5" ||
-                              meta.code.toUpperCase().includes("IR-5") ||
-                              meta.code.toUpperCase().includes("IR5")
+                              isMultiCandidateCategory(meta.canonicalId) ||
+                              isMultiCandidateCategory(meta.code)
                             }
                             candidateCount={
+                              candidates.filter(
+                                (c) =>
+                                  isMultiCandidateCategory(c.visaCategory) &&
+                                  getBaseVisaCategory(c.visaCategory) ===
+                                    getBaseVisaCategory(meta.code || meta.canonicalId)
+                              ).length ||
                               candidates.filter((c) =>
-                                (c.visaCategory || "").toUpperCase().includes("IR-5")
-                              ).length || candidates.length
+                                isMultiCandidateCategory(c.visaCategory)
+                              ).length ||
+                              candidates.length
                             }
                             onOpen={() => handleOpenJourney(meta)}
                             onUpdateJourneyName={(newName) =>

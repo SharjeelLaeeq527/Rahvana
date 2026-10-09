@@ -42,6 +42,7 @@ import {
 } from "@/app/(tools)/(visa)/visa-category/data/journeys";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { useCandidate } from "@/app/context/CandidateContext";
+import { isMultiCandidateCategory } from "@/lib/candidate/candidateSyncService";
 
 /* ===========================================================================
    TIER VISUAL CONFIG
@@ -655,12 +656,13 @@ function PricingContent() {
   const [checkoutCanceled, setCheckoutCanceled] = useState(false);
 
   // Derived
+  const isMultiCandidate = isMultiCandidateCategory(visa);
   const isIr5 = Boolean(
     visa && (visa.toUpperCase().includes("IR-5") || visa.toUpperCase().includes("IR5"))
   );
   const isAddingCandidate = searchParams.get("action") === "add_candidate";
   const hasActiveIr5 = Boolean(journeyTiers.ir5 && journeyTiers.ir5 !== "free");
-  const parentMultiplier = isIr5 ? parentCount : 1;
+  const parentMultiplier = (isMultiCandidate || isIr5) ? parentCount : 1;
   const isIr1Purchased = Boolean(journeyTiers.ir1 && journeyTiers.ir1 !== "free");
 
   // Auto-switch away from IR-1 if user already has an active purchased plan for it
@@ -1621,9 +1623,11 @@ function PricingContent() {
 
                         const planRank = TIER_RANK[plan.id] ?? 0;
 
-                        const isCurrentPlan = !isIr5 && plan.id === selectedJourneyTier;
+                        const isCurrentPlan =
+                          !isMultiCandidate && !isIr5 && plan.id === selectedJourneyTier;
 
-                        const isDowngrade = !isIr5 && planRank < activeTierRank;
+                        const isDowngrade =
+                          !isMultiCandidate && !isIr5 && planRank < activeTierRank;
 
                         return (
                           <article

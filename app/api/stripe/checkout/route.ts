@@ -12,6 +12,7 @@ import { E, msg } from "@/lib/errors";
 import { getAuthenticatedUser } from "@/lib/api/authGuards";
 import { acquireCheckoutLock, releaseCheckoutLock } from "@/lib/stripe/checkoutLock";
 import { resolveSubscriptionTier } from "@/lib/stripe/subscriptionCleanup";
+import { isMultiCandidateCategory } from "@/lib/candidate/candidateSyncService";
 
 function logDebug(msg: string, obj?: any) {
   // Never write request/session details to disk in production (PII hygiene).
@@ -289,13 +290,14 @@ export async function POST(request: NextRequest) {
     // If we trusted a client-supplied `currentTier`/`isUpgrade`, a free user could
     // send { isUpgrade: true, currentTier: "premium" } and pay only the tier
     // *difference* while being provisioned the full higher tier. So it is server-derived.
-    const isMultiCandidateCategory = selectedJourneyType === "IR5";
-    const isAddCandidateRequest = action === "add_candidate" || isMultiCandidateCategory;
+    const isMultiCandidate =
+      isMultiCandidateCategory(effectiveVisaCategory) || selectedJourneyType === "IR5";
+    const isAddCandidateRequest = action === "add_candidate" || isMultiCandidate;
 
     // For single-candidate journeys (e.g. IR-1), serverIsUpgrade handles proration and replaces old sub.
-    // For multi-candidate journeys (IR-5), each candidate is an independent petition with their own subscription,
+    // For multi-candidate journeys (IR-5, IR-2, etc.), each candidate is an independent petition with their own subscription,
     // so new candidate purchases must not retire existing candidate subscriptions or trigger proration.
-    const serverIsUpgrade = !isMultiCandidateCategory && hasLivePlan && effectiveCurrentRank > 0;
+    const serverIsUpgrade = !isMultiCandidate && hasLivePlan && effectiveCurrentRank > 0;
     const serverCurrentTier = serverIsUpgrade ? effectiveCurrentTier : undefined;
 
     // ── Server-side downgrade + duplicate-purchase guard (Stripe-aware) ──────
@@ -304,8 +306,8 @@ export async function POST(request: NextRequest) {
     //   (b) target tier == current tier  → duplicate purchase (already owned/live)
     // Blocks even when the DB status is stale, because `hasLivePlan` also trusts
     // Stripe. Upgrades (target > current) fall through and are allowed.
-    // NOTE: Multi-candidate categories (IR-5) allow purchasing additional candidates at any tier!
-    if (productTier && !isMultiCandidateCategory) {
+    // NOTE: Multi-candidate categories (IR-5, IR-2, etc.) allow purchasing additional candidates at any tier!
+    if (productTier && !isMultiCandidate) {
       const targetRank = TIER_RANK[productTier.toLowerCase()] ?? 0;
 
       if (hasLivePlan && targetRank < effectiveCurrentRank) {

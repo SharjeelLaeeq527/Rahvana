@@ -8,8 +8,11 @@
 // ============================================================================
 
 import { SupabaseClient } from "@supabase/supabase-js";
-import type { CandidateProfile, CandidateTier } from "@/types/candidate";
-import { getCandidateJourneyKey, getBaseVisaCategory } from "./candidateSyncService";
+import {
+  getCandidateJourneyKey,
+  getBaseVisaCategory,
+  isMultiCandidateCategory,
+} from "./candidateSyncService";
 import { DocumentDatabaseStorage } from "@/lib/document-vault/storage-database";
 import { journeyService } from "@/lib/journey/service";
 
@@ -33,7 +36,7 @@ export interface ProvisionResult {
 
 /**
  * Automatically provisions candidate profiles, journey roadmaps, and document vaults
- * according to the purchased candidateCount (e.g. 1 parent vs 2+ parents on IR-5).
+ * according to the purchased candidateCount (e.g. 1 parent vs 2+ parents on IR-5, or multiple children on IR-2).
  */
 export async function provisionCandidateJourneysAndVaults({
   supabase,
@@ -45,17 +48,14 @@ export async function provisionCandidateJourneysAndVaults({
   isAddCandidate = false,
 }: ProvisionCandidatesParams): Promise<ProvisionResult> {
   try {
+    const isMultiCandidate = isMultiCandidateCategory(visaCategory);
     const isIr5 =
       visaCategory.toUpperCase().includes("IR-5") ||
       visaCategory.toUpperCase().includes("IR5");
-    const isIr1 =
-      visaCategory.toUpperCase().includes("IR-1") ||
-      visaCategory.toUpperCase().includes("IR1") ||
-      visaCategory.toUpperCase().includes("CR-1");
 
-    const normVisaType = isIr5 ? "IR5" : "IR1";
-    const canonicalVisa = isIr5 ? "IR-5" : "IR-1";
-    const effectiveCount = isIr5 ? Math.max(1, candidateCount) : 1;
+    const canonicalVisa = getBaseVisaCategory(visaCategory);
+    const normVisaType = canonicalVisa.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+    const effectiveCount = isMultiCandidate ? Math.max(1, candidateCount) : 1;
 
     const dbStorage = new DocumentDatabaseStorage(supabase);
 
@@ -76,7 +76,7 @@ export async function provisionCandidateJourneysAndVaults({
     // Adding an additional candidate to an existing IR-5 roster occurs if flagged
     // OR if an active paid IR-5 journey already exists for Candidate 1.
     const isAddingToExistingRoster = Boolean(
-      isIr5 && (isAddCandidate || isExistingPrimaryPaid)
+      isMultiCandidate && (isAddCandidate || isExistingPrimaryPaid)
     );
 
     if (existingPrimary) {
@@ -199,9 +199,14 @@ export async function provisionCandidateJourneysAndVaults({
       candidateJourneyIds["candidate-1"] = primaryJourneyId;
     }
 
-    // ── 4. Provision Additional Candidates & Vaults (IR-5 multi-parent) ──────
-    if (isIr5) {
-      const configPath = "data/visa-category/ir-5.json";
+    // ── 4. Provision Additional Candidates & Vaults (Multi-candidate journeys) ──────
+    if (isMultiCandidate) {
+      const configPath =
+        normVisaType === "IR5"
+          ? "data/visa-category/ir-5.json"
+          : "data/visa-category/ir-1.json";
+      const defaultRelation: CandidateRelation =
+        canonicalVisa === "IR-2" || canonicalVisa === "CR-2" ? "Child" : "Other";
 
       if (isAddingToExistingRoster) {
         // Appending new candidate(s) to the existing roster
@@ -223,9 +228,9 @@ export async function provisionCandidateJourneysAndVaults({
           const newCandidate: CandidateProfile = {
             id: candId,
             label: `Candidate ${nextNum}`,
-            relation: "Other",
+            relation: defaultRelation,
             fullName: "",
-            visaCategory: "IR-5",
+            visaCategory: canonicalVisa,
             tier: tier as CandidateTier,
             isPrimary: false,
             isPreview: false,
@@ -235,7 +240,7 @@ export async function provisionCandidateJourneysAndVaults({
           updatedCandidates.push(newCandidate);
 
           // Provision Candidate's Journey row in Supabase
-          const journeyKey = getCandidateJourneyKey("IR-5", candId); // e.g. "ir5_candidate2"
+          const journeyKey = getCandidateJourneyKey(canonicalVisa, candId);
           let candJourneyId: string | undefined;
 
           const { data: existingCandJourney } = await supabase
@@ -325,15 +330,15 @@ export async function provisionCandidateJourneysAndVaults({
               ...updatedCandidates[cIndex],
               tier: tier as CandidateTier,
               isPreview: false,
-              visaCategory: "IR-5",
+              visaCategory: canonicalVisa,
             };
           } else {
             updatedCandidates.push({
               id: candId,
               label: `Candidate ${i}`,
-              relation: "Other",
+              relation: defaultRelation,
               fullName: "",
-              visaCategory: "IR-5",
+              visaCategory: canonicalVisa,
               tier: tier as CandidateTier,
               isPrimary: false,
               isPreview: false,
@@ -343,7 +348,7 @@ export async function provisionCandidateJourneysAndVaults({
           }
 
           // Provision Candidate's Journey row in Supabase
-          const journeyKey = getCandidateJourneyKey("IR-5", candId); // e.g. "ir5_candidate2"
+          const journeyKey = getCandidateJourneyKey(canonicalVisa, candId);
           let candJourneyId: string | undefined;
 
           const { data: existingCandJourney } = await supabase
