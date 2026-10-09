@@ -264,6 +264,19 @@ surface, not a spinner. Adding a guide to the toolbox = an `AppGroup` item + a `
 `OVERLAY_PAGE_ROUTES` entry + a `GUIDE_PRELOADERS` entry (its feature key must match the guide
 page's own `PageGate`).
 
+**Cross-journey service request directory.** The Services folder in `AppGroupModal` has a
+"My Requests (all journeys)" link that opens `journey-engine/AllServiceRequestsModal.tsx`: every
+Consultation / Medical / PCC / Translation request on the account (`services-status?scope=all`
+via `lib/hooks/useServiceRequestDirectory.ts`), grouped by WHERE it was filed, with a detail view
+and a jump to the owning journey (sets the active candidate + pushes `getJourneyHrefByType`). The
+where-resolution lives in `lib/services/serviceRequestDirectory.ts` (tested in
+`__tests__/service-request-directory.test.ts`) because each table tags origin differently:
+Medical/PCC use `source` + `journey_slug` (authoritative category) + a candidate tag
+(`candidate_id` / `metadata.candidate_id` / `[Candidate: x]` in `admin_notes`); Translation has only
+`metadata.candidate_id` (category comes from that candidate's `visaCategory`); Consultation has no
+candidate tag and is shown account-wide under its own `visa_category`. Untagged legacy rows resolve
+to `candidate-1`, matching `services-status`.
+
 **My Journeys (`app/(main)/my-journeys/page.tsx`).** Lists journeys via `listUserJourneys`.
 Opening an IR-5 journey shows `components/CandidateProfileLauncherModal.tsx` (candidates
 filtered by visa category; picking one sets the active candidate and pushes the journey route;
@@ -817,7 +830,7 @@ Python backend. Highlights:
 | `iv-status/*` | "documentarily complete" lookup from `backend/data/iv_data.json` | static data |
 | `guides/*` | guides wizard (start/save/progress/upload/my-guides) + admin feedback triage | Supabase |
 | `quick-access/*` | dashboard "quick access" tile CRUD (`user_quick_access`) | Supabase |
-| `user-dashboard/*` | `services-status` (PCC/consult/translation), `analytics` aggregation | Supabase |
+| `user-dashboard/*` | `services-status` (PCC/medical/consult/translation; `scope=journey` = journey-tagged rows, default = standalone/My Resources, `scope=all` = every row unfiltered for the cross-journey request directory), `analytics` aggregation | Supabase |
 | `visa-forms/[formCode]/*` | save/resume multi-step form drafts (`visa_forms_draft`) | Supabase |
 | `consultation`, `book-appointment`, `document-translation/*`, `police-verification/*` | service bookings + admin workflows + payments | Supabase, Resend, Stripe |
 | `interview-prep/*`, `visa-checker/*` | sessions, answers, AI coaching (`ai-improve`) | Supabase, Gemini |
