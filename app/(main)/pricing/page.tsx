@@ -664,13 +664,15 @@ function PricingContent() {
   const hasActiveIr5 = Boolean(journeyTiers.ir5 && journeyTiers.ir5 !== "free");
   const parentMultiplier = (isMultiCandidate || isIr5) ? parentCount : 1;
   const isIr1Purchased = Boolean(journeyTiers.ir1 && journeyTiers.ir1 !== "free");
+  const isIr1Executive = journeyTiers.ir1?.toLowerCase() === "executive";
+  const canUpgradeIr1 = Boolean(isIr1Purchased && !isIr1Executive);
 
-  // Auto-switch away from IR-1 if user already has an active purchased plan for it
+  // Auto-switch away from IR-1 ONLY if user already has executive plan (cannot upgrade)
   useEffect(() => {
-    if (isIr1Purchased && (visa.includes("IR-1") || visa.includes("CR-1"))) {
+    if (isIr1Executive && (visa.includes("IR-1") || visa.includes("CR-1"))) {
       setVisa("IR-5");
     }
-  }, [isIr1Purchased, visa]);
+  }, [isIr1Executive, visa]);
 
   // Reset eligibility confirmation when switching back to <= 2 parents
   useEffect(() => {
@@ -688,6 +690,21 @@ function PricingContent() {
   const selectedJourneyTier = visa.toLowerCase().includes("5")
     ? (journeyTiers.ir5 ?? "free")
     : (journeyTiers.ir1 ?? "free");
+
+  // When viewing single-candidate journey, ensure selectedPlan defaults to a valid upgrade tier
+  useEffect(() => {
+    if (!isMultiCandidate && !isIr5 && selectedJourneyTier && selectedJourneyTier !== "free") {
+      const TIER_RANK: Record<string, number> = { free: 0, basic: 1, premium: 2, executive: 3 };
+      const currentRank = TIER_RANK[selectedJourneyTier] || 0;
+      setSelectedPlan((prev) => {
+        const prevRank = TIER_RANK[prev] || 0;
+        if (prevRank <= currentRank) {
+          return currentRank === 1 ? "premium" : "executive";
+        }
+        return prev;
+      });
+    }
+  }, [selectedJourneyTier, isMultiCandidate, isIr5]);
   const activePlans = activeVisaCategory.plans;
   const paidPlans = activePlans.filter((p) => p.id !== "free");
   const currentPlanData = activePlans.find((p) => p.id === selectedPlan) || activePlans[2];
@@ -1231,14 +1248,14 @@ function PricingContent() {
                 guidance available for you.
               </p>
 
-              {/* Already purchased IR-1 notice */}
-              {isIr1Purchased && (
+              {/* Already maxed out IR-1 notice (Executive tier) */}
+              {isIr1Executive && (
                 <div className="mt-5 flex flex-col gap-2.5 rounded-2xl border border-teal-200/90 bg-teal-50/80 p-4 text-xs text-teal-900 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-2.5">
                     <CheckCircle2 className="h-4 w-4 shrink-0 text-teal-600" />
                     <span>
                       You already have an active <strong>IR-1 Spouse Visa</strong> journey (
-                      <strong>{journeyTiers.ir1}</strong> plan).
+                      <strong>Executive</strong> plan).
                     </span>
                   </div>
                   <Link
@@ -1250,11 +1267,46 @@ function PricingContent() {
                 </div>
               )}
 
+              {/* Upgrade available notice for IR-1 */}
+              {canUpgradeIr1 && (
+                <div className="mt-5 flex flex-col gap-2.5 rounded-2xl border border-emerald-200/90 bg-emerald-50/80 p-4 text-xs text-emerald-900 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+                    <span>
+                      You have an active <strong>IR-1 Spouse Visa</strong> journey (
+                      <strong className="capitalize">{journeyTiers.ir1}</strong> plan). You can upgrade to a higher plan anytime.
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const ir1Card = EXPLORER_CARDS.find(
+                          (c) => c.code.includes("IR-1") || c.slug === "ir-1"
+                        );
+                        if (ir1Card) setVisa(ir1Card.code);
+                        setIsChangingJourney(false);
+                      }}
+                      className="inline-flex items-center gap-1 font-semibold text-[#0d7377] hover:underline cursor-pointer"
+                    >
+                      Upgrade IR-1 Plan →
+                    </button>
+                    <span className="text-emerald-300">|</span>
+                    <Link
+                      href="/my-journeys"
+                      className="inline-flex items-center gap-1 text-emerald-700 hover:underline"
+                    >
+                      My Journeys
+                    </Link>
+                  </div>
+                </div>
+              )}
+
               {/* Journey Cards */}
               <div className="mt-7 grid grid-cols-1 gap-5 md:grid-cols-3">
                 {EXPLORER_CARDS.filter((card) => {
                   if (
-                    isIr1Purchased &&
+                    isIr1Executive &&
                     (card.code.includes("IR-1") ||
                       card.code.includes("CR-1") ||
                       card.slug === "ir-1")
@@ -1265,6 +1317,10 @@ function PricingContent() {
                 }).map((card) => {
                   const isLive = card.status === "Live" && Boolean(card.href);
                   const isSelected = card.code === visa;
+                  const isIr1Card =
+                    card.code.includes("IR-1") ||
+                    card.code.includes("CR-1") ||
+                    card.slug === "ir-1";
 
                   return (
                     <div
@@ -1291,6 +1347,12 @@ function PricingContent() {
                         <span className="absolute top-3 right-3 z-10 inline-flex items-center gap-1 rounded-full bg-[#0d7a5c] px-2.5 py-1 text-[10.5px] font-bold tracking-wide text-white uppercase shadow-sm">
                           <IconCheck className="h-3 w-3" strokeWidth={3} />
                           Selected
+                        </span>
+                      )}
+
+                      {!isSelected && canUpgradeIr1 && isIr1Card && (
+                        <span className="absolute top-3 right-3 z-10 inline-flex items-center gap-1 rounded-full bg-emerald-100 border border-emerald-300 px-2.5 py-1 text-[10.5px] font-bold tracking-wide text-emerald-800 uppercase shadow-sm">
+                          Upgrade Available
                         </span>
                       )}
                     </div>
@@ -1604,6 +1666,18 @@ function PricingContent() {
                   </div>
                 )}
 
+                {/* Single-Candidate / IR-1 Upgrade Banner */}
+                {!isMultiCandidate && !isIr5 && canUpgradeIr1 && (
+                  <div className="mb-6 flex flex-col gap-2.5 rounded-2xl border border-emerald-200/90 bg-emerald-50/80 p-4 text-xs text-emerald-900 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+                      <span>
+                        You are currently on the <strong className="capitalize">{journeyTiers.ir1}</strong> plan. Select a higher tier below to upgrade your IR-1 Spouse Visa journey. The prorated credit from your current plan is automatically deducted at checkout.
+                      </span>
+                    </div>
+                  </div>
+                )}
+
                 {(() => {
                   const TIER_RANK: Record<string, number> = {
                     free: 0,
@@ -1629,6 +1703,9 @@ function PricingContent() {
                         const isDowngrade =
                           !isMultiCandidate && !isIr5 && planRank < activeTierRank;
 
+                        const isUpgrade =
+                          !isMultiCandidate && !isIr5 && activeTierRank > 0 && planRank > activeTierRank;
+
                         return (
                           <article
                             key={plan.id}
@@ -1647,30 +1724,40 @@ function PricingContent() {
                               }
                             }}
                           >
-                            {/* Current plan badge */}
-                            {isCurrentPlan && (
-                              <div className="absolute top-4 right-4 rounded-full border border-green-300 bg-green-100 px-2.5 py-1 text-[10px] font-bold tracking-[0.06em] text-green-700 uppercase">
-                                Current Plan
-                              </div>
-                            )}
+                            {/* Top-right badges & selection status */}
+                            <div className="absolute top-4 right-4 flex items-center gap-2">
+                              {/* Current plan badge */}
+                              {isCurrentPlan && (
+                                <div className="rounded-full border border-green-300 bg-green-100 px-2.5 py-1 text-[10px] font-bold tracking-[0.06em] text-green-700 uppercase">
+                                  Current Plan
+                                </div>
+                              )}
 
-                            {/* Most popular badge */}
-                            {!isCurrentPlan && plan.recommended && !isDowngrade && (
-                              <div
-                                className={`absolute top-4 right-4 rounded-full px-2.5 py-1 text-[10px] font-bold tracking-[0.06em] uppercase ${tc.badgeBg} ${tc.badgeText}`}
-                              >
-                                Most Popular
-                              </div>
-                            )}
+                              {/* Upgrade badge */}
+                              {!isCurrentPlan && isUpgrade && (
+                                <div className="rounded-full border border-emerald-300 bg-emerald-100 px-2.5 py-1 text-[10px] font-bold tracking-[0.06em] text-emerald-800 uppercase">
+                                  Upgrade
+                                </div>
+                              )}
 
-                            {/* Selected check */}
-                            {isSelected && !plan.recommended && !isCurrentPlan && !isDowngrade && (
-                              <div
-                                className={`absolute top-4 right-4 flex h-6 w-6 items-center justify-center rounded-full ${tc.btn}`}
-                              >
-                                <IconCheck className="h-3.5 w-3.5" />
-                              </div>
-                            )}
+                              {/* Most popular badge */}
+                              {!isCurrentPlan && !isUpgrade && plan.recommended && !isDowngrade && (
+                                <div
+                                  className={`rounded-full px-2.5 py-1 text-[10px] font-bold tracking-[0.06em] uppercase ${tc.badgeBg} ${tc.badgeText}`}
+                                >
+                                  Most Popular
+                                </div>
+                              )}
+
+                              {/* Selected check */}
+                              {isSelected && !isCurrentPlan && !isDowngrade && (
+                                <div
+                                  className={`flex h-6 w-6 items-center justify-center rounded-full shadow-sm ${tc.btn}`}
+                                >
+                                  <IconCheck className="h-3.5 w-3.5" />
+                                </div>
+                              )}
+                            </div>
 
                             {/* Icon + Name + Price */}
                             <div className="mb-4 -ml-3 flex items-center gap-0">
@@ -1794,9 +1881,13 @@ function PricingContent() {
                                 ? "Your Current Plan"
                                 : isDowngrade
                                   ? "Not Available"
-                                  : isSelected
-                                    ? "Continue to Checkout →"
-                                    : plan.cta}
+                                  : isUpgrade
+                                    ? isSelected
+                                      ? "Continue to Upgrade →"
+                                      : `Upgrade to ${plan.name} →`
+                                    : isSelected
+                                      ? "Continue to Checkout →"
+                                      : plan.cta}
                             </button>
                           </article>
                         );
