@@ -88,10 +88,8 @@ const TIER_HIGHLIGHTS: Record<PlanTier, string[]> = {
     "Document vault, upload & auto-extract",
     "Tracker & reminders (DQ, interview, case status)",
     "Smart Form Filler (I-130 / I-130A)",
-    "Case Strength Analyzer",
     "Sponsorship Calculator",
     "Rapid Fire interview prep",
-    "Medical appointment booking via Rahvana",
     "Civil document guides",
   ],
   executive: [
@@ -100,8 +98,9 @@ const TIER_HIGHLIGHTS: Record<PlanTier, string[]> = {
     "Mock interview sessions",
     // "Expert case review, 2 sessions included",
     "Expert consultation calls, 2 sessions included",
-    "PCC filing assistance (Sindh only)",
+    "PCC filing assistance (Sindh only), unlimited",
     "Document translation, unlimited",
+    "Medical Booking, unlimited",
   ],
 };
 
