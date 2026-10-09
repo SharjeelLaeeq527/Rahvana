@@ -73,10 +73,11 @@ export async function provisionCandidateJourneysAndVaults({
       existingPrimary?.subscription_tier &&
       existingPrimary.subscription_tier.toLowerCase() !== "free";
 
-    // Adding an additional candidate to an existing IR-5 roster occurs if flagged
-    // OR if an active paid IR-5 journey already exists for Candidate 1.
+    // Adding an additional candidate to an existing IR-5 roster occurs only when specifically requested
+    // (isAddCandidate flag is true) AND an active paid primary journey already exists.
+    // If isAddCandidate is false (e.g. an upgrade or initial purchase), we upgrade/initialize candidate-1.
     const isAddingToExistingRoster = Boolean(
-      isMultiCandidate && (isAddCandidate || isExistingPrimaryPaid)
+      isMultiCandidate && isAddCandidate && isExistingPrimaryPaid
     );
 
     if (existingPrimary) {

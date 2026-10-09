@@ -662,7 +662,20 @@ function PricingContent() {
   );
   const isAddingCandidate = searchParams.get("action") === "add_candidate";
   const hasActiveIr5 = Boolean(journeyTiers.ir5 && journeyTiers.ir5 !== "free");
-  const parentMultiplier = (isMultiCandidate || isIr5) ? parentCount : 1;
+  const isIr5Executive = journeyTiers.ir5?.toLowerCase() === "executive";
+  const canUpgradeIr5 = Boolean(hasActiveIr5 && !isIr5Executive);
+
+  const [ir5Action, setIr5Action] = useState<"upgrade" | "add_candidate">(() => {
+    if (typeof window !== "undefined") {
+      const actionParam = new URLSearchParams(window.location.search).get("action");
+      if (actionParam === "add_candidate") return "add_candidate";
+      if (actionParam === "upgrade") return "upgrade";
+    }
+    return "upgrade";
+  });
+
+  const isUpgradingIr5 = Boolean(isIr5 && canUpgradeIr5 && ir5Action === "upgrade");
+  const parentMultiplier = (isMultiCandidate || isIr5) && !isUpgradingIr5 ? parentCount : 1;
   const isIr1Purchased = Boolean(journeyTiers.ir1 && journeyTiers.ir1 !== "free");
   const isIr1Executive = journeyTiers.ir1?.toLowerCase() === "executive";
   const canUpgradeIr1 = Boolean(isIr1Purchased && !isIr1Executive);
@@ -691,9 +704,11 @@ function PricingContent() {
     ? (journeyTiers.ir5 ?? "free")
     : (journeyTiers.ir1 ?? "free");
 
-  // When viewing single-candidate journey, ensure selectedPlan defaults to a valid upgrade tier
+  // When viewing single-candidate journey or upgrading IR-5, ensure selectedPlan defaults to a valid upgrade tier
   useEffect(() => {
-    if (!isMultiCandidate && !isIr5 && selectedJourneyTier && selectedJourneyTier !== "free") {
+    const isUpgradingThisJourney = (!isMultiCandidate && !isIr5) || isUpgradingIr5;
+
+    if (isUpgradingThisJourney && selectedJourneyTier && selectedJourneyTier !== "free") {
       const TIER_RANK: Record<string, number> = { free: 0, basic: 1, premium: 2, executive: 3 };
       const currentRank = TIER_RANK[selectedJourneyTier] || 0;
       setSelectedPlan((prev) => {
@@ -704,7 +719,7 @@ function PricingContent() {
         return prev;
       });
     }
-  }, [selectedJourneyTier, isMultiCandidate, isIr5]);
+  }, [selectedJourneyTier, isMultiCandidate, isIr5, isUpgradingIr5]);
   const activePlans = activeVisaCategory.plans;
   const paidPlans = activePlans.filter((p) => p.id !== "free");
   const currentPlanData = activePlans.find((p) => p.id === selectedPlan) || activePlans[2];
@@ -755,8 +770,12 @@ function PricingContent() {
             visaCategory: visa,
             billing,
             userId: uid,
-            candidateCount: isIr5 ? parentCount : 1,
-            action: isAddingCandidate || (isIr5 && hasActiveIr5) ? "add_candidate" : undefined,
+            candidateCount: isIr5 ? (isUpgradingIr5 ? 1 : parentCount) : 1,
+            action: isUpgradingIr5
+              ? "upgrade"
+              : isAddingCandidate || (isIr5 && hasActiveIr5 && ir5Action === "add_candidate")
+                ? "add_candidate"
+                : undefined,
           }),
         });
         const data = await res.json();
@@ -874,7 +893,10 @@ function PricingContent() {
       if (!isNaN(parsed) && parsed >= 1) setParentCount(parsed);
     }
     if (searchParams.get("action") === "add_candidate") {
+      setIr5Action("add_candidate");
       setParentCount(1);
+    } else if (searchParams.get("action") === "upgrade") {
+      setIr5Action("upgrade");
     }
     // Restore the order-summary (review) step when deep-linked back to it.
     if (searchParams.get("step") === "review") setPurchaseStep("review");
@@ -1020,13 +1042,21 @@ function PricingContent() {
           productTier={mode === "plans" && selectedPlan !== "free" ? selectedPlan : undefined}
           addons={checkoutAddonIds}
           visaCategory={visa}
-          candidateCount={isIr5 ? parentCount : 1}
-          action={isAddingCandidate || (isIr5 && hasActiveIr5) ? "add_candidate" : undefined}
+          candidateCount={isIr5 ? (isUpgradingIr5 ? 1 : parentCount) : 1}
+          action={
+            isUpgradingIr5
+              ? "upgrade"
+              : isAddingCandidate || (isIr5 && hasActiveIr5 && ir5Action === "add_candidate")
+                ? "add_candidate"
+                : undefined
+          }
           userId={userId}
           onLoadingChange={setIsManualCheckoutLoading}
           className="bg-primary hover:bg-primary/90 w-full rounded-full px-5 py-[11px] text-center text-[14px] font-semibold text-white"
         >
-          Continue to Secure Checkout →
+          {isUpgradingIr5 || canUpgradeIr1
+            ? "Continue to Upgrade →"
+            : "Continue to Secure Checkout →"}
         </CheckoutButton>
       ) : (
         <Link
@@ -1095,13 +1125,19 @@ function PricingContent() {
       productTier={mode === "plans" && selectedPlan !== "free" ? selectedPlan : undefined}
       addons={checkoutAddonIds}
       visaCategory={visa}
-      candidateCount={isIr5 ? parentCount : 1}
-      action={isAddingCandidate || (isIr5 && hasActiveIr5) ? "add_candidate" : undefined}
+      candidateCount={isIr5 ? (isUpgradingIr5 ? 1 : parentCount) : 1}
+      action={
+        isUpgradingIr5
+          ? "upgrade"
+          : isAddingCandidate || (isIr5 && hasActiveIr5 && ir5Action === "add_candidate")
+            ? "add_candidate"
+            : undefined
+      }
       userId={userId}
       onLoadingChange={setIsManualCheckoutLoading}
       className="bg-primary hover:bg-primary/90 w-full rounded-full px-4 py-2.5 text-center text-[13px] font-semibold text-white"
     >
-      Checkout →
+      {isUpgradingIr5 || canUpgradeIr1 ? "Upgrade →" : "Checkout →"}
     </CheckoutButton>
   ) : (
     <Link
@@ -1274,7 +1310,8 @@ function PricingContent() {
                     <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
                     <span>
                       You have an active <strong>IR-1 Spouse Visa</strong> journey (
-                      <strong className="capitalize">{journeyTiers.ir1}</strong> plan). You can upgrade to a higher plan anytime.
+                      <strong className="capitalize">{journeyTiers.ir1}</strong> plan). You can
+                      upgrade to a higher plan anytime.
                     </span>
                   </div>
                   <div className="flex items-center gap-3">
@@ -1287,7 +1324,7 @@ function PricingContent() {
                         if (ir1Card) setVisa(ir1Card.code);
                         setIsChangingJourney(false);
                       }}
-                      className="inline-flex items-center gap-1 font-semibold text-[#0d7377] hover:underline cursor-pointer"
+                      className="inline-flex cursor-pointer items-center gap-1 font-semibold text-[#0d7377] hover:underline"
                     >
                       Upgrade IR-1 Plan →
                     </button>
@@ -1301,6 +1338,59 @@ function PricingContent() {
                   </div>
                 </div>
               )}
+
+              {/* Active IR-5 Notice (Upgrade or Add Parent) */}
+              {/* {hasActiveIr5 && (
+                <div className="mt-5 flex flex-col gap-2.5 rounded-2xl border border-teal-200/90 bg-teal-50/80 p-4 text-xs text-teal-900 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <CheckCircle2 className="h-4 w-4 shrink-0 text-teal-600" />
+                    <span>
+                      You have an active <strong>IR-5 Parents Visa</strong> journey (
+                      <strong className="capitalize">{journeyTiers.ir5}</strong> plan).
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {canUpgradeIr5 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const ir5Card = EXPLORER_CARDS.find(
+                            (c) => c.code.includes("IR-5") || c.slug === "ir-5"
+                          );
+                          if (ir5Card) setVisa(ir5Card.code);
+                          setIr5Action("upgrade");
+                          setIsChangingJourney(false);
+                        }}
+                        className="inline-flex items-center gap-1 font-semibold text-[#0d7377] hover:underline cursor-pointer"
+                      >
+                        Upgrade IR-5 Plan →
+                      </button>
+                    )}
+                    {canUpgradeIr5 && <span className="text-teal-300">|</span>}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const ir5Card = EXPLORER_CARDS.find(
+                          (c) => c.code.includes("IR-5") || c.slug === "ir-5"
+                        );
+                        if (ir5Card) setVisa(ir5Card.code);
+                        setIr5Action("add_candidate");
+                        setIsChangingJourney(false);
+                      }}
+                      className="inline-flex items-center gap-1 font-semibold text-[#0d7377] hover:underline cursor-pointer"
+                    >
+                      + Add Another Parent
+                    </button>
+                    <span className="text-teal-300">|</span>
+                    <Link
+                      href="/my-journeys"
+                      className="inline-flex items-center gap-1 text-teal-700 hover:underline"
+                    >
+                      My Journeys
+                    </Link>
+                  </div>
+                </div>
+              )} */}
 
               {/* Journey Cards */}
               <div className="mt-7 grid grid-cols-1 gap-5 md:grid-cols-3">
@@ -1321,6 +1411,7 @@ function PricingContent() {
                     card.code.includes("IR-1") ||
                     card.code.includes("CR-1") ||
                     card.slug === "ir-1";
+                  const isIr5Card = card.code.includes("IR-5") || card.slug === "ir-5";
 
                   return (
                     <div
@@ -1351,8 +1442,14 @@ function PricingContent() {
                       )}
 
                       {!isSelected && canUpgradeIr1 && isIr1Card && (
-                        <span className="absolute top-3 right-3 z-10 inline-flex items-center gap-1 rounded-full bg-emerald-100 border border-emerald-300 px-2.5 py-1 text-[10.5px] font-bold tracking-wide text-emerald-800 uppercase shadow-sm">
+                        <span className="absolute top-3 right-3 z-10 inline-flex items-center gap-1 rounded-full border border-emerald-300 bg-emerald-100 px-2.5 py-1 text-[10.5px] font-bold tracking-wide text-emerald-800 uppercase shadow-sm">
                           Upgrade Available
+                        </span>
+                      )}
+
+                      {!isSelected && hasActiveIr5 && isIr5Card && (
+                        <span className="absolute top-3 right-3 z-10 inline-flex items-center gap-1 rounded-full border border-teal-300 bg-teal-100 px-2.5 py-1 text-[10.5px] font-bold tracking-wide text-teal-800 uppercase shadow-sm">
+                          {canUpgradeIr5 ? "Upgrade or Add Parent" : "Active Plan"}
                         </span>
                       )}
                     </div>
@@ -1454,118 +1551,167 @@ function PricingContent() {
           PLAN CARDS — FULL WIDTH
           ═════════════════════════════════════════════════════════════════ */}
               <div className={`${W}`}>
-                {/* IR-5 Multi-Parent Selector & Eligibility Disclaimer */}
+                {/* IR-5 Multi-Parent Selector, Action Switcher & Eligibility Disclaimer */}
                 {isIr5 && (
                   <div className="mb-8 space-y-4">
-                    {/* Parent Selector Card */}
-                    <div className="border-border bg-card rounded-[22px] border p-5 shadow-sm sm:p-6">
-                      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#0d7377]/10 text-[#0d7377]">
-                              <Users className="h-4 w-4" />
-                            </span>
-                            <h3 className="text-foreground text-[17px] font-bold">
-                              {isAddingCandidate || hasActiveIr5
-                                ? "Add Additional Beneficiary Parent"
-                                : "Beneficiary Parents Selection"}
-                            </h3>
-                            <span className="rounded-full bg-[#0d7377]/10 px-2.5 py-0.5 text-[11px] font-semibold text-[#0d7377]">
-                              IR-5 Visa
-                            </span>
-                          </div>
-                          <p className="text-muted-foreground mt-1 text-[13px]">
-                            {isAddingCandidate || hasActiveIr5
-                              ? "You are adding another parent beneficiary to your IR-5 petition. Choose how many additional parents and select their plan below."
-                              : "How many parents are you petitioning for? Select biological, step, or adoptive parents."}
-                          </p>
-                        </div>
-
-                        {/* Counter and presets */}
-                        <div className="flex flex-wrap items-center gap-2">
-                          {[1, 2, 3, 4].map((count) => (
-                            <button
-                              key={count}
-                              type="button"
-                              onClick={() => {
-                                setParentCount(count);
-                                if (count <= 2) {
-                                  setIsEligibilityConfirmed(true);
-                                }
-                              }}
-                              className={`rounded-xl px-3.5 py-2 text-[13px] font-semibold transition-all ${
-                                parentCount === count
-                                  ? "bg-[#0d7377] text-white shadow-sm ring-2 ring-[#0d7377]/20"
-                                  : "border-border bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground border"
-                              }`}
-                            >
-                              {count} {count === 1 ? "Parent" : "Parents"}
-                            </button>
-                          ))}
-
-                          {/* Stepper for 5+ or precise adjusting */}
-                          <div className="border-border bg-muted/20 flex items-center rounded-xl border p-1">
-                            <button
-                              type="button"
-                              disabled={parentCount <= 1}
-                              onClick={() => {
-                                const next = Math.max(1, parentCount - 1);
-                                setParentCount(next);
-                                if (next <= 2) setIsEligibilityConfirmed(true);
-                              }}
-                              className="text-muted-foreground hover:bg-card hover:text-foreground flex h-8 w-8 items-center justify-center rounded-lg disabled:opacity-30 disabled:hover:bg-transparent"
-                              title="Decrease parent count"
-                            >
-                              <Minus className="h-3.5 w-3.5" />
-                            </button>
-                            <span className="text-foreground min-w-[42px] px-2 text-center text-[13px] font-bold">
-                              {parentCount}
-                            </span>
-                            <button
-                              type="button"
-                              disabled={parentCount >= 8}
-                              onClick={() => {
-                                const next = Math.min(8, parentCount + 1);
-                                setParentCount(next);
-                                if (next > 2 && parentCount <= 2) {
-                                  setIsEligibilityConfirmed(false);
-                                }
-                              }}
-                              className="text-muted-foreground hover:bg-card hover:text-foreground flex h-8 w-8 items-center justify-center rounded-lg disabled:opacity-30 disabled:hover:bg-transparent"
-                              title="Increase parent count"
-                            >
-                              <Plus className="h-3.5 w-3.5" />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Dynamic multiplier note */}
-                      <div className="border-border/60 text-muted-foreground mt-4 flex flex-wrap items-center justify-between gap-2 border-t pt-3 text-[12px]">
-                        <div className="flex items-center gap-1.5">
-                          <Heart className="h-3.5 w-3.5 text-[#0d7377]" />
-                          <span>
-                            {parentCount === 1 ? (
-                              "Petitioning for 1 parent. Standard single-journey pricing applies."
-                            ) : (
-                              <>
-                                Petitioning for{" "}
-                                <strong className="text-foreground">{parentCount} parents</strong> (
-                                {parentCount}x journey plan). Plan pricing adjusts automatically.
-                              </>
-                            )}
+                    {/* Action Switcher when user already has an active IR-5 journey */}
+                    {hasActiveIr5 && (
+                      <div className="flex flex-col justify-between gap-3 rounded-2xl border border-teal-200/90 bg-teal-50/70 p-3.5 sm:flex-row sm:items-center dark:border-teal-900/40 dark:bg-teal-950/20">
+                        <div className="flex items-center gap-2.5">
+                          <CheckCircle2 className="h-4 w-4 shrink-0 text-teal-600" />
+                          <span className="text-xs text-teal-900 dark:text-teal-200">
+                            Active IR-5 journey (
+                            <strong className="capitalize">{journeyTiers.ir5}</strong> plan).
                           </span>
                         </div>
-                        {parentCount > 2 && (
-                          <span className="font-medium text-amber-600 dark:text-amber-400">
-                            Requires step/adoptive parent eligibility confirmation
+
+                        {canUpgradeIr5 ? (
+                          <div className="bg-card border-border inline-flex rounded-xl border p-1 shadow-xs">
+                            <button
+                              type="button"
+                              onClick={() => setIr5Action("upgrade")}
+                              className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all ${
+                                ir5Action === "upgrade"
+                                  ? "bg-[#0d7377] text-white shadow-xs"
+                                  : "text-muted-foreground hover:text-foreground"
+                              }`}
+                            >
+                              <Zap className="h-3.5 w-3.5" />
+                              <span>Upgrade Existing Plan</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setIr5Action("add_candidate")}
+                              className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all ${
+                                ir5Action === "add_candidate"
+                                  ? "bg-[#0d7377] text-white shadow-xs"
+                                  : "text-muted-foreground hover:text-foreground"
+                              }`}
+                            >
+                              <Users className="h-3.5 w-3.5" />
+                              <span>Add Another Parent</span>
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="rounded-full bg-teal-100 px-2.5 py-0.5 text-[11px] font-semibold text-teal-800 dark:bg-teal-900/50 dark:text-teal-200">
+                            Highest Plan (Executive)
                           </span>
                         )}
                       </div>
-                    </div>
+                    )}
+
+                    {/* Parent Selector Card - only shown when adding a candidate or on initial purchase */}
+                    {!isUpgradingIr5 && (
+                      <div className="border-border bg-card rounded-[22px] border p-5 shadow-sm sm:p-6">
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#0d7377]/10 text-[#0d7377]">
+                                <Users className="h-4 w-4" />
+                              </span>
+                              <h3 className="text-foreground text-[17px] font-bold">
+                                {isAddingCandidate ||
+                                (hasActiveIr5 && ir5Action === "add_candidate")
+                                  ? "Add Additional Beneficiary Parent"
+                                  : "Beneficiary Parents Selection"}
+                              </h3>
+                              <span className="rounded-full bg-[#0d7377]/10 px-2.5 py-0.5 text-[11px] font-semibold text-[#0d7377]">
+                                IR-5 Visa
+                              </span>
+                            </div>
+                            <p className="text-muted-foreground mt-1 text-[13px]">
+                              {isAddingCandidate || (hasActiveIr5 && ir5Action === "add_candidate")
+                                ? "You are adding another parent beneficiary to your IR-5 petition. Choose how many additional parents and select their plan below."
+                                : "How many parents are you petitioning for? Select biological, step, or adoptive parents."}
+                            </p>
+                          </div>
+
+                          {/* Counter and presets */}
+                          <div className="flex flex-wrap items-center gap-2">
+                            {[1, 2, 3, 4].map((count) => (
+                              <button
+                                key={count}
+                                type="button"
+                                onClick={() => {
+                                  setParentCount(count);
+                                  if (count <= 2) {
+                                    setIsEligibilityConfirmed(true);
+                                  }
+                                }}
+                                className={`rounded-xl px-3.5 py-2 text-[13px] font-semibold transition-all ${
+                                  parentCount === count
+                                    ? "bg-[#0d7377] text-white shadow-sm ring-2 ring-[#0d7377]/20"
+                                    : "border-border bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground border"
+                                }`}
+                              >
+                                {count} {count === 1 ? "Parent" : "Parents"}
+                              </button>
+                            ))}
+
+                            {/* Stepper for 5+ or precise adjusting */}
+                            <div className="border-border bg-muted/20 flex items-center rounded-xl border p-1">
+                              <button
+                                type="button"
+                                disabled={parentCount <= 1}
+                                onClick={() => {
+                                  const next = Math.max(1, parentCount - 1);
+                                  setParentCount(next);
+                                  if (next <= 2) setIsEligibilityConfirmed(true);
+                                }}
+                                className="text-muted-foreground hover:bg-card hover:text-foreground flex h-8 w-8 items-center justify-center rounded-lg disabled:opacity-30 disabled:hover:bg-transparent"
+                                title="Decrease parent count"
+                              >
+                                <Minus className="h-3.5 w-3.5" />
+                              </button>
+                              <span className="text-foreground min-w-[42px] px-2 text-center text-[13px] font-bold">
+                                {parentCount}
+                              </span>
+                              <button
+                                type="button"
+                                disabled={parentCount >= 8}
+                                onClick={() => {
+                                  const next = Math.min(8, parentCount + 1);
+                                  setParentCount(next);
+                                  if (next > 2 && parentCount <= 2) {
+                                    setIsEligibilityConfirmed(false);
+                                  }
+                                }}
+                                className="text-muted-foreground hover:bg-card hover:text-foreground flex h-8 w-8 items-center justify-center rounded-lg disabled:opacity-30 disabled:hover:bg-transparent"
+                                title="Increase parent count"
+                              >
+                                <Plus className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Dynamic multiplier note */}
+                        <div className="border-border/60 text-muted-foreground mt-4 flex flex-wrap items-center justify-between gap-2 border-t pt-3 text-[12px]">
+                          <div className="flex items-center gap-1.5">
+                            <Heart className="h-3.5 w-3.5 text-[#0d7377]" />
+                            <span>
+                              {parentCount === 1 ? (
+                                "Petitioning for 1 parent. Standard single-journey pricing applies."
+                              ) : (
+                                <>
+                                  Petitioning for{" "}
+                                  <strong className="text-foreground">{parentCount} parents</strong>{" "}
+                                  ({parentCount}x journey plan). Plan pricing adjusts automatically.
+                                </>
+                              )}
+                            </span>
+                          </div>
+                          {parentCount > 2 && (
+                            <span className="font-medium text-amber-600 dark:text-amber-400">
+                              Requires step/adoptive parent eligibility confirmation
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
 
                     {/* Disclaimer when parentCount > 2 */}
-                    {parentCount > 2 && (
+                    {!isUpgradingIr5 && parentCount > 2 && (
                       <div
                         id="parent-eligibility-disclaimer"
                         className={`rounded-[22px] border p-5 transition-all duration-200 ${
@@ -1666,13 +1812,17 @@ function PricingContent() {
                   </div>
                 )}
 
-                {/* Single-Candidate / IR-1 Upgrade Banner */}
-                {!isMultiCandidate && !isIr5 && canUpgradeIr1 && (
+                {/* Single-Candidate / IR-1 & IR-5 Upgrade Banner */}
+                {((!isMultiCandidate && !isIr5 && canUpgradeIr1) || isUpgradingIr5) && (
                   <div className="mb-6 flex flex-col gap-2.5 rounded-2xl border border-emerald-200/90 bg-emerald-50/80 p-4 text-xs text-emerald-900 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-center gap-2.5">
-                      <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+                      <Zap className="h-4 w-4 shrink-0 text-emerald-600" />
                       <span>
-                        You are currently on the <strong className="capitalize">{journeyTiers.ir1}</strong> plan. Select a higher tier below to upgrade your IR-1 Spouse Visa journey. The prorated credit from your current plan is automatically deducted at checkout.
+                        You are currently on the{" "}
+                        <strong className="capitalize">{selectedJourneyTier}</strong> plan. Select a
+                        higher tier below to upgrade your {activeVisaCategory.label} journey. The
+                        prorated credit from your current plan is automatically deducted at
+                        checkout.
                       </span>
                     </div>
                   </div>
@@ -1697,14 +1847,16 @@ function PricingContent() {
 
                         const planRank = TIER_RANK[plan.id] ?? 0;
 
-                        const isCurrentPlan =
-                          !isMultiCandidate && !isIr5 && plan.id === selectedJourneyTier;
+                        const isUpgradingThisJourney =
+                          (!isMultiCandidate && !isIr5) || isUpgradingIr5;
 
-                        const isDowngrade =
-                          !isMultiCandidate && !isIr5 && planRank < activeTierRank;
+                        const isCurrentPlan =
+                          isUpgradingThisJourney && plan.id === selectedJourneyTier;
+
+                        const isDowngrade = isUpgradingThisJourney && planRank < activeTierRank;
 
                         const isUpgrade =
-                          !isMultiCandidate && !isIr5 && activeTierRank > 0 && planRank > activeTierRank;
+                          isUpgradingThisJourney && activeTierRank > 0 && planRank > activeTierRank;
 
                         return (
                           <article

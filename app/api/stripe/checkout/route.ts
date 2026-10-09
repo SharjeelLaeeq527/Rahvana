@@ -292,13 +292,21 @@ export async function POST(request: NextRequest) {
     // *difference* while being provisioned the full higher tier. So it is server-derived.
     const isMultiCandidate =
       isMultiCandidateCategory(effectiveVisaCategory) || selectedJourneyType === "IR5";
-    const isAddCandidateRequest = action === "add_candidate" || isMultiCandidate;
+    const isUpgradeAction = action === "upgrade";
+    const isAddCandidateAction = action === "add_candidate";
 
-    // For single-candidate journeys (e.g. IR-1), serverIsUpgrade handles proration and replaces old sub.
-    // For multi-candidate journeys (IR-5, IR-2, etc.), each candidate is an independent petition with their own subscription,
-    // so new candidate purchases must not retire existing candidate subscriptions or trigger proration.
-    const serverIsUpgrade = !isMultiCandidate && hasLivePlan && effectiveCurrentRank > 0;
+    // When upgrading (either explicitly requested via action="upgrade" or a single-candidate upgrade),
+    // we want proration, retiring the old sub, and guarding against downgrade/duplicate.
+    const serverIsUpgrade =
+      hasLivePlan &&
+      effectiveCurrentRank > 0 &&
+      (isUpgradeAction || (!isMultiCandidate && !isAddCandidateAction));
+
     const serverCurrentTier = serverIsUpgrade ? effectiveCurrentTier : undefined;
+
+    // isAddCandidateRequest indicates adding a new candidate to a roster or initial multi-candidate setup
+    const isAddCandidateRequest =
+      !serverIsUpgrade && (isAddCandidateAction || isMultiCandidate);
 
     // ── Server-side downgrade + duplicate-purchase guard (Stripe-aware) ──────
     // Rejects two scenarios:
@@ -306,8 +314,8 @@ export async function POST(request: NextRequest) {
     //   (b) target tier == current tier  → duplicate purchase (already owned/live)
     // Blocks even when the DB status is stale, because `hasLivePlan` also trusts
     // Stripe. Upgrades (target > current) fall through and are allowed.
-    // NOTE: Multi-candidate categories (IR-5, IR-2, etc.) allow purchasing additional candidates at any tier!
-    if (productTier && !isMultiCandidate) {
+    // NOTE: Multi-candidate categories allow purchasing additional candidates at any tier!
+    if (productTier && (!isMultiCandidate || isUpgradeAction)) {
       const targetRank = TIER_RANK[productTier.toLowerCase()] ?? 0;
 
       if (hasLivePlan && targetRank < effectiveCurrentRank) {
