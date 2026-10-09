@@ -15,6 +15,7 @@ import {
   ENTITLEMENTS,
   PlanTier,
 } from "@/lib/entitlements/config";
+import { useToast } from "@/app/components/shared/ToastProvider";
 
 interface UpgradeModalProps {
   feature: string;
@@ -276,6 +277,7 @@ const MISSING_OUT: Record<string, string> = {
 };
 
 export function UpgradeModal({ feature, onClose, onConfirm, interviewMode }: UpgradeModalProps) {
+  const { showToast } = useToast();
   const { tier: currentTier } = usePlan();
   const e = getEntitlement(feature, currentTier);
   const detailsHref = getDetailsHref(feature);
@@ -314,9 +316,10 @@ export function UpgradeModal({ feature, onClose, onConfirm, interviewMode }: Upg
     }
 
     if (!user) {
-      console.error("Checkout: no user logged in");
+      showToast("Please sign in to continue with checkout.", "error");
       return;
     }
+
     setProcessing(true);
 
     try {
@@ -329,43 +332,74 @@ export function UpgradeModal({ feature, onClose, onConfirm, interviewMode }: Upg
         addons: action === "addon" ? [target] : undefined,
       };
 
-      console.log("[Checkout] Sending payload:", JSON.stringify(payload));
-
       const response = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
-      const data = await response.json();
-      console.log("[Checkout] API response:", data);
+      // Handle non-JSON responses safely.
+      const data = await response.json().catch(() => null);
 
-      if (data.url) {
+      if (!response.ok) {
+        showToast(
+          data?.error || data?.message || "We couldn't start checkout. Please try again.",
+          "error"
+        );
+        return;
+      }
+
+      if (data?.url) {
         window.location.href = data.url;
-      } else if (data?.portal) {
-        // Past-due / recovery: send the user to the billing portal to fix their
-        // existing plan instead of buying a duplicate subscription.
+        return;
+      }
+
+      // Past-due / recovery: redirect to the billing portal if requested.
+      if (data?.portal) {
         try {
           const portalRes = await fetch("/api/stripe/portal", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userId: user?.id }),
+            body: JSON.stringify({ userId: user.id }),
           });
-          const portalData = await portalRes.json();
-          if (portalData?.url) {
-            window.location.href = portalData.url;
+
+          const portalData = await portalRes.json().catch(() => null);
+
+          if (!portalRes.ok || !portalData?.url) {
+            showToast(
+              portalData?.error ||
+                portalData?.message ||
+                "We couldn't open your billing portal. Please try again.",
+              "error"
+            );
             return;
           }
-        } catch (portalErr) {
-          console.error("[Checkout] Portal redirect failed:", portalErr);
+
+          window.location.href = portalData.url;
+          return;
+        } catch {
+          showToast(
+            "Unable to connect to the billing portal. Please check your connection and try again.",
+            "error"
+          );
+          return;
         }
-        setProcessing(false);
-      } else {
-        console.error("[Checkout] No URL in response:", data);
-        setProcessing(false);
       }
+
+      showToast(
+        data?.error ||
+          data?.message ||
+          "Checkout couldn't be started because no payment link was returned.",
+        "error"
+      );
     } catch (error) {
       console.error("[Checkout] Error:", error);
+
+      showToast(
+        "Something went wrong while starting checkout. Please check your internet connection and try again.",
+        "error"
+      );
+    } finally {
       setProcessing(false);
     }
   };
@@ -455,7 +489,7 @@ export function UpgradeModal({ feature, onClose, onConfirm, interviewMode }: Upg
     const modal = (
       <div
         className="fixed inset-0 flex items-end justify-center sm:items-center sm:p-4"
-        style={{ zIndex: 2147483647 }}
+        style={{ zIndex: 2147483000 }}
       >
         <div
           className="pointer-events-auto absolute inset-0 bg-black/40 backdrop-blur-sm"
@@ -740,7 +774,7 @@ export function UpgradeModal({ feature, onClose, onConfirm, interviewMode }: Upg
   const modal = (
     <div
       className="fixed inset-0 flex items-end justify-center sm:items-center sm:p-4"
-      style={{ zIndex: 2147483647 }}
+      style={{ zIndex: 2147483000 }}
     >
       {/* Backdrop */}
       <div
