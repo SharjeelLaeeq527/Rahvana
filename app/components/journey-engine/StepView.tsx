@@ -165,8 +165,6 @@ import { SafeHtml } from "../shared/SafeHTML";
 // Medical / PCC journey-module wiring (mirrors journey-spouse/StepView).
 import { MedicalBookingModule } from "./components/MedicalBookingModule";
 import { PccFilingModule } from "./components/PccFilingModule";
-import MedicalAppointmentTool from "./components/MedicalAppointmentTool";
-import PccFilingTool from "./components/PccFilingTool";
 import {
   isJourneyRequestLocked,
   isPccRequestLocked,
@@ -284,6 +282,9 @@ interface StepViewProps {
   onBack: () => void;
   onSelectChapter?: (chapterIdx: number) => void;
   onSelectStep?: (chapterIdx: number, stepIdx: number) => void;
+  /** Launch a service/tool through the shared roadmap toolbox (breadcrumb chrome).
+   *  The optional second arg is the step key to auto-complete when the service is saved. */
+  onLaunchTool?: (toolKey: string, autoCompleteStepKey?: string | null) => void;
 }
 
 export const StepView: React.FC<StepViewProps> = ({
@@ -294,6 +295,7 @@ export const StepView: React.FC<StepViewProps> = ({
   onBack,
   onSelectChapter,
   onSelectStep,
+  onLaunchTool,
 }) => {
   const [guideOverlayUrl, setGuideOverlayUrl] = useState<string | null>(null);
   const [toolOverlayHref, setToolOverlayHref] = useState<string | null>(null);
@@ -1925,7 +1927,7 @@ export const StepView: React.FC<StepViewProps> = ({
                   onOpen={() => {
                     if (locked) return; // one active booking per journey
                     if (!stepEntitlement.guard()) return; // journey-tier access gate (no credits)
-                    setIsMedicalBookingOpen(true);
+                    onLaunchTool?.("medical_appointment", sId);
                   }}
                 />
               );
@@ -1950,7 +1952,7 @@ export const StepView: React.FC<StepViewProps> = ({
                   onOpen={() => {
                     if (locked) return; // one active PCC application per journey
                     if (!stepEntitlement.guard()) return;
-                    setIsPccFilingOpen(true);
+                    onLaunchTool?.("police_verification", sId);
                   }}
                   onMarkReceived={() => {
                     if (!record) return;
@@ -4266,55 +4268,11 @@ export const StepView: React.FC<StepViewProps> = ({
         }}
       />
 
-      {/* Medical Appointment Booking Tool Overlay (journey-scoped). */}
-      <MedicalAppointmentTool
-        isOpen={isMedicalBookingOpen}
-        onClose={() => {
-          setIsMedicalBookingOpen(false);
-          serviceStatus.refetch(); // pick up any create/delete changes made while open
-        }}
-        mode="journey"
-        journeyTier={state?.subscriptionTier ?? (state as any)?.subscription_tier}
-        journeyContext={{
-          journeySlug: toolJourneySlug,
-          journeyCategory: toolJourneyCategory,
-          candidateId: (state as any).candidateId || "candidate-1",
-          backendId: (state as any).backendId || null,
-          subscriptionTier: state?.subscriptionTier ?? (state as any)?.subscription_tier,
-        }}
-        existingRequests={serviceStatus.medicalRows}
-        onSave={(record) => {
-          actions.updateMetadata({ medicalBooking: record });
-          setIsMedicalBookingOpen(false);
-          serviceStatus.refetch();
-          if (!isCompleted) actions.toggleComplete(sId); // sId = current step key ("step_3_1")
-        }}
-      />
-
-      {/* Police Character Certificate Filing Tool Overlay (journey-scoped). */}
-      <PccFilingTool
-        isOpen={isPccFilingOpen}
-        onClose={() => {
-          setIsPccFilingOpen(false);
-          serviceStatus.refetch();
-        }}
-        mode="journey"
-        journeyTier={state?.subscriptionTier ?? (state as any)?.subscription_tier}
-        journeyContext={{
-          journeySlug: toolJourneySlug,
-          journeyCategory: toolJourneyCategory,
-          candidateId: (state as any).candidateId || "candidate-1",
-          backendId: (state as any).backendId || null,
-          subscriptionTier: state?.subscriptionTier ?? (state as any)?.subscription_tier,
-        }}
-        existingRequests={serviceStatus.pccRows}
-        onSave={(record) => {
-          actions.updateMetadata({ pccFiling: record });
-          setIsPccFilingOpen(false);
-          serviceStatus.refetch();
-          if (!isCompleted) actions.toggleComplete(sId); // sId = "step_3_3"
-        }}
-      />
+      {/* Medical / PCC now launch through the shared roadmap toolbox (onLaunchTool →
+          RoadmapLayoutEngine.activeToolKey → EmbeddedToolContainer) so they render inline
+          under the RoadmapLayoutEngine breadcrumb, consistent with Document Translation.
+          The service record is persisted and the step auto-completed by
+          EmbeddedToolContainer.autoCompleteStepKey on save. */}
 
       {/* Global Modals */}
       <CredentialFormModal

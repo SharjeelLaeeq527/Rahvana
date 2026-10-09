@@ -6,7 +6,6 @@ import { createPortal } from "react-dom";
 import { X, Check, Zap, ShoppingCart, Loader2, BookOpen, Mic } from "lucide-react";
 import { usePlan } from "@/app/context/PlanContext";
 import { useAuth } from "@/app/context/AuthContext";
-import { useCandidate } from "@/app/context/CandidateContext";
 import { getDetailsHref } from "@/lib/entitlements/resourceLinks";
 import {
   getEntitlement,
@@ -89,10 +88,8 @@ const TIER_HIGHLIGHTS: Record<PlanTier, string[]> = {
     "Document vault, upload & auto-extract",
     "Tracker & reminders (DQ, interview, case status)",
     "Smart Form Filler (I-130 / I-130A)",
-    "Case Strength Analyzer",
     "Sponsorship Calculator",
     "Rapid Fire interview prep",
-    "Medical appointment booking via Rahvana",
     "Civil document guides",
   ],
   executive: [
@@ -101,8 +98,9 @@ const TIER_HIGHLIGHTS: Record<PlanTier, string[]> = {
     "Mock interview sessions",
     // "Expert case review, 2 sessions included",
     "Expert consultation calls, 2 sessions included",
-    "PCC filing assistance (Sindh only)",
+    "PCC filing assistance (Sindh only), unlimited",
     "Document translation, unlimited",
+    "Medical Booking, unlimited",
   ],
 };
 
@@ -280,7 +278,6 @@ const MISSING_OUT: Record<string, string> = {
 export function UpgradeModal({ feature, onClose, onConfirm, interviewMode }: UpgradeModalProps) {
   const { showToast } = useToast();
   const { tier: currentTier } = usePlan();
-  const { activeCandidate } = useCandidate();
   const e = getEntitlement(feature, currentTier);
   const detailsHref = getDetailsHref(feature);
 
@@ -332,7 +329,6 @@ export function UpgradeModal({ feature, onClose, onConfirm, interviewMode }: Upg
         currentTier: currentTier !== "free" ? currentTier : undefined,
         productTier: action === "upgrade" ? target : undefined,
         addons: action === "addon" ? [target] : undefined,
-        visaCategory: activeCandidate?.visaCategory || undefined,
       };
 
       const response = await fetch("/api/stripe/checkout", {

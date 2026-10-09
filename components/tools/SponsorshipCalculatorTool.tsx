@@ -254,6 +254,10 @@ export interface SponsorshipCalculatorToolProps extends ToolModeProps {
     visaCategory?: string;
   };
   journeyTier?: string | null;
+  /** Journey chrome: when true the tool renders inline under the roadmap breadcrumb
+   *  (no fixed overlay, no own topbar, no body scroll-lock) — the same pattern as
+   *  Medical / PCC / Consultation. Passed by EmbeddedToolContainer for toolbox launches. */
+  embedded?: boolean;
 }
 
 const getDefaultFormData = (initial?: any): SponsorshipFormData => ({
@@ -290,6 +294,7 @@ export default function SponsorshipCalculatorTool({
   onProgressChange,
   lockState = false,
   candidateInfo,
+  embedded,
   mode: propMode,
   journeyContext: propContext,
   journeyTier: propJourneyTier,
@@ -395,7 +400,7 @@ export default function SponsorshipCalculatorTool({
   const [expandedOptions, setExpandedOptions] = useState<Record<string, boolean>>({});
 
   React.useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !embedded) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
@@ -403,7 +408,7 @@ export default function SponsorshipCalculatorTool({
     return () => {
       document.body.style.overflow = "";
     };
-  }, [isOpen]);
+  }, [isOpen, embedded]);
 
   const prevInitialDataRef = React.useRef<string>(JSON.stringify(initialData || {}));
   const prevIsOpenRef = React.useRef<boolean>(isOpen);
@@ -584,8 +589,15 @@ export default function SponsorshipCalculatorTool({
   };
 
   return (
-    <div className="fixed inset-0 bg-white z-[150] flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
-      {/* Topbar */}
+    <div
+      className={
+        embedded
+          ? "flex w-full flex-col font-sans"
+          : "fixed inset-0 bg-white z-[150] flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans"
+      }
+    >
+      {/* Topbar (overlay / standalone only — journey uses the roadmap breadcrumb) */}
+      {!embedded && (
       <div className="flex items-center h-[64px] border-b border-[#d0e4f7] px-6 gap-4 shrink-0 bg-white">
         <button
           onClick={onClose}
@@ -628,9 +640,10 @@ export default function SponsorshipCalculatorTool({
           mode="icon"
         />
       </div>
+      )}
 
       {/* Body */}
-      <div className="flex-1 overflow-y-auto bg-white p-[48px_24px_40px] flex flex-col items-center">
+      <div className={embedded ? "flex flex-col items-center p-[32px_24px_40px]" : "flex-1 overflow-y-auto bg-white p-[48px_24px_40px] flex flex-col items-center"}>
         <div className="w-full max-w-[560px] flex flex-col">
           {(() => {
             const step = stepIdx;

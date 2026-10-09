@@ -6,9 +6,22 @@ import { useJourneyEnvironment } from "@/app/context/JourneyEnvironmentContext";
 import { useCandidate } from "@/app/context/CandidateContext";
 import { usePlan } from "@/app/context/PlanContext";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
+import {
+  isJourneyRequestLocked,
+  isPccRequestLocked,
+  isConsultationRequestLocked,
+  pccExpiryDate,
+  pccRenewalDate,
+  type JourneyServiceRecord,
+} from "@/lib/journey/toolModeGuards";
 import { getEffectiveDocDef } from "@/app/components/journey-engine/StepView";
 import { DocActionModal } from "./components/DocActionModal";
 import { DocumentUploadModal } from "@/app/components/document-vault/DocumentUploadModal";
+// Consultation is opened directly from the journey Services toolbox and must appear
+// instantly as a full-screen overlay (no Suspense loading flash), so it is statically
+// imported here rather than React.lazy — mirroring how the step-based Medical/PCC
+// overlays mount their tools.
+import BookConsultationTool from "@/components/tools/BookConsultationTool";
 
 // Lazy-load mode-aware tool components
 const SponsorshipCalculatorTool = React.lazy(
@@ -69,6 +82,10 @@ interface EmbeddedToolContainerProps {
   state?: unknown;
   actions?: unknown;
   journeyTier?: string;
+  /** When the tool was launched from a specific roadmap step (e.g. the Medical/PCC
+   *  module cards), completing the service should also tick that step off. Passed by
+   *  RoadmapLayoutEngine when a step card launches a tool via the shared breadcrumb. */
+  autoCompleteStepKey?: string | null;
 }
 
 function ToolSkeleton() {
@@ -290,7 +307,7 @@ function JourneyVisaFormsEmbeddedTool({
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-2 sm:px-4">
       {/* Form Picker Tabs */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1">
-        <span className="text-xs font-bold text-slate-500 uppercase tracking-wider shrink-0 mr-1">
+        <span className="mr-1 shrink-0 text-xs font-bold tracking-wider text-slate-500 uppercase">
           Visa Form:
         </span>
         {availableForms.map((form) => {
@@ -299,10 +316,10 @@ function JourneyVisaFormsEmbeddedTool({
             <button
               key={form.code}
               onClick={() => setSelectedForm(form.code)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
+              className={`shrink-0 cursor-pointer rounded-xl px-3 py-1.5 text-xs font-bold transition-all ${
                 isSelected
                   ? "bg-[#0d7377] text-white shadow-xs"
-                  : "bg-white border border-slate-200 text-slate-700 hover:border-teal-300 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200"
+                  : "border border-slate-200 bg-white text-slate-700 hover:border-teal-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
               }`}
               title={form.title}
             >
@@ -312,7 +329,7 @@ function JourneyVisaFormsEmbeddedTool({
         })}
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-xs dark:border-slate-800 dark:bg-slate-900">
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
         <MultiStepForm
           key={selectedForm}
           formCode={selectedForm}
@@ -331,12 +348,6 @@ import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { useJourneyPlan } from "@/app/context/useJourneyPlan";
 import { TOOL_FEATURE_MAP } from "@/lib/constants/journey-app-groups";
 import { useJourneyServiceStatus } from "@/lib/journey/useJourneyServiceStatus";
-import {
-  isJourneyRequestLocked,
-  isPccRequestLocked,
-  pccExpiryDate,
-  JourneyServiceRecord,
-} from "@/lib/journey/toolModeGuards";
 import { Lock, ArrowRight } from "lucide-react";
 
 function LockedToolGate({
@@ -400,6 +411,7 @@ export function EmbeddedToolContainer({
   journeyTier = "free",
   data,
   onClose,
+  autoCompleteStepKey,
 }: EmbeddedToolContainerProps) {
   const { journeySlug, candidateId } = useJourneyEnvironment();
   const { activeCandidate } = useCandidate();
@@ -458,26 +470,36 @@ export function EmbeddedToolContainer({
   // is still active (only fetched when one of those tools is open).
   const isMedicalTool = toolKey === "medical_appointment";
   const isPccTool = toolKey === "police_verification";
-  const isServiceTool = isMedicalTool || isPccTool;
+  const isConsultationTool = toolKey === "expert_consultation";
+  const isServiceTool = isMedicalTool || isPccTool || isConsultationTool;
 
   const serviceStatus = useJourneyServiceStatus({
     journeySlug: resolvedSlug,
     candidateId: resolvedCandidateId,
     medicalMetadata: (resolvedState?.metadata?.medicalBooking as JourneyServiceRecord) ?? null,
     pccMetadata: (resolvedState?.metadata?.pccFiling as JourneyServiceRecord) ?? null,
+    consultationMetadata: resolvedState?.metadata?.consultationBooking as
+      JourneyServiceRecord | null | undefined,
     updateMetadata: (actions as { updateMetadata?: (updates: Record<string, unknown>) => void })
       ?.updateMetadata,
     enabled: isServiceTool,
   });
 
   // Medical: locked until the scheduled appointment date passes. PCC: locked while
-  // in progress, then for the 6-month validity window after receipt.
+  // in progress, then for the 4-month renewal margin after receipt (a two-month buffer
+  // inside the certificate's true 6-month validity).
   // The tool intro uses `loading` to render a neutral "Checking…" placeholder,
   // then swaps to either the amber lock banner (locked=true) or the CTA (locked=false).
   const serviceLoading = serviceStatus.loading;
   const medicalLocked = isJourneyRequestLocked(serviceStatus.medicalRecord);
   const pccLocked = isPccRequestLocked(serviceStatus.pccRecord);
   const pccValidUntil = pccExpiryDate(serviceStatus.pccRecord);
+  const pccRenewal = pccRenewalDate(serviceStatus.pccRecord);
+
+  const consultationLocked = isConsultationRequestLocked(serviceStatus.consultationRecord);
+  const consultationLockHint = serviceStatus.consultationRecord?.referenceDate
+    ? `A consultation is already scheduled for ${serviceStatus.consultationRecord.referenceDate}. You can book another once it takes place.`
+    : "You already have an active consultation. You can book another once its session takes place.";
 
   const medicalLockHint = serviceStatus.medicalRecord?.referenceDate
     ? `An appointment is already scheduled for ${serviceStatus.medicalRecord.referenceDate}. You can book another once that date has passed.`
@@ -485,14 +507,29 @@ export function EmbeddedToolContainer({
 
   const pccLockHint =
     serviceStatus.pccRecord?.status === "received"
-      ? `Your certificate is valid${pccValidUntil ? ` until ${pccValidUntil}` : ""} (6 months from receipt). You can file a new request after it expires.`
-      : "Your PCC application is still in progress. You can file another once you receive it and its 6-month validity passes.";
+      ? `Your certificate is valid until ${pccValidUntil ?? "its expiry"}. You can file your next request${pccRenewal ? ` from ${pccRenewal}` : ""} — we open renewals two months early so there is no gap.`
+      : "Your PCC application is still in progress. You can file another once you receive it and the lock period ends.";
 
   // Persist the newly-created request to journey metadata, then refresh the card list.
-  const saveServiceRecord = (key: "medicalBooking" | "pccFiling", record: unknown) => {
+  const saveServiceRecord = (
+    key: "medicalBooking" | "pccFiling" | "consultationBooking",
+    record: unknown
+  ) => {
     (actions as { updateMetadata?: (u: Record<string, unknown>) => void })?.updateMetadata?.({
       [key]: record,
     });
+    // When launched from a roadmap step, mark that step complete on successful save.
+    // Guard against re-toggling an already-complete step off (toggleComplete is a toggle).
+    if (autoCompleteStepKey) {
+      const alreadyComplete = (
+        state as { completedSteps?: Set<string> } | undefined
+      )?.completedSteps?.has?.(autoCompleteStepKey);
+      if (!alreadyComplete) {
+        (actions as { toggleComplete?: (id: string) => void })?.toggleComplete?.(
+          autoCompleteStepKey
+        );
+      }
+    }
     serviceStatus.refetch();
     onClose?.();
   };
@@ -521,6 +558,7 @@ export function EmbeddedToolContainer({
           <SponsorshipCalculatorTool
             isOpen={true}
             onClose={onClose}
+            embedded
             mode="journey"
             journeyContext={journeyContext}
             journeyTier={effectiveJourneyTier}
@@ -558,6 +596,7 @@ export function EmbeddedToolContainer({
           <MedicalAppointmentTool
             isOpen={true}
             onClose={onClose}
+            embedded
             mode="journey"
             journeyContext={journeyContext}
             journeyTier={effectiveJourneyTier}
@@ -575,6 +614,7 @@ export function EmbeddedToolContainer({
           <PccFilingTool
             isOpen={true}
             onClose={onClose}
+            embedded
             mode="journey"
             journeyContext={journeyContext}
             journeyTier={effectiveJourneyTier}
@@ -623,30 +663,22 @@ export function EmbeddedToolContainer({
 
       case "expert_consultation":
         return (
-          <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-xs sm:p-12 dark:border-slate-800 dark:bg-slate-900">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400">
-              <MessageSquare className="h-8 w-8" />
-            </div>
-            <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-amber-500/20 bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
-              <span>Journey Service</span>
-            </div>
-            <h3 className="text-xl font-bold text-slate-900 sm:text-2xl dark:text-slate-100">
-              1-on-1 Expert Consultation
-            </h3>
-            <p className="mx-auto mt-2 max-w-md text-sm text-slate-600 dark:text-slate-400">
-              Schedule a private strategy session with a dedicated Rahvana immigration consultant to
-              review your case documents and interview preparation.
-            </p>
-            <div className="mt-6">
-              <button
-                onClick={() => window.open("/expert-consultation", "_blank")}
-                className="inline-flex items-center gap-2 rounded-xl bg-[#0d7377] px-6 py-3 text-sm font-bold text-white shadow-md transition-all hover:bg-[#095457] hover:shadow-lg active:scale-98"
-              >
-                <span>Book Consultation Session</span>
-                <ArrowRight className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
+          <BookConsultationTool
+            isOpen={true}
+            onClose={onClose}
+            embedded
+            mode="journey"
+            journeyContext={journeyContext}
+            journeyTier={effectiveJourneyTier}
+            existingRequests={serviceStatus.consultationRows}
+            statusLoading={serviceLoading}
+            locked={consultationLocked}
+            lockHint={consultationLockHint}
+            initialData={
+              (resolvedState?.metadata?.consultationBooking as Record<string, unknown>) || {}
+            }
+            onSave={(record) => saveServiceRecord("consultationBooking", record)}
+          />
         );
 
       case "pdf_toolkit":

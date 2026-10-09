@@ -29,14 +29,23 @@ export function isJourneyRequestLocked(record?: JourneyServiceRecord | null): bo
   return d.getTime() >= today.getTime(); // date is today or in the future → locked
 }
 
-/** Number of months a collected Police Character Certificate stays valid. */
+/** Number of months a collected Police Character Certificate stays legally valid. */
 export const PCC_VALIDITY_MONTHS = 6;
+
+/**
+ * Re-request lock window after a PCC is received. Shorter than the certificate's
+ * true validity ({@link PCC_VALIDITY_MONTHS}) so the journey unlocks a renewal two
+ * months early — a safety margin so a fresh certificate is ready before the old one
+ * actually expires.
+ */
+export const PCC_LOCK_MONTHS = 4;
 
 /**
  * PCC re-request lock. A journey keeps one active PCC application at a time:
  * - while the certificate is still pending (`status !== "received"`) it stays locked;
- * - once received, it stays locked for {@link PCC_VALIDITY_MONTHS} months from the
- *   received date (a PCC is valid for six months), then unlocks for a fresh application.
+ * - once received, it stays locked for {@link PCC_LOCK_MONTHS} months from the
+ *   received date (a 4-month margin inside the 6-month validity window), then
+ *   unlocks for a fresh application.
  */
 export function isPccRequestLocked(record?: JourneyServiceRecord | null): boolean {
   if (!record) return false;
@@ -46,7 +55,7 @@ export function isPccRequestLocked(record?: JourneyServiceRecord | null): boolea
   const received = new Date(base);
   if (Number.isNaN(received.getTime())) return true;
   const expiry = new Date(received);
-  expiry.setMonth(expiry.getMonth() + PCC_VALIDITY_MONTHS);
+  expiry.setMonth(expiry.getMonth() + PCC_LOCK_MONTHS);
   return expiry.getTime() > Date.now();
 }
 
@@ -60,4 +69,38 @@ export function pccExpiryDate(record?: JourneyServiceRecord | null): string | un
   const expiry = new Date(received);
   expiry.setMonth(expiry.getMonth() + PCC_VALIDITY_MONTHS);
   return expiry.toISOString().slice(0, 10);
+}
+
+/**
+ * ISO date (YYYY-MM-DD) on which a received PCC unlocks a renewal — earlier than the
+ * true expiry by design (the {@link PCC_LOCK_MONTHS} margin). Undefined if unknown.
+ */
+export function pccRenewalDate(record?: JourneyServiceRecord | null): string | undefined {
+  if (!record || record.status !== "received") return undefined;
+  const base = record.receivedAt || record.referenceDate;
+  if (!base) return undefined;
+  const received = new Date(base);
+  if (Number.isNaN(received.getTime())) return undefined;
+  const unlock = new Date(received);
+  unlock.setMonth(unlock.getMonth() + PCC_LOCK_MONTHS);
+  return unlock.toISOString().slice(0, 10);
+}
+
+/**
+ * Consultation re-request lock. Unlike Medical (date-only, midnight comparison) a
+ * consultation slot is a full ISO datetime — with the midnight rule a session that
+ * ended at 10:00 would still block rebooking until 23:59. Cancelled / rejected
+ * sessions never lock.
+ */
+export function isConsultationRequestLocked(record?: JourneyServiceRecord | null): boolean {
+  if (!record) return false;
+  if (
+    record.status === "canceled" ||
+    record.status === "cancelled" ||
+    record.status === "rejected"
+  ) {
+    return false;
+  }
+  if (!record.referenceDate) return true; // no slot known → stay locked until cleared
+  return new Date(record.referenceDate).getTime() >= Date.now(); // full timestamp compare
 }

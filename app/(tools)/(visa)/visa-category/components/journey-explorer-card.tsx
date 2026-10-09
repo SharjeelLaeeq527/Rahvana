@@ -8,9 +8,11 @@ import type { ExplorerJourneyCard as ExplorerJourneyCardType } from "../data/jou
 export function ExplorerJourneyCard({
   card,
   onSelect,
+  showStartJourney = false,
 }: {
   card: ExplorerJourneyCardType;
   onSelect?: () => void;
+  showStartJourney?: boolean;
 }) {
   const isLive = card.status === "Live" && card.href;
 
@@ -54,22 +56,35 @@ export function ExplorerJourneyCard({
 
       <div className="mt-auto p-5">
         {isLive && card.href ? (
-          <div className="flex flex-row sm:flex-col xl:flex-row items-center justify-between gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row">
             {/* Learn More */}
             <Link
               href={card.href}
-              className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-[var(--rahvana-primary)] px-5 py-3 text-sm font-semibold text-white transition duration-200 hover:-translate-y-0.5 hover:bg-[var(--rahvana-primary-dark)]"
+              className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-[var(--rahvana-primary)] px-5 py-3 text-xs font-semibold text-white transition duration-200 hover:-translate-y-0.5 hover:bg-[var(--rahvana-primary-dark)]"
             >
-              Learn More
+              Explore Journey
               <ArrowRight className="h-4 w-4" />
             </Link>
+
+            {/* Start Journey — Explore page only */}
+            {showStartJourney && (
+              <Link
+                href={
+                  card.code === "IR-5" ? "/visa-category/ir5-journey" : "/visa-category/ir1-journey"
+                }
+                className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-[var(--rahvana-primary)] bg-white px-5 py-3 text-xs font-semibold text-[var(--rahvana-primary)] transition duration-200 hover:-translate-y-0.5 hover:bg-[var(--rahvana-primary-pale)]"
+              >
+                Start Journey
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            )}
 
             {/* Select Journey */}
             {onSelect && (
               <button
                 type="button"
                 onClick={onSelect}
-                className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-[var(--rv-line)] bg-white px-5 py-3 text-sm font-semibold text-[var(--rv-navy)] transition duration-200 hover:-translate-y-0.5 hover:bg-[var(--rv-sky)] cursor-pointer"
+                className="inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full border border-[var(--rv-line)] bg-white px-5 py-3 text-xs font-semibold text-[var(--rv-navy)] transition duration-200 hover:-translate-y-0.5 hover:bg-[var(--rv-sky)]"
               >
                 Pick Journey
                 <ArrowRight className="h-4 w-4" />

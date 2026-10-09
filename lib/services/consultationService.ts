@@ -136,6 +136,10 @@ export const consultationService = {
       payment_status: bookingPaymentStatus,
       payment_id: bookingData.payment_id || null,
       user_id: bookingData.user_id || null,
+      // Journey-scope tagging
+      source: bookingData.source ?? "standalone",
+      journey_slug: bookingData.journey_slug ?? null,
+      candidate_id: bookingData.candidate_id ?? null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Expires in 24 hours if not approved

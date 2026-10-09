@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, Fragment } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -301,6 +301,7 @@ function PoliceApplyContent({
   locked,
   lockHint,
   statusLoading,
+  embedded,
   mode: propMode,
   journeyContext: propContext,
   journeyTier: propJourneyTier,
@@ -973,13 +974,13 @@ function PoliceApplyContent({
 
   // Lock background scroll while the journey overlay is open (mirrors the Sponsorship overlay).
   useEffect(() => {
-    if (isJourney && isOpen) {
+    if (isJourney && isOpen && !embedded) {
       document.body.style.overflow = "hidden";
       return () => {
         document.body.style.overflow = "";
       };
     }
-  }, [isJourney, isOpen]);
+  }, [isJourney, isOpen, embedded]);
 
   // Each time the journey overlay opens, show the intro screen first.
   useEffect(() => {
@@ -1001,26 +1002,34 @@ function PoliceApplyContent({
   const showIntro = isJourney && !started && currentStep < 5;
   if (showIntro) {
     return (
-      <div className="animate-in slide-in-from-bottom-[18px] fixed inset-0 z-[150] overflow-y-auto bg-white font-sans duration-[0.28s] ease-in-out">
-        <div className="sticky top-0 z-10 flex h-[64px] items-center gap-3 border-b border-[#d0e4f7] bg-white px-4 sm:gap-4 sm:px-6">
-          <button
-            onClick={onClose}
-            aria-label="Close"
-            className="hover:bg-primary/10 focus:ring-primary flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border-none bg-[#f4f7fb] text-[#3a4f63] transition-all outline-none focus:ring-2"
-          >
-            <X size={16} strokeWidth={2} />
-          </button>
-          <div className="flex-1" />
-          <QuickAccessButton
-            item={{
-              id: "service-pcc-filing-service-—-sindh",
-              title: "Sindh Police Verification Service",
-              href: "/police-verification/apply",
-              icon_name: "Shield",
-            }}
-            mode="icon"
-          />
-        </div>
+      <div
+        className={
+          embedded
+            ? "w-full font-sans"
+            : "animate-in slide-in-from-bottom-[18px] fixed inset-0 z-[150] overflow-y-auto bg-white font-sans duration-[0.28s] ease-in-out"
+        }
+      >
+        {!embedded && (
+          <div className="sticky top-0 z-10 flex h-[64px] items-center gap-3 border-b border-[#d0e4f7] bg-white px-4 sm:gap-4 sm:px-6">
+            <button
+              onClick={onClose}
+              aria-label="Close"
+              className="hover:bg-primary/10 focus:ring-primary flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border-none bg-[#f4f7fb] text-[#3a4f63] transition-all outline-none focus:ring-2"
+            >
+              <X size={16} strokeWidth={2} />
+            </button>
+            <div className="flex-1" />
+            <QuickAccessButton
+              item={{
+                id: "service-pcc-filing-service-—-sindh",
+                title: "Sindh Police Verification Service",
+                href: "/police-verification/apply",
+                icon_name: "Shield",
+              }}
+              mode="icon"
+            />
+          </div>
+        )}
         <div className="mx-auto w-full max-w-2xl px-5 py-12">
           <div className="mb-2 text-[11px] font-bold tracking-widest text-teal-700 uppercase">
             PCC Filing Service
@@ -1105,11 +1114,13 @@ function PoliceApplyContent({
     <div
       className={
         isJourney
-          ? "animate-in slide-in-from-bottom-[18px] fixed inset-0 z-[150] overflow-y-auto bg-[#f8fafc] font-sans duration-[0.28s] ease-in-out"
+          ? embedded
+            ? "w-full bg-[#f8fafc] font-sans"
+            : "animate-in slide-in-from-bottom-[18px] fixed inset-0 z-[150] overflow-y-auto bg-[#f8fafc] font-sans duration-[0.28s] ease-in-out"
           : "sm:site-main-px site-main-py flex w-full flex-col items-center bg-[#f8fafc] px-2 pt-24 sm:pt-28 md:mt-8 md:pt-4"
       }
     >
-      {isJourney && (
+      {isJourney && !embedded && (
         <div className="sticky top-0 isolate z-50 mb-4 flex h-[64px] items-center gap-3 border-b border-[#d0e4f7] bg-white px-4 sm:gap-4 sm:px-6">
           {/* Close (left) */}
           <button
@@ -1151,7 +1162,7 @@ function PoliceApplyContent({
         {/* Journey-only compact heading — keeps the service title + a short description visible
             so users immediately understand what this screen is (standalone uses the sticky header). */}
         {isJourney && (
-          <div className="mb-5 px-1 text-center">
+          <div className="mb-5 px-1 text-center mt-4">
             <h1 className="flex items-center justify-center gap-2.5 text-xl font-bold text-gray-900">
               <div className="bg-primary/10 shrink-0 rounded-xl p-2">
                 <ShieldCheck className="text-primary" size={22} />
@@ -1159,8 +1170,43 @@ function PoliceApplyContent({
               Sindh Police Verification Form
             </h1>
             <p className="mt-1.5 text-sm text-slate-600">
-              Apply for your Police Character Certificate (PCC) for Sindh — takes about 3 minutes.
+              Apply for your Police Character Certificate (PCC) for Sindh.
             </p>
+          </div>
+        )}
+        {embedded && (
+          <div className="mb-6">
+            <div className="flex items-center justify-center gap-2 sm:gap-3">
+              {[
+                { n: 1, label: "Personal Info" },
+                { n: 2, label: "Details of Deponents/Guarantor" },
+                { n: 3, label: "Documents Required" },
+              ]
+                .filter((s) => s.n <= pccTotalSteps)
+                .map((s, idx) => (
+                  <Fragment key={s.n}>
+                    {idx > 0 && <div className="h-px w-4 shrink-0 bg-gray-200 md:w-8" />}
+                    <div className="flex shrink-0 items-center gap-2 text-sm">
+                      <span
+                        className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${
+                          pccCurrentStep >= s.n
+                            ? "bg-primary text-white"
+                            : "bg-gray-100 text-gray-500"
+                        }`}
+                      >
+                        {s.n}
+                      </span>
+                      <span
+                        className={
+                          pccCurrentStep >= s.n ? "font-semibold text-gray-900" : "text-gray-400"
+                        }
+                      >
+                        {s.label}
+                      </span>
+                    </div>
+                  </Fragment>
+                ))}
+            </div>
           </div>
         )}
         {/* Header (standalone only — journey mode uses the topbar above for title / quick-access / progress) */}

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { JourneyServiceRecord } from "./toolModeGuards";
 import type { PccRequestRow } from "@/components/services/PccRequestCard";
 import type { MedicalAppointmentRow } from "@/components/services/MedicalAppointmentCard";
+import type { ConsultationRow } from "@/components/services/ConsultationRequestCard";
 
 /**
  * Server-synced journey service status for the Medical Booking / PCC Filing step cards.
@@ -20,6 +21,7 @@ interface UseJourneyServiceStatusParams {
   candidateId?: string | null;
   medicalMetadata?: JourneyServiceRecord | null;
   pccMetadata?: JourneyServiceRecord | null;
+  consultationMetadata?: JourneyServiceRecord | null;
   updateMetadata?: (updates: Record<string, unknown>) => void;
   /** Skip fetching/reconciling (e.g. when the service tool isn't the active view). */
   enabled?: boolean;
@@ -63,6 +65,29 @@ function mapMedicalRow(row: MedicalAppointmentRow): JourneyServiceRecord {
   };
 }
 
+/** Upcoming (non-cancelled) consultation first; fall back to the most recent active row. */
+function pickActiveConsultation(rows: ConsultationRow[]): ConsultationRow | null {
+  const usable = rows.filter((r) => r.status !== "canceled" && r.status !== "cancelled");
+  if (usable.length === 0) return null;
+  const upcoming = usable.filter((r) => isFutureDate(r.selected_slot));
+  if (upcoming.length > 0) {
+    return upcoming.sort(
+      (a, b) => new Date(a.selected_slot!).getTime() - new Date(b.selected_slot!).getTime()
+    )[0];
+  }
+  return usable[0] ?? null;
+}
+
+function mapConsultationRow(row: ConsultationRow): JourneyServiceRecord {
+  return {
+    savedAt: row.created_at || new Date().toISOString(),
+    referenceId: row.reference_id || row.id,
+    referenceDate: row.selected_slot || undefined, // full ISO datetime — see 7.6
+    location: row.location || "Remote (video call)",
+    status: row.status || "pending_approval",
+  };
+}
+
 function mapPccRow(
   row: PccRequestRow,
   metadata?: JourneyServiceRecord | null
@@ -83,11 +108,13 @@ export function useJourneyServiceStatus({
   candidateId,
   medicalMetadata,
   pccMetadata,
+  consultationMetadata,
   updateMetadata,
   enabled = true,
 }: UseJourneyServiceStatusParams) {
   const [pccRows, setPccRows] = useState<PccRequestRow[]>([]);
   const [medicalRows, setMedicalRows] = useState<MedicalAppointmentRow[]>([]);
+  const [consultationRows, setConsultationRows] = useState<ConsultationRow[]>([]);
   const [loading, setLoading] = useState(enabled);
   const [refreshKey, setRefreshKey] = useState(0);
   const lastFetchKey = useRef<string>("");
@@ -117,6 +144,7 @@ export function useJourneyServiceStatus({
         if (cancelled) return;
         setPccRows(data.pccRequests || []);
         setMedicalRows(data.medicalAppointments || []);
+        setConsultationRows(data.consultationBookings || []);
       } catch (err) {
         console.error("[journey-service-status] fetch failed:", err);
       } finally {
@@ -131,13 +159,16 @@ export function useJourneyServiceStatus({
 
   const activeMedicalRow = useMemo(() => pickActiveMedical(medicalRows), [medicalRows]);
   const activePccRow = useMemo(() => pickActivePcc(pccRows), [pccRows]);
-
+  const activeConsultationRow = useMemo(() => pickActiveConsultation(consultationRows), [consultationRows]);
   // Server row wins over local metadata (which may reference a deleted request).
   const medicalRecord: JourneyServiceRecord | null = activeMedicalRow
     ? mapMedicalRow(activeMedicalRow)
     : null;
   const pccRecord: JourneyServiceRecord | null = activePccRow
     ? mapPccRow(activePccRow, pccMetadata)
+    : null;
+  const consultationRecord: JourneyServiceRecord | null = activeConsultationRow
+    ? mapConsultationRow(activeConsultationRow)
     : null;
 
   // ── Metadata reconciliation ──────────────────────────────────────────────
@@ -172,6 +203,15 @@ export function useJourneyServiceStatus({
         }
       }
     }
+
+    if (consultationMetadata) {
+      if (!activeConsultationRow) {
+        updateMetadata({ consultation: null });
+      } else if (consultationMetadata.referenceId !== activeConsultationRow.id && activeConsultationRow.id) {
+        updateMetadata({ consultation: mapConsultationRow(activeConsultationRow) });
+      }
+    }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, enabled, activeMedicalRow?.id, activePccRow?.id, activePccRow?.status]);
 
@@ -182,10 +222,13 @@ export function useJourneyServiceStatus({
     loading,
     medicalRecord,
     pccRecord,
+    consultationRecord,
     activeMedicalRow,
     activePccRow,
+    activeConsultationRow,
     medicalRows: medicalRows as MedicalAppointmentRow[],
     pccRows: pccRows as PccRequestRow[],
+    consultationRows: consultationRows as ConsultationRow[],
     refetch,
   };
 }

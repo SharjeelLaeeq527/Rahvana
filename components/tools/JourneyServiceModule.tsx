@@ -35,6 +35,8 @@ interface JourneyServiceModuleProps {
   summaryEmptyText: string;
   /** Overrides the disabled-tile hint (default: "Active until {referenceDate}"). */
   lockedHint?: string;
+  /** Suppress the small "Active until {referenceDate}" note on the disabled service tile. */
+  hideActiveUntilNote?: boolean;
   /** Extra content rendered below the summary card (e.g. PCC pending/received lifecycle cards). */
   afterSummary?: React.ReactNode;
 }
@@ -57,6 +59,7 @@ export const JourneyServiceModule: React.FC<JourneyServiceModuleProps> = ({
   summaryRows,
   summaryEmptyText,
   lockedHint,
+  hideActiveUntilNote,
   afterSummary,
 }) => {
   const [guideOpen, setGuideOpen] = useState(false);
@@ -100,7 +103,7 @@ export const JourneyServiceModule: React.FC<JourneyServiceModuleProps> = ({
                   <div className="mb-1 text-sm font-bold text-white">{p.title}</div>
                   <div className="text-[10px] leading-relaxed text-white/50">{p.sub}</div>
                   {p.note && <div className="mt-2 text-[10px] text-white/40">{p.note}</div>}
-                  {disabled && (lockedHint ?? record?.referenceDate) && (
+                  {disabled && !hideActiveUntilNote && (lockedHint ?? record?.referenceDate) && (
                     <div className="mt-2 text-[10px] font-semibold text-teal-300">
                       {`Active until ${record?.referenceDate}`}
                     </div>
@@ -111,10 +114,6 @@ export const JourneyServiceModule: React.FC<JourneyServiceModuleProps> = ({
           </div>
         </div>
       </div>
-
-      {disclaimer && (
-        <p className="mb-5 text-center text-[11.5px] leading-[1.65] text-[#6b8097]">{disclaimer}</p>
-      )}
 
       {/* Prominent lock banner: explains *why* a second booking is blocked. Only shown
           when the service path is locked AND we have a hint worth surfacing. Styled
@@ -129,15 +128,12 @@ export const JourneyServiceModule: React.FC<JourneyServiceModuleProps> = ({
       )}
 
       {/* Summary card (Sponsorship style) */}
-      <div className="w-full">
-        <div className="mb-[12px] text-[12px] font-semibold tracking-wide text-[#6b8097] uppercase">
-          {summaryTitle}
-        </div>
-        {!hasRecord ? (
-          <div className="rounded-[10px] border-[1.5px] border-dashed border-[#d0e4f7] bg-[#fafcff] p-[24px] text-center">
-            <div className="text-[14px] leading-[1.6] text-[#6b8097]">{summaryEmptyText}</div>
+      {hasRecord && (
+        <div className="w-full">
+          <div className="mb-[12px] text-[12px] font-semibold tracking-wide text-[#6b8097] uppercase">
+            {summaryTitle}
           </div>
-        ) : (
+
           <div className="animate-in fade-in rounded-[10px] border-[1.5px] border-[#d0e4f7] bg-[#fafcff] p-[20px] duration-300">
             <div className="mb-[14px] flex items-center justify-between">
               <div className="text-[10px] font-bold tracking-widest text-[#3b7dd8] uppercase">
@@ -171,8 +167,8 @@ export const JourneyServiceModule: React.FC<JourneyServiceModuleProps> = ({
               </button>
             )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {afterSummary}
 

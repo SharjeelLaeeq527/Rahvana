@@ -181,8 +181,8 @@ export function AppGroupModal({ group, isOpen, onClose, onLaunchItem, state }: A
               <div className="shrink-0 px-6 pt-3">
                 <ExpandableTooltip
                   icon={<Info size={12} />}
-                  title="Scoped to this journey"
-                  message="Anything you request from this modal is tagged to this journey and only appears here. Requests you filed from the standalone service pages will not show up inside journey."
+                  title="Saved to this Journey"
+                  message="Anything you request here is saved to this Journey. Requests made outside of this Journey will not appear here."
                   defaultOpen={false}
                 />
               </div>

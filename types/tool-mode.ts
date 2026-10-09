@@ -34,4 +34,15 @@ export interface ToolModeProps {
   journeyContext?: JourneyToolContext;
   /** Journey's specific subscription tier (e.g. state.subscriptionTier) */
   journeyTier?: string | null;
+  /**
+   * Journey chrome style (service tools: Medical / PCC / Consultation):
+   * - false/undefined: full-screen modal overlay with its own sticky topbar
+   *   (used by the StepView overlay mounts, e.g. journey-spouse).
+   * - true: renders INLINE inside the journey `roadmap-main` region, relying on
+   *   the RoadmapLayoutEngine breadcrumb (Dashboard › Tool › ✕) for close/back —
+   *   the same chrome Document Translation uses. The in-content progress/metro
+   *   stepper is shown because there is no topbar progress bar. Passed by
+   *   EmbeddedToolContainer so toolbox launches stay consistent.
+   */
+  embedded?: boolean;
 }
