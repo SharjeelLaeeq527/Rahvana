@@ -45,6 +45,7 @@ import { ExpandableTooltip } from "@/app/components/shared/ExpandableTooltip";
 import { useCandidate } from "@/app/context/CandidateContext";
 import { JourneyPlanBadge } from "@/app/components/shared/JourneyPlanBadge";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
+import { AllServiceRequestsModal } from "./AllServiceRequestsModal";
 
 interface AppGroupModalProps {
   group: AppGroup | null;
@@ -90,6 +91,7 @@ export function AppGroupModal({ group, isOpen, onClose, onLaunchItem, state }: A
   const [searchQuery, setSearchQuery] = useState("");
   const [mounted, setMounted] = useState(false);
   const [upgradeFeature, setUpgradeFeature] = useState<string | null>(null);
+  const [showAllRequests, setShowAllRequests] = useState(false);
 
   const plan = useJourneyPlan(state);
   const { activeCandidateId } = useCandidate();
@@ -97,6 +99,11 @@ export function AppGroupModal({ group, isOpen, onClose, onLaunchItem, state }: A
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // The cross-journey request directory never outlives the folder that opened it.
+  useEffect(() => {
+    if (!isOpen) setShowAllRequests(false);
+  }, [isOpen]);
 
   // Warm the chunk AND the saved progress of every page-backed item (guides) as soon as
   // the folder opens, so launching one renders instantly instead of hitting a loader.
@@ -124,6 +131,18 @@ export function AppGroupModal({ group, isOpen, onClose, onLaunchItem, state }: A
     <>
       {upgradeFeature && (
         <UpgradeModal feature={upgradeFeature} onClose={() => setUpgradeFeature(null)} />
+      )}
+
+      {isServicesGroup && (
+        <AllServiceRequestsModal
+          isOpen={showAllRequests}
+          onClose={() => setShowAllRequests(false)}
+          onDone={() => {
+            setShowAllRequests(false);
+            onClose();
+          }}
+          onLaunchItem={onLaunchItem}
+        />
       )}
 
       <div className="fixed inset-0 z-[100000] overflow-y-auto overscroll-contain">
@@ -185,6 +204,15 @@ export function AppGroupModal({ group, isOpen, onClose, onLaunchItem, state }: A
                   message="Anything you request from this modal is tagged to this journey and only appears here. Requests you filed from the standalone service pages will not show up inside journey."
                   defaultOpen={false}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowAllRequests(true)}
+                  className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-[#0d7377] decoration-2 underline-offset-2 hover:underline dark:text-teal-400"
+                >
+                  <Search className="h-3.5 w-3.5" />
+                  <span>My Requests (all journeys)</span>
+                  <ArrowRight className="h-3 w-3" />
+                </button>
               </div>
             )}
 

@@ -89,6 +89,18 @@ export async function GET(req: NextRequest) {
     let translationDocuments = translationsData || [];
     const consultationBookings = consultationData || [];
 
+    // scope=all -> every request on the account, unfiltered by origin or candidate. Backs the
+    // cross-journey "My Requests (all journeys)" directory, which labels each row with the
+    // journey/candidate it belongs to (lib/services/serviceRequestDirectory.ts).
+    if (scope === "all") {
+      return NextResponse.json({
+        pccRequests: sindhPccRequests,
+        medicalAppointments,
+        consultationBookings,
+        translationDocuments,
+      });
+    }
+
     // Origin split: journey-scoped rows vs standalone rows. Legacy rows without a
     // source are treated as standalone so My Resources keeps showing them.
     if (scope === "journey") {
