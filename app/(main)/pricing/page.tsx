@@ -700,6 +700,13 @@ function PricingContent() {
     () => VISA_CATEGORIES.find((v) => v.id === visa) || VISA_CATEGORIES[0],
     [visa]
   );
+  const activeExplorerCard = useMemo(
+    () =>
+      EXPLORER_CARDS.find(
+        (c) => c.code === visa || c.slug === visa.toLowerCase() || visa.includes(c.code)
+      ),
+    [visa]
+  );
   const selectedJourneyTier = visa.toLowerCase().includes("5")
     ? (journeyTiers.ir5 ?? "free")
     : (journeyTiers.ir1 ?? "free");
@@ -1055,15 +1062,15 @@ function PricingContent() {
           className="bg-primary hover:bg-primary/90 w-full rounded-full px-5 py-[11px] text-center text-[14px] font-semibold text-white"
         >
           {isUpgradingIr5 || canUpgradeIr1
-            ? "Continue to Upgrade →"
-            : "Continue to Secure Checkout →"}
+            ? `Continue to Upgrade (${activeExplorerCard?.code || activeVisaCategory.id}) →`
+            : `Continue to Secure Checkout (${activeExplorerCard?.code || activeVisaCategory.id}) →`}
         </CheckoutButton>
       ) : (
         <Link
           href={`/login?redirect=${encodeURIComponent(`/pricing?auto_checkout=true&plan=${selectedPlan}&addons=${checkoutAddonIds.join(",")}&visa=${encodeURIComponent(visa)}&candidate_count=${parentCount}`)}`}
           className="bg-primary hover:bg-primary/90 block w-full rounded-full px-5 py-[11px] text-center text-[14px] font-semibold text-white"
         >
-          Sign in to Checkout →
+          Sign in to Checkout ({activeExplorerCard?.code || activeVisaCategory.id}) →
         </Link>
       )}
       <p className="text-muted-foreground text-center text-[11px]">Secure checkout via Stripe</p>
@@ -1137,14 +1144,16 @@ function PricingContent() {
       onLoadingChange={setIsManualCheckoutLoading}
       className="bg-primary hover:bg-primary/90 w-full rounded-full px-4 py-2.5 text-center text-[13px] font-semibold text-white"
     >
-      {isUpgradingIr5 || canUpgradeIr1 ? "Upgrade →" : "Checkout →"}
+      {isUpgradingIr5 || canUpgradeIr1
+        ? `Upgrade (${activeExplorerCard?.code || activeVisaCategory.id}) →`
+        : `Checkout (${activeExplorerCard?.code || activeVisaCategory.id}) →`}
     </CheckoutButton>
   ) : (
     <Link
       href={`/login?redirect=${encodeURIComponent(`/pricing?auto_checkout=true&plan=${selectedPlan}&addons=${checkoutAddonIds.join(",")}&visa=${encodeURIComponent(visa)}&candidate_count=${parentCount}`)}`}
       className="bg-primary hover:bg-primary/90 block w-full rounded-full px-4 py-2.5 text-center text-[13px] font-semibold text-white"
     >
-      Sign in →
+      Sign in ({activeExplorerCard?.code || activeVisaCategory.id}) →
     </Link>
   );
 
@@ -1475,27 +1484,67 @@ function PricingContent() {
                 <div className="flex items-start justify-between gap-4">
                   {/* Hero copy */}
                   <div>
-                    <div className="flex gap-3">
-                      <div className="mb-6 flex items-center justify-between gap-3">
-                        <button
-                          className="text-muted-foreground hover:text-foreground inline-flex cursor-pointer items-center gap-1.5 border-0 bg-transparent p-0 text-[13.5px] font-medium transition-colors"
-                          onClick={() => {
-                            setIsChangingJourney(true);
-                            window.scrollTo({ top: 0 });
-                          }}
-                        >
-                          <ArrowLeft className="h-4 w-4" />
-                          Back to Journeys
-                        </button>
-                      </div>
+                    <div className="mb-4 flex flex-wrap items-center gap-2">
+                      <button
+                        className="text-muted-foreground hover:text-foreground inline-flex cursor-pointer items-center gap-1.5 border-0 bg-transparent p-0 text-[13.5px] font-medium transition-colors"
+                        onClick={() => {
+                          setIsChangingJourney(true);
+                          window.scrollTo({ top: 0 });
+                        }}
+                      >
+                        <ArrowLeft className="h-4 w-4" />
+                        Back to Journeys
+                      </button>
+                      <span className="text-muted-foreground/40 text-xs">·</span>
                       <div className={eyebrow}>Journey Plans</div>
                     </div>
 
-                    <h1 className="page-heading m-0">Choose your Rahvana journey plan</h1>
+                    <h1 className="page-heading m-0">
+                      Choose your plan for{" "}
+                      <span className="text-[#0d7377] dark:text-[#32e0c4]">
+                        {activeExplorerCard
+                          ? `${activeExplorerCard.code} ${activeExplorerCard.title}`
+                          : activeVisaCategory.label}
+                      </span>
+                    </h1>
 
                     <p className="page-description text-muted-foreground mt-2">
                       Pick the level of guidance, tools, and support that fits your case.
                     </p>
+
+                    {/* Selected Journey Confirmation Strip */}
+                    {/* <div className="mt-4 flex flex-col justify-between gap-3 rounded-2xl border border-teal-200/90 bg-teal-50/80 p-3.5 text-xs text-teal-950 sm:flex-row sm:items-center dark:border-teal-900/60 dark:bg-teal-950/30 dark:text-teal-100">
+                      <div className="flex items-center gap-3">
+                        <div className="bg-[#0d7377] flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-xs font-bold text-white shadow-xs">
+                          {activeExplorerCard?.code || activeVisaCategory.id}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-[13.5px]">
+                              {activeVisaCategory.label}
+                            </span>
+                            <span className="rounded-full border border-emerald-300 bg-emerald-100 px-2 py-0.5 text-[9.5px] font-bold tracking-wide text-emerald-800 uppercase dark:border-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300">
+                              Selected Journey
+                            </span>
+                          </div>
+                          <p className="text-teal-800/80 m-0 mt-0.5 text-[11.5px] dark:text-teal-300/80">
+                            {activeExplorerCard?.summary ||
+                              "All roadmap phases, legal checklists, and document vaults are tailored for this petition."}
+                          </p>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsChangingJourney(true);
+                          window.scrollTo({ top: 0 });
+                        }}
+                        className="inline-flex shrink-0 cursor-pointer items-center gap-1 self-start text-xs font-semibold text-[#0d7377] hover:underline sm:self-auto dark:text-teal-300"
+                      >
+                        Change Journey →
+                      </button>
+                    </div> */}
                   </div>
                 </div>
 
@@ -1663,7 +1712,7 @@ function PricingContent() {
                               >
                                 <Minus className="h-3.5 w-3.5" />
                               </button>
-                              <span className="text-foreground min-w-[42px] px-2 text-center text-[13px] font-bold">
+                              <span className="text-foreground min-w-[34px] px-2 text-center text-[13px] font-bold">
                                 {parentCount}
                               </span>
                               <button
@@ -1924,11 +1973,16 @@ function PricingContent() {
                               />
 
                               <div className="flex flex-col gap-0.5">
-                                {/* Plan name */}
-                                <div
-                                  className={`text-[10px] font-extrabold tracking-[0.16em] uppercase ${tc.textAccent}`}
-                                >
-                                  {plan.name}
+                                {/* Plan name & Journey label */}
+                                <div className="flex items-center gap-1.5">
+                                  <span
+                                    className={`text-[10px] font-extrabold tracking-[0.16em] uppercase ${tc.textAccent}`}
+                                  >
+                                    {plan.name}
+                                  </span>
+                                  <span className="text-muted-foreground/60 text-[10px] font-semibold">
+                                    · {activeExplorerCard?.code || activeVisaCategory.id}
+                                  </span>
                                 </div>
 
                                 {/* Monthly price */}
@@ -2038,7 +2092,7 @@ function PricingContent() {
                                       ? "Continue to Upgrade →"
                                       : `Upgrade to ${plan.name} →`
                                     : isSelected
-                                      ? "Continue to Checkout →"
+                                      ? `Continue with ${plan.name} (${activeExplorerCard?.code || activeVisaCategory.id}) →`
                                       : plan.cta}
                             </button>
                           </article>
@@ -2228,12 +2282,20 @@ function PricingContent() {
                     <div className={`${tc.cardBg} border ${tc.selBorder} mb-8 rounded-[22px] p-5`}>
                       <div className="flex items-start justify-between">
                         <div>
-                          <div
-                            className={`mb-1 text-[11px] font-extrabold tracking-widest uppercase ${tc.textAccent}`}
-                          >
-                            Selected Plan
+                          <div className="mb-1.5 flex flex-wrap items-center gap-2">
+                            <span
+                              className={`text-[11px] font-extrabold tracking-widest uppercase ${tc.textAccent}`}
+                            >
+                              Selected Plan
+                            </span>
+                            <span className="text-muted-foreground/40 text-xs">·</span>
+                            <span className="inline-flex items-center gap-1 rounded-full border border-teal-300/80 bg-teal-100/70 px-2 py-0.5 text-[10.5px] font-bold text-teal-900 uppercase dark:border-teal-800 dark:bg-teal-950/70 dark:text-teal-300">
+                              <span className="h-1.5 w-1.5 rounded-full bg-teal-600 dark:bg-teal-400" />
+                              {activeExplorerCard?.code || activeVisaCategory.id} Journey
+                            </span>
                           </div>
-                          <div className="flex items-center gap-2">
+
+                          <div className="flex flex-wrap items-center gap-2">
                             <span className="text-[20px] font-bold">{currentPlanData.name}</span>
                             {isIr5 && parentCount > 1 && (
                               <span className="rounded-full bg-[#0d7377]/10 px-2.5 py-0.5 text-[11px] font-semibold text-[#0d7377]">
@@ -2281,12 +2343,24 @@ function PricingContent() {
                         </div>
                       )}
 
-                      <button
-                        className={`mt-3 text-[12.5px] font-medium ${tc.textAccent} cursor-pointer border-0 bg-transparent p-0`}
-                        onClick={() => setPurchaseStep("browse")}
-                      >
-                        Change plan or parent count →
-                      </button>
+                      <div className="border-border/60 mt-4 flex flex-wrap items-center justify-between gap-3 border-t pt-3">
+                        <button
+                          className={`text-[12.5px] font-medium ${tc.textAccent} cursor-pointer border-0 bg-transparent p-0 hover:underline`}
+                          onClick={() => setPurchaseStep("browse")}
+                        >
+                          ← Change plan {isIr5 ? "or parent count" : ""}
+                        </button>
+                        <button
+                          className="text-muted-foreground hover:text-foreground cursor-pointer border-0 bg-transparent p-0 text-[12.5px] font-medium hover:underline"
+                          onClick={() => {
+                            setIsChangingJourney(true);
+                            setPurchaseStep("browse");
+                            window.scrollTo({ top: 0 });
+                          }}
+                        >
+                          Change journey ({activeExplorerCard?.code || activeVisaCategory.id}) →
+                        </button>
+                      </div>
                     </div>
                   );
                 })()}
