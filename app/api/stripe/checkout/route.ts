@@ -74,6 +74,7 @@ export async function POST(request: NextRequest) {
       addons,
       visaCategory,
       candidateCount,
+      action,
     } = body;
 
     if (Array.isArray(addons)) {
@@ -288,7 +289,13 @@ export async function POST(request: NextRequest) {
     // If we trusted a client-supplied `currentTier`/`isUpgrade`, a free user could
     // send { isUpgrade: true, currentTier: "premium" } and pay only the tier
     // *difference* while being provisioned the full higher tier. So it is server-derived.
-    const serverIsUpgrade = hasLivePlan && effectiveCurrentRank > 0;
+    const isMultiCandidateCategory = selectedJourneyType === "IR5";
+    const isAddCandidateRequest = action === "add_candidate" || isMultiCandidateCategory;
+
+    // For single-candidate journeys (e.g. IR-1), serverIsUpgrade handles proration and replaces old sub.
+    // For multi-candidate journeys (IR-5), each candidate is an independent petition with their own subscription,
+    // so new candidate purchases must not retire existing candidate subscriptions or trigger proration.
+    const serverIsUpgrade = !isMultiCandidateCategory && hasLivePlan && effectiveCurrentRank > 0;
     const serverCurrentTier = serverIsUpgrade ? effectiveCurrentTier : undefined;
 
     // ── Server-side downgrade + duplicate-purchase guard (Stripe-aware) ──────
@@ -297,7 +304,8 @@ export async function POST(request: NextRequest) {
     //   (b) target tier == current tier  → duplicate purchase (already owned/live)
     // Blocks even when the DB status is stale, because `hasLivePlan` also trusts
     // Stripe. Upgrades (target > current) fall through and are allowed.
-    if (productTier) {
+    // NOTE: Multi-candidate categories (IR-5) allow purchasing additional candidates at any tier!
+    if (productTier && !isMultiCandidateCategory) {
       const targetRank = TIER_RANK[productTier.toLowerCase()] ?? 0;
 
       if (hasLivePlan && targetRank < effectiveCurrentRank) {
@@ -468,6 +476,8 @@ export async function POST(request: NextRequest) {
           tier: tierLower,
           visa_category: effectiveVisaCategory,
           candidate_count: String(parsedCandidateCount),
+          action: isAddCandidateRequest ? "add_candidate" : "",
+          is_add_candidate: isAddCandidateRequest ? "true" : "false",
         },
       };
 
@@ -542,6 +552,8 @@ export async function POST(request: NextRequest) {
         product_name: product.name + (serverIsUpgrade ? " (Upgrade)" : ""),
         visa_category: effectiveVisaCategory,
         candidate_count: String(parsedCandidateCount),
+        action: isAddCandidateRequest ? "add_candidate" : "",
+        is_add_candidate: isAddCandidateRequest ? "true" : "false",
         is_upgrade: serverIsUpgrade ? "true" : "false",
         old_subscription_id: serverIsUpgrade ? oldSubscriptionId || "" : "",
       };

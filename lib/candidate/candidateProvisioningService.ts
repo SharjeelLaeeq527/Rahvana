@@ -20,6 +20,7 @@ export interface ProvisionCandidatesParams {
   candidateCount: number;
   tier: string;
   stripeSubscriptionId?: string;
+  isAddCandidate?: boolean;
 }
 
 export interface ProvisionResult {
@@ -41,6 +42,7 @@ export async function provisionCandidateJourneysAndVaults({
   candidateCount = 1,
   tier,
   stripeSubscriptionId,
+  isAddCandidate = false,
 }: ProvisionCandidatesParams): Promise<ProvisionResult> {
   try {
     const isIr5 =
@@ -67,16 +69,28 @@ export async function provisionCandidateJourneysAndVaults({
       .ilike("journey_type", normVisaType)
       .maybeSingle();
 
+    const isExistingPrimaryPaid =
+      existingPrimary?.subscription_tier &&
+      existingPrimary.subscription_tier.toLowerCase() !== "free";
+
+    // Adding an additional candidate to an existing IR-5 roster occurs if flagged
+    // OR if an active paid IR-5 journey already exists for Candidate 1.
+    const isAddingToExistingRoster = Boolean(
+      isIr5 && (isAddCandidate || isExistingPrimaryPaid)
+    );
+
     if (existingPrimary) {
       primaryJourneyId = existingPrimary.id;
-      await supabase
-        .from("journeys")
-        .update({
-          subscription_tier: tier,
-          stripe_subscription_id: stripeSubscriptionId || undefined,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", existingPrimary.id);
+      if (!isAddingToExistingRoster) {
+        await supabase
+          .from("journeys")
+          .update({
+            subscription_tier: tier,
+            stripe_subscription_id: stripeSubscriptionId || undefined,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", existingPrimary.id);
+      }
     } else {
       // Seed a full journey from the template config
       const configPath = isIr5
@@ -157,12 +171,14 @@ export async function provisionCandidateJourneysAndVaults({
     // Ensure Candidate 1 is in the roster with purchased tier
     const c1Index = updatedCandidates.findIndex((c) => c.id === "candidate-1");
     if (c1Index >= 0) {
-      updatedCandidates[c1Index] = {
-        ...updatedCandidates[c1Index],
-        tier: tier as CandidateTier,
-        isPreview: false,
-        visaCategory: updatedCandidates[c1Index].visaCategory || canonicalVisa,
-      };
+      if (!isAddingToExistingRoster) {
+        updatedCandidates[c1Index] = {
+          ...updatedCandidates[c1Index],
+          tier: tier as CandidateTier,
+          isPreview: false,
+          visaCategory: updatedCandidates[c1Index].visaCategory || canonicalVisa,
+        };
+      }
     } else {
       updatedCandidates.unshift({
         id: "candidate-1",
@@ -184,24 +200,29 @@ export async function provisionCandidateJourneysAndVaults({
     }
 
     // ── 4. Provision Additional Candidates & Vaults (IR-5 multi-parent) ──────
-    if (isIr5 && effectiveCount > 1) {
+    if (isIr5) {
       const configPath = "data/visa-category/ir-5.json";
 
-      for (let i = 2; i <= effectiveCount; i++) {
-        const candId = `candidate-${i}`;
-        const cIndex = updatedCandidates.findIndex((c) => c.id === candId);
+      if (isAddingToExistingRoster) {
+        // Appending new candidate(s) to the existing roster
+        const currentCount = updatedCandidates.length;
+        const colorPalette: Array<CandidateProfile["colorTag"]> = [
+          "teal",
+          "blue",
+          "purple",
+          "amber",
+          "rose",
+          "emerald",
+        ];
 
-        if (cIndex >= 0) {
-          updatedCandidates[cIndex] = {
-            ...updatedCandidates[cIndex],
-            tier: tier as CandidateTier,
-            isPreview: false,
-            visaCategory: "IR-5",
-          };
-        } else {
-          updatedCandidates.push({
+        for (let k = 1; k <= effectiveCount; k++) {
+          const nextNum = currentCount + k;
+          const candId = `candidate-${nextNum}`;
+          const colorTag = colorPalette[(nextNum - 1) % colorPalette.length];
+
+          const newCandidate: CandidateProfile = {
             id: candId,
-            label: `Candidate ${i}`,
+            label: `Candidate ${nextNum}`,
             relation: "Other",
             fullName: "",
             visaCategory: "IR-5",
@@ -209,59 +230,23 @@ export async function provisionCandidateJourneysAndVaults({
             isPrimary: false,
             isPreview: false,
             createdAt: new Date().toISOString(),
-            colorTag: i === 2 ? "teal" : i === 3 ? "blue" : i === 4 ? "emerald" : "amber",
-          });
-        }
+            colorTag,
+          };
+          updatedCandidates.push(newCandidate);
 
-        // Provision Candidate's Journey row in Supabase
-        const journeyKey = getCandidateJourneyKey("IR-5", candId); // e.g. "ir5_candidate2"
-        let candJourneyId: string | undefined;
+          // Provision Candidate's Journey row in Supabase
+          const journeyKey = getCandidateJourneyKey("IR-5", candId); // e.g. "ir5_candidate2"
+          let candJourneyId: string | undefined;
 
-        const { data: existingCandJourney } = await supabase
-          .from("journeys")
-          .select("id")
-          .eq("user_id", userId)
-          .eq("journey_type", journeyKey)
-          .maybeSingle();
-
-        if (existingCandJourney) {
-          candJourneyId = existingCandJourney.id;
-          await supabase
+          const { data: existingCandJourney } = await supabase
             .from("journeys")
-            .update({
-              subscription_tier: tier,
-              stripe_subscription_id: stripeSubscriptionId || undefined,
-              updated_at: new Date().toISOString(),
-            })
-            .eq("id", existingCandJourney.id);
-        } else {
-          try {
-            const created = await journeyService.createJourneyFromConfig(
-              configPath,
-              { journey_type: journeyKey },
-              { supabase, user: { id: userId } }
-            );
-            candJourneyId = created?.journey?.id || created?.id;
-          } catch (err) {
-            console.warn(`[provisioning] Error seeding journey config for ${journeyKey}:`, err);
-          }
+            .select("id")
+            .eq("user_id", userId)
+            .eq("journey_type", journeyKey)
+            .maybeSingle();
 
-          if (!candJourneyId) {
-            const { data: inserted } = await supabase
-              .from("journeys")
-              .insert({
-                user_id: userId,
-                journey_type: journeyKey,
-                filing_method: "online",
-                sponsor_structure: "individual",
-                subscription_tier: tier,
-                stripe_subscription_id: stripeSubscriptionId || undefined,
-                status: "not_started",
-              })
-              .select("id")
-              .single();
-            candJourneyId = inserted?.id;
-          } else {
+          if (existingCandJourney) {
+            candJourneyId = existingCandJourney.id;
             await supabase
               .from("journeys")
               .update({
@@ -269,38 +254,191 @@ export async function provisionCandidateJourneysAndVaults({
                 stripe_subscription_id: stripeSubscriptionId || undefined,
                 updated_at: new Date().toISOString(),
               })
-              .eq("id", candJourneyId);
+              .eq("id", existingCandJourney.id);
+          } else {
+            try {
+              const created = await journeyService.createJourneyFromConfig(
+                configPath,
+                { journey_type: journeyKey },
+                { supabase, user: { id: userId } }
+              );
+              candJourneyId = created?.journey?.id || created?.id;
+            } catch (err) {
+              console.warn(`[provisioning] Error seeding journey config for ${journeyKey}:`, err);
+            }
+
+            if (!candJourneyId) {
+              const { data: inserted } = await supabase
+                .from("journeys")
+                .insert({
+                  user_id: userId,
+                  journey_type: journeyKey,
+                  filing_method: "online",
+                  sponsor_structure: "individual",
+                  subscription_tier: tier,
+                  stripe_subscription_id: stripeSubscriptionId || undefined,
+                  status: "not_started",
+                })
+                .select("id")
+                .single();
+              candJourneyId = inserted?.id;
+            } else {
+              await supabase
+                .from("journeys")
+                .update({
+                  subscription_tier: tier,
+                  stripe_subscription_id: stripeSubscriptionId || undefined,
+                  updated_at: new Date().toISOString(),
+                })
+                .eq("id", candJourneyId);
+            }
+          }
+
+          if (candJourneyId) {
+            candidateJourneyIds[candId] = candJourneyId;
+
+            // Provision isolated Document Vault for Candidate nextNum
+            try {
+              const existingCandVault = await dbStorage.getVaultConfig(userId, candJourneyId);
+              if (!existingCandVault) {
+                await dbStorage.saveVaultConfig({
+                  userId,
+                  visaCategory: "IR-5",
+                  journeyId: candJourneyId,
+                  scenarioFlags: {},
+                  dynamicDocuments: {},
+                  beneficiaryName: `Candidate ${nextNum}`,
+                });
+              }
+            } catch (err) {
+              console.warn(`[provisioning] Candidate ${nextNum} vault init error (non-fatal):`, err);
+            }
           }
         }
+      } else if (effectiveCount > 1) {
+        for (let i = 2; i <= effectiveCount; i++) {
+          const candId = `candidate-${i}`;
+          const cIndex = updatedCandidates.findIndex((c) => c.id === candId);
 
-        if (candJourneyId) {
-          candidateJourneyIds[candId] = candJourneyId;
+          if (cIndex >= 0) {
+            updatedCandidates[cIndex] = {
+              ...updatedCandidates[cIndex],
+              tier: tier as CandidateTier,
+              isPreview: false,
+              visaCategory: "IR-5",
+            };
+          } else {
+            updatedCandidates.push({
+              id: candId,
+              label: `Candidate ${i}`,
+              relation: "Other",
+              fullName: "",
+              visaCategory: "IR-5",
+              tier: tier as CandidateTier,
+              isPrimary: false,
+              isPreview: false,
+              createdAt: new Date().toISOString(),
+              colorTag: i === 2 ? "teal" : i === 3 ? "blue" : i === 4 ? "emerald" : "amber",
+            });
+          }
 
-          // Provision isolated Document Vault for Candidate i
-          try {
-            const existingCandVault = await dbStorage.getVaultConfig(userId, candJourneyId);
-            if (!existingCandVault) {
-              await dbStorage.saveVaultConfig({
-                userId,
-                visaCategory: "IR-5",
-                journeyId: candJourneyId,
-                scenarioFlags: {},
-                dynamicDocuments: {},
-                beneficiaryName: `Candidate ${i}`,
-              });
+          // Provision Candidate's Journey row in Supabase
+          const journeyKey = getCandidateJourneyKey("IR-5", candId); // e.g. "ir5_candidate2"
+          let candJourneyId: string | undefined;
+
+          const { data: existingCandJourney } = await supabase
+            .from("journeys")
+            .select("id")
+            .eq("user_id", userId)
+            .eq("journey_type", journeyKey)
+            .maybeSingle();
+
+          if (existingCandJourney) {
+            candJourneyId = existingCandJourney.id;
+            await supabase
+              .from("journeys")
+              .update({
+                subscription_tier: tier,
+                stripe_subscription_id: stripeSubscriptionId || undefined,
+                updated_at: new Date().toISOString(),
+              })
+              .eq("id", existingCandJourney.id);
+          } else {
+            try {
+              const created = await journeyService.createJourneyFromConfig(
+                configPath,
+                { journey_type: journeyKey },
+                { supabase, user: { id: userId } }
+              );
+              candJourneyId = created?.journey?.id || created?.id;
+            } catch (err) {
+              console.warn(`[provisioning] Error seeding journey config for ${journeyKey}:`, err);
             }
-          } catch (err) {
-            console.warn(`[provisioning] Candidate ${i} vault init error (non-fatal):`, err);
+
+            if (!candJourneyId) {
+              const { data: inserted } = await supabase
+                .from("journeys")
+                .insert({
+                  user_id: userId,
+                  journey_type: journeyKey,
+                  filing_method: "online",
+                  sponsor_structure: "individual",
+                  subscription_tier: tier,
+                  stripe_subscription_id: stripeSubscriptionId || undefined,
+                  status: "not_started",
+                })
+                .select("id")
+                .single();
+              candJourneyId = inserted?.id;
+            } else {
+              await supabase
+                .from("journeys")
+                .update({
+                  subscription_tier: tier,
+                  stripe_subscription_id: stripeSubscriptionId || undefined,
+                  updated_at: new Date().toISOString(),
+                })
+                .eq("id", candJourneyId);
+            }
+          }
+
+          if (candJourneyId) {
+            candidateJourneyIds[candId] = candJourneyId;
+
+            // Provision isolated Document Vault for Candidate i
+            try {
+              const existingCandVault = await dbStorage.getVaultConfig(userId, candJourneyId);
+              if (!existingCandVault) {
+                await dbStorage.saveVaultConfig({
+                  userId,
+                  visaCategory: "IR-5",
+                  journeyId: candJourneyId,
+                  scenarioFlags: {},
+                  dynamicDocuments: {},
+                  beneficiaryName: `Candidate ${i}`,
+                });
+              }
+            } catch (err) {
+              console.warn(`[provisioning] Candidate ${i} vault init error (non-fatal):`, err);
+            }
           }
         }
       }
     }
 
     // ── 5. Save Updated Candidates to user_profiles ──────────────────────────
+    const TIER_RANK: Record<string, number> = { free: 0, basic: 1, premium: 2, executive: 3 };
+    const highestRank = updatedCandidates.reduce((max, c) => {
+      const rank = TIER_RANK[(c.tier || "free").toLowerCase()] || 0;
+      return Math.max(max, rank);
+    }, TIER_RANK[(tier || "free").toLowerCase()] || 0);
+    const highestTier =
+      Object.keys(TIER_RANK).find((k) => TIER_RANK[k] === highestRank) || tier;
+
     await supabase
       .from("user_profiles")
       .update({
-        subscription_tier: tier,
+        subscription_tier: highestTier,
         subscription_status: "active",
         profile_details: {
           ...profileDetails,

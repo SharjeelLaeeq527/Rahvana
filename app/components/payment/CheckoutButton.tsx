@@ -10,6 +10,7 @@ interface CheckoutButtonProps {
   visaCategory?: string;
   consultationId?: string;
   candidateCount?: number;
+  action?: string;
   userId: string;
   children: React.ReactNode;
   className?: string;
@@ -22,6 +23,7 @@ export default function CheckoutButton({
   visaCategory,
   consultationId,
   candidateCount,
+  action,
   userId,
   children,
   className = "",
@@ -61,6 +63,7 @@ export default function CheckoutButton({
           visaCategory,
           consultationId,
           candidateCount,
+          action,
         }),
       });
 

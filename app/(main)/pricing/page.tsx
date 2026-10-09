@@ -658,6 +658,8 @@ function PricingContent() {
   const isIr5 = Boolean(
     visa && (visa.toUpperCase().includes("IR-5") || visa.toUpperCase().includes("IR5"))
   );
+  const isAddingCandidate = searchParams.get("action") === "add_candidate";
+  const hasActiveIr5 = Boolean(journeyTiers.ir5 && journeyTiers.ir5 !== "free");
   const parentMultiplier = isIr5 ? parentCount : 1;
   const isIr1Purchased = Boolean(journeyTiers.ir1 && journeyTiers.ir1 !== "free");
 
@@ -735,6 +737,7 @@ function PricingContent() {
             billing,
             userId: uid,
             candidateCount: isIr5 ? parentCount : 1,
+            action: isAddingCandidate || (isIr5 && hasActiveIr5) ? "add_candidate" : undefined,
           }),
         });
         const data = await res.json();
@@ -780,6 +783,8 @@ function PricingContent() {
       isIr5,
       parentCount,
       isProcessingAutoCheckout,
+      isAddingCandidate,
+      hasActiveIr5,
     ]
   );
 
@@ -850,7 +855,7 @@ function PricingContent() {
       if (!isNaN(parsed) && parsed >= 1) setParentCount(parsed);
     }
     if (searchParams.get("action") === "add_candidate") {
-      setParentCount((prev) => Math.max(prev, 2));
+      setParentCount(1);
     }
     // Restore the order-summary (review) step when deep-linked back to it.
     if (searchParams.get("step") === "review") setPurchaseStep("review");
@@ -997,6 +1002,7 @@ function PricingContent() {
           addons={checkoutAddonIds}
           visaCategory={visa}
           candidateCount={isIr5 ? parentCount : 1}
+          action={isAddingCandidate || (isIr5 && hasActiveIr5) ? "add_candidate" : undefined}
           userId={userId}
           onLoadingChange={setIsManualCheckoutLoading}
           className="bg-primary hover:bg-primary/90 w-full rounded-full px-5 py-[11px] text-center text-[14px] font-semibold text-white"
@@ -1071,6 +1077,7 @@ function PricingContent() {
       addons={checkoutAddonIds}
       visaCategory={visa}
       candidateCount={isIr5 ? parentCount : 1}
+      action={isAddingCandidate || (isIr5 && hasActiveIr5) ? "add_candidate" : undefined}
       userId={userId}
       onLoadingChange={setIsManualCheckoutLoading}
       className="bg-primary hover:bg-primary/90 w-full rounded-full px-4 py-2.5 text-center text-[13px] font-semibold text-white"
@@ -1395,15 +1402,18 @@ function PricingContent() {
                               <Users className="h-4 w-4" />
                             </span>
                             <h3 className="text-foreground text-[17px] font-bold">
-                              Beneficiary Parents Selection
+                              {isAddingCandidate || hasActiveIr5
+                                ? "Add Additional Beneficiary Parent"
+                                : "Beneficiary Parents Selection"}
                             </h3>
                             <span className="rounded-full bg-[#0d7377]/10 px-2.5 py-0.5 text-[11px] font-semibold text-[#0d7377]">
                               IR-5 Visa
                             </span>
                           </div>
                           <p className="text-muted-foreground mt-1 text-[13px]">
-                            How many parents are you petitioning for? Select biological, step, or
-                            adoptive parents.
+                            {isAddingCandidate || hasActiveIr5
+                              ? "You are adding another parent beneficiary to your IR-5 petition. Choose how many additional parents and select their plan below."
+                              : "How many parents are you petitioning for? Select biological, step, or adoptive parents."}
                           </p>
                         </div>
 
@@ -1611,9 +1621,9 @@ function PricingContent() {
 
                         const planRank = TIER_RANK[plan.id] ?? 0;
 
-                        const isCurrentPlan = plan.id === selectedJourneyTier;
+                        const isCurrentPlan = !isIr5 && plan.id === selectedJourneyTier;
 
-                        const isDowngrade = planRank < activeTierRank;
+                        const isDowngrade = !isIr5 && planRank < activeTierRank;
 
                         return (
                           <article

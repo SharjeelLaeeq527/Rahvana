@@ -163,6 +163,9 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
         // Provision Candidates, Candidate Journeys, and Isolated Document Vaults
         const visaCategoryMeta = session.metadata?.visa_category || "ir1";
         const candidateCountMeta = parseInt(session.metadata?.candidate_count || "1", 10) || 1;
+        const isAddCandidateMeta =
+          session.metadata?.action === "add_candidate" ||
+          session.metadata?.is_add_candidate === "true";
 
         await provisionCandidateJourneysAndVaults({
           supabase,
@@ -171,6 +174,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
           candidateCount: candidateCountMeta,
           tier: productId,
           stripeSubscriptionId: (session.subscription as string) || undefined,
+          isAddCandidate: isAddCandidateMeta,
         });
 
         const { data: existingProfile } =
