@@ -404,7 +404,7 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
       ["Will it definitely be accepted?", "It outputs to the standard size for US and shows the requirements checklist, but always double-check your specific post's instructions before submitting."],
     ],
     media: [
-      imgFile("photobooth.webp", "Your original photo (before)", "Before: a normal photo you upload"),
+      imgFile("photobooth.jpg", "Your original photo (before)", "Before: a normal photo you upload"),
       imgFile("photobooth-after.jpg", "Compliant passport photo (after)", "After: a fully compliant biometric photo"),
     ],
     related: ["smart", "guide-passport"],
