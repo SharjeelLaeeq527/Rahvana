@@ -5,6 +5,7 @@ import { RoadmapDataV3 } from "./types";
 import { DashboardView } from "./DashboardView";
 import { EmbeddedToolContainer } from "./EmbeddedToolContainer";
 import { JourneyPlanBadge } from "@/app/components/shared/JourneyPlanBadge";
+import { JourneyFavoritesTray } from "./JourneyFavoritesTray";
 import { ChapterView } from "./ChapterView";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { getActiveStepsForStage } from "./journeyHelpers";
@@ -269,8 +270,12 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
           )}
         </ol>
 
-        <div className="ml-auto shrink-0">
+        <div className="ml-auto flex shrink-0 items-center gap-2">
           <JourneyPlanBadge tier={state.subscriptionTier} />
+          <JourneyFavoritesTray
+            journeyId={state.backendId}
+            onLaunchTool={(componentKey) => launchTool(componentKey)}
+          />
         </div>
 
         {/* Right-side toolbar */}

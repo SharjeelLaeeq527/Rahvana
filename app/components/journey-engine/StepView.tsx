@@ -154,7 +154,6 @@ import { InterviewSchedulingTool } from "./components/InterviewSchedulingTool";
 import RegisterReceiptStep from "./components/RegisterReceiptStep";
 import TrackCaseStatusStep from "./components/TrackCaseStatusStep";
 import { FinancialChecklistTool } from "./components/FinancialChecklistTool";
-import SponsorshipCalculatorTool from "./components/SponsorshipCalculatorTool";
 import { ApUpdateModal } from "./PortalWalletManager";
 import { HouseholdSponsorshipTool } from "./components/HouseholdSponsorshipTool";
 import { DocumentQuestionnaire } from "@/app/components/questionnaire/DocumentQuestionnaire";
@@ -588,8 +587,6 @@ export const StepView: React.FC<StepViewProps> = ({
     setHhRelationships,
     hhDocsStatus,
     setHhDocsStatus,
-    isSponsorshipCalcOpen,
-    setIsSponsorshipCalcOpen,
     sponsorshipResult,
     sponsorshipDraft,
   } = useSponsorship({ metadata: state.metadata });
@@ -1402,7 +1399,7 @@ export const StepView: React.FC<StepViewProps> = ({
               sponsorshipResult={sponsorshipResult}
               onOpenCalc={() => {
                 if (!stepEntitlement.guard()) return;
-                setIsSponsorshipCalcOpen(true);
+                onLaunchTool?.("sponsorship_calculator", sId);
               }}
               tool={tool}
               guard={stepEntitlement.guard}
@@ -4226,44 +4223,11 @@ export const StepView: React.FC<StepViewProps> = ({
         </button>
       </footer>
 
-      {/* Sponsorship Calculator Tool Overlay */}
-      <SponsorshipCalculatorTool
-        mode="journey"
-        journeyTier={state?.subscriptionTier ?? (state as any)?.subscription_tier}
-        journeyContext={{
-          journeySlug: data.journey_type
-            ? `${data.journey_type.toLowerCase()}-journey`
-            : "ir5-journey",
-          journeyCategory: data.journey_type || "IR-5",
-          candidateId: (state as any).candidateId || "candidate-1",
-          backendId: (state as any).backendId || null,
-          subscriptionTier: state?.subscriptionTier ?? (state as any)?.subscription_tier,
-        }}
-        isOpen={isSponsorshipCalcOpen}
-        onClose={() => setIsSponsorshipCalcOpen(false)}
-        initialData={{
-          ...(sponsorshipDraft?.data || sponsorshipResult?.raw || {}),
-          // Auto-supply the sponsor's state from the profile so the user is not
-          // asked to re-enter it. Prior saved input wins if present.
-          state:
-            sponsorshipDraft?.data?.state ||
-            sponsorshipResult?.raw?.state ||
-            profile?.sponsor?.address?.state ||
-            "",
-        }}
-        initialStep={sponsorshipDraft?.stepIdx ?? (sponsorshipResult ? 10 : 0)}
-        // Lock (show read-only) only when we actually have a sponsor state;
-        // otherwise fall back to asking the user.
-        lockState={Boolean(profile?.sponsor?.address?.state)}
-        onProgressChange={(draft) => {
-          actions.updateMetadata({ sponsorshipDraft: draft });
-        }}
-        onSave={(result: any) => {
-          actions.updateMetadata({ sponsorshipResult: result, sponsorshipDraft: null });
-          setIsSponsorshipCalcOpen(false);
-          if (!isCompleted) actions.toggleComplete("step_2_5");
-        }}
-      />
+      {/* Sponsorship Calculator now launches through the shared roadmap toolbox (onLaunchTool →
+          RoadmapLayoutEngine.activeToolKey → EmbeddedToolContainer) so it renders inline
+          under the RoadmapLayoutEngine breadcrumb, consistent with Medical / PCC / Translation.
+          The draft/result are persisted to metadata and the step auto-completed by
+          EmbeddedToolContainer.onSave via autoCompleteStepKey. */}
 
       {/* Medical / PCC now launch through the shared roadmap toolbox (onLaunchTool →
           RoadmapLayoutEngine.activeToolKey → EmbeddedToolContainer) so they render inline

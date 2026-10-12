@@ -5,6 +5,7 @@ import { RoadmapData } from "@/app/(tools)/(visa)/visa-category/[visa-journey]/c
 import { DashboardView } from "./DashboardView";
 import { EmbeddedToolContainer } from "@/app/components/journey-engine/EmbeddedToolContainer";
 import { JourneyPlanBadge } from "@/app/components/shared/JourneyPlanBadge";
+import { JourneyFavoritesTray } from "@/app/components/journey-engine/JourneyFavoritesTray";
 import { ChapterView } from "./ChapterView";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { getActiveStepsForStage } from "./journeyHelpers";
@@ -53,6 +54,12 @@ export default function RoadmapLayoutSpouse({ data, state, actions }: RoadmapLay
   const [view, setView] = useState<ViewType>("dashboard");
   const [selectedChapterIdx, setSelectedChapterIdx] = useState<number>(0);
   const [activeToolKey, setActiveToolKey] = useState<string | null>(null);
+
+  const [activeToolAutoCompleteStep, setActiveToolAutoCompleteStep] = useState<string | null>(null);
+  const launchTool = (toolKey: string, autoCompleteStepKey?: string | null) => {
+    setActiveToolAutoCompleteStep(autoCompleteStepKey ?? null);
+    setActiveToolKey(toolKey);
+  };
 
   const { showToast } = useToast();
   const { user } = useAuth();
@@ -185,11 +192,19 @@ export default function RoadmapLayoutSpouse({ data, state, actions }: RoadmapLay
           <li>
             <button
               className={`breadcrumb-item ${view === "dashboard" && !activeToolKey ? "breadcrumb-current" : "breadcrumb-link"}`}
-              onClick={activeToolKey ? () => setActiveToolKey(null) : view !== "dashboard" ? handleBackToDashboard : undefined}
+              onClick={
+                activeToolKey
+                  ? () => setActiveToolKey(null)
+                  : view !== "dashboard"
+                    ? handleBackToDashboard
+                    : undefined
+              }
               disabled={view === "dashboard" && !activeToolKey}
             >
               <LayoutDashboard size={12} strokeWidth={3} aria-hidden="true" />
-              <span className={`bc-text${view !== "dashboard" || activeToolKey ? " bc-text--dashboard" : ""}`}>
+              <span
+                className={`bc-text${view !== "dashboard" || activeToolKey ? "bc-text--dashboard" : ""}`}
+              >
                 Dashboard
               </span>
             </button>
@@ -204,7 +219,9 @@ export default function RoadmapLayoutSpouse({ data, state, actions }: RoadmapLay
                 aria-hidden="true"
               />
               <span className="breadcrumb-item breadcrumb-current">
-                <span className="bc-text">{activeToolKey.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}</span>
+                <span className="bc-text">
+                  {activeToolKey.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+                </span>
               </span>
             </li>
           )}
@@ -242,8 +259,12 @@ export default function RoadmapLayoutSpouse({ data, state, actions }: RoadmapLay
           )}
         </ol>
 
-        <div className="ml-auto shrink-0">
+        <div className="ml-auto flex shrink-0 items-center gap-2">
           <JourneyPlanBadge tier={state.subscriptionTier} />
+          <JourneyFavoritesTray
+            journeyId={state.backendId}
+            onLaunchTool={(componentKey) => launchTool(componentKey)}
+          />
         </div>
 
         {/* Right-side toolbar */}
@@ -302,6 +323,7 @@ export default function RoadmapLayoutSpouse({ data, state, actions }: RoadmapLay
           <EmbeddedToolContainer
             toolKey={activeToolKey}
             onClose={() => setActiveToolKey(null)}
+            autoCompleteStepKey={activeToolAutoCompleteStep}
             data={data}
             state={state}
             actions={actions}
@@ -341,6 +363,7 @@ export default function RoadmapLayoutSpouse({ data, state, actions }: RoadmapLay
                   onBack={handleBackToChapter}
                   onSelectChapter={handleSelectChapter}
                   onSelectStep={handleSelectStep}
+                  onLaunchTool={launchTool}
                   actions={actions}
                 />
               </Suspense>
