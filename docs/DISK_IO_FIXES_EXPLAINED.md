@@ -6,6 +6,7 @@
 
 ---
 
+
 ## 1. First, what is "Disk IO"? (the almari analogy)
 
 Think of the database as a big **almari (cupboard)** full of files.
