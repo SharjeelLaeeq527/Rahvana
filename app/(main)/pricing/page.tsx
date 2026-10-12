@@ -1884,8 +1884,8 @@ function PricingContent() {
                     {/* Parent Selector Card - only shown when adding a candidate or on initial purchase */}
                     {!isUpgradingIr5 && (
                       <div className="border-border bg-card rounded-[22px] border p-5 shadow-sm sm:p-6">
-                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                          <div>
+                        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                          <div className="lg:max-w-xl">
                             <div className="flex items-center gap-2">
                               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#0d7377]/10 text-[#0d7377]">
                                 <Users className="h-4 w-4" />
@@ -1908,7 +1908,7 @@ function PricingContent() {
                           </div>
 
                           {/* Counter and presets */}
-                          <div className="flex flex-wrap items-center gap-2">
+                          <div className="flex shrink-0 items-center gap-1.5 overflow-x-auto pb-1 sm:gap-2 sm:pb-0">
                             {[1, 2, 3, 4].map((count) => (
                               <button
                                 key={count}
@@ -1919,7 +1919,7 @@ function PricingContent() {
                                     setIsEligibilityConfirmed(true);
                                   }
                                 }}
-                                className={`rounded-xl px-3.5 py-2 text-[13px] font-semibold transition-all ${
+                                className={`whitespace-nowrap rounded-xl px-3 py-1.5 text-[12.5px] font-semibold transition-all sm:px-3.5 sm:py-2 sm:text-[13px] ${
                                   parentCount === count
                                     ? "bg-[#0d7377] text-white shadow-sm ring-2 ring-[#0d7377]/20"
                                     : "border-border bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground border"
@@ -1930,7 +1930,7 @@ function PricingContent() {
                             ))}
 
                             {/* Stepper for 5+ or precise adjusting */}
-                            <div className="border-border bg-muted/20 flex items-center rounded-xl border p-1">
+                            <div className="border-border bg-muted/20 flex shrink-0 items-center rounded-xl border p-1">
                               <button
                                 type="button"
                                 disabled={parentCount <= 1}
@@ -1939,12 +1939,12 @@ function PricingContent() {
                                   setParentCount(next);
                                   if (next <= 2) setIsEligibilityConfirmed(true);
                                 }}
-                                className="text-muted-foreground hover:bg-card hover:text-foreground flex h-8 w-8 items-center justify-center rounded-lg disabled:opacity-30 disabled:hover:bg-transparent"
+                                className="text-muted-foreground hover:bg-card hover:text-foreground flex h-7 w-7 items-center justify-center rounded-lg disabled:opacity-30 disabled:hover:bg-transparent sm:h-8 sm:w-8"
                                 title="Decrease parent count"
                               >
                                 <Minus className="h-3.5 w-3.5" />
                               </button>
-                              <span className="text-foreground min-w-[30px] px-2 text-center text-[13px] font-bold">
+                              <span className="text-foreground min-w-[26px] px-1 text-center text-[13px] font-bold sm:min-w-[30px] sm:px-2">
                                 {parentCount}
                               </span>
                               <button
@@ -1957,7 +1957,7 @@ function PricingContent() {
                                     setIsEligibilityConfirmed(false);
                                   }
                                 }}
-                                className="text-muted-foreground hover:bg-card hover:text-foreground flex h-8 w-8 items-center justify-center rounded-lg disabled:opacity-30 disabled:hover:bg-transparent"
+                                className="text-muted-foreground hover:bg-card hover:text-foreground flex h-7 w-7 items-center justify-center rounded-lg disabled:opacity-30 disabled:hover:bg-transparent sm:h-8 sm:w-8"
                                 title="Increase parent count"
                               >
                                 <Plus className="h-3.5 w-3.5" />
