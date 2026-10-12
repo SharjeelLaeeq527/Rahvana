@@ -87,6 +87,10 @@ export async function GET(request: NextRequest) {
       const isAddCandidateMeta =
         session.metadata?.action === "add_candidate" ||
         session.metadata?.is_add_candidate === "true";
+      const targetCandidateIdMeta =
+        session.metadata?.target_candidate_id ||
+        session.metadata?.candidate_id ||
+        undefined;
 
       // ── 1. Provision Candidates, Journeys, and Document Vaults ─────────────
       // Automatically creates candidate profiles, seeds multi-candidate journeys
@@ -99,6 +103,7 @@ export async function GET(request: NextRequest) {
         tier: productId,
         stripeSubscriptionId: (session.subscription as string) || undefined,
         isAddCandidate: isAddCandidateMeta,
+        targetCandidateId: targetCandidateIdMeta,
       });
 
       // ── 2. Compute highest active tier across all user journeys ─────────────

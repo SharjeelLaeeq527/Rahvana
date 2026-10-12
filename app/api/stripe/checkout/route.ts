@@ -12,7 +12,10 @@ import { E, msg } from "@/lib/errors";
 import { getAuthenticatedUser } from "@/lib/api/authGuards";
 import { acquireCheckoutLock, releaseCheckoutLock } from "@/lib/stripe/checkoutLock";
 import { resolveSubscriptionTier } from "@/lib/stripe/subscriptionCleanup";
-import { isMultiCandidateCategory } from "@/lib/candidate/candidateSyncService";
+import {
+  isMultiCandidateCategory,
+  getCandidateJourneyKey,
+} from "@/lib/candidate/candidateSyncService";
 
 function logDebug(msg: string, obj?: any) {
   // Never write request/session details to disk in production (PII hygiene).
@@ -75,8 +78,12 @@ export async function POST(request: NextRequest) {
       addons,
       visaCategory,
       candidateCount,
+      candidateId: rawCandidateId,
+      candidate_id: snakeCandidateId,
       action,
     } = body;
+
+    const candidateId = rawCandidateId || snakeCandidateId || undefined;
 
     if (Array.isArray(addons)) {
       const unresolvedInterviewPrep = addons.find(
@@ -121,14 +128,26 @@ export async function POST(request: NextRequest) {
       profile?.profile_details?.plan_visa_category || profile?.profile_details?.visa_category;
     const effectiveVisaCategory = visaCategory || dbVisaCategory || "IR-1 / CR-1";
     const selectedJourneyType = journeyTypeForVisaCategory(effectiveVisaCategory);
+    const isMultiCand =
+      isMultiCandidateCategory(effectiveVisaCategory) || selectedJourneyType === "IR5";
+    const targetCandidateJourneyKey =
+      isMultiCand && candidateId
+        ? getCandidateJourneyKey(effectiveVisaCategory, candidateId)
+        : selectedJourneyType;
+
     const { data: selectedJourney } = productTier
       ? await supabase
           .from("journeys")
           .select("subscription_tier, stripe_subscription_id, status")
           .eq("user_id", userId)
-          .ilike("journey_type", selectedJourneyType)
+          .ilike("journey_type", targetCandidateJourneyKey)
           .maybeSingle()
       : { data: null };
+
+    const targetCandidateProfile =
+      isMultiCand && candidateId && Array.isArray(profile?.profile_details?.candidates)
+        ? (profile.profile_details.candidates as any[]).find((c) => c.id === candidateId)
+        : null;
 
     // ── Concurrency guard: serialize subscription checkouts per user so two
     // in-flight requests can't both pass the "no live sub" check below and each
@@ -249,7 +268,8 @@ export async function POST(request: NextRequest) {
         subscription.id === selectedJourney?.stripe_subscription_id
       );
     });
-    const dbTier = (selectedJourney?.subscription_tier ?? "free").toLowerCase();
+    const candidateRosterTier = targetCandidateProfile?.tier;
+    const dbTier = (candidateRosterTier || selectedJourney?.subscription_tier ?? "free").toLowerCase();
     const dbStatus = selectedJourney?.status ?? "not_started";
     const stripeTierRank = journeyLiveSubs.reduce((max, s) => {
       const t = resolveSubscriptionTier(s);
@@ -486,6 +506,8 @@ export async function POST(request: NextRequest) {
           tier: tierLower,
           visa_category: effectiveVisaCategory,
           candidate_count: String(parsedCandidateCount),
+          target_candidate_id: candidateId || "",
+          candidate_id: candidateId || "",
           action: isAddCandidateRequest ? "add_candidate" : "",
           is_add_candidate: isAddCandidateRequest ? "true" : "false",
         },
@@ -562,6 +584,8 @@ export async function POST(request: NextRequest) {
         product_name: product.name + (serverIsUpgrade ? " (Upgrade)" : ""),
         visa_category: effectiveVisaCategory,
         candidate_count: String(parsedCandidateCount),
+        target_candidate_id: candidateId || "",
+        candidate_id: candidateId || "",
         action: isAddCandidateRequest ? "add_candidate" : "",
         is_add_candidate: isAddCandidateRequest ? "true" : "false",
         is_upgrade: serverIsUpgrade ? "true" : "false",

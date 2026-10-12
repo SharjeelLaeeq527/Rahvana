@@ -166,6 +166,10 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
         const isAddCandidateMeta =
           session.metadata?.action === "add_candidate" ||
           session.metadata?.is_add_candidate === "true";
+        const targetCandidateIdMeta =
+          session.metadata?.target_candidate_id ||
+          session.metadata?.candidate_id ||
+          undefined;
 
         await provisionCandidateJourneysAndVaults({
           supabase,
@@ -175,6 +179,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
           tier: productId,
           stripeSubscriptionId: (session.subscription as string) || undefined,
           isAddCandidate: isAddCandidateMeta,
+          targetCandidateId: targetCandidateIdMeta,
         });
 
         const { data: existingProfile } =
