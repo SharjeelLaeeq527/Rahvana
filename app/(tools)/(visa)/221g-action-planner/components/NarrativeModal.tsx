@@ -1771,7 +1771,7 @@ export function NarrativeModal({
             >
               <div
                 className="pointer-events-none absolute inset-x-0 top-0 bg-gradient-to-b from-white/95 to-transparent"
-                style={{ height: isWizardScene ? "2rem" : "6rem" }}
+                style={{ height: isGuideVariant ? "1.5rem" : "2.5rem" }}
               />
               <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white/95 to-transparent" />
 

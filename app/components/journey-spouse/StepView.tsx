@@ -2,8 +2,8 @@
 // Dynamic refactoring in progress
 "use client";
 
-import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
-import { GuidePageOverlay } from "@/app/components/shared/GuidePageOverlay";
+import React, { useEffect, useLayoutEffect, useMemo, useState, useCallback, useRef } from "react";
+import { JourneyGuidePage } from "@/app/components/shared/GuidePageOverlay";
 import { ToolPageOverlay } from "@/app/components/shared/ToolPageOverlay";
 import { E, msg } from "@/lib/errors";
 import {
@@ -431,6 +431,58 @@ export const StepView: React.FC<StepViewProps> = ({
   const [activeUploadId, setActiveUploadId] = useState<string | null>(null);
   const [activeUploadType, setActiveUploadType] = useState<"doc" | "hh" | "financial" | null>(null);
   const [selectedGuideId, setSelectedGuideId] = useState<string | null>(null);
+
+  const [journeyHeaderBottom, setJourneyHeaderBottom] = useState(112);
+
+  useLayoutEffect(() => {
+    const header = document.querySelector<HTMLElement>("[data-journey-header]");
+    const updateHeaderBottom = () => {
+      setJourneyHeaderBottom(header ? Math.max(0, header.getBoundingClientRect().bottom) : 112);
+    };
+
+    updateHeaderBottom();
+    const observer = header ? new ResizeObserver(updateHeaderBottom) : null;
+    if (header && observer) observer.observe(header);
+    window.addEventListener("resize", updateHeaderBottom);
+    window.addEventListener("scroll", updateHeaderBottom, true);
+
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener("resize", updateHeaderBottom);
+      window.removeEventListener("scroll", updateHeaderBottom, true);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (
+      selectedGuideId === "doc_passport_photos" ||
+      selectedGuideId === "passport-photos" ||
+      selectedGuideId === "photo-booth"
+    ) {
+      setSelectedGuideId(null);
+      setToolOverlayHref("/passport");
+    } else if (
+      selectedGuideId === "doc_translations" ||
+      selectedGuideId === "translations" ||
+      selectedGuideId === "document-translation"
+    ) {
+      setSelectedGuideId(null);
+      setToolOverlayHref("/document-translation");
+    }
+  }, [selectedGuideId]);
+
+  useEffect(() => {
+    if (!selectedGuideId || !InlineGuideData[selectedGuideId]) return;
+    const title = InlineGuideData[selectedGuideId]?.title || "Guide";
+    window.dispatchEvent(new CustomEvent("journey-overlay-name", { detail: title }));
+    const handleClose = () => setSelectedGuideId(null);
+    window.addEventListener("journey-overlay-close", handleClose);
+    return () => {
+      window.dispatchEvent(new CustomEvent("journey-overlay-name", { detail: null }));
+      window.removeEventListener("journey-overlay-close", handleClose);
+    };
+  }, [selectedGuideId]);
+
   const [documentToDelete, setDocumentToDelete] = useState<{
     id: string;
     name: string;
@@ -2913,6 +2965,16 @@ export const StepView: React.FC<StepViewProps> = ({
     );
   };
 
+  if (guideOverlayUrl) {
+    return (
+      <JourneyGuidePage
+        guideUrl={guideOverlayUrl}
+        onClose={() => setGuideOverlayUrl(null)}
+        plan={plan}
+      />
+    );
+  }
+
   if (!currentStep) return null;
 
   // (moved to top-level, see above)
@@ -3433,7 +3495,23 @@ export const StepView: React.FC<StepViewProps> = ({
                                           <div
                                             key={doc.id || idx}
                                             onClick={() => {
+                                              const isPhotoBoothDoc =
+                                                doc.id === "doc_passport_photos" ||
+                                                doc.id === "passport-photos" ||
+                                                doc.id === "photo-booth" ||
+                                                doc.guideKey === "doc_passport_photos" ||
+                                                doc.selectedGuideId === "doc_passport_photos" ||
+                                                doc.name?.toLowerCase().includes("passport photo");
+                                              const isTranslationDoc =
+                                                doc.id === "doc_translations" ||
+                                                doc.id === "translations" ||
+                                                doc.id === "document-translation" ||
+                                                doc.guideKey === "doc_translations" ||
+                                                doc.selectedGuideId === "doc_translations" ||
+                                                doc.name?.toLowerCase().includes("translation");
                                               const hasDocGuide =
+                                                isPhotoBoothDoc ||
+                                                isTranslationDoc ||
                                                 Boolean(
                                                   doc.guideUrl && doc.guideUrl !== "/guides"
                                                 ) || Boolean(doc.id && InlineGuideData[doc.id]);
@@ -3445,6 +3523,26 @@ export const StepView: React.FC<StepViewProps> = ({
                                                 subtitle: doc.subtitle,
                                                 hasGuide: hasDocGuide,
                                                 onReadGuide: () => {
+                                                  if (isPhotoBoothDoc) {
+                                                    setToolOverlayHref("/passport");
+                                                    if (actions.updateDocumentStatus && doc.id) {
+                                                      actions.updateDocumentStatus(
+                                                        doc.id,
+                                                        "in-progress"
+                                                      );
+                                                    }
+                                                    return;
+                                                  }
+                                                  if (isTranslationDoc) {
+                                                    setToolOverlayHref("/document-translation");
+                                                    if (actions.updateDocumentStatus && doc.id) {
+                                                      actions.updateDocumentStatus(
+                                                        doc.id,
+                                                        "in-progress"
+                                                      );
+                                                    }
+                                                    return;
+                                                  }
                                                   if (doc.guideUrl && doc.guideUrl !== "/guides") {
                                                     setGuideOverlayUrl(doc.guideUrl);
                                                     if (actions.updateDocumentStatus && doc.id) {
@@ -3849,7 +3947,23 @@ export const StepView: React.FC<StepViewProps> = ({
                           }
                           showTags
                           onItemClick={(item) => {
+                            const isPhotoBoothItem =
+                              item.id === "doc_passport_photos" ||
+                              item.id === "passport-photos" ||
+                              item.id === "photo-booth" ||
+                              item.guideKey === "doc_passport_photos" ||
+                              item.selectedGuideId === "doc_passport_photos" ||
+                              item.title?.toLowerCase().includes("passport photo");
+                            const isTranslationItem =
+                              item.id === "doc_translations" ||
+                              item.id === "translations" ||
+                              item.id === "document-translation" ||
+                              item.guideKey === "doc_translations" ||
+                              item.selectedGuideId === "doc_translations" ||
+                              item.title?.toLowerCase().includes("translation");
                             const hasDocGuide =
+                              isPhotoBoothItem ||
+                              isTranslationItem ||
                               Boolean(item.guideUrl && item.guideUrl !== "/guides") ||
                               Boolean(item.id && InlineGuideData[item.id]);
 
@@ -3860,6 +3974,20 @@ export const StepView: React.FC<StepViewProps> = ({
                               subtitle: item.sub,
                               hasGuide: hasDocGuide,
                               onReadGuide: () => {
+                                if (isPhotoBoothItem) {
+                                  setToolOverlayHref("/passport");
+                                  if (actions.updateDocumentStatus && item.id) {
+                                    actions.updateDocumentStatus(item.id, "in-progress");
+                                  }
+                                  return;
+                                }
+                                if (isTranslationItem) {
+                                  setToolOverlayHref("/document-translation");
+                                  if (actions.updateDocumentStatus && item.id) {
+                                    actions.updateDocumentStatus(item.id, "in-progress");
+                                  }
+                                  return;
+                                }
                                 if (item.guideUrl && item.guideUrl !== "/guides") {
                                   setGuideOverlayUrl(item.guideUrl);
                                   if (actions.updateDocumentStatus && item.id)
@@ -4471,31 +4599,10 @@ export const StepView: React.FC<StepViewProps> = ({
       )}
 
       {selectedGuideId && InlineGuideData[selectedGuideId] && (
-        <div className="animate-in slide-in-from-bottom-4 fixed inset-0 z-[100] flex flex-col bg-white duration-300 ease-out">
-          {/* Guide Topbar */}
-          <div className="flex shrink-0 items-center gap-[16px] border-b border-[#d0e4f7] p-[18px_24px]">
-            <button
-              onClick={() => setSelectedGuideId(null)}
-              className="focus:ring-primary flex h-[36px] w-[36px] shrink-0 cursor-pointer items-center justify-center rounded-full border-none bg-[#f5f7fa] transition-all outline-none hover:bg-[#e8f1fb] focus:ring-2"
-              aria-label="Close guide"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                className="h-[16px] w-[16px] shrink-0 fill-none stroke-[#3a4f63] stroke-2"
-                style={{ strokeLinecap: "round" }}
-              >
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
-            <div className="bg-primary/30 h-[5px] flex-1 overflow-hidden rounded-full">
-              <div className="from-primary to-primary h-full w-full bg-linear-to-r transition-all duration-300" />
-            </div>
-            <div className="shrink-0 text-[12px] font-medium whitespace-nowrap text-[#6b8097]">
-              Guide
-            </div>
-          </div>
-
+        <div
+          className="animate-in slide-in-from-bottom-4 fixed inset-x-0 bottom-0 z-[30] flex flex-col bg-white duration-300 ease-out"
+          style={{ top: journeyHeaderBottom }}
+        >
           {/* Guide Body */}
           <div className="flex flex-1 flex-col items-center overflow-y-auto p-[48px_24px_40px]">
             <div className="flex w-full max-w-[680px] flex-col">
@@ -5489,15 +5596,23 @@ export const StepView: React.FC<StepViewProps> = ({
           }}
         />
       )}
-      <GuidePageOverlay
-        guideUrl={guideOverlayUrl}
-        onClose={() => setGuideOverlayUrl(null)}
-        plan={plan}
-      />
       <ToolPageOverlay
         toolHref={toolOverlayHref}
         onClose={() => setToolOverlayHref(null)}
         plan={plan}
+        tier={state?.subscriptionTier ?? (state as any)?.subscription_tier}
+        toolProps={{
+          showHeader: true,
+          showRequirements: true,
+          journeyTier: state?.subscriptionTier ?? (state as any)?.subscription_tier,
+          journeyContext: {
+            journeySlug: data.journey_type ? `${data.journey_type.toLowerCase()}-journey` : "ir1-journey",
+            journeyCategory: data.journey_type || "IR-1",
+            candidateId: (state as any)?.candidateId || activeCandidateId || "candidate-1",
+            backendId: (state as any)?.backendId || null,
+            subscriptionTier: state?.subscriptionTier ?? (state as any)?.subscription_tier,
+          },
+        }}
       />
     </div>
   );

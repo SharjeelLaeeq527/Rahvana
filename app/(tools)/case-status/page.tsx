@@ -198,8 +198,12 @@ export function decodePrefix(receipt: string) {
   };
 }
 
-export function parseUSCISData(raw: USCISCaseStatus, receiptNumber: string): CaseResult {
-  const status = raw.current_case_status_text_en ?? "";
+export function parseUSCISData(
+  raw: USCISCaseStatus,
+  receiptNumber: string,
+  candidateMeta?: { candidateId?: string | null; candidateName?: string | null }
+): CaseResult {
+  const status = raw.current_case_status_text_en ?? raw.current_case_status_en ?? "";
   const description = raw.current_case_status_desc_en ?? "";
   const formType = raw.formType ?? "";
   const modifiedDate = raw.modifiedDate ?? raw.submittedDate ?? "";

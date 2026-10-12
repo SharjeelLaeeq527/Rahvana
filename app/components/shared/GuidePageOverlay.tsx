@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
-import { X, Loader2 } from "lucide-react";
+import { Loader } from "@/components/ui/spinner";
 
 import {
   usePlan,
@@ -20,7 +20,7 @@ import {
 } from "@/lib/entitlements/helpers";
 import { PlanTier, isAccessible } from "@/lib/entitlements/config";
 
-interface GuidePageOverlayProps {
+interface JourneyGuidePageProps {
   /** Relative URL of the guide page, e.g. "/guides/passport-guide" */
   guideUrl: string | null;
   /** Called when the user dismisses the overlay */
@@ -32,171 +32,201 @@ interface GuidePageOverlayProps {
 }
 
 const ToolLoadingState = () => (
-  <div className="min-h-screen flex flex-col items-center justify-center bg-[#f8fafc] gap-3">
-    <Loader2 size={32} className="text-primary animate-spin" />
-    <span className="text-xs font-medium text-slate-500">Loading tool...</span>
+  <div className="flex min-h-[50vh] w-full items-center justify-center bg-[#f8fafc]">
+    <Loader size="md" text="Loading tool..." className="!gap-2 [&_h2]:text-base [&_h2]:font-semibold [&_h2]:mt-0" />
   </div>
 );
 
 const GuideLoadingState = () => (
-  <div className="min-h-screen flex flex-col items-center justify-center bg-[#f8fafc] gap-3">
-    <Loader2 size={32} className="text-primary animate-spin" />
-    <span className="text-xs font-medium text-slate-500">Loading guide...</span>
+  <div className="flex min-h-[50vh] w-full items-center justify-center bg-[#f8fafc]">
+    <Loader size="md" text="Loading guide..." className="!gap-2 [&_h2]:text-base [&_h2]:font-semibold [&_h2]:mt-0" />
   </div>
 );
+
+const JourneyGuideLayoutStyles = () => (
+  <style jsx global>{`
+    /* ── Hide standalone WizardHeader inside the journey ── */
+    /* The Journey Header already renders title, breadcrumbs, back button, and plan badge */
+    .journey-guide-page header {
+      display: none !important;
+    }
+
+    /* Kill standalone-mode pt-26 top-padding on the outer wrapper and content */
+    .journey-guide-page div[class~="pt-26"],
+    .journey-guide-page div[class~="pt-24"],
+    .journey-guide-page div[class~="pt-20"] {
+      padding-top: 0 !important;
+    }
+
+    /* Remove min-h-screen on the outer guide container so it fits naturally */
+    .journey-guide-page div[class~="min-h-screen"]:not(:has(.animate-spin)) {
+      min-height: 0 !important;
+      padding-top: 0 !important;
+    }
+
+    /* Centered loader state */
+    .journey-guide-page div:has(> .animate-spin),
+    .journey-guide-page div:has(> * > .animate-spin) {
+      min-height: 60vh !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding-top: 0 !important;
+      margin: 0 auto !important;
+    }
+  `}</style>
+);
+
+function safeDynamic(importFn: () => Promise<any>, loadingComponent: React.ComponentType) {
+  return dynamic(
+    () =>
+      importFn().catch((error) => {
+        if (
+          typeof window !== "undefined" &&
+          (error?.name === "ChunkLoadError" || String(error?.message).includes("Loading chunk"))
+        ) {
+          window.location.reload();
+        }
+        throw error;
+      }),
+    { loading: loadingComponent }
+  );
+}
 
 // Map of slug -> dynamically imported Guide/Tool React component
 const GUIDE_COMPONENTS: Record<string, React.ComponentType<any>> = {
   // Tools mapped when opened via guide links
-  passport: dynamic(() => import("@/components/tools/PassportPhotoTool"), {
-    loading: ToolLoadingState,
-  }),
-  "passport-photos": dynamic(() => import("@/components/tools/PassportPhotoTool"), {
-    loading: ToolLoadingState,
-  }),
-  "photo-booth": dynamic(() => import("@/components/tools/PassportPhotoTool"), {
-    loading: ToolLoadingState,
-  }),
-  "document-translation": dynamic(
+  passport: safeDynamic(() => import("@/components/tools/PassportPhotoTool"), ToolLoadingState),
+  "passport-photos": safeDynamic(() => import("@/components/tools/PassportPhotoTool"), ToolLoadingState),
+  "photo-booth": safeDynamic(() => import("@/components/tools/PassportPhotoTool"), ToolLoadingState),
+  "document-translation": safeDynamic(
     () => import("@/components/tools/DocumentTranslationTool"),
-    { loading: ToolLoadingState }
+    ToolLoadingState
   ),
-  translation: dynamic(
+  translation: safeDynamic(
     () => import("@/components/tools/DocumentTranslationTool"),
-    { loading: ToolLoadingState }
+    ToolLoadingState
   ),
-  "affidavit-support-calculator": dynamic(
+  "affidavit-support-calculator": safeDynamic(
     () => import("@/app/(tools)/affidavit-support-calculator/page"),
-    { loading: ToolLoadingState }
+    ToolLoadingState
   ),
-  "signature-image-processing": dynamic(
+  "signature-image-processing": safeDynamic(
     () => import("@/app/(tools)/signature-image-processing/page"),
-    { loading: ToolLoadingState }
+    ToolLoadingState
   ),
-  "visa-forms": dynamic(
+  "visa-forms": safeDynamic(
     () => import("@/app/(tools)/(visa)/visa-forms/page"),
-    { loading: ToolLoadingState }
+    ToolLoadingState
   ),
-  "visa-checker": dynamic(
+  "visa-checker": safeDynamic(
     () => import("@/app/(tools)/(visa)/visa-checker/page"),
-    { loading: ToolLoadingState }
+    ToolLoadingState
   ),
-  "portal-wallet": dynamic(
+  "portal-wallet": safeDynamic(
     () => import("@/app/(tools)/document-vault/page"),
-    { loading: ToolLoadingState }
+    ToolLoadingState
   ),
-  "document-vault": dynamic(
+  "document-vault": safeDynamic(
     () => import("@/app/(tools)/document-vault/page"),
-    { loading: ToolLoadingState }
+    ToolLoadingState
   ),
-  "pdf-processing": dynamic(
+  "pdf-processing": safeDynamic(
     () => import("@/app/(tools)/pdf-processing/page"),
-    { loading: ToolLoadingState }
+    ToolLoadingState
   ),
-  "case-status": dynamic(
+  "case-status": safeDynamic(
     () => import("@/app/(tools)/case-status/page"),
-    { loading: ToolLoadingState }
+    ToolLoadingState
   ),
-  "interview-prep": dynamic(
+  "interview-prep": safeDynamic(
     () => import("@/app/(tools)/interview-prep/page"),
-    { loading: ToolLoadingState }
+    ToolLoadingState
   ),
-  "visa-case-strength-checker": dynamic(
+  "visa-case-strength-checker": safeDynamic(
     () => import("@/app/(tools)/visa-case-strength-checker/page"),
-    { loading: ToolLoadingState }
+    ToolLoadingState
   ),
-  "221g-action-planner": dynamic(
+  "221g-action-planner": safeDynamic(
     () => import("@/app/(tools)/(visa)/221g-action-planner/page"),
-    { loading: ToolLoadingState }
+    ToolLoadingState
   ),
-  "book-appointment": dynamic(
+  "book-appointment": safeDynamic(
     () => import("@/app/(tools)/book-appointment/page"),
-    { loading: ToolLoadingState }
+    ToolLoadingState
   ),
-  "police-verification": dynamic(
+  "police-verification": safeDynamic(
     () => import("@/app/(tools)/police-verification/page"),
-    { loading: ToolLoadingState }
+    ToolLoadingState
   ),
-  "visa-eligibility": dynamic(
+  "visa-eligibility": safeDynamic(
     () => import("@/app/(tools)/visa-eligibility/page"),
-    { loading: ToolLoadingState }
+    ToolLoadingState
   ),
-  "passport-ocr": dynamic(
+  "passport-ocr": safeDynamic(
     () => import("@/components/tools/PassportOcrTool"),
-    { loading: ToolLoadingState }
+    ToolLoadingState
   ),
 
   // Guides
-  "passport-guide": dynamic(() => import("@/app/(tools)/guides/passport-guide/page"), {
-    loading: GuideLoadingState,
-  }),
-  "birth-certificate-guide": dynamic(
+  "passport-guide": safeDynamic(() => import("@/app/(tools)/guides/passport-guide/page"), GuideLoadingState),
+  "birth-certificate-guide": safeDynamic(
     () => import("@/app/(tools)/guides/birth-certificate-guide/page"),
-    { loading: GuideLoadingState }
+    GuideLoadingState
   ),
-  "cnic-guide": dynamic(() => import("@/app/(tools)/guides/cnic-guide/page"), {
-    loading: GuideLoadingState,
-  }),
-  "frc-guide": dynamic(() => import("@/app/(tools)/guides/frc-guide/page"), {
-    loading: GuideLoadingState,
-  }),
-  "nikah-nama-guide": dynamic(() => import("@/app/(tools)/guides/nikah-nama-guide/page"), {
-    loading: GuideLoadingState,
-  }),
-  "police-verification-guide": dynamic(
+  "cnic-guide": safeDynamic(() => import("@/app/(tools)/guides/cnic-guide/page"), GuideLoadingState),
+  "frc-guide": safeDynamic(() => import("@/app/(tools)/guides/frc-guide/page"), GuideLoadingState),
+  "nikah-nama-guide": safeDynamic(() => import("@/app/(tools)/guides/nikah-nama-guide/page"), GuideLoadingState),
+  "police-verification-guide": safeDynamic(
     () => import("@/app/(tools)/guides/police-verification-guide/page"),
-    { loading: GuideLoadingState }
+    GuideLoadingState
   ),
-  "police-certificate": dynamic(
+  "police-certificate": safeDynamic(
     () => import("@/app/(tools)/guides/police-certificate/page"),
-    { loading: GuideLoadingState }
+    GuideLoadingState
   ),
-  "polio-vaccination-guide": dynamic(
+  "polio-vaccination-guide": safeDynamic(
     () => import("@/app/(tools)/guides/polio-vaccination-guide/page"),
-    { loading: GuideLoadingState }
+    GuideLoadingState
   ),
-  "step-parent-guide": dynamic(() => import("@/app/(tools)/guides/step-parent-guide/page"), {
-    loading: GuideLoadingState,
-  }),
-  "adoptive-parent-guide": dynamic(
+  "step-parent-guide": safeDynamic(() => import("@/app/(tools)/guides/step-parent-guide/page"), GuideLoadingState),
+  "adoptive-parent-guide": safeDynamic(
     () => import("@/app/(tools)/guides/adoptive-parent-guide/page"),
-    { loading: GuideLoadingState }
+    GuideLoadingState
   ),
-  "adoption-guide": dynamic(
+  "adoption-guide": safeDynamic(
     () => import("@/app/(tools)/guides/adoptive-parent-guide/page"),
-    { loading: GuideLoadingState }
+    GuideLoadingState
   ),
-  "asset-document-guide": dynamic(
+  "asset-document-guide": safeDynamic(
     () => import("@/app/(tools)/guides/asset-document-guide/page"),
-    { loading: GuideLoadingState }
+    GuideLoadingState
   ),
-  "bona-marriage-guide": dynamic(
+  "bona-marriage-guide": safeDynamic(
     () => import("@/app/(tools)/guides/bona-marriage-guide/page"),
-    { loading: GuideLoadingState }
+    GuideLoadingState
   ),
-  "educational-certificates-us-visa": dynamic(
+  "educational-certificates-us-visa": safeDynamic(
     () => import("@/app/(tools)/guides/educational-certificates-us-visa/page"),
-    { loading: GuideLoadingState }
+    GuideLoadingState
   ),
-  "employment-certificate-guide": dynamic(
+  "employment-certificate-guide": safeDynamic(
     () => import("@/app/(tools)/guides/employment-certificate-guide/page"),
-    { loading: GuideLoadingState }
+    GuideLoadingState
   ),
-  "visa-strength-guide": dynamic(
+  "visa-strength-guide": safeDynamic(
     () => import("@/app/(tools)/guides/visa-strength-guide/page"),
-    { loading: GuideLoadingState }
+    GuideLoadingState
   ),
-  "all-guides": dynamic(() => import("@/app/(tools)/guides/page"), {
-    loading: GuideLoadingState,
-  }),
+  "all-guides": safeDynamic(() => import("@/app/(tools)/guides/page"), GuideLoadingState),
 };
 
 function getInlineGuideProps(slug: string): Record<string, unknown> {
   if (slug === "passport" || slug === "passport-photos" || slug === "photo-booth") {
-    return { showHeader: true, mode: "journey" };
+    return { showHeader: false, mode: "journey" };
   }
   if (slug === "document-translation" || slug === "translation") {
-    return { showHeader: true, mode: "journey", showRequestsLink: false };
+    return { showHeader: false, mode: "journey", showRequestsLink: false };
   }
   return {};
 }
@@ -205,7 +235,7 @@ function getInlineGuideProps(slug: string): Record<string, unknown> {
  * Directly mounts and renders the selected Guide component inside the journey,
  * evaluating guide access against the current Journey's plan/tier.
  */
-export const GuidePageOverlay: React.FC<GuidePageOverlayProps> = ({
+export const JourneyGuidePage: React.FC<JourneyGuidePageProps> = ({
   guideUrl,
   onClose,
   plan: passedPlan,
@@ -235,26 +265,24 @@ export const GuidePageOverlay: React.FC<GuidePageOverlayProps> = ({
     return accountPlan;
   }, [passedPlan, passedTier, accountPlan]);
 
-  // Lock body scroll while guide is open
-  useEffect(() => {
-    if (!guideUrl) return;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [guideUrl]);
-
 // ── DYNAMIC MULTI-STEP FORM ─────────────────────────────────────────────────
 const DynamicMultiStepForm = dynamic(
   () =>
-    import("@/app/components/forms/auto-visaform-filling/MultiStepForm").then(
-      (mod) => mod.MultiStepForm
-    ),
+    import("@/app/components/forms/auto-visaform-filling/MultiStepForm")
+      .then((mod) => mod.MultiStepForm)
+      .catch((error) => {
+        if (
+          typeof window !== "undefined" &&
+          (error?.name === "ChunkLoadError" || String(error?.message).includes("Loading chunk"))
+        ) {
+          window.location.reload();
+        }
+        throw error;
+      }),
   {
     loading: () => (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#f8fafc] gap-3">
-        <Loader2 size={32} className="text-primary animate-spin" />
-        <span className="text-xs font-medium text-slate-500">Loading form wizard...</span>
+      <div className="flex min-h-[60vh] w-full items-center justify-center bg-[#f8fafc]">
+        <Loader size="md" text="Loading form wizard..." />
       </div>
     ),
   }
@@ -270,14 +298,12 @@ function extractFormCode(href: string | null): string | null {
   return rawCode || null;
 }
 
-  // Close on Escape key
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [onClose]);
+    if (!guideUrl) return;
+    const closeFromJourneyHeader = () => onClose();
+    window.addEventListener("journey-overlay-close", closeFromJourneyHeader);
+    return () => window.removeEventListener("journey-overlay-close", closeFromJourneyHeader);
+  }, [guideUrl, onClose]);
 
   const detectedFormCode = useMemo(() => extractFormCode(guideUrl), [guideUrl]);
 
@@ -288,6 +314,22 @@ function extractFormCode(href: string | null): string | null {
     if (parts.length === 0 || clean === "/guides") return "all-guides";
     return parts[parts.length - 1];
   }, [guideUrl]);
+
+  const overlayTitle = useMemo(() => {
+    if (!guideUrl) return null;
+    if (detectedFormCode) return `Form ${detectedFormCode.toUpperCase()}`;
+    if (["passport", "passport-photos", "photo-booth"].includes(slug)) return "Photo Booth";
+    if (slug === "interview-prep") return "Interview Prep";
+    return slug.replace(/[-_]/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+  }, [guideUrl, detectedFormCode, slug]);
+
+  useEffect(() => {
+    if (!overlayTitle) return;
+    window.dispatchEvent(new CustomEvent("journey-overlay-name", { detail: overlayTitle }));
+    return () => {
+      window.dispatchEvent(new CustomEvent("journey-overlay-name", { detail: null }));
+    };
+  }, [overlayTitle]);
 
   const isTool = useMemo(() => {
     if (detectedFormCode) return true;
@@ -321,32 +363,24 @@ function extractFormCode(href: string | null): string | null {
   if (detectedFormCode) {
     return (
       <div
-        className="fixed inset-0 z-[600] bg-[#f8fafc] overflow-y-auto font-sans animate-in fade-in duration-200"
+        className="journey-guide-page w-full bg-[#f8fafc] font-sans"
         role="dialog"
         aria-modal="true"
         aria-label={`Form ${detectedFormCode.toUpperCase()} Auto-Filler`}
       >
-        {/* ── Close Button ── */}
-        <button
-          onClick={onClose}
-          className="fixed top-4 right-5 z-[800] w-9 h-9 flex items-center justify-center rounded-full bg-white/95 hover:bg-white text-slate-700 hover:text-slate-900 shadow-md border border-slate-200/90 backdrop-blur transition-all active:scale-95 cursor-pointer"
-          aria-label="Close form wizard"
-          title="Close (Esc)"
-        >
-          <X size={18} strokeWidth={2.2} />
-        </button>
-
-        <div className="min-h-screen w-full">
-          <PlanContext.Provider value={effectivePlan}>
-            <main className="min-h-screen">
-              <DynamicMultiStepForm
-                formCode={detectedFormCode}
-                onClose={onClose}
-                isEmbedded={true}
-                {...(extraProps || {})}
-              />
-            </main>
-          </PlanContext.Provider>
+        <JourneyGuideLayoutStyles />
+        <div className="min-h-full w-full">
+          <div className="min-h-full w-full">
+            <PlanContext.Provider value={effectivePlan}>
+              <main className="min-h-full">
+                <DynamicMultiStepForm
+                  formCode={detectedFormCode}
+                  onClose={onClose}
+                  isEmbedded={true}
+                />
+              </main>
+            </PlanContext.Provider>
+          </div>
         </div>
       </div>
     );
@@ -357,47 +391,40 @@ function extractFormCode(href: string | null): string | null {
 
   return (
     <div
-      className="fixed inset-0 z-[600] bg-[#f8fafc] overflow-y-auto font-sans animate-in fade-in duration-200"
+      className="journey-guide-page w-full bg-[#f8fafc] font-sans"
       role="dialog"
       aria-modal="true"
       aria-label={isTool ? "Tool View" : "Guide View"}
     >
-      {/* ── Light Floating Close Button ── */}
-      <button
-        onClick={onClose}
-        className="fixed top-4 right-5 z-[800] w-9 h-9 flex items-center justify-center rounded-full bg-white/95 hover:bg-white text-slate-700 hover:text-slate-900 shadow-md border border-slate-200/90 backdrop-blur transition-all active:scale-95 cursor-pointer"
-        aria-label={isTool ? "Close tool" : "Close guide"}
-        title="Close (Esc)"
-      >
-        <X size={18} strokeWidth={2.2} />
-      </button>
-
+      <JourneyGuideLayoutStyles />
       {/* ── Guide Component Rendered Directly with Journey Plan Context ── */}
-      <div className="min-h-screen w-full">
-        {GuideComponent ? (
-          <PlanContext.Provider value={effectivePlan}>
-            <GuideComponent {...inlineProps} />
-          </PlanContext.Provider>
-        ) : (
-          <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
-            <h2 className="text-lg font-bold text-slate-900 mb-2">
-              {isTool ? "Tool Not Found" : "Guide Not Found"}
-            </h2>
-            <p className="text-sm text-slate-500 mb-4">
-              Could not load {isTool ? "tool" : "guide"} for:{" "}
-              <code className="text-xs bg-slate-100 p-1 rounded">{guideUrl}</code>
-            </p>
-            <button
-              onClick={onClose}
-              className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90"
-            >
-              Close
-            </button>
-          </div>
-        )}
+      <div className="min-h-full w-full">
+        <div className="min-h-full w-full">
+          {GuideComponent ? (
+            <PlanContext.Provider value={effectivePlan}>
+              <GuideComponent {...inlineProps} />
+            </PlanContext.Provider>
+          ) : (
+            <div className="min-h-full flex flex-col items-center justify-center p-6 text-center">
+              <h2 className="text-lg font-bold text-slate-900 mb-2">
+                {isTool ? "Tool Not Found" : "Guide Not Found"}
+              </h2>
+              <p className="text-sm text-slate-500 mb-4">
+                Could not load {isTool ? "tool" : "guide"} for: {" "}
+                <code className="text-xs bg-slate-100 p-1 rounded">{guideUrl}</code>
+              </p>
+              <button
+                onClick={onClose}
+                className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90"
+              >
+                Close
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
 };
 
-export default GuidePageOverlay;
+export default JourneyGuidePage;

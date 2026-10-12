@@ -1,30 +1,59 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { DEFAULT_FREE_QUESTION_LIMIT } from "./useFreePreview";
-import { motion, AnimatePresence } from "framer-motion";
 import type { Field } from "@/lib/formConfig/types";
 import type { CandidateProfile } from "@/types/candidate";
 import { getFieldCandidateScope } from "@/lib/formConfig/candidateScope";
 import {
-  CheckCircle2,
-  Circle,
-  Edit3,
+  Check,
   ChevronDown,
-  ChevronUp,
+  Pencil,
   Eye,
   Download,
   Save,
   ArrowLeft,
-  FileCheck2,
   Lock,
   User,
-  ShieldCheck,
-  AlertTriangle,
+  RefreshCw,
+  CornerDownRight,
+  ClipboardCheck,
 } from "lucide-react";
 import { useLanguage } from "@/app/context/LanguageContext";
 
+/* ─── palette ─────────────────────────────────────────────────────────────────
+ * One family: the app's deep teal + its soft tint.
+ *   teal   #0d7377  primary, progress, "checked", main buttons
+ *   tint   #e8f6f6  soft teal backgrounds
+ *   glow   #3fb8b0  bright end of the progress bar
+ *   blue   (Tailwind blue)  ONLY for things about the beneficiary / carried-over answers
+ *   amber  (Tailwind amber) ONLY for blanks
+ * Everything else is neutral slate.
+ */
+const TEAL = "#0d7377";
+const TEAL_TINT = "#e8f6f6";
+const TEAL_GLOW = "#3fb8b0";
+
 /* ─── helpers ─────────────────────────────────────────────────────────────── */
+
+/** Small string hash, so saved progress can tell "answers changed" without storing the answers themselves. */
+const hashString = (str: string): string => {
+  let h = 5381;
+  for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) | 0;
+  return (h >>> 0).toString(36);
+};
+
+const PROGRESS_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+
+type SavedProgress = {
+  savedAt: number;
+  /** section index → hash of that section's answers when it was checked */
+  sections: Record<string, string>;
+  /** carried-over field key → hash of its value when it was marked correct */
+  correct: Record<string, string>;
+};
+
+const plural = (n: number, one: string, many: string) => (n === 1 ? one : many);
 
 const isFieldAnswered = (field: Field, formData: Record<string, string>): boolean => {
   if (field.type === "checkbox" && field.options) {
@@ -44,140 +73,63 @@ const getDisplayValue = (field: Field, formData: Record<string, string>): string
   return formData[field.key] ?? "";
 };
 
-interface ReviewGroup {
-  type: "group";
-  key: string;
-  label: string;
-  fields: Field[];
-}
-interface ReviewFieldItem {
-  type: "field";
-  key: string;
-  label: string;
-  field: Field;
-}
-type ReviewItem = ReviewGroup | ReviewFieldItem;
-
-const getReviewItems = (fields: Field[], formData: Record<string, string>): ReviewItem[] => {
-  const items: ReviewItem[] = [];
-  const processField = (field: Field) => {
-    if (field.condition && !field.condition(formData)) return;
-    if (field.type === "hidden" && field.subQuestions && field.subQuestions.length > 0) {
-      const visibleSubQuestions: Field[] = [];
-      const collectSubs = (subField: Field) => {
-        if (subField.condition && !subField.condition(formData)) return;
-        if (subField.type !== "hidden" || subField.label) visibleSubQuestions.push(subField);
-        if (subField.subQuestions) subField.subQuestions.forEach((s) => collectSubs(s as unknown as Field));
-      };
-      field.subQuestions.forEach((s) => collectSubs(s as unknown as Field));
-      if (visibleSubQuestions.length > 0)
-        items.push({ type: "group", key: field.key, label: field.label, fields: visibleSubQuestions });
-    } else if (field.type !== "hidden") {
-      items.push({ type: "field", key: field.key, label: field.label, field });
-    } else if (field.label) {
-      items.push({ type: "field", key: field.key, label: field.label, field });
-    }
-  };
-  fields.forEach(processField);
-  return items;
+/**
+ * Blank answers that are fine to leave blank. Uses the field's own `required` flag when it has one,
+ * and falls back to the wording of the question ("if any", "leave blank", "if applicable", ...).
+ */
+const isOptionalField = (field: Field): boolean => {
+  const required = (field as { required?: boolean }).required;
+  if (required === false) return true;
+  return /\((?:[^)]*\b)?(if any|if applicable|leave blank|optional|if outside|if in the u\.?s|if you still)/i.test(
+    field.label ?? ""
+  );
 };
 
-/* ─── FieldCard ─────────────────────────────────────────────────────────────*/
+type Row =
+  | { kind: "heading"; key: string; label: string }
+  | { kind: "field"; key: string; field: Field; depth: number };
 
-interface FieldCardProps {
-  fieldKey: string;
-  label: string;
-  val: string;
-  hasVal: boolean;
-  isChecked: boolean;
-  isCandidateField: boolean;
-  candidateName: string;
-  onToggle: () => void;
-  size?: "sm" | "md";
-}
+/**
+ * Every visible question in a section, in form order.
+ * - Hidden group cards become a small heading followed by their sub-questions.
+ * - Sub-questions of ANY question (e.g. the details that appear when someone answers "Yes" to
+ *   "Does the beneficiary have an A-Number?") are listed right under it, indented, whenever
+ *   their condition is met.
+ */
+const getRows = (fields: Field[], formData: Record<string, string>): Row[] => {
+  const rows: Row[] = [];
 
-function FieldCard({
-  label,
-  val,
-  hasVal,
-  isChecked,
-  isCandidateField,
-  candidateName,
-  onToggle,
-}: FieldCardProps) {
-  const cardStyles = isChecked
-    ? "bg-[#f0fbf6] border-[#a3e4c8] shadow-sm"
-    : !hasVal
-    ? "bg-amber-50/40 border-amber-200 shadow-sm"
-    : isCandidateField
-    ? "bg-sky-50/45 border-sky-200/90 shadow-sm"
-    : "bg-white border-slate-200 shadow-sm";
+  // `groupChildren`: sub-questions of a hidden group card sit level with each other, unless they only
+  // appear conditionally. Conditional ones are follow-ups to an earlier answer, so they get indented.
+  const addSubs = (parent: Field, depth: number, groupChildren = false) => {
+    (parent.subQuestions ?? []).forEach((s) => {
+      const sub = s as unknown as Field;
+      if (sub.condition && !sub.condition(formData)) return;
+      const showSelf = sub.type !== "hidden" || !!sub.label;
+      const d = groupChildren ? (sub.condition ? 1 : 0) : depth;
+      if (showSelf) rows.push({ kind: "field", key: sub.key, field: sub, depth: d });
+      addSubs(sub, showSelf ? d + 1 : d);
+    });
+  };
 
-  const btnStyles = isChecked
-    ? "bg-[#0d7857] text-white hover:bg-[#096245] shadow-xs"
-    : "bg-white text-slate-600 hover:bg-teal-50 hover:text-teal-700 border border-slate-200 shadow-2xs";
+  fields.forEach((field) => {
+    if (field.condition && !field.condition(formData)) return;
 
-  const chipStyles = isChecked
-    ? "bg-[#e6f7ef] text-[#09573c] font-medium border border-[#b2e8d2]"
-    : isCandidateField
-    ? "bg-sky-100/70 text-sky-950 font-medium border border-sky-200/70"
-    : "bg-slate-100 text-slate-800 border border-slate-200/50";
+    if (field.type === "hidden" && field.subQuestions && field.subQuestions.length > 0) {
+      const before = rows.length;
+      rows.push({ kind: "heading", key: `h-${field.key}`, label: field.label });
+      addSubs(field, 0, true);
+      if (rows.length === before + 1) rows.pop(); // group had nothing visible
+    } else if (field.type !== "hidden" || field.label) {
+      // A top-level question that only appears conditionally is a follow-up to an earlier answer.
+      const isFollowUp = !!field.condition && rows.some((r) => r.kind === "field");
+      rows.push({ kind: "field", key: field.key, field, depth: isFollowUp ? 1 : 0 });
+      addSubs(field, isFollowUp ? 2 : 1);
+    }
+  });
 
-  return (
-    <div
-      onClick={onToggle}
-      className={`p-4 rounded-xl border transition-all flex flex-col justify-between cursor-pointer hover:shadow-md ${cardStyles}`}
-    >
-      <div>
-        {/* Zone 1: pill (beneficiary only) */}
-        {isCandidateField && (
-          <div className="mb-2">
-            <span className="inline-flex items-center gap-1 text-[9px] font-bold text-[#0369a1] bg-[#e0f2fe] border border-[#7dd3fc] px-2 py-0.5 rounded-full tracking-wide uppercase shadow-2xs">
-              <User className="w-2.5 h-2.5 text-[#0284c7]" />
-              {candidateName}
-            </span>
-          </div>
-        )}
-
-        {/* Zone 2: label */}
-        <p className="text-xs font-semibold text-slate-700 leading-snug">
-          {label}
-        </p>
-      </div>
-
-      <div>
-        {/* Zone 3: value — clean breathing room before answer */}
-        <div className="pt-3 border-t border-slate-100/80 mt-3.5">
-          {hasVal ? (
-            <span title={val} className={`text-xs font-medium px-2.5 py-1 rounded-md block truncate ${chipStyles}`}>
-              {val}
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-md bg-amber-100/90 text-amber-800 border border-amber-200">
-              <AlertTriangle className="w-2.5 h-2.5 shrink-0 text-amber-600" />
-              Not provided
-            </span>
-          )}
-        </div>
-
-        {/* Zone 4: verify button — full width, pinned bottom */}
-        <div className="pt-2.5">
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); onToggle(); }}
-            className={`w-full inline-flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${btnStyles}`}
-          >
-            {isChecked ? (
-              <><CheckCircle2 className="w-3.5 h-3.5" strokeWidth={2.5} />Verified</>
-            ) : (
-              <><Circle className="w-3.5 h-3.5 text-slate-400" />Verify</>
-            )}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
+  return rows;
+};
 
 /* ─── props ────────────────────────────────────────────────────────────────── */
 
@@ -198,6 +150,13 @@ export interface ReviewPageProps {
   onUpgradeClick?: () => void;
   formCode?: string;
   activeCandidate?: CandidateProfile | null;
+  /**
+   * Set when this form was pre-filled from another candidate (e.g. "test2").
+   * If omitted, nothing is flagged as carried-over and the "Check these first" box is hidden.
+   */
+  prefilledFromName?: string;
+  /** Keys of fields the user has edited themselves this session. Edited answers aren't flagged. */
+  editedKeys?: Set<string>;
 }
 
 /* ─── component ─────────────────────────────────────────────────────────────*/
@@ -218,74 +177,29 @@ export function ReviewPage({
   onUpgradeClick,
   formCode = "i130",
   activeCandidate,
+  prefilledFromName,
+  editedKeys,
 }: ReviewPageProps) {
   const { t } = useLanguage();
 
-  const [verifiedFields, setVerifiedFields] = useState<Set<string>>(new Set());
-  const [collapsedSections, setCollapsedSections] = useState<Set<number>>(new Set());
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
-  const [filterMode, setFilterMode] = useState<"all" | "beneficiary" | "unanswered" | "unverified">("all");
+  const [confirmed, setConfirmed] = useState<Set<number>>(new Set());
+  const [stillCorrect, setStillCorrect] = useState<Set<string>>(new Set());
+  // undefined = user hasn't touched it yet, so we pick a smart default below
+  const [openIdx, setOpenIdx] = useState<number | null | undefined>(undefined);
+  const [allOpen, setAllOpen] = useState(false);
+  const [lockedHint, setLockedHint] = useState<string | null>(null);
+  const [hydrated, setHydrated] = useState(false);
+  const [restored, setRestored] = useState(false);
+  const hintTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // The answers each checked section had at the moment it was checked
+  const confirmedSigs = useRef<Map<number, string>>(new Map());
 
-  // Extract all fields per section to calculate total & progress
-  const sectionFieldMap = useMemo(() => {
-    return sections.map((section, idx) => {
-      const reviewItems = getReviewItems(section.fields, formData);
-      const allFields: Field[] = [];
-      reviewItems.forEach((item) => {
-        if (item.type === "group") allFields.push(...item.fields);
-        else allFields.push(item.field);
-      });
-      return {
-        sectionIdx: idx,
-        section,
-        reviewItems,
-        allFields,
-        fieldKeys: allFields.map((f) => f.key),
-      };
-    });
-  }, [sections, formData]);
-
-  const totalAnswerCount = useMemo(() => {
-    return sectionFieldMap.reduce((acc, curr) => acc + curr.allFields.length, 0);
-  }, [sectionFieldMap]);
-
-  const verifiedAnswerCount = useMemo(() => {
-    let count = 0;
-    sectionFieldMap.forEach((item) => {
-      item.allFields.forEach((f) => {
-        if (verifiedFields.has(f.key)) count++;
-      });
-    });
-    return count;
-  }, [sectionFieldMap, verifiedFields]);
-
-  const beneficiaryFieldCount = useMemo(() => {
-    if (!activeCandidate) return 0;
-    let count = 0;
-    sectionFieldMap.forEach((item) => {
-      item.allFields.forEach((f) => {
-        if (getFieldCandidateScope(formCode, f, item.section.title) === "candidate_distinct") {
-          count++;
-        }
-      });
-    });
-    return count;
-  }, [sectionFieldMap, formCode, activeCandidate]);
-
-  const unansweredFieldCount = useMemo(() => {
-    let count = 0;
-    sectionFieldMap.forEach((item) => {
-      item.allFields.forEach((f) => {
-        if (!isFieldAnswered(f, formData)) count++;
-      });
-    });
-    return count;
-  }, [sectionFieldMap, formData]);
-
-  const unverifiedFieldCount = totalAnswerCount - verifiedAnswerCount;
-  const progressPercent =
-    totalAnswerCount > 0 ? Math.round((verifiedAnswerCount / totalAnswerCount) * 100) : 0;
-  const allConfirmed = totalAnswerCount > 0 && verifiedAnswerCount === totalAnswerCount;
+  useEffect(
+    () => () => {
+      if (hintTimer.current) clearTimeout(hintTimer.current);
+    },
+    []
+  );
 
   const candidateName = useMemo(() => {
     if (!activeCandidate) return "Beneficiary";
@@ -310,485 +224,698 @@ export function ReviewPage({
     return "Beneficiary";
   }, [activeCandidate, formData]);
 
-  const candidateRelation = useMemo(() => {
-    const r = activeCandidate?.relation?.trim().toLowerCase() ?? "";
-    const map: Record<string, string> = {
-      spouse: "Spouse", wife: "Wife", husband: "Husband",
-      child: "Child", son: "Son", daughter: "Daughter",
-      mother: "Mother", father: "Father", parent: "Parent",
-      brother: "Brother", sister: "Sister", other: "",
-    };
-    return r in map ? map[r] : (activeCandidate?.relation ?? "");
-  }, [activeCandidate]);
+  const isEdited = (f: Field) =>
+    !!editedKeys && (editedKeys.has(f.key) || !!f.options?.some((o) => editedKeys.has(o.pdfKey || o.value)));
 
-  const toggleFieldVerified = (fieldKey: string) => {
-    setVerifiedFields((prev) => {
-      const next = new Set(prev);
-      if (next.has(fieldKey)) {
-        next.delete(fieldKey);
-      } else {
-        next.add(fieldKey);
+  const isPersonSpecific = (f: Field, sectionTitle: string) =>
+    !!activeCandidate && getFieldCandidateScope(formCode, f, sectionTitle) === "candidate_distinct";
+
+  /* Every section with every question, plus counts and the carried-over list */
+  const { sectionData, carriedItems } = useMemo(() => {
+    const carried: { field: Field; stepNum: number; value: string }[] = [];
+
+    const data = sections
+      .map((section, idx) => {
+        const rows = getRows(section.fields, formData);
+        let total = 0;
+        let answered = 0;
+        let requiredBlank = 0;
+        let personCount = 0;
+        const sectionCarried: { field: Field; stepNum: number; value: string }[] = [];
+
+        rows.forEach((row) => {
+          if (row.kind !== "field") return;
+          const f = row.field;
+          total++;
+          if (isPersonSpecific(f, section.title)) personCount++;
+          if (isFieldAnswered(f, formData)) {
+            answered++;
+            if (isPersonSpecific(f, section.title) && prefilledFromName) {
+              if (!isEdited(f))
+                sectionCarried.push({ field: f, stepNum: idx + 1, value: getDisplayValue(f, formData) });
+            }
+          } else if (!isOptionalField(f)) {
+            requiredBlank++;
+          }
+        });
+
+        // A beneficiary section is one where most questions are about the beneficiary. Only those get the
+        // "About <name>" treatment, and only their copied answers are listed under "Check these first".
+        const hasPerson = total > 0 && personCount * 2 >= total;
+        if (hasPerson) carried.push(...sectionCarried);
+
+        const sig = hashString(
+          rows.map((r) => (r.kind === "field" ? `${r.key}=${getDisplayValue(r.field, formData)}` : r.key)).join("|")
+        );
+
+        return { idx, title: section.title, rows, total, answered, requiredBlank, hasPerson, sig };
+      })
+      .filter((s) => s.total > 0);
+
+    return { sectionData: data, carriedItems: carried };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sections, formData, activeCandidate, formCode, prefilledFromName, editedKeys]);
+
+  /* ── Remembered progress ─────────────────────────────────────────────────────
+   * Checked sections and "still correct" ticks are kept for a week, per form and candidate.
+   * Only hashes are stored (never the answers), and a tick is dropped automatically if that
+   * section's answers have changed since it was checked.
+   */
+  const candidateKey =
+    (activeCandidate as { id?: string } | null | undefined)?.id ?? activeCandidate?.label ?? "default";
+  const storageKey = `review-progress:${formCode}:${candidateKey}`;
+
+  useEffect(() => {
+    if (hydrated || sectionData.length === 0) return;
+    try {
+      const raw = window.localStorage.getItem(storageKey);
+      if (raw) {
+        const saved = JSON.parse(raw) as SavedProgress;
+        if (saved && Date.now() - saved.savedAt < PROGRESS_TTL_MS) {
+          const sigs = new Map(sectionData.map((sec) => [String(sec.idx), sec.sig]));
+          const okSections = Object.entries(saved.sections ?? {})
+            .filter(([i, sig]) => sigs.get(i) === sig)
+            .map(([i, sig]) => {
+              confirmedSigs.current.set(Number(i), sig);
+              return Number(i);
+            });
+          const carriedSigs = new Map(carriedItems.map((c) => [c.field.key, hashString(c.value)]));
+          const okCorrect = Object.entries(saved.correct ?? {})
+            .filter(([k, sig]) => carriedSigs.get(k) === sig)
+            .map(([k]) => k);
+          if (okSections.length > 0 || okCorrect.length > 0) {
+            setConfirmed(new Set(okSections));
+            setStillCorrect(new Set(okCorrect));
+            setRestored(true);
+          }
+        }
       }
-      return next;
-    });
+    } catch {
+      /* storage unavailable: start fresh */
+    }
+    setHydrated(true);
+  }, [hydrated, sectionData, carriedItems, storageKey]);
+
+  // Un-check a section if its answers changed after it was checked (or a copied answer was edited)
+  useEffect(() => {
+    if (!hydrated) return;
+    const sigs = new Map(sectionData.map((sec) => [sec.idx, sec.sig]));
+    const staleSections = [...confirmed].filter((i) => confirmedSigs.current.get(i) !== sigs.get(i));
+    if (staleSections.length > 0) {
+      staleSections.forEach((i) => confirmedSigs.current.delete(i));
+      setConfirmed((prev) => {
+        const n = new Set(prev);
+        staleSections.forEach((i) => n.delete(i));
+        return n;
+      });
+    }
+    const stillCarried = new Set(carriedItems.map((c) => c.field.key));
+    const staleCorrect = [...stillCorrect].filter((k) => !stillCarried.has(k));
+    if (staleCorrect.length > 0) {
+      setStillCorrect((prev) => {
+        const n = new Set(prev);
+        staleCorrect.forEach((k) => n.delete(k));
+        return n;
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated, sectionData, carriedItems]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      const sections: Record<string, string> = {};
+      confirmed.forEach((i) => {
+        const sig = confirmedSigs.current.get(i);
+        if (sig) sections[String(i)] = sig;
+      });
+      const correct: Record<string, string> = {};
+      carriedItems.forEach((c) => {
+        if (stillCorrect.has(c.field.key)) correct[c.field.key] = hashString(c.value);
+      });
+      if (Object.keys(sections).length === 0 && Object.keys(correct).length === 0) {
+        window.localStorage.removeItem(storageKey);
+      } else {
+        const payload: SavedProgress = { savedAt: Date.now(), sections, correct };
+        window.localStorage.setItem(storageKey, JSON.stringify(payload));
+      }
+    } catch {
+      /* storage unavailable: progress just won't be remembered */
+    }
+  }, [hydrated, confirmed, stillCorrect, carriedItems, storageKey]);
+
+  const carriedResolved = carriedItems.filter((c) => stillCorrect.has(c.field.key)).length;
+  const carriedLeft = carriedItems.length - carriedResolved;
+  const allCarriedResolved = carriedItems.length === 0 || carriedResolved === carriedItems.length;
+  const confirmedCount = sectionData.filter((s) => confirmed.has(s.idx)).length;
+  const sectionsLeft = sectionData.length - confirmedCount;
+  const allSectionsConfirmed = sectionData.length > 0 && confirmedCount === sectionData.length;
+  const unlocked = allCarriedResolved && allSectionsConfirmed;
+  const exportBusy = isPreviewing || isDownloading || isSavingToVault;
+  const progressPercent = sectionData.length ? Math.round((confirmedCount / sectionData.length) * 100) : 0;
+  const totalRequiredBlank = sectionData.reduce((n, s) => n + s.requiredBlank, 0);
+
+  /* Header message: changes with where the person is */
+  const baseMessage = (() => {
+    if (unlocked) return "You're all set. Preview your PDF, download it, or save it to your vault.";
+    const blankNote =
+      totalRequiredBlank > 0
+        ? ` ${totalRequiredBlank} ${plural(totalRequiredBlank, "question is", "questions are")} still blank.`
+        : "";
+    if (carriedLeft > 0) {
+      return `Some answers were copied from ${prefilledFromName}. Please make sure they're right for ${candidateName}, then go through each section.${blankNote}`;
+    }
+    if (allSectionsConfirmed) {
+      return "Every section is checked. One more look at the answers copied over, and you're done.";
+    }
+    if (confirmedCount === 0) {
+      return `Go through each section. When it's correct, tap "Looks right".${blankNote}`;
+    }
+    return `Nice work. ${sectionsLeft} ${plural(sectionsLeft, "section", "sections")} to go.${blankNote}`;
+  })();
+  const headerMessage = restored && !unlocked ? `Welcome back. We kept your progress. ${baseMessage}` : baseMessage;
+
+  /* Tapping a locked export button says what's missing and takes the person there */
+  const showLockedHint = () => {
+    let hint: string;
+    if (carriedLeft > 0) {
+      hint = `Confirm the ${carriedLeft} copied ${plural(carriedLeft, "answer", "answers")} at the top first.`;
+      document.getElementById("review-carried")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      const next = sectionData.find((s) => !confirmed.has(s.idx));
+      if (!next) return;
+      hint = `Check "${next.title}" first. ${sectionsLeft} ${plural(sectionsLeft, "section", "sections")} left.`;
+      setAllOpen(false);
+      setOpenIdx(next.idx);
+      scrollToSection(next.idx);
+    }
+    setLockedHint(hint);
+    if (hintTimer.current) clearTimeout(hintTimer.current);
+    hintTimer.current = setTimeout(() => setLockedHint(null), 6000);
   };
 
-  const toggleSectionCollapse = (idx: number) => {
-    setCollapsedSections((prev) => {
+  const guarded = (action?: () => void) => () => {
+    if (!unlocked) {
+      showLockedHint();
+      return;
+    }
+    action?.();
+  };
+
+  const toggleStillCorrect = (key: string) => {
+    setRestored(false);
+    setStillCorrect((prev) => {
       const n = new Set(prev);
-      if (n.has(idx)) n.delete(idx); else n.add(idx);
+      if (n.has(key)) n.delete(key);
+      else n.add(key);
       return n;
     });
   };
 
-  const toggleGroup = (key: string) => {
-    setExpandedGroups((prev) => {
+  const markAllCarried = () => {
+    setRestored(false);
+    setStillCorrect(allCarriedResolved ? new Set() : new Set(carriedItems.map((c) => c.field.key)));
+  };
+
+  const scrollToSection = (idx: number) => {
+    setTimeout(() => {
+      document.getElementById(`review-sec-${idx}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 60);
+  };
+
+  // First open section: the first beneficiary section when we know what was carried over, else the first one
+  const firstUnchecked = sectionData.find((s) => !confirmed.has(s.idx))?.idx;
+  const defaultOpenIdx =
+    confirmed.size > 0
+      ? firstUnchecked ?? null
+      : (prefilledFromName ? sectionData.find((s) => s.hasPerson)?.idx : undefined) ?? sectionData[0]?.idx ?? null;
+  const currentOpen = openIdx === undefined ? defaultOpenIdx : openIdx;
+
+  const toggleOpen = (idx: number) => {
+    setAllOpen(false);
+    setOpenIdx(currentOpen === idx ? null : idx);
+  };
+
+  const confirmSection = (idx: number) => {
+    setRestored(false);
+    confirmedSigs.current.set(idx, sectionData.find((s) => s.idx === idx)?.sig ?? "");
+    const next = new Set(confirmed);
+    next.add(idx);
+    setConfirmed(next);
+    const after = sectionData.find((s) => s.idx > idx && !next.has(s.idx));
+    const any = after ?? sectionData.find((s) => !next.has(s.idx));
+    setAllOpen(false);
+    setOpenIdx(any ? any.idx : null);
+    if (any) scrollToSection(any.idx);
+  };
+
+  const undoConfirm = (idx: number) => {
+    setRestored(false);
+    confirmedSigs.current.delete(idx);
+    setConfirmed((prev) => {
       const n = new Set(prev);
-      if (n.has(key)) n.delete(key); else n.add(key);
+      n.delete(idx);
       return n;
     });
   };
 
   return (
-    <div className="space-y-8 w-full pb-20">
-
-      {/* Free Preview Banner */}
+    <div className="w-full pb-4 max-w-3xl mx-auto">
+      {/* Free preview banner (teal: amber is reserved for blanks) */}
       {isFreePreview && (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-amber-500 p-2 text-white shrink-0">
-              <Lock size={15} />
-            </div>
-            <div>
-              <h4 className="text-sm font-bold text-amber-900">
-                I-130 Demo Mode ({freePreviewLimit}-Question Limit)
-              </h4>
-              <p className="mt-1 text-xs leading-relaxed text-amber-800/85">
-                You&apos;re using the demo available on Free and Basic plans. You can fill up to{" "}
-                {freePreviewLimit} questions and print/preview the <strong>first page</strong> of
-                your completed PDF to test the tool.
-              </p>
-            </div>
+        <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-teal-200 bg-[#e8f6f6] px-4 py-2.5">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <Lock size={15} className="text-[#0d7377] shrink-0" />
+            <p className="text-[13px] text-slate-800">
+              <span className="font-bold">Demo mode.</span> Fill up to {freePreviewLimit} questions and preview the first
+              page of your PDF.
+            </p>
           </div>
           <button
             onClick={onUpgradeClick}
-            className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-sm transition-all shrink-0 cursor-pointer"
+            className="px-3 py-1.5 rounded-lg bg-[#0d7377] hover:bg-[#0a5c5f] text-white text-[13px] font-bold shrink-0 cursor-pointer"
           >
-            Unlock Full PDF
+            Unlock full PDF
           </button>
         </div>
       )}
 
-      {/* Hero Header */}
-      <div className="rounded-2xl border border-slate-200 bg-white px-6 py-6 shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-5">
-          <div className="flex items-start gap-4">
-            <div className="h-11 w-11 rounded-xl bg-teal-50 border border-teal-200 flex items-center justify-center text-[#0d7377] shrink-0 mt-0.5">
-              <FileCheck2 className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2.5 flex-wrap">
-                <h1 className="text-xl font-bold text-slate-900">Form Review &amp; Confirmation</h1>
-                {activeCandidate && (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-[#e0f2fe] text-[#0369a1] border border-[#7dd3fc]">
-                    <User className="w-3 h-3 text-[#0284c7]" />
-                    {candidateName}{candidateRelation ? ` · ${candidateRelation}` : ""}
-                  </span>
-                )}
-              </div>
-              <p className="text-xs text-slate-400 mt-1">
-                Audit each response below. Click any card or use the Verify button to confirm details before exporting.
-              </p>
-            </div>
+      {/* Header card: title, who it's for, a message for where you are, progress */}
+      <div className="mb-4 flex gap-3.5 rounded-2xl border border-teal-200 bg-gradient-to-br from-[#e8f6f6] to-white p-4">
+        <span
+          className="hidden sm:flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white"
+          style={{ background: TEAL }}
+        >
+          {unlocked ? <Check className="h-5 w-5" strokeWidth={2.5} /> : <ClipboardCheck className="h-5 w-5" />}
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+              {unlocked ? "You're all set" : "Check your answers"}
+            </h1>
+            {activeCandidate && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
+                <User className="w-3 h-3" />
+                {candidateName}
+              </span>
+            )}
           </div>
+          <p className="mt-1 text-[13.5px] leading-relaxed text-slate-600">{headerMessage}</p>
 
-          {allConfirmed && (
-            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl self-start shadow-sm whitespace-nowrap">
-              <ShieldCheck className="w-4 h-4" />
-              All Verified · Ready to Export
-            </span>
-          )}
-        </div>
-
-        {/* Progress bar */}
-        <div className="mb-5">
-          <div className="flex items-center justify-between text-xs font-semibold mb-2 text-slate-500">
-            <span>{verifiedAnswerCount} of {totalAnswerCount} answers verified</span>
-            <span className={allConfirmed ? "text-emerald-600 font-bold" : "text-[#0d7377]"}>{progressPercent}%</span>
-          </div>
-          <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
-            <motion.div
-              className="h-full rounded-full"
-              style={{ backgroundColor: allConfirmed ? "#16a34a" : "#0d7377" }}
-              initial={{ width: 0 }}
-              animate={{ width: `${progressPercent}%` }}
-              transition={{ duration: 0.35, ease: "easeOut" }}
+          <div
+            className="mt-3 h-[6px] rounded-full overflow-hidden"
+            style={{ background: "rgba(13,115,119,0.15)" }}
+            role="progressbar"
+            aria-valuenow={progressPercent}
+            aria-valuemin={0}
+            aria-valuemax={100}
+          >
+            <div
+              className="h-full rounded-full transition-all duration-300"
+              style={{ width: `${progressPercent}%`, background: `linear-gradient(90deg, ${TEAL}, ${TEAL_GLOW})` }}
             />
           </div>
-        </div>
-
-        {/* Focus Filter Pills */}
-        <div className="flex items-center gap-2 flex-wrap pt-4 border-t border-slate-100">
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mr-0.5">Focus</span>
-
-          <button
-            type="button"
-            onClick={() => setFilterMode("all")}
-            className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-              filterMode === "all" ? "bg-slate-800 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-            }`}
-          >
-            All Fields ({totalAnswerCount})
-          </button>
-
-          {beneficiaryFieldCount > 0 && (
-            <button
-              type="button"
-              onClick={() => setFilterMode("beneficiary")}
-              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                filterMode === "beneficiary"
-                  ? "bg-[#0284c7] text-white shadow-xs"
-                  : "bg-[#e0f2fe] text-[#0369a1] border border-[#7dd3fc] hover:bg-[#bae6fd]"
-              }`}
-            >
-              <User className="w-3 h-3" />
-              Beneficiary Only ({beneficiaryFieldCount})
-            </button>
-          )}
-
-          {unansweredFieldCount > 0 && (
-            <button
-              type="button"
-              onClick={() => setFilterMode("unanswered")}
-              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                filterMode === "unanswered"
-                  ? "bg-amber-500 text-white"
-                  : "bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100"
-              }`}
-            >
-              <AlertTriangle className="w-3 h-3" />
-              Not Provided ({unansweredFieldCount})
-            </button>
-          )}
-
-          {unverifiedFieldCount > 0 && (
-            <button
-              type="button"
-              onClick={() => setFilterMode("unverified")}
-              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                filterMode === "unverified"
-                  ? "bg-slate-700 text-white"
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-              }`}
-            >
-              Pending ({unverifiedFieldCount})
-            </button>
-          )}
+          <p className="mt-1.5 text-[12.5px] font-semibold text-[#0d7377]">
+            {confirmedCount} of {sectionData.length} sections checked
+          </p>
         </div>
       </div>
 
-      {/* Section Cards */}
-      <div className="space-y-6">
-        {sectionFieldMap.map(({ section, reviewItems, allFields, sectionIdx }) => {
-          const stepNum = sectionIdx + 1;
-          const total = allFields.length;
-          const answeredFields = allFields.filter((f) => isFieldAnswered(f, formData)).length;
-          const unanswered = total - answeredFields;
-          const verifiedCount = allFields.filter((f) => verifiedFields.has(f.key)).length;
-          const isSectionComplete = total > 0 && verifiedCount === total;
-          const isCollapsed = collapsedSections.has(sectionIdx);
+      {/* Carried-over answers (blue: about the beneficiary) */}
+      {carriedItems.length > 0 && (
+        <div id="review-carried" className="mb-4 scroll-mt-4 rounded-2xl border border-blue-200 bg-white overflow-hidden shadow-sm">
+          <div className="px-3.5 py-3 bg-blue-50 border-b border-blue-200">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="inline-flex items-center gap-1.5 text-[15px] font-bold text-blue-950">
+                <RefreshCw className="w-4 h-4" />
+                Check these first
+              </h2>
+              {carriedItems.length > 4 && (
+                <button
+                  type="button"
+                  onClick={markAllCarried}
+                  className="text-[13px] font-semibold text-blue-800 hover:underline cursor-pointer"
+                >
+                  {allCarriedResolved ? "Clear all" : "Mark all correct"}
+                </button>
+              )}
+            </div>
+            <p className="mt-1 text-[14px] leading-snug text-slate-900">
+              These were copied from <span className="font-bold">{prefilledFromName}</span>. Make sure they are right
+              for <span className="font-bold">{candidateName}</span>, not left over from someone else.
+            </p>
+          </div>
 
-          const filteredReviewItems = reviewItems.filter((item) => {
-            if (filterMode === "all") return true;
-            const checkField = (f: Field) => {
-              const isCandidate = getFieldCandidateScope(formCode, f, section.title) === "candidate_distinct";
-              const isAnswered = isFieldAnswered(f, formData);
-              const isVerified = verifiedFields.has(f.key);
-              if (filterMode === "beneficiary") return isCandidate;
-              if (filterMode === "unanswered") return !isAnswered;
-              if (filterMode === "unverified") return !isVerified;
-              return true;
-            };
-            if (item.type === "group") return item.fields.some(checkField);
-            return checkField(item.field);
-          });
+          {allCarriedResolved && (
+            <p className="flex items-center gap-1.5 px-3.5 py-2 text-[12.5px] font-semibold text-[#0d7377] bg-[#e8f6f6] border-b border-teal-100">
+              <Check className="w-3.5 h-3.5" strokeWidth={3} />
+              All copied answers confirmed for {candidateName}.
+            </p>
+          )}
 
-          if (filterMode !== "all" && filteredReviewItems.length === 0) return null;
-
-          return (
-            <div
-              key={`sec-${sectionIdx}`}
-              className="rounded-2xl border bg-white overflow-hidden shadow-sm transition-all"
-              style={{ borderColor: isSectionComplete ? "#a3e4c8" : "#e2e8f0" }}
-            >
-              {/* Section Header */}
-              <div
-                onClick={() => toggleSectionCollapse(sectionIdx)}
-                className={`px-5 py-4 border-b flex items-center justify-between gap-3 cursor-pointer transition-colors ${
-                  isSectionComplete
-                    ? "bg-[#f0fbf6] border-[#a3e4c8]"
-                    : "bg-slate-50/50 border-slate-100 hover:bg-slate-50"
-                }`}
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <span
-                    className={`w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center shrink-0 ${
-                      isSectionComplete ? "bg-[#0d7857] text-white" : "bg-[#0d7377] text-white"
-                    }`}
-                  >
-                    {isSectionComplete ? "✓" : stepNum}
-                  </span>
-                  <div className="min-w-0">
-                    <h2 className="text-sm sm:text-base font-bold text-slate-800 truncate">{section.title}</h2>
-                    <p className="text-xs text-slate-400 mt-0.5 flex items-center gap-2">
-                      <span>{verifiedCount} of {total} verified</span>
-                      {unanswered > 0 && (
-                        <span className="inline-flex items-center gap-1 text-amber-600 font-semibold">
-                          <AlertTriangle className="w-3 h-3" />
-                          {unanswered} not provided
-                        </span>
-                      )}
-                    </p>
+          <ul className="divide-y divide-slate-200">
+            {carriedItems.map(({ field, stepNum, value }) => {
+              const ok = stillCorrect.has(field.key);
+              return (
+                <li
+                  key={field.key}
+                  className={`flex items-center gap-2 px-3.5 py-2 transition-colors ${ok ? "bg-[#e8f6f6]" : "bg-white"}`}
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[13px] font-medium text-slate-700 leading-snug">{field.label}</p>
+                    <p className="text-sm font-semibold text-slate-900 break-words leading-snug">{value}</p>
                   </div>
-                </div>
-
-                <div className="flex items-center gap-2 shrink-0">
                   <button
                     type="button"
-                    onClick={(e) => { e.stopPropagation(); onEditStep(stepNum); }}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-[#0d7377] bg-white hover:bg-teal-50 border border-slate-200 transition-colors cursor-pointer"
+                    onClick={() => toggleStillCorrect(field.key)}
+                    aria-label={ok ? "Marked correct" : "Mark as correct"}
+                    aria-pressed={ok}
+                    className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 border transition-colors cursor-pointer ${
+                      ok
+                        ? "bg-[#0d7377] border-[#0d7377] text-white"
+                        : "bg-white border-slate-300 text-slate-500 hover:bg-slate-100"
+                    }`}
                   >
-                    <Edit3 className="w-3.5 h-3.5" />
-                    Edit
+                    <Check className="w-4 h-4" strokeWidth={2.5} />
                   </button>
-                  <div className="p-1 text-slate-400">
-                    {isCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
-                  </div>
-                </div>
-              </div>
-
-              {/* Section Body */}
-              <AnimatePresence initial={false}>
-                {!isCollapsed && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="p-5 sm:p-6 space-y-5 bg-slate-50/20"
+                  <button
+                    type="button"
+                    onClick={() => onEditStep(stepNum)}
+                    aria-label={`Change ${field.label}`}
+                    className="h-8 w-8 rounded-lg flex items-center justify-center shrink-0 border border-slate-300 bg-white text-slate-500 hover:bg-slate-100 transition-colors cursor-pointer"
                   >
-                    {/* Nested Groups */}
-                    {filteredReviewItems
-                      .filter((item): item is ReviewGroup => item.type === "group")
-                      .map((item, itemIdx) => {
-                        const isGroupExpanded = expandedGroups.has(item.key);
-                        const groupFields = item.fields.filter((f) => {
-                          if (filterMode === "all") return true;
-                          const isCandidate = getFieldCandidateScope(formCode, f, section.title) === "candidate_distinct";
-                          const isAnswered = isFieldAnswered(f, formData);
-                          const isVerified = verifiedFields.has(f.key);
-                          if (filterMode === "beneficiary") return isCandidate;
-                          if (filterMode === "unanswered") return !isAnswered;
-                          if (filterMode === "unverified") return !isVerified;
-                          return true;
-                        });
-                        const groupVerifiedCount = groupFields.filter((f) => verifiedFields.has(f.key)).length;
+                    <Pencil className="w-3.5 h-3.5" />
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
 
+      {/* Sections */}
+      <div className="flex items-center justify-between px-0.5 mb-1.5 text-[12.5px] text-slate-500">
+        <span>{sectionData.length} sections</span>
+        <button
+          type="button"
+          onClick={() => setAllOpen((v) => !v)}
+          className="font-semibold text-[#0d7377] hover:underline cursor-pointer"
+        >
+          {allOpen ? "Collapse all" : "Expand all"}
+        </button>
+      </div>
+
+      <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden divide-y divide-slate-100 shadow-sm">
+        {sectionData.map(({ idx, title, rows, total, answered, requiredBlank, hasPerson }, pos) => {
+          const open = allOpen || currentOpen === idx;
+          const done = confirmed.has(idx);
+          const isLastToCheck = !done && sectionData.every((s) => s.idx === idx || confirmed.has(s.idx));
+
+          return (
+            <div key={`sec-${idx}`} id={`review-sec-${idx}`} className="scroll-mt-4">
+              <button
+                type="button"
+                onClick={() => toggleOpen(idx)}
+                aria-expanded={open}
+                className={`w-full flex items-center gap-3 px-4 py-3.5 text-left transition-colors cursor-pointer ${
+                  open ? "" : "bg-white hover:bg-slate-50"
+                }`}
+                style={
+                  open
+                    ? {
+                        background: hasPerson
+                          ? "linear-gradient(90deg, #eff6ff 0%, #f8fbff 50%, #ffffff 100%)"
+                          : `linear-gradient(90deg, ${TEAL_TINT} 0%, #f5fbfb 50%, #ffffff 100%)`,
+                      }
+                    : undefined
+                }
+              >
+                <span
+                  className={`w-7 h-7 rounded-full text-xs font-semibold flex items-center justify-center shrink-0 transition-shadow ${
+                    done
+                      ? "bg-[#0d7377] text-white"
+                      : open && hasPerson
+                      ? "bg-blue-500 text-white ring-4 ring-blue-500/15"
+                      : open
+                      ? "bg-[#0d7377] text-white ring-4 ring-[#0d7377]/15"
+                      : hasPerson
+                      ? "bg-blue-100 text-blue-700"
+                      : "bg-[#e8f6f6] text-[#0d7377]"
+                  }`}
+                >
+                  {done ? <Check className="w-3.5 h-3.5" strokeWidth={3} /> : pos + 1}
+                </span>
+
+                <span className="min-w-0 flex-1 flex items-center gap-2 flex-wrap">
+                  <span className="text-[14.5px] font-semibold text-slate-900">{title}</span>
+                  {hasPerson && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-semibold text-blue-700">
+                      <User className="w-3 h-3" />
+                      About {candidateName}
+                    </span>
+                  )}
+                  <span className="text-xs text-slate-500 whitespace-nowrap">
+                    {answered} of {total}
+                  </span>
+                </span>
+
+                {done ? (
+                  <span className="rounded-full bg-[#e8f6f6] px-2.5 py-0.5 text-[11.5px] font-semibold text-[#0d7377]">
+                    Checked
+                  </span>
+                ) : requiredBlank > 0 ? (
+                  <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-[11.5px] font-semibold text-amber-800">
+                    {requiredBlank} blank
+                  </span>
+                ) : null}
+
+                <ChevronDown
+                  className={`w-4 h-4 shrink-0 transition-transform ${
+                    open ? `rotate-180 ${hasPerson ? "text-blue-500" : "text-[#0d7377]"}` : "text-slate-400"
+                  }`}
+                />
+              </button>
+
+              {open && (
+                <div className="border-t border-slate-200">
+                  {/* Note for this section: changes with its state */}
+                  {requiredBlank > 0 ? (
+                    <p className="px-4 py-2.5 text-[13px] text-slate-600 bg-[#e8f6f6]/60 border-b border-teal-100">
+                      <span className="font-semibold text-slate-800">
+                        {requiredBlank} {plural(requiredBlank, "question is", "questions are")} blank.
+                      </span>{" "}
+                      Tap Add answer to fill {plural(requiredBlank, "it", "them")} in, or continue if{" "}
+                      {plural(requiredBlank, "it doesn't", "they don't")} apply to you.
+                    </p>
+                  ) : done ? (
+                    <p className="flex items-center gap-2 px-4 py-2.5 text-[13px] text-[#0d7377] bg-[#e8f6f6] border-b border-teal-100">
+                      <Check className="w-4 h-4 shrink-0" strokeWidth={2.5} />
+                      <span>
+                        <span className="font-semibold">Checked.</span> You can still edit this section.
+                      </span>
+                    </p>
+                  ) : (
+                    <p className="px-4 py-2.5 text-[13px] text-slate-600 bg-[#e8f6f6]/60 border-b border-teal-100">
+                      {hasPerson
+                        ? `Everything here is filled in. Check it's right for ${candidateName}, then tap Looks right.`
+                        : "Everything here is filled in. Take a look, then tap Looks right."}
+                    </p>
+                  )}
+
+                  <dl className="divide-y divide-slate-200">
+                    {rows.map((row, ri) => {
+                      if (row.kind === "heading") {
                         return (
-                          <div key={item.key || `grp-${itemIdx}`} className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
-                            <div
-                              onClick={() => toggleGroup(item.key)}
-                              className="flex items-center justify-between px-4 py-3.5 cursor-pointer bg-slate-50 hover:bg-slate-100/70 transition-colors border-b border-slate-100"
-                            >
-                              <div className="flex items-center gap-2.5">
-                                <span className="text-sm font-semibold text-slate-800">{item.label}</span>
-                                <span className="text-[11px] text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
-                                  {groupVerifiedCount}/{groupFields.length} verified
-                                </span>
-                              </div>
-                              {isGroupExpanded ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
-                            </div>
-
-                            <AnimatePresence initial={false}>
-                              {isGroupExpanded && (
-                                <motion.div
-                                  initial={{ height: 0 }}
-                                  animate={{ height: "auto" }}
-                                  exit={{ height: 0 }}
-                                  className="overflow-hidden"
-                                >
-                                  <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                                    {groupFields.map((f, fIdx) => {
-                                      const val = getDisplayValue(f, formData);
-                                      const hasVal = !!(val && val.trim() !== "");
-                                      const isChecked = verifiedFields.has(f.key);
-                                      const isCandidateField =
-                                        !!activeCandidate &&
-                                        getFieldCandidateScope(formCode, f, section.title) === "candidate_distinct";
-                                      return (
-                                        <FieldCard
-                                          key={f.key || `gf-${fIdx}`}
-                                          fieldKey={f.key}
-                                          label={f.label}
-                                          val={val}
-                                          hasVal={hasVal}
-                                          isChecked={isChecked}
-                                          isCandidateField={isCandidateField}
-                                          candidateName={candidateName}
-                                          onToggle={() => toggleFieldVerified(f.key)}
-                                          size="sm"
-                                        />
-                                      );
-                                    })}
-                                  </div>
-                                </motion.div>
-                              )}
-                            </AnimatePresence>
+                          <div
+                            key={`${row.key}-${ri}`}
+                            className="px-4 py-2 text-[11px] font-bold uppercase tracking-wider text-[#0d7377] bg-[#e8f6f6]/70"
+                          >
+                            {row.label}
                           </div>
                         );
-                      })}
+                      }
+                      const f = row.field;
+                      const has = isFieldAnswered(f, formData);
+                      const optional = isOptionalField(f);
+                      const edited = isEdited(f);
+                      const nested = row.depth > 0;
+                      // Questions are mid slate, answers are near-black bold, so the two never blend together
+                      const qColor = nested ? "text-slate-600" : "text-slate-700";
 
-                    {/* Standalone Field Grid */}
-                    {filteredReviewItems.filter((item): item is ReviewFieldItem => item.type === "field").length > 0 && (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                        {filteredReviewItems
-                          .filter((item): item is ReviewFieldItem => item.type === "field")
-                          .map((item, itemIdx) => {
-                            const field = item.field;
-                            const val = getDisplayValue(field, formData);
-                            const hasVal = !!(val && val.trim() !== "");
-                            const isChecked = verifiedFields.has(field.key);
-                            const isCandidateField =
-                              !!activeCandidate &&
-                              getFieldCandidateScope(formCode, field, section.title) === "candidate_distinct";
-                            return (
-                              <FieldCard
-                                key={field.key || `f-${itemIdx}`}
-                                fieldKey={field.key}
-                                label={field.label}
-                                val={val}
-                                hasVal={hasVal}
-                                isChecked={isChecked}
-                                isCandidateField={isCandidateField}
-                                candidateName={candidateName}
-                                onToggle={() => toggleFieldVerified(field.key)}
-                                size="md"
-                              />
-                            );
-                          })}
-                      </div>
+                      return (
+                        <div
+                          key={`${row.key}-${ri}`}
+                          className="pr-4 bg-white"
+                          style={{ paddingLeft: 16 + (nested ? row.depth * 20 : 0) }}
+                        >
+                          <div
+                            className={`flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1.5 sm:gap-6 ${
+                              nested ? "py-2.5" : "py-3.5"
+                            }`}
+                          >
+                            <dt
+                              className={`leading-snug flex items-start gap-1.5 sm:max-w-[60%] ${qColor} ${
+                                nested ? "text-[13px] font-medium" : "text-[14px] font-medium"
+                              }`}
+                            >
+                              {nested && <CornerDownRight className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-px" />}
+                              {f.label}
+                            </dt>
+                            <dd className="text-[15px] sm:text-right break-words sm:max-w-[38%] shrink-0">
+                              {has ? (
+                                <>
+                                  {edited && (
+                                    <span className="mr-2 inline-block rounded-full bg-[#e8f6f6] px-2 py-0.5 align-middle text-[11px] font-semibold text-[#0d7377]">
+                                      Edited
+                                    </span>
+                                  )}
+                                  <span className="font-bold text-slate-950">{getDisplayValue(f, formData)}</span>
+                                </>
+                              ) : optional ? (
+                                <span className="text-slate-400">—</span>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => onEditStep(idx + 1)}
+                                  className="rounded-full border border-amber-300 bg-white px-3 py-1 text-xs font-semibold text-amber-800 hover:bg-amber-100 cursor-pointer"
+                                >
+                                  Add answer
+                                </button>
+                              )}
+                            </dd>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </dl>
+
+                  <div className="flex items-center justify-between gap-3 px-4 py-3 bg-slate-50/80 border-t border-slate-100">
+                    <button
+                      type="button"
+                      onClick={() => onEditStep(idx + 1)}
+                      className="inline-flex items-center gap-1.5 h-8 text-[13px] font-semibold text-slate-600 hover:text-[#0d7377] cursor-pointer"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                      Edit
+                    </button>
+
+                    {done ? (
+                      <button
+                        type="button"
+                        onClick={() => undoConfirm(idx)}
+                        className="h-8 text-[13px] font-semibold text-slate-500 hover:text-slate-800 cursor-pointer"
+                      >
+                        Undo
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => confirmSection(idx)}
+                        className="h-9 px-5 rounded-xl text-[13px] font-semibold text-white bg-[#0d7377] hover:bg-[#0a5c5f] shadow-sm shadow-[#0d7377]/25 transition-colors cursor-pointer"
+                      >
+                        {requiredBlank > 0
+                          ? `Continue with ${requiredBlank} blank`
+                          : isLastToCheck
+                          ? "Looks right, finish"
+                          : "Looks right, next →"}
+                      </button>
                     )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                  </div>
+                </div>
+              )}
             </div>
           );
         })}
       </div>
 
-      {/* All Confirmed Banner */}
-      <AnimatePresence>
-        {allConfirmed && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            className="rounded-2xl px-5 py-5 flex items-center gap-4 bg-[#f0fbf6] border border-[#a3e4c8] shadow-sm"
+      {/* You're all set */}
+      {unlocked && (
+        <div className="mt-4 flex items-start gap-3 rounded-2xl border border-teal-200 bg-[#e8f6f6] px-4 py-3.5">
+          <span
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white"
+            style={{ background: TEAL }}
           >
-            <ShieldCheck className="w-7 h-7 text-[#0d7857] shrink-0" strokeWidth={2.2} />
-            <div>
-              <p className="text-sm font-bold text-[#09573c]">Every Answer Audited &amp; Confirmed</p>
-              <p className="text-xs text-[#0d7857] mt-0.5">
-                Your form is 100% verified. You can now preview, download, or save your completed packet.
-              </p>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Sticky Bottom Action Bar */}
-      <div
-        className="sticky bottom-0 -mx-3 mt-8 border-t border-slate-200 bg-white/95 px-4 py-4 backdrop-blur-md md:-mx-6 md:px-6 z-30"
-        style={{ boxShadow: "0 -4px 20px rgba(0,0,0,0.05)" }}
-      >
-        {!allConfirmed && (
-          <div className="mb-3 flex items-center gap-2.5 rounded-xl bg-amber-50 border border-amber-200 px-4 py-2.5 max-w-5xl mx-auto">
-            <AlertTriangle className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-            <p className="text-xs text-amber-800">
-              Verify remaining{" "}
-              <span className="font-bold text-amber-900">{totalAnswerCount - verifiedAnswerCount}</span>{" "}
-              answer{totalAnswerCount - verifiedAnswerCount !== 1 ? "s" : ""} to unlock export options.
+            <Check className="h-4 w-4" strokeWidth={3} />
+          </span>
+          <div>
+            <p className="text-[15px] font-bold text-slate-900">You're all set</p>
+            <p className="mt-0.5 text-[13px] text-slate-600">
+              Every section is checked{totalRequiredBlank > 0 ? ", and the blanks are ones you chose to skip" : ""}. Use
+              the buttons below to preview your PDF, download it, or save it to your vault.
             </p>
           </div>
-        )}
+        </div>
+      )}
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-5xl mx-auto">
-          <button
-            onClick={onPreviewPDF}
-            disabled={!allConfirmed || isPreviewing || isDownloading || isSavingToVault}
-            className="flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-white transition-all disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
-            style={{ background: allConfirmed ? "#334155" : "#94a3b8" }}
+      {/* Sticky bottom bar */}
+      <div
+        className="sticky bottom-0 -mx-3 mt-6 border-t border-slate-200 bg-white/95 px-4 py-3 backdrop-blur-md md:-mx-6 md:px-6 z-30"
+        style={{ boxShadow: "0 -4px 20px rgba(0,0,0,0.05)" }}
+      >
+        <div className="flex items-center gap-2 flex-wrap max-w-3xl mx-auto">
+          <p
+            role="status"
+            aria-live="polite"
+            className={`flex-1 min-w-[160px] text-[12.5px] font-semibold ${
+              unlocked ? "text-[#0d7377]" : lockedHint ? "text-slate-900" : "text-slate-500"
+            }`}
           >
-            <Eye className="h-4 w-4 shrink-0" />
-            {isFreePreview ? (
-              <>
-                {isPreviewing ? "Previewing..." : "Preview Page 1"}
-                <span className="ml-1 rounded bg-amber-500 px-1.5 py-0.5 text-[9px] font-extrabold tracking-wide text-white uppercase">
-                  Demo
-                </span>
-              </>
-            ) : isPreviewing ? (
-              "Previewing..."
-            ) : (
-              "Preview PDF"
-            )}
-          </button>
-
-          <button
-            onClick={onDownloadPDF}
-            disabled={!allConfirmed || isPreviewing || isDownloading || isSavingToVault}
-            className="flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-white transition-all disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
-            style={{ background: allConfirmed ? "#1e293b" : "#94a3b8" }}
-          >
-            <Download className="h-4 w-4 shrink-0" />
-            {isFreePreview ? (
-              <>
-                {isDownloading ? "Downloading..." : "Download Page 1"}
-                <span className="ml-1 rounded bg-amber-500 px-1.5 py-0.5 text-[9px] font-extrabold tracking-wide text-white uppercase">
-                  Demo
-                </span>
-              </>
-            ) : isDownloading ? (
-              "Download PDF"
-            ) : (
-              "Download PDF"
-            )}
-          </button>
+            {unlocked
+              ? "You're all set. Ready to export."
+              : lockedHint
+              ? lockedHint
+              : sectionsLeft > 0
+              ? `${sectionsLeft} ${plural(sectionsLeft, "section", "sections")} left to check before you can download.`
+              : `Confirm the ${carriedLeft} copied ${plural(carriedLeft, "answer", "answers")} above to continue.`}
+          </p>
 
           <button
             onClick={onBackToForm}
-            className="flex items-center justify-center gap-2 rounded-xl bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-800 transition-all hover:bg-slate-200 cursor-pointer"
+            className="inline-flex items-center gap-1.5 h-[34px] px-3 rounded-[9px] text-[13px] font-semibold text-slate-500 hover:bg-slate-100 cursor-pointer"
           >
-            <ArrowLeft className="h-4 w-4 shrink-0" />
-            Back to Form
+            <ArrowLeft className="h-4 w-4" />
+            Back
           </button>
 
           <button
-            onClick={isFreePreview ? onUpgradeClick : onSaveToVault}
-            disabled={(!allConfirmed && !isFreePreview) || (!isFreePreview && (isPreviewing || isDownloading || isSavingToVault))}
-            className="flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
-            style={{
-              backgroundColor: allConfirmed || isFreePreview ? "#0d7377" : "#94a3b8",
-              boxShadow: allConfirmed ? "0 4px 14px rgba(13,115,119,0.25)" : "none",
-            }}
+            onClick={guarded(onPreviewPDF)}
+            disabled={exportBusy}
+            aria-disabled={!unlocked}
+            className={`inline-flex items-center gap-1.5 h-[34px] px-3.5 rounded-[9px] text-[13px] font-semibold text-[#0d7377] bg-white border border-[#0d7377] hover:bg-[#e8f6f6] disabled:opacity-40 disabled:cursor-not-allowed ${
+              unlocked ? "cursor-pointer" : "opacity-40 cursor-not-allowed"
+            }`}
           >
-            {isFreePreview ? <Lock className="h-4 w-4 shrink-0" /> : <Save className="h-4 w-4 shrink-0" />}
-            {isFreePreview ? "Unlock Save to Vault" : isSavingToVault ? "Saving..." : "Save to Vault"}
+            <Eye className="h-4 w-4" />
+            {isPreviewing ? "Previewing..." : isFreePreview ? "Preview page 1" : "Preview"}
+          </button>
+
+          <button
+            onClick={guarded(onDownloadPDF)}
+            disabled={exportBusy}
+            aria-disabled={!unlocked}
+            className={`inline-flex items-center gap-1.5 h-[34px] px-3.5 rounded-[9px] text-[13px] font-semibold text-white bg-slate-800 hover:bg-slate-900 disabled:opacity-40 disabled:cursor-not-allowed ${
+              unlocked ? "cursor-pointer" : "opacity-40 cursor-not-allowed"
+            }`}
+          >
+            <Download className="h-4 w-4" />
+            {isDownloading ? "Downloading..." : isFreePreview ? "Download page 1" : "Download"}
+          </button>
+
+          <button
+            onClick={isFreePreview ? onUpgradeClick : guarded(onSaveToVault)}
+            disabled={!isFreePreview && exportBusy}
+            aria-disabled={!unlocked && !isFreePreview}
+            className={`inline-flex items-center gap-1.5 h-[34px] px-3.5 rounded-[9px] text-[13px] font-semibold text-white bg-[#0d7377] hover:bg-[#0a5c5f] disabled:opacity-40 disabled:cursor-not-allowed ${
+              unlocked || isFreePreview ? "cursor-pointer" : "opacity-40 cursor-not-allowed"
+            }`}
+          >
+            {isFreePreview ? <Lock className="h-4 w-4" /> : <Save className="h-4 w-4" />}
+            {isFreePreview ? "Unlock save to vault" : isSavingToVault ? "Saving..." : "Save to vault"}
           </button>
         </div>
 
-        <div className="mt-3 flex items-center justify-center gap-1 text-center text-[10px] font-semibold text-slate-500">
-          <Lock className="h-3 w-3 shrink-0 text-emerald-600" />
+        <div className="mt-2 flex items-center justify-center gap-1 text-[10.5px] font-semibold text-slate-500">
+          <Lock className="h-3 w-3 shrink-0 text-[#0d7377]" />
           <span>{t("documentVaultPage.components.uploadModal.securityNotice")}</span>
         </div>
       </div>

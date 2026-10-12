@@ -556,16 +556,18 @@ export default function PassportPhotoTool({
             >
               {t("passportPhoto.subtitle")}
             </p>
-            <div className="mt-4 flex justify-center">
-              <QuickAccessButton
-                item={{
-                  id: "photo-booth",
-                  title: "Photo Booth",
-                  href: "/passport",
-                  icon_name: "Camera",
-                }}
-              />
-            </div>
+            {!isJourney && (
+              <div className="mt-4 flex justify-center">
+                <QuickAccessButton
+                  item={{
+                    id: "photo-booth",
+                    title: "Photo Booth",
+                    href: "/passport",
+                    icon_name: "Camera",
+                  }}
+                />
+              </div>
+            )}
           </header>
         )}
 

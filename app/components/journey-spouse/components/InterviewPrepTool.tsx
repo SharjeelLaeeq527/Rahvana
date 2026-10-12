@@ -61,7 +61,11 @@ export const InterviewPrepTool: React.FC<InterviewPrepToolProps> = ({
               if (guard && !guard()) return;
               setIsPrepLaunched(true);
               const baseUrl = "/interview-prep";
-              const url = journeyId ? `${baseUrl}?journey_id=${journeyId}` : baseUrl;
+              const queryParams = new URLSearchParams();
+              if (journeyId) queryParams.set("journey_id", journeyId);
+              queryParams.set("category_slug", "ir-1-spouse");
+              const qs = queryParams.toString();
+              const url = `${baseUrl}?${qs}`;
               setToolHref(url);
             }}
             className="w-full p-4 bg-[#3b7dd8] text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[#3b7dd8] transition-all shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
@@ -109,6 +113,7 @@ export const InterviewPrepTool: React.FC<InterviewPrepToolProps> = ({
       <ToolPageOverlay
         toolHref={toolHref}
         onClose={() => setToolHref(null)}
+        toolProps={{ journeyId, categorySlug: "ir-1-spouse", journeyCategory: "IR-1" }}
       />
     </div>
   );
