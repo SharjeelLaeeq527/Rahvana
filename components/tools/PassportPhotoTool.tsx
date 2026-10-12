@@ -130,6 +130,11 @@ export default function PassportPhotoTool({
 
   // Reset form
   const reset = () => {
+    if (preview) {
+      try {
+        URL.revokeObjectURL(preview);
+      } catch {}
+    }
     setFile(null);
     setPreview(null);
     setResult(null);
@@ -140,18 +145,31 @@ export default function PassportPhotoTool({
 
   // Handle file selection
   const handleFileUpload = (fieldName: string, uploadedFile: File | File[] | null) => {
-    if (!uploadedFile || Array.isArray(uploadedFile)) return;
+    if (!uploadedFile) {
+      reset();
+      return;
+    }
+
+    if (Array.isArray(uploadedFile)) return;
 
     // Validate file type
     if (!uploadedFile.type.startsWith("image/")) {
+      reset();
       setError(t("passportPhoto.errors.invalid"));
       return;
     }
 
     // Validate file size (max 10MB)
     if (uploadedFile.size > 10 * 1024 * 1024) {
+      reset();
       setError(t("passportPhoto.errors.large"));
       return;
+    }
+
+    if (preview) {
+      try {
+        URL.revokeObjectURL(preview);
+      } catch {}
     }
 
     setFile(uploadedFile);
@@ -164,7 +182,8 @@ export default function PassportPhotoTool({
     showToast(
       t("passportPhoto.frontFacingToast") ||
         "Photo selected! Please verify your face is facing straight ahead with no tilt before generating.",
-      "info"
+      "info",
+      6000
     );
   };
 
@@ -427,6 +446,7 @@ export default function PassportPhotoTool({
               fieldName="passportPhoto"
               accept="image/*"
               multiple={false}
+              file={file}
               height="220px"
               helperText={
                 t("passportPhoto.frontFacingHelper") ||
@@ -452,7 +472,7 @@ export default function PassportPhotoTool({
                 </div>
 
                 <div className="mt-2.5 text-center">
-                  <span className="inline-flex items-center gap-1.5 text-xs text-[#0d7377] font-medium bg-[#e6f4f4] px-3 py-1 rounded-full border border-[#0d7377]/20">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-[#0d7377]/20 bg-[#e6f4f4] px-3 py-1 text-xs font-medium text-[#0d7377]">
                     <CheckCircle className="h-3.5 w-3.5" />
                     Verify your head is upright and looking straight ahead
                   </span>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 import * as Icons from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createPortal } from "react-dom";
@@ -35,6 +35,11 @@ export const useToast = () => {
 
 export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // ✅ NEW: showToast returns id + supports optional custom id
   const showToast = (
@@ -81,7 +86,8 @@ return (
   <ToastContext.Provider value={{ showToast, updateToast, dismissToast }}>
     {children}
 
-    {typeof document !== "undefined" &&
+    {mounted &&
+      typeof document !== "undefined" &&
       createPortal(
         <div
           className="fixed bottom-6 left-0 right-0 sm:left-auto sm:right-6 sm:w-auto flex flex-col items-center sm:items-end px-4 sm:px-0 space-y-3 pointer-events-none"
