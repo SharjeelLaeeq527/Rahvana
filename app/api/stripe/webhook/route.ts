@@ -7,6 +7,7 @@ import Stripe from "stripe";
 import { consultationService } from "@/lib/services/consultationService";
 import { buildAddonPurchaseUpdate } from "@/lib/payments/addon-purchase-ledger";
 import { cancelDuplicateSubscriptions } from "@/lib/stripe/subscriptionCleanup";
+import { provisionCandidateJourneysAndVaults } from "@/lib/candidate/candidateProvisioningService";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -159,12 +160,29 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
           (session.customer as string) || session.metadata.stripe_customer_id
         );
 
+        // Provision Candidates, Candidate Journeys, and Isolated Document Vaults
+        const visaCategoryMeta = session.metadata?.visa_category || "ir1";
+        const candidateCountMeta = parseInt(session.metadata?.candidate_count || "1", 10) || 1;
+        const isAddCandidateMeta =
+          session.metadata?.action === "add_candidate" ||
+          session.metadata?.is_add_candidate === "true";
+
+        await provisionCandidateJourneysAndVaults({
+          supabase,
+          userId,
+          visaCategory: visaCategoryMeta,
+          candidateCount: candidateCountMeta,
+          tier: productId,
+          stripeSubscriptionId: (session.subscription as string) || undefined,
+          isAddCandidate: isAddCandidateMeta,
+        });
+
         const { data: existingProfile } =
-  await supabase
-    .from("user_profiles")
-    .select("profile_details")
-    .eq("id", userId)
-    .single();
+          await supabase
+            .from("user_profiles")
+            .select("profile_details")
+            .eq("id", userId)
+            .single();
 
 const existingPurchasedAddons =
   Array.isArray(

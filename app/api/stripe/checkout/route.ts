@@ -12,6 +12,7 @@ import { E, msg } from "@/lib/errors";
 import { getAuthenticatedUser } from "@/lib/api/authGuards";
 import { acquireCheckoutLock, releaseCheckoutLock } from "@/lib/stripe/checkoutLock";
 import { resolveSubscriptionTier } from "@/lib/stripe/subscriptionCleanup";
+import { isMultiCandidateCategory } from "@/lib/candidate/candidateSyncService";
 
 function logDebug(msg: string, obj?: any) {
   // Never write request/session details to disk in production (PII hygiene).
@@ -73,6 +74,8 @@ export async function POST(request: NextRequest) {
       documentTranslationId,
       addons,
       visaCategory,
+      candidateCount,
+      action,
     } = body;
 
     if (Array.isArray(addons)) {
@@ -287,8 +290,23 @@ export async function POST(request: NextRequest) {
     // If we trusted a client-supplied `currentTier`/`isUpgrade`, a free user could
     // send { isUpgrade: true, currentTier: "premium" } and pay only the tier
     // *difference* while being provisioned the full higher tier. So it is server-derived.
-    const serverIsUpgrade = hasLivePlan && effectiveCurrentRank > 0;
+    const isMultiCandidate =
+      isMultiCandidateCategory(effectiveVisaCategory) || selectedJourneyType === "IR5";
+    const isUpgradeAction = action === "upgrade";
+    const isAddCandidateAction = action === "add_candidate";
+
+    // When upgrading (either explicitly requested via action="upgrade" or a single-candidate upgrade),
+    // we want proration, retiring the old sub, and guarding against downgrade/duplicate.
+    const serverIsUpgrade =
+      hasLivePlan &&
+      effectiveCurrentRank > 0 &&
+      (isUpgradeAction || (!isMultiCandidate && !isAddCandidateAction));
+
     const serverCurrentTier = serverIsUpgrade ? effectiveCurrentTier : undefined;
+
+    // isAddCandidateRequest indicates adding a new candidate to a roster or initial multi-candidate setup
+    const isAddCandidateRequest =
+      !serverIsUpgrade && (isAddCandidateAction || isMultiCandidate);
 
     // ── Server-side downgrade + duplicate-purchase guard (Stripe-aware) ──────
     // Rejects two scenarios:
@@ -296,7 +314,8 @@ export async function POST(request: NextRequest) {
     //   (b) target tier == current tier  → duplicate purchase (already owned/live)
     // Blocks even when the DB status is stale, because `hasLivePlan` also trusts
     // Stripe. Upgrades (target > current) fall through and are allowed.
-    if (productTier) {
+    // NOTE: Multi-candidate categories allow purchasing additional candidates at any tier!
+    if (productTier && (!isMultiCandidate || isUpgradeAction)) {
       const targetRank = TIER_RANK[productTier.toLowerCase()] ?? 0;
 
       if (hasLivePlan && targetRank < effectiveCurrentRank) {
@@ -452,12 +471,23 @@ export async function POST(request: NextRequest) {
       // Tag the subscription itself (not just the checkout session) with the tier
       // so Stripe stays the source of truth: future checkouts and the safety
       // cleanup can read `subscription.metadata.tier` to know exactly what a live
+      const parsedCandidateCount =
+        candidateCount && !isNaN(Number(candidateCount)) && Number(candidateCount) >= 1
+          ? Math.floor(Number(candidateCount))
+          : 1;
+
+      // Tag the subscription itself (not just the checkout session) with the tier
+      // so Stripe stays the source of truth: future checkouts and the safety
+      // cleanup can read `subscription.metadata.tier` to know exactly what a live
       // sub represents, instead of guessing from price amounts.
       sessionParams.subscription_data = {
         metadata: {
           user_id: userId,
           tier: tierLower,
           visa_category: effectiveVisaCategory,
+          candidate_count: String(parsedCandidateCount),
+          action: isAddCandidateRequest ? "add_candidate" : "",
+          is_add_candidate: isAddCandidateRequest ? "true" : "false",
         },
       };
 
@@ -504,7 +534,7 @@ export async function POST(request: NextRequest) {
       if (useRecurringId) {
         sessionParams.line_items!.push({
           price: product.recurringPriceId,
-          quantity: 1,
+          quantity: parsedCandidateCount,
         });
       } else {
         // Custom price (e.g. CR-2) — create dynamic recurring price
@@ -519,7 +549,7 @@ export async function POST(request: NextRequest) {
             unit_amount: Math.round(monthlyPrice * 100),
             recurring: { interval: "month" },
           },
-          quantity: 1,
+          quantity: parsedCandidateCount,
         });
       }
 
@@ -531,6 +561,9 @@ export async function POST(request: NextRequest) {
         product_id: productTier,
         product_name: product.name + (serverIsUpgrade ? " (Upgrade)" : ""),
         visa_category: effectiveVisaCategory,
+        candidate_count: String(parsedCandidateCount),
+        action: isAddCandidateRequest ? "add_candidate" : "",
+        is_add_candidate: isAddCandidateRequest ? "true" : "false",
         is_upgrade: serverIsUpgrade ? "true" : "false",
         old_subscription_id: serverIsUpgrade ? oldSubscriptionId || "" : "",
       };

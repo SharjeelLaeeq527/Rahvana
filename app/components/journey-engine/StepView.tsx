@@ -342,6 +342,9 @@ export const StepView: React.FC<StepViewProps> = ({
 
   const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
   const [isApUpdateModalOpen, setIsApUpdateModalOpen] = useState(false);
+  // Journey overlay visibility for the Medical booking / PCC filing tools.
+  const [isMedicalBookingOpen, setIsMedicalBookingOpen] = useState(false);
+  const [isPccFilingOpen, setIsPccFilingOpen] = useState(false);
 
   useEffect(() => {
     fetchUserJourneysCached().catch(() => {});

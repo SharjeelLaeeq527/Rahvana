@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { useCandidate } from "@/app/context/CandidateContext";
+import { patchGuideSessionCache } from "./useGuideSession";
 
 export function useGuideSave() {
   const [saving, setSaving] = useState(false);
@@ -39,6 +40,7 @@ export function useGuideSave() {
             const parsed = JSON.parse(raw);
             parsed.saved = true;
             localStorage.setItem(`rahvana_guide_${slug}_${candidateId}`, JSON.stringify(parsed));
+            patchGuideSessionCache(slug, candidateId, { session: parsed });
 
             const listRaw = localStorage.getItem(`rahvana_guide_sessions_${candidateId}`);
             const list = listRaw ? JSON.parse(listRaw) : [];

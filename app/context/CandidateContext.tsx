@@ -39,6 +39,19 @@ function candidatesStorageKey(userId: string | undefined | null): string {
   return userId ? `${CANDIDATES_STORAGE_KEY_PREFIX}_${userId}` : CANDIDATES_STORAGE_KEY_PREFIX;
 }
 
+function writeCandidatesToStorage(
+  userId: string | undefined | null,
+  candidates: CandidateProfile[]
+): void {
+  try {
+    if (typeof window !== "undefined") {
+      localStorage.setItem(candidatesStorageKey(userId), JSON.stringify(candidates));
+    }
+  } catch {
+    /* non-fatal */
+  }
+}
+
 interface CandidateContextType {
   /** Array of all candidate profiles associated with the account */
   candidates: CandidateProfile[];
@@ -129,10 +142,13 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
         let next = c;
         if (next.isPreview) next = { ...next, isPreview: false };
 
+        const isCustom = Boolean(next.customName);
         const nameIsDefault =
-          !next.fullName ||
-          next.fullName === next.relation ||
-          DEFAULT_NAME_RE.test(next.fullName.trim());
+          !isCustom &&
+          (!next.fullName ||
+            next.fullName === next.relation ||
+            DEFAULT_NAME_RE.test(next.fullName.trim()));
+
         if (nameIsDefault) {
           const num = (next.id || "").replace(/[^0-9]/g, "") || "1";
           const genericLabel = `Candidate ${num}`;
@@ -150,6 +166,12 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
               ...(shouldNeutralizeRelation ? { relation: "Other" as const } : {}),
             };
           }
+        } else if (isCustom && next.customName) {
+          next = {
+            ...next,
+            label: next.customName,
+            fullName: next.fullName || next.customName,
+          };
         }
         return next;
       });

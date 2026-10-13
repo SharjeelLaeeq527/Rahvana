@@ -52,6 +52,7 @@ export interface JourneyProgressRecord {
   user_id: string;
   journey_id: string;
   subscription_tier?: string;
+  status?: string;
   current_stage: number;
   current_step: number;
   scenario_type_ir2?: "bio" | "step" | "adopted";
@@ -297,7 +298,7 @@ export async function listUserJourneys(userId: string): Promise<JourneyProgressR
       supabase
         .from("journeys")
         .select(
-          "id, journey_type, subscription_tier, completed_steps_count, total_steps_count, updated_at, filing_method"
+          "id, journey_type, subscription_tier, completed_steps_count, total_steps_count, updated_at, filing_method, status"
         )
         .eq("user_id", userId)
         .order("updated_at", { ascending: false })
@@ -334,6 +335,7 @@ export async function listUserJourneys(userId: string): Promise<JourneyProgressR
           user_id: userId,
           journey_id: record.journey_type, // Map journey_type to journey_id for backward compatibility
           subscription_tier: record.subscription_tier || "free",
+          status: record.status || "not_started",
           current_stage: 0,
           current_step: 0,
           completed_steps: Array(activeProgress.completed_steps_count || 0).fill(""), // Create array of appropriate length
@@ -344,7 +346,7 @@ export async function listUserJourneys(userId: string): Promise<JourneyProgressR
           filing_type: (record.filing_method || "online") as JourneyProgressRecord["filing_type"],
           document_checklist: {},
           notes: {},
-          started: true,
+          started: record.status === "in_progress" || (activeProgress.completed_steps_count || 0) > 0 || true,
           started_at: new Date().toISOString(),
           last_updated_at: record.updated_at, // Map updated_at to last_updated_at for compatibility
           updated_at: record.updated_at,

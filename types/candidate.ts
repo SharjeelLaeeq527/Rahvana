@@ -88,6 +88,18 @@ export interface CandidateProfile {
 
   /** Color accent for UI avatar badge */
   colorTag?: "teal" | "purple" | "blue" | "amber" | "rose" | "emerald";
+
+  /** Custom candidate avatar / profile photo URL */
+  avatarUrl?: string;
+
+  /** Custom candidate display name */
+  customName?: string;
+
+  /** Optional custom journey name for this candidate */
+  journeyName?: string;
+
+  /** Optional custom journey cover image */
+  journeyImage?: string;
 }
 
 export interface CandidateSyncConfig {
