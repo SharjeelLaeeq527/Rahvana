@@ -29,10 +29,8 @@ CREATE TRIGGER trg_user_wallets_updated_at
     FOR EACH ROW
     EXECUTE FUNCTION public.handle_wallet_updated_at();
 
--- 4. ROW LEVEL SECURITY (RLS) POLICIES
+-- 4. ROW LEVEL SECURITY (RLS) POLICY
 ALTER TABLE public.user_wallets ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.credit_transactions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.standalone_unlocked_resources ENABLE ROW LEVEL SECURITY;
 
 -- User Read Policies
 DROP POLICY IF EXISTS "Users can view own wallet" ON public.user_wallets;

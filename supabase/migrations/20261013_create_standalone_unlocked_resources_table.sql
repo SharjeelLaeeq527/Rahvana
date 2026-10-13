@@ -35,6 +35,8 @@ CREATE TRIGGER trg_unlocked_res_updated_at
     FOR EACH ROW
     EXECUTE FUNCTION public.handle_unlocked_res_updated_at();
 
+ALTER TABLE public.standalone_unlocked_resources ENABLE ROW LEVEL SECURITY;
+
 DROP POLICY IF EXISTS "Users can view own unlocked resources" ON public.standalone_unlocked_resources;
 CREATE POLICY "Users can view own unlocked resources"
     ON public.standalone_unlocked_resources FOR SELECT
