@@ -95,7 +95,10 @@ jest.mock('@/lib/stripe/config', () => ({
     BASIC:     { name: 'Basic', price: 349, monthlyPrice: 29.08, priceId: 'price_basic', recurringPriceId: 'price_basic_m', features: [] },
     PREMIUM:   { name: 'Premium', price: 699, monthlyPrice: 58.25, priceId: 'price_premium', recurringPriceId: 'price_premium_m', features: [] },
     EXECUTIVE: { name: 'Executive', price: 1099, monthlyPrice: 91.58, priceId: 'price_exec', recurringPriceId: 'price_exec_m', features: [] },
-    ADDONS: {},
+    ADDONS: {
+      sponsor: { name: 'Sponsorship Calculator', price: 15, priceId: '' },
+      'interview-prep': { name: 'Interview Prep', price: 200, priceId: '' },
+    },
   },
 }))
 
@@ -270,5 +273,103 @@ describe('Checkout — past_due recovers instead of re-buying', () => {
     const body = await res.json()
     expect(body.portal).toBe(true)
     expect(body.recover).toBe(true)
+  })
+})
+
+// --- Wallet top-up ($1 = 1 credit) ---
+
+describe('Checkout — wallet top-up', () => {
+  beforeEach(resetAll)
+
+  const sessionsCreate = () =>
+    require('@/lib/stripe/config').stripe.checkout.sessions.create as jest.Mock
+  const createPayment = () =>
+    require('@/lib/services/paymentService').paymentService.createPayment as jest.Mock
+
+  it('creates a one-time session charging exactly the requested credits', async () => {
+    sessionsCreate().mockClear()
+    const res = await POST(
+      makeRequest({ productType: 'wallet_topup', amount: 25, returnUrl: '/resources?tab=tools' })
+    )
+    expect(res.status).toBe(200)
+    const params = sessionsCreate().mock.calls[0][0]
+    expect(params.mode).toBe('payment')
+    expect(params.line_items).toHaveLength(1)
+    expect(params.line_items[0].price_data.unit_amount).toBe(2500)
+    expect(params.metadata.product_type).toBe('wallet_topup')
+    expect(params.metadata.credits).toBe('25')
+    expect(params.metadata.user_id).toBe('user-123')
+    expect(params.metadata.return_to).toBe('/resources?tab=tools')
+    expect(params.cancel_url).toContain('/resources?tab=tools&topup_canceled=1')
+  })
+
+  it('records the payment as consultation, never journey_plan (reconcile reads journey_plan)', async () => {
+    createPayment().mockClear()
+    await POST(makeRequest({ productType: 'wallet_topup', amount: 10 }))
+    const row = createPayment().mock.calls[0][0]
+    expect(row.product_type).toBe('consultation')
+    expect(row.product_id).toBe('wallet_topup')
+    expect(row.metadata.original_product_type).toBe('wallet_topup')
+  })
+
+  it('lifts an exact deficit below the minimum to the minimum', async () => {
+    sessionsCreate().mockClear()
+    await POST(makeRequest({ productType: 'wallet_topup', amount: 3, resourceId: 'guide-cnic' }))
+    const params = sessionsCreate().mock.calls[0][0]
+    expect(params.line_items[0].price_data.unit_amount).toBe(500)
+    expect(params.metadata.topup_reason).toBe('exact_deficit')
+  })
+
+  it.each([[0], [-10], [12.5], ['abc'], [5000], [null]])('rejects invalid amount %p', async (amount) => {
+    const res = await POST(makeRequest({ productType: 'wallet_topup', amount }))
+    expect(res.status).toBe(400)
+  })
+
+  it('rejects mixing a top-up with a plan purchase', async () => {
+    const res = await POST(
+      makeRequest({ productType: 'wallet_topup', amount: 25, productTier: 'basic' })
+    )
+    expect(res.status).toBe(400)
+  })
+
+  it('falls back to /resources for an off-site return URL', async () => {
+    sessionsCreate().mockClear()
+    await POST(makeRequest({ productType: 'wallet_topup', amount: 10, returnUrl: '//evil.com' }))
+    const params = sessionsCreate().mock.calls[0][0]
+    expect(params.metadata.return_to).toBe('/resources')
+  })
+})
+
+// --- Standalone add-ons (one-time) ---
+
+describe('Checkout — standalone add-ons', () => {
+  beforeEach(resetAll)
+
+  const sessionsCreate = () =>
+    require('@/lib/stripe/config').stripe.checkout.sessions.create as jest.Mock
+
+  it('creates a one-time session for a valid add-on (regression: always returned 400)', async () => {
+    sessionsCreate().mockClear()
+    const res = await POST(makeRequest({ addons: ['sponsor'] }))
+    expect(res.status).toBe(200)
+    const params = sessionsCreate().mock.calls[0][0]
+    expect(params.mode).toBe('payment')
+    expect(params.line_items).toHaveLength(1)
+    expect(params.line_items[0].price_data.unit_amount).toBe(1500)
+    expect(params.metadata.product_type).toBe('standalone_addon')
+  })
+
+  it('resolves category-specific interview prep to the catalog price', async () => {
+    sessionsCreate().mockClear()
+    const res = await POST(makeRequest({ addons: ['interview-prep:ir-1'] }))
+    expect(res.status).toBe(200)
+    expect(sessionsCreate().mock.calls[0][0].line_items[0].price_data.unit_amount).toBe(20000)
+  })
+
+  it('rejects when no add-on is purchasable', async () => {
+    sessionsCreate().mockClear()
+    const res = await POST(makeRequest({ addons: ['does-not-exist'] }))
+    expect(res.status).toBe(400)
+    expect(sessionsCreate()).not.toHaveBeenCalled()
   })
 })

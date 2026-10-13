@@ -29,6 +29,12 @@ jest.mock('@/lib/payments/addon-purchase-ledger', () => ({
   buildAddonPurchaseUpdate: jest.fn(() => ({ alreadyProcessed: false, profileDetails: {} })),
 }))
 
+const mockApplyWalletTopup = jest.fn()
+jest.mock('@/lib/wallet/topup', () => ({
+  ...jest.requireActual('@/lib/wallet/topup'),
+  applyWalletTopup: (...a: any[]) => mockApplyWalletTopup(...a),
+}))
+
 let profile: any = null
 const updateSpy = jest.fn(() => makeChain())
 
@@ -140,5 +146,36 @@ describe('verify-session — journey plan activation', () => {
     expect(mockCancelDuplicates).toHaveBeenCalledWith(
       expect.objectContaining({ customerId: 'cus_1', keepSubId: 'sub_existing', oldSubscriptionId: null })
     )
+  })
+})
+
+describe('verify-session — wallet top-up', () => {
+  const topupSession = {
+    id: 'cs_w', status: 'complete', payment_status: 'paid', customer: 'cus_1',
+    payment_intent: 'pi_1', amount_subtotal: 2500,
+    metadata: { user_id: 'user-1', product_type: 'wallet_topup', credits: '25', return_to: '/resources?tab=tools' },
+  }
+
+  it('credits the wallet and returns balance + return path, without touching the tier', async () => {
+    sessionData = topupSession
+    mockApplyWalletTopup.mockResolvedValue({
+      ok: true, credits: 25, balance: 40, alreadyProcessed: false, transactionId: 'tx_1',
+    })
+    const res = await GET(makeRequest('cs_w'))
+    const body = await res.json()
+    expect(body).toEqual(expect.objectContaining({
+      activated: true, productType: 'wallet_topup', credits: 25, balance: 40, returnTo: '/resources?tab=tools',
+    }))
+    expect(updateSpy).not.toHaveBeenCalledWith(expect.objectContaining({ subscription_tier: expect.anything() }))
+    expect(mockCancelDuplicates).not.toHaveBeenCalled()
+  })
+
+  it('does not mark the payment succeeded when credits did not land', async () => {
+    sessionData = topupSession
+    mockApplyWalletTopup.mockResolvedValue({ ok: false, reason: 'rpc_failed' })
+    const res = await GET(makeRequest('cs_w'))
+    expect(res.status).toBe(500)
+    expect((await res.json()).activated).toBe(false)
+    expect(updateSpy).not.toHaveBeenCalledWith(expect.objectContaining({ status: 'succeeded' }))
   })
 })

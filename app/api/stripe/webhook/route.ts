@@ -9,6 +9,7 @@ import { buildAddonPurchaseUpdate } from "@/lib/payments/addon-purchase-ledger";
 import { cancelSupersededSubscriptions } from "@/lib/stripe/subscriptionCleanup";
 import { getCandidateJourneyKey } from "@/lib/candidate/candidateSyncService";
 import { provisionCandidateJourneysAndVaults } from "@/lib/candidate/candidateProvisioningService";
+import { applyWalletTopup, isWalletTopupSession } from "@/lib/wallet/topup";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -50,6 +51,14 @@ export async function POST(request: NextRequest) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
         await handleCheckoutSessionCompleted(session);
+        break;
+      }
+
+      // Delayed payment methods settle after checkout completes. Only wallet
+      // top-ups act on this event; everything else is unchanged.
+      case "checkout.session.async_payment_succeeded": {
+        const session = event.data.object as Stripe.Checkout.Session;
+        if (isWalletTopupSession(session)) await handleCheckoutSessionCompleted(session);
         break;
       }
 
@@ -127,6 +136,27 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
 
   if (!userId) {
     console.error("No user_id in session metadata");
+    return;
+  }
+
+  // Wallet top-up: credit the wallet (idempotent with verify-session), then mark
+  // the payment succeeded only once the credits landed. Nothing else applies.
+  if (isWalletTopupSession(session)) {
+    const result = await applyWalletTopup(supabase, session, "[webhook]");
+    if (result.ok) {
+      const topupPayment = await paymentService.getPaymentBySessionId(session.id);
+      if (topupPayment && topupPayment.status !== "succeeded") {
+        await paymentService.updatePayment(topupPayment.id, {
+          stripe_payment_id: (session.payment_intent as string) || undefined,
+          status: "succeeded",
+        });
+      }
+      console.log(
+        `✅ Wallet top-up ${result.alreadyProcessed ? "already credited" : `+${result.credits} credits`} for user ${userId}`
+      );
+    } else {
+      console.error(`[webhook] Wallet top-up not applied for ${session.id}: ${result.reason}`);
+    }
     return;
   }
 

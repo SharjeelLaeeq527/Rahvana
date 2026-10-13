@@ -9,9 +9,20 @@ import { usePlan } from "@/app/context/PlanContext";
 
 // Poll /api/stripe/verify-session — first call is immediate (no delay).
 // verify-session directly applies the tier from Stripe so usually one call is enough.
+type VerifyResult = {
+  activated: boolean;
+  tier?: string;
+  productType?: string;
+  credits?: number;
+  balance?: number;
+  returnTo?: string;
+};
+
+type WalletTopupResult = { credits: number; balance: number; returnTo: string };
+
 async function pollUntilActivated(
   sessionId: string,
-  onActivated: (tier: string) => void,
+  onActivated: (data: VerifyResult) => void,
   onTimeout: () => void,
   intervalMs = 1500,
   maxAttempts = 20 // 20 × 1.5s = 30s max
@@ -21,9 +32,9 @@ async function pollUntilActivated(
     attempts++;
     try {
       const res = await fetch(`/api/stripe/verify-session?session_id=${sessionId}`);
-      const data = await res.json();
+      const data: VerifyResult = await res.json();
       if (data.activated) {
-        onActivated(data.tier);
+        onActivated(data);
         return;
       }
     } catch {
@@ -271,6 +282,7 @@ function PaymentSuccessContent() {
   const [verifyStatus, setVerifyStatus] = useState<"checking" | "confirmed" | "timeout">(
     "checking"
   );
+  const [walletTopup, setWalletTopup] = useState<WalletTopupResult | null>(null);
   const sessionId = searchParams.get("session_id");
   const { refresh } = usePlan();
   const pollingStarted = useRef(false);
@@ -309,8 +321,19 @@ try {
 
     pollUntilActivated(
       sessionId,
-      (_tier) => {
+      (data) => {
         refresh();
+
+        if (data.productType === "wallet_topup") {
+          setWalletTopup({
+            credits: data.credits ?? 0,
+            balance: data.balance ?? 0,
+            returnTo: data.returnTo || "/resources",
+          });
+          setVerifyStatus("confirmed");
+          setIsVerifying(false);
+          return;
+        }
       
         if (pendingInterviewCategory) {
           router.replace(
@@ -335,7 +358,7 @@ try {
   if (isVerifying) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-rahvana-primary-pale to-slate-50">
-        <Loader size="md" text="Confirming your plan activation..." />
+        <Loader size="md" text="Confirming your payment..." />
       </div>
     );
   }
@@ -350,7 +373,9 @@ try {
             Payment Successful!
           </h1>
           <p className="text-slate-500 text-[13px] leading-relaxed mb-4">
-            {verifyStatus === "confirmed"
+            {walletTopup
+              ? `${walletTopup.credits} credits were added to your Rahvana Wallet. Your balance is now ${walletTopup.balance} credits.`
+              : verifyStatus === "confirmed"
               ? "Your plan has been activated. Welcome to your new tier!"
               : "Your payment was processed. Plan activation may take a few moments, refresh your dashboard if features are not yet unlocked."}
           </p>
@@ -361,11 +386,18 @@ try {
               What&apos;s Next?
             </h2>
             <ul className="space-y-1.5">
-              {[
-                "You'll receive a confirmation email shortly",
-                "Your account has been upgraded with new features",
-                "Access your dashboard to explore premium features",
-              ].map((item, i) => (
+              {(walletTopup
+                ? [
+                    "You'll receive a confirmation email shortly",
+                    "Your credits work across all standalone tools, guides and services",
+                    "Launch any tool, guide or service from Resources",
+                  ]
+                : [
+                    "You'll receive a confirmation email shortly",
+                    "Your account has been upgraded with new features",
+                    "Access your dashboard to explore premium features",
+                  ]
+              ).map((item, i) => (
                 <li
                   key={i}
                   className="flex items-center gap-2 text-[13px] text-rahvana-primary-dark"
@@ -388,7 +420,14 @@ try {
           </div>
 
           <div className="flex gap-2">
-  {hasPendingInterviewPurchase ? (
+  {walletTopup ? (
+    <Link
+      href={walletTopup.returnTo}
+      className="flex-1 px-4 py-2.5 rounded-lg bg-rahvana-primary text-white text-[14px] font-semibold hover:bg-rahvana-primary-dark transition-colors text-center"
+    >
+      Continue
+    </Link>
+  ) : hasPendingInterviewPurchase ? (
     <Link
       href="/interview-prep?purchase_success=true"
       className="flex-1 px-4 py-2.5 rounded-lg bg-rahvana-primary text-white text-[14px] font-semibold hover:bg-rahvana-primary-dark transition-colors text-center"

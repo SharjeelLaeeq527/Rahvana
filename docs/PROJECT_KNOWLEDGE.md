@@ -860,6 +860,17 @@ translation documents, profiles/roles, `visa_security` questions, interview-prep
   of two partial unique indexes (`(user_id, item_id)` for account scope,
   `(user_id, journey_id, item_id)` for journey scope). **Schema only so far:** no app code reads
   or writes `scope_type` yet, so every existing favorite is account-scoped.
+- **Rahvana Wallet (in progress, plan: `docs/rahvana-credit-wallet-system-implementation-plan.md`).**
+  `20261013_*` adds `user_wallets` (one per user, `balance >= 0`), `credit_transactions` (signed
+  ledger, before/after balances, unique `stripe_session_id` + `idempotency_key`),
+  `standalone_unlocked_resources` (unique per user/type/resource), RPCs
+  `deduct_wallet_credits_atomic` / `credit_wallet_topup_atomic` / `record_unlocked_resource_usage` /
+  `get_monthly_wallet_statement`, and a backfill of legacy `purchased_addons` into unlocks.
+  `20261014_01_harden_wallet_rpcs.sql` makes **all four RPCs service_role only** (they take
+  `p_user_id`, so an `authenticated` grant let users mint credits / unlock for free), validates
+  amounts > 0, and takes the wallet row lock BEFORE the idempotency / already-unlocked checks.
+  Users only SELECT their own rows; every write goes through an RPC from a server route.
+  Journey plans are untouched: journey tools never spend credits.
 
 **Security hardening.** `20260715_fix_rls_security_gaps`, `20260731_*`, `20260717/18_*`, and
 `20260921_security_hardening_batch1`: triggers `guard_profile_role` (blocks self-setting
@@ -890,7 +901,7 @@ Python backend. Highlights:
 | Group | Notable endpoints | Talks to |
 |---|---|---|
 | `auth/*` | login (rate-limited + lockout), signup, callback, confirm-email, forgot/reset/change-password, signout, delete-account, `mfa/*`, check-admin | Supabase Auth, Resend, Redis |
-| `stripe/*` | `checkout` (takes `visaCategory` / `candidateCount` / `action`), `verify-session` (idempotent self-heal & source of truth), `webhook`, `portal`; both confirm paths call `provisionCandidateJourneysAndVaults` (see 4.3) | Stripe |
+| `stripe/*` | `checkout` (takes `visaCategory` / `candidateCount` / `action`, or `productType: "wallet_topup"` + whole-dollar `amount` + `returnUrl`), `verify-session` (idempotent self-heal & source of truth), `webhook`, `portal`; both confirm paths call `provisionCandidateJourneysAndVaults` (see 4.3) and, for top-ups, `applyWalletTopup` (`lib/wallet/topup.ts`) | Stripe |
 | `plan/*` | `plan/reconcile` (never-downgrade tier self-heal) | Supabase |
 | `journeys|chapters|steps|case_data` | journey CRUD, `journeys/initialize` (combined load + bg step-sync), `journeys/[id]/document-checklist` (`DocumentChecklistEngine`), `case_data/validate` | Supabase, journey engines |
 | `candidate/*` | `candidate/create` (server-side upsert candidate into `profile_details.candidates` + lazy-insert its suffixed `journeys` row; the authoritative save path so candidates survive refresh), `candidate/delete` (remove candidate from `profile_details.candidates` + cleanup its `user_guides` and suffixed `journeys` rows; candidate-1 protected) | Supabase |
@@ -963,6 +974,14 @@ Components consume these via hooks/contexts; they should not re-implement domain
   `resolveSubscriptionTier`, `isRahvanaJourneySubscription`). **Plan** —
   `lib/plan/reconcile.ts`. **Payments** — `lib/payments/addon-purchase-ledger.ts`
   (idempotency ledger of processed add-on checkout sessions in `profile_details`).
+- **Wallet** — `lib/wallet/topup.ts`: top-up packs (10/25/50/100), `WALLET_MIN_TOPUP = 5` (an
+  exact deficit below it is lifted to it), whole credits only, max 1000. `applyWalletTopup` is
+  called by BOTH the webhook (`checkout.session.completed` + `async_payment_succeeded`) and
+  verify-session; it requires `payment_status === "paid"`, derives credits from Stripe's
+  pre-tax `amount_subtotal` (refusing a mismatch with `metadata.credits`) and calls
+  `credit_wallet_topup_atomic` keyed by session id, so double delivery credits once. The
+  `payments` row is stored as `product_type = "consultation"` (`original_product_type:
+  wallet_topup`), never `journey_plan`, which `reconcileUserPlan` reads for tier self-heal.
 - **Candidates** — `lib/candidate/candidateSyncService.ts` (journey keys, base category,
   `isMultiCandidateCategory`, shared vs candidate-specific fields) and
   `lib/candidate/candidateProvisioningService.ts` (`provisionCandidateJourneysAndVaults`:
