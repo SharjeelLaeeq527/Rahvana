@@ -169,7 +169,7 @@ const PLAN_RECS: Record<string, string[]> = {
   // "case-strength" temporarily hidden — Case Strength Analyzer commented out.
   basic: ["smart", "sponsor", "interview-prep", "civil-guid"],
   premium: ["interview-prep", "doc-review", "consultation", "221g"],
-  executive: ["case-manager", "consultation", "translate"],
+  executive: ["case-manager", "consultation"],
 };
 
 const INTERVIEW_PREP_ADDON_PREFIX = "interview-prep:";
@@ -2506,24 +2506,25 @@ function PricingContent() {
                             >
                               Selected Plan
                             </span>
-                            <span className="text-muted-foreground/40 text-xs">·</span>
+                            {/* <span className="text-muted-foreground/40 text-xs">·</span>
                             <span className="inline-flex items-center gap-1 rounded-full border border-teal-300/80 bg-teal-100/70 px-2 py-0.5 text-[10.5px] font-bold text-teal-900 uppercase dark:border-teal-800 dark:bg-teal-950/70 dark:text-teal-300">
                               <span className="h-1.5 w-1.5 rounded-full bg-teal-600 dark:bg-teal-400" />
                               {activeExplorerCard?.code || activeVisaCategory.id} Journey
-                            </span>
+                            </span> */}
                           </div>
 
                           <div className="flex flex-wrap items-center gap-2">
                             <span className="text-[20px] font-bold">{currentPlanData.name}</span>
-                            {isUpgradingIr5 && activeUpgradeCandidate ? (
+                            {/* {isUpgradingIr5 && activeUpgradeCandidate ? (
                               <span className="rounded-full border border-emerald-300 bg-emerald-100 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
-                                Upgrading: {getCandidateDisplayName(activeUpgradeCandidate)}
+                                Upgrading: 
+                                 {getCandidateDisplayName(activeUpgradeCandidate)} 
                               </span>
                             ) : isIr5 && parentCount > 1 ? (
                               <span className="rounded-full bg-[#0d7377]/10 px-2.5 py-0.5 text-[11px] font-semibold text-[#0d7377]">
                                 {parentCount} Parents
                               </span>
-                            ) : null}
+                            ) : null} */}
                           </div>
                           <p className="text-muted-foreground m-0 mt-0.5 text-[13px]">
                             {currentPlanData.tagline}
@@ -2543,7 +2544,7 @@ function PricingContent() {
                       </div>
 
                       {/* If > 2 total parents, show eligibility reminder in the plan card */}
-                      {isIr5 && totalEffectiveParents > 2 && (
+                      {/* {isIr5 && totalEffectiveParents > 2 && (
                         <div className="border-border/80 bg-background/60 mt-4 rounded-xl border p-3 text-[12.5px]">
                           <label className="flex cursor-pointer items-start gap-2.5 select-none">
                             <input
@@ -2563,7 +2564,7 @@ function PricingContent() {
                             </div>
                           </label>
                         </div>
-                      )}
+                      )} */}
 
                       {/* <div className="border-border/60 mt-4 flex flex-wrap items-center justify-between gap-3 border-t pt-3">
                         <button
@@ -2780,7 +2781,7 @@ function PricingContent() {
                   </div>
                 )}
 
-                {isIr5 && totalEffectiveParents > 2 && (
+                {/* {isIr5 && totalEffectiveParents > 2 && (
                   <div className="border-border border-b border-dashed py-2.5">
                     <label className="flex cursor-pointer items-center gap-2 text-[12px] select-none">
                       <input
@@ -2802,7 +2803,7 @@ function PricingContent() {
                       </span>
                     </label>
                   </div>
-                )}
+                )} */}
 
                 {activeAddons.map((a) => (
                   <div
