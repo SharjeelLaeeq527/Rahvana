@@ -41,6 +41,7 @@ import {
   type ExplorerJourneyCard as ExplorerJourneyCardType,
 } from "@/app/(tools)/(visa)/visa-category/data/journeys";
 import { useToast } from "@/app/components/shared/ToastProvider";
+import { JourneyPlanBadge } from "@/app/components/shared/JourneyPlanBadge";
 import { useCandidate } from "@/app/context/CandidateContext";
 import {
   isMultiCandidateCategory,
@@ -677,13 +678,17 @@ function PricingContent() {
   const getCandidateDisplayName = useCallback(
     (c: { fullName?: string; label?: string; relation?: string }) => {
       if (c.fullName && c.fullName.trim()) {
-        return c.relation && c.relation !== "Other"
-          ? `${c.fullName.trim()} (${c.relation})`
-          : c.fullName.trim();
+        const trimmed = c.fullName.trim();
+        return c.relation &&
+          c.relation !== "Other" &&
+          c.relation.toLowerCase() !== trimmed.toLowerCase()
+          ? `${trimmed} (${c.relation})`
+          : trimmed;
       }
-      return c.relation && c.relation !== "Other"
-        ? `${c.relation} (${c.label || "Beneficiary"})`
-        : c.label || "Beneficiary";
+      if (c.relation && c.relation !== "Other") {
+        return c.label && c.label !== c.relation ? `${c.relation} (${c.label})` : c.relation;
+      }
+      return c.label || "Beneficiary";
     },
     []
   );
@@ -1703,8 +1708,9 @@ function PricingContent() {
                   </div>
 
                   {/* IR-5 / Multi-Candidate Action Switcher */}
-                  {isIr5 && hasActiveIr5 && (
-                    canUpgradeIr5 ? (
+                  {isIr5 &&
+                    hasActiveIr5 &&
+                    (canUpgradeIr5 ? (
                       <div className="bg-card border-border inline-flex shrink-0 rounded-xl border p-1 shadow-xs">
                         <button
                           type="button"
@@ -1735,8 +1741,7 @@ function PricingContent() {
                       <span className="rounded-full bg-teal-100 px-3 py-1 text-[11px] font-semibold text-teal-800 dark:bg-teal-900/50 dark:text-teal-200">
                         Highest Plan (Executive)
                       </span>
-                    )
-                  )}
+                    ))}
                 </div>
 
                 {/* Checkout error if present */}
@@ -1770,93 +1775,98 @@ function PricingContent() {
                 {/* IR-5 Multi-Parent Selector, Action Switcher & Eligibility Disclaimer */}
                 {isIr5 && (
                   <div className="mb-8 space-y-4">
-
-                    {/* Beneficiary Selector for Multi-Candidate Upgrade */}
+                    {/* Beneficiary Selector for Multi-Candidate Upgrade (Clean UI) */}
                     {isUpgradingIr5 && upgradableCategoryCandidates.length > 1 && (
-                      <div className="bg-card rounded-[22px] border border-teal-200/90 p-5 shadow-sm sm:p-6 dark:border-teal-900/50">
-                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#0d7377]/10 text-[#0d7377]">
-                                <Users className="h-4 w-4" />
-                              </span>
-                              <h3 className="text-foreground text-[16.5px] font-bold">
-                                Select Beneficiary to Upgrade
-                              </h3>
-                              <span className="rounded-full bg-[#0d7377]/10 px-2.5 py-0.5 text-[11px] font-semibold text-[#0d7377]">
-                                {upgradableCategoryCandidates.length} Beneficiaries
-                              </span>
-                            </div>
-                            <p className="text-muted-foreground mt-1 text-[13px]">
-                              You have multiple beneficiaries with active plans for this{" "}
-                              {activeExplorerCard?.code || activeVisaCategory.id} petition. Choose
-                              which beneficiary&apos;s journey plan to upgrade.
-                            </p>
-                          </div>
+                      <div className="bg-card w-fit max-w-full rounded-[22px] border border-teal-200/90 p-5 shadow-sm sm:p-6 dark:border-teal-900/50">
+                        <div className="flex items-center gap-2">
+                          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#0d7377]/10 text-[#0d7377]">
+                            <Users className="h-4 w-4" />
+                          </span>
+                          <h3 className="text-foreground text-[16px] font-bold">
+                            Select Beneficiary to Upgrade
+                          </h3>
                         </div>
 
-                        {/* Candidate selector cards */}
-                        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                          {upgradableCategoryCandidates.map((cand) => {
+                        {/* New-style rounded profile avatars */}
+                        <div className="mt-4 flex flex-wrap items-center gap-6 sm:gap-7">
+                          {upgradableCategoryCandidates.map((cand, index) => {
                             const candTier = getCandidateEffectiveTier(cand);
                             const isSelected = activeUpgradeCandidate?.id === cand.id;
                             const isExecutive = candTier === "executive";
                             const displayName = getCandidateDisplayName(cand);
+                            const initial = (
+                              cand.relation && cand.relation !== "Other"
+                                ? cand.relation[0]
+                                : cand.fullName?.trim()
+                                  ? cand.fullName.trim()[0]
+                                  : cand.label?.[0] || "B"
+                            ).toUpperCase();
+
+                            const colorGradients = [
+                              "from-teal-600 to-emerald-700",
+                              "from-sky-600 to-blue-700",
+                              "from-purple-600 to-indigo-700",
+                              "from-amber-600 to-orange-700",
+                              "from-rose-600 to-pink-700",
+                              "from-emerald-600 to-teal-800",
+                            ];
+                            const gradient = colorGradients[index % colorGradients.length];
 
                             return (
                               <button
                                 key={cand.id}
                                 type="button"
                                 onClick={() => setSelectedUpgradeCandidateId(cand.id)}
-                                className={`group relative flex cursor-pointer flex-col justify-between rounded-xl border p-3.5 text-left transition-all ${
-                                  isSelected
-                                    ? "border-[#0d7377] bg-[#0d7377]/5 shadow-xs ring-2 ring-[#0d7377]/25"
-                                    : "border-border bg-muted/20 hover:border-border/80 hover:bg-muted/40"
-                                }`}
+                                className="group relative flex cursor-pointer flex-col items-center text-center transition-all focus:outline-none"
                               >
-                                <div className="flex items-start justify-between gap-2">
-                                  <div className="flex items-center gap-2.5">
-                                    <div
-                                      className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold ${
-                                        isSelected
-                                          ? "bg-[#0d7377] text-white"
-                                          : "bg-muted text-muted-foreground group-hover:bg-muted/80"
-                                      }`}
-                                    >
-                                      {cand.relation ? cand.relation[0] : "B"}
-                                    </div>
-                                    <div>
-                                      <div className="text-foreground text-[13.5px] font-bold">
-                                        {displayName}
-                                      </div>
-                                      <div className="text-muted-foreground text-[11.5px]">
-                                        {cand.relation || "Beneficiary"} · {cand.label}
-                                      </div>
-                                    </div>
-                                  </div>
-
-                                  {isSelected && (
-                                    <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#0d7377] text-white">
-                                      <CheckCircle2 className="h-3.5 w-3.5" />
-                                    </div>
-                                  )}
-                                </div>
-
-                                <div className="border-border/50 mt-3 flex items-center justify-between border-t pt-2.5 text-[11px]">
-                                  <span className="text-muted-foreground">Current Plan:</span>
-                                  <span
-                                    className={`rounded-md px-2 py-0.5 font-semibold capitalize ${
-                                      isExecutive
-                                        ? "bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300"
-                                        : candTier === "premium"
-                                          ? "bg-purple-100 text-purple-800 dark:bg-purple-950/40 dark:text-purple-300"
-                                          : candTier === "basic"
-                                            ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300"
-                                            : "bg-muted text-muted-foreground"
+                                {/* Profile Avatar */}
+                                <div className="relative">
+                                  <div
+                                    className={`flex h-16 w-16 items-center justify-center rounded-full text-xl font-bold transition-all duration-200 sm:h-20 sm:w-20 sm:text-2xl ${
+                                      isSelected
+                                        ? `bg-gradient-to-br ${gradient} ring-offset-card scale-105 text-white opacity-100 shadow-lg ring-4 ring-[#0d7377] ring-offset-2`
+                                        : `bg-gradient-to-br ${gradient} text-white opacity-75 shadow-xs group-hover:scale-105 group-hover:opacity-100 group-hover:shadow-md`
                                     }`}
                                   >
-                                    {candTier} Plan
-                                    {isExecutive && " (Highest)"}
+                                    {cand.avatarUrl ? (
+                                      <img
+                                        src={cand.avatarUrl}
+                                        alt={displayName}
+                                        className="h-full w-full rounded-full object-cover"
+                                      />
+                                    ) : (
+                                      <span>{initial}</span>
+                                    )}
+                                  </div>
+
+                                  {/* Plan Badge (Icon only, top right of profile circle) */}
+                                  <div className="absolute -top-1.5 -right-1.5 z-10">
+                                    <JourneyPlanBadge
+                                      tier={candTier}
+                                      iconOnly={true}
+                                      className="border-background h-6 w-6 border-2 shadow-xs sm:h-7 sm:w-7"
+                                    />
+                                  </div>
+
+                                  {/* Floating Selected Checkmark Badge (Bottom right of profile circle) */}
+                                  {/* {isSelected && (
+                                    <div className="absolute -bottom-1 -right-1 z-10 flex h-5 w-5 sm:h-6 sm:w-6 items-center justify-center rounded-full bg-[#0d7377] text-white shadow-xs ring-2 ring-card animate-in zoom-in-75 duration-150">
+                                      <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                                    </div>
+                                  )} */}
+                                </div>
+
+                                {/* Name below Avatar */}
+                                <div className="mt-2.5 flex max-w-[130px] flex-col items-center">
+                                  <span
+                                    className={`line-clamp-1 text-[13.5px] leading-tight font-bold transition-colors ${
+                                      isSelected
+                                        ? "text-[#0d7377] dark:text-teal-400"
+                                        : "text-foreground group-hover:text-[#0d7377]"
+                                    }`}
+                                    title={displayName}
+                                  >
+                                    {displayName}
                                   </span>
                                 </div>
                               </button>
@@ -2075,7 +2085,6 @@ function PricingContent() {
                         </div>
                       </div>
                     )}
-
                   </div>
                 )}
 
