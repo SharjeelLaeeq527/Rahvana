@@ -1428,29 +1428,10 @@ function PricingContent() {
 
               <h1 className="page-heading m-0">Choose your immigration journey</h1>
 
-              <p className="page-description text-muted-foreground mt-2 max-w-2xl">
+              <p className="page-description text-muted-foreground mt-2">
                 Select the journey that matches your immigration case to see the plans, tools, and
                 guidance available for you.
               </p>
-
-              {/* Already maxed out IR-1 notice (Executive tier) */}
-              {isIr1Executive && (
-                <div className="mt-5 flex flex-col gap-2.5 rounded-2xl border border-teal-200/90 bg-teal-50/80 p-4 text-xs text-teal-900 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <CheckCircle2 className="h-4 w-4 shrink-0 text-teal-600" />
-                    <span>
-                      You already have an active <strong>IR-1 Spouse Visa</strong> journey (
-                      <strong>Executive</strong> plan).
-                    </span>
-                  </div>
-                  <Link
-                    href="/my-journeys"
-                    className="inline-flex items-center gap-1 font-semibold text-[#0d7377] hover:underline"
-                  >
-                    Go to My Journeys →
-                  </Link>
-                </div>
-              )}
 
               {/* Upgrade available notice for IR-1 */}
               {canUpgradeIr1 && (
@@ -1543,17 +1524,7 @@ function PricingContent() {
 
               {/* Journey Cards */}
               <div className="mt-7 grid grid-cols-1 gap-5 md:grid-cols-3">
-                {EXPLORER_CARDS.filter((card) => {
-                  if (
-                    isIr1Executive &&
-                    (card.code.includes("IR-1") ||
-                      card.code.includes("CR-1") ||
-                      card.slug === "ir-1")
-                  ) {
-                    return false;
-                  }
-                  return true;
-                }).map((card) => {
+                {EXPLORER_CARDS.map((card) => {
                   const isLive = card.status === "Live" && Boolean(card.href);
                   const isSelected = card.code === visa;
                   const isIr1Card =
@@ -1561,6 +1532,7 @@ function PricingContent() {
                     card.code.includes("CR-1") ||
                     card.slug === "ir-1";
                   const isIr5Card = card.code.includes("IR-5") || card.slug === "ir-5";
+                  const isCardExecutiveMaxed = isIr1Card && isIr1Executive;
 
                   return (
                     <div
@@ -1573,8 +1545,9 @@ function PricingContent() {
                     >
                       <ExplorerJourneyCard
                         card={card}
+                        isExecutiveMaxed={isCardExecutiveMaxed}
                         onSelect={
-                          isLive
+                          isLive && !isCardExecutiveMaxed
                             ? () => {
                                 setVisa(card.code);
                                 setIsChangingJourney(false);
@@ -1590,7 +1563,13 @@ function PricingContent() {
                         </span>
                       )}
 
-                      {!isSelected && canUpgradeIr1 && isIr1Card && (
+                      {!isSelected && isCardExecutiveMaxed && (
+                        <span className="absolute top-3 right-3 z-10 inline-flex items-center gap-1 rounded-full border border-teal-300 bg-teal-100 px-2.5 py-1 text-[10.5px] font-bold tracking-wide text-teal-800 uppercase shadow-sm">
+                          Active (Executive)
+                        </span>
+                      )}
+
+                      {!isSelected && canUpgradeIr1 && isIr1Card && !isCardExecutiveMaxed && (
                         <span className="absolute top-3 right-3 z-10 inline-flex items-center gap-1 rounded-full border border-emerald-300 bg-emerald-100 px-2.5 py-1 text-[10.5px] font-bold tracking-wide text-emerald-800 uppercase shadow-sm">
                           Upgrade Available
                         </span>
@@ -1607,13 +1586,12 @@ function PricingContent() {
               </div>
 
               {/* Supporting note */}
-              <div className="mt-6 flex items-center gap-3">
+              {/* <div className="mt-6 flex items-center gap-3">
                 <span className="text-muted-foreground/50 text-[12px]">·</span>
-
                 <span className="text-muted-foreground text-[12px]">
                   Select a journey to continue to available plans.
                 </span>
-              </div>
+              </div> */}
             </section>
           ) : (
             <>
@@ -2237,7 +2215,7 @@ function PricingContent() {
                                 {/* Annual price */}
                                 <div className="text-muted-foreground text-[11px]">
                                   ${plan.annualPrice * parentMultiplier} total
-                                  {isIr5 && parentCount > 1 && (
+                                  {!isUpgradingIr5 && isIr5 && parentCount > 1 && (
                                     <span>
                                       {" "}
                                       ({parentCount}x ${plan.annualPrice}/ea)

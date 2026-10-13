@@ -2,17 +2,21 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, Hourglass } from "lucide-react";
+import { ArrowRight, Hourglass, CheckCircle2 } from "lucide-react";
 import type { ExplorerJourneyCard as ExplorerJourneyCardType } from "../data/journeys";
 
 export function ExplorerJourneyCard({
   card,
   onSelect,
   showStartJourney = false,
+  isExecutiveMaxed = false,
+  executiveNotice,
 }: {
   card: ExplorerJourneyCardType;
   onSelect?: () => void;
   showStartJourney?: boolean;
+  isExecutiveMaxed?: boolean;
+  executiveNotice?: React.ReactNode;
 }) {
   const isLive = card.status === "Live" && card.href;
 
@@ -55,7 +59,25 @@ export function ExplorerJourneyCard({
       </div>
 
       <div className="mt-auto p-5">
-        {isLive && card.href ? (
+        {executiveNotice ? (
+          executiveNotice
+        ) : isExecutiveMaxed ? (
+          <div className="flex flex-col gap-2 rounded-2xl border border-teal-200/90 bg-teal-50/80 p-3.5 text-xs text-teal-900 dark:border-teal-900/50 dark:bg-teal-950/40 dark:text-teal-200">
+            <div className="flex items-start gap-2">
+              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-teal-600 dark:text-teal-400" />
+              <span className="leading-snug">
+                You already have a <strong>{card.title}</strong> journey (<strong>Executive</strong>{" "}
+                plan).
+              </span>
+            </div>
+            {/* <Link
+              href="/my-journeys"
+              className="inline-flex items-center gap-1 font-semibold text-[#0d7377] hover:underline dark:text-teal-300"
+            >
+              Go to My Journeys →
+            </Link> */}
+          </div>
+        ) : isLive && card.href ? (
           <div className="flex flex-col gap-3 sm:flex-row">
             {/* Learn More */}
             <Link
@@ -86,7 +108,7 @@ export function ExplorerJourneyCard({
                 onClick={onSelect}
                 className="inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full border border-[var(--rv-line)] bg-white px-5 py-3 text-xs font-semibold text-[var(--rv-navy)] transition duration-200 hover:-translate-y-0.5 hover:bg-[var(--rv-sky)]"
               >
-                Pick Journey
+                Select Journey
                 <ArrowRight className="h-4 w-4" />
               </button>
             )}
