@@ -772,6 +772,21 @@ function PricingContent() {
   const isUpgradingIr5 = Boolean(
     (isMultiCandidate || isIr5) && canUpgradeIr5 && ir5Action === "upgrade"
   );
+  const isAddingAnotherParent = Boolean(
+    (isMultiCandidate || isIr5) &&
+    (isAddingCandidate || (hasActiveIr5 && ir5Action === "add_candidate"))
+  );
+  const existingPurchasedParents = useMemo(() => {
+    if (!isIr5 && !isMultiCandidate) return 0;
+    if (upgradableCategoryCandidates.length > 0) return upgradableCategoryCandidates.length;
+    if (hasActiveIr5) return 1;
+    return 0;
+  }, [isIr5, isMultiCandidate, upgradableCategoryCandidates.length, hasActiveIr5]);
+
+  const totalEffectiveParents = useMemo(() => {
+    return isAddingAnotherParent ? existingPurchasedParents + parentCount : parentCount;
+  }, [isAddingAnotherParent, existingPurchasedParents, parentCount]);
+
   const parentMultiplier = (isMultiCandidate || isIr5) && !isUpgradingIr5 ? parentCount : 1;
   const isIr1Purchased = Boolean(journeyTiers.ir1 && journeyTiers.ir1 !== "free");
   const isIr1Executive = journeyTiers.ir1?.toLowerCase() === "executive";
@@ -784,14 +799,14 @@ function PricingContent() {
     }
   }, [isIr1Executive, visa]);
 
-  // Reset eligibility confirmation when switching back to <= 2 parents
+  // Reset eligibility confirmation when switching back to <= 2 total parents
   useEffect(() => {
-    if (parentCount <= 2) {
+    if (totalEffectiveParents <= 2) {
       setIsEligibilityConfirmed(true);
     } else {
       setIsEligibilityConfirmed(false);
     }
-  }, [parentCount]);
+  }, [totalEffectiveParents]);
 
   const activeVisaCategory = useMemo(
     () => VISA_CATEGORIES.find((v) => v.id === visa) || VISA_CATEGORIES[0],
@@ -1126,8 +1141,8 @@ function PricingContent() {
   const secBtn =
     "px-4 py-[8px] rounded-full text-[13px] font-medium cursor-pointer transition-colors border border-border bg-card hover:bg-muted/40 text-foreground inline-flex items-center gap-2";
 
-  // Parent eligibility guard for > 2 parents
-  const isParentEligibilityBlocked = isIr5 && parentCount > 2 && !isEligibilityConfirmed;
+  // Parent eligibility guard for > 2 total parents
+  const isParentEligibilityBlocked = isIr5 && totalEffectiveParents > 2 && !isEligibilityConfirmed;
 
   // Checkout button (shared)
   const checkoutBtn = (
@@ -1982,17 +1997,18 @@ function PricingContent() {
                               )}
                             </span>
                           </div>
-                          {parentCount > 2 && (
+                          {totalEffectiveParents > 2 && (
                             <span className="font-medium text-amber-600 dark:text-amber-400">
-                              Requires step/adoptive parent eligibility confirmation
+                              Requires step/adoptive parent eligibility confirmation (
+                              {totalEffectiveParents} total parents)
                             </span>
                           )}
                         </div>
                       </div>
                     )}
 
-                    {/* Disclaimer when parentCount > 2 */}
-                    {!isUpgradingIr5 && parentCount > 2 && (
+                    {/* Disclaimer when totalEffectiveParents > 2 */}
+                    {!isUpgradingIr5 && totalEffectiveParents > 2 && (
                       <div
                         id="parent-eligibility-disclaimer"
                         className={`rounded-[22px] border p-5 transition-all duration-200 ${
@@ -2029,7 +2045,9 @@ function PricingContent() {
                                     : "bg-amber-500/20 text-amber-700 dark:text-amber-300"
                                 }`}
                               >
-                                {parentCount} Parents Selected
+                                {isAddingAnotherParent
+                                  ? `${totalEffectiveParents} Total Parents (${parentCount} being added)`
+                                  : `${parentCount} Parents Selected`}
                               </span>
                             </div>
 
@@ -2305,7 +2323,7 @@ function PricingContent() {
                                   return;
                                 }
 
-                                if (isIr5 && parentCount > 2 && !isEligibilityConfirmed) {
+                                if (isIr5 && totalEffectiveParents > 2 && !isEligibilityConfirmed) {
                                   showToast(
                                     "Please confirm legal eligibility for all beneficiary parents before proceeding.",
                                     "error"
@@ -2569,8 +2587,8 @@ function PricingContent() {
                         </div>
                       </div>
 
-                      {/* If > 2 parents, show eligibility reminder in the plan card */}
-                      {isIr5 && parentCount > 2 && (
+                      {/* If > 2 total parents, show eligibility reminder in the plan card */}
+                      {isIr5 && totalEffectiveParents > 2 && (
                         <div className="border-border/80 bg-background/60 mt-4 rounded-xl border p-3 text-[12.5px]">
                           <label className="flex cursor-pointer items-start gap-2.5 select-none">
                             <input
@@ -2807,7 +2825,7 @@ function PricingContent() {
                   </div>
                 )}
 
-                {isIr5 && parentCount > 2 && (
+                {isIr5 && totalEffectiveParents > 2 && (
                   <div className="border-border border-b border-dashed py-2.5">
                     <label className="flex cursor-pointer items-center gap-2 text-[12px] select-none">
                       <input
