@@ -1683,9 +1683,9 @@ function PricingContent() {
                   </div>
                 </div>
 
-                {/* Compare plans */}
-                <div className="mt-4 -ml-3">
-                  <div className="ml-2 flex flex-wrap items-center justify-start gap-2 md:flex-row md:flex-nowrap">
+                {/* Controls Bar: Compare plans & Government fees on left, Action Switcher on right */}
+                <div className="mt-4 -ml-1 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex flex-wrap items-center gap-3">
                     <button
                       type="button"
                       className={`${secBtn} shrink-0`}
@@ -1694,41 +1694,73 @@ function PricingContent() {
                       <IcoTableCompare className="h-4 w-4 opacity-60" />
                       Compare plans
                     </button>
+                    <div className="flex items-center gap-2">
+                      <span className="text-muted-foreground/40 text-[12px]">·</span>
+                      <span className="text-muted-foreground text-[12px]">
+                        Government fees are not included in any plan
+                      </span>
+                    </div>
                   </div>
+
+                  {/* IR-5 / Multi-Candidate Action Switcher */}
+                  {isIr5 && hasActiveIr5 && (
+                    canUpgradeIr5 ? (
+                      <div className="bg-card border-border inline-flex shrink-0 rounded-xl border p-1 shadow-xs">
+                        <button
+                          type="button"
+                          onClick={() => setIr5Action("upgrade")}
+                          className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all ${
+                            ir5Action === "upgrade"
+                              ? "bg-[#0d7377] text-white shadow-xs"
+                              : "text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          <Zap className="h-3.5 w-3.5" />
+                          <span>Upgrade Existing Plan</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setIr5Action("add_candidate")}
+                          className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all ${
+                            ir5Action === "add_candidate"
+                              ? "bg-[#0d7377] text-white shadow-xs"
+                              : "text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          <Users className="h-3.5 w-3.5" />
+                          <span>Add Another Parent</span>
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="rounded-full bg-teal-100 px-3 py-1 text-[11px] font-semibold text-teal-800 dark:bg-teal-900/50 dark:text-teal-200">
+                        Highest Plan (Executive)
+                      </span>
+                    )
+                  )}
                 </div>
 
-                {/* Checkout error + Government fees */}
-                <div className="mt-4 -ml-3">
-                  {checkoutError && (
-                    <div className="mb-3 flex w-full items-start gap-3 rounded-xl border border-red-100 bg-red-50 p-4">
-                      <svg
-                        className="mt-0.5 h-5 w-5 shrink-0 text-red-500"
+                {/* Checkout error if present */}
+                {checkoutError && (
+                  <div className="mt-3 flex w-full items-start gap-3 rounded-xl border border-red-100 bg-red-50 p-4">
+                    <svg
+                      className="mt-0.5 h-5 w-5 shrink-0 text-red-500"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
                         fill="none"
                         stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth={2}
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
+                        strokeWidth={2}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
 
-                      <p className="text-sm text-red-700">{checkoutError}</p>
-                    </div>
-                  )}
-
-                  <div className="flex items-center gap-3">
-                    <span className="text-muted-foreground/50 text-[12px]">·</span>
-
-                    <span className="text-muted-foreground text-[12px]">
-                      Government fees are not included in any plan
-                    </span>
+                    <p className="text-sm text-red-700">{checkoutError}</p>
                   </div>
-                </div>
+                )}
               </section>
 
               {/* ═════════════════════════════════════════════════════════════════
@@ -1738,68 +1770,6 @@ function PricingContent() {
                 {/* IR-5 Multi-Parent Selector, Action Switcher & Eligibility Disclaimer */}
                 {isIr5 && (
                   <div className="mb-8 space-y-4">
-                    {/* Action Switcher when user already has an active IR-5 journey */}
-                    {hasActiveIr5 && (
-                      <div className="flex flex-col justify-between gap-3 rounded-2xl border border-teal-200/90 bg-teal-50/70 p-3.5 sm:flex-row sm:items-center dark:border-teal-900/40 dark:bg-teal-950/20">
-                        <div className="flex items-center gap-2.5">
-                          <CheckCircle2 className="h-4 w-4 shrink-0 text-teal-600" />
-                          <span className="text-xs text-teal-900 dark:text-teal-200">
-                            Active {activeExplorerCard?.code || activeVisaCategory.id} journey{" "}
-                            {upgradableCategoryCandidates.length > 1 ? (
-                              <span>
-                                ({upgradableCategoryCandidates.length} active beneficiary journeys)
-                              </span>
-                            ) : upgradableCategoryCandidates.length === 1 ? (
-                              <span>
-                                ({getCandidateDisplayName(upgradableCategoryCandidates[0])} ·{" "}
-                                <strong className="capitalize">
-                                  {getCandidateEffectiveTier(upgradableCategoryCandidates[0])}
-                                </strong>{" "}
-                                plan)
-                              </span>
-                            ) : (
-                              <span>
-                                (<strong className="capitalize">{journeyTiers.ir5}</strong> plan)
-                              </span>
-                            )}
-                            .
-                          </span>
-                        </div>
-
-                        {canUpgradeIr5 ? (
-                          <div className="bg-card border-border inline-flex rounded-xl border p-1 shadow-xs">
-                            <button
-                              type="button"
-                              onClick={() => setIr5Action("upgrade")}
-                              className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all ${
-                                ir5Action === "upgrade"
-                                  ? "bg-[#0d7377] text-white shadow-xs"
-                                  : "text-muted-foreground hover:text-foreground"
-                              }`}
-                            >
-                              <Zap className="h-3.5 w-3.5" />
-                              <span>Upgrade Existing Plan</span>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setIr5Action("add_candidate")}
-                              className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all ${
-                                ir5Action === "add_candidate"
-                                  ? "bg-[#0d7377] text-white shadow-xs"
-                                  : "text-muted-foreground hover:text-foreground"
-                              }`}
-                            >
-                              <Users className="h-3.5 w-3.5" />
-                              <span>Add Another Parent</span>
-                            </button>
-                          </div>
-                        ) : (
-                          <span className="rounded-full bg-teal-100 px-2.5 py-0.5 text-[11px] font-semibold text-teal-800 dark:bg-teal-900/50 dark:text-teal-200">
-                            Highest Plan (Executive)
-                          </span>
-                        )}
-                      </div>
-                    )}
 
                     {/* Beneficiary Selector for Multi-Candidate Upgrade */}
                     {isUpgradingIr5 && upgradableCategoryCandidates.length > 1 && (
@@ -1911,9 +1881,9 @@ function PricingContent() {
                                   ? "Add Additional Beneficiary Parent"
                                   : "Beneficiary Parents Selection"}
                               </h3>
-                              <span className="rounded-full bg-[#0d7377]/10 px-2.5 py-0.5 text-[11px] font-semibold text-[#0d7377]">
+                              {/* <span className="rounded-full bg-[#0d7377]/10 px-2.5 py-0.5 text-[11px] font-semibold text-[#0d7377]">
                                 IR-5 Visa
-                              </span>
+                              </span> */}
                             </div>
                             <p className="text-muted-foreground mt-1 text-[13px]">
                               {isAddingCandidate || (hasActiveIr5 && ir5Action === "add_candidate")
@@ -1934,7 +1904,7 @@ function PricingContent() {
                                     setIsEligibilityConfirmed(true);
                                   }
                                 }}
-                                className={`whitespace-nowrap rounded-xl px-3 py-1.5 text-[12.5px] font-semibold transition-all sm:px-3.5 sm:py-2 sm:text-[13px] ${
+                                className={`rounded-xl px-3 py-1.5 text-[12.5px] font-semibold whitespace-nowrap transition-all sm:px-3.5 sm:py-2 sm:text-[13px] ${
                                   parentCount === count
                                     ? "bg-[#0d7377] text-white shadow-sm ring-2 ring-[#0d7377]/20"
                                     : "border-border bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground border"
@@ -1982,8 +1952,15 @@ function PricingContent() {
                         </div>
 
                         {/* Dynamic multiplier note */}
-                        <div className="border-border/60 text-muted-foreground mt-4 flex flex-wrap items-center justify-between gap-2 border-t pt-3 text-[12px]">
-                          <div className="flex items-center gap-1.5">
+                        <div className="border-border/60 text-muted-foreground mt-4 flex flex-wrap items-center justify-start gap-2 border-t pt-3 text-[12px]">
+                          <ShieldCheck className="h-5 w-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                          <span>
+                            <strong>100% Isolated Roadmaps & Document Vaults:</strong> Each parent
+                            receives their own dedicated journey roadmap, document checklist, and
+                            secure vault under your account.
+                          </span>
+
+                          {/* <div className="flex items-center gap-1.5">
                             <Heart className="h-3.5 w-3.5 text-[#0d7377]" />
                             <span>
                               {parentCount === 1 ? (
@@ -2002,7 +1979,7 @@ function PricingContent() {
                               Requires step/adoptive parent eligibility confirmation (
                               {totalEffectiveParents} total parents)
                             </span>
-                          )}
+                          )} */}
                         </div>
                       </div>
                     )}
@@ -2099,15 +2076,6 @@ function PricingContent() {
                       </div>
                     )}
 
-                    {/* Separation / Isolation feature callout */}
-                    <div className="flex items-center gap-3 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 text-[12.5px] text-emerald-900 dark:text-emerald-200">
-                      <ShieldCheck className="h-5 w-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
-                      <span>
-                        <strong>100% Isolated Roadmaps & Document Vaults:</strong> Each parent
-                        receives their own dedicated journey roadmap, document checklist, and secure
-                        vault under your account.
-                      </span>
-                    </div>
                   </div>
                 )}
 
