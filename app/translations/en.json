@@ -3205,8 +3205,8 @@
       "3": "Clear image of your full face",
       "4": "No editing, filters, or AI alterations",
       "5": "Face the camera straight, no head tilt",
-      "6": "Please remove all prohibited accessories, including eyeglasses, sunglasses, tinted lenses, hats, face masks, headphones, earbuds that obscure your face before uploading the photo.",
-      "7": "Plain white or off-white background, no shadows, textures, or lines"
+      "6": "Plain white or off-white background, no shadows, textures, or lines",
+      "7": "Please remove all prohibited accessories, including eyeglasses, sunglasses, tinted lenses, hats, face masks, headphones, earbuds that obscure your face before uploading the photo"
     },
     "uploadLabel": "Upload Your Photo",
     "dropzone": "Click to upload or drag & drop",
