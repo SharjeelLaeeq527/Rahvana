@@ -11,7 +11,11 @@ import * as crypto from "crypto";
 import { E, msg } from "@/lib/errors";
 import { getAuthenticatedUser } from "@/lib/api/authGuards";
 import { acquireCheckoutLock, releaseCheckoutLock } from "@/lib/stripe/checkoutLock";
-import { resolveSubscriptionTier } from "@/lib/stripe/subscriptionCleanup";
+import {
+  resolveSubscriptionTier,
+  journeyTypeForVisaCategory,
+  isAddCandidateSubscription,
+} from "@/lib/stripe/subscriptionCleanup";
 import { isMultiCandidateCategory } from "@/lib/candidate/candidateSyncService";
 
 function logDebug(msg: string, obj?: any) {
@@ -26,11 +30,6 @@ function logDebug(msg: string, obj?: any) {
 }
 
 const INTERVIEW_PREP_ADDON_PREFIX = "interview-prep:";
-
-/** Keeps checkout ownership checks scoped to the selected journey. */
-function journeyTypeForVisaCategory(visaCategory: string): "IR1" | "IR5" {
-  return visaCategory.toLowerCase().includes("5") ? "IR5" : "IR1";
-}
 
 function getCatalogAddonId(addonId: string): string {
   const normalized = addonId.toLowerCase();
@@ -240,13 +239,20 @@ export async function POST(request: NextRequest) {
     // duplicate or downgrade slip through.
     // The account profile holds a maximum tier. Checkout guards must instead
     // consider only the selected journey and its Stripe subscription.
+    // Within the journey, plans bought to ADD an IR-5 candidate pay for that
+    // candidate's own journey row, not the primary plan being upgraded, so they are
+    // excluded (unless the journey row itself points at one, e.g. the first IR-5
+    // purchase). Otherwise a candidate-2 Executive plan would make a candidate-1
+    // Basic -> Premium upgrade look like a downgrade, or be picked as the sub to retire.
+    const dbSubId = selectedJourney?.stripe_subscription_id as string | undefined;
     const journeyLiveSubs = liveSubs.filter((subscription) => {
+      if (subscription.id === dbSubId) return true;
       const subscriptionJourneyType = subscription.metadata?.visa_category
         ? journeyTypeForVisaCategory(subscription.metadata.visa_category)
         : null;
       return (
-        subscriptionJourneyType === selectedJourneyType ||
-        subscription.id === selectedJourney?.stripe_subscription_id
+        subscriptionJourneyType === selectedJourneyType &&
+        !isAddCandidateSubscription(subscription)
       );
     });
     const dbTier = (selectedJourney?.subscription_tier ?? "free").toLowerCase();
@@ -274,7 +280,6 @@ export async function POST(request: NextRequest) {
     // at, else the highest-tier live sub. This is only a HINT: verify-session runs
     // a belt-and-suspenders cleanup, and (critically) the old sub is cancelled ONLY
     // after the new one is confirmed paid, never here at checkout time.
-    const dbSubId = selectedJourney?.stripe_subscription_id as string | undefined;
     const oldSubscriptionId =
       journeyLiveSubs.find((s) => s.id === dbSubId)?.id ||
       [...journeyLiveSubs].sort((a, b) => {

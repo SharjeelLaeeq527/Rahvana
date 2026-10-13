@@ -6,13 +6,17 @@ import { createClient } from "@supabase/supabase-js";
 import Stripe from "stripe";
 import { consultationService } from "@/lib/services/consultationService";
 import { buildAddonPurchaseUpdate } from "@/lib/payments/addon-purchase-ledger";
-import { cancelDuplicateSubscriptions } from "@/lib/stripe/subscriptionCleanup";
+import { cancelSupersededSubscriptions } from "@/lib/stripe/subscriptionCleanup";
+import { getCandidateJourneyKey } from "@/lib/candidate/candidateSyncService";
 import { provisionCandidateJourneysAndVaults } from "@/lib/candidate/candidateProvisioningService";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+// Plan ranking for the account-level summary (`user_profiles.subscription_tier`).
+const SUMMARY_TIER_RANK: Record<string, number> = { free: 0, basic: 1, premium: 2, executive: 3 };
 
 export const runtime = "nodejs";
 
@@ -220,19 +224,26 @@ const mergedPlanAddons = [
 
         console.log(`✅ User ${userId} subscribed to ${productId}`);
 
-        // ── Safety cleanup: exactly ONE live subscription per customer. ────────
+        // ── Upgrade cleanup: retire the plan this checkout replaces. ───────────
         // Runs only after this checkout completed (payment confirmed) and after
         // the DB above now points at this session's subscription, so a retired
-        // duplicate can never be mistaken for the current sub and trigger a
-        // downgrade. This mirrors verify-session; whichever activation path fires
-        // first, the customer is left with a single active subscription. It
-        // supersedes the old is_upgrade/old_subscription_id targeted cancel by
-        // also healing duplicates from earlier desyncs.
+        // plan can never be mistaken for the current sub and trigger a downgrade.
+        // Scoped to THIS journey: an IR-1 purchase never touches the IR-5 plan, and
+        // an add-candidate purchase replaces nothing. Mirrors verify-session;
+        // whichever activation path fires first does the cleanup (idempotent).
         const customerIdForCleanup =
           (session.customer as string) || session.metadata.stripe_customer_id;
         const keepSubId = session.subscription as string;
         if (customerIdForCleanup && keepSubId) {
-          await cancelDuplicateSubscriptions(customerIdForCleanup, keepSubId, "[webhook]");
+          await cancelSupersededSubscriptions({
+            customerId: customerIdForCleanup,
+            keepSubId,
+            visaCategory: visaCategoryMeta,
+            isAddCandidate: isAddCandidateMeta,
+            oldSubscriptionId:
+              session.metadata.is_upgrade === "true" ? session.metadata.old_subscription_id : null,
+            logPrefix: "[webhook]",
+          });
         }
       } catch (error) {
         console.error("Error updating user subscription:", error);
@@ -470,39 +481,116 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
     return;
   }
 
-  // Guard: if the cancelled sub is NOT the user's current active sub, it was
-  // cancelled as part of an upgrade flow — do NOT downgrade.
+  // The account summary tracks one "current" sub. Any other cancelled sub is either an
+  // upgrade's retired plan or another journey's plan.
   const currentSubId = profile.profile_details?.stripe_subscription_id;
-  if (currentSubId && currentSubId !== subscription.id) {
+  const isCurrentSub = !currentSubId || currentSubId === subscription.id;
+
+  // ── 1. Revoke the journeys this plan paid for. ──────────────────────────────
+  // Entitlements resolve per journey (`journeys.subscription_tier`), so the journey
+  // rows still pointing at the cancelled sub drop to free (for an IR-5 purchase that
+  // can be several candidate journeys). An upgrade's retired plan matches no row:
+  // provisioning repoints the journey at the new sub BEFORE cleanup cancels the old
+  // one, so upgrade cleanup never revokes anything here.
+  const revokedUpdate = {
+    subscription_tier: "free",
+    stripe_subscription_id: null,
+    updated_at: new Date().toISOString(),
+  };
+  let { data: revokedJourneys } = await supabase
+    .from("journeys")
+    .update(revokedUpdate)
+    .eq("user_id", profile.id)
+    .eq("stripe_subscription_id", subscription.id)
+    .select("id, journey_type");
+  if (!revokedJourneys?.length && isCurrentSub) {
+    // Legacy rows paid before journeys were stamped with their sub id: the account's
+    // current plan ended, so its unstamped paid journeys go with it.
+    ({ data: revokedJourneys } = await supabase
+      .from("journeys")
+      .update(revokedUpdate)
+      .eq("user_id", profile.id)
+      .is("stripe_subscription_id", null)
+      .neq("subscription_tier", "free")
+      .select("id, journey_type"));
+  }
+  const revokedCount = revokedJourneys?.length ?? 0;
+  if (revokedCount > 0) {
+    console.log(`Revoked ${revokedCount} journey(s) paid by cancelled sub ${subscription.id}`);
+  }
+
+  // The roster's per-candidate `tier` also gates access (PlanContext forces a candidate
+  // whose tier is "free" to free, while journey tiers are keyed per CATEGORY), so the
+  // candidates whose journeys were revoked drop to free too. Otherwise a cancelled
+  // candidate-2 plan would keep inheriting candidate-1's IR-5 tier.
+  const normKey = (k: string) => k.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const revokedKeys = new Set((revokedJourneys || []).map((j) => normKey(j.journey_type || "")));
+  const details = { ...(profile.profile_details || {}) };
+  if (revokedKeys.size > 0 && Array.isArray(details.candidates)) {
+    details.candidates = details.candidates.map((c: { id?: string; visaCategory?: string }) =>
+      c?.visaCategory &&
+      revokedKeys.has(normKey(getCandidateJourneyKey(c.visaCategory, c.id)))
+        ? { ...c, tier: "free" }
+        : c
+    );
+  }
+
+  // ── 2. Account-level summary. ────────────────────────────────────────────────
+  if (!isCurrentSub && revokedCount === 0) {
     console.log(
       `Skipping downgrade, cancelled sub ${subscription.id} is not current (${currentSubId}). Upgrade cleanup.`
     );
     return;
   }
 
-  // Downgrade user to free plan. Clear the subscription id in BOTH metadata and
-  // profile_details — the rest of the app reads profile_details.stripe_subscription_id,
-  // so leaving a stale id there would confuse the next purchase's upgrade detection.
-  await supabase
-    .from("user_profiles")
-    .update({
-      subscription_tier: "free",
-      subscription_status: "canceled",
-      metadata: {
-        ...profile.metadata,
-        active_plan: null,
-        plan_cancelled_date: new Date().toISOString(),
-        stripe_subscription_id: null,
+  if (!isCurrentSub) {
+    // Another journey's plan ended: summary unchanged, only the roster tiers.
+    await supabase.from("user_profiles").update({ profile_details: details }).eq("id", profile.id);
+  } else {
+    // Other journeys may still be paid (e.g. IR-1 cancelled, IR-5 still live): the
+    // summary falls back to the best remaining journey plan instead of to free.
+    const { data: remainingJourneys } = await supabase
+      .from("journeys")
+      .select("subscription_tier, stripe_subscription_id")
+      .eq("user_id", profile.id);
+    const best = (remainingJourneys || []).reduce<{
+      tier: string;
+      rank: number;
+      subId: string | null;
+    }>(
+      (acc, j) => {
+        const tier = (j.subscription_tier || "free").toLowerCase();
+        const rank = SUMMARY_TIER_RANK[tier] ?? 0;
+        return rank > acc.rank ? { tier, rank, subId: j.stripe_subscription_id ?? null } : acc;
       },
-      profile_details: {
-        ...(profile.profile_details || {}),
-        active_plan: null,
-        stripe_subscription_id: null,
-      },
-    })
-    .eq("id", profile.id);
+      { tier: "free", rank: 0, subId: null }
+    );
+    const stillPaid = best.rank > 0;
 
-  console.log(`✅ User ${profile.id} downgraded to free plan`);
+    // Clear (or repoint) the subscription id in BOTH metadata and profile_details: the
+    // rest of the app reads profile_details.stripe_subscription_id, so leaving a stale
+    // id there would confuse the next purchase's upgrade detection.
+    await supabase
+      .from("user_profiles")
+      .update({
+        subscription_tier: best.tier,
+        subscription_status: stillPaid ? "active" : "canceled",
+        metadata: {
+          ...profile.metadata,
+          active_plan: stillPaid ? best.tier : null,
+          plan_cancelled_date: new Date().toISOString(),
+          stripe_subscription_id: best.subId,
+        },
+        profile_details: {
+          ...details,
+          active_plan: stillPaid ? best.tier : null,
+          stripe_subscription_id: best.subId,
+        },
+      })
+      .eq("id", profile.id);
+
+    console.log(`✅ User ${profile.id} account summary set to ${best.tier}`);
+  }
 
   // Send cancellation email
   try {

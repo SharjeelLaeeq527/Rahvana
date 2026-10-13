@@ -4,7 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
 import { consultationService } from "@/lib/services/consultationService";
 import { buildAddonPurchaseUpdate } from "@/lib/payments/addon-purchase-ledger";
-import { cancelDuplicateSubscriptions } from "@/lib/stripe/subscriptionCleanup";
+import { cancelSupersededSubscriptions } from "@/lib/stripe/subscriptionCleanup";
 import { provisionCandidateJourneysAndVaults } from "@/lib/candidate/candidateProvisioningService";
 
 const supabase = createClient(
@@ -140,7 +140,26 @@ export async function GET(request: NextRequest) {
         })
         .eq("id", userId);
 
-      // ── 4. Mark verification as successfully activated ─────────────────────
+      // ── 4. Retire the plan this checkout replaced (upgrade cleanup) ─────────
+      // Only after payment is confirmed and the journey row points at the new
+      // sub, so a failed upgrade never removes the existing plan. Scoped to this
+      // journey; add-candidate purchases replace nothing. Idempotent with the
+      // webhook's identical call.
+      const customerIdForCleanup =
+        (session.customer as string) || profile?.stripe_customer_id || undefined;
+      const keepSubId = session.subscription as string | null;
+      if (customerIdForCleanup && keepSubId) {
+        await cancelSupersededSubscriptions({
+          customerId: customerIdForCleanup,
+          keepSubId,
+          visaCategory: visaCategoryMeta,
+          isAddCandidate: isAddCandidateMeta,
+          oldSubscriptionId: isUpgrade ? oldSubId : null,
+          logPrefix: "[verify-session]",
+        });
+      }
+
+      // ── 5. Mark verification as successfully activated ─────────────────────
       appliedTier = productId;
       activated = true;
     }

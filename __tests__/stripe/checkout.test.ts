@@ -32,6 +32,17 @@ jest.mock('@supabase/supabase-js', () => ({
     from: () => ({
       select: jest.fn().mockReturnThis(),
       eq: jest.fn().mockReturnThis(),
+      ilike: jest.fn().mockReturnThis(),
+      // Per-journey lookup (journeys row for the selected visa category): the tier
+      // guard compares against THIS journey's plan, not the account summary.
+      maybeSingle: () =>
+        Promise.resolve({
+          data:
+            mockTier === 'free'
+              ? null
+              : { subscription_tier: mockTier, stripe_subscription_id: null, status: 'in_progress' },
+          error: null,
+        }),
       single: () =>
         Promise.resolve({
           data: {
@@ -180,7 +191,7 @@ describe('Checkout — Stripe is the source of truth on DB desync', () => {
     mockCustomersSearch.mockResolvedValue({ data: [{ id: 'cus_existing' }] })
     // ...and that customer already holds a live premium subscription.
     mockSubsList.mockImplementation(() =>
-      asyncSubs([{ id: 'sub_live', status: 'active', metadata: { tier: 'premium' }, items: { data: [] } }])
+      asyncSubs([{ id: 'sub_live', status: 'active', metadata: { tier: 'premium', visa_category: 'IR-1 / CR-1' }, items: { data: [] } }])
     )
     const res = await POST(makeRequest({ productTier: 'premium' }))
     expect(res.status).toBe(400) // dup guard fired off Stripe, not the stale DB
@@ -190,9 +201,37 @@ describe('Checkout — Stripe is the source of truth on DB desync', () => {
   it('still allows an upgrade when Stripe shows a lower live tier', async () => {
     mockCustomerId = 'cus_existing'
     mockSubsList.mockImplementation(() =>
-      asyncSubs([{ id: 'sub_live', status: 'active', metadata: { tier: 'basic' }, items: { data: [] } }])
+      asyncSubs([{ id: 'sub_live', status: 'active', metadata: { tier: 'basic', visa_category: 'IR-1 / CR-1' }, items: { data: [] } }])
     )
     expect((await POST(makeRequest({ productTier: 'premium' }))).status).toBe(200)
+  })
+})
+
+// --- Per-journey / per-candidate plans ---
+
+describe('Checkout — plans for other journeys or candidates do not block an upgrade', () => {
+  beforeEach(resetAll)
+
+  it('IR-5 basic -> premium upgrade is allowed while candidate 2 holds an executive plan', async () => {
+    mockTier = 'basic'; mockStatus = 'active'; mockCustomerId = 'cus_1'
+    mockSubsList.mockImplementation(() =>
+      asyncSubs([
+        { id: 'sub_cand2', status: 'active', metadata: { tier: 'executive', visa_category: 'IR-5', is_add_candidate: 'true' }, items: { data: [] } },
+      ])
+    )
+    const res = await POST(makeRequest({ productTier: 'premium', visaCategory: 'IR-5', action: 'upgrade' }))
+    expect(res.status).toBe(200)
+  })
+
+  it('an IR-5 premium plan does not block buying IR-1 basic', async () => {
+    mockCustomerId = 'cus_1'
+    mockSubsList.mockImplementation(() =>
+      asyncSubs([
+        { id: 'sub_ir5', status: 'active', metadata: { tier: 'premium', visa_category: 'IR-5' }, items: { data: [] } },
+      ])
+    )
+    const res = await POST(makeRequest({ productTier: 'basic', visaCategory: 'IR-1 / CR-1' }))
+    expect(res.status).toBe(200)
   })
 })
 
@@ -224,7 +263,7 @@ describe('Checkout — past_due recovers instead of re-buying', () => {
   it('returns 409 with portal:true for a same-tier past_due sub', async () => {
     mockCustomerId = 'cus_existing'
     mockSubsList.mockImplementation(() =>
-      asyncSubs([{ id: 'sub_pd', status: 'past_due', metadata: { tier: 'premium' }, items: { data: [] } }])
+      asyncSubs([{ id: 'sub_pd', status: 'past_due', metadata: { tier: 'premium', visa_category: 'IR-1 / CR-1' }, items: { data: [] } }])
     )
     const res = await POST(makeRequest({ productTier: 'premium' }))
     expect(res.status).toBe(409)

@@ -31,15 +31,25 @@ jest.mock('@/lib/stripe/config', () => {
   }
 })
 
+// The route creates its Supabase client ONCE at import, so swapping createClient's
+// return value later has no effect on it. Instead the client delegates every
+// `from()` to `mockFromImpl`, which a test can replace (see useFakeDb).
+function defaultFrom() {
+  const chain: any = {
+    select: jest.fn(() => chain),
+    update: jest.fn(() => chain),
+    eq: jest.fn(() => chain),
+    is: jest.fn(() => chain),
+    neq: jest.fn(() => chain),
+    single: jest.fn().mockResolvedValue({ data: buildUserProfile(), error: null }),
+    then: (res: any, rej: any) => Promise.resolve({ data: null, error: null }).then(res, rej),
+  }
+  return chain
+}
+let mockFromImpl: (table: string) => any = defaultFrom
+
 jest.mock('@supabase/supabase-js', () => ({
-  createClient: jest.fn(() => ({
-    from: jest.fn(() => ({
-      select: jest.fn().mockReturnThis(),
-      update: jest.fn().mockReturnThis(),
-      eq: jest.fn().mockReturnThis(),
-      single: jest.fn().mockResolvedValue({ data: buildUserProfile(), error: null }),
-    })),
-  })),
+  createClient: jest.fn(() => ({ from: (table: string) => mockFromImpl(table) })),
 }))
 
 jest.mock('@/lib/services/paymentService', () => ({
@@ -218,7 +228,7 @@ describe('Webhook — checkout.session.completed (subscription activation)', () 
     paymentService.getPaymentBySessionId.mockResolvedValueOnce({ id: 'pay_1' })
     ;(stripeConfig.stripe as any).subscriptions.list.mockReturnValueOnce({
       async *[Symbol.asyncIterator]() {
-        yield { id: 'sub_old', status: 'active', metadata: { tier: 'premium' }, items: { data: [] } }
+        yield { id: 'sub_old', status: 'active', metadata: { tier: 'premium', visa_category: 'IR-1' }, items: { data: [] } }
       },
     })
     mockConstructEvent.mockReturnValue({
@@ -232,6 +242,228 @@ describe('Webhook — checkout.session.completed (subscription activation)', () 
     // The old duplicate is cancelled; the just-paid sub_test123 is kept.
     expect((stripeConfig.stripe as any).subscriptions.cancel).toHaveBeenCalledWith('sub_old')
     expect((stripeConfig.stripe as any).subscriptions.cancel).not.toHaveBeenCalledWith('sub_test123')
+  })
+
+  it('keeps a live plan for ANOTHER journey (IR-1 purchase must not cancel IR-5)', async () => {
+    paymentService.getPaymentBySessionId.mockResolvedValueOnce({ id: 'pay_1' })
+    ;(stripeConfig.stripe as any).subscriptions.list.mockReturnValueOnce({
+      async *[Symbol.asyncIterator]() {
+        yield { id: 'sub_ir5', status: 'active', metadata: { tier: 'executive', visa_category: 'IR-5' }, items: { data: [] } }
+      },
+    })
+    mockConstructEvent.mockReturnValue({
+      type: 'checkout.session.completed',
+      data: { object: buildCheckoutSession() },
+    })
+    setProfile({ subscription_tier: 'free' })
+
+    await POST(makeRequest({}))
+
+    expect((stripeConfig.stripe as any).subscriptions.cancel).not.toHaveBeenCalled()
+  })
+
+  it('add-candidate purchase cancels nothing (existing IR-5 plan survives)', async () => {
+    paymentService.getPaymentBySessionId.mockResolvedValueOnce({ id: 'pay_1' })
+    ;(stripeConfig.stripe as any).subscriptions.list.mockReturnValueOnce({
+      async *[Symbol.asyncIterator]() {
+        yield { id: 'sub_ir5_primary', status: 'active', metadata: { tier: 'premium', visa_category: 'IR-5' }, items: { data: [] } }
+      },
+    })
+    const base = buildCheckoutSession()
+    const session = {
+      ...base,
+      metadata: { ...base.metadata, visa_category: 'IR-5', action: 'add_candidate', is_add_candidate: 'true' },
+    }
+    mockConstructEvent.mockReturnValue({ type: 'checkout.session.completed', data: { object: session } })
+    setProfile({ subscription_tier: 'premium' })
+
+    await POST(makeRequest({}))
+
+    expect((stripeConfig.stripe as any).subscriptions.cancel).not.toHaveBeenCalled()
+  })
+})
+
+// --- Cancellation against a stateful fake DB (per-journey plans) ---
+
+type JourneyRow = {
+  id: string
+  user_id: string
+  journey_type: string
+  subscription_tier: string
+  stripe_subscription_id: string | null
+}
+
+/**
+ * In-memory stand-in for the two tables the cancellation handler touches. Journey
+ * updates apply their eq/is/neq filters for real, so the tests assert the resulting
+ * rows rather than call shapes. Profile updates are recorded in order.
+ */
+function useFakeDb(profile: any, journeys: JourneyRow[]) {
+  const profileUpdates: any[] = []
+  mockFromImpl = (table: string) => {
+    const filters: Array<[string, string, any]> = []
+    let values: any = null
+    const matches = (row: any) =>
+      filters.every(([op, k, v]) => (op === 'neq' ? row[k] !== v : row[k] === v))
+    const chain: any = {
+      select: () => chain,
+      update: (v: any) => {
+        values = v
+        return chain
+      },
+      eq: (k: string, v: any) => (filters.push(['eq', k, v]), chain),
+      is: (k: string, v: any) => (filters.push(['is', k, v]), chain),
+      neq: (k: string, v: any) => (filters.push(['neq', k, v]), chain),
+      single: () => Promise.resolve({ data: profile, error: null }),
+      then: (res: any, rej: any) => {
+        let data: any = null
+        if (table === 'journeys') {
+          const rows = journeys.filter(matches)
+          if (values) rows.forEach((r) => Object.assign(r, values))
+          data = rows.map((r) => ({ ...r }))
+        } else if (table === 'user_profiles' && values) {
+          profileUpdates.push(values)
+        }
+        return Promise.resolve({ data, error: null }).then(res, rej)
+      },
+    }
+    return chain
+  }
+  return { profileUpdates }
+}
+
+function journey(id: string, journey_type: string, tier: string, sub: string | null): JourneyRow {
+  return { id, user_id: 'user-abc', journey_type, subscription_tier: tier, stripe_subscription_id: sub }
+}
+
+function cancelEvent(subId: string) {
+  mockConstructEvent.mockReturnValue({
+    type: 'customer.subscription.deleted',
+    data: { object: { id: subId, customer: 'cus_test123' } },
+  })
+}
+
+describe('Webhook — customer.subscription.deleted (per-journey plans)', () => {
+  beforeEach(() => jest.clearAllMocks())
+  afterEach(() => {
+    mockFromImpl = defaultFrom
+  })
+
+  it('cancelling the IR-1 plan revokes only IR-1; the IR-5 plan and account summary stay', async () => {
+    const journeys = [
+      journey('j1', 'IR1', 'premium', 'sub_ir1'),
+      journey('j5', 'IR5', 'executive', 'sub_ir5'),
+    ]
+    const { profileUpdates } = useFakeDb(
+      buildUserProfile({
+        subscription_tier: 'executive',
+        profile_details: { stripe_subscription_id: 'sub_ir5', purchased_addons: [] },
+      }),
+      journeys
+    )
+    cancelEvent('sub_ir1')
+
+    await POST(makeRequest({}))
+
+    expect(journeys[0]).toMatchObject({ subscription_tier: 'free', stripe_subscription_id: null })
+    expect(journeys[1]).toMatchObject({ subscription_tier: 'executive', stripe_subscription_id: 'sub_ir5' })
+    expect(profileUpdates.some((u) => 'subscription_tier' in u)).toBe(false)
+  })
+
+  it('cancelling the current plan falls back to the best remaining journey plan, not free', async () => {
+    const journeys = [
+      journey('j1', 'IR1', 'premium', 'sub_ir1'),
+      journey('j5', 'IR5', 'executive', 'sub_ir5'),
+    ]
+    const { profileUpdates } = useFakeDb(
+      buildUserProfile({
+        subscription_tier: 'executive',
+        profile_details: { stripe_subscription_id: 'sub_ir5', purchased_addons: [] },
+      }),
+      journeys
+    )
+    cancelEvent('sub_ir5')
+
+    await POST(makeRequest({}))
+
+    expect(journeys[1].subscription_tier).toBe('free')
+    const summary = profileUpdates.find((u) => 'subscription_tier' in u)
+    expect(summary).toMatchObject({
+      subscription_tier: 'premium',
+      subscription_status: 'active',
+      profile_details: expect.objectContaining({ stripe_subscription_id: 'sub_ir1' }),
+    })
+  })
+
+  it('cancelling a candidate-2 plan drops only that candidate (journey + roster tier) to free', async () => {
+    const journeys = [
+      journey('jp', 'ir5', 'premium', 'sub_primary'),
+      journey('jc2', 'ir5_candidate2', 'basic', 'sub_c2'),
+    ]
+    const { profileUpdates } = useFakeDb(
+      buildUserProfile({
+        subscription_tier: 'premium',
+        profile_details: {
+          stripe_subscription_id: 'sub_primary',
+          purchased_addons: [],
+          candidates: [
+            { id: 'candidate-1', visaCategory: 'IR-5', tier: 'premium' },
+            { id: 'candidate-2', visaCategory: 'IR-5', tier: 'basic' },
+          ],
+        },
+      }),
+      journeys
+    )
+    cancelEvent('sub_c2')
+
+    await POST(makeRequest({}))
+
+    expect(journeys[0].subscription_tier).toBe('premium')
+    expect(journeys[1].subscription_tier).toBe('free')
+    const rosterUpdate = profileUpdates.find((u) => u.profile_details?.candidates)
+    expect(rosterUpdate.profile_details.candidates).toEqual([
+      { id: 'candidate-1', visaCategory: 'IR-5', tier: 'premium' },
+      { id: 'candidate-2', visaCategory: 'IR-5', tier: 'free' },
+    ])
+    expect(rosterUpdate.subscription_tier).toBeUndefined()
+  })
+
+  it("an upgrade's retired plan changes nothing", async () => {
+    // Provisioning already repointed the journey at the new sub before cleanup ran.
+    const journeys = [journey('j1', 'IR1', 'premium', 'sub_new')]
+    const { profileUpdates } = useFakeDb(
+      buildUserProfile({
+        subscription_tier: 'premium',
+        profile_details: { stripe_subscription_id: 'sub_new', purchased_addons: [] },
+      }),
+      journeys
+    )
+    cancelEvent('sub_old_basic')
+
+    await POST(makeRequest({}))
+
+    expect(journeys[0]).toMatchObject({ subscription_tier: 'premium', stripe_subscription_id: 'sub_new' })
+    expect(profileUpdates).toEqual([])
+  })
+
+  it('legacy account: cancelling its only plan revokes journeys never stamped with a sub id', async () => {
+    const journeys = [journey('j1', 'IR1', 'premium', null)]
+    const { profileUpdates } = useFakeDb(
+      buildUserProfile({
+        subscription_tier: 'premium',
+        profile_details: { stripe_subscription_id: 'sub_legacy', purchased_addons: [] },
+      }),
+      journeys
+    )
+    cancelEvent('sub_legacy')
+
+    await POST(makeRequest({}))
+
+    expect(journeys[0].subscription_tier).toBe('free')
+    expect(profileUpdates.find((u) => 'subscription_tier' in u)).toMatchObject({
+      subscription_tier: 'free',
+      subscription_status: 'canceled',
+    })
   })
 })
 

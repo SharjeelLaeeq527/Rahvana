@@ -108,13 +108,13 @@ errors do **not** fail the build (run `npx tsc --noEmit` manually to check types
 
 | Folder | Purpose |
 |---|---|
-| `app/` | Next.js App Router. Route groups `(auth)`, `(main)`, `(tools)` (with nested `(tools)/(visa)` and `(tools)/(courier-registration)`), plus `admin/` and `book-consultation/`; `app/api/*` route handlers (~161 `route.ts` across ~45 groups); `app/components/*` (feature components, incl. `journey-engine/`, `journey-spouse/`, `case-health/`, `candidate/`, `payment/`, `followup/`, `visa-checker/`, `chat/`, `seo/`, `Contact/`; `journey-v3/` is a leftover holding only `RegisterReceiptStep.tsx`); `app/context/*` (global providers); `app/constants/`, `app/routes/ProtectedRoute.tsx`; `app/translations/*` (i18n JSON). |
+| `app/` | Next.js App Router. Route groups `(auth)`, `(main)`, `(tools)` (with nested `(tools)/(visa)` and `(tools)/(courier-registration)`), plus `admin/` and `book-consultation/`; `app/api/*` route handlers (~165 `route.ts` across ~45 groups); `app/components/*` (feature components, incl. `journey-engine/`, `journey-spouse/`, `case-health/`, `candidate/`, `payment/`, `followup/`, `visa-checker/`, `chat/`, `seo/`, `Contact/`; `journey-v3/` is a leftover holding only `RegisterReceiptStep.tsx`); `app/context/*` (global providers); `app/constants/`, `app/routes/ProtectedRoute.tsx`; `app/translations/*` (i18n JSON). |
 | `components/` | Shared/reusable UI: `ui/` (shadcn primitives), `magicui/`, `pricing/`, `resources/`, `tools/`, `chat/`, `blog/`, `policy/`, `seo/`. |
 | `lib/` | **The business-logic core.** Engines and services: journey, entitlements, autoFill, case-strength, ir1-engine, document-vault, document-ocr, notifications/reminders, ceac-tracking, security, guides, plan, usage, supabase clients, stripe, payments, email, interview-prep, questionnaire, visa-checker, profile, api (route guards), easypost, blog, policies, etc. (see 14). |
 | `data/` | Static domain config. **`visa-category/*.json`** = the live journey source of truth (`ir-1`, `ir-2`, `ir-5`, `f-1`, and student journeys for australia, canada, china, germany, italy, uk). `roadmap.ts` = **legacy** old-schema data used only by home/marketing pages. Also `interview-categories/*`, `visa-checker/*`, and many guide/data JSON files. |
 | `types/` | Shared TypeScript types (`profile.ts` = MasterProfile, `journey-support.ts`, `roadmap.ts`, `notifications.ts`, etc.). |
 | `backend/` | Python FastAPI service: `app/api/v1/*` endpoints, `app/services/*`, `app/core/form_configs/*` (USCIS form field maps), `data/` (visa bulletin + `iv_data.json`), `modnet/` (git submodule, background-removal model). |
-| `supabase/` | `migrations/*` SQL (~86 files) — the database schema, RLS policies, triggers. |
+| `supabase/` | `migrations/*` SQL (~89 files) — the database schema, RLS policies, triggers. |
 | `actions/` | Next.js server actions (currently only `chat-actions.ts`). |
 | `scripts/` | Maintenance/dev scripts (incl. `copy-pdf-worker.mjs`, run on `postinstall`). `scratch/` holds one-off guide-registration `.mjs` scripts. |
 | `__tests__/` | Jest tests: `case-strength/`, `consultation/`, `stripe/`, `candidate/`, `interview-prep/`, `questionnaire/`, `security/`, plus root tests (`candidate-sharing`, `journeyHelpers`, `profile-section-registry`, `resources-entitlement`, `sponsorship-poverty-guidelines`) and `setup.ts`. |
@@ -273,15 +273,58 @@ where-resolution lives in `lib/services/serviceRequestDirectory.ts` (tested in
 `__tests__/service-request-directory.test.ts`) because each table tags origin differently:
 Medical/PCC use `source` + `journey_slug` (authoritative category) + a candidate tag
 (`candidate_id` / `metadata.candidate_id` / `[Candidate: x]` in `admin_notes`); Translation has only
-`metadata.candidate_id` (category comes from that candidate's `visaCategory`); Consultation has no
-candidate tag and is shown account-wide under its own `visa_category`. Untagged legacy rows resolve
-to `candidate-1`, matching `services-status`.
+`metadata.candidate_id` (category comes from that candidate's `visaCategory`); Consultation is
+still shown account-wide under its own `visa_category` by the directory resolver, even though
+`consultation_bookings` now carries `source` / `journey_slug` / `candidate_id` (`20261006`, see
+10) and `services-status` already filters consultations by them for `scope=journey` and by
+candidate. Untagged legacy rows resolve to `candidate-1`, matching `services-status`.
 
-**My Journeys (`app/(main)/my-journeys/page.tsx`).** Lists journeys via `listUserJourneys`.
-Opening an IR-5 journey shows `components/CandidateProfileLauncherModal.tsx` (candidates
-filtered by visa category; picking one sets the active candidate and pushes the journey route;
-"Add" goes to `/pricing?visa=...&action=add_candidate`, unlike `AddCandidateModal`). Other
-categories navigate directly.
+**Journey-embedded services (Medical / PCC / Consultation).** All three are tier-gated services
+launched from the Services folder or from their roadmap step card, and they share one pattern:
+- **UI shell:** `components/tools/JourneyServiceModule.tsx` (service tiles, lock banner, summary
+  card shown only once a request exists). Tools: `MedicalAppointmentTool`, `PccFilingTool` /
+  `PccFilingModule`, and **`components/tools/BookConsultationTool.tsx`** (the whole booking UI now
+  lives here; `app/book-consultation/page.tsx` is a thin `Suspense` wrapper around it, so the
+  standalone page and the journey use the same component). `EmbeddedToolContainer` imports
+  `BookConsultationTool` statically (not `React.lazy`) so it opens with no loading flash.
+- **Chrome:** `ToolModeProps.embedded` (`types/tool-mode.ts`). `false` = full-screen overlay with its
+  own sticky top bar (StepView overlay mounts, e.g. spouse UI); `true` = rendered inline in the
+  engine's `roadmap-main` region using the `RoadmapLayoutEngine` breadcrumb for back/close
+  (passed by `EmbeddedToolContainer`).
+- **Step auto-complete:** when a step card launches a tool, `RoadmapLayoutEngine.launchTool(key,
+  autoCompleteStepKey)` passes `autoCompleteStepKey` to `EmbeddedToolContainer`, so finishing the
+  service also ticks off that roadmap step.
+- **Status sync:** `lib/journey/useJourneyServiceStatus.ts` reads `services-status?scope=journey`
+  and reconciles server rows into journey metadata (medical, PCC, consultation records; the active
+  consultation = earliest upcoming non-cancelled slot, else latest usable row).
+- **One active request per journey** (`lib/journey/toolModeGuards.ts`): Medical locks until the
+  appointment date passes (date-only, midnight compare); PCC locks while pending and for
+  `PCC_LOCK_MONTHS = 4` after receipt (`pccRenewalDate`), a deliberate 2-month margin inside the
+  real `PCC_VALIDITY_MONTHS = 6` (`pccExpiryDate`); Consultation (`isConsultationRequestLocked`)
+  compares the full slot timestamp and never locks on cancelled/rejected sessions.
+- **Origin tagging:** journey launches write `source: "journey"` + `journey_slug` + `candidate_id`
+  on the row (`app/api/consultation/route.ts` forwards them for consultations), which is how
+  `services-status` separates journey requests from standalone / My Resources ones.
+
+**My Journeys (`app/(main)/my-journeys/page.tsx`).** Lists journeys via `listUserJourneys`
+(which now also returns the journey `status`). Opening an IR-5 journey shows
+`components/CandidateProfileLauncherModal.tsx` (candidates filtered by visa category; picking one
+sets the active candidate and pushes the journey route; "Add" goes to
+`/pricing?visa=...&action=add_candidate`, unlike `AddCandidateModal`). Other categories navigate
+directly. Multi-candidate journey cards show a beneficiary-profile count.
+**Journey + candidate customization:** users can rename a journey card and set a cover image
+(stored in `MasterProfile.journeyCustomizations[<journey key>] = { name, image, updatedAt }`, saved
+via `updateProfile(..., { immediate: true })`), and rename / set an avatar for a candidate
+(`CandidateProfile.customName` / `avatarUrl`, plus optional `journeyName` / `journeyImage`).
+`CandidateContext` treats a `customName` as authoritative: it is used as the label and is never
+overwritten by the generic "Candidate N" default-name normalization. Images go through
+`lib/journey/imageUploadHelper.ts` (client-side canvas resize to 1200px, then
+`POST /api/journey/upload-image`: auth required, JPEG/PNG/WebP/GIF, 5MB cap) into the
+`document-vault` storage bucket at `journey-media/<userId>/<entity>_<id>_<ts>.<ext>` (NOT
+encrypted, unlike vault files). They are served back through `GET /api/journey/media?path=...`,
+which requires a session and only serves paths inside the caller's own
+`journey-media/<userId>/` folder (it downloads with the service-role client, so that ownership
+check is the only guard; `..` is rejected and responses are `Cache-Control: private`).
 
 ### 4.2 Wizard state hook (`app/(main)/dashboard/hooks/useWizard.ts`)
 
@@ -363,6 +406,30 @@ fallback). One caveat to watch: if a paying account's active candidate is a stal
 category (e.g. an IR-1 account whose `profile.visaType` is unset defaults the candidate to
 IR-5), the active category can be wrong; the defaulted-fallback neutralization in
 `CandidateContext` mitigates this but relies on the profile carrying the real category.
+
+**Multi-candidate purchases + auto-provisioning.** `MULTI_CANDIDATE_VISA_CATEGORIES` /
+`isMultiCandidateCategory()` (`lib/candidate/candidateSyncService.ts`: IR-5, IR-2, CR-2, F-4) is the
+single switch for "this category can hold several beneficiaries"; pricing, checkout, provisioning
+and My Journeys all branch on it (do not add new `includes("ir5")` checks). The pricing page
+(`app/(main)/pricing/page.tsx`) has a beneficiary step: for IR-5 the user picks a parent count, and
+an account that already owns IR-5 chooses **Upgrade** (existing candidates, count forced to 1) vs
+**Add candidate** (`?action=add_candidate`, also deep-linked from My Journeys). Checkout
+(`app/api/stripe/checkout`) receives `{ visaCategory, candidateCount, action }`: for
+multi-candidate categories the same-tier/downgrade guard and proration-upgrade path apply ONLY
+when `action === "upgrade"`; otherwise the purchase is an add-candidate purchase (any tier allowed),
+tagged `action` / `is_add_candidate` + `candidate_count` in session and subscription metadata.
+That tag is what keeps the post-payment cleanup from cancelling it (or being cancelled by a later
+primary upgrade), see 27 "One live plan per JOURNEY". On confirmation BOTH `verify-session` and the webhook call
+**`provisionCandidateJourneysAndVaults()`** (`lib/candidate/candidateProvisioningService.ts`), which
+replaced the old inline "find-or-insert one IR1/IR5 journey row" code. It (1) ensures the primary
+journey exists (seeded from `data/visa-category/ir-1.json` / `ir-5.json` via
+`createJourneyFromConfig`, raw insert as fallback) and stamps its `subscription_tier` /
+`stripe_subscription_id` - except on an add-candidate purchase against an already-paid primary,
+which leaves the primary's tier alone; (2) initializes candidate-1's vault; (3) appends
+candidate-2+ to `profile_details.candidates` with their suffixed `journeys` rows (each carrying the
+purchased tier) and isolated vaults; (4) saves the roster. Non-multi categories always provision
+exactly one candidate. `verify-session` re-reads `profile_details` after provisioning before writing
+the account summary, so it does not clobber the roster the provisioner just saved.
 
 ### 4.4 Auto-fill (`lib/autoFill/*`)
 
@@ -740,7 +807,7 @@ into `user_profiles.profile_details`** so tools share one profile.
 
 ## 10. Database Architecture (Supabase Postgres)
 
-Schema lives entirely in `supabase/migrations/*` (~86 files; never edit RLS in the
+Schema lives entirely in `supabase/migrations/*` (~89 files; never edit RLS in the
 dashboard — always a migration). The journey core was added in four `20260403_*`
 migrations (`create_{journeys,chapters,steps,case_data}_table.sql`).
 
@@ -783,6 +850,17 @@ translation documents, profiles/roles, `visa_security` questions, interview-prep
 (threaded + moderated; public reads approved, authors edit own, admins full).
 `payments.stripe_subscription_id` was added in `20260910`.
 
+**Recent additions.**
+- `20261006_add_consultation_source` - `consultation_bookings` gains `source` (default
+  `'standalone'`), `journey_slug`, `candidate_id` (+ partial index on `source`), matching the
+  origin tags Medical/PCC already had (see 4.1 "Journey-embedded services").
+- `20261009_add_quick_access_scope` - `user_quick_access` gains `scope_type`
+  (`'account'` default | `'journey'`) + `journey_id` (FK -> `journeys`, cascade delete) with a
+  CHECK tying them together; the old `user_quick_access_unique` constraint is dropped in favor
+  of two partial unique indexes (`(user_id, item_id)` for account scope,
+  `(user_id, journey_id, item_id)` for journey scope). **Schema only so far:** no app code reads
+  or writes `scope_type` yet, so every existing favorite is account-scoped.
+
 **Security hardening.** `20260715_fix_rls_security_gaps`, `20260731_*`, `20260717/18_*`, and
 `20260921_security_hardening_batch1`: triggers `guard_profile_role` (blocks self-setting
 `profiles.role`) and `guard_user_profile_billing` (blocks self-upgrading the tier), revoked
@@ -804,7 +882,7 @@ reminder-flag resets on appointment reschedule.
 
 ## 11. API Architecture (Next.js route handlers under `app/api/`)
 
-The Next.js API layer is a **Backend-for-Frontend** (~161 handlers across ~45 groups): it
+The Next.js API layer is a **Backend-for-Frontend** (~165 handlers across ~45 groups): it
 authenticates, enforces entitlements, encrypts sensitive data, talks to
 Supabase/Stripe/Gemini/EasyPost/Resend/USCIS/Sheets, and proxies CPU/AI work to the
 Python backend. Highlights:
@@ -812,11 +890,11 @@ Python backend. Highlights:
 | Group | Notable endpoints | Talks to |
 |---|---|---|
 | `auth/*` | login (rate-limited + lockout), signup, callback, confirm-email, forgot/reset/change-password, signout, delete-account, `mfa/*`, check-admin | Supabase Auth, Resend, Redis |
-| `stripe/*` | `checkout`, `verify-session` (idempotent self-heal & source of truth), `webhook`, `portal` | Stripe |
+| `stripe/*` | `checkout` (takes `visaCategory` / `candidateCount` / `action`), `verify-session` (idempotent self-heal & source of truth), `webhook`, `portal`; both confirm paths call `provisionCandidateJourneysAndVaults` (see 4.3) | Stripe |
 | `plan/*` | `plan/reconcile` (never-downgrade tier self-heal) | Supabase |
 | `journeys|chapters|steps|case_data` | journey CRUD, `journeys/initialize` (combined load + bg step-sync), `journeys/[id]/document-checklist` (`DocumentChecklistEngine`), `case_data/validate` | Supabase, journey engines |
 | `candidate/*` | `candidate/create` (server-side upsert candidate into `profile_details.candidates` + lazy-insert its suffixed `journeys` row; the authoritative save path so candidates survive refresh), `candidate/delete` (remove candidate from `profile_details.candidates` + cleanup its `user_guides` and suffixed `journeys` rows; candidate-1 protected) | Supabase |
-| `journey/*` | `journey/marriage-check` (singular; distinct from `journeys`) | Supabase |
+| `journey/*` | `journey/marriage-check` (singular; distinct from `journeys`), `journey/upload-image` (journey cover / candidate avatar upload, auth + 5MB image cap), `journey/media` (owner-only: session required, path must be the caller's `journey-media/<userId>/`, see 4.1) | Supabase, Storage |
 | `documents/*` | upload (validate + encrypt + compress), download/preview/export, `config`, `mark-read`, `extract-{passport,cnic,birth,marriage,divorce}` | Supabase Storage, Python, Gemini |
 | `upload/*` | generic authenticated file upload tied to an appointment | Supabase Storage |
 | `profile/*` | get/save with field encryption, `complete`, `merge` | Supabase |
@@ -830,7 +908,7 @@ Python backend. Highlights:
 | `iv-status/*` | "documentarily complete" lookup from `backend/data/iv_data.json` | static data |
 | `guides/*` | guides wizard (start/save/progress/upload/my-guides) + admin feedback triage | Supabase |
 | `quick-access/*` | dashboard "quick access" tile CRUD (`user_quick_access`) | Supabase |
-| `user-dashboard/*` | `services-status` (PCC/medical/consult/translation; `scope=journey` = journey-tagged rows, default = standalone/My Resources, `scope=all` = every row unfiltered for the cross-journey request directory), `analytics` aggregation | Supabase |
+| `user-dashboard/*` | `services-status` (PCC/medical/consult/translation, all four now filtered by origin + candidate; `scope=journey` = journey-tagged rows, default = standalone/My Resources, `scope=all` = every row unfiltered for the cross-journey request directory), `analytics` aggregation | Supabase |
 | `visa-forms/[formCode]/*` | save/resume multi-step form drafts (`visa_forms_draft`) | Supabase |
 | `consultation`, `book-appointment`, `document-translation/*`, `police-verification/*` | service bookings + admin workflows + payments | Supabase, Resend, Stripe |
 | `interview-prep/*`, `visa-checker/*` | sessions, answers, AI coaching (`ai-improve`) | Supabase, Gemini |
@@ -880,10 +958,17 @@ Components consume these via hooks/contexts; they should not re-implement domain
 - **Journey services** — `JourneyService`, `StepService`, `CaseDataValidationEngine`
   (`lib/journey/service.ts`).
 - **Stripe** — `lib/stripe/{config,utils}.ts`, `checkoutLock.ts` (per-user Redis checkout
-  lock), `subscriptionCleanup.ts` (`cancelDuplicateSubscriptions`, `LIVE_SUB_STATUSES`,
+  lock), `subscriptionCleanup.ts` (`cancelSupersededSubscriptions` journey-scoped upgrade cleanup,
+  `journeyTypeForVisaCategory`, `isAddCandidateSubscription`, `LIVE_SUB_STATUSES`,
   `resolveSubscriptionTier`, `isRahvanaJourneySubscription`). **Plan** —
   `lib/plan/reconcile.ts`. **Payments** — `lib/payments/addon-purchase-ledger.ts`
   (idempotency ledger of processed add-on checkout sessions in `profile_details`).
+- **Candidates** — `lib/candidate/candidateSyncService.ts` (journey keys, base category,
+  `isMultiCandidateCategory`, shared vs candidate-specific fields) and
+  `lib/candidate/candidateProvisioningService.ts` (`provisionCandidateJourneysAndVaults`:
+  post-payment journey + roster + vault provisioning, see 4.3).
+- **Journey services UI logic** — `lib/journey/toolModeGuards.ts` (one-active-request locks),
+  `lib/journey/useJourneyServiceStatus.ts`, `lib/journey/imageUploadHelper.ts` (see 4.1).
 - **EasyPost** — `lib/easypost/{client,tracker}.ts`.
 - **Email/notify** — `lib/email/resend.ts`; `lib/notifications.ts` (root `"use server"`
   file: Resend email + in-app notification creation from `NOTIFICATION_TEMPLATES`).
@@ -1245,22 +1330,47 @@ External: Stripe . Resend . EasyPost . Gemini . USCIS . GA4 . Sheets . OCR.space
 - **`canvas` is aliased away** for pdfjs. **WhatsApp assistant is disabled** in
   `backend/main.py`. **MODNet** is a git submodule.
 - **Stripe truth = `verify-session`**, not the webhook.
-- **One journey subscription per customer (Stripe is the source of truth).** Checkout
-  lists the customer's live Stripe subs (`active/trialing/past_due/unpaid`) and blocks
-  same-tier/downgrade even when the DB is stale — the old DB-only guard let duplicate live
-  subs be created on any desync. New subs are tagged `subscription_data.metadata.tier`.
-  `verify-session` + webhook run `cancelDuplicateSubscriptions(customer, keepSubId)` which
-  cancels every live sub except the confirmed one. **Ordering is load-bearing:** the old
-  sub is cancelled ONLY after the new payment is confirmed and after the DB points at the
+- **One live plan per JOURNEY (Stripe is the source of truth).** A customer can legitimately
+  hold several Rahvana subscriptions: one per journey (IR-1 and IR-5 are bought separately) plus
+  one per IR-5 candidate added through an add-candidate purchase. Every subscription is tagged in
+  `subscription_data.metadata` with `tier`, `visa_category`, `candidate_count`, `action` /
+  `is_add_candidate`. **Checkout** lists the customer's live Stripe subs
+  (`active/trialing/past_due/unpaid`), keeps only the selected journey's plan(s)
+  (`journeyTypeForVisaCategory` from `lib/stripe/subscriptionCleanup.ts`, shared with cleanup;
+  add-candidate plans excluded unless the journey row points at one) and blocks same-tier /
+  downgrade against those even when the DB is stale - so an IR-5 plan never blocks buying IR-1,
+  and a candidate-2 Executive plan never makes a candidate-1 Basic -> Premium upgrade look like a
+  downgrade. **Upgrade cleanup:** after payment is confirmed, BOTH `verify-session` and the webhook
+  call `cancelSupersededSubscriptions({ customerId, keepSubId, visaCategory, isAddCandidate,
+  oldSubscriptionId })` (idempotent; whichever runs first wins). It cancels only the upgrade's
+  `old_subscription_id` plus any other live plan tagged with the SAME journey that is not an
+  add-candidate plan (desync duplicates); an add-candidate purchase cancels nothing, plans for
+  other journeys and untagged legacy subs (unless they are the upgrade hint) are never touched.
+  So Basic -> Premium on IR-1 retires the IR-1 Basic plan and nothing else. Do NOT reintroduce an
+  account-wide "cancel every other sub" cleanup: it cancelled the IR-5 plan when IR-1 was bought
+  and the primary IR-5 plan on every add-candidate purchase (fixed Oct 2026; covered by
+  `__tests__/stripe/{subscriptionCleanup,webhook,checkout}.test.ts`). **Ordering is load-bearing:**
+  the old sub is cancelled ONLY after the new payment is confirmed and after the DB points at the
   new sub, so (a) a failed checkout never removes the user's existing plan and (b) the
-  `customer.subscription.deleted` guard skips the downgrade → upgrades never reset tier or
-  journey progress (journey rows are independent of tier anyway). The existing Stripe
-  customer is resolved (search by metadata/email) BEFORE the live-sub guard runs, so a
-  DB desync with no stored customer id can't bypass the guard; a customer-lookup error on a
+  `customer.subscription.deleted` guard skips the downgrade, so upgrades never reset tier or
+  journey progress (journey rows are independent of tier anyway). **Genuine cancellation**
+  (`customer.subscription.deleted` in the webhook) revokes per journey: every `journeys` row whose
+  `stripe_subscription_id` is the cancelled sub drops to `free` (several rows for an IR-5 purchase
+  covering multiple candidates), and the matching candidates in `profile_details.candidates` get
+  `tier: "free"` too - required, because `PlanContext` keys journey tiers per CATEGORY and only
+  the candidate's own `tier` stops candidate 2 inheriting candidate 1's IR-5 tier. An upgrade's
+  retired plan matches no row (the journey was already repointed), so it changes nothing. The
+  account summary (`user_profiles.subscription_tier` + `profile_details.stripe_subscription_id`) is
+  only touched when the cancelled sub is the one it points at, and then falls back to the best
+  remaining journey plan instead of `free`. Legacy accounts whose journey rows were never stamped
+  with a sub id: when their current plan is cancelled, their unstamped paid journeys are revoked.
+  Covered by the "per-journey plans" block in `__tests__/stripe/webhook.test.ts`. The existing
+  Stripe customer is resolved (search by metadata/email) BEFORE the live-sub guard runs, so a DB
+  desync with no stored customer id can't bypass the guard; a customer-lookup error on a
   subscription purchase FAILS CLOSED (503). The per-user checkout lock
-  (`lib/stripe/checkoutLock.ts`) uses a random ownership token + compare-and-delete release
-  so it can't delete another request's lock; it stays fail-open on a Redis error (cleanup is
-  the backstop).
+  (`lib/stripe/checkoutLock.ts`) uses a random ownership token + compare-and-delete release so it
+  can't delete another request's lock; it stays fail-open on a Redis error (cleanup is the
+  backstop).
 - **`outputFileTracingIncludes`** bundles `data/**` into API routes (routes read
   `data/visa-category/*.json` at runtime).
 - Migrations include big "combined"/"run_all" files — mind apply order and duplication.
@@ -1339,9 +1449,9 @@ backend for PDF + AI work; **Stripe / Resend / Gemini / EasyPost / USCIS / GA4 /
 OCR.space / Upstash** integrations. Deployed on Vercel + Render.
 
 **Shape.** `app/` has route groups `(auth)`, `(main)`, `(tools)`, `admin/`, and
-**`app/api/*` (~161 handlers, ~45 groups) acting as a BFF**. Domain logic is in **`lib/`**.
+**`app/api/*` (~165 handlers, ~45 groups) acting as a BFF**. Domain logic is in **`lib/`**.
 Live journey config is in **`data/visa-category/*.json`**. DB schema is in
-**`supabase/migrations/`** (~86 files). Shared types in **`types/`**.
+**`supabase/migrations/`** (~89 files). Shared types in **`types/`**.
 
 **Core model.** `data/visa-category/*.json` is the **source of truth**: journey ->
 chapters -> **steps**, each step carrying `who` (petitioner/beneficiary/both),
@@ -1404,6 +1514,10 @@ Webhooks HMAC-verified + idempotent. `middleware.ts` adds `X-Robots-Tag` + body-
 standalone mode for every tool (smart form filler drafts/gating differ by mode). Both
 dashboards share the app-groups toolbox (`AppGroupGrid`/`AppGroupModal`) and
 `EmbeddedToolContainer`. New categories need a `JOURNEY_DATA_MAP` entry + slug maps.
+Medical / PCC / Consultation run as journey-embedded services (`JourneyServiceModule`, one
+active request per journey via `toolModeGuards`, rows tagged `source`/`journey_slug`/`candidate_id`).
+Multi-candidate purchases (`isMultiCandidateCategory`, pricing `action=add_candidate|upgrade`) are
+provisioned after payment by `provisionCandidateJourneysAndVaults` (journeys + roster + vaults).
 
 **Gotchas.** Builds **ignore TS/ESLint errors** (run `tsc --noEmit`). Modal page-scroll is
 locked globally by `ModalScrollLock` (no per-modal body locks). `data/roadmap.ts` +

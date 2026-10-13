@@ -18,7 +18,7 @@ jest.mock('@/lib/stripe/config', () => ({
 }))
 
 jest.mock('@/lib/stripe/subscriptionCleanup', () => ({
-  cancelDuplicateSubscriptions: (...a: any[]) => mockCancelDuplicates(...a),
+  cancelSupersededSubscriptions: (...a: any[]) => mockCancelDuplicates(...a),
 }))
 
 jest.mock('resend', () => ({ Resend: jest.fn(() => ({ emails: { send: jest.fn() } })) }))
@@ -109,7 +109,10 @@ describe('verify-session — journey plan activation', () => {
       expect.objectContaining({ subscription_tier: 'premium', subscription_status: 'active' })
     )
     // Cleanup keeps the just-paid subscription
-    expect(mockCancelDuplicates).toHaveBeenCalledWith('cus_1', 'sub_new', '[verify-session]')
+    expect(mockCancelDuplicates).toHaveBeenCalledWith({
+      customerId: 'cus_1', keepSubId: 'sub_new', visaCategory: 'IR-1',
+      isAddCandidate: false, oldSubscriptionId: 'sub_old', logPrefix: '[verify-session]',
+    })
     // Sub id written to its own column, not stripe_payment_id
     const paymentsUpdate = updateSpy.mock.calls.find(
       (c: any[]) => c[0] && 'stripe_subscription_id' in c[0]
@@ -134,6 +137,8 @@ describe('verify-session — journey plan activation', () => {
     const res = await GET(makeRequest('cs_1'))
     const body = await res.json()
     expect(body.activated).toBe(true)
-    expect(mockCancelDuplicates).toHaveBeenCalledWith('cus_1', 'sub_existing', '[verify-session]')
+    expect(mockCancelDuplicates).toHaveBeenCalledWith(
+      expect.objectContaining({ customerId: 'cus_1', keepSubId: 'sub_existing', oldSubscriptionId: null })
+    )
   })
 })
