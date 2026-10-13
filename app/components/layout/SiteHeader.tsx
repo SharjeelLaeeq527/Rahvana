@@ -1367,8 +1367,8 @@ export function SiteHeader({
                 </div>
               )}
 
-          {/* ── Favorite Items Button ── */}
-          {isSignedIn && (
+          {/* ── Favorite Items Button (account-wide, hidden inside journeys) ── */}
+          {isSignedIn && !isJourneyEnvironment && (
             <div className="relative" ref={quickAccessRef}>
               <HydrationSafeButton
                 aria-label="Quick Access List"

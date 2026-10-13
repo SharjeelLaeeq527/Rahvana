@@ -5,6 +5,7 @@ import { MessageSquare, Wrench } from "lucide-react";
 import { useJourneyEnvironment } from "@/app/context/JourneyEnvironmentContext";
 import { useCandidate } from "@/app/context/CandidateContext";
 import { usePlan } from "@/app/context/PlanContext";
+import { useUserProfile } from "@/app/context/UserProfileContext";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import {
   isJourneyRequestLocked,
@@ -415,6 +416,7 @@ export function EmbeddedToolContainer({
 }: EmbeddedToolContainerProps) {
   const { journeySlug, candidateId } = useJourneyEnvironment();
   const { activeCandidate } = useCandidate();
+  const { profile } = useUserProfile();
 
   const resolvedState = state as
     | {
@@ -553,20 +555,54 @@ export function EmbeddedToolContainer({
     }
 
     switch (toolKey) {
-      case "sponsorship_calculator":
+      case "sponsorship_calculator": {
+        const draft = resolvedState?.metadata?.sponsorshipDraft;
+        const savedResult = resolvedState?.metadata?.sponsorshipResult;
+        const sponsorState =
+          draft?.data?.state ||
+          savedResult?.raw?.state ||
+          (profile as { sponsor?: { address?: { state?: string } } } | null)?.sponsor?.address
+            ?.state ||
+          "";
         return (
           <SponsorshipCalculatorTool
             isOpen={true}
-            onClose={onClose}
+            onClose={onClose ?? (() => {})}
             embedded
             mode="journey"
             journeyContext={journeyContext}
             journeyTier={effectiveJourneyTier}
             initialData={{
-              ...((state as any)?.metadata?.sponsorshipResult?.raw || {}),
+              ...(draft?.data || savedResult?.raw || {}),
+              state: sponsorState,
+            }}
+            initialStep={draft?.stepIdx ?? (savedResult ? 10 : 0)}
+            lockState={Boolean(sponsorState)}
+            onProgressChange={(d) => {
+              (
+                actions as { updateMetadata?: (u: Record<string, unknown>) => void }
+              )?.updateMetadata?.({ sponsorshipDraft: d });
+            }}
+            onSave={(result) => {
+              (
+                actions as { updateMetadata?: (u: Record<string, unknown>) => void }
+              )?.updateMetadata?.({ sponsorshipResult: result, sponsorshipDraft: null });
+              // Auto-complete the originating step when launched from one.
+              if (autoCompleteStepKey) {
+                const alreadyComplete = (
+                  state as { completedSteps?: Set<string> } | undefined
+                )?.completedSteps?.has?.(autoCompleteStepKey);
+                if (!alreadyComplete) {
+                  (actions as { toggleComplete?: (id: string) => void })?.toggleComplete?.(
+                    autoCompleteStepKey
+                  );
+                }
+              }
+              onClose?.();
             }}
           />
         );
+      }
 
       case "passport_photo":
         return (

@@ -44,6 +44,9 @@ import { useJourneyPlan } from "@/app/context/useJourneyPlan";
 import { ExpandableTooltip } from "@/app/components/shared/ExpandableTooltip";
 import { useCandidate } from "@/app/context/CandidateContext";
 import { JourneyPlanBadge } from "@/app/components/shared/JourneyPlanBadge";
+import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
+import { useJourneyEnvironment } from "@/app/context/JourneyEnvironmentContext";
+import type { QuickAccessScope } from "@/app/context/QuickAccessContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { AllServiceRequestsModal } from "./AllServiceRequestsModal";
 
@@ -95,6 +98,17 @@ export function AppGroupModal({ group, isOpen, onClose, onLaunchItem, state }: A
 
   const plan = useJourneyPlan(state);
   const { activeCandidateId } = useCandidate();
+
+  const { journeySlug } = useJourneyEnvironment();
+  const journeyId: string | undefined = (state as { backendId?: string })?.backendId;
+
+  // Favorite destination: return to this journey's dashboard.
+  const journeyHref = journeySlug ? `/visa-category/${journeySlug}` : "/dashboard";
+
+  // Undefined while the journey is still loading → the heart is hidden.
+  const journeyScope: QuickAccessScope | undefined = journeyId
+    ? { type: "journey", journeyId }
+    : undefined;
 
   useEffect(() => {
     setMounted(true);
@@ -262,12 +276,18 @@ export function AppGroupModal({ group, isOpen, onClose, onLaunchItem, state }: A
 
                             {isLocked ? (
                               <JourneyPlanBadge tier={targetTier || "premium"} />
-                            ) : (
-                              <span className="flex items-center gap-1 text-[11px] font-bold text-[#0d7377] opacity-0 transition-opacity group-hover:opacity-100 dark:text-teal-400">
-                                <span>Launch</span>
-                                <ArrowRight className="h-3 w-3" />
-                              </span>
-                            )}
+                            ) : journeyScope ? (
+                              <QuickAccessButton
+                                mode="icon"
+                                scope={journeyScope}
+                                item={{
+                                  id: item.componentKey,
+                                  title: item.label,
+                                  href: journeyHref,
+                                  icon_name: item.iconName,
+                                }}
+                              />
+                            ) : null}
                           </div>
 
                           <h3 className="text-sm font-bold text-slate-900 group-hover:text-[#0d7377] dark:text-slate-100 dark:group-hover:text-teal-400">
