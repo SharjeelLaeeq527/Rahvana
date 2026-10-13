@@ -73,7 +73,7 @@ export default function PassportPhotoTool({
   const [preview, setPreview] = useState<string | null>(null);
   const [result, setResult] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+
   const [selectedSize] = useState(SIZE_PRESETS[0]);
   const [customWidth] = useState(600);
   const [customHeight] = useState(600);
@@ -139,7 +139,6 @@ export default function PassportPhotoTool({
     setPreview(null);
     setResult(null);
     setResultLocked(false);
-    setError(null);
     setProcessingStep("");
   };
 
@@ -155,14 +154,14 @@ export default function PassportPhotoTool({
     // Validate file type
     if (!uploadedFile.type.startsWith("image/")) {
       reset();
-      setError(t("passportPhoto.errors.invalid"));
+      showToast(t("passportPhoto.errors.invalid"), "error");
       return;
     }
 
     // Validate file size (max 10MB)
     if (uploadedFile.size > 10 * 1024 * 1024) {
       reset();
-      setError(t("passportPhoto.errors.large"));
+      showToast(t("passportPhoto.errors.large"), "error");
       return;
     }
 
@@ -176,14 +175,12 @@ export default function PassportPhotoTool({
     setPreview(URL.createObjectURL(uploadedFile));
     setResult(null);
     setResultLocked(false);
-    setError(null);
 
     // Friendly reminder toast to verify front-facing orientation before generating
     showToast(
       t("passportPhoto.frontFacingToast") ||
         "Photo selected! Please verify your face is facing straight ahead with no tilt before generating.",
-      "info",
-      6000
+      "info"
     );
   };
 
@@ -205,7 +202,6 @@ export default function PassportPhotoTool({
     }
 
     setLoading(true);
-    setError(null);
     setProcessingStep(t("passportPhoto.steps.uploading"));
 
     // Verify and consume credit if the user has limited credits, blocking if exhausted
@@ -253,8 +249,17 @@ export default function PassportPhotoTool({
       });
 
       if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`Server Error (${res.status}): ${errorText.substring(0, 100)}...`);
+        // Extract user-friendly message from structured backend response
+        let friendlyMsg = t("passportPhoto.errors.general");
+        try {
+          const body = await res.json();
+          const detail = body?.detail;
+          if (typeof detail === "string") friendlyMsg = detail;
+          else if (detail?.message) friendlyMsg = detail.message;
+        } catch {
+          // non-JSON response — keep generic message
+        }
+        throw new Error(friendlyMsg);
       }
 
       setProcessingStep(t("passportPhoto.steps.finalizing"));
@@ -267,11 +272,8 @@ export default function PassportPhotoTool({
       setProcessingStep("");
       if (onResult) onResult(url);
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : `${t("passportPhoto.errors.general")} API Base: ${API_BASE}`
-      );
+      const message = err instanceof Error ? err.message : t("passportPhoto.errors.general");
+      showToast(message, "error");
       setProcessingStep("");
     } finally {
       setLoading(false);
@@ -486,22 +488,6 @@ export default function PassportPhotoTool({
                   <X className="h-4 w-4" />
                   {t("passportPhoto.removePhoto")}
                 </button>
-              </div>
-            )}
-
-            {/* Error */}
-            {error && (
-              <div
-                className="mt-4 flex items-center gap-2 rounded-lg p-3 text-sm"
-                style={{
-                  backgroundColor: "#fef2f2",
-                  border: "1px solid #fecaca",
-                  color: "#b91c1c",
-                  boxShadow: "0 2px 8px rgba(185,28,28,0.08)",
-                }}
-              >
-                <AlertCircle className="h-5 w-5 shrink-0" />
-                {error}
               </div>
             )}
 
