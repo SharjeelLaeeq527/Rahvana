@@ -12,6 +12,8 @@ import mediapipe as mp
 import numpy as np
 from PIL import Image, ImageOps, UnidentifiedImageError
 
+from app.services.accessory_detection import detect_forbidden_accessories
+
 
 # Configuration
 BACKEND_ROOT = Path(__file__).resolve().parents[2]
@@ -40,18 +42,31 @@ MIN_IMAGE_WIDTH = int(os.getenv("PASSPORT_MIN_IMAGE_WIDTH", "320"))
 MIN_IMAGE_HEIGHT = int(os.getenv("PASSPORT_MIN_IMAGE_HEIGHT", "320"))
 
 MIN_FACE_CONFIDENCE = float(
-    os.getenv("PASSPORT_MIN_FACE_CONFIDENCE", "0.65")
-)
-MIN_FACE_AREA_RATIO = float(
-    os.getenv("PASSPORT_MIN_FACE_AREA_RATIO", "0.08")
-)
-MAX_FACE_AREA_RATIO = float(
-    os.getenv("PASSPORT_MAX_FACE_AREA_RATIO", "0.65")
+    os.getenv("PASSPORT_MIN_FACE_CONFIDENCE", "0.5")
 )
 
-MIN_BLUR_SCORE = float(os.getenv("PASSPORT_MIN_BLUR_SCORE", "25"))
-MIN_BRIGHTNESS = float(os.getenv("PASSPORT_MIN_BRIGHTNESS", "35"))
-MAX_BRIGHTNESS = float(os.getenv("PASSPORT_MAX_BRIGHTNESS", "245"))
+# Face sizing is measured against image HEIGHT (the passport-standard metric),
+# which is independent of aspect ratio, plus an absolute pixel floor so the
+# downstream auto-crop never upscales a tiny face into a pixelated result.
+MIN_FACE_HEIGHT_RATIO = float(
+    os.getenv("PASSPORT_MIN_FACE_HEIGHT_RATIO", "0.16")
+)
+MAX_FACE_HEIGHT_RATIO = float(
+    os.getenv("PASSPORT_MAX_FACE_HEIGHT_RATIO", "0.92")
+)
+MIN_FACE_PIXEL_HEIGHT = int(os.getenv("PASSPORT_MIN_FACE_PIXEL_HEIGHT", "120"))
+
+# Quality metrics are computed on a resolution-normalized face ROI so the
+# threshold behaves the same for a 640px and a 4000px source.
+BLUR_ROI_TARGET_PX = int(os.getenv("PASSPORT_BLUR_ROI_TARGET_PX", "512"))
+MIN_BLUR_SCORE = float(os.getenv("PASSPORT_MIN_BLUR_SCORE", "40"))
+MIN_BRIGHTNESS = float(os.getenv("PASSPORT_MIN_BRIGHTNESS", "45"))
+MAX_BRIGHTNESS = float(os.getenv("PASSPORT_MAX_BRIGHTNESS", "235"))
+
+# Accessory enforcement (glasses/hats/masks/headphones) via the ML detector.
+ACCESSORY_CHECK_ENABLED = os.getenv(
+    "PASSPORT_ACCESSORY_CHECK_ENABLED", "true"
+).strip().lower() in {"1", "true", "yes", "on"}
 
 # One detector per application process.
 _detector = None
@@ -167,13 +182,55 @@ def _decode_image(image_bytes: bytes) -> Image.Image:
         ) from exc
 
 
+# Face region-of-interest helpers
+def _face_roi(gray: np.ndarray, bbox: tuple[int, int, int, int]) -> np.ndarray:
+    """Crop a slightly padded face region from a grayscale image."""
+    img_h, img_w = gray.shape[:2]
+    x1, y1, x2, y2 = bbox
+
+    pw = int((x2 - x1) * 0.25)
+    ph = int((y2 - y1) * 0.25)
+
+    rx1 = max(0, x1 - pw)
+    ry1 = max(0, y1 - ph)
+    rx2 = min(img_w, x2 + pw)
+    ry2 = min(img_h, y2 + ph)
+
+    return gray[ry1:ry2, rx1:rx2]
+
+
+def _normalized_blur(roi: np.ndarray) -> float:
+    """
+    Laplacian-variance sharpness on a resolution-normalized ROI.
+
+    Resizing to a fixed long side makes the score comparable across different
+    source resolutions instead of scaling with pixel count.
+    """
+    if roi.size == 0:
+        return float("inf")
+
+    h, w = roi.shape[:2]
+    long_side = max(h, w)
+
+    if long_side != BLUR_ROI_TARGET_PX and long_side > 0:
+        scale = BLUR_ROI_TARGET_PX / long_side
+        new_w = max(1, int(w * scale))
+        new_h = max(1, int(h * scale))
+        roi = cv2.resize(roi, (new_w, new_h), interpolation=cv2.INTER_AREA)
+
+    return float(cv2.Laplacian(roi, cv2.CV_64F).var())
+
+
 # Passport photo validation
 def validate_passport_image(image_bytes: bytes) -> ValidatedPassportImage:
     """
-    Screen a portrait for basic image quality and face framing.
+    Screen a portrait for image quality, face framing, and disallowed accessories.
 
-    This is a technical screening step, not a guarantee of compliance
-    with official passport or visa photo requirements.
+    The face is detected first so quality metrics (blur, brightness) and the
+    sizing rule are computed against the face ROI rather than the whole frame.
+
+    This is a technical screening step, not a guarantee of compliance with
+    official passport or visa photo requirements.
     """
     image = _decode_image(image_bytes)
     width, height = image.size
@@ -187,30 +244,6 @@ def validate_passport_image(image_bytes: bytes) -> ValidatedPassportImage:
 
     rgb = np.asarray(image)
     gray = cv2.cvtColor(rgb, cv2.COLOR_RGB2GRAY)
-
-    # Blur screening.
-    blur_score = float(cv2.Laplacian(gray, cv2.CV_64F).var())
-
-    if blur_score < MIN_BLUR_SCORE:
-        _reject(
-            "IMAGE_TOO_BLURRY",
-            "The image appears blurry. Please upload a sharper photo.",
-        )
-
-    # Average brightness screening.
-    brightness = float(np.mean(gray))
-
-    if brightness < MIN_BRIGHTNESS:
-        _reject(
-            "IMAGE_TOO_DARK",
-            "The image appears too dark. Use more even lighting.",
-        )
-
-    if brightness > MAX_BRIGHTNESS:
-        _reject(
-            "IMAGE_TOO_BRIGHT",
-            "The image appears overexposed. Reduce the lighting.",
-        )
 
     # MediaPipe Tasks expects an SRGB image.
     mp_image = mp.Image(
@@ -261,20 +294,25 @@ def validate_passport_image(image_bytes: bytes) -> ValidatedPassportImage:
 
     face_width = x2 - x1
     face_height = y2 - y1
-    face_area_ratio = (face_width * face_height) / (width * height)
 
-    if face_area_ratio < MIN_FACE_AREA_RATIO:
+    # Sizing: aspect-ratio-independent height ratio plus an absolute pixel floor.
+    face_height_ratio = face_height / height
+
+    if face_height_ratio < MIN_FACE_HEIGHT_RATIO or face_height < MIN_FACE_PIXEL_HEIGHT:
         _reject(
             "FACE_TOO_SMALL",
-            "Your face appears too small. Move closer to the camera.",
+            "Your face appears too small or too low-resolution. "
+            "Move closer to the camera or use a higher-resolution photo.",
         )
 
-    if face_area_ratio > MAX_FACE_AREA_RATIO:
+    if face_height_ratio > MAX_FACE_HEIGHT_RATIO:
         _reject(
             "FACE_TOO_LARGE",
-            "Your face appears too large or cropped. Move farther away.",
+            "Your face appears too large or cropped. Move farther away so "
+            "your full head fits in the frame.",
         )
 
+    # Centering.
     center_x = (x1 + x2) / 2 / width
     center_y = (y1 + y2) / 2 / height
 
@@ -284,11 +322,42 @@ def validate_passport_image(image_bytes: bytes) -> ValidatedPassportImage:
             "Position your face closer to the horizontal center.",
         )
 
-    if not 0.15 <= center_y <= 0.80:
+    if not 0.12 <= center_y <= 0.85:
         _reject(
             "FACE_OFF_CENTER",
             "Adjust the framing so your face is more centrally positioned.",
         )
+
+    # Quality metrics are sampled on the face ROI, not the whole frame.
+    roi = _face_roi(gray, (x1, y1, x2, y2))
+
+    blur_score = _normalized_blur(roi)
+
+    if blur_score < MIN_BLUR_SCORE:
+        _reject(
+            "IMAGE_TOO_BLURRY",
+            "The image appears blurry. Please upload a sharper photo.",
+        )
+
+    brightness = float(np.mean(roi))
+
+    if brightness < MIN_BRIGHTNESS:
+        _reject(
+            "IMAGE_TOO_DARK",
+            "The face appears too dark. Use more even lighting.",
+        )
+
+    if brightness > MAX_BRIGHTNESS:
+        _reject(
+            "IMAGE_TOO_BRIGHT",
+            "The face appears overexposed. Reduce the lighting.",
+        )
+
+    # Accessory enforcement (glasses/hats/masks/headphones) via the ML detector.
+    if ACCESSORY_CHECK_ENABLED:
+        reason = detect_forbidden_accessories(rgb, (x1, y1, x2, y2))
+        if reason:
+            _reject("ACCESSORY_NOT_ALLOWED", reason)
 
     # Normalize orientation and encoding before background removal.
     normalized = io.BytesIO()

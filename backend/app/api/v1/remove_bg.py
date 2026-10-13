@@ -7,8 +7,12 @@ from functools import lru_cache
 from pathlib import Path
 
 # Configure rembg's model directory BEFORE importing rembg.
+# Anchor to the backend root (not the process CWD) so weights resolve to a
+# stable location regardless of how the server is launched.
 # Override U2NET_HOME in the deployment environment if needed.
-os.environ.setdefault("U2NET_HOME", str(Path.cwd() / ".u2net"))
+os.environ.setdefault(
+    "U2NET_HOME", str(Path(__file__).resolve().parents[3] / ".u2net")
+)
 
 import cv2
 import httpx
