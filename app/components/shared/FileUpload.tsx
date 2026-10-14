@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
   CheckCircle2,
-  File,
+  File as FileIcon,
   FileImage,
   FileText,
   ImageIcon,
@@ -20,6 +20,9 @@ interface FileUploadProps {
   height?: string;
   accept?: string;
   multiple?: boolean;
+
+  // Optional controlled file to synchronize external resets or values.
+  file?: File | File[] | null;
 
   /**
    * Controls the visual style.
@@ -43,6 +46,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
   label,
   fieldName,
   onFileUpload,
+  file,
   height = "180px",
   accept = "*/*",
   multiple = false,
@@ -98,6 +102,20 @@ const FileUpload: React.FC<FileUploadProps> = ({
       });
     };
   }, [uploadedFiles, showPreview]);
+
+  // Synchronize internal files state when controlled file prop changes (e.g., cleared/reset externally)
+  useEffect(() => {
+    if (file === null) {
+      setUploadedFiles([]);
+      if (inputRef.current) {
+        inputRef.current.value = "";
+      }
+    } else if (typeof window !== "undefined" && file instanceof window.File) {
+      setUploadedFiles([file]);
+    } else if (Array.isArray(file)) {
+      setUploadedFiles(file);
+    }
+  }, [file]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     handleFiles(e.target.files);
@@ -163,7 +181,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
       return <FileText className="h-5 w-5" />;
     }
 
-    return <File className="h-5 w-5" />;
+    return <FileIcon className="h-5 w-5" />;
   };
 
   return (

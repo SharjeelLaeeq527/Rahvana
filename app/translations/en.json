@@ -3208,6 +3208,15 @@
       "6": "Plain white or off-white background, no shadows, textures, or lines",
       "7": "Please remove all prohibited accessories, including eyeglasses, sunglasses, tinted lenses, hats, face masks, headphones, earbuds that obscure your face before uploading the photo"
     },
+    "frontFacingNotice": {
+      "title": "Front-Facing Photo Required",
+      "description": "Please ensure your photo is taken straight-on at eye level with both eyes open and full face visible. Angled selfies, side profiles, or tilted heads will be rejected.",
+      "tip1": "Look directly at camera",
+      "tip2": "No head tilt or angle",
+      "tip3": "Full face centered"
+    },
+    "frontFacingToast": "Photo selected! Please verify your face is facing straight ahead with no tilt before generating.",
+    "frontFacingHelper": "Upload a clear, front-facing photo (JPG or PNG up to 10MB)",
     "uploadLabel": "Upload Your Photo",
     "dropzone": "Click to upload or drag & drop",
     "fileSize": "JPG, PNG up to 10MB",
@@ -3224,6 +3233,8 @@
     "errors": {
       "invalid": "Please upload a valid image file.",
       "large": "Image size must be under 10 MB.",
+      "network": "Could not reach the photo service. Please check your connection and try again.",
+      "timeout": "The request timed out. Please try again.",
       "general": "An unknown error occurred."
     },
     "presets": {

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { ArrowLeft } from "lucide-react";
 
 import {
   ADDONS,
@@ -129,19 +130,27 @@ export default async function ResourceDetailPage({
     verified: r.verifiedPurchase,
   }));
 
+  const categoryLabel =
+    addon.kind === "services" ? "Services" : addon.kind === "guides" ? "Guides" : "Tools";
+
   return (
     <div className="bg-background text-foreground min-h-screen">
       <div className="mx-auto max-w-[1100px] px-5 pt-[88px] pb-28 sm:px-8 lg:px-10">
-        {/* Breadcrumb */}
-        <nav className="text-muted-foreground mb-8 text-[13px]">
+        {/* Back navigation & Breadcrumb */}
+        <nav aria-label="Breadcrumb" className="mb-8 flex flex-wrap items-center gap-2.5 text-[13.5px]">
           <Link
             href={`/pricing?mode=${addon.kind}`}
-            className="hover:text-foreground transition-colors"
+            className="group inline-flex items-center gap-2 rounded-full border border-border/80 bg-background/80 px-3.5 py-1.5 font-medium text-muted-foreground shadow-xs backdrop-blur-sm transition-all hover:border-foreground/20 hover:bg-muted/50 hover:text-foreground active:scale-[0.98]"
           >
-            {addon.kind === "services" ? "Services" : addon.kind === "guides" ? "Guides" : "Tools"}
+            <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
+            <span>Back to Pricing</span>
+            <span className="text-muted-foreground/40">·</span>
+            <span className="font-normal text-muted-foreground group-hover:text-foreground">
+              {categoryLabel}
+            </span>
           </Link>
-          <span className="text-border px-2">/</span>
-          <span className="text-foreground">{addon.title}</span>
+          <span className="text-border">/</span>
+          <span className="text-foreground font-medium">{addon.title}</span>
         </nav>
 
         {/* ── Hero ──────────────────────────────────────────────────────────── */}
@@ -472,9 +481,10 @@ export default async function ResourceDetailPage({
         <div className="mt-10">
           <Link
             href={`/pricing?mode=${addon.kind}`}
-            className="text-muted-foreground hover:text-foreground text-[13.5px] font-medium transition-colors"
+            className="group inline-flex items-center gap-2 text-muted-foreground hover:text-foreground text-[13.5px] font-medium transition-colors"
           >
-            ← Back to all
+            <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
+            <span>Back to Pricing ({categoryLabel})</span>
           </Link>
         </div>
       </div>

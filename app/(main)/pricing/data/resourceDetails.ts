@@ -373,19 +373,19 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
     badge: "Minutes, Not Studios",
     tagline: "A compliant visa photo, without the studio trip.",
     overview: [
-      "Visa and passport photos get rejected for the smallest things: wrong size, busy background, off-center crop. Photo Booth makes a compliant biometric photo from a picture you already have: background removed, face-centered, and cropped to the exact dimensions for your country.",
-      "Skip the studio queue and the do-overs. Upload, pick your country preset, download.",
+      "Visa and passport photos get rejected for the smallest things: wrong size, busy background, off-center crop. Photo Booth makes a compliant biometric photo from a picture you already have: background removed, face-centered, and cropped to the exact dimensions for US.",
+      "Skip the studio queue and the do-overs. Upload, auto-process, download.",
     ],
     highlights: [
       { icon: "Scissors", title: "Automatic background removal", text: "Clean white background with the subject centered, powered by smart cutout." },
-      { icon: "Crop", title: "Country size presets", text: "Outputs the exact dimensions for US, UK, India, Canada, or a custom size." },
+      { icon: "Crop", title: "Country size preset", text: "Outputs the exact dimensions for US." },
       { icon: "Camera", title: "Face-centered crop", text: "Automatically positions and crops your face to spec." },
       { icon: "Image", title: "Download-ready output", text: "Get a print- and upload-ready JPG in one click." },
     ],
     steps: [
       { title: "Upload a photo", text: "Use a clear, front-facing picture." },
-      { title: "Pick your preset", text: "Choose US, UK, India, Canada or a custom size." },
-      { title: "Auto-process", text: "We remove the background and crop to your chosen dimensions." },
+      { title: "Automatic sizing", text: "Pre-configured to the exact dimensions for US." },
+      { title: "Auto-process", text: "We remove the background and crop to compliant dimensions." },
       { title: "Download", text: "Get your photo, ready to print or upload." },
     ],
     audience: [
@@ -395,16 +395,16 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
     ],
     outcomes: [
       "2 credits per purchase — each credit produces one compliant photo output",
-      "Country-correct dimensions (US/UK/India/Canada or custom)",
+      "Country-correct dimensions (US)",
       "No studio visit required",
     ],
     faqs: [
       ["How many credits do I get?", "Every Photo Booth purchase grants 2 credits, on any plan — each credit produces one compliant photo output."],
       ["What photo should I upload?", "A clear, well-lit, front-facing photo with your full face visible works best."],
-      ["Will it definitely be accepted?", "It outputs to the standard size for your selected country and shows the requirements checklist, but always double-check your specific post's instructions before submitting."],
+      ["Will it definitely be accepted?", "It outputs to the standard size for US and shows the requirements checklist, but always double-check your specific post's instructions before submitting."],
     ],
     media: [
-      imgFile("photobooth.webp", "Your original photo (before)", "Before: a normal photo you upload"),
+      imgFile("photobooth.jpg", "Your original photo (before)", "Before: a normal photo you upload"),
       imgFile("photobooth-after.jpg", "Compliant passport photo (after)", "After: a fully compliant biometric photo"),
     ],
     related: ["smart", "guide-passport"],

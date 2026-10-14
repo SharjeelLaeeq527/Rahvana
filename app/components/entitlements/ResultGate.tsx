@@ -5,6 +5,13 @@ import { Lock, ArrowRight } from "lucide-react";
 import { usePlan } from "@/app/context/PlanContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { Loader } from "@/components/ui/spinner";
+import {
+  canUse as canUseForTier,
+  lockHint as lockHintForTier,
+  upgradeCTA as upgradeCTAForTier,
+  getEffectiveEntitlement,
+} from "@/lib/entitlements/helpers";
+import { normalizePlanTier, type PlanTier } from "@/lib/entitlements/config";
 
 interface ResultGateProps {
   /** The entitlement feature key (must exist in ENTITLEMENTS config). */
@@ -31,6 +38,13 @@ interface ResultGateProps {
    * Optional custom override to force the gate into a locked/blurred state.
    */
   isLocked?: boolean;
+  /**
+   * Explicit plan tier to evaluate entitlement against — e.g. a journey's
+   * Executive tier that differs from the account plan. When provided it
+   * overrides the account-derived `usePlan().tier`, so journey results unlock
+   * correctly. Omit to fall back to the account plan.
+   */
+  planTier?: PlanTier | string | null;
 }
 
 /**
@@ -53,9 +67,15 @@ export function ResultGate({
   blurStrength = "md",
   minHeight = "300px",
   isLocked,
+  planTier,
 }: ResultGateProps) {
   const plan = usePlan();
   const [showModal, setShowModal] = useState(false);
+
+  // Evaluate entitlement against the caller-provided tier (e.g. a journey's
+  // Executive tier) when present, otherwise the account-derived plan tier.
+  const tier = planTier != null ? normalizePlanTier(planTier) : plan.tier;
+  const addons = plan.purchasedAddons;
 
   /* ── Loading state ─────────────────────────────────────────────────────── */
   if (plan.isLoading) {
@@ -67,15 +87,18 @@ export function ResultGate({
   }
 
   /* ── Accessible — render normally ───────────────────────────────────────── */
-  if (plan.canUse(feature) && !isLocked) return <>{children}</>;
+  if (canUseForTier(feature, tier, addons) && !isLocked) return <>{children}</>;
 
   /* ── Locked — blur children + floating upgrade card ─────────────────────── */
   const blurClass =
     blurStrength === "sm" ? "blur-sm" : blurStrength === "lg" ? "blur-lg" : "blur-md";
 
-  const cta = plan.upgradeCTA(feature) || "Upgrade to Unlock";
-  const hint = hintOverride || plan.lockHint(feature) || "Upgrade your plan to view your results.";
-  const ent = plan.entitlement(feature);
+  const cta = upgradeCTAForTier(feature, tier, addons) || "Upgrade to Unlock";
+  const hint =
+    hintOverride ||
+    lockHintForTier(feature, tier, addons) ||
+    "Upgrade your plan to view your results.";
+  const ent = getEffectiveEntitlement(feature, tier, addons);
   const targetTier = ent?.upgradeTarget;
   // Only mention a one-time add-on when the feature actually has one.
   const canBuyAddon = (ent?.state === "locked_buy" || ent?.state === "limited") && !!ent?.addon;

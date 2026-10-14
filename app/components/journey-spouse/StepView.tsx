@@ -82,8 +82,6 @@ import { MultipleDocumentUploadModal } from "@/app/components/document-vault/Mul
 import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
 import { useAuth } from "@/app/context/AuthContext";
 import { useUserProfile } from "@/app/context/UserProfileContext";
-import PassportPhotoTool from "@/components/tools/PassportPhotoTool";
-import DocumentTranslationTool from "@/components/tools/DocumentTranslationTool";
 import { usePortalWallet } from "./hooks/usePortalWallet";
 import { useCandidate } from "@/app/context/CandidateContext";
 import { useFilingQuiz } from "./hooks/useFilingQuiz";
@@ -438,7 +436,6 @@ export const StepView: React.FC<StepViewProps> = ({
   // Candidate context — safely called at component level (no try/catch needed here)
   let activeCandidateId: string | null = null;
   try {
-     
     const candidateCtx = useCandidate();
     activeCandidateId = candidateCtx?.activeCandidateId ?? null;
   } catch {
@@ -3534,6 +3531,26 @@ export const StepView: React.FC<StepViewProps> = ({
                                                 subtitle: doc.subtitle,
                                                 hasGuide: hasDocGuide,
                                                 onReadGuide: () => {
+                                                  if (doc.id === "doc_passport_photos") {
+                                                    onLaunchTool?.("passport_photo", sId);
+                                                    if (actions.updateDocumentStatus && doc.id) {
+                                                      actions.updateDocumentStatus(
+                                                        doc.id,
+                                                        "in-progress"
+                                                      );
+                                                    }
+                                                    return;
+                                                  }
+                                                  if (doc.id === "doc_translations") {
+                                                    onLaunchTool?.("doc_translation", sId);
+                                                    if (actions.updateDocumentStatus && doc.id) {
+                                                      actions.updateDocumentStatus(
+                                                        doc.id,
+                                                        "in-progress"
+                                                      );
+                                                    }
+                                                    return;
+                                                  }
                                                   if (doc.guideUrl && doc.guideUrl !== "/guides") {
                                                     setGuideOverlayUrl(doc.guideUrl);
                                                     if (actions.updateDocumentStatus && doc.id) {
@@ -3949,6 +3966,18 @@ export const StepView: React.FC<StepViewProps> = ({
                               subtitle: item.sub,
                               hasGuide: hasDocGuide,
                               onReadGuide: () => {
+                                if (item.id === "doc_passport_photos") {
+                                  onLaunchTool?.("passport_photo", sId);
+                                  if (actions.updateDocumentStatus && item.id)
+                                    actions.updateDocumentStatus(item.id, "in-progress");
+                                  return;
+                                }
+                                if (item.id === "doc_translations") {
+                                  onLaunchTool?.("doc_translation", sId);
+                                  if (actions.updateDocumentStatus && item.id)
+                                    actions.updateDocumentStatus(item.id, "in-progress");
+                                  return;
+                                }
                                 if (item.guideUrl && item.guideUrl !== "/guides") {
                                   setGuideOverlayUrl(item.guideUrl);
                                   if (actions.updateDocumentStatus && item.id)
@@ -4578,44 +4607,17 @@ export const StepView: React.FC<StepViewProps> = ({
 
               {/* Sections */}
               <div className="flex w-full flex-col">
-                {selectedGuideId === "doc_passport_photos" ? (
-                  <div className="mb-4">
-                    <PassportPhotoTool
-                      showHeader={false}
-                      showRequirements={true}
-                      mode="journey"
-                      journeyTier={state?.subscriptionTier ?? (state as any)?.subscription_tier}
-                      journeyContext={{
-                        journeySlug: "ir1-journey",
-                        journeyCategory: "IR-1",
-                        candidateId: "candidate-1",
-                        subscriptionTier:
-                          state?.subscriptionTier ?? (state as any)?.subscription_tier,
-                      }}
-                    />
-                  </div>
-                ) : selectedGuideId === "doc_translations" ? (
-                  <div className="mb-4">
-                    <DocumentTranslationTool
-                      showHeader={false}
-                      showRequirements={true}
-                      showRequestsLink={false}
-                      mode="journey"
-                    />
-                  </div>
-                ) : (
-                  InlineGuideData[selectedGuideId].sections.map((section, idx) => (
-                    <div
-                      key={idx}
-                      className="mb-[14px] rounded-[16px] border border-[#d0e4f7] bg-[#f4f7fb] p-[20px_22px]"
-                    >
-                      <div className="mb-[10px] text-[13px] font-semibold tracking-[0.05em] text-[#6b8097] uppercase">
-                        {section.title}
-                      </div>
-                      <SafeHtml className="guide-content" html={section.htmlContent} />
+                {InlineGuideData[selectedGuideId].sections.map((section, idx) => (
+                  <div
+                    key={idx}
+                    className="mb-[14px] rounded-[16px] border border-[#d0e4f7] bg-[#f4f7fb] p-[20px_22px]"
+                  >
+                    <div className="mb-[10px] text-[13px] font-semibold tracking-[0.05em] text-[#6b8097] uppercase">
+                      {section.title}
                     </div>
-                  ))
-                )}
+                    <SafeHtml className="guide-content" html={section.htmlContent} />
+                  </div>
+                ))}
               </div>
 
               {/* Actions */}
