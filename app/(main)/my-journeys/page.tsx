@@ -1058,7 +1058,7 @@ function JourneyCard({
 
       {/* Image */}
       <div
-        className={`relative h-44 overflow-hidden ${
+        className={`relative h-58 overflow-hidden ${
           isActiveJourney ? "bg-[#dbeeee]" : "bg-slate-200"
         }`}
       >
@@ -1268,9 +1268,9 @@ function JourneyCard({
 
       <CardContent className="relative flex flex-1 flex-col px-4 py-2">
         {/* Decorative card glow */}
-        {isActiveJourney && (
+        {/* {isActiveJourney && (
           <div className="pointer-events-none absolute -top-20 -right-16 h-40 w-40 rounded-full bg-[#32e0c4]/8 blur-3xl" />
-        )}
+        )} */}
 
         {/* Progress block / Multi-Candidate Profile summary */}
         {isMultiCandidate && candidateCount && candidateCount > 0 ? (

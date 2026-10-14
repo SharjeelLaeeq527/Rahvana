@@ -269,7 +269,10 @@ export async function POST(request: NextRequest) {
       );
     });
     const candidateRosterTier = targetCandidateProfile?.tier;
-    const dbTier = (candidateRosterTier || selectedJourney?.subscription_tier ?? "free").toLowerCase();
+    const dbTier = (
+      (candidateRosterTier || selectedJourney?.subscription_tier) ??
+      "free"
+    ).toLowerCase();
     const dbStatus = selectedJourney?.status ?? "not_started";
     const stripeTierRank = journeyLiveSubs.reduce((max, s) => {
       const t = resolveSubscriptionTier(s);
