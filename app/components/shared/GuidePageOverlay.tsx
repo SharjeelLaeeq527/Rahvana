@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { Loader } from "@/components/ui/spinner";
 
@@ -58,26 +58,18 @@ const JourneyGuideLayoutStyles = () => (
       padding-top: 0 !important;
     }
 
-    /* Remove min-h-screen on the outer guide container so it fits naturally */
-    .journey-guide-page div[class~="min-h-screen"]:not(:has(.animate-spin)) {
-      min-height: 0 !important;
-      padding-top: 0 !important;
-    }
-
-    /* Centered loader state */
-    .journey-guide-page div:has(> .animate-spin),
-    .journey-guide-page div:has(> * > .animate-spin) {
+    /* Normalize standalone min-h-screen inside the journey overlay without touching inner loader elements */
+    .journey-guide-page div[class~="min-h-screen"] {
       min-height: 60vh !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
       padding-top: 0 !important;
-      margin: 0 auto !important;
     }
   `}</style>
 );
 
-function safeDynamic(importFn: () => Promise<any>, loadingComponent: React.ComponentType) {
+function safeDynamic(
+  importFn: () => Promise<any>,
+  LoadingComponent: React.ComponentType<any>
+) {
   return dynamic(
     () =>
       importFn().catch((error) => {
@@ -89,137 +81,67 @@ function safeDynamic(importFn: () => Promise<any>, loadingComponent: React.Compo
         }
         throw error;
       }),
-    { loading: loadingComponent }
+    { loading: () => <LoadingComponent /> }
   );
 }
 
-// Map of slug -> dynamically imported Guide/Tool React component
-const GUIDE_COMPONENTS: Record<string, React.ComponentType<any>> = {
-  // Tools mapped when opened via guide links
-  passport: safeDynamic(() => import("@/components/tools/PassportPhotoTool"), ToolLoadingState),
-  "passport-photos": safeDynamic(() => import("@/components/tools/PassportPhotoTool"), ToolLoadingState),
-  "photo-booth": safeDynamic(() => import("@/components/tools/PassportPhotoTool"), ToolLoadingState),
-  "document-translation": safeDynamic(
-    () => import("@/components/tools/DocumentTranslationTool"),
-    ToolLoadingState
-  ),
-  translation: safeDynamic(
-    () => import("@/components/tools/DocumentTranslationTool"),
-    ToolLoadingState
-  ),
-  "affidavit-support-calculator": safeDynamic(
-    () => import("@/app/(tools)/affidavit-support-calculator/page"),
-    ToolLoadingState
-  ),
-  "signature-image-processing": safeDynamic(
-    () => import("@/app/(tools)/signature-image-processing/page"),
-    ToolLoadingState
-  ),
-  "visa-forms": safeDynamic(
-    () => import("@/app/(tools)/(visa)/visa-forms/page"),
-    ToolLoadingState
-  ),
-  "visa-checker": safeDynamic(
-    () => import("@/app/(tools)/(visa)/visa-checker/page"),
-    ToolLoadingState
-  ),
-  "portal-wallet": safeDynamic(
-    () => import("@/app/(tools)/document-vault/page"),
-    ToolLoadingState
-  ),
-  "document-vault": safeDynamic(
-    () => import("@/app/(tools)/document-vault/page"),
-    ToolLoadingState
-  ),
-  "pdf-processing": safeDynamic(
-    () => import("@/app/(tools)/pdf-processing/page"),
-    ToolLoadingState
-  ),
-  "case-status": safeDynamic(
-    () => import("@/app/(tools)/case-status/page"),
-    ToolLoadingState
-  ),
-  "interview-prep": safeDynamic(
-    () => import("@/app/(tools)/interview-prep/page"),
-    ToolLoadingState
-  ),
-  "visa-case-strength-checker": safeDynamic(
-    () => import("@/app/(tools)/visa-case-strength-checker/page"),
-    ToolLoadingState
-  ),
-  "221g-action-planner": safeDynamic(
-    () => import("@/app/(tools)/(visa)/221g-action-planner/page"),
-    ToolLoadingState
-  ),
-  "book-appointment": safeDynamic(
-    () => import("@/app/(tools)/book-appointment/page"),
-    ToolLoadingState
-  ),
-  "police-verification": safeDynamic(
-    () => import("@/app/(tools)/police-verification/page"),
-    ToolLoadingState
-  ),
-  "visa-eligibility": safeDynamic(
-    () => import("@/app/(tools)/visa-eligibility/page"),
-    ToolLoadingState
-  ),
-  "passport-ocr": safeDynamic(
-    () => import("@/components/tools/PassportOcrTool"),
-    ToolLoadingState
-  ),
+import { preloadGuideSession } from "@/lib/guides/useGuideSession";
+
+// Map of slug -> dynamic import function for preloading and dynamic component creation
+const GUIDE_IMPORTERS: Record<string, () => Promise<any>> = {
+  // Tools
+  passport: () => import("@/components/tools/PassportPhotoTool"),
+  "passport-photos": () => import("@/components/tools/PassportPhotoTool"),
+  "photo-booth": () => import("@/components/tools/PassportPhotoTool"),
+  "document-translation": () => import("@/components/tools/DocumentTranslationTool"),
+  translation: () => import("@/components/tools/DocumentTranslationTool"),
+  "affidavit-support-calculator": () => import("@/app/(tools)/affidavit-support-calculator/page"),
+  "signature-image-processing": () => import("@/app/(tools)/signature-image-processing/page"),
+  "visa-forms": () => import("@/app/(tools)/(visa)/visa-forms/page"),
+  "visa-checker": () => import("@/app/(tools)/(visa)/visa-checker/page"),
+  "portal-wallet": () => import("@/app/(tools)/document-vault/page"),
+  "document-vault": () => import("@/app/(tools)/document-vault/page"),
+  "pdf-processing": () => import("@/app/(tools)/pdf-processing/page"),
+  "case-status": () => import("@/app/(tools)/case-status/page"),
+  "interview-prep": () => import("@/app/(tools)/interview-prep/page"),
+  "visa-case-strength-checker": () => import("@/app/(tools)/visa-case-strength-checker/page"),
+  "221g-action-planner": () => import("@/app/(tools)/(visa)/221g-action-planner/page"),
+  "book-appointment": () => import("@/app/(tools)/book-appointment/page"),
+  "police-verification": () => import("@/app/(tools)/police-verification/page"),
+  "visa-eligibility": () => import("@/app/(tools)/visa-eligibility/page"),
+  "passport-ocr": () => import("@/components/tools/PassportOcrTool"),
 
   // Guides
-  "passport-guide": safeDynamic(() => import("@/app/(tools)/guides/passport-guide/page"), GuideLoadingState),
-  "birth-certificate-guide": safeDynamic(
-    () => import("@/app/(tools)/guides/birth-certificate-guide/page"),
-    GuideLoadingState
-  ),
-  "cnic-guide": safeDynamic(() => import("@/app/(tools)/guides/cnic-guide/page"), GuideLoadingState),
-  "frc-guide": safeDynamic(() => import("@/app/(tools)/guides/frc-guide/page"), GuideLoadingState),
-  "nikah-nama-guide": safeDynamic(() => import("@/app/(tools)/guides/nikah-nama-guide/page"), GuideLoadingState),
-  "police-verification-guide": safeDynamic(
-    () => import("@/app/(tools)/guides/police-verification-guide/page"),
-    GuideLoadingState
-  ),
-  "police-certificate": safeDynamic(
-    () => import("@/app/(tools)/guides/police-certificate/page"),
-    GuideLoadingState
-  ),
-  "polio-vaccination-guide": safeDynamic(
-    () => import("@/app/(tools)/guides/polio-vaccination-guide/page"),
-    GuideLoadingState
-  ),
-  "step-parent-guide": safeDynamic(() => import("@/app/(tools)/guides/step-parent-guide/page"), GuideLoadingState),
-  "adoptive-parent-guide": safeDynamic(
-    () => import("@/app/(tools)/guides/adoptive-parent-guide/page"),
-    GuideLoadingState
-  ),
-  "adoption-guide": safeDynamic(
-    () => import("@/app/(tools)/guides/adoptive-parent-guide/page"),
-    GuideLoadingState
-  ),
-  "asset-document-guide": safeDynamic(
-    () => import("@/app/(tools)/guides/asset-document-guide/page"),
-    GuideLoadingState
-  ),
-  "bona-marriage-guide": safeDynamic(
-    () => import("@/app/(tools)/guides/bona-marriage-guide/page"),
-    GuideLoadingState
-  ),
-  "educational-certificates-us-visa": safeDynamic(
-    () => import("@/app/(tools)/guides/educational-certificates-us-visa/page"),
-    GuideLoadingState
-  ),
-  "employment-certificate-guide": safeDynamic(
-    () => import("@/app/(tools)/guides/employment-certificate-guide/page"),
-    GuideLoadingState
-  ),
-  "visa-strength-guide": safeDynamic(
-    () => import("@/app/(tools)/guides/visa-strength-guide/page"),
-    GuideLoadingState
-  ),
-  "all-guides": safeDynamic(() => import("@/app/(tools)/guides/page"), GuideLoadingState),
+  "passport-guide": () => import("@/app/(tools)/guides/passport-guide/page"),
+  "birth-certificate-guide": () => import("@/app/(tools)/guides/birth-certificate-guide/page"),
+  "cnic-guide": () => import("@/app/(tools)/guides/cnic-guide/page"),
+  "frc-guide": () => import("@/app/(tools)/guides/frc-guide/page"),
+  "nikah-nama-guide": () => import("@/app/(tools)/guides/nikah-nama-guide/page"),
+  "police-verification-guide": () => import("@/app/(tools)/guides/police-verification-guide/page"),
+  "police-certificate": () => import("@/app/(tools)/guides/police-certificate/page"),
+  "polio-vaccination-guide": () => import("@/app/(tools)/guides/polio-vaccination-guide/page"),
+  "step-parent-guide": () => import("@/app/(tools)/guides/step-parent-guide/page"),
+  "adoptive-parent-guide": () => import("@/app/(tools)/guides/adoptive-parent-guide/page"),
+  "adoption-guide": () => import("@/app/(tools)/guides/adoptive-parent-guide/page"),
+  "asset-document-guide": () => import("@/app/(tools)/guides/asset-document-guide/page"),
+  "bona-marriage-guide": () => import("@/app/(tools)/guides/bona-marriage-guide/page"),
+  "educational-certificates-us-visa": () => import("@/app/(tools)/guides/educational-certificates-us-visa/page"),
+  "employment-certificate-guide": () => import("@/app/(tools)/guides/employment-certificate-guide/page"),
+  "visa-strength-guide": () => import("@/app/(tools)/guides/visa-strength-guide/page"),
+  "all-guides": () => import("@/app/(tools)/guides/page"),
 };
+
+// Map of slug -> dynamically imported Guide/Tool React component
+const GUIDE_COMPONENTS: Record<string, React.ComponentType<any>> = Object.fromEntries(
+  Object.entries(GUIDE_IMPORTERS).map(([slug, importer]) => {
+    const isGuide =
+      slug.endsWith("-guide") ||
+      slug === "police-certificate" ||
+      slug === "all-guides" ||
+      slug.includes("certificate");
+    return [slug, safeDynamic(importer, isGuide ? GuideLoadingState : ToolLoadingState)];
+  })
+);
 
 function getInlineGuideProps(slug: string): Record<string, unknown> {
   if (slug === "passport" || slug === "passport-photos" || slug === "photo-booth") {
@@ -298,6 +220,46 @@ function extractFormCode(href: string | null): string | null {
   return rawCode || null;
 }
 
+  const [journeyHeaderBottom, setJourneyHeaderBottom] = useState<number>(112);
+
+  useLayoutEffect(() => {
+    if (!guideUrl) return;
+    const header = document.querySelector<HTMLElement>("[data-journey-header]");
+    const updateHeaderBottom = () => {
+      setJourneyHeaderBottom(header ? Math.max(0, header.getBoundingClientRect().bottom) : 112);
+    };
+
+    updateHeaderBottom();
+    const observer = header ? new ResizeObserver(updateHeaderBottom) : null;
+    if (header && observer) observer.observe(header);
+    window.addEventListener("resize", updateHeaderBottom);
+    window.addEventListener("scroll", updateHeaderBottom, true);
+
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener("resize", updateHeaderBottom);
+      window.removeEventListener("scroll", updateHeaderBottom, true);
+    };
+  }, [guideUrl]);
+
+  // Lock body scroll while overlay is open
+  useEffect(() => {
+    if (!guideUrl) return;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [guideUrl]);
+
+  // Close on Escape key
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
   useEffect(() => {
     if (!guideUrl) return;
     const closeFromJourneyHeader = () => onClose();
@@ -363,7 +325,8 @@ function extractFormCode(href: string | null): string | null {
   if (detectedFormCode) {
     return (
       <div
-        className="journey-guide-page w-full bg-[#f8fafc] font-sans"
+        className="journey-guide-page fixed inset-x-0 bottom-0 z-[30] overflow-x-hidden overflow-y-auto overscroll-contain bg-[#f8fafc] font-sans animate-in fade-in duration-200"
+        style={{ top: journeyHeaderBottom }}
         role="dialog"
         aria-modal="true"
         aria-label={`Form ${detectedFormCode.toUpperCase()} Auto-Filler`}
@@ -391,7 +354,8 @@ function extractFormCode(href: string | null): string | null {
 
   return (
     <div
-      className="journey-guide-page w-full bg-[#f8fafc] font-sans"
+      className="journey-guide-page fixed inset-x-0 bottom-0 z-[30] overflow-x-hidden overflow-y-auto overscroll-contain bg-[#f8fafc] font-sans animate-in fade-in duration-200"
+      style={{ top: journeyHeaderBottom }}
       role="dialog"
       aria-modal="true"
       aria-label={isTool ? "Tool View" : "Guide View"}
@@ -427,4 +391,23 @@ function extractFormCode(href: string | null): string | null {
   );
 };
 
+export function preloadGuidePage(guideUrl: string | null, candidateId = "candidate-1") {
+  if (!guideUrl) return;
+  const clean = guideUrl.split("?")[0].replace(/\/$/, "");
+  const parts = clean.split("/").filter(Boolean);
+  const slug = parts.length === 0 || clean === "/guides" ? "all-guides" : parts[parts.length - 1];
+
+  // 1. Warm the JS chunk
+  const importer = GUIDE_IMPORTERS[slug];
+  if (importer) {
+    void importer().catch(() => {});
+  }
+
+  // 2. Warm the guide session data from /api/guides/progress
+  if (slug.endsWith("-guide") || slug === "police-certificate") {
+    preloadGuideSession(slug, candidateId);
+  }
+}
+
+export { JourneyGuidePage as GuidePageOverlay };
 export default JourneyGuidePage;

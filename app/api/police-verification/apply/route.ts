@@ -50,6 +50,9 @@ interface PoliceVerificationData {
 
   request_id: string;
   status: "pending";
+  admin_notes?: string;
+  source?: string | null;
+  journey_slug?: string | null;
 }
 
 function generateRequestId() {
@@ -124,7 +127,12 @@ export async function POST(req: NextRequest) {
 
       request_id: requestId,
       status: "pending",
-      admin_notes: body.candidate_id ? `[Candidate: ${body.candidate_id}] ${body.candidate_name || ''}`.trim() : "",
+      admin_notes: body.candidate_id
+        ? `[Candidate: ${body.candidate_id}] ${body.candidate_name || ""}`.trim()
+        : "",
+      // Origin tagging: 'journey' rows are hidden from standalone My Resources.
+      source: body.source === "journey" ? "journey" : "standalone",
+      journey_slug: body.journey_slug || null,
     };
 
     const { data, error } = await supabase

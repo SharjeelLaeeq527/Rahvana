@@ -359,8 +359,9 @@ export function SiteHeader({
   const pathname = usePathname();
   const { isInsideJourney, journeyCategory, journeySlug } = useJourneyEnvironment();
   const isJourneyPath = pathname
-    ? /^\/visa-category\/(?:[a-z0-9-]+-journey|ir-1|ir-5|ir-2|f-1|germany-student)/.test(pathname)
-    : false;
+  ? /^\/visa-category\/(?:ir1-journey|ir5-journey)/.test(pathname)
+  : false;
+
   const isJourneyEnvironment = isInsideJourney || isJourneyPath;
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -917,7 +918,10 @@ export function SiteHeader({
                     {getJourneyDisplayTitle(journeyCategory, journeySlug, pathname)}
                   </span>
                   {activeCandidate && (activeCandidate.fullName || activeCandidate.label) && (
-                    <span className="text-[10px] leading-tight font-medium text-teal-700 dark:text-teal-400">
+                    <span
+                      suppressHydrationWarning
+                      className="text-[10px] leading-tight font-medium text-teal-700 dark:text-teal-400"
+                    >
                       {activeCandidate.fullName || activeCandidate.label}
                     </span>
                   )}

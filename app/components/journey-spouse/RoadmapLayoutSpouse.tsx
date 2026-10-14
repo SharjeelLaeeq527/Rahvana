@@ -4,6 +4,7 @@ import React, { useState, useEffect, Suspense } from "react";
 import { RoadmapData } from "@/app/(tools)/(visa)/visa-category/[visa-journey]/components/types";
 import { DashboardView } from "./DashboardView";
 import { EmbeddedToolContainer } from "@/app/components/journey-engine/EmbeddedToolContainer";
+import { getAppGroupItemLabel } from "@/lib/constants/journey-app-groups";
 import { JourneyPlanBadge } from "@/app/components/shared/JourneyPlanBadge";
 import { ChapterView } from "./ChapterView";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
@@ -119,12 +120,18 @@ export default function RoadmapLayoutSpouse({ data, state, actions }: RoadmapLay
   };
 
   const handleBackToDashboard = () => {
+    if (journeyOverlayName) {
+      window.dispatchEvent(new Event("journey-overlay-close"));
+    }
     setView("dashboard");
     actions.setCurrentStep(-1);
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   };
 
   const handleBackToChapter = () => {
+    if (journeyOverlayName) {
+      window.dispatchEvent(new Event("journey-overlay-close"));
+    }
     setView("chapter");
     actions.setCurrentStep(-1);
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
@@ -227,7 +234,7 @@ export default function RoadmapLayoutSpouse({ data, state, actions }: RoadmapLay
                 aria-hidden="true"
               />
               <span className="breadcrumb-item breadcrumb-current">
-                <span className="bc-text">{activeToolKey.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}</span>
+                <span className="bc-text">{getAppGroupItemLabel(activeToolKey)}</span>
               </span>
             </li>
           )}
@@ -246,6 +253,23 @@ export default function RoadmapLayoutSpouse({ data, state, actions }: RoadmapLay
                 disabled={view === "chapter"}
               >
                 <span className="bc-text">Ch. {selectedChapterIdx + 1}</span>
+              </button>
+            </li>
+          )}
+
+          {!activeToolKey && view === "step" && currentStepDisplayNum !== null && journeyOverlayName && (
+            <li className="breadcrumb-sep-item">
+              <ChevronRight
+                size={10}
+                className="breadcrumb-sep"
+                strokeWidth={3}
+                aria-hidden="true"
+              />
+              <button
+                className="breadcrumb-item breadcrumb-link"
+                onClick={() => window.dispatchEvent(new Event("journey-overlay-close"))}
+              >
+                <span className="bc-text">Step {currentStepDisplayNum}</span>
               </button>
             </li>
           )}

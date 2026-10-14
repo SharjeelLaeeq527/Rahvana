@@ -389,6 +389,16 @@ export interface MasterProfile {
   // Journey-scoped profile data to prevent multi-journey bleed
   journeys?: Record<string, Record<string, any>>;
 
+  // Customizations for journeys on My Journeys dashboard (name, image, etc.)
+  journeyCustomizations?: Record<
+    string,
+    {
+      name?: string;
+      image?: string;
+      updatedAt?: string;
+    }
+  >;
+
   // Multi-Candidate / Beneficiary profiles (IR-5 parents, IR-2 children)
   activeCandidateId?: string;
   candidates?: import("./candidate").CandidateProfile[];

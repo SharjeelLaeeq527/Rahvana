@@ -35,13 +35,17 @@ import {
   Shield,
   Syringe,
   FileUp,
+  Info,
 } from "lucide-react";
 import { AppGroup } from "@/types/app-groups";
-import { TOOL_FEATURE_MAP } from "@/lib/constants/journey-app-groups";
+import { TOOL_FEATURE_MAP, getOverlayPageRoute } from "@/lib/constants/journey-app-groups";
+import { preloadGuidePage } from "@/app/components/shared/GuidePageOverlay";
 import { useJourneyPlan } from "@/app/context/useJourneyPlan";
-
+import { ExpandableTooltip } from "@/app/components/shared/ExpandableTooltip";
+import { useCandidate } from "@/app/context/CandidateContext";
 import { JourneyPlanBadge } from "@/app/components/shared/JourneyPlanBadge";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
+import { AllServiceRequestsModal } from "./AllServiceRequestsModal";
 
 interface AppGroupModalProps {
   group: AppGroup | null;
@@ -80,18 +84,36 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   Shield,
   Syringe,
   FileUp,
+  Info,
 };
 
 export function AppGroupModal({ group, isOpen, onClose, onLaunchItem, state }: AppGroupModalProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [mounted, setMounted] = useState(false);
   const [upgradeFeature, setUpgradeFeature] = useState<string | null>(null);
+  const [showAllRequests, setShowAllRequests] = useState(false);
 
   const plan = useJourneyPlan(state);
+  const { activeCandidateId } = useCandidate();
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // The cross-journey request directory never outlives the folder that opened it.
+  useEffect(() => {
+    if (!isOpen) setShowAllRequests(false);
+  }, [isOpen]);
+
+  // Warm the chunk AND the saved progress of every page-backed item (guides) as soon as
+  // the folder opens, so launching one renders instantly instead of hitting a loader.
+  useEffect(() => {
+    if (!isOpen || !group) return;
+    const candidateId = activeCandidateId || "candidate-1";
+    group.items.forEach((item) =>
+      preloadGuidePage(getOverlayPageRoute(item.componentKey), candidateId)
+    );
+  }, [isOpen, group, activeCandidateId]);
 
   if (!isOpen || !group || !mounted) return null;
 
@@ -103,26 +125,37 @@ export function AppGroupModal({ group, isOpen, onClose, onLaunchItem, state }: A
       item.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const isServicesGroup = group.title.toLowerCase() === "services";
+
   const modalContent = (
     <>
       {upgradeFeature && (
-        <UpgradeModal
-          feature={upgradeFeature}
-          onClose={() => setUpgradeFeature(null)}
+        <UpgradeModal feature={upgradeFeature} onClose={() => setUpgradeFeature(null)} />
+      )}
+
+      {isServicesGroup && (
+        <AllServiceRequestsModal
+          isOpen={showAllRequests}
+          onClose={() => setShowAllRequests(false)}
+          onDone={() => {
+            setShowAllRequests(false);
+            onClose();
+          }}
+          onLaunchItem={onLaunchItem}
         />
       )}
 
-      <div className="fixed inset-0 z-[100000] overflow-y-auto">
+      <div className="fixed inset-0 z-[100000] overflow-y-auto overscroll-contain">
         {/* Backdrop */}
         <div
           className="animate-in fade-in fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity duration-200"
           onClick={onClose}
         />
 
-        {/* Centering Wrapper with top/bottom padding to prevent any top cut-off */}
-        <div className="flex min-h-full items-center justify-center p-4 py-10 sm:p-6 sm:py-16">
+        {/* Padding + card max-h must total <= 100dvh, otherwise the overlay itself scrolls a little */}
+        <div className="flex min-h-full items-center justify-center p-4 sm:p-6">
           {/* Modal Card */}
-          <div className="animate-in zoom-in-95 relative z-10 flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl duration-200 dark:border-slate-800 dark:bg-slate-900">
+          <div className="animate-in zoom-in-95 relative z-10 flex max-h-[85dvh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl duration-200 dark:border-slate-800 dark:bg-slate-900">
             {/* ── Header ── */}
             <div className="flex shrink-0 items-center justify-between border-b border-slate-100 p-5 sm:p-6 dark:border-slate-800">
               <div className="flex items-center gap-3.5">
@@ -163,8 +196,28 @@ export function AppGroupModal({ group, isOpen, onClose, onLaunchItem, state }: A
               </div>
             </div>
 
+            {isServicesGroup && (
+              <div className="shrink-0 px-6 pt-3">
+                <ExpandableTooltip
+                  icon={<Info size={12} />}
+                  title="Saved to this Journey"
+                  message="Anything you request here is saved to this Journey. Requests made outside of this Journey will not appear here."
+                  defaultOpen={false}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowAllRequests(true)}
+                  className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-[#0d7377] decoration-2 underline-offset-2 hover:underline dark:text-teal-400"
+                >
+                  <Search className="h-3.5 w-3.5" />
+                  <span>My Requests (all journeys)</span>
+                  <ArrowRight className="h-3 w-3" />
+                </button>
+              </div>
+            )}
+
             {/* ── Items Grid / List ── */}
-            <div className="flex-1 overflow-y-auto p-6">
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-6">
               {filteredItems.length === 0 ? (
                 <div className="py-12 text-center">
                   <p className="text-sm font-medium text-slate-500">
@@ -177,7 +230,9 @@ export function AppGroupModal({ group, isOpen, onClose, onLaunchItem, state }: A
                     const ItemIcon = ICON_MAP[item.iconName] || Wrench;
                     const featureKey = TOOL_FEATURE_MAP[item.componentKey];
                     const isLocked = featureKey ? plan.isLocked(featureKey) : false;
-                    const targetTier = featureKey ? plan.entitlement(featureKey)?.upgradeTarget : null;
+                    const targetTier = featureKey
+                      ? plan.entitlement(featureKey)?.upgradeTarget
+                      : null;
 
                     return (
                       <div
@@ -226,7 +281,9 @@ export function AppGroupModal({ group, isOpen, onClose, onLaunchItem, state }: A
                         <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-2.5 text-xs dark:border-slate-700/60">
                           <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
                             {isLocked ? (
-                              <span className="capitalize">{targetTier ? `${targetTier} Plan` : "Upgrade Required"}</span>
+                              <span className="capitalize">
+                                {targetTier ? `${targetTier} Plan` : "Upgrade Required"}
+                              </span>
                             ) : (
                               <span>Auto-saves in Journey</span>
                             )}
@@ -252,7 +309,10 @@ export function AppGroupModal({ group, isOpen, onClose, onLaunchItem, state }: A
                           ) : (
                             <span className="flex items-center gap-1 text-xs font-semibold text-[#0d7377] decoration-2 underline-offset-2 group-hover:underline dark:text-teal-400">
                               <span>Open Tool</span>
-                              <ArrowRight size={13} className="transition-transform group-hover:translate-x-0.5" />
+                              <ArrowRight
+                                size={13}
+                                className="transition-transform group-hover:translate-x-0.5"
+                              />
                             </span>
                           )}
                         </div>

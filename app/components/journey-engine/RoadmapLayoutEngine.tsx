@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo, Suspense } from "react";
 import { RoadmapDataV3 } from "./types";
 import { DashboardView } from "./DashboardView";
 import { EmbeddedToolContainer } from "./EmbeddedToolContainer";
+import { getAppGroupItemLabel } from "@/lib/constants/journey-app-groups";
 import { JourneyPlanBadge } from "@/app/components/shared/JourneyPlanBadge";
 import { ChapterView } from "./ChapterView";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
@@ -54,6 +55,14 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
   const [view, setView] = useState<ViewType>("dashboard");
   const [selectedChapterIdx, setSelectedChapterIdx] = useState<number>(0);
   const [activeToolKey, setActiveToolKey] = useState<string | null>(null);
+  // When a tool is launched from a specific roadmap step (e.g. the Medical/PCC module
+  // cards), remember that step so finishing the service can tick it off in the toolbox
+  // flow. Dashboard toolbox launches leave this null.
+  const [activeToolAutoCompleteStep, setActiveToolAutoCompleteStep] = useState<string | null>(null);
+  const launchTool = (toolKey: string, autoCompleteStepKey?: string | null) => {
+    setActiveToolAutoCompleteStep(autoCompleteStepKey ?? null);
+    setActiveToolKey(toolKey);
+  };
   const [journeyOverlayName, setJourneyOverlayName] = useState<string | null>(null);
 
   useEffect(() => {
@@ -128,12 +137,18 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
   };
 
   const handleBackToDashboard = () => {
+    if (journeyOverlayName) {
+      window.dispatchEvent(new Event("journey-overlay-close"));
+    }
     setView("dashboard");
     actions.setCurrentStep(-1);
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   };
 
   const handleBackToChapter = () => {
+    if (journeyOverlayName) {
+      window.dispatchEvent(new Event("journey-overlay-close"));
+    }
     setView("chapter");
     actions.setCurrentStep(-1);
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
@@ -236,7 +251,9 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
                 aria-hidden="true"
               />
               <span className="breadcrumb-item breadcrumb-current">
-                <span className="bc-text">{activeToolKey.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}</span>
+                <span className="bc-text">
+                  {activeToolKey.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+                </span>
               </span>
             </li>
           )}
@@ -255,6 +272,23 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
                 disabled={view === "chapter"}
               >
                 <span className="bc-text">Ch. {selectedChapterIdx + 1}</span>
+              </button>
+            </li>
+          )}
+
+          {!activeToolKey && view === "step" && currentStepDisplayNum !== null && journeyOverlayName && (
+            <li className="breadcrumb-sep-item">
+              <ChevronRight
+                size={10}
+                className="breadcrumb-sep"
+                strokeWidth={3}
+                aria-hidden="true"
+              />
+              <button
+                className="breadcrumb-item breadcrumb-link"
+                onClick={() => window.dispatchEvent(new Event("journey-overlay-close"))}
+              >
+                <span className="bc-text">Step {currentStepDisplayNum}</span>
               </button>
             </li>
           )}
@@ -292,21 +326,17 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
           )}
           {view === "step" && !activeToolKey && !journeyOverlayName && (
             <button
-            onClick={handleToggleComplete}
-            className={`complete-btn ${
-              isStepDone ? "complete-btn--done" : "complete-btn--idle"
-            }`}
-            aria-pressed={!!isStepDone}
-            title={isStepDone ? "Completed" : "Mark complete"}
-          >
-            {/* Icon: visible on all screen sizes */}
-            <Check size={12} strokeWidth={3} aria-hidden="true" />
-          
-            {/* Text: hidden on mobile, visible from md */}
-            <span className="hidden md:inline">
-              {isStepDone ? "Done" : "Complete"}
-            </span>
-          </button>
+              onClick={handleToggleComplete}
+              className={`complete-btn ${isStepDone ? "complete-btn--done" : "complete-btn--idle"}`}
+              aria-pressed={!!isStepDone}
+              title={isStepDone ? "Completed" : "Mark complete"}
+            >
+              {/* Icon: visible on all screen sizes */}
+              <Check size={12} strokeWidth={3} aria-hidden="true" />
+
+              {/* Text: hidden on mobile, visible from md */}
+              <span className="hidden md:inline">{isStepDone ? "Done" : "Complete"}</span>
+            </button>
           )}
           {/* DEV ONLY — reset button */}
           {isDevelopment && !activeToolKey && (
@@ -336,6 +366,7 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
           <EmbeddedToolContainer
             toolKey={activeToolKey}
             onClose={() => setActiveToolKey(null)}
+            autoCompleteStepKey={activeToolAutoCompleteStep}
             data={data}
             state={state}
             actions={actions}
@@ -353,7 +384,7 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
                 evidence={csProfile.evidence}
                 onSelectChapter={handleSelectChapter}
                 onSelectStep={handleSelectStep}
-                onLaunchTool={(toolKey) => setActiveToolKey(toolKey)}
+                onLaunchTool={(toolKey) => launchTool(toolKey)}
                 actions={{
                   setCurrentStep: actions.setCurrentStep,
                   setStage: actions.setStage,
@@ -381,6 +412,7 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
                   onBack={handleBackToChapter}
                   onSelectChapter={handleSelectChapter}
                   onSelectStep={handleSelectStep}
+                  onLaunchTool={launchTool}
                   actions={actions}
                 />
               </Suspense>

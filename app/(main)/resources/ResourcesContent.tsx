@@ -77,29 +77,29 @@ export default function ResourcesContent({ initialTab }: { initialTab: ResourceT
   };
 
   return (
-    <div className="bg-background text-foreground font-sans overflow-x-hidden selection:bg-primary selection:text-primary-foreground min-h-screen">
+    <div className="bg-background text-foreground selection:bg-primary selection:text-primary-foreground min-h-screen overflow-x-hidden font-sans">
       {/* Ambient Glow */}
-      <div className="fixed top-0 left-0 w-full h-full pointer-events-none -z-10">
-        <div className="absolute top-[10%] left-[15%] w-[30rem] h-[30rem] bg-[#0d7377]/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-[20%] right-[10%] w-[40rem] h-[40rem] bg-[#32e0c4]/5 rounded-full blur-3xl" />
+      <div className="pointer-events-none fixed top-0 left-0 -z-10 h-full w-full">
+        <div className="absolute top-[10%] left-[15%] h-[30rem] w-[30rem] rounded-full bg-[#0d7377]/5 blur-3xl" />
+        <div className="absolute right-[10%] bottom-[20%] h-[40rem] w-[40rem] rounded-full bg-[#32e0c4]/5 blur-3xl" />
       </div>
 
       {/* Page heading */}
-      <div className="text-center pt-24 pb-2">
-        <h1 className="text-3xl md:text-5xl font-bold bg-clip-text text-transparent bg-linear-to-r from-foreground to-muted-foreground animate-fade-up">
+      <div className="pt-24 pb-2 text-center">
+        <h1 className="from-foreground to-muted-foreground animate-fade-up -my-1 bg-linear-to-r bg-clip-text py-1 text-3xl leading-tight font-bold text-transparent md:text-5xl">
           My Resources
         </h1>
-        <p className="mt-3 text-muted-foreground text-base md:text-lg max-w-2xl mx-auto animate-fade-up [animation-delay:100ms] hidden md:block">
+        <p className="text-muted-foreground animate-fade-up mx-auto mt-4 hidden max-w-2xl text-base [animation-delay:100ms] md:block md:text-lg">
           Everything you&apos;ve added, plus the full catalog to browse and try anytime.
         </p>
-        <p className="mt-3 text-muted-foreground text-base md:text-lg max-w-2xl mx-auto animate-fade-up [animation-delay:100ms] block md:hidden">
-        Your unlocked tools, guides & services.
+        <p className="text-muted-foreground animate-fade-up mx-auto mt-3 block max-w-2xl text-base [animation-delay:100ms] md:hidden md:text-lg">
+          Your unlocked tools, guides & services.
         </p>
       </div>
 
       {/* Tab Selector Section */}
       <div className="flex justify-center pt-6 pb-8">
-        <div className="flex gap-2 bg-slate-100 dark:bg-slate-800/50 p-1.5 rounded-full border border-slate-200 dark:border-slate-700/50 shadow-sm backdrop-blur-md relative">
+        <div className="relative flex gap-2 rounded-full border border-slate-200 bg-slate-100 p-1.5 shadow-sm backdrop-blur-md dark:border-slate-700/50 dark:bg-slate-800/50">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
             const Icon = tab.icon;
@@ -108,7 +108,7 @@ export default function ResourcesContent({ initialTab }: { initialTab: ResourceT
               <button
                 key={tab.id}
                 onClick={() => handleTabChange(tab.id)}
-                className={`relative px-4 sm:px-6 py-2.5 flex items-center gap-2 rounded-full font-medium text-sm transition-colors duration-300 z-10 ${
+                className={`relative z-10 flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium transition-colors duration-300 sm:px-6 ${
                   isActive
                     ? "text-slate-900 dark:text-white"
                     : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
@@ -117,7 +117,7 @@ export default function ResourcesContent({ initialTab }: { initialTab: ResourceT
                 {isActive && (
                   <motion.div
                     layoutId="active-resource-tab"
-                    className="absolute inset-0 bg-white dark:bg-slate-700 rounded-full shadow-sm border border-slate-200/50 dark:border-slate-600/50"
+                    className="absolute inset-0 rounded-full border border-slate-200/50 bg-white shadow-sm dark:border-slate-600/50 dark:bg-slate-700"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -139,10 +139,10 @@ export default function ResourcesContent({ initialTab }: { initialTab: ResourceT
 
                 {/* animate-pulse */}
                 {tab.id === "services" && hasActiveRequests && (
-                  <span className="absolute top-1.5 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border border-white" />
+                  <span className="absolute top-1.5 right-2 h-2.5 w-2.5 rounded-full border border-white bg-red-500" />
                 )}
                 {tab.id === "guides" && hasStartedGuides && (
-                  <span className="absolute top-1.5 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border border-white" />
+                  <span className="absolute top-1.5 right-2 h-2.5 w-2.5 rounded-full border border-white bg-red-500" />
                 )}
               </button>
             );
@@ -151,7 +151,7 @@ export default function ResourcesContent({ initialTab }: { initialTab: ResourceT
       </div>
 
       {/* Content Section */}
-      <div className="w-full relative min-h-[50vh]">
+      <div className="relative min-h-[50vh] w-full">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
@@ -159,7 +159,7 @@ export default function ResourcesContent({ initialTab }: { initialTab: ResourceT
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -15 }}
             transition={{ duration: 0.25, ease: "easeInOut" }}
-            className="w-full h-full"
+            className="h-full w-full"
           >
             {activeTab === "toolbox" && <ToolsPage isEmbedded />}
             {activeTab === "guides" && <GuidesPage isEmbedded />}

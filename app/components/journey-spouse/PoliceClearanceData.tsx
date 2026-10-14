@@ -84,7 +84,7 @@ export const POLICE_CLEARANCE_DATA = {
   ],
   guideSteps: [
     {
-      label: "Step 1 of 4",
+      label: "Step 1 of 3",
       heading: "What you need before applying",
       instruction:
         "Gather the required documents before visiting the police station or submitting an online application.",
@@ -92,7 +92,7 @@ export const POLICE_CLEARANCE_DATA = {
       nav: { next: "Next →" },
     },
     {
-      label: "Step 2 of 4",
+      label: "Step 2 of 3",
       heading: "Submit your PCC application",
       instruction:
         "Visit the relevant police station or submit through the government's online portal if available in your district.",
@@ -101,20 +101,12 @@ export const POLICE_CLEARANCE_DATA = {
       nav: { back: true, next: "Next →" },
     },
     {
-      label: "Step 3 of 4",
+      label: "Step 3 of 3",
       heading: "Keep the receipt and track regularly",
       instruction:
         "Once submitted, keep your receipt and follow up with the police department periodically. Do not assume it will arrive automatically.",
       warn: "PCCs can take several weeks to months. Follow up directly with the relevant police station every week or two. Proactive follow-up significantly reduces delays.",
-      nav: { back: true, next: "Save tracking details →" },
-    },
-    {
-      label: "Step 4 of 4",
-      heading: "Save your receipt and application date",
-      instruction:
-        "Return to the main page and save your receipt and application date. Your dashboard will show a persistent reminder until you mark the certificate as received.",
-      info: "Once you receive the fresh PCC, return here and mark it as received. You can then save it to the Document Vault.",
-      nav: { back: true, done: "Return to tracking →" },
+      nav: { back: true },
     },
   ],
 };

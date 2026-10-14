@@ -266,13 +266,15 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()((set, get) => 
 
     try {
       // Try to persist to DB (best effort — store is already updated above)
-      await fetch("/api/documents/config", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(configWithJourney),
-      });
+      if (configWithJourney.userId && configWithJourney.userId !== "session") {
+        await fetch("/api/documents/config", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(configWithJourney),
+        });
+      }
     } catch (error) {
-      console.error("Failed to persist config to DB (config still active for session):", error);
+      console.warn("Failed to persist config to DB (config still active for session):", error);
     }
   },
 

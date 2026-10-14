@@ -1024,15 +1024,6 @@ export function DashboardView({
     { label: "Medical date", value: state.metadata.medicalDate },
   ];
 
-  if (guideOverlayUrl) {
-    return (
-      <JourneyGuidePage
-        guideUrl={guideOverlayUrl}
-        onClose={() => setGuideOverlayUrl(null)}
-        plan={plan}
-      />
-    );
-  }
 
   return (
     <div
@@ -1895,6 +1886,11 @@ export function DashboardView({
         onClose={() => setShowEvidenceQuestionnaireModal(false)}
         responses={questionnaireResponses}
         onSave={handleQuestionnaireSave}
+      />
+      <JourneyGuidePage
+        guideUrl={guideOverlayUrl}
+        onClose={() => setGuideOverlayUrl(null)}
+        plan={plan}
       />
 
     </div>

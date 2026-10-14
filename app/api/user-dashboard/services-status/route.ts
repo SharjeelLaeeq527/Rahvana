@@ -7,6 +7,10 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const candidateId = searchParams.get("candidateId");
+    // scope=journey → only requests created from inside a journey (for the journey step card /
+    // embedded service views). Default → standalone only (My Resources), i.e. journey rows hidden.
+    const scope = searchParams.get("scope");
+    const journeySlug = searchParams.get("journeySlug");
 
     // 1. Authenticate user session
     const authClient = await createClient();
@@ -85,6 +89,39 @@ export async function GET(req: NextRequest) {
     let translationDocuments = translationsData || [];
     let consultationBookings = consultationData || [];
 
+    // scope=all -> every request on the account, unfiltered by origin or candidate. Backs the
+    // cross-journey "My Requests (all journeys)" directory, which labels each row with the
+    // journey/candidate it belongs to (lib/services/serviceRequestDirectory.ts).
+    if (scope === "all") {
+      return NextResponse.json({
+        pccRequests: sindhPccRequests,
+        medicalAppointments,
+        consultationBookings,
+        translationDocuments,
+      });
+    }
+
+    // Origin split: journey-scoped rows vs standalone rows. Legacy rows without a
+    // source are treated as standalone so My Resources keeps showing them.
+    if (scope === "journey") {
+      sindhPccRequests = sindhPccRequests.filter(
+        (item: any) =>
+          item.source === "journey" && (!journeySlug || item.journey_slug === journeySlug)
+      );
+      medicalAppointments = medicalAppointments.filter(
+        (item: any) =>
+          item.source === "journey" && (!journeySlug || item.journey_slug === journeySlug)
+      );
+      consultationBookings = consultationBookings.filter(
+        (item: any) =>
+          item.source === "journey" && (!journeySlug || item.journey_slug === journeySlug)
+      );
+    } else {
+      sindhPccRequests = sindhPccRequests.filter((item: any) => item.source !== "journey");
+      medicalAppointments = medicalAppointments.filter((item: any) => item.source !== "journey");
+      consultationBookings = consultationBookings.filter((item: any) => item.source !== "journey");
+    }
+
     // Filter by candidateId if provided
     if (candidateId) {
       sindhPccRequests = sindhPccRequests.filter((item: any) => {
@@ -128,6 +165,26 @@ export async function GET(req: NextRequest) {
         return false;
       });
 
+      consultationBookings = consultationBookings.filter((item: any) => {
+        const directId = item.candidate_id;
+        const metaId = item.metadata?.candidate_id;
+        const notesTag =
+          typeof item.admin_notes === "string" &&
+          item.admin_notes.includes(`[Candidate: ${candidateId}]`);
+        if (directId) return directId === candidateId;
+        if (metaId) return metaId === candidateId;
+        if (notesTag) return true;
+        if (
+          candidateId === "candidate-1" &&
+          !directId &&
+          !metaId &&
+          (!item.admin_notes || !item.admin_notes.includes("[Candidate: "))
+        ) {
+          return true;
+        }
+        return false;
+      });
+
       translationDocuments = translationDocuments.filter((item: any) => {
         const directId = item.candidate_id;
         const metaId = item.metadata?.candidate_id;
@@ -151,4 +208,3 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Failed to fetch services status" }, { status: 500 });
   }
 }
-
