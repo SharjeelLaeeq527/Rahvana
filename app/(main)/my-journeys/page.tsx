@@ -189,18 +189,13 @@ const getJourneyStatus = (
   const normTier = (tier || journey?.subscription_tier || "free").toLowerCase();
   const hasPaidTier = normTier !== "free";
   const isExplicitlyActive =
-    journey?.status === "in_progress" ||
-    journey?.status === "active" ||
-    Boolean(journey?.started);
+    journey?.status === "in_progress" || journey?.status === "active" || Boolean(journey?.started);
 
-  const rawUpdatedAt =
-    journey?.last_updated_at || journey?.updated_at || journey?.started_at;
+  const rawUpdatedAt = journey?.last_updated_at || journey?.updated_at || journey?.started_at;
 
   const updatedAt = rawUpdatedAt ? new Date(rawUpdatedAt).getTime() : Number.NaN;
 
-  const isPaused =
-    Number.isFinite(updatedAt) &&
-    Date.now() - updatedAt > 1000 * 60 * 60 * 24 * 10;
+  const isPaused = Number.isFinite(updatedAt) && Date.now() - updatedAt > 1000 * 60 * 60 * 24 * 10;
 
   if (isPaused && progress > 0) {
     return {
@@ -448,15 +443,16 @@ export default function MyJourneysPage() {
         // Find active candidate's journey or the most progressed IR-5 journey
         const activeIr5Cand = ir5Candidates.find((c) => c.id === activeCandidateId);
         const activeIr5Key = activeIr5Cand
-          ? getCandidateJourneyKey("IR-5", activeIr5Cand.id).toLowerCase().replace(/[^a-z0-9]/g, "")
+          ? getCandidateJourneyKey("IR-5", activeIr5Cand.id)
+              .toLowerCase()
+              .replace(/[^a-z0-9]/g, "")
           : null;
 
-        const candDbJourney =
-          activeIr5Key
-            ? ir5DbJourneys.find(
-                (j) => (j.journey_id || "").toLowerCase().replace(/[^a-z0-9]/g, "") === activeIr5Key
-              )
-            : null;
+        const candDbJourney = activeIr5Key
+          ? ir5DbJourneys.find(
+              (j) => (j.journey_id || "").toLowerCase().replace(/[^a-z0-9]/g, "") === activeIr5Key
+            )
+          : null;
 
         const mostProgressedJourney = [...ir5DbJourneys].sort(
           (a, b) => getProgressPercent(b) - getProgressPercent(a)
@@ -585,8 +581,8 @@ export default function MyJourneysPage() {
         baseCategory === "IR-5"
           ? "ir5"
           : baseCategory === "IR-1"
-          ? "ir1"
-          : profileVisa.toLowerCase();
+            ? "ir1"
+            : profileVisa.toLowerCase();
 
       if (!processedCanonicals.has(canonicalKey)) {
         if (IR5_ENABLED || canonicalKey !== "ir5") {
@@ -806,9 +802,8 @@ export default function MyJourneysPage() {
                                   getBaseVisaCategory(c.visaCategory) ===
                                     getBaseVisaCategory(meta.code || meta.canonicalId)
                               ).length ||
-                              candidates.filter((c) =>
-                                isMultiCandidateCategory(c.visaCategory)
-                              ).length ||
+                              candidates.filter((c) => isMultiCandidateCategory(c.visaCategory))
+                                .length ||
                               candidates.length
                             }
                             onOpen={() => handleOpenJourney(meta)}
@@ -975,7 +970,7 @@ function JourneyCard({
           ? meta.isCurrentActive
             ? "border-[#0d7377]/40 bg-white/90 shadow-[0_20px_60px_rgba(13,115,119,0.18)] ring-2 ring-[#0d7377]/25 hover:border-[#0d7377]/60 hover:shadow-[0_28px_70px_rgba(13,115,119,0.24)]"
             : "border-white/80 bg-white/75 shadow-[0_18px_55px_rgba(15,61,63,0.08)] hover:border-[#14a0a6]/30 hover:shadow-[0_28px_70px_rgba(13,115,119,0.16)]"
-          : "border-slate-200/70 bg-slate-100/60 opacity-60 grayscale-[0.75] shadow-xs hover:border-slate-300 hover:opacity-95 hover:grayscale-0 hover:shadow-[0_18px_50px_rgba(15,61,63,0.1)]"
+          : "border-slate-200/70 bg-slate-100/60 opacity-60 shadow-xs grayscale-[0.75] hover:border-slate-300 hover:opacity-95 hover:shadow-[0_18px_50px_rgba(15,61,63,0.1)] hover:grayscale-0"
       }`}
     >
       {/* Hidden File Input for Cover Photo */}
@@ -1039,12 +1034,12 @@ function JourneyCard({
           )}
 
           <div className="flex items-center gap-1.5">
-            {isMultiCandidate && candidateCount && candidateCount > 0 ? (
+            {/* {isMultiCandidate && candidateCount && candidateCount > 0 ? (
               <Badge className="rounded-full border border-teal-300/40 bg-slate-950/70 px-2.5 py-1 text-[10px] font-semibold text-teal-300 shadow-lg backdrop-blur-md hover:bg-slate-950/80">
                 <Users className="mr-1 h-3 w-3 text-teal-300" />
                 {candidateCount} {candidateCount === 1 ? "Profile" : "Profiles"}
               </Badge>
-            ) : null}
+            ) : null} */}
 
             {/* Quick Actions Dropdown Menu */}
             <div ref={menuRef} className="relative">
@@ -1074,7 +1069,7 @@ function JourneyCard({
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.94, y: -4 }}
                     transition={{ duration: 0.15, ease: "easeOut" }}
-                    className="absolute right-0 top-full mt-1.5 z-30 min-w-[175px] rounded-2xl border border-white/20 bg-slate-950/95 p-1.5 shadow-2xl backdrop-blur-xl"
+                    className="absolute top-full right-0 z-30 mt-1.5 min-w-[175px] rounded-2xl border border-white/20 bg-slate-950/95 p-1.5 shadow-2xl backdrop-blur-xl"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <button
@@ -1270,9 +1265,7 @@ function JourneyCard({
           <div className="flex min-w-0 items-center gap-2.5 text-xs text-slate-500">
             <span
               className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
-                isActiveJourney
-                  ? "bg-[#e8f6f6] text-[#0d7377]"
-                  : "bg-slate-100 text-slate-500"
+                isActiveJourney ? "bg-[#e8f6f6] text-[#0d7377]" : "bg-slate-100 text-slate-500"
               }`}
             >
               {progress >= 100 ? (

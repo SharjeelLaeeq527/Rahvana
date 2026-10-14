@@ -842,9 +842,13 @@ function PricingContent() {
   ]);
 
   // When viewing single-candidate journey or upgrading IR-5, ensure selectedPlan defaults to a valid upgrade tier
-  useEffect(() => {
-    const isUpgradingThisJourney = (!isMultiCandidate && !isIr5) || isUpgradingIr5;
+  const isUpgradingThisJourney = useMemo(
+    () => (!isMultiCandidate && !isIr5 && canUpgradeIr1) || isUpgradingIr5,
+    [isMultiCandidate, isIr5, canUpgradeIr1, isUpgradingIr5]
+  );
 
+  // When viewing single-candidate journey or upgrading IR-5, ensure selectedPlan defaults to a valid upgrade tier
+  useEffect(() => {
     if (isUpgradingThisJourney && selectedJourneyTier && selectedJourneyTier !== "free") {
       const TIER_RANK: Record<string, number> = { free: 0, basic: 1, premium: 2, executive: 3 };
       const currentRank = TIER_RANK[selectedJourneyTier] || 0;
@@ -856,15 +860,57 @@ function PricingContent() {
         return prev;
       });
     }
-  }, [selectedJourneyTier, isMultiCandidate, isIr5, isUpgradingIr5]);
+  }, [selectedJourneyTier, isUpgradingThisJourney]);
+
   const activePlans = activeVisaCategory.plans;
   const paidPlans = activePlans.filter((p) => p.id !== "free");
   const currentPlanData = activePlans.find((p) => p.id === selectedPlan) || activePlans[2];
   const activeAddons = ADDONS.filter((addon) => isAddonSelected(addon.id));
-  const planDisplayPrice = (plan: PlanData) => plan.monthlyPrice * parentMultiplier;
+
+  // Dynamic upgrade difference calculator (target tier price - current tier price)
+  const getPlanUpgradeDiff = useCallback(
+    (targetPlan: PlanData) => {
+      if (!isUpgradingThisJourney || !selectedJourneyTier || selectedJourneyTier === "free") {
+        return null;
+      }
+      const TIER_RANK: Record<string, number> = { free: 0, basic: 1, premium: 2, executive: 3 };
+      const curRank = TIER_RANK[selectedJourneyTier] ?? 0;
+      const targetRank = TIER_RANK[targetPlan.id] ?? 0;
+      if (targetRank <= curRank) return null;
+
+      const curPlan = activePlans.find((p) => p.id === selectedJourneyTier);
+      const curAnnual = curPlan ? curPlan.annualPrice : 0;
+      const diffAnnual = Math.max(0, targetPlan.annualPrice - curAnnual);
+      const diffMonthly = Math.round((diffAnnual / 12) * 100) / 100;
+
+      return {
+        diffAnnual,
+        diffMonthly,
+        curAnnual,
+        targetAnnual: targetPlan.annualPrice,
+      };
+    },
+    [isUpgradingThisJourney, selectedJourneyTier, activePlans]
+  );
+
+  const currentPlanUpgradeDiff = useMemo(
+    () => getPlanUpgradeDiff(currentPlanData),
+    [getPlanUpgradeDiff, currentPlanData]
+  );
+
+  const planDisplayPrice = (plan: PlanData) => {
+    const diff = getPlanUpgradeDiff(plan);
+    if (diff) {
+      return diff.diffMonthly;
+    }
+    return plan.monthlyPrice * parentMultiplier;
+  };
+
   const summaryBase =
     mode === "plans" && currentPlanData.id !== "free"
-      ? currentPlanData.annualPrice * parentMultiplier
+      ? currentPlanUpgradeDiff
+        ? currentPlanUpgradeDiff.diffAnnual
+        : currentPlanData.annualPrice * parentMultiplier
       : 0;
   const summaryAddonsTotal = activeAddons.reduce((s, a) => s + a.price, 0);
   const summaryTotal = summaryBase + summaryAddonsTotal;
@@ -2066,35 +2112,6 @@ function PricingContent() {
                   </div>
                 )}
 
-                {/* Single-Candidate / IR-1 & IR-5 Upgrade Banner */}
-                {((!isMultiCandidate && !isIr5 && canUpgradeIr1) || isUpgradingIr5) && (
-                  <div className="mb-6 flex flex-col gap-2.5 rounded-2xl border border-emerald-200/90 bg-emerald-50/80 p-4 text-xs text-emerald-900 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="flex items-center gap-2.5">
-                      <Zap className="h-4 w-4 shrink-0 text-emerald-600" />
-                      <span>
-                        {isUpgradingIr5 && activeUpgradeCandidate ? (
-                          <>
-                            You are upgrading{" "}
-                            <strong>{getCandidateDisplayName(activeUpgradeCandidate)}</strong>{" "}
-                            (currently on the{" "}
-                            <strong className="capitalize">{selectedJourneyTier}</strong> plan).
-                            Select a higher tier below to upgrade. Prorated credit from the current
-                            plan is automatically applied at checkout.
-                          </>
-                        ) : (
-                          <>
-                            You are currently on the{" "}
-                            <strong className="capitalize">{selectedJourneyTier}</strong> plan.
-                            Select a higher tier below to upgrade your {activeVisaCategory.label}{" "}
-                            journey. The prorated credit from your current plan is automatically
-                            deducted at checkout.
-                          </>
-                        )}
-                      </span>
-                    </div>
-                  </div>
-                )}
-
                 {(() => {
                   const TIER_RANK: Record<string, number> = {
                     free: 0,
@@ -2114,9 +2131,6 @@ function PricingContent() {
 
                         const planRank = TIER_RANK[plan.id] ?? 0;
 
-                        const isUpgradingThisJourney =
-                          (!isMultiCandidate && !isIr5) || isUpgradingIr5;
-
                         const isCurrentPlan =
                           isUpgradingThisJourney && plan.id === selectedJourneyTier;
 
@@ -2124,6 +2138,8 @@ function PricingContent() {
 
                         const isUpgrade =
                           isUpgradingThisJourney && activeTierRank > 0 && planRank > activeTierRank;
+
+                        const upgradeDiff = getPlanUpgradeDiff(plan);
 
                         return (
                           <article
@@ -2206,7 +2222,9 @@ function PricingContent() {
                                 {/* Monthly price */}
                                 <div className="flex items-baseline gap-1">
                                   <span className="text-[34px] leading-none font-bold tracking-tight">
-                                    ${planDisplayPrice(plan)}
+                                    {upgradeDiff
+                                      ? `+$${upgradeDiff.diffMonthly}`
+                                      : `$${planDisplayPrice(plan)}`}
                                   </span>
 
                                   <span className="text-muted-foreground text-[12px]">/mo</span>
@@ -2214,12 +2232,29 @@ function PricingContent() {
 
                                 {/* Annual price */}
                                 <div className="text-muted-foreground text-[11px]">
-                                  ${plan.annualPrice * parentMultiplier} total
-                                  {!isUpgradingIr5 && isIr5 && parentCount > 1 && (
-                                    <span>
-                                      {" "}
-                                      ({parentCount}x ${plan.annualPrice}/ea)
+                                  {upgradeDiff ? (
+                                    <div className="flex flex-wrap items-center gap-1.5">
+                                      <span className="font-bold text-emerald-700 dark:text-emerald-400">
+                                        ${upgradeDiff.diffAnnual} to upgrade
+                                      </span>
+                                      <span className="text-muted-foreground/60 line-through">
+                                        ${plan.annualPrice}
+                                      </span>
+                                    </div>
+                                  ) : isCurrentPlan ? (
+                                    <span className="font-medium text-emerald-700 dark:text-emerald-400">
+                                      ${plan.annualPrice}
                                     </span>
+                                  ) : (
+                                    <>
+                                      ${plan.annualPrice * parentMultiplier} total
+                                      {!isUpgradingIr5 && isIr5 && parentCount > 1 && (
+                                        <span>
+                                          {" "}
+                                          ({parentCount}x ${plan.annualPrice}/ea)
+                                        </span>
+                                      )}
+                                    </>
                                   )}
                                 </div>
                               </div>
@@ -2307,8 +2342,8 @@ function PricingContent() {
                                   ? "Not Available"
                                   : isUpgrade
                                     ? isSelected
-                                      ? "Continue to Upgrade →"
-                                      : `Upgrade to ${plan.name} →`
+                                      ? `Continue to Upgrade ($${upgradeDiff?.diffAnnual}) →`
+                                      : `Upgrade for $${upgradeDiff?.diffAnnual} →`
                                     : isSelected
                                       ? `Continue with ${plan.name} (${activeExplorerCard?.code || activeVisaCategory.id}) →`
                                       : plan.cta}
@@ -2535,9 +2570,20 @@ function PricingContent() {
                             ${planDisplayPrice(currentPlanData)}
                           </div>
                           <div className="text-muted-foreground text-[12px]">
-                            /mo · ${currentPlanData.annualPrice * parentMultiplier} total
-                            {isIr5 && parentCount > 1 && (
-                              <span> (${currentPlanData.annualPrice}/ea)</span>
+                            {currentPlanUpgradeDiff ? (
+                              <>
+                                /mo · ${currentPlanUpgradeDiff.diffAnnual} upgrade difference
+                                <span className="text-muted-foreground/60 ml-1.5 line-through">
+                                  ${currentPlanData.annualPrice}
+                                </span>
+                              </>
+                            ) : (
+                              <>
+                                /mo · ${currentPlanData.annualPrice * parentMultiplier} total
+                                {!isUpgradingIr5 && isIr5 && parentCount > 1 && (
+                                  <span> (${currentPlanData.annualPrice}/ea)</span>
+                                )}
+                              </>
                             )}
                           </div>
                         </div>
@@ -2763,7 +2809,9 @@ function PricingContent() {
 
                 {currentPlanData.id !== "free" && (
                   <div className="border-border flex justify-between gap-3 border-b border-dashed py-2.5 text-[13px]">
-                    <span className="text-muted-foreground">Plan</span>
+                    <span className="text-muted-foreground">
+                      {currentPlanUpgradeDiff ? "Upgrade Plan" : "Plan"}
+                    </span>
                     <div className="text-right">
                       <strong
                         className={`block ${TIER[currentPlanData.id as TierKey]?.textAccent ?? ""}`}
@@ -2772,8 +2820,11 @@ function PricingContent() {
                       </strong>
                       <span className="text-muted-foreground text-[11px]">
                         ${planDisplayPrice(currentPlanData)}/mo · $
-                        {currentPlanData.annualPrice * parentMultiplier} total
-                        {isIr5 && parentCount > 1 && (
+                        {currentPlanUpgradeDiff
+                          ? currentPlanUpgradeDiff.diffAnnual
+                          : currentPlanData.annualPrice * parentMultiplier}{" "}
+                        {currentPlanUpgradeDiff ? "upgrade total" : "total"}
+                        {!currentPlanUpgradeDiff && isIr5 && parentCount > 1 && (
                           <span> (${currentPlanData.annualPrice}/ea)</span>
                         )}
                       </span>
@@ -2832,9 +2883,19 @@ function PricingContent() {
                 </div>
 
                 <p className="text-muted-foreground bg-muted/40 border-border mt-3 mb-4 rounded-[12px] border border-dashed p-3 text-[11px] leading-relaxed">
-                  Billed monthly at $
-                  {currentPlanData.id !== "free" ? planDisplayPrice(currentPlanData) : 0}
-                  /mo. Add-ons are one-time. Government fees excluded.
+                  {currentPlanUpgradeDiff ? (
+                    <>
+                      Upgrade difference of ${currentPlanUpgradeDiff.diffAnnual} (billed at $
+                      {planDisplayPrice(currentPlanData)}/mo). Replaces your current{" "}
+                      <strong className="capitalize">{selectedJourneyTier}</strong> plan.
+                    </>
+                  ) : (
+                    <>
+                      Billed monthly at $
+                      {currentPlanData.id !== "free" ? planDisplayPrice(currentPlanData) : 0}
+                      /mo. Add-ons are one-time. Government fees excluded.
+                    </>
+                  )}
                 </p>
 
                 {checkoutBtn}
