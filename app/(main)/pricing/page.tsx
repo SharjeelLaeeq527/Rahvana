@@ -1508,11 +1508,7 @@ function PricingContent() {
       onLoadingChange={setIsManualCheckoutLoading}
       className="bg-primary hover:bg-primary/90 w-full rounded-full px-4 py-2.5 text-center text-[13px] font-semibold text-white"
     >
-      {isUpgradingIr5
-        ? `Upgrade ${activeUpgradeCandidate ? getCandidateDisplayName(activeUpgradeCandidate) : activeExplorerCard?.code || activeVisaCategory.id} →`
-        : canUpgradeIr1
-          ? `Upgrade (${activeExplorerCard?.code || activeVisaCategory.id}) →`
-          : `Checkout (${activeExplorerCard?.code || activeVisaCategory.id}) →`}
+      {isUpgradingIr5 ? `Upgrade →` : canUpgradeIr1 ? `Upgrade →` : `Checkout →`}
     </CheckoutButton>
   ) : (
     <Link
