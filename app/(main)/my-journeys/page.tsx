@@ -802,7 +802,7 @@ export default function MyJourneysPage() {
                 </h1>
 
                 <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 md:text-lg md:leading-8">
-                  Continue your active applications, review your progress and manage every
+                  Continue your active journeys, review your progress and manage every
                   immigration journey from one secure workspace.
                 </p>
               </div>
@@ -1293,40 +1293,28 @@ function JourneyCard({
             </span>
           </div>
         ) : (
-          <div className="relative rounded-[20px] border border-[#0d7377]/8 bg-linear-to-br from-[#f2fbfb] to-white px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
-            <div className="flex items-end justify-between gap-4">
-              <div>
-                <p className="text-[10px] font-semibold tracking-[0.2em] text-slate-500 uppercase">
-                  Overall progress
-                </p>
-
-                <div className="mt-1 flex items-baseline gap-1">
-                  <span
-                    className={`text-2xl font-bold tracking-[-0.04em] ${
-                      isActiveJourney ? "text-[#0a5a5d]" : "text-slate-600"
-                    }`}
-                  >
-                    {progress}
-                  </span>
-                  <span
-                    className={`text-sm font-semibold ${
-                      isActiveJourney ? "text-[#0d7377]" : "text-slate-500"
-                    }`}
-                  >
-                    %
-                  </span>
-                </div>
+          <div className="relative rounded-2xl border border-[#0d7377]/10 bg-linear-to-br from-[#f2fbfb]/90 to-white px-3.5 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-[10px] font-semibold tracking-wider text-slate-500 uppercase">
+                  Progress
+                </span>
+                <span
+                  className={`text-[14px] font-bold tracking-tight ${
+                    isActiveJourney ? "text-[#0a5a5d]" : "text-slate-700"
+                  }`}
+                >
+                  {progress}%
+                </span>
               </div>
 
-              <div className="text-right">
-                <p className="text-xs font-medium text-slate-500">
-                  {completedSteps} of {totalSteps}
-                </p>
-                <p className="mt-0.5 text-[11px] text-slate-400">steps completed</p>
-              </div>
+              <p className="text-[11px] font-medium text-slate-500">
+                <span className="font-semibold text-slate-700">{completedSteps}</span>
+                <span className="text-slate-400">/{totalSteps} steps</span>
+              </p>
             </div>
 
-            <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-[#dceeed] shadow-inner">
+            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#dceeed]">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${progress}%` }}
