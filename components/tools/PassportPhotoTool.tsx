@@ -251,6 +251,11 @@ export default function PassportPhotoTool({
 
   // Reset current upload form
   const reset = () => {
+    if (preview) {
+      try {
+        URL.revokeObjectURL(preview);
+      } catch {}
+    }
     setFile(null);
     setPreview(null);
     setProcessingStep("");
@@ -258,22 +263,43 @@ export default function PassportPhotoTool({
 
   // Handle file selection
   const handleFileUpload = (fieldName: string, uploadedFile: File | File[] | null) => {
-    if (!uploadedFile || Array.isArray(uploadedFile)) return;
+    if (!uploadedFile) {
+      reset();
+      return;
+    }
+
+    if (Array.isArray(uploadedFile)) return;
 
     // Validate file type
     if (!uploadedFile.type.startsWith("image/")) {
-      showToast(t("passportPhoto.errors.invalid"), "error");
+reset();      
+showToast(t("passportPhoto.errors.invalid"), "error");
       return;
     }
 
     // Validate file size (max 10MB)
     if (uploadedFile.size > 10 * 1024 * 1024) {
-      showToast(t("passportPhoto.errors.large"), "error");
+reset();      
+showToast(t("passportPhoto.errors.large"), "error");
       return;
+    }
+
+    if (preview) {
+      try {
+        URL.revokeObjectURL(preview);
+      } catch {}
     }
 
     setFile(uploadedFile);
     setPreview(URL.createObjectURL(uploadedFile));
+    setResult(null);
+    setResultLocked(false);
+
+    // Friendly reminder toast to verify front-facing orientation before generating
+    showToast(
+      t("passportPhoto.frontFacingToast") ||
+        "Photo selected! Please verify your face is facing straight ahead with no tilt before generating.",
+      "info");
   };
 
   // Get final dimensions
@@ -677,12 +703,55 @@ export default function PassportPhotoTool({
               border: "1px solid rgba(74,124,142,0.2)",
             }}
           >
+            {/* Front-Facing Reminder Callout */}
+            {/* <div className="mb-4 rounded-xl border border-[#0d7377]/25 bg-gradient-to-r from-[#f0f9f9] to-[#e6f4f4] p-3.5 sm:p-4 shadow-xs">
+              <div className="flex items-start gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#0d7377]/15 text-[#0d7377]">
+                  <Camera className="h-5 w-5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-sm font-semibold text-[#0d7377]">
+                      {t("passportPhoto.frontFacingNotice.title") || "Front-Facing Photo Required"}
+                    </h3>
+                    <span className="inline-flex items-center rounded-full bg-[#0d7377]/10 px-2 py-0.5 text-[11px] font-medium text-[#0d7377]">
+                      Biometric Spec
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs sm:text-[13px] leading-relaxed text-[#3a5860]">
+                    {t("passportPhoto.frontFacingNotice.description") ||
+                      "Please upload a clear picture facing directly towards the camera at eye level. Angled selfies, tilted heads, or side profile shots will be rejected by consular review."}
+                  </p>
+
+                  <div className="mt-2.5 flex flex-wrap gap-2 text-[11px]">
+                    <span className="inline-flex items-center gap-1 rounded-md bg-white/85 px-2 py-1 font-medium text-[#2d5059] shadow-2xs border border-[#0d7377]/15">
+                      <CheckCircle className="h-3 w-3 text-[#0d7377]" />
+                      {t("passportPhoto.frontFacingNotice.tip1") || "Look straight at camera"}
+                    </span>
+                    <span className="inline-flex items-center gap-1 rounded-md bg-white/85 px-2 py-1 font-medium text-[#2d5059] shadow-2xs border border-[#0d7377]/15">
+                      <CheckCircle className="h-3 w-3 text-[#0d7377]" />
+                      {t("passportPhoto.frontFacingNotice.tip2") || "No head tilt or angle"}
+                    </span>
+                    <span className="inline-flex items-center gap-1 rounded-md bg-white/85 px-2 py-1 font-medium text-[#2d5059] shadow-2xs border border-[#0d7377]/15">
+                      <CheckCircle className="h-3 w-3 text-[#0d7377]" />
+                      {t("passportPhoto.frontFacingNotice.tip3") || "Full face centered"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div> */}
+
             <FileUpload
               label={t("passportPhoto.uploadLabel")}
               fieldName="passportPhoto"
               accept="image/*"
               multiple={false}
+              file={file}
               height="220px"
+              helperText={
+                t("passportPhoto.frontFacingHelper") ||
+                "Upload a clear, front-facing photo (JPG or PNG up to 10MB)"
+              }
               onFileUpload={handleFileUpload}
             />
 
@@ -700,6 +769,13 @@ export default function PassportPhotoTool({
                     }}
                     unoptimized
                   />
+                </div>
+
+                <div className="mt-2.5 text-center">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-[#0d7377]/20 bg-[#e6f4f4] px-3 py-1 text-xs font-medium text-[#0d7377]">
+                    <CheckCircle className="h-3.5 w-3.5" />
+                    Verify your head is upright and looking straight ahead
+                  </span>
                 </div>
 
                 <button
