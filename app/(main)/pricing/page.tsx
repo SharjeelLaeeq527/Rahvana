@@ -588,6 +588,185 @@ function CompareModal({
 }
 
 /* ===========================================================================
+   BENEFICIARY UPGRADE MODAL & GRADIENTS
+   =========================================================================== */
+const BENEFICIARY_COLOR_GRADIENTS = [
+  "from-teal-600 to-emerald-700",
+  "from-sky-600 to-blue-700",
+  "from-purple-600 to-indigo-700",
+  "from-amber-600 to-orange-700",
+  "from-rose-600 to-pink-700",
+  "from-emerald-600 to-teal-800",
+];
+
+function BeneficiaryUpgradeSelectModal({
+  isOpen,
+  onClose,
+  candidates,
+  selectedCandidateId,
+  onSelectCandidate,
+  getCandidateEffectiveTier,
+  getCandidateDisplayName,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  candidates: any[];
+  selectedCandidateId: string | null;
+  onSelectCandidate: (id: string) => void;
+  getCandidateEffectiveTier: (cand: any) => string;
+  getCandidateDisplayName: (cand: any) => string;
+}) {
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "";
+    };
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div
+      className="animate-in fade-in fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 px-4 py-6 backdrop-blur-sm duration-150"
+      onClick={onClose}
+    >
+      <div
+        className="bg-card border-border animate-in zoom-in-95 flex w-full max-w-[480px] flex-col overflow-hidden rounded-[24px] border shadow-2xl duration-200"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="beneficiary-select-title"
+      >
+        {/* Header */}
+        <div className="border-border from-muted/30 flex shrink-0 items-center justify-between border-b bg-gradient-to-b to-transparent px-5 py-4 sm:px-6 sm:py-5">
+          <div className="flex items-center gap-2.5">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#0d7377]/10 text-[#0d7377]">
+              <Users className="h-4.5 w-4.5" />
+            </span>
+            <div>
+              <h2
+                id="beneficiary-select-title"
+                className="text-foreground m-0 text-[16px] leading-tight font-bold sm:text-[18px]"
+              >
+                Select Beneficiary to Upgrade
+              </h2>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="border-border bg-card hover:bg-muted/60 shrink-0 cursor-pointer rounded-full border p-1.5 transition-colors"
+            aria-label="Close"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* Modal Candidates List */}
+        <div className="scrollbar-premium max-h-[60vh] overflow-y-auto p-6 sm:p-7">
+          <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-7">
+            {candidates.map((cand, index) => {
+              const candTier = getCandidateEffectiveTier(cand);
+              const isSelected = selectedCandidateId === cand.id;
+              const displayName = getCandidateDisplayName(cand);
+              const initial = (
+                cand.relation && cand.relation !== "Other"
+                  ? cand.relation[0]
+                  : cand.fullName?.trim()
+                    ? cand.fullName.trim()[0]
+                    : cand.label?.[0] || "B"
+              ).toUpperCase();
+              const gradient =
+                BENEFICIARY_COLOR_GRADIENTS[index % BENEFICIARY_COLOR_GRADIENTS.length];
+
+              return (
+                <button
+                  key={cand.id}
+                  type="button"
+                  onClick={() => {
+                    onSelectCandidate(cand.id);
+                    onClose();
+                  }}
+                  className="group relative flex cursor-pointer flex-col items-center text-center transition-all focus:outline-none"
+                >
+                  {/* Profile Avatar */}
+                  <div className="relative">
+                    <div
+                      className={`flex h-16 w-16 items-center justify-center rounded-full text-xl font-bold transition-all duration-200 sm:h-20 sm:w-20 sm:text-2xl ${
+                        isSelected
+                          ? `bg-gradient-to-br ${gradient} ring-offset-card scale-105 text-white opacity-100 shadow-lg ring-4 ring-[#0d7377] ring-offset-2`
+                          : `bg-gradient-to-br ${gradient} text-white opacity-75 shadow-xs group-hover:scale-105 group-hover:opacity-100 group-hover:shadow-md`
+                      }`}
+                    >
+                      {cand.avatarUrl ? (
+                        <img
+                          src={cand.avatarUrl}
+                          alt={displayName}
+                          className="h-full w-full rounded-full object-cover"
+                        />
+                      ) : (
+                        <span>{initial}</span>
+                      )}
+                    </div>
+
+                    {/* Plan Badge (Icon only, top right of profile circle) */}
+                    <div className="absolute -top-1.5 -right-1.5 z-10">
+                      <JourneyPlanBadge
+                        tier={candTier}
+                        iconOnly={true}
+                        className="border-background h-6 w-6 border-2 shadow-xs sm:h-7 sm:w-7"
+                      />
+                    </div>
+
+                    {/* Floating Selected Checkmark Badge */}
+                    {isSelected && (
+                      <div className="ring-card animate-in zoom-in-75 absolute -right-1 -bottom-1 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-[#0d7377] text-white shadow-xs ring-2 duration-150 sm:h-6 sm:w-6">
+                        <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Name below Avatar */}
+                  <div className="mt-2.5 flex max-w-[130px] flex-col items-center">
+                    <span
+                      className={`line-clamp-1 text-[13.5px] leading-tight font-bold transition-colors ${
+                        isSelected
+                          ? "text-[#0d7377] dark:text-teal-400"
+                          : "text-foreground group-hover:text-[#0d7377]"
+                      }`}
+                      title={displayName}
+                    >
+                      {displayName}
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Footer */}
+        {/* <div className="border-border bg-muted/20 text-muted-foreground flex items-center justify-between border-t px-6 py-3.5 text-xs">
+          <span>Click any beneficiary to switch</span>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-muted-foreground hover:text-foreground font-semibold hover:underline"
+          >
+            Cancel
+          </button>
+        </div> */}
+      </div>
+    </div>
+  );
+}
+
+/* ===========================================================================
    MAIN PRICING CONTENT
    =========================================================================== */
 function PricingContent() {
@@ -656,6 +835,7 @@ function PricingContent() {
     );
 
   const [comparePlansOpen, setComparePlansOpen] = useState(false);
+  const [isBeneficiaryModalOpen, setIsBeneficiaryModalOpen] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState<number>(-1);
   const [allAddonsOpen, setAllAddonsOpen] = useState(false);
   const [checkoutCanceled, setCheckoutCanceled] = useState(false);
@@ -1603,9 +1783,8 @@ function PricingContent() {
                       />
 
                       {isSelected && (
-                        <span className="absolute top-3 right-3 z-10 inline-flex items-center gap-1 rounded-full bg-[#0d7a5c] px-2.5 py-1 text-[10.5px] font-bold tracking-wide text-white uppercase shadow-sm">
+                        <span className="absolute top-3 right-3 z-10 inline-flex items-center rounded-full bg-[#0d7a5c] px-1.5 py-1.5 text-[10.5px] font-bold tracking-wide text-white uppercase shadow-sm">
                           <IconCheck className="h-3 w-3" strokeWidth={3} />
-                          Selected
                         </span>
                       )}
 
@@ -1645,9 +1824,9 @@ function PricingContent() {
           STEP 2 — PLAN SELECTION HERO
           ═════════════════════════════════════════════════════════════════ */}
               <section className={`${W} pt-7 pb-6`}>
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   {/* Hero copy */}
-                  <div>
+                  <div className="flex-1">
                     <div className="mb-4 flex flex-wrap items-center gap-2">
                       <button
                         className="text-muted-foreground hover:text-foreground inline-flex cursor-pointer items-center gap-1.5 border-0 bg-transparent p-0 text-[13.5px] font-medium transition-colors"
@@ -1675,41 +1854,75 @@ function PricingContent() {
                     <p className="page-description text-muted-foreground mt-2">
                       Pick the level of guidance, tools, and support that fits your case.
                     </p>
+                  </div>
 
-                    {/* Selected Journey Confirmation Strip */}
-                    {/* <div className="mt-4 flex flex-col justify-between gap-3 rounded-2xl border border-teal-200/90 bg-teal-50/80 p-3.5 text-xs text-teal-950 sm:flex-row sm:items-center dark:border-teal-900/60 dark:bg-teal-950/30 dark:text-teal-100">
-                      <div className="flex items-center gap-3">
-                        <div className="bg-[#0d7377] flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-xs font-bold text-white shadow-xs">
-                          {activeExplorerCard?.code || activeVisaCategory.id}
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-[13.5px]">
-                              {activeVisaCategory.label}
-                            </span>
-                            <span className="rounded-full border border-emerald-300 bg-emerald-100 px-2 py-0.5 text-[9.5px] font-bold tracking-wide text-emerald-800 uppercase dark:border-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300">
-                              Selected Journey
+                  {/* Selected Beneficiary on the right side of Title / Header */}
+                  {isUpgradingIr5 &&
+                    activeUpgradeCandidate &&
+                    upgradableCategoryCandidates.length > 1 && (
+                      <div className="shrink-0 self-start pt-1 sm:self-center sm:pt-0">
+                        <button
+                          type="button"
+                          onClick={() => setIsBeneficiaryModalOpen(true)}
+                          className="group relative flex cursor-pointer flex-col items-center text-center transition-all focus:outline-none"
+                          title="Click to switch beneficiary"
+                        >
+                          {/* Profile Avatar */}
+                          <div className="relative">
+                            <div
+                              className={`flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br text-xl font-bold transition-all duration-200 sm:h-20 sm:w-20 sm:text-2xl ${
+                                BENEFICIARY_COLOR_GRADIENTS[
+                                  (upgradableCategoryCandidates.findIndex(
+                                    (c) => c.id === activeUpgradeCandidate.id
+                                  ) >= 0
+                                    ? upgradableCategoryCandidates.findIndex(
+                                        (c) => c.id === activeUpgradeCandidate.id
+                                      )
+                                    : 0) % BENEFICIARY_COLOR_GRADIENTS.length
+                                ]
+                              } ring-offset-card scale-105 text-white opacity-100 shadow-md ring-4 ring-[#0d7377] ring-offset-2 group-hover:scale-110 group-hover:shadow-lg`}
+                            >
+                              {activeUpgradeCandidate.avatarUrl ? (
+                                <img
+                                  src={activeUpgradeCandidate.avatarUrl}
+                                  alt={getCandidateDisplayName(activeUpgradeCandidate)}
+                                  className="h-full w-full rounded-full object-cover"
+                                />
+                              ) : (
+                                <span>
+                                  {(activeUpgradeCandidate.relation &&
+                                  activeUpgradeCandidate.relation !== "Other"
+                                    ? activeUpgradeCandidate.relation[0]
+                                    : activeUpgradeCandidate.fullName?.trim()
+                                      ? activeUpgradeCandidate.fullName.trim()[0]
+                                      : activeUpgradeCandidate.label?.[0] || "B"
+                                  ).toUpperCase()}
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Plan Badge (Icon only, top right of profile circle) */}
+                            <div className="absolute -top-1.5 -right-1.5 z-10">
+                              <JourneyPlanBadge
+                                tier={getCandidateEffectiveTier(activeUpgradeCandidate)}
+                                iconOnly={true}
+                                className="border-background h-6 w-6 border-2 shadow-xs sm:h-7 sm:w-7"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Name below Avatar */}
+                          <div className="mt-2.5 flex max-w-[130px] flex-col items-center">
+                            <span
+                              className="line-clamp-1 text-[13.5px] leading-tight font-bold text-[#0d7377] transition-colors group-hover:underline dark:text-teal-400"
+                              title={getCandidateDisplayName(activeUpgradeCandidate)}
+                            >
+                              {getCandidateDisplayName(activeUpgradeCandidate)}
                             </span>
                           </div>
-                          <p className="text-teal-800/80 m-0 mt-0.5 text-[11.5px] dark:text-teal-300/80">
-                            {activeExplorerCard?.summary ||
-                              "All roadmap phases, legal checklists, and document vaults are tailored for this petition."}
-                          </p>
-                        </div>
+                        </button>
                       </div>
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsChangingJourney(true);
-                          window.scrollTo({ top: 0 });
-                        }}
-                        className="inline-flex shrink-0 cursor-pointer items-center gap-1 self-start text-xs font-semibold text-[#0d7377] hover:underline sm:self-auto dark:text-teal-300"
-                      >
-                        Change Journey →
-                      </button>
-                    </div> */}
-                  </div>
+                    )}
                 </div>
 
                 {/* Controls Bar: Compare plans & Government fees on left, Action Switcher on right */}
@@ -1797,109 +2010,8 @@ function PricingContent() {
           ═════════════════════════════════════════════════════════════════ */}
               <div className={`${W}`}>
                 {/* IR-5 Multi-Parent Selector, Action Switcher & Eligibility Disclaimer */}
-                {isIr5 && (
+                {isIr5 && !isUpgradingIr5 && (
                   <div className="mb-8 space-y-4">
-                    {/* Beneficiary Selector for Multi-Candidate Upgrade (Clean UI) */}
-                    {isUpgradingIr5 && upgradableCategoryCandidates.length > 1 && (
-                      <div className="bg-card w-fit max-w-full rounded-[22px] border border-teal-200/90 p-5 shadow-sm sm:p-6 dark:border-teal-900/50">
-                        <div className="flex items-center gap-2">
-                          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#0d7377]/10 text-[#0d7377]">
-                            <Users className="h-4 w-4" />
-                          </span>
-                          <h3 className="text-foreground text-[16px] font-bold">
-                            Select Beneficiary to Upgrade
-                          </h3>
-                        </div>
-
-                        {/* New-style rounded profile avatars */}
-                        <div className="mt-4 flex flex-wrap items-center gap-6 sm:gap-7">
-                          {upgradableCategoryCandidates.map((cand, index) => {
-                            const candTier = getCandidateEffectiveTier(cand);
-                            const isSelected = activeUpgradeCandidate?.id === cand.id;
-                            const isExecutive = candTier === "executive";
-                            const displayName = getCandidateDisplayName(cand);
-                            const initial = (
-                              cand.relation && cand.relation !== "Other"
-                                ? cand.relation[0]
-                                : cand.fullName?.trim()
-                                  ? cand.fullName.trim()[0]
-                                  : cand.label?.[0] || "B"
-                            ).toUpperCase();
-
-                            const colorGradients = [
-                              "from-teal-600 to-emerald-700",
-                              "from-sky-600 to-blue-700",
-                              "from-purple-600 to-indigo-700",
-                              "from-amber-600 to-orange-700",
-                              "from-rose-600 to-pink-700",
-                              "from-emerald-600 to-teal-800",
-                            ];
-                            const gradient = colorGradients[index % colorGradients.length];
-
-                            return (
-                              <button
-                                key={cand.id}
-                                type="button"
-                                onClick={() => setSelectedUpgradeCandidateId(cand.id)}
-                                className="group relative flex cursor-pointer flex-col items-center text-center transition-all focus:outline-none"
-                              >
-                                {/* Profile Avatar */}
-                                <div className="relative">
-                                  <div
-                                    className={`flex h-16 w-16 items-center justify-center rounded-full text-xl font-bold transition-all duration-200 sm:h-20 sm:w-20 sm:text-2xl ${
-                                      isSelected
-                                        ? `bg-gradient-to-br ${gradient} ring-offset-card scale-105 text-white opacity-100 shadow-lg ring-4 ring-[#0d7377] ring-offset-2`
-                                        : `bg-gradient-to-br ${gradient} text-white opacity-75 shadow-xs group-hover:scale-105 group-hover:opacity-100 group-hover:shadow-md`
-                                    }`}
-                                  >
-                                    {cand.avatarUrl ? (
-                                      <img
-                                        src={cand.avatarUrl}
-                                        alt={displayName}
-                                        className="h-full w-full rounded-full object-cover"
-                                      />
-                                    ) : (
-                                      <span>{initial}</span>
-                                    )}
-                                  </div>
-
-                                  {/* Plan Badge (Icon only, top right of profile circle) */}
-                                  <div className="absolute -top-1.5 -right-1.5 z-10">
-                                    <JourneyPlanBadge
-                                      tier={candTier}
-                                      iconOnly={true}
-                                      className="border-background h-6 w-6 border-2 shadow-xs sm:h-7 sm:w-7"
-                                    />
-                                  </div>
-
-                                  {/* Floating Selected Checkmark Badge (Bottom right of profile circle) */}
-                                  {/* {isSelected && (
-                                    <div className="absolute -bottom-1 -right-1 z-10 flex h-5 w-5 sm:h-6 sm:w-6 items-center justify-center rounded-full bg-[#0d7377] text-white shadow-xs ring-2 ring-card animate-in zoom-in-75 duration-150">
-                                      <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                                    </div>
-                                  )} */}
-                                </div>
-
-                                {/* Name below Avatar */}
-                                <div className="mt-2.5 flex max-w-[130px] flex-col items-center">
-                                  <span
-                                    className={`line-clamp-1 text-[13.5px] leading-tight font-bold transition-colors ${
-                                      isSelected
-                                        ? "text-[#0d7377] dark:text-teal-400"
-                                        : "text-foreground group-hover:text-[#0d7377]"
-                                    }`}
-                                    title={displayName}
-                                  >
-                                    {displayName}
-                                  </span>
-                                </div>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
-
                     {/* Parent Selector Card - only shown when adding a candidate or on initial purchase */}
                     {!isUpgradingIr5 && (
                       <div className="border-border bg-card rounded-[22px] border p-5 shadow-sm sm:p-6">
@@ -3027,6 +3139,17 @@ function PricingContent() {
           setMode("plans");
           setPurchaseStep("browse");
         }}
+      />
+
+      {/* ── Beneficiary Select Modal (for IR-5 Upgrade) ─────────────────────────── */}
+      <BeneficiaryUpgradeSelectModal
+        isOpen={isBeneficiaryModalOpen}
+        onClose={() => setIsBeneficiaryModalOpen(false)}
+        candidates={upgradableCategoryCandidates}
+        selectedCandidateId={activeUpgradeCandidate?.id ?? null}
+        onSelectCandidate={(id) => setSelectedUpgradeCandidateId(id)}
+        getCandidateEffectiveTier={getCandidateEffectiveTier}
+        getCandidateDisplayName={getCandidateDisplayName}
       />
     </div>
   );

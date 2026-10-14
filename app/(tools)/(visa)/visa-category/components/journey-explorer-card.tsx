@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, Hourglass, CheckCircle2 } from "lucide-react";
+import { ArrowRight, Hourglass, CheckCircle2, Radio } from "lucide-react";
 import type { ExplorerJourneyCard as ExplorerJourneyCardType } from "../data/journeys";
 
 export function ExplorerJourneyCard({
@@ -37,17 +37,23 @@ export function ExplorerJourneyCard({
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,27,51,0.86)] via-[rgba(12,27,51,0.28)] to-transparent" />
         <div className="absolute top-4 left-4 flex items-center gap-2">
-          <span className="rounded-full bg-white/90 px-3 py-1 text-[11px] font-bold tracking-[0.16em] text-[var(--rahvana-primary-dark)] uppercase backdrop-blur">
+          {/* <span className="rounded-full bg-white/90 px-3 py-1 text-[11px] font-bold tracking-[0.16em] text-[var(--rahvana-primary-dark)] uppercase backdrop-blur">
             {card.category}
-          </span>
+          </span> */}
           <span
-            className={`rounded-full px-3 py-1 text-[11px] font-bold tracking-[0.16em] uppercase backdrop-blur ${
+            title={card.status}
+            aria-label={card.status}
+            className={`flex h-7 w-7 items-center justify-center rounded-full backdrop-blur shadow-xs ${
               isLive
                 ? "bg-[var(--rahvana-secondary)]/90 text-[var(--rv-navy)]"
                 : "bg-white/80 text-[var(--rv-muted)]"
             }`}
           >
-            {card.status}
+            {isLive ? (
+              <Radio className="h-3.5 w-3.5" />
+            ) : (
+              <Hourglass className="h-3.5 w-3.5" />
+            )}
           </span>
         </div>
         <div className="absolute right-4 bottom-4 left-4 text-white">
