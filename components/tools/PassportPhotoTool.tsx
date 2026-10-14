@@ -357,12 +357,17 @@ export default function PassportPhotoTool({
     const formData = new FormData();
     formData.append("file", file);
 
+    // Guard against a hung request: abort after 120s so the failure always surfaces as a toast.
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 120000);
+
     try {
       setProcessingStep(t("passportPhoto.steps.removing"));
 
       const res = await fetch(API_ENDPOINT, {
         method: "POST",
         body: formData,
+        signal: controller.signal,
       });
 
       if (!res.ok) {
@@ -371,10 +376,10 @@ export default function PassportPhotoTool({
         try {
           const body = await res.json();
           const detail = body?.detail;
-          if (typeof detail === "string") friendlyMsg = detail;
-          else if (detail?.message) friendlyMsg = detail.message;
+          if (typeof detail === "string" && detail.trim()) friendlyMsg = detail;
+          else if (detail?.message) friendlyMsg = String(detail.message);
         } catch {
-          // non-JSON response — keep generic message
+          // non-JSON response (gateway/proxy HTML) — keep generic message
         }
         throw new Error(friendlyMsg);
       }
@@ -434,10 +439,21 @@ export default function PassportPhotoTool({
 
       setProcessingStep("");
     } catch (err) {
-      const message = err instanceof Error ? err.message : t("passportPhoto.errors.general");
+      console.error("Passport photo processing failed:", err);
+      let message: string;
+      if (err instanceof DOMException && err.name === "AbortError") {
+        message = t("passportPhoto.errors.timeout");
+      } else if (err instanceof TypeError) {
+        // fetch rejects with TypeError on network failure (offline / DNS / CORS / refused)
+        message = t("passportPhoto.errors.network");
+      } else {
+        const raw = err instanceof Error ? err.message.trim() : "";
+        message = raw || t("passportPhoto.errors.general");
+      }
       showToast(message, "error");
       setProcessingStep("");
     } finally {
+      clearTimeout(timeoutId);
       setLoading(false);
     }
   };
