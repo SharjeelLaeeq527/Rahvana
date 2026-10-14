@@ -155,11 +155,8 @@ import { AwaitingReviewStep } from "./components/AwaitingReviewStep";
 import { GuideStepRenderer, AwaitingDecisionTool } from "./components/GuideStepRenderer";
 import { NoticeTriageTool } from "./components/NoticeTriageTool";
 import { FinancialChecklistTool } from "./components/FinancialChecklistTool";
-import SponsorshipCalculatorTool from "./components/SponsorshipCalculatorTool";
 import { MedicalBookingModule } from "./components/MedicalBookingModule";
 import { PccFilingModule } from "./components/PccFilingModule";
-import MedicalAppointmentTool from "./components/MedicalAppointmentTool";
-import PccFilingTool from "./components/PccFilingTool";
 import {
   isJourneyRequestLocked,
   isPccRequestLocked,
@@ -361,6 +358,8 @@ interface StepViewProps {
   onBack: () => void;
   onSelectChapter?: (chapterIdx: number) => void;
   onSelectStep?: (chapterIdx: number, stepIdx: number) => void;
+  /** Launch a service/tool through the shared roadmap toolbox (breadcrumb chrome). */
+  onLaunchTool?: (toolKey: string, autoCompleteStepKey?: string | null) => void;
 }
 
 export const StepView: React.FC<StepViewProps> = ({
@@ -370,6 +369,7 @@ export const StepView: React.FC<StepViewProps> = ({
   onBack,
   onSelectChapter,
   onSelectStep,
+  onLaunchTool,
 }) => {
   const [guideOverlayUrl, setGuideOverlayUrl] = useState<string | null>(null);
   const [toolOverlayHref, setToolOverlayHref] = useState<string | null>(null);
@@ -438,7 +438,7 @@ export const StepView: React.FC<StepViewProps> = ({
   // Candidate context — safely called at component level (no try/catch needed here)
   let activeCandidateId: string | null = null;
   try {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
+     
     const candidateCtx = useCandidate();
     activeCandidateId = candidateCtx?.activeCandidateId ?? null;
   } catch {
@@ -708,14 +708,9 @@ export const StepView: React.FC<StepViewProps> = ({
     setHhRelationships,
     hhDocsStatus,
     setHhDocsStatus,
-    isSponsorshipCalcOpen,
-    setIsSponsorshipCalcOpen,
     sponsorshipResult,
     sponsorshipDraft,
   } = useSponsorship({ metadata: state.metadata });
-
-  const [isMedicalBookingOpen, setIsMedicalBookingOpen] = useState(false);
-  const [isPccFilingOpen, setIsPccFilingOpen] = useState(false);
 
   // --- 2. Remaining Local State ---
   const [isLaunched, setIsLaunched] = useState(false);
@@ -1516,7 +1511,7 @@ export const StepView: React.FC<StepViewProps> = ({
               sponsorshipResult={sponsorshipResult}
               onOpenCalc={() => {
                 if (!stepEntitlement.guard()) return;
-                setIsSponsorshipCalcOpen(true);
+                onLaunchTool?.("sponsorship_calculator", sId);
               }}
               tool={tool}
               guard={stepEntitlement.guard}
@@ -1542,7 +1537,7 @@ export const StepView: React.FC<StepViewProps> = ({
                   onOpen={() => {
                     if (locked) return; // one active booking per journey
                     if (!stepEntitlement.guard()) return; // journey-tier access gate (no credits)
-                    setIsMedicalBookingOpen(true);
+                    onLaunchTool?.("medical_appointment", sId);
                   }}
                 />
               );
@@ -1567,7 +1562,7 @@ export const StepView: React.FC<StepViewProps> = ({
                   onOpen={() => {
                     if (locked) return; // one active PCC application per journey
                     if (!stepEntitlement.guard()) return; // journey-tier access gate (no credits)
-                    setIsPccFilingOpen(true);
+                    onLaunchTool?.("police_verification", sId);
                   }}
                   onMarkReceived={() => {
                     if (!record) return;
@@ -4428,92 +4423,10 @@ export const StepView: React.FC<StepViewProps> = ({
         </button>
       </footer>
 
-      {/* Sponsorship Calculator Tool Overlay */}
-      <SponsorshipCalculatorTool
-        mode="journey"
-        journeyTier={state?.subscriptionTier ?? (state as any)?.subscription_tier}
-        journeyContext={{
-          journeySlug: "ir1-journey",
-          journeyCategory: "IR-1",
-          candidateId: (state as any).candidateId || "candidate-1",
-          backendId: (state as any).backendId || null,
-          subscriptionTier: state?.subscriptionTier ?? (state as any)?.subscription_tier,
-        }}
-        isOpen={isSponsorshipCalcOpen}
-        onClose={() => setIsSponsorshipCalcOpen(false)}
-        initialData={{
-          ...(sponsorshipDraft?.data || sponsorshipResult?.raw || {}),
-          // Auto-supply the sponsor's state from the profile so the user is not
-          // asked to re-enter it. Prior saved input wins if present.
-          state:
-            sponsorshipDraft?.data?.state ||
-            sponsorshipResult?.raw?.state ||
-            profile?.sponsor?.address?.state ||
-            "",
-        }}
-        initialStep={sponsorshipDraft?.stepIdx ?? (sponsorshipResult ? 10 : 0)}
-        // Lock (show read-only) only when we actually have a sponsor state;
-        // otherwise fall back to asking the user.
-        lockState={Boolean(profile?.sponsor?.address?.state)}
-        onProgressChange={(draft) => {
-          actions.updateMetadata({ sponsorshipDraft: draft });
-        }}
-        onSave={(result: any) => {
-          actions.updateMetadata({ sponsorshipResult: result, sponsorshipDraft: null });
-          setIsSponsorshipCalcOpen(false);
-          if (!isCompleted) actions.toggleComplete("step_2_5");
-        }}
-      />
-
-      {/* Medical Appointment Booking Tool Overlay */}
-      <MedicalAppointmentTool
-        isOpen={isMedicalBookingOpen}
-        onClose={() => {
-          setIsMedicalBookingOpen(false);
-          serviceStatus.refetch(); // pick up any create/delete changes made while open
-        }}
-        mode="journey"
-        journeyTier={state?.subscriptionTier ?? (state as any)?.subscription_tier}
-        journeyContext={{
-          journeySlug: toolJourneySlug,
-          journeyCategory: toolJourneyCategory,
-          candidateId: (state as any).candidateId || "candidate-1",
-          backendId: (state as any).backendId || null,
-          subscriptionTier: state?.subscriptionTier ?? (state as any)?.subscription_tier,
-        }}
-        existingRequests={serviceStatus.medicalRows}
-        onSave={(record) => {
-          actions.updateMetadata({ medicalBooking: record });
-          setIsMedicalBookingOpen(false);
-          serviceStatus.refetch();
-          if (!isCompleted) actions.toggleComplete(sId); // sId = current step key ("step_3_1")
-        }}
-      />
-
-      {/* Police Character Certificate Filing Tool Overlay */}
-      <PccFilingTool
-        isOpen={isPccFilingOpen}
-        onClose={() => {
-          setIsPccFilingOpen(false);
-          serviceStatus.refetch(); // pick up any create/delete changes made while open
-        }}
-        mode="journey"
-        journeyTier={state?.subscriptionTier ?? (state as any)?.subscription_tier}
-        journeyContext={{
-          journeySlug: toolJourneySlug,
-          journeyCategory: toolJourneyCategory,
-          candidateId: (state as any).candidateId || "candidate-1",
-          backendId: (state as any).backendId || null,
-          subscriptionTier: state?.subscriptionTier ?? (state as any)?.subscription_tier,
-        }}
-        existingRequests={serviceStatus.pccRows}
-        onSave={(record) => {
-          actions.updateMetadata({ pccFiling: record });
-          setIsPccFilingOpen(false);
-          serviceStatus.refetch();
-          if (!isCompleted) actions.toggleComplete(sId); // sId = "step_3_3"
-        }}
-      />
+      {/* Sponsorship Calculator, Medical, and PCC now launch through the shared roadmap
+          toolbox (onLaunchTool → RoadmapLayoutSpouse.activeToolKey → EmbeddedToolContainer)
+          so they render inline under the breadcrumb header, consistent with the AppGroupModal.
+          Draft/result persistence and step auto-completion are handled by EmbeddedToolContainer. */}
 
       {/* Global Modals */}
       <CredentialFormModal
