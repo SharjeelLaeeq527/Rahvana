@@ -24,7 +24,7 @@ __pycache__/
 .u2net/
 modnet/
 
-# Docs / scratch / IDE 
+# Docs / Scratch / IDE 
 pdfs/**/*.tmp
 *.md
 .vscode/
