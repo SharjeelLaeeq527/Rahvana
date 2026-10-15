@@ -8,6 +8,7 @@ import {
   validateTopupAmount,
   creditsFromSession,
   applyWalletTopup,
+  applyWalletRefund,
   resolveTopupReturnPath,
   WALLET_MIN_TOPUP,
 } from '@/lib/wallet/topup'
@@ -129,5 +130,65 @@ describe('applyWalletTopup', () => {
     const { client } = makeSupabase({ data: null, error: { message: 'boom' } })
     const r = await applyWalletTopup(client, paidSession())
     expect(r).toEqual({ ok: false, reason: 'rpc_failed', error: 'boom' })
+  })
+})
+
+describe('applyWalletRefund', () => {
+  const args = {
+    userId: 'user-1',
+    stripeSessionId: 'cs_topup',
+    amountRefundedCents: 2700,
+    amountCapturedCents: 2700,
+    chargeId: 'ch_1',
+  }
+
+  it('calls the reversal RPC with the cumulative Stripe amounts', async () => {
+    const { client, rpc } = makeSupabase({
+      data: { success: true, credits_reversed: 25, credits_deducted: 25, shortfall: 0, balance: 5 },
+      error: null,
+    })
+    const r = await applyWalletRefund(client, args)
+    expect(r).toEqual({
+      ok: true, creditsReversed: 25, creditsDeducted: 25, shortfall: 0, balance: 5, alreadyProcessed: false,
+    })
+    expect(rpc).toHaveBeenCalledWith('reverse_wallet_topup_atomic', {
+      p_user_id: 'user-1',
+      p_stripe_session_id: 'cs_topup',
+      p_amount_refunded_cents: 2700,
+      p_amount_captured_cents: 2700,
+      p_stripe_charge_id: 'ch_1',
+    })
+  })
+
+  it('reports spent credits as a shortfall', async () => {
+    const { client } = makeSupabase({
+      data: { success: true, credits_reversed: 25, credits_deducted: 10, shortfall: 15, balance: 0 },
+      error: null,
+    })
+    const r = await applyWalletRefund(client, args)
+    expect(r.ok && r.shortfall).toBe(15)
+  })
+
+  it.each([
+    [{ amountRefundedCents: 0 }],
+    [{ amountCapturedCents: 0 }],
+    [{ amountRefundedCents: 10.5 }],
+    [{ stripeSessionId: '' }],
+  ])('rejects invalid input %p without calling the RPC', async (over) => {
+    const { client, rpc } = makeSupabase({ data: null, error: null })
+    const r = await applyWalletRefund(client, { ...args, ...over } as any)
+    expect(r).toEqual({ ok: false, reason: 'invalid_charge' })
+    expect(rpc).not.toHaveBeenCalled()
+  })
+
+  it('distinguishes a missing top-up from an RPC failure', async () => {
+    const missing = makeSupabase({ data: { success: false, error: 'TOPUP_NOT_FOUND' }, error: null })
+    expect(await applyWalletRefund(missing.client, args)).toEqual({
+      ok: false, reason: 'topup_not_found', error: 'TOPUP_NOT_FOUND',
+    })
+    const failed = makeSupabase({ data: null, error: { message: 'boom' } })
+    expect(await applyWalletRefund(failed.client, args)).toEqual({
+      ok: false, reason: 'rpc_failed', error: 'boom',
+    })
   })
 })

@@ -869,8 +869,18 @@ translation documents, profiles/roles, `visa_security` questions, interview-prep
   `20261014_01_harden_wallet_rpcs.sql` makes **all four RPCs service_role only** (they take
   `p_user_id`, so an `authenticated` grant let users mint credits / unlock for free), validates
   amounts > 0, and takes the wallet row lock BEFORE the idempotency / already-unlocked checks.
+  `20261014_03_wallet_topup_refunds.sql` adds `reverse_wallet_topup_atomic` (service_role only):
+  on a refunded top-up it takes credits back in proportion to Stripe's cumulative
+  `amount_refunded / amount_captured` (idempotent, out-of-order safe), never below zero; credits
+  already spent are recorded as `shortfall` in the refund row's metadata.
+  `20261015_01_block_service_unlocks.sql` makes the deduct RPC refuse `resource_type = 'service'`
+  (`SERVICE_NOT_UNLOCKABLE`): services are paid per booking and must never become a permanent
+  unlock; per-booking service deduction will be a separate RPC (plan Phase 6).
   Users only SELECT their own rows; every write goes through an RPC from a server route.
-  Journey plans are untouched: journey tools never spend credits.
+  Journey plans are untouched: journey tools never spend credits. **Entitlement split (decided
+  Oct 2026):** journey-embedded tools follow the journey plan (`useJourneyPlan`); STANDALONE
+  tools/guides cost credits unless the user already owns standalone access (wallet unlock or a
+  permanent legacy add-on). The account plan tier does NOT grant free standalone launches.
 
 **Security hardening.** `20260715_fix_rls_security_gaps`, `20260731_*`, `20260717/18_*`, and
 `20260921_security_hardening_batch1`: triggers `guard_profile_role` (blocks self-setting
@@ -903,6 +913,7 @@ Python backend. Highlights:
 | `auth/*` | login (rate-limited + lockout), signup, callback, confirm-email, forgot/reset/change-password, signout, delete-account, `mfa/*`, check-admin | Supabase Auth, Resend, Redis |
 | `stripe/*` | `checkout` (takes `visaCategory` / `candidateCount` / `action`, or `productType: "wallet_topup"` + whole-dollar `amount` + `returnUrl`), `verify-session` (idempotent self-heal & source of truth), `webhook`, `portal`; both confirm paths call `provisionCandidateJourneysAndVaults` (see 4.3) and, for top-ups, `applyWalletTopup` (`lib/wallet/topup.ts`) | Stripe |
 | `plan/*` | `plan/reconcile` (never-downgrade tier self-heal) | Supabase |
+| `wallet/*` | `wallet` (GET balance + resources usable without paying), `wallet/launch-tool` (POST `{resourceType, resourceId, idempotencyKey?}`; unlocks a tool/guide at the `lib/wallet/catalog.ts` price, 402 + `deficit` / `topupAmount` when short), `wallet/transactions` (paginated own ledger, max 50/page). All auth-required, service-role after auth, filtered by the session user | Supabase |
 | `journeys|chapters|steps|case_data` | journey CRUD, `journeys/initialize` (combined load + bg step-sync), `journeys/[id]/document-checklist` (`DocumentChecklistEngine`), `case_data/validate` | Supabase, journey engines |
 | `candidate/*` | `candidate/create` (server-side upsert candidate into `profile_details.candidates` + lazy-insert its suffixed `journeys` row; the authoritative save path so candidates survive refresh), `candidate/delete` (remove candidate from `profile_details.candidates` + cleanup its `user_guides` and suffixed `journeys` rows; candidate-1 protected) | Supabase |
 | `journey/*` | `journey/marriage-check` (singular; distinct from `journeys`), `journey/upload-image` (journey cover / candidate avatar upload, auth + 5MB image cap), `journey/media` (owner-only: session required, path must be the caller's `journey-media/<userId>/`, see 4.1) | Supabase, Storage |
@@ -979,9 +990,25 @@ Components consume these via hooks/contexts; they should not re-implement domain
   called by BOTH the webhook (`checkout.session.completed` + `async_payment_succeeded`) and
   verify-session; it requires `payment_status === "paid"`, derives credits from Stripe's
   pre-tax `amount_subtotal` (refusing a mismatch with `metadata.credits`) and calls
-  `credit_wallet_topup_atomic` keyed by session id, so double delivery credits once. The
+  `credit_wallet_topup_atomic` keyed by session id, so double delivery credits once. A
+  transient RPC failure in the webhook throws `WalletWebhookRetryableError`, the ONLY case where
+  the webhook answers 500 (so Stripe retries; there may be no success-page visit to self-heal).
+  `charge.refunded` on a top-up calls `applyWalletRefund` (credits first if the top-up never
+  landed, then reverses). verify-session credits for anyone holding the session id but returns
+  the amount / balance / tier only to the signed-in buyer. The
   `payments` row is stored as `product_type = "consultation"` (`original_product_type:
   wallet_topup`), never `journey_plan`, which `reconcileUserPlan` reads for tier self-heal.
+  `lib/wallet/catalog.ts` is the server-authoritative price list (`WALLET_CATALOG`, mirrors the
+  pricing-page `ADDONS`; `__tests__/wallet/catalog.test.ts` fails on drift). `resolveUnlockedItems`
+  decides free standalone access: an active `standalone_unlocked_resources` row OR a legacy
+  `purchased_addons` entry that grants permanent access (`legacyGrantsUnlock`; `civil-guid` =
+  every guide, `interview-prep:*` = interview prep). Consumables (photo, every service) never
+  grant unlimited access from a legacy purchase. **Services are `launchable: false`**: the deduct
+  RPC writes a permanent unlock, so per-booking credit payment needs its own flow first.
+  `lib/wallet/launch.ts` (`launchResource`) skips the charge for owned items, namespaces the
+  client idempotency key as `launch:<user>:<type>:<id>:<key>` (the ledger index is global), and
+  maps `INSUFFICIENT_CREDITS` to 402 with `topupAmountForDeficit`. `lib/wallet/state.ts`
+  (`loadWalletState`) reads balance + unlocks + add-ons for one user.
 - **Candidates** — `lib/candidate/candidateSyncService.ts` (journey keys, base category,
   `isMultiCandidateCategory`, shared vs candidate-specific fields) and
   `lib/candidate/candidateProvisioningService.ts` (`provisionCandidateJourneysAndVaults`:
@@ -1183,7 +1210,8 @@ Permissions-Policy, XSS) are applied globally via `next.config.mjs` `headers()`.
 - Centralized localized errors in `lib/errors` (`E.*` IDs + `msg()`).
 - API routes return appropriate HTTP codes with error codes; 429 + `Retry-After` on rate
   limits.
-- Webhooks always return 200 (Stripe/EasyPost) and rely on idempotent reconciliation;
+- Webhooks always return 200 (Stripe/EasyPost) and rely on idempotent reconciliation; the one
+  exception is a wallet top-up / refund whose RPC failed transiently (500, so Stripe retries);
   `stripe/verify-session` self-heals missed activations.
 - Vision OCR endpoint **never throws** — returns `ok:false` so the frontend keeps the
   prior result.

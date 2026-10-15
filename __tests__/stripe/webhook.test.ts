@@ -19,6 +19,8 @@ jest.mock('@/lib/stripe/config', () => {
       webhooks: { constructEvent: jest.fn() },
       subscriptions: { cancel: jest.fn().mockResolvedValue({}), list: listImpl },
       customers: { retrieve: jest.fn().mockResolvedValue({ email: 'x@y.com' }) },
+      paymentIntents: { retrieve: jest.fn() },
+      checkout: { sessions: { list: jest.fn() } },
     },
     STRIPE_PRICES: {
       BASIC: 'price_basic',
@@ -66,6 +68,14 @@ jest.mock('resend', () => ({
   Resend: jest.fn(() => ({
     emails: { send: jest.fn().mockResolvedValue({ id: 'email_123' }) },
   })),
+}))
+
+const mockApplyWalletTopup = jest.fn()
+const mockApplyWalletRefund = jest.fn()
+jest.mock('@/lib/wallet/topup', () => ({
+  ...jest.requireActual('@/lib/wallet/topup'),
+  applyWalletTopup: (...a: any[]) => mockApplyWalletTopup(...a),
+  applyWalletRefund: (...a: any[]) => mockApplyWalletRefund(...a),
 }))
 
 // Get mock references AFTER jest.mock (no hoisting issue this way)
@@ -506,3 +516,121 @@ function buildUserProfile(overrides: Partial<{
     ...overrides,
   }
 }
+
+// ================================================
+// Wallet top-ups: retry on transient failure + refunds
+// ================================================
+describe('Webhook — wallet top-up', () => {
+  const stripeMock = stripeConfig.stripe as any
+  const walletSession = {
+    id: 'cs_w',
+    mode: 'payment',
+    payment_status: 'paid',
+    payment_intent: 'pi_w',
+    amount_subtotal: 2500,
+    metadata: { user_id: 'user-1', product_type: 'wallet_topup', credits: '25' },
+  }
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockFromImpl = defaultFrom
+  })
+
+  it('answers 500 (Stripe retries) when the credit RPC fails', async () => {
+    mockConstructEvent.mockReturnValue({
+      id: 'evt_1', type: 'checkout.session.completed', data: { object: walletSession },
+    })
+    mockApplyWalletTopup.mockResolvedValue({ ok: false, reason: 'rpc_failed' })
+    const res = await POST(makeRequest({}))
+    expect(res.status).toBe(500)
+  })
+
+  it.each(['not_paid', 'invalid_session'])('still answers 200 for %s (retrying cannot help)', async (reason) => {
+    mockConstructEvent.mockReturnValue({
+      id: 'evt_2', type: 'checkout.session.completed', data: { object: walletSession },
+    })
+    mockApplyWalletTopup.mockResolvedValue({ ok: false, reason })
+    const res = await POST(makeRequest({}))
+    expect(res.status).toBe(200)
+  })
+
+  it('keeps answering 200 when a NON-wallet handler throws', async () => {
+    mockConstructEvent.mockReturnValue({
+      id: 'evt_3', type: 'customer.subscription.updated', data: { object: null },
+    })
+    const res = await POST(makeRequest({}))
+    expect(res.status).toBe(200)
+  })
+
+  const refundedCharge = (over: any = {}) => ({
+    id: 'ch_w',
+    payment_intent: 'pi_w',
+    amount_captured: 2700,
+    amount_refunded: 2700,
+    metadata: {},
+    ...over,
+  })
+
+  it('reverses credits on charge.refunded for a wallet top-up', async () => {
+    mockConstructEvent.mockReturnValue({
+      id: 'evt_4', type: 'charge.refunded', data: { object: refundedCharge() },
+    })
+    stripeMock.paymentIntents.retrieve.mockResolvedValue({ metadata: { product_type: 'wallet_topup' } })
+    stripeMock.checkout.sessions.list.mockResolvedValue({ data: [walletSession] })
+    mockApplyWalletTopup.mockResolvedValue({ ok: true, credits: 25, balance: 25, alreadyProcessed: true })
+    mockApplyWalletRefund.mockResolvedValue({
+      ok: true, creditsReversed: 25, creditsDeducted: 25, shortfall: 0, balance: 0, alreadyProcessed: false,
+    })
+    const res = await POST(makeRequest({}))
+    expect(res.status).toBe(200)
+    expect(mockApplyWalletRefund).toHaveBeenCalledWith(
+      expect.anything(),
+      {
+        userId: 'user-1',
+        stripeSessionId: 'cs_w',
+        amountRefundedCents: 2700,
+        amountCapturedCents: 2700,
+        chargeId: 'ch_w',
+      },
+      expect.any(String)
+    )
+  })
+
+  it('ignores refunds of non-wallet payments', async () => {
+    mockConstructEvent.mockReturnValue({
+      id: 'evt_5', type: 'charge.refunded', data: { object: refundedCharge() },
+    })
+    stripeMock.paymentIntents.retrieve.mockResolvedValue({ metadata: { product_type: 'consultation' } })
+    const res = await POST(makeRequest({}))
+    expect(res.status).toBe(200)
+    expect(stripeMock.checkout.sessions.list).not.toHaveBeenCalled()
+    expect(mockApplyWalletRefund).not.toHaveBeenCalled()
+  })
+
+  it('does not reverse when the top-up could never be credited', async () => {
+    mockConstructEvent.mockReturnValue({
+      id: 'evt_6',
+      type: 'charge.refunded',
+      data: { object: refundedCharge({ metadata: { product_type: 'wallet_topup' } }) },
+    })
+    stripeMock.checkout.sessions.list.mockResolvedValue({ data: [walletSession] })
+    mockApplyWalletTopup.mockResolvedValue({ ok: false, reason: 'not_paid' })
+    const res = await POST(makeRequest({}))
+    expect(res.status).toBe(200)
+    expect(stripeMock.paymentIntents.retrieve).not.toHaveBeenCalled()
+    expect(mockApplyWalletRefund).not.toHaveBeenCalled()
+  })
+
+  it('answers 500 when the reversal RPC fails', async () => {
+    mockConstructEvent.mockReturnValue({
+      id: 'evt_7',
+      type: 'charge.refunded',
+      data: { object: refundedCharge({ metadata: { product_type: 'wallet_topup' } }) },
+    })
+    stripeMock.checkout.sessions.list.mockResolvedValue({ data: [walletSession] })
+    mockApplyWalletTopup.mockResolvedValue({ ok: true, credits: 25, balance: 25, alreadyProcessed: true })
+    mockApplyWalletRefund.mockResolvedValue({ ok: false, reason: 'rpc_failed' })
+    const res = await POST(makeRequest({}))
+    expect(res.status).toBe(500)
+  })
+})

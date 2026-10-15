@@ -9,7 +9,13 @@ import { buildAddonPurchaseUpdate } from "@/lib/payments/addon-purchase-ledger";
 import { cancelSupersededSubscriptions } from "@/lib/stripe/subscriptionCleanup";
 import { getCandidateJourneyKey } from "@/lib/candidate/candidateSyncService";
 import { provisionCandidateJourneysAndVaults } from "@/lib/candidate/candidateProvisioningService";
-import { applyWalletTopup, isWalletTopupSession } from "@/lib/wallet/topup";
+import {
+  WALLET_TOPUP_PRODUCT_TYPE,
+  WalletWebhookRetryableError,
+  applyWalletRefund,
+  applyWalletTopup,
+  isWalletTopupSession,
+} from "@/lib/wallet/topup";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -62,6 +68,13 @@ export async function POST(request: NextRequest) {
         break;
       }
 
+      // Wallet top-up refunded: take the credits back. Other refunds are ignored.
+      case "charge.refunded": {
+        const charge = event.data.object as Stripe.Charge;
+        await handleChargeRefunded(charge);
+        break;
+      }
+
       // ✅ Every monthly charge succeeds
       case "invoice.payment_succeeded": {
         const invoice = event.data.object as Stripe.Invoice;
@@ -110,6 +123,14 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ received: true });
   } catch (error: unknown) {
+    // The one exception to "always 200": a paid wallet top-up that could not be
+    // credited (or a refund that could not be reversed) because of a transient
+    // failure. Answer 500 so Stripe retries; the wallet RPCs are idempotent, so a
+    // retry can never credit or reverse twice.
+    if (error instanceof WalletWebhookRetryableError) {
+      console.error(`Wallet webhook failed, asking Stripe to retry (${event.type}, ${event.id}):`, error);
+      return NextResponse.json({ received: false, retry: true }, { status: 500 });
+    }
     // Log loudly so the failure is visible in production logs, but STILL return 200.
     // verify-session / reconcileUserPlan are the source of truth for activation, so a failed
     // sync here is non-critical — and a 200 keeps Stripe from disabling the endpoint again.
@@ -156,6 +177,11 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
       );
     } else {
       console.error(`[webhook] Wallet top-up not applied for ${session.id}: ${result.reason}`);
+      // A transient DB failure must be retried: there may be no success-page
+      // visit to self-heal it. not_paid / invalid_session never become creditable.
+      if (result.reason === "rpc_failed") {
+        throw new WalletWebhookRetryableError(`credit_wallet_topup_atomic failed for ${session.id}`);
+      }
     }
     return;
   }
@@ -400,6 +426,67 @@ const mergedPlanAddons = [
 // HANDLER 2: Invoice Payment Succeeded
 // Every monthly charge — keep subscription active
 // ================================================
+// ================================================
+// HANDLER: Charge Refunded (wallet top-ups only)
+// ================================================
+async function handleChargeRefunded(charge: Stripe.Charge) {
+  const paymentIntentId =
+    typeof charge.payment_intent === "string" ? charge.payment_intent : charge.payment_intent?.id;
+  if (!paymentIntentId) return;
+
+  // Top-ups tag their PaymentIntent (checkout payment_intent_data.metadata). Cheap
+  // filter so refunds of plans / consultations are left alone.
+  let piMetadata = charge.metadata;
+  if (piMetadata?.product_type !== WALLET_TOPUP_PRODUCT_TYPE) {
+    const pi = await stripe.paymentIntents.retrieve(paymentIntentId);
+    piMetadata = pi.metadata;
+  }
+  if (piMetadata?.product_type !== WALLET_TOPUP_PRODUCT_TYPE) return;
+
+  const sessions = await stripe.checkout.sessions.list({ payment_intent: paymentIntentId, limit: 1 });
+  const session = sessions.data[0];
+  if (!session || !isWalletTopupSession(session) || !session.metadata?.user_id) {
+    console.error(`[webhook] Refunded wallet charge ${charge.id} has no matching top-up session`);
+    return;
+  }
+
+  // Credit first if the top-up never landed (refund raced the credit), so the
+  // reversal below always has a top-up to reverse. Idempotent.
+  const credited = await applyWalletTopup(supabase, session, "[webhook:refund]");
+  if (!credited.ok) {
+    if (credited.reason === "rpc_failed") {
+      throw new WalletWebhookRetryableError(`credit before refund failed for ${session.id}`);
+    }
+    console.error(`[webhook] Refunded top-up ${session.id} was never creditable: ${credited.reason}`);
+    return;
+  }
+
+  const result = await applyWalletRefund(
+    supabase,
+    {
+      userId: session.metadata.user_id,
+      stripeSessionId: session.id,
+      amountRefundedCents: charge.amount_refunded,
+      amountCapturedCents: charge.amount_captured,
+      chargeId: charge.id,
+    },
+    "[webhook:refund]"
+  );
+
+  if (!result.ok) {
+    if (result.reason === "rpc_failed") {
+      throw new WalletWebhookRetryableError(`reverse_wallet_topup_atomic failed for ${session.id}`);
+    }
+    console.error(`[webhook] Wallet refund not applied for ${session.id}: ${result.reason}`);
+    return;
+  }
+  console.log(
+    `✅ Wallet refund for ${session.id}: -${result.creditsDeducted} credits` +
+      (result.shortfall > 0 ? ` (shortfall ${result.shortfall}, already spent)` : "") +
+      (result.alreadyProcessed ? " (already processed)" : "")
+  );
+}
+
 async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
   console.log("✅ Invoice payment succeeded:", invoice.id);
 

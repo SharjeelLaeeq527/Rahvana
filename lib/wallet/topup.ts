@@ -156,3 +156,89 @@ export async function applyWalletTopup(
     transactionId: data.transaction_id ?? null,
   };
 }
+
+/**
+ * Thrown by the webhook when a paid top-up could not be credited (or reversed)
+ * because of a transient failure. The webhook answers 500 for this error ONLY, so
+ * Stripe retries the delivery. Every other webhook failure still answers 200.
+ */
+export class WalletWebhookRetryableError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "WalletWebhookRetryableError";
+  }
+}
+
+export type WalletRefundResult =
+  | {
+      ok: true;
+      creditsReversed: number;
+      creditsDeducted: number;
+      shortfall: number;
+      balance: number;
+      alreadyProcessed: boolean;
+    }
+  | { ok: false; reason: "invalid_charge" | "topup_not_found" | "rpc_failed"; error?: string };
+
+/**
+ * Take back the credits of a refunded top-up, in proportion to what Stripe has
+ * refunded so far (`amount_refunded / amount_captured`, both tax-inclusive, so a
+ * full refund reverses exactly the credits that were added). Cumulative and
+ * idempotent: replays and out-of-order partial refunds reverse nothing extra.
+ * The balance never goes negative; credits already spent are reported as a
+ * shortfall for support to follow up.
+ */
+export async function applyWalletRefund(
+  supabase: SupabaseClient,
+  args: {
+    userId: string;
+    stripeSessionId: string;
+    amountRefundedCents: number;
+    amountCapturedCents: number;
+    chargeId: string;
+  },
+  logPrefix = "[wallet-refund]"
+): Promise<WalletRefundResult> {
+  const { userId, stripeSessionId, amountRefundedCents, amountCapturedCents, chargeId } = args;
+  if (
+    !userId ||
+    !stripeSessionId ||
+    !Number.isInteger(amountRefundedCents) ||
+    !Number.isInteger(amountCapturedCents) ||
+    amountRefundedCents <= 0 ||
+    amountCapturedCents <= 0
+  ) {
+    return { ok: false, reason: "invalid_charge" };
+  }
+
+  const { data, error } = await supabase.rpc("reverse_wallet_topup_atomic", {
+    p_user_id: userId,
+    p_stripe_session_id: stripeSessionId,
+    p_amount_refunded_cents: amountRefundedCents,
+    p_amount_captured_cents: amountCapturedCents,
+    p_stripe_charge_id: chargeId,
+  });
+
+  if (error) {
+    console.error(`${logPrefix} reverse_wallet_topup_atomic failed for ${stripeSessionId}:`, error);
+    return { ok: false, reason: "rpc_failed", error: error.message };
+  }
+  if (!data?.success) {
+    return { ok: false, reason: "topup_not_found", error: data?.error };
+  }
+
+  const shortfall = Number(data.shortfall ?? 0);
+  if (shortfall > 0) {
+    console.error(
+      `${logPrefix} Refund on ${stripeSessionId} exceeds the wallet balance by ${shortfall} credits (already spent).`
+    );
+  }
+  return {
+    ok: true,
+    creditsReversed: Number(data.credits_reversed ?? 0),
+    creditsDeducted: Number(data.credits_deducted ?? 0),
+    shortfall,
+    balance: Number(data.balance ?? 0),
+    alreadyProcessed: data.already_processed === true,
+  };
+}

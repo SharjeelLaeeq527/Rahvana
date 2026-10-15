@@ -48,6 +48,11 @@ function makeChain(): any {
   return o
 }
 
+const mockGetAuthenticatedUser = jest.fn()
+jest.mock('@/lib/api/authGuards', () => ({
+  getAuthenticatedUser: () => mockGetAuthenticatedUser(),
+}))
+
 jest.mock('@supabase/supabase-js', () => ({
   createClient: () => ({
     from: () => ({
@@ -158,6 +163,7 @@ describe('verify-session — wallet top-up', () => {
 
   it('credits the wallet and returns balance + return path, without touching the tier', async () => {
     sessionData = topupSession
+    mockGetAuthenticatedUser.mockResolvedValue({ id: 'user-1' })
     mockApplyWalletTopup.mockResolvedValue({
       ok: true, credits: 25, balance: 40, alreadyProcessed: false, transactionId: 'tx_1',
     })
@@ -177,5 +183,19 @@ describe('verify-session — wallet top-up', () => {
     expect(res.status).toBe(500)
     expect((await res.json()).activated).toBe(false)
     expect(updateSpy).not.toHaveBeenCalledWith(expect.objectContaining({ status: 'succeeded' }))
+  })
+
+  it('still credits, but hides amount, balance and tier from a caller who is not the buyer', async () => {
+    sessionData = topupSession
+    mockApplyWalletTopup.mockResolvedValue({
+      ok: true, credits: 25, balance: 40, alreadyProcessed: false, transactionId: 'tx_1',
+    })
+    for (const viewer of [null, { id: 'someone-else' }]) {
+      mockGetAuthenticatedUser.mockResolvedValue(viewer)
+      const res = await GET(makeRequest('cs_w'))
+      expect(res.status).toBe(200)
+      expect(await res.json()).toEqual({ activated: true, productType: 'wallet_topup' })
+    }
+    expect(mockApplyWalletTopup).toHaveBeenCalledTimes(2)
   })
 })

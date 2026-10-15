@@ -18,7 +18,9 @@ type VerifyResult = {
   returnTo?: string;
 };
 
-type WalletTopupResult = { credits: number; balance: number; returnTo: string };
+// credits/balance are null when the viewer is not signed in as the buyer
+// (verify-session only reveals them to the owner).
+type WalletTopupResult = { credits: number | null; balance: number | null; returnTo: string };
 
 async function pollUntilActivated(
   sessionId: string,
@@ -326,8 +328,8 @@ try {
 
         if (data.productType === "wallet_topup") {
           setWalletTopup({
-            credits: data.credits ?? 0,
-            balance: data.balance ?? 0,
+            credits: typeof data.credits === "number" ? data.credits : null,
+            balance: typeof data.balance === "number" ? data.balance : null,
             returnTo: data.returnTo || "/resources",
           });
           setVerifyStatus("confirmed");
@@ -374,7 +376,9 @@ try {
           </h1>
           <p className="text-slate-500 text-[13px] leading-relaxed mb-4">
             {walletTopup
-              ? `${walletTopup.credits} credits were added to your Rahvana Wallet. Your balance is now ${walletTopup.balance} credits.`
+              ? walletTopup.credits !== null && walletTopup.balance !== null
+                ? `${walletTopup.credits} credits were added to your Rahvana Wallet. Your balance is now ${walletTopup.balance} credits.`
+                : "Your credits were added to your Rahvana Wallet. Sign in to see your balance."
               : verifyStatus === "confirmed"
               ? "Your plan has been activated. Welcome to your new tier!"
               : "Your payment was processed. Plan activation may take a few moments, refresh your dashboard if features are not yet unlocked."}

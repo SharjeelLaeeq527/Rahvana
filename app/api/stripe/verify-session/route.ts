@@ -6,6 +6,7 @@ import { consultationService } from "@/lib/services/consultationService";
 import { buildAddonPurchaseUpdate } from "@/lib/payments/addon-purchase-ledger";
 import { cancelSupersededSubscriptions } from "@/lib/stripe/subscriptionCleanup";
 import { provisionCandidateJourneysAndVaults } from "@/lib/candidate/candidateProvisioningService";
+import { getAuthenticatedUser } from "@/lib/api/authGuards";
 import {
   WALLET_TOPUP_PRODUCT_TYPE,
   WALLET_DEFAULT_RETURN_PATH,
@@ -407,10 +408,20 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Wallet top-ups: anyone holding the session id may trigger the (idempotent,
+    // owner-only) credit, but only the signed-in owner sees the amount, balance and
+    // tier. Other purchase types keep their existing response.
+    if (walletTopup) {
+      const viewer = await getAuthenticatedUser().catch(() => null);
+      if (viewer?.id !== userId) {
+        return NextResponse.json({ activated, productType });
+      }
+      return NextResponse.json({ activated, tier: appliedTier, productType, ...walletTopup });
+    }
+
     return NextResponse.json({
       activated,
       tier: appliedTier,
-      ...(walletTopup ? { productType, ...walletTopup } : {}),
     });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Unknown error";
