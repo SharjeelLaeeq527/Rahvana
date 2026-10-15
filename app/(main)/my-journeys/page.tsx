@@ -769,7 +769,7 @@ export default function MyJourneysPage() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#f7fbfb]">
+    <main className="relative overflow-hidden bg-[#f7fbfb]">
       {/* Background */}
       <div className="pointer-events-none absolute inset-0">
         <div className="grid-bg absolute inset-0" />
@@ -785,25 +785,25 @@ export default function MyJourneysPage() {
 
       <div className="relative z-10">
         {/* Page header */}
-        <section className="site-main-px pt-12 md:pt-16 lg:pt-20">
+        <section className="site-main-px pt-16 md:pt-16 lg:pt-20">
           <div className="mx-auto max-w-7xl">
             <div className="flex flex-col justify-between gap-8 lg:flex-row lg:items-end">
-              <div className="max-w-3xl">
-                <div className="mt-6 mb-4 flex items-center gap-2 text-sm font-semibold text-[#0d7377] md:mt-3 lg:mt-0">
+              <div className="max-w-6xl">
+                {/* <div className="mt-6 mb-4 flex items-center gap-2 text-sm font-semibold text-[#0d7377] md:mt-3 lg:mt-0">
                   <span className="h-2 w-2 rounded-full bg-[#32e0c4] shadow-[0_0_0_5px_rgba(50,224,196,0.14)]" />
                   Your immigration dashboard
-                </div>
+                </div> */}
 
                 <h1 className="text-4xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-5xl lg:text-[3.6rem] lg:leading-[1.05]">
-                  My Immigration
-                  <span className="block bg-linear-to-r from-[#0a5a5d] via-[#0d7377] to-[#14a0a6] bg-clip-text text-transparent">
+                  My Immigration{" "}
+                  <span className="bg-linear-to-r from-[#0a5a5d] via-[#0d7377] to-[#14a0a6] bg-clip-text text-transparent">
                     Journeys
                   </span>
                 </h1>
 
-                <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 md:text-lg md:leading-8">
-                  Continue your active journeys, review your progress and manage every
-                  immigration journey from one secure workspace.
+                <p className="mt-5 max-w-5xl text-base leading-7 text-slate-600 md:text-lg md:leading-8">
+                  Continue your active journeys, review your progress and manage every immigration
+                  journey from one secure workspace.
                 </p>
               </div>
 
@@ -821,7 +821,7 @@ export default function MyJourneysPage() {
         </section>
 
         {/* Journey content */}
-        <section className="site-main-px pt-10 pb-24 md:pt-12">
+        <section className="site-main-px pt-4 pb-24">
           <div className="mx-auto max-w-7xl">
             {loading && journeys.length === 0 ? (
               <JourneyCardsSkeleton />
@@ -830,7 +830,7 @@ export default function MyJourneysPage() {
                 {visibleJourneys.length === 0 ? (
                   <EmptyJourneyState onStartJourney={startNewJourney} />
                 ) : (
-                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {visibleJourneys.map(
                       (
                         {
@@ -1038,7 +1038,7 @@ function JourneyCard({
           }
         }
       }}
-      className={`group relative flex h-full cursor-pointer flex-col overflow-hidden rounded-3xl border p-0 backdrop-blur-xl transition-all duration-500 hover:-translate-y-1.5 focus-visible:ring-2 focus-visible:ring-[#14a0a6]/50 focus-visible:outline-none ${
+      className={`group relative flex h-full cursor-pointer flex-col gap-0 overflow-hidden rounded-3xl border p-0 backdrop-blur-xl transition-all duration-500 hover:-translate-y-1.5 focus-visible:ring-2 focus-visible:ring-[#14a0a6]/50 focus-visible:outline-none ${
         isActiveJourney
           ? meta.isCurrentActive
             ? "border-[#0d7377]/40 bg-white/90 shadow-[0_20px_60px_rgba(13,115,119,0.18)] ring-2 ring-[#0d7377]/25 hover:border-[#0d7377]/60 hover:shadow-[0_28px_70px_rgba(13,115,119,0.24)]"
@@ -1266,7 +1266,7 @@ function JourneyCard({
         </div>
       </div>
 
-      <CardContent className="relative flex flex-1 flex-col px-4 py-2">
+      <CardContent className="relative flex flex-1 flex-col px-4 pt-2 pb-2.5">
         {/* Decorative card glow */}
         {/* {isActiveJourney && (
           <div className="pointer-events-none absolute -top-20 -right-16 h-40 w-40 rounded-full bg-[#32e0c4]/8 blur-3xl" />
@@ -1274,7 +1274,7 @@ function JourneyCard({
 
         {/* Progress block / Multi-Candidate Profile summary */}
         {isMultiCandidate && candidateCount && candidateCount > 0 ? (
-          <div className="relative mt-4 flex items-center justify-between rounded-[20px] border border-[#0d7377]/10 bg-linear-to-br from-[#f2fbfb] to-white p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+          <div className="relative mt-1 flex items-center justify-between rounded-[20px] border border-[#0d7377]/10 bg-linear-to-br from-[#f2fbfb] to-white p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#e8f6f6] text-[#0d7377] shadow-xs">
                 <Users className="h-5 w-5" />
@@ -1293,14 +1293,14 @@ function JourneyCard({
             </span>
           </div>
         ) : (
-          <div className="relative rounded-2xl border border-[#0d7377]/10 bg-linear-to-br from-[#f2fbfb]/90 to-white px-3.5 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+          <div className="my-0.5">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-baseline gap-1.5">
                 <span className="text-[10px] font-semibold tracking-wider text-slate-500 uppercase">
                   Progress
                 </span>
                 <span
-                  className={`text-[14px] font-bold tracking-tight ${
+                  className={`text-[13px] font-bold tracking-tight ${
                     isActiveJourney ? "text-[#0a5a5d]" : "text-slate-700"
                   }`}
                 >
