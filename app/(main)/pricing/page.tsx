@@ -1785,9 +1785,9 @@ function PricingContent() {
                       )}
 
                       {!isSelected && isCardExecutiveMaxed && (
-                        <span className="absolute top-3 right-3 z-10 inline-flex items-center gap-1 rounded-full border border-teal-300 bg-teal-100 px-2.5 py-1 text-[10.5px] font-bold tracking-wide text-teal-800 uppercase shadow-sm">
-                          Active (Executive)
-                        </span>
+                        <div className="absolute top-3 right-3 z-10">
+                          <JourneyPlanBadge tier="executive" iconOnly={true} />
+                        </div>
                       )}
 
                       {!isSelected && canUpgradeIr1 && isIr1Card && !isCardExecutiveMaxed && (

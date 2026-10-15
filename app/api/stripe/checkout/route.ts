@@ -84,6 +84,10 @@ export async function POST(request: NextRequest) {
     } = body;
 
     const candidateId = rawCandidateId || snakeCandidateId || undefined;
+    const parsedCandidateCount =
+      candidateCount && !isNaN(Number(candidateCount)) && Number(candidateCount) >= 1
+        ? Math.floor(Number(candidateCount))
+        : 1;
 
     if (Array.isArray(addons)) {
       const unresolvedInterviewPrep = addons.find(
@@ -494,10 +498,6 @@ export async function POST(request: NextRequest) {
       // Tag the subscription itself (not just the checkout session) with the tier
       // so Stripe stays the source of truth: future checkouts and the safety
       // cleanup can read `subscription.metadata.tier` to know exactly what a live
-      const parsedCandidateCount =
-        candidateCount && !isNaN(Number(candidateCount)) && Number(candidateCount) >= 1
-          ? Math.floor(Number(candidateCount))
-          : 1;
 
       // Tag the subscription itself (not just the checkout session) with the tier
       // so Stripe stays the source of truth: future checkouts and the safety
@@ -879,14 +879,31 @@ export async function POST(request: NextRequest) {
     // SAME purchase (network timeout, double submit) so a retry returns the
     // existing session instead of creating a second one. Scoped to a short time
     // bucket so a genuinely new attempt later still gets a fresh session, and
-    // includes the selection so changing plan/add-ons yields a new session.
+    // includes ALL parameters (plan, candidate count, candidate ID, action, line items,
+    // and add-ons) so any parameter change (e.g. switching between 2 and 4 parents)
+    // yields a distinct idempotency key, avoiding Stripe parameter-mismatch errors.
     let idempotencyKey: string | undefined;
     if (productTier) {
-      const bucket = Math.floor(Date.now() / (10 * 60 * 1000)); // 10-minute window
-      const addonKey = Array.isArray(addons) ? [...addons].sort().join(",") : "";
+      const bucket = Math.floor(Date.now() / (10 * 60 * 1000)); // 10-minute dedupe window
+      const lineItemsSummary = (sessionParams.line_items || []).map((item) => ({
+        price: item.price || null,
+        quantity: item.quantity ?? 1,
+        amount: item.price_data?.unit_amount ?? null,
+      }));
+      const payloadToHash = {
+        userId,
+        productTier: productTier.toLowerCase(),
+        visaCategory: effectiveVisaCategory,
+        candidateCount: parsedCandidateCount,
+        candidateId: candidateId || "",
+        action: action || "",
+        addons: Array.isArray(addons) ? [...addons].sort() : [],
+        lineItems: lineItemsSummary,
+        bucket,
+      };
       idempotencyKey = crypto
         .createHash("sha256")
-        .update(`checkout|${userId}|${productTier}|${addonKey}|${effectiveVisaCategory}|${bucket}`)
+        .update(JSON.stringify(payloadToHash))
         .digest("hex");
     }
 
@@ -932,23 +949,35 @@ export async function POST(request: NextRequest) {
 
     let paymentId: string | null = null;
     try {
-      const payment = await paymentService.createPayment({
-        user_id: userId,
-        stripe_checkout_session_id: session.id,
-        amount: (session.amount_total ?? 0) / 100,
-        currency: session.currency || "usd",
-        status: "pending",
-        product_type: dbProductType,
-        product_id: dbProductId,
-        metadata: {
-          product_name: sessionParams.metadata?.product_name || "Add-on Purchase",
-          customer_email: userEmail,
-          stripe_customer_id: stripeCustomerId!,
-          original_product_type: sessionParams.metadata?.product_type || "",
-        },
-      });
-      paymentId = payment.id;
-      logDebug("Payment record created successfully:", { paymentId });
+      // Check if payment already exists for this session (e.g. reused checkout session from idempotent retry)
+      const { data: existingPayment } = await supabase
+        .from("payments")
+        .select("id")
+        .eq("stripe_checkout_session_id", session.id)
+        .maybeSingle();
+
+      if (existingPayment) {
+        paymentId = existingPayment.id;
+        logDebug("Existing payment record reused for session:", { paymentId });
+      } else {
+        const payment = await paymentService.createPayment({
+          user_id: userId,
+          stripe_checkout_session_id: session.id,
+          amount: (session.amount_total ?? 0) / 100,
+          currency: session.currency || "usd",
+          status: "pending",
+          product_type: dbProductType,
+          product_id: dbProductId,
+          metadata: {
+            product_name: sessionParams.metadata?.product_name || "Add-on Purchase",
+            customer_email: userEmail,
+            stripe_customer_id: stripeCustomerId!,
+            original_product_type: sessionParams.metadata?.product_type || "",
+          },
+        });
+        paymentId = payment.id;
+        logDebug("Payment record created successfully:", { paymentId });
+      }
 
       // Link payment to translation document if this is a document translation purchase
       if (

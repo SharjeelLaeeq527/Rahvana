@@ -43,17 +43,13 @@ export function ExplorerJourneyCard({
           <span
             title={card.status}
             aria-label={card.status}
-            className={`flex h-7 w-7 items-center justify-center rounded-full backdrop-blur shadow-xs ${
+            className={`flex h-7 w-7 items-center justify-center rounded-full shadow-xs backdrop-blur ${
               isLive
                 ? "bg-[var(--rahvana-secondary)]/90 text-[var(--rv-navy)]"
                 : "bg-white/80 text-[var(--rv-muted)]"
             }`}
           >
-            {isLive ? (
-              <Radio className="h-3.5 w-3.5" />
-            ) : (
-              <Hourglass className="h-3.5 w-3.5" />
-            )}
+            {isLive ? <Radio className="h-3.5 w-3.5" /> : <Hourglass className="h-3.5 w-3.5" />}
           </span>
         </div>
         <div className="absolute right-4 bottom-4 left-4 text-white">
@@ -68,10 +64,11 @@ export function ExplorerJourneyCard({
         {executiveNotice ? (
           executiveNotice
         ) : isExecutiveMaxed ? (
-          <div className="flex flex-col gap-2 rounded-2xl border border-teal-200/90 bg-teal-50/80 p-3.5 text-xs text-teal-900 dark:border-teal-900/50 dark:bg-teal-950/40 dark:text-teal-200">
+          <>
+            {/* <div className="flex flex-col gap-2 rounded-2xl border border-teal-200/90 bg-teal-50/80 p-3.5 text-xs text-teal-900 dark:border-teal-900/50 dark:bg-teal-950/40 dark:text-teal-200"> */}
             <div className="flex items-start gap-2">
               <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-teal-600 dark:text-teal-400" />
-              <span className="leading-snug">
+              <span className="leading-snug text-[13px]">
                 You already have a <strong>{card.title}</strong> journey (<strong>Executive</strong>{" "}
                 plan).
               </span>
@@ -82,7 +79,8 @@ export function ExplorerJourneyCard({
             >
               Go to My Journeys →
             </Link> */}
-          </div>
+            {/* </div> */}
+          </>
         ) : isLive && card.href ? (
           <div className="flex flex-col gap-3 sm:flex-row">
             {/* Learn More */}
