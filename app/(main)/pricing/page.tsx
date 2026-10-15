@@ -29,6 +29,7 @@ import {
   Minus,
   Plus,
   Heart,
+  ChevronDown,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { E, msg, errorCode } from "@/lib/errors";
@@ -1851,74 +1852,6 @@ function PricingContent() {
                       Pick the level of guidance, tools, and support that fits your case.
                     </p>
                   </div>
-
-                  {/* Selected Beneficiary on the right side of Title / Header */}
-                  {isUpgradingIr5 &&
-                    activeUpgradeCandidate &&
-                    upgradableCategoryCandidates.length > 1 && (
-                      <div className="shrink-0 self-start pt-1 sm:self-center sm:pt-0">
-                        <button
-                          type="button"
-                          onClick={() => setIsBeneficiaryModalOpen(true)}
-                          className="group relative flex cursor-pointer flex-col items-center text-center transition-all focus:outline-none"
-                          title="Click to switch beneficiary"
-                        >
-                          {/* Profile Avatar */}
-                          <div className="relative">
-                            <div
-                              className={`flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br text-xl font-bold transition-all duration-200 sm:h-20 sm:w-20 sm:text-2xl ${
-                                BENEFICIARY_COLOR_GRADIENTS[
-                                  (upgradableCategoryCandidates.findIndex(
-                                    (c) => c.id === activeUpgradeCandidate.id
-                                  ) >= 0
-                                    ? upgradableCategoryCandidates.findIndex(
-                                        (c) => c.id === activeUpgradeCandidate.id
-                                      )
-                                    : 0) % BENEFICIARY_COLOR_GRADIENTS.length
-                                ]
-                              } ring-offset-card scale-105 text-white opacity-100 shadow-md ring-4 ring-[#0d7377] ring-offset-2 group-hover:scale-110 group-hover:shadow-lg`}
-                            >
-                              {activeUpgradeCandidate.avatarUrl ? (
-                                <img
-                                  src={activeUpgradeCandidate.avatarUrl}
-                                  alt={getCandidateDisplayName(activeUpgradeCandidate)}
-                                  className="h-full w-full rounded-full object-cover"
-                                />
-                              ) : (
-                                <span>
-                                  {(activeUpgradeCandidate.relation &&
-                                  activeUpgradeCandidate.relation !== "Other"
-                                    ? activeUpgradeCandidate.relation[0]
-                                    : activeUpgradeCandidate.fullName?.trim()
-                                      ? activeUpgradeCandidate.fullName.trim()[0]
-                                      : activeUpgradeCandidate.label?.[0] || "B"
-                                  ).toUpperCase()}
-                                </span>
-                              )}
-                            </div>
-
-                            {/* Plan Badge (Icon only, top right of profile circle) */}
-                            <div className="absolute -top-1.5 -right-1.5 z-10">
-                              <JourneyPlanBadge
-                                tier={getCandidateEffectiveTier(activeUpgradeCandidate)}
-                                iconOnly={true}
-                                className="border-background h-6 w-6 border-2 shadow-xs sm:h-7 sm:w-7"
-                              />
-                            </div>
-                          </div>
-
-                          {/* Name below Avatar */}
-                          <div className="mt-2.5 flex max-w-[130px] flex-col items-center">
-                            <span
-                              className="line-clamp-1 text-[13.5px] leading-tight font-bold text-[#0d7377] transition-colors group-hover:underline dark:text-teal-400"
-                              title={getCandidateDisplayName(activeUpgradeCandidate)}
-                            >
-                              {getCandidateDisplayName(activeUpgradeCandidate)}
-                            </span>
-                          </div>
-                        </button>
-                      </div>
-                    )}
                 </div>
 
                 {/* Controls Bar: Compare plans & Government fees on left, Action Switcher on right */}
@@ -1940,41 +1873,106 @@ function PricingContent() {
                     </div>
                   </div>
 
-                  {/* IR-5 / Multi-Candidate Action Switcher */}
-                  {isIr5 &&
-                    hasActiveIr5 &&
-                    (canUpgradeIr5 ? (
-                      <div className="bg-card border-border inline-flex shrink-0 rounded-xl border p-1 shadow-xs">
+                  {/* IR-5 / Multi-Candidate Action Switcher & Beneficiary Selector */}
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+                    {isIr5 &&
+                      hasActiveIr5 &&
+                      (canUpgradeIr5 ? (
+                        <div className="bg-card border-border inline-flex shrink-0 rounded-xl border p-1 shadow-xs">
+                          <button
+                            type="button"
+                            onClick={() => setIr5Action("upgrade")}
+                            className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all ${
+                              ir5Action === "upgrade"
+                                ? "bg-[#0d7377] text-white shadow-xs"
+                                : "text-muted-foreground hover:text-foreground"
+                            }`}
+                          >
+                            <Zap className="h-3.5 w-3.5" />
+                            <span>Upgrade Existing Plan</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setIr5Action("add_candidate")}
+                            className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all ${
+                              ir5Action === "add_candidate"
+                                ? "bg-[#0d7377] text-white shadow-xs"
+                                : "text-muted-foreground hover:text-foreground"
+                            }`}
+                          >
+                            <Users className="h-3.5 w-3.5" />
+                            <span>Add Another Parent</span>
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="rounded-full bg-teal-100 px-3 py-1 text-[11px] font-semibold text-teal-800 dark:bg-teal-900/50 dark:text-teal-200">
+                          Highest Plan (Executive)
+                        </span>
+                      ))}
+
+                    {/* Beneficiary selector pill placed after the upgrade/add buttons */}
+                    {isUpgradingIr5 &&
+                      activeUpgradeCandidate &&
+                      upgradableCategoryCandidates.length > 1 && (
                         <button
                           type="button"
-                          onClick={() => setIr5Action("upgrade")}
-                          className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all ${
-                            ir5Action === "upgrade"
-                              ? "bg-[#0d7377] text-white shadow-xs"
-                              : "text-muted-foreground hover:text-foreground"
-                          }`}
+                          onClick={() => setIsBeneficiaryModalOpen(true)}
+                          className="group bg-card border-border hover:bg-muted/40 inline-flex shrink-0 cursor-pointer items-center gap-2 rounded-xl border px-3 py-1.5 shadow-xs transition-all hover:border-[#0d7377]/50 focus:ring-2 focus:ring-[#0d7377]/30 focus:outline-none"
+                          title="Click to switch beneficiary"
                         >
-                          <Zap className="h-3.5 w-3.5" />
-                          <span>Upgrade Existing Plan</span>
+                          <span className="text-muted-foreground text-[11.5px] font-medium">
+                            Beneficiary:
+                          </span>
+                          <div className="relative flex shrink-0">
+                            <div
+                              className={`flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br text-[11px] font-bold text-white shadow-xs ${
+                                BENEFICIARY_COLOR_GRADIENTS[
+                                  (upgradableCategoryCandidates.findIndex(
+                                    (c) => c.id === activeUpgradeCandidate.id
+                                  ) >= 0
+                                    ? upgradableCategoryCandidates.findIndex(
+                                        (c) => c.id === activeUpgradeCandidate.id
+                                      )
+                                    : 0) % BENEFICIARY_COLOR_GRADIENTS.length
+                                ]
+                              }`}
+                            >
+                              {activeUpgradeCandidate.avatarUrl ? (
+                                <img
+                                  src={activeUpgradeCandidate.avatarUrl}
+                                  alt={getCandidateDisplayName(activeUpgradeCandidate)}
+                                  className="h-full w-full rounded-full object-cover"
+                                />
+                              ) : (
+                                <span>
+                                  {(activeUpgradeCandidate.relation &&
+                                  activeUpgradeCandidate.relation !== "Other"
+                                    ? activeUpgradeCandidate.relation[0]
+                                    : activeUpgradeCandidate.fullName?.trim()
+                                      ? activeUpgradeCandidate.fullName.trim()[0]
+                                      : activeUpgradeCandidate.label?.[0] || "B"
+                                  ).toUpperCase()}
+                                </span>
+                              )}
+                            </div>
+                            {/* <div className="absolute -top-1 -right-1 z-10">
+                              <JourneyPlanBadge
+                                tier={getCandidateEffectiveTier(activeUpgradeCandidate)}
+                                iconOnly={true}
+                                className="border-background h-1 w-1 border shadow-xs"
+                              />
+                            </div> */}
+                          </div>
+                          <span
+                            className="max-w-[130px] truncate text-xs font-bold text-[#0d7377] transition-colors group-hover:underline dark:text-teal-400"
+                            title={getCandidateDisplayName(activeUpgradeCandidate)}
+                          >
+                            {getCandidateDisplayName(activeUpgradeCandidate)}
+                          </span>
+                          <ChevronDown className="text-muted-foreground group-hover:text-foreground h-3.5 w-3.5 shrink-0 transition-colors" />
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => setIr5Action("add_candidate")}
-                          className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all ${
-                            ir5Action === "add_candidate"
-                              ? "bg-[#0d7377] text-white shadow-xs"
-                              : "text-muted-foreground hover:text-foreground"
-                          }`}
-                        >
-                          <Users className="h-3.5 w-3.5" />
-                          <span>Add Another Parent</span>
-                        </button>
-                      </div>
-                    ) : (
-                      <span className="rounded-full bg-teal-100 px-3 py-1 text-[11px] font-semibold text-teal-800 dark:bg-teal-900/50 dark:text-teal-200">
-                        Highest Plan (Executive)
-                      </span>
-                    ))}
+                      )}
+                  </div>
                 </div>
 
                 {/* Checkout error if present */}
