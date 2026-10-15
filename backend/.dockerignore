@@ -1,0 +1,39 @@
+# Secrets: MUST never reach the build context/image 
+.env
+.env.*
+!.env.example
+
+# Local virtualenvs (uv/venv) — rebuilt inside image 
+.venv/
+venv/
+env/
+
+# Python caches 
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Git 
+.git/
+.gitignore
+.gitattributes
+
+# Model weights that are git-ignored / re-baked at build 
+# u2netp.onnx is baked in by the Dockerfile RUN step; don't rely on local copy.
+.u2net/
+modnet/
+
+# Docs / scratch / IDE 
+pdfs/**/*.tmp
+*.md
+.vscode/
+.idea/
+
+# Runtime junk / local DB that must not ship 
+whatsapp_memory.db
+data/debug.html
+
+# OS noise 
+.DS_Store
+Thumbs.db
