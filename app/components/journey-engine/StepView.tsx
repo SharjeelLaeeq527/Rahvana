@@ -80,8 +80,6 @@ import { MultipleDocumentUploadModal } from "@/app/components/document-vault/Mul
 import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
 import { useAuth } from "@/app/context/AuthContext";
 import { useUserProfile } from "@/app/context/UserProfileContext";
-import PassportPhotoTool from "@/components/tools/PassportPhotoTool";
-import DocumentTranslationTool from "@/components/tools/DocumentTranslationTool";
 import { usePortalWallet } from "./hooks/usePortalWallet";
 import { useCandidate } from "@/app/context/CandidateContext";
 import { useFilingQuiz } from "./hooks/useFilingQuiz";
@@ -154,7 +152,6 @@ import { InterviewSchedulingTool } from "./components/InterviewSchedulingTool";
 import RegisterReceiptStep from "./components/RegisterReceiptStep";
 import TrackCaseStatusStep from "./components/TrackCaseStatusStep";
 import { FinancialChecklistTool } from "./components/FinancialChecklistTool";
-import SponsorshipCalculatorTool from "./components/SponsorshipCalculatorTool";
 import { ApUpdateModal } from "./PortalWalletManager";
 import { HouseholdSponsorshipTool } from "./components/HouseholdSponsorshipTool";
 import { DocumentQuestionnaire } from "@/app/components/questionnaire/DocumentQuestionnaire";
@@ -591,8 +588,6 @@ export const StepView: React.FC<StepViewProps> = ({
     setHhRelationships,
     hhDocsStatus,
     setHhDocsStatus,
-    isSponsorshipCalcOpen,
-    setIsSponsorshipCalcOpen,
     sponsorshipResult,
     sponsorshipDraft,
   } = useSponsorship({ metadata: state.metadata });
@@ -1405,7 +1400,7 @@ export const StepView: React.FC<StepViewProps> = ({
               sponsorshipResult={sponsorshipResult}
               onOpenCalc={() => {
                 if (!stepEntitlement.guard()) return;
-                setIsSponsorshipCalcOpen(true);
+                onLaunchTool?.("sponsorship_calculator", sId);
               }}
               tool={tool}
               guard={stepEntitlement.guard}
@@ -3459,6 +3454,26 @@ export const StepView: React.FC<StepViewProps> = ({
                                                 subtitle: doc.subtitle,
                                                 hasGuide: hasDocGuide,
                                                 onReadGuide: () => {
+                                                  if (doc.id === "doc_passport_photos") {
+                                                    onLaunchTool?.("passport_photo", sId);
+                                                    if (actions.updateDocumentStatus && doc.id) {
+                                                      actions.updateDocumentStatus(
+                                                        doc.id,
+                                                        "in-progress"
+                                                      );
+                                                    }
+                                                    return;
+                                                  }
+                                                  if (doc.id === "doc_translations") {
+                                                    onLaunchTool?.("doc_translation", sId);
+                                                    if (actions.updateDocumentStatus && doc.id) {
+                                                      actions.updateDocumentStatus(
+                                                        doc.id,
+                                                        "in-progress"
+                                                      );
+                                                    }
+                                                    return;
+                                                  }
                                                   if (doc.guideUrl && doc.guideUrl !== "/guides") {
                                                     setGuideOverlayUrl(doc.guideUrl);
                                                     if (actions.updateDocumentStatus && doc.id) {
@@ -3874,6 +3889,18 @@ export const StepView: React.FC<StepViewProps> = ({
                               subtitle: item.sub,
                               hasGuide: hasDocGuide,
                               onReadGuide: () => {
+                                if (item.id === "doc_passport_photos") {
+                                  onLaunchTool?.("passport_photo", sId);
+                                  if (actions.updateDocumentStatus && item.id)
+                                    actions.updateDocumentStatus(item.id, "in-progress");
+                                  return;
+                                }
+                                if (item.id === "doc_translations") {
+                                  onLaunchTool?.("doc_translation", sId);
+                                  if (actions.updateDocumentStatus && item.id)
+                                    actions.updateDocumentStatus(item.id, "in-progress");
+                                  return;
+                                }
                                 if (item.guideUrl && item.guideUrl !== "/guides") {
                                   setGuideOverlayUrl(item.guideUrl);
                                   if (actions.updateDocumentStatus && item.id)
@@ -4229,44 +4256,11 @@ export const StepView: React.FC<StepViewProps> = ({
         </button>
       </footer>
 
-      {/* Sponsorship Calculator Tool Overlay */}
-      <SponsorshipCalculatorTool
-        mode="journey"
-        journeyTier={state?.subscriptionTier ?? (state as any)?.subscription_tier}
-        journeyContext={{
-          journeySlug: data.journey_type
-            ? `${data.journey_type.toLowerCase()}-journey`
-            : "ir5-journey",
-          journeyCategory: data.journey_type || "IR-5",
-          candidateId: (state as any).candidateId || "candidate-1",
-          backendId: (state as any).backendId || null,
-          subscriptionTier: state?.subscriptionTier ?? (state as any)?.subscription_tier,
-        }}
-        isOpen={isSponsorshipCalcOpen}
-        onClose={() => setIsSponsorshipCalcOpen(false)}
-        initialData={{
-          ...(sponsorshipDraft?.data || sponsorshipResult?.raw || {}),
-          // Auto-supply the sponsor's state from the profile so the user is not
-          // asked to re-enter it. Prior saved input wins if present.
-          state:
-            sponsorshipDraft?.data?.state ||
-            sponsorshipResult?.raw?.state ||
-            profile?.sponsor?.address?.state ||
-            "",
-        }}
-        initialStep={sponsorshipDraft?.stepIdx ?? (sponsorshipResult ? 10 : 0)}
-        // Lock (show read-only) only when we actually have a sponsor state;
-        // otherwise fall back to asking the user.
-        lockState={Boolean(profile?.sponsor?.address?.state)}
-        onProgressChange={(draft) => {
-          actions.updateMetadata({ sponsorshipDraft: draft });
-        }}
-        onSave={(result: any) => {
-          actions.updateMetadata({ sponsorshipResult: result, sponsorshipDraft: null });
-          setIsSponsorshipCalcOpen(false);
-          if (!isCompleted) actions.toggleComplete("step_2_5");
-        }}
-      />
+      {/* Sponsorship Calculator now launches through the shared roadmap toolbox (onLaunchTool →
+          RoadmapLayoutEngine.activeToolKey → EmbeddedToolContainer) so it renders inline
+          under the RoadmapLayoutEngine breadcrumb, consistent with Medical / PCC / Translation.
+          The draft/result are persisted to metadata and the step auto-completed by
+          EmbeddedToolContainer.onSave via autoCompleteStepKey. */}
 
       {/* Medical / PCC now launch through the shared roadmap toolbox (onLaunchTool →
           RoadmapLayoutEngine.activeToolKey → EmbeddedToolContainer) so they render inline
@@ -4543,47 +4537,17 @@ export const StepView: React.FC<StepViewProps> = ({
 
               {/* Sections */}
               <div className="flex w-full flex-col">
-                {selectedGuideId === "doc_passport_photos" ? (
-                  <div className="mb-4">
-                    <PassportPhotoTool
-                      showHeader={false}
-                      showRequirements={true}
-                      mode="journey"
-                      journeyTier={state?.subscriptionTier ?? (state as any)?.subscription_tier}
-                      journeyContext={{
-                        journeySlug: data.journey_type
-                          ? `${data.journey_type.toLowerCase()}-journey`
-                          : "ir5-journey",
-                        journeyCategory: data.journey_type || "IR-5",
-                        candidateId: (state as any)?.candidateId || "candidate-1",
-                        backendId: (state as any)?.backendId || null,
-                        subscriptionTier:
-                          state?.subscriptionTier ?? (state as any)?.subscription_tier,
-                      }}
-                    />
-                  </div>
-                ) : selectedGuideId === "doc_translations" ? (
-                  <div className="mb-4">
-                    <DocumentTranslationTool
-                      showHeader={false}
-                      showRequirements={true}
-                      showRequestsLink={false}
-                      mode="journey"
-                    />
-                  </div>
-                ) : (
-                  inlineGuideData[selectedGuideId].sections.map((section: any, idx: number) => (
-                    <div
-                      key={idx}
-                      className="mb-[14px] rounded-[16px] border border-[#d0e4f7] bg-[#f4f7fb] p-[20px_22px]"
-                    >
-                      <div className="mb-[10px] text-[13px] font-semibold tracking-[0.05em] text-[#6b8097] uppercase">
-                        {section.title}
-                      </div>
-                      <SafeHtml className="guide-content" html={section.htmlContent} />
+                {inlineGuideData[selectedGuideId].sections.map((section: any, idx: number) => (
+                  <div
+                    key={idx}
+                    className="mb-[14px] rounded-[16px] border border-[#d0e4f7] bg-[#f4f7fb] p-[20px_22px]"
+                  >
+                    <div className="mb-[10px] text-[13px] font-semibold tracking-[0.05em] text-[#6b8097] uppercase">
+                      {section.title}
                     </div>
-                  ))
-                )}
+                    <SafeHtml className="guide-content" html={section.htmlContent} />
+                  </div>
+                ))}
               </div>
 
               {/* Actions */}

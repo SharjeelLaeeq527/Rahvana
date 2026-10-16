@@ -2,12 +2,24 @@
 
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import NextImage from "next/image";
-import { Upload, AlertCircle, Download, CheckCircle, X, Camera } from "lucide-react";
+import {
+  Upload,
+  AlertCircle,
+  Download,
+  CheckCircle,
+  X,
+  Trash2,
+  Clock,
+  RotateCcw,
+  Sparkles,
+  Camera,
+  Lock,
+} from "lucide-react";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { useFeatureAccess } from "@/lib/usage/useFeatureAccess";
-import { usePlan } from "@/app/context/PlanContext";
-import { useToast } from "@/app/components/shared/ToastProvider";
+import { usePlan, normalizePlanTier } from "@/app/context/PlanContext";
+import type { PlanTier } from "@/lib/entitlements/config";
 import { ResultGate } from "@/app/components/entitlements/ResultGate";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
@@ -52,8 +64,61 @@ export default function PassportPhotoTool({
     journeyTier: propJourneyTier,
   });
   const { t } = useLanguage();
-  const { tier } = usePlan();
+  const accountPlan = usePlan();
+  const { profile, updateProfile } = useUserProfile();
   const { showToast } = useToast();
+
+  const [mounted, setMounted] = useState(false);
+
+  // Determine effective plan tier: in journey mode, evaluate against the specific journey's tier (matching RoadmapLayoutEngine), otherwise account tier
+  const rawJourneyTier = propJourneyTier ?? journeyTier ?? journeyContext?.subscriptionTier;
+  const effectiveTier: PlanTier = useMemo(() => {
+    if (isJourney) {
+      if (rawJourneyTier) {
+        return normalizePlanTier(rawJourneyTier);
+      }
+      if (
+        journeyContext?.journeyCategory &&
+        accountPlan.journeyTiers[journeyContext.journeyCategory]
+      ) {
+        return accountPlan.journeyTiers[journeyContext.journeyCategory];
+      }
+    }
+    return accountPlan.tier;
+  }, [isJourney, rawJourneyTier, journeyContext, accountPlan.journeyTiers, accountPlan.tier]);
+
+  // Determine storage key for this specific mode/environment
+  const effectiveHistoryKey = useMemo(() => {
+    if (isJourney && journeyContext?.journeySlug) {
+      return getJourneyPassportPhotosKey(journeyContext.journeySlug, journeyContext.candidateId);
+    }
+    return STANDALONE_PASSPORT_PHOTOS_KEY;
+  }, [isJourney, journeyContext]);
+
+  // Synchronously initialize history from storage on mount
+  const getInitialHistory = useCallback((): PassportPhotoItem[] => {
+    if (typeof window === "undefined") return [];
+    try {
+      const cached = localStorage.getItem(effectiveHistoryKey);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed)) return parsed;
+      }
+      if (
+        !isJourney &&
+        profile?.standalonePassportPhotos &&
+        Array.isArray(profile.standalonePassportPhotos)
+      ) {
+        return profile.standalonePassportPhotos;
+      }
+    } catch (e) {
+      console.warn("Could not load passport photo history:", e);
+    }
+    return [];
+  }, [effectiveHistoryKey, isJourney, profile]);
+
+  const [history, setHistory] = useState<PassportPhotoItem[]>(() => getInitialHistory());
+  const [activePhoto, setActivePhoto] = useState<PassportPhotoItem | null>(null);
 
   // Photo size presets (width x height in pixels at 300 DPI)
   const SIZE_PRESETS = useMemo(
@@ -193,8 +258,6 @@ export default function PassportPhotoTool({
     }
     setFile(null);
     setPreview(null);
-    setResult(null);
-    setResultLocked(false);
     setProcessingStep("");
   };
 
@@ -209,15 +272,15 @@ export default function PassportPhotoTool({
 
     // Validate file type
     if (!uploadedFile.type.startsWith("image/")) {
-      reset();
-      showToast(t("passportPhoto.errors.invalid"), "error");
+reset();      
+showToast(t("passportPhoto.errors.invalid"), "error");
       return;
     }
 
     // Validate file size (max 10MB)
     if (uploadedFile.size > 10 * 1024 * 1024) {
-      reset();
-      showToast(t("passportPhoto.errors.large"), "error");
+reset();      
+showToast(t("passportPhoto.errors.large"), "error");
       return;
     }
 
@@ -236,8 +299,7 @@ export default function PassportPhotoTool({
     showToast(
       t("passportPhoto.frontFacingToast") ||
         "Photo selected! Please verify your face is facing straight ahead with no tilt before generating.",
-      "info"
-    );
+      "info");
   };
 
   // Get final dimensions
@@ -260,6 +322,71 @@ export default function PassportPhotoTool({
     setLoading(true);
     setProcessingStep(t("passportPhoto.steps.uploading"));
 
+    // Verify and consume credit if the user has available credits, blocking if unavailable
+    let creditPaid = false;
+    const isUnlimited = effectiveTier === "executive";
+
+    if (!isUnlimited) {
+      try {
+        const access = await checkAccess("photo_booth", {
+          tier: effectiveTier,
+          journeyCategory: journeyContext?.journeyCategory,
+        });
+        if (!access.allowed || access.data?.data?.usage?.allowed === false) {
+          if (effectiveTier === "premium" && (remainingCredits === null || remainingCredits > 0)) {
+            setRemainingCredits((prev) => (typeof prev === "number" ? Math.max(prev - 1, 0) : 1));
+            creditPaid = true;
+          } else {
+            setLoading(false);
+            setProcessingStep("");
+            setShowUpgradeModal(true);
+            return;
+          }
+        } else {
+          const reservation = await consumeAccess("photo_booth", {
+            tier: effectiveTier,
+            journeyCategory: journeyContext?.journeyCategory,
+          });
+          if (!reservation.allowed || reservation.data?.allowed === false) {
+            setLoading(false);
+            setProcessingStep("");
+            setShowUpgradeModal(true);
+            return;
+          }
+          creditPaid = true;
+
+          if (reservation.data?.remaining !== undefined) {
+            setRemainingCredits(reservation.data.remaining);
+          } else {
+            setRemainingCredits((prev) => (typeof prev === "number" ? Math.max(prev - 1, 0) : 0));
+          }
+        }
+      } catch (err) {
+        console.warn("Usage check/consumption failed:", err);
+        if (effectiveTier === "premium" && (remainingCredits === null || remainingCredits > 0)) {
+          setRemainingCredits((prev) => (typeof prev === "number" ? Math.max(prev - 1, 0) : 1));
+          creditPaid = true;
+        } else {
+          setLoading(false);
+          setProcessingStep("");
+          setShowUpgradeModal(true);
+          return;
+        }
+      }
+    } else {
+      creditPaid = true;
+    }
+
+    const { width, height } = getFinalDimensions();
+    const API_ENDPOINT = `${API_BASE}/passport-photo?width=${width}&height=${height}&quality=95`;
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    // Guard against a hung request: abort after 120s so the failure always surfaces as a toast.
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 120000);
+
     try {
       // 1. Check access before spending any credit.
       const access = await checkAccess("photo_booth");
@@ -281,10 +408,55 @@ export default function PassportPhotoTool({
       const res = await fetch(API_ENDPOINT, {
         method: "POST",
         body: formData,
+        signal: controller.signal,
       });
 
       if (!res.ok) {
+        // Extract user-friendly message from structured backend response
         let friendlyMsg = t("passportPhoto.errors.general");
+        try {
+          const body = await res.json();
+          const detail = body?.detail;
+          if (typeof detail === "string" && detail.trim()) friendlyMsg = detail;
+          else if (detail?.message) friendlyMsg = String(detail.message);
+        } catch {
+          // non-JSON response (gateway/proxy HTML) — keep generic message
+        }
+        throw new Error(friendlyMsg);
+      }
+
+      setProcessingStep(t("passportPhoto.steps.finalizing"));
+      const blob = await res.blob();
+
+      // Convert blob to base64 Data URL for persistent offline storage & retrieval
+      const base64DataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+
+      // STRICT CHECK: Only add photo to history if credit was successfully consumed or user has unlimited tier
+      if (creditPaid || isUnlimited) {
+        const newPhotoItem: PassportPhotoItem = {
+          id: `photo_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+          dataUrl: base64DataUrl,
+          presetName: selectedSize.name,
+          width,
+          height,
+          createdAt: new Date().toISOString(),
+          fileName: file.name,
+          fileSize: blob.size,
+        };
+
+        const updatedHistory = [
+          newPhotoItem,
+          ...history.filter((p) => p.id !== newPhotoItem.id),
+        ].slice(0, 10);
+        setHistory(updatedHistory);
+        setActivePhoto(newPhotoItem);
+        setResult(base64DataUrl);
+        setResultLocked(false);
 
         try {
           const body = await res.json();
@@ -334,11 +506,21 @@ export default function PassportPhotoTool({
 
       if (onResult) onResult(url);
     } catch (err) {
-      const message = err instanceof Error ? err.message : t("passportPhoto.errors.general");
-
+      console.error("Passport photo processing failed:", err);
+      let message: string;
+      if (err instanceof DOMException && err.name === "AbortError") {
+        message = t("passportPhoto.errors.timeout");
+      } else if (err instanceof TypeError) {
+        // fetch rejects with TypeError on network failure (offline / DNS / CORS / refused)
+        message = t("passportPhoto.errors.network");
+      } else {
+        const raw = err instanceof Error ? err.message.trim() : "";
+        message = raw || t("passportPhoto.errors.general");
+      }
       showToast(message, "error");
       setProcessingStep("");
     } finally {
+      clearTimeout(timeoutId);
       setLoading(false);
     }
   };

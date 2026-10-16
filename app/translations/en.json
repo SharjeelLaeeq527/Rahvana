@@ -3233,6 +3233,8 @@
     "errors": {
       "invalid": "Please upload a valid image file.",
       "large": "Image size must be under 10 MB.",
+      "network": "Could not reach the photo service. Please check your connection and try again.",
+      "timeout": "The request timed out. Please try again.",
       "general": "An unknown error occurred."
     },
     "presets": {
