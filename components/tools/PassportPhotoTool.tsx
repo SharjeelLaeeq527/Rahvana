@@ -192,7 +192,7 @@ export default function PassportPhotoTool({
     return { width: selectedSize.width, height: selectedSize.height };
   };
 
-  // Process image with new passport-photo endpoint
+  // Process image with passport-photo endpoint
   const handleProcess = async () => {
     if (!file) return;
 
@@ -204,43 +204,22 @@ export default function PassportPhotoTool({
     setLoading(true);
     setProcessingStep(t("passportPhoto.steps.uploading"));
 
-    // Verify and consume credit if the user has limited credits, blocking if exhausted
-    let creditPaid = false;
     try {
+      // 1. Check access before spending any credit.
       const access = await checkAccess("photo_booth");
+
       if (!access.allowed || access.data?.data?.usage?.allowed === false) {
-        setLoading(false);
-        setProcessingStep("");
         setShowUpgradeModal(true);
         return;
       }
 
-      const reservation = await consumeAccess("photo_booth");
-      if (!reservation.allowed || reservation.data?.allowed === false) {
-        setLoading(false);
-        setProcessingStep("");
-        setShowUpgradeModal(true);
-        return;
-      }
-      creditPaid = true;
+      // 2. Generate the image first. Validation/API failures cost no credit.
+      const { width, height } = getFinalDimensions();
+      const API_ENDPOINT = `${API_BASE}/passport-photo?width=${width}&height=${height}&quality=95`;
 
-      if (tier === "executive") {
-        setRemainingCredits(null);
-      } else if (reservation.data?.remaining !== undefined) {
-        setRemainingCredits(reservation.data.remaining);
-      }
-    } catch (err) {
-      console.warn("Usage check/consumption failed, continuing with photo generation:", err);
-    }
+      const formData = new FormData();
+      formData.append("file", file);
 
-    const { width, height } = getFinalDimensions();
-    const API_ENDPOINT = `${API_BASE}/passport-photo?width=${width}&height=${height}&quality=95`;
-    console.log(`Calling API: ${API_ENDPOINT}`);
-
-    const formData = new FormData();
-    formData.append("file", file);
-
-    try {
       setProcessingStep(t("passportPhoto.steps.removing"));
 
       const res = await fetch(API_ENDPOINT, {
@@ -249,30 +228,58 @@ export default function PassportPhotoTool({
       });
 
       if (!res.ok) {
-        // Extract user-friendly message from structured backend response
         let friendlyMsg = t("passportPhoto.errors.general");
+
         try {
           const body = await res.json();
           const detail = body?.detail;
-          if (typeof detail === "string") friendlyMsg = detail;
-          else if (detail?.message) friendlyMsg = detail.message;
+
+          if (typeof detail === "string") {
+            friendlyMsg = detail;
+          } else if (detail?.message) {
+            friendlyMsg = detail.message;
+          }
         } catch {
-          // non-JSON response — keep generic message
+          // Keep the generic error message.
         }
+
         throw new Error(friendlyMsg);
       }
 
-      setProcessingStep(t("passportPhoto.steps.finalizing"));
       const blob = await res.blob();
+
+      if (!blob.size) {
+        throw new Error(t("passportPhoto.errors.general"));
+      }
+
+      // 3. Consume credit only after successful image generation.
+      setProcessingStep(t("passportPhoto.steps.finalizing"));
+
+      const reservation = await consumeAccess("photo_booth");
+
+      if (!reservation.allowed || reservation.data?.allowed === false) {
+        setShowUpgradeModal(true);
+        return;
+      }
+
+      // 4. Update the credit balance after successful consumption.
+      if (tier === "executive") {
+        setRemainingCredits(null);
+      } else if (reservation.data?.remaining !== undefined) {
+        setRemainingCredits(reservation.data.remaining);
+      }
+
+      // 5. Unlock the result because this generation paid successfully.
       const url = URL.createObjectURL(blob);
-      // Only blur when this generation did NOT pay (fail-open path above); never
-      // penalize the user for the credit they just spent on this very result.
-      setResultLocked(tier !== "executive" && !creditPaid);
+
+      setResultLocked(false);
       setResult(url);
       setProcessingStep("");
+
       if (onResult) onResult(url);
     } catch (err) {
       const message = err instanceof Error ? err.message : t("passportPhoto.errors.general");
+
       showToast(message, "error");
       setProcessingStep("");
     } finally {

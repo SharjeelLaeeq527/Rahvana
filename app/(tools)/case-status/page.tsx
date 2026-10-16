@@ -312,7 +312,6 @@ export default function CaseStatusPage() {
   }, [fetchHistory]);
 
   const handleCheck = async () => {
-    setError(null);
     const normalized = receipt.trim().toUpperCase();
 
     if (!normalized) {
@@ -332,6 +331,8 @@ export default function CaseStatusPage() {
 
     setLoading(true);
     setResult(null);
+    // Dismiss any stale error so it never lingers next to a newer result.
+    setError(null);
 
     try {
       const res = await fetch("/api/uscis-case-status", {
@@ -383,6 +384,8 @@ export default function CaseStatusPage() {
   const loadHistory = (item: CaseResult) => {
     setReceipt(item.receiptNumber);
     setResult(item);
+    // Selecting a past receipt resolves the previous failed lookup too.
+    setError(null);
     setShowHistory(false);
   };
 
@@ -630,6 +633,8 @@ export default function CaseStatusPage() {
                     value={receipt}
                     onChange={(e) => {
                       setReceipt(formatReceiptInput(e.target.value));
+                      // Revising the receipt invalidates the prior failed lookup.
+                      setError(null);
                     }}
                     onKeyDown={(e) => e.key === "Enter" && handleCheck()}
                     placeholder="e.g. MSC2490000001"
