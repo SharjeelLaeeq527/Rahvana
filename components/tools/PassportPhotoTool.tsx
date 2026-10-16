@@ -65,6 +65,7 @@ export default function PassportPhotoTool({
   });
   const { t } = useLanguage();
   const accountPlan = usePlan();
+  const { tier } = usePlan();
   const { profile, updateProfile } = useUserProfile();
   const { showToast } = useToast();
 
@@ -272,15 +273,15 @@ export default function PassportPhotoTool({
 
     // Validate file type
     if (!uploadedFile.type.startsWith("image/")) {
-reset();      
-showToast(t("passportPhoto.errors.invalid"), "error");
+      reset();
+      showToast(t("passportPhoto.errors.invalid"), "error");
       return;
     }
 
     // Validate file size (max 10MB)
     if (uploadedFile.size > 10 * 1024 * 1024) {
-reset();      
-showToast(t("passportPhoto.errors.large"), "error");
+      reset();
+      showToast(t("passportPhoto.errors.large"), "error");
       return;
     }
 
@@ -299,7 +300,8 @@ showToast(t("passportPhoto.errors.large"), "error");
     showToast(
       t("passportPhoto.frontFacingToast") ||
         "Photo selected! Please verify your face is facing straight ahead with no tilt before generating.",
-      "info");
+      "info"
+    );
   };
 
   // Get final dimensions
@@ -411,9 +413,9 @@ showToast(t("passportPhoto.errors.large"), "error");
         signal: controller.signal,
       });
 
+      let friendlyMsg = t("passportPhoto.errors.general");
       if (!res.ok) {
         // Extract user-friendly message from structured backend response
-        let friendlyMsg = t("passportPhoto.errors.general");
         try {
           const body = await res.json();
           const detail = body?.detail;
@@ -473,8 +475,6 @@ showToast(t("passportPhoto.errors.large"), "error");
 
         throw new Error(friendlyMsg);
       }
-
-      const blob = await res.blob();
 
       if (!blob.size) {
         throw new Error(t("passportPhoto.errors.general"));
