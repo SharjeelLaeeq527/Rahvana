@@ -1433,58 +1433,43 @@ function EmptyJourneyState({ onStartJourney }: EmptyJourneyStateProps) {
 
 function JourneyCardsSkeleton() {
   return (
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-      {Array.from({ length: 6 }).map((_, index) => (
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {Array.from({ length: 8 }).map((_, index) => (
         <Card
           key={index}
-          className="overflow-hidden rounded-[28px] border border-white/80 bg-white/75 p-0 shadow-[0_18px_55px_rgba(15,61,63,0.07)]"
+          className="relative flex h-full flex-col gap-0 overflow-hidden rounded-3xl border border-white/80 bg-white/75 p-0 shadow-[0_18px_55px_rgba(15,61,63,0.08)]"
         >
-          <div className="relative h-52 overflow-hidden bg-slate-100">
-            <div className="absolute inset-0 animate-pulse bg-linear-to-r from-slate-100 via-slate-50 to-slate-100" />
+          {/* Image skeleton */}
+          <div className="relative h-58 overflow-hidden bg-slate-200/70">
+            <div className="absolute inset-0 animate-pulse bg-linear-to-r from-slate-200/60 via-slate-100/80 to-slate-200/60" />
 
-            <div className="absolute top-4 right-4 left-4 flex justify-between">
-              <div className="h-7 w-16 animate-pulse rounded-full bg-white/70" />
-              <div className="h-7 w-20 animate-pulse rounded-full bg-white/70" />
+            {/* Top badges */}
+            <div className="absolute top-4 right-4 left-4 z-10 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <div className="h-7 w-7 animate-pulse rounded-full bg-white/70" />
+                <div className="h-5 w-14 animate-pulse rounded-full bg-white/60" />
+              </div>
+              <div className="h-7 w-7 animate-pulse rounded-full bg-white/70" />
             </div>
 
-            <div className="absolute bottom-5 left-5 space-y-2">
-              <div className="h-3 w-24 animate-pulse rounded-full bg-white/50" />
-              <div className="h-6 w-44 animate-pulse rounded-full bg-white/70" />
+            {/* Bottom Title */}
+            <div className="absolute right-5 bottom-4 left-5">
+              <div className="h-6 w-36 animate-pulse rounded-lg bg-white/75" />
             </div>
           </div>
 
-          <CardContent className="space-y-5 p-5 md:p-6">
-            <div className="space-y-2">
-              <div className="h-4 w-full animate-pulse rounded-full bg-slate-100" />
-              <div className="h-4 w-4/5 animate-pulse rounded-full bg-slate-100" />
-            </div>
-
-            <div className="rounded-[20px] border border-slate-100 bg-slate-50/70 p-4">
-              <div className="flex items-end justify-between">
-                <div className="space-y-2">
-                  <div className="h-3 w-24 animate-pulse rounded-full bg-slate-200" />
-                  <div className="h-7 w-14 animate-pulse rounded-full bg-slate-200" />
+          {/* Compact Progress Content skeleton */}
+          <CardContent className="relative flex flex-1 flex-col px-4 pt-2 pb-2.5">
+            <div className="my-0.5 space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5">
+                  <div className="h-3 w-12 animate-pulse rounded-full bg-slate-200" />
+                  <div className="h-3.5 w-7 animate-pulse rounded-full bg-slate-200" />
                 </div>
-
-                <div className="space-y-2">
-                  <div className="ml-auto h-3 w-14 animate-pulse rounded-full bg-slate-200" />
-                  <div className="h-3 w-20 animate-pulse rounded-full bg-slate-200" />
-                </div>
+                <div className="h-3 w-16 animate-pulse rounded-full bg-slate-200" />
               </div>
 
-              <div className="mt-4 h-2.5 animate-pulse rounded-full bg-slate-200" />
-            </div>
-
-            <div className="flex items-center justify-between border-t border-slate-100 pt-4">
-              <div className="flex items-center gap-3">
-                <div className="h-8 w-8 animate-pulse rounded-full bg-slate-100" />
-                <div className="space-y-1.5">
-                  <div className="h-2.5 w-20 animate-pulse rounded-full bg-slate-100" />
-                  <div className="h-3 w-24 animate-pulse rounded-full bg-slate-100" />
-                </div>
-              </div>
-
-              <div className="h-10 w-10 animate-pulse rounded-full bg-slate-100" />
+              <div className="h-1.5 w-full animate-pulse rounded-full bg-[#dceeed]/80" />
             </div>
           </CardContent>
         </Card>
