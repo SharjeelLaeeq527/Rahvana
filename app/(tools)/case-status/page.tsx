@@ -31,6 +31,7 @@ import { E, msg } from "@/lib/errors";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import FileUpload from "@/app/components/shared/FileUpload";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
+import { SafeHtml } from "@/app/components/shared/SafeHTML";
 
 /* ─── USCIS API Response Structure ──────────────────────────── */
 export interface USCISCaseStatus {
@@ -753,7 +754,15 @@ export default function CaseStatusPage() {
                     <ResultCell
                       icon={<Calendar className="h-3.5 w-3.5" />}
                       label="Last Updated"
-                      value={result.modifiedDate}
+                      value={new Date(result.modifiedDate).toLocaleString("en-US", {
+                        month: "2-digit",
+                        day: "2-digit",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit",
+                        hour12: false,
+                      })}
                     />
                   )}
                   {decodePrefix(result.receiptNumber) && (
@@ -783,9 +792,11 @@ export default function CaseStatusPage() {
                       <h4 className="mb-3 flex items-center gap-2 text-[10px] font-semibold tracking-[0.18em] text-[#5f7777] uppercase">
                         <Info className="h-3.5 w-3.5" /> Official Case Update
                       </h4>
-                      <p className="text-[15px] leading-relaxed text-[#183b3b]/80 italic">
-                        &ldquo;{result.description}&rdquo;
-                      </p>
+                      <SafeHtml
+                        as="p"
+                        html={result.description}
+                        className="text-[15px] leading-relaxed text-[#183b3b]/80 [&_a]:font-medium [&_a]:text-[#0D7377] [&_a]:underline [&_a]:decoration-[#0D7377]/40 [&_a]:underline-offset-4 [&_a]:transition-colors hover:[&_a]:text-[#09585B] hover:[&_a]:decoration-[#09585B]"
+                      />
                     </div>
                   )}
                 </div>
