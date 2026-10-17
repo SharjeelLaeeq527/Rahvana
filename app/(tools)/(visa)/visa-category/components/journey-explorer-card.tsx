@@ -11,12 +11,18 @@ export function ExplorerJourneyCard({
   showStartJourney = false,
   isExecutiveMaxed = false,
   executiveNotice,
+  isSelected = false,
+  topRightSlot,
+  className = "",
 }: {
   card: ExplorerJourneyCardType;
   onSelect?: () => void;
   showStartJourney?: boolean;
   isExecutiveMaxed?: boolean;
   executiveNotice?: React.ReactNode;
+  isSelected?: boolean;
+  topRightSlot?: React.ReactNode;
+  className?: string;
 }) {
   const isLive = card.status === "Live" && card.href;
 
@@ -26,11 +32,15 @@ export function ExplorerJourneyCard({
 
   return (
     <motion.article
-      whileHover={{ y: -5 }}
+      whileHover={isSelected ? undefined : { y: -5 }}
       transition={{ duration: 0.18, ease: "easeOut" }}
-      className="group flex h-full flex-col overflow-hidden rounded-[1.35rem] border border-[var(--rv-line)] bg-white shadow-[0_20px_46px_-34px_rgba(12,27,51,0.48)]"
+      className={`group flex h-full flex-col overflow-hidden rounded-[1.35rem] border bg-white transition-all duration-200 ${
+        isSelected
+          ? "border-transparent shadow-[0_12px_36px_rgba(13,122,92,0.18)] ring-2 ring-[#0d7a5c] ring-offset-2 ring-offset-[#fafcfb]"
+          : "border-[var(--rv-line)] shadow-[0_20px_46px_-34px_rgba(12,27,51,0.48)]"
+      } ${className}`}
     >
-      <div className="relative h-80 overflow-hidden">
+      <div className="relative h-80 overflow-hidden rounded-t-[1.35rem] isolate">
         <div
           className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
           style={{ backgroundImage: `url(${card.image})` }}
@@ -52,6 +62,11 @@ export function ExplorerJourneyCard({
             {isLive ? <Radio className="h-3.5 w-3.5" /> : <Hourglass className="h-3.5 w-3.5" />}
           </span>
         </div>
+        {topRightSlot && (
+          <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5">
+            {topRightSlot}
+          </div>
+        )}
         <div className="absolute right-4 bottom-4 left-4 text-white">
           <p className="text-sm font-semibold tracking-[0.18em] text-white/70 uppercase">
             {card.code}

@@ -1657,7 +1657,7 @@ function PricingContent() {
               </p>
 
               {/* Upgrade available notice for IR-1 */}
-              {canUpgradeIr1 && (
+              {/* {canUpgradeIr1 && (
                 <div className="mt-5 flex flex-col gap-2.5 rounded-2xl border border-emerald-200/90 bg-emerald-50/80 p-4 text-xs text-emerald-900 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-2.5">
                     <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
@@ -1690,59 +1690,6 @@ function PricingContent() {
                     </Link>
                   </div>
                 </div>
-              )}
-
-              {/* Active IR-5 Notice (Upgrade or Add Parent) */}
-              {/* {hasActiveIr5 && (
-                <div className="mt-5 flex flex-col gap-2.5 rounded-2xl border border-teal-200/90 bg-teal-50/80 p-4 text-xs text-teal-900 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <CheckCircle2 className="h-4 w-4 shrink-0 text-teal-600" />
-                    <span>
-                      You have an active <strong>IR-5 Parents Visa</strong> journey (
-                      <strong className="capitalize">{journeyTiers.ir5}</strong> plan).
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    {canUpgradeIr5 && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const ir5Card = EXPLORER_CARDS.find(
-                            (c) => c.code.includes("IR-5") || c.slug === "ir-5"
-                          );
-                          if (ir5Card) setVisa(ir5Card.code);
-                          setIr5Action("upgrade");
-                          setIsChangingJourney(false);
-                        }}
-                        className="inline-flex items-center gap-1 font-semibold text-[#0d7377] hover:underline cursor-pointer"
-                      >
-                        Upgrade IR-5 Plan →
-                      </button>
-                    )}
-                    {canUpgradeIr5 && <span className="text-teal-300">|</span>}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const ir5Card = EXPLORER_CARDS.find(
-                          (c) => c.code.includes("IR-5") || c.slug === "ir-5"
-                        );
-                        if (ir5Card) setVisa(ir5Card.code);
-                        setIr5Action("add_candidate");
-                        setIsChangingJourney(false);
-                      }}
-                      className="inline-flex items-center gap-1 font-semibold text-[#0d7377] hover:underline cursor-pointer"
-                    >
-                      + Add Another Parent
-                    </button>
-                    <span className="text-teal-300">|</span>
-                    <Link
-                      href="/my-journeys"
-                      className="inline-flex items-center gap-1 text-teal-700 hover:underline"
-                    >
-                      My Journeys
-                    </Link>
-                  </div>
-                </div>
               )} */}
 
               {/* Journey Cards */}
@@ -1757,17 +1704,29 @@ function PricingContent() {
                   const isIr5Card = card.code.includes("IR-5") || card.slug === "ir-5";
                   const isCardExecutiveMaxed = isIr1Card && isIr1Executive;
 
+                  const topRightSlot = isSelected ? (
+                    <span className="inline-flex items-center rounded-full bg-[#0d7a5c] p-1.5 text-[10.5px] font-bold tracking-wide text-white uppercase shadow-sm">
+                      <IconCheck className="h-3 w-3" strokeWidth={3} />
+                    </span>
+                  ) : isCardExecutiveMaxed ? (
+                    <JourneyPlanBadge tier="executive" iconOnly={true} />
+                  ) : canUpgradeIr1 && isIr1Card && !isCardExecutiveMaxed ? (
+                    <span className="inline-flex items-center gap-1 rounded-full border border-emerald-300 bg-emerald-100 px-2.5 py-1 text-[10.5px] font-bold tracking-wide text-emerald-800 uppercase shadow-sm">
+                      Upgrade Available
+                    </span>
+                  ) : // : hasActiveIr5 && isIr5Card ? (
+                  //   <span className="inline-flex items-center gap-1 rounded-full border border-teal-300 bg-teal-100 px-2.5 py-1 text-[10.5px] font-bold tracking-wide text-teal-800 uppercase shadow-sm">
+                  //     {canUpgradeIr5 ? "Upgrade or Add Parent" : "Active Plan"}
+                  //   </span>
+                  // )
+                  null;
+
                   return (
-                    <div
-                      key={card.code}
-                      className={`relative rounded-[24px] transition-all duration-200 ${
-                        isSelected
-                          ? "shadow-[0_12px_36px_rgba(13,122,92,0.18)] ring-2 ring-[#0d7a5c] ring-offset-2 ring-offset-[#fafcfb]"
-                          : ""
-                      }`}
-                    >
+                    <div key={card.code} className="relative rounded-[1.35rem]">
                       <ExplorerJourneyCard
                         card={card}
+                        isSelected={isSelected}
+                        topRightSlot={topRightSlot}
                         isExecutiveMaxed={isCardExecutiveMaxed}
                         onSelect={
                           isLive && !isCardExecutiveMaxed
@@ -1778,30 +1737,6 @@ function PricingContent() {
                             : undefined
                         }
                       />
-
-                      {isSelected && (
-                        <span className="absolute top-3 right-3 z-10 inline-flex items-center rounded-full bg-[#0d7a5c] px-1.5 py-1.5 text-[10.5px] font-bold tracking-wide text-white uppercase shadow-sm">
-                          <IconCheck className="h-3 w-3" strokeWidth={3} />
-                        </span>
-                      )}
-
-                      {!isSelected && isCardExecutiveMaxed && (
-                        <div className="absolute top-3 right-3 z-10">
-                          <JourneyPlanBadge tier="executive" iconOnly={true} />
-                        </div>
-                      )}
-
-                      {!isSelected && canUpgradeIr1 && isIr1Card && !isCardExecutiveMaxed && (
-                        <span className="absolute top-3 right-3 z-10 inline-flex items-center gap-1 rounded-full border border-emerald-300 bg-emerald-100 px-2.5 py-1 text-[10.5px] font-bold tracking-wide text-emerald-800 uppercase shadow-sm">
-                          Upgrade Available
-                        </span>
-                      )}
-
-                      {!isSelected && hasActiveIr5 && isIr5Card && (
-                        <span className="absolute top-3 right-3 z-10 inline-flex items-center gap-1 rounded-full border border-teal-300 bg-teal-100 px-2.5 py-1 text-[10.5px] font-bold tracking-wide text-teal-800 uppercase shadow-sm">
-                          {canUpgradeIr5 ? "Upgrade or Add Parent" : "Active Plan"}
-                        </span>
-                      )}
                     </div>
                   );
                 })}
