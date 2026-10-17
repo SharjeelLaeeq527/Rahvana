@@ -11,11 +11,20 @@ import * as crypto from "crypto";
 import { E, msg } from "@/lib/errors";
 import { getAuthenticatedUser } from "@/lib/api/authGuards";
 import { acquireCheckoutLock, releaseCheckoutLock } from "@/lib/stripe/checkoutLock";
-import { resolveSubscriptionTier } from "@/lib/stripe/subscriptionCleanup";
 import {
   isMultiCandidateCategory,
   getCandidateJourneyKey,
 } from "@/lib/candidate/candidateSyncService";
+import {
+  resolveSubscriptionTier,
+  journeyTypeForVisaCategory,
+  isAddCandidateSubscription,
+} from "@/lib/stripe/subscriptionCleanup";
+import {
+  WALLET_TOPUP_PRODUCT_TYPE,
+  validateTopupAmount,
+  resolveTopupReturnPath,
+} from "@/lib/wallet/topup";
 
 function logDebug(msg: string, obj?: any) {
   // Never write request/session details to disk in production (PII hygiene).
@@ -29,11 +38,6 @@ function logDebug(msg: string, obj?: any) {
 }
 
 const INTERVIEW_PREP_ADDON_PREFIX = "interview-prep:";
-
-/** Keeps checkout ownership checks scoped to the selected journey. */
-function journeyTypeForVisaCategory(visaCategory: string): "IR1" | "IR5" {
-  return visaCategory.toLowerCase().includes("5") ? "IR5" : "IR1";
-}
 
 function getCatalogAddonId(addonId: string): string {
   const normalized = addonId.toLowerCase();
@@ -81,6 +85,10 @@ export async function POST(request: NextRequest) {
       candidateId: rawCandidateId,
       candidate_id: snakeCandidateId,
       action,
+      productType,
+      amount,
+      returnUrl,
+      resourceId,
     } = body;
 
     const candidateId = rawCandidateId || snakeCandidateId || undefined;
@@ -88,6 +96,25 @@ export async function POST(request: NextRequest) {
       candidateCount && !isNaN(Number(candidateCount)) && Number(candidateCount) >= 1
         ? Math.floor(Number(candidateCount))
         : 1;
+    // ── Wallet top-up: validate before touching Stripe. The client sends only a
+    // whole-dollar amount ($1 = 1 credit); it never sets what gets credited, which
+    // is derived from what Stripe actually charged (lib/wallet/topup.ts). ──
+    const isWalletTopup = productType === WALLET_TOPUP_PRODUCT_TYPE;
+    let topupCredits = 0;
+    if (isWalletTopup) {
+      if (productTier || (Array.isArray(addons) && addons.length > 0)) {
+        return NextResponse.json(
+          { error: "A wallet top-up cannot be combined with a plan or add-ons." },
+          { status: 400 }
+        );
+      }
+      const topup = validateTopupAmount(amount);
+      if (!topup.ok) {
+        return NextResponse.json({ error: topup.error }, { status: 400 });
+      }
+      topupCredits = topup.credits;
+    }
+    const topupReturnPath = resolveTopupReturnPath(returnUrl);
 
     if (Array.isArray(addons)) {
       const unresolvedInterviewPrep = addons.find(
@@ -263,13 +290,20 @@ export async function POST(request: NextRequest) {
     // duplicate or downgrade slip through.
     // The account profile holds a maximum tier. Checkout guards must instead
     // consider only the selected journey and its Stripe subscription.
+    // Within the journey, plans bought to ADD an IR-5 candidate pay for that
+    // candidate's own journey row, not the primary plan being upgraded, so they are
+    // excluded (unless the journey row itself points at one, e.g. the first IR-5
+    // purchase). Otherwise a candidate-2 Executive plan would make a candidate-1
+    // Basic -> Premium upgrade look like a downgrade, or be picked as the sub to retire.
+    const dbSubId = selectedJourney?.stripe_subscription_id as string | undefined;
     const journeyLiveSubs = liveSubs.filter((subscription) => {
+      if (subscription.id === dbSubId) return true;
       const subscriptionJourneyType = subscription.metadata?.visa_category
         ? journeyTypeForVisaCategory(subscription.metadata.visa_category)
         : null;
       return (
-        subscriptionJourneyType === selectedJourneyType ||
-        subscription.id === selectedJourney?.stripe_subscription_id
+        subscriptionJourneyType === selectedJourneyType &&
+        !isAddCandidateSubscription(subscription)
       );
     });
     const candidateRosterTier = targetCandidateProfile?.tier;
@@ -301,7 +335,6 @@ export async function POST(request: NextRequest) {
     // at, else the highest-tier live sub. This is only a HINT: verify-session runs
     // a belt-and-suspenders cleanup, and (critically) the old sub is cancelled ONLY
     // after the new one is confirmed paid, never here at checkout time.
-    const dbSubId = selectedJourney?.stripe_subscription_id as string | undefined;
     const oldSubscriptionId =
       journeyLiveSubs.find((s) => s.id === dbSubId)?.id ||
       [...journeyLiveSubs].sort((a, b) => {
@@ -437,6 +470,10 @@ export async function POST(request: NextRequest) {
     // subtle "checkout canceled, no charge made" notice.
     const buildCancelUrl = () => {
       const base = origin;
+      if (isWalletTopup) {
+        const sep = topupReturnPath.includes("?") ? "&" : "?";
+        return `${base}${topupReturnPath}${sep}topup_canceled=1`;
+      }
       // Consultations have no order-summary concept — send back to booking.
       if (!productTier && !(Array.isArray(addons) && addons.length > 0) && consultationId) {
         return `${base}/book-consultation?checkout_canceled=1`;
@@ -474,9 +511,42 @@ export async function POST(request: NextRequest) {
     };
 
     // ================================================
+    // WALLET TOP-UP — One-time Payment ($1 = 1 credit)
+    // ================================================
+    if (isWalletTopup) {
+      sessionParams.mode = "payment";
+      sessionParams.line_items = [
+        {
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: `Rahvana Wallet: ${topupCredits} Credits`,
+              description: "Credits for standalone tools, guides and services. 1 credit = $1.",
+            },
+            unit_amount: topupCredits * 100,
+          },
+          quantity: 1,
+        },
+      ];
+      sessionParams.payment_intent_data = {
+        metadata: { user_id: userId, product_type: WALLET_TOPUP_PRODUCT_TYPE },
+      };
+      sessionParams.metadata = {
+        ...sessionParams.metadata,
+        stripe_customer_id: stripeCustomerId!,
+        product_type: WALLET_TOPUP_PRODUCT_TYPE,
+        product_id: WALLET_TOPUP_PRODUCT_TYPE,
+        product_name: `Rahvana Wallet: ${topupCredits} Credits`,
+        credits: String(topupCredits),
+        topup_reason: typeof resourceId === "string" && resourceId ? "exact_deficit" : "pack",
+        resource_id: typeof resourceId === "string" ? resourceId.slice(0, 100) : "",
+        return_to: topupReturnPath,
+      };
+    }
+    // ================================================
     // JOURNEY PLAN — Monthly Subscription + Add-ons
     // ================================================
-    if (productTier) {
+    else if (productTier) {
       const tierLower = productTier.toLowerCase();
 
       let product:
@@ -631,15 +701,6 @@ export async function POST(request: NextRequest) {
 
         const addon = (PRODUCTS.ADDONS as any)?.[catalogAddonId];
 
-        if (!sessionParams.line_items || sessionParams.line_items.length === 0) {
-          return NextResponse.json(
-            {
-              error: "No valid purchasable add-ons were provided.",
-            },
-            { status: 400 }
-          );
-        }
-
         if (addon) {
           sessionParams.line_items!.push({
             price_data: {
@@ -653,6 +714,15 @@ export async function POST(request: NextRequest) {
             quantity: 1,
           });
         }
+      }
+
+      // Checked AFTER the loop: checking inside it (before the first push) rejected
+      // every standalone add-on purchase with a 400.
+      if (sessionParams.line_items!.length === 0) {
+        return NextResponse.json(
+          { error: "No valid purchasable add-ons were provided." },
+          { status: 400 }
+        );
       }
 
       sessionParams.metadata = {
@@ -927,12 +997,15 @@ export async function POST(request: NextRequest) {
     // FIX: Map standalone_addon to journey_plan for the DB insert to satisfy the check constraint,
     // and map medical_booking / pcc_filing to consultation to satisfy the check constraint as well,
     // but keep it as medical_booking / pcc_filing in the Stripe metadata so the webhook/verify-session works perfectly.
+    // wallet_topup is mapped to "consultation" too (NOT journey_plan, which
+    // reconcileUserPlan reads to self-heal plan tiers).
     const dbProductType =
       sessionParams.metadata?.product_type === "standalone_addon"
         ? "journey_plan"
         : sessionParams.metadata?.product_type === "medical_booking" ||
             sessionParams.metadata?.product_type === "pcc_filing" ||
-            sessionParams.metadata?.product_type === "document_translations"
+            sessionParams.metadata?.product_type === "document_translations" ||
+            sessionParams.metadata?.product_type === WALLET_TOPUP_PRODUCT_TYPE
           ? "consultation"
           : (sessionParams.metadata?.product_type as any) || "journey_plan";
 
