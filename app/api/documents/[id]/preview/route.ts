@@ -93,7 +93,5 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   } catch (error) {
     console.error("[preview] Unexpected error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
-    console.error("[preview] Unexpected error:", error);
-    return NextResponse.json({ error: msg(E.VAULT_DOWNLOAD_FAILED) }, { status: 500 });
   }
 }
