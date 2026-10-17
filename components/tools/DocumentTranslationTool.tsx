@@ -71,10 +71,7 @@ export default function DocumentTranslationTool({
       if (rawJourneyTier) {
         return normalizePlanTier(rawJourneyTier);
       }
-      if (
-        journeyContext?.journeyCategory &&
-        plan.journeyTiers[journeyContext.journeyCategory]
-      ) {
+      if (journeyContext?.journeyCategory && plan.journeyTiers[journeyContext.journeyCategory]) {
         return plan.journeyTiers[journeyContext.journeyCategory];
       }
     }
@@ -167,6 +164,13 @@ export default function DocumentTranslationTool({
       formData.append("documentType", documentType);
       formData.append("candidateId", activeCandidateId || "candidate-1");
       formData.append("candidateName", activeCandidate.fullName || activeCandidate.label || "");
+      // Origin tag: journey-embedded requests are kept out of standalone My Resources (mirrors PCC / Medical).
+      if (isJourney) {
+        formData.append("source", "journey");
+        formData.append("journey_slug", journeyContext?.journeySlug || "");
+      } else {
+        formData.append("source", "standalone");
+      }
       if (userNotes) {
         formData.append("userNotes", userNotes);
       }
@@ -232,6 +236,13 @@ export default function DocumentTranslationTool({
       requestData.append("documentType", documentType);
       requestData.append("candidateId", activeCandidateId || "candidate-1");
       requestData.append("candidateName", activeCandidate.fullName || activeCandidate.label || "");
+      // Origin tag: journey-embedded requests are kept out of standalone My Resources (mirrors PCC / Medical).
+      if (isJourney) {
+        requestData.append("source", "journey");
+        requestData.append("journey_slug", journeyContext?.journeySlug || "");
+      } else {
+        requestData.append("source", "standalone");
+      }
 
       if (userNotes) {
         requestData.append("userNotes", userNotes);
@@ -508,7 +519,11 @@ export default function DocumentTranslationTool({
   };
 
   return (
-    <div className={`flex w-full flex-col items-center ${className}`}>
+    <div
+      className={`flex w-full flex-col items-center ${
+        uploadSuccess ? "flex-1 justify-center" : ""
+      } ${className}`}
+    >
       {/* Header */}
       {showHeader && (
         <header className="mb-8 w-full max-w-4xl text-center md:mb-10">
@@ -812,6 +827,7 @@ export default function DocumentTranslationTool({
       ) : (
         <SuccessState
           onGoToRequests={() => (window.location.href = "/document-translation/my-requests")}
+          isJourney={isJourney}
         />
       )}
 
