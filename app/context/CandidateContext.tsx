@@ -114,10 +114,26 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
 
   const [activeCandidateId, setActiveCandidateIdState] = useState<string>("candidate-1");
   const candidatesRef = useRef<CandidateProfile[]>([]);
+  const [cachedCandidates, setCachedCandidates] = useState<CandidateProfile[] | null>(null);
 
   // Track whether we've already re-synced the localStorage backup to the server
   // after a profile load that was missing candidates (avoids infinite loops).
   const didResyncRef = useRef(false);
+
+  // Load cached candidates from localStorage in useEffect (client-side only, after hydration)
+  // This prevents SSR hydration mismatch where server rendered defaults but client had localStorage cached roster.
+  useEffect(() => {
+    try {
+      const cached = localStorage.getItem(candidatesStorageKey(user?.id));
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setCachedCandidates(parsed);
+          candidatesRef.current = parsed;
+        }
+      }
+    } catch {}
+  }, [user?.id]);
 
   // ── Derive or initialize candidates ───────────────────────────────────────
   const candidates: CandidateProfile[] = useMemo(() => {
@@ -182,25 +198,18 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
       return normalized;
     }
 
-    // Try loading cached roster from localStorage (persists for guest mode or before profile fetch resolves)
-    try {
-      const cached =
-        typeof window !== "undefined" ? localStorage.getItem(candidatesStorageKey(user?.id)) : null;
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          candidatesRef.current = parsed;
-          return parsed;
-        }
-      }
-    } catch {}
+    // Client-side cached roster (loaded after hydration)
+    if (cachedCandidates && cachedCandidates.length > 0) {
+      candidatesRef.current = cachedCandidates;
+      return cachedCandidates;
+    }
 
     // Default fallback — single candidate derived from the journey type.
     const visa = profile?.visaType || profile?.visaCategory || "IR-1";
     const defaults = getDefaultCandidatesForVisa(visa, "free", false);
     candidatesRef.current = defaults;
     return defaults;
-  }, [profile?.candidates, profile?.visaType, profile?.visaCategory, user?.id]);
+  }, [profile?.candidates, profile?.visaType, profile?.visaCategory, user?.id, cachedCandidates]);
 
   // ── Restore activeCandidateId from profile / localStorage (ONCE) ─────────
   // Hydrate the active candidate a single time from profile/session. After that, an
@@ -321,6 +330,7 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
 
       const updated = [...candidatesRef.current, newCand];
       candidatesRef.current = updated;
+      setCachedCandidates(updated);
 
       try {
         localStorage.setItem(candidatesStorageKey(user?.id), JSON.stringify(updated));
@@ -370,6 +380,7 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
     (id: string, updates: Partial<CandidateProfile>) => {
       const updated = candidatesRef.current.map((c) => (c.id === id ? { ...c, ...updates } : c));
       candidatesRef.current = updated;
+      setCachedCandidates(updated);
 
       try {
         localStorage.setItem(candidatesStorageKey(user?.id), JSON.stringify(updated));
@@ -405,6 +416,7 @@ export function CandidateProvider({ children }: { children: React.ReactNode }) {
       const target = candidatesRef.current.find((c) => c.id === id);
       const updated = candidatesRef.current.filter((c) => c.id !== id);
       candidatesRef.current = updated;
+      setCachedCandidates(updated);
 
       try {
         localStorage.setItem(candidatesStorageKey(user?.id), JSON.stringify(updated));

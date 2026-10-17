@@ -23,6 +23,7 @@ interface CategorySelectionStepProps {
   onNext: () => void;
   onBack: () => void;
   onPurchaseAgain?: () => void;
+  onOpenMySessions?: () => void;
   error?: string | null;
 }
 
@@ -151,7 +152,11 @@ export function CategorySelectionStep({
           <Button
             type="button"
             onClick={() => {
-              window.location.href = "/interview-prep/my-sessions";
+              if (onOpenMySessions) {
+                onOpenMySessions();
+              } else {
+                window.location.href = "/interview-prep/my-sessions";
+              }
             }}
             className="rounded-full bg-primary px-5 text-white shadow-sm shadow-primary/20 hover:bg-primary/90"
           >

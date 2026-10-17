@@ -332,7 +332,7 @@ function JourneyVisaFormsEmbeddedTool({
 
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
         <MultiStepForm
-          key={selectedForm}
+          key={`${selectedForm}_${journeyContext?.candidateId || "candidate-1"}`}
           formCode={selectedForm}
           mode="journey"
           journeyContext={journeyContext}

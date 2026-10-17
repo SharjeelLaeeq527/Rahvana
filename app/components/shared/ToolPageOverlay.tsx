@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
-import { X, Loader2 } from "lucide-react";
+import { X } from "lucide-react";
+import { Loader } from "@/components/ui/spinner";
 
 import {
   usePlan,
@@ -29,16 +30,43 @@ interface ToolPageOverlayProps {
   plan?: PlanContextValue;
   /** Optional journey tier override (e.g. "premium" | "executive") */
   tier?: PlanTier | string;
+  /** Keep the roadmap navigation visible above the tool */
+  showJourneyHeader?: boolean;
   /** Extra props forwarded to the tool component (e.g. journeyContext for PassportPhotoTool) */
   toolProps?: Record<string, unknown>;
 }
 
 const LoadingState = () => (
-  <div className="min-h-screen flex flex-col items-center justify-center bg-[#f8fafc] gap-3">
-    <Loader2 size={32} className="text-primary animate-spin" />
-    <span className="text-xs font-medium text-slate-500">Loading tool…</span>
+  <div className="flex min-h-[calc(100dvh-76px)] items-center justify-center bg-[#f8fafc]">
+    <Loader size="md" text="Loading tool..." className="!gap-2 [&_h2]:text-base [&_h2]:font-semibold [&_h2]:mt-0" />
   </div>
 );
+
+function safeDynamic(
+  importFn: () => Promise<any>,
+  loadingComponent: React.ComponentType<any>
+) {
+  return dynamic(
+    () =>
+      importFn().catch((error) => {
+        const msg = String(error?.message || "");
+        if (
+          typeof window !== "undefined" &&
+          (msg.includes("ChunkLoadError") ||
+            msg.includes("Loading chunk") ||
+            msg.includes("Failed to fetch dynamically imported module"))
+        ) {
+          const reloadKey = "chunk_reload_" + window.location.pathname;
+          if (!sessionStorage.getItem(reloadKey)) {
+            sessionStorage.setItem(reloadKey, "1");
+            window.location.reload();
+          }
+        }
+        throw error;
+      }),
+    { loading: loadingComponent }
+  );
+}
 
 // ── TOOL_COMPONENTS ──────────────────────────────────────────────────────────
 // Maps an href prefix to a dynamically imported tool component.
@@ -46,60 +74,66 @@ const LoadingState = () => (
 // new tab in the callers.
 // ─────────────────────────────────────────────────────────────────────────────
 const TOOL_COMPONENTS: Record<string, React.ComponentType<any>> = {
-  "/passport": dynamic(() => import("@/components/tools/PassportPhotoTool"), {
-    loading: LoadingState,
-  }),
-  "/document-translation": dynamic(
+  "/passport": safeDynamic(() => import("@/components/tools/PassportPhotoTool"), LoadingState),
+  "/document-translation": safeDynamic(
     () => import("@/components/tools/DocumentTranslationTool"),
-    { loading: LoadingState }
+    LoadingState
   ),
-  "/affidavit-support-calculator": dynamic(
+  "/affidavit-support-calculator": safeDynamic(
     () => import("@/app/(tools)/affidavit-support-calculator/page"),
-    { loading: LoadingState }
+    LoadingState
   ),
-  "/signature-image-processing": dynamic(
+  "/signature-image-processing": safeDynamic(
     () => import("@/app/(tools)/signature-image-processing/page"),
-    { loading: LoadingState }
+    LoadingState
   ),
-  "/visa-forms": dynamic(
+  "/visa-forms": safeDynamic(
     () => import("@/app/(tools)/(visa)/visa-forms/page"),
-    { loading: LoadingState }
+    LoadingState
   ),
-  "/visa-checker": dynamic(
+  "/visa-checker": safeDynamic(
     () => import("@/app/(tools)/(visa)/visa-checker/page"),
-    { loading: LoadingState }
+    LoadingState
   ),
-  "/portal-wallet": dynamic(
+  "/portal-wallet": safeDynamic(
     () => import("@/app/(tools)/document-vault/page"),
-    { loading: LoadingState }
+    LoadingState
   ),
-  "/document-vault": dynamic(
+  "/document-vault": safeDynamic(
     () => import("@/app/(tools)/document-vault/page"),
-    { loading: LoadingState }
+    LoadingState
   ),
-  "/pdf-processing": dynamic(
+  "/pdf-processing": safeDynamic(
     () => import("@/app/(tools)/pdf-processing/page"),
-    { loading: LoadingState }
+    LoadingState
   ),
-  "/case-status": dynamic(
+  "/case-status": safeDynamic(
     () => import("@/app/(tools)/case-status/page"),
-    { loading: LoadingState }
+    LoadingState
   ),
-  "/interview-prep": dynamic(
+  "/interview-prep/my-sessions": safeDynamic(
+    () => import("@/app/(tools)/interview-prep/my-sessions/page"),
+    LoadingState
+  ),
+  "/interview-prep/result": safeDynamic(
+    () => import("@/app/(tools)/interview-prep/result/page"),
+    LoadingState
+  ),
+  "/interview-prep": safeDynamic(
     () => import("@/app/(tools)/interview-prep/page"),
-    { loading: LoadingState }
+    LoadingState
   ),
-  "/visa-case-strength-checker": dynamic(
+  "/visa-case-strength-checker": safeDynamic(
     () => import("@/app/(tools)/visa-case-strength-checker/page"),
-    { loading: LoadingState }
+    LoadingState
   ),
-  "/221g-action-planner": dynamic(
+  "/221g-action-planner": safeDynamic(
     () => import("@/app/(tools)/(visa)/221g-action-planner/page"),
-    { loading: LoadingState }
+    LoadingState
   ),
-  "/book-appointment": dynamic(
+  "/book-appointment": safeDynamic(
     () => import("@/app/(tools)/book-appointment/page"),
-    { loading: LoadingState }
+    LoadingState
   ),
   "/police-verification": dynamic(
     () => import("@/app/(tools)/police-verification/page"),
@@ -123,9 +157,8 @@ const DynamicMultiStepForm = dynamic(
     ),
   {
     loading: () => (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#f8fafc] gap-3">
-        <Loader2 size={32} className="text-primary animate-spin" />
-        <span className="text-xs font-medium text-slate-500">Loading form wizard…</span>
+      <div className="flex min-h-[calc(100dvh-76px)] items-center justify-center bg-[#f8fafc]">
+        <Loader size="md" text="Loading form wizard..." />
       </div>
     ),
   }
@@ -166,10 +199,26 @@ function resolveToolComponent(href: string): React.ComponentType<any> | null {
 function getInlineProps(href: string, extra?: Record<string, unknown>): Record<string, unknown> {
   const base: Record<string, unknown> = { ...(extra || {}) };
   if (href.startsWith("/passport")) {
-    return { ...base, showHeader: true, mode: "journey" };
+    return { showRequirements: true, ...base, showHeader: true, mode: "journey" };
   }
   if (href.startsWith("/document-translation")) {
-    return { ...base, showHeader: true, mode: "journey", showRequestsLink: false };
+    return { showRequirements: true, ...base, showHeader: true, mode: "journey", showRequestsLink: false };
+  }
+  if (href.startsWith("/interview-prep")) {
+    const searchStr = href.includes("?") ? href.split("?")[1] : "";
+    const params = new URLSearchParams(searchStr);
+    const journeyId = params.get("journey_id") || (extra?.journeyId as string) || undefined;
+    const sessionId = params.get("sessionId") || (extra?.sessionId as string) || undefined;
+    const categorySlug = params.get("category_slug") || (extra?.categorySlug as string) || undefined;
+    return {
+      ...base,
+      isEmbedded: true,
+      mode: "journey",
+      toolHref: href,
+      journeyId,
+      sessionId,
+      categorySlug,
+    };
   }
   return base;
 }
@@ -183,9 +232,31 @@ export const ToolPageOverlay: React.FC<ToolPageOverlayProps> = ({
   onClose,
   plan: passedPlan,
   tier: passedTier,
+  showJourneyHeader = true,
   toolProps: extraProps,
 }) => {
+  const [journeyHeaderBottom, setJourneyHeaderBottom] = useState(112);
   const accountPlan = usePlan();
+
+  useLayoutEffect(() => {
+    if (!toolHref || !showJourneyHeader) return;
+    const header = document.querySelector<HTMLElement>("[data-journey-header]");
+    const updateHeaderBottom = () => {
+      setJourneyHeaderBottom(header ? Math.max(0, header.getBoundingClientRect().bottom) : 112);
+    };
+
+    updateHeaderBottom();
+    const observer = header ? new ResizeObserver(updateHeaderBottom) : null;
+    if (header && observer) observer.observe(header);
+    window.addEventListener("resize", updateHeaderBottom);
+    window.addEventListener("scroll", updateHeaderBottom, true);
+
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener("resize", updateHeaderBottom);
+      window.removeEventListener("scroll", updateHeaderBottom, true);
+    };
+  }, [toolHref, showJourneyHeader]);
 
   // Evaluate tool plan based on the Journey tier
   const effectivePlan = useMemo<PlanContextValue>(() => {
@@ -227,7 +298,29 @@ export const ToolPageOverlay: React.FC<ToolPageOverlayProps> = ({
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose]);
 
+  useEffect(() => {
+    if (!toolHref || !showJourneyHeader) return;
+    const closeFromJourneyHeader = () => onClose();
+    window.addEventListener("journey-overlay-close", closeFromJourneyHeader);
+    return () => window.removeEventListener("journey-overlay-close", closeFromJourneyHeader);
+  }, [toolHref, showJourneyHeader, onClose]);
+
   const detectedFormCode = useMemo(() => extractFormCode(toolHref), [toolHref]);
+
+  const overlayTitle = useMemo(() => {
+    if (!toolHref) return null;
+    if (detectedFormCode) return `Form ${detectedFormCode.toUpperCase()}`;
+    const slug = toolHref.split("?")[0].split("/").filter(Boolean).at(-1) || "Tool";
+    if (["passport", "passport-photos", "photo-booth"].includes(slug)) return "Photo Booth";
+    if (slug === "interview-prep") return "Interview Prep";
+    return slug.replace(/[-_]/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+  }, [toolHref, detectedFormCode]);
+
+  useEffect(() => {
+    if (!overlayTitle || !showJourneyHeader) return;
+    window.dispatchEvent(new CustomEvent("journey-overlay-name", { detail: overlayTitle }));
+    return () => window.dispatchEvent(new CustomEvent("journey-overlay-name", { detail: null }));
+  }, [overlayTitle, showJourneyHeader]);
 
   if (!toolHref) return null;
 
@@ -235,24 +328,26 @@ export const ToolPageOverlay: React.FC<ToolPageOverlayProps> = ({
   if (detectedFormCode) {
     return (
       <div
-        className="fixed inset-0 z-[600] bg-[#f8fafc] overflow-y-auto font-sans animate-in fade-in duration-200"
+        className="fixed inset-x-0 bottom-0 z-[30] overflow-x-hidden overflow-y-auto overscroll-contain bg-[#f8fafc] font-sans animate-in fade-in duration-200"
+        style={{ top: showJourneyHeader ? journeyHeaderBottom : 0 }}
         role="dialog"
         aria-modal="true"
         aria-label={`Form ${detectedFormCode.toUpperCase()} Auto-Filler`}
       >
-        {/* ── Close Button ── */}
-        <button
-          onClick={onClose}
-          className="fixed top-4 right-5 z-[800] w-9 h-9 flex items-center justify-center rounded-full bg-white/95 hover:bg-white text-slate-600 hover:text-slate-900 shadow-md border border-slate-200/90 backdrop-blur transition-all active:scale-95 cursor-pointer"
-          aria-label="Close form wizard"
-          title="Close (Esc)"
-        >
-          <X size={18} strokeWidth={2.2} />
-        </button>
+        {!showJourneyHeader && (
+          <button
+            onClick={onClose}
+            className="fixed top-4 right-5 z-[800] w-9 h-9 flex items-center justify-center rounded-full bg-white/95 hover:bg-white text-slate-600 hover:text-slate-900 shadow-md border border-slate-200/90 backdrop-blur transition-all active:scale-95 cursor-pointer"
+            aria-label="Close form wizard"
+            title="Close (Esc)"
+          >
+            <X size={18} strokeWidth={2.2} />
+          </button>
+        )}
 
-        <div className="min-h-screen w-full">
+        <div className="min-h-full w-full">
           <PlanContext.Provider value={effectivePlan}>
-            <main className="min-h-screen">
+            <main className="min-h-full">
               <DynamicMultiStepForm
                 formCode={detectedFormCode}
                 onClose={onClose}
@@ -271,29 +366,31 @@ export const ToolPageOverlay: React.FC<ToolPageOverlayProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-[600] bg-[#f8fafc] overflow-y-auto font-sans animate-in fade-in duration-200"
+      className="fixed inset-x-0 bottom-0 z-[30] overflow-x-hidden overflow-y-auto overscroll-contain bg-[#f8fafc] font-sans animate-in fade-in duration-200"
+      style={{ top: showJourneyHeader ? journeyHeaderBottom : 0 }}
       role="dialog"
       aria-modal="true"
       aria-label="Tool View"
     >
-      {/* ── Close Button ── */}
-      <button
-        onClick={onClose}
-        className="fixed top-4 right-5 z-[800] w-9 h-9 flex items-center justify-center rounded-full bg-white/95 hover:bg-white text-slate-600 hover:text-slate-900 shadow-md border border-slate-200/90 backdrop-blur transition-all active:scale-95 cursor-pointer"
-        aria-label="Close tool"
-        title="Close (Esc)"
-      >
-        <X size={18} strokeWidth={2.2} />
-      </button>
+      {!showJourneyHeader && (
+        <button
+          onClick={onClose}
+          className="fixed top-4 right-5 z-[800] w-9 h-9 flex items-center justify-center rounded-full bg-white/95 hover:bg-white text-slate-600 hover:text-slate-900 shadow-md border border-slate-200/90 backdrop-blur transition-all active:scale-95 cursor-pointer"
+          aria-label="Close tool"
+          title="Close (Esc)"
+        >
+          <X size={18} strokeWidth={2.2} />
+        </button>
+      )}
 
       {/* ── Tool Component Rendered Directly with Journey Plan Context ── */}
-      <div className="min-h-screen w-full">
+      <div className="min-h-full w-full">
         {ToolComponent ? (
           <PlanContext.Provider value={effectivePlan}>
             <ToolComponent {...resolvedProps} />
           </PlanContext.Provider>
         ) : (
-          <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
+          <div className="min-h-full flex flex-col items-center justify-center p-6 text-center">
             <h2 className="text-lg font-bold text-slate-900 mb-2">Tool Not Available</h2>
             <p className="text-sm text-slate-500 mb-4">
               Could not load tool for:{" "}

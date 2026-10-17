@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { X, Info, CheckCircle2, ShieldCheck, ClipboardCheck, FolderCheck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useHideIntroModal } from "@/lib/guides/useHideIntro";
@@ -192,14 +193,19 @@ const WhatsThisModal = ({ open, onClose, data, documentLabel, guideSlug }: Whats
     }
   };
 
-  return (
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const modalContent = (
     <AnimatePresence>
       {open && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 bg-teal-900/60 backdrop-blur-md"
+          className="fixed inset-0 z-[150] flex items-center justify-center px-4 py-6 bg-teal-900/60 backdrop-blur-md"
           role="dialog"
           aria-modal="true"
           aria-labelledby="whats-this-welcome-title"
@@ -376,6 +382,12 @@ const WhatsThisModal = ({ open, onClose, data, documentLabel, guideSlug }: Whats
       )}
     </AnimatePresence>
   );
+
+  if (!mounted || typeof document === "undefined") {
+    return null;
+  }
+
+  return createPortal(modalContent, document.body);
 };
 
 export default WhatsThisModal;
