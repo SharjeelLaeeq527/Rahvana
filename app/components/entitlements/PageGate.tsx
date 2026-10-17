@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Lock, ArrowRight } from "lucide-react";
 import { usePlan } from "@/app/context/PlanContext";
+import { useJourneyPlan } from "@/app/context/useJourneyPlan";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { useRouter } from "next/navigation";
 import { Loader } from "@/components/ui/spinner";
@@ -14,11 +15,19 @@ interface PageGateProps {
   title?: string;
   /** Optional override for the description text on the lock screen */
   description?: string;
+  /**
+   * When provided, entitlement is evaluated against the relevant journey tier instead of the
+   * account-wide plan. Omit to preserve the current account-plan behavior.
+   */
+  planTier?: string | null;
 }
 
-export function PageGate({ feature, children, title, description }: PageGateProps) {
+export function PageGate({ feature, children, title, description, planTier }: PageGateProps) {
   const router = useRouter();
-  const plan = usePlan();
+  const accountPlan = usePlan();
+  // Reuse the journey plan API when a tier is supplied; otherwise fall back to account plan.
+  const journeyPlan = useJourneyPlan(planTier != null ? { subscriptionTier: planTier } : null);
+  const plan = planTier != null ? journeyPlan : accountPlan;
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   // If plan is loading, show loading spinner instead of the restriction card
