@@ -6,8 +6,6 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowRight,
-  CheckCircle2,
-  Clock3,
   Plus,
   Route,
   Users,
@@ -27,7 +25,6 @@ import { JourneyProgressRecord, listUserJourneys } from "@/lib/journey/journeyPr
 import {
   getCandidateJourneyKey,
   getBaseVisaCategory,
-  isMultiCandidateCategory,
 } from "@/lib/candidate/candidateSyncService";
 import { getJourneyHrefByType, ir1journeyHref, ir5journeyHref } from "@/lib/constants/routes";
 import { IR5_ENABLED } from "@/lib/feature-flags";
@@ -36,7 +33,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { JourneyPlanBadge } from "@/app/components/shared/JourneyPlanBadge";
-import { CandidateProfileLauncherModal } from "./components/CandidateProfileLauncherModal";
 import { uploadJourneyImage } from "@/lib/journey/imageUploadHelper";
 
 const JOURNEY_ALIASES: Record<string, string> = {

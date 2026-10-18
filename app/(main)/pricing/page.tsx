@@ -43,6 +43,7 @@ import {
 } from "@/app/(tools)/(visa)/visa-category/data/journeys";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { JourneyPlanBadge } from "@/app/components/shared/JourneyPlanBadge";
+import { CustomDropdown, type DropdownOption } from "@/app/components/shared/CustomDropdown";
 import { useCandidate } from "@/app/context/CandidateContext";
 import {
   isMultiCandidateCategory,
@@ -836,7 +837,6 @@ function PricingContent() {
     );
 
   const [comparePlansOpen, setComparePlansOpen] = useState(false);
-  const [isBeneficiaryModalOpen, setIsBeneficiaryModalOpen] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState<number>(-1);
   const [allAddonsOpen, setAllAddonsOpen] = useState(false);
   const [checkoutCanceled, setCheckoutCanceled] = useState(false);
@@ -894,6 +894,72 @@ function PricingContent() {
       return t !== "free";
     });
   }, [categoryCandidates, getCandidateEffectiveTier]);
+
+  const beneficiaryUpgradeOptions: DropdownOption[] = useMemo(() => {
+    return upgradableCategoryCandidates.map((cand) => {
+      const tier = getCandidateEffectiveTier(cand);
+      const name = getCandidateDisplayName(cand);
+      const initial = (
+        cand.relation && cand.relation !== "Other"
+          ? cand.relation[0]
+          : cand.fullName?.trim()
+            ? cand.fullName.trim()[0]
+            : cand.label?.[0] || "B"
+      ).toUpperCase();
+
+      const avatarBg =
+        cand.colorTag &&
+        {
+          teal: "from-teal-600 to-emerald-700 text-white",
+          purple: "from-purple-600 to-indigo-700 text-white",
+          blue: "from-blue-600 to-cyan-700 text-white",
+          amber: "from-amber-500 to-orange-600 text-white",
+          rose: "from-rose-500 to-pink-600 text-white",
+          emerald: "from-emerald-600 to-teal-700 text-white",
+        }[cand.colorTag]
+          ? {
+              teal: "from-teal-600 to-emerald-700 text-white",
+              purple: "from-purple-600 to-indigo-700 text-white",
+              blue: "from-blue-600 to-cyan-700 text-white",
+              amber: "from-amber-500 to-orange-600 text-white",
+              rose: "from-rose-500 to-pink-600 text-white",
+              emerald: "from-emerald-600 to-teal-700 text-white",
+            }[cand.colorTag]
+          : "from-[#0d7377] to-[#14919b] text-white";
+
+      const avatar = (
+        <span
+          className={`flex h-5 w-5 shrink-0 items-center justify-center overflow-hidden rounded-full bg-linear-to-br ${avatarBg} text-[10px] font-bold shadow-xs`}
+        >
+          {cand.avatarUrl ? (
+            <img
+              src={cand.avatarUrl}
+              alt={name}
+              className="h-full w-full rounded-full object-cover"
+            />
+          ) : (
+            <span>{initial}</span>
+          )}
+        </span>
+      );
+
+      const rightBadge =
+        tier && tier !== "free" ? (
+          <JourneyPlanBadge
+            tier={tier}
+            iconOnly={true}
+            className="!h-5 !w-5 shrink-0 [&>img]:!h-3 [&>img]:!w-3"
+          />
+        ) : null;
+
+      return {
+        value: cand.id,
+        label: name,
+        icon: avatar,
+        rightElement: rightBadge,
+      };
+    });
+  }, [upgradableCategoryCandidates, getCandidateEffectiveTier, getCandidateDisplayName]);
 
   const [selectedUpgradeCandidateId, setSelectedUpgradeCandidateId] = useState<string | null>(null);
 
@@ -1845,67 +1911,24 @@ function PricingContent() {
                         </span>
                       ))}
 
-                    {/* Beneficiary selector pill placed after the upgrade/add buttons */}
+                    {/* Beneficiary selector dropdown for IR-5 Upgrade */}
                     {isUpgradingIr5 &&
                       activeUpgradeCandidate &&
                       upgradableCategoryCandidates.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => setIsBeneficiaryModalOpen(true)}
-                          className="group bg-card border-border hover:bg-muted/40 inline-flex shrink-0 cursor-pointer items-center gap-2 rounded-xl border px-3 py-1.5 shadow-xs transition-all hover:border-[#0d7377]/50 focus:ring-2 focus:ring-[#0d7377]/30 focus:outline-none"
-                          title="Click to switch beneficiary"
-                        >
-                          <span className="text-muted-foreground text-[11.5px] font-medium">
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <span className="text-muted-foreground text-[11.5px] font-medium shrink-0">
                             Beneficiary:
                           </span>
-                          <div className="relative flex shrink-0">
-                            <div
-                              className={`flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br text-[11px] font-bold text-white shadow-xs ${
-                                BENEFICIARY_COLOR_GRADIENTS[
-                                  (upgradableCategoryCandidates.findIndex(
-                                    (c) => c.id === activeUpgradeCandidate.id
-                                  ) >= 0
-                                    ? upgradableCategoryCandidates.findIndex(
-                                        (c) => c.id === activeUpgradeCandidate.id
-                                      )
-                                    : 0) % BENEFICIARY_COLOR_GRADIENTS.length
-                                ]
-                              }`}
-                            >
-                              {activeUpgradeCandidate.avatarUrl ? (
-                                <img
-                                  src={activeUpgradeCandidate.avatarUrl}
-                                  alt={getCandidateDisplayName(activeUpgradeCandidate)}
-                                  className="h-full w-full rounded-full object-cover"
-                                />
-                              ) : (
-                                <span>
-                                  {(activeUpgradeCandidate.relation &&
-                                  activeUpgradeCandidate.relation !== "Other"
-                                    ? activeUpgradeCandidate.relation[0]
-                                    : activeUpgradeCandidate.fullName?.trim()
-                                      ? activeUpgradeCandidate.fullName.trim()[0]
-                                      : activeUpgradeCandidate.label?.[0] || "B"
-                                  ).toUpperCase()}
-                                </span>
-                              )}
-                            </div>
-                            {/* <div className="absolute -top-1 -right-1 z-10">
-                              <JourneyPlanBadge
-                                tier={getCandidateEffectiveTier(activeUpgradeCandidate)}
-                                iconOnly={true}
-                                className="border-background h-1 w-1 border shadow-xs"
-                              />
-                            </div> */}
-                          </div>
-                          <span
-                            className="max-w-[130px] truncate text-xs font-bold text-[#0d7377] transition-colors group-hover:underline dark:text-teal-400"
-                            title={getCandidateDisplayName(activeUpgradeCandidate)}
-                          >
-                            {getCandidateDisplayName(activeUpgradeCandidate)}
-                          </span>
-                          <ChevronDown className="text-muted-foreground group-hover:text-foreground h-3.5 w-3.5 shrink-0 transition-colors" />
-                        </button>
+                          <CustomDropdown
+                            value={selectedUpgradeCandidateId || activeUpgradeCandidate.id}
+                            onChange={(val) => setSelectedUpgradeCandidateId(val)}
+                            options={beneficiaryUpgradeOptions}
+                            placeholder="Select Beneficiary"
+                            className="w-auto"
+                            maxLabelWidth="max-w-[120px] sm:max-w-[160px]"
+                            triggerClassName="!min-h-[32px] !h-[32px] !w-auto !py-1 !px-2.5 !gap-1.5 !text-xs !font-bold !rounded-full !border !border-border !bg-card text-foreground shadow-xs hover:border-[#0d7377]/50"
+                          />
+                        </div>
                       )}
                   </div>
                 </div>
@@ -3070,16 +3093,6 @@ function PricingContent() {
         }}
       />
 
-      {/* ── Beneficiary Select Modal (for IR-5 Upgrade) ─────────────────────────── */}
-      <BeneficiaryUpgradeSelectModal
-        isOpen={isBeneficiaryModalOpen}
-        onClose={() => setIsBeneficiaryModalOpen(false)}
-        candidates={upgradableCategoryCandidates}
-        selectedCandidateId={activeUpgradeCandidate?.id ?? null}
-        onSelectCandidate={(id) => setSelectedUpgradeCandidateId(id)}
-        getCandidateEffectiveTier={getCandidateEffectiveTier}
-        getCandidateDisplayName={getCandidateDisplayName}
-      />
     </div>
   );
 }
