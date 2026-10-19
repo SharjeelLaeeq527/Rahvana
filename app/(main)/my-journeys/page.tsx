@@ -546,6 +546,11 @@ export default function MyJourneysPage() {
             activeCandidate &&
             getBaseVisaCategory(activeCandidate.visaCategory || "IR-5") === "IR-5";
 
+          const candForIr5 =
+            candidates.find((c) => getBaseVisaCategory(c.visaCategory) === "IR-5") ||
+            candidates.find((c) => c.isPrimary) ||
+            candidates[0];
+
           result.push({
             id: activeDbJourney?.id || "parent_ir5_journey",
             journey: activeDbJourney,
@@ -556,6 +561,8 @@ export default function MyJourneysPage() {
               ...meta,
               name: customName,
               image: customImage,
+              canonicalId: "ir5",
+              candidateId: candForIr5?.id,
               isCurrentActive: Boolean(isIr5Active),
             },
             status,
@@ -608,10 +615,24 @@ export default function MyJourneysPage() {
         profile?.journeyCustomizations?.[canonicalKey] ||
         profile?.journeyCustomizations?.[canonical] ||
         profile?.journeyCustomizations?.[j.journey_id];
-      const defaultCand =
-        activeCandidate && getBaseVisaCategory(activeCandidate.visaCategory) === baseCategory
+
+      const candIdFromJourney =
+        j.journey_id && j.journey_id.includes("_") ? j.journey_id.split("_")[1] : null;
+      const candForJourney =
+        (candIdFromJourney
+          ? candidates.find(
+              (c) => c.id.replace(/[^a-z0-9]/g, "") === candIdFromJourney.replace(/[^a-z0-9]/g, "")
+            )
+          : null) ||
+        (activeCandidate && getBaseVisaCategory(activeCandidate.visaCategory) === baseCategory
           ? activeCandidate
-          : null;
+          : null) ||
+        candidates.find((c) => getBaseVisaCategory(c.visaCategory) === baseCategory) ||
+        (baseCategory === "IR-1" ? candidates.find((c) => c.relation === "Spouse") : null) ||
+        candidates.find((c) => c.isPrimary) ||
+        candidates[0];
+
+      const defaultCand = candForJourney || null;
       const defaultCandName =
         defaultCand?.customName || defaultCand?.fullName || defaultCand?.label || meta.name;
       const customName = jCustom?.name || defaultCandName;
@@ -621,7 +642,9 @@ export default function MyJourneysPage() {
       const isCurrentActive =
         baseCategory === "IR-1"
           ? activeCandidate && getBaseVisaCategory(activeCandidate.visaCategory) === "IR-1"
-          : true;
+          : activeCandidate && candForJourney
+            ? activeCandidate.id === candForJourney.id
+            : true;
 
       result.push({
         id: j.id,
@@ -633,6 +656,8 @@ export default function MyJourneysPage() {
           ...meta,
           name: customName,
           image: customImage,
+          canonicalId: canonicalKey,
+          candidateId: candForJourney?.id,
           isCurrentActive: Boolean(isCurrentActive),
         },
         status,
@@ -659,10 +684,17 @@ export default function MyJourneysPage() {
           const fbCustom =
             profile?.journeyCustomizations?.[canonicalKey] ||
             profile?.journeyCustomizations?.[profileVisa.toLowerCase()];
-          const defaultCand =
-            activeCandidate && getBaseVisaCategory(activeCandidate.visaCategory) === baseCategory
+
+          const candForProfile =
+            (activeCandidate && getBaseVisaCategory(activeCandidate.visaCategory) === baseCategory
               ? activeCandidate
-              : null;
+              : null) ||
+            candidates.find((c) => getBaseVisaCategory(c.visaCategory) === baseCategory) ||
+            (baseCategory === "IR-1" ? candidates.find((c) => c.relation === "Spouse") : null) ||
+            candidates.find((c) => c.isPrimary) ||
+            candidates[0];
+
+          const defaultCand = candForProfile || null;
           const defaultCandName =
             defaultCand?.customName || defaultCand?.fullName || defaultCand?.label || meta.name;
           const customName = fbCustom?.name || defaultCandName;
@@ -699,6 +731,8 @@ export default function MyJourneysPage() {
               ...meta,
               name: customName,
               image: customImage,
+              canonicalId: canonicalKey,
+              candidateId: candForProfile?.id,
               isCurrentActive: false,
             },
             status: fbStatus,
@@ -749,8 +783,27 @@ export default function MyJourneysPage() {
     }
     */
 
-    if (meta.candidateId) {
-      setActiveCandidateId(meta.candidateId);
+    let targetCandidateId = meta.candidateId;
+
+    // Safety fallback: if candidateId was not directly on meta, resolve the appropriate candidate
+    if (!targetCandidateId) {
+      const baseCategory = getBaseVisaCategory(meta.code || meta.canonicalId);
+      const match =
+        (activeCandidate && getBaseVisaCategory(activeCandidate.visaCategory) === baseCategory
+          ? activeCandidate
+          : null) ||
+        candidates.find((c) => getBaseVisaCategory(c.visaCategory) === baseCategory) ||
+        (baseCategory === "IR-1" ? candidates.find((c) => c.relation === "Spouse") : null) ||
+        candidates.find((c) => c.isPrimary) ||
+        candidates[0];
+
+      if (match?.id) {
+        targetCandidateId = match.id;
+      }
+    }
+
+    if (targetCandidateId) {
+      setActiveCandidateId(targetCandidateId);
     }
 
     router.push(meta.route);
