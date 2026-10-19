@@ -50,6 +50,11 @@ import {
   getBaseVisaCategory,
   getCandidateJourneyKey,
 } from "@/lib/candidate/candidateSyncService";
+import {
+  calculateSubscriptionCycle,
+  calculateUpgradeSchedule,
+  type UpgradeScheduleResult,
+} from "@/lib/pricing/upgradeScheduleService";
 
 /* ===========================================================================
    TIER VISUAL CONFIG
@@ -776,6 +781,8 @@ function PricingContent() {
 
   const [userId, setUserId] = useState<string | null>(null);
   const [journeyTiers, setJourneyTiers] = useState<Record<string, string>>({});
+  const [journeyStartDates, setJourneyStartDates] = useState<Record<string, string>>({});
+  const [accountPlanPurchaseDate, setAccountPlanPurchaseDate] = useState<string | null>(null);
   const [isLoadingUser, setIsLoadingUser] = useState(true);
   const [isProcessingAutoCheckout, setIsProcessingAutoCheckout] = useState(false);
   const [isManualCheckoutLoading, setIsManualCheckoutLoading] = useState(false);
@@ -1114,30 +1121,58 @@ function PricingContent() {
   const currentPlanData = activePlans.find((p) => p.id === selectedPlan) || activePlans[2];
   const activeAddons = ADDONS.filter((addon) => isAddonSelected(addon.id));
 
-  // Dynamic upgrade difference calculator (target tier price - current tier price)
+  const activeSubscriptionStartDate = useMemo(() => {
+    if (isUpgradingIr5 && activeUpgradeCandidate) {
+      if (activeUpgradeCandidate.createdAt) {
+        return activeUpgradeCandidate.createdAt;
+      }
+    }
+    const catKey = visa.toLowerCase().includes("5") || isIr5 ? "ir5" : "ir1";
+    return journeyStartDates[catKey] || accountPlanPurchaseDate || null;
+  }, [
+    isUpgradingIr5,
+    activeUpgradeCandidate,
+    visa,
+    isIr5,
+    journeyStartDates,
+    accountPlanPurchaseDate,
+  ]);
+
+  const subscriptionCycle = useMemo(() => {
+    return calculateSubscriptionCycle(activeSubscriptionStartDate);
+  }, [activeSubscriptionStartDate]);
+
+  // Dynamic 12-month upgrade schedule calculator
+  // Total commitment = Remaining current plan amount + (Target plan - Current plan difference)
+  // New Monthly Rate = Total commitment / 12
   const getPlanUpgradeDiff = useCallback(
     (targetPlan: PlanData) => {
       if (!isUpgradingThisJourney || !selectedJourneyTier || selectedJourneyTier === "free") {
         return null;
       }
-      const TIER_RANK: Record<string, number> = { free: 0, basic: 1, premium: 2, executive: 3 };
-      const curRank = TIER_RANK[selectedJourneyTier] ?? 0;
-      const targetRank = TIER_RANK[targetPlan.id] ?? 0;
-      if (targetRank <= curRank) return null;
 
       const curPlan = activePlans.find((p) => p.id === selectedJourneyTier);
-      const curAnnual = curPlan ? curPlan.annualPrice : 0;
-      const diffAnnual = Math.max(0, targetPlan.annualPrice - curAnnual);
-      const diffMonthly = Math.round((diffAnnual / 12) * 100) / 100;
+      if (!curPlan) return null;
+
+      const schedule = calculateUpgradeSchedule({
+        currentPlan: curPlan,
+        targetPlan,
+        monthsElapsed: subscriptionCycle.monthsElapsed,
+        monthsRemaining: subscriptionCycle.monthsRemaining,
+      });
+
+      if (!schedule) return null;
 
       return {
-        diffAnnual,
-        diffMonthly,
-        curAnnual,
-        targetAnnual: targetPlan.annualPrice,
+        ...schedule,
+        // Backward compatibility properties for existing card renderers:
+        diffAnnual: schedule.totalNewCommitment,
+        diffMonthly: schedule.newMonthlyRate,
+        curAnnual: schedule.currentPlanAnnual,
+        targetAnnual: schedule.targetPlanAnnual,
       };
     },
-    [isUpgradingThisJourney, selectedJourneyTier, activePlans]
+    [isUpgradingThisJourney, selectedJourneyTier, activePlans, subscriptionCycle]
   );
 
   const currentPlanUpgradeDiff = useMemo(
@@ -1413,21 +1448,46 @@ function PricingContent() {
       const uid = data.user?.id || null;
       setUserId(uid);
       if (uid) {
-        const { data: journeys } = await supabase
-          .from("journeys")
-          .select("journey_type, subscription_tier")
-          .eq("user_id", uid);
-        setJourneyTiers(
-          (journeys || []).reduce<Record<string, string>>((tiers, journey) => {
-            const raw = String(journey.journey_type || "").toLowerCase();
-            tiers[raw] = journey.subscription_tier || "free";
-            if (raw.includes("5"))
-              tiers["ir5"] = tiers["ir5"] || journey.subscription_tier || "free";
-            if (raw.includes("1"))
-              tiers["ir1"] = tiers["ir1"] || journey.subscription_tier || "free";
-            return tiers;
-          }, {})
-        );
+        const [journeysRes, profileRes] = await Promise.all([
+          supabase
+            .from("journeys")
+            .select("journey_type, subscription_tier, created_at, updated_at")
+            .eq("user_id", uid),
+          supabase
+            .from("user_profiles")
+            .select("profile_details, created_at")
+            .eq("id", uid)
+            .maybeSingle(),
+        ]);
+
+        const journeys = journeysRes.data || [];
+        const profile = profileRes.data;
+
+        const tiersMap: Record<string, string> = {};
+        const datesMap: Record<string, string> = {};
+
+        journeys.forEach((journey) => {
+          const raw = String(journey.journey_type || "").toLowerCase();
+          const tier = journey.subscription_tier || "free";
+          tiersMap[raw] = tier;
+          if (journey.created_at) datesMap[raw] = journey.created_at;
+
+          if (raw.includes("5")) {
+            tiersMap["ir5"] = tiersMap["ir5"] || tier;
+            if (journey.created_at) datesMap["ir5"] = datesMap["ir5"] || journey.created_at;
+          }
+          if (raw.includes("1")) {
+            tiersMap["ir1"] = tiersMap["ir1"] || tier;
+            if (journey.created_at) datesMap["ir1"] = datesMap["ir1"] || journey.created_at;
+          }
+        });
+
+        setJourneyTiers(tiersMap);
+        setJourneyStartDates(datesMap);
+
+        const purchaseDate =
+          (profile?.profile_details as any)?.plan_purchase_date || profile?.created_at || null;
+        setAccountPlanPurchaseDate(purchaseDate);
       }
       setIsLoadingUser(false);
     });
