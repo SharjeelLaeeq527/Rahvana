@@ -59,6 +59,7 @@ import { requestNavigation } from "@/lib/guides/navigationGuardStore";
 import { ir1journeyHref, ir5journeyHref } from "@/lib/constants/routes";
 import { useCandidate } from "@/app/context/CandidateContext";
 import { useJourneyEnvironment } from "@/app/context/JourneyEnvironmentContext";
+import { WalletBalancePill } from "@/app/components/wallet/WalletBalancePill";
 
 interface HeaderProps {
   activeSection?: string;
@@ -1154,6 +1155,10 @@ export function SiteHeader({
               {language === "en" ? "اردو" : "EN"}
             </span>
           </HydrationSafeButton> */}
+
+          {isLoading && !resolvedUser ? null : isSignedIn && (
+            <WalletBalancePill tone={isHomeHeroState ? "hero" : "default"} />
+          )}
 
           {isLoading && !resolvedUser
             ? null
