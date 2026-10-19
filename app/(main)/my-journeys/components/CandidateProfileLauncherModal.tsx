@@ -47,6 +47,20 @@ const RAHVANA_AVATAR_THEMES = [
   },
 ];
 
+const formatCandidateRelation = (rel?: string): string => {
+  if (!rel) return "";
+  const map: Record<string, string> = {
+    Mother: "Mother",
+    Father: "Father",
+    Stepparent: "Step-Parent",
+    AdoptiveParent: "Adoptive Parent",
+    Child: "Child",
+    Spouse: "Spouse",
+    Other: "Other",
+  };
+  return map[rel] || rel.replace(/([a-z])([A-Z])/g, "$1 $2");
+};
+
 export function CandidateProfileLauncherModal({
   isOpen,
   onClose,
@@ -217,7 +231,7 @@ export function CandidateProfileLauncherModal({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 14 }}
           transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-          className="relative z-10 max-h-[90dvh] w-full max-w-3xl overflow-y-auto rounded-3xl border border-slate-200/90 bg-white p-6 shadow-2xl sm:p-10 lg:p-12 dark:border-slate-800 dark:bg-slate-900"
+          className="relative z-10 max-h-[90dvh] w-full max-w-4xl overflow-y-auto rounded-3xl border border-slate-200/90 bg-white p-6 shadow-2xl sm:p-8 lg:p-10 dark:border-slate-800 dark:bg-slate-900"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Close Button */}
@@ -240,14 +254,14 @@ export function CandidateProfileLauncherModal({
               Who&apos;s continuing this journey?
             </h2>
 
-            <p className="mx-auto mt-3 max-w-lg text-xs leading-relaxed text-slate-500 sm:text-sm dark:text-slate-400">
+            {/* <p className="mx-auto mt-3 max-w-lg text-xs leading-relaxed text-slate-500 sm:text-sm dark:text-slate-400">
               Select a candidate profile to load their personal document vault, step-by-step
               roadmap, and isolated progress.
-            </p>
+            </p> */}
           </div>
 
-          {/* Profile Tiles Grid */}
-          <div className="mt-9 flex flex-wrap items-start justify-center gap-6 sm:gap-8 lg:gap-10">
+          {/* Profile Cards Grid */}
+          <div className="mt-8 flex flex-wrap items-start justify-center gap-4 sm:gap-5 lg:gap-6">
             {displayCandidates.map((candidate, idx) => {
               const theme = RAHVANA_AVATAR_THEMES[idx % RAHVANA_AVATAR_THEMES.length];
               const displayName =
@@ -261,6 +275,11 @@ export function CandidateProfileLauncherModal({
 
               const isEditingThis = editingCandidateId === candidate.id;
               const isUploadingThis = uploadingCandidateId === candidate.id;
+
+              const formattedRelation = formatCandidateRelation(candidate.relation);
+              const isSameAsName =
+                displayName.trim().toLowerCase() === formattedRelation.toLowerCase();
+              const relationDisplay = isSameAsName ? "Primary Beneficiary" : formattedRelation;
 
               return (
                 <div
@@ -287,7 +306,7 @@ export function CandidateProfileLauncherModal({
                       }
                     }
                   }}
-                  className="group flex flex-col items-center focus:outline-none"
+                  className="group relative flex w-44 cursor-pointer flex-col items-center justify-between rounded-3xl border border-slate-200/80 bg-white p-4 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-[#0d7377] hover:shadow-xl hover:shadow-[#0d7377]/10 focus:outline-none sm:w-48 sm:p-4.5 dark:border-slate-800 dark:bg-slate-900/90 dark:hover:border-teal-500"
                 >
                   {/* Hidden File Input for Avatar Upload */}
                   <input
@@ -301,166 +320,181 @@ export function CandidateProfileLauncherModal({
                     onChange={(e) => handleCandidatePhotoChange(e, candidate.id)}
                   />
 
-                  {/* Avatar Tile */}
-                  <div
-                    className={`relative flex h-24 w-24 cursor-pointer items-center justify-center overflow-hidden rounded-2xl bg-linear-to-br sm:h-28 sm:w-28 sm:rounded-3xl ${theme.bg} shadow-md transition-all duration-200 group-hover:scale-105 group-hover:ring-4 ${theme.ring} ${theme.shadow}`}
-                  >
-                    {candidate.avatarUrl ? (
-                      <Image
-                        src={candidate.avatarUrl}
-                        alt={displayName}
-                        fill
-                        unoptimized={candidate.avatarUrl.startsWith("data:")}
-                        sizes="112px"
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                    ) : (
-                      <span className="text-2xl font-black tracking-wider text-white sm:text-3xl">
-                        {initials || <User className="h-10 w-10 text-white/90" />}
-                      </span>
-                    )}
-
-                    {/* Upload spinner */}
-                    {isUploadingThis && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs">
-                        <Loader2 className="h-6 w-6 animate-spin text-white" />
-                      </div>
-                    )}
-
-                    {/* Camera Upload Badge Button */}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleTriggerPhotoUpload(e, candidate.id);
-                      }}
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                      }}
-                      onPointerDown={(e) => {
-                        e.stopPropagation();
-                      }}
-                      title="Upload or change photo"
-                      className="absolute right-1.5 bottom-1.5 flex h-7 w-7 items-center justify-center rounded-full border border-white/40 bg-slate-950/70 text-white shadow-md backdrop-blur-md transition-all duration-200 hover:scale-110 hover:border-teal-300 hover:bg-[#0d7377] dark:border-slate-700"
-                    >
-                      <Camera className="h-3.5 w-3.5 text-teal-300" />
-                    </button>
-                  </div>
-
-                  {/* Name & Relation Label */}
-                  <div className="mt-3 flex flex-col items-center text-center">
-                    {isEditingThis ? (
+                  {/* Top / Identity Block */}
+                  <div className="flex w-full flex-col items-center">
+                    {/* Avatar Wrapper with Top-Left Tier Badge & Bottom-Right Camera */}
+                    <div className="relative">
+                      {/* Avatar Tile */}
                       <div
-                        className="mt-0.5 flex items-center gap-1"
-                        onClick={(e) => e.stopPropagation()}
+                        className={`relative flex h-24 w-24 cursor-pointer items-center justify-center overflow-hidden rounded-2xl bg-linear-to-br sm:h-28 sm:w-28 sm:rounded-3xl ${theme.bg} shadow-md transition-all duration-200 group-hover:scale-105 group-hover:ring-4 ${theme.ring} ${theme.shadow}`}
                       >
-                        <input
-                          type="text"
-                          value={candidateNameInput}
-                          onChange={(e) => setCandidateNameInput(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault();
-                              saveCandidateName(candidate.id);
-                            } else if (e.key === "Escape") {
-                              e.preventDefault();
-                              setEditingCandidateId(null);
-                            }
+                        {candidate.avatarUrl ? (
+                          <Image
+                            src={candidate.avatarUrl}
+                            alt={displayName}
+                            fill
+                            unoptimized={candidate.avatarUrl.startsWith("data:")}
+                            sizes="112px"
+                            className="object-cover transition-transform duration-300 group-hover:scale-105"
+                          />
+                        ) : (
+                          <span className="text-2xl font-black tracking-wider text-white sm:text-3xl">
+                            {initials || <User className="h-10 w-10 text-white/90" />}
+                          </span>
+                        )}
+
+                        {/* Upload spinner */}
+                        {isUploadingThis && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs">
+                            <Loader2 className="h-6 w-6 animate-spin text-white" />
+                          </div>
+                        )}
+
+                        {/* Camera Upload Badge Button */}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleTriggerPhotoUpload(e, candidate.id);
                           }}
-                          placeholder="Candidate Name"
-                          className="w-28 rounded-lg border border-teal-500/50 bg-white px-2 py-1 text-xs font-bold text-slate-800 shadow-xs focus:ring-2 focus:ring-[#0d7377]/40 focus:outline-none dark:bg-slate-800 dark:text-slate-100"
-                          autoFocus
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                          }}
+                          onPointerDown={(e) => {
+                            e.stopPropagation();
+                          }}
+                          title="Upload or change photo"
+                          className="absolute right-1.5 bottom-1.5 flex h-7 w-7 items-center justify-center rounded-full border border-white/40 bg-slate-950/70 text-white shadow-md backdrop-blur-md transition-all duration-200 hover:scale-110 hover:border-teal-300 hover:bg-[#0d7377] dark:border-slate-700"
+                        >
+                          <Camera className="h-3.5 w-3.5 text-teal-300" />
+                        </button>
+                      </div>
+
+                      {/* Tier Badge on top-left of the profile image */}
+                      <div
+                        className="absolute -top-1.5 -left-1.5 z-10 transition-transform duration-200 group-hover:scale-110 sm:-top-2 sm:-left-2"
+                        title={`${(candidate.tier || "free").toUpperCase()} Plan`}
+                      >
+                        <JourneyPlanBadge
+                          tier={candidate.tier || "free"}
+                          className="shadow-md ring-2 ring-white dark:ring-slate-900"
                         />
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            saveCandidateName(candidate.id);
-                          }}
-                          onMouseDown={(e) => e.stopPropagation()}
-                          onPointerDown={(e) => e.stopPropagation()}
-                          className="flex h-6 w-6 items-center justify-center rounded-md bg-[#0d7377] text-white hover:bg-[#0a5a5d]"
-                          title="Save"
-                        >
-                          <Check className="h-3.5 w-3.5" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            cancelEditCandidateName(e);
-                          }}
-                          onMouseDown={(e) => e.stopPropagation()}
-                          onPointerDown={(e) => e.stopPropagation()}
-                          className="flex h-6 w-6 items-center justify-center rounded-md bg-slate-200 text-slate-600 hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-300"
-                          title="Cancel"
-                        >
-                          <X className="h-3.5 w-3.5" />
-                        </button>
                       </div>
-                    ) : (
-                      <div className="flex items-center gap-1.5">
-                        <span
-                          title={displayName}
-                          className="max-w-[130px] truncate text-xs font-bold text-slate-800 transition-colors group-hover:text-[#0d7377] sm:text-sm dark:text-slate-200 dark:group-hover:text-teal-400"
-                        >
-                          {displayName}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            startEditCandidateName(e, candidate);
-                          }}
-                          onMouseDown={(e) => e.stopPropagation()}
-                          onPointerDown={(e) => e.stopPropagation()}
-                          title="Change name"
-                          className="flex h-5 w-5 items-center justify-center rounded-full text-slate-400 opacity-60 transition-all hover:bg-slate-100 hover:text-[#0d7377] hover:opacity-100 dark:hover:bg-slate-800"
-                        >
-                          <Pencil className="h-3 w-3" />
-                        </button>
-                      </div>
-                    )}
-
-                    {candidate.relation && (
-                      <span className="mt-0.5 text-[11px] font-medium text-[#0d7377] dark:text-teal-400">
-                        {candidate.relation}
-                      </span>
-                    )}
-
-                    <div className="mt-1.5">
-                      <JourneyPlanBadge tier={candidate.tier || "free"} />
                     </div>
 
-                    {/* Candidate Roadmap Progress */}
-                    {(() => {
-                      const candProgress = getCandidateProgress(candidate.id);
-                      return (
-                        <div className="mt-3 w-28 sm:w-32 text-center">
-                          <div className="flex items-center justify-between text-[10px] font-semibold text-slate-500 dark:text-slate-400">
-                            <span>Progress</span>
-                            <span className="font-bold text-[#0d7377] dark:text-teal-400">
-                              {candProgress.percent}%
-                            </span>
-                          </div>
-                          <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-slate-200/90 dark:bg-slate-700">
-                            <div
-                              className="h-full rounded-full bg-linear-to-r from-[#0d7377] to-[#32e0c4] transition-all duration-500"
-                              style={{ width: `${candProgress.percent}%` }}
-                            />
-                          </div>
-                          <p className="mt-0.5 text-[9px] text-slate-400 dark:text-slate-500">
-                            {candProgress.completed} of {candProgress.total} steps
-                          </p>
+                    {/* Name & Relation Label */}
+                    <div className="mt-3.5 flex w-full flex-col items-center text-center">
+                      {isEditingThis ? (
+                        <div
+                          className="mt-0.5 flex items-center gap-1"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <input
+                            type="text"
+                            value={candidateNameInput}
+                            onChange={(e) => setCandidateNameInput(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                saveCandidateName(candidate.id);
+                              } else if (e.key === "Escape") {
+                                e.preventDefault();
+                                setEditingCandidateId(null);
+                              }
+                            }}
+                            placeholder="Candidate Name"
+                            className="w-28 rounded-lg border border-teal-500/50 bg-white px-2 py-1 text-xs font-bold text-slate-800 shadow-xs focus:ring-2 focus:ring-[#0d7377]/40 focus:outline-none sm:w-32 dark:bg-slate-800 dark:text-slate-100"
+                            autoFocus
+                          />
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              saveCandidateName(candidate.id);
+                            }}
+                            onMouseDown={(e) => e.stopPropagation()}
+                            onPointerDown={(e) => e.stopPropagation()}
+                            className="flex h-6 w-6 items-center justify-center rounded-md bg-[#0d7377] text-white hover:bg-[#0a5a5d]"
+                            title="Save"
+                          >
+                            <Check className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              cancelEditCandidateName(e);
+                            }}
+                            onMouseDown={(e) => e.stopPropagation()}
+                            onPointerDown={(e) => e.stopPropagation()}
+                            className="flex h-6 w-6 items-center justify-center rounded-md bg-slate-200 text-slate-600 hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-300"
+                            title="Cancel"
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </button>
                         </div>
-                      );
-                    })()}
+                      ) : (
+                        <div className="flex items-center justify-center gap-1.5">
+                          <span
+                            title={displayName}
+                            className="max-w-[130px] truncate text-sm font-bold text-slate-800 transition-colors group-hover:text-[#0d7377] sm:max-w-[145px] sm:text-base dark:text-slate-100 dark:group-hover:text-teal-400"
+                          >
+                            {displayName}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              startEditCandidateName(e, candidate);
+                            }}
+                            onMouseDown={(e) => e.stopPropagation()}
+                            onPointerDown={(e) => e.stopPropagation()}
+                            title="Change name"
+                            className="flex h-5 w-5 items-center justify-center rounded-full text-slate-400 opacity-60 transition-all hover:bg-slate-100 hover:text-[#0d7377] hover:opacity-100 dark:hover:bg-slate-800"
+                          >
+                            <Pencil className="h-3 w-3" />
+                          </button>
+                        </div>
+                      )}
+
+                      {/* {relationDisplay && (
+                        <span className="mt-1 inline-flex items-center rounded-full border border-teal-500/15 bg-teal-50 px-2.5 py-0.5 text-[10px] font-semibold text-[#0d7377] dark:border-teal-500/25 dark:bg-teal-950/40 dark:text-teal-300">
+                          {relationDisplay}
+                        </span>
+                      )} */}
+                    </div>
                   </div>
+
+                  {/* Integrated Progress Footer */}
+                  {(() => {
+                    const candProgress = getCandidateProgress(candidate.id);
+                    return (
+                      <div className="mt-4 w-full border-t border-slate-100 pt-3 dark:border-slate-800">
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
+                            Progress
+                          </span>
+                          <span className="font-bold text-[#0d7377] dark:text-teal-400">
+                            {candProgress.percent}%
+                          </span>
+                        </div>
+                        <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                          <div
+                            className="h-full rounded-full bg-linear-to-r from-[#0d7377] to-[#32e0c4] transition-all duration-500"
+                            style={{ width: `${candProgress.percent}%` }}
+                          />
+                        </div>
+                        <p className="mt-1 text-center text-[10px] font-medium text-slate-400 dark:text-slate-500">
+                          {candProgress.completed} of {candProgress.total} steps
+                        </p>
+                      </div>
+                    );
+                  })()}
                 </div>
               );
             })}
@@ -476,7 +510,7 @@ export function CandidateProfileLauncherModal({
                   handleAddCandidate();
                 }
               }}
-              className="group flex flex-col items-center focus:outline-none"
+              className="group flex flex-col items-center justify-center self-center focus:outline-none"
             >
               {/* Plus Tile */}
               <div className="relative flex h-24 w-24 cursor-pointer items-center justify-center rounded-2xl border-2 border-dashed border-[#0d7377]/30 bg-[#f0f9fa]/80 shadow-xs transition-all duration-200 group-hover:scale-105 group-hover:shadow-[0_12px_28px_rgba(13,115,119,0.18)] hover:border-[#0d7377] hover:bg-[#e4f4f5] sm:h-28 sm:w-28 sm:rounded-3xl dark:border-slate-700 dark:bg-slate-800/40 dark:hover:border-teal-400 dark:hover:bg-slate-800/80">

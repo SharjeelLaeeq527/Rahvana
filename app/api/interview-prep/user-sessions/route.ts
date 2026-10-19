@@ -13,6 +13,7 @@ import {
   getSessionAnswersDB,
   getInterviewResultsDB,
 } from "@/lib/interview-prep/data-access";
+import { resolveCategorySlug } from "@/lib/interview-prep/journey-category-map";
 
 export async function GET(request: NextRequest) {
   try {
@@ -21,12 +22,19 @@ export async function GET(request: NextRequest) {
     // Parse query parameters
     const completedParam = searchParams.get("completed");
     const limitParam = searchParams.get("limit");
+    const rawCategory = searchParams.get("category_slug") || searchParams.get("category");
+    const journeyId = searchParams.get("journey_id") || undefined;
+    const journeyType = searchParams.get("journey_type");
+    const sourceParam = searchParams.get("source") as "journey" | "tool" | null;
 
     const completed = completedParam ? completedParam === "true" : undefined;
     const limit = limitParam ? parseInt(limitParam, 10) : undefined;
+    const categorySlug = resolveCategorySlug(rawCategory || journeyType) || (rawCategory || undefined);
+    const source = sourceParam || undefined;
 
     // Get all user sessions with optional filters
-    const sessions = await getAllUserSessionsDB(limit, completed);
+    const sessions = await getAllUserSessionsDB(limit, completed, categorySlug, journeyId, source);
+
 
     // Enrich sessions with answer counts and category information
     const enrichedSessions = await Promise.all(

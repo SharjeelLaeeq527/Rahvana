@@ -65,6 +65,7 @@ export default function PassportPhotoTool({
   });
   const { t } = useLanguage();
   const accountPlan = usePlan();
+  const { tier } = usePlan();
   const { profile, updateProfile } = useUserProfile();
   const { showToast } = useToast();
 
@@ -272,15 +273,15 @@ export default function PassportPhotoTool({
 
     // Validate file type
     if (!uploadedFile.type.startsWith("image/")) {
-reset();      
-showToast(t("passportPhoto.errors.invalid"), "error");
+      reset();
+      showToast(t("passportPhoto.errors.invalid"), "error");
       return;
     }
 
     // Validate file size (max 10MB)
     if (uploadedFile.size > 10 * 1024 * 1024) {
-reset();      
-showToast(t("passportPhoto.errors.large"), "error");
+      reset();
+      showToast(t("passportPhoto.errors.large"), "error");
       return;
     }
 
@@ -299,7 +300,8 @@ showToast(t("passportPhoto.errors.large"), "error");
     showToast(
       t("passportPhoto.frontFacingToast") ||
         "Photo selected! Please verify your face is facing straight ahead with no tilt before generating.",
-      "info");
+      "info"
+    );
   };
 
   // Get final dimensions
@@ -310,7 +312,7 @@ showToast(t("passportPhoto.errors.large"), "error");
     return { width: selectedSize.width, height: selectedSize.height };
   };
 
-  // Process image with passport-photo endpoint and save to isolated history only when credit is consumed
+  // Process image with passport-photo endpoint
   const handleProcess = async () => {
     if (!file) return;
 
@@ -388,6 +390,21 @@ showToast(t("passportPhoto.errors.large"), "error");
     const timeoutId = setTimeout(() => controller.abort(), 120000);
 
     try {
+      // 1. Check access before spending any credit.
+      const access = await checkAccess("photo_booth");
+
+      if (!access.allowed || access.data?.data?.usage?.allowed === false) {
+        setShowUpgradeModal(true);
+        return;
+      }
+
+      // 2. Generate the image first. Validation/API failures cost no credit.
+      const { width, height } = getFinalDimensions();
+      const API_ENDPOINT = `${API_BASE}/passport-photo?width=${width}&height=${height}&quality=95`;
+
+      const formData = new FormData();
+      formData.append("file", file);
+
       setProcessingStep(t("passportPhoto.steps.removing"));
 
       const res = await fetch(API_ENDPOINT, {
@@ -396,9 +413,9 @@ showToast(t("passportPhoto.errors.large"), "error");
         signal: controller.signal,
       });
 
+      let friendlyMsg = t("passportPhoto.errors.general");
       if (!res.ok) {
         // Extract user-friendly message from structured backend response
-        let friendlyMsg = t("passportPhoto.errors.general");
         try {
           const body = await res.json();
           const detail = body?.detail;
@@ -444,26 +461,50 @@ showToast(t("passportPhoto.errors.large"), "error");
         setResultLocked(false);
 
         try {
-          localStorage.setItem(effectiveHistoryKey, JSON.stringify(updatedHistory));
-          if (!isJourney && updateProfile) {
-            updateProfile({ standalonePassportPhotos: updatedHistory }, { silent: true });
+          const body = await res.json();
+          const detail = body?.detail;
+
+          if (typeof detail === "string") {
+            friendlyMsg = detail;
+          } else if (detail?.message) {
+            friendlyMsg = detail.message;
           }
-        } catch (e) {
-          console.warn("Error saving photo history:", e);
+        } catch {
+          // Keep the generic error message.
         }
 
-        if (onResult) onResult(base64DataUrl);
-        onHistoryChange?.(updatedHistory);
-        showToast("Passport photo generated and saved to history!", "success");
-      } else {
-        // Credit was not consumed; lock result behind ResultGate and strictly DO NOT add to history or storage
-        setActivePhoto(null);
-        setResult(base64DataUrl);
-        setResultLocked(true);
-        showToast("Photo generated! Upgrade or use a credit to unlock & download.", "info");
+        throw new Error(friendlyMsg);
       }
 
+      if (!blob.size) {
+        throw new Error(t("passportPhoto.errors.general"));
+      }
+
+      // 3. Consume credit only after successful image generation.
+      setProcessingStep(t("passportPhoto.steps.finalizing"));
+
+      const reservation = await consumeAccess("photo_booth");
+
+      if (!reservation.allowed || reservation.data?.allowed === false) {
+        setShowUpgradeModal(true);
+        return;
+      }
+
+      // 4. Update the credit balance after successful consumption.
+      if (tier === "executive") {
+        setRemainingCredits(null);
+      } else if (reservation.data?.remaining !== undefined) {
+        setRemainingCredits(reservation.data.remaining);
+      }
+
+      // 5. Unlock the result because this generation paid successfully.
+      const url = URL.createObjectURL(blob);
+
+      setResultLocked(false);
+      setResult(url);
       setProcessingStep("");
+
+      if (onResult) onResult(url);
     } catch (err) {
       console.error("Passport photo processing failed:", err);
       let message: string;
@@ -601,16 +642,18 @@ showToast(t("passportPhoto.errors.large"), "error");
             >
               {t("passportPhoto.subtitle")}
             </p>
-            <div className="mt-4 flex justify-center">
-              <QuickAccessButton
-                item={{
-                  id: "photo-booth",
-                  title: "Photo Booth",
-                  href: "/passport",
-                  icon_name: "Camera",
-                }}
-              />
-            </div>
+            {!isJourney && (
+              <div className="mt-4 flex justify-center">
+                <QuickAccessButton
+                  item={{
+                    id: "photo-booth",
+                    title: "Photo Booth",
+                    href: "/passport",
+                    icon_name: "Camera",
+                  }}
+                />
+              </div>
+            )}
           </header>
         )}
 

@@ -918,7 +918,10 @@ export function SiteHeader({
                     {getJourneyDisplayTitle(journeyCategory, journeySlug, pathname)}
                   </span>
                   {activeCandidate && (activeCandidate.fullName || activeCandidate.label) && (
-                    <span className="text-[10px] leading-tight font-medium text-teal-700 dark:text-teal-400">
+                    <span
+                      suppressHydrationWarning
+                      className="text-[10px] leading-tight font-medium text-teal-700 dark:text-teal-400"
+                    >
                       {activeCandidate.fullName || activeCandidate.label}
                     </span>
                   )}

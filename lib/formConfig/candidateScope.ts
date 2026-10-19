@@ -565,6 +565,16 @@ export function extractInheritableCandidateData(
 
   walkFields(fields);
 
+  // In sameJourney mode (e.g. IR-5 candidate 1 <-> candidate 2), ensure every answered key is cloned
+  if (sameJourney) {
+    Object.entries(sourceData).forEach(([k, v]) => {
+      if (typeof v === "string" && v.trim() !== "" && !inheritedData[k]) {
+        inheritedData[k] = v;
+        if (!inheritedKeys.includes(k)) inheritedKeys.push(k);
+      }
+    });
+  }
+
   return {
     inheritedData,
     inheritedKeys,

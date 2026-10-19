@@ -54,12 +54,20 @@ export const DocActionModal: React.FC<DocActionModalProps> = ({
 
   const isTranslation =
     doc.id === "doc_translations" ||
+    doc.id === "translations" ||
+    doc.id === "document-translation" ||
     doc.guideKey === "doc_translations" ||
-    doc.selectedGuideId === "doc_translations";
+    doc.selectedGuideId === "doc_translations" ||
+    doc.name?.toLowerCase().includes("translation") ||
+    doc.title?.toLowerCase().includes("translation");
   const isPassportPhoto =
     doc.id === "doc_passport_photos" ||
+    doc.id === "passport-photos" ||
+    doc.id === "photo-booth" ||
     doc.guideKey === "doc_passport_photos" ||
-    doc.selectedGuideId === "doc_passport_photos";
+    doc.selectedGuideId === "doc_passport_photos" ||
+    doc.name?.toLowerCase().includes("passport photo") ||
+    doc.title?.toLowerCase().includes("passport photo");
 
   const guideFeature = isTranslation
     ? "document_translation"

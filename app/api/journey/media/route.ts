@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 import { createClient as createClientJs } from "@supabase/supabase-js";
 
 function getStorageClient() {
@@ -17,6 +18,16 @@ const MIME_BY_EXT: Record<string, string> = {
 
 export async function GET(req: NextRequest) {
   try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(req.url);
     const storagePath = searchParams.get("path");
 
@@ -24,11 +35,10 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Missing image path." }, { status: 400 });
     }
 
-    // Security guard: only allow paths within journey-media/ or user-uploads/
-    if (
-      !storagePath.startsWith("journey-media/") &&
-      !storagePath.startsWith("user-uploads/")
-    ) {
+    // Owner-only: the download below uses the service role (bypasses storage RLS), so
+    // the path must sit inside the caller's own folder, as written by upload-image
+    // (`journey-media/<userId>/...`). Rejecting ".." keeps it from escaping that folder.
+    if (!storagePath.startsWith(`journey-media/${user.id}/`) || storagePath.includes("..")) {
       return NextResponse.json({ error: "Access denied." }, { status: 403 });
     }
 
@@ -50,7 +60,8 @@ export async function GET(req: NextRequest) {
       status: 200,
       headers: {
         "Content-Type": contentType,
-        "Cache-Control": "public, max-age=86400, stale-while-revalidate=604800",
+        // private: owner-only content must not be stored by shared caches/CDNs.
+        "Cache-Control": "private, max-age=86400",
       },
     });
   } catch (err) {

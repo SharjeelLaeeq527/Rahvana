@@ -89,7 +89,7 @@ _FORBIDDEN_RULES = (
     (
         ("eyeglass", "glasses", "spectacle", "eyewear"),
         "Eyeglasses are not allowed unless you have a signed doctor's note for "
-        "an medical reason. Please remove them or provide a photo without glasses.",
+        "a medical reason. Please remove them or provide a photo without glasses.",
     ),
     (
         ("mask", "face covering", "facecover"),

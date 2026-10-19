@@ -20,6 +20,12 @@ const JOURNEY_DATA_MAP: Record<string, any> = {
 };
 
 function resolveJourneyData(visaJourney: string): any | null {
+  if (!visaJourney) return null;
+  const norm = String(visaJourney).toLowerCase().replace(/[^a-z0-9]/g, "");
+  if (norm.startsWith("ir5")) return ir5Data;
+  if (norm.startsWith("ir1") || norm.startsWith("cr1")) return ir1Data;
+  if (norm.startsWith("f1")) return f1Data;
+  if (norm.includes("germany")) return germanyData;
   return JOURNEY_DATA_MAP[visaJourney] ?? null;
 }
 import { useAuth } from "@/app/context/AuthContext";
@@ -149,6 +155,7 @@ export default function IR1JourneyPage() {
   const { state, actions, isLoaded, hasExistingProgress, isSyncing, error } = useWizard({
     userId,
     journeyId: visaJourney,
+    candidateId: activeCandidate?.id,
     roadmapData,
   });
 
@@ -266,7 +273,8 @@ export default function IR1JourneyPage() {
   }
 
   // IR-1/CR-1 keep the dedicated (legacy) spouse UI.
-  if (visaJourney === "ir-1" || visaJourney === "cr-1") {
+  const normCategory = (visaJourney || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  if (normCategory.startsWith("ir1") || normCategory.startsWith("cr1")) {
     return (
       <RoadmapLayoutSpouse
         key={`${visaJourney}_${activeCandidate?.id || "default"}`}
@@ -278,10 +286,8 @@ export default function IR1JourneyPage() {
   }
 
   // Any JSON-driven journey (chapters-schema) renders through the generic engine —
-  // ir-5 today, and ANY future category whose JSON follows the chapters schema, with
-  // NO routing change needed. Old-schema journeys (f-1, germany: `stages`/no `chapters`)
-  // fall through to the legacy UI below.
-  if (Array.isArray((roadmapData as any).chapters)) {
+  // ir-5 today, and ANY future category whose JSON follows the chapters schema.
+  if (roadmapData && Array.isArray((roadmapData as any).chapters)) {
     return (
       <RoadmapLayoutEngine
         key={`${visaJourney}_${activeCandidate?.id || "default"}`}

@@ -17,7 +17,7 @@ import { useCandidate } from "@/app/context/CandidateContext";
 import WaitingStateCard from "./WaitingStateCard";
 // import { JourneyRiskCard } from "./components/JourneyRiskCard";
 import { DocCaseStrengthMeter } from "./components/DocCaseStrengthMeter";
-import { GuidePageOverlay } from "@/app/components/shared/GuidePageOverlay";
+import { JourneyGuidePage } from "@/app/components/shared/GuidePageOverlay";
 import { Phase2Modal } from "./components/Phase2Modal";
 import { EvidenceQuestionnaireModal } from "./components/EvidenceQuestionnaireModal";
 import { CaseStatusHero } from "./components/CaseStatusHero";
@@ -1129,6 +1129,7 @@ export function DashboardView({
     { label: "Medical date", value: state.metadata.medicalDate },
   ];
 
+
   return (
     <div
       className="flex-1 overflow-y-auto py-9 px-6 pb-20 scrollbar-hide relative"
@@ -1994,8 +1995,7 @@ export function DashboardView({
         questions={evidenceQuestionnaire}
       />
 
-      {/* ── In-Journey Guide Overlay ── */}
-      <GuidePageOverlay
+      <JourneyGuidePage
         guideUrl={guideOverlayUrl}
         onClose={() => setGuideOverlayUrl(null)}
         plan={plan}

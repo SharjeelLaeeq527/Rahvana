@@ -237,6 +237,9 @@ export function MultiStepForm({
     count: number;
     sourceName: string;
   } | null>(null);
+  // Keys of fields the user has edited themselves this session. The review page uses this
+  // to tell which carried-over (pre-filled) answers the user has NOT touched yet.
+  const [editedKeys, setEditedKeys] = useState<Set<string>>(new Set());
   // Mirror of draftStatus for reads inside dependency-free callbacks (handleChange).
   const draftStatusRef = useRef(draftStatus);
   useEffect(() => {
@@ -319,34 +322,65 @@ export function MultiStepForm({
 
         let inheritedPayload: Record<string, string> | null = null;
 
-        // If no existing draft for this candidate, attempt to inherit data from any sibling candidate (JOURNEY mode only).
+        // If in JOURNEY mode, attempt to inherit data from any sibling candidate.
         // Same-journey siblings (same visa category base) get a full clone — all fields are copied
         // and the user just corrects the candidate-distinct ones (DOB, passport, name etc.).
         // Cross-journey siblings only share petitioner/household fields.
-        if (isJourney && !draftData) {
-          const activeBase = getBaseVisaCategory(activeCandidate?.visaCategory || "");
-          const siblingCandidates = (candidates || []).filter(
-            (c) => c.id !== activeCandidate?.id
+        if (isJourney) {
+          const currentCandId =
+            journeyContext?.candidateId || activeCandidate?.id || candidateCtx?.activeCandidateId || "candidate-1";
+          const activeBase = getBaseVisaCategory(
+            activeCandidate?.visaCategory || journeyContext?.journeyCategory || "IR-5"
           );
+          const normBase = activeBase.toLowerCase().replace(/[^a-z0-9]/g, "");
 
-          // If no structured candidates found or standard candidate-1 fallback
           const candidateKeysToCheck: { key: string; name: string; sameJourney: boolean }[] = [];
+          const seenKeys = new Set<string>([draftJourneyKey]);
+
+          // 1. Structured candidate profiles in roster
+          const siblingCandidates = (candidates || []).filter((c) => c.id !== currentCandId);
           if (siblingCandidates.length > 0) {
             siblingCandidates.forEach((s) => {
-              const sKey = getCandidateJourneyKey(s.visaCategory, s.id);
-              const sName = s.fullName || s.label || s.name?.first || "Another Candidate";
-              const sameJourney = getBaseVisaCategory(s.visaCategory) === activeBase;
-              candidateKeysToCheck.push({ key: sKey, name: sName, sameJourney });
+              const sBase = getBaseVisaCategory(s.visaCategory || activeBase);
+              const sKey = getCandidateJourneyKey(s.visaCategory || activeBase, s.id);
+              if (!seenKeys.has(sKey)) {
+                seenKeys.add(sKey);
+                const sName = s.fullName || s.label || s.name?.first || "Another Candidate";
+                const sameJourney = sBase === activeBase;
+                candidateKeysToCheck.push({ key: sKey, name: sName, sameJourney });
+              }
             });
-          } else {
-            // Fallbacks — can't determine visa category, treat as cross-journey (partial inherit)
-            if (draftJourneyKey !== "candidate-1" && draftJourneyKey !== "global") {
-              candidateKeysToCheck.push({ key: "candidate-1", name: "Candidate 1", sameJourney: false });
-              candidateKeysToCheck.push({ key: "global", name: "Primary Candidate", sameJourney: false });
-            } else {
-              candidateKeysToCheck.push({ key: "ir5_candidate-2", name: "Candidate 2", sameJourney: false });
-            }
           }
+
+          // 2. Add canonical fallback candidate keys (handles unfilled rosters & order-agnostic filling)
+          const fallbackCandidates: { key: string; name: string; sameJourney: boolean }[] = [];
+          if (currentCandId !== "candidate-1") {
+            // Target is Candidate 2 / 3 -> check Candidate 1 first
+            fallbackCandidates.push({ key: normBase, name: "Candidate 1", sameJourney: true });
+            fallbackCandidates.push({ key: `${normBase}-journey`, name: "Candidate 1", sameJourney: true });
+            fallbackCandidates.push({ key: "candidate-1", name: "Candidate 1", sameJourney: true });
+            fallbackCandidates.push({ key: "global", name: "Primary Candidate", sameJourney: true });
+          } else {
+            // Target is Candidate 1 -> check Candidate 2 / 3
+            fallbackCandidates.push({ key: `${normBase}_candidate2`, name: "Candidate 2", sameJourney: true });
+            fallbackCandidates.push({ key: `${normBase}_candidate-2`, name: "Candidate 2", sameJourney: true });
+            fallbackCandidates.push({ key: `${normBase}_candidate3`, name: "Candidate 3", sameJourney: true });
+            fallbackCandidates.push({ key: "candidate-2", name: "Candidate 2", sameJourney: true });
+          }
+
+          // Cross-journey fallbacks (e.g. IR-1 <-> IR-5 share petitioner fields)
+          const crossCategoryBases = ["ir5", "ir1", "ir2"].filter((b) => b !== normBase);
+          crossCategoryBases.forEach((cBase) => {
+            fallbackCandidates.push({ key: cBase, name: "Other Journey", sameJourney: false });
+            fallbackCandidates.push({ key: `${cBase}_candidate2`, name: "Other Journey Candidate", sameJourney: false });
+          });
+
+          fallbackCandidates.forEach((entry) => {
+            if (!seenKeys.has(entry.key)) {
+              seenKeys.add(entry.key);
+              candidateKeysToCheck.push(entry);
+            }
+          });
 
           for (const candInfo of candidateKeysToCheck) {
             let siblingDraft: FormProgressDraft | null = null;
@@ -358,7 +392,9 @@ export function MultiStepForm({
                 );
                 if (sRes.ok) {
                   const sData = (await sRes.json()) as FormProgressResponse;
-                  siblingDraft = sData.draft;
+                  if (sData.draft?.payload && Object.keys(sData.draft.payload).length > 0) {
+                    siblingDraft = sData.draft;
+                  }
                 }
               } catch {
                 // Ignore network issues for fallback inheritance
@@ -368,7 +404,12 @@ export function MultiStepForm({
               siblingDraft = readDraftBackup(formCode, candInfo.key);
             }
 
-            if (siblingDraft?.payload && Object.keys(siblingDraft.payload).length > 0) {
+            if (siblingDraft?.payload) {
+              const hasValues = Object.values(siblingDraft.payload).some(
+                (v) => typeof v === "string" && v.trim() !== ""
+              );
+              if (!hasValues) continue;
+
               const { inheritedData, inheritedKeys } = extractInheritableCandidateData(
                 formCode,
                 config.formFields,
@@ -394,7 +435,7 @@ export function MultiStepForm({
                     sourceName: candInfo.name,
                   });
                 }
-                break; // Inherited from first valid sibling
+                break; // Inherited from first valid sibling with data
               }
             }
           }
@@ -413,8 +454,16 @@ export function MultiStepForm({
           .filter(([, fields]) => fields.length > 0)
           .map(([title, fields]) => ({ title, fields }));
 
+        // Check whether current draft is empty (no user entered fields other than default relationship)
+        const isCurrentDraftEmpty =
+          !draftData ||
+          !draftData.payload ||
+          !Object.entries(draftData.payload).some(
+            ([k, v]) => typeof v === "string" && v.trim() !== "" && k !== "relationship"
+          );
+
         // Validate and restore draft or initialize fresh
-        if (draftData && sections.length > 0) {
+        if (draftData && sections.length > 0 && !isCurrentDraftEmpty) {
           // Validate step is within bounds
           const validStep = Math.min(Math.max(1, draftData.current_step || 1), sections.length);
 
@@ -457,10 +506,16 @@ export function MultiStepForm({
             validatedPayload[key] = value;
           });
 
+          // Merge inherited fields for any fields that are empty in the current draft
+          if (inheritedPayload) {
+            Object.entries(inheritedPayload).forEach(([key, value]) => {
+              if (validKeys.has(key) && (!validatedPayload[key] || validatedPayload[key].trim() === "")) {
+                validatedPayload[key] = value;
+              }
+            });
+          }
+
           // Journey-mode I-130: auto-seed the relationship from the visa category.
-          // Also skip straight to question index 1 (the next question after relationship)
-          // when on the first section — the relationship is locked by journey context
-          // and the user never needs to choose it.
           let journeySkippedRelationship = false;
           if (isJourney && formCode === "i130") {
             const cat = (journeyContext?.journeyCategory || activeCandidate?.visaCategory || "").toUpperCase();
@@ -485,8 +540,6 @@ export function MultiStepForm({
           if (isMounted) {
             setFormData(validatedPayload);
             setCurrentStep(validStep);
-            // If we auto-seeded relationship and we're still on step 1 question 0,
-            // advance past the locked relationship card.
             const resolvedQuestionIndex =
               journeySkippedRelationship && validStep === 1 && validQuestionIndex === 0
                 ? 1
@@ -498,7 +551,7 @@ export function MultiStepForm({
             setLastSavedAt(draftData.last_saved_at || null);
           }
         } else {
-          // Fresh form initialization (or pre-filled with Candidate 1 shared data)
+          // Fresh form initialization (pre-filled with Candidate shared / cloned data)
           const initialData = {
             ...config.getInitialFormData(),
             ...(inheritedPayload || {}),
@@ -525,15 +578,12 @@ export function MultiStepForm({
             if (defaultRel) {
               initialData.relationship = defaultRel;
               freshJourneySkippedRelationship = true;
-              // No need to pre-open relationship sub-questions progressively —
-              // the user starts at the NEXT question (index 1) entirely.
             }
           }
 
           if (isMounted) {
             setFormData(initialData);
             setCurrentStep(1);
-            // Skip the locked relationship card in journey mode.
             setCurrentQuestionIndex(freshJourneySkippedRelationship ? 1 : 0);
             setView("form");
             setDraftStatus("draft");
@@ -817,6 +867,10 @@ export function MultiStepForm({
         setDraftStatus("draft");
       }
 
+      // Remember that the user touched this field (used by the review page to flag
+      // carried-over answers that were never looked at).
+      setEditedKeys((prev) => (prev.has(name) ? prev : new Set(prev).add(name)));
+
       setFormData((prev) => {
         const newData = {
           ...prev,
@@ -873,9 +927,6 @@ export function MultiStepForm({
   ]);
 
   // ============ DEBOUNCED AUTOSAVE EFFECT ============
-  // Separated from saveDraft callback to avoid re-creating effect on data changes
-  const lastSaveTimeRef = useRef<number>(0);
-
   useEffect(() => {
     if (!draftLoaded || !user || !isSessionValid || draftStatus === "completed") {
       return;
@@ -887,13 +938,6 @@ export function MultiStepForm({
 
     saveTimerRef.current = window.setTimeout(async () => {
       if (!user || !isSessionValid) return;
-
-      // THROTTLE: enforce minimum 5s gap between API calls
-      const now = Date.now();
-      if (now - lastSaveTimeRef.current < 5000) {
-        return;
-      }
-      lastSaveTimeRef.current = now;
 
       setSaveError(null);
       setIsAutoSaving(true);
@@ -2208,6 +2252,8 @@ export function MultiStepForm({
                     onUpgradeClick={() => setShowUpgradeModal(true)}
                     formCode={formCode}
                     activeCandidate={activeCandidate}
+                    prefilledFromName={inheritedInfo?.sourceName}
+                    editedKeys={editedKeys}
                   />
                 </div>
               )}

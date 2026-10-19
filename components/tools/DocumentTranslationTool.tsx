@@ -533,17 +533,19 @@ export default function DocumentTranslationTool({
           <p className="mx-auto mt-3 max-w-2xl text-base text-gray-600 sm:text-lg">
             {t("documentTranslation.uploadPage.subtitle")}
           </p>
-          <div className="mt-4 flex justify-center">
-            <QuickAccessButton
-              item={{
-                id: "service-urdu-→-english-translation",
-                title:
-                  t("documentTranslation.uploadPage.title") || "Certified Document Translation",
-                href: "/document-translation",
-                icon_name: "Files",
-              }}
-            />
-          </div>
+          {!isJourney && (
+            <div className="mt-4 flex justify-center">
+              <QuickAccessButton
+                item={{
+                  id: "service-urdu-→-english-translation",
+                  title:
+                    t("documentTranslation.uploadPage.title") || "Certified Document Translation",
+                  href: "/document-translation",
+                  icon_name: "Files",
+                }}
+              />
+            </div>
+          )}
 
           {/* Credit visibility (mirrors Medical / PCC credit chips) */}
           {isUnlimited("document_translation", plan.tier) ? (

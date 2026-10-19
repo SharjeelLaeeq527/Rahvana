@@ -85,6 +85,15 @@ export function useWizard(options: UseWizardOptions = {}) {
 
   const {showToast} = useToast();
 
+  // Abort controller ref — cancelled on unmount to silence "Failed to fetch"
+  // errors caused by in-flight requests surviving hot-reloads or navigation.
+  const abortControllerRef = useRef<AbortController | null>(null);
+  useEffect(() => {
+    return () => {
+      abortControllerRef.current?.abort();
+    };
+  }, []);
+
   // Keep a ref to the latest state to use in stable memoized actions
   const stateRef = useRef(state);
   useEffect(() => {
@@ -481,6 +490,9 @@ export function useWizard(options: UseWizardOptions = {}) {
           );
           try {
             setIsSyncing(true);
+            // Create a fresh controller for the auto-heal fetch
+            const healController = new AbortController();
+            abortControllerRef.current = healController;
             const res = await fetch("/api/journeys/initialize", {
               method: "POST",
               headers: { "Content-Type": "application/json", "x-cache-bust": "1" },
@@ -488,6 +500,7 @@ export function useWizard(options: UseWizardOptions = {}) {
                 journey_type: journeyId,
                 candidate_id: effectiveCandidateId,
               }),
+              signal: healController.signal,
             });
             if (res.ok) {
               const { data } = await res.json();
@@ -504,6 +517,7 @@ export function useWizard(options: UseWizardOptions = {}) {
               }
             }
           } catch (syncErr) {
+            if ((syncErr as any)?.name === "AbortError") return; // unmount — no-op
             console.error("[useWizard] auto-heal stepMap error:", syncErr);
           } finally {
             setIsSyncing(false);
@@ -543,19 +557,29 @@ export function useWizard(options: UseWizardOptions = {}) {
           const method = !isCompleted ? "POST" : "PATCH";
           const body = JSON.stringify(!isCompleted ? {} : { status: "not_started" });
 
+          // Fresh abort controller for this sync request
+          const syncController = new AbortController();
+          abortControllerRef.current = syncController;
+
           try {
             const res = await fetch(url, {
               method,
               headers: { "Content-Type": "application/json" },
               body,
+              signal: syncController.signal,
             });
             if (res.ok) {
               window.dispatchEvent(new CustomEvent("refresh-reminders"));
               invalidateJourneyCache();
             } else {
-              throw new Error("Sync failed");
+              throw new Error(`Sync failed: HTTP ${res.status}`);
             }
           } catch (err) {
+            if ((err as any)?.name === "AbortError") {
+              // Request was cancelled (unmount / hot-reload) — leave optimistic state as-is
+              setIsSyncing(false);
+              return;
+            }
             console.error("[useWizard] sync failed:", err);
             // Rollback (including the optimistic completed_at stamp)
             setState((prev) => {

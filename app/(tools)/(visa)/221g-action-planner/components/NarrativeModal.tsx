@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useMemo, useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -1543,6 +1544,20 @@ export function NarrativeModal({
     []
   );
 
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [isOpen]);
+
   useEffect(() => {
     if (isOpen) {
       setShowDontShowAgain(!dontShowAgain);
@@ -1634,7 +1649,7 @@ export function NarrativeModal({
     }
   }, [isOpen, currentScene]);
 
-  return (
+  const modalContent = (
     <AnimatePresence>
       {isOpen && (
         <motion.div
@@ -1648,8 +1663,8 @@ export function NarrativeModal({
           exit={reduceHeavyEffects ? { opacity: 0 } : { opacity: 0, backdropFilter: "blur(0px)" }}
           transition={{ duration: compactModalMotion.duration, ease: [0.16, 1, 0.3, 1] }}
           className={[
-            "fixed inset-0 z-[150] flex items-start justify-center overflow-y-auto welcome-thick-scrollbar p-2.5 pt-3 sm:items-start sm:p-4 md:items-center md:p-8",
-            isCompactView ? "p-1.5 pt-2" : "",
+            "fixed inset-0 z-[150] flex items-center justify-center overflow-y-auto welcome-thick-scrollbar p-3 sm:p-5 md:p-8",
+            isCompactView ? "p-2 sm:p-3" : "",
           ].join(" ")}
           style={{
             background:
@@ -1699,22 +1714,19 @@ export function NarrativeModal({
             }}
             transition={{ duration: compactModalMotion.duration, ease: [0.16, 1, 0.3, 1] }}
             className={[
-              "relative flex w-full max-w-5xl max-h-[calc(100svh-0.75rem)] min-h-0 flex-col overflow-hidden border border-[#cfe3e3] bg-[linear-gradient(180deg,#ffffff_0%,#fcffff_100%)] shadow-[0_32px_80px_-34px_rgba(13,115,119,0.35)] ring-1 ring-white/90 antialiased sm:max-h-[calc(100svh-1.5rem)] sm:rounded-[2.5rem] sm:ring-2 md:max-h-[calc(100svh-4rem)]",
+              "relative flex w-full max-w-4xl min-h-0 flex-col overflow-hidden border border-[#cfe3e3] bg-[linear-gradient(180deg,#ffffff_0%,#fcffff_100%)] shadow-[0_32px_80px_-34px_rgba(13,115,119,0.35)] ring-1 ring-white/90 antialiased sm:rounded-[2rem]",
               isCompactView
-                ? "!w-[98vw] !h-[98svh] !max-w-full !max-h-[98svh] rounded-[1.2rem] overflow-y-auto welcome-thick-scrollbar"
-                : "rounded-[1.65rem]",
+                ? "w-[94vw] max-w-full max-h-[92svh] rounded-[1.2rem] overflow-y-auto welcome-thick-scrollbar"
+                : "max-h-[calc(100svh-3rem)] rounded-[1.5rem]",
             ].join(" ")}
             style={
               isCompactView
                 ? {
                     scrollbarWidth: "none",
-                    width: "98vw",
-                    // Use svh (small viewport height) so the card always fits the
-                    // VISIBLE area on mobile. With vh, mobile browser chrome made
-                    // the card taller than the screen and cropped the footer.
-                    height: "98svh",
+                    width: "94vw",
+                    height: "92svh",
                     maxWidth: "100vw",
-                    maxHeight: "98svh",
+                    maxHeight: "92svh",
                   }
                 : undefined
             }
@@ -1733,21 +1745,22 @@ export function NarrativeModal({
               />
             </div>
 
-            <div className="pointer-events-none absolute inset-0 rounded-[1.65rem] ring-1 ring-inset ring-white/75 sm:rounded-[2.5rem]" />
+            <div className="pointer-events-none absolute inset-0 rounded-[1.5rem] ring-1 ring-inset ring-white/75 sm:rounded-[2rem]" />
 
-            <div className="absolute right-2.5 top-2.5 z-20 flex items-center gap-2 sm:right-6 sm:top-6 sm:gap-3">
+            <div className="absolute right-3.5 top-3.5 z-20 flex items-center gap-2 sm:right-5 sm:top-5 sm:gap-3">
               <button
                 onClick={onClose}
-                className="transition-opacity duration-300 hover:opacity-70"
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100/80 transition-all duration-200 hover:bg-slate-200/80 hover:opacity-90 sm:h-9 sm:w-9"
                 style={{ color: colors.deepTeal }}
                 type="button"
+                aria-label="Close modal"
               >
-                <X className="h-4.5 w-4.5 sm:h-6 sm:w-6" />
+                <X className="h-4 w-4 sm:h-5 sm:w-5" />
               </button>
             </div>
 
             {showDontShowAgain && (
-              <label className="absolute left-6 top-6 z-20 hidden items-center gap-2 rounded-full border border-[#dbe8e8] bg-white/95 px-3.5 py-1.5 text-[11px] font-semibold tracking-[0.01em] text-slate-600 shadow-sm sm:flex">
+              <label className="absolute left-4 top-4 z-20 hidden items-center gap-2 rounded-full border border-[#dbe8e8] bg-white/95 px-3 py-1.5 text-[11px] font-semibold tracking-[0.01em] text-slate-600 shadow-sm sm:flex">
                 <input
                   type="checkbox"
                   checked={dontShowAgain}
@@ -1764,14 +1777,14 @@ export function NarrativeModal({
               className={[
                 "relative flex flex-col min-h-0 flex-1 overflow-x-hidden overscroll-contain bg-gradient-to-b from-white via-[#fbfefe] to-[#f3faf9] w-full h-full",
                 isCompactView
-                  ? "overflow-y-auto px-3 pt-4 pb-4"
-                  : "items-start justify-center overflow-y-auto px-3 pb-4 pt-16 sm:px-8 sm:pb-8 sm:pt-20 md:items-center md:p-12",
+                  ? "overflow-y-auto px-4 pt-12 pb-4"
+                  : "items-center justify-center overflow-y-auto px-6 pb-6 pt-14 sm:px-8 sm:pb-8 sm:pt-16 md:px-12 md:py-10",
               ].join(" ")}
               style={{ scrollbarWidth: "none" }}
             >
               <div
                 className="pointer-events-none absolute inset-x-0 top-0 bg-gradient-to-b from-white/95 to-transparent"
-                style={{ height: isWizardScene ? "2rem" : "6rem" }}
+                style={{ height: isGuideVariant ? "1.5rem" : "2.5rem" }}
               />
               <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white/95 to-transparent" />
 
@@ -1810,19 +1823,19 @@ export function NarrativeModal({
                     ease: [0.16, 1, 0.3, 1],
                   }}
                   className={[
-                    "flex w-full flex-col gap-3 pb-1 md:flex-row md:justify-center md:gap-12 md:items-center",
-                    isCompactView ? "gap-8 px-3" : "",
+                    "flex w-full flex-col gap-4 pb-1 md:flex-row md:justify-center md:gap-8 lg:gap-12 md:items-center",
+                    isCompactView ? "gap-4 px-2" : "",
                     isCompactView && isCompactFirstScene
-                      ? "justify-center items-center text-center mt-4"
+                      ? "justify-center items-center text-center mt-2"
                       : "items-center",
                   ].join(" ")}
                 >
                   <div
                     className={[
-                      "w-full flex-none sm:max-w-md sm:flex-1 overflow-visible max-w-[200px]",
-                      isCompactView ? "flex justify-center mb-2" : "",
+                      "w-full flex-none overflow-visible max-w-[180px] sm:max-w-[220px] md:max-w-[260px] lg:max-w-[280px]",
+                      isCompactView ? "flex justify-center mb-1 max-w-[150px]" : "mx-auto md:mx-0",
                       isCompactView && isCompactFirstScene
-                        ? "justify-center items-center text-center mb-2"
+                        ? "justify-center items-center text-center mb-1"
                         : "",
                     ].join(" ")}
                   >
@@ -1839,17 +1852,16 @@ export function NarrativeModal({
                   <div
                     className={[
                       "relative z-20 w-full max-w-lg flex-1",
-                      isCompactView ? "text-center mt-6 px-2" : "text-center md:text-left",
-                      isCompactView && isCompactFirstScene ? "text-center mt-2" : "",
+                      isCompactView ? "text-center mt-3 px-2" : "text-center md:text-left",
+                      isCompactView && isCompactFirstScene ? "text-center mt-1" : "",
                     ].join(" ")}
                   >
                     <motion.h2
                       className={[
-                        "font-black leading-[1.05] tracking-[-0.02em] text-balance break-words w-full sm:text-[2rem] md:text-[3.1rem]",
-                        isCompactFirstScene ? "mb-4 text-[1.12rem] leading-[1.12]" : "",
-                        isCompactView ? "mb-5" : "",
-                        isCompactPagesThreeToSix ? "mb-2.5 text-[1.12rem] leading-[1.14]" : "",
-                        isFirstFourScene ? "mb-2 text-[1.48rem]" : "mb-2 text-[1.38rem]",
+                        "font-black leading-[1.1] tracking-[-0.02em] text-balance break-words w-full",
+                        isCompactView
+                          ? "text-lg sm:text-xl mb-2"
+                          : "text-2xl sm:text-3xl md:text-[2.2rem] mb-3",
                       ].join(" ")}
                       style={{ color: colors.deepTeal }}
                     >
@@ -1869,8 +1881,8 @@ export function NarrativeModal({
                     {scene.description && (
                       <motion.p
                         className={[
-                          "mx-auto max-w-[60ch] text-[14px] font-medium leading-6 tracking-[0.002em] sm:text-[16px] sm:leading-7 md:mx-0 md:text-[1.12rem] md:leading-[1.65]",
-                          isCompactPagesThreeToSix ? "text-[13px] leading-[1.5]" : "",
+                          "mx-auto max-w-[54ch] text-[14px] font-medium leading-relaxed tracking-[0.002em] sm:text-[15px] md:mx-0 md:text-[16px]",
+                          isCompactPagesThreeToSix ? "text-[13px] leading-[1.45]" : "",
                         ].join(" ")}
                         style={{ color: colors.sageGrey }}
                       >
@@ -1892,12 +1904,12 @@ export function NarrativeModal({
               </AnimatePresence>
             </div>
 
-            <div className="relative z-20 shrink-0 border-t border-[#d5e7e7] bg-white/97 px-2.5 py-2.5 shadow-[0_-8px_24px_-18px_rgba(13,115,119,0.32)] sm:px-6 sm:py-4">
+            <div className="relative z-20 shrink-0 border-t border-[#d5e7e7] bg-white/97 px-4 py-3 shadow-[0_-8px_24px_-18px_rgba(13,115,119,0.32)] sm:px-6 sm:py-3.5">
               <img
                 src="/assets/images/mascot.png"
                 alt="Rahvana bird mascot"
                 className={[
-                  "pointer-events-none absolute bottom-full -left-1 h-11 w-auto translate-y-1.5 sm:h-36 sm:translate-y-5 md:h-40",
+                  "pointer-events-none absolute bottom-full -left-1 h-10 w-auto translate-y-1.5 sm:h-24 sm:translate-y-4 md:h-28",
                   isCompactView ? "hidden" : "",
                 ].join(" ")}
                 draggable={false}
@@ -1975,6 +1987,12 @@ export function NarrativeModal({
       )}
     </AnimatePresence>
   );
+
+  if (!mounted || typeof document === "undefined") {
+    return null;
+  }
+
+  return createPortal(modalContent, document.body);
 }
 
 function SceneIllustration({
@@ -2006,7 +2024,7 @@ function SceneIllustration({
     <div
       className={[
         "relative mx-auto flex aspect-square w-full items-center justify-center overflow-visible",
-        isNeedsScene ? "max-w-[280px] md:max-w-[310px]" : "max-w-md",
+        isNeedsScene ? "max-w-[240px] md:max-w-[280px]" : "max-w-[260px] md:max-w-[300px]",
       ].join(" ")}
     >
       <div className={compactMode ? "h-full w-full scale-[0.82]" : "h-full w-full"}>
