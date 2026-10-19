@@ -655,6 +655,7 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
           </div>
         </div>
       </article>
+      
     </>
   );
 }
