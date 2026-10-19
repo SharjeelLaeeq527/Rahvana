@@ -3,6 +3,7 @@ import { stripe } from "@/lib/stripe/config";
 import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
 import { consultationService } from "@/lib/services/consultationService";
+import { triggerTranslationNotification } from "@/lib/notifications";
 import { buildAddonPurchaseUpdate } from "@/lib/payments/addon-purchase-ledger";
 import { cancelSupersededSubscriptions } from "@/lib/stripe/subscriptionCleanup";
 import { provisionCandidateJourneysAndVaults } from "@/lib/candidate/candidateProvisioningService";
@@ -117,9 +118,7 @@ export async function GET(request: NextRequest) {
         session.metadata?.action === "add_candidate" ||
         session.metadata?.is_add_candidate === "true";
       const targetCandidateIdMeta =
-        session.metadata?.target_candidate_id ||
-        session.metadata?.candidate_id ||
-        undefined;
+        session.metadata?.target_candidate_id || session.metadata?.candidate_id || undefined;
 
       // ── 1. Provision Candidates, Journeys, and Document Vaults ─────────────
       // Automatically creates candidate profiles, seeds multi-candidate journeys
@@ -308,7 +307,10 @@ export async function GET(request: NextRequest) {
 
     // ── 3d. MEDICAL APPOINTMENT (one-time) ───────────────────────────────────
     else if (productType === "medical_booking" && productId) {
-      await supabase.from("appointments").update({ payment_status: "paid" }).eq("id", productId);
+      await supabase
+        .from("appointments")
+        .update({ payment_status: "paid", awaiting_payment: false })
+        .eq("id", productId);
 
       activated = true;
     }
@@ -317,7 +319,7 @@ export async function GET(request: NextRequest) {
     else if (productType === "pcc_filing" && productId) {
       await supabase
         .from("police_verification_requests")
-        .update({ payment_status: "paid" })
+        .update({ payment_status: "paid", awaiting_payment: false })
         .eq("id", productId);
 
       activated = true;
@@ -325,10 +327,71 @@ export async function GET(request: NextRequest) {
 
     // ── 3e. Document Translation (one-time) ───────────────────────────────────
     else if (productType === "document_translations" && productId) {
-      await supabase
+      // Deferred-create (pay-first) flow — mirrors Expert Consultation. The row is
+      // inserted ONLY now that payment succeeded, so a canceled/failed checkout never
+      // leaves a "submitted" request behind. The update branch stays for legacy rows
+      // that were created before payment (backward compatible).
+      const { data: paymentRecord } = await supabase
+        .from("payments")
+        .select("id")
+        .eq("stripe_checkout_session_id", sessionId)
+        .maybeSingle();
+      const paymentId = paymentRecord?.id;
+
+      const { data: existingDoc } = await supabase
         .from("translation_documents")
-        .update({ payment_status: "paid" })
-        .eq("id", productId);
+        .select("id")
+        .eq("id", productId)
+        .maybeSingle();
+
+      if (existingDoc) {
+        await supabase
+          .from("translation_documents")
+          .update({ payment_status: "paid", payment_id: paymentId || undefined })
+          .eq("id", productId);
+      } else {
+        // Reconstruct user_notes from split metadata fields.
+        let userNotes = "";
+        let noteIndex = 1;
+        while (true) {
+          const part = session.metadata?.[`t_notes_${noteIndex}`];
+          if (!part) break;
+          userNotes += part;
+          noteIndex++;
+        }
+
+        const { error: insertErr } = await supabase.from("translation_documents").insert({
+          id: session.metadata?.t_doc_id || productId,
+          user_id: userId,
+          user_email: session.metadata?.t_user_email || session.customer_details?.email || "",
+          user_name: session.metadata?.t_user_name || "User",
+          document_type: session.metadata?.t_document_type || "marriage",
+          original_file_path: session.metadata?.t_storage_path || "",
+          original_filename: session.metadata?.t_original_filename || "",
+          original_file_size: Number(session.metadata?.t_original_file_size || 0) || 0,
+          original_mime_type: session.metadata?.t_original_mime_type || "application/pdf",
+          user_notes: userNotes || null,
+          status: "PENDING",
+          payment_status: "paid",
+          payment_id: paymentId,
+          metadata: {
+            candidate_id: session.metadata?.t_candidate_id || "candidate-1",
+            candidate_name: session.metadata?.t_candidate_name || "",
+            source: session.metadata?.t_source || "standalone",
+            journey_slug: session.metadata?.t_journey_slug || null,
+          },
+        });
+
+        if (insertErr) {
+          console.error("[verify-session] translation deferred-create error:", insertErr);
+        } else {
+          try {
+            await triggerTranslationNotification(session.metadata?.t_doc_id || productId);
+          } catch (notifErr) {
+            console.error("[verify-session] translation notification error:", notifErr);
+          }
+        }
+      }
 
       activated = true;
     }
