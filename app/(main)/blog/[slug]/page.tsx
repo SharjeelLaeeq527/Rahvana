@@ -26,6 +26,62 @@ import {
   List,
 } from "lucide-react";
 
+/**
+ * Parses inline markdown links [label](url) and **bold** text into interactive React elements.
+ */
+function renderFormattedContent(text: string): React.ReactNode {
+  if (!text) return null;
+  const regex = /\[([^\]]+)\]\(([^)]+)\)|\*\*([^*]+)\*\*/g;
+  const nodes: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      nodes.push(text.slice(lastIndex, match.index));
+    }
+    if (match[1] && match[2]) {
+      const label = match[1];
+      const url = match[2];
+      const isExternal = url.startsWith("http://") || url.startsWith("https://");
+      nodes.push(
+        isExternal ? (
+          <a
+            key={`link-${match.index}`}
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary font-medium underline underline-offset-4 hover:opacity-80 transition-opacity"
+          >
+            {label}
+          </a>
+        ) : (
+          <Link
+            key={`link-${match.index}`}
+            href={url}
+            className="text-primary font-medium underline underline-offset-4 hover:opacity-80 transition-opacity"
+          >
+            {label}
+          </Link>
+        )
+      );
+    } else if (match[3]) {
+      nodes.push(
+        <strong key={`bold-${match.index}`} className="text-foreground font-semibold">
+          {match[3]}
+        </strong>
+      );
+    }
+    lastIndex = regex.lastIndex;
+  }
+
+  if (lastIndex < text.length) {
+    nodes.push(text.slice(lastIndex));
+  }
+
+  return nodes.length > 0 ? nodes : text;
+}
+
 export function generateStaticParams() {
   return ARTICLES.map((article) => ({ slug: article.slug }));
 }
@@ -328,9 +384,9 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
                             section.paragraphs.map((p, pIdx) => (
                               <p
                                 key={pIdx}
-                                className="text-muted-foreground text-base leading-relaxed"
+                                className="text-muted-foreground text-base leading-relaxed whitespace-pre-line"
                               >
-                                {p}
+                                {renderFormattedContent(p)}
                               </p>
                             ))}
                         </div>
@@ -361,54 +417,12 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
                             section.paragraphs.map((p, pIdx) => (
                               <p
                                 key={pIdx}
-                                className="text-muted-foreground text-base leading-relaxed"
+                                className="text-muted-foreground text-base leading-relaxed whitespace-pre-line"
                               >
-                                {p}
+                                {renderFormattedContent(p)}
                               </p>
                             ))}
                         </>
-                      )}
-
-                      {/* Optional Callout Box */}
-                      {section.callout && (
-                        <div
-                          className={cn(
-                            "my-6 rounded-2xl border bg-slate-900/95 p-5 text-slate-100 shadow-md",
-                            section.callout.type === "warning"
-                              ? "border-amber-500/40"
-                              : section.callout.type === "tip"
-                                ? "border-emerald-500/40"
-                                : "border-primary/40"
-                          )}
-                        >
-                          <div className="mb-1.5 flex items-center gap-2 text-sm font-bold">
-                            {section.callout.type === "warning" ? (
-                              <AlertTriangle className="h-4 w-4 shrink-0 text-amber-400" />
-                            ) : section.callout.type === "tip" ? (
-                              <Lightbulb className="h-4 w-4 shrink-0 text-emerald-400" />
-                            ) : (
-                              <Info className="text-primary h-4 w-4 shrink-0" />
-                            )}
-                            {section.callout.title && (
-                              <span
-                                className={
-                                  section.callout.type === "warning"
-                                    ? "text-amber-400"
-                                    : section.callout.type === "tip"
-                                      ? "text-emerald-400"
-                                      : "text-primary"
-                                }
-                              >
-                                {section.callout.title}
-                              </span>
-                            )}
-                          </div>
-                          {section.callout.text && (
-                            <p className="text-xs leading-relaxed text-slate-200 sm:text-sm">
-                              {section.callout.text}
-                            </p>
-                          )}
-                        </div>
                       )}
 
                       {/* Optional Comparison Table */}
@@ -464,11 +478,11 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
 
                       {/* Optional Bullet List */}
                       {section.bulletList && section.bulletList.length > 0 && (
-                        <ul className="text-muted-foreground my-4 space-y-2 text-sm">
+                        <ul className="text-muted-foreground my-4 space-y-2 text-sm leading-relaxed">
                           {section.bulletList.map((item, bIdx) => (
                             <li key={bIdx} className="flex items-start gap-2.5">
                               <CheckCircle2 className="text-primary mt-0.5 h-4 w-4 shrink-0" />
-                              <span>{item}</span>
+                              <span className="flex-1 leading-relaxed">{renderFormattedContent(item)}</span>
                             </li>
                           ))}
                         </ul>
@@ -476,16 +490,58 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
 
                       {/* Optional Numbered List */}
                       {section.numberedList && section.numberedList.length > 0 && (
-                        <ol className="text-muted-foreground my-4 list-none space-y-2.5 text-sm">
+                        <ol className="text-muted-foreground my-4 list-none space-y-2.5 text-sm leading-relaxed">
                           {section.numberedList.map((item, nIdx) => (
                             <li key={nIdx} className="flex items-start gap-3">
-                              <span className="bg-primary/10 text-primary flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold">
+                              <span className="bg-primary/10 text-primary mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold">
                                 {nIdx + 1}
                               </span>
-                              <span className="pt-0.5">{item}</span>
+                              <span className="flex-1 leading-relaxed">{renderFormattedContent(item)}</span>
                             </li>
                           ))}
                         </ol>
+                      )}
+
+                      {/* Optional Callout Box (Placed at the end of section content) */}
+                      {section.callout && (
+                        <div
+                          className={cn(
+                            "my-6 rounded-2xl border bg-slate-900/95 p-5 text-slate-100 shadow-md",
+                            section.callout.type === "warning"
+                              ? "border-amber-500/40"
+                              : section.callout.type === "tip"
+                                ? "border-emerald-500/40"
+                                : "border-primary/40"
+                          )}
+                        >
+                          <div className="mb-1.5 flex items-center gap-2 text-sm font-bold">
+                            {section.callout.type === "warning" ? (
+                              <AlertTriangle className="h-4 w-4 shrink-0 text-amber-400" />
+                            ) : section.callout.type === "tip" ? (
+                              <Lightbulb className="h-4 w-4 shrink-0 text-emerald-400" />
+                            ) : (
+                              <Info className="text-primary h-4 w-4 shrink-0" />
+                            )}
+                            {section.callout.title && (
+                              <span
+                                className={
+                                  section.callout.type === "warning"
+                                    ? "text-amber-400"
+                                    : section.callout.type === "tip"
+                                      ? "text-emerald-400"
+                                      : "text-primary"
+                                }
+                              >
+                                {section.callout.title}
+                              </span>
+                            )}
+                          </div>
+                          {section.callout.text && (
+                            <p className="text-xs leading-relaxed text-slate-200 sm:text-sm whitespace-pre-line">
+                              {renderFormattedContent(section.callout.text)}
+                            </p>
+                          )}
+                        </div>
                       )}
 
                       {/* Section CTA or Mid-Article CTA */}
@@ -542,8 +598,8 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
                               +
                             </span>
                           </summary>
-                          <p className="text-muted-foreground border-border/40 mt-3 border-t pt-3 text-sm leading-relaxed">
-                            {faq.answer}
+                          <p className="text-muted-foreground border-border/40 mt-3 border-t pt-3 text-sm leading-relaxed whitespace-pre-line">
+                            {renderFormattedContent(faq.answer)}
                           </p>
                         </details>
                       );
