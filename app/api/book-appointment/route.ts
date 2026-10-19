@@ -125,12 +125,14 @@ export async function POST(req: NextRequest) {
       original_passport: string | null;
       status: string;
       case_number?: string;
+      admin_notes?: string;
       user_id?: string | null;
       candidate_id?: string | null;
       candidate_role?: string | null;
       candidate_name?: string | null;
       source?: string | null;
       journey_slug?: string | null;
+      awaiting_payment?: boolean;
     }
 
     // Prepare appointment data for database insertion
@@ -178,13 +180,18 @@ export async function POST(req: NextRequest) {
       original_passport: formData.originalPassport || null,
       status: "pending",
       user_id: currentUserId,
-      admin_notes: formData.candidate_id ? `[Candidate: ${formData.candidate_id}] ${formData.candidate_name || ''}`.trim() : "",
+      admin_notes: formData.candidate_id
+        ? `[Candidate: ${formData.candidate_id}] ${formData.candidate_name || ""}`.trim()
+        : "",
       candidate_id: formData.candidateId || formData.candidate_id || null,
       candidate_role: formData.candidateRole || formData.candidate_role || null,
       candidate_name: formData.candidateName || formData.candidate_name || null,
       // Origin tagging: 'journey' rows are hidden from standalone My Resources.
       source: formData.source === "journey" ? "journey" : "standalone",
       journey_slug: formData.journey_slug || null,
+      // Draft flag: standalone must-pay bookings are created hidden and revealed by the
+      // Stripe webhook / verify-session once paid. Credit/journey/plan rows stay false.
+      awaiting_payment: formData.awaitingPayment === true,
     };
 
     // Only add case_number if it exists
