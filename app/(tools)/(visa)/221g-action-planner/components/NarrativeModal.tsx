@@ -1623,6 +1623,24 @@ export function NarrativeModal({
     return () => clearTimeout(timer);
   }, [isOpen, isPlaying, currentScene]);
 
+  // The overlay is mounted and unmounted here instead of through AnimatePresence:
+  // AnimatePresence faded it out but never removed it, leaving an invisible
+  // full-screen layer that blocked every click and locked page scroll.
+  const [isRendered, setIsRendered] = useState(isOpen);
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsRendered(true);
+      return;
+    }
+    // Fallback in case the close animation never reports completion.
+    const timer = setTimeout(
+      () => setIsRendered(false),
+      compactModalMotion.duration * 1000 + 300
+    );
+    return () => clearTimeout(timer);
+  }, [isOpen, compactModalMotion.duration]);
+
   useLayoutEffect(() => {
     if (!isOpen) return;
 
@@ -1635,18 +1653,27 @@ export function NarrativeModal({
   }, [isOpen, currentScene]);
 
   return (
-    <AnimatePresence>
-      {isOpen && (
+    <>
+      {isRendered && (
         <motion.div
           ref={modalScrollRef}
           initial={
             reduceHeavyEffects ? { opacity: 0 } : { opacity: 0, backdropFilter: "blur(0px)" }
           }
           animate={
-            reduceHeavyEffects ? { opacity: 1 } : { opacity: 1, backdropFilter: "blur(12px)" }
+            isOpen
+              ? reduceHeavyEffects
+                ? { opacity: 1 }
+                : { opacity: 1, backdropFilter: "blur(12px)" }
+              : reduceHeavyEffects
+                ? { opacity: 0 }
+                : { opacity: 0, backdropFilter: "blur(0px)" }
           }
-          exit={reduceHeavyEffects ? { opacity: 0 } : { opacity: 0, backdropFilter: "blur(0px)" }}
+          onAnimationComplete={() => {
+            if (!isOpen) setIsRendered(false);
+          }}
           transition={{ duration: compactModalMotion.duration, ease: [0.16, 1, 0.3, 1] }}
+          aria-hidden={!isOpen}
           className={[
             "fixed inset-0 z-[150] flex items-start justify-center overflow-y-auto welcome-thick-scrollbar p-2.5 pt-3 sm:items-start sm:p-4 md:items-center md:p-8",
             isCompactView ? "p-1.5 pt-2" : "",
@@ -1655,6 +1682,8 @@ export function NarrativeModal({
             background:
               "radial-gradient(circle at 50% 25%, rgba(255,255,255,0.92) 0%, rgba(248,251,252,0.9) 42%, rgba(13,115,119,0.16) 100%)",
             scrollbarWidth: "none",
+            // Stop catching clicks the moment the modal is closed, even while it fades out.
+            pointerEvents: isOpen ? "auto" : "none",
           }}
         >
           {!reduceHeavyEffects && (
@@ -1691,12 +1720,15 @@ export function NarrativeModal({
               opacity: 0,
               y: compactModalMotion.initialY,
             }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{
-              scale: reduceHeavyEffects ? 0.992 : 0.98,
-              opacity: 0,
-              y: compactModalMotion.exitY,
-            }}
+            animate={
+              isOpen
+                ? { scale: 1, opacity: 1, y: 0 }
+                : {
+                    scale: reduceHeavyEffects ? 0.992 : 0.98,
+                    opacity: 0,
+                    y: compactModalMotion.exitY,
+                  }
+            }
             transition={{ duration: compactModalMotion.duration, ease: [0.16, 1, 0.3, 1] }}
             className={[
               "relative flex w-full max-w-5xl max-h-[calc(100svh-0.75rem)] min-h-0 flex-col overflow-hidden border border-[#cfe3e3] bg-[linear-gradient(180deg,#ffffff_0%,#fcffff_100%)] shadow-[0_32px_80px_-34px_rgba(13,115,119,0.35)] ring-1 ring-white/90 antialiased sm:max-h-[calc(100svh-1.5rem)] sm:rounded-[2.5rem] sm:ring-2 md:max-h-[calc(100svh-4rem)]",
@@ -1973,7 +2005,7 @@ export function NarrativeModal({
           </motion.div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </>
   );
 }
 
