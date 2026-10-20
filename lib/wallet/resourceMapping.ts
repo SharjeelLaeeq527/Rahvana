@@ -24,6 +24,7 @@ export const GUIDE_RESOURCE_IDS: Record<string, string> = {
   "birth-certificate": "guide-birth-cert",
   frc: "guide-frc",
   "marriage-certificate": "guide-nikah-nama",
+  vaccinations: "guide-polio",
 };
 
 /** Returns the catalog item for a tool, or null if it isn't mapped. */

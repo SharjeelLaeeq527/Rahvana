@@ -18,6 +18,9 @@ const ids = (items: { resourceId: string }[]) => items.map((i) => i.resourceId).
 describe('WALLET_CATALOG', () => {
   it('prices every item exactly like its add-on in the pricing catalog', () => {
     for (const item of WALLET_CATALOG) {
+      // Items with no legacy add-on counterpart (empty legacyAddonId, e.g.
+      // guide-polio) have nothing to mirror - credits are their only price.
+      if (!item.legacyAddonId) continue
       const addon = (ADDONS as any[]).find((a) => a.id === item.legacyAddonId)
       expect({ id: item.resourceId, price: addon?.price }).toEqual({ id: item.resourceId, price: item.credits })
     }
@@ -64,12 +67,31 @@ describe('resolveUnlockedItems', () => {
     ])
   })
 
-  it('expands the legacy civil guides bundle to every guide', () => {
-    const guides = WALLET_CATALOG.filter((i) => i.resourceType === 'guide').map((i) => i.resourceId).sort()
-    expect(ids(resolveUnlockedItems([], ['civil-guid']))).toEqual(guides)
+  it('expands the legacy civil guides bundle to every civil guide but not polio', () => {
+    const civilGuides = WALLET_CATALOG.filter(
+      (i) => i.resourceType === 'guide' && i.resourceId !== 'guide-polio'
+    )
+      .map((i) => i.resourceId)
+      .sort()
+    expect(ids(resolveUnlockedItems([], ['civil-guid']))).toEqual(civilGuides)
     expect(
       ids(resolveUnlockedItems([{ resource_type: 'guide', resource_id: 'civil-guid', status: 'active' }], []))
-    ).toEqual(guides)
+    ).toEqual(civilGuides)
+  })
+
+  it('unlocks the polio guide only via an actual wallet unlock row', () => {
+    const polio = getCatalogItem('guide', 'guide-polio')!
+    expect(polio.credits).toBe(5)
+    expect(polio.launchable).toBe(true)
+    // No legacy add-on ever grants it - not even the civil guides bundle.
+    expect(isItemUnlocked(polio, [], ['civil-guid', 'guide-polio'])).toBe(false)
+    expect(
+      isItemUnlocked(polio, [{ resource_type: 'guide', resource_id: 'civil-guid', status: 'active' }], [])
+    ).toBe(false)
+    // A paid launch (unlock row) does.
+    expect(
+      isItemUnlocked(polio, [{ resource_type: 'guide', resource_id: 'guide-polio', status: 'active' }], [])
+    ).toBe(true)
   })
 
   it('never turns consumable legacy add-ons into unlimited access', () => {
