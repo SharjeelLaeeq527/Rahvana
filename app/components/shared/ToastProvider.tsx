@@ -87,6 +87,7 @@ return (
     {children}
 
     {mounted &&
+      // typeof document !== "undefined" &&
       createPortal(
         <div
           className="fixed bottom-6 left-0 right-0 sm:left-auto sm:right-6 sm:w-auto flex flex-col items-center sm:items-end px-4 sm:px-0 space-y-3 pointer-events-none"

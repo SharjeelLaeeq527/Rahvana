@@ -24,6 +24,7 @@ export interface ProvisionCandidatesParams {
   tier: string;
   stripeSubscriptionId?: string;
   isAddCandidate?: boolean;
+  targetCandidateId?: string;
 }
 
 export interface ProvisionResult {
@@ -46,6 +47,7 @@ export async function provisionCandidateJourneysAndVaults({
   tier,
   stripeSubscriptionId,
   isAddCandidate = false,
+  targetCandidateId,
 }: ProvisionCandidatesParams): Promise<ProvisionResult> {
   try {
     const isMultiCandidate = isMultiCandidateCategory(visaCategory);
@@ -75,22 +77,39 @@ export async function provisionCandidateJourneysAndVaults({
 
     // Adding an additional candidate to an existing IR-5 roster occurs only when specifically requested
     // (isAddCandidate flag is true) AND an active paid primary journey already exists.
-    // If isAddCandidate is false (e.g. an upgrade or initial purchase), we upgrade/initialize candidate-1.
+    // If isAddCandidate is false (e.g. an upgrade or initial purchase), we upgrade the targeted candidate (or candidate-1).
     const isAddingToExistingRoster = Boolean(
       isMultiCandidate && isAddCandidate && isExistingPrimaryPaid
     );
 
+    const targetCandKey = targetCandidateId
+      ? getCandidateJourneyKey(canonicalVisa, targetCandidateId)
+      : normVisaType;
+
     if (existingPrimary) {
       primaryJourneyId = existingPrimary.id;
       if (!isAddingToExistingRoster) {
-        await supabase
-          .from("journeys")
-          .update({
-            subscription_tier: tier,
-            stripe_subscription_id: stripeSubscriptionId || undefined,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", existingPrimary.id);
+        if (!targetCandidateId || targetCandidateId === "candidate-1") {
+          await supabase
+            .from("journeys")
+            .update({
+              subscription_tier: tier,
+              stripe_subscription_id: stripeSubscriptionId || undefined,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", existingPrimary.id);
+        } else {
+          // Updating a specific secondary candidate's journey row
+          await supabase
+            .from("journeys")
+            .update({
+              subscription_tier: tier,
+              stripe_subscription_id: stripeSubscriptionId || undefined,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("user_id", userId)
+            .ilike("journey_type", targetCandKey);
+        }
       }
     } else {
       // Seed a full journey from the template config
@@ -169,15 +188,16 @@ export async function provisionCandidateJourneysAndVaults({
 
     let updatedCandidates: CandidateProfile[] = [...existingCandidates];
 
-    // Ensure Candidate 1 is in the roster with purchased tier
-    const c1Index = updatedCandidates.findIndex((c) => c.id === "candidate-1");
-    if (c1Index >= 0) {
+    // Ensure targeted candidate (or Candidate 1) is in the roster with purchased tier
+    const targetCandidateToUpdate = targetCandidateId || "candidate-1";
+    const targetCandIndex = updatedCandidates.findIndex((c) => c.id === targetCandidateToUpdate);
+    if (targetCandIndex >= 0) {
       if (!isAddingToExistingRoster) {
-        updatedCandidates[c1Index] = {
-          ...updatedCandidates[c1Index],
+        updatedCandidates[targetCandIndex] = {
+          ...updatedCandidates[targetCandIndex],
           tier: tier as CandidateTier,
           isPreview: false,
-          visaCategory: updatedCandidates[c1Index].visaCategory || canonicalVisa,
+          visaCategory: updatedCandidates[targetCandIndex].visaCategory || canonicalVisa,
         };
       }
     } else {

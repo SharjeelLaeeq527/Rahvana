@@ -121,6 +121,7 @@ Administrative adjustment, if an authorized workflow exists
 Users should be able to see where their credits were spent.
 The meeting suggested monthly or biweekly summaries, but the delivery mechanism and frequency were not finalized.
 Implement the underlying transaction history first. Treat scheduled summaries as a separate decision.
+
 7. Journey and Standalone Isolation
 Review how tools currently determine their execution context.
 The system must distinguish between:
