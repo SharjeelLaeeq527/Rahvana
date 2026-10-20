@@ -237,6 +237,33 @@ const resolveHighestTier = (...tiers: (string | null | undefined)[]): string => 
   return highest;
 };
 
+/**
+ * Resolves the journey tier following the strict priority:
+ * 1. Primary: Direct subscription_tier from the `journeys` table row.
+ *    If the `journeys` table has a paid tier (Basic, Premium, Executive), that is used directly.
+ * 2. Fallback: If `journeys` table has "free" or no tier, fallback to `user_profiles` table
+ *    (user_profiles.subscription_tier, profile_details.active_plan, profile_details.candidates)
+ *    and PlanContext.
+ */
+const resolveJourneyTier = ({
+  dbJourneyTier,
+  fallbackTiers = [],
+}: {
+  dbJourneyTier?: string | null;
+  fallbackTiers?: (string | null | undefined)[];
+}): string => {
+  // 1. Primary check: If journeys table has an explicit paid tier, use it directly
+  if (dbJourneyTier) {
+    const norm = dbJourneyTier.toLowerCase().trim();
+    if (norm !== "free" && (tierHierarchy[norm] ?? -1) > 0) {
+      return norm;
+    }
+  }
+
+  // 2. Fallback check: If journeys table has "free" or is unset, check user_profiles table & context
+  return resolveHighestTier(dbJourneyTier, ...fallbackTiers);
+};
+
 export default function MyJourneysPage() {
   const { user, isLoading: authLoading } = useAuth();
   const { profile, updateProfile } = useUserProfile();
@@ -340,8 +367,18 @@ export default function MyJourneysPage() {
 
     try {
       const supabase = createClient();
-      const [data, profileRes] = await Promise.all([
-        listUserJourneys(user.id),
+      // Primary: Query the journeys table directly to get all available journeys and their tiers for the logged-in user
+      // Secondary / Fallback: Enriched step counts and user_profiles table
+      const [journeysQueryRes, progressData, profileRes] = await Promise.all([
+        supabase
+          .from("journeys")
+          .select("id, journey_type, subscription_tier, completed_steps_count, total_steps_count, updated_at, filing_method, status")
+          .eq("user_id", user.id)
+          .order("updated_at", { ascending: false }),
+        listUserJourneys(user.id).catch((err) => {
+          console.warn("[my-journeys] listUserJourneys fallback:", err);
+          return [] as JourneyProgressRecord[];
+        }),
         supabase
           .from("user_profiles")
           .select("subscription_tier, profile_details")
@@ -353,7 +390,51 @@ export default function MyJourneysPage() {
         return;
       }
 
-      setJourneys(data || []);
+      const rawDbJourneys = journeysQueryRes.data || [];
+      const progressMap = new Map((progressData || []).map((p) => [p.id, p]));
+
+      // Merge DB journeys with progress calculations while preserving journeys table as primary source of truth
+      const mappedJourneys: JourneyProgressRecord[] = rawDbJourneys.map((raw: any) => {
+        const enriched = progressMap.get(raw.id);
+        return {
+          id: raw.id,
+          user_id: user.id,
+          journey_id: raw.journey_type,
+          subscription_tier: raw.subscription_tier || enriched?.subscription_tier || "free",
+          status: raw.status || enriched?.status || "not_started",
+          current_stage: enriched?.current_stage || 0,
+          current_step: enriched?.current_step || 0,
+          completed_steps: enriched?.completed_steps || [],
+          completed_steps_count: enriched?.completed_steps_count || raw.completed_steps_count || 0,
+          total_steps_count: enriched?.total_steps_count || raw.total_steps_count || 28,
+          collapsed_steps: enriched?.collapsed_steps || {},
+          role: enriched?.role || "both",
+          filing_type: (raw.filing_method || enriched?.filing_type || "online") as any,
+          document_checklist: enriched?.document_checklist || {},
+          notes: enriched?.notes || {},
+          started:
+            raw.status === "in_progress" ||
+            (raw.completed_steps_count || 0) > 0 ||
+            enriched?.started ||
+            false,
+          started_at: enriched?.started_at || raw.updated_at || new Date().toISOString(),
+          last_updated_at: raw.updated_at || enriched?.last_updated_at || new Date().toISOString(),
+          updated_at: raw.updated_at,
+          doc_uploads: enriched?.doc_uploads || {},
+        };
+      });
+
+      // If progressData contained journeys not returned by direct query (edge cases), include them
+      if (progressData && progressData.length > 0) {
+        const existingIds = new Set(mappedJourneys.map((j) => j.id));
+        for (const p of progressData) {
+          if (!existingIds.has(p.id)) {
+            mappedJourneys.push(p);
+          }
+        }
+      }
+
+      setJourneys(mappedJourneys);
 
       if (profileRes.data) {
         const topTier = profileRes.data.subscription_tier;
@@ -423,23 +504,24 @@ export default function MyJourneysPage() {
     // Track processed canonical category IDs to guarantee each visa category gets exactly 1 parent card
     const processedCanonicals = new Set<string>();
 
-    // ── 1. Handle Multi-Candidate Visas (IR-5) as ONE Parent Card ─────────────
+    // ── 1. Handle Multi-Candidate Visas (IR-5) as Individual Cards ─────────────
     if (IR5_ENABLED) {
-      const ir5Candidates = candidates.filter((c) => {
-        const cat = getBaseVisaCategory(c.visaCategory || "IR-5");
-        return cat === "IR-5";
-      });
-
+      // 1. Primary: Check journeys table for any IR-5 journeys for this user
       const ir5DbJourneys = journeys.filter((j) => {
         const cat = getBaseVisaCategory(j.journey_id);
         return cat === "IR-5";
       });
 
-      // User has IR-5 if they have IR-5 candidates, IR-5 DB journeys, or profile has IR-5
+      const ir5Candidates = candidates.filter((c) => {
+        const cat = getBaseVisaCategory(c.visaCategory || "IR-5");
+        return cat === "IR-5";
+      });
+
+      // User has IR-5 if they have IR-5 DB journeys (primary), IR-5 candidates, or profile has IR-5 (fallback)
       const profileVisa = profile?.visaType || profile?.visaCategory;
       const hasIr5 =
-        ir5Candidates.length > 0 ||
         ir5DbJourneys.length > 0 ||
+        ir5Candidates.length > 0 ||
         getBaseVisaCategory(profileVisa) === "IR-5";
 
       if (hasIr5) {
@@ -453,14 +535,40 @@ export default function MyJourneysPage() {
           return rel;
         };
 
-        // If user has specific candidate profiles, display each candidate individually
-        if (ir5Candidates.length > 0) {
-          ir5Candidates.forEach((cand, idx) => {
+        // Build list of candidate profiles: from context candidates, and ensure every journey in journeys table is represented
+        const candidateList = [...ir5Candidates];
+
+        ir5DbJourneys.forEach((dbJ) => {
+          const jKey = (dbJ.journey_id || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+          const hasMatch = candidateList.some((c) => {
+            const cKey = getCandidateJourneyKey("IR-5", c.id)
+              .toLowerCase()
+              .replace(/[^a-z0-9]/g, "");
+            return cKey === jKey || (c.id === "candidate-1" && !dbJ.journey_id.includes("candidate"));
+          });
+          if (!hasMatch) {
+            const candIdMatch = dbJ.journey_id.match(/candidate[-_]?(\d+)/i);
+            const candId = candIdMatch
+              ? `candidate-${candIdMatch[1]}`
+              : `candidate-${candidateList.length + 1}`;
+            candidateList.push({
+              id: candId,
+              relation: "Other",
+              label: `Beneficiary ${candIdMatch ? candIdMatch[1] : candidateList.length + 1}`,
+              fullName: "",
+              isPrimary: candidateList.length === 0,
+              tier: (dbJ.subscription_tier as any) || "free",
+            });
+          }
+        });
+
+        if (candidateList.length > 0) {
+          candidateList.forEach((cand, idx) => {
             const candKey = getCandidateJourneyKey("IR-5", cand.id)
               .toLowerCase()
               .replace(/[^a-z0-9]/g, "");
 
-            // Look up the specific journey for this candidate
+            // Look up the specific journey for this candidate from the journeys table
             const candDbJourney =
               ir5DbJourneys.find(
                 (j) => (j.journey_id || "").toLowerCase().replace(/[^a-z0-9]/g, "") === candKey
@@ -474,43 +582,48 @@ export default function MyJourneysPage() {
             const completedSteps = candDbJourney ? getCompletedSteps(candDbJourney) : 0;
             const totalSteps = candDbJourney ? getTotalSteps(candDbJourney) : 28;
 
-            // Determine candidate tier
+            // 1. Primary: Check journeys table for this candidate journey's subscription_tier
             const candDbTier =
               candDbJourney?.subscription_tier || (candDbJourney as any)?.tier;
+
+            // 2. Fallback: Check user_profiles table (roster, account-level plan, profile_details)
             const candRosterTier =
               cand.tier ||
               dbCandidates?.find((c) => c.id === cand.id)?.tier ||
               (profile as any)?.candidates?.find((c: any) => c.id === cand.id)?.tier;
 
             const isPrimaryCand = Boolean(
-              cand.isPrimary || cand.id === "candidate-1" || ir5Candidates.length === 1
+              cand.isPrimary || cand.id === "candidate-1" || candidateList.length === 1
             );
             const isActiveCand = cand.id === activeCandidateId;
 
-            let candTier = resolveHighestTier(
-              candRosterTier,
-              candDbTier,
-              planCtx?.journeyTiers?.[candKey],
-              planCtx?.journeyTiers?.[cand.id],
-              planCtx?.journeyTiers?.[cand.id.toLowerCase().replace(/[^a-z0-9]/g, "")],
-              planCtx?.journeyTiers?.[candKey.replace(/[^a-z0-9]/g, "")]
-            );
+            const accountPlanTier =
+              isPrimaryCand || isActiveCand
+                ? resolveHighestTier(
+                    accountPlan,
+                    (profile as any)?.active_plan,
+                    (profile as any)?.subscription_tier,
+                    (profile as any)?.subscriptionTier,
+                    (profile as any)?.tier,
+                    planCtx?.journeyTiers?.["IR-5"],
+                    planCtx?.journeyTiers?.["ir5"],
+                    planCtx?.maxActiveJourneyTier,
+                    isActiveCand ? planCtx?.realTier : null,
+                    isActiveCand ? planCtx?.tier : null
+                  )
+                : null;
 
-            if (isPrimaryCand || isActiveCand) {
-              const accountPlanTier = resolveHighestTier(
-                planCtx?.journeyTiers?.["IR-5"],
-                planCtx?.journeyTiers?.["ir5"],
-                accountPlan,
-                planCtx?.maxActiveJourneyTier,
-                (profile as any)?.active_plan,
-                (profile as any)?.subscription_tier,
-                (profile as any)?.subscriptionTier,
-                (profile as any)?.tier,
-                isActiveCand ? planCtx?.realTier : null,
-                isActiveCand ? planCtx?.tier : null
-              );
-              candTier = resolveHighestTier(candTier, accountPlanTier);
-            }
+            const candTier = resolveJourneyTier({
+              dbJourneyTier: candDbTier,
+              fallbackTiers: [
+                candRosterTier,
+                planCtx?.journeyTiers?.[candKey],
+                planCtx?.journeyTiers?.[cand.id],
+                planCtx?.journeyTiers?.[cand.id.toLowerCase().replace(/[^a-z0-9]/g, "")],
+                planCtx?.journeyTiers?.[candKey.replace(/[^a-z0-9]/g, "")],
+                accountPlanTier,
+              ],
+            });
 
             const status = getJourneyStatus(candDbJourney, progress, candTier);
             const baseMeta = resolveJourneyMeta("IR-5");
@@ -555,20 +668,25 @@ export default function MyJourneysPage() {
         } else {
           // Fallback if IR-5 is active on profile/DB but no candidate object in context
           const activeDbJourney = ir5DbJourneys[0];
-          const highestTier = resolveHighestTier(
-            ...ir5DbJourneys.map((j) => j.subscription_tier),
-            activeDbJourney?.subscription_tier,
-            planCtx?.journeyTiers?.["IR-5"],
-            planCtx?.journeyTiers?.["ir5"],
-            accountPlan,
-            planCtx?.maxActiveJourneyTier,
-            planCtx?.realTier,
-            planCtx?.tier,
-            (profile as any)?.active_plan,
-            (profile as any)?.subscription_tier,
-            (profile as any)?.subscriptionTier,
-            (profile as any)?.tier
-          );
+          const dbTier =
+            activeDbJourney?.subscription_tier || (activeDbJourney as any)?.tier;
+
+          const highestTier = resolveJourneyTier({
+            dbJourneyTier: dbTier,
+            fallbackTiers: [
+              ...ir5DbJourneys.map((j) => j.subscription_tier),
+              accountPlan,
+              (profile as any)?.active_plan,
+              (profile as any)?.subscription_tier,
+              (profile as any)?.subscriptionTier,
+              (profile as any)?.tier,
+              planCtx?.journeyTiers?.["IR-5"],
+              planCtx?.journeyTiers?.["ir5"],
+              planCtx?.maxActiveJourneyTier,
+              planCtx?.realTier,
+              planCtx?.tier,
+            ],
+          });
 
           const progress = activeDbJourney ? getProgressPercent(activeDbJourney) : 0;
           const completedSteps = activeDbJourney ? getCompletedSteps(activeDbJourney) : 0;
@@ -653,27 +771,30 @@ export default function MyJourneysPage() {
       const userAccountPlanTier = isMatchingCategory
         ? resolveHighestTier(
             accountPlan,
-            planCtx?.maxActiveJourneyTier,
             (profile as any)?.active_plan,
             (profile as any)?.subscription_tier,
             (profile as any)?.subscriptionTier,
             (profile as any)?.tier,
+            planCtx?.maxActiveJourneyTier,
             planCtx?.realTier,
             planCtx?.tier
           )
         : null;
 
-      const jTier = resolveHighestTier(
-        j.subscription_tier,
-        (j as any)?.tier,
-        candRosterTier,
-        planCtx?.journeyTiers?.[j.journey_id],
-        planCtx?.journeyTiers?.[canonicalKey],
-        planCtx?.journeyTiers?.[baseCategory],
-        planCtx?.journeyTiers?.[baseCategory.toLowerCase()],
-        planCtx?.journeyTiers?.[canonical],
-        userAccountPlanTier
-      );
+      // 1. Primary: Check journeys table for this journey's subscription_tier
+      // 2. Fallback: If journeys table tier is "free" or unset, check user_profiles & context
+      const jTier = resolveJourneyTier({
+        dbJourneyTier: j.subscription_tier || (j as any)?.tier,
+        fallbackTiers: [
+          candRosterTier,
+          planCtx?.journeyTiers?.[j.journey_id],
+          planCtx?.journeyTiers?.[canonicalKey],
+          planCtx?.journeyTiers?.[baseCategory],
+          planCtx?.journeyTiers?.[baseCategory.toLowerCase()],
+          planCtx?.journeyTiers?.[canonical],
+          userAccountPlanTier,
+        ],
+      });
 
       const progress = getProgressPercent(j);
       const completedSteps = getCompletedSteps(j);
@@ -763,12 +884,13 @@ export default function MyJourneysPage() {
             !activeCandidate?.visaCategory ||
             getBaseVisaCategory(activeCandidate.visaCategory) === baseCategory;
 
+          // Fallback to user_profiles table when no row exists in journeys table
           const fbTier = resolveHighestTier(
+            accountPlan,
             profile?.subscriptionTier,
             (profile as any)?.subscription_tier,
             (profile as any)?.active_plan,
             (profile as any)?.tier,
-            accountPlan,
             candRosterTier,
             planCtx?.journeyTiers?.[baseCategory],
             planCtx?.journeyTiers?.[canonicalKey],
