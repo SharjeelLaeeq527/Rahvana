@@ -1,47 +1,27 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
-import { Shield } from "lucide-react";
+import { Shield, Wallet } from "lucide-react";
 import { Loader } from "@/components/ui/spinner";
 import { E, msg } from "@/lib/errors";
 import PortalCard from "./components/PortalCard";
 import CredentialFormModal from "./components/CredentialFormModal";
 import ViewCredentialModal from "./components/ViewCredentialModal";
+import WalletSwitcher, {
+  WalletCase,
+  PortalStatus,
+  Journey,
+  buildToneMap,
+  toneGradient,
+} from "./components/Walletswitcher";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { useCandidate } from "@/app/context/CandidateContext";
+import { usePlan } from "@/app/context/PlanContext";
+import { useUserProfile } from "@/app/context/UserProfileContext";
 
-/**
- * Parses "Candidate 1 (Mother)" -> { name: "Candidate 1", role: "Mother" }
- */
-const parseCandidateLabel = (label?: string, relation?: string) => {
-  if (!label) return { name: relation || "Candidate", role: relation || "" };
-  const match = label.match(/^(.+?)\s*\(([^)]+)\)\s*$/);
-  if (match) return { name: match[1].trim(), role: match[2].trim() };
-  return { name: label.trim(), role: relation || "" };
-};
 
-/**
- * Always returns the base label "Candidate 1", "Candidate 2", etc.
- * If they have a real personal name, that goes in the subtitle instead.
- */
-const formatCandidateDisplayName = (c?: { fullName?: string; label?: string; relation?: string }) => {
-  if (!c) return "Candidate";
-  return parseCandidateLabel(c.label, c.relation).name;
-};
-
-/**
- * Returns the subtitle: the user's real name if entered, otherwise the relation role.
- */
-const formatCandidateSubtitle = (c?: { fullName?: string; label?: string; relation?: string }) => {
-  if (!c) return "";
-  const { role } = parseCandidateLabel(c.label, c.relation);
-  const full = c.fullName?.trim();
-  // Use fullName only if it's a real personal name (not the auto-assigned relation word)
-  if (full && full !== c.relation && full !== role) return full;
-  return role;
-};
 
 type PortalType = "USCIS" | "NVC" | "COURIER";
 
@@ -107,16 +87,156 @@ const portals: {
 ];
 
 const PortalWallet: React.FC = () => {
-  let candidateCtx;
+  let candidateCtx: any;
   try {
     // eslint-disable-next-line react-hooks/rules-of-hooks
     candidateCtx = useCandidate();
   } catch {
     candidateCtx = undefined;
   }
-  const { candidates = [], activeCandidate } = candidateCtx || {};
-  const activeCandidateId = activeCandidate?.id || null;
+  let planCtx: any;
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    planCtx = usePlan();
+  } catch {
+    planCtx = undefined;
+  }
+  let profileCtx: any;
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    profileCtx = useUserProfile();
+  } catch {
+    profileCtx = undefined;
+  }
 
+  const { profile } = profileCtx || {};
+  const { candidates = [], activeCandidate, setActiveCandidateId } = candidateCtx || {};
+
+  // Fetch journeys to detect active IR-1 / IR-5 journeys
+  const [userJourneys, setUserJourneys] = useState<any[]>([]);
+  useEffect(() => {
+    fetch("/api/journeys")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.data && Array.isArray(data.data)) {
+          setUserJourneys(data.data.map((item: any) => item.journey || item));
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const hasIr1Journey = useMemo(() => {
+    const fromJourneys = userJourneys.some(
+      (j) =>
+        j.journey_type?.toUpperCase().includes("IR1") ||
+        j.journey_type?.toUpperCase().includes("IR-1") ||
+        j.journey_type?.toUpperCase().includes("CR1") ||
+        j.journey_type?.toUpperCase().includes("CR-1")
+    );
+    const fromPlan = Boolean(
+      planCtx?.journeyTiers?.["IR-1"] ||
+      planCtx?.journeyTiers?.["IR1"] ||
+      planCtx?.journeyTiers?.["ir1"] ||
+      planCtx?.journeyTiers?.["CR-1"]
+    );
+    const fromProfile =
+      profile?.visaCategory?.toUpperCase().includes("IR-1") ||
+      profile?.visaType?.toUpperCase().includes("IR-1") ||
+      profile?.visaCategory?.toUpperCase().includes("CR-1") ||
+      profile?.visaType?.toUpperCase().includes("CR-1");
+    return fromJourneys || fromPlan || fromProfile;
+  }, [userJourneys, planCtx?.journeyTiers, profile?.visaCategory, profile?.visaType]);
+
+  const walletCases: WalletCase[] = useMemo(() => {
+    const cases: WalletCase[] = [];
+
+    // IR-1 has no candidate concept since there can only be one spouse.
+    // If the user has IR-1 activated, always provide the IR-1 Spouse card.
+    const hasSpouseInCandidates = candidates.some(
+      (c) =>
+        c.relation === "Spouse" ||
+        c.visaCategory?.toUpperCase().includes("IR-1") ||
+        c.visaCategory?.toUpperCase().includes("CR-1")
+    );
+
+    if (hasIr1Journey || hasSpouseInCandidates) {
+      cases.push({
+        id: "ir1",
+        journey: "IR-1",
+        journeyLabel: "Spouse",
+        name: "Spouse",
+        role: "Spouse",
+      });
+    }
+
+    // Add candidate beneficiaries (e.g. IR-5 parents)
+    candidates.forEach((c, index) => {
+      const isSpouse =
+        c.relation === "Spouse" ||
+        c.visaCategory?.toUpperCase().includes("IR-1") ||
+        c.visaCategory?.toUpperCase().includes("CR-1");
+      if (isSpouse) return; // Handled by the IR-1 case above
+
+      const isParent =
+        ["Mother", "Father", "Stepparent", "AdoptiveParent"].includes(c.relation) ||
+        c.visaCategory?.toUpperCase().includes("IR-5");
+      const isChild =
+        c.relation === "Child" ||
+        c.visaCategory?.toUpperCase().includes("IR-2") ||
+        c.visaCategory?.toUpperCase().includes("CR-2");
+
+      let journey: Journey = "IR-5";
+      let journeyLabel = "Beneficiary";
+      if (isParent) journeyLabel = "Parent";
+      else if (isChild) journeyLabel = "Child";
+      else if (c.relation) journeyLabel = c.relation;
+
+      const name = c.label || `Candidate ${index + 1}`;
+      const role =
+        c.fullName && c.fullName.trim() && c.fullName !== c.relation
+          ? c.fullName.trim()
+          : c.relation && c.relation !== "Other"
+            ? c.relation
+            : undefined;
+
+      cases.push({
+        id: c.id,
+        journey,
+        journeyLabel,
+        name,
+        role,
+      });
+    });
+
+    if (cases.length === 0) {
+      cases.push({
+        id: "ir1",
+        journey: "IR-1",
+        journeyLabel: "Spouse",
+        name: "Spouse",
+        role: "Spouse",
+      });
+    }
+
+    return cases;
+  }, [candidates, hasIr1Journey]);
+
+  // Selected card in the wallet (defaults to IR-1 if active, or first case)
+  const [selectedCandidateId, setSelectedCandidateId] = useState<string>("ir1");
+
+  useEffect(() => {
+    if (walletCases.length > 0) {
+      const stillValid = walletCases.some((c) => c.id === selectedCandidateId);
+      if (!stillValid) {
+        const defaultId = walletCases.find((c) => c.journey === "IR-1")?.id || walletCases[0].id;
+        setSelectedCandidateId(defaultId);
+      }
+    }
+  }, [walletCases, selectedCandidateId]);
+
+  const activeId = selectedCandidateId || (walletCases[0]?.id ?? "ir1");
+
+  const [walletSwitcherOpen, setWalletSwitcherOpen] = useState(true);
   const [loading, setLoading] = useState(true);
   const [credentials, setCredentials] = useState<Credential[]>([]);
   const [formModal, setFormModal] = useState<{
@@ -136,8 +256,9 @@ const PortalWallet: React.FC = () => {
   const { showToast } = useToast();
 
   const fetchCredentials = useCallback(async () => {
+    if (!activeId) return;
     try {
-      const qs = activeCandidateId ? `?candidateId=${encodeURIComponent(activeCandidateId)}` : "";
+      const qs = `?candidateId=${encodeURIComponent(activeId)}`;
       const res = await fetch(`${API_BASE}${qs}`);
       const data = await res.json();
       if (data.credentials) setCredentials(data.credentials);
@@ -147,11 +268,74 @@ const PortalWallet: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [activeCandidateId]);
+  }, [activeId]);
 
   useEffect(() => {
     fetchCredentials();
   }, [fetchCredentials]);
+
+  const [allCredentials, setAllCredentials] = useState<any[]>([]);
+
+  const fetchAllCredentials = useCallback(async () => {
+    try {
+      const res = await fetch(API_BASE);
+      const data = await res.json();
+      if (data?.credentials) setAllCredentials(data.credentials);
+    } catch (err) {
+      console.error("Failed to fetch all credentials:", err);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchAllCredentials();
+  }, [fetchAllCredentials]);
+
+  const statusByCase: Record<string, PortalStatus> = useMemo(() => {
+    const map: Record<string, PortalStatus> = {};
+    walletCases.forEach((c) => {
+      const creds = allCredentials.filter((cred) => {
+        if (c.id === "ir1") {
+          return cred.candidate_id === "ir1" || !cred.candidate_id;
+        }
+        return cred.candidate_id === c.id;
+      });
+      map[c.id] = {
+        USCIS: creds.some((cr) => cr.portal_type?.toUpperCase() === "USCIS"),
+        NVC: creds.some((cr) => cr.portal_type?.toUpperCase() === "NVC"),
+        COURIER: creds.some((cr) => cr.portal_type?.toUpperCase() === "COURIER"),
+      };
+    });
+    return map;
+  }, [walletCases, allCredentials]);
+
+  const portalStatus: PortalStatus = useMemo(
+    () => ({
+      USCIS: credentials.some((c) => c.portal_type.toUpperCase() === "USCIS"),
+      NVC: credentials.some((c) => c.portal_type.toUpperCase() === "NVC"),
+      COURIER: credentials.some((c) => c.portal_type.toUpperCase() === "COURIER"),
+    }),
+    [credentials]
+  );
+
+  const toneMap = useMemo(() => buildToneMap(walletCases), [walletCases]);
+  const activeTone = useMemo(() => {
+    if (activeId && toneMap[activeId]) {
+      return toneGradient(toneMap[activeId]);
+    }
+    return "linear-gradient(140deg, #0f5a60, #0a3a3f)";
+  }, [activeId, toneMap]);
+
+  const configuredCount = useMemo(() => {
+    let count = 0;
+    if (portalStatus.USCIS) count++;
+    if (portalStatus.NVC) count++;
+    if (portalStatus.COURIER) count++;
+    return count;
+  }, [portalStatus]);
+
+  const activeCase = useMemo(() => {
+    return walletCases.find((c) => c.id === activeId) || walletCases[0];
+  }, [walletCases, activeId]);
 
   const getCredential = (portalType: string) =>
     credentials.find((c) => c.portal_type.toUpperCase() === portalType.toUpperCase());
@@ -164,12 +348,12 @@ const PortalWallet: React.FC = () => {
       const res = await fetch(API_BASE, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, candidateId: activeCandidateId }),
+        body: JSON.stringify({ ...data, candidateId: activeId }),
       });
       if (!res.ok) throw new Error("Failed to save");
       showToast("Credentials saved successfully!", "success");
       setFormModal((prev) => ({ ...prev, open: false }));
-      await fetchCredentials();
+      await Promise.all([fetchCredentials(), fetchAllCredentials()]);
     } catch {
       showToast(msg(E.VAULT_CREDENTIAL_SAVE_FAILED), "error");
     } finally {
@@ -183,7 +367,7 @@ const PortalWallet: React.FC = () => {
     setProcessingPortal(portalType);
 
     try {
-      const qs = activeCandidateId ? `?candidateId=${encodeURIComponent(activeCandidateId)}` : "";
+      const qs = activeId ? `?candidateId=${encodeURIComponent(activeId)}` : "";
       const res = await fetch(`${API_BASE}/${portalType}/delete${qs}`, {
         method: "DELETE",
       });
@@ -196,7 +380,7 @@ const PortalWallet: React.FC = () => {
       setViewModal({ open: false, portalType: "USCIS" });
       setDeletePortal(null);
 
-      await fetchCredentials();
+      await Promise.all([fetchCredentials(), fetchAllCredentials()]);
     } catch {
       showToast(msg(E.VAULT_CREDENTIAL_DELETE_FAILED), "error");
     } finally {
@@ -213,7 +397,7 @@ const PortalWallet: React.FC = () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         credentialId,
-        candidateId: activeCandidateId,
+        candidateId: activeId,
         portalType: cred?.portal_type,
         type: "password",
       }),
@@ -238,7 +422,7 @@ const PortalWallet: React.FC = () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         credentialId,
-        candidateId: activeCandidateId,
+        candidateId: activeId,
         portalType: cred?.portal_type,
         type: "nvc_case_number",
       }),
@@ -263,7 +447,7 @@ const PortalWallet: React.FC = () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         credentialId,
-        candidateId: activeCandidateId,
+        candidateId: activeId,
         portalType: cred?.portal_type,
         type: "nvc_invoice_id",
       }),
@@ -288,7 +472,7 @@ const PortalWallet: React.FC = () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         credentialId,
-        candidateId: activeCandidateId,
+        candidateId: activeId,
         portalType: cred?.portal_type,
         type: "answer",
         questionId,
@@ -316,16 +500,7 @@ const PortalWallet: React.FC = () => {
     return data.value || "";
   };
 
-  // Curated candidate color palettes (Clean & matte, no glow)
-  const CANDIDATE_COLORS = [
-    { bg: "#f0fdfa", avatarBg: "#e6f7f4", text: "#0d7377", ring: "#b8e6e2" },
-    { bg: "#f5f7ff", avatarBg: "#eef2ff", text: "#4338ca", ring: "#c7d2fe" },
-    { bg: "#fffdf5", avatarBg: "#fef3c7", text: "#b45309", ring: "#fde68a" },
-    { bg: "#fff5f7", avatarBg: "#fce7f3", text: "#be185d", ring: "#fbcfe8" },
-    { bg: "#f0fdf4", avatarBg: "#dcfce7", text: "#15803d", ring: "#bbf7d0" },
-    { bg: "#fff7ed", avatarBg: "#ffedd5", text: "#c2410c", ring: "#fed7aa" },
-  ];
-  const getCandidateColor = (idx: number) => CANDIDATE_COLORS[idx % CANDIDATE_COLORS.length];
+
 
   const activeCredential = getCredential(viewModal.portalType);
   const formCredential = getCredential(formModal.portalType);
@@ -356,47 +531,52 @@ const PortalWallet: React.FC = () => {
             Securely manage credentials and portal case access.
           </p>
 
-          {/* Candidate Plate (Multi-candidate only - Static badge for privacy) */}
-          {activeCandidate && candidates.length > 1 && (() => {
-            const activeIdx = candidates.findIndex((c) => c.id === activeCandidate.id);
-            const activeColor = getCandidateColor(activeIdx >= 0 ? activeIdx : 0);
-            const activeDisplay = formatCandidateDisplayName(activeCandidate);
-            const activeRole = formatCandidateSubtitle(activeCandidate);
-            const showActiveRole = !!activeRole;
+          {/* Candidate switcher trigger — clean pill that clearly signals "click to switch" */}
+          <div className="mt-7 flex flex-col items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => setWalletSwitcherOpen(true)}
+              className="group relative inline-flex items-center gap-3 rounded-2xl border border-[#0d7377]/20 bg-white pl-3 pr-4 py-2.5 shadow-sm transition-all duration-200 hover:border-[#0d7377]/50 hover:shadow-[0_4px_20px_rgba(13,115,119,0.1)] active:scale-[0.98]"
+            >
+              {/* Teal avatar dot */}
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#e6f7f4] text-[#0d7377] transition-colors duration-200 group-hover:bg-[#0d7377] group-hover:text-white">
+                <Wallet size={16} strokeWidth={2} />
+              </span>
 
-            const SilhouetteSVG = ({ color }: { color: typeof activeColor }) => (
-              <svg viewBox="0 0 36 36" width="34" height="34" fill="none">
-                <circle cx="18" cy="12.5" r="6" fill={color.text} opacity="0.9" />
-                <path d="M6 32c0-6.63 5.37-12 12-12s12 5.37 12 12" fill={color.text} opacity="0.9" />
-              </svg>
-            );
-
-            return (
-              <div
-                className="mt-5 flex w-[260px] items-center gap-3.5 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left shadow-xs"
-              >
-                {/* Silhouette Avatar */}
-                <span
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl overflow-hidden"
-                  style={{ background: activeColor.avatarBg }}
-                >
-                  <SilhouetteSVG color={activeColor} />
+              {/* Labels */}
+              <div className="flex flex-col items-start leading-tight">
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-[#94a3b8]">
+                  Viewing credentials for
                 </span>
-
-                {/* Name + Role */}
-                <div className="flex flex-1 flex-col items-start min-w-0 pr-1 text-left">
-                  <span className="text-[13.5px] font-bold leading-tight tracking-tight text-[#0a1128] truncate w-full">
-                    {activeDisplay}
-                  </span>
-                  {showActiveRole && (
-                    <span className="text-[11.5px] font-semibold leading-tight mt-0.5" style={{ color: activeColor.text }}>
-                      {activeRole}
-                    </span>
-                  )}
-                </div>
+                <span className="text-[14px] font-bold text-[#0f172a]">
+                  {activeCase?.name ?? "Spouse"}{" "}
+                  <span className="font-normal text-[#64748b]">({activeCase?.journey ?? "IR-1"})</span>
+                </span>
               </div>
-            );
-          })()}
+
+              {/* Divider */}
+              <span className="h-6 w-px bg-slate-200" />
+
+              {/* "Switch" cue */}
+              <div className="flex items-center gap-1 text-[12px] font-semibold text-[#0d7377]">
+                <span>Switch</span>
+                {/* Animated chevron right */}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="13" height="13" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                  className="transition-transform duration-200 group-hover:translate-x-0.5"
+                >
+                  <path d="M9 18l6-6-6-6" />
+                </svg>
+              </div>
+            </button>
+
+            {/* Subtle hint text below */}
+            <p className="text-[11px] text-[#94a3b8]">
+              {walletCases.length > 1 ? `${walletCases.length} candidates · click to switch` : "click to manage your wallet"}
+            </p>
+          </div>
         </div>
 
         {/* Portal Cards */}
@@ -518,6 +698,22 @@ const PortalWallet: React.FC = () => {
           }
         }}
         loading={isSubmitting}
+      />
+
+      {/* Wallet Switcher Modal */}
+      <WalletSwitcher
+        open={walletSwitcherOpen}
+        onClose={() => setWalletSwitcherOpen(false)}
+        cases={walletCases}
+        activeId={activeId}
+        onSelect={(id) => {
+          setSelectedCandidateId(id);
+          if (setActiveCandidateId && id !== "ir1") {
+            setActiveCandidateId(id);
+          }
+        }}
+        portalStatus={loading ? null : portalStatus}
+        statusByCase={statusByCase}
       />
     </div>
   );

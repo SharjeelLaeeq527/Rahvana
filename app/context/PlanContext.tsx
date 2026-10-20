@@ -114,12 +114,10 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     return accountTier;
   }, [normalizedCategory, journeyTiers, accountTier]);
 
-  // If candidate is in Free Preview mode, force effective tier to 'free'
+  // Respect the journey-level subscription (realTier).
+  // Only force 'free' if the candidate is explicitly marked in Free Preview mode.
   const isCandidatePreview = Boolean(
-    candidateCtx &&
-      (candidateCtx.activeCandidate?.isPreview ||
-        candidateCtx.activeCandidateTier === "free" ||
-        candidateCtx.activeCandidate?.tier === "free")
+    candidateCtx?.activeCandidate?.isPreview
   );
 
   const effectiveJourneyTier = isCandidatePreview ? "free" : realTier;
