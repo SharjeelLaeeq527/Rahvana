@@ -6,6 +6,7 @@ import { CheckCircle } from "lucide-react";
 import Link from "next/link";
 import { Loader } from "@/components/ui/spinner";
 import { usePlan } from "@/app/context/PlanContext";
+import { useWallet } from "@/app/context/WalletContext";
 
 // Poll /api/stripe/verify-session — first call is immediate (no delay).
 // verify-session directly applies the tier from Stripe so usually one call is enough.
@@ -287,6 +288,7 @@ function PaymentSuccessContent() {
   const [walletTopup, setWalletTopup] = useState<WalletTopupResult | null>(null);
   const sessionId = searchParams.get("session_id");
   const { refresh } = usePlan();
+  const { refreshWallet } = useWallet();
   const pollingStarted = useRef(false);
 
   useEffect(() => {
@@ -327,6 +329,7 @@ try {
         refresh();
 
         if (data.productType === "wallet_topup") {
+          void refreshWallet();
           setWalletTopup({
             credits: typeof data.credits === "number" ? data.credits : null,
             balance: typeof data.balance === "number" ? data.balance : null,
@@ -351,11 +354,12 @@ try {
         // 40s passed — webhook might still come, show success anyway
         // Plan will update on next navigation or manual refresh
         refresh();
+        void refreshWallet();
         setVerifyStatus("timeout");
         setIsVerifying(false);
       }
     );
-  }, [sessionId, router, refresh]);
+  }, [sessionId, router, refresh, refreshWallet]);
 
   if (isVerifying) {
     return (
