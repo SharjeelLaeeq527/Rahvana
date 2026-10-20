@@ -38,7 +38,8 @@ export interface UpgradeScheduleResult {
   currentPlanMonthly: number;
   currentPlanAnnual: number;
   targetPlanMonthly: number;
-  targetPlanAnnual: number;
+  /** Amount paid so far by user on their current plan (monthsElapsed × curMonthly) */
+  paidSoFarAmount: number;
   /** Unpaid/remaining portion on the current plan commitment (monthsRemaining × curMonthly) */
   remainingCurrentAmount: number;
   /** Difference between target tier annual and current tier annual */
@@ -136,16 +137,19 @@ export function calculateUpgradeSchedule({
   const targetAnnual = targetPlan.annualPrice;
   const targetMonthly = targetPlan.monthlyPrice;
 
-  // 1. Remaining current plan amount
+  // 1. Amount user paid till now for their previously bought plan
+  const paidSoFarAmount = Math.min(curAnnual, Math.round(monthsElapsed * curMonthly * 100) / 100);
+
+  // 2. New upgraded plan yearly amount - user paid amount
+  const totalNewCommitment = Math.round(Math.max(0, targetAnnual - paidSoFarAmount) * 100) / 100;
+
+  // Remaining current plan commitment for reference
   const remainingCurrentAmount = Math.round(monthsRemaining * curMonthly * 100) / 100;
 
-  // 2. Plan difference amount
+  // Plan difference amount for reference
   const planDifferenceAmount = Math.max(0, targetAnnual - curAnnual);
 
-  // 3. New 12-month commitment total
-  const totalNewCommitment = Math.round((remainingCurrentAmount + planDifferenceAmount) * 100) / 100;
-
-  // 4. Per-month amount across the fresh 12-month schedule
+  // 3. Per-month amount across the fresh 12-month schedule
   const newMonthlyRate = Math.round((totalNewCommitment / 12) * 100) / 100;
 
   const monthlySavings = Math.round(Math.max(0, targetMonthly - newMonthlyRate) * 100) / 100;
@@ -160,6 +164,7 @@ export function calculateUpgradeSchedule({
     currentPlanAnnual: curAnnual,
     targetPlanMonthly: targetMonthly,
     targetPlanAnnual: targetAnnual,
+    paidSoFarAmount,
     remainingCurrentAmount,
     planDifferenceAmount,
     totalNewCommitment,

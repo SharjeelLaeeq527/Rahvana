@@ -1238,7 +1238,7 @@ function PricingContent() {
             candidateCount: isIr5 ? (isUpgradingIr5 ? 1 : parentCount) : 1,
             candidateId:
               isUpgradingIr5 && activeUpgradeCandidate ? activeUpgradeCandidate.id : undefined,
-            action: isUpgradingIr5
+            action: isUpgradingThisJourney
               ? "upgrade"
               : isAddingCandidate || (isIr5 && hasActiveIr5 && ir5Action === "add_candidate")
                 ? "add_candidate"
@@ -1539,7 +1539,7 @@ function PricingContent() {
             isUpgradingIr5 && activeUpgradeCandidate ? activeUpgradeCandidate.id : undefined
           }
           action={
-            isUpgradingIr5
+            isUpgradingThisJourney
               ? "upgrade"
               : isAddingCandidate || (isIr5 && hasActiveIr5 && ir5Action === "add_candidate")
                 ? "add_candidate"
@@ -2346,24 +2346,27 @@ function PricingContent() {
                                 {/* Monthly price */}
                                 <div className="flex items-baseline gap-1">
                                   <span className="text-[34px] leading-none font-bold tracking-tight">
-                                    {upgradeDiff
-                                      ? `+$${upgradeDiff.diffMonthly}`
-                                      : `$${planDisplayPrice(plan)}`}
+                                    ${planDisplayPrice(plan)}
                                   </span>
 
                                   <span className="text-muted-foreground text-[12px]">/mo</span>
                                 </div>
 
-                                {/* Annual price */}
+                                {/* Annual price & 12-month upgrade breakdown */}
                                 <div className="text-muted-foreground text-[11px]">
                                   {upgradeDiff ? (
-                                    <div className="flex flex-wrap items-center gap-1.5">
-                                      <span className="font-bold text-emerald-700 dark:text-emerald-400">
-                                        ${upgradeDiff.diffAnnual} to upgrade
-                                      </span>
-                                      <span className="text-muted-foreground/60 line-through">
-                                        ${plan.annualPrice}
-                                      </span>
+                                    <div className="flex flex-col gap-0.5">
+                                      <div className="flex flex-wrap items-center gap-1.5">
+                                        <span className="font-bold text-emerald-700 dark:text-emerald-400">
+                                          ${upgradeDiff.totalNewCommitment} total over 12 months
+                                        </span>
+                                        <span className="text-muted-foreground/60 line-through">
+                                          ${plan.annualPrice}
+                                        </span>
+                                      </div>
+                                      {/* <div className="text-[10.5px] text-muted-foreground font-medium">
+                                        ${upgradeDiff.targetPlanAnnual} new plan − ${upgradeDiff.paidSoFarAmount} paid till now
+                                      </div> */}
                                     </div>
                                   ) : isCurrentPlan ? (
                                     <span className="font-medium text-emerald-700 dark:text-emerald-400">
@@ -2466,8 +2469,8 @@ function PricingContent() {
                                   ? "Not Available"
                                   : isUpgrade
                                     ? isSelected
-                                      ? `Continue to Upgrade ($${upgradeDiff?.diffAnnual}) →`
-                                      : `Upgrade for $${upgradeDiff?.diffAnnual} →`
+                                      ? `Continue to Upgrade ($${upgradeDiff?.diffMonthly}/mo) →`
+                                      : `Upgrade for $${upgradeDiff?.diffMonthly}/mo →`
                                     : isSelected
                                       ? `Continue with ${plan.name} (${activeExplorerCard?.code || activeVisaCategory.id}) →`
                                       : plan.cta}
@@ -2695,12 +2698,20 @@ function PricingContent() {
                           </div>
                           <div className="text-muted-foreground text-[12px]">
                             {currentPlanUpgradeDiff ? (
-                              <>
-                                /mo · ${currentPlanUpgradeDiff.diffAnnual} upgrade difference
-                                <span className="text-muted-foreground/60 ml-1.5 line-through">
-                                  ${currentPlanData.annualPrice}
-                                </span>
-                              </>
+                              <div className="flex flex-col items-end gap-0.5">
+                                <div>
+                                  /mo ·{" "}
+                                  <span className="font-semibold text-emerald-700 dark:text-emerald-400">
+                                    ${currentPlanUpgradeDiff.totalNewCommitment} total (12 mos)
+                                  </span>
+                                  <span className="text-muted-foreground/60 ml-1.5 line-through">
+                                    ${currentPlanData.annualPrice}
+                                  </span>
+                                </div>
+                                <div className="text-[10.5px] text-muted-foreground">
+                                  ${currentPlanUpgradeDiff.targetPlanAnnual} new plan − ${currentPlanUpgradeDiff.paidSoFarAmount} paid till now
+                                </div>
+                              </div>
                             ) : (
                               <>
                                 /mo · ${currentPlanData.annualPrice * parentMultiplier} total
@@ -2945,13 +2956,37 @@ function PricingContent() {
                       <span className="text-muted-foreground text-[11px]">
                         ${planDisplayPrice(currentPlanData)}/mo · $
                         {currentPlanUpgradeDiff
-                          ? currentPlanUpgradeDiff.diffAnnual
+                          ? currentPlanUpgradeDiff.totalNewCommitment
                           : currentPlanData.annualPrice * parentMultiplier}{" "}
-                        {currentPlanUpgradeDiff ? "upgrade total" : "total"}
+                        {currentPlanUpgradeDiff ? "12-month total" : "total"}
                         {!currentPlanUpgradeDiff && isIr5 && parentCount > 1 && (
                           <span> (${currentPlanData.annualPrice}/ea)</span>
                         )}
                       </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Simplified 12-month upgrade breakdown */}
+                {currentPlanUpgradeDiff && (
+                  <div className="border-border space-y-1.5 border-b border-dashed py-2.5 text-[12px]">
+                    <div className="flex justify-between text-muted-foreground">
+                      <span>{currentPlanData.name} Yearly Total</span>
+                      <span className="font-medium text-foreground">
+                        ${currentPlanUpgradeDiff.targetPlanAnnual}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-emerald-700 dark:text-emerald-400">
+                      <span>
+                        Paid till now ({currentPlanUpgradeDiff.monthsElapsed}{" "}
+                        {currentPlanUpgradeDiff.monthsElapsed === 1 ? "month" : "months"} on{" "}
+                        <span className="capitalize">{selectedJourneyTier}</span>)
+                      </span>
+                      <span className="font-medium">-${currentPlanUpgradeDiff.paidSoFarAmount}</span>
+                    </div>
+                    <div className="border-border/40 flex justify-between border-t pt-1 font-semibold text-foreground">
+                      <span>New 12-Month Total</span>
+                      <span>${currentPlanUpgradeDiff.totalNewCommitment}</span>
                     </div>
                   </div>
                 )}
@@ -3000,18 +3035,35 @@ function PricingContent() {
                 ))}
 
                 <div className="border-border mt-4 flex items-end justify-between border-t pt-4">
-                  <span className="text-muted-foreground text-[12px]">Total commitment</span>
-                  <span className="text-primary text-[28px] leading-none font-bold tracking-tight">
-                    ${summaryTotal}
-                  </span>
+                  <div className="flex flex-col">
+                    <span className="text-muted-foreground text-[12px]">Total commitment</span>
+                    {currentPlanUpgradeDiff && (
+                      <span className="text-emerald-700 dark:text-emerald-400 text-[11px] font-medium">
+                        Fresh 12-month schedule
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <span className="text-primary text-[28px] leading-none font-bold tracking-tight">
+                      ${summaryTotal}
+                    </span>
+                    {currentPlanUpgradeDiff && (
+                      <div className="text-muted-foreground text-[11px] mt-0.5">
+                        (${planDisplayPrice(currentPlanData)}/mo × 12 mos)
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <p className="text-muted-foreground bg-muted/40 border-border mt-3 mb-4 rounded-[12px] border border-dashed p-3 text-[11px] leading-relaxed">
                   {currentPlanUpgradeDiff ? (
                     <>
-                      Upgrade difference of ${currentPlanUpgradeDiff.diffAnnual} (billed at $
-                      {planDisplayPrice(currentPlanData)}/mo). Replaces your current{" "}
-                      <strong className="capitalize">{selectedJourneyTier}</strong> plan.
+                      Starting today, your plan resets to a fresh 12-month schedule at{" "}
+                      <strong className="text-foreground">${planDisplayPrice(currentPlanData)}/mo</strong>.
+                      Total commitment is{" "}
+                      <strong className="text-foreground">${currentPlanUpgradeDiff.totalNewCommitment}</strong>{" "}
+                      (${currentPlanUpgradeDiff.targetPlanAnnual} new plan yearly − ${currentPlanUpgradeDiff.paidSoFarAmount} paid till now).
+                      Replaces your current <strong className="capitalize">{selectedJourneyTier}</strong> plan.
                     </>
                   ) : (
                     <>
