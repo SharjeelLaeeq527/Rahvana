@@ -45,6 +45,7 @@ import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 import { PhoneInput } from "@/components/ui/phone-input";
 import type { Value as E164Number } from "react-phone-number-input";
 import { validatePhoneNumber, formatPhoneNumber } from "@/lib/validation/phone";
+import Input from "../ui/input";
 
 export interface BookConsultationToolProps extends ToolModeProps {
   isOpen?: boolean; // journey overlay control; standalone renders inline (default true)
@@ -218,7 +219,7 @@ export default function BookConsultationTool({
     issue_category: "",
     visa_category: "",
     case_stage: "",
-    embassy_consulate: "islamabad",
+    embassy_consulate: "Islamabad",
     urgency: "" as string,
     preferred_language: "English",
     full_name: "",
@@ -1210,11 +1211,14 @@ export default function BookConsultationTool({
                 <label className="mb-2 block text-sm font-medium text-gray-700">
                   Embassy / Consulate
                 </label>
-                <CustomDropdown
-                  value={formData.embassy_consulate}
-                  onChange={(value) => handleInputChange("embassy_consulate", value)}
-                  options={embassyOptions}
+                <Input
+                  id="embassy_consulate"
+                  name="embassy_consulate"
+                  value={formData.embassy_consulate || ""}
                   placeholder="Select embassy..."
+                  disabled
+                  readOnly
+                  className="cursor-not-allowed bg-gray-100 font-medium text-gray-700"
                 />
               </div>
               <div>
@@ -2902,25 +2906,28 @@ export default function BookConsultationTool({
                 />
                 <div className="flex gap-3">
                   <Button
-                    onClick={() => {
-                      setActiveView("booking");
-                    }}
+                    onClick={() => setActiveView("booking")}
                     className={cn(
-                      "flex items-center gap-2 rounded-full px-6 py-2 text-sm font-bold transition-all",
-                      activeView === ("booking" as "booking" | "requests")
-                        ? "bg-white text-teal-800 shadow-lg"
-                        : "border border-white/20 bg-white/10 text-white hover:bg-white/20"
+                      "flex items-center gap-2 rounded-full px-6 py-2 text-sm font-bold",
+                      "transition-colors duration-200",
+                      "focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:outline-none",
+                      activeView === "booking"
+                        ? "!bg-white !text-teal-800 shadow-lg hover:!bg-white hover:!text-teal-800"
+                        : "!border !border-white/25 !bg-white/10 !text-white hover:!border-white/40 hover:!bg-white/20 hover:!text-white active:!bg-white/25"
                     )}
                   >
                     Book New
                   </Button>
+
                   <Button
                     onClick={() => setActiveView("requests")}
                     className={cn(
-                      "rounded-full px-6 py-2 text-sm font-bold transition-all",
-                      activeView === ("requests" as "booking" | "requests")
-                        ? "bg-white text-teal-800 shadow-lg"
-                        : "border border-white/20 bg-white/10 text-white hover:bg-white/20"
+                      "rounded-full px-6 py-2 text-sm font-bold",
+                      "transition-colors duration-200",
+                      "focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:outline-none",
+                      activeView === "requests"
+                        ? "!bg-white !text-teal-800 shadow-lg hover:!bg-white hover:!text-teal-800"
+                        : "!border !border-white/25 !bg-white/10 !text-white hover:!border-white/40 hover:!bg-white/20 hover:!text-white active:!bg-white/25"
                     )}
                   >
                     My Requests

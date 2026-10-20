@@ -5,6 +5,7 @@ import { Resend } from "resend";
 import { createClient } from "@supabase/supabase-js";
 import Stripe from "stripe";
 import { consultationService } from "@/lib/services/consultationService";
+import { triggerTranslationNotification } from "@/lib/notifications";
 import { buildAddonPurchaseUpdate } from "@/lib/payments/addon-purchase-ledger";
 import { cancelSupersededSubscriptions } from "@/lib/stripe/subscriptionCleanup";
 import { getCandidateJourneyKey } from "@/lib/candidate/candidateSyncService";
@@ -128,7 +129,10 @@ export async function POST(request: NextRequest) {
     // failure. Answer 500 so Stripe retries; the wallet RPCs are idempotent, so a
     // retry can never credit or reverse twice.
     if (error instanceof WalletWebhookRetryableError) {
-      console.error(`Wallet webhook failed, asking Stripe to retry (${event.type}, ${event.id}):`, error);
+      console.error(
+        `Wallet webhook failed, asking Stripe to retry (${event.type}, ${event.id}):`,
+        error
+      );
       return NextResponse.json({ received: false, retry: true }, { status: 500 });
     }
     // Log loudly so the failure is visible in production logs, but STILL return 200.
@@ -180,7 +184,9 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
       // A transient DB failure must be retried: there may be no success-page
       // visit to self-heal it. not_paid / invalid_session never become creditable.
       if (result.reason === "rpc_failed") {
-        throw new WalletWebhookRetryableError(`credit_wallet_topup_atomic failed for ${session.id}`);
+        throw new WalletWebhookRetryableError(
+          `credit_wallet_topup_atomic failed for ${session.id}`
+        );
       }
     }
     return;
@@ -227,9 +233,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
           session.metadata?.action === "add_candidate" ||
           session.metadata?.is_add_candidate === "true";
         const targetCandidateIdMeta =
-          session.metadata?.target_candidate_id ||
-          session.metadata?.candidate_id ||
-          undefined;
+          session.metadata?.target_candidate_id || session.metadata?.candidate_id || undefined;
 
         await provisionCandidateJourneysAndVaults({
           supabase,
@@ -242,46 +246,34 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
           targetCandidateId: targetCandidateIdMeta,
         });
 
-        const { data: existingProfile } =
-          await supabase
-            .from("user_profiles")
-            .select("profile_details")
-            .eq("id", userId)
-            .single();
+        const { data: existingProfile } = await supabase
+          .from("user_profiles")
+          .select("profile_details")
+          .eq("id", userId)
+          .single();
 
-const existingPurchasedAddons =
-  Array.isArray(
-    existingProfile?.profile_details
-      ?.purchased_addons
-  )
-    ? existingProfile.profile_details
-        .purchased_addons
-    : [];
+        const existingPurchasedAddons = Array.isArray(
+          existingProfile?.profile_details?.purchased_addons
+        )
+          ? existingProfile.profile_details.purchased_addons
+          : [];
 
-const mergedPlanAddons = [
-  ...new Set([
-    ...existingPurchasedAddons,
-    ...selectedAddons,
-  ]),
-];
+        const mergedPlanAddons = [...new Set([...existingPurchasedAddons, ...selectedAddons])];
 
         // Save active plan details in user_profiles
         await supabase
-  .from("user_profiles")
-  .update({
-    profile_details: {
-      ...(existingProfile?.profile_details || {}),
-      active_plan: productId,
-      plan_visa_category:
-        session.metadata.visa_category,
-      plan_purchase_date:
-        new Date().toISOString(),
-      purchased_addons: mergedPlanAddons,
-      stripe_subscription_id:
-        session.subscription,
-    },
-  })
-  .eq("id", userId);
+          .from("user_profiles")
+          .update({
+            profile_details: {
+              ...(existingProfile?.profile_details || {}),
+              active_plan: productId,
+              plan_visa_category: session.metadata.visa_category,
+              plan_purchase_date: new Date().toISOString(),
+              purchased_addons: mergedPlanAddons,
+              stripe_subscription_id: session.subscription,
+            },
+          })
+          .eq("id", userId);
 
         console.log(`✅ User ${userId} subscribed to ${productId}`);
 
@@ -318,26 +310,20 @@ const mergedPlanAddons = [
       );
     }
     // Standalone Add-on fulfillment
-    else if (
-      productType === "standalone_addon" &&
-      selectedAddons.length > 0
-    ) {
+    else if (productType === "standalone_addon" && selectedAddons.length > 0) {
       try {
         const { data: profile } = await supabase
           .from("user_profiles")
           .select("profile_details")
           .eq("id", userId)
           .single();
-    
-        const {
-          alreadyProcessed,
-          profileDetails,
-        } = buildAddonPurchaseUpdate(
+
+        const { alreadyProcessed, profileDetails } = buildAddonPurchaseUpdate(
           profile?.profile_details,
           session.id,
           selectedAddons
         );
-    
+
         if (!alreadyProcessed) {
           await supabase
             .from("user_profiles")
@@ -346,15 +332,10 @@ const mergedPlanAddons = [
             })
             .eq("id", userId);
         }
-    
-        console.log(
-          `✅ User ${userId} purchased standalone addons: ${selectedAddons.join(", ")}`
-        );
+
+        console.log(`✅ User ${userId} purchased standalone addons: ${selectedAddons.join(", ")}`);
       } catch (error) {
-        console.error(
-          "Error updating standalone addons:",
-          error
-        );
+        console.error("Error updating standalone addons:", error);
       }
     }
   }
@@ -392,9 +373,11 @@ const mergedPlanAddons = [
       }
 
       // Reconstruct arrays
-      const attachments = session.metadata?.c_attachments ? session.metadata.c_attachments.split(",") : [];
-      const alternateSlots = session.metadata?.c_alternate_slots 
-        ? session.metadata.c_alternate_slots.split(",").map((s) => new Date(s)) 
+      const attachments = session.metadata?.c_attachments
+        ? session.metadata.c_attachments.split(",")
+        : [];
+      const alternateSlots = session.metadata?.c_alternate_slots
+        ? session.metadata.c_alternate_slots.split(",").map((s) => new Date(s))
         : [];
 
       const bookingData = {
@@ -425,6 +408,93 @@ const mergedPlanAddons = [
       session.metadata.consultation_reference || productId
     );
   }
+
+  // Document Translation — deferred-create (pay-first) or mark as paid.
+  // Mirrors verify-session so a paid request still lands even if the user never
+  // returns to the success page. Idempotent: the existence check + primary key guard
+  // against the webhook and verify-session both running.
+  if (productType === "document_translations" && productId) {
+    const { data: existingDoc } = await supabase
+      .from("translation_documents")
+      .select("id, payment_status")
+      .eq("id", productId)
+      .maybeSingle();
+
+    if (existingDoc) {
+      if (existingDoc.payment_status !== "paid") {
+        await supabase
+          .from("translation_documents")
+          .update({ payment_status: "paid", payment_id: payment?.id })
+          .eq("id", productId);
+      }
+    } else {
+      let userNotes = "";
+      let noteIndex = 1;
+      while (true) {
+        const part = session.metadata?.[`t_notes_${noteIndex}`];
+        if (!part) break;
+        userNotes += part;
+        noteIndex++;
+      }
+
+      const docId = session.metadata?.t_doc_id || productId;
+      const { error: insertErr } = await supabase.from("translation_documents").insert({
+        id: docId,
+        user_id: userId,
+        user_email: session.metadata?.t_user_email || session.customer_details?.email || "",
+        user_name: session.metadata?.t_user_name || "User",
+        document_type: session.metadata?.t_document_type || "marriage",
+        original_file_path: session.metadata?.t_storage_path || "",
+        original_filename: session.metadata?.t_original_filename || "",
+        original_file_size: Number(session.metadata?.t_original_file_size || 0) || 0,
+        original_mime_type: session.metadata?.t_original_mime_type || "application/pdf",
+        user_notes: userNotes || null,
+        status: "PENDING",
+        payment_status: "paid",
+        payment_id: payment?.id,
+        metadata: {
+          candidate_id: session.metadata?.t_candidate_id || "candidate-1",
+          candidate_name: session.metadata?.t_candidate_name || "",
+          source: session.metadata?.t_source || "standalone",
+          journey_slug: session.metadata?.t_journey_slug || null,
+        },
+      });
+
+      if (insertErr) {
+        // A PK conflict means verify-session already created it — that's fine.
+        console.error("[webhook] translation deferred-create error:", insertErr);
+      } else {
+        try {
+          await triggerTranslationNotification(docId);
+        } catch (notifErr) {
+          console.error("[webhook] translation notification error:", notifErr);
+        }
+      }
+    }
+  }
+
+  // Medical appointment / PCC filing — mark as paid and reveal the draft.
+  // These rows are pre-created (as hidden drafts when payment was required), so
+  // fulfillment here just flips the existing row. Idempotent (only acts when not
+  // already paid) and covers the case where the user paid but never returned to the
+  // success page (previously only verify-session flipped these — an orphaned draft).
+  if ((productType === "medical_booking" || productType === "pcc_filing") && productId) {
+    const serviceTable =
+      productType === "medical_booking" ? "appointments" : "police_verification_requests";
+    const { data: existingServiceRow } = await supabase
+      .from(serviceTable)
+      .select("id, payment_status")
+      .eq("id", productId)
+      .maybeSingle();
+
+    if (existingServiceRow && existingServiceRow.payment_status !== "paid") {
+      await supabase
+        .from(serviceTable)
+        .update({ payment_status: "paid", awaiting_payment: false })
+        .eq("id", productId);
+      console.log(`✅ [webhook] ${productType} ${productId} marked paid and revealed`);
+    }
+  }
 }
 
 // ================================================
@@ -448,7 +518,10 @@ async function handleChargeRefunded(charge: Stripe.Charge) {
   }
   if (piMetadata?.product_type !== WALLET_TOPUP_PRODUCT_TYPE) return;
 
-  const sessions = await stripe.checkout.sessions.list({ payment_intent: paymentIntentId, limit: 1 });
+  const sessions = await stripe.checkout.sessions.list({
+    payment_intent: paymentIntentId,
+    limit: 1,
+  });
   const session = sessions.data[0];
   if (!session || !isWalletTopupSession(session) || !session.metadata?.user_id) {
     console.error(`[webhook] Refunded wallet charge ${charge.id} has no matching top-up session`);
@@ -462,7 +535,9 @@ async function handleChargeRefunded(charge: Stripe.Charge) {
     if (credited.reason === "rpc_failed") {
       throw new WalletWebhookRetryableError(`credit before refund failed for ${session.id}`);
     }
-    console.error(`[webhook] Refunded top-up ${session.id} was never creditable: ${credited.reason}`);
+    console.error(
+      `[webhook] Refunded top-up ${session.id} was never creditable: ${credited.reason}`
+    );
     return;
   }
 
@@ -650,8 +725,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   const details = { ...(profile.profile_details || {}) };
   if (revokedKeys.size > 0 && Array.isArray(details.candidates)) {
     details.candidates = details.candidates.map((c: { id?: string; visaCategory?: string }) =>
-      c?.visaCategory &&
-      revokedKeys.has(normKey(getCandidateJourneyKey(c.visaCategory, c.id)))
+      c?.visaCategory && revokedKeys.has(normKey(getCandidateJourneyKey(c.visaCategory, c.id)))
         ? { ...c, tier: "free" }
         : c
     );
