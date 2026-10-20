@@ -193,13 +193,24 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
         const addons = profileData?.profile_details?.purchased_addons as string[] | undefined;
         setPurchasedAddons(Array.isArray(addons) ? addons : []);
 
+        const TIER_RANK: Record<string, number> = { free: 0, basic: 1, premium: 2, executive: 3 };
         const tiersMap: Record<string, PlanTier> = {};
         if (Array.isArray(journeysData)) {
           journeysData.forEach((j) => {
             if (j.journey_type && j.subscription_tier) {
+              const tier = normalizePlanTier(j.subscription_tier);
+              const rawKey = j.journey_type.toLowerCase();
+              const cleanKey = rawKey.replace(/[^a-z0-9]/g, "");
+              tiersMap[rawKey] = tier;
+              tiersMap[cleanKey] = tier;
+
               const baseCat = getBaseVisaCategory(j.journey_type);
               if (baseCat !== UNKNOWN_VISA_CATEGORY) {
-                tiersMap[baseCat] = normalizePlanTier(j.subscription_tier);
+                const currentRank = TIER_RANK[tiersMap[baseCat] || "free"] ?? 0;
+                const newRank = TIER_RANK[tier] ?? 0;
+                if (newRank >= currentRank) {
+                  tiersMap[baseCat] = tier;
+                }
               }
             }
           });

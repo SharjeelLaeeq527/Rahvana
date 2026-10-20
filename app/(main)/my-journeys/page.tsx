@@ -22,6 +22,7 @@ import { useUserProfile } from "@/app/context/UserProfileContext";
 import { PlanContext } from "@/app/context/PlanContext";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { JourneyProgressRecord, listUserJourneys } from "@/lib/journey/journeyProgressService";
+import { createClient } from "@/lib/supabase/client";
 import {
   getCandidateJourneyKey,
   getBaseVisaCategory,
@@ -217,6 +218,25 @@ const getJourneyStatus = (
   };
 };
 
+const tierHierarchy: Record<string, number> = {
+  executive: 3,
+  premium: 2,
+  basic: 1,
+  free: 0,
+};
+
+const resolveHighestTier = (...tiers: (string | null | undefined)[]): string => {
+  let highest = "free";
+  for (const t of tiers) {
+    if (!t) continue;
+    const norm = t.toLowerCase().trim();
+    if ((tierHierarchy[norm] ?? -1) > (tierHierarchy[highest] ?? 0)) {
+      highest = norm;
+    }
+  }
+  return highest;
+};
+
 export default function MyJourneysPage() {
   const { user, isLoading: authLoading } = useAuth();
   const { profile, updateProfile } = useUserProfile();
@@ -233,6 +253,8 @@ export default function MyJourneysPage() {
   } = useCandidate();
 
   const [journeys, setJourneys] = useState<JourneyProgressRecord[]>([]);
+  const [accountPlan, setAccountPlan] = useState<string | null>(null);
+  const [dbCandidates, setDbCandidates] = useState<any[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [hasFetched, setHasFetched] = useState(false);
 
@@ -317,13 +339,32 @@ export default function MyJourneysPage() {
     setLoading(true);
 
     try {
-      const data = await listUserJourneys(user.id);
+      const supabase = createClient();
+      const [data, profileRes] = await Promise.all([
+        listUserJourneys(user.id),
+        supabase
+          .from("user_profiles")
+          .select("subscription_tier, profile_details")
+          .eq("id", user.id)
+          .maybeSingle(),
+      ]);
 
       if (!isMounted.current) {
         return;
       }
 
       setJourneys(data || []);
+
+      if (profileRes.data) {
+        const topTier = profileRes.data.subscription_tier;
+        const detailsPlan = (profileRes.data.profile_details as any)?.active_plan;
+        setAccountPlan(topTier || detailsPlan || null);
+
+        const candRoster = (profileRes.data.profile_details as any)?.candidates;
+        if (Array.isArray(candRoster) && candRoster.length > 0) {
+          setDbCandidates(candRoster);
+        }
+      }
     } catch (error) {
       console.error("Error fetching journeys:", error);
 
@@ -404,13 +445,6 @@ export default function MyJourneysPage() {
       if (hasIr5) {
         processedCanonicals.add("ir5");
 
-        const tierHierarchy: Record<string, number> = {
-          executive: 3,
-          premium: 2,
-          basic: 1,
-          free: 0,
-        };
-
         const formatCandidateRelation = (rel?: string) => {
           if (!rel) return "";
           if (rel === "AdoptiveParent") return "Adoptive Parent";
@@ -441,30 +475,41 @@ export default function MyJourneysPage() {
             const totalSteps = candDbJourney ? getTotalSteps(candDbJourney) : 28;
 
             // Determine candidate tier
-            let candTier = (cand.tier || "free").toLowerCase();
-            if (candDbJourney?.subscription_tier) {
-              const dbTier = candDbJourney.subscription_tier.toLowerCase();
-              if ((tierHierarchy[dbTier] ?? -1) > (tierHierarchy[candTier] ?? 0)) {
-                candTier = dbTier;
-              }
-            }
-            if (planCtx?.journeyTiers?.["IR-5"]) {
-              const catTier = planCtx.journeyTiers["IR-5"].toLowerCase();
-              if ((tierHierarchy[catTier] ?? -1) > (tierHierarchy[candTier] ?? 0)) {
-                candTier = catTier;
-              }
-            }
-            if (planCtx?.journeyTiers?.["ir5"]) {
-              const catTier = planCtx.journeyTiers["ir5"].toLowerCase();
-              if ((tierHierarchy[catTier] ?? -1) > (tierHierarchy[candTier] ?? 0)) {
-                candTier = catTier;
-              }
-            }
-            if (cand.id === activeCandidateId && planCtx?.realTier) {
-              const rTier = planCtx.realTier.toLowerCase();
-              if ((tierHierarchy[rTier] ?? -1) > (tierHierarchy[candTier] ?? 0)) {
-                candTier = rTier;
-              }
+            const candDbTier =
+              candDbJourney?.subscription_tier || (candDbJourney as any)?.tier;
+            const candRosterTier =
+              cand.tier ||
+              dbCandidates?.find((c) => c.id === cand.id)?.tier ||
+              (profile as any)?.candidates?.find((c: any) => c.id === cand.id)?.tier;
+
+            const isPrimaryCand = Boolean(
+              cand.isPrimary || cand.id === "candidate-1" || ir5Candidates.length === 1
+            );
+            const isActiveCand = cand.id === activeCandidateId;
+
+            let candTier = resolveHighestTier(
+              candRosterTier,
+              candDbTier,
+              planCtx?.journeyTiers?.[candKey],
+              planCtx?.journeyTiers?.[cand.id],
+              planCtx?.journeyTiers?.[cand.id.toLowerCase().replace(/[^a-z0-9]/g, "")],
+              planCtx?.journeyTiers?.[candKey.replace(/[^a-z0-9]/g, "")]
+            );
+
+            if (isPrimaryCand || isActiveCand) {
+              const accountPlanTier = resolveHighestTier(
+                planCtx?.journeyTiers?.["IR-5"],
+                planCtx?.journeyTiers?.["ir5"],
+                accountPlan,
+                planCtx?.maxActiveJourneyTier,
+                (profile as any)?.active_plan,
+                (profile as any)?.subscription_tier,
+                (profile as any)?.subscriptionTier,
+                (profile as any)?.tier,
+                isActiveCand ? planCtx?.realTier : null,
+                isActiveCand ? planCtx?.tier : null
+              );
+              candTier = resolveHighestTier(candTier, accountPlanTier);
             }
 
             const status = getJourneyStatus(candDbJourney, progress, candTier);
@@ -509,30 +554,22 @@ export default function MyJourneysPage() {
           });
         } else {
           // Fallback if IR-5 is active on profile/DB but no candidate object in context
-          let highestTier = "free";
-          const considerTier = (t?: string | null) => {
-            if (!t) return;
-            const normalized = t.toLowerCase().trim();
-            if ((tierHierarchy[normalized] ?? -1) > (tierHierarchy[highestTier] ?? 0)) {
-              highestTier = normalized;
-            }
-          };
-
-          for (const j of ir5DbJourneys) {
-            considerTier(j.subscription_tier);
-          }
-          if (planCtx) {
-            considerTier(planCtx.journeyTiers?.["IR-5"]);
-            considerTier(planCtx.journeyTiers?.["ir5"]);
-            considerTier(planCtx.realTier);
-          }
-          const profileAny = profile as any;
-          considerTier(profileAny?.subscriptionTier);
-          considerTier(profileAny?.subscription_tier);
-          considerTier(profileAny?.tier);
-          considerTier(profileAny?.active_plan);
-
           const activeDbJourney = ir5DbJourneys[0];
+          const highestTier = resolveHighestTier(
+            ...ir5DbJourneys.map((j) => j.subscription_tier),
+            activeDbJourney?.subscription_tier,
+            planCtx?.journeyTiers?.["IR-5"],
+            planCtx?.journeyTiers?.["ir5"],
+            accountPlan,
+            planCtx?.maxActiveJourneyTier,
+            planCtx?.realTier,
+            planCtx?.tier,
+            (profile as any)?.active_plan,
+            (profile as any)?.subscription_tier,
+            (profile as any)?.subscriptionTier,
+            (profile as any)?.tier
+          );
+
           const progress = activeDbJourney ? getProgressPercent(activeDbJourney) : 0;
           const completedSteps = activeDbJourney ? getCompletedSteps(activeDbJourney) : 0;
           const totalSteps = activeDbJourney ? getTotalSteps(activeDbJourney) : 28;
@@ -586,36 +623,6 @@ export default function MyJourneysPage() {
 
       processedCanonicals.add(canonicalKey);
 
-      const tierHierarchy: Record<string, number> = {
-        executive: 3,
-        premium: 2,
-        basic: 1,
-        free: 0,
-      };
-
-      let jTier = (j.subscription_tier || "free").toLowerCase();
-      if (planCtx?.journeyTiers?.[baseCategory]) {
-        const catTier = planCtx.journeyTiers[baseCategory].toLowerCase();
-        if ((tierHierarchy[catTier] ?? -1) > (tierHierarchy[jTier] ?? 0)) {
-          jTier = catTier;
-        }
-      }
-      if (planCtx?.realTier && baseCategory === activeCandidate?.visaCategory) {
-        const realTier = planCtx.realTier.toLowerCase();
-        if ((tierHierarchy[realTier] ?? -1) > (tierHierarchy[jTier] ?? 0)) {
-          jTier = realTier;
-        }
-      }
-
-      const progress = getProgressPercent(j);
-      const completedSteps = getCompletedSteps(j);
-      const totalSteps = getTotalSteps(j);
-      const meta = resolveJourneyMeta(j.journey_id);
-      const jCustom =
-        profile?.journeyCustomizations?.[canonicalKey] ||
-        profile?.journeyCustomizations?.[canonical] ||
-        profile?.journeyCustomizations?.[j.journey_id];
-
       const candIdFromJourney =
         j.journey_id && j.journey_id.includes("_") ? j.journey_id.split("_")[1] : null;
       const candForJourney =
@@ -631,6 +638,51 @@ export default function MyJourneysPage() {
         (baseCategory === "IR-1" ? candidates.find((c) => c.relation === "Spouse") : null) ||
         candidates.find((c) => c.isPrimary) ||
         candidates[0];
+
+      const candRosterTier =
+        candForJourney?.tier ||
+        (candForJourney ? dbCandidates?.find((c) => c.id === candForJourney.id)?.tier : null) ||
+        (candForJourney
+          ? (profile as any)?.candidates?.find((c: any) => c.id === candForJourney.id)?.tier
+          : null);
+
+      const isMatchingCategory =
+        !activeCandidate?.visaCategory ||
+        getBaseVisaCategory(activeCandidate.visaCategory) === baseCategory;
+
+      const userAccountPlanTier = isMatchingCategory
+        ? resolveHighestTier(
+            accountPlan,
+            planCtx?.maxActiveJourneyTier,
+            (profile as any)?.active_plan,
+            (profile as any)?.subscription_tier,
+            (profile as any)?.subscriptionTier,
+            (profile as any)?.tier,
+            planCtx?.realTier,
+            planCtx?.tier
+          )
+        : null;
+
+      const jTier = resolveHighestTier(
+        j.subscription_tier,
+        (j as any)?.tier,
+        candRosterTier,
+        planCtx?.journeyTiers?.[j.journey_id],
+        planCtx?.journeyTiers?.[canonicalKey],
+        planCtx?.journeyTiers?.[baseCategory],
+        planCtx?.journeyTiers?.[baseCategory.toLowerCase()],
+        planCtx?.journeyTiers?.[canonical],
+        userAccountPlanTier
+      );
+
+      const progress = getProgressPercent(j);
+      const completedSteps = getCompletedSteps(j);
+      const totalSteps = getTotalSteps(j);
+      const meta = resolveJourneyMeta(j.journey_id);
+      const jCustom =
+        profile?.journeyCustomizations?.[canonicalKey] ||
+        profile?.journeyCustomizations?.[canonical] ||
+        profile?.journeyCustomizations?.[j.journey_id];
 
       const defaultCand = candForJourney || null;
       const defaultCandName =
@@ -700,25 +752,31 @@ export default function MyJourneysPage() {
           const customName = fbCustom?.name || defaultCandName;
           const customImage = fbCustom?.image || defaultCand?.avatarUrl || meta.image;
 
-          const tierHierarchy: Record<string, number> = {
-            executive: 3,
-            premium: 2,
-            basic: 1,
-            free: 0,
-          };
-          let fbTier = (profile?.subscriptionTier || "free").toLowerCase();
-          if (planCtx?.journeyTiers?.[baseCategory]) {
-            const catTier = planCtx.journeyTiers[baseCategory].toLowerCase();
-            if ((tierHierarchy[catTier] ?? -1) > (tierHierarchy[fbTier] ?? 0)) {
-              fbTier = catTier;
-            }
-          }
-          if (planCtx?.realTier) {
-            const rTier = planCtx.realTier.toLowerCase();
-            if ((tierHierarchy[rTier] ?? -1) > (tierHierarchy[fbTier] ?? 0)) {
-              fbTier = rTier;
-            }
-          }
+          const candRosterTier =
+            candForProfile?.tier ||
+            (candForProfile ? dbCandidates?.find((c) => c.id === candForProfile.id)?.tier : null) ||
+            (candForProfile
+              ? (profile as any)?.candidates?.find((c: any) => c.id === candForProfile.id)?.tier
+              : null);
+
+          const isMatchingCategory =
+            !activeCandidate?.visaCategory ||
+            getBaseVisaCategory(activeCandidate.visaCategory) === baseCategory;
+
+          const fbTier = resolveHighestTier(
+            profile?.subscriptionTier,
+            (profile as any)?.subscription_tier,
+            (profile as any)?.active_plan,
+            (profile as any)?.tier,
+            accountPlan,
+            candRosterTier,
+            planCtx?.journeyTiers?.[baseCategory],
+            planCtx?.journeyTiers?.[canonicalKey],
+            planCtx?.journeyTiers?.[profileVisa.toLowerCase()],
+            planCtx?.maxActiveJourneyTier,
+            isMatchingCategory ? planCtx?.realTier : null,
+            isMatchingCategory ? planCtx?.tier : null
+          );
 
           const fbStatus = getJourneyStatus(null, 0, fbTier);
 
@@ -750,9 +808,12 @@ export default function MyJourneysPage() {
     activeCandidateId,
     activeCandidate,
     profile,
+    accountPlan,
+    dbCandidates,
     planCtx?.journeyTiers,
     planCtx?.maxActiveJourneyTier,
     planCtx?.realTier,
+    planCtx?.tier,
   ]);
 
   const startNewJourney = () => {
