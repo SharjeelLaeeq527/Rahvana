@@ -156,9 +156,7 @@ export function resolveUnlockedItems(
 ): WalletCatalogItem[] {
   const active = unlockRows.filter((row) => row.status === "active");
   const addons = purchasedAddons.filter((a): a is string => typeof a === "string");
-  const hasCivilBundleRow = active.some(
-    (row) => row.resource_id === LEGACY_CIVIL_GUIDES_BUNDLE
-  );
+  const hasCivilBundleRow = active.some((row) => row.resource_id === LEGACY_CIVIL_GUIDES_BUNDLE);
 
   return WALLET_CATALOG.filter((item) => {
     if (
