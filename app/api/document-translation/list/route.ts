@@ -42,10 +42,21 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: msg(E.ADMIN_FETCH_FAILED) }, { status: 500 });
     }
 
-    // Filter by candidateId if provided (and not 'all')
+    const scope = searchParams.get("scope");
+    const journeySlugParam = searchParams.get("journeySlug");
+
     const filteredDocs = (documents || []).filter((doc) => {
-      if (!candidateId || candidateId === "all") return true;
       const meta = (doc.metadata || {}) as Record<string, unknown>;
+      // Origin separation, mirroring PCC / Medical:
+      if (scope === "journey") {
+        if (meta.source !== "journey") return false;
+        if (journeySlugParam && meta.journey_slug && meta.journey_slug !== journeySlugParam)
+          return false;
+      } else {
+        // default / "standalone": legacy rows (no source) still show here
+        if (meta.source === "journey") return false;
+      }
+      if (!candidateId || candidateId === "all") return true;
       const docCandId = (meta.candidate_id as string) || "candidate-1";
       return docCandId === candidateId;
     });

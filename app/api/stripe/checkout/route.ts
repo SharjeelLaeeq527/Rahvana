@@ -79,6 +79,7 @@ export async function POST(request: NextRequest) {
       appointmentId,
       policeVerificationId,
       documentTranslationId,
+      translationDetails,
       addons,
       visaCategory,
       candidateCount,
@@ -255,7 +256,7 @@ export async function POST(request: NextRequest) {
     // Trusting it alone let a second live subscription get created on the same
     // customer. These statuses all mean "occupies a live subscription slot".
     const LIVE_SUB_STATUSES = ["active", "trialing", "past_due", "unpaid"];
-    let liveSubs: Stripe.Subscription[] = [];
+    const liveSubs: Stripe.Subscription[] = [];
     if (stripeCustomerId && productTier) {
       // FAIL CLOSED: for a subscription purchase we MUST know the customer's
       // current subscriptions before creating a new one. If Stripe is unreachable
@@ -302,8 +303,7 @@ export async function POST(request: NextRequest) {
         ? journeyTypeForVisaCategory(subscription.metadata.visa_category)
         : null;
       return (
-        subscriptionJourneyType === selectedJourneyType &&
-        !isAddCandidateSubscription(subscription)
+        subscriptionJourneyType === selectedJourneyType && !isAddCandidateSubscription(subscription)
       );
     });
     const candidateRosterTier = targetCandidateProfile?.tier;
@@ -320,8 +320,7 @@ export async function POST(request: NextRequest) {
     const effectiveCurrentTier = tierNameForRank(effectiveCurrentRank);
     // "Has a plan" is true if EITHER source says so — this closes the desync gap.
     const hasLivePlan =
-      journeyLiveSubs.length > 0 ||
-      (dbStatus !== "completed" && (TIER_RANK[dbTier] ?? 0) > 0);
+      journeyLiveSubs.length > 0 || (dbStatus !== "completed" && (TIER_RANK[dbTier] ?? 0) > 0);
 
     // A live sub whose recurring charge is failing. Such a user should RECOVER
     // (update payment method / pay the open invoice) via the billing portal, not
@@ -365,8 +364,7 @@ export async function POST(request: NextRequest) {
     const serverCurrentTier = serverIsUpgrade ? effectiveCurrentTier : undefined;
 
     // isAddCandidateRequest indicates adding a new candidate to a roster or initial multi-candidate setup
-    const isAddCandidateRequest =
-      !serverIsUpgrade && (isAddCandidateAction || isMultiCandidate);
+    const isAddCandidateRequest = !serverIsUpgrade && (isAddCandidateAction || isMultiCandidate);
 
     // ── Server-side downgrade + duplicate-purchase guard (Stripe-aware) ──────
     // Rejects two scenarios:
@@ -489,8 +487,7 @@ export async function POST(request: NextRequest) {
         const firstKind =
           (
             ADDONS.find((addon) => addon.id === firstCatalogAddonId) as
-              | { kind?: string }
-              | undefined
+              { kind?: string } | undefined
           )?.kind ?? "tools";
         params.set("mode", firstKind);
       }
@@ -550,10 +547,7 @@ export async function POST(request: NextRequest) {
       const tierLower = productTier.toLowerCase();
 
       let product:
-        | typeof PRODUCTS.BASIC
-        | typeof PRODUCTS.PREMIUM
-        | typeof PRODUCTS.EXECUTIVE
-        | null = null;
+        typeof PRODUCTS.BASIC | typeof PRODUCTS.PREMIUM | typeof PRODUCTS.EXECUTIVE | null = null;
       if (tierLower === "basic") product = PRODUCTS.BASIC;
       if (tierLower === "premium") product = PRODUCTS.PREMIUM;
       if (tierLower === "executive") product = PRODUCTS.EXECUTIVE;
@@ -893,6 +887,71 @@ export async function POST(request: NextRequest) {
         product_type: "pcc_filing",
         product_id: policeVerificationId,
       };
+    } else if (translationDetails) {
+      // Deferred-create (pay-first) flow for Document Translation — mirrors Expert
+      // Consultation. No `translation_documents` row exists yet; the fields ride along
+      // in Stripe metadata and the row is inserted by the webhook / verify-session ONLY
+      // after a successful payment, so a canceled/failed checkout leaves nothing behind.
+      // `docId` is the future row's primary key.
+      const docId =
+        typeof translationDetails.docId === "string" && translationDetails.docId
+          ? translationDetails.docId
+          : crypto.randomUUID();
+      const documentTranslationPrice = 25; // $25 per document translation request
+
+      // Look up name server-side (never trust client-provided identity).
+      const { data: profileRow } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", userId)
+        .single();
+
+      const splitMeta = (str: string, prefix: string) => {
+        const chunkLimit = 450;
+        const meta: Record<string, string> = {};
+        if (!str) return meta;
+        let index = 1;
+        for (let i = 0; i < str.length; i += chunkLimit) {
+          meta[`${prefix}_${index}`] = str.substring(i, i + chunkLimit);
+          index++;
+        }
+        return meta;
+      };
+      const notesMeta = splitMeta(String(translationDetails.userNotes || ""), "t_notes");
+
+      sessionParams.mode = "payment";
+      sessionParams.line_items = [
+        {
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: "Document Translation",
+              description: `Document Translation (${translationDetails.documentType || "document"})`,
+            },
+            unit_amount: documentTranslationPrice * 100,
+          },
+          quantity: 1,
+        },
+      ];
+
+      sessionParams.metadata = {
+        ...sessionParams.metadata,
+        product_type: "document_translations",
+        product_id: docId,
+        t_doc_id: docId,
+        t_storage_path: String(translationDetails.storagePath || ""),
+        t_original_filename: String(translationDetails.originalFilename || ""),
+        t_original_file_size: String(translationDetails.originalFileSize || ""),
+        t_original_mime_type: String(translationDetails.originalMimeType || ""),
+        t_document_type: String(translationDetails.documentType || ""),
+        t_user_email: String(user.email || ""),
+        t_user_name: String(profileRow?.full_name || "User"),
+        t_candidate_id: String(translationDetails.candidateId || "candidate-1"),
+        t_candidate_name: String(translationDetails.candidateName || ""),
+        t_source: translationDetails.source === "journey" ? "journey" : "standalone",
+        t_journey_slug: String(translationDetails.journeySlug || ""),
+        ...notesMeta,
+      };
     } else if (documentTranslationId) {
       // Note: document upload route stores records in `translation_documents`
       const { data: requestRecord, error: requestError } = await supabase
@@ -1017,7 +1076,7 @@ export async function POST(request: NextRequest) {
           : sessionParams.metadata?.product_type === "pcc_filing"
             ? policeVerificationId
             : sessionParams.metadata?.product_type === "document_translations"
-              ? documentTranslationId
+              ? documentTranslationId || sessionParams.metadata?.product_id || ""
               : String(sessionParams.metadata?.product_id || "");
 
     let paymentId: string | null = null;

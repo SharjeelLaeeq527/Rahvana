@@ -170,7 +170,11 @@ export function QuickAccessButton({
       </motion.button>
 
       {/* Tooltip */}
-      <div className="absolute top-full left-0 z-[999] mt-3 hidden w-72 rounded-lg border border-slate-700 bg-slate-800 p-3 text-xs text-white shadow-xl group-hover:block">
+      <div
+        className={`absolute top-full z-[999] mt-3 hidden w-72 max-w-[calc(100vw-2rem)] rounded-lg border border-slate-700 bg-slate-800 p-3 text-xs text-white shadow-xl group-hover:block ${
+          className.includes("!text-white") ? "right-0" : "left-0"
+        }`}
+      >
         <div className="mb-1 flex items-center gap-1 font-medium text-[#afdbdb]">
           <Heart size={14} className="text-[#afdbdb]" />
 
@@ -183,7 +187,11 @@ export function QuickAccessButton({
             : "Save this resource to your Favorites for quick access from the header menu."}
         </p>
 
-        <div className="absolute bottom-full left-6 border-8 border-transparent border-b-slate-800" />
+        <div
+          className={`absolute bottom-full border-8 border-transparent border-b-slate-800 ${
+            className.includes("!text-white") ? "right-6" : "left-6"
+          }`}
+        />
       </div>
     </div>
   );

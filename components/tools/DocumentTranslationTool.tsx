@@ -71,10 +71,7 @@ export default function DocumentTranslationTool({
       if (rawJourneyTier) {
         return normalizePlanTier(rawJourneyTier);
       }
-      if (
-        journeyContext?.journeyCategory &&
-        plan.journeyTiers[journeyContext.journeyCategory]
-      ) {
+      if (journeyContext?.journeyCategory && plan.journeyTiers[journeyContext.journeyCategory]) {
         return plan.journeyTiers[journeyContext.journeyCategory];
       }
     }
@@ -167,6 +164,13 @@ export default function DocumentTranslationTool({
       formData.append("documentType", documentType);
       formData.append("candidateId", activeCandidateId || "candidate-1");
       formData.append("candidateName", activeCandidate.fullName || activeCandidate.label || "");
+      // Origin tag: journey-embedded requests are kept out of standalone My Resources (mirrors PCC / Medical).
+      if (isJourney) {
+        formData.append("source", "journey");
+        formData.append("journey_slug", journeyContext?.journeySlug || "");
+      } else {
+        formData.append("source", "standalone");
+      }
       if (userNotes) {
         formData.append("userNotes", userNotes);
       }
@@ -225,69 +229,115 @@ export default function DocumentTranslationTool({
       setCheckoutLoading(true);
       setCheckoutError(null);
 
-      // Create translation request first
-      const requestData = new FormData();
+      // Build the upload FormData once — used by every "covered" path (journey /
+      // Executive / credit), where the request row is created immediately.
+      const buildUploadFormData = () => {
+        const requestData = new FormData();
+        requestData.append("file", file);
+        requestData.append("documentType", documentType);
+        requestData.append("candidateId", activeCandidateId || "candidate-1");
+        requestData.append(
+          "candidateName",
+          activeCandidate.fullName || activeCandidate.label || ""
+        );
+        // Origin tag: journey-embedded requests are kept out of standalone My Resources (mirrors PCC / Medical).
+        if (isJourney) {
+          requestData.append("source", "journey");
+          requestData.append("journey_slug", journeyContext?.journeySlug || "");
+        } else {
+          requestData.append("source", "standalone");
+        }
+        if (userNotes) {
+          requestData.append("userNotes", userNotes);
+        }
+        return requestData;
+      };
 
-      requestData.append("file", file);
-      requestData.append("documentType", documentType);
-      requestData.append("candidateId", activeCandidateId || "candidate-1");
-      requestData.append("candidateName", activeCandidate.fullName || activeCandidate.label || "");
+      // Create the translation request (uploads file + inserts row) and show success.
+      const createRequestAndFinish = async (consumedRemaining?: number) => {
+        const response = await fetch("/api/document-translation/upload", {
+          method: "POST",
+          body: buildUploadFormData(),
+        });
+        const result = await response.json();
+        if (!response.ok) {
+          throw new Error(result.error);
+        }
+        if (consumedRemaining !== undefined) {
+          setRemainingCredits(consumedRemaining);
+        }
+        setUploadSuccess(true);
+        if (onSuccess) {
+          onSuccess(result);
+        }
+      };
 
-      if (userNotes) {
-        requestData.append("userNotes", userNotes);
+      // Journey mode: access was already tier-gated before this tool opened. Create the
+      // request directly — no credits, no Stripe.
+      if (isJourney) {
+        await createRequestAndFinish();
+        return;
       }
 
-      const response = await fetch("/api/document-translation/upload", {
+      // Standalone — resolve access BEFORE creating anything (the point of this reorder):
+      // plan (Executive = unlimited) or one credit first; checkout only if neither.
+      if (isUnlimited("document_translation", effectiveTier)) {
+        await createRequestAndFinish();
+        return;
+      }
+
+      // Lock one credit (the POST checks + consumes atomically).
+      const reservation = await consumeAccess("document_translation");
+      if (reservation.allowed && reservation.data?.allowed !== false) {
+        // Credit covers it — create the request now.
+        await createRequestAndFinish(
+          reservation.data?.remaining !== undefined ? reservation.data.remaining : undefined
+        );
+        return;
+      }
+
+      // No credit — pay-first: upload to storage only (NO row created yet), then open
+      // Stripe. The request row is created by the webhook / verify-session ONLY after a
+      // successful payment, so a failed/canceled checkout never submits a request.
+      const fileRes = await fetch("/api/document-translation/upload-file", {
         method: "POST",
-        body: requestData,
+        body: buildUploadFormData(),
       });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error);
+      const fileData = await fileRes.json();
+      if (!fileRes.ok) {
+        throw new Error(fileData.error || "Upload failed");
       }
 
-      // Free path: Executive (unlimited) or one available credit. The POST
-      // endpoint checks + consumes atomically, so no separate pre-check here.
-      const unlimited = isUnlimited("document_translation", plan.tier);
-
-      if (!unlimited) {
-        const reservation = await consumeAccess("document_translation");
-
-        if (!reservation.allowed || reservation.data?.allowed === false) {
-          // No credits left (or raced with another tab) — pay $25 via Stripe.
-          try {
-            // The upload API returns { documentId } (not id). Send that to Stripe.
-            const stripeRes = await fetch("/api/stripe/checkout", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ documentTranslationId: String(result.documentId) }),
-            });
-            const stripeData = await stripeRes.json();
-            if (stripeData.url) {
-              window.location.href = stripeData.url;
-              return;
-            }
-            setCheckoutError("Could not start the payment. Please try again.");
-            return;
-          } catch (stripeErr) {
-            console.error("Checkout redirection failed:", stripeErr);
-            setCheckoutError("Checkout redirection failed");
-            return;
-          }
+      try {
+        const stripeRes = await fetch("/api/stripe/checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            translationDetails: {
+              docId: fileData.docId,
+              storagePath: fileData.storagePath,
+              originalFilename: fileData.originalFilename,
+              originalFileSize: fileData.originalFileSize,
+              originalMimeType: fileData.originalMimeType,
+              documentType,
+              userNotes,
+              candidateId: activeCandidateId || "candidate-1",
+              candidateName: activeCandidate.fullName || activeCandidate.label || "",
+              source: "standalone",
+            },
+          }),
+        });
+        const stripeData = await stripeRes.json();
+        if (stripeData.url) {
+          window.location.href = stripeData.url;
+          return;
         }
-
-        // Credit applied — keep the displayed balance in sync.
-        if (reservation.data?.remaining !== undefined) {
-          setRemainingCredits(reservation.data.remaining);
-        }
-      }
-
-      setUploadSuccess(true);
-
-      if (onSuccess) {
-        onSuccess(result);
+        setCheckoutError("Could not start the payment. Please try again.");
+        return;
+      } catch (stripeErr) {
+        console.error("Checkout redirection failed:", stripeErr);
+        setCheckoutError("Checkout redirection failed");
+        return;
       }
     } catch (err) {
       setCheckoutError(err instanceof Error ? err.message : "Checkout failed");
@@ -508,7 +558,11 @@ export default function DocumentTranslationTool({
   };
 
   return (
-    <div className={`flex w-full flex-col items-center ${className}`}>
+    <div
+      className={`flex w-full flex-col items-center ${
+        uploadSuccess ? "flex-1 justify-center" : ""
+      } ${className}`}
+    >
       {/* Header */}
       {showHeader && (
         <header className="mb-8 w-full max-w-4xl text-center md:mb-10">
@@ -814,6 +868,7 @@ export default function DocumentTranslationTool({
       ) : (
         <SuccessState
           onGoToRequests={() => (window.location.href = "/document-translation/my-requests")}
+          isJourney={isJourney}
         />
       )}
 
