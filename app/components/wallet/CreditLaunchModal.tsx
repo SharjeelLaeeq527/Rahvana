@@ -213,12 +213,6 @@ export function CreditLaunchModal({ item, href, onClose }: Props) {
               </p>
             ) : (
               <>
-                <p className="text-[13.5px] leading-relaxed text-slate-700">
-                  This standalone {kind.toLowerCase()} requires{" "}
-                  <strong>{item.credits} Rahvana Credits</strong>. Launching will permanently unlock
-                  full access for your account.
-                </p>
-
                 <div className="rounded-2xl border border-slate-200 bg-slate-50/60 px-4 py-3">
                   <div className="flex items-center justify-between py-1.5 text-[13px]">
                     <span className="font-medium text-slate-500">Your Wallet Balance</span>
@@ -247,8 +241,7 @@ export function CreditLaunchModal({ item, href, onClose }: Props) {
             )}
 
             <p className="text-[11.5px] leading-relaxed text-slate-500">
-              $1 = 1 credit. One launch = unlimited standalone use - you will not be charged again.
-              Tools inside your journey never use credits.
+              $1 = 1 credit. Tools inside your journey never use credits.
             </p>
           </div>
         ) : (
@@ -350,15 +343,17 @@ export function CreditLaunchModal({ item, href, onClose }: Props) {
                   type="button"
                   onClick={handleConfirm}
                   disabled={charging || balance === null || shortfall !== null}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[#0d7377] px-4 py-3 text-[14px] font-bold text-white transition-colors hover:bg-[#0a5c5f] disabled:cursor-not-allowed disabled:opacity-50"
+                  aria-busy={charging}
+                  className={`flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[#0d7377] px-4 py-3 text-[14px] font-bold text-white transition-colors hover:bg-[#0a5c5f] disabled:cursor-not-allowed ${
+                    charging ? "" : "disabled:opacity-50"
+                  }`}
                 >
                   {charging ? (
                     <>
-                      <Loader2 size={16} className="animate-spin" />
-                      Deducting credits
+                      <Loader2 size={16} className="animate-spin" /> Unlocking...
                     </>
                   ) : (
-                    <>Confirm &amp; Deduct {item.credits} Credits</>
+                    `Unlock for ${item.credits} credits`
                   )}
                 </button>
               </div>
