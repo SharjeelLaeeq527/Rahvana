@@ -51,7 +51,11 @@ export async function POST(req: Request) {
     if (credentialId) {
       query = query.eq("id", credentialId);
     } else if (candidateId) {
-      query = query.eq("candidate_id", candidateId);
+      if (candidateId === "ir1") {
+        query = query.or("candidate_id.eq.ir1,candidate_id.is.null");
+      } else {
+        query = query.eq("candidate_id", candidateId);
+      }
     }
 
     const { data: credential, error } = await query.maybeSingle();

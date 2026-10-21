@@ -30,7 +30,11 @@ export async function DELETE(req: NextRequest, context: { params: Promise<{ port
       .eq("portal_type", portalType);
 
     if (candidateId) {
-      fetchQuery = fetchQuery.eq("candidate_id", candidateId);
+      if (candidateId === "ir1") {
+        fetchQuery = fetchQuery.or("candidate_id.eq.ir1,candidate_id.is.null");
+      } else {
+        fetchQuery = fetchQuery.eq("candidate_id", candidateId);
+      }
     } else {
       fetchQuery = fetchQuery.is("candidate_id", null);
     }

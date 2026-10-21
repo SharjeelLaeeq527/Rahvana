@@ -673,7 +673,7 @@ export const StepView: React.FC<StepViewProps> = ({
     isSubmittingCreds,
     showDeleteConfirmation,
     setShowDeleteConfirmation,
-  } = usePortalWallet({ sId, isCompleted, actions, candidateId: activeCandidateId });
+  } = usePortalWallet({ sId, isCompleted, actions, candidateId: "ir1" });
 
   const {
     showQuiz,

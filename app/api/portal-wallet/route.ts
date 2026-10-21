@@ -44,7 +44,12 @@ export async function GET(request: NextRequest) {
       .order("created_at", { ascending: false });
 
     if (candidateId) {
-      query = query.eq("candidate_id", candidateId);
+      if (candidateId === "ir1") {
+        // IR-1 includes both candidate_id = 'ir1' and legacy un-tagged rows
+        query = query.or("candidate_id.eq.ir1,candidate_id.is.null");
+      } else {
+        query = query.eq("candidate_id", candidateId);
+      }
     }
 
     const { data, error } = await query;
