@@ -25,6 +25,7 @@ export interface ProvisionCandidatesParams {
   stripeSubscriptionId?: string;
   isAddCandidate?: boolean;
   targetCandidateId?: string;
+  isUpgrade?: boolean;
 }
 
 export interface ProvisionResult {
@@ -48,6 +49,7 @@ export async function provisionCandidateJourneysAndVaults({
   stripeSubscriptionId,
   isAddCandidate = false,
   targetCandidateId,
+  isUpgrade = false,
 }: ProvisionCandidatesParams): Promise<ProvisionResult> {
   try {
     const isMultiCandidate = isMultiCandidateCategory(visaCategory);
@@ -89,24 +91,26 @@ export async function provisionCandidateJourneysAndVaults({
     if (existingPrimary) {
       primaryJourneyId = existingPrimary.id;
       if (!isAddingToExistingRoster) {
+        const journeyUpdatePayload: Record<string, unknown> = {
+          subscription_tier: tier,
+          stripe_subscription_id: stripeSubscriptionId || undefined,
+          updated_at: new Date().toISOString(),
+        };
+        // Reset 12-month subscription schedule from the upgrade date
+        if (isUpgrade) {
+          journeyUpdatePayload.created_at = new Date().toISOString();
+        }
+
         if (!targetCandidateId || targetCandidateId === "candidate-1") {
           await supabase
             .from("journeys")
-            .update({
-              subscription_tier: tier,
-              stripe_subscription_id: stripeSubscriptionId || undefined,
-              updated_at: new Date().toISOString(),
-            })
+            .update(journeyUpdatePayload)
             .eq("id", existingPrimary.id);
         } else {
           // Updating a specific secondary candidate's journey row
           await supabase
             .from("journeys")
-            .update({
-              subscription_tier: tier,
-              stripe_subscription_id: stripeSubscriptionId || undefined,
-              updated_at: new Date().toISOString(),
-            })
+            .update(journeyUpdatePayload)
             .eq("user_id", userId)
             .ilike("journey_type", targetCandKey);
         }
@@ -198,6 +202,9 @@ export async function provisionCandidateJourneysAndVaults({
           tier: tier as CandidateTier,
           isPreview: false,
           visaCategory: updatedCandidates[targetCandIndex].visaCategory || canonicalVisa,
+          createdAt: isUpgrade
+            ? new Date().toISOString()
+            : updatedCandidates[targetCandIndex].createdAt,
         };
       }
     } else {

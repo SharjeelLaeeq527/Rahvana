@@ -25,6 +25,10 @@ import {
   validateTopupAmount,
   resolveTopupReturnPath,
 } from "@/lib/wallet/topup";
+import {
+  calculateSubscriptionCycle,
+  calculateUpgradeSchedule,
+} from "@/lib/pricing/upgradeScheduleService";
 
 function logDebug(msg: string, obj?: any) {
   // Never write request/session details to disk in production (PII hygiene).
@@ -90,6 +94,8 @@ export async function POST(request: NextRequest) {
       amount,
       returnUrl,
       resourceId,
+      upgradeTotal,
+      newMonthlyPrice,
     } = body;
 
     const candidateId = rawCandidateId || snakeCandidateId || undefined;
@@ -170,7 +176,7 @@ export async function POST(request: NextRequest) {
     const { data: selectedJourney } = productTier
       ? await supabase
           .from("journeys")
-          .select("subscription_tier, stripe_subscription_id, status")
+          .select("subscription_tier, stripe_subscription_id, status, created_at")
           .eq("user_id", userId)
           .ilike("journey_type", targetCandidateJourneyKey)
           .maybeSingle()
@@ -604,23 +610,81 @@ export async function POST(request: NextRequest) {
       }
 
       let effectiveAnnualPrice = targetAnnualPrice;
+      let monthlyPrice = product.monthlyPrice;
+      let upgradeMonthsElapsed = 0;
+      let upgradeMonthsRemaining = 12;
+
       if (serverIsUpgrade && serverCurrentTier && targetAnnualPrice > currentAnnualPrice) {
-        effectiveAnnualPrice = targetAnnualPrice - currentAnnualPrice;
+        // Resolve active subscription start date for accurate 12-month timeline calculation
+        const activeStartDate =
+          targetCandidateProfile?.createdAt ||
+          selectedJourney?.created_at ||
+          profile?.profile_details?.plan_purchase_date ||
+          null;
+
+        const cycle = calculateSubscriptionCycle(activeStartDate);
+        upgradeMonthsElapsed = cycle.monthsElapsed;
+        upgradeMonthsRemaining = cycle.monthsRemaining;
+
+        const category = VISA_CATEGORIES.find((v) => v.id === effectiveVisaCategory);
+        const curPlanObj = category?.plans.find((p) => p.id === serverCurrentTier);
+        const targetPlanObj = category?.plans.find((p) => p.id === tierLower);
+
+        if (curPlanObj && targetPlanObj) {
+          const schedule = calculateUpgradeSchedule({
+            currentPlan: curPlanObj,
+            targetPlan: targetPlanObj,
+            monthsElapsed: cycle.monthsElapsed,
+            monthsRemaining: cycle.monthsRemaining,
+          });
+
+          if (schedule) {
+            effectiveAnnualPrice = schedule.totalNewCommitment;
+            monthlyPrice = schedule.newMonthlyRate;
+          }
+        } else if (newMonthlyPrice && !isNaN(Number(newMonthlyPrice)) && Number(newMonthlyPrice) > 0) {
+          monthlyPrice = Number(newMonthlyPrice);
+          effectiveAnnualPrice =
+            upgradeTotal && !isNaN(Number(upgradeTotal))
+              ? Number(upgradeTotal)
+              : Math.round(monthlyPrice * 12 * 100) / 100;
+        } else {
+          // Fallback simplified formula: targetAnnual - paidSoFar
+          const curMonthly =
+            currentAnnualPrice > 0 ? Math.round((currentAnnualPrice / 12) * 100) / 100 : 0;
+          const paidSoFar = Math.round(upgradeMonthsElapsed * curMonthly * 100) / 100;
+          effectiveAnnualPrice = Math.max(0, targetAnnualPrice - paidSoFar);
+          monthlyPrice = Math.round((effectiveAnnualPrice / 12) * 100) / 100;
+        }
+      } else {
+        monthlyPrice =
+          effectiveAnnualPrice === product.price
+            ? product.monthlyPrice // $29.08, $58.25, $91.58
+            : Math.round((effectiveAnnualPrice / 12) * 100) / 100;
       }
 
-      // FIX 1: Use exact monthlyPrice from PRODUCTS, or divide custom annual price by 12
-      const monthlyPrice =
-        effectiveAnnualPrice === product.price
-          ? product.monthlyPrice // $29.08, $58.25, $91.58
-          : Math.round((effectiveAnnualPrice / 12) * 100) / 100;
-
-      // Add main plan — use saved recurringPriceId if price matches default
+      // Add main plan — for upgrades, create dynamic 12-month upgrade schedule line item
       const useRecurringId =
+        !serverIsUpgrade &&
         product.recurringPriceId &&
         product.recurringPriceId.length >= 10 &&
-        effectiveAnnualPrice === product.price; // only use saved ID if price is default
+        effectiveAnnualPrice === product.price;
 
-      if (useRecurringId) {
+      if (serverIsUpgrade) {
+        sessionParams.line_items!.push({
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: `${product.name} (Upgrade — 12-Month Schedule)`,
+              description: `12-month upgrade schedule: $${effectiveAnnualPrice} total ($${monthlyPrice}/mo). Replaces ${serverCurrentTier} plan.`,
+              tax_code: (product as any).taxCode || "txcd_10103000",
+            },
+            unit_amount: Math.round(monthlyPrice * 100),
+            recurring: { interval: "month" },
+          },
+          quantity: parsedCandidateCount,
+        });
+      } else if (useRecurringId) {
         sessionParams.line_items!.push({
           price: product.recurringPriceId,
           quantity: parsedCandidateCount,
@@ -642,7 +706,25 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      // FIX 2: Metadata — stripe_customer_id + addons as JSON
+      // Metadata — tag subscription and checkout session with upgrade schedule info
+      sessionParams.subscription_data = {
+        metadata: {
+          user_id: userId,
+          tier: tierLower,
+          visa_category: effectiveVisaCategory,
+          candidate_count: String(parsedCandidateCount),
+          target_candidate_id: candidateId || "",
+          candidate_id: candidateId || "",
+          action: isAddCandidateRequest ? "add_candidate" : isUpgradeAction ? "upgrade" : "",
+          is_add_candidate: isAddCandidateRequest ? "true" : "false",
+          is_upgrade: serverIsUpgrade ? "true" : "false",
+          upgrade_total: serverIsUpgrade ? String(effectiveAnnualPrice) : "",
+          upgrade_monthly_rate: serverIsUpgrade ? String(monthlyPrice) : "",
+          upgrade_months_elapsed: serverIsUpgrade ? String(upgradeMonthsElapsed) : "",
+          upgrade_months_remaining: serverIsUpgrade ? String(upgradeMonthsRemaining) : "",
+        },
+      };
+
       sessionParams.metadata = {
         ...sessionParams.metadata,
         stripe_customer_id: stripeCustomerId!,
@@ -653,9 +735,13 @@ export async function POST(request: NextRequest) {
         candidate_count: String(parsedCandidateCount),
         target_candidate_id: candidateId || "",
         candidate_id: candidateId || "",
-        action: isAddCandidateRequest ? "add_candidate" : "",
+        action: isAddCandidateRequest ? "add_candidate" : isUpgradeAction ? "upgrade" : "",
         is_add_candidate: isAddCandidateRequest ? "true" : "false",
         is_upgrade: serverIsUpgrade ? "true" : "false",
+        upgrade_total: serverIsUpgrade ? String(effectiveAnnualPrice) : "",
+        upgrade_monthly_rate: serverIsUpgrade ? String(monthlyPrice) : "",
+        upgrade_months_elapsed: serverIsUpgrade ? String(upgradeMonthsElapsed) : "",
+        upgrade_months_remaining: serverIsUpgrade ? String(upgradeMonthsRemaining) : "",
         old_subscription_id: serverIsUpgrade ? oldSubscriptionId || "" : "",
       };
 

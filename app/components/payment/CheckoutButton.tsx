@@ -12,6 +12,8 @@ interface CheckoutButtonProps {
   candidateCount?: number;
   candidateId?: string;
   action?: string;
+  upgradeTotal?: number;
+  newMonthlyPrice?: number;
   userId: string;
   children: React.ReactNode;
   className?: string;
@@ -26,6 +28,8 @@ export default function CheckoutButton({
   candidateCount,
   candidateId,
   action,
+  upgradeTotal,
+  newMonthlyPrice,
   userId,
   children,
   className = "",
@@ -67,6 +71,8 @@ export default function CheckoutButton({
           candidateCount,
           candidateId,
           action,
+          upgradeTotal,
+          newMonthlyPrice,
         }),
       });
 

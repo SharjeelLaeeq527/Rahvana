@@ -132,6 +132,7 @@ export async function GET(request: NextRequest) {
         stripeSubscriptionId: (session.subscription as string) || undefined,
         isAddCandidate: isAddCandidateMeta,
         targetCandidateId: targetCandidateIdMeta,
+        isUpgrade,
       });
 
       // ── 2. Compute highest active tier across all user journeys ─────────────

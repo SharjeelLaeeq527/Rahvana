@@ -1243,6 +1243,8 @@ function PricingContent() {
               : isAddingCandidate || (isIr5 && hasActiveIr5 && ir5Action === "add_candidate")
                 ? "add_candidate"
                 : undefined,
+            upgradeTotal: currentPlanUpgradeDiff ? currentPlanUpgradeDiff.totalNewCommitment : undefined,
+            newMonthlyPrice: currentPlanUpgradeDiff ? currentPlanUpgradeDiff.newMonthlyRate : undefined,
           }),
         });
         const data = await res.json();
@@ -1545,6 +1547,8 @@ function PricingContent() {
                 ? "add_candidate"
                 : undefined
           }
+          upgradeTotal={currentPlanUpgradeDiff?.totalNewCommitment}
+          newMonthlyPrice={currentPlanUpgradeDiff?.newMonthlyRate}
           userId={userId}
           onLoadingChange={setIsManualCheckoutLoading}
           className="bg-primary hover:bg-primary/90 w-full rounded-full px-5 py-[11px] text-center text-[14px] font-semibold text-white"
@@ -1625,12 +1629,14 @@ function PricingContent() {
       candidateCount={isIr5 ? (isUpgradingIr5 ? 1 : parentCount) : 1}
       candidateId={isUpgradingIr5 && activeUpgradeCandidate ? activeUpgradeCandidate.id : undefined}
       action={
-        isUpgradingIr5
+        isUpgradingThisJourney
           ? "upgrade"
           : isAddingCandidate || (isIr5 && hasActiveIr5 && ir5Action === "add_candidate")
             ? "add_candidate"
             : undefined
       }
+      upgradeTotal={currentPlanUpgradeDiff?.totalNewCommitment}
+      newMonthlyPrice={currentPlanUpgradeDiff?.newMonthlyRate}
       userId={userId}
       onLoadingChange={setIsManualCheckoutLoading}
       className="bg-primary hover:bg-primary/90 w-full rounded-full px-4 py-2.5 text-center text-[13px] font-semibold text-white"

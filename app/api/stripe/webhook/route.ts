@@ -244,6 +244,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
           stripeSubscriptionId: (session.subscription as string) || undefined,
           isAddCandidate: isAddCandidateMeta,
           targetCandidateId: targetCandidateIdMeta,
+          isUpgrade: session.metadata?.is_upgrade === "true",
         });
 
         const { data: existingProfile } = await supabase
