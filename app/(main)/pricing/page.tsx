@@ -782,6 +782,7 @@ function PricingContent() {
   const [userId, setUserId] = useState<string | null>(null);
   const [journeyTiers, setJourneyTiers] = useState<Record<string, string>>({});
   const [journeyStartDates, setJourneyStartDates] = useState<Record<string, string>>({});
+  const [userJourneys, setUserJourneys] = useState<any[]>([]);
   const [accountPlanPurchaseDate, setAccountPlanPurchaseDate] = useState<string | null>(null);
   const [isLoadingUser, setIsLoadingUser] = useState(true);
   const [isProcessingAutoCheckout, setIsProcessingAutoCheckout] = useState(false);
@@ -857,11 +858,85 @@ function PricingContent() {
 
   const categoryCandidates = useMemo(() => {
     if (!isMultiCandidate && !isIr5) return [];
-    return (candidates || []).filter((c) => {
+
+    // 1. Base candidates from CandidateContext
+    const baseCandidates = (candidates || []).filter((c) => {
       const cVisa = getBaseVisaCategory(c.visaCategory);
-      return cVisa === canonicalVisa;
+      return (
+        cVisa === canonicalVisa ||
+        c.relation === "Mother" ||
+        c.relation === "Father" ||
+        c.relation === "Stepparent" ||
+        c.relation === "AdoptiveParent" ||
+        (!c.visaCategory && c.relation !== "Spouse")
+      );
     });
-  }, [candidates, isMultiCandidate, isIr5, canonicalVisa]);
+
+    // 2. Discover IR-5 candidate journeys from DB journeys
+    const ir5DbJourneys = (userJourneys || []).filter((j) => {
+      const raw = String(j.journey_type || "").toLowerCase();
+      return (
+        raw.includes("ir5") ||
+        raw.includes("ir-5") ||
+        (raw.startsWith("ir") && raw.includes("5"))
+      );
+    });
+
+    if (ir5DbJourneys.length === 0) {
+      return baseCandidates;
+    }
+
+    // Merge DB journeys into candidate roster
+    const mergedMap = new Map<string, any>();
+
+    // Seed with baseCandidates
+    baseCandidates.forEach((c) => {
+      mergedMap.set(c.id.toLowerCase(), {
+        ...c,
+        visaCategory: "IR-5",
+      });
+    });
+
+    // Map each DB journey to a candidate profile
+    ir5DbJourneys.forEach((j) => {
+      const raw = String(j.journey_type || "").toLowerCase();
+      const candMatch = raw.match(/candidate[-_]?(\d+)/i);
+      const candNum = candMatch ? parseInt(candMatch[1], 10) : 1;
+      const candId = `candidate-${candNum}`;
+      const isPrimary = candNum === 1;
+      const tier = j.subscription_tier || "free";
+
+      const existing = mergedMap.get(candId.toLowerCase());
+      if (existing) {
+        mergedMap.set(candId.toLowerCase(), {
+          ...existing,
+          visaCategory: "IR-5",
+          isPrimary,
+          tier: tier !== "free" ? tier : existing.tier || "free",
+          createdAt: existing.createdAt || j.created_at,
+        });
+      } else {
+        mergedMap.set(candId.toLowerCase(), {
+          id: candId,
+          label: candNum === 1 ? "Candidate 1" : `Candidate ${candNum}`,
+          relation: "Other",
+          fullName: "",
+          visaCategory: "IR-5",
+          tier,
+          isPrimary,
+          isPreview: false,
+          colorTag: isPrimary ? "purple" : "teal",
+          createdAt: j.created_at,
+        });
+      }
+    });
+
+    return Array.from(mergedMap.values()).sort((a, b) => {
+      const aNum = parseInt(a.id.replace(/\D/g, "") || "1", 10);
+      const bNum = parseInt(b.id.replace(/\D/g, "") || "1", 10);
+      return aNum - bNum;
+    });
+  }, [candidates, userJourneys, isMultiCandidate, isIr5, canonicalVisa]);
 
   const getCandidateDisplayName = useCallback(
     (c: { fullName?: string; label?: string; relation?: string }) => {
@@ -885,8 +960,13 @@ function PricingContent() {
     (c: { id: string; tier?: string; isPrimary?: boolean }) => {
       if (c.tier && c.tier !== "free") return c.tier.toLowerCase();
       const jKey = getCandidateJourneyKey(canonicalVisa, c.id).toLowerCase();
-      if (journeyTiers[jKey] && journeyTiers[jKey] !== "free")
-        return journeyTiers[jKey].toLowerCase();
+      const cleanKey = jKey.replace(/[-_]/g, "");
+      const altKey = jKey.includes("-") ? jKey.replace(/-/g, "_") : jKey.replace(/_/g, "-");
+
+      const foundTier = journeyTiers[jKey] || journeyTiers[cleanKey] || journeyTiers[altKey];
+      if (foundTier && foundTier !== "free")
+        return foundTier.toLowerCase();
+
       if (c.isPrimary && journeyTiers.ir5 && journeyTiers.ir5 !== "free")
         return journeyTiers.ir5.toLowerCase();
       return "free";
@@ -1126,12 +1206,17 @@ function PricingContent() {
       if (activeUpgradeCandidate.createdAt) {
         return activeUpgradeCandidate.createdAt;
       }
+      const candKey = getCandidateJourneyKey(canonicalVisa, activeUpgradeCandidate.id).toLowerCase();
+      const cleanKey = candKey.replace(/[-_]/g, "");
+      if (journeyStartDates[candKey]) return journeyStartDates[candKey];
+      if (journeyStartDates[cleanKey]) return journeyStartDates[cleanKey];
     }
     const catKey = visa.toLowerCase().includes("5") || isIr5 ? "ir5" : "ir1";
     return journeyStartDates[catKey] || accountPlanPurchaseDate || null;
   }, [
     isUpgradingIr5,
     activeUpgradeCandidate,
+    canonicalVisa,
     visa,
     isIr5,
     journeyStartDates,
@@ -1463,6 +1548,7 @@ function PricingContent() {
         ]);
 
         const journeys = journeysRes.data || [];
+        setUserJourneys(journeys);
         const profile = profileRes.data;
 
         const tiersMap: Record<string, string> = {};
@@ -1472,20 +1558,48 @@ function PricingContent() {
           const raw = String(journey.journey_type || "").toLowerCase();
           const tier = journey.subscription_tier || "free";
           tiersMap[raw] = tier;
-          if (journey.created_at) datesMap[raw] = journey.created_at;
-
-          if (raw.includes("5")) {
-            tiersMap["ir5"] = tiersMap["ir5"] || tier;
-            if (journey.created_at) datesMap["ir5"] = datesMap["ir5"] || journey.created_at;
+          tiersMap[raw.replace(/[-_]/g, "")] = tier;
+          tiersMap[raw.replace("-", "_")] = tier;
+          tiersMap[raw.replace("_", "-")] = tier;
+          if (journey.created_at) {
+            datesMap[raw] = journey.created_at;
+            datesMap[raw.replace(/[-_]/g, "")] = journey.created_at;
+            datesMap[raw.replace("-", "_")] = journey.created_at;
+            datesMap[raw.replace("_", "-")] = journey.created_at;
           }
-          if (raw.includes("1")) {
-            tiersMap["ir1"] = tiersMap["ir1"] || tier;
-            if (journey.created_at) datesMap["ir1"] = datesMap["ir1"] || journey.created_at;
+
+          const isCandidateSpecific = /candidate[-_]?\d+/i.test(raw);
+          if (raw.includes("5") && !isCandidateSpecific) {
+            tiersMap["ir5"] = tier;
+            if (journey.created_at) datesMap["ir5"] = journey.created_at;
+          }
+          if (raw.includes("1") && !isCandidateSpecific) {
+            tiersMap["ir1"] = tier;
+            if (journey.created_at) datesMap["ir1"] = journey.created_at;
           }
         });
 
+        // Fallback for base keys if only candidate journeys exist
+        if (!tiersMap["ir5"]) {
+          const firstIr5Key = Object.keys(tiersMap).find((k) => k.includes("5") && tiersMap[k] !== "free");
+          if (firstIr5Key) {
+            tiersMap["ir5"] = tiersMap[firstIr5Key];
+            if (datesMap[firstIr5Key]) datesMap["ir5"] = datesMap[firstIr5Key];
+          }
+        }
+
         setJourneyTiers(tiersMap);
         setJourneyStartDates(datesMap);
+
+        // Auto-select IR-5 if user has active IR-5 journey and no active IR-1 or explicit URL parameter
+        const hasActiveIr5InJourneys = Object.keys(tiersMap).some((k) => k.includes("5") && tiersMap[k] !== "free");
+        const hasActiveIr1InJourneys = Boolean(tiersMap.ir1 && tiersMap.ir1 !== "free");
+        if (hasActiveIr5InJourneys && !hasActiveIr1InJourneys && typeof window !== "undefined") {
+          const explicitVisaParam = new URLSearchParams(window.location.search).get("visa");
+          if (!explicitVisaParam) {
+            setVisa("IR-5");
+          }
+        }
 
         const purchaseDate =
           (profile?.profile_details as any)?.plan_purchase_date || profile?.created_at || null;
@@ -1846,12 +1960,11 @@ function PricingContent() {
                     <span className="inline-flex items-center gap-1 rounded-full border border-emerald-300 bg-emerald-100 px-2.5 py-1 text-[10.5px] font-bold tracking-wide text-emerald-800 uppercase shadow-sm">
                       Upgrade Available
                     </span>
-                  ) : // : hasActiveIr5 && isIr5Card ? (
-                  //   <span className="inline-flex items-center gap-1 rounded-full border border-teal-300 bg-teal-100 px-2.5 py-1 text-[10.5px] font-bold tracking-wide text-teal-800 uppercase shadow-sm">
-                  //     {canUpgradeIr5 ? "Upgrade or Add Parent" : "Active Plan"}
-                  //   </span>
-                  // )
-                  null;
+                  ) : hasActiveIr5 && isIr5Card ? (
+                    <span className="inline-flex items-center gap-1 rounded-full border border-teal-300 bg-teal-100 px-2.5 py-1 text-[10.5px] font-bold tracking-wide text-teal-800 uppercase shadow-sm">
+                      {canUpgradeIr5 ? "Upgrade Available" : "Active Plan"}
+                    </span>
+                  ) : null;
 
                   return (
                     <div key={card.code} className="relative rounded-[1.35rem]">
