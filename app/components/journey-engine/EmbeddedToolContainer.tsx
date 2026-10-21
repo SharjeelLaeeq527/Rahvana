@@ -4,7 +4,7 @@ import React, { Suspense } from "react";
 import { MessageSquare, Wrench } from "lucide-react";
 import { useJourneyEnvironment } from "@/app/context/JourneyEnvironmentContext";
 import { useCandidate } from "@/app/context/CandidateContext";
-import { usePlan } from "@/app/context/PlanContext";
+import { usePlan, PlanContext } from "@/app/context/PlanContext";
 import { useUserProfile } from "@/app/context/UserProfileContext";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import {
@@ -40,8 +40,8 @@ const MedicalAppointmentTool = React.lazy(
   () => import("@/components/tools/MedicalAppointmentTool")
 );
 const PccFilingTool = React.lazy(() => import("@/components/tools/PccFilingTool"));
-const InterviewPrepTool = React.lazy(() =>
-  import("./components/InterviewPrepTool").then((m) => ({ default: m.InterviewPrepTool }))
+const InterviewPreparationPage = React.lazy(() =>
+  import("@/app/(tools)/interview-prep/page").then((m) => ({ default: m.default }))
 );
 const Input221gTool = React.lazy(() =>
   import("./components/Input221gTool").then((m) => ({ default: m.Input221gTool }))
@@ -75,6 +75,7 @@ const MultiStepForm = React.lazy(() =>
 
 import { GuidePageOverlay } from "@/app/components/shared/GuidePageOverlay";
 import { getOverlayPageRoute } from "@/lib/constants/journey-app-groups";
+import { resolveCategorySlug } from "@/lib/interview-prep/journey-category-map";
 
 interface EmbeddedToolContainerProps {
   toolKey: string;
@@ -431,7 +432,11 @@ export function EmbeddedToolContainer({
   const effectiveJourneyTier =
     resolvedState?.subscriptionTier ?? resolvedState?.subscription_tier ?? journeyTier ?? "free";
 
-  const plan = useJourneyPlan(resolvedState || { subscriptionTier: effectiveJourneyTier });
+  const plan = useJourneyPlan({
+    ...resolvedState,
+    subscriptionTier: effectiveJourneyTier,
+    subscription_tier: effectiveJourneyTier,
+  });
   const featureKey = TOOL_FEATURE_MAP[toolKey];
   const isToolLocked = featureKey ? plan.isLocked(featureKey) : false;
 
@@ -663,10 +668,26 @@ export function EmbeddedToolContainer({
           />
         );
 
-      // case "interview_prep":
-      //   return (
-
-      //   );
+      case "interview_prep": {
+        const interviewCategorySlug =
+          (data as any)?.categorySlug ||
+          (data as any)?.category_slug ||
+          resolveCategorySlug(journeyCategory) ||
+          "ir-1-spouse";
+        return (
+          <PlanContext.Provider value={plan}>
+            <div className="w-full">
+              <InterviewPreparationPage
+                isEmbedded={true}
+                journeyId={journeyContext.journeyId || journeyContext.backendId || null}
+                journeyCategory={journeyCategory}
+                categorySlug={interviewCategorySlug}
+                journeyTier={effectiveJourneyTier}
+              />
+            </div>
+          </PlanContext.Provider>
+        );
+      }
 
       case "action_221g":
         return (

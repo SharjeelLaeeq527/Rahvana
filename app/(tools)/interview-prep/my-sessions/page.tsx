@@ -190,11 +190,17 @@ export default function MyInterviewSessions({
       let url = "/api/interview-prep/user-sessions";
       const params = new URLSearchParams();
 
-      if (isEmbedded && targetCategorySlug) {
-        params.set("category_slug", targetCategorySlug);
-      }
-      if (isEmbedded && effectiveJourneyId) {
-        params.set("journey_id", effectiveJourneyId);
+      if (isEmbedded) {
+        params.set("source", "journey");
+        if (targetCategorySlug) {
+          params.set("category_slug", targetCategorySlug);
+        }
+        if (effectiveJourneyId) {
+          params.set("journey_id", effectiveJourneyId);
+        }
+      } else {
+        // Standalone must strictly load only standalone tool sessions
+        params.set("source", "tool");
       }
 
       const qs = params.toString();
