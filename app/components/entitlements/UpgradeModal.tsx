@@ -16,6 +16,7 @@ import {
   PlanTier,
 } from "@/lib/entitlements/config";
 import { useToast } from "@/app/components/shared/ToastProvider";
+import { getCreditsForLegacyAddon } from "@/lib/wallet/catalog";
 
 interface UpgradeModalProps {
   feature: string;
@@ -244,6 +245,16 @@ const UPGRADE_PITCH: Record<string, string> = {
   "civil-guid": "unlock every civil document guide plus the tools that organize them.",
   "pdf-tool-kit": "handle every PDF task in your case, not just this one.",
 };
+
+/**
+ * Quote a one-off add-on in wallet credits when it maps 1:1 to a credit-catalog
+ * resource ($1 = 1 credit) — "5 Credits" for every guide, each tool's own price
+ * for tools. Bundles and per-request services keep their dollar label.
+ */
+function addonPriceLabel(addonId: string, price: number): string {
+  const credits = getCreditsForLegacyAddon(addonId);
+  return credits !== undefined ? `${credits} Credits` : `$${price}`;
+}
 
 /**
  * Per-resource opportunity cost — what stays unavailable when buying only the
@@ -709,7 +720,7 @@ export function UpgradeModal({ feature, onClose, onConfirm, interviewMode }: Upg
               </p>
               <div className="mb-1 flex items-baseline gap-1.5">
                 <span className="text-[28px] leading-none font-black text-neutral-800">
-                  ${addon.price}
+                  {addonPriceLabel(addon.id, addon.price)}
                 </span>
                 {addon.unit && (
                   <span className="text-[12px] font-medium text-neutral-500 opacity-70">
@@ -734,7 +745,7 @@ export function UpgradeModal({ feature, onClose, onConfirm, interviewMode }: Upg
                 )}
                 {isAddonProcessing
                   ? "Redirecting to payment..."
-                  : `Get ${addon.name} Only · $${addon.price}`}
+                  : `Get ${addon.name} Only · ${addonPriceLabel(addon.id, addon.price)}`}
               </button>
             </div>
 

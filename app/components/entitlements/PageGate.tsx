@@ -120,14 +120,7 @@ export function PageGate({ feature, children, title, description, allow, creditU
               : "Upgrading your plan unlocks this tool along with your full journey toolkit — the recommended way to get more from Rahvana.")}
         </p>
 
-        {creditUnlock && (
-          <p className="-mt-2 mb-6 text-center text-[12px] text-[#9aa5b1]">
-            Just need this guide? Pay once with wallet credits — or unlock it
-            plus your full toolkit by upgrading.
-          </p>
-        )}
-
-        <p className="mb-6 text-[12px] text-[#9aa5b1]">{hint}</p>
+        {!creditUnlock && <p className="mb-6 text-[12px] text-[#9aa5b1]">{hint}</p>}
 
         <div className="flex flex-col gap-3">
           {creditUnlock ? (
