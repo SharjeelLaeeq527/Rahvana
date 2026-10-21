@@ -418,6 +418,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
       .from("translation_documents")
       .select("id, payment_status")
       .eq("id", productId)
+      .eq("user_id", userId)
       .maybeSingle();
 
     if (existingDoc) {
@@ -425,7 +426,8 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
         await supabase
           .from("translation_documents")
           .update({ payment_status: "paid", payment_id: payment?.id })
-          .eq("id", productId);
+          .eq("id", productId)
+          .eq("user_id", userId);
       }
     } else {
       let userNotes = "";

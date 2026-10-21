@@ -897,6 +897,16 @@ export async function POST(request: NextRequest) {
         typeof translationDetails.docId === "string" && translationDetails.docId
           ? translationDetails.docId
           : crypto.randomUUID();
+      // The file must be the caller's own upload from upload-file
+      // (`<userId>/translation-originals/<docId>/...`); never trust a client path.
+      const storagePath = String(translationDetails.storagePath || "");
+      if (
+        !/^[0-9a-f-]{36}$/i.test(docId) ||
+        !storagePath.startsWith(`${userId}/translation-originals/${docId}/`) ||
+        storagePath.includes("..")
+      ) {
+        return NextResponse.json({ error: "Invalid translation upload." }, { status: 400 });
+      }
       const documentTranslationPrice = 25; // $25 per document translation request
 
       // Look up name server-side (never trust client-provided identity).
@@ -939,7 +949,7 @@ export async function POST(request: NextRequest) {
         product_type: "document_translations",
         product_id: docId,
         t_doc_id: docId,
-        t_storage_path: String(translationDetails.storagePath || ""),
+        t_storage_path: storagePath,
         t_original_filename: String(translationDetails.originalFilename || ""),
         t_original_file_size: String(translationDetails.originalFileSize || ""),
         t_original_mime_type: String(translationDetails.originalMimeType || ""),

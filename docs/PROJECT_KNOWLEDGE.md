@@ -1098,7 +1098,13 @@ lens, compare, confetti).
   `MFAPromptModal`, `ToastProvider`, `UrduKeyboard`, `DataTable`.
 - **Chat:** `FloatingChatWidget` -> `ChatInterface`.
 - **Wallet:** `wallet/WalletBalancePill` (SiteHeader, signed-in only, opens the top-up modal),
-  `wallet/WalletTopupModal` (rendered by `WalletProvider`, portalled to `<body>`).
+  `wallet/WalletTopupModal` (rendered by `WalletProvider`, portalled to `<body>`),
+  `wallet/CreditLaunchModal` (Phase 5: confirm + deduct for a standalone tool/guide, or an
+  exact-deficit / pack top-up straight to Stripe when short). The `/tools` and `/guides` cards
+  show a dual CTA (Preview + Launch N credits) when an item is plan-locked, has a catalog price
+  (`lib/wallet/resourceMapping.ts` maps page ids to catalog ids) and is not wallet-unlocked.
+  **Not yet enforced on the tool/guide pages themselves** (`PageGate` / `ResultGate` read only
+  the plan, and `?mode=preview` is not read anywhere): that is plan Phase 6.
 
 Pattern: shadcn primitives at the base, thin custom wrappers, composition over
 inheritance, i18n via `useLanguage().t()`, gating via `usePlan()`.

@@ -595,7 +595,7 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
         <div className="absolute right-[10%] bottom-[20%] h-[600px] w-[600px] rounded-full bg-[#32e0c4]/5 blur-3xl" />
       </div>
 
-      <div className="w-full mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Hero Section — hidden in the embedded "My Resources" view */}
         {!isEmbedded && (
           <section className="relative mb-5 flex flex-col items-center pt-1 text-center md:mb-10">
@@ -818,7 +818,7 @@ function GuideCard({
     }
   };
 
-  const CardWrapper: any = showDualCta ? "div" : isNavigable ? Link : "div";
+  const CardWrapper = (showDualCta || !isNavigable ? "div" : Link) as React.ElementType;
 
   return (
     <CardWrapper
@@ -930,31 +930,31 @@ function GuideCard({
       {/* Footer / Action */}
       <div className="border-border relative z-10 -mt-6 flex flex-col border-t pt-2">
         {showDualCta && catalogItem ? (
-          <>
-            <div className="mb-2 flex items-center gap-1.5 text-xs font-bold text-[#0d7377] dark:text-[#32e0c4]">
-              <Coins size={13} aria-hidden="true" /> Cost: {catalogItem.credits} Credits
+          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2.5 pt-1">
+            <div className="flex flex-col">
+              <span className="flex items-center gap-1.5 text-sm font-bold text-slate-900 tabular-nums dark:text-white">
+                <Coins size={14} className="text-[#0d7377] dark:text-[#32e0c4]" aria-hidden="true" />
+                {catalogItem.credits} credits
+              </span>
             </div>
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2">
               <Link
                 href={withPreviewMode(guide.href)}
                 onClick={(e) => e.stopPropagation()}
-                className="flex-1 rounded-xl border-[1.5px] border-slate-200 bg-white px-3 py-2.5 text-center text-sm font-bold text-slate-700 transition-colors hover:border-[#0d7377]/50 hover:text-[#0d7377]"
+                className="inline-flex h-9 items-center rounded-lg border border-slate-200 bg-white px-3.5 text-[13px] font-semibold whitespace-nowrap text-slate-700 transition-colors hover:border-[#0d7377]/40 hover:text-[#0d7377]"
               >
-                Preview Guide
+                Preview
               </Link>
               <button
                 type="button"
                 onClick={() => onLaunch(catalogItem)}
-                className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-[#0d7377] px-3 py-2.5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#0a5c5f]"
+                aria-label={`Launch ${guide.title} for ${catalogItem.credits} credits`}
+                className="inline-flex h-9 items-center rounded-lg bg-[#0d7377] px-4 text-[13px] font-semibold whitespace-nowrap text-white transition-colors hover:bg-[#0a5c5f]"
               >
-                Launch Guide ({catalogItem.credits} Credits)
+                Launch
               </button>
             </div>
-            <p className="mt-2 text-[11px] leading-snug font-medium text-slate-400">
-              Preview is free. Launching permanently unlocks the full guide with your wallet
-              credits.
-            </p>
-          </>
+          </div>
         ) : (
           <div className="flex items-center justify-between">
             <span className="text-muted-foreground flex items-center gap-1 text-xs font-medium" />
