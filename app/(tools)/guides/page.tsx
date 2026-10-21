@@ -595,7 +595,7 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
         <div className="absolute right-[10%] bottom-[20%] h-[600px] w-[600px] rounded-full bg-[#32e0c4]/5 blur-3xl" />
       </div>
 
-      <div className="site-main-px site-main-py">
+      <div className="w-full mx-auto px-6 py-8">
         {/* Hero Section — hidden in the embedded "My Resources" view */}
         {!isEmbedded && (
           <section className="relative mb-5 flex flex-col items-center pt-1 text-center md:mb-10">
@@ -928,7 +928,7 @@ function GuideCard({
       </div>
 
       {/* Footer / Action */}
-      <div className="border-border relative z-10 mt-auto flex flex-col border-t pt-2">
+      <div className="border-border relative z-10 -mt-6 flex flex-col border-t pt-2">
         {showDualCta && catalogItem ? (
           <>
             <div className="mb-2 flex items-center gap-1.5 text-xs font-bold text-[#0d7377] dark:text-[#32e0c4]">

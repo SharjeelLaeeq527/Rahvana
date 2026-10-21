@@ -326,7 +326,7 @@ export default function ToolsPage({ isEmbedded = false }: { isEmbedded?: boolean
         <div className="absolute right-[10%] bottom-[20%] h-[600px] w-[600px] rounded-full bg-[#32e0c4]/5 blur-3xl" />
       </div>
 
-      <div className="site-main-px site-main-py">
+      <div className="w-full mx-auto px-6 py-8">
         {/* Hero — hidden in the embedded "My Resources" view */}
         {!isEmbedded && (
           <section className="mb-5 pt-1 text-center md:mb-10">
@@ -670,7 +670,7 @@ function ToolCard({
             </span>
           )} */}
         </div>
-        <p className={`mb-0 mb-1 grow text-sm leading-relaxed text-slate-900 dark:text-white`}>
+        <p className={`mb-4 grow text-sm leading-relaxed text-slate-900 dark:text-white`}>
           {t(`toolsPage.toolsItems.${tool.id}.desc`) || tool.description}
         </p>
       </div>

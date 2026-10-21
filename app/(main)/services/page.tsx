@@ -439,7 +439,7 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
         <div className="absolute right-[10%] bottom-[20%] h-[600px] w-[600px] rounded-full bg-[#32e0c4]/5 blur-3xl" />
       </div>
 
-      <div className="site-main-px site-main-py w-full">
+      <div className="w-full mx-auto px-6 py-8">
         {/* Hero Section — hidden in the embedded "My Resources" view */}
         {!isEmbedded && (
           <section className={`mb-4 pt-1 text-center md:mb-6`}>
