@@ -343,13 +343,15 @@ export async function GET(request: NextRequest) {
         .from("translation_documents")
         .select("id")
         .eq("id", productId)
+        .eq("user_id", userId)
         .maybeSingle();
 
       if (existingDoc) {
         await supabase
           .from("translation_documents")
           .update({ payment_status: "paid", payment_id: paymentId || undefined })
-          .eq("id", productId);
+          .eq("id", productId)
+          .eq("user_id", userId);
       } else {
         // Reconstruct user_notes from split metadata fields.
         let userNotes = "";

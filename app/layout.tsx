@@ -15,6 +15,7 @@ import { CandidateProvider } from "./context/CandidateContext";
 import { PlanTierDevToggle } from "./components/entitlements/PlanTierDevToggle"; // DEV ONLY — uncomment for local testing
 import { ToolsGuard } from "./(tools)/ToolsGuard";
 import { QuickAccessProvider } from "./context/QuickAccessContext";
+import { WalletProvider } from "./context/WalletContext";
 import { Analytics } from "@vercel/analytics/react";
 import { JsonLd } from "./components/seo/JsonLd";
 import { ModalScrollLock } from "./components/shared/ModalScrollLock";
@@ -190,6 +191,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <CandidateProvider>
                 <PlanProvider>
                   <QuickAccessProvider>
+                    <WalletProvider>
                     <LanguageProvider>
                       {/* <ThemeProvider
                   attribute="class"
@@ -203,6 +205,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                       <Footer />
                       {/* </ThemeProvider> */}
                     </LanguageProvider>
+                    </WalletProvider>
                   </QuickAccessProvider>
                   <PlanTierDevToggle />
                   {/* DEV ONLY — uncomment for local testing */}

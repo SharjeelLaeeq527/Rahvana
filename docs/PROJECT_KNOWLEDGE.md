@@ -738,13 +738,20 @@ into `user_profiles.profile_details`** so tools share one profile.
 ## 8. State Management
 
 - **Global (React Context, in `app/context/`).** Actual nesting in `app/layout.tsx`:
-  **Toast -> Auth -> UserProfile -> Candidate -> Plan -> QuickAccess -> Language**, wrapping
+  **Toast -> Auth -> UserProfile -> Candidate -> Plan -> QuickAccess -> Wallet -> Language**, wrapping
   `ClientHeader`, `ToolsGuard{children}`, `ClientWidgets`, `Footer` (`PlanTierDevToggle` renders
   inside Plan). `ModalScrollLock` sits outside the providers (see 27).
   - **CandidateContext** — candidate roster, active candidate, `activeJourneyBase` /
     `activeJourneyKey` (see 4.7). Sits ABOVE Plan because Plan resolves the tier per active
     category.
   - **QuickAccessContext** — dashboard quick-access tiles (`/api/quick-access`).
+  - **WalletContext** (`useWallet()`) — Rahvana Wallet display state for STANDALONE use:
+    `balance`, `unlocks`, `isUnlocked(id, type?)`, `refreshWallet`, `launchResource`, and
+    `openTopup({amount?, returnUrl?})`, which renders `app/components/wallet/WalletTopupModal`
+    (packs 10/25/50/100 + custom $5-$1000). Loads `/api/wallet` on sign-in (keyed on user id),
+    re-reads on tab focus at most once per 60s and after a top-up on the payment-success page.
+    Fetch helpers live in `lib/wallet/client.ts`. The balance is display-only: the server
+    re-checks every launch. Never use it to gate journey tools (those follow `useJourneyPlan`).
   - **JourneyEnvironmentContext** — NOT global: provided per journey page by
     `[visa-journey]/JourneyLayoutClient.tsx` (see 4.1).
   - `useJourneyPlan.ts` — hook (not a provider) for per-journey entitlements (see 4.3).
@@ -1090,6 +1097,14 @@ lens, compare, confetti).
 - **Shared:** `ModalScrollLock` (global modal scroll lock, see 27), `AuthRequiredModal`, `CountryAutoComplete`, `ConfirmationModal`,
   `MFAPromptModal`, `ToastProvider`, `UrduKeyboard`, `DataTable`.
 - **Chat:** `FloatingChatWidget` -> `ChatInterface`.
+- **Wallet:** `wallet/WalletBalancePill` (SiteHeader, signed-in only, opens the top-up modal),
+  `wallet/WalletTopupModal` (rendered by `WalletProvider`, portalled to `<body>`),
+  `wallet/CreditLaunchModal` (Phase 5: confirm + deduct for a standalone tool/guide, or an
+  exact-deficit / pack top-up straight to Stripe when short). The `/tools` and `/guides` cards
+  show a dual CTA (Preview + Launch N credits) when an item is plan-locked, has a catalog price
+  (`lib/wallet/resourceMapping.ts` maps page ids to catalog ids) and is not wallet-unlocked.
+  **Not yet enforced on the tool/guide pages themselves** (`PageGate` / `ResultGate` read only
+  the plan, and `?mode=preview` is not read anywhere): that is plan Phase 6.
 
 Pattern: shadcn primitives at the base, thin custom wrappers, composition over
 inheritance, i18n via `useLanguage().t()`, gating via `usePlan()`.
@@ -1192,7 +1207,7 @@ Permissions-Policy, XSS) are applied globally via `next.config.mjs` `headers()`.
 ## 21. Application Lifecycle
 
 1. **Frontend boot:** root `app/layout.tsx` mounts `ModalScrollLock`, then providers
-   (Toast -> Auth -> UserProfile -> Candidate -> Plan -> QuickAccess -> Language).
+   (Toast -> Auth -> UserProfile -> Candidate -> Plan -> QuickAccess -> Wallet -> Language).
 2. **Request:** `middleware.ts` refreshes session + guards routes + crawler/body guards.
 3. **Auth resolves:** AuthContext loads user; UserProfileContext loads MasterProfile once;
    CandidateContext resolves the roster + active candidate; PlanContext loads account +
@@ -1512,7 +1527,7 @@ route by slug: IR-1/CR-1 -> `RoadmapLayoutSpouse`, chapters-schema (IR-5+) ->
 `RoadmapLayoutEngine`, old stages-schema -> legacy `Wizard`.
 
 **State.** Global React Contexts (nesting: Toast > Auth > UserProfile > Candidate > Plan >
-QuickAccess > Language): **Candidate** (multi-candidate roster, one journey per candidate,
+QuickAccess > Wallet > Language): **Candidate** (multi-candidate roster, one journey per candidate,
 active journey scope), **Auth**, **Plan** (tier + entitlements; per-journey tier via
 `useJourneyPlan` inside dashboards; DB
 `core/plus/pro` -> `basic/premium/executive`; reconcile throttled to once/24h per user),
