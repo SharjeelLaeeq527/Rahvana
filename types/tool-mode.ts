@@ -1,0 +1,48 @@
+// types/tool-mode.ts
+// ============================================================================
+// Tool Mode & Isolation Types
+//
+// Governs the execution environment of tools across the platform:
+// - 'journey': Embedded inside a journey roadmap; reads & writes candidate/journey state.
+// - 'standalone': Direct tool access; saves in isolated standalone storage, zero cross-leak with journeys.
+// ============================================================================
+
+export type ToolMode = "journey" | "standalone";
+
+export interface JourneyToolContext {
+  /** The journey slug (e.g. "ir5-journey", "ir1-journey") */
+  journeySlug: string;
+  /** The base visa category (e.g. "IR-5", "IR-1") */
+  journeyCategory: string;
+  /** Active candidate ID (e.g. "candidate-1", "candidate-2") */
+  candidateId: string;
+  /** Backend journey UUID if available */
+  backendId?: string | null;
+  /** Plan tier for this specific journey instance (e.g. "free", "basic", "premium", "executive") */
+  subscriptionTier?: string | null;
+}
+
+export interface ToolModeProps {
+  /**
+   * Execution mode:
+   * - 'journey': Operates within journey/candidate scope, pre-fills & saves to roadmap.
+   * - 'standalone': Operates in isolated standalone scope, saves independently.
+   * If omitted, defaults to auto-detection via useResolveToolMode().
+   */
+  mode?: ToolMode;
+  /** Context supplied when embedded in a journey */
+  journeyContext?: JourneyToolContext;
+  /** Journey's specific subscription tier (e.g. state.subscriptionTier) */
+  journeyTier?: string | null;
+  /**
+   * Journey chrome style (service tools: Medical / PCC / Consultation):
+   * - false/undefined: full-screen modal overlay with its own sticky topbar
+   *   (used by the StepView overlay mounts, e.g. journey-spouse).
+   * - true: renders INLINE inside the journey `roadmap-main` region, relying on
+   *   the RoadmapLayoutEngine breadcrumb (Dashboard › Tool › ✕) for close/back —
+   *   the same chrome Document Translation uses. The in-content progress/metro
+   *   stepper is shown because there is no topbar progress bar. Passed by
+   *   EmbeddedToolContainer so toolbox launches stay consistent.
+   */
+  embedded?: boolean;
+}

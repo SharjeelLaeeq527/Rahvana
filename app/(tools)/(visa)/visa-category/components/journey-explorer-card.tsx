@@ -2,15 +2,27 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, Hourglass } from "lucide-react";
+import { ArrowRight, Hourglass, CheckCircle2, Radio } from "lucide-react";
 import type { ExplorerJourneyCard as ExplorerJourneyCardType } from "../data/journeys";
 
 export function ExplorerJourneyCard({
   card,
   onSelect,
+  showStartJourney = false,
+  isExecutiveMaxed = false,
+  executiveNotice,
+  isSelected = false,
+  topRightSlot,
+  className = "",
 }: {
   card: ExplorerJourneyCardType;
   onSelect?: () => void;
+  showStartJourney?: boolean;
+  isExecutiveMaxed?: boolean;
+  executiveNotice?: React.ReactNode;
+  isSelected?: boolean;
+  topRightSlot?: React.ReactNode;
+  className?: string;
 }) {
   const isLive = card.status === "Live" && card.href;
 
@@ -20,30 +32,41 @@ export function ExplorerJourneyCard({
 
   return (
     <motion.article
-      whileHover={{ y: -5 }}
+      whileHover={isSelected ? undefined : { y: -5 }}
       transition={{ duration: 0.18, ease: "easeOut" }}
-      className="group flex h-full flex-col overflow-hidden rounded-[1.35rem] border border-[var(--rv-line)] bg-white shadow-[0_20px_46px_-34px_rgba(12,27,51,0.48)]"
+      className={`group flex h-full flex-col overflow-hidden rounded-[1.35rem] border bg-white transition-all duration-200 ${
+        isSelected
+          ? "border-transparent shadow-[0_12px_36px_rgba(13,122,92,0.18)] ring-2 ring-[#0d7a5c] ring-offset-2 ring-offset-[#fafcfb]"
+          : "border-[var(--rv-line)] shadow-[0_20px_46px_-34px_rgba(12,27,51,0.48)]"
+      } ${className}`}
     >
-      <div className="relative h-80 overflow-hidden">
+      <div className="relative h-80 overflow-hidden rounded-t-[1.35rem] isolate">
         <div
           className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
           style={{ backgroundImage: `url(${card.image})` }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,27,51,0.86)] via-[rgba(12,27,51,0.28)] to-transparent" />
         <div className="absolute top-4 left-4 flex items-center gap-2">
-          <span className="rounded-full bg-white/90 px-3 py-1 text-[11px] font-bold tracking-[0.16em] text-[var(--rahvana-primary-dark)] uppercase backdrop-blur">
+          {/* <span className="rounded-full bg-white/90 px-3 py-1 text-[11px] font-bold tracking-[0.16em] text-[var(--rahvana-primary-dark)] uppercase backdrop-blur">
             {card.category}
-          </span>
+          </span> */}
           <span
-            className={`rounded-full px-3 py-1 text-[11px] font-bold tracking-[0.16em] uppercase backdrop-blur ${
+            title={card.status}
+            aria-label={card.status}
+            className={`flex h-7 w-7 items-center justify-center rounded-full shadow-xs backdrop-blur ${
               isLive
                 ? "bg-[var(--rahvana-secondary)]/90 text-[var(--rv-navy)]"
                 : "bg-white/80 text-[var(--rv-muted)]"
             }`}
           >
-            {card.status}
+            {isLive ? <Radio className="h-3.5 w-3.5" /> : <Hourglass className="h-3.5 w-3.5" />}
           </span>
         </div>
+        {topRightSlot && (
+          <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5">
+            {topRightSlot}
+          </div>
+        )}
         <div className="absolute right-4 bottom-4 left-4 text-white">
           <p className="text-sm font-semibold tracking-[0.18em] text-white/70 uppercase">
             {card.code}
@@ -53,25 +76,58 @@ export function ExplorerJourneyCard({
       </div>
 
       <div className="mt-auto p-5">
-        {isLive && card.href ? (
-          <div className="flex flex-row sm:flex-col xl:flex-row items-center justify-between gap-3">
+        {executiveNotice ? (
+          executiveNotice
+        ) : isExecutiveMaxed ? (
+          <>
+            {/* <div className="flex flex-col gap-2 rounded-2xl border border-teal-200/90 bg-teal-50/80 p-3.5 text-xs text-teal-900 dark:border-teal-900/50 dark:bg-teal-950/40 dark:text-teal-200"> */}
+            <div className="flex items-start gap-2">
+              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-teal-600 dark:text-teal-400" />
+              <span className="leading-snug text-[13px]">
+                You already have a <strong>{card.title}</strong> journey (<strong>Executive</strong>{" "}
+                plan).
+              </span>
+            </div>
+            {/* <Link
+              href="/my-journeys"
+              className="inline-flex items-center gap-1 font-semibold text-[#0d7377] hover:underline dark:text-teal-300"
+            >
+              Go to My Journeys →
+            </Link> */}
+            {/* </div> */}
+          </>
+        ) : isLive && card.href ? (
+          <div className="flex flex-col gap-3 sm:flex-row">
             {/* Learn More */}
             <Link
               href={card.href}
-              className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-[var(--rahvana-primary)] px-5 py-3 text-sm font-semibold text-white transition duration-200 hover:-translate-y-0.5 hover:bg-[var(--rahvana-primary-dark)]"
+              className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-[var(--rahvana-primary)] px-5 py-3 text-xs font-semibold text-white transition duration-200 hover:-translate-y-0.5 hover:bg-[var(--rahvana-primary-dark)]"
             >
-              Learn More
+              Explore Journey
               <ArrowRight className="h-4 w-4" />
             </Link>
+
+            {/* Start Journey — Explore page only */}
+            {showStartJourney && (
+              <Link
+                href={
+                  card.code === "IR-5" ? "/visa-category/ir5-journey" : "/visa-category/ir1-journey"
+                }
+                className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-[var(--rahvana-primary)] bg-white px-5 py-3 text-xs font-semibold text-[var(--rahvana-primary)] transition duration-200 hover:-translate-y-0.5 hover:bg-[var(--rahvana-primary-pale)]"
+              >
+                Start Journey
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            )}
 
             {/* Select Journey */}
             {onSelect && (
               <button
                 type="button"
                 onClick={onSelect}
-                className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-[var(--rv-line)] bg-white px-5 py-3 text-sm font-semibold text-[var(--rv-navy)] transition duration-200 hover:-translate-y-0.5 hover:bg-[var(--rv-sky)] cursor-pointer"
+                className="inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full border border-[var(--rv-line)] bg-white px-5 py-3 text-xs font-semibold text-[var(--rv-navy)] transition duration-200 hover:-translate-y-0.5 hover:bg-[var(--rv-sky)]"
               >
-                Pick Journey
+                Select Journey
                 <ArrowRight className="h-4 w-4" />
               </button>
             )}

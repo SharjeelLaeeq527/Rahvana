@@ -5,13 +5,26 @@ import { Resend } from "resend";
 import { createClient } from "@supabase/supabase-js";
 import Stripe from "stripe";
 import { consultationService } from "@/lib/services/consultationService";
+import { triggerTranslationNotification } from "@/lib/notifications";
 import { buildAddonPurchaseUpdate } from "@/lib/payments/addon-purchase-ledger";
-import { cancelDuplicateSubscriptions } from "@/lib/stripe/subscriptionCleanup";
+import { cancelSupersededSubscriptions } from "@/lib/stripe/subscriptionCleanup";
+import { getCandidateJourneyKey } from "@/lib/candidate/candidateSyncService";
+import { provisionCandidateJourneysAndVaults } from "@/lib/candidate/candidateProvisioningService";
+import {
+  WALLET_TOPUP_PRODUCT_TYPE,
+  WalletWebhookRetryableError,
+  applyWalletRefund,
+  applyWalletTopup,
+  isWalletTopupSession,
+} from "@/lib/wallet/topup";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+// Plan ranking for the account-level summary (`user_profiles.subscription_tier`).
+const SUMMARY_TIER_RANK: Record<string, number> = { free: 0, basic: 1, premium: 2, executive: 3 };
 
 export const runtime = "nodejs";
 
@@ -45,6 +58,21 @@ export async function POST(request: NextRequest) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
         await handleCheckoutSessionCompleted(session);
+        break;
+      }
+
+      // Delayed payment methods settle after checkout completes. Only wallet
+      // top-ups act on this event; everything else is unchanged.
+      case "checkout.session.async_payment_succeeded": {
+        const session = event.data.object as Stripe.Checkout.Session;
+        if (isWalletTopupSession(session)) await handleCheckoutSessionCompleted(session);
+        break;
+      }
+
+      // Wallet top-up refunded: take the credits back. Other refunds are ignored.
+      case "charge.refunded": {
+        const charge = event.data.object as Stripe.Charge;
+        await handleChargeRefunded(charge);
         break;
       }
 
@@ -96,6 +124,17 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ received: true });
   } catch (error: unknown) {
+    // The one exception to "always 200": a paid wallet top-up that could not be
+    // credited (or a refund that could not be reversed) because of a transient
+    // failure. Answer 500 so Stripe retries; the wallet RPCs are idempotent, so a
+    // retry can never credit or reverse twice.
+    if (error instanceof WalletWebhookRetryableError) {
+      console.error(
+        `Wallet webhook failed, asking Stripe to retry (${event.type}, ${event.id}):`,
+        error
+      );
+      return NextResponse.json({ received: false, retry: true }, { status: 500 });
+    }
     // Log loudly so the failure is visible in production logs, but STILL return 200.
     // verify-session / reconcileUserPlan are the source of truth for activation, so a failed
     // sync here is non-critical — and a 200 keeps Stripe from disabling the endpoint again.
@@ -122,6 +161,34 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
 
   if (!userId) {
     console.error("No user_id in session metadata");
+    return;
+  }
+
+  // Wallet top-up: credit the wallet (idempotent with verify-session), then mark
+  // the payment succeeded only once the credits landed. Nothing else applies.
+  if (isWalletTopupSession(session)) {
+    const result = await applyWalletTopup(supabase, session, "[webhook]");
+    if (result.ok) {
+      const topupPayment = await paymentService.getPaymentBySessionId(session.id);
+      if (topupPayment && topupPayment.status !== "succeeded") {
+        await paymentService.updatePayment(topupPayment.id, {
+          stripe_payment_id: (session.payment_intent as string) || undefined,
+          status: "succeeded",
+        });
+      }
+      console.log(
+        `✅ Wallet top-up ${result.alreadyProcessed ? "already credited" : `+${result.credits} credits`} for user ${userId}`
+      );
+    } else {
+      console.error(`[webhook] Wallet top-up not applied for ${session.id}: ${result.reason}`);
+      // A transient DB failure must be retried: there may be no success-page
+      // visit to self-heal it. not_paid / invalid_session never become creditable.
+      if (result.reason === "rpc_failed") {
+        throw new WalletWebhookRetryableError(
+          `credit_wallet_topup_atomic failed for ${session.id}`
+        );
+      }
+    }
     return;
   }
 
@@ -159,62 +226,77 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
           (session.customer as string) || session.metadata.stripe_customer_id
         );
 
-        const { data: existingProfile } =
-  await supabase
-    .from("user_profiles")
-    .select("profile_details")
-    .eq("id", userId)
-    .single();
+        // Provision Candidates, Candidate Journeys, and Isolated Document Vaults
+        const visaCategoryMeta = session.metadata?.visa_category || "ir1";
+        const candidateCountMeta = parseInt(session.metadata?.candidate_count || "1", 10) || 1;
+        const isAddCandidateMeta =
+          session.metadata?.action === "add_candidate" ||
+          session.metadata?.is_add_candidate === "true";
+        const targetCandidateIdMeta =
+          session.metadata?.target_candidate_id || session.metadata?.candidate_id || undefined;
 
-const existingPurchasedAddons =
-  Array.isArray(
-    existingProfile?.profile_details
-      ?.purchased_addons
-  )
-    ? existingProfile.profile_details
-        .purchased_addons
-    : [];
+        await provisionCandidateJourneysAndVaults({
+          supabase,
+          userId,
+          visaCategory: visaCategoryMeta,
+          candidateCount: candidateCountMeta,
+          tier: productId,
+          stripeSubscriptionId: (session.subscription as string) || undefined,
+          isAddCandidate: isAddCandidateMeta,
+          targetCandidateId: targetCandidateIdMeta,
+        });
 
-const mergedPlanAddons = [
-  ...new Set([
-    ...existingPurchasedAddons,
-    ...selectedAddons,
-  ]),
-];
+        const { data: existingProfile } = await supabase
+          .from("user_profiles")
+          .select("profile_details")
+          .eq("id", userId)
+          .single();
+
+        const existingPurchasedAddons = Array.isArray(
+          existingProfile?.profile_details?.purchased_addons
+        )
+          ? existingProfile.profile_details.purchased_addons
+          : [];
+
+        const mergedPlanAddons = [...new Set([...existingPurchasedAddons, ...selectedAddons])];
 
         // Save active plan details in user_profiles
         await supabase
-  .from("user_profiles")
-  .update({
-    profile_details: {
-      ...(existingProfile?.profile_details || {}),
-      active_plan: productId,
-      plan_visa_category:
-        session.metadata.visa_category,
-      plan_purchase_date:
-        new Date().toISOString(),
-      purchased_addons: mergedPlanAddons,
-      stripe_subscription_id:
-        session.subscription,
-    },
-  })
-  .eq("id", userId);
+          .from("user_profiles")
+          .update({
+            profile_details: {
+              ...(existingProfile?.profile_details || {}),
+              active_plan: productId,
+              plan_visa_category: session.metadata.visa_category,
+              plan_purchase_date: new Date().toISOString(),
+              purchased_addons: mergedPlanAddons,
+              stripe_subscription_id: session.subscription,
+            },
+          })
+          .eq("id", userId);
 
         console.log(`✅ User ${userId} subscribed to ${productId}`);
 
-        // ── Safety cleanup: exactly ONE live subscription per customer. ────────
+        // ── Upgrade cleanup: retire the plan this checkout replaces. ───────────
         // Runs only after this checkout completed (payment confirmed) and after
         // the DB above now points at this session's subscription, so a retired
-        // duplicate can never be mistaken for the current sub and trigger a
-        // downgrade. This mirrors verify-session; whichever activation path fires
-        // first, the customer is left with a single active subscription. It
-        // supersedes the old is_upgrade/old_subscription_id targeted cancel by
-        // also healing duplicates from earlier desyncs.
+        // plan can never be mistaken for the current sub and trigger a downgrade.
+        // Scoped to THIS journey: an IR-1 purchase never touches the IR-5 plan, and
+        // an add-candidate purchase replaces nothing. Mirrors verify-session;
+        // whichever activation path fires first does the cleanup (idempotent).
         const customerIdForCleanup =
           (session.customer as string) || session.metadata.stripe_customer_id;
         const keepSubId = session.subscription as string;
         if (customerIdForCleanup && keepSubId) {
-          await cancelDuplicateSubscriptions(customerIdForCleanup, keepSubId, "[webhook]");
+          await cancelSupersededSubscriptions({
+            customerId: customerIdForCleanup,
+            keepSubId,
+            visaCategory: visaCategoryMeta,
+            isAddCandidate: isAddCandidateMeta,
+            oldSubscriptionId:
+              session.metadata.is_upgrade === "true" ? session.metadata.old_subscription_id : null,
+            logPrefix: "[webhook]",
+          });
         }
       } catch (error) {
         console.error("Error updating user subscription:", error);
@@ -228,26 +310,20 @@ const mergedPlanAddons = [
       );
     }
     // Standalone Add-on fulfillment
-    else if (
-      productType === "standalone_addon" &&
-      selectedAddons.length > 0
-    ) {
+    else if (productType === "standalone_addon" && selectedAddons.length > 0) {
       try {
         const { data: profile } = await supabase
           .from("user_profiles")
           .select("profile_details")
           .eq("id", userId)
           .single();
-    
-        const {
-          alreadyProcessed,
-          profileDetails,
-        } = buildAddonPurchaseUpdate(
+
+        const { alreadyProcessed, profileDetails } = buildAddonPurchaseUpdate(
           profile?.profile_details,
           session.id,
           selectedAddons
         );
-    
+
         if (!alreadyProcessed) {
           await supabase
             .from("user_profiles")
@@ -256,15 +332,10 @@ const mergedPlanAddons = [
             })
             .eq("id", userId);
         }
-    
-        console.log(
-          `✅ User ${userId} purchased standalone addons: ${selectedAddons.join(", ")}`
-        );
+
+        console.log(`✅ User ${userId} purchased standalone addons: ${selectedAddons.join(", ")}`);
       } catch (error) {
-        console.error(
-          "Error updating standalone addons:",
-          error
-        );
+        console.error("Error updating standalone addons:", error);
       }
     }
   }
@@ -302,9 +373,11 @@ const mergedPlanAddons = [
       }
 
       // Reconstruct arrays
-      const attachments = session.metadata?.c_attachments ? session.metadata.c_attachments.split(",") : [];
-      const alternateSlots = session.metadata?.c_alternate_slots 
-        ? session.metadata.c_alternate_slots.split(",").map((s) => new Date(s)) 
+      const attachments = session.metadata?.c_attachments
+        ? session.metadata.c_attachments.split(",")
+        : [];
+      const alternateSlots = session.metadata?.c_alternate_slots
+        ? session.metadata.c_alternate_slots.split(",").map((s) => new Date(s))
         : [];
 
       const bookingData = {
@@ -335,12 +408,165 @@ const mergedPlanAddons = [
       session.metadata.consultation_reference || productId
     );
   }
+
+  // Document Translation — deferred-create (pay-first) or mark as paid.
+  // Mirrors verify-session so a paid request still lands even if the user never
+  // returns to the success page. Idempotent: the existence check + primary key guard
+  // against the webhook and verify-session both running.
+  if (productType === "document_translations" && productId) {
+    const { data: existingDoc } = await supabase
+      .from("translation_documents")
+      .select("id, payment_status")
+      .eq("id", productId)
+      .maybeSingle();
+
+    if (existingDoc) {
+      if (existingDoc.payment_status !== "paid") {
+        await supabase
+          .from("translation_documents")
+          .update({ payment_status: "paid", payment_id: payment?.id })
+          .eq("id", productId);
+      }
+    } else {
+      let userNotes = "";
+      let noteIndex = 1;
+      while (true) {
+        const part = session.metadata?.[`t_notes_${noteIndex}`];
+        if (!part) break;
+        userNotes += part;
+        noteIndex++;
+      }
+
+      const docId = session.metadata?.t_doc_id || productId;
+      const { error: insertErr } = await supabase.from("translation_documents").insert({
+        id: docId,
+        user_id: userId,
+        user_email: session.metadata?.t_user_email || session.customer_details?.email || "",
+        user_name: session.metadata?.t_user_name || "User",
+        document_type: session.metadata?.t_document_type || "marriage",
+        original_file_path: session.metadata?.t_storage_path || "",
+        original_filename: session.metadata?.t_original_filename || "",
+        original_file_size: Number(session.metadata?.t_original_file_size || 0) || 0,
+        original_mime_type: session.metadata?.t_original_mime_type || "application/pdf",
+        user_notes: userNotes || null,
+        status: "PENDING",
+        payment_status: "paid",
+        payment_id: payment?.id,
+        metadata: {
+          candidate_id: session.metadata?.t_candidate_id || "candidate-1",
+          candidate_name: session.metadata?.t_candidate_name || "",
+          source: session.metadata?.t_source || "standalone",
+          journey_slug: session.metadata?.t_journey_slug || null,
+        },
+      });
+
+      if (insertErr) {
+        // A PK conflict means verify-session already created it — that's fine.
+        console.error("[webhook] translation deferred-create error:", insertErr);
+      } else {
+        try {
+          await triggerTranslationNotification(docId);
+        } catch (notifErr) {
+          console.error("[webhook] translation notification error:", notifErr);
+        }
+      }
+    }
+  }
+
+  // Medical appointment / PCC filing — mark as paid and reveal the draft.
+  // These rows are pre-created (as hidden drafts when payment was required), so
+  // fulfillment here just flips the existing row. Idempotent (only acts when not
+  // already paid) and covers the case where the user paid but never returned to the
+  // success page (previously only verify-session flipped these — an orphaned draft).
+  if ((productType === "medical_booking" || productType === "pcc_filing") && productId) {
+    const serviceTable =
+      productType === "medical_booking" ? "appointments" : "police_verification_requests";
+    const { data: existingServiceRow } = await supabase
+      .from(serviceTable)
+      .select("id, payment_status")
+      .eq("id", productId)
+      .maybeSingle();
+
+    if (existingServiceRow && existingServiceRow.payment_status !== "paid") {
+      await supabase
+        .from(serviceTable)
+        .update({ payment_status: "paid", awaiting_payment: false })
+        .eq("id", productId);
+      console.log(`✅ [webhook] ${productType} ${productId} marked paid and revealed`);
+    }
+  }
 }
 
 // ================================================
 // HANDLER 2: Invoice Payment Succeeded
 // Every monthly charge — keep subscription active
 // ================================================
+// ================================================
+// HANDLER: Charge Refunded (wallet top-ups only)
+// ================================================
+async function handleChargeRefunded(charge: Stripe.Charge) {
+  const paymentIntentId =
+    typeof charge.payment_intent === "string" ? charge.payment_intent : charge.payment_intent?.id;
+  if (!paymentIntentId) return;
+
+  // Top-ups tag their PaymentIntent (checkout payment_intent_data.metadata). Cheap
+  // filter so refunds of plans / consultations are left alone.
+  let piMetadata = charge.metadata;
+  if (piMetadata?.product_type !== WALLET_TOPUP_PRODUCT_TYPE) {
+    const pi = await stripe.paymentIntents.retrieve(paymentIntentId);
+    piMetadata = pi.metadata;
+  }
+  if (piMetadata?.product_type !== WALLET_TOPUP_PRODUCT_TYPE) return;
+
+  const sessions = await stripe.checkout.sessions.list({
+    payment_intent: paymentIntentId,
+    limit: 1,
+  });
+  const session = sessions.data[0];
+  if (!session || !isWalletTopupSession(session) || !session.metadata?.user_id) {
+    console.error(`[webhook] Refunded wallet charge ${charge.id} has no matching top-up session`);
+    return;
+  }
+
+  // Credit first if the top-up never landed (refund raced the credit), so the
+  // reversal below always has a top-up to reverse. Idempotent.
+  const credited = await applyWalletTopup(supabase, session, "[webhook:refund]");
+  if (!credited.ok) {
+    if (credited.reason === "rpc_failed") {
+      throw new WalletWebhookRetryableError(`credit before refund failed for ${session.id}`);
+    }
+    console.error(
+      `[webhook] Refunded top-up ${session.id} was never creditable: ${credited.reason}`
+    );
+    return;
+  }
+
+  const result = await applyWalletRefund(
+    supabase,
+    {
+      userId: session.metadata.user_id,
+      stripeSessionId: session.id,
+      amountRefundedCents: charge.amount_refunded,
+      amountCapturedCents: charge.amount_captured,
+      chargeId: charge.id,
+    },
+    "[webhook:refund]"
+  );
+
+  if (!result.ok) {
+    if (result.reason === "rpc_failed") {
+      throw new WalletWebhookRetryableError(`reverse_wallet_topup_atomic failed for ${session.id}`);
+    }
+    console.error(`[webhook] Wallet refund not applied for ${session.id}: ${result.reason}`);
+    return;
+  }
+  console.log(
+    `✅ Wallet refund for ${session.id}: -${result.creditsDeducted} credits` +
+      (result.shortfall > 0 ? ` (shortfall ${result.shortfall}, already spent)` : "") +
+      (result.alreadyProcessed ? " (already processed)" : "")
+  );
+}
+
 async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
   console.log("✅ Invoice payment succeeded:", invoice.id);
 
@@ -452,39 +678,115 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
     return;
   }
 
-  // Guard: if the cancelled sub is NOT the user's current active sub, it was
-  // cancelled as part of an upgrade flow — do NOT downgrade.
+  // The account summary tracks one "current" sub. Any other cancelled sub is either an
+  // upgrade's retired plan or another journey's plan.
   const currentSubId = profile.profile_details?.stripe_subscription_id;
-  if (currentSubId && currentSubId !== subscription.id) {
+  const isCurrentSub = !currentSubId || currentSubId === subscription.id;
+
+  // ── 1. Revoke the journeys this plan paid for. ──────────────────────────────
+  // Entitlements resolve per journey (`journeys.subscription_tier`), so the journey
+  // rows still pointing at the cancelled sub drop to free (for an IR-5 purchase that
+  // can be several candidate journeys). An upgrade's retired plan matches no row:
+  // provisioning repoints the journey at the new sub BEFORE cleanup cancels the old
+  // one, so upgrade cleanup never revokes anything here.
+  const revokedUpdate = {
+    subscription_tier: "free",
+    stripe_subscription_id: null,
+    updated_at: new Date().toISOString(),
+  };
+  let { data: revokedJourneys } = await supabase
+    .from("journeys")
+    .update(revokedUpdate)
+    .eq("user_id", profile.id)
+    .eq("stripe_subscription_id", subscription.id)
+    .select("id, journey_type");
+  if (!revokedJourneys?.length && isCurrentSub) {
+    // Legacy rows paid before journeys were stamped with their sub id: the account's
+    // current plan ended, so its unstamped paid journeys go with it.
+    ({ data: revokedJourneys } = await supabase
+      .from("journeys")
+      .update(revokedUpdate)
+      .eq("user_id", profile.id)
+      .is("stripe_subscription_id", null)
+      .neq("subscription_tier", "free")
+      .select("id, journey_type"));
+  }
+  const revokedCount = revokedJourneys?.length ?? 0;
+  if (revokedCount > 0) {
+    console.log(`Revoked ${revokedCount} journey(s) paid by cancelled sub ${subscription.id}`);
+  }
+
+  // The roster's per-candidate `tier` also gates access (PlanContext forces a candidate
+  // whose tier is "free" to free, while journey tiers are keyed per CATEGORY), so the
+  // candidates whose journeys were revoked drop to free too. Otherwise a cancelled
+  // candidate-2 plan would keep inheriting candidate-1's IR-5 tier.
+  const normKey = (k: string) => k.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const revokedKeys = new Set((revokedJourneys || []).map((j) => normKey(j.journey_type || "")));
+  const details = { ...(profile.profile_details || {}) };
+  if (revokedKeys.size > 0 && Array.isArray(details.candidates)) {
+    details.candidates = details.candidates.map((c: { id?: string; visaCategory?: string }) =>
+      c?.visaCategory && revokedKeys.has(normKey(getCandidateJourneyKey(c.visaCategory, c.id)))
+        ? { ...c, tier: "free" }
+        : c
+    );
+  }
+
+  // ── 2. Account-level summary. ────────────────────────────────────────────────
+  if (!isCurrentSub && revokedCount === 0) {
     console.log(
       `Skipping downgrade, cancelled sub ${subscription.id} is not current (${currentSubId}). Upgrade cleanup.`
     );
     return;
   }
 
-  // Downgrade user to free plan. Clear the subscription id in BOTH metadata and
-  // profile_details — the rest of the app reads profile_details.stripe_subscription_id,
-  // so leaving a stale id there would confuse the next purchase's upgrade detection.
-  await supabase
-    .from("user_profiles")
-    .update({
-      subscription_tier: "free",
-      subscription_status: "canceled",
-      metadata: {
-        ...profile.metadata,
-        active_plan: null,
-        plan_cancelled_date: new Date().toISOString(),
-        stripe_subscription_id: null,
+  if (!isCurrentSub) {
+    // Another journey's plan ended: summary unchanged, only the roster tiers.
+    await supabase.from("user_profiles").update({ profile_details: details }).eq("id", profile.id);
+  } else {
+    // Other journeys may still be paid (e.g. IR-1 cancelled, IR-5 still live): the
+    // summary falls back to the best remaining journey plan instead of to free.
+    const { data: remainingJourneys } = await supabase
+      .from("journeys")
+      .select("subscription_tier, stripe_subscription_id")
+      .eq("user_id", profile.id);
+    const best = (remainingJourneys || []).reduce<{
+      tier: string;
+      rank: number;
+      subId: string | null;
+    }>(
+      (acc, j) => {
+        const tier = (j.subscription_tier || "free").toLowerCase();
+        const rank = SUMMARY_TIER_RANK[tier] ?? 0;
+        return rank > acc.rank ? { tier, rank, subId: j.stripe_subscription_id ?? null } : acc;
       },
-      profile_details: {
-        ...(profile.profile_details || {}),
-        active_plan: null,
-        stripe_subscription_id: null,
-      },
-    })
-    .eq("id", profile.id);
+      { tier: "free", rank: 0, subId: null }
+    );
+    const stillPaid = best.rank > 0;
 
-  console.log(`✅ User ${profile.id} downgraded to free plan`);
+    // Clear (or repoint) the subscription id in BOTH metadata and profile_details: the
+    // rest of the app reads profile_details.stripe_subscription_id, so leaving a stale
+    // id there would confuse the next purchase's upgrade detection.
+    await supabase
+      .from("user_profiles")
+      .update({
+        subscription_tier: best.tier,
+        subscription_status: stillPaid ? "active" : "canceled",
+        metadata: {
+          ...profile.metadata,
+          active_plan: stillPaid ? best.tier : null,
+          plan_cancelled_date: new Date().toISOString(),
+          stripe_subscription_id: best.subId,
+        },
+        profile_details: {
+          ...details,
+          active_plan: stillPaid ? best.tier : null,
+          stripe_subscription_id: best.subId,
+        },
+      })
+      .eq("id", profile.id);
+
+    console.log(`✅ User ${profile.id} account summary set to ${best.tier}`);
+  }
 
   // Send cancellation email
   try {

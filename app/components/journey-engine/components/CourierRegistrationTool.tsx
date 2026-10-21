@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Truck, ArrowRight, ExternalLink, Monitor, Lock, Upload, X } from "lucide-react";
 
 interface CourierRegistrationToolProps {

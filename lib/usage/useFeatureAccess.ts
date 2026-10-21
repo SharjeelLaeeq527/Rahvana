@@ -32,12 +32,18 @@ type FeatureUsageResponse = {
   };
 };
 
+export type FeatureAccessOptions = {
+  tier?: string | null;
+  journeyCategory?: string | null;
+};
+
 export function useFeatureAccess() {
   const [loading, setLoading] = useState(false);
 
   const checkAccess = useCallback(
     async (
-      feature: string
+      feature: string,
+      options?: FeatureAccessOptions
     ): Promise<{
       allowed: boolean;
       data?: FeatureUsageResponse;
@@ -45,7 +51,11 @@ export function useFeatureAccess() {
       try {
         setLoading(true);
 
-        const res = await fetch(`/api/feature-usage?feature=${encodeURIComponent(feature)}`, {
+        const params = new URLSearchParams({ feature });
+        if (options?.tier) params.set("tier", options.tier);
+        if (options?.journeyCategory) params.set("journeyCategory", options.journeyCategory);
+
+        const res = await fetch(`/api/feature-usage?${params.toString()}`, {
           method: "GET",
         });
 
@@ -79,7 +89,8 @@ export function useFeatureAccess() {
 
   const consumeAccess = useCallback(
     async (
-      feature: string
+      feature: string,
+      options?: FeatureAccessOptions
     ): Promise<{
       allowed: boolean;
       data?: FeatureUsageResponse;
@@ -92,7 +103,11 @@ export function useFeatureAccess() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ feature }),
+          body: JSON.stringify({
+            feature,
+            tier: options?.tier,
+            journeyCategory: options?.journeyCategory,
+          }),
         });
 
         const data = (await res.json()) as FeatureUsageResponse;

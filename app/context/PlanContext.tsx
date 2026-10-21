@@ -1,7 +1,8 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from "react";
 import { useAuth } from "./AuthContext";
+import { CandidateContext } from "./CandidateContext";
 import { createClient } from "@/lib/supabase/client";
 import {
   PlanTier,
@@ -18,14 +19,17 @@ import {
   upgradeCTA,
   getEffectiveEntitlement,
 } from "@/lib/entitlements/helpers";
+import { getBaseVisaCategory, UNKNOWN_VISA_CATEGORY } from "@/lib/candidate/candidateSyncService";
 
-interface PlanContextValue {
-  /** The real tier from DB (unaffected by dev override). */
+export interface PlanContextValue {
+  /** The real tier from DB for the active journey/category (unaffected by dev override). */
   realTier: PlanTier;
-  /** Effective tier — devOverride when set, otherwise realTier. */
+  /** Effective tier for the active journey — devOverride when set, otherwise realTier. */
   tier: PlanTier;
-  /** Highest active subscription tier across the user's journeys. */
+  /** Highest active subscription tier across the user's journeys / account summary. */
   maxActiveJourneyTier: PlanTier;
+  /** Per-category tiers map, e.g. { "IR-5": "premium", "IR-1": "free" }. */
+  journeyTiers: Record<string, PlanTier>;
   isLoading: boolean;
   /** Dev-only: override the active tier for UI testing. null = use real tier. */
   devOverride: PlanTier | null;
@@ -50,7 +54,7 @@ interface PlanContextValue {
   upgradeCTA: (feature: string) => string | null;
 }
 
-const PlanContext = createContext<PlanContextValue | null>(null);
+export const PlanContext = createContext<PlanContextValue | null>(null);
 
 /** Kept as a re-export for existing importers; the implementation lives in lib/entitlements/config. */
 export { normalizePlanTier };
@@ -82,14 +86,45 @@ function markReconciled(userId: string) {
 
 export function PlanProvider({ children }: { children: React.ReactNode }) {
   const { user, isLoading: authLoading } = useAuth();
-  const [realTier, setRealTier] = useState<PlanTier>("free");
+  const candidateCtx = useContext(CandidateContext);
+  const [accountTier, setAccountTier] = useState<PlanTier>("free");
+  const [journeyTiers, setJourneyTiers] = useState<Record<string, PlanTier>>({});
   const [purchasedAddons, setPurchasedAddons] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [devOverride, setDevOverride] = useState<PlanTier | null>(null);
   const [refreshCounter, setRefreshCounter] = useState(0);
 
-  const tier = devOverride ?? realTier;
-  const maxActiveJourneyTier = realTier;
+  // Active category determination
+  const activeCategory =
+    candidateCtx?.activeCandidate?.visaCategory || candidateCtx?.activeJourneyBase;
+  const normalizedCategory = activeCategory
+    ? getBaseVisaCategory(activeCategory)
+    : UNKNOWN_VISA_CATEGORY;
+
+  // Derive the active journey's specific real tier from journeyTiers or fallback
+  const realTier: PlanTier = useMemo(() => {
+    if (normalizedCategory !== UNKNOWN_VISA_CATEGORY && journeyTiers[normalizedCategory]) {
+      return journeyTiers[normalizedCategory];
+    }
+    // If user has journey records with explicit tiers, an unpurchased new category is "free"
+    if (Object.keys(journeyTiers).length > 0) {
+      return "free";
+    }
+    // Legacy single-journey fallback
+    return accountTier;
+  }, [normalizedCategory, journeyTiers, accountTier]);
+
+  // If candidate is in Free Preview mode, force effective tier to 'free'
+  const isCandidatePreview = Boolean(
+    candidateCtx &&
+      (candidateCtx.activeCandidate?.isPreview ||
+        candidateCtx.activeCandidateTier === "free" ||
+        candidateCtx.activeCandidate?.tier === "free")
+  );
+
+  const effectiveJourneyTier = isCandidatePreview ? "free" : realTier;
+  const tier: PlanTier = devOverride ?? effectiveJourneyTier;
+  const maxActiveJourneyTier = accountTier;
 
   const refresh = useCallback(() => setRefreshCounter((n) => n + 1), []);
 
@@ -102,7 +137,8 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (!user?.id) {
-      setRealTier("free");
+      setAccountTier("free");
+      setJourneyTiers({});
       setPurchasedAddons([]);
       setIsLoading(false);
       return;
@@ -133,33 +169,58 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
           .catch(() => null)
       : Promise.resolve(null);
 
-    // 2. Wait for reconcile to settle, THEN read the (possibly updated) tier.
+    // 2. Wait for reconcile to settle, then query user_profiles and journeys in parallel
     reconcile
       .then(() =>
-        supabase
-          .from("user_profiles")
-          .select("subscription_tier, profile_details")
-          .eq("id", user.id)
-          .single()
+        Promise.all([
+          supabase
+            .from("user_profiles")
+            .select("subscription_tier, profile_details")
+            .eq("id", user.id)
+            .single(),
+          supabase
+            .from("journeys")
+            .select("journey_type, subscription_tier")
+            .eq("user_id", user.id),
+        ])
       )
-      .then(
-        ({
-          data,
-        }: {
-          data: {
-            subscription_tier?: string;
-            profile_details?: Record<string, unknown> | null;
-          } | null;
-        }) => {
-          if (cancelled) return;
-          setRealTier(normalizePlanTier(data?.subscription_tier));
-          const addons = data?.profile_details?.purchased_addons as string[] | undefined;
-          setPurchasedAddons(Array.isArray(addons) ? addons : []);
+      .then(([profileRes, journeysRes]) => {
+        if (cancelled) return;
+        const profileData = profileRes.data;
+        const journeysData = journeysRes.data;
+
+        setAccountTier(normalizePlanTier(profileData?.subscription_tier));
+        const addons = profileData?.profile_details?.purchased_addons as string[] | undefined;
+        setPurchasedAddons(Array.isArray(addons) ? addons : []);
+
+        const TIER_RANK: Record<string, number> = { free: 0, basic: 1, premium: 2, executive: 3 };
+        const tiersMap: Record<string, PlanTier> = {};
+        if (Array.isArray(journeysData)) {
+          journeysData.forEach((j) => {
+            if (j.journey_type && j.subscription_tier) {
+              const tier = normalizePlanTier(j.subscription_tier);
+              const rawKey = j.journey_type.toLowerCase();
+              const cleanKey = rawKey.replace(/[^a-z0-9]/g, "");
+              tiersMap[rawKey] = tier;
+              tiersMap[cleanKey] = tier;
+
+              const baseCat = getBaseVisaCategory(j.journey_type);
+              if (baseCat !== UNKNOWN_VISA_CATEGORY) {
+                const currentRank = TIER_RANK[tiersMap[baseCat] || "free"] ?? 0;
+                const newRank = TIER_RANK[tier] ?? 0;
+                if (newRank >= currentRank) {
+                  tiersMap[baseCat] = tier;
+                }
+              }
+            }
+          });
         }
-      )
+        setJourneyTiers(tiersMap);
+      })
       .catch(() => {
         if (!cancelled) {
-          setRealTier("free");
+          setAccountTier("free");
+          setJourneyTiers({});
           setPurchasedAddons([]);
         }
       })
@@ -176,6 +237,7 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     realTier,
     tier,
     maxActiveJourneyTier,
+    journeyTiers,
     isLoading,
     devOverride,
     setDevOverride,
@@ -201,3 +263,4 @@ export function usePlan(): PlanContextValue {
   if (!ctx) throw new Error("usePlan must be used inside PlanProvider");
   return ctx;
 }
+

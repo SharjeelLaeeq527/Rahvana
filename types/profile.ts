@@ -330,6 +330,15 @@ export interface MasterProfile {
   isVAWA?: boolean;
   isWidow?: boolean;
   isSpecialImmigrant?: boolean;
+  standaloneSponsorshipDraft?: {
+    stepIdx: number;
+    data: any;
+    updatedAt: string;
+  };
+  standaloneSponsorshipCalc?: any;
+  standalone221gDraft?: import("@/app/(tools)/(visa)/221g-action-planner/types/221g").TwentyTwoOneGDraft;
+  standalone221gResult?: import("@/app/(tools)/(visa)/221g-action-planner/types/221g").TwentyTwoOneGResult;
+  standalonePassportPhotos?: import("./passport-photo").PassportPhotoItem[];
 
   // Visa Eligibility Tool Specifics
   visaEligibility?: {
@@ -379,7 +388,24 @@ export interface MasterProfile {
 
   // Journey-scoped profile data to prevent multi-journey bleed
   journeys?: Record<string, Record<string, any>>;
+
+  // Customizations for journeys on My Journeys dashboard (name, image, etc.)
+  journeyCustomizations?: Record<
+    string,
+    {
+      name?: string;
+      image?: string;
+      updatedAt?: string;
+    }
+  >;
+
+  // Multi-Candidate / Beneficiary profiles (IR-5 parents, IR-2 children)
+  activeCandidateId?: string;
+  candidates?: import("./candidate").CandidateProfile[];
+  candidateSync?: import("./candidate").CandidateSyncConfig;
 }
+
+export * from "./candidate";
 
 export interface QuestionDefinition {
   id: string;

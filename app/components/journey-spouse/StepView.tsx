@@ -2,7 +2,9 @@
 // Dynamic refactoring in progress
 "use client";
 
-import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useState, useCallback, useRef } from "react";
+import { JourneyGuidePage } from "@/app/components/shared/GuidePageOverlay";
+import { ToolPageOverlay } from "@/app/components/shared/ToolPageOverlay";
 import { E, msg } from "@/lib/errors";
 import {
   ArrowLeft,
@@ -80,9 +82,8 @@ import { MultipleDocumentUploadModal } from "@/app/components/document-vault/Mul
 import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
 import { useAuth } from "@/app/context/AuthContext";
 import { useUserProfile } from "@/app/context/UserProfileContext";
-import PassportPhotoTool from "@/components/tools/PassportPhotoTool";
-import DocumentTranslationTool from "@/components/tools/DocumentTranslationTool";
 import { usePortalWallet } from "./hooks/usePortalWallet";
+import { useCandidate } from "@/app/context/CandidateContext";
 import { useFilingQuiz } from "./hooks/useFilingQuiz";
 import { useSponsorship } from "./hooks/useSponsorship";
 import { DocActionModal } from "./components/DocActionModal";
@@ -152,13 +153,20 @@ import { AwaitingReviewStep } from "./components/AwaitingReviewStep";
 import { GuideStepRenderer, AwaitingDecisionTool } from "./components/GuideStepRenderer";
 import { NoticeTriageTool } from "./components/NoticeTriageTool";
 import { FinancialChecklistTool } from "./components/FinancialChecklistTool";
-import SponsorshipCalculatorTool from "./components/SponsorshipCalculatorTool";
+import { MedicalBookingModule } from "./components/MedicalBookingModule";
+import { PccFilingModule } from "./components/PccFilingModule";
+import {
+  isJourneyRequestLocked,
+  isPccRequestLocked,
+  type JourneyServiceRecord,
+} from "@/lib/journey/toolModeGuards";
+import { useJourneyServiceStatus, patchPccReceived } from "@/lib/journey/useJourneyServiceStatus";
 import { ApUpdateModal } from "./PortalWalletManager";
 import { HouseholdSponsorshipTool } from "./components/HouseholdSponsorshipTool";
 import { DocumentQuestionnaire } from "@/app/components/questionnaire/DocumentQuestionnaire";
 import { QuestRenderer } from "./QuestRenderer";
 import { ActionStepRenderer } from "./ActionStepRenderer";
-import {DocumentChecklistTool} from "@/app/components/journey-engine/components/DocumentChecklistTool";
+import { DocumentChecklistTool } from "@/app/components/journey-engine/components/DocumentChecklistTool";
 import { SafeHtml } from "../shared/SafeHTML";
 
 const STEP_CITATIONS: Record<string, { text: string; link: string }[]> = {
@@ -348,6 +356,8 @@ interface StepViewProps {
   onBack: () => void;
   onSelectChapter?: (chapterIdx: number) => void;
   onSelectStep?: (chapterIdx: number, stepIdx: number) => void;
+  /** Launch a service/tool through the shared roadmap toolbox (breadcrumb chrome). */
+  onLaunchTool?: (toolKey: string, autoCompleteStepKey?: string | null) => void;
 }
 
 export const StepView: React.FC<StepViewProps> = ({
@@ -357,7 +367,20 @@ export const StepView: React.FC<StepViewProps> = ({
   onBack,
   onSelectChapter,
   onSelectStep,
+  onLaunchTool,
 }) => {
+  const [guideOverlayUrl, setGuideOverlayUrl] = useState<string | null>(null);
+  const [toolOverlayHref, setToolOverlayHref] = useState<string | null>(null);
+
+  /** Opens internal tool hrefs inline; falls back to new tab for external URLs. */
+  const openToolHref = (href: string) => {
+    if (!href) return;
+    if (href.startsWith("http://") || href.startsWith("https://")) {
+      window.open(href, "_blank", "noopener,noreferrer");
+    } else {
+      setToolOverlayHref(href);
+    }
+  };
   // Top-level step/chapter detection logic for use throughout the file
   const chapters = data.chapters || (data as any).stages;
   const currentChapter = chapters?.[state.currentStage];
@@ -366,6 +389,23 @@ export const StepView: React.FC<StepViewProps> = ({
   const isChapter1 = sId.startsWith("step_1_");
   const isChapter2 = sId.startsWith("step_2_");
   const isChapter3 = sId.startsWith("step_3_");
+  // Journey identity for service tool overlays — derived from data.journey_type
+  // (spouse defaults to IR-1) instead of a hardcoded value.
+  const journeyTypeToken = (data.journey_type || "IR1").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  const toolJourneyCategory = journeyTypeToken.startsWith("IR")
+    ? `IR-${journeyTypeToken.slice(2)}`
+    : journeyTypeToken || "IR-1";
+  const toolJourneySlug = `${journeyTypeToken.toLowerCase()}-journey`;
+  // ── Server-synced Medical / PCC service status ──────────────────────────────
+  // The step summary card reflects the LIVE journey request, so deleting it in the
+  // backend clears the card instead of showing ghost info.
+  const serviceStatus = useJourneyServiceStatus({
+    journeySlug: toolJourneySlug,
+    candidateId: (state as any)?.candidateId || "candidate-1",
+    medicalMetadata: (state.metadata?.medicalBooking as JourneyServiceRecord) ?? null,
+    pccMetadata: (state.metadata?.pccFiling as JourneyServiceRecord) ?? null,
+    updateMetadata: actions?.updateMetadata,
+  });
   // ── Step-level entitlement gating ──────────────────────────────────────────
   const plan = useJourneyPlan(state);
   const effectiveTier = plan.tier;
@@ -393,6 +433,15 @@ export const StepView: React.FC<StepViewProps> = ({
   // Add Evidence Note modal state
 
   const { user } = useAuth();
+  // Candidate context — safely called at component level (no try/catch needed here)
+  let activeCandidateId: string | null = null;
+  try {
+    const candidateCtx = useCandidate();
+    activeCandidateId = candidateCtx?.activeCandidateId ?? null;
+  } catch {
+    /* not inside CandidateProvider — single-candidate journey */
+  }
+
   const {
     openUploadModal,
     uploadModalOpen,
@@ -408,6 +457,58 @@ export const StepView: React.FC<StepViewProps> = ({
   const [activeUploadId, setActiveUploadId] = useState<string | null>(null);
   const [activeUploadType, setActiveUploadType] = useState<"doc" | "hh" | "financial" | null>(null);
   const [selectedGuideId, setSelectedGuideId] = useState<string | null>(null);
+
+  const [journeyHeaderBottom, setJourneyHeaderBottom] = useState(112);
+
+  useLayoutEffect(() => {
+    const header = document.querySelector<HTMLElement>("[data-journey-header]");
+    const updateHeaderBottom = () => {
+      setJourneyHeaderBottom(header ? Math.max(0, header.getBoundingClientRect().bottom) : 112);
+    };
+
+    updateHeaderBottom();
+    const observer = header ? new ResizeObserver(updateHeaderBottom) : null;
+    if (header && observer) observer.observe(header);
+    window.addEventListener("resize", updateHeaderBottom);
+    window.addEventListener("scroll", updateHeaderBottom, true);
+
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener("resize", updateHeaderBottom);
+      window.removeEventListener("scroll", updateHeaderBottom, true);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (
+      selectedGuideId === "doc_passport_photos" ||
+      selectedGuideId === "passport-photos" ||
+      selectedGuideId === "photo-booth"
+    ) {
+      setSelectedGuideId(null);
+      setToolOverlayHref("/passport");
+    } else if (
+      selectedGuideId === "doc_translations" ||
+      selectedGuideId === "translations" ||
+      selectedGuideId === "document-translation"
+    ) {
+      setSelectedGuideId(null);
+      setToolOverlayHref("/document-translation");
+    }
+  }, [selectedGuideId]);
+
+  useEffect(() => {
+    if (!selectedGuideId || !InlineGuideData[selectedGuideId]) return;
+    const title = InlineGuideData[selectedGuideId]?.title || "Guide";
+    window.dispatchEvent(new CustomEvent("journey-overlay-name", { detail: title }));
+    const handleClose = () => setSelectedGuideId(null);
+    window.addEventListener("journey-overlay-close", handleClose);
+    return () => {
+      window.dispatchEvent(new CustomEvent("journey-overlay-name", { detail: null }));
+      window.removeEventListener("journey-overlay-close", handleClose);
+    };
+  }, [selectedGuideId]);
+
   const [documentToDelete, setDocumentToDelete] = useState<{
     id: string;
     name: string;
@@ -417,6 +518,7 @@ export const StepView: React.FC<StepViewProps> = ({
     doc: any | null;
     title?: string;
     subtitle?: string;
+    hasGuide?: boolean;
     onReadGuide?: () => void;
     onUpload?: () => void;
   }>({
@@ -571,7 +673,7 @@ export const StepView: React.FC<StepViewProps> = ({
     isSubmittingCreds,
     showDeleteConfirmation,
     setShowDeleteConfirmation,
-  } = usePortalWallet({ sId, isCompleted, actions });
+  } = usePortalWallet({ sId, isCompleted, actions, candidateId: activeCandidateId });
 
   const {
     showQuiz,
@@ -603,9 +705,8 @@ export const StepView: React.FC<StepViewProps> = ({
     setHhRelationships,
     hhDocsStatus,
     setHhDocsStatus,
-    isSponsorshipCalcOpen,
-    setIsSponsorshipCalcOpen,
     sponsorshipResult,
+    sponsorshipDraft,
   } = useSponsorship({ metadata: state.metadata });
 
   // --- 2. Remaining Local State ---
@@ -1407,12 +1508,75 @@ export const StepView: React.FC<StepViewProps> = ({
               sponsorshipResult={sponsorshipResult}
               onOpenCalc={() => {
                 if (!stepEntitlement.guard()) return;
-                setIsSponsorshipCalcOpen(true);
+                onLaunchTool?.("sponsorship_calculator", sId);
               }}
               tool={tool}
               guard={stepEntitlement.guard}
             />
           )}
+
+          {/* MEDICAL BOOKING TOOL RENDERING */}
+          {tool.type === "medical_booking" &&
+            (() => {
+              const record =
+                serviceStatus.medicalRecord ??
+                (serviceStatus.loading
+                  ? ((state.metadata?.medicalBooking as JourneyServiceRecord) ?? null)
+                  : null);
+
+              const locked = isJourneyRequestLocked(record);
+
+              return (
+                <MedicalBookingModule
+                  tool={tool}
+                  record={record}
+                  locked={locked}
+                  onOpen={() => {
+                    if (locked) return; // one active booking per journey
+                    if (!stepEntitlement.guard()) return; // journey-tier access gate (no credits)
+                    onLaunchTool?.("medical_appointment", sId);
+                  }}
+                />
+              );
+            })()}
+
+          {/* PCC FILING TOOL RENDERING */}
+          {tool.type === "pcc_filing" &&
+            (() => {
+              const record =
+                serviceStatus.pccRecord ??
+                (serviceStatus.loading
+                  ? ((state.metadata?.pccFiling as JourneyServiceRecord) ?? null)
+                  : null);
+
+              const locked = isPccRequestLocked(record);
+
+              return (
+                <PccFilingModule
+                  tool={tool}
+                  record={record}
+                  locked={locked}
+                  onOpen={() => {
+                    if (locked) return; // one active PCC application per journey
+                    if (!stepEntitlement.guard()) return; // journey-tier access gate (no credits)
+                    onLaunchTool?.("police_verification", sId);
+                  }}
+                  onMarkReceived={() => {
+                    if (!record) return;
+                    const receivedAt = new Date().toISOString().slice(0, 10);
+                    actions.updateMetadata({
+                      pccFiling: { ...record, status: "received", receivedAt },
+                    });
+                    // Persist to the live journey request server-side (best-effort).
+                    if (serviceStatus.activePccRow?.id) {
+                      patchPccReceived(serviceStatus.activePccRow.id, receivedAt).then(() =>
+                        serviceStatus.refetch()
+                      );
+                    }
+                  }}
+                />
+              );
+            })()}
 
           {/* DQ RECORDING TOOL RENDERING */}
           {tool.type === "dq_recording" && (
@@ -1765,11 +1929,8 @@ export const StepView: React.FC<StepViewProps> = ({
 
           {/* DOCUMENT CHECKLIST (Step 3.7 SPECIFIC) */}
           {tool.type === "document_checklist" && (
-  <DocumentChecklistTool
-    journeyId={journeyId}
-    journeyType={data.journey_type}
-  />
-)}
+            <DocumentChecklistTool journeyId={journeyId} journeyType={data.journey_type} />
+          )}
 
           {/* ATTEND MEDICAL EXAM (Step 3.5 SPECIFIC) */}
           {tool.type === "medical_exam_guide" && (
@@ -1936,6 +2097,8 @@ export const StepView: React.FC<StepViewProps> = ({
           {/* PRIMARY LAUNCH MODULE */}
           {tool.launch_module &&
             tool.type !== "sponsorship_calculator" &&
+            tool.type !== "medical_booking" &&
+            tool.type !== "pcc_filing" &&
             tool.type !== "submission_review" &&
             tool.type !== "interview_prep" &&
             tool.type !== "interview_day" &&
@@ -2154,7 +2317,7 @@ export const StepView: React.FC<StepViewProps> = ({
                         onClick={() => {
                           if (!stepEntitlement.guard()) return;
                           if (tool.launch_module.href) {
-                            window.open(tool.launch_module.href, "_blank", "noopener,noreferrer");
+                            openToolHref(tool.launch_module.href);
                             setIsLaunched(true);
                           }
                         }}
@@ -2849,7 +3012,7 @@ export const StepView: React.FC<StepViewProps> = ({
                       setIsTutorialOpen(true);
                     } else if (card.href) {
                       if (!stepEntitlement.guard()) return;
-                      window.open(card.href, "_blank", "noopener,noreferrer");
+                      openToolHref(card.href);
                     }
                   }}
                   className="group hover:border-primary flex cursor-pointer flex-col rounded-[16px] border-[1.5px] border-[#d0e4f7] bg-white p-[20px] text-left transition-all select-none hover:-translate-y-px hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)]"
@@ -2887,6 +3050,7 @@ export const StepView: React.FC<StepViewProps> = ({
       </div>
     );
   };
+
 
   if (!currentStep) return null;
 
@@ -3308,6 +3472,7 @@ export const StepView: React.FC<StepViewProps> = ({
                           contextLabel="Case Strength"
                           stepName="Petition Readiness"
                           defaultCollapsed={false}
+                          onOpenGuide={setGuideOverlayUrl}
                         />
                       </FloatingSidePanel>
 
@@ -3329,6 +3494,7 @@ export const StepView: React.FC<StepViewProps> = ({
                           contextLabel="Case Strength"
                           stepName="Petition Readiness"
                           defaultCollapsed={true}
+                          onOpenGuide={setGuideOverlayUrl}
                         />
                       </div>
                     </>
@@ -3406,7 +3572,23 @@ export const StepView: React.FC<StepViewProps> = ({
                                           <div
                                             key={doc.id || idx}
                                             onClick={() => {
+                                              const isPhotoBoothDoc =
+                                                doc.id === "doc_passport_photos" ||
+                                                doc.id === "passport-photos" ||
+                                                doc.id === "photo-booth" ||
+                                                doc.guideKey === "doc_passport_photos" ||
+                                                doc.selectedGuideId === "doc_passport_photos" ||
+                                                doc.name?.toLowerCase().includes("passport photo");
+                                              const isTranslationDoc =
+                                                doc.id === "doc_translations" ||
+                                                doc.id === "translations" ||
+                                                doc.id === "document-translation" ||
+                                                doc.guideKey === "doc_translations" ||
+                                                doc.selectedGuideId === "doc_translations" ||
+                                                doc.name?.toLowerCase().includes("translation");
                                               const hasDocGuide =
+                                                isPhotoBoothDoc ||
+                                                isTranslationDoc ||
                                                 Boolean(
                                                   doc.guideUrl && doc.guideUrl !== "/guides"
                                                 ) || Boolean(doc.id && InlineGuideData[doc.id]);
@@ -3418,8 +3600,28 @@ export const StepView: React.FC<StepViewProps> = ({
                                                 subtitle: doc.subtitle,
                                                 hasGuide: hasDocGuide,
                                                 onReadGuide: () => {
+                                                  if (isPhotoBoothDoc) {
+                                                    setToolOverlayHref("/passport");
+                                                    if (actions.updateDocumentStatus && doc.id) {
+                                                      actions.updateDocumentStatus(
+                                                        doc.id,
+                                                        "in-progress"
+                                                      );
+                                                    }
+                                                    return;
+                                                  }
+                                                  if (isTranslationDoc) {
+                                                    setToolOverlayHref("/document-translation");
+                                                    if (actions.updateDocumentStatus && doc.id) {
+                                                      actions.updateDocumentStatus(
+                                                        doc.id,
+                                                        "in-progress"
+                                                      );
+                                                    }
+                                                    return;
+                                                  }
                                                   if (doc.guideUrl && doc.guideUrl !== "/guides") {
-                                                    window.open(doc.guideUrl, "_blank");
+                                                    setGuideOverlayUrl(doc.guideUrl);
                                                     if (actions.updateDocumentStatus && doc.id) {
                                                       actions.updateDocumentStatus(
                                                         doc.id,
@@ -3822,7 +4024,23 @@ export const StepView: React.FC<StepViewProps> = ({
                           }
                           showTags
                           onItemClick={(item) => {
+                            const isPhotoBoothItem =
+                              item.id === "doc_passport_photos" ||
+                              item.id === "passport-photos" ||
+                              item.id === "photo-booth" ||
+                              item.guideKey === "doc_passport_photos" ||
+                              item.selectedGuideId === "doc_passport_photos" ||
+                              item.title?.toLowerCase().includes("passport photo");
+                            const isTranslationItem =
+                              item.id === "doc_translations" ||
+                              item.id === "translations" ||
+                              item.id === "document-translation" ||
+                              item.guideKey === "doc_translations" ||
+                              item.selectedGuideId === "doc_translations" ||
+                              item.title?.toLowerCase().includes("translation");
                             const hasDocGuide =
+                              isPhotoBoothItem ||
+                              isTranslationItem ||
                               Boolean(item.guideUrl && item.guideUrl !== "/guides") ||
                               Boolean(item.id && InlineGuideData[item.id]);
 
@@ -3833,9 +4051,21 @@ export const StepView: React.FC<StepViewProps> = ({
                               subtitle: item.sub,
                               hasGuide: hasDocGuide,
                               onReadGuide: () => {
-                                if (item.guideUrl && item.guideUrl !== "/guides") {
-                                  window.open(item.guideUrl, "_blank");
+                                if (item.id === "doc_passport_photos") {
+                                  onLaunchTool?.("passport_photo", sId);
                                   if (actions.updateDocumentStatus && item.id)
+                                    actions.updateDocumentStatus(item.id, "in-progress");
+                                  return;
+                                }
+                                if (isTranslationItem) {
+                                  setToolOverlayHref("/document-translation");
+                                  if (actions.updateDocumentStatus && item.id) {
+                                    actions.updateDocumentStatus(item.id, "in-progress");
+                                  }
+                                  return;
+                                }
+                                if (item.guideUrl && item.guideUrl !== "/guides") {
+                                  setGuideOverlayUrl(item.guideUrl);
                                     actions.updateDocumentStatus(item.id, "reviewed");
                                 } else {
                                   setSelectedGuideId(item.id || null);
@@ -4188,25 +4418,10 @@ export const StepView: React.FC<StepViewProps> = ({
         </button>
       </footer>
 
-      {/* Sponsorship Calculator Tool Overlay */}
-      <SponsorshipCalculatorTool
-        isOpen={isSponsorshipCalcOpen}
-        onClose={() => setIsSponsorshipCalcOpen(false)}
-        initialData={{
-          ...(sponsorshipResult?.raw || {}),
-          // Auto-supply the sponsor's state from the profile so the user is not
-          // asked to re-enter it. Prior saved input wins if present.
-          state: sponsorshipResult?.raw?.state || profile?.sponsor?.address?.state || "",
-        }}
-        // Lock (show read-only) only when we actually have a sponsor state;
-        // otherwise fall back to asking the user.
-        lockState={Boolean(profile?.sponsor?.address?.state)}
-        onSave={(result: any) => {
-          actions.updateMetadata({ sponsorshipResult: result });
-          setIsSponsorshipCalcOpen(false);
-          if (!isCompleted) actions.toggleComplete("step_2_5");
-        }}
-      />
+      {/* Sponsorship Calculator, Medical, and PCC now launch through the shared roadmap
+          toolbox (onLaunchTool → RoadmapLayoutSpouse.activeToolKey → EmbeddedToolContainer)
+          so they render inline under the breadcrumb header, consistent with the AppGroupModal.
+          Draft/result persistence and step auto-completion are handled by EmbeddedToolContainer. */}
 
       {/* Global Modals */}
       <CredentialFormModal
@@ -4427,31 +4642,10 @@ export const StepView: React.FC<StepViewProps> = ({
       )}
 
       {selectedGuideId && InlineGuideData[selectedGuideId] && (
-        <div className="animate-in slide-in-from-bottom-4 fixed inset-0 z-[100] flex flex-col bg-white duration-300 ease-out">
-          {/* Guide Topbar */}
-          <div className="flex shrink-0 items-center gap-[16px] border-b border-[#d0e4f7] p-[18px_24px]">
-            <button
-              onClick={() => setSelectedGuideId(null)}
-              className="focus:ring-primary flex h-[36px] w-[36px] shrink-0 cursor-pointer items-center justify-center rounded-full border-none bg-[#f5f7fa] transition-all outline-none hover:bg-[#e8f1fb] focus:ring-2"
-              aria-label="Close guide"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                className="h-[16px] w-[16px] shrink-0 fill-none stroke-[#3a4f63] stroke-2"
-                style={{ strokeLinecap: "round" }}
-              >
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
-            <div className="bg-primary/30 h-[5px] flex-1 overflow-hidden rounded-full">
-              <div className="from-primary to-primary h-full w-full bg-linear-to-r transition-all duration-300" />
-            </div>
-            <div className="shrink-0 text-[12px] font-medium whitespace-nowrap text-[#6b8097]">
-              Guide
-            </div>
-          </div>
-
+        <div
+          className="animate-in slide-in-from-bottom-4 fixed inset-x-0 bottom-0 z-[30] flex flex-col bg-white duration-300 ease-out"
+          style={{ top: journeyHeaderBottom }}
+        >
           {/* Guide Body */}
           <div className="flex flex-1 flex-col items-center overflow-y-auto p-[48px_24px_40px]">
             <div className="flex w-full max-w-[680px] flex-col">
@@ -4477,31 +4671,17 @@ export const StepView: React.FC<StepViewProps> = ({
 
               {/* Sections */}
               <div className="flex w-full flex-col">
-                {selectedGuideId === "doc_passport_photos" ? (
-                  <div className="mb-4">
-                    <PassportPhotoTool showHeader={false} showRequirements={true} />
-                  </div>
-                ) : selectedGuideId === "doc_translations" ? (
-                  <div className="mb-4">
-                    <DocumentTranslationTool
-                      showHeader={false}
-                      showRequirements={true}
-                      showRequestsLink={false}
-                    />
-                  </div>
-                ) : (
-                  InlineGuideData[selectedGuideId].sections.map((section, idx) => (
-                    <div
-                      key={idx}
-                      className="mb-[14px] rounded-[16px] border border-[#d0e4f7] bg-[#f4f7fb] p-[20px_22px]"
-                    >
-                      <div className="mb-[10px] text-[13px] font-semibold tracking-[0.05em] text-[#6b8097] uppercase">
-                        {section.title}
-                      </div>
-                      <SafeHtml className="guide-content" html={section.htmlContent} />
+                {InlineGuideData[selectedGuideId].sections.map((section, idx) => (
+                  <div
+                    key={idx}
+                    className="mb-[14px] rounded-[16px] border border-[#d0e4f7] bg-[#f4f7fb] p-[20px_22px]"
+                  >
+                    <div className="mb-[10px] text-[13px] font-semibold tracking-[0.05em] text-[#6b8097] uppercase">
+                      {section.title}
                     </div>
-                  ))
-                )}
+                    <SafeHtml className="guide-content" html={section.htmlContent} />
+                  </div>
+                ))}
               </div>
 
               {/* Actions */}
@@ -5433,6 +5613,29 @@ export const StepView: React.FC<StepViewProps> = ({
           }}
         />
       )}
+      <JourneyGuidePage
+        guideUrl={guideOverlayUrl}
+        onClose={() => setGuideOverlayUrl(null)}
+        plan={plan}
+      />
+      <ToolPageOverlay
+        toolHref={toolOverlayHref}
+        onClose={() => setToolOverlayHref(null)}
+        plan={plan}
+        tier={state?.subscriptionTier ?? (state as any)?.subscription_tier}
+        toolProps={{
+          showHeader: true,
+          showRequirements: true,
+          journeyTier: state?.subscriptionTier ?? (state as any)?.subscription_tier,
+          journeyContext: {
+            journeySlug: data.journey_type ? `${data.journey_type.toLowerCase()}-journey` : "ir1-journey",
+            journeyCategory: data.journey_type || "IR-1",
+            candidateId: (state as any)?.candidateId || activeCandidateId || "candidate-1",
+            backendId: (state as any)?.backendId || null,
+            subscriptionTier: state?.subscriptionTier ?? (state as any)?.subscription_tier,
+          },
+        }}
+      />
     </div>
   );
 };

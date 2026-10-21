@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Eye, EyeOff, Copy, Check } from "lucide-react";
+import { useCandidate } from "@/app/context/CandidateContext";
 
 interface SecurityQuestion {
   id: string;
@@ -198,6 +199,20 @@ const ViewCredentialModal: React.FC<ViewCredentialModalProps> = ({
     onClose();
   };
 
+  let candidateCtx;
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    candidateCtx = useCandidate();
+  } catch {
+    candidateCtx = undefined;
+  }
+  const activeCandidate = candidateCtx?.activeCandidate;
+  const displayName = activeCandidate
+    ? activeCandidate.fullName && activeCandidate.fullName !== activeCandidate.relation
+      ? activeCandidate.fullName
+      : activeCandidate.label || activeCandidate.relation
+    : null;
+
   return (
     <AnimatePresence>
       {isOpen && credential && (
@@ -225,19 +240,26 @@ const ViewCredentialModal: React.FC<ViewCredentialModalProps> = ({
               <X size={16} />
             </button>
 
-            <div className="px-5 sm:px-6 pt-5 sm:pt-6 pb-4 border-b border-border bg-gradient-to-b from-[#0d7377]/5 to-transparent">
+            <div className="px-5 sm:px-6 pt-5 sm:pt-6 pb-4 border-b border-[#e2e8f0] bg-gradient-to-b from-[#f4faf9] to-white">
               <div className="flex items-center gap-3 pr-10">
-                <div className="w-11 h-11 rounded-2xl bg-[#0d7377]/10 flex items-center justify-center text-[#0d7377] shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-[#0d7377]/10 flex items-center justify-center text-[#0d7377] shrink-0 border border-[#0d7377]/20">
                   {icon}
                 </div>
 
                 <div className="min-w-0">
-                  <h2 className="text-base sm:text-lg font-bold text-foreground leading-tight">
-                    {portalType} Credentials
-                  </h2>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h2 className="text-base sm:text-lg font-bold text-[#0c1b33] leading-tight">
+                      {portalType} Credentials
+                    </h2>
+                    {displayName && (
+                      <span className="rounded-full bg-[#0d7377]/10 border border-[#0d7377]/20 px-2.5 py-0.5 text-[11px] font-semibold text-[#0d7377]">
+                        {displayName}
+                      </span>
+                    )}
+                  </div>
 
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Revealed sensitive data hides automatically after 30 seconds.
+                  <p className="text-[12px] text-[#64748b] mt-0.5">
+                    Revealed sensitive data automatically hides after 30 seconds.
                   </p>
                 </div>
               </div>

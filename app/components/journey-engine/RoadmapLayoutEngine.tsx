@@ -3,7 +3,10 @@
 import React, { useState, useEffect, useMemo, Suspense } from "react";
 import { RoadmapDataV3 } from "./types";
 import { DashboardView } from "./DashboardView";
+import { EmbeddedToolContainer } from "./EmbeddedToolContainer";
+import { getAppGroupItemLabel } from "@/lib/constants/journey-app-groups";
 import { JourneyPlanBadge } from "@/app/components/shared/JourneyPlanBadge";
+import { JourneyFavoritesTray } from "./JourneyFavoritesTray";
 import { ChapterView } from "./ChapterView";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { getActiveStepsForStage } from "./journeyHelpers";
@@ -52,6 +55,24 @@ type ViewType = "dashboard" | "chapter" | "step";
 export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLayoutEngineProps) {
   const [view, setView] = useState<ViewType>("dashboard");
   const [selectedChapterIdx, setSelectedChapterIdx] = useState<number>(0);
+  const [activeToolKey, setActiveToolKey] = useState<string | null>(null);
+  // When a tool is launched from a specific roadmap step (e.g. the Medical/PCC module
+  // cards), remember that step so finishing the service can tick it off in the toolbox
+  // flow. Dashboard toolbox launches leave this null.
+  const [activeToolAutoCompleteStep, setActiveToolAutoCompleteStep] = useState<string | null>(null);
+  const launchTool = (toolKey: string, autoCompleteStepKey?: string | null) => {
+    setActiveToolAutoCompleteStep(autoCompleteStepKey ?? null);
+    setActiveToolKey(toolKey);
+  };
+  const [journeyOverlayName, setJourneyOverlayName] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handleOverlayName = (event: Event) => {
+      setJourneyOverlayName((event as CustomEvent<string | null>).detail);
+    };
+    window.addEventListener("journey-overlay-name", handleOverlayName);
+    return () => window.removeEventListener("journey-overlay-name", handleOverlayName);
+  }, []);
 
   // Resolve the case-strength profile ONCE from the journey's category. Every
   // case-strength surface (dashboard alerts, per-step health panel) gets this
@@ -117,12 +138,18 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
   };
 
   const handleBackToDashboard = () => {
+    if (journeyOverlayName) {
+      window.dispatchEvent(new Event("journey-overlay-close"));
+    }
     setView("dashboard");
     actions.setCurrentStep(-1);
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   };
 
   const handleBackToChapter = () => {
+    if (journeyOverlayName) {
+      window.dispatchEvent(new Event("journey-overlay-close"));
+    }
     setView("chapter");
     actions.setCurrentStep(-1);
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
@@ -171,14 +198,20 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
   })();
 
   return (
-    <div className="animate-in fade-in flex min-h-screen w-full flex-col bg-[#f4f7fb] pt-10 font-sans text-[#1c2b3a] duration-500">
+    <div className="animate-in fade-in flex min-h-screen w-full flex-col bg-[#f4f7fb] pt-16 font-sans text-[#1c2b3a] duration-500">
       {/* Top Navigation */}
-      <nav className="sticky top-15 z-40 flex h-[52px] shrink-0 items-center gap-3 border-b border-[#d0e4f7] bg-white px-5">
+      <nav data-journey-header className="sticky top-16 z-40 flex h-[52px] shrink-0 items-center gap-3 border-b border-[#d0e4f7] bg-white px-5">
         {/* Dynamic Back / Logo */}
         <div className="flex items-center gap-3">
-          {view !== "dashboard" && (
+          {(view !== "dashboard" || activeToolKey || journeyOverlayName) && (
             <button
-              onClick={handleBack}
+              onClick={
+                journeyOverlayName
+                  ? () => window.dispatchEvent(new Event("journey-overlay-close"))
+                  : activeToolKey
+                    ? () => setActiveToolKey(null)
+                    : handleBack
+              }
               className="hover:text-primary flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-[#d0e4f7] text-[#6b8097] transition-all hover:bg-[#f4f7fb] active:scale-95"
               title="Back"
             >
@@ -190,15 +223,43 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
         {/* Breadcrumbs */}
         <ol className="breadcrumbs" aria-label="Navigation">
           <li>
-            <button className="breadcrumb-item breadcrumb-link" onClick={handleBackToDashboard}>
+            <button
+              className={`breadcrumb-item ${view === "dashboard" && !activeToolKey && !journeyOverlayName ? "breadcrumb-current" : "breadcrumb-link"}`}
+              onClick={
+                activeToolKey
+                  ? () => setActiveToolKey(null)
+                  : view !== "dashboard"
+                    ? handleBackToDashboard
+                    : journeyOverlayName
+                      ? () => window.dispatchEvent(new Event("journey-overlay-close"))
+                      : undefined
+              }
+              disabled={view === "dashboard" && !activeToolKey && !journeyOverlayName}
+            >
               <LayoutDashboard size={12} strokeWidth={3} aria-hidden="true" />
-              <span className={`bc-text${view !== "dashboard" ? "bc-text--dashboard" : ""}`}>
+              <span className={`bc-text${view !== "dashboard" || activeToolKey || journeyOverlayName ? " bc-text--dashboard" : ""}`}>
                 Dashboard
               </span>
             </button>
           </li>
 
-          {(view === "chapter" || view === "step") && (
+          {activeToolKey && (
+            <li className="breadcrumb-sep-item">
+              <ChevronRight
+                size={10}
+                className="breadcrumb-sep"
+                strokeWidth={3}
+                aria-hidden="true"
+              />
+              <span className="breadcrumb-item breadcrumb-current">
+                <span className="bc-text">
+                  {activeToolKey.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+                </span>
+              </span>
+            </li>
+          )}
+
+          {!activeToolKey && (view === "chapter" || view === "step") && (
             <li className="breadcrumb-sep-item">
               <ChevronRight
                 size={10}
@@ -216,7 +277,24 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
             </li>
           )}
 
-          {view === "step" && currentStepDisplayNum !== null && (
+          {!activeToolKey && view === "step" && currentStepDisplayNum !== null && journeyOverlayName && (
+            <li className="breadcrumb-sep-item">
+              <ChevronRight
+                size={10}
+                className="breadcrumb-sep"
+                strokeWidth={3}
+                aria-hidden="true"
+              />
+              <button
+                className="breadcrumb-item breadcrumb-link"
+                onClick={() => window.dispatchEvent(new Event("journey-overlay-close"))}
+              >
+                <span className="bc-text">Step {currentStepDisplayNum}</span>
+              </button>
+            </li>
+          )}
+
+          {!activeToolKey && (journeyOverlayName || (view === "step" && currentStepDisplayNum !== null)) && (
             <li className="breadcrumb-sep-item">
               <ChevronRight
                 size={10}
@@ -225,38 +303,48 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
                 aria-hidden="true"
               />
               <span className="breadcrumb-item breadcrumb-current">
-                <span className="bc-text">Step {currentStepDisplayNum}</span>
+                <span className="bc-text">{journeyOverlayName || `Step ${currentStepDisplayNum}`}</span>
               </span>
             </li>
           )}
         </ol>
 
-        <div className="ml-auto shrink-0">
+        <div className="ml-auto flex shrink-0 items-center gap-2">
           <JourneyPlanBadge tier={state.subscriptionTier} />
+          <JourneyFavoritesTray
+            journeyId={state.backendId}
+            onLaunchTool={(componentKey) => launchTool(componentKey)}
+          />
         </div>
 
         {/* Right-side toolbar */}
         <div className="nav-actions">
-          {view === "step" && (
+          {activeToolKey && (
             <button
-            onClick={handleToggleComplete}
-            className={`complete-btn ${
-              isStepDone ? "complete-btn--done" : "complete-btn--idle"
-            }`}
-            aria-pressed={!!isStepDone}
-            title={isStepDone ? "Completed" : "Mark complete"}
-          >
-            {/* Icon: visible on all screen sizes */}
-            <Check size={12} strokeWidth={3} aria-hidden="true" />
-          
-            {/* Text: hidden on mobile, visible from md */}
-            <span className="hidden md:inline">
-              {isStepDone ? "Done" : "Complete"}
-            </span>
-          </button>
+              onClick={() => setActiveToolKey(null)}
+              className="reset-btn"
+              title="Close Tool and Return to Dashboard"
+              aria-label="Close Tool"
+            >
+              <X size={14} />
+            </button>
+          )}
+          {view === "step" && !activeToolKey && !journeyOverlayName && (
+            <button
+              onClick={handleToggleComplete}
+              className={`complete-btn ${isStepDone ? "complete-btn--done" : "complete-btn--idle"}`}
+              aria-pressed={!!isStepDone}
+              title={isStepDone ? "Completed" : "Mark complete"}
+            >
+              {/* Icon: visible on all screen sizes */}
+              <Check size={12} strokeWidth={3} aria-hidden="true" />
+
+              {/* Text: hidden on mobile, visible from md */}
+              <span className="hidden md:inline">{isStepDone ? "Done" : "Complete"}</span>
+            </button>
           )}
           {/* DEV ONLY — reset button */}
-          {isDevelopment && (
+          {isDevelopment && !activeToolKey && (
             <button
               onClick={async () => {
                 if (
@@ -278,45 +366,63 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
 
       {/* ── Main Content ── */}
       <main className="roadmap-main">
-        {view === "dashboard" && (
-          <DashboardView
+        {/* If a tool was launched from the App Group folder, render it embedded */}
+        {activeToolKey ? (
+          <EmbeddedToolContainer
+            toolKey={activeToolKey}
+            onClose={() => setActiveToolKey(null)}
+            autoCompleteStepKey={activeToolAutoCompleteStep}
             data={data}
             state={state}
-            registry={csProfile.stepCheckers}
-            consistency={csProfile.consistency}
-            evidence={csProfile.evidence}
-            onSelectChapter={handleSelectChapter}
-            onSelectStep={handleSelectStep}
-            actions={{
-              setCurrentStep: actions.setCurrentStep,
-              setStage: actions.setStage,
-              updateMetadata: actions.updateMetadata,
-            }}
+            actions={actions}
           />
-        )}
+        ) : (
+          <>
+            {/* Candidate switcher now lives in the global SiteHeader (app-wide, IR-5/IR-2 only),
+                so it is not duplicated on the dashboard. */}
+            {view === "dashboard" && (
+              <DashboardView
+                data={data}
+                state={state}
+                registry={csProfile.stepCheckers}
+                consistency={csProfile.consistency}
+                evidence={csProfile.evidence}
+                onSelectChapter={handleSelectChapter}
+                onSelectStep={handleSelectStep}
+                onLaunchTool={(toolKey) => launchTool(toolKey)}
+                actions={{
+                  setCurrentStep: actions.setCurrentStep,
+                  setStage: actions.setStage,
+                  updateMetadata: actions.updateMetadata,
+                }}
+              />
+            )}
 
-        {view === "chapter" && (
-          <ChapterView
-            data={data}
-            chapterIdx={selectedChapterIdx}
-            state={state}
-            onBack={handleBackToDashboard}
-            onSelectStep={handleSelectStep}
-          />
-        )}
+            {view === "chapter" && (
+              <ChapterView
+                data={data}
+                chapterIdx={selectedChapterIdx}
+                state={state}
+                onBack={handleBackToDashboard}
+                onSelectStep={handleSelectStep}
+              />
+            )}
 
-        {view === "step" && (
-          <Suspense fallback={<StepSkeleton />}>
-            <LazyStepView
-              data={data}
-              state={state}
-              registry={csProfile.stepCheckers}
-              onBack={handleBackToChapter}
-              onSelectChapter={handleSelectChapter}
-              onSelectStep={handleSelectStep}
-              actions={actions}
-            />
-          </Suspense>
+            {view === "step" && (
+              <Suspense fallback={<StepSkeleton />}>
+                <LazyStepView
+                  data={data}
+                  state={state}
+                  registry={csProfile.stepCheckers}
+                  onBack={handleBackToChapter}
+                  onSelectChapter={handleSelectChapter}
+                  onSelectStep={handleSelectStep}
+                  onLaunchTool={launchTool}
+                  actions={actions}
+                />
+              </Suspense>
+            )}
+          </>
         )}
       </main>
 

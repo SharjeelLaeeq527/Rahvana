@@ -1,8 +1,10 @@
 /**
  * lib/stripe/subscriptionCleanup.ts
  *
- * Enforces the invariant "one Rahvana JOURNEY subscription per Stripe customer"
- * and heals duplicates left behind by a webhook/DB desync.
+ * Enforces the invariant "one live plan per JOURNEY" (an upgrade retires the plan
+ * it replaces) and heals same-journey duplicates left behind by a webhook/DB desync.
+ * A customer may legitimately hold several plans: one per journey (IR-1, IR-5) plus
+ * one per added IR-5 candidate, so cleanup is always scoped to the purchase.
  *
  * IMPORTANT — scope: this ONLY ever cancels subscriptions we can positively
  * identify as Rahvana journey plans (tagged with our metadata, or billed on a
@@ -87,14 +89,79 @@ export function isRahvanaJourneySubscription(sub: Stripe.Subscription): boolean 
 }
 
 /**
- * Cancels every LIVE Rahvana journey subscription on `customerId` EXCEPT
- * `keepSubId`. Returns the ids it cancelled. Best-effort and never throws — a
- * failure here must not break activation (the next call self-heals).
+ * Journey a plan belongs to, derived from its `visa_category`. A customer can hold one live
+ * plan PER journey (IR-1 and IR-5 are bought separately), so ownership checks and upgrade
+ * cleanup must compare within the same journey only. Shared with checkout.
  */
-export async function cancelDuplicateSubscriptions(
+export function journeyTypeForVisaCategory(visaCategory: string): "IR1" | "IR5" {
+  return visaCategory.toLowerCase().includes("5") ? "IR5" : "IR1";
+}
+
+/**
+ * True for a subscription bought to ADD a beneficiary to a multi-candidate journey (IR-5).
+ * It pays for that candidate's journey, so it is never a stale copy of the primary plan.
+ */
+export function isAddCandidateSubscription(sub: Stripe.Subscription): boolean {
+  return sub.metadata?.is_add_candidate === "true" || sub.metadata?.action === "add_candidate";
+}
+
+export interface SupersededSubscriptionParams {
+  customerId: string;
+  /** The subscription the confirmed checkout created. Never cancelled. */
+  keepSubId: string;
+  /** `visa_category` of the confirmed checkout: scopes cleanup to that journey. */
+  visaCategory?: string | null;
+  /** The confirmed checkout added a candidate: it adds a plan and replaces nothing. */
+  isAddCandidate?: boolean;
+  /** Checkout's `old_subscription_id` hint on an upgrade (covers untagged legacy subs). */
+  oldSubscriptionId?: string | null;
+  logPrefix?: string;
+}
+
+/**
+ * Retires the plan(s) a confirmed checkout REPLACES, and nothing else:
+ * - add-candidate purchases replace nothing (each candidate keeps its own plan);
+ * - otherwise cancels the upgrade's `oldSubscriptionId`, plus any other live plan tagged
+ *   with the SAME journey (a duplicate left by a desync), skipping add-candidate plans.
+ * Plans for a different journey (IR-1 vs IR-5) and untagged legacy subs that are not the
+ * upgrade hint are left alone. Returns the ids it cancelled. Best-effort, never throws.
+ */
+export async function cancelSupersededSubscriptions({
+  customerId,
+  keepSubId,
+  visaCategory,
+  isAddCandidate = false,
+  oldSubscriptionId,
+  logPrefix = "[subscriptionCleanup]",
+}: SupersededSubscriptionParams): Promise<string[]> {
+  if (isAddCandidate) return [];
+  const journeyType = visaCategory ? journeyTypeForVisaCategory(visaCategory) : null;
+
+  return cancelSubscriptionsWhere(
+    customerId,
+    keepSubId,
+    (s) => {
+      if (oldSubscriptionId && s.id === oldSubscriptionId) return true;
+      if (!journeyType || !s.metadata?.visa_category) return false;
+      return (
+        journeyTypeForVisaCategory(s.metadata.visa_category) === journeyType &&
+        !isAddCandidateSubscription(s)
+      );
+    },
+    logPrefix
+  );
+}
+
+/**
+ * Cancels LIVE Rahvana journey subscriptions on `customerId` (never `keepSubId`) that match
+ * `shouldCancel`. Best-effort and never throws: a failure here must not break activation
+ * (the next call self-heals).
+ */
+async function cancelSubscriptionsWhere(
   customerId: string,
   keepSubId: string,
-  logPrefix = "[subscriptionCleanup]"
+  shouldCancel: (sub: Stripe.Subscription) => boolean,
+  logPrefix: string
 ): Promise<string[]> {
   const cancelled: string[] = [];
   try {
@@ -109,7 +176,8 @@ export async function cancelDuplicateSubscriptions(
       if (
         LIVE_SUB_STATUSES.includes(s.status) &&
         s.id !== keepSubId &&
-        isRahvanaJourneySubscription(s)
+        isRahvanaJourneySubscription(s) &&
+        shouldCancel(s)
       ) {
         duplicates.push(s);
       }

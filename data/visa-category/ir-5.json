@@ -1040,7 +1040,7 @@
               "name": "Certified English Translations",
               "subtitle": "Complete English translations of every submitted non-English document",
               "tag": "both",
-              "guideUrl": "/document-translation",
+              "guideUrl": "/guides",
               "icon": "Globe",
               "group": "Required if Applicable",
               "status": "not-started",
@@ -1095,7 +1095,7 @@
               "name": "Passport-Style Photos",
               "subtitle": "Needed later for medical and immigrant visa processing, not for the standard online I-130 evidence packet",
               "tag": "parent beneficiary",
-              "guideUrl": "/passport",
+              "guideUrl": "/guides",
               "icon": "Camera",
               "group": "Gather Later",
               "status": "not-started",
@@ -2468,6 +2468,7 @@
                   "value": "Fee Exemption with Form G-1651",
                   "label": "Fee Exemption with Form G-1651"
                 },
+
                 {
                   "value": "Other verified method",
                   "label": "Other verified method"
@@ -6912,7 +6913,7 @@
             ],
             "guideSteps": [
               {
-                "label": "Step 1 of 4, Find an approved physician",
+                "label": "Step 1 of 3, Find an approved physician",
                 "heading": "Find an embassy-approved physician",
                 "sub": "U.S. Embassy Islamabad publishes the approved panel physician list for immigrant visa applicants. You must use a physician on the current official list.",
                 "info": "Use only a panel physician listed in the current U.S. Embassy Islamabad immigrant visa instructions. Approved clinics may be located in Islamabad, Lahore, Karachi, or another listed city, but the physician must appear on the official Islamabad-approved list.",
@@ -6921,29 +6922,20 @@
                 }
               },
               {
-                "label": "Step 2 of 4, Contact and book the appointment",
+                "label": "Step 2 of 3, Contact and book the appointment",
                 "heading": "Contact the physician and book directly",
                 "sub": "Call or visit the approved physician's office to schedule your immigrant visa medical examination. Bring your appointment letter and passport.",
                 "info": "Contact the selected approved physician directly and follow that clinic's current booking instructions. Appointment methods, fees, timing, and required documents vary by clinic.",
+                "alert": "Ensure the physician is currently active on the approved list, lists are updated periodically. A medical exam from a removed physician will not be accepted.",
                 "nav": {
                   "back": true,
                   "next": "Next →"
                 }
               },
               {
-                "label": "Step 3 of 4, Confirm your appointment",
+                "label": "Step 3 of 3, Confirm your appointment",
                 "heading": "Confirm the appointment date and location",
                 "sub": "Verify the appointment date and location directly with the physician's office before proceeding.",
-                "alert": "Ensure the physician is currently active on the approved list, lists are updated periodically. A medical exam from a removed physician will not be accepted.",
-                "nav": {
-                  "back": true,
-                  "next": "Save my appointment details →"
-                }
-              },
-              {
-                "label": "Step 4 of 4, Save appointment details",
-                "heading": "Save your appointment details",
-                "sub": "Record your appointment so Rahvana can set a reminder and keep it visible on your dashboard.",
                 "form": true,
                 "nav": {
                   "back": true,
@@ -6961,8 +6953,19 @@
             },
             "disclaimer": "Rahvana provides scheduling assistance only. Always confirm approved physician status with your embassy directly.",
             "id": "step_3_1",
-            "type": "medical_exam",
-            "subtitle": "Every immigrant visa applicant must complete a medical exam with an embassy-approved physician before their interview."
+            "type": "medical_booking",
+            "subtitle": "Every immigrant visa applicant must complete a medical exam with an embassy-approved physician before their interview.",
+            "launch_module": {
+              "label": "Medical Appointment Service",
+              "title": "Book your panel-physician medical exam",
+              "icon": "calculator",
+              "buttonText": "Start Booking Service",
+              "features": [
+                "Pick an approved panel physician (Karachi / Lahore / Islamabad)",
+                "Submit your details once — Rahvana confirms the slot",
+                "Reminder pinned to your dashboard until the visit"
+              ]
+            }
           },
           "citations": [
             {
@@ -7226,7 +7229,7 @@
             ],
             "guideSteps": [
               {
-                "label": "Step 1 of 4",
+                "label": "Step 1 of 3",
                 "heading": "What you need before applying",
                 "instruction": "Gather the required documents before visiting the police station or submitting an online application.",
                 "info": "Typically required:\n\n• CNIC (original + copy)\n• Passport biographic page copy\n• Passport photo(s)\n• Application fee (varies by district)\n\nCheck the Rahvana guide for your specific district requirements.",
@@ -7235,7 +7238,7 @@
                 }
               },
               {
-                "label": "Step 2 of 4",
+                "label": "Step 2 of 3",
                 "heading": "Submit your PCC application",
                 "instruction": "Visit the relevant police station or submit through the government's online portal if available in your district.",
                 "info": "For detailed district-specific instructions, use the Rahvana Police Certificate Guide:\n\nOpen Full PCC Guide →",
@@ -7246,27 +7249,29 @@
                 }
               },
               {
-                "label": "Step 3 of 4",
+                "label": "Step 3 of 3",
                 "heading": "Keep the receipt and track regularly",
                 "instruction": "Once submitted, keep your receipt and follow up with the police department periodically. Do not assume it will arrive automatically.",
                 "warn": "PCCs can take several weeks to months. Follow up directly with the relevant police station every week or two. Proactive follow-up significantly reduces delays.",
                 "nav": {
                   "back": true,
-                  "next": "Save tracking details →"
-                }
-              },
-              {
-                "label": "Step 4 of 4",
-                "heading": "Save your receipt and application date",
-                "instruction": "Return to the main page and save your receipt and application date. Your dashboard will show a persistent reminder until you mark the certificate as received.",
-                "info": "Once you receive the fresh PCC, return here and mark it as received. You can then save it to the Document Vault.",
-                "nav": {
-                  "back": true,
-                  "done": "Return to tracking →"
+                  "next": "Next →"
                 }
               }
             ],
-            "type": "police_clearance"
+            "id": "step_3_3",
+            "type": "pcc_filing",
+            "launch_module": {
+              "label": "Police Character Certificate (Sindh)",
+              "title": "Apply for your Police Character Certificate",
+              "icon": "shield-check",
+              "buttonText": "Start PCC Filing Service",
+              "features": [
+                "Rahvana submits your PCC application on your behalf",
+                "Available for applicants in Sindh",
+                "Track your application and certificate collection status"
+              ]
+            }
           }
         },
         {

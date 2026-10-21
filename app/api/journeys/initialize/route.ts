@@ -17,50 +17,60 @@ import * as db from "@/lib/journey/data-access";
 import { ConfigLoader } from "@/lib/journey/config-loader";
 import { decrypt } from "@/lib/encryption";
 import { E, msg } from "@/lib/errors";
+import { getCandidateJourneyKey, getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
 
 // ── In-memory server cache (resets on cold start, fine for Vercel) ───────────
 const serverCache = new Map<string, { data: any; cachedAt: number }>();
 const CACHE_TTL_MS = 30_000; // 30 seconds
 
 function normType(t: string) {
-  return t.toLowerCase().replace(/-/g, "");
+  return t.toLowerCase().replace(/[-:_]/g, "");
 }
 
 function configTypeFromJourneyType(journeyType: string) {
-  const normalized = normType(journeyType);
-
-  const map: Record<string, string> = {
-    ir1: "ir-1",
-    ir5: "ir-5",
-  };
-
-  return map[normalized] ?? journeyType.toLowerCase();
+  const base = getBaseVisaCategory(journeyType);
+  return base.toLowerCase();
 }
 
-// Runs AFTER response is sent — never blocks the user
-async function syncStepsBackground(journeyId: string, configType: string) {
+// Runs to ensure all chapters and steps from the config JSON exist in the DB
+async function syncChaptersAndSteps(
+  journeyId: string,
+  configType: string,
+  dbClient?: { supabase: any; user: any }
+) {
   try {
     const rawJSON = ConfigLoader.loadJourneyJSON(`data/visa-category/${configType}.json`);
     const [existingChapters, existingSteps] = await Promise.all([
-      db.getChaptersForJourneyDB(journeyId),
-      db.getStepsForJourneyDB(journeyId),
+      db.getChaptersForJourneyDB(journeyId, undefined, dbClient),
+      db.getStepsForJourneyDB(journeyId, undefined, dbClient),
     ]);
     const existingKeys = new Set(existingSteps.map((s) => s.step_key));
+    const chaptersInput = ConfigLoader.transformChaptersInput(rawJSON.chapters);
 
-    for (const rawChapter of rawJSON.chapters) {
-      const dbChapter = existingChapters.find((ch) => ch.chapter_key === rawChapter.chapter_key);
-      if (!dbChapter) continue;
+    for (let i = 0; i < rawJSON.chapters.length; i++) {
+      const rawChapter = rawJSON.chapters[i];
+      let dbChapter = existingChapters.find((ch) => ch.chapter_key === rawChapter.chapter_key);
+
+      if (!dbChapter) {
+        try {
+          dbChapter = await db.createChapterDB(journeyId, chaptersInput[i], dbClient);
+        } catch (chapterErr) {
+          console.error(`[initialize] Failed to create chapter ${rawChapter.chapter_key}:`, chapterErr);
+          continue;
+        }
+      }
 
       const stepsInput = ConfigLoader.transformStepsInput(rawChapter.steps, rawChapter.chapter_key);
       const newSteps = stepsInput.filter((s) => !existingKeys.has(s.step_key));
 
-      // Batch inserts — parallel instead of sequential
-      await Promise.all(
-        newSteps.map((stepInput) => db.createStepDB(dbChapter.id, stepInput).catch(() => {}))
-      );
+      if (newSteps.length > 0 && dbChapter) {
+        await db.createStepsBatchDB(dbChapter.id, newSteps, dbClient).catch((err) => {
+          console.error(`[initialize] Failed to batch create steps for chapter ${rawChapter.chapter_key}:`, err);
+        });
+      }
     }
-  } catch {
-    // sync is non-critical — ignore errors
+  } catch (err) {
+    console.error(`[initialize] syncChaptersAndSteps error for ${configType}:`, err);
   }
 }
 
@@ -79,7 +89,7 @@ export async function POST(req: NextRequest) {
     // Shared context to avoid redundant auth calls in data-access
     const dbClient = { supabase, user };
 
-    const { journey_type } = await req.json();
+    const { journey_type, candidate_id } = await req.json();
     if (!journey_type) {
       return NextResponse.json(
         { error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: "[journey_type]" }) },
@@ -87,8 +97,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Resolve effective journey type key (candidate-isolated)
+    const effectiveJourneyType = getCandidateJourneyKey(journey_type, candidate_id);
+
     const bustCache = req.headers.get("x-cache-bust") === "1";
-    const cacheKey = `${user.id}_${normType(journey_type)}`;
+    const cacheKey = `${user.id}_${normType(effectiveJourneyType)}`;
 
     // ── Server cache hit — return immediately (repeat visits ~200ms) ──────────
     if (!bustCache) {
@@ -109,8 +122,16 @@ export async function POST(req: NextRequest) {
 
     // ── Find or create journey ────────────────────────────────────────────────
     const allJourneys = await db.getAllJourneysDB(undefined, dbClient);
-    const normalizedQuery = normType(journey_type);
-    const existing = allJourneys.find((j) => normType(j.journey_type) === normalizedQuery);
+    const normalizedQuery = normType(effectiveJourneyType);
+    const existing = allJourneys.find((j) => {
+      const normJ = normType(j.journey_type);
+      if (normJ === normalizedQuery) return true;
+      // Handle legacy match if journey_type had extra suffix
+      if (candidate_id && candidate_id !== "candidate-1" && normJ.includes(normType(candidate_id))) {
+        return true;
+      }
+      return false;
+    });
 
     let journeyId: string;
     const configType = configTypeFromJourneyType(journey_type);
@@ -120,7 +141,13 @@ export async function POST(req: NextRequest) {
     } else {
       const configPath = `data/visa-category/${configType}.json`;
       try {
-        const result = await journeyService.createJourneyFromConfig(configPath);
+        const result = await journeyService.createJourneyFromConfig(
+          configPath,
+          {
+            journey_type: effectiveJourneyType,
+          },
+          dbClient
+        );
         journeyId = result.journey.id;
       } catch (createErr: any) {
         // Race condition: another tab already created it
@@ -135,15 +162,21 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // ── Schedule sync AFTER response — does not block the user ───────────────
-    after(() => syncStepsBackground(journeyId, configType));
-
     // ── Fetch all needed data in parallel ─────────────────────────────────────
-    const [journeyRow, stepsRows, caseDataRows] = await Promise.all([
+    let [journeyRow, stepsRows, caseDataRows] = await Promise.all([
       db.getJourneyDB(journeyId, dbClient),
       db.getStepsForJourneyDB(journeyId, undefined, dbClient),
       db.getCaseDataForJourneyDB(journeyId, undefined, dbClient),
     ]);
+
+    // If journey existed but has 0 steps or missing chapters, sync synchronously so client gets full stepMap
+    if (!stepsRows || stepsRows.length === 0) {
+      await syncChaptersAndSteps(journeyId, configType, dbClient);
+      stepsRows = await db.getStepsForJourneyDB(journeyId, undefined, dbClient);
+    } else {
+      // Otherwise schedule non-blocking background sync for any newly added steps
+      after(() => syncChaptersAndSteps(journeyId, configType, dbClient));
+    }
 
     // Decrypt sensitive fields in case_data before returning to client
     if (caseDataRows) {

@@ -94,7 +94,6 @@ const nextConfig = {
 
               // Scripts
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://js.stripe.com https://www.googletagmanager.com",
-
               // Workers (required by canvas-confetti)
               "worker-src 'self' blob:",
               "child-src 'self' blob:",
@@ -112,7 +111,7 @@ const nextConfig = {
               "connect-src 'self' https://*.supabase.co https://*.stripe.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://rahvana-1.onrender.com wss://*.supabase.co http://localhost:8000 http://127.0.0.1:8000 ws://localhost:8000 ws://127.0.0.1:8000 https://api.geoapify.com",
 
               // Frames
-              "frame-src 'self' blob: https://js.stripe.com https://*.uscis.gov https://*.state.gov https://*.cbp.dhs.gov https://*.ssa.gov",
+              "frame-src 'self' https://js.stripe.com https://*.uscis.gov https://*.state.gov https://*.cbp.dhs.gov https://*.ssa.gov",
 
               "object-src 'none'",
               "base-uri 'self'",
@@ -134,14 +133,14 @@ const nextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://js.stripe.com",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://js.stripe.com https://www.googletagmanager.com",
               "worker-src 'self' blob:",
               "child-src 'self' blob:",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com data:",
-              "img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com",
-              "connect-src 'self' https://*.supabase.co https://*.stripe.com https://*.google-analytics.com https://rahvana-1.onrender.com wss://*.supabase.co https://api.geoapify.com",
-              "frame-src 'self' blob: https://js.stripe.com",
+              "img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com https://www.googletagmanager.com https://*.google-analytics.com",
+              "connect-src 'self' https://*.supabase.co https://*.stripe.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://rahvana-1.onrender.com wss://*.supabase.co https://api.geoapify.com",
+              "frame-src 'self' https://js.stripe.com",
               "object-src 'none'",
               "base-uri 'self'",
               "form-action 'self'",

@@ -1,23 +1,38 @@
-// C:\Users\HP\Desktop\arachnie\Arachnie\app\visa-forms\[formCode]\wizard\page.tsx
-import { MultiStepForm } from "@/app/components/forms/auto-visaform-filling/MultiStepForm";
+"use client";
 
-// 2. Async Params Props Definition (Next 15 Fix)
+import { use } from "react";
+import dynamic from "next/dynamic";
+
+const MultiStepForm = dynamic(
+  () =>
+    import("@/app/components/forms/auto-visaform-filling/MultiStepForm").then(
+      (mod) => mod.MultiStepForm
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="min-h-screen flex items-center justify-center bg-[#f8fafc]">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-8 w-8 animate-spin rounded-full border-3 border-[#0d7377] border-t-transparent" />
+          <p className="text-sm font-medium text-slate-600">Loading form wizard...</p>
+        </div>
+      </div>
+    ),
+  }
+);
+
 type Props = {
   params: Promise<{ formCode: string }>;
 };
 
-// 3. Make the function async
-export default async function FormWizardPage({ params }: Props) {
-  // 4. Await params
-  const resolvedParams = await params;
+export default function FormWizardPage({ params }: Props) {
+  const resolvedParams = use(params);
   const { formCode } = resolvedParams;
   const normalizedCode = formCode.toLowerCase().replace(/[^a-z0-9]/g, "");
 
   return (
     <main className="min-h-screen">
-      {/* 5. Only pass the string formCode (No config object) */}
-      {/* FIX: Pass the normalizedCode as the formCode prop */}
-      <MultiStepForm formCode={normalizedCode} />
+      <MultiStepForm formCode={normalizedCode} mode="standalone" />
     </main>
   );
 }

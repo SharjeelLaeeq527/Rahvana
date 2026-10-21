@@ -1,6 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo, useCallback } from "react";
+import type { ToolModeProps } from "@/types/tool-mode";
+import { useResolveToolMode } from "@/lib/hooks/useResolveToolMode";
+import { useUserProfile } from "@/app/context/UserProfileContext";
+import { usePlan, normalizePlanTier } from "@/app/context/PlanContext";
+import type { PlanTier } from "@/lib/entitlements/config";
 import { ResultGate } from "@/app/components/entitlements/ResultGate";
 import {
   X,
@@ -20,6 +25,7 @@ import {
   AlertTriangle,
   ChevronDown,
   ChevronUp,
+  RotateCcw,
 } from "lucide-react";
 import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
@@ -188,29 +194,213 @@ export const getSponsorshipResult = (d: any) => {
   };
 };
 
-interface SponsorshipCalculatorToolProps {
+export const STANDALONE_SPONSORSHIP_STORAGE_KEY = "standalone_sponsorship_calc";
+export const STANDALONE_SPONSORSHIP_DRAFT_KEY = "standalone_sponsorship_calc_draft";
+
+export const getJourneySponsorshipDraftKey = (
+  journeySlug: string,
+  candidateId: string = "candidate-1"
+) => {
+  const normSlug = journeySlug || "journey";
+  const normCand = candidateId || "candidate-1";
+  return `journey_${normSlug}_${normCand}_sponsorship_draft`;
+};
+
+export interface SponsorshipFormData {
+  state: string;
+  sponsorStatus: string;
+  isMilitary: boolean | null;
+  isMarried: boolean | null;
+  relationshipToApplicant: string;
+  numberOfChildren: number;
+  taxDependents: number;
+  hasPreviousSponsorship: boolean | null;
+  previousSponsoredCount: number;
+  currentSponsoredApplicant: boolean;
+  currentSponsoredSpouse: boolean;
+  currentSponsoredChildren: number;
+  agi: number;
+  currentAnnualIncome: number;
+  householdMembers: Array<{ id: string; relationship: string; annualIncome: number }>;
+  jointSponsors: Array<{ id: string; name: string; relationship: string; annualIncome: number }>;
+  assetValue: number;
+  sponsorDeceased: boolean;
+  isVAWA: boolean;
+  isWidow: boolean;
+  isSpecialImmigrant: boolean;
+}
+
+export interface SponsorshipCalculatorDraft {
+  stepIdx: number;
+  data: SponsorshipFormData;
+  updatedAt: string;
+}
+
+export interface SponsorshipCalculatorToolProps extends ToolModeProps {
   isOpen: boolean;
   onClose: () => void;
   initialData?: any;
-  onSave: (result: any) => void;
+  initialStep?: number;
+  onSave?: (result: any) => void;
+  onProgressChange?: (draft: SponsorshipCalculatorDraft) => void;
   // When true, the sponsor state was supplied by the Journey/profile and is
   // shown read-only (the user is not asked to re-enter it). Defaults to false
   // (standalone), where a required state selector is shown.
   lockState?: boolean;
+  candidateInfo?: {
+    id?: string;
+    name?: string;
+    relation?: string;
+    visaCategory?: string;
+  };
+  journeyTier?: string | null;
+  /** Journey chrome: when true the tool renders inline under the roadmap breadcrumb
+   *  (no fixed overlay, no own topbar, no body scroll-lock) — the same pattern as
+   *  Medical / PCC / Consultation. Passed by EmbeddedToolContainer for toolbox launches. */
+  embedded?: boolean;
 }
+
+const getDefaultFormData = (initial?: any): SponsorshipFormData => ({
+  state: initial?.state || "",
+  sponsorStatus: initial?.sponsorStatus || "",
+  isMilitary: initial?.isMilitary ?? null,
+  isMarried: initial?.isMarried ?? null,
+  relationshipToApplicant: initial?.relationshipToApplicant || "",
+  numberOfChildren: initial?.numberOfChildren || 0,
+  taxDependents: initial?.taxDependents || 0,
+  hasPreviousSponsorship: initial?.hasPreviousSponsorship ?? null,
+  previousSponsoredCount: initial?.previousSponsoredCount || 0,
+  currentSponsoredApplicant: true,
+  currentSponsoredSpouse: initial?.currentSponsoredSpouse || false,
+  currentSponsoredChildren: initial?.currentSponsoredChildren || 0,
+  agi: initial?.agi || 0,
+  currentAnnualIncome: initial?.currentAnnualIncome || 0,
+  householdMembers: initial?.householdMembers || [],
+  jointSponsors: initial?.jointSponsors || [],
+  // Advanced Options
+  assetValue: initial?.assetValue || 0,
+  sponsorDeceased: initial?.sponsorDeceased || false,
+  isVAWA: initial?.isVAWA || false,
+  isWidow: initial?.isWidow || false,
+  isSpecialImmigrant: initial?.isSpecialImmigrant || false,
+});
 
 export default function SponsorshipCalculatorTool({
   isOpen,
   onClose,
   initialData,
+  initialStep,
   onSave,
+  onProgressChange,
   lockState = false,
+  candidateInfo,
+  embedded,
+  mode: propMode,
+  journeyContext: propContext,
+  journeyTier: propJourneyTier,
 }: SponsorshipCalculatorToolProps) {
-  const [stepIdx, setStepIdx] = useState(0);
+  const { isJourney, journeyContext, journeyTier } = useResolveToolMode({
+    mode: propMode,
+    journeyContext: propContext,
+    journeyTier: propJourneyTier,
+  });
+
+  const accountPlan = usePlan();
+  const { profile, updateProfile } = useUserProfile();
+
+  // Determine effective plan tier: in journey mode, evaluate against the specific journey's tier (matching RoadmapLayoutEngine), otherwise account tier
+  const rawJourneyTier = propJourneyTier ?? journeyTier ?? journeyContext?.subscriptionTier;
+  const effectiveTier: PlanTier = useMemo(() => {
+    if (isJourney) {
+      if (rawJourneyTier) {
+        return normalizePlanTier(rawJourneyTier);
+      }
+      if (journeyContext?.journeyCategory && accountPlan.journeyTiers[journeyContext.journeyCategory]) {
+        return accountPlan.journeyTiers[journeyContext.journeyCategory];
+      }
+    }
+    return accountPlan.tier;
+  }, [isJourney, rawJourneyTier, journeyContext, accountPlan.journeyTiers, accountPlan.tier]);
+
+  const effectiveDraftKey = React.useMemo(() => {
+    if (isJourney && journeyContext?.journeySlug) {
+      return getJourneySponsorshipDraftKey(journeyContext.journeySlug, journeyContext.candidateId);
+    }
+    return STANDALONE_SPONSORSHIP_DRAFT_KEY;
+  }, [isJourney, journeyContext]);
+
+  // Synchronously compute initial state on first mount to prevent race conditions
+  const getInitialState = React.useCallback((): { step: number; formData: SponsorshipFormData } => {
+    // 1. If explicit initialData passed with keys
+    if (initialData && Object.keys(initialData).length > 0) {
+      return {
+        step: typeof initialStep === "number" ? initialStep : 0,
+        formData: getDefaultFormData(initialData),
+      };
+    }
+
+    // 2. Try loading isolated draft from localStorage
+    if (typeof window !== "undefined") {
+      try {
+        const draftJson = localStorage.getItem(effectiveDraftKey);
+        if (draftJson) {
+          const draft: SponsorshipCalculatorDraft = JSON.parse(draftJson);
+          if (draft && draft.data) {
+            return {
+              step:
+                typeof initialStep === "number"
+                  ? initialStep
+                  : typeof draft.stepIdx === "number"
+                    ? draft.stepIdx
+                    : 0,
+              formData: getDefaultFormData(draft.data),
+            };
+          }
+        }
+      } catch (e) {
+        console.warn("Could not parse sponsorship calculator draft:", e);
+      }
+
+      // 3. If standalone and user is logged in, check profile DB
+      if (!isJourney && profile?.standaloneSponsorshipDraft?.data) {
+        return {
+          step:
+            typeof initialStep === "number"
+              ? initialStep
+              : (profile.standaloneSponsorshipDraft.stepIdx ?? 0),
+          formData: getDefaultFormData(profile.standaloneSponsorshipDraft.data),
+        };
+      }
+
+      // 4. If standalone and saved result exists, restore raw data
+      if (!isJourney) {
+        try {
+          const cachedStandalone = localStorage.getItem(STANDALONE_SPONSORSHIP_STORAGE_KEY);
+          if (cachedStandalone) {
+            const parsed = JSON.parse(cachedStandalone);
+            if (parsed?.raw) {
+              return {
+                step: typeof initialStep === "number" ? initialStep : 10,
+                formData: getDefaultFormData(parsed.raw),
+              };
+            }
+          }
+        } catch (e) {}
+      }
+    }
+
+    return {
+      step: typeof initialStep === "number" ? initialStep : 0,
+      formData: getDefaultFormData(initialData),
+    };
+  }, [initialData, initialStep, effectiveDraftKey, isJourney, profile]);
+
+  const [stepIdx, setStepIdx] = useState<number>(() => getInitialState().step);
+  const [data, setData] = useState<SponsorshipFormData>(() => getInitialState().formData);
   const [expandedOptions, setExpandedOptions] = useState<Record<string, boolean>>({});
 
   React.useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !embedded) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
@@ -218,31 +408,104 @@ export default function SponsorshipCalculatorTool({
     return () => {
       document.body.style.overflow = "";
     };
-  }, [isOpen]);
-  const [data, setData] = useState({
-    state: initialData?.state || "",
-    sponsorStatus: initialData?.sponsorStatus || "",
-    isMilitary: initialData?.isMilitary ?? null,
-    isMarried: initialData?.isMarried ?? null,
-    relationshipToApplicant: initialData?.relationshipToApplicant || "",
-    numberOfChildren: initialData?.numberOfChildren || 0,
-    taxDependents: initialData?.taxDependents || 0,
-    hasPreviousSponsorship: initialData?.hasPreviousSponsorship ?? null,
-    previousSponsoredCount: initialData?.previousSponsoredCount || 0,
-    currentSponsoredApplicant: true,
-    currentSponsoredSpouse: initialData?.currentSponsoredSpouse || false,
-    currentSponsoredChildren: initialData?.currentSponsoredChildren || 0,
-    agi: initialData?.agi || 0,
-    currentAnnualIncome: initialData?.currentAnnualIncome || 0,
-    householdMembers: initialData?.householdMembers || [],
-    jointSponsors: initialData?.jointSponsors || [],
-    // Advanced Options
-    assetValue: initialData?.assetValue || 0,
-    sponsorDeceased: initialData?.sponsorDeceased || false,
-    isVAWA: initialData?.isVAWA || false,
-    isWidow: initialData?.isWidow || false,
-    isSpecialImmigrant: initialData?.isSpecialImmigrant || false,
-  });
+  }, [isOpen, embedded]);
+
+  const prevInitialDataRef = React.useRef<string>(JSON.stringify(initialData || {}));
+  const prevIsOpenRef = React.useRef<boolean>(isOpen);
+  const lastSavedSnapshotRef = React.useRef<string>("");
+
+  // Sync state only if initialData actually changed or when modal opens
+  React.useEffect(() => {
+    const isOpening = isOpen && !prevIsOpenRef.current;
+    prevIsOpenRef.current = isOpen;
+
+    if (!isOpen) return;
+
+    const currentInitStr = JSON.stringify(initialData || {});
+    if (isOpening || (currentInitStr !== prevInitialDataRef.current && Object.keys(initialData || {}).length > 0)) {
+      prevInitialDataRef.current = currentInitStr;
+      if (initialData && Object.keys(initialData).length > 0) {
+        setData((prev) => ({
+          ...prev,
+          ...getDefaultFormData(initialData),
+          state: initialData.state ?? prev.state,
+        }));
+        if (typeof initialStep === "number") {
+          setStepIdx(initialStep);
+        }
+      }
+    }
+  }, [isOpen, initialData, initialStep]);
+
+  // Auto-save draft progress on changes while open (guarded by snapshot comparison)
+  React.useEffect(() => {
+    if (!isOpen) return;
+
+    const currentSnapshot = JSON.stringify({ stepIdx, data });
+    if (lastSavedSnapshotRef.current === currentSnapshot) return;
+    lastSavedSnapshotRef.current = currentSnapshot;
+
+    const draftPayload: SponsorshipCalculatorDraft = {
+      stepIdx,
+      data,
+      updatedAt: new Date().toISOString(),
+    };
+
+    try {
+      localStorage.setItem(effectiveDraftKey, JSON.stringify(draftPayload));
+      onProgressChange?.(draftPayload);
+
+      // Save to Supabase user_profiles if in standalone mode and user is logged in
+      if (!isJourney && updateProfile) {
+        updateProfile({ standaloneSponsorshipDraft: draftPayload }, { silent: true });
+      }
+    } catch (e) {
+      console.warn("Error auto-saving sponsorship draft:", e);
+    }
+  }, [isOpen, stepIdx, data, effectiveDraftKey, onProgressChange, isJourney, updateProfile]);
+
+  const handleResetProgress = () => {
+    try {
+      localStorage.removeItem(effectiveDraftKey);
+      if (!isJourney && updateProfile) {
+        updateProfile({
+          standaloneSponsorshipDraft: undefined,
+        }, { silent: true });
+      }
+    } catch {}
+    const defaultData = getDefaultFormData(lockState ? { state: data.state } : undefined);
+    setData(defaultData);
+    setStepIdx(0);
+    onProgressChange?.({
+      stepIdx: 0,
+      data: defaultData,
+      updatedAt: new Date().toISOString(),
+    });
+  };
+
+  const handleCompleteSave = () => {
+    const finalResult = getSponsorshipResult(data);
+    try {
+      // Clear draft once completed
+      localStorage.removeItem(effectiveDraftKey);
+
+      // In standalone mode, persist to standalone storage and database
+      if (!isJourney) {
+        localStorage.setItem(STANDALONE_SPONSORSHIP_STORAGE_KEY, JSON.stringify(finalResult));
+        localStorage.removeItem(STANDALONE_SPONSORSHIP_DRAFT_KEY);
+        if (updateProfile) {
+          updateProfile({
+            standaloneSponsorshipCalc: finalResult,
+            standaloneSponsorshipDraft: undefined,
+          }, { silent: true });
+        }
+      }
+    } catch (e) {
+      console.warn("Error finalizing sponsorship storage:", e);
+    }
+
+    onSave?.(finalResult);
+  };
 
   if (!isOpen) return null;
 
@@ -326,8 +589,15 @@ export default function SponsorshipCalculatorTool({
   };
 
   return (
-    <div className="fixed inset-0 bg-white z-[150] flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans">
-      {/* Topbar */}
+    <div
+      className={
+        embedded
+          ? "flex w-full flex-col font-sans"
+          : "fixed inset-0 bg-white z-[150] flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans"
+      }
+    >
+      {/* Topbar (overlay / standalone only — journey uses the roadmap breadcrumb) */}
+      {!embedded && (
       <div className="flex items-center h-[64px] border-b border-[#d0e4f7] px-6 gap-4 shrink-0 bg-white">
         <button
           onClick={onClose}
@@ -335,6 +605,12 @@ export default function SponsorshipCalculatorTool({
         >
           <X size={16} strokeWidth={2} />
         </button>
+        {candidateInfo?.name && (
+          <div className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-teal-50 border border-teal-200 text-[11px] font-semibold text-teal-800 shrink-0">
+            <Users className="w-3 h-3 text-teal-600" />
+            <span>Beneficiary: {candidateInfo.name} {candidateInfo.relation ? `(${candidateInfo.relation})` : ""}</span>
+          </div>
+        )}
         <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
           <div
             className="h-full bg-linear-to-r transition-all duration-500"
@@ -347,6 +623,13 @@ export default function SponsorshipCalculatorTool({
         <div className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap shrink-0">
           {stepIdx + 1} / 11
         </div>
+        <button
+          onClick={handleResetProgress}
+          title="Reset progress and start over"
+          className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors flex items-center justify-center cursor-pointer border-none text-xs"
+        >
+          <RotateCcw size={13} />
+        </button>
         <QuickAccessButton
           item={{
             id: "sponsorship-calculator",
@@ -357,9 +640,10 @@ export default function SponsorshipCalculatorTool({
           mode="icon"
         />
       </div>
+      )}
 
       {/* Body */}
-      <div className="flex-1 overflow-y-auto bg-white p-[48px_24px_40px] flex flex-col items-center">
+      <div className={embedded ? "flex flex-col items-center p-[32px_24px_40px]" : "flex-1 overflow-y-auto bg-white p-[48px_24px_40px] flex flex-col items-center"}>
         <div className="w-full max-w-[560px] flex flex-col">
           {(() => {
             const step = stepIdx;
@@ -367,11 +651,19 @@ export default function SponsorshipCalculatorTool({
             if (step === 0) {
               return (
                 <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                  <div
-                    className="text-[11px] font-semibold tracking-widest uppercase mb-4"
-                    style={{ color: COLORS.primary }}
-                  >
-                    Sponsorship Calculator · Step 1 of 11
+                  <div className="flex items-center justify-between gap-2 mb-4">
+                    <div
+                      className="text-[11px] font-semibold tracking-widest uppercase"
+                      style={{ color: COLORS.primary }}
+                    >
+                      Sponsorship Calculator · Step 1 of 11
+                    </div>
+                    {candidateInfo?.name && (
+                      <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-teal-50 border border-teal-200 text-[10px] font-semibold text-teal-800">
+                        <Users className="w-2.5 h-2.5 text-teal-600" />
+                        <span>{candidateInfo.name}</span>
+                      </div>
+                    )}
                   </div>
                   <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-2 leading-[1.3]">
                     Welcome to the Sponsorship Calculator
@@ -1027,7 +1319,7 @@ export default function SponsorshipCalculatorTool({
 
             if (step === 7) {
               return (
-                <ResultGate feature="sponsorship_calc">
+                <ResultGate feature="sponsorship_calc" planTier={effectiveTier}>
                   <div className="animate-in fade-in slide-in-from-right-4 duration-300">
                     <div className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center" style={{ color: COLORS.primary }}>Step 8 of 11</div>
                     <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6 text-center">Initial Status</h2>
@@ -1108,7 +1400,7 @@ export default function SponsorshipCalculatorTool({
 
             if (step === 8) {
               return (
-                <ResultGate feature="sponsorship_calc">
+                <ResultGate feature="sponsorship_calc" planTier={effectiveTier}>
                   <div className="animate-in fade-in slide-in-from-right-4 duration-300">
                     <div className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center" style={{ color: stepColor }}>Step 9 of 11</div>
                     <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6 text-center">Support Resources</h2>
@@ -1213,7 +1505,7 @@ export default function SponsorshipCalculatorTool({
 
             if (step === 9) {
               return (
-                <ResultGate feature="sponsorship_calc">
+                <ResultGate feature="sponsorship_calc" planTier={effectiveTier}>
                   <div className="animate-in fade-in slide-in-from-right-4 duration-300">
                     <div className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center" style={{ color: COLORS.primary }}>Step 10 of 11</div>
                     <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6 text-center">Alternative Options</h2>
@@ -1310,7 +1602,7 @@ export default function SponsorshipCalculatorTool({
 
             if (step === 10) {
               return (
-                <ResultGate feature="sponsorship_calc">
+                <ResultGate feature="sponsorship_calc" planTier={effectiveTier}>
                   <div className="animate-in fade-in slide-in-from-right-4 duration-300">
                     <div className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center" style={{ color: COLORS.primary }}>Step 11 of 11</div>
                     <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6 text-center">Final Sponsorship Plan</h2>
@@ -1371,11 +1663,11 @@ export default function SponsorshipCalculatorTool({
                         <ArrowLeft size={14} /> Edit Info
                       </button>
                       <button 
-                        onClick={() => onSave(result)} 
+                        onClick={handleCompleteSave} 
                         style={{ backgroundColor: COLORS.primary }}
                         className="flex-1 p-[14px_22px] text-white rounded-[10px] text-[15px] font-semibold shadow-lg transition-all hover:opacity-90 hover:-translate-y-px flex items-center justify-center gap-2"
                       >
-                        Complete & Save Plan <ArrowRight size={14} />
+                        {isJourney ? "Complete & Save to Roadmap" : "Complete & Save Calculation"} <ArrowRight size={14} />
                       </button>
                     </div>
                   </div>

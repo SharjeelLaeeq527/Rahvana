@@ -38,6 +38,8 @@ import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 import { useQuickAccess } from "@/app/context/QuickAccessContext";
 
+import { useCandidate } from "@/app/context/CandidateContext";
+
 interface UserGuideSession {
   id: string;
   status: string;
@@ -244,6 +246,7 @@ const TIER_GRADIENT_BORDER_STYLE: Record<string, React.CSSProperties> = {
 
 export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolean }) {
   const { user } = useAuth();
+  const { activeCandidateId } = useCandidate();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<"All" | GuideCategory>("All");
   const [visibleCount, setVisibleCount] = useState(7);
@@ -264,11 +267,43 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
     const fetchMyGuides = async () => {
       try {
         setSessionsLoading(true);
-        const res = await fetch("/api/guides/my-guides");
-        if (res.ok) {
-          const data = await res.json();
-          setSessions(data.sessions || []);
+        const currentCandidateId = activeCandidateId || "candidate-1";
+
+        // 1. Fetch from server API
+        let apiSessions: UserGuideSession[] = [];
+        try {
+          const res = await fetch(`/api/guides/my-guides?candidateId=${currentCandidateId}`);
+          if (res.ok) {
+            const data = await res.json();
+            apiSessions = data.sessions || [];
+          }
+        } catch (e) {
+          console.error("API error fetching guides:", e);
         }
+
+        // 2. Read local candidate sessions cache
+        let localSessions: UserGuideSession[] = [];
+        if (typeof window !== "undefined") {
+          try {
+            const raw = localStorage.getItem(`rahvana_guide_sessions_${currentCandidateId}`);
+            if (raw) {
+              localSessions = JSON.parse(raw);
+            }
+          } catch {
+            // Ignore storage errors
+          }
+        }
+
+        // 3. Merge sessions cleanly by guide slug
+        const sessionMap = new Map<string, UserGuideSession>();
+        for (const s of localSessions) {
+          if (s.guides?.slug) sessionMap.set(s.guides.slug, s);
+        }
+        for (const s of apiSessions) {
+          if (s.guides?.slug) sessionMap.set(s.guides.slug, s);
+        }
+
+        setSessions(Array.from(sessionMap.values()));
       } catch (error) {
         console.error("Failed to fetch my guides:", error);
       } finally {
@@ -276,12 +311,31 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
       }
     };
     fetchMyGuides();
-  }, [user]);
+  }, [user, activeCandidateId]);
 
   const handleDelete = async () => {
     if (!selectedSessionId) return;
     try {
       setDeleting(true);
+
+      // Clean local storage cache
+      if (typeof window !== "undefined") {
+        const currentCandidateId = activeCandidateId || "candidate-1";
+        try {
+          const raw = localStorage.getItem(`rahvana_guide_sessions_${currentCandidateId}`);
+          if (raw) {
+            const list: UserGuideSession[] = JSON.parse(raw);
+            const updated = list.filter((s) => s.id !== selectedSessionId);
+            localStorage.setItem(
+              `rahvana_guide_sessions_${currentCandidateId}`,
+              JSON.stringify(updated)
+            );
+          }
+        } catch {
+          // Ignore
+        }
+      }
+
       const res = await fetch("/api/guides/delete", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },

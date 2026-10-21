@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import type { ToolModeProps } from "@/types/tool-mode";
+import { useResolveToolMode } from "@/lib/hooks/useResolveToolMode";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -89,14 +91,23 @@ async function resizeImageIfNeeded(file: File): Promise<File> {
   return file; // best effort — server will reject if still too big
 }
 
-export interface PassportOcrToolProps {
+export interface PassportOcrToolProps extends ToolModeProps {
   /** Render without the outer Card chrome (e.g. inside a Dialog/modal). */
   embedded?: boolean;
   /** Called after fields are successfully saved to the profile. */
   onSaved?: (fields: PassportFields) => void;
 }
 
-export default function PassportOcrTool({ embedded = false, onSaved }: PassportOcrToolProps = {}) {
+export default function PassportOcrTool({
+  embedded = false,
+  onSaved,
+  mode: propMode,
+  journeyContext: propContext,
+}: PassportOcrToolProps = {}) {
+  const { isJourney } = useResolveToolMode({
+    mode: propMode,
+    journeyContext: propContext,
+  });
   const [storedDetails, setStoredDetails] = useState<Record<string, unknown> | null>(null);
   const [fields, setFields] = useState<PassportFields>({});
   const [confidence, setConfidence] = useState<ExtractResponse["confidence"]>({});
@@ -112,8 +123,23 @@ export default function PassportOcrTool({ embedded = false, onSaved }: PassportO
 
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Load existing profile values once, so we can cross-check what we extract.
+  // Load existing profile values once if in journey mode, so we can cross-check what we extract.
   useEffect(() => {
+    if (!isJourney) {
+      // In standalone mode, load previous standalone scan if available
+      try {
+        const cached = localStorage.getItem("standalone_passport_ocr");
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed && typeof parsed === "object") {
+            setFields(parsed);
+            setHasResult(true);
+          }
+        }
+      } catch {}
+      return;
+    }
+
     let cancelled = false;
     (async () => {
       try {
@@ -131,7 +157,7 @@ export default function PassportOcrTool({ embedded = false, onSaved }: PassportO
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [isJourney]);
 
   function runCrossCheck(extracted: PassportFields) {
     const stored: Partial<Record<keyof PassportFields, string>> = {};
@@ -188,6 +214,21 @@ export default function PassportOcrTool({ embedded = false, onSaved }: PassportO
   async function handleSave() {
     setSaving(true);
     setError(null);
+
+    if (!isJourney) {
+      // Standalone mode: save in local standalone storage without touching /api/profile
+      try {
+        localStorage.setItem("standalone_passport_ocr", JSON.stringify(fields));
+        setSaved(true);
+        onSaved?.(fields);
+      } catch {
+        setError("Could not save standalone scan.");
+      } finally {
+        setSaving(false);
+      }
+      return;
+    }
+
     try {
       const res = await fetch("/api/profile/merge", {
         method: "POST",
@@ -326,13 +367,19 @@ export default function PassportOcrTool({ embedded = false, onSaved }: PassportO
             {saved && (
               <Alert>
                 <AlertTitle>Saved</AlertTitle>
-                <AlertDescription>Details saved to your profile.</AlertDescription>
+                <AlertDescription>
+                  {isJourney ? "Details saved to your profile." : "Details saved in your browser."}
+                </AlertDescription>
               </Alert>
             )}
 
             <div className="flex justify-end">
               <Button onClick={handleSave} disabled={saving}>
-                {saving ? "Saving..." : "Confirm & Save to Profile"}
+                {saving
+                  ? "Saving..."
+                  : isJourney
+                  ? "Confirm & Save to Profile"
+                  : "Save Scanned Data"}
               </Button>
             </div>
           </div>

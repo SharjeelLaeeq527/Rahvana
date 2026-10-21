@@ -3,7 +3,8 @@
 import { useEffect, useRef } from "react";
 import { useDocumentVaultStore } from "./store";
 import type { VisaCategory } from "./types";
-import { normalizeJourneyType } from "@/lib/questionnaire";
+import { getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
+import { useCandidate } from "@/app/context/CandidateContext";
 
 interface InitDocumentVaultArgs {
   /** The journey's journey_type (e.g. "ir-1", "ir-5"). Used to derive the visa category. */
@@ -35,15 +36,7 @@ interface InitDocumentVaultArgs {
  * so the uploaded documents — and therefore the case-strength score — are loaded as
  * soon as the journey opens, while the user is still on the dashboard.
  *
- * Previously the fetch fired only when the lazy StepView mounted (i.e. the moment the
- * user reached a step). That made the "Get Required Documents" step show "Checking..."
- * and left the case-strength ring blank on arrival, because the network round-trip
- * started too late. Hoisting it to the parent means the data is ready before the user
- * navigates into any step.
- *
- * Idempotent per journey: the effect body runs once per backendId. The store's own
- * `hasLoadedDocsInitial` guard additionally prevents a "Checking..." flash on any later
- * background refetch of an already-loaded journey.
+ * Scoped per candidate profile and backend journey ID.
  */
 export function useInitDocumentVault({
   journeyType,
@@ -55,8 +48,9 @@ export function useInitDocumentVault({
 }: InitDocumentVaultArgs) {
   const setConfig = useDocumentVaultStore((s) => s.setConfig);
   const reloadDocuments = useDocumentVaultStore((s) => s.reloadDocuments);
+  const { activeCandidate, activeCandidateId } = useCandidate();
 
-  // Guard so the init runs once per journey even across re-renders.
+  // Guard so the init runs once per journey & candidate even across re-renders.
   const initedJourneyRef = useRef<string | null>(null);
   // Keep the latest metadata without adding it to the effect deps (its object
   // identity changes every render, which would otherwise thrash the effect).
@@ -66,23 +60,34 @@ export function useInitDocumentVault({
   useEffect(() => {
     if (skip) return;
     const journeyKey = backendId || "__no-journey__";
-    if (initedJourneyRef.current === journeyKey) return;
-    initedJourneyRef.current = journeyKey;
+    const initKey = `${journeyKey}_${activeCandidateId}`;
+    if (initedJourneyRef.current === initKey) return;
+    initedJourneyRef.current = initKey;
 
     const category =
       visaCategory ||
-      (normalizeJourneyType(journeyType || "ir-1").toUpperCase() as VisaCategory);
+      getBaseVisaCategory(journeyType || activeCandidate?.visaCategory || "IR-5");
     const md = metadataRef.current || {};
+
+    const beneficiaryDisplayName =
+      activeCandidate?.fullName ||
+      (md.beneficiaryName as string) ||
+      activeCandidate?.label ||
+      "Beneficiary";
 
     // Config sets synchronously in the store; reloadDocuments does the network
     // fetch. Fire both together and let the store manage its loading flags.
     Promise.all([
       setConfig({
         userId: userId || "session",
+        journeyId: backendId || undefined,
         visaCategory: category,
-        caseId: (md.caseId as string) || `ARACHNIE-${category.replace("-", "")}`,
+        caseId:
+          (md.caseId as string) ||
+          activeCandidate?.caseNumber ||
+          `ARACHNIE-${category.replace("-", "")}`,
         petitionerName: (md.petitionerName as string) || "Petitioner",
-        beneficiaryName: (md.beneficiaryName as string) || "Beneficiary",
+        beneficiaryName: beneficiaryDisplayName,
         jointSponsorName: (md.jointSponsorName as string) || "",
         scenarioFlags: {},
       }),
@@ -91,5 +96,15 @@ export function useInitDocumentVault({
       // Best-effort prefetch; the store logs its own errors and the StepView
       // still functions if this fails (it just won't be pre-warmed).
     });
-  }, [backendId, journeyType, userId, visaCategory, skip, setConfig, reloadDocuments]);
+  }, [
+    backendId,
+    journeyType,
+    userId,
+    visaCategory,
+    skip,
+    setConfig,
+    reloadDocuments,
+    activeCandidateId,
+    activeCandidate,
+  ]);
 }

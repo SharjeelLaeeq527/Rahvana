@@ -187,20 +187,20 @@ export const JOURNEY_DETAILS: Record<JourneySlug, JourneyDetailContent> = {
         rahvanaSupport:
           "Rahvana tracks the medical exam, police certificate, courier registration, original-document packet, interview practice, and the final interview-day checklist.",
       },
-      {
-        stage: "Stage 4",
-        title: "U.S. Entry and Green Card",
-        summary:
-          "The spouse enters the United States and receives permanent resident status on arrival.",
-        detail:
-          "The passport stamp acts as temporary proof of residency and the green card is mailed to the U.S. address after arrival processing.",
-        metric: "Outcome: 10-year permanent residency",
-        duration: "Green card typically follows after U.S. entry",
-        outcome:
-          "The spouse enters as a permanent resident and can begin life and work in the United States.",
-        rahvanaSupport:
-          "Rahvana records the interview outcome, unlocks the correct next steps for approval or 221(g), tracks visa issuance or post-interview review, and keeps delivery and arrival tasks visible.",
-      },
+      // {
+      //   stage: "Stage 4",
+      //   title: "U.S. Entry and Green Card",
+      //   summary:
+      //     "The spouse enters the United States and receives permanent resident status on arrival.",
+      //   detail:
+      //     "The passport stamp acts as temporary proof of residency and the green card is mailed to the U.S. address after arrival processing.",
+      //   metric: "Outcome: 10-year permanent residency",
+      //   duration: "Green card typically follows after U.S. entry",
+      //   outcome:
+      //     "The spouse enters as a permanent resident and can begin life and work in the United States.",
+      //   rahvanaSupport:
+      //     "Rahvana records the interview outcome, unlocks the correct next steps for approval or 221(g), tracks visa issuance or post-interview review, and keeps delivery and arrival tasks visible.",
+      // },
     ],
     preparationHeading: "What Couples Need Along the Spouse Visa Journey",
     preparationDescription:
@@ -236,12 +236,12 @@ export const JOURNEY_DETAILS: Record<JourneySlug, JourneyDetailContent> = {
           "Original documents, appointment letters, medical exam readiness, and relationship timeline preparation for the consular interview.",
         icon: "interview",
       },
-      {
-        title: "Arrival & Post-Approval Documents",
-        description:
-          "Visa packet, immigrant fee, U.S. address readiness, and proof of permanent residence after entry.",
-        icon: "arrival",
-      },
+      // {
+      //   title: "Arrival & Post-Approval Documents",
+      //   description:
+      //     "Visa packet, immigrant fee, U.S. address readiness, and proof of permanent residence after entry.",
+      //   icon: "arrival",
+      // },
     ],
     supportingResources: [
       {
@@ -336,20 +336,20 @@ export const JOURNEY_DETAILS: Record<JourneySlug, JourneyDetailContent> = {
         rahvanaSupport:
           "Rahvana creates an interview-ready file, tracks medical and police certificate timing, and highlights documents the parent should carry.",
       },
-      {
-        stage: "Stage 4",
-        title: "Arrival in the United States",
-        summary:
-          "The parent enters the U.S. as a permanent resident and continues life with the family.",
-        detail:
-          "The immigrant packet and passport stay with the traveler. After arrival, the green card arrives by mail to the U.S. address.",
-        metric: "Outcome: permanent residency",
-        duration: "Green card typically follows after U.S. entry",
-        outcome:
-          "The parent enters the United States as a permanent resident with post-arrival tasks clearly defined.",
-        rahvanaSupport:
-          "Rahvana keeps final travel, immigrant fee, U.S. address, and post-approval document tasks organized through arrival.",
-      },
+      // {
+      //   stage: "Stage 4",
+      //   title: "Arrival in the United States",
+      //   summary:
+      //     "The parent enters the U.S. as a permanent resident and continues life with the family.",
+      //   detail:
+      //     "The immigrant packet and passport stay with the traveler. After arrival, the green card arrives by mail to the U.S. address.",
+      //   metric: "Outcome: permanent residency",
+      //   duration: "Green card typically follows after U.S. entry",
+      //   outcome:
+      //     "The parent enters the United States as a permanent resident with post-arrival tasks clearly defined.",
+      //   rahvanaSupport:
+      //     "Rahvana keeps final travel, immigrant fee, U.S. address, and post-approval document tasks organized through arrival.",
+      // },
     ],
     preparationHeading: "What Families Need Along the Parent Visa Journey",
     preparationDescription:
@@ -385,12 +385,12 @@ export const JOURNEY_DETAILS: Record<JourneySlug, JourneyDetailContent> = {
           "Medical exam, original civil documents, appointment letter, and sponsor relationship proof prepared for the consulate.",
         icon: "interview",
       },
-      {
-        title: "Arrival & Post-Approval Documents",
-        description:
-          "Visa packet, U.S. entry planning, immigrant fee, address readiness, and green-card delivery tracking.",
-        icon: "arrival",
-      },
+      // {
+      //   title: "Arrival & Post-Approval Documents",
+      //   description:
+      //     "Visa packet, U.S. entry planning, immigrant fee, address readiness, and green-card delivery tracking.",
+      //   icon: "arrival",
+      // },
     ],
     supportingResources: [
       {

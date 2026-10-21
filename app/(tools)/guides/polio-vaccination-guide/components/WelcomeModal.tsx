@@ -1,15 +1,21 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { usePolioWizard } from "../PolioContext";
 import { X, Info, ShieldCheck, CheckCircle2 } from "lucide-react";
 
 export default function WelcomeModal() {
   const { showWelcomeModal, setShowWelcomeModal } = usePolioWizard();
   const [dontShowAgain, setDontShowAgain] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Prevent background scrolling when modal is open
-  React.useEffect(() => {
+  useEffect(() => {
     if (showWelcomeModal) {
       document.body.style.overflow = "hidden";
     } else {
@@ -20,7 +26,7 @@ export default function WelcomeModal() {
     };
   }, [showWelcomeModal]);
 
-  if (!showWelcomeModal) return null;
+  if (!showWelcomeModal || !mounted || typeof document === "undefined") return null;
 
   const handleClose = () => {
     if (dontShowAgain && typeof window !== "undefined") {
@@ -29,8 +35,8 @@ export default function WelcomeModal() {
     setShowWelcomeModal(false);
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-primary/20 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto">
+  const modalContent = (
+    <div className="fixed inset-0 z-[150] flex items-center justify-center p-3 sm:p-4 bg-primary/20 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto">
       <div
         className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-none sm:max-h-[85vh]"
         onClick={(e) => e.stopPropagation()}
@@ -149,4 +155,6 @@ export default function WelcomeModal() {
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 }

@@ -19,6 +19,7 @@ const GUIDE_ROUTE_MAP: Record<string, { id: string; title: string; icon: string 
   "nikah-nama-guide": { id: "guide-marriage-certificate", title: "Marriage Registration Guide", icon: "Heart" },
   "polio-vaccination-guide": { id: "guide-vaccinations", title: "Polio Vaccination Guide", icon: "Syringe" },
   "step-parent-guide": { id: "guide-step-parent", title: "Step-Parent Relationship Guide", icon: "Users" },
+  "adoptive-parent-guide": { id: "guide-adoption", title: "Adoptive Parent & Guardianship Guide", icon: "Heart" },
   "adoption-guide": { id: "guide-adoption", title: "Adoptive Parent & Guardianship Guide", icon: "Heart" },
 };
 

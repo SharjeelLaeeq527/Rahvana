@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import Pagination from "@/components/ui/pagination";
 import { ElementType } from "react";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { useCandidate } from "@/app/context/CandidateContext";
 import { Loader } from "@/components/ui/spinner";
 import { DataTable, Column } from "@/app/components/shared/table/DataTable";
 import { FilterPanel, FilterField } from "@/app/components/shared/FilterPanel";
@@ -35,6 +36,8 @@ interface Requests {
   created_at: string;
   status: TranslationStatus;
   version: number;
+  candidate_id?: string;
+  candidate_name?: string;
 }
 
 const StatusBadge = ({ status, version }: { status: TranslationStatus; version: number }) => {
@@ -93,6 +96,7 @@ const StatusBadge = ({ status, version }: { status: TranslationStatus; version: 
 
 export default function MyTranslationRequests() {
   const { t } = useLanguage();
+  const { activeCandidate, activeCandidateId, isMultiCandidate } = useCandidate();
   const [requests, setRequests] = useState<Requests[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<Record<string, string>>({
@@ -105,12 +109,17 @@ export default function MyTranslationRequests() {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const ITEMS_PER_PAGE = 10;
 
-  // fetch
+  // fetch candidate-scoped translation requests
   useEffect(() => {
+    let isCancelled = false;
     const fetchRequests = async () => {
+      setLoading(true);
       try {
-        const response = await fetch(`/api/document-translation/list`);
+        const queryParam = activeCandidateId ? `?candidateId=${encodeURIComponent(activeCandidateId)}` : "";
+        const response = await fetch(`/api/document-translation/list${queryParam}`);
         const data = await response.json();
+
+        if (isCancelled) return;
 
         if (response.ok) {
           setRequests(data.documents || []);
@@ -119,15 +128,21 @@ export default function MyTranslationRequests() {
           setRequests([]);
         }
       } catch (error) {
+        if (isCancelled) return;
         console.error("Error fetching requests:", error);
         setRequests([]);
       } finally {
-        setLoading(false);
+        if (!isCancelled) {
+          setLoading(false);
+        }
       }
     };
 
     fetchRequests();
-  }, []);
+    return () => {
+      isCancelled = true;
+    };
+  }, [activeCandidateId]);
 
   // Helper function to calculate date range for date filters
   const getDateRange = (filterValue: string): { start: Date; end: Date } | null => {
@@ -300,6 +315,15 @@ export default function MyTranslationRequests() {
             <p className="mt-2 text-sm sm:text-base text-gray-600">
               {t("documentTranslation.myRequestsPage.subtitle")}
             </p>
+            {isMultiCandidate && (
+              <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 bg-teal-50 border border-teal-200 text-teal-800 rounded-full text-xs font-medium">
+                <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
+                <span>
+                  Showing requests for:{" "}
+                  <strong>{activeCandidate.fullName ? `${activeCandidate.fullName} (${activeCandidate.label})` : activeCandidate.label}</strong>
+                </span>
+              </div>
+            )}
           </header>
 
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">

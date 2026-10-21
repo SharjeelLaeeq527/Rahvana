@@ -63,33 +63,26 @@ export const MEDICAL_EXAM_DATA = {
   ],
   guideSteps: [
     {
-      label: "Step 1 of 4, Find an approved physician",
+      label: "Step 1 of 3, Find an approved physician",
       heading: "Find an embassy-approved physician",
-      sub: "Your consulate maintains a list of approved panel physicians. You must book with a physician on that specific list.",
-      info: 'For U.S. Embassy Islamabad, Karachi, and Lahore, the approved physician list is available on the embassy\'s official website. Search "U.S. Embassy [city] panel physician list" to find current approved physicians.',
+      sub: "U.S. Embassy Islamabad publishes the approved panel physician list for immigrant visa applicants. You must use a physician on the current official list.",
+      info: "Use only a panel physician listed in the current U.S. Embassy Islamabad immigrant visa instructions. Approved clinics may be located in Islamabad, Lahore, Karachi, or another listed city, but the physician must appear on the official Islamabad-approved list.",
       nav: { next: "Next →" },
     },
     {
-      label: "Step 2 of 4, Contact and book the appointment",
+      label: "Step 2 of 3, Contact and book the appointment",
       heading: "Contact the physician and book directly",
       sub: "Call or visit the approved physician's office to schedule your immigrant visa medical examination. Bring your appointment letter and passport.",
-      info: "Most approved physicians in Pakistan accept walk-ins or appointments by phone. Confirm the medical exam fee before attending. The fee is typically paid directly to the physician, not to the embassy.",
+      info: "Contact the selected approved physician directly and follow that clinic's current booking instructions. Appointment methods, fees, timing, and required documents vary by clinic.",
+      alert:
+        "Ensure the physician is currently active on the approved list, lists are updated periodically. A medical exam from a removed physician will not be accepted.",
       nav: { back: true, next: "Next →" },
     },
     {
-      label: "Step 3 of 4, Confirm your appointment",
+      label: "Step 3 of 3, Confirm your appointment",
       heading: "Confirm the appointment date and location",
       sub: "Verify the appointment date and location directly with the physician's office before proceeding.",
-      alert:
-        "Ensure the physician is currently active on the approved list, lists are updated periodically. A medical exam from a removed physician will not be accepted.",
-      nav: { back: true, next: "Save my appointment details →" },
-    },
-    {
-      label: "Step 4 of 4, Save appointment details",
-      heading: "Save your appointment details",
-      sub: "Record your appointment so Rahvana can set a reminder and keep it visible on your dashboard.",
-      form: true,
-      nav: { back: true, save: true },
+      nav: { back: true },
     },
   ],
   savedView: {

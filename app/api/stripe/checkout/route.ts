@@ -11,7 +11,20 @@ import * as crypto from "crypto";
 import { E, msg } from "@/lib/errors";
 import { getAuthenticatedUser } from "@/lib/api/authGuards";
 import { acquireCheckoutLock, releaseCheckoutLock } from "@/lib/stripe/checkoutLock";
-import { resolveSubscriptionTier } from "@/lib/stripe/subscriptionCleanup";
+import {
+  isMultiCandidateCategory,
+  getCandidateJourneyKey,
+} from "@/lib/candidate/candidateSyncService";
+import {
+  resolveSubscriptionTier,
+  journeyTypeForVisaCategory,
+  isAddCandidateSubscription,
+} from "@/lib/stripe/subscriptionCleanup";
+import {
+  WALLET_TOPUP_PRODUCT_TYPE,
+  validateTopupAmount,
+  resolveTopupReturnPath,
+} from "@/lib/wallet/topup";
 
 function logDebug(msg: string, obj?: any) {
   // Never write request/session details to disk in production (PII hygiene).
@@ -25,11 +38,6 @@ function logDebug(msg: string, obj?: any) {
 }
 
 const INTERVIEW_PREP_ADDON_PREFIX = "interview-prep:";
-
-/** Keeps checkout ownership checks scoped to the selected journey. */
-function journeyTypeForVisaCategory(visaCategory: string): "IR1" | "IR5" {
-  return visaCategory.toLowerCase().includes("5") ? "IR5" : "IR1";
-}
 
 function getCatalogAddonId(addonId: string): string {
   const normalized = addonId.toLowerCase();
@@ -71,9 +79,43 @@ export async function POST(request: NextRequest) {
       appointmentId,
       policeVerificationId,
       documentTranslationId,
+      translationDetails,
       addons,
       visaCategory,
+      candidateCount,
+      candidateId: rawCandidateId,
+      candidate_id: snakeCandidateId,
+      action,
+      productType,
+      amount,
+      returnUrl,
+      resourceId,
     } = body;
+
+    const candidateId = rawCandidateId || snakeCandidateId || undefined;
+    const parsedCandidateCount =
+      candidateCount && !isNaN(Number(candidateCount)) && Number(candidateCount) >= 1
+        ? Math.floor(Number(candidateCount))
+        : 1;
+    // ── Wallet top-up: validate before touching Stripe. The client sends only a
+    // whole-dollar amount ($1 = 1 credit); it never sets what gets credited, which
+    // is derived from what Stripe actually charged (lib/wallet/topup.ts). ──
+    const isWalletTopup = productType === WALLET_TOPUP_PRODUCT_TYPE;
+    let topupCredits = 0;
+    if (isWalletTopup) {
+      if (productTier || (Array.isArray(addons) && addons.length > 0)) {
+        return NextResponse.json(
+          { error: "A wallet top-up cannot be combined with a plan or add-ons." },
+          { status: 400 }
+        );
+      }
+      const topup = validateTopupAmount(amount);
+      if (!topup.ok) {
+        return NextResponse.json({ error: topup.error }, { status: 400 });
+      }
+      topupCredits = topup.credits;
+    }
+    const topupReturnPath = resolveTopupReturnPath(returnUrl);
 
     if (Array.isArray(addons)) {
       const unresolvedInterviewPrep = addons.find(
@@ -118,14 +160,26 @@ export async function POST(request: NextRequest) {
       profile?.profile_details?.plan_visa_category || profile?.profile_details?.visa_category;
     const effectiveVisaCategory = visaCategory || dbVisaCategory || "IR-1 / CR-1";
     const selectedJourneyType = journeyTypeForVisaCategory(effectiveVisaCategory);
+    const isMultiCand =
+      isMultiCandidateCategory(effectiveVisaCategory) || selectedJourneyType === "IR5";
+    const targetCandidateJourneyKey =
+      isMultiCand && candidateId
+        ? getCandidateJourneyKey(effectiveVisaCategory, candidateId)
+        : selectedJourneyType;
+
     const { data: selectedJourney } = productTier
       ? await supabase
           .from("journeys")
           .select("subscription_tier, stripe_subscription_id, status")
           .eq("user_id", userId)
-          .ilike("journey_type", selectedJourneyType)
+          .ilike("journey_type", targetCandidateJourneyKey)
           .maybeSingle()
       : { data: null };
+
+    const targetCandidateProfile =
+      isMultiCand && candidateId && Array.isArray(profile?.profile_details?.candidates)
+        ? (profile.profile_details.candidates as any[]).find((c) => c.id === candidateId)
+        : null;
 
     // ── Concurrency guard: serialize subscription checkouts per user so two
     // in-flight requests can't both pass the "no live sub" check below and each
@@ -202,7 +256,7 @@ export async function POST(request: NextRequest) {
     // Trusting it alone let a second live subscription get created on the same
     // customer. These statuses all mean "occupies a live subscription slot".
     const LIVE_SUB_STATUSES = ["active", "trialing", "past_due", "unpaid"];
-    let liveSubs: Stripe.Subscription[] = [];
+    const liveSubs: Stripe.Subscription[] = [];
     if (stripeCustomerId && productTier) {
       // FAIL CLOSED: for a subscription purchase we MUST know the customer's
       // current subscriptions before creating a new one. If Stripe is unreachable
@@ -237,16 +291,26 @@ export async function POST(request: NextRequest) {
     // duplicate or downgrade slip through.
     // The account profile holds a maximum tier. Checkout guards must instead
     // consider only the selected journey and its Stripe subscription.
+    // Within the journey, plans bought to ADD an IR-5 candidate pay for that
+    // candidate's own journey row, not the primary plan being upgraded, so they are
+    // excluded (unless the journey row itself points at one, e.g. the first IR-5
+    // purchase). Otherwise a candidate-2 Executive plan would make a candidate-1
+    // Basic -> Premium upgrade look like a downgrade, or be picked as the sub to retire.
+    const dbSubId = selectedJourney?.stripe_subscription_id as string | undefined;
     const journeyLiveSubs = liveSubs.filter((subscription) => {
+      if (subscription.id === dbSubId) return true;
       const subscriptionJourneyType = subscription.metadata?.visa_category
         ? journeyTypeForVisaCategory(subscription.metadata.visa_category)
         : null;
       return (
-        subscriptionJourneyType === selectedJourneyType ||
-        subscription.id === selectedJourney?.stripe_subscription_id
+        subscriptionJourneyType === selectedJourneyType && !isAddCandidateSubscription(subscription)
       );
     });
-    const dbTier = (selectedJourney?.subscription_tier ?? "free").toLowerCase();
+    const candidateRosterTier = targetCandidateProfile?.tier;
+    const dbTier = (
+      (candidateRosterTier || selectedJourney?.subscription_tier) ??
+      "free"
+    ).toLowerCase();
     const dbStatus = selectedJourney?.status ?? "not_started";
     const stripeTierRank = journeyLiveSubs.reduce((max, s) => {
       const t = resolveSubscriptionTier(s);
@@ -256,8 +320,7 @@ export async function POST(request: NextRequest) {
     const effectiveCurrentTier = tierNameForRank(effectiveCurrentRank);
     // "Has a plan" is true if EITHER source says so — this closes the desync gap.
     const hasLivePlan =
-      journeyLiveSubs.length > 0 ||
-      (dbStatus !== "completed" && (TIER_RANK[dbTier] ?? 0) > 0);
+      journeyLiveSubs.length > 0 || (dbStatus !== "completed" && (TIER_RANK[dbTier] ?? 0) > 0);
 
     // A live sub whose recurring charge is failing. Such a user should RECOVER
     // (update payment method / pay the open invoice) via the billing portal, not
@@ -271,7 +334,6 @@ export async function POST(request: NextRequest) {
     // at, else the highest-tier live sub. This is only a HINT: verify-session runs
     // a belt-and-suspenders cleanup, and (critically) the old sub is cancelled ONLY
     // after the new one is confirmed paid, never here at checkout time.
-    const dbSubId = selectedJourney?.stripe_subscription_id as string | undefined;
     const oldSubscriptionId =
       journeyLiveSubs.find((s) => s.id === dbSubId)?.id ||
       [...journeyLiveSubs].sort((a, b) => {
@@ -287,8 +349,22 @@ export async function POST(request: NextRequest) {
     // If we trusted a client-supplied `currentTier`/`isUpgrade`, a free user could
     // send { isUpgrade: true, currentTier: "premium" } and pay only the tier
     // *difference* while being provisioned the full higher tier. So it is server-derived.
-    const serverIsUpgrade = hasLivePlan && effectiveCurrentRank > 0;
+    const isMultiCandidate =
+      isMultiCandidateCategory(effectiveVisaCategory) || selectedJourneyType === "IR5";
+    const isUpgradeAction = action === "upgrade";
+    const isAddCandidateAction = action === "add_candidate";
+
+    // When upgrading (either explicitly requested via action="upgrade" or a single-candidate upgrade),
+    // we want proration, retiring the old sub, and guarding against downgrade/duplicate.
+    const serverIsUpgrade =
+      hasLivePlan &&
+      effectiveCurrentRank > 0 &&
+      (isUpgradeAction || (!isMultiCandidate && !isAddCandidateAction));
+
     const serverCurrentTier = serverIsUpgrade ? effectiveCurrentTier : undefined;
+
+    // isAddCandidateRequest indicates adding a new candidate to a roster or initial multi-candidate setup
+    const isAddCandidateRequest = !serverIsUpgrade && (isAddCandidateAction || isMultiCandidate);
 
     // ── Server-side downgrade + duplicate-purchase guard (Stripe-aware) ──────
     // Rejects two scenarios:
@@ -296,7 +372,8 @@ export async function POST(request: NextRequest) {
     //   (b) target tier == current tier  → duplicate purchase (already owned/live)
     // Blocks even when the DB status is stale, because `hasLivePlan` also trusts
     // Stripe. Upgrades (target > current) fall through and are allowed.
-    if (productTier) {
+    // NOTE: Multi-candidate categories allow purchasing additional candidates at any tier!
+    if (productTier && (!isMultiCandidate || isUpgradeAction)) {
       const targetRank = TIER_RANK[productTier.toLowerCase()] ?? 0;
 
       if (hasLivePlan && targetRank < effectiveCurrentRank) {
@@ -391,6 +468,10 @@ export async function POST(request: NextRequest) {
     // subtle "checkout canceled, no charge made" notice.
     const buildCancelUrl = () => {
       const base = origin;
+      if (isWalletTopup) {
+        const sep = topupReturnPath.includes("?") ? "&" : "?";
+        return `${base}${topupReturnPath}${sep}topup_canceled=1`;
+      }
       // Consultations have no order-summary concept — send back to booking.
       if (!productTier && !(Array.isArray(addons) && addons.length > 0) && consultationId) {
         return `${base}/book-consultation?checkout_canceled=1`;
@@ -406,8 +487,7 @@ export async function POST(request: NextRequest) {
         const firstKind =
           (
             ADDONS.find((addon) => addon.id === firstCatalogAddonId) as
-              | { kind?: string }
-              | undefined
+              { kind?: string } | undefined
           )?.kind ?? "tools";
         params.set("mode", firstKind);
       }
@@ -428,16 +508,46 @@ export async function POST(request: NextRequest) {
     };
 
     // ================================================
+    // WALLET TOP-UP — One-time Payment ($1 = 1 credit)
+    // ================================================
+    if (isWalletTopup) {
+      sessionParams.mode = "payment";
+      sessionParams.line_items = [
+        {
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: `Rahvana Wallet: ${topupCredits} Credits`,
+              description: "Credits for standalone tools, guides and services. 1 credit = $1.",
+            },
+            unit_amount: topupCredits * 100,
+          },
+          quantity: 1,
+        },
+      ];
+      sessionParams.payment_intent_data = {
+        metadata: { user_id: userId, product_type: WALLET_TOPUP_PRODUCT_TYPE },
+      };
+      sessionParams.metadata = {
+        ...sessionParams.metadata,
+        stripe_customer_id: stripeCustomerId!,
+        product_type: WALLET_TOPUP_PRODUCT_TYPE,
+        product_id: WALLET_TOPUP_PRODUCT_TYPE,
+        product_name: `Rahvana Wallet: ${topupCredits} Credits`,
+        credits: String(topupCredits),
+        topup_reason: typeof resourceId === "string" && resourceId ? "exact_deficit" : "pack",
+        resource_id: typeof resourceId === "string" ? resourceId.slice(0, 100) : "",
+        return_to: topupReturnPath,
+      };
+    }
+    // ================================================
     // JOURNEY PLAN — Monthly Subscription + Add-ons
     // ================================================
-    if (productTier) {
+    else if (productTier) {
       const tierLower = productTier.toLowerCase();
 
       let product:
-        | typeof PRODUCTS.BASIC
-        | typeof PRODUCTS.PREMIUM
-        | typeof PRODUCTS.EXECUTIVE
-        | null = null;
+        typeof PRODUCTS.BASIC | typeof PRODUCTS.PREMIUM | typeof PRODUCTS.EXECUTIVE | null = null;
       if (tierLower === "basic") product = PRODUCTS.BASIC;
       if (tierLower === "premium") product = PRODUCTS.PREMIUM;
       if (tierLower === "executive") product = PRODUCTS.EXECUTIVE;
@@ -452,12 +562,21 @@ export async function POST(request: NextRequest) {
       // Tag the subscription itself (not just the checkout session) with the tier
       // so Stripe stays the source of truth: future checkouts and the safety
       // cleanup can read `subscription.metadata.tier` to know exactly what a live
+
+      // Tag the subscription itself (not just the checkout session) with the tier
+      // so Stripe stays the source of truth: future checkouts and the safety
+      // cleanup can read `subscription.metadata.tier` to know exactly what a live
       // sub represents, instead of guessing from price amounts.
       sessionParams.subscription_data = {
         metadata: {
           user_id: userId,
           tier: tierLower,
           visa_category: effectiveVisaCategory,
+          candidate_count: String(parsedCandidateCount),
+          target_candidate_id: candidateId || "",
+          candidate_id: candidateId || "",
+          action: isAddCandidateRequest ? "add_candidate" : "",
+          is_add_candidate: isAddCandidateRequest ? "true" : "false",
         },
       };
 
@@ -504,7 +623,7 @@ export async function POST(request: NextRequest) {
       if (useRecurringId) {
         sessionParams.line_items!.push({
           price: product.recurringPriceId,
-          quantity: 1,
+          quantity: parsedCandidateCount,
         });
       } else {
         // Custom price (e.g. CR-2) — create dynamic recurring price
@@ -519,7 +638,7 @@ export async function POST(request: NextRequest) {
             unit_amount: Math.round(monthlyPrice * 100),
             recurring: { interval: "month" },
           },
-          quantity: 1,
+          quantity: parsedCandidateCount,
         });
       }
 
@@ -531,6 +650,11 @@ export async function POST(request: NextRequest) {
         product_id: productTier,
         product_name: product.name + (serverIsUpgrade ? " (Upgrade)" : ""),
         visa_category: effectiveVisaCategory,
+        candidate_count: String(parsedCandidateCount),
+        target_candidate_id: candidateId || "",
+        candidate_id: candidateId || "",
+        action: isAddCandidateRequest ? "add_candidate" : "",
+        is_add_candidate: isAddCandidateRequest ? "true" : "false",
         is_upgrade: serverIsUpgrade ? "true" : "false",
         old_subscription_id: serverIsUpgrade ? oldSubscriptionId || "" : "",
       };
@@ -571,15 +695,6 @@ export async function POST(request: NextRequest) {
 
         const addon = (PRODUCTS.ADDONS as any)?.[catalogAddonId];
 
-        if (!sessionParams.line_items || sessionParams.line_items.length === 0) {
-          return NextResponse.json(
-            {
-              error: "No valid purchasable add-ons were provided.",
-            },
-            { status: 400 }
-          );
-        }
-
         if (addon) {
           sessionParams.line_items!.push({
             price_data: {
@@ -593,6 +708,15 @@ export async function POST(request: NextRequest) {
             quantity: 1,
           });
         }
+      }
+
+      // Checked AFTER the loop: checking inside it (before the first push) rejected
+      // every standalone add-on purchase with a 400.
+      if (sessionParams.line_items!.length === 0) {
+        return NextResponse.json(
+          { error: "No valid purchasable add-ons were provided." },
+          { status: 400 }
+        );
       }
 
       sessionParams.metadata = {
@@ -763,6 +887,71 @@ export async function POST(request: NextRequest) {
         product_type: "pcc_filing",
         product_id: policeVerificationId,
       };
+    } else if (translationDetails) {
+      // Deferred-create (pay-first) flow for Document Translation — mirrors Expert
+      // Consultation. No `translation_documents` row exists yet; the fields ride along
+      // in Stripe metadata and the row is inserted by the webhook / verify-session ONLY
+      // after a successful payment, so a canceled/failed checkout leaves nothing behind.
+      // `docId` is the future row's primary key.
+      const docId =
+        typeof translationDetails.docId === "string" && translationDetails.docId
+          ? translationDetails.docId
+          : crypto.randomUUID();
+      const documentTranslationPrice = 25; // $25 per document translation request
+
+      // Look up name server-side (never trust client-provided identity).
+      const { data: profileRow } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", userId)
+        .single();
+
+      const splitMeta = (str: string, prefix: string) => {
+        const chunkLimit = 450;
+        const meta: Record<string, string> = {};
+        if (!str) return meta;
+        let index = 1;
+        for (let i = 0; i < str.length; i += chunkLimit) {
+          meta[`${prefix}_${index}`] = str.substring(i, i + chunkLimit);
+          index++;
+        }
+        return meta;
+      };
+      const notesMeta = splitMeta(String(translationDetails.userNotes || ""), "t_notes");
+
+      sessionParams.mode = "payment";
+      sessionParams.line_items = [
+        {
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: "Document Translation",
+              description: `Document Translation (${translationDetails.documentType || "document"})`,
+            },
+            unit_amount: documentTranslationPrice * 100,
+          },
+          quantity: 1,
+        },
+      ];
+
+      sessionParams.metadata = {
+        ...sessionParams.metadata,
+        product_type: "document_translations",
+        product_id: docId,
+        t_doc_id: docId,
+        t_storage_path: String(translationDetails.storagePath || ""),
+        t_original_filename: String(translationDetails.originalFilename || ""),
+        t_original_file_size: String(translationDetails.originalFileSize || ""),
+        t_original_mime_type: String(translationDetails.originalMimeType || ""),
+        t_document_type: String(translationDetails.documentType || ""),
+        t_user_email: String(user.email || ""),
+        t_user_name: String(profileRow?.full_name || "User"),
+        t_candidate_id: String(translationDetails.candidateId || "candidate-1"),
+        t_candidate_name: String(translationDetails.candidateName || ""),
+        t_source: translationDetails.source === "journey" ? "journey" : "standalone",
+        t_journey_slug: String(translationDetails.journeySlug || ""),
+        ...notesMeta,
+      };
     } else if (documentTranslationId) {
       // Note: document upload route stores records in `translation_documents`
       const { data: requestRecord, error: requestError } = await supabase
@@ -819,14 +1008,31 @@ export async function POST(request: NextRequest) {
     // SAME purchase (network timeout, double submit) so a retry returns the
     // existing session instead of creating a second one. Scoped to a short time
     // bucket so a genuinely new attempt later still gets a fresh session, and
-    // includes the selection so changing plan/add-ons yields a new session.
+    // includes ALL parameters (plan, candidate count, candidate ID, action, line items,
+    // and add-ons) so any parameter change (e.g. switching between 2 and 4 parents)
+    // yields a distinct idempotency key, avoiding Stripe parameter-mismatch errors.
     let idempotencyKey: string | undefined;
     if (productTier) {
-      const bucket = Math.floor(Date.now() / (10 * 60 * 1000)); // 10-minute window
-      const addonKey = Array.isArray(addons) ? [...addons].sort().join(",") : "";
+      const bucket = Math.floor(Date.now() / (10 * 60 * 1000)); // 10-minute dedupe window
+      const lineItemsSummary = (sessionParams.line_items || []).map((item) => ({
+        price: item.price || null,
+        quantity: item.quantity ?? 1,
+        amount: item.price_data?.unit_amount ?? null,
+      }));
+      const payloadToHash = {
+        userId,
+        productTier: productTier.toLowerCase(),
+        visaCategory: effectiveVisaCategory,
+        candidateCount: parsedCandidateCount,
+        candidateId: candidateId || "",
+        action: action || "",
+        addons: Array.isArray(addons) ? [...addons].sort() : [],
+        lineItems: lineItemsSummary,
+        bucket,
+      };
       idempotencyKey = crypto
         .createHash("sha256")
-        .update(`checkout|${userId}|${productTier}|${addonKey}|${effectiveVisaCategory}|${bucket}`)
+        .update(JSON.stringify(payloadToHash))
         .digest("hex");
     }
 
@@ -850,12 +1056,15 @@ export async function POST(request: NextRequest) {
     // FIX: Map standalone_addon to journey_plan for the DB insert to satisfy the check constraint,
     // and map medical_booking / pcc_filing to consultation to satisfy the check constraint as well,
     // but keep it as medical_booking / pcc_filing in the Stripe metadata so the webhook/verify-session works perfectly.
+    // wallet_topup is mapped to "consultation" too (NOT journey_plan, which
+    // reconcileUserPlan reads to self-heal plan tiers).
     const dbProductType =
       sessionParams.metadata?.product_type === "standalone_addon"
         ? "journey_plan"
         : sessionParams.metadata?.product_type === "medical_booking" ||
             sessionParams.metadata?.product_type === "pcc_filing" ||
-            sessionParams.metadata?.product_type === "document_translations"
+            sessionParams.metadata?.product_type === "document_translations" ||
+            sessionParams.metadata?.product_type === WALLET_TOPUP_PRODUCT_TYPE
           ? "consultation"
           : (sessionParams.metadata?.product_type as any) || "journey_plan";
 
@@ -867,28 +1076,40 @@ export async function POST(request: NextRequest) {
           : sessionParams.metadata?.product_type === "pcc_filing"
             ? policeVerificationId
             : sessionParams.metadata?.product_type === "document_translations"
-              ? documentTranslationId
+              ? documentTranslationId || sessionParams.metadata?.product_id || ""
               : String(sessionParams.metadata?.product_id || "");
 
     let paymentId: string | null = null;
     try {
-      const payment = await paymentService.createPayment({
-        user_id: userId,
-        stripe_checkout_session_id: session.id,
-        amount: (session.amount_total ?? 0) / 100,
-        currency: session.currency || "usd",
-        status: "pending",
-        product_type: dbProductType,
-        product_id: dbProductId,
-        metadata: {
-          product_name: sessionParams.metadata?.product_name || "Add-on Purchase",
-          customer_email: userEmail,
-          stripe_customer_id: stripeCustomerId!,
-          original_product_type: sessionParams.metadata?.product_type || "",
-        },
-      });
-      paymentId = payment.id;
-      logDebug("Payment record created successfully:", { paymentId });
+      // Check if payment already exists for this session (e.g. reused checkout session from idempotent retry)
+      const { data: existingPayment } = await supabase
+        .from("payments")
+        .select("id")
+        .eq("stripe_checkout_session_id", session.id)
+        .maybeSingle();
+
+      if (existingPayment) {
+        paymentId = existingPayment.id;
+        logDebug("Existing payment record reused for session:", { paymentId });
+      } else {
+        const payment = await paymentService.createPayment({
+          user_id: userId,
+          stripe_checkout_session_id: session.id,
+          amount: (session.amount_total ?? 0) / 100,
+          currency: session.currency || "usd",
+          status: "pending",
+          product_type: dbProductType,
+          product_id: dbProductId,
+          metadata: {
+            product_name: sessionParams.metadata?.product_name || "Add-on Purchase",
+            customer_email: userEmail,
+            stripe_customer_id: stripeCustomerId!,
+            original_product_type: sessionParams.metadata?.product_type || "",
+          },
+        });
+        paymentId = payment.id;
+        logDebug("Payment record created successfully:", { paymentId });
+      }
 
       // Link payment to translation document if this is a document translation purchase
       if (

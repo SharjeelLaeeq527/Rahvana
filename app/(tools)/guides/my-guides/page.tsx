@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
+import { useCandidate } from "@/app/context/CandidateContext";
 
 interface UserGuideSession {
   id: string;
@@ -30,6 +31,7 @@ interface UserGuideSession {
 }
 
 export default function MyGuidesPage() {
+  const { activeCandidateId } = useCandidate();
   const [sessions, setSessions] = useState<UserGuideSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
@@ -43,9 +45,43 @@ export default function MyGuidesPage() {
   const fetchMyGuides = async () => {
     try {
       setLoading(true);
-      const res = await fetch("/api/guides/my-guides");
-      const data = await res.json();
-      setSessions(data.sessions || []);
+      const currentCandidateId = activeCandidateId || "candidate-1";
+
+      // 1. Fetch from server API
+      let apiSessions: UserGuideSession[] = [];
+      try {
+        const res = await fetch(`/api/guides/my-guides?candidateId=${currentCandidateId}`);
+        if (res.ok) {
+          const data = await res.json();
+          apiSessions = data.sessions || [];
+        }
+      } catch (e) {
+        console.error("API error fetching guides:", e);
+      }
+
+      // 2. Read local candidate sessions cache
+      let localSessions: UserGuideSession[] = [];
+      if (typeof window !== "undefined") {
+        try {
+          const raw = localStorage.getItem(`rahvana_guide_sessions_${currentCandidateId}`);
+          if (raw) {
+            localSessions = JSON.parse(raw);
+          }
+        } catch {
+          // Ignore
+        }
+      }
+
+      // 3. Merge sessions cleanly by guide slug
+      const sessionMap = new Map<string, UserGuideSession>();
+      for (const s of localSessions) {
+        if (s.guides?.slug) sessionMap.set(s.guides.slug, s);
+      }
+      for (const s of apiSessions) {
+        if (s.guides?.slug) sessionMap.set(s.guides.slug, s);
+      }
+
+      setSessions(Array.from(sessionMap.values()));
     } catch (error) {
       console.error("Failed to fetch my guides:", error);
     } finally {
@@ -55,7 +91,7 @@ export default function MyGuidesPage() {
 
   useEffect(() => {
     fetchMyGuides();
-  }, []);
+  }, [activeCandidateId]);
 
   const handleDelete = async () => {
     if (!selectedSessionId) return;
