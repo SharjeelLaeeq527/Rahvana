@@ -2635,6 +2635,15 @@ export default function MedicalAppointmentTool({
     setError(null);
 
     try {
+      // ── Entitlement check FIRST (before creating any row) ─────────────
+      const unlimited = isUnlimited("medical_booking", tier);
+      let hasCredit = false;
+      if (!isJourney && !unlimited) {
+        const access = await checkAccess("medical_booking");
+        hasCredit = access.allowed && access.data?.data?.usage?.allowed === true;
+      }
+      const mustPay = !isJourney && !unlimited && !hasCredit;
+
       // First, submit appointment data to API to get the appointment ID
       const appointmentResponse = await fetch("/api/book-appointment", {
         method: "POST",
@@ -2658,6 +2667,8 @@ export default function MedicalAppointmentTool({
           appointmentConfirmationLetter: undefined,
           // Send applicants data separately to prevent circular references
           applicants: formData.applicants,
+          // Draft flag: hidden until Stripe confirms payment (revealed by webhook)
+          awaitingPayment: mustPay,
         }),
       });
 
@@ -2741,56 +2752,41 @@ export default function MedicalAppointmentTool({
         return;
       }
 
-      // Credit model: Executive = unlimited; anyone else must hold a purchased
-      // $5 credit (checked server-side via /api/feature-usage). No access at all → existing pay-as-you-go $5 checkout (fulfills this request).
-      let usedCredit = false;
-      if (!isUnlimited("medical_booking", tier)) {
-        const access = await checkAccess("medical_booking");
-        const usage = access.data?.data?.usage;
-        const hasCredit = access.allowed && usage?.allowed === true;
-
-        if (!hasCredit) {
-          try {
-            const stripeRes = await fetch("/api/stripe/checkout", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                appointmentId: appointmentId,
-              }),
-            });
-
-            const stripeData = await stripeRes.json();
-
-            if (!stripeRes.ok) {
-              throw new Error(stripeData.error || "Failed to create checkout session");
-            }
-
-            if (stripeData.url) {
-              window.location.href = stripeData.url;
-              return; // Redirecting to Stripe
-            } else {
-              throw new Error("No checkout URL returned");
-            }
-          } catch (stripeErr: unknown) {
-            console.error("Checkout redirection failed:", stripeErr);
-            setError(
-              stripeErr instanceof Error ? stripeErr.message : "Checkout redirection failed"
-            );
-            setLoading(false);
+      // Must-pay path: row exists as hidden draft. Stripe reveals on payment.
+      if (mustPay) {
+        try {
+          const stripeRes = await fetch("/api/stripe/checkout", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ appointmentId }),
+          });
+          const stripeData = await stripeRes.json();
+          if (!stripeRes.ok) {
+            throw new Error(stripeData.error || "Failed to create checkout session");
+          }
+          if (stripeData.url) {
+            window.location.href = stripeData.url;
             return;
           }
+          throw new Error("No checkout URL returned");
+        } catch (stripeErr: unknown) {
+          console.error("Checkout redirection failed:", stripeErr);
+          setError(stripeErr instanceof Error ? stripeErr.message : "Checkout redirection failed");
+          setLoading(false);
+          return;
         }
+      }
 
-        // Consume exactly one credit now that the booking is proceeding.
+      // Free path: consume one credit (non-unlimited). Race fallback → Stripe.
+      let usedCredit = false;
+      if (!unlimited) {
         const reservation = await consumeAccess("medical_booking");
         if (!reservation.allowed || reservation.data?.allowed === false) {
-          // Raced with another tab / pool drained between check and consume —
-          // fall back to the pay-as-you-go checkout instead of a silent freebie.
           try {
             const stripeRes = await fetch("/api/stripe/checkout", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ appointmentId: appointmentId }),
+              body: JSON.stringify({ appointmentId }),
             });
             const stripeData = await stripeRes.json();
             if (stripeData.url) {
@@ -2809,7 +2805,7 @@ export default function MedicalAppointmentTool({
           setRemainingCredits(reservation.data.remaining);
         }
       }
-      void usedCredit; // available for a future "credit applied" toast
+      void usedCredit;
 
       setStep(10);
     } catch (err: unknown) {

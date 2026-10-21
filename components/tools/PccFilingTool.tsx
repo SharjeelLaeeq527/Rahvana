@@ -698,7 +698,19 @@ function PoliceApplyContent({
       setCheckoutLoading(true);
       setCheckoutError(null);
 
-      // 1. Save application
+      // ── Entitlement check FIRST ──────────────────────────────────────────
+      // Determine whether the user must pay BEFORE creating any DB row, so
+      // must-pay submissions are stored as hidden drafts (awaiting_payment)
+      // and never leak as visible unpaid requests if checkout fails.
+      const unlimited = isUnlimited("pcc_filing", tier);
+      let hasCredit = false;
+      if (!isJourney && !unlimited) {
+        const access = await checkAccess("pcc_filing");
+        hasCredit = !!access.allowed && (access.data?.data?.usage?.allowed ?? false);
+      }
+      const mustPay = !isJourney && !unlimited && !hasCredit;
+
+      // 1. Save application (as draft when mustPay, visible otherwise)
       const payload = {
         ...formData,
         userId: user?.id,
@@ -708,18 +720,16 @@ function PoliceApplyContent({
         ...(isJourney
           ? { source: "journey", journey_slug: journeyContext?.journeySlug || null }
           : { source: "standalone" }),
+        awaitingPayment: mustPay,
       };
 
       const response = await fetch("/api/police-verification/apply", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
       const result = await response.json();
-
       if (!response.ok) {
         throw new Error(result.error || "Submission failed");
       }
@@ -727,25 +737,18 @@ function PoliceApplyContent({
       const { id, requestId } = result;
       setReferenceId(requestId);
 
-      // 2. Upload files
+      // 2. Upload files (attached regardless of payment status)
       const uploadPromises = Object.entries(files).map(async ([key, file]) => {
         if (!file) return;
-
         const fd = new FormData();
         fd.append("file", file);
         fd.append("requestId", id);
         fd.append("fileType", key);
-
-        await fetch("/api/police-verification/upload", {
-          method: "POST",
-          body: fd,
-        });
+        await fetch("/api/police-verification/upload", { method: "POST", body: fd });
       });
-
       await Promise.all(uploadPromises);
 
-      // 3a) MODE BRANCH at the credit gate — journey mode: no credits, no Stripe.
-      // Access was already gated by StepView (tier guard before opening); finalize here.
+      // 3a) Journey mode: no credits, no Stripe — finalize directly.
       if (isJourney) {
         onSave?.({
           referenceId: requestId,
@@ -753,48 +756,33 @@ function PoliceApplyContent({
           location: formData.district || "Sindh",
           status: "requested",
         });
-        setCurrentStep(5); // Success Step
+        setCurrentStep(5);
         return;
       }
 
-      // Server-side balance check (canUse() only reflects pool size, not the remaining balance — a purchaser who used their credit must pay again).
-      const pccAccess = isUnlimited("pcc_filing", tier)
-        ? { allowed: true }
-        : await checkAccess("pcc_filing");
-      const canUsePccFiling =
-        pccAccess.allowed &&
-        (isUnlimited("pcc_filing", tier) || (pccAccess.data?.data?.usage?.allowed ?? false));
-      if (!canUsePccFiling && user?.id) {
+      // 3b) Must-pay: row exists as hidden draft. Stripe reveals on payment.
+      if (mustPay) {
         const stripeRes = await fetch("/api/stripe/checkout", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            policeVerificationId: id,
-            userId: user.id,
-          }),
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ policeVerificationId: id, userId: user?.id }),
         });
-
         const stripeData = await stripeRes.json();
-
         if (!stripeRes.ok) {
           throw new Error(stripeData.error || "Failed to create checkout session");
         }
-
         if (stripeData.url) {
           window.location.href = stripeData.url;
           return;
         }
-
         throw new Error("No checkout URL returned");
       }
 
-      // Free path: Executive (unlimited) or consuming one purchased credit.
-      if (!isUnlimited("pcc_filing", tier)) {
+      // 3c) Free path: consume credit (or unlimited — no consume needed).
+      if (!unlimited) {
         const reservation = await consumeAccess("pcc_filing");
         if (!reservation.allowed || reservation.data?.allowed === false) {
-          // Raced with another tab — send them to pay instead of a silent freebie.
+          // Raced with another tab — fall back to Stripe against same row.
           const stripeRes = await fetch("/api/stripe/checkout", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -813,7 +801,7 @@ function PoliceApplyContent({
         }
       }
 
-      setCurrentStep(5); // Success Step
+      setCurrentStep(5);
     } catch (err) {
       console.error(err);
 
@@ -1162,7 +1150,7 @@ function PoliceApplyContent({
         {/* Journey-only compact heading — keeps the service title + a short description visible
             so users immediately understand what this screen is (standalone uses the sticky header). */}
         {isJourney && (
-          <div className="mb-5 px-1 text-center mt-4">
+          <div className="mt-4 mb-5 px-1 text-center">
             <h1 className="flex items-center justify-center gap-2.5 text-xl font-bold text-gray-900">
               <div className="bg-primary/10 shrink-0 rounded-xl p-2">
                 <ShieldCheck className="text-primary" size={22} />

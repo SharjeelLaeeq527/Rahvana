@@ -53,6 +53,7 @@ interface PoliceVerificationData {
   admin_notes?: string;
   source?: string | null;
   journey_slug?: string | null;
+  awaiting_payment?: boolean;
 }
 
 function generateRequestId() {
@@ -133,6 +134,9 @@ export async function POST(req: NextRequest) {
       // Origin tagging: 'journey' rows are hidden from standalone My Resources.
       source: body.source === "journey" ? "journey" : "standalone",
       journey_slug: body.journey_slug || null,
+      // Draft flag: standalone must-pay requests are created hidden and revealed by the
+      // Stripe webhook / verify-session once paid. Credit/journey/plan rows stay false.
+      awaiting_payment: body.awaitingPayment === true,
     };
 
     const { data, error } = await supabase
