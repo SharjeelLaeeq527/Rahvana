@@ -125,3 +125,64 @@ export async function createTopupCheckout(amount: number, returnUrl: string): Pr
   }
   return data.url;
 }
+
+export type ServiceBookingResponse = {
+  status: number;
+  body: {
+    success: boolean;
+    error?: string;
+    balance?: number;
+    transactionId?: string | null;
+    serviceId?: string;
+    referenceId?: string | null;
+    alreadyProcessed?: boolean;
+    required?: number;
+    available?: number;
+    deficit?: number;
+    topupAmount?: number;
+    [key: string]: unknown;
+  };
+};
+
+/** Generates an idempotency key for service booking requests. */
+export function newServiceBookingIdempotencyKey(serviceId: string, referenceId?: string): string {
+  const rand =
+    typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+      ? crypto.randomUUID()
+      : Math.random().toString(36).slice(2);
+  const refPart = referenceId ? `_${referenceId}` : "";
+  return `svc_${serviceId}${refPart}_${Date.now()}_${rand}`.slice(0, 100);
+}
+
+/**
+ * Request wallet credit deduction for a standalone service booking.
+ * Returns 200 on success, 402 on insufficient credits (with deficit and suggested top-up).
+ */
+export async function requestServiceBookingDeduction(
+  serviceId: string,
+  referenceId?: string,
+  idempotencyKey?: string,
+  metadata?: Record<string, unknown>
+): Promise<ServiceBookingResponse> {
+  const key = idempotencyKey || newServiceBookingIdempotencyKey(serviceId, referenceId);
+  try {
+    const res = await fetch("/api/wallet/deduct-service", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        serviceId,
+        referenceId,
+        idempotencyKey: key,
+        metadata,
+      }),
+    });
+    const body = await res.json().catch(() => null);
+    return {
+      status: res.status,
+      body: body && typeof body === "object" ? body : { success: false, error: "DEDUCT_SERVICE_FAILED" },
+    };
+  } catch {
+    return { status: 0, body: { success: false, error: "NETWORK_ERROR" } };
+  }
+}
+

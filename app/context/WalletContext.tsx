@@ -6,9 +6,12 @@ import type { WalletResourceType } from "@/lib/wallet/catalog";
 import {
   fetchWalletSnapshot,
   newLaunchIdempotencyKey,
+  newServiceBookingIdempotencyKey,
   requestLaunch,
+  requestServiceBookingDeduction,
   unlockKey,
   type LaunchResponse,
+  type ServiceBookingResponse,
   type WalletUnlock,
 } from "@/lib/wallet/client";
 import { WalletTopupModal } from "@/app/components/wallet/WalletTopupModal";
@@ -39,6 +42,12 @@ interface WalletContextValue {
   isUnlocked: (resourceId: string, resourceType?: WalletResourceType) => boolean;
   refreshWallet: () => Promise<void>;
   launchResource: (resourceType: WalletResourceType, resourceId: string) => Promise<LaunchResponse>;
+  deductServiceBooking: (
+    serviceId: string,
+    referenceId?: string,
+    idempotencyKey?: string,
+    metadata?: Record<string, unknown>
+  ) => Promise<ServiceBookingResponse>;
   openTopup: (options?: OpenTopupOptions) => void;
   closeTopup: () => void;
 }
@@ -142,6 +151,28 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     []
   );
 
+  const deductServiceBooking = useCallback(
+    async (
+      serviceId: string,
+      referenceId?: string,
+      idempotencyKey?: string,
+      metadata?: Record<string, unknown>
+    ): Promise<ServiceBookingResponse> => {
+      const result = await requestServiceBookingDeduction(
+        serviceId,
+        referenceId,
+        idempotencyKey,
+        metadata
+      );
+      const { body } = result;
+      if (typeof body.balance === "number") setBalance(body.balance);
+      else if (typeof body.available === "number") setBalance(body.available);
+      // Consumable per booking: services never write to unlocks
+      return result;
+    },
+    []
+  );
+
   const openTopup = useCallback((options?: OpenTopupOptions) => setTopup(options ?? {}), []);
   const closeTopup = useCallback(() => setTopup(null), []);
 
@@ -155,10 +186,23 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       isUnlocked,
       refreshWallet,
       launchResource,
+      deductServiceBooking,
       openTopup,
       closeTopup,
     }),
-    [balance, isLoading, error, unlocks, unlockedResources, isUnlocked, refreshWallet, launchResource, openTopup, closeTopup]
+    [
+      balance,
+      isLoading,
+      error,
+      unlocks,
+      unlockedResources,
+      isUnlocked,
+      refreshWallet,
+      launchResource,
+      deductServiceBooking,
+      openTopup,
+      closeTopup,
+    ]
   );
 
   return (

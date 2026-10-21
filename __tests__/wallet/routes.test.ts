@@ -10,6 +10,7 @@ const mockEq = jest.fn()
 const mockRange = jest.fn()
 const mockLaunch = jest.fn()
 const mockLoadState = jest.fn()
+const mockDeductService = jest.fn()
 
 jest.mock('@/lib/api/authGuards', () => ({
   getAuthenticatedUser: () => mockUser(),
@@ -28,13 +29,19 @@ jest.mock('@/lib/api/authGuards', () => ({
 }))
 jest.mock('@/lib/wallet/launch', () => ({ launchResource: (...a: any[]) => mockLaunch(...a) }))
 jest.mock('@/lib/wallet/state', () => ({ loadWalletState: (...a: any[]) => mockLoadState(...a) }))
+jest.mock('@/lib/wallet/serviceBooking', () => ({
+  deductServiceBooking: (...a: any[]) => mockDeductService(...a),
+}))
 
 import { GET as getWallet } from '@/app/api/wallet/route'
 import { POST as launchTool } from '@/app/api/wallet/launch-tool/route'
+import { POST as deductService } from '@/app/api/wallet/deduct-service/route'
 import { GET as getTransactions } from '@/app/api/wallet/transactions/route'
 
 const post = (body: string) =>
   new NextRequest('http://localhost/api/wallet/launch-tool', { method: 'POST', body })
+const postService = (body: string) =>
+  new NextRequest('http://localhost/api/wallet/deduct-service', { method: 'POST', body })
 const txReq = (qs = '') => new NextRequest(`http://localhost/api/wallet/transactions${qs}`)
 
 beforeEach(() => {
@@ -47,9 +54,11 @@ describe('auth', () => {
     mockUser.mockResolvedValue(null)
     expect((await getWallet()).status).toBe(401)
     expect((await launchTool(post('{}'))).status).toBe(401)
+    expect((await deductService(postService('{}'))).status).toBe(401)
     expect((await getTransactions(txReq())).status).toBe(401)
     expect(mockLaunch).not.toHaveBeenCalled()
     expect(mockLoadState).not.toHaveBeenCalled()
+    expect(mockDeductService).not.toHaveBeenCalled()
   })
 })
 
@@ -98,6 +107,51 @@ describe('POST /api/wallet/launch-tool', () => {
     const res = await launchTool(post(body))
     expect(res.status).toBe(400)
     expect(mockLaunch).not.toHaveBeenCalled()
+  })
+})
+
+describe('POST /api/wallet/deduct-service', () => {
+  it('passes serviceId, referenceId and idempotencyKey to deductServiceBooking', async () => {
+    mockDeductService.mockResolvedValue({
+      status: 200,
+      body: { success: true, balance: 95, transactionId: 'tx_123' },
+    })
+    const res = await deductService(
+      postService(
+        JSON.stringify({
+          serviceId: 'book-medical-appointment',
+          referenceId: 'apt_123',
+          idempotencyKey: 'idemp_key_123',
+        })
+      )
+    )
+    expect(res.status).toBe(200)
+    expect(mockDeductService).toHaveBeenCalledWith(
+      expect.anything(),
+      'user-1',
+      expect.objectContaining({
+        serviceId: 'book-medical-appointment',
+        referenceId: 'apt_123',
+        idempotencyKey: 'idemp_key_123',
+      })
+    )
+  })
+
+  it('forwards 402 INSUFFICIENT_CREDITS response', async () => {
+    mockDeductService.mockResolvedValue({
+      status: 402,
+      body: { success: false, error: 'INSUFFICIENT_CREDITS', required: 25, available: 5, deficit: 20, topupAmount: 20 },
+    })
+    const res = await deductService(
+      postService(JSON.stringify({ serviceId: 'pcc-filing-service' }))
+    )
+    expect(res.status).toBe(402)
+  })
+
+  it.each(['not json', '[]', 'null'])('rejects body %p with 400', async (body) => {
+    const res = await deductService(postService(body))
+    expect(res.status).toBe(400)
+    expect(mockDeductService).not.toHaveBeenCalled()
   })
 })
 
