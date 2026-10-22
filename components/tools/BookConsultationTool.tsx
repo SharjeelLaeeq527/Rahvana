@@ -22,7 +22,9 @@ import {
   ChevronDown,
   Lock,
   MessageCircle,
+  Coins,
 } from "lucide-react";
+import { useWallet } from "@/app/context/WalletContext";
 import type { ToolModeProps } from "@/types/tool-mode";
 import { useResolveToolMode } from "@/lib/hooks/useResolveToolMode";
 import { usePlan, normalizePlanTier } from "@/app/context/PlanContext";
@@ -254,6 +256,11 @@ export default function BookConsultationTool({
   const { checkAccess, consumeAccess } = useFeatureAccess();
   const { showToast } = useToast();
   const [useCreditIfAvailable, setUseCreditIfAvailable] = useState<boolean>(true);
+
+  const wallet = useWallet();
+  const costCredits = 99;
+  const hasWalletCredits = wallet.balance !== null && wallet.balance >= costCredits;
+  const deficit = Math.max(costCredits, costCredits - (wallet.balance ?? 0));
 
   // Mock data for dropdowns
   const issueCategories = [
@@ -568,8 +575,13 @@ export default function BookConsultationTool({
       const response = await fetch(url);
       if (response.ok) {
         const data = await response.json();
-        // Filter by current logged-in user's email so they only see their own requests
-        const myBookings = data.filter((booking: any) => booking.email === user?.email);
+        // Filter by current logged-in user's email so they only see their own confirmed requests
+        const myBookings = data.filter(
+          (booking: any) =>
+            booking.email === user?.email &&
+            booking.payment_status !== "pending" &&
+            booking.payment_status !== "failed"
+        );
         setUserBookings(myBookings);
       }
     } catch (error) {
@@ -757,21 +769,14 @@ export default function BookConsultationTool({
       return;
     }
 
-    // Credits come from the pool (Executive's 2 included + any $99 add-on purchases on any tier)
-    const hasCredit = remainingConsultations !== null && remainingConsultations > 0;
-
-    // Journey mode bypasses credits/Stripe entirely — access was already tier-gated by stepEntitlement.guard() / LockedToolGate before the overlay opened.
-    const shouldConsumeCredit = !isJourney && hasCredit && useCreditIfAvailable;
-
     setLoading(true);
 
-    if (shouldConsumeCredit) {
-      // Check first if they have credits before uploading files and calling endpoint
-      const check = await checkAccess("expert_consultation");
-      const remaining = check.data?.data?.usage?.remaining;
-      if (!check.allowed || (remaining !== undefined && remaining <= 0)) {
+    // Standalone check: pre-flight check on wallet credits
+    if (!isJourney) {
+      if (wallet.balance === null || wallet.balance < costCredits) {
+        wallet.openTopup({ amount: deficit });
         showToast(
-          "You have run out of consultation credits. Please select card payment or upgrade your plan.",
+          `You need 99 credits for an expert consultation (Balance: ${wallet.balance ?? 0} credits). Please top up to proceed.`,
           "error"
         );
         setLoading(false);
@@ -806,11 +811,8 @@ export default function BookConsultationTool({
       // Phone number is already in E.164 format from PhoneInput
       const finalPhoneStr = formData.whatsapp_phone;
 
-      // Journey mode creates the booking through the same direct POST path as a free
-      // (credit-covered) booking — access was already tier-gated before the overlay
-      // opened, so we never hit Stripe here. Standalone credit bookings share this
-      // branch; standalone paid bookings fall through to the Stripe `else` below.
-      if (isJourney || shouldConsumeCredit) {
+      if (isJourney) {
+        // Journey mode: 0 credits, paid immediately, tagged with journey scope
         const payload = {
           ...formData,
           whatsapp_phone: finalPhoneStr,
@@ -818,17 +820,10 @@ export default function BookConsultationTool({
           selected_slot: formData.selected_slot?.toISOString(),
           alternate_slots: formData.alternate_slots?.map((slot) => slot.toISOString()),
           payment_status: "paid",
-          // Journey-scope tagging
-          ...(isJourney
-            ? {
-                source: "journey",
-                journey_slug: journeyContext?.journeySlug || null,
-                candidate_id: journeyContext?.candidateId || null,
-              }
-            : { source: "standalone" }),
+          source: "journey",
+          journey_slug: journeyContext?.journeySlug || null,
+          candidate_id: journeyContext?.candidateId || null,
         };
-
-        console.log("Final Free Payload:", payload);
 
         const response = await fetch("/api/consultation", {
           method: "POST",
@@ -838,96 +833,91 @@ export default function BookConsultationTool({
 
         if (response.ok) {
           const result = await response.json();
-
-          // Journey mode: emit onSave and skip consumeAccess / fetchTimeSlots.
-          // selected_slot is a full ISO datetime — see 7.6 for why this matters.
-          if (isJourney) {
-            onSave?.({
-              referenceId: String(result.reference_id ?? result.id),
-              referenceDate: formData.selected_slot
-                ? new Date(formData.selected_slot).toISOString()
-                : new Date().toISOString(),
-              location: "Remote (video call)",
-              status: "pending_approval",
-            });
-            setReferenceId(result.reference_id);
-            setShowConfirmation(true);
-            return; // skip the standalone credit-consumption path below
-          }
-
-          // Consume credit ONLY after successful booking creation!
-          try {
-            const reservation = await consumeAccess("expert_consultation");
-            if (reservation.allowed && reservation.data?.remaining !== undefined) {
-              setRemainingConsultations(reservation.data.remaining);
-            }
-          } catch (consumeErr) {
-            console.error("Failed to consume credit after booking:", consumeErr);
-          }
-
-          // Free booking -> show confirmation directly!
+          onSave?.({
+            referenceId: String(result.reference_id ?? result.id),
+            referenceDate: formData.selected_slot
+              ? new Date(formData.selected_slot).toISOString()
+              : new Date().toISOString(),
+            location: "Remote (video call)",
+            status: "pending_approval",
+          });
           setReferenceId(result.reference_id);
           setShowConfirmation(true);
-          fetchTimeSlots();
+          return;
         } else {
           const errorData = await response.json().catch(() => ({}));
-          console.error("Submission failed:", errorData);
-          showToast(`Failed to submit: ${errorData.error || "Check console for details"}`, "error");
+          throw new Error(errorData.error || "Failed to submit consultation");
         }
       } else {
-        // Direct checkout for paid bookings (decoupling reservation from API hit before checkout)
-        if (!user?.id) {
-          showToast("User session not found. Please log in again.", "error");
-          return;
-        }
-
-        const consultationDetails = {
-          issue_category: formData.issue_category,
-          visa_category: formData.visa_category,
-          case_stage: formData.case_stage,
-          urgency: formData.urgency || "normal",
-          preferred_language: formData.preferred_language || "English",
-          full_name: formData.full_name,
-          email: formData.email,
+        // Standalone mode: create draft with payment_status: 'pending', then deduct credits atomically
+        const payload = {
+          ...formData,
           whatsapp_phone: finalPhoneStr,
-          embassy_consulate: formData.embassy_consulate || "",
-          case_summary: formData.case_summary,
           attachments: uploadedPaths,
           selected_slot: formData.selected_slot?.toISOString(),
-          alternate_slots: formData.alternate_slots?.map((slot) => slot.toISOString()) || [],
+          alternate_slots: formData.alternate_slots?.map((slot) => slot.toISOString()),
+          payment_status: "pending",
+          source: "standalone",
         };
 
+        const response = await fetch("/api/consultation", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        const result = await response.json();
+        if (!response.ok) {
+          throw new Error(result.error || "Failed to create consultation request");
+        }
+
+        const bookingId = result.id;
+
+        // Deduct 99 credits atomically
         try {
-          const stripeRes = await fetch("/api/stripe/checkout", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              consultationDetails,
-            }),
-          });
+          const deductResult = await wallet.deductServiceBooking("book-a-consultation", bookingId);
 
-          const stripeData = await stripeRes.json();
-
-          if (!stripeRes.ok) {
-            throw new Error(stripeData.error || "Failed to create checkout session");
+          if (deductResult.body.success) {
+            setReferenceId(result.reference_id);
+            setShowConfirmation(true);
+            fetchTimeSlots();
+            return;
           }
 
-          if (stripeData.url) {
-            window.location.href = stripeData.url;
-            return; // Redirecting to Stripe
-          } else {
-            throw new Error("No checkout URL returned");
+          if (deductResult.status === 402) {
+            const deficitAmount = deductResult.body.deficit ?? costCredits;
+            wallet.openTopup({ amount: deductResult.body.topupAmount ?? deficitAmount });
+            showToast(
+              `Insufficient credits. Please top up ${deficitAmount} credits to complete your booking.`,
+              "error"
+            );
+            setLoading(false);
+            return;
           }
-        } catch (stripeErr: any) {
-          console.error("Checkout redirection failed:", stripeErr);
-          showToast(`Redirection failed: ${stripeErr.message || stripeErr}`, "error");
+
+          const rawErr = deductResult.body.error || "Failed to deduct service credits";
+          if (rawErr === "NETWORK_ERROR") {
+            throw new Error(
+              "Connection error: could not reach the server to process credits. No credits were deducted and your consultation has not been booked. Please check your connection and try again."
+            );
+          }
+          throw new Error(rawErr);
+        } catch (deductErr: unknown) {
+          console.error("Credit deduction failed:", deductErr);
+          const errMsg =
+            deductErr instanceof Error
+              ? deductErr.message === "NETWORK_ERROR"
+                ? "Connection error: could not reach the server to process credits. No credits were deducted and your consultation has not been booked. Please check your connection and try again."
+                : deductErr.message
+              : "Credit deduction failed. Your consultation has not been booked. Please try again.";
+          showToast(errMsg, "error");
+          setLoading(false);
+          return;
         }
       }
     } catch (error) {
       console.error("Submission error:", error);
-      showToast("An error occurred during submission.", "error");
+      showToast(error instanceof Error ? error.message : "An error occurred during submission.", "error");
     } finally {
       setLoading(false);
     }
@@ -2316,14 +2306,10 @@ export default function BookConsultationTool({
                 </p>
               </div>
               <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/10 px-4 py-2 backdrop-blur-md">
-                {tier !== "free" ? (
-                  <span
-                    aria-hidden="true"
-                    className={`plan-icon plan-icon--${tier}`}
-                    style={{ width: 28, height: 28, flexShrink: 0 }}
-                  />
-                ) : null}
-                <span className="text-sm font-semibold capitalize">{tier} Plan</span>
+                <Coins className="h-4 w-4 text-amber-300" />
+                <span className="text-sm font-semibold">
+                  {wallet.isLoading ? "..." : `${wallet.balance ?? 0} Credits Available`}
+                </span>
               </div>
             </div>
 
@@ -2411,7 +2397,7 @@ export default function BookConsultationTool({
                 </div> */}
               </div>
 
-              {/* Shopping Cart Summary & Payment Choice */}
+              {/* Price Breakdown & Wallet Credits */}
               <div className="space-y-6 md:col-span-2">
                 <div className="flex h-full flex-col justify-between rounded-2xl border border-slate-200/60 bg-slate-50/55 p-6 shadow-sm">
                   <div>
@@ -2424,157 +2410,76 @@ export default function BookConsultationTool({
                     <div className="space-y-4">
                       <div className="flex items-center justify-between text-sm">
                         <span className="font-medium text-slate-600">1x Expert Consultation</span>
-                        <span className="font-bold text-slate-800">$99.00</span>
+                        <span className="font-bold text-slate-800">99 Credits ($99.00)</span>
                       </div>
 
-                      {/* Plan Discounts / Benefits */}
-                      {hasCredit && useCreditIfAvailable ? (
-                        <div className="flex items-center justify-between text-sm text-green-600">
-                          <span className="flex items-center gap-1 font-semibold">
-                            <Sparkles className="h-3.5 w-3.5 animate-pulse" />
-                            Consultation Credit Applied
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="font-medium text-slate-600">Wallet Balance</span>
+                        <span className="font-bold text-slate-800">
+                          {wallet.isLoading ? "..." : `${wallet.balance ?? 0} Credits`}
+                        </span>
+                      </div>
+
+                      {hasWalletCredits && (
+                        <div className="flex items-center justify-between text-sm text-[#0d7377]">
+                          <span className="font-medium">Balance After Booking</span>
+                          <span className="font-bold">
+                            {(wallet.balance ?? 99) - 99} Credits
                           </span>
-                          <span className="font-bold">-$99.00</span>
                         </div>
-                      ) : null}
+                      )}
 
                       <div className="mt-2 flex items-center justify-between border-t border-slate-200 pt-4">
                         <span className="text-base font-bold text-slate-900">Total Due</span>
                         <span className="text-xl font-black text-slate-900">
-                          {hasCredit && useCreditIfAvailable ? "$0.00" : "$99.00"}
+                          99 Credits ($99.00)
                         </span>
                       </div>
                     </div>
 
-                    {/* Show available credits message */}
-                    {remainingConsultations !== null && (
-                      <div className="mt-5 flex items-center gap-2 rounded-xl border border-amber-100 bg-amber-50 p-3">
-                        <Crown className="h-4 w-4 flex-shrink-0 text-amber-500" />
-                        <span className="text-[11px] font-bold text-amber-800">
-                          {remainingConsultations === 0
-                            ? "No consultation credits left — pay $99 for this booking or buy an add-on."
-                            : useCreditIfAvailable
-                              ? `${Math.max(remainingConsultations - 1, 0)} consultation credits left after this booking`
-                              : `${remainingConsultations} consultation credits left`}
+                    {hasWalletCredits ? (
+                      <div className="mt-5 flex items-center gap-2 rounded-xl border border-teal-200 bg-teal-50 p-3">
+                        <Coins className="h-4 w-4 flex-shrink-0 text-[#0d7377]" />
+                        <span className="text-[11px] font-bold text-teal-800">
+                          99 credits will be deducted from your Rahvana Wallet upon confirmation.
                         </span>
+                      </div>
+                    ) : (
+                      <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-3.5">
+                        <div className="flex items-start gap-2">
+                          <Coins className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-600" />
+                          <div>
+                            <p className="text-xs font-bold text-amber-900">
+                              Insufficient Wallet Balance
+                            </p>
+                            <p className="mt-0.5 text-[11px] text-amber-700">
+                              You have {wallet.balance ?? 0} credits. 99 credits are required to book this consultation.
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() => wallet.openTopup({ amount: deficit })}
+                              className="mt-2.5 inline-flex items-center gap-1.5 rounded-lg bg-[#0d7377] px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-[#0a5c5f]"
+                            >
+                              <Coins size={12} /> Top up {deficit} Credits (${deficit})
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     )}
                   </div>
 
-                  {/* Credit Choice Selection if credits are available */}
-                  {hasCredit && (
-                    <div className="mt-6 border-t border-slate-200 pt-5">
-                      <p className="mb-3 text-xs font-bold tracking-wide text-slate-900 uppercase">
-                        Redemption Method
-                      </p>
-
-                      <div className="space-y-3">
-                        <div
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setUseCreditIfAvailable(true);
-                          }}
-                          className={cn(
-                            "flex cursor-pointer items-center justify-between rounded-xl border-2 p-3.5 transition-all duration-200",
-                            useCreditIfAvailable
-                              ? "border-teal-600 bg-teal-50/50 shadow-xs"
-                              : "border-slate-200 hover:border-slate-300"
-                          )}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div
-                              className={cn(
-                                "flex h-4 w-4 items-center justify-center rounded-full border",
-                                useCreditIfAvailable
-                                  ? "border-teal-600 bg-teal-600"
-                                  : "border-slate-300"
-                              )}
-                            >
-                              {useCreditIfAvailable && (
-                                <div className="h-1.5 w-1.5 rounded-full bg-white" />
-                              )}
-                            </div>
-                            <div>
-                              <p className="text-xs font-bold text-slate-900">
-                                Use Plan Credit (Free)
-                              </p>
-                              <p className="mt-0.5 text-[10px] font-medium text-teal-700">
-                                Consume 1 credit (
-                                {useCreditIfAvailable
-                                  ? `${remainingConsultations - 1} left after booking`
-                                  : `${remainingConsultations} available`}
-                                )
-                              </p>
-                            </div>
-                          </div>
-                          <Crown
-                            className={cn(
-                              "h-5 w-5",
-                              useCreditIfAvailable ? "text-amber-500" : "text-slate-400"
-                            )}
-                          />
-                        </div>
-
-                        <div
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setUseCreditIfAvailable(false);
-                          }}
-                          className={cn(
-                            "flex cursor-pointer items-center justify-between rounded-xl border-2 p-3.5 transition-all duration-200",
-                            !useCreditIfAvailable
-                              ? "border-teal-600 bg-teal-50/50 shadow-xs"
-                              : "border-slate-200 hover:border-slate-300"
-                          )}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div
-                              className={cn(
-                                "flex h-4 w-4 items-center justify-center rounded-full border",
-                                !useCreditIfAvailable
-                                  ? "border-teal-600 bg-teal-600"
-                                  : "border-slate-300"
-                              )}
-                            >
-                              {!useCreditIfAvailable && (
-                                <div className="h-1.5 w-1.5 rounded-full bg-white" />
-                              )}
-                            </div>
-                            <div>
-                              <p className="text-xs font-bold text-slate-900">
-                                Pay with Card ($99)
-                              </p>
-                              <p className="mt-0.5 text-[10px] text-slate-500">
-                                Save your credits for future use
-                              </p>
-                            </div>
-                          </div>
-                          <CreditCard
-                            className={cn(
-                              "h-5 w-5",
-                              !useCreditIfAvailable ? "text-teal-600" : "text-slate-400"
-                            )}
-                          />
-                        </div>
-                      </div>
+                  {/* Secure transaction info */}
+                  <div className="mt-6 flex flex-col gap-2 rounded-xl border border-slate-200/60 bg-white p-4">
+                    <div className="flex items-center gap-2">
+                      <CreditCard className="h-4 w-4 shrink-0 text-teal-600" />
+                      <h5 className="text-xs font-bold tracking-wide text-slate-900 uppercase">
+                        Secure Transaction
+                      </h5>
                     </div>
-                  )}
-
-                  {/* Show Checkout badge if paying */}
-                  {(!hasCredit || !useCreditIfAvailable) && (
-                    <div className="mt-5 flex items-start gap-3 rounded-xl border border-teal-100 bg-teal-50 p-4">
-                      <CreditCard className="mt-0.5 h-5 w-5 flex-shrink-0 text-teal-600" />
-                      <div>
-                        <p className="text-xs font-bold text-teal-800">Secure Card Checkout</p>
-                        <p className="mt-0.5 text-[11px] leading-relaxed text-teal-700/80">
-                          Payment is processed securely via Stripe. All major credit and debit cards
-                          accepted.
-                        </p>
-                      </div>
-                    </div>
-                  )}
+                    <p className="text-xs leading-relaxed text-slate-500">
+                      Standalone requests are paid with your Rahvana Wallet credits ($1 = 1 credit). If your balance is short, you can top up instantly via Stripe.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -2874,25 +2779,21 @@ export default function BookConsultationTool({
                 <p className="max-w-2xl text-xl font-light text-teal-50">
                   Personalized guidance for your U.S. immigration journey.
                 </p>
-                {remainingConsultations !== null && (
-                  <div className="mt-5 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white ring-1 ring-white/20 backdrop-blur-sm">
-                    <Crown className="h-4 w-4 text-amber-200" />
-                    {consultationCreditsLoading ? (
-                      <span>Loading consultation credits...</span>
-                    ) : (
-                      <span>
-                        Remaining consultation credits:{" "}
-                        {currentStep === 4 &&
-                        useCreditIfAvailable &&
-                        remainingConsultations !== null &&
-                        remainingConsultations > 0
-                          ? remainingConsultations - 1
-                          : remainingConsultations}
-                        /{consultationCreditLimit}
-                      </span>
-                    )}
-                  </div>
-                )}
+                <div className="mt-5 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white ring-1 ring-white/20 backdrop-blur-sm">
+                  <Coins className="h-4 w-4 text-amber-300" />
+                  {wallet.isLoading ? (
+                    <span>Loading credits...</span>
+                  ) : (
+                    <span>Wallet Balance: {wallet.balance ?? 0} Credits</span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => wallet.openTopup({ amount: deficit })}
+                    className="ml-2 rounded-full bg-white/20 px-2.5 py-0.5 text-xs font-bold text-white transition-colors hover:bg-white/30"
+                  >
+                    Top Up
+                  </button>
+                </div>
               </div>
               <div className="flex shrink-0 flex-col items-start gap-4 md:items-end">
                 <QuickAccessButton
@@ -3143,20 +3044,18 @@ export default function BookConsultationTool({
                     ) : (
                       <Button
                         key="submit-btn"
-                        type="submit"
+                        type={isJourney || hasWalletCredits ? "submit" : "button"}
+                        onClick={!isJourney && !hasWalletCredits ? () => wallet.openTopup({ amount: deficit }) : undefined}
                         disabled={!formData.selected_slot || loading}
-                        className="gap-1 bg-teal-600 px-2 text-xs hover:bg-teal-700 sm:gap-2 sm:px-8 sm:text-sm"
+                        className="gap-1 bg-teal-600 px-4 text-xs hover:bg-teal-700 sm:gap-2 sm:px-8 sm:text-sm"
                       >
                         {loading
                           ? "Processing..."
                           : isJourney
                             ? "Confirm & Book"
-                            : tier === "executive" &&
-                                remainingConsultations !== null &&
-                                remainingConsultations > 0 &&
-                                useCreditIfAvailable
-                              ? "Confirm & Book (Free)"
-                              : "Proceed to Payment ($99)"}
+                            : hasWalletCredits
+                              ? "Pay 99 Credits & Book"
+                              : `Top up ${deficit} Credits to Book`}
                       </Button>
                     )}
                   </div>
