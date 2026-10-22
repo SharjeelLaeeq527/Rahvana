@@ -22,7 +22,13 @@ import { useAuth } from "@/app/context/AuthContext";
 type Props = {
   item: WalletCatalogItem;
   /** URL to open after the resource launches successfully. */
-  href: string;
+  href?: string;
+  /**
+   * Called instead of navigating when the launch succeeds. Used by an in-tool
+   * lock card: the tool is already open, so it should unlock in place and keep
+   * whatever the user has entered.
+   */
+  onLaunched?: () => void;
   onClose: () => void;
 };
 
@@ -33,7 +39,7 @@ type Insufficient = {
   topupAmount: number;
 };
 
-export function CreditLaunchModal({ item, href, onClose }: Props) {
+export function CreditLaunchModal({ item, href, onLaunched, onClose }: Props) {
   const router = useRouter();
   const { balance, isLoading, launchResource } = useWallet();
   const { isAuthenticated } = useAuth();
@@ -83,8 +89,12 @@ export function CreditLaunchModal({ item, href, onClose }: Props) {
     const body = result.body;
 
     if (body.success) {
+      if (onLaunched) {
+        onLaunched();
+        return;
+      }
       onClose();
-      router.push(href);
+      if (href) router.push(href);
       return;
     }
     if (result.status === 402) {
@@ -299,9 +309,11 @@ export function CreditLaunchModal({ item, href, onClose }: Props) {
                           {amount} credits
                         </span>
                         <span className="block text-[11.5px] font-medium text-slate-500">
+                          {/* Spell out the math (balance + top-up - cost) so the
+                              leftover is not read as "top-up minus needed". */}
                           {leftAfter <= 0
-                            ? "Exactly what you need"
-                            : `${leftAfter} credits left after launch`}
+                            ? `Balance becomes ${shortfall.available + amount}, exactly the ${shortfall.required} you need`
+                            : `Balance becomes ${shortfall.available + amount}, ${leftAfter} left after the ${shortfall.required}-credit unlock`}
                         </span>
                       </span>
                     </span>

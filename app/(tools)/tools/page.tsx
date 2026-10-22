@@ -229,6 +229,7 @@ export default function ToolsPage({ isEmbedded = false }: { isEmbedded?: boolean
   } | null>(null);
   const { t } = useLanguage();
   const plan = usePlan();
+  const wallet = useWallet();
 
   const containerRef = React.useRef<HTMLDivElement>(null);
   const measureRef = React.useRef<HTMLDivElement>(null);
@@ -287,11 +288,19 @@ export default function ToolsPage({ isEmbedded = false }: { isEmbedded?: boolean
   }).sort((a, b) => a.title.localeCompare(b.title));
 
   // "My Resources" (embedded) view splits the catalog into two sections:
-  //  • "My Tools"     — tools the user owns (free/public + unlocked by plan or add-ons)
+  //  • "My Tools"     — tools the user owns (free/public, wallet-unlocked, or plan-unlocked
+  //                     for tools with no credit price)
   //  • "Browse Tools" — everything else, shown as locked/"Unlock" cards to explore
-  const isOwned = (feature?: string) => !feature || (!plan.isLoading && !plan.isLocked(feature));
-  const ownedTools = filteredTools.filter((tool) => isOwned(tool.entitlementFeature));
-  const browseTools = filteredTools.filter((tool) => !isOwned(tool.entitlementFeature));
+  // Priced standalone tools are paid with credits even by plan holders, so for them
+  // only a wallet unlock (incl. grandfathered legacy add-ons) counts as owned.
+  const isOwned = (tool: Tool) => {
+    const item = getToolCatalogItem(tool.id);
+    if (item) return !wallet.isLoading && wallet.isUnlocked(item.resourceId, item.resourceType);
+    const feature = tool.entitlementFeature;
+    return !feature || (!plan.isLoading && !plan.isLocked(feature));
+  };
+  const ownedTools = filteredTools.filter((tool) => isOwned(tool));
+  const browseTools = filteredTools.filter((tool) => !isOwned(tool));
 
   const renderToolCard = (tool: Tool, index: number) => (
     <ToolCard
@@ -550,11 +559,13 @@ function ToolCard({
 
   const planLocked =
     !!tool.entitlementFeature && !plan.isLoading && plan.isLocked(tool.entitlementFeature);
-  // Wallet unlock (incl. grandfathered legacy add-ons via /api/wallet) grants access.
+  // Priced tools are standalone credit tools: only a wallet unlock (incl.
+  // grandfathered legacy add-ons via /api/wallet) opens them, whatever the plan.
+  // Unpriced tools keep the plan rule.
   const catalogItem = getToolCatalogItem(tool.id);
   const walletUnlocked =
     !!catalogItem && wallet.isUnlocked(catalogItem.resourceId, catalogItem.resourceType);
-  const isLocked = planLocked && !walletUnlocked;
+  const isLocked = catalogItem ? !wallet.isLoading && !walletUnlocked : planLocked;
 
   // Credit-purchasable and still locked -> the card becomes a dual-CTA card.
   const showDualCta = !!catalogItem && isLocked && !tool.disabled;

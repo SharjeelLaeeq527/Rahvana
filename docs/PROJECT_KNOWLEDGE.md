@@ -888,6 +888,10 @@ translation documents, profiles/roles, `visa_security` questions, interview-prep
   Oct 2026):** journey-embedded tools follow the journey plan (`useJourneyPlan`); STANDALONE
   tools/guides cost credits unless the user already owns standalone access (wallet unlock or a
   permanent legacy add-on). The account plan tier does NOT grant free standalone launches.
+  `20261022_01_scope_legacy_interview_prep_unlocks.sql` removes backfilled ('tool',
+  'interview-prep') rows unless the user owns the bare all-categories `interview-prep` add-on: a
+  per-category purchase stays per-category (catalog `legacyAddonMatches` no longer maps
+  `interview-prep:*` to the whole tool).
 
 **Security hardening.** `20260715_fix_rls_security_gaps`, `20260731_*`, `20260717/18_*`, and
 `20260921_security_hardening_batch1`: triggers `guard_profile_role` (blocks self-setting
@@ -946,7 +950,7 @@ Python backend. Highlights:
 | `create-pdf`, `convert-pdf` | PDF generation/conversion | Python backend |
 | `admin/*` | `appointments`, `police-verifications`, `reviews`, `visa-cases`, guide feedback, `announce-feature`, `announce-blog`, `blog-comments`, `audit-logs`, `account-deletion-feedback`, `logout` (translation admin lives under `document-translation/*`) | Supabase, Resend |
 | `dev/*` | dev-only debug (`debug-reminders`, `seed-notifications`); hard-404 in production | Supabase |
-| `analytics`, `notifications`, `feature-usage`, `feedback`, `reviews` | GA4 + app telemetry/feedback (feedback also -> Google Sheets) | GA4, Supabase, Sheets |
+| `analytics`, `notifications`, `feature-usage`, `feedback`, `reviews` | GA4 + app telemetry/feedback (feedback also -> Google Sheets). `feature-usage` resolves the tier server-side from `scope` (`lib/usage/resolveUsageTier.ts`: `journey` = owned journey's tier, `standalone` = no plan + legacy add-on pools, wallet unlock = unlimited, default = account tier); a client `tier` is ignored | GA4, Supabase, Sheets |
 | `v1/journeys/[id]/*`, `v2/ir1-estimate` | RESTful journey-scoped resources; IR-1 estimate | Supabase, ir1-engine |
 
 **Conventions:** auth via Supabase session; shared guards in `lib/api/authGuards.ts` (required
@@ -1103,8 +1107,43 @@ lens, compare, confetti).
   exact-deficit / pack top-up straight to Stripe when short). The `/tools` and `/guides` cards
   show a dual CTA (Preview + Launch N credits) when an item is plan-locked, has a catalog price
   (`lib/wallet/resourceMapping.ts` maps page ids to catalog ids) and is not wallet-unlocked.
-  **Not yet enforced on the tool/guide pages themselves** (`PageGate` / `ResultGate` read only
-  the plan, and `?mode=preview` is not read anywhere): that is plan Phase 6.
+  **Phase 6 enforcement (tools done; guides/services owned by another developer).** Rule:
+  journey-embedded tools follow the journey plan; STANDALONE priced tools need a wallet unlock
+  (credits, or a permanent legacy add-on reported by `/api/wallet`) even for plan holders.
+  - `ResultGate standaloneToolId` (pass only when `!isJourney`) ignores the plan tier: the result
+    opens for a wallet unlock or `standaloneGranted` (access the caller verified, e.g. a legacy
+    per-category Interview Prep purchase); the lock card offers "Unlock for N credits"
+    (`CreditLaunchModal onLaunched` unlocks in place). Without the prop the plan rule is unchanged.
+    The teammate's `resolveStandaloneAccess` (guides) still lets a plan open; tools do not use it.
+  - Non-`ResultGate` gates use `useStandaloneToolUnlock(id | null)` (`null` in journey mode, so a
+    journey never reads wallet unlocks). `/tools` cards: a priced tool is owned only when
+    wallet-unlocked.
+  - **Photo Booth:** journey = journey tier (Executive unlimited); standalone = wallet unlock
+    unlimited, else only legacy purchased photo credits. Usage goes through `/api/feature-usage`
+    with a `scope` (below).
+  - **Smart Form Filler:** every PDF (preview, download, vault save) goes through
+    `POST /api/visa-forms/[formCode]/pdf`, which decides full vs page 1 server-side
+    (`lib/forms/smartFormAccess.ts`: journey = owned journey's tier + account add-ons, like
+    `useJourneyPlan`; standalone = wallet unlock / legacy "smart") and proxies to the Python
+    `/fill-pdf` with `X-Internal-Token: PDF_FILL_INTERNAL_TOKEN` only for a full fill. The backend
+    refuses a full USCIS form fill without that token (page-1 previews and the public
+    police/authority letters stay open). **The gate is only active once `PDF_FILL_INTERNAL_TOKEN`
+    is set on BOTH the Next.js server and the backend**; until then the backend logs a warning
+    and allows full fills. `MultiStepForm` journey access = `canUse("smart_form_filler",
+    journeyTier, addons)` (Basic journeys get the page-1 demo), standalone = wallet unlock.
+  - **Interview Prep:** `POST /api/interview-prep` with `source: "journey"` calls
+    `validateJourneySessionCreation` (owned journey via `resolveOwnedJourney`, journey still
+    active, `basic_interview_prep` on the journey tier + add-ons) and creates a `source =
+    journey` session (`createJourneyInterviewSession`); it used to create a paid tool session.
+    Standalone sessions (`validateToolSessionCreation`) ignore the plan: a credit unlock or the
+    bare `interview-prep` add-on = unlimited, every category; a per-category purchase
+    (`interview-prep:<slug>`) keeps its per-category session count. `/api/interview-prep/categories
+    ?scope=journey` skips wallet data. Client: `ResultPage isStandalone` + `standaloneGranted`
+    (category purchase) -> free demo without access, full with it; Rapid Fire / Mock take
+    `isStandalone` / `standaloneFull`.
+  - `lib/journey/resolveOwnedJourney.ts` is the shared ownership check: journey row id, or a
+    slug/category + candidate matched on canonical identity, always filtered by `user_id`.
+  - `WalletContext.isLoading` stays true until the first fetch for the signed-in user settles.
 
 Pattern: shadcn primitives at the base, thin custom wrappers, composition over
 inheritance, i18n via `useLanguage().t()`, gating via `usePlan()`.
@@ -1153,7 +1192,8 @@ Permissions-Policy, XSS) are applied globally via `next.config.mjs` `headers()`.
   `NEXT_PUBLIC_API_URL` (Python backend), `NEXT_PUBLIC_ENABLE_IR5` /
   `NEXT_PUBLIC_ENVIRONMENT` (IR-5 flag), `CRON_SECRET`, `NEXT_PUBLIC_APP_URL`,
   `NEXT_PUBLIC_SITE_URL`, `EMAIL_FROM`, `OCR_SPACE_API_KEY`, `NEXT_PUBLIC_PROPERTY_ID` (GA4),
-  `PYTHON_API_URL`, `COMPRESSION_API_URL`, `USCIS_ENV` / `USCIS_CLIENT_ID` /
+  `PYTHON_API_URL`, `COMPRESSION_API_URL`, `PDF_FILL_INTERNAL_TOKEN` (shared secret, set on the
+  Next.js server AND the backend: gates full Smart Form Filler PDFs, see 15), `USCIS_ENV` / `USCIS_CLIENT_ID` /
   `USCIS_CLIENT_SECRET`, `TOOL_WEBHOOK_SECRET`, `EASYPOST_WEBHOOK_SECRET`, `GOOGLE_SHEET_ID`,
   `NEXT_PUBLIC_GEOAPIFY_API_KEY`, and ~30 Stripe price IDs (`STRIPE_*_PRICE_ID`,
   `STRIPE_ADDON_*`, legacy `STRIPE_PRICE_ID_PRO` / `STRIPE_PRICE_ID_PLUS`). Backend `.env`:

@@ -137,7 +137,11 @@ export default function PdfToolkitTool({
             </button>
           </div>
           <div className="min-h-0 w-full flex-1">
-            <ResultGate feature="pdf_toolkit" planTier={effectiveTier}>
+            <ResultGate
+              feature="pdf_toolkit"
+              planTier={effectiveTier}
+              standaloneToolId={isJourney ? undefined : "pdf-toolkit"}
+            >
               <PDFEditor />
             </ResultGate>
           </div>
@@ -204,7 +208,11 @@ export default function PdfToolkitTool({
 
           {/* Content based on active tab */}
           <div className="w-full rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm md:min-h-[50vh] md:p-8 dark:border-slate-800 dark:bg-slate-900">
-            <ResultGate feature="pdf_toolkit" planTier={effectiveTier}>
+            <ResultGate
+              feature="pdf_toolkit"
+              planTier={effectiveTier}
+              standaloneToolId={isJourney ? undefined : "pdf-toolkit"}
+            >
               {activeTab === "upload" && <PDFUpload />}
               {activeTab === "merge" && <PDFMergeAdvanced />}
               {activeTab === "compress" && <CompressPDF />}

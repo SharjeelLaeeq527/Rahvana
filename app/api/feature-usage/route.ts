@@ -4,6 +4,11 @@ import { E, msg } from "@/lib/errors";
 import { checkFeatureUsage } from "@/lib/usage/checkFeatureUsage";
 import { type PlanTier, normalizePlanTier } from "@/lib/entitlements/config";
 import { getEffectiveEntitlement, getCreditPools, addonPoolKey } from "@/lib/entitlements/helpers";
+import { resolveUsageTier } from "@/lib/usage/resolveUsageTier";
+
+// The tier is always resolved server-side (lib/usage/resolveUsageTier.ts). A
+// `tier` sent by the client is ignored: it used to be trusted, which let any
+// user claim Executive and skip usage limits.
 
 // GET /api/feature-usage?feature=xyz - Check feature usage for the authenticated user
 export async function GET(request: Request) {
@@ -25,8 +30,12 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const feature = searchParams.get("feature");
-    const requestedTier = searchParams.get("tier");
-    const journeyCategory = searchParams.get("journeyCategory");
+    const scopeInput = {
+      scope: searchParams.get("scope"),
+      journeyId: searchParams.get("journeyId"),
+      journeyCategory: searchParams.get("journeyCategory"),
+      candidateId: searchParams.get("candidateId"),
+    };
 
     if (!feature) {
       return NextResponse.json(
@@ -41,33 +50,32 @@ export async function GET(request: Request) {
       .eq("id", user.id)
       .single();
 
-    let userTier: PlanTier = normalizePlanTier(profile?.subscription_tier);
-
-    if (requestedTier) {
-      const normalizedRequested = normalizePlanTier(requestedTier);
-      if (normalizedRequested === userTier) {
-        userTier = normalizedRequested;
-      } else {
-        const { data: journeys } = await supabase
-          .from("journeys")
-          .select("journey_type, subscription_tier")
-          .eq("user_id", user.id);
-
-        const hasMatchingJourneyTier = (journeys ?? []).some(
-          (j: { journey_type?: string; subscription_tier?: string }) =>
-            normalizePlanTier(j.subscription_tier) === normalizedRequested ||
-            (journeyCategory &&
-              j.journey_type?.toUpperCase().includes(journeyCategory.toUpperCase()) &&
-              normalizePlanTier(j.subscription_tier) === normalizedRequested)
-        );
-
-        if (hasMatchingJourneyTier || process.env.NODE_ENV === "development" || normalizedRequested) {
-          userTier = normalizedRequested;
-        }
-      }
-    }
-
     const purchasedAddons: string[] = profile?.profile_details?.purchased_addons ?? [];
+    const resolved = await resolveUsageTier(
+      supabase,
+      user.id,
+      feature,
+      normalizePlanTier(profile?.subscription_tier),
+      purchasedAddons,
+      scopeInput
+    );
+    if (!resolved.ok) {
+      return NextResponse.json(
+        { success: false, message: resolved.message },
+        { status: resolved.status }
+      );
+    }
+    const userTier: PlanTier = resolved.tier;
+
+    if (resolved.walletUnlimited) {
+      return NextResponse.json(
+        {
+          success: true,
+          data: { feature, usage: { allowed: true, reason: "Wallet unlock" } },
+        },
+        { status: 200 }
+      );
+    }
 
     const usage = await checkFeatureUsage(user.id, feature, userTier, purchasedAddons);
 
@@ -103,7 +111,7 @@ export async function POST(request: Request) {
 
     // Parse request
     const body = await request.json();
-    const { feature, tier: requestedTier, journeyCategory } = body;
+    const { feature, scope, journeyId, journeyCategory, candidateId } = body ?? {};
 
     if (!feature) {
       return NextResponse.json({ success: false, message: "Feature is required" }, { status: 400 });
@@ -115,33 +123,27 @@ export async function POST(request: Request) {
       .eq("id", user.id)
       .single();
 
-    let userTier: PlanTier = normalizePlanTier(profile?.subscription_tier);
-
-    if (requestedTier) {
-      const normalizedRequested = normalizePlanTier(requestedTier);
-      if (normalizedRequested === userTier) {
-        userTier = normalizedRequested;
-      } else {
-        const { data: journeys } = await supabase
-          .from("journeys")
-          .select("journey_type, subscription_tier")
-          .eq("user_id", user.id);
-
-        const hasMatchingJourneyTier = (journeys ?? []).some(
-          (j: { journey_type?: string; subscription_tier?: string }) =>
-            normalizePlanTier(j.subscription_tier) === normalizedRequested ||
-            (journeyCategory &&
-              j.journey_type?.toUpperCase().includes(journeyCategory.toUpperCase()) &&
-              normalizePlanTier(j.subscription_tier) === normalizedRequested)
-        );
-
-        if (hasMatchingJourneyTier || process.env.NODE_ENV === "development" || normalizedRequested) {
-          userTier = normalizedRequested;
-        }
-      }
-    }
-
     const purchasedAddons: string[] = profile?.profile_details?.purchased_addons ?? [];
+    const resolved = await resolveUsageTier(
+      supabase,
+      user.id,
+      feature,
+      normalizePlanTier(profile?.subscription_tier),
+      purchasedAddons,
+      { scope, journeyId, journeyCategory, candidateId }
+    );
+    if (!resolved.ok) {
+      return NextResponse.json(
+        { success: false, message: resolved.message },
+        { status: resolved.status }
+      );
+    }
+    const userTier: PlanTier = resolved.tier;
+
+    // Standalone wallet unlock: unlimited, nothing to count.
+    if (resolved.walletUnlimited) {
+      return NextResponse.json({ success: true, allowed: true, unlimited: true });
+    }
 
     const entitlement = getEffectiveEntitlement(feature, userTier, purchasedAddons);
 

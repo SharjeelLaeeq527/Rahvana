@@ -6,10 +6,15 @@
  */
 
 import { NextResponse, NextRequest } from "next/server";
-import { createInterviewSession, getInterviewSession } from "@/lib/interview-prep/service";
+import {
+  createInterviewSession,
+  createJourneyInterviewSession,
+  getInterviewSession,
+} from "@/lib/interview-prep/service";
 import { categoryLoader } from "@/lib/interview-prep/category-loader";
 import {
   validateToolSessionCreation,
+  validateJourneySessionCreation,
   getAddonIdForCategory,
 } from "@/lib/interview-prep/purchase-validation";
 import { createClient } from "@/lib/supabase/server";
@@ -23,11 +28,18 @@ import { E, msg } from "@/lib/errors";
  * - category_slug: string (e.g., 'ir-1-spouse')
  * - user_email: string
  * - user_name: string
+ * - source?: "journey" | "tool" (default "tool")
+ * - journey_id / journey_category / candidate_id: required context for "journey"
+ *
+ * Journey sessions are validated against the user's own journey and its plan
+ * tier and are stored as source "journey". Standalone ("tool") sessions need a
+ * wallet unlock or a per-category purchase; the plan tier does not count.
  */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { category_slug, user_email, user_name } = body;
+    const { category_slug, user_email, user_name, source, journey_id, journey_category, candidate_id } =
+      body ?? {};
 
     // Validate required fields
     if (!category_slug) {
@@ -58,7 +70,32 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Validate purchase BEFORE creating session
+    if (source === "journey") {
+      const journeyCheck = await validateJourneySessionCreation(user.id, {
+        journeyId: typeof journey_id === "string" ? journey_id : null,
+        journeyCategory: typeof journey_category === "string" ? journey_category : null,
+        candidateId: typeof candidate_id === "string" ? candidate_id : null,
+      });
+      if (!journeyCheck.allowed) {
+        return NextResponse.json(
+          { success: false, error: journeyCheck.reason, message: journeyCheck.message },
+          { status: journeyCheck.status }
+        );
+      }
+
+      const journeyResult = await createJourneyInterviewSession(journeyCheck.journeyId, category_slug);
+      return NextResponse.json(
+        {
+          success: true,
+          alreadyExists: journeyResult.alreadyExists,
+          session: journeyResult.session,
+          source: "journey",
+        },
+        { status: journeyResult.alreadyExists ? 200 : 201 }
+      );
+    }
+
+    // Standalone: validate purchase BEFORE creating session
     const validation = await validateToolSessionCreation(user.id, category_slug);
 
     if (!validation.allowed) {
