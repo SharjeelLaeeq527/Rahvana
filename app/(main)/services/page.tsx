@@ -2,10 +2,12 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
-import { Search, ArrowRight, ChevronDown, X, Shield, Calendar, Info, Video } from "lucide-react";
+import { Search, ArrowRight, ChevronDown, X, Shield, Calendar, Info, Video, Coins } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { NAV_DATA } from "@/app/components/layout/navigationData";
+import { getServiceCatalogItem, withPreviewMode } from "@/lib/wallet/resourceMapping";
+import type { WalletCatalogItem } from "@/lib/wallet/catalog";
+import { CreditLaunchModal } from "@/app/components/wallet/CreditLaunchModal";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -66,10 +68,14 @@ interface TranslationDocument {
  */
 const SERVICE_ENTITLEMENT_MAP: Record<string, string> = {
   "book-a-consultation": "expert_consultation",
+  "expert-consultation": "expert_consultation",
   // "expert-case-review":           "expert_doc_review",
   "pcc-filing-service-, -sindh": "pcc_filing",
+  "pcc-filing-service,-sindh": "pcc_filing",
+  "pcc-filing-service": "pcc_filing",
   "book-medical-appointment": "medical_booking",
   "urdu-→-english-translation": "document_translation",
+  "document-translation": "document_translation",
 };
 /** Maps service ID → minimum required plan tier */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -96,6 +102,10 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
   const [selectedCategoryId, setSelectedCategoryId] = useState("All");
   const [visibleCount, setVisibleCount] = useState(7); // Default to all
   const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
+  const [launchTarget, setLaunchTarget] = useState<{
+    item: WalletCatalogItem;
+    href: string;
+  } | null>(null);
   const plan = usePlan();
 
   const [pccRequests, setPccRequests] = useState<PCCRequest[]>([]);
@@ -230,7 +240,11 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
         };
       }
     }
-    if (serviceId === "pcc-filing-service-, -sindh") {
+    if (
+      serviceId === "pcc-filing-service-, -sindh" ||
+      serviceId === "pcc-filing-service,-sindh" ||
+      serviceId === "pcc-filing-service"
+    ) {
       if (pccRequests.length > 0) {
         return {
           count: pccRequests.length,
@@ -410,17 +424,12 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
     .sort((a, b) => a.title.localeCompare(b.title));
 
   // "My Resources" (embedded) view splits the catalog into two sections:
-  //  • "My Services"     — services the user owns (plan/add-ons) OR has an active booking
-  //  • "Browse Services" — everything else, shown as locked/"Unlock" cards to explore
-  const isOwned = (feature?: string) => !feature || (!plan.isLoading && !plan.isLocked(feature));
+  //  • "My Services"     — services the user has an active request or booking for
+  //  • "Browse Services" — all other services with Preview & Launch dual CTAs
   const hasBooking = (service: Service) => getActiveBookingData(service.id) !== null;
-  // A service with an active request/booking belongs in "My Services" even if locked.
-  const isMine = (service: Service) => isOwned(service.entitlementFeature) || hasBooking(service);
-  const ownedServices = filteredServices.filter(isMine);
-  const browseServices = filteredServices.filter((service) => !isMine(service));
-  // Embedded "My Resources" shows owned/booked in the first grid; the standalone
-  // page shows the full filtered list.
-  const displayServices = isEmbedded ? ownedServices : filteredServices;
+  const bookedServices = filteredServices.filter(hasBooking);
+  const browseServices = filteredServices.filter((service) => !hasBooking(service));
+  const displayServices = isEmbedded ? bookedServices : filteredServices;
 
   return (
     <div
@@ -431,6 +440,14 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
       {/* Upgrade Modal */}
       {upgradeModalFeature && (
         <UpgradeModal feature={upgradeModalFeature} onClose={() => setUpgradeModalFeature(null)} />
+      )}
+
+      {launchTarget && (
+        <CreditLaunchModal
+          item={launchTarget.item}
+          href={launchTarget.href}
+          onClose={() => setLaunchTarget(null)}
+        />
       )}
 
       {/* Ambient Glow */}
@@ -609,9 +626,13 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
                           icon_name: (() => {
                             const mapping: Record<string, string> = {
                               "book-a-consultation": "Briefcase",
+                              "expert-consultation": "Briefcase",
                               "pcc-filing-service-, -sindh": "Shield",
+                              "pcc-filing-service,-sindh": "Shield",
+                              "pcc-filing-service": "Shield",
                               "book-medical-appointment": "Clock",
                               "urdu-→-english-translation": "Files",
+                              "document-translation": "Files",
                             };
                             return mapping[service.id] || "Briefcase";
                           })(),
@@ -638,6 +659,7 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
                 service={service}
                 index={index}
                 onLockedClick={(feature) => setUpgradeModalFeature(feature)}
+                onLaunch={(item) => setLaunchTarget({ item, href: service.href })}
               />
             );
           })}
@@ -660,7 +682,7 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
           <>
             <ResourceSectionHeader
               title="Browse Services"
-              subtitle="Explore more services, unlock them when you're ready."
+              subtitle="Explore more services, preview them or book with credits."
             />
             <div className="grid grid-cols-1 gap-x-6 gap-y-10 pt-6 md:grid-cols-2 lg:grid-cols-3">
               {browseServices.map((service, index) => (
@@ -669,6 +691,7 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
                   service={service}
                   index={index}
                   onLockedClick={(feature) => setUpgradeModalFeature(feature)}
+                  onLaunch={(item) => setLaunchTarget({ item, href: service.href })}
                 />
               ))}
             </div>
@@ -923,62 +946,41 @@ function ServiceCard({
   service,
   index,
   onLockedClick,
+  onLaunch,
 }: {
   service: Service;
   index: number;
   onLockedClick: (feature: string) => void;
+  onLaunch: (item: WalletCatalogItem) => void;
 }) {
   const { t } = useLanguage();
-  const plan = usePlan();
   const styles = CATEGORY_STYLES[service.categoryId] || CATEGORY_STYLES["Default"];
   const { isInQuickAccess } = useQuickAccess();
 
-  // Entitlement check
-  const featureLocked =
-    !!service.entitlementFeature && !plan.isLoading && plan.isLocked(service.entitlementFeature);
+  const catalogItem = getServiceCatalogItem(service.id);
+  const showDualCta = !!catalogItem && !service.disabled;
   const isNavigable = !service.disabled;
 
-  const isPinned = isInQuickAccess(`service-${service.id}`);
-
-  const CardWrapper = isNavigable ? Link : "div";
-
   const handleClick = (e: React.MouseEvent) => {
-    if (featureLocked && service.entitlementFeature) {
+    if (!showDualCta && service.entitlementFeature) {
       e.preventDefault();
       onLockedClick(service.entitlementFeature);
     }
   };
 
+  const CardWrapper = (showDualCta || !isNavigable ? "div" : Link) as React.ElementType;
+
   return (
     <CardWrapper
-      href={isNavigable ? service.href : "#"}
+      href={showDualCta ? undefined : isNavigable ? service.href : "#"}
       onClick={handleClick}
       className={`group bg-card relative mx-2 mt-6 flex flex-col rounded-[30px] p-6 pt-7 transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] md:mx-0 ${
-        // isPinned
-        //   ? "border-[3px] border-[#0d7377] dark:border-[#32e0c4] shadow-md hover:-translate-y-2 hover:shadow-xl cursor-pointer"
-        //   :
-        featureLocked
-          ? "border-border cursor-pointer border shadow-md hover:-translate-y-1"
-          : isNavigable
-            ? "border-border cursor-pointer border hover:-translate-y-2 hover:shadow-xl"
-            : "border-border cursor-not-allowed border opacity-80 grayscale-[0.5]"
+        isNavigable
+          ? "border-border cursor-pointer border hover:-translate-y-2 hover:shadow-xl"
+          : "border-border cursor-not-allowed border opacity-80 grayscale-[0.5]"
       } animate-fade-up`}
       style={{ animationDelay: `${index * 100}ms` }}
     >
-      {/* Ribbon for locked cards */}
-      {featureLocked && (
-        <div className="pointer-events-none absolute -top-21 -right-12 z-20 sm:-right-3">
-          <Image
-            src="/icons/ribbon.png"
-            alt="Premium ribbon"
-            width={260}
-            height={320}
-            priority={false}
-            className="h-56 w-40 object-contain drop-shadow-lg"
-          />
-        </div>
-      )}
-
       {/* Floating Icon Box */}
       <div
         className={`absolute -top-6 left-6 z-10 flex h-12 w-12 items-center justify-center rounded-2xl border shadow-md transition-all duration-400 group-hover:-translate-y-1 group-hover:-rotate-3 group-hover:shadow-lg md:h-14 md:w-14 ${styles.iconBox}`}
@@ -993,14 +995,10 @@ function ServiceCard({
           : service.icon}
       </div>
 
-      {/* (Removed tier badge — ribbon now indicates locked state) */}
-
       {/* Hover overlay with light category-specific background & border */}
-      {!featureLocked && (
-        <div
-          className={`pointer-events-none absolute inset-0 z-0 rounded-[30px] border border-transparent transition-all duration-400 ${styles.hoverBg} ${styles.hoverBorder}`}
-        />
-      )}
+      <div
+        className={`pointer-events-none absolute inset-0 z-0 rounded-[30px] border border-transparent transition-all duration-400 ${styles.hoverBg} ${styles.hoverBorder}`}
+      />
 
       {/* Radial Glow */}
       <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(13,115,119,0.04),transparent_40%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100 dark:bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(255,255,255,0.03),transparent_40%)]" />
@@ -1011,27 +1009,29 @@ function ServiceCard({
           <h3 className="text-foreground mb-1 text-xl font-bold transition-colors">
             {service.title}
           </h3>
-          {!featureLocked && (
-            <div className="relative z-50 shrink-0">
-              <QuickAccessButton
-                item={{
-                  id: `service-${service.id}`,
-                  title: service.title,
-                  href: service.href,
-                  icon_name: (() => {
-                    const mapping: Record<string, string> = {
-                      "book-a-consultation": "Briefcase",
-                      "pcc-filing-service-, -sindh": "Shield",
-                      "book-medical-appointment": "Clock",
-                      "urdu-→-english-translation": "Files",
-                    };
-                    return mapping[service.id] || "Briefcase";
-                  })(),
-                }}
-                mode="icon"
-              />
-            </div>
-          )}
+          <div className="relative z-50 shrink-0">
+            <QuickAccessButton
+              item={{
+                id: `service-${service.id}`,
+                title: service.title,
+                href: service.href,
+                icon_name: (() => {
+                  const mapping: Record<string, string> = {
+                    "book-a-consultation": "Briefcase",
+                    "expert-consultation": "Briefcase",
+                    "pcc-filing-service-, -sindh": "Shield",
+                    "pcc-filing-service,-sindh": "Shield",
+                    "pcc-filing-service": "Shield",
+                    "book-medical-appointment": "Clock",
+                    "urdu-→-english-translation": "Files",
+                    "document-translation": "Files",
+                  };
+                  return mapping[service.id] || "Briefcase";
+                })(),
+              }}
+              mode="icon"
+            />
+          </div>
         </div>
         <div className="mb-3">
           <span className="text-muted-foreground/80 bg-muted rounded px-2 py-0.5 text-[11px] font-bold tracking-wide uppercase">
@@ -1044,21 +1044,48 @@ function ServiceCard({
       </div>
 
       {/* Footer / Action */}
-      <div className="border-border relative z-10 mt-auto flex items-center justify-between border-t pt-4">
-        <span className="text-muted-foreground flex items-center gap-1 text-xs font-medium" />
-
-        {featureLocked ? (
-          <span aria-hidden="true" className="h-5" />
-        ) : isNavigable ? (
-          <span
-            className={`flex items-center gap-1.5 text-sm font-semibold decoration-2 underline-offset-2 group-hover:underline ${styles.link}`}
-          >
-            {t("pages.services.openService")} <ArrowRight className="h-4 w-4" />
-          </span>
+      <div className="border-border relative z-10 mt-auto flex flex-col border-t pt-3">
+        {showDualCta && catalogItem ? (
+          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2.5">
+            <div className="flex flex-col">
+              <span className="flex items-center gap-1.5 text-sm font-bold text-slate-900 tabular-nums dark:text-white">
+                <Coins size={14} className="text-[#0d7377] dark:text-[#32e0c4]" aria-hidden="true" />
+                {catalogItem.credits} credits
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Link
+                href={withPreviewMode(service.href)}
+                onClick={(e) => e.stopPropagation()}
+                className="inline-flex h-9 items-center rounded-lg border border-slate-200 bg-white px-3.5 text-[13px] font-semibold whitespace-nowrap text-slate-700 transition-colors hover:border-[#0d7377]/40 hover:text-[#0d7377]"
+              >
+                Preview
+              </Link>
+              <button
+                type="button"
+                onClick={() => onLaunch(catalogItem)}
+                aria-label={`Launch ${service.title} for ${catalogItem.credits} credits`}
+                className="inline-flex h-9 items-center rounded-lg bg-[#0d7377] px-4 text-[13px] font-semibold whitespace-nowrap text-white transition-colors hover:bg-[#0a5c5f]"
+              >
+                Launch
+              </button>
+            </div>
+          </div>
         ) : (
-          <span className="text-muted-foreground/50 flex cursor-not-allowed items-center gap-1.5 text-sm font-semibold">
-            {t("pages.services.comingSoon")}
-          </span>
+          <div className="flex items-center justify-between">
+            <span className="text-muted-foreground flex items-center gap-1 text-xs font-medium" />
+            {isNavigable ? (
+              <span
+                className={`flex items-center gap-1.5 text-sm font-semibold decoration-2 underline-offset-2 group-hover:underline ${styles.link}`}
+              >
+                {t("pages.services.openService")} <ArrowRight className="h-4 w-4" />
+              </span>
+            ) : (
+              <span className="text-muted-foreground/50 flex cursor-not-allowed items-center gap-1.5 text-sm font-semibold">
+                {t("pages.services.comingSoon")}
+              </span>
+            )}
+          </div>
         )}
       </div>
     </CardWrapper>

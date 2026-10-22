@@ -35,7 +35,7 @@ type Insufficient = {
 
 export function CreditLaunchModal({ item, href, onClose }: Props) {
   const router = useRouter();
-  const { balance, isLoading, launchResource } = useWallet();
+  const { balance, isLoading, launchResource, deductServiceBooking } = useWallet();
   const { isAuthenticated } = useAuth();
 
   const [charging, setCharging] = useState(false);
@@ -46,7 +46,12 @@ export function CreditLaunchModal({ item, href, onClose }: Props) {
   // Top-up option picked in the shortfall state; null = the exact amount.
   const [pickedTopup, setPickedTopup] = useState<number | null>(null);
 
-  const kind = item.resourceType === "guide" ? "Guide" : "Tool";
+  const kind =
+    item.resourceType === "guide"
+      ? "Guide"
+      : item.resourceType === "service"
+        ? "Service"
+        : "Tool";
   const balanceAfter = balance !== null ? balance - item.credits : null;
 
   // Decide the state from the balance up front instead of round-tripping the
@@ -79,7 +84,10 @@ export function CreditLaunchModal({ item, href, onClose }: Props) {
     if (charging) return;
     setCharging(true);
     setError(null);
-    const result = await launchResource(item.resourceType, item.resourceId);
+    const result =
+      item.resourceType === "service"
+        ? await deductServiceBooking(item.resourceId)
+        : await launchResource(item.resourceType, item.resourceId);
     const body = result.body;
 
     if (body.success) {
@@ -173,10 +181,14 @@ export function CreditLaunchModal({ item, href, onClose }: Props) {
                 id="credit-launch-title"
                 className="text-[18px] font-extrabold tracking-tight text-[#0d7377]"
               >
-                {`Launch ${item.name}`}
+                {item.resourceType === "service" ? `Book ${item.name}` : `Launch ${item.name}`}
               </h2>
               <p className="text-[12px] font-medium text-slate-600">
-                {shortfall ? "Add credits to continue" : "Pay once, use it as often as you like"}
+                {shortfall
+                  ? "Add credits to continue"
+                  : item.resourceType === "service"
+                    ? "Book this service using your Rahvana credits"
+                    : "Pay once, use it as often as you like"}
               </p>
             </div>
           </div>
@@ -225,7 +237,9 @@ export function CreditLaunchModal({ item, href, onClose }: Props) {
                     </span>
                   </div>
                   <div className="flex items-center justify-between border-t border-slate-200 py-1.5 text-[13px]">
-                    <span className="font-medium text-slate-500">Balance After Launch</span>
+                    <span className="font-medium text-slate-500">
+                      Balance After {item.resourceType === "service" ? "Booking" : "Launch"}
+                    </span>
                     <span className="font-extrabold text-[#0d7377] tabular-nums">
                       {balanceAfter} Credits
                     </span>
@@ -241,7 +255,7 @@ export function CreditLaunchModal({ item, href, onClose }: Props) {
             )}
 
             <p className="text-[11.5px] leading-relaxed text-slate-500">
-              $1 = 1 credit. Tools inside your journey never use credits.
+              $1 = 1 credit. {item.resourceType === "service" ? "Services inside your journey never use credits." : "Tools inside your journey never use credits."}
             </p>
           </div>
         ) : (
@@ -350,8 +364,11 @@ export function CreditLaunchModal({ item, href, onClose }: Props) {
                 >
                   {charging ? (
                     <>
-                      <Loader2 size={16} className="animate-spin" /> Unlocking...
+                      <Loader2 size={16} className="animate-spin" />{" "}
+                      {item.resourceType === "service" ? "Booking..." : "Unlocking..."}
                     </>
+                  ) : item.resourceType === "service" ? (
+                    `Book for ${item.credits} credits`
                   ) : (
                     `Unlock for ${item.credits} credits`
                   )}

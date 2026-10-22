@@ -31,10 +31,12 @@ export const GUIDE_RESOURCE_IDS: Record<string, string> = {
 export const SERVICE_RESOURCE_IDS: Record<string, string> = {
   "book-medical-appointment": "book-medical-appointment",
   "pcc-filing-service": "pcc-filing-service",
+  "pcc-filing-service,-sindh": "pcc-filing-service",
   "pcc-filing-service-, -sindh": "pcc-filing-service",
   "document-translation": "document-translation",
   "urdu-→-english-translation": "document-translation",
   "book-a-consultation": "book-a-consultation",
+  "expert-consultation": "book-a-consultation",
 };
 
 /** Returns the catalog item for a tool, or null if it isn't mapped. */
