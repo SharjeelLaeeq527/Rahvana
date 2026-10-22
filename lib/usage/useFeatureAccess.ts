@@ -32,9 +32,17 @@ type FeatureUsageResponse = {
   };
 };
 
+/**
+ * Where the check runs. The server resolves the tier from this (journey plan,
+ * no plan for standalone, or the account plan by default); it never trusts a
+ * tier sent by the client.
+ */
 export type FeatureAccessOptions = {
-  tier?: string | null;
+  scope?: "journey" | "standalone";
+  /** Journey row id (or slug) when scope is "journey". */
+  journeyId?: string | null;
   journeyCategory?: string | null;
+  candidateId?: string | null;
 };
 
 export function useFeatureAccess() {
@@ -52,8 +60,10 @@ export function useFeatureAccess() {
         setLoading(true);
 
         const params = new URLSearchParams({ feature });
-        if (options?.tier) params.set("tier", options.tier);
+        if (options?.scope) params.set("scope", options.scope);
+        if (options?.journeyId) params.set("journeyId", options.journeyId);
         if (options?.journeyCategory) params.set("journeyCategory", options.journeyCategory);
+        if (options?.candidateId) params.set("candidateId", options.candidateId);
 
         const res = await fetch(`/api/feature-usage?${params.toString()}`, {
           method: "GET",
@@ -105,8 +115,10 @@ export function useFeatureAccess() {
           },
           body: JSON.stringify({
             feature,
-            tier: options?.tier,
+            scope: options?.scope,
+            journeyId: options?.journeyId,
             journeyCategory: options?.journeyCategory,
+            candidateId: options?.candidateId,
           }),
         });
 

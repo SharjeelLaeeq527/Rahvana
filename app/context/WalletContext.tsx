@@ -66,6 +66,9 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [topup, setTopup] = useState<OpenTopupOptions | null>(null);
+  // User whose first wallet fetch has settled. Until then the wallet counts as
+  // loading, so a gate never flashes "locked" for a user who owns the tool.
+  const [loadedFor, setLoadedFor] = useState<string | null>(null);
 
   const lastFetchRef = useRef(0);
   // Ignores a response that arrives after the user changed (logout / switch).
@@ -89,7 +92,10 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       if (userRef.current !== forUser) return;
       setError(e instanceof Error ? e.message : "Could not load your wallet.");
     } finally {
-      if (userRef.current === forUser) setIsLoading(false);
+      if (userRef.current === forUser) {
+        setIsLoading(false);
+        setLoadedFor(forUser);
+      }
     }
   }, []);
 
@@ -176,10 +182,12 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   const openTopup = useCallback((options?: OpenTopupOptions) => setTopup(options ?? {}), []);
   const closeTopup = useCallback(() => setTopup(null), []);
 
+  const walletLoading = isLoading || (userId !== null && loadedFor !== userId);
+
   const value = useMemo<WalletContextValue>(
     () => ({
       balance,
-      isLoading,
+      isLoading: walletLoading,
       error,
       unlocks,
       unlockedResources,
@@ -192,7 +200,8 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     }),
     [
       balance,
-      isLoading,
+      // isLoading,
+      walletLoading,
       error,
       unlocks,
       unlockedResources,

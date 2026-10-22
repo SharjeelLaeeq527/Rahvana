@@ -147,8 +147,10 @@ export function getCatalogItem(
 function legacyAddonMatches(item: WalletCatalogItem, addonId: string): boolean {
   if (!item.legacyGrantsUnlock) return false;
   if (item.legacyAddonId && addonId === item.legacyAddonId) return true;
-  // Interview prep was sold per category ("interview-prep:ir1", ...).
-  if (item.resourceId === "interview-prep" && addonId.startsWith("interview-prep")) return true;
+  // Interview prep was sold per category ("interview-prep:ir-1-spouse"). A
+  // category purchase keeps its per-category, per-session access through
+  // lib/interview-prep/purchase-validation.ts; only the bare all-categories
+  // add-on ("interview-prep", matched above) grants the whole tool.
   return (
     item.resourceType === "guide" &&
     CIVIL_GUIDE_RESOURCE_IDS.has(item.resourceId) &&

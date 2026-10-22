@@ -373,7 +373,7 @@ export default function CombinedIntakeForm({
   onProgressChange,
   onReset,
 }: CombinedIntakeFormProps) {
-  const { isJourney, journeyContext } = useResolveToolMode({
+  const { isJourney, journeyContext, journeyTier } = useResolveToolMode({
     mode: propMode,
     journeyContext: propContext,
   });
@@ -2963,6 +2963,8 @@ footer.querySelector(".footer-page").textContent = String(p);
           {currentStep === 3 && (
             <ResultGate
               feature="action_221g"
+              standaloneToolId={isJourney ? undefined : "221g-planner"}
+              planTier={isJourney ? (journeyTier ?? journeyContext?.subscriptionTier) : undefined}
               title="Unlock Your Full 221(g) Results"
               description="Upgrade to Executive to review your case response details, next steps, and generate your custom document packet."
               hint="Included with Executive, along with advanced tools and support."
@@ -2973,6 +2975,8 @@ footer.querySelector(".footer-page").textContent = String(p);
           {currentStep === 4 && (
             <ResultGate
               feature="action_221g"
+              standaloneToolId={isJourney ? undefined : "221g-planner"}
+              planTier={isJourney ? (journeyTier ?? journeyContext?.subscriptionTier) : undefined}
               title="Your Action Packet Is Ready"
               description="Upgrade to Executive to download, print, or copy your personalized 221(g) response plan and document packet checklist."
               hint="Included with Executive, along with advanced tools and support."

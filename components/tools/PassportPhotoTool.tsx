@@ -21,6 +21,8 @@ import { useFeatureAccess } from "@/lib/usage/useFeatureAccess";
 import { usePlan, normalizePlanTier } from "@/app/context/PlanContext";
 import type { PlanTier } from "@/lib/entitlements/config";
 import { ResultGate } from "@/app/components/entitlements/ResultGate";
+import { CreditLaunchModal } from "@/app/components/wallet/CreditLaunchModal";
+import { useStandaloneToolUnlock } from "@/lib/wallet/useStandaloneToolUnlock";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { PassportPhotoHistoryModal } from "@/components/tools/PassportPhotoHistoryModal";
@@ -65,7 +67,6 @@ export default function PassportPhotoTool({
   });
   const { t } = useLanguage();
   const accountPlan = usePlan();
-  const { tier } = usePlan();
   const { profile, updateProfile } = useUserProfile();
   const { showToast } = useToast();
 
@@ -177,6 +178,30 @@ export default function PassportPhotoTool({
 
   const { checkAccess, consumeAccess } = useFeatureAccess();
 
+  // Journey mode follows the journey plan (Executive = unlimited). Standalone is
+  // paid with credits even for plan holders: a wallet unlock = unlimited, else
+  // only legacy purchased photo credits remain. Journey passes null so it never
+  // reads wallet unlocks.
+  const photoWallet = useStandaloneToolUnlock(isJourney ? null : "photo-booth");
+  const [showCreditModal, setShowCreditModal] = useState(false);
+  const hasUnlimitedPhotos = isJourney ? effectiveTier === "executive" : photoWallet.unlocked;
+  // The server resolves the tier from this scope; it never trusts a client tier.
+  const usageOptions = useMemo(
+    () =>
+      isJourney
+        ? {
+            scope: "journey" as const,
+            journeyId: journeyContext?.backendId || journeyContext?.journeySlug,
+            journeyCategory: journeyContext?.journeyCategory,
+            candidateId: journeyContext?.candidateId,
+          }
+        : { scope: "standalone" as const },
+    [isJourney, journeyContext]
+  );
+  // Out of photo credits: offer the credit unlock in standalone mode, else the plan upgrade.
+  const openPhotoUnlock = () =>
+    photoWallet.item ? setShowCreditModal(true) : setShowUpgradeModal(true);
+
   const resultRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -203,8 +228,8 @@ export default function PassportPhotoTool({
     let isMounted = true;
 
     const loadCredits = async () => {
-      // If journey (or account) is on executive tier, access is unlimited
-      if (effectiveTier === "executive") {
+      // Executive journey or a standalone wallet unlock: access is unlimited
+      if (hasUnlimitedPhotos) {
         setRemainingCredits(null);
         setCreditStatusLoading(false);
         return;
@@ -212,30 +237,20 @@ export default function PassportPhotoTool({
 
       setCreditStatusLoading(true);
       try {
-        const access = await checkAccess("photo_booth", {
-          tier: effectiveTier,
-          journeyCategory: journeyContext?.journeyCategory,
-        });
+        const access = await checkAccess("photo_booth", usageOptions);
         if (!isMounted) return;
 
+        // The server counts the real pools for this scope, so no client-side guess.
         const usage = access.data?.data?.usage;
         if (access.allowed && usage?.remaining !== undefined) {
           setRemainingCredits(usage.remaining);
         } else if (access.allowed && usage?.limit !== undefined) {
           setRemainingCredits(usage.limit);
-        } else if (effectiveTier === "premium") {
-          setRemainingCredits(2);
         } else {
           setRemainingCredits(null);
         }
       } catch {
-        if (isMounted) {
-          if (effectiveTier === "premium") {
-            setRemainingCredits(2);
-          } else {
-            setRemainingCredits(null);
-          }
-        }
+        if (isMounted) setRemainingCredits(null);
       } finally {
         if (isMounted) {
           setCreditStatusLoading(false);
@@ -248,7 +263,7 @@ export default function PassportPhotoTool({
     return () => {
       isMounted = false;
     };
-  }, [checkAccess, effectiveTier, journeyContext?.journeyCategory]);
+  }, [checkAccess, hasUnlimitedPhotos, usageOptions]);
 
   // Reset current upload form
   const reset = () => {
@@ -312,78 +327,20 @@ export default function PassportPhotoTool({
     return { width: selectedSize.width, height: selectedSize.height };
   };
 
-  // Process image with passport-photo endpoint
+  // Process image with passport-photo endpoint.
+  // Order: check access, generate, then spend a credit only once the photo is
+  // ready, so a failed generation never costs a credit. Unlimited users
+  // (Executive, or a standalone wallet unlock) skip the credit pool entirely.
   const handleProcess = async () => {
     if (!file) return;
 
-    if (effectiveTier !== "executive" && (remainingCredits === null || remainingCredits <= 0)) {
-      setShowUpgradeModal(true);
+    if (!hasUnlimitedPhotos && (remainingCredits === null || remainingCredits <= 0)) {
+      openPhotoUnlock();
       return;
     }
 
     setLoading(true);
     setProcessingStep(t("passportPhoto.steps.uploading"));
-
-    // Verify and consume credit if the user has available credits, blocking if unavailable
-    let creditPaid = false;
-    const isUnlimited = effectiveTier === "executive";
-
-    if (!isUnlimited) {
-      try {
-        const access = await checkAccess("photo_booth", {
-          tier: effectiveTier,
-          journeyCategory: journeyContext?.journeyCategory,
-        });
-        if (!access.allowed || access.data?.data?.usage?.allowed === false) {
-          if (effectiveTier === "premium" && (remainingCredits === null || remainingCredits > 0)) {
-            setRemainingCredits((prev) => (typeof prev === "number" ? Math.max(prev - 1, 0) : 1));
-            creditPaid = true;
-          } else {
-            setLoading(false);
-            setProcessingStep("");
-            setShowUpgradeModal(true);
-            return;
-          }
-        } else {
-          const reservation = await consumeAccess("photo_booth", {
-            tier: effectiveTier,
-            journeyCategory: journeyContext?.journeyCategory,
-          });
-          if (!reservation.allowed || reservation.data?.allowed === false) {
-            setLoading(false);
-            setProcessingStep("");
-            setShowUpgradeModal(true);
-            return;
-          }
-          creditPaid = true;
-
-          if (reservation.data?.remaining !== undefined) {
-            setRemainingCredits(reservation.data.remaining);
-          } else {
-            setRemainingCredits((prev) => (typeof prev === "number" ? Math.max(prev - 1, 0) : 0));
-          }
-        }
-      } catch (err) {
-        console.warn("Usage check/consumption failed:", err);
-        if (effectiveTier === "premium" && (remainingCredits === null || remainingCredits > 0)) {
-          setRemainingCredits((prev) => (typeof prev === "number" ? Math.max(prev - 1, 0) : 1));
-          creditPaid = true;
-        } else {
-          setLoading(false);
-          setProcessingStep("");
-          setShowUpgradeModal(true);
-          return;
-        }
-      }
-    } else {
-      creditPaid = true;
-    }
-
-    const { width, height } = getFinalDimensions();
-    const API_ENDPOINT = `${API_BASE}/passport-photo?width=${width}&height=${height}&quality=95`;
-
-    const formData = new FormData();
-    formData.append("file", file);
 
     // Guard against a hung request: abort after 120s so the failure always surfaces as a toast.
     const controller = new AbortController();
@@ -391,11 +348,13 @@ export default function PassportPhotoTool({
 
     try {
       // 1. Check access before spending any credit.
-      const access = await checkAccess("photo_booth");
-
-      if (!access.allowed || access.data?.data?.usage?.allowed === false) {
-        setShowUpgradeModal(true);
-        return;
+      if (!hasUnlimitedPhotos) {
+        const access = await checkAccess("photo_booth", usageOptions);
+        if (!access.allowed || access.data?.data?.usage?.allowed === false) {
+          setProcessingStep("");
+          openPhotoUnlock();
+          return;
+        }
       }
 
       // 2. Generate the image first. Validation/API failures cost no credit.
@@ -413,24 +372,42 @@ export default function PassportPhotoTool({
         signal: controller.signal,
       });
 
-      let friendlyMsg = t("passportPhoto.errors.general");
       if (!res.ok) {
         // Extract user-friendly message from structured backend response
+        let friendlyMsg = t("passportPhoto.errors.general");
         try {
           const body = await res.json();
           const detail = body?.detail;
           if (typeof detail === "string" && detail.trim()) friendlyMsg = detail;
           else if (detail?.message) friendlyMsg = String(detail.message);
         } catch {
-          // non-JSON response (gateway/proxy HTML) — keep generic message
+          // non-JSON response (gateway/proxy HTML) - keep generic message
         }
         throw new Error(friendlyMsg);
       }
 
       setProcessingStep(t("passportPhoto.steps.finalizing"));
       const blob = await res.blob();
+      if (!blob.size) {
+        throw new Error(t("passportPhoto.errors.general"));
+      }
 
-      // Convert blob to base64 Data URL for persistent offline storage & retrieval
+      // 3. Consume a credit only after successful image generation.
+      if (!hasUnlimitedPhotos) {
+        const reservation = await consumeAccess("photo_booth", usageOptions);
+        if (!reservation.allowed || reservation.data?.allowed === false) {
+          setProcessingStep("");
+          openPhotoUnlock();
+          return;
+        }
+        if (reservation.data?.remaining !== undefined) {
+          setRemainingCredits(reservation.data.remaining);
+        } else {
+          setRemainingCredits((prev) => (typeof prev === "number" ? Math.max(prev - 1, 0) : 0));
+        }
+      }
+
+      // 4. Save the paid photo to history (data URL so it survives reloads).
       const base64DataUrl = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
         reader.onloadend = () => resolve(reader.result as string);
@@ -438,73 +415,39 @@ export default function PassportPhotoTool({
         reader.readAsDataURL(blob);
       });
 
-      // STRICT CHECK: Only add photo to history if credit was successfully consumed or user has unlimited tier
-      if (creditPaid || isUnlimited) {
-        const newPhotoItem: PassportPhotoItem = {
-          id: `photo_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
-          dataUrl: base64DataUrl,
-          presetName: selectedSize.name,
-          width,
-          height,
-          createdAt: new Date().toISOString(),
-          fileName: file.name,
-          fileSize: blob.size,
-        };
+      const newPhotoItem: PassportPhotoItem = {
+        id: `photo_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+        dataUrl: base64DataUrl,
+        presetName: selectedSize.name,
+        width,
+        height,
+        createdAt: new Date().toISOString(),
+        fileName: file.name,
+        fileSize: blob.size,
+      };
 
-        const updatedHistory = [
-          newPhotoItem,
-          ...history.filter((p) => p.id !== newPhotoItem.id),
-        ].slice(0, 10);
-        setHistory(updatedHistory);
-        setActivePhoto(newPhotoItem);
-        setResult(base64DataUrl);
-        setResultLocked(false);
-
-        try {
-          const body = await res.json();
-          const detail = body?.detail;
-
-          if (typeof detail === "string") {
-            friendlyMsg = detail;
-          } else if (detail?.message) {
-            friendlyMsg = detail.message;
-          }
-        } catch {
-          // Keep the generic error message.
-        }
-
-        throw new Error(friendlyMsg);
-      }
-
-      if (!blob.size) {
-        throw new Error(t("passportPhoto.errors.general"));
-      }
-
-      // 3. Consume credit only after successful image generation.
-      setProcessingStep(t("passportPhoto.steps.finalizing"));
-
-      const reservation = await consumeAccess("photo_booth");
-
-      if (!reservation.allowed || reservation.data?.allowed === false) {
-        setShowUpgradeModal(true);
-        return;
-      }
-
-      // 4. Update the credit balance after successful consumption.
-      if (tier === "executive") {
-        setRemainingCredits(null);
-      } else if (reservation.data?.remaining !== undefined) {
-        setRemainingCredits(reservation.data.remaining);
-      }
-
-      // 5. Unlock the result because this generation paid successfully.
-      const url = URL.createObjectURL(blob);
-
+      const updatedHistory = [
+        newPhotoItem,
+        ...history.filter((p) => p.id !== newPhotoItem.id),
+      ].slice(0, 10);
+      setHistory(updatedHistory);
+      setActivePhoto(newPhotoItem);
+      setResult(base64DataUrl);
       setResultLocked(false);
-      setResult(url);
-      setProcessingStep("");
 
-      if (onResult) onResult(url);
+      try {
+        localStorage.setItem(effectiveHistoryKey, JSON.stringify(updatedHistory));
+        if (!isJourney && updateProfile) {
+          updateProfile({ standalonePassportPhotos: updatedHistory }, { silent: true });
+        }
+      } catch (e) {
+        console.warn("Error saving photo history:", e);
+      }
+
+      if (onResult) onResult(base64DataUrl);
+      onHistoryChange?.(updatedHistory);
+      showToast("Passport photo generated and saved to history!", "success");
+      setProcessingStep("");
     } catch (err) {
       console.error("Passport photo processing failed:", err);
       let message: string;
@@ -691,10 +634,10 @@ export default function PassportPhotoTool({
         )}
 
         {/* Credit Status */}
-        {effectiveTier !== "executive" && (
+        {!hasUnlimitedPhotos && !photoWallet.loading && (
           <section className="mb-6 w-full max-w-2xl">
             <div
-              onClick={() => setShowUpgradeModal(true)}
+              onClick={openPhotoUnlock}
               className="flex cursor-pointer flex-col items-start justify-between gap-4 rounded-xl border border-[#0d7377]/20 bg-white/90 px-4 py-3 shadow-sm backdrop-blur-sm transition-all hover:border-[#0d7377]/40 hover:bg-white hover:shadow-md active:scale-[0.99] md:flex-row md:items-center"
               title="Click to view upgrade options"
             >
@@ -833,17 +776,22 @@ export default function PassportPhotoTool({
             )}
 
             {/* Process Button */}
-            {effectiveTier !== "executive" &&
+            {!hasUnlimitedPhotos &&
+            !photoWallet.loading &&
             (remainingCredits === null || remainingCredits <= 0) ? (
               <button
                 type="button"
-                onClick={() => setShowUpgradeModal(true)}
+                onClick={openPhotoUnlock}
                 className="mt-6 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#0d7377] py-3.5 font-semibold text-white shadow-[0_4px_18px_rgba(217,119,6,0.3)] transition-all hover:bg-[#0a5f63] active:scale-[0.99]"
                 title="Credits required to generate photo"
               >
                 <Lock className="h-5 w-5" />
                 <span>
-                  {effectiveTier === "premium" ? "Upgrade to Executive" : "Upgrade to continue"}
+                  {photoWallet.item
+                    ? `Unlock for ${photoWallet.item.credits} credits`
+                    : effectiveTier === "premium"
+                      ? "Upgrade to Executive"
+                      : "Upgrade to continue"}
                 </span>
               </button>
             ) : (
@@ -878,7 +826,13 @@ export default function PassportPhotoTool({
             ref={resultRef}
             className="animate-in fade-in mt-8 w-full max-w-2xl duration-500"
           >
-            <ResultGate feature="photo_booth" isLocked={resultLocked} planTier={effectiveTier}>
+            <ResultGate
+              feature="photo_booth"
+              isLocked={resultLocked}
+              planTier={effectiveTier}
+              standaloneToolId={isJourney ? undefined : "photo-booth"}
+              standaloneGranted={!resultLocked}
+            >
               <div
                 className="rounded-2xl border border-[#0d7377]/30 bg-white/90 p-5 shadow-xl backdrop-blur-md sm:p-7"
                 style={{
@@ -950,6 +904,14 @@ export default function PassportPhotoTool({
         onRequestClearAll={() => setShowClearHistoryModal(true)}
         isJourney={isJourney}
       />
+
+      {showCreditModal && photoWallet.item && (
+        <CreditLaunchModal
+          item={photoWallet.item}
+          onClose={() => setShowCreditModal(false)}
+          onLaunched={() => setShowCreditModal(false)}
+        />
+      )}
 
       {/* UpgradeModal */}
       {showUpgradeModal && (
