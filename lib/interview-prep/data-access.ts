@@ -278,6 +278,9 @@ export async function getAllUserSessionsDB(
   // Optional filter by source
   if (source) {
     query = query.eq("source", source);
+    if (source === "tool") {
+      query = query.is("journey_id", null);
+    }
   }
 
   // Order by journey / tool sessions first

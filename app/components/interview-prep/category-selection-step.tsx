@@ -25,6 +25,8 @@ interface CategorySelectionStepProps {
   onPurchaseAgain?: () => void;
   onOpenMySessions?: () => void;
   error?: string | null;
+  isJourney?: boolean;
+  journeyTier?: string | null;
 }
 
 // Color palette mapping for categories
@@ -123,7 +125,10 @@ export function CategorySelectionStep({
   onNext,
   onBack,
   onPurchaseAgain,
+  onOpenMySessions,
   error,
+  isJourney = false,
+  journeyTier,
 }: CategorySelectionStepProps) {
   const visibleCategories = categories
   
@@ -259,8 +264,32 @@ export function CategorySelectionStep({
                 <div className="flex-1 min-w-0">
                   <h3 className="font-bold text-xl text-slate-900 mb-1">{category.displayName}</h3>
 
-                  {/* Purchase Status Badge */}
-                  {category.isPurchased ? (
+                  {/* Purchase / Journey Status Badge */}
+                  {isJourney ? (
+                    journeyTier && journeyTier.toLowerCase() !== "free" ? (
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                          <path
+                            fillRule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        Included in Journey
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                        <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                          <path
+                            fillRule="evenodd"
+                            d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        Requires Basic Journey Plan
+                      </span>
+                    )
+                  ) : category.isPurchased ? (
                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                       <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                         <path

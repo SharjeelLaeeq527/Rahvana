@@ -59,6 +59,7 @@ export interface InterviewPreparationProps {
   initialCategorySlug?: string | null;
   initialView?: "prep" | "sessions";
   onClose?: () => void;
+  journeyTier?: string | null;
 }
 
 export default function InterviewPreparation({
@@ -71,6 +72,7 @@ export default function InterviewPreparation({
   initialCategorySlug: propInitialCategorySlug,
   initialView = "prep",
   onClose,
+  journeyTier: propJourneyTier,
 }: InterviewPreparationProps = {}) {
   const router = useRouter();
   const journeyEnv = useJourneyEnvironment();
@@ -89,6 +91,12 @@ export default function InterviewPreparation({
     }
     return null;
   };
+
+  const effectiveJourneyTier =
+    propJourneyTier ||
+    getEffectiveParam("journey_tier") ||
+    getEffectiveParam("tier") ||
+    null;
 
   const effectiveJourneyId =
     propJourneyId ||
@@ -269,6 +277,9 @@ export default function InterviewPreparation({
 
   const saveProgressToProfile = (currentFormData = formData) => {
     if (!user) return;
+    // CRITICAL: Standalone interview prep must NOT save to or overwrite the journey case profile!
+    // The user's prompt requires complete data isolation between standalone and journey prep.
+    if (!isJourneySession && !isEmbedded) return;
     try {
       const profileUpdate = mapFormToProfile(currentFormData as Record<string, unknown>);
       updateProfile(profileUpdate, { silent: true });
@@ -281,8 +292,9 @@ export default function InterviewPreparation({
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [step]);
 
-  // Auto-fill profile data (from central context)
+  // Auto-fill profile data (from central context) - ONLY for Journey sessions
   useEffect(() => {
+    if (!isJourneySession && !isEmbedded) return;
     if (isProfileLoading || profileLoaded || !profile) return;
 
     const mappedData = mapProfileToGenericForm(profile, {
@@ -441,9 +453,9 @@ export default function InterviewPreparation({
 
         // Load questionnaire for the restored category
         const catDataResponse = await fetch(`/api/interview-prep?category_slug=${categorySlug}`);
-        const catData = await catDataResponse.json();
+        const catData = catDataResponse.ok ? await catDataResponse.json().catch(() => null) : null;
 
-        if (catData.success) {
+        if (catData?.success) {
           setQuestionnaire({
             categorySlug: category.categorySlug,
             version: catData.questionnaire?.version || "1.0.0",
@@ -593,13 +605,15 @@ export default function InterviewPreparation({
             const categorySlug =
               journeyData.session.category_slug || targetCategorySlug || "ir-1-spouse";
             const catDataResponse = await fetch(`/api/interview-prep?category_slug=${categorySlug}`);
-            const catData = await catDataResponse.json();
+            const catData = catDataResponse.ok ? await catDataResponse.json().catch(() => null) : null;
 
-            if (catData.success) {
+            if (catData?.success) {
               const categoriesResponse = await fetch(`/api/interview-prep/categories`);
-              const categoriesData = await categoriesResponse.json();
+              const categoriesData = categoriesResponse.ok
+                ? await categoriesResponse.json().catch(() => null)
+                : null;
 
-              if (categoriesData.success && categoriesData.categories) {
+              if (categoriesData?.success && categoriesData.categories) {
                 const category = categoriesData.categories.find(
                   (c: { categorySlug: string }) => c.categorySlug === categorySlug
                 );
@@ -684,6 +698,15 @@ export default function InterviewPreparation({
           const sessionData = await response.json();
 
           if (response.ok && sessionData.session && sessionData.session.interview_prep_results) {
+            const sess = sessionData.session;
+            // Strict isolation: do not load journey sessions into standalone, or vice versa
+            if ((isEmbedded && sess.source === "tool") || (!isEmbedded && sess.source === "journey")) {
+              setLoading(false);
+              setLoadingMessage("");
+              setSessionRestorationAttempted(true);
+              return;
+            }
+
             setSessionId(sessionIdParam);
             setGeneratedResults(sessionData.session.interview_prep_results.generated_questions);
             setStep(questionnaire ? questionnaire.sections.length + 2 : 4);
@@ -709,20 +732,26 @@ export default function InterviewPreparation({
           const sessionData = await response.json();
 
           if (response.ok && sessionData.session && sessionData.session.completed === false) {
-            const source = sessionData.session.source || savedSessionSource || (isEmbedded ? "journey" : "tool");
-            setSessionSource(source);
-            if (source === "journey") {
-              setIsJourneySession(true);
-              setJourneyId(sessionData.session.journey_id);
-            }
+            const session = sessionData.session;
+            // Strict isolation check: reject cross-source stored sessions
+            if ((isEmbedded && session.source === "tool") || (!isEmbedded && session.source === "journey")) {
+              clearStoredSession(activeCandidateId, isEmbedded);
+            } else {
+              const source = session.source || savedSessionSource || (isEmbedded ? "journey" : "tool");
+              setSessionSource(source);
+              if (source === "journey") {
+                setIsJourneySession(true);
+                setJourneyId(session.journey_id);
+              }
 
-            await restoreSessionData(sessionData.session, (categorySlug: string) => {
-              const category = availableCategories.find((c) => c.categorySlug === categorySlug);
-              return category;
-            });
-            setLoading(false);
-            setSessionRestorationAttempted(true);
-            return;
+              await restoreSessionData(session, (categorySlug: string) => {
+                const category = availableCategories.find((c) => c.categorySlug === categorySlug);
+                return category;
+              });
+              setLoading(false);
+              setSessionRestorationAttempted(true);
+              return;
+            }
           } else {
             clearStoredSession(activeCandidateId, isEmbedded);
           }
@@ -940,7 +969,7 @@ export default function InterviewPreparation({
     }
 
     try {
-      if (selectedCategory.purchaseExhausted && selectedCategory.addonId) {
+      if (!isEmbedded && !isJourneySession && selectedCategory.purchaseExhausted && selectedCategory.addonId) {
         showToast(
           "You have already used your purchased interview prep session for this category. Purchase another session to continue.",
           "info"
@@ -1228,6 +1257,8 @@ export default function InterviewPreparation({
               router.push("/interview-prep/my-sessions");
             }
           }}
+          isJourney={isEmbedded || isJourneySession}
+          journeyTier={effectiveJourneyTier}
           error={error}
         />
       );
@@ -1277,6 +1308,7 @@ export default function InterviewPreparation({
       return (
         <ResultGate
           feature="basic_interview_prep"
+          planTier={effectiveJourneyTier}
           title="Your Interview Prep Plan Is Ready"
           description="Upgrade to Basic or above to unlock your personalised interview questions and preparation guide."
           minHeight="400px"

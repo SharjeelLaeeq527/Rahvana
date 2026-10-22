@@ -5,8 +5,12 @@
  * Now supports dynamic category selection.
  */
 
-import { NextResponse, NextRequest } from "next/server";
-import { createInterviewSession, getInterviewSession } from "@/lib/interview-prep/service";
+import { NextRequest, NextResponse } from "next/server";
+import {
+  createInterviewSession,
+  createJourneyInterviewSession,
+  getInterviewSession,
+} from "@/lib/interview-prep/service";
 import { categoryLoader } from "@/lib/interview-prep/category-loader";
 import {
   validateToolSessionCreation,
@@ -23,11 +27,13 @@ import { E, msg } from "@/lib/errors";
  * - category_slug: string (e.g., 'ir-1-spouse')
  * - user_email: string
  * - user_name: string
+ * - source?: 'journey' | 'tool'
+ * - journey_id?: string
  */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { category_slug, user_email, user_name } = body;
+    const { category_slug, user_email, user_name, source, journey_id } = body;
 
     // Validate required fields
     if (!category_slug) {
@@ -48,7 +54,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get user for purchase validation
+    // Get user for authentication
     const supabase = await createClient();
     const {
       data: { user },
@@ -58,7 +64,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Validate purchase BEFORE creating session
+    // Handle journey-scoped sessions: access governed by Journey tier, isolated from standalone
+    if (source === "journey" || journey_id) {
+      const resolvedJourneyId = journey_id || "journey";
+      const result = await createJourneyInterviewSession(resolvedJourneyId, category_slug);
+
+      return NextResponse.json(
+        {
+          success: true,
+          alreadyExists: result.alreadyExists,
+          session: result.session,
+          source: "journey",
+        },
+        {
+          status: result.alreadyExists ? 200 : 201,
+        }
+      );
+    }
+
+    // Validate purchase BEFORE creating standalone tool session
     const validation = await validateToolSessionCreation(user.id, category_slug);
 
     if (!validation.allowed) {

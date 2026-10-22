@@ -375,6 +375,7 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
             data={data}
             state={state}
             actions={actions}
+            journeyTier={state.subscriptionTier}
           />
         ) : (
           <>
