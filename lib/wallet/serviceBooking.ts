@@ -131,7 +131,7 @@ export async function deductServiceBooking(
             .eq("user_id", userId);
         } else if (item.resourceId === "pcc-filing-service") {
           await supabase
-            .from("police_certificate_requests")
+            .from("police_verification_requests")
             .update({ payment_status: "paid", awaiting_payment: false })
             .eq("id", referenceId)
             .eq("user_id", userId);
