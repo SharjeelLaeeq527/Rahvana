@@ -120,15 +120,48 @@ export async function deductServiceBooking(
     return { status: 500, body: { success: false, error: "DEDUCT_SERVICE_FAILED" } };
   }
 
-  return {
-    status: 200,
-    body: {
-      success: true,
-      transactionId: data.transaction_id ?? null,
-      balance: Number(data.balance ?? 0),
-      serviceId: item.resourceId,
-      referenceId: data.reference_id ?? referenceId,
-      alreadyProcessed: data.already_processed === true,
-    },
-  };
+    // Reveal and mark the service record as paid when referenceId is provided
+    if (referenceId) {
+      try {
+        if (item.resourceId === "book-medical-appointment") {
+          await supabase
+            .from("appointments")
+            .update({ payment_status: "paid", awaiting_payment: false })
+            .eq("id", referenceId)
+            .eq("user_id", userId);
+        } else if (item.resourceId === "pcc-filing-service") {
+          await supabase
+            .from("police_certificate_requests")
+            .update({ payment_status: "paid", awaiting_payment: false })
+            .eq("id", referenceId)
+            .eq("user_id", userId);
+        } else if (item.resourceId === "book-a-consultation") {
+          await supabase
+            .from("consultation_bookings")
+            .update({ payment_status: "paid" })
+            .eq("id", referenceId)
+            .eq("user_id", userId);
+        } else if (item.resourceId === "document-translation") {
+          await supabase
+            .from("translation_documents")
+            .update({ payment_status: "paid" })
+            .eq("id", referenceId)
+            .eq("user_id", userId);
+        }
+      } catch (tableErr) {
+        console.error(`[wallet] Failed to update service record for ${item.resourceId} (${referenceId}):`, tableErr);
+      }
+    }
+
+    return {
+      status: 200,
+      body: {
+        success: true,
+        transactionId: data.transaction_id ?? null,
+        balance: Number(data.balance ?? 0),
+        serviceId: item.resourceId,
+        referenceId: data.reference_id ?? referenceId,
+        alreadyProcessed: data.already_processed === true,
+      },
+    };
 }

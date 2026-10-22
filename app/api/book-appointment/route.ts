@@ -92,8 +92,15 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Extract the full name from given name and surname
-    const fullName = `${formData.givenName} ${formData.surname}`;
+    // Extract the full name from given name, surname, or direct fullName
+    const fullName =
+      formData.fullName?.trim() ||
+      `${formData.givenName || ""} ${formData.surname || ""}`.trim() ||
+      "Applicant";
+    const nameParts = fullName.split(" ");
+    const givenName = formData.givenName || nameParts[0] || fullName;
+    const surname = formData.surname || nameParts.slice(1).join(" ") || nameParts[0] || fullName;
+    const phoneNumber = formData.primaryContact || formData.contactNumber || "";
 
     // Define types for our data structures
     interface AppointmentData {
@@ -139,7 +146,7 @@ export async function POST(req: NextRequest) {
     const appointmentData: AppointmentData = {
       full_name: fullName,
       email: formData.email,
-      phone_number: formData.primaryContact, // ✅ Correct column name
+      phone_number: phoneNumber, // ✅ Uses primaryContact or contactNumber
       medical_website:
         formData.location === "islamabad"
           ? formData.islamabadProvider === "amc"
@@ -151,8 +158,8 @@ export async function POST(req: NextRequest) {
       appointment_type: formData.appointmentType || null,
       visa_type: formData.visaType || null,
       medical_type: formData.medicalType || null,
-      surname: formData.surname,
-      given_name: formData.givenName,
+      surname: surname,
+      given_name: givenName,
       gender: formData.gender || null,
       date_of_birth: formData.dateOfBirth ? new Date(formData.dateOfBirth).toISOString() : null,
       passport_number: formData.passportNumber || null,
