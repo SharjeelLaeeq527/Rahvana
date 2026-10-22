@@ -8,14 +8,7 @@ import WizardInfoPanel, { InfoPanelData } from "../../../components/guides/Wizar
 import { NarrativeModal } from "../../(visa)/221g-action-planner/components/NarrativeModal";
 import { type WizardState, WizardStepId } from "@/types/guide-wizard";
 import guideData from "@/data/step-parent-guide-data.json";
-import {
-  ArrowLeft,
-  ArrowRight,
-  Check,
-  AlertTriangle,
-  Info,
-  CheckCircle2,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, AlertTriangle, Info, CheckCircle2 } from "lucide-react";
 import { Loader } from "@/components/ui/spinner";
 
 import FeedbackButton from "@/app/components/FeedbackButton";
@@ -51,7 +44,7 @@ const StepParentGuidePage = () => {
   const { isUrdu } = useLanguage();
   const [currentStep, setCurrentStep] = useState(0);
   const [highestReachedStep, setHighestReachedStep] = useState(0);
-  const [showWhatsThis, setShowWhatsThis] = useState(true);
+  const [showWhatsThis, setShowWhatsThis] = useState(false);
   const [dontShowAgain, setDontShowAgain] = useState(
     typeof window !== "undefined" && localStorage.getItem("dont_show_stepparent_welcome") === "true"
   );
@@ -279,40 +272,41 @@ const StepParentGuidePage = () => {
     switch (currentStepId) {
       case "document_need":
         return (
-          <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
+          <div className="animate-in fade-in slide-in-from-bottom-4 flex flex-col gap-6 duration-300">
             <div>
-              <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
+              <h2 className="mb-2 text-3xl font-extrabold tracking-tight text-slate-900">
                 Determine Step-Parent Qualification
               </h2>
-              <p className="text-slate-500 text-sm">
+              <p className="text-sm text-slate-500">
                 USCIS enforces strict conditions on step-parent petitions. Answer the following to
                 determine if your relationship qualifies under U.S. immigration law.
               </p>
             </div>
 
             {/* Question 1 */}
-            <div className="border border-slate-100 p-6 rounded-2xl bg-slate-50/50">
-            <h3 className="mb-4 flex items-start gap-2 text-base font-bold text-slate-800">
+            <div className="rounded-2xl border border-slate-100 bg-slate-50/50 p-6">
+              <h3 className="mb-4 flex items-start gap-2 text-base font-bold text-slate-800">
                 <span className="mt-0.5 flex h-6 min-h-6 w-6 min-w-6 shrink-0 items-center justify-center rounded-full bg-teal-500 text-xs leading-none font-bold text-white">
                   1
                 </span>
 
                 <span className="flex-1 leading-6">
-                Was the marriage between your biological parent and step-parent legally recognized?
+                  Was the marriage between your biological parent and step-parent legally
+                  recognized?
                 </span>
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <button
                   type="button"
                   onClick={() => handleEligibilitySelect("legallyRecognized", "yes")}
-                  className={`p-4 rounded-xl border text-left transition-all duration-250 flex flex-col gap-1 ${
+                  className={`flex flex-col gap-1 rounded-xl border p-4 text-left transition-all duration-250 ${
                     answers.legallyRecognized === "yes"
                       ? "border-teal-500 bg-teal-50/50 shadow-sm ring-1 ring-teal-500"
                       : "border-slate-200 bg-white hover:border-slate-300"
                   }`}
                 >
-                  <span className="font-bold text-slate-800 text-sm">Yes, it is legally valid</span>
-                  <span className="text-slate-500 text-xs leading-normal">
+                  <span className="text-sm font-bold text-slate-800">Yes, it is legally valid</span>
+                  <span className="text-xs leading-normal text-slate-500">
                     The marriage was legally registered and either spouse&apos;s previous marriages
                     legally ended beforehand.
                   </span>
@@ -320,14 +314,14 @@ const StepParentGuidePage = () => {
                 <button
                   type="button"
                   onClick={() => handleEligibilitySelect("legallyRecognized", "no")}
-                  className={`p-4 rounded-xl border text-left transition-all duration-250 flex flex-col gap-1 ${
+                  className={`flex flex-col gap-1 rounded-xl border p-4 text-left transition-all duration-250 ${
                     answers.legallyRecognized === "no"
                       ? "border-teal-500 bg-teal-50/50 shadow-sm ring-1 ring-teal-500"
                       : "border-slate-200 bg-white hover:border-slate-300"
                   }`}
                 >
-                  <span className="font-bold text-slate-800 text-sm">No or Unsure</span>
-                  <span className="text-slate-500 text-xs leading-normal">
+                  <span className="text-sm font-bold text-slate-800">No or Unsure</span>
+                  <span className="text-xs leading-normal text-slate-500">
                     The marriage is not legally recognized, or we do not have proof of termination
                     of prior marriages.
                   </span>
@@ -336,8 +330,8 @@ const StepParentGuidePage = () => {
             </div>
 
             {/* Question 2 */}
-            <div className="border border-slate-100 p-6 rounded-2xl bg-slate-50/50">
-              <h3 className="text-base font-bold text-slate-800 mb-4 flex items-start gap-2">
+            <div className="rounded-2xl border border-slate-100 bg-slate-50/50 p-6">
+              <h3 className="mb-4 flex items-start gap-2 text-base font-bold text-slate-800">
                 <span className="mt-0.5 flex h-6 min-h-6 w-6 min-w-6 shrink-0 items-center justify-center rounded-full bg-teal-500 text-xs leading-none font-bold text-white">
                   2
                 </span>
@@ -345,32 +339,32 @@ const StepParentGuidePage = () => {
                   How old was the child when this marriage took place?
                 </span>
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <button
                   type="button"
                   onClick={() => handleEligibilitySelect("childAge", "under18")}
-                  className={`p-4 rounded-xl border text-left transition-all duration-250 flex flex-col gap-1 ${
+                  className={`flex flex-col gap-1 rounded-xl border p-4 text-left transition-all duration-250 ${
                     answers.childAge === "under18"
                       ? "border-teal-500 bg-teal-50/50 shadow-sm ring-1 ring-teal-500"
                       : "border-slate-200 bg-white hover:border-slate-300"
                   }`}
                 >
-                  <span className="font-bold text-slate-800 text-sm">Under 18 Years Old</span>
-                  <span className="text-slate-500 text-xs leading-normal">
+                  <span className="text-sm font-bold text-slate-800">Under 18 Years Old</span>
+                  <span className="text-xs leading-normal text-slate-500">
                     The marriage occurred before the child&apos;s 18th birthday.
                   </span>
                 </button>
                 <button
                   type="button"
                   onClick={() => handleEligibilitySelect("childAge", "over18")}
-                  className={`p-4 rounded-xl border text-left transition-all duration-250 flex flex-col gap-1 ${
+                  className={`flex flex-col gap-1 rounded-xl border p-4 text-left transition-all duration-250 ${
                     answers.childAge === "over18"
                       ? "border-teal-500 bg-teal-50/50 shadow-sm ring-1 ring-teal-500"
                       : "border-slate-200 bg-white hover:border-slate-300"
                   }`}
                 >
-                  <span className="font-bold text-slate-800 text-sm">18 Years Old or Older</span>
-                  <span className="text-slate-500 text-xs leading-normal">
+                  <span className="text-sm font-bold text-slate-800">18 Years Old or Older</span>
+                  <span className="text-xs leading-normal text-slate-500">
                     The marriage took place on or after the child&apos;s 18th birthday.
                   </span>
                 </button>
@@ -385,7 +379,7 @@ const StepParentGuidePage = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.2 }}
-                  className={`p-5 rounded-2xl border flex gap-4 ${
+                  className={`flex gap-4 rounded-2xl border p-5 ${
                     qualifies
                       ? "border-emerald-200 bg-emerald-50/40 text-emerald-900"
                       : "border-amber-200 bg-amber-50/40 text-amber-900"
@@ -393,13 +387,13 @@ const StepParentGuidePage = () => {
                 >
                   <div className="mt-0.5">
                     {qualifies ? (
-                      <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                      <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600" />
                     ) : (
-                      <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />
+                      <AlertTriangle className="h-5 w-5 shrink-0 text-amber-600" />
                     )}
                   </div>
-                  <div className="flex-1 flex flex-col gap-1">
-                    <span className="font-bold text-sm">
+                  <div className="flex flex-1 flex-col gap-1">
+                    <span className="text-sm font-bold">
                       {qualifies
                         ? "Relationship Generally Qualifies"
                         : "Important Eligibility Note"}
@@ -408,8 +402,8 @@ const StepParentGuidePage = () => {
                       {qualifies
                         ? "Based on your selections, the step-parent relationship meets the timing and validity rules under U.S. immigration law. You are ready to compile the required documents on the next step."
                         : answers.childAge === "over18"
-                        ? "Under U.S. immigration law, the marriage creating the step-relationship must take place before the child turns 18. Because your case does not meet this timing requirement, the relationship does not qualify, and the continue button has been disabled."
-                        : "To qualify, the marriage between the biological parent and the step-parent must be legally recognized, and all prior marriages must have been legally dissolved. Please review your documents before proceeding."}
+                          ? "Under U.S. immigration law, the marriage creating the step-relationship must take place before the child turns 18. Because your case does not meet this timing requirement, the relationship does not qualify, and the continue button has been disabled."
+                          : "To qualify, the marriage between the biological parent and the step-parent must be legally recognized, and all prior marriages must have been legally dissolved. Please review your documents before proceeding."}
                     </span>
                   </div>
                 </motion.div>
@@ -447,12 +441,12 @@ const StepParentGuidePage = () => {
         ];
 
         return (
-          <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
+          <div className="animate-in fade-in slide-in-from-bottom-4 flex flex-col gap-6 duration-300">
             <div>
-              <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
+              <h2 className="mb-2 text-3xl font-extrabold tracking-tight text-slate-900">
                 Compile Your Documents
               </h2>
-              <p className="text-slate-500 text-sm">
+              <p className="text-sm text-slate-500">
                 You must obtain the following records to substantiate the step-parent connection.
                 Check off each document as you acquire it.
               </p>
@@ -465,30 +459,30 @@ const StepParentGuidePage = () => {
                   <div
                     key={doc.id}
                     onClick={() => handleToggleDoc(doc.id)}
-                    className={`p-5 rounded-2xl border transition-all duration-200 cursor-pointer flex items-start gap-4 ${
+                    className={`flex cursor-pointer items-start gap-4 rounded-2xl border p-5 transition-all duration-200 ${
                       isChecked
                         ? "border-teal-500/40 bg-teal-50/15"
-                        : "border-slate-200 bg-white hover:shadow-md hover:border-slate-300"
+                        : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-md"
                     }`}
                   >
                     <div
-                      className={`w-5 h-5 rounded-md border flex items-center justify-center mt-0.5 shrink-0 transition-colors ${
+                      className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-colors ${
                         isChecked
-                          ? "bg-teal-600 border-teal-600 text-white"
+                          ? "border-teal-600 bg-teal-600 text-white"
                           : "border-slate-300 bg-white"
                       }`}
                     >
-                      {isChecked && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                      {isChecked && <Check className="h-3.5 w-3.5 stroke-[3]" />}
                     </div>
                     <div className="flex-1">
-                      <div className="flex items-center justify-between gap-4 mb-1">
+                      <div className="mb-1 flex items-center justify-between gap-4">
                         <span
-                          className={`font-bold text-sm ${isChecked ? "text-teal-900" : "text-slate-800"}`}
+                          className={`text-sm font-bold ${isChecked ? "text-teal-900" : "text-slate-800"}`}
                         >
                           {doc.name}
                         </span>
                         <span
-                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider shrink-0 ${
+                          className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase ${
                             doc.required ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700"
                           }`}
                         >
@@ -510,67 +504,68 @@ const StepParentGuidePage = () => {
 
       case "translation_standards":
         return (
-          <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
+          <div className="animate-in fade-in slide-in-from-bottom-4 flex flex-col gap-6 duration-300">
             <div>
-              <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
+              <h2 className="mb-2 text-3xl font-extrabold tracking-tight text-slate-900">
                 Ensure Translation Standards
               </h2>
-              <p className="text-slate-500 text-sm">
+              <p className="text-sm text-slate-500">
                 All foreign-language documents submitted to USCIS must be accompanied by a certified
                 English translation following strict statutory guidelines.
               </p>
             </div>
 
-            <div className="bg-teal-50/40 border-l-4 border-teal-600 p-4 rounded-r-xl flex gap-3">
-              <Info className="w-5 h-5 text-teal-600 shrink-0 mt-0.5" />
-              <p className="text-teal-900 text-xs leading-relaxed">
+            <div className="flex gap-3 rounded-r-xl border-l-4 border-teal-600 bg-teal-50/40 p-4">
+              <Info className="mt-0.5 h-5 w-5 shrink-0 text-teal-600" />
+              <p className="text-xs leading-relaxed text-teal-900">
                 <strong>CRITICAL RULE:</strong> Do not translate the documents yourself. Even if you
-                are bilingual, USCIS requires a third-party certifier to confirm the translation&apos;s
-                completeness and accuracy.
+                are bilingual, USCIS requires a third-party certifier to confirm the
+                translation&apos;s completeness and accuracy.
               </p>
             </div>
 
             {/* Steps / checklist of translation rules */}
             <div className="flex flex-col gap-4">
-              <div className="flex gap-4 items-start">
-                <span className="w-6 h-6 rounded-full bg-teal-100 text-teal-700 text-xs flex items-center justify-center font-bold shrink-0 mt-0.5">
+              <div className="flex items-start gap-4">
+                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal-100 text-xs font-bold text-teal-700">
                   1
                 </span>
                 <div>
-                  <h4 className="font-bold text-slate-800 text-sm mb-0.5">
+                  <h4 className="mb-0.5 text-sm font-bold text-slate-800">
                     Complete English Translation
                   </h4>
-                  <p className="text-slate-500 text-xs leading-normal">
+                  <p className="text-xs leading-normal text-slate-500">
                     The translation must map word-for-word to the original layout, including seals,
                     stamps, signatures, and margins.
                   </p>
                 </div>
               </div>
 
-              <div className="flex gap-4 items-start">
-                <span className="w-6 h-6 rounded-full bg-teal-100 text-teal-700 text-xs flex items-center justify-center font-bold shrink-0 mt-0.5">
+              <div className="flex items-start gap-4">
+                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal-100 text-xs font-bold text-teal-700">
                   2
                 </span>
                 <div>
-                  <h4 className="font-bold text-slate-800 text-sm mb-0.5">
+                  <h4 className="mb-0.5 text-sm font-bold text-slate-800">
                     Translator Certification Statement
                   </h4>
-                  <p className="text-slate-500 text-xs leading-normal">
-                    A signed statement stating: &quot;I certify that I am competent to translate from
-                    [Language] into English, and that the translation is complete and accurate.&quot;
+                  <p className="text-xs leading-normal text-slate-500">
+                    A signed statement stating: &quot;I certify that I am competent to translate
+                    from [Language] into English, and that the translation is complete and
+                    accurate.&quot;
                   </p>
                 </div>
               </div>
 
-              <div className="flex gap-4 items-start">
-                <span className="w-6 h-6 rounded-full bg-teal-100 text-teal-700 text-xs flex items-center justify-center font-bold shrink-0 mt-0.5">
+              <div className="flex items-start gap-4">
+                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal-100 text-xs font-bold text-teal-700">
                   3
                 </span>
                 <div>
-                  <h4 className="font-bold text-slate-800 text-sm mb-0.5">
+                  <h4 className="mb-0.5 text-sm font-bold text-slate-800">
                     Translator&apos;s Credentials
                   </h4>
-                  <p className="text-slate-500 text-xs leading-normal">
+                  <p className="text-xs leading-normal text-slate-500">
                     The statement must list the translator&apos;s printed name, signature, date, and
                     contact details (phone, email, and address).
                   </p>
@@ -589,19 +584,19 @@ const StepParentGuidePage = () => {
         ];
 
         return (
-          <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
+          <div className="animate-in fade-in slide-in-from-bottom-4 flex flex-col gap-6 duration-300">
             <div>
-              <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
+              <h2 className="mb-2 text-3xl font-extrabold tracking-tight text-slate-900">
                 Review & Finalize
               </h2>
-              <p className="text-slate-500 text-sm">
+              <p className="text-sm text-slate-500">
                 Review our checklists to ensure names, dates, and documentation align with USCIS
                 policies.
               </p>
             </div>
 
-            <div className="border border-slate-200 rounded-2xl p-5 bg-slate-50/50 flex flex-col gap-4">
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+            <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-slate-50/50 p-5">
+              <span className="text-xs font-bold tracking-wider text-slate-500 uppercase">
                 Final USCIS Checklist
               </span>
               <div className="flex flex-col gap-3">
@@ -610,13 +605,13 @@ const StepParentGuidePage = () => {
                   return (
                     <label
                       key={idx}
-                      className="flex items-start gap-3 cursor-pointer text-slate-700 select-none"
+                      className="flex cursor-pointer items-start gap-3 text-slate-700 select-none"
                     >
                       <input
                         type="checkbox"
                         checked={isChecked}
                         onChange={() => handleToggleValidationCheck(item)}
-                        className="mt-1 w-4 h-4 rounded accent-teal-600 cursor-pointer"
+                        className="mt-1 h-4 w-4 cursor-pointer rounded accent-teal-600"
                       />
                       <span className="text-xs leading-relaxed">{item}</span>
                     </label>
@@ -625,10 +620,10 @@ const StepParentGuidePage = () => {
               </div>
             </div>
 
-            <div className="p-5 border border-red-200 bg-red-50/40 rounded-2xl flex gap-4 text-red-950">
-              <AlertTriangle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
-              <div className="flex-1 flex flex-col gap-1">
-                <span className="font-bold text-sm">Important Reminder</span>
+            <div className="flex gap-4 rounded-2xl border border-red-200 bg-red-50/40 p-5 text-red-950">
+              <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-red-600" />
+              <div className="flex flex-1 flex-col gap-1">
+                <span className="text-sm font-bold">Important Reminder</span>
                 <span className="text-xs leading-relaxed opacity-90">
                   Submitting these documents does not automatically guarantee petition approval.
                   USCIS officers review the complete file and verify the bona fide nature of the
@@ -646,7 +641,7 @@ const StepParentGuidePage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f5f7fa] pt-14">
+      <div className="flex min-h-screen items-center justify-center bg-[#f5f7fa] pt-14">
         <Loader size="md" />
       </div>
     );
@@ -654,13 +649,13 @@ const StepParentGuidePage = () => {
 
   return (
     <div
-      className={`min-h-screen flex flex-col bg-gray-50 pt-26 ${isUrdu ? "font-urdu-body" : ""}`}
+      className={`flex min-h-screen flex-col bg-gray-50 pt-26 ${isUrdu ? "font-urdu-body" : ""}`}
     >
       {/* Header */}
       <WizardHeader onWhatsThis={() => setShowWhatsThis(true)} title={guideData.wizard.title} />
 
       {/* Grid Layout Container matching other guides */}
-      <div className="grid flex-1 grid-cols-1 gap-4 overflow-y-auto xl:overflow-hidden h-[calc(100vh-56px)] xl:h-auto xl:grid-cols-[320px_minmax(0,1fr)_350px] xl:gap-6 xl:items-start p-4 md:p-6">
+      <div className="grid h-[calc(100vh-56px)] flex-1 grid-cols-1 gap-4 overflow-y-auto p-4 md:p-6 xl:h-auto xl:grid-cols-[320px_minmax(0,1fr)_350px] xl:items-start xl:gap-6 xl:overflow-hidden">
         {/* Sidebar */}
         <WizardSidebar
           currentStep={STEP_IDS.indexOf(currentStepId)}
@@ -676,10 +671,10 @@ const StepParentGuidePage = () => {
         />
 
         {/* Main Work Area */}
-        <main className="min-w-0 xl:overflow-y-auto p-4 sm:p-6 relative flex flex-col xl:items-start items-center xl:justify-start justify-center">
+        <main className="relative flex min-w-0 flex-col items-center justify-center p-4 sm:p-6 xl:items-start xl:justify-start xl:overflow-y-auto">
           {/* Subtle grid background pattern */}
           <div
-            className="fixed inset-0 pointer-events-none z-0"
+            className="pointer-events-none fixed inset-0 z-0"
             style={{
               backgroundImage:
                 "linear-gradient(hsl(168 80% 30% / 0.02) 1px, transparent 1px), linear-gradient(90deg, hsl(168 80% 30% / 0.02) 1px, transparent 1px)",
@@ -687,31 +682,29 @@ const StepParentGuidePage = () => {
             }}
           />
 
-          <div className="w-full flex flex-col xl:items-start items-center min-h-[500px] justify-start relative z-10">
+          <div className="relative z-10 flex min-h-[500px] w-full flex-col items-center justify-start xl:items-start">
             <div className="w-full max-w-full md:max-w-3xl">
               {/* Active Step Content container card */}
-              <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-10 shadow-sm min-h-[420px] flex flex-col justify-between">
+              <div className="flex min-h-[420px] flex-col justify-between rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-10">
                 <div>{renderStepContent()}</div>
 
                 {/* Footer Navigation Buttons */}
-                <div className="flex justify-between items-center mt-10 pt-6 border-t border-slate-100">
+                <div className="mt-10 flex items-center justify-between border-t border-slate-100 pt-6">
                   {currentStep > 0 ? (
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={goBack}
-                      className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-700 font-semibold text-xs transition-colors hover:bg-slate-50 cursor-pointer"
+                      className="flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50"
                     >
-                      <ArrowLeft className="w-4 h-4" /> 
-                      <span className="hidden md:inline-block">
-                        Back
-                      </span>
+                      <ArrowLeft className="h-4 w-4" />
+                      <span className="hidden md:inline-block">Back</span>
                     </motion.button>
                   ) : (
                     <div />
                   )}
 
-                  <span className="text-xs text-slate-400 font-semibold">
+                  <span className="text-xs font-semibold text-slate-400">
                     Step {currentStep + 1} of {STEP_IDS.length}
                   </span>
 
@@ -721,18 +714,14 @@ const StepParentGuidePage = () => {
                       whileTap={{ scale: 0.98 }}
                       onClick={goNext}
                       disabled={!canGoNext()}
-                      className={`flex items-center gap-1.5 px-5 py-2.5 rounded-xl font-semibold text-xs transition-all
-                        ${
-                          canGoNext()
-                            ? "bg-linear-to-br from-teal-600 to-teal-500 text-white shadow-sm hover:from-teal-700 hover:to-teal-600 cursor-pointer"
-                            : "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200"
-                        }
-                      `}
+                      className={`flex items-center gap-1.5 rounded-xl px-5 py-2.5 text-xs font-semibold transition-all ${
+                        canGoNext()
+                          ? "cursor-pointer bg-linear-to-br from-teal-600 to-teal-500 text-white shadow-sm hover:from-teal-700 hover:to-teal-600"
+                          : "cursor-not-allowed border border-slate-200 bg-slate-100 text-slate-400"
+                      } `}
                     >
-                      <span className="hidden md:inline-block">
-                        Continue
-                      </span>
-                      <ArrowRight className="w-4 h-4" />
+                      <span className="hidden md:inline-block">Continue</span>
+                      <ArrowRight className="h-4 w-4" />
                     </motion.button>
                   ) : (
                     <div />

@@ -46,8 +46,18 @@ export function NavigationGuard({
       const link = target.closest("a");
       if (!link || !shouldBlock || navigationHandled) return;
 
+      // Let deliberate new-tab / new-window gestures pass unimpeded.
+      if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || e.button !== 0) return;
+
+      const href = link.getAttribute("href");
+      // Same-page links (pin buttons, in-page anchors) are not "leaving".
+      if (!href || href === window.location.pathname) return;
+
+      // Prevented during CAPTURE (below): Next's <Link> starts its client-side
+      // navigation from its own React onClick, which runs BEFORE any bubble-phase
+      // document listener — preventing only at bubble time shows the modal but
+      // navigates anyway.
       e.preventDefault();
-      const href = link.getAttribute("href") || "/";
 
       setPendingHref(href);
       setShowModal(true);
@@ -56,8 +66,8 @@ export function NavigationGuard({
   );
 
   useEffect(() => {
-    document.addEventListener("click", handleClick);
-    return () => document.removeEventListener("click", handleClick);
+    document.addEventListener("click", handleClick, true);
+    return () => document.removeEventListener("click", handleClick, true);
   }, [handleClick]);
 
   const handleSaveAndLeave = async () => {
