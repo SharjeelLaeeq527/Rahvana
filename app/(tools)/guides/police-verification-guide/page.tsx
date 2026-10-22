@@ -8,8 +8,7 @@ import WizardInfoPanel, { InfoPanelData } from "../../../components/guides/Wizar
 import { NarrativeModal } from "../../(visa)/221g-action-planner/components/NarrativeModal";
 import FeedbackButton from "@/app/components/FeedbackButton";
 import { Loader } from "@/components/ui/spinner";
-import { PageGate } from "@/app/components/entitlements/PageGate";
-
+import { StandaloneAccessGate } from "@/app/components/wallet/StandaloneAccessGate";
 import ProvinceSelectionStep from "./components/ProvinceSelectionStep";
 import RoadmapStep from "../../../components/guides/steps/RoadmapStep";
 import ValidationStep from "../../../components/guides/steps/ValidationStep";
@@ -60,7 +59,7 @@ const INFO_PANEL_KEYS: Record<string, keyof typeof guideData.wizard.info_panel> 
 export default function PoliceVerificationGuide() {
   const [currentStep, setCurrentStep] = useState(0);
   const [highestReachedStep, setHighestReachedStep] = useState(0);
-  const [showWhatsThis, setShowWhatsThis] = useState(true);
+  const [showWhatsThis, setShowWhatsThis] = useState(false);
   const [dontShowAgain, setDontShowAgain] = useState(
     typeof window !== "undefined" &&
       localStorage.getItem("dont_show_police_character_welcome") === "true"
@@ -343,238 +342,236 @@ export default function PoliceVerificationGuide() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f5f7fa] pt-14">
+      <div className="flex min-h-screen items-center justify-center bg-[#f5f7fa] pt-14">
         <Loader size="md" />
       </div>
     );
   }
 
   return (
-    <PageGate
+    <StandaloneAccessGate
       feature="guide_police"
+      resourceType="guide"
+      resourceId="guide-police"
       title="Police Character Certificate Guide Locked"
-      description="Upgrade your plan to unlock step-by-step guidance on obtaining your Police Character Certificate."
+      description="Unlock step-by-step guidance on obtaining your Police Character Certificate — with wallet credits or a plan upgrade."
     >
-      <div className="min-h-screen flex flex-col bg-gray-50 pt-26">
-      <WizardHeader onWhatsThis={() => setShowWhatsThis(true)} title={guideData.wizard.title} />
+      <div className="flex min-h-screen flex-col bg-gray-50 pt-26">
+        <WizardHeader onWhatsThis={() => setShowWhatsThis(true)} title={guideData.wizard.title} />
 
-      <div className="grid flex-1 grid-cols-1 gap-4 overflow-y-auto xl:overflow-hidden h-[calc(100vh-56px)] xl:h-auto xl:grid-cols-[320px_minmax(0,1fr)_350px] xl:gap-6 xl:items-start">
-        <WizardSidebar
-          currentStep={STEP_IDS.indexOf(currentStepId)}
-          steps={STEP_IDS}
-          onStepClick={(stepIndex) => setCurrentStep(stepIndex)}
-          stepLabels={STEP_LABELS}
-          guideSlug="police-verification-guide"
-          onSaveGuide={saveGuide}
-          onGuideSaved={() => setIsSaved(true)}
-          saving={saving}
-          session={session}
-          highestReachedStep={highestReachedStep}
-        />
-
-        <main className="min-w-0 xl:overflow-y-auto p-4 sm:p-8 relative flex flex-col xl:items-start items-center xl:justify-start justify-center">
-          <div
-            className="fixed inset-0 pointer-events-none z-0"
-            style={{
-              backgroundImage:
-                "linear-gradient(hsl(168 80% 30% / 0.02) 1px, transparent 1px), linear-gradient(90deg, hsl(168 80% 30% / 0.02) 1px, transparent 1px)",
-              backgroundSize: "48px 48px",
-            }}
+        <div className="grid h-[calc(100vh-56px)] flex-1 grid-cols-1 gap-4 overflow-y-auto xl:h-auto xl:grid-cols-[320px_minmax(0,1fr)_350px] xl:items-start xl:gap-6 xl:overflow-hidden">
+          <WizardSidebar
+            currentStep={STEP_IDS.indexOf(currentStepId)}
+            steps={STEP_IDS}
+            onStepClick={(stepIndex) => setCurrentStep(stepIndex)}
+            stepLabels={STEP_LABELS}
+            guideSlug="police-verification-guide"
+            onSaveGuide={saveGuide}
+            onGuideSaved={() => setIsSaved(true)}
+            saving={saving}
+            session={session}
+            highestReachedStep={highestReachedStep}
           />
-          <div className="w-full flex flex-col xl:items-start items-center min-h-[550px] xl:min-h-[550px] justify-center">
-            <div className="relative z-10 w-full max-w-full md:max-w-3xl">
-              <div className="bg-white rounded-2xl border border-gray-200 p-4 sm:p-8 shadow-sm min-h-100">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={currentStepId}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.25 }}
-                  >
-                    {renderStep()}
-                  </motion.div>
-                </AnimatePresence>
-              </div>
 
-              <div className="flex justify-between items-center mt-5 pb-6">
-                {currentStep > 0 ? (
-                  <motion.button
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={goBack}
-                    className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-gray-300 bg-white text-gray-700 font-semibold text-sm cursor-pointer"
-                  >
-                    <ArrowLeft className="w-4 h-4" /> 
-                    <span className="hidden md:inline-block">
-                      Back
-                    </span>
-                  </motion.button>
-                ) : (
-                  <div />
-                )}
+          <main className="relative flex min-w-0 flex-col items-center justify-center p-4 sm:p-8 xl:items-start xl:justify-start xl:overflow-y-auto">
+            <div
+              className="pointer-events-none fixed inset-0 z-0"
+              style={{
+                backgroundImage:
+                  "linear-gradient(hsl(168 80% 30% / 0.02) 1px, transparent 1px), linear-gradient(90deg, hsl(168 80% 30% / 0.02) 1px, transparent 1px)",
+                backgroundSize: "48px 48px",
+              }}
+            />
+            <div className="flex min-h-[550px] w-full flex-col items-center justify-center xl:min-h-[550px] xl:items-start">
+              <div className="relative z-10 w-full max-w-full md:max-w-3xl">
+                <div className="min-h-100 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-8">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={currentStepId}
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      transition={{ duration: 0.25 }}
+                    >
+                      {renderStep()}
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
 
-                <span className="text-sm text-gray-500 font-medium">
-                  Step {currentStep + 1} of {STEP_IDS.length}
-                </span>
+                <div className="mt-5 flex items-center justify-between pb-6">
+                  {currentStep > 0 ? (
+                    <motion.button
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={goBack}
+                      className="flex cursor-pointer items-center gap-1.5 rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700"
+                    >
+                      <ArrowLeft className="h-4 w-4" />
+                      <span className="hidden md:inline-block">Back</span>
+                    </motion.button>
+                  ) : (
+                    <div />
+                  )}
 
-                {currentStep < STEP_IDS.length - 1 && (
-                  <motion.button
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={goNext}
-                    disabled={!canGoNext()}
-                    className={`flex items-center gap-1.5 px-5 py-2.5 rounded-xl font-semibold text-sm cursor-pointer ${
-                      canGoNext()
-                        ? "bg-linear-to-br from-teal-600 to-teal-500 text-white shadow-md"
-                        : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                    }`}
-                  >
-                    <span className="hidden md:inline-block">
-                      Continue
-                    </span>
-                    <ArrowRight className="w-4 h-4" />
-                  </motion.button>
-                )}
+                  <span className="text-sm font-medium text-gray-500">
+                    Step {currentStep + 1} of {STEP_IDS.length}
+                  </span>
+
+                  {currentStep < STEP_IDS.length - 1 && (
+                    <motion.button
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={goNext}
+                      disabled={!canGoNext()}
+                      className={`flex cursor-pointer items-center gap-1.5 rounded-xl px-5 py-2.5 text-sm font-semibold ${
+                        canGoNext()
+                          ? "bg-linear-to-br from-teal-600 to-teal-500 text-white shadow-md"
+                          : "cursor-not-allowed bg-gray-200 text-gray-400"
+                      }`}
+                    >
+                      <span className="hidden md:inline-block">Continue</span>
+                      <ArrowRight className="h-4 w-4" />
+                    </motion.button>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        </main>
+          </main>
 
-        <div className="xl:sticky xl:top-4 xl:self-start">
-          <WizardInfoPanel
-            data={infoPanelData}
-            lastVerified={guideData.wizard.last_verified}
-            guideData={guideData as Record<string, unknown>}
-            guideType="police-verification"
-          >
-            {/* Custom Action Buttons for Police Verification */}
-            <div className="flex flex-col gap-3">
-              <button
-                onClick={() => setIsPKMModalOpen(true)}
-                className="w-full flex items-center justify-between p-4 bg-white hover:bg-slate-50 border border-slate-200 hover:border-primary/40 rounded-xl transition-all shadow-sm group"
-              >
-                <span className="font-bold text-slate-700 group-hover:text-primary transition-colors flex items-center gap-2">
-                  <MapPin size={18} /> PKM Locator
-                </span>
-                <ArrowRight
-                  size={18}
-                  className="text-slate-400 group-hover:text-primary group-hover:translate-x-1 transition-all"
-                />
-              </button>
-              {state.province === "Sindh" && (
+          <div className="xl:sticky xl:top-4 xl:self-start">
+            <WizardInfoPanel
+              data={infoPanelData}
+              lastVerified={guideData.wizard.last_verified}
+              guideData={guideData as Record<string, unknown>}
+              guideType="police-verification"
+            >
+              {/* Custom Action Buttons for Police Verification */}
+              <div className="flex flex-col gap-3">
                 <button
-                  onClick={() => setIsLetterModalOpen(true)}
-                  className="w-full flex items-center justify-between p-4 bg-white hover:bg-slate-50 border border-slate-200 hover:border-primary/40 rounded-xl transition-all shadow-sm group"
+                  onClick={() => setIsPKMModalOpen(true)}
+                  className="hover:border-primary/40 group flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:bg-slate-50"
                 >
-                  <span className="font-bold text-slate-700 group-hover:text-primary transition-colors flex items-center gap-2">
-                    <FileText size={18} /> Create Purpose Letter
+                  <span className="group-hover:text-primary flex items-center gap-2 font-bold text-slate-700 transition-colors">
+                    <MapPin size={18} /> PKM Locator
                   </span>
                   <ArrowRight
                     size={18}
-                    className="text-slate-400 group-hover:text-primary group-hover:translate-x-1 transition-all"
+                    className="group-hover:text-primary text-slate-400 transition-all group-hover:translate-x-1"
                   />
                 </button>
-              )}
-              <button
-                onClick={() => setIsAuthModalOpen(true)}
-                className="w-full flex items-center justify-between p-4 bg-white hover:bg-slate-50 border border-slate-200 hover:border-primary/40 rounded-xl transition-all shadow-sm group"
-              >
-                <span className="font-bold text-slate-700 group-hover:text-primary transition-colors flex items-center gap-2">
-                  <UserCheck size={18} /> Create Authority Letter
-                </span>
-                <ArrowRight
-                  size={18}
-                  className="text-slate-400 group-hover:text-primary group-hover:translate-x-1 transition-all"
-                />
-              </button>
-              {state.province === "Sindh" && (
+                {state.province === "Sindh" && (
+                  <button
+                    onClick={() => setIsLetterModalOpen(true)}
+                    className="hover:border-primary/40 group flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:bg-slate-50"
+                  >
+                    <span className="group-hover:text-primary flex items-center gap-2 font-bold text-slate-700 transition-colors">
+                      <FileText size={18} /> Create Purpose Letter
+                    </span>
+                    <ArrowRight
+                      size={18}
+                      className="group-hover:text-primary text-slate-400 transition-all group-hover:translate-x-1"
+                    />
+                  </button>
+                )}
                 <button
-                  onClick={() => setIsSindhApplyModalOpen(true)}
-                  className="w-full flex items-center justify-between p-4 bg-primary text-white hover:bg-primary/90 rounded-xl transition-all shadow-md group"
+                  onClick={() => setIsAuthModalOpen(true)}
+                  className="hover:border-primary/40 group flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:bg-slate-50"
                 >
-                  <span className="font-bold flex items-center gap-2">
-                    <Building2 size={18} /> Apply Now (Sindh)
+                  <span className="group-hover:text-primary flex items-center gap-2 font-bold text-slate-700 transition-colors">
+                    <UserCheck size={18} /> Create Authority Letter
                   </span>
-                  <ArrowRight size={18} className="group-hover:translate-x-1 transition-all" />
+                  <ArrowRight
+                    size={18}
+                    className="group-hover:text-primary text-slate-400 transition-all group-hover:translate-x-1"
+                  />
                 </button>
-              )}
-            </div>
-          </WizardInfoPanel>
+                {state.province === "Sindh" && (
+                  <button
+                    onClick={() => setIsSindhApplyModalOpen(true)}
+                    className="bg-primary hover:bg-primary/90 group flex w-full items-center justify-between rounded-xl p-4 text-white shadow-md transition-all"
+                  >
+                    <span className="flex items-center gap-2 font-bold">
+                      <Building2 size={18} /> Apply Now (Sindh)
+                    </span>
+                    <ArrowRight size={18} className="transition-all group-hover:translate-x-1" />
+                  </button>
+                )}
+              </div>
+            </WizardInfoPanel>
+          </div>
         </div>
+
+        <NarrativeModal
+          isOpen={showWhatsThis}
+          onClose={handleCloseIntro}
+          onComplete={handleCloseIntro}
+          dontShowAgain={dontShowAgain}
+          onDontShowAgainChange={setDontShowAgain}
+          variant="police-verification"
+        />
+
+        <NavigationGuard
+          shouldBlock={hasProgress && !isSaved}
+          onSave={async () => {
+            await saveGuide("police-verification-guide");
+            setIsSaved(true);
+          }}
+          navigationHandled={navigationHandled}
+          setNavigationHandled={setNavigationHandled}
+        />
+
+        <FeedbackButton
+          steps={Object.values(STEP_LABELS)}
+          currentStepName={STEP_LABELS[currentStepId] || ""}
+          onSubmit={handleSubmitFeedback}
+        />
+
+        {/* Modals Mounting */}
+        {state.province === "Sindh" && (
+          <>
+            <LetterModal
+              isOpen={isLetterModalOpen}
+              onClose={() => setIsLetterModalOpen(false)}
+              onOpenPreview={openPreviewModal}
+              formData={formData}
+              setFormData={setFormData}
+              province={state.province || "Punjab"}
+            />
+            <PreviewModal
+              isOpen={isPreviewModalOpen}
+              onClose={() => setIsPreviewModalOpen(false)}
+              formData={formData}
+              province={state.province || "Punjab"}
+            />
+          </>
+        )}
+
+        <AuthorityLetterModal
+          isOpen={isAuthModalOpen}
+          onClose={() => setIsAuthModalOpen(false)}
+          onOpenPreview={openAuthPreviewModal}
+          formData={authFormData}
+          setFormData={setAuthFormData}
+          province={state.province || "Punjab"}
+        />
+        <AuthorityLetterPreviewModal
+          isOpen={isAuthPreviewModalOpen}
+          onClose={() => setIsAuthPreviewModalOpen(false)}
+          formData={authFormData}
+          province={state.province || "Punjab"}
+        />
+
+        <SindhApplyModal
+          isOpen={isSindhApplyModalOpen}
+          onClose={() => setIsSindhApplyModalOpen(false)}
+        />
+
+        <PKMLocatorModal
+          isOpen={isPKMModalOpen}
+          onClose={() => setIsPKMModalOpen(false)}
+          province={state.province || "Punjab"}
+        />
       </div>
-
-      <NarrativeModal
-        isOpen={showWhatsThis}
-        onClose={handleCloseIntro}
-        onComplete={handleCloseIntro}
-        dontShowAgain={dontShowAgain}
-        onDontShowAgainChange={setDontShowAgain}
-        variant="police-verification"
-      />
-
-      <NavigationGuard
-        shouldBlock={hasProgress && !isSaved}
-        onSave={async () => {
-          await saveGuide("police-verification-guide");
-          setIsSaved(true);
-        }}
-        navigationHandled={navigationHandled}
-        setNavigationHandled={setNavigationHandled}
-      />
-
-      <FeedbackButton
-        steps={Object.values(STEP_LABELS)}
-        currentStepName={STEP_LABELS[currentStepId] || ""}
-        onSubmit={handleSubmitFeedback}
-      />
-
-      {/* Modals Mounting */}
-      {state.province === "Sindh" && (
-        <>
-          <LetterModal
-            isOpen={isLetterModalOpen}
-            onClose={() => setIsLetterModalOpen(false)}
-            onOpenPreview={openPreviewModal}
-            formData={formData}
-            setFormData={setFormData}
-            province={state.province || "Punjab"}
-          />
-          <PreviewModal
-            isOpen={isPreviewModalOpen}
-            onClose={() => setIsPreviewModalOpen(false)}
-            formData={formData}
-            province={state.province || "Punjab"}
-          />
-        </>
-      )}
-
-      <AuthorityLetterModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-        onOpenPreview={openAuthPreviewModal}
-        formData={authFormData}
-        setFormData={setAuthFormData}
-        province={state.province || "Punjab"}
-      />
-      <AuthorityLetterPreviewModal
-        isOpen={isAuthPreviewModalOpen}
-        onClose={() => setIsAuthPreviewModalOpen(false)}
-        formData={authFormData}
-        province={state.province || "Punjab"}
-      />
-
-      <SindhApplyModal
-        isOpen={isSindhApplyModalOpen}
-        onClose={() => setIsSindhApplyModalOpen(false)}
-      />
-
-      <PKMLocatorModal
-        isOpen={isPKMModalOpen}
-        onClose={() => setIsPKMModalOpen(false)}
-        province={state.province || "Punjab"}
-      />
-      </div>
-    </PageGate>
+    </StandaloneAccessGate>
   );
 }
