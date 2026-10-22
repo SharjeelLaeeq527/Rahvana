@@ -1,6 +1,12 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getServiceCatalogItem } from "@/lib/wallet/resourceMapping";
 import { topupAmountForDeficit } from "@/lib/wallet/launch";
+import {
+  triggerAppointmentNotification,
+  triggerPCCNotification,
+  triggerTranslationNotification,
+  triggerConsultationNotification,
+} from "@/lib/notifications";
 
 const IDEMPOTENCY_KEY_RE = /^[A-Za-z0-9_:.-]{8,100}$/;
 
@@ -129,24 +135,55 @@ export async function deductServiceBooking(
             .update({ payment_status: "paid", awaiting_payment: false })
             .eq("id", referenceId)
             .eq("user_id", userId);
+          try {
+            await triggerAppointmentNotification(referenceId);
+          } catch (notifErr) {
+            console.error("[wallet] Failed to trigger appointment notification:", notifErr);
+          }
         } else if (item.resourceId === "pcc-filing-service") {
           await supabase
             .from("police_verification_requests")
             .update({ payment_status: "paid", awaiting_payment: false })
             .eq("id", referenceId)
             .eq("user_id", userId);
+          try {
+            const { data: pccReq } = await supabase
+              .from("police_verification_requests")
+              .select("id, full_name, district, province, request_id")
+              .eq("id", referenceId)
+              .maybeSingle();
+            if (pccReq) {
+              const locationParts = [pccReq.district, pccReq.province].filter(Boolean);
+              const locationText = locationParts.length > 0 ? ` for ${locationParts.join(", ")}` : "";
+              const refText = pccReq.request_id ? ` (${pccReq.request_id})` : "";
+              const body = `${pccReq.full_name} has submitted a new Police Verification request${refText}${locationText}.`;
+              await triggerPCCNotification(pccReq.id, undefined, pccReq.full_name, body);
+            }
+          } catch (notifErr) {
+            console.error("[wallet] Failed to trigger PCC notification:", notifErr);
+          }
         } else if (item.resourceId === "book-a-consultation") {
           await supabase
             .from("consultation_bookings")
             .update({ payment_status: "paid" })
             .eq("id", referenceId)
             .eq("user_id", userId);
+          try {
+            await triggerConsultationNotification(referenceId);
+          } catch (notifErr) {
+            console.error("[wallet] Failed to trigger consultation notification:", notifErr);
+          }
         } else if (item.resourceId === "document-translation") {
           await supabase
             .from("translation_documents")
             .update({ payment_status: "paid" })
             .eq("id", referenceId)
             .eq("user_id", userId);
+          try {
+            await triggerTranslationNotification(referenceId);
+          } catch (notifErr) {
+            console.error("[wallet] Failed to trigger translation notification:", notifErr);
+          }
         }
       } catch (tableErr) {
         console.error(`[wallet] Failed to update service record for ${item.resourceId} (${referenceId}):`, tableErr);
