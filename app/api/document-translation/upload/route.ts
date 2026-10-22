@@ -113,6 +113,7 @@ export async function POST(request: NextRequest) {
         original_mime_type: checked.detectedMime,
         user_notes: userNotes,
         status: "PENDING",
+        payment_status: source === "journey" ? "paid" : "pending",
         metadata: {
           upload_ip: request.headers.get("x-forwarded-for") || "unknown",
           user_agent: request.headers.get("user-agent") || "unknown",
@@ -132,11 +133,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Failed to create database record" }, { status: 500 });
     }
 
-    // Trigger admin notification
-    try {
-      await triggerTranslationNotification(document.id);
-    } catch (notifError) {
-      console.error("Failed to trigger admin notification:", notifError);
+    // Trigger admin notification only if already paid (journey mode)
+    if (document.payment_status === "paid") {
+      try {
+        await triggerTranslationNotification(document.id);
+      } catch (notifError) {
+        console.error("Failed to trigger admin notification:", notifError);
+      }
     }
 
     return NextResponse.json({

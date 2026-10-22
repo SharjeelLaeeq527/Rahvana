@@ -738,14 +738,20 @@ function PoliceApplyContent({
           return;
         }
 
-        throw new Error(deductResult.body.error || "Failed to deduct service credits");
+        const rawErr = deductResult.body.error || "Failed to deduct service credits";
+        if (rawErr === "NETWORK_ERROR") {
+          throw new Error("Connection error: could not reach the server to process credits. No credits were deducted and your application has not been filed. Please check your connection and try again.");
+        }
+        throw new Error(rawErr);
       } catch (deductErr: unknown) {
         console.error("Credit deduction failed:", deductErr);
-        setCheckoutError(
+        const errMsg =
           deductErr instanceof Error
-            ? deductErr.message
-            : "Credit deduction failed. Please try again."
-        );
+            ? deductErr.message === "NETWORK_ERROR"
+              ? "Connection error: could not reach the server to process credits. No credits were deducted and your application has not been filed. Please check your connection and try again."
+              : deductErr.message
+            : "Credit deduction failed. Your application has not been filed. Please try again.";
+        setCheckoutError(errMsg);
         setCheckoutLoading(false);
         return;
       }

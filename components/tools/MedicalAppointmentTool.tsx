@@ -2755,10 +2755,20 @@ export default function MedicalAppointmentTool({
           return;
         }
 
-        throw new Error(deductResult.body.error || "Failed to deduct service credits");
+        const rawErr = deductResult.body.error || "Failed to deduct service credits";
+        if (rawErr === "NETWORK_ERROR") {
+          throw new Error("Connection error: could not reach the server to process credits. No credits were deducted and your appointment has not been booked. Please check your connection and try again.");
+        }
+        throw new Error(rawErr);
       } catch (deductErr: unknown) {
         console.error("Credit deduction failed:", deductErr);
-        setError(deductErr instanceof Error ? deductErr.message : "Credit deduction failed");
+        const errMsg =
+          deductErr instanceof Error
+            ? deductErr.message === "NETWORK_ERROR"
+              ? "Connection error: could not reach the server to process credits. No credits were deducted and your appointment has not been booked. Please check your connection and try again."
+              : deductErr.message
+            : "Credit deduction failed. Your appointment has not been booked. Please try again.";
+        setError(errMsg);
         setLoading(false);
         return;
       }
