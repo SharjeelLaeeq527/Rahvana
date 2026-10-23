@@ -4,9 +4,10 @@ import { deductServiceBooking } from "@/lib/wallet/serviceBooking";
 
 /**
  * POST /api/wallet/deduct-service
- * Body: { serviceId: string, referenceId?: string, idempotencyKey?: string, description?: string, metadata?: Record<string, unknown> }
+ * Body: { serviceId: string, referenceId: string, metadata?: Record<string, unknown> }
  *
- * Deducts wallet credits for a standalone service booking.
+ * Deducts wallet credits for a standalone service booking. referenceId is the
+ * caller's own unpaid booking id; each booking is charged at most once.
  * 402 = not enough credits (returns deficit and required top-up amount).
  * Prices are strictly server-authoritative from the wallet catalog.
  */
@@ -30,7 +31,6 @@ export async function POST(request: NextRequest) {
       serviceId: body.serviceId,
       referenceId: body.referenceId,
       idempotencyKey: body.idempotencyKey,
-      description: body.description,
       metadata:
         typeof body.metadata === "object" && body.metadata !== null && !Array.isArray(body.metadata)
           ? (body.metadata as Record<string, unknown>)

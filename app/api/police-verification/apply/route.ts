@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { triggerPCCNotification } from "@/lib/notifications";
 import { safeError } from "@/lib/api/safeError";
+import { verifyJourneyServiceAccess } from "@/lib/journey/journeyServiceAccess";
 
 interface PoliceVerificationData {
   user_id?: string;
@@ -54,6 +55,7 @@ interface PoliceVerificationData {
   source?: string | null;
   journey_slug?: string | null;
   awaiting_payment?: boolean;
+  payment_status?: string;
 }
 
 function generateRequestId() {
@@ -78,11 +80,45 @@ export async function POST(req: NextRequest) {
       }
     );
 
+    // The request is filed for the signed-in user (never a user id from the body),
+    // paid with their credits or covered by their journey plan.
+    const authClient = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return req.cookies.getAll();
+          },
+          setAll() {},
+        },
+      }
+    );
+    const {
+      data: { user },
+    } = await authClient.auth.getUser();
+    if (!user) {
+      return Response.json({ error: "Authentication required" }, { status: 401 });
+    }
+
     const body = await req.json();
     const requestId = generateRequestId();
 
+    // Payment is decided here, never by the client (see book-appointment).
+    const isJourneyRequest = body.source === "journey";
+    if (isJourneyRequest) {
+      const access = await verifyJourneyServiceAccess(supabase, user.id, "pcc_filing", {
+        journeyId: body.journey_id || body.journeyId || null,
+        journeyCategory: body.journey_category || body.journey_slug || null,
+        candidateId: body.candidateId || body.candidate_id || null,
+      });
+      if (!access.allowed) {
+        return Response.json({ error: access.error }, { status: access.status });
+      }
+    }
+
     const verificationData: PoliceVerificationData = {
-      user_id: body.userId || null,
+      user_id: user.id,
       full_name: body.fullName,
       father_name: body.fatherName,
       email: body.email,
@@ -132,11 +168,10 @@ export async function POST(req: NextRequest) {
         ? `[Candidate: ${body.candidate_id}] ${body.candidate_name || ""}`.trim()
         : "",
       // Origin tagging: 'journey' rows are hidden from standalone My Resources.
-      source: body.source === "journey" ? "journey" : "standalone",
-      journey_slug: body.journey_slug || null,
-      // Draft flag: standalone must-pay requests are created hidden and revealed by the
-      // Stripe webhook / verify-session once paid. Credit/journey/plan rows stay false.
-      awaiting_payment: body.awaitingPayment === true,
+      source: isJourneyRequest ? "journey" : "standalone",
+      journey_slug: isJourneyRequest ? body.journey_slug || null : null,
+      awaiting_payment: !isJourneyRequest,
+      payment_status: isJourneyRequest ? "paid" : "pending",
     };
 
     const { data, error } = await supabase

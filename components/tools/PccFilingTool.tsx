@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense, Fragment } from "react";
+import { useState, useEffect, useRef, Suspense, Fragment } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -33,6 +33,7 @@ import { useUserProfile } from "@/app/context/UserProfileContext";
 import { Loader } from "@/components/ui/spinner";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { useWallet } from "@/app/context/WalletContext";
+import { serviceBookingErrorMessage } from "@/lib/wallet/client";
 import { E, msg } from "@/lib/errors";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -315,6 +316,9 @@ function PoliceApplyContent({
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const wallet = useWallet();
+  // Standalone draft whose payment failed: a retry pays for this same request
+  // (never a second one). Cleared once paid or when the user goes back to edit.
+  const pendingDraftRef = useRef<{ id: string; requestId: string } | null>(null);
   const [referenceId, setReferenceId] = useState("");
 
   // 1) Mode resolution — journey when embedded in StepView, standalone otherwise.
@@ -657,17 +661,33 @@ function PoliceApplyContent({
       setCheckoutLoading(true);
       setCheckoutError(null);
 
-      // 1. Save application (as awaiting payment in standalone, directly active in journey)
+      // Standalone: check the balance before creating anything, so a short balance
+      // leaves no hidden draft (or uploaded documents) behind.
+      if (!isJourney && (wallet.balance === null || wallet.balance < 25)) {
+        const deficit = Math.max(25, 25 - (wallet.balance ?? 0));
+        wallet.openTopup({ amount: deficit });
+        setCheckoutError(
+          `You need 25 credits for PCC filing (Balance: ${wallet.balance ?? 0} credits). Please top up to proceed.`
+        );
+        return;
+      }
+
+      let draft = pendingDraftRef.current;
+      if (!draft) {
+      // 1. Save application (hidden draft in standalone, active in journey; the server decides)
       const payload = {
         ...formData,
-        userId: user?.id,
         candidate_id: activeCandidateId || "candidate-1",
         candidate_name: activeCandidate.fullName || activeCandidate.label || "",
         // Origin tag: journey-embedded requests are kept out of standalone My Resources.
         ...(isJourney
-          ? { source: "journey", journey_slug: journeyContext?.journeySlug || null }
+          ? {
+              source: "journey",
+              journey_slug: journeyContext?.journeySlug || null,
+              journey_id: journeyContext?.backendId || null,
+              journey_category: journeyContext?.journeyCategory || null,
+            }
           : { source: "standalone" }),
-        awaitingPayment: !isJourney,
       };
 
       const response = await fetch("/api/police-verification/apply", {
@@ -681,8 +701,9 @@ function PoliceApplyContent({
         throw new Error(result.error || "Submission failed");
       }
 
-      const { id, requestId } = result;
-      setReferenceId(requestId);
+      draft = { id: result.id as string, requestId: result.requestId as string };
+      const { id } = draft;
+      setReferenceId(draft.requestId);
 
       // 2. Upload files (attached regardless of payment status)
       const uploadPromises = Object.entries(files).map(async ([key, file]) => {
@@ -694,6 +715,9 @@ function PoliceApplyContent({
         await fetch("/api/police-verification/upload", { method: "POST", body: fd });
       });
       await Promise.all(uploadPromises);
+      if (!isJourney) pendingDraftRef.current = draft;
+      }
+      const { id, requestId } = draft;
 
       // 3a) Journey mode: 0 credits, no wallet, no Stripe — finalize directly.
       if (isJourney) {
@@ -707,54 +731,26 @@ function PoliceApplyContent({
         return;
       }
 
-      // 3b) Standalone mode: strictly deduct 25 wallet credits ($25)
-      // Check wallet balance first
-      if (wallet.balance === null || wallet.balance < 25) {
-        const deficit = Math.max(25, 25 - (wallet.balance ?? 0));
-        wallet.openTopup({ amount: deficit });
+      // 3b) Standalone mode: deduct 25 credits for this request (charged at most once).
+      const deductResult = await wallet.deductServiceBooking("pcc-filing-service", id);
+
+      if (deductResult.body.success) {
+        pendingDraftRef.current = null;
+        setCurrentStep(5);
+        return;
+      }
+
+      if (deductResult.status === 402) {
+        const deficit = deductResult.body.deficit ?? 25;
+        wallet.openTopup({ amount: deductResult.body.topupAmount ?? deficit });
         setCheckoutError(
-          `You need 25 credits for PCC filing (Balance: ${wallet.balance ?? 0} credits). Please top up to proceed.`
+          `Insufficient credits. Please top up ${deficit} credits to complete your application.`
         );
-        setCheckoutLoading(false);
         return;
       }
 
-      // Sufficient balance: deduct 25 credits atomically for service booking
-      try {
-        const deductResult = await wallet.deductServiceBooking("pcc-filing-service", id);
-
-        if (deductResult.body.success) {
-          setCurrentStep(5);
-          return;
-        }
-
-        if (deductResult.status === 402) {
-          const deficit = deductResult.body.deficit ?? 25;
-          wallet.openTopup({ amount: deductResult.body.topupAmount ?? deficit });
-          setCheckoutError(
-            `Insufficient credits. Please top up ${deficit} credits to complete your application.`
-          );
-          setCheckoutLoading(false);
-          return;
-        }
-
-        const rawErr = deductResult.body.error || "Failed to deduct service credits";
-        if (rawErr === "NETWORK_ERROR") {
-          throw new Error("Connection error: could not reach the server to process credits. No credits were deducted and your application has not been filed. Please check your connection and try again.");
-        }
-        throw new Error(rawErr);
-      } catch (deductErr: unknown) {
-        console.error("Credit deduction failed:", deductErr);
-        const errMsg =
-          deductErr instanceof Error
-            ? deductErr.message === "NETWORK_ERROR"
-              ? "Connection error: could not reach the server to process credits. No credits were deducted and your application has not been filed. Please check your connection and try again."
-              : deductErr.message
-            : "Credit deduction failed. Your application has not been filed. Please try again.";
-        setCheckoutError(errMsg);
-        setCheckoutLoading(false);
-        return;
-      }
+      console.error("Credit deduction failed:", deductResult.body.error);
+      setCheckoutError(serviceBookingErrorMessage(deductResult.body.error));
     } catch (err) {
       console.error(err);
       setCheckoutError(err instanceof Error ? err.message : "Submission failed");
@@ -764,6 +760,8 @@ function PoliceApplyContent({
   };
 
   const handleBack = () => {
+    // Editing after a failed payment files a fresh request with the new details.
+    pendingDraftRef.current = null;
     if (currentStep > 1) setCurrentStep(currentStep - 1);
     else router.back();
   };
@@ -2233,7 +2231,7 @@ function PoliceApplyContent({
             >
               {isJourney && currentStep === 3 && checkoutLoading ? (
                 <>
-                  <Loader2 size={20} className="animate-spin" /> Processing…
+                  <Loader2 size={20} className="animate-spin" /> Processing...
                 </>
               ) : (
                 <>

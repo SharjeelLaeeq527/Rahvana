@@ -41,7 +41,7 @@ type Insufficient = {
 
 export function CreditLaunchModal({ item, href, onLaunched, onClose }: Props) {
   const router = useRouter();
-  const { balance, isLoading, launchResource, deductServiceBooking } = useWallet();
+  const { balance, isLoading, launchResource } = useWallet();
   const { isAuthenticated } = useAuth();
 
   const [charging, setCharging] = useState(false);
@@ -88,12 +88,16 @@ export function CreditLaunchModal({ item, href, onLaunched, onClose }: Props) {
 
   const handleConfirm = async () => {
     if (charging) return;
+    // Services are charged per booking, by the booking form itself (with the
+    // booking id). Charging here would take credits for no booking, then again.
+    if (item.resourceType === "service") {
+      onClose();
+      if (href) router.push(href);
+      return;
+    }
     setCharging(true);
     setError(null);
-    const result =
-      item.resourceType === "service"
-        ? await deductServiceBooking(item.resourceId)
-        : await launchResource(item.resourceType, item.resourceId);
+    const result = await launchResource(item.resourceType, item.resourceId);
     const body = result.body;
 
     if (body.success) {

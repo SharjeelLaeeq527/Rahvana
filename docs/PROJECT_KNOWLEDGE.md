@@ -305,6 +305,24 @@ launched from the Services folder or from their roadmap step card, and they shar
 - **Origin tagging:** journey launches write `source: "journey"` + `journey_slug` + `candidate_id`
   on the row (`app/api/consultation/route.ts` forwards them for consultations), which is how
   `services-status` separates journey requests from standalone / My Resources ones.
+- **Payment is decided on the server, never by the client** (all four services). A journey
+  request (`source: "journey"`, plus `journey_id` / `journey_category` / candidate) is stored as
+  `payment_status: paid` only after `lib/journey/journeyServiceAccess.ts`
+  (`verifyJourneyServiceAccess`) finds an owned, active journey whose tier + add-ons include the
+  feature (`document_translation`, `medical_booking`, `pcc_filing`, `expert_consultation`), else
+  404/403 before anything is saved. Every other request is an unpaid draft (`pending`, and
+  `awaiting_payment = true` for Medical / PCC) until `/api/wallet/deduct-service` charges it. The
+  client's `payment_status` / `awaitingPayment` / `userId` are ignored. All booking routes
+  (`book-appointment`, `police-verification/apply`, `consultation`, translation upload) require a
+  session; PCC files under the session user. Journey UIs show no checkout step.
+  `20261023_04_guard_service_payment_fields.sql` pins `payment_status` / `payment_id` /
+  `awaiting_payment` on all four tables for `authenticated` / `anon` writes (an INSERT is unpaid,
+  an UPDATE keeps the stored values), so a user's own-row write access can't mark a request paid.
+- **Consultation routes:** `GET /api/consultation` = own bookings (by `user_id`, plus pre-login
+  rows with the same email) or every booking for an admin; `PUT` = admin, except a user accepting
+  one of the alternative slots proposed on their own booking; slot POST / PUT / DELETE and
+  `consultation/upload` need admin / a session. A booking holds its slot unless cancelled,
+  `failed`, or an unpaid draft older than 15 minutes (`slots/route.ts holdsSlot`).
 
 **My Journeys (`app/(main)/my-journeys/page.tsx`).** Lists journeys via `listUserJourneys`
 (which now also returns the journey `status`). Opening an IR-5 journey shows
@@ -389,7 +407,10 @@ journey's category**, not just the account. `PlanContext` reads BOTH
 `user_profiles.subscription_tier` (`accountTier`) AND every `journeys.subscription_tier` in
 parallel, building a `journeyTiers` map keyed by base category
 (`getBaseVisaCategory(journey_type)` -> tier), and exposes it. The effective `realTier` for the
-active journey is: the `journeyTiers[activeCategory]` when present; else, if ANY journey has an
+active journey is: for candidate 2+ (`activeJourneyKey` like `ir5_candidate2`) ONLY that
+candidate's own journey row, else `free` (it never borrows candidate-1's tier); otherwise the
+`journeyTiers[activeCategory]` entry, which is the best PRIMARY row of the category (candidate
+rows are excluded from it); else, if ANY journey has an
 explicit tier, an **unpurchased category resolves to `free`** (so an IR-1 candidate added on an
 IR-5-purchased account stays free/preview until IR-1 is bought - the existing Stripe flow, no
 new billing); else the legacy `accountTier` (single-journey / pre-`subscription_tier`-column
@@ -892,6 +913,19 @@ translation documents, profiles/roles, `visa_security` questions, interview-prep
   'interview-prep') rows unless the user owns the bare all-categories `interview-prep` add-on: a
   per-category purchase stays per-category (catalog `legacyAddonMatches` no longer maps
   `interview-prep:*` to the whole tool).
+  **Phase 7 (legacy add-ons).** `20261023_02_sync_legacy_addon_unlocks.sql` replaces the one-time
+  backfill with `legacy_addon_unlock_map()` (the catalog's `legacyAddonId` + `legacyGrantsUnlock`
+  items plus `civil-guid`; `__tests__/wallet/legacyBackfill.test.ts` fails on drift) and
+  `sync_legacy_addon_unlocks(user | NULL)` (service_role only, idempotent, never touches existing
+  rows), run for everyone and re-run by a `user_profiles` trigger whenever `purchased_addons`
+  changes. It deletes backfilled rows outside the map. Access still also comes from the live
+  `purchased_addons` read in `resolveUnlockedItems`, so the rows are a mirror, not the only source.
+  **`purchased_addons` and the other Stripe-written keys in `profile_details`
+  (`lib/profile/serverOwnedKeys.ts`) are server-owned:** `/api/profile/complete` keeps the stored
+  values whatever the client sends, and `20261023_01_protect_server_owned_profile_keys.sql` makes
+  `guard_user_profile_billing` restore them on any `authenticated` write. Before this, a signed-in
+  user could write their own add-on ledger (every add-on free) and a stale profile save could erase
+  a purchase. Keep the SQL key list and the TS list in sync (tested).
 
 **Security hardening.** `20260715_fix_rls_security_gaps`, `20260731_*`, `20260717/18_*`, and
 `20260921_security_hardening_batch1`: triggers `guard_profile_role` (blocks self-setting
@@ -1014,8 +1048,22 @@ Components consume these via hooks/contexts; they should not re-implement domain
   decides free standalone access: an active `standalone_unlocked_resources` row OR a legacy
   `purchased_addons` entry that grants permanent access (`legacyGrantsUnlock`; `civil-guid` =
   every guide, `interview-prep:*` = interview prep). Consumables (photo, every service) never
-  grant unlimited access from a legacy purchase. **Services are `launchable: false`**: the deduct
-  RPC writes a permanent unlock, so per-booking credit payment needs its own flow first.
+  grant unlimited access from a legacy purchase. **Services are `launchable: false`**: the unlock
+  RPC refuses them; they are paid per booking through `lib/wallet/serviceBooking.ts`
+  (`deductServiceBooking`, `/api/wallet/deduct-service`). It requires the caller's own unpaid
+  booking id (`referenceId`), derives the idempotency key from it
+  (`service_booking:<user>:<service>:<booking>`), returns success without charging for an
+  already-paid booking, marks the row paid after the charge (a failed update is a 500
+  `BOOKING_UPDATE_FAILED`; a retry replays the charge and finishes it) and only then notifies
+  admins. `deduct_service_credits_atomic` (`20261023_03`) requires the reference, treats an
+  existing charge for (user, service, booking) as the replay, refuses a key reused for another
+  booking, and keeps caller metadata from overwriting `reference_id` (unique index backstop). The
+  booking tools check the balance before creating a draft and reuse the same draft on a retry
+  (`pendingDraftRef`), so a retry never books or charges twice. `CreditLaunchModal` never charges
+  for a service: services cards go straight to the booking form.
+  **Webhook retries:** `applyWalletTopup` / `applyWalletRefund` return `rpc_failed` (webhook 500,
+  Stripe retries) only for transient errors (`isTransientRpcError`: no SQLSTATE, or class 08 / 40 /
+  53 / 57); data errors are `rpc_rejected` (logged, 200).
   `lib/wallet/launch.ts` (`launchResource`) skips the charge for owned items, namespaces the
   client idempotency key as `launch:<user>:<type>:<id>:<key>` (the ledger index is global), and
   maps `INSUFFICIENT_CREDITS` to 402 with `topupAmountForDeficit`. `lib/wallet/state.ts`

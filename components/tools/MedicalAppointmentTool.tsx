@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { ToolModeProps } from "@/types/tool-mode";
 import { useResolveToolMode } from "@/lib/hooks/useResolveToolMode";
 import { normalizePlanTier } from "@/app/context/PlanContext";
@@ -17,6 +17,7 @@ import { useCandidate } from "@/app/context/CandidateContext";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { useUserProfile } from "@/app/context/UserProfileContext";
 import { useWallet } from "@/app/context/WalletContext";
+import { serviceBookingErrorMessage } from "@/lib/wallet/client";
 import { mapProfileToGenericForm, mapFormToProfile } from "@/lib/autoFill/mapper";
 import MedicalAppointmentCard, {
   type MedicalAppointmentRow,
@@ -2227,6 +2228,9 @@ export default function MedicalAppointmentTool({
   const { t } = useLanguage();
   const { profile, isProfileLoading, updateProfile } = useUserProfile();
   const wallet = useWallet();
+  // Standalone draft whose payment failed: a retry pays for this same booking
+  // (never a second one). Cleared once paid or when the user goes back to edit.
+  const pendingDraftRef = useRef<string | null>(null);
 
   const saveProgressToProfile = (currentFormData = formData) => {
     if (!user) return;
@@ -2612,6 +2616,19 @@ export default function MedicalAppointmentTool({
     setError(null);
 
     try {
+      // Standalone: check the balance before creating anything, so a short balance
+      // leaves no hidden draft (or uploaded passport) behind.
+      if (!isJourney && (wallet.balance === null || wallet.balance < 5)) {
+        const deficit = Math.max(5, 5 - (wallet.balance ?? 0));
+        wallet.openTopup({ amount: deficit });
+        setError(
+          `You need 5 credits for this booking (Balance: ${wallet.balance ?? 0} credits). Please top up to proceed.`
+        );
+        return;
+      }
+
+      let appointmentId = pendingDraftRef.current;
+      if (!appointmentId) {
       // First, submit appointment data to API to get the appointment ID
       const appointmentResponse = await fetch("/api/book-appointment", {
         method: "POST",
@@ -2628,7 +2645,12 @@ export default function MedicalAppointmentTool({
             `${formData.givenName} ${formData.surname}`.trim(),
           // Origin tag: journey-embedded bookings are kept out of standalone My Resources.
           ...(isJourney
-            ? { source: "journey", journey_slug: journeyContext?.journeySlug || null }
+            ? {
+                source: "journey",
+                journey_slug: journeyContext?.journeySlug || null,
+                journey_id: journeyContext?.backendId || null,
+                journey_category: journeyContext?.journeyCategory || null,
+              }
             : { source: "standalone" }),
           // Exclude file objects from the initial request
           scannedPassport: undefined,
@@ -2636,8 +2658,6 @@ export default function MedicalAppointmentTool({
           appointmentConfirmationLetter: undefined,
           // Send applicants data separately to prevent circular references
           applicants: formData.applicants,
-          // Draft flag: hidden until paid (standalone requires credits deduction; journey is immediate)
-          awaitingPayment: !isJourney,
         }),
       });
 
@@ -2647,7 +2667,7 @@ export default function MedicalAppointmentTool({
         throw new Error(appointmentResult.error || t("bookAppointment.validation.submitError"));
       }
 
-      const appointmentId = appointmentResult.id;
+      appointmentId = appointmentResult.id as string;
       console.log("Appointment created successfully:", appointmentResult);
 
       // Then upload documents separately if they exist
@@ -2705,6 +2725,8 @@ export default function MedicalAppointmentTool({
           throw new Error(errorText || t("bookAppointment.validation.uploadError"));
         }
       }
+      if (!isJourney) pendingDraftRef.current = appointmentId;
+      }
 
       // 3) MODE BRANCH at the credit gate.
       if (isJourney) {
@@ -2721,57 +2743,29 @@ export default function MedicalAppointmentTool({
         return;
       }
 
-      // Standalone mode: strictly deduct wallet credits (5 credits = $5)
-      // 1. If wallet balance is insufficient (< 5 credits), prompt top-up
-      if (wallet.balance === null || wallet.balance < 5) {
-        const deficit = Math.max(5, 5 - (wallet.balance ?? 0));
-        wallet.openTopup({ amount: deficit });
+      // Standalone mode: deduct 5 credits for this booking (charged at most once).
+      const deductResult = await wallet.deductServiceBooking(
+        "book-medical-appointment",
+        appointmentId
+      );
+
+      if (deductResult.body.success) {
+        pendingDraftRef.current = null;
+        setStep(10); // success step
+        return;
+      }
+
+      if (deductResult.status === 402) {
+        const deficit = deductResult.body.deficit ?? 5;
+        wallet.openTopup({ amount: deductResult.body.topupAmount ?? deficit });
         setError(
-          `You need 5 credits for this booking (Balance: ${wallet.balance ?? 0} credits). Please top up to proceed.`
+          `Insufficient credits. Please top up ${deficit} credits to complete your booking.`
         );
-        setLoading(false);
         return;
       }
 
-      // 2. Sufficient balance: deduct 5 credits atomically for service booking
-      try {
-        const deductResult = await wallet.deductServiceBooking(
-          "book-medical-appointment",
-          appointmentId
-        );
-
-        if (deductResult.body.success) {
-          setStep(10); // success step
-          return;
-        }
-
-        if (deductResult.status === 402) {
-          const deficit = deductResult.body.deficit ?? 5;
-          wallet.openTopup({ amount: deductResult.body.topupAmount ?? deficit });
-          setError(
-            `Insufficient credits. Please top up ${deficit} credits to complete your booking.`
-          );
-          setLoading(false);
-          return;
-        }
-
-        const rawErr = deductResult.body.error || "Failed to deduct service credits";
-        if (rawErr === "NETWORK_ERROR") {
-          throw new Error("Connection error: could not reach the server to process credits. No credits were deducted and your appointment has not been booked. Please check your connection and try again.");
-        }
-        throw new Error(rawErr);
-      } catch (deductErr: unknown) {
-        console.error("Credit deduction failed:", deductErr);
-        const errMsg =
-          deductErr instanceof Error
-            ? deductErr.message === "NETWORK_ERROR"
-              ? "Connection error: could not reach the server to process credits. No credits were deducted and your appointment has not been booked. Please check your connection and try again."
-              : deductErr.message
-            : "Credit deduction failed. Your appointment has not been booked. Please try again.";
-        setError(errMsg);
-        setLoading(false);
-        return;
-      }
+      console.error("Credit deduction failed:", deductResult.body.error);
+      setError(serviceBookingErrorMessage(deductResult.body.error));
     } catch (err: unknown) {
       console.error("Error submitting appointment:", err);
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
@@ -2782,6 +2776,8 @@ export default function MedicalAppointmentTool({
   };
 
   const handleGoBack = () => {
+    // Editing after a failed payment books a fresh request with the new details.
+    pendingDraftRef.current = null;
     if (step === 9) {
       setStep(1);
     } else if (step > 1) {

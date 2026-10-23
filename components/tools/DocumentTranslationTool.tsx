@@ -17,6 +17,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import { useCandidate } from "@/app/context/CandidateContext";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { useWallet } from "@/app/context/WalletContext";
+import { serviceBookingErrorMessage } from "@/lib/wallet/client";
 import { normalizePlanTier } from "@/app/context/PlanContext";
 import type { PlanTier } from "@/lib/entitlements/config";
 
@@ -67,6 +68,9 @@ export default function DocumentTranslationTool({
   const { activeCandidate, activeCandidateId } = useCandidate();
   const { t } = useLanguage();
   const wallet = useWallet();
+  // Standalone draft whose payment failed: a retry pays for this same request
+  // (never a second one). Cleared once paid or when the user goes back to edit.
+  const pendingDraftRef = useRef<string | null>(null);
   const { user } = useAuth();
 
   // Effective tier — journey tier when embedded, null otherwise
@@ -109,8 +113,31 @@ export default function DocumentTranslationTool({
     setError(null);
   };
 
-  // Handle upload
+  // Origin tag: journey-embedded requests are kept out of standalone My Resources (mirrors PCC / Medical).
+  // A journey request also names its journey, which the server checks for ownership + plan.
+  const buildUploadFormData = (selected: File, type: string) => {
+    const requestData = new FormData();
+    requestData.append("file", selected);
+    requestData.append("documentType", type);
+    requestData.append("candidateId", activeCandidateId || "candidate-1");
+    requestData.append("candidateName", activeCandidate.fullName || activeCandidate.label || "");
+    if (isJourney) {
+      requestData.append("source", "journey");
+      requestData.append("journey_slug", journeyContext?.journeySlug || "");
+      requestData.append("journey_id", journeyContext?.backendId || "");
+      requestData.append("journey_category", journeyContext?.journeyCategory || "");
+    } else {
+      requestData.append("source", "standalone");
+    }
+    if (userNotes) {
+      requestData.append("userNotes", userNotes);
+    }
+    return requestData;
+  };
+
+  // Journey submit: covered by the journey plan, so no checkout step and no credits.
   const handleUpload = async () => {
+    if (uploading) return;
     if (!isAuthenticated) {
       setShowAuthModal(true);
       return;
@@ -125,25 +152,9 @@ export default function DocumentTranslationTool({
     setError(null);
 
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("documentType", documentType);
-      formData.append("candidateId", activeCandidateId || "candidate-1");
-      formData.append("candidateName", activeCandidate.fullName || activeCandidate.label || "");
-      // Origin tag: journey-embedded requests are kept out of standalone My Resources (mirrors PCC / Medical).
-      if (isJourney) {
-        formData.append("source", "journey");
-        formData.append("journey_slug", journeyContext?.journeySlug || "");
-      } else {
-        formData.append("source", "standalone");
-      }
-      if (userNotes) {
-        formData.append("userNotes", userNotes);
-      }
-
       const response = await fetch("/api/document-translation/upload", {
         method: "POST",
-        body: formData,
+        body: buildUploadFormData(file, documentType),
       });
 
       const data = await response.json();
@@ -195,45 +206,7 @@ export default function DocumentTranslationTool({
       setCheckoutLoading(true);
       setCheckoutError(null);
 
-      // Build the upload FormData
-      const buildUploadFormData = () => {
-        const requestData = new FormData();
-        requestData.append("file", file);
-        requestData.append("documentType", documentType);
-        requestData.append("candidateId", activeCandidateId || "candidate-1");
-        requestData.append(
-          "candidateName",
-          activeCandidate.fullName || activeCandidate.label || ""
-        );
-        // Origin tag: journey-embedded requests are kept out of standalone My Resources (mirrors PCC / Medical).
-        if (isJourney) {
-          requestData.append("source", "journey");
-          requestData.append("journey_slug", journeyContext?.journeySlug || "");
-        } else {
-          requestData.append("source", "standalone");
-        }
-        if (userNotes) {
-          requestData.append("userNotes", userNotes);
-        }
-        return requestData;
-      };
-
-      // 3a) Journey mode: 0 credits, no wallet, no Stripe — create request directly.
-      if (isJourney) {
-        const response = await fetch("/api/document-translation/upload", {
-          method: "POST",
-          body: buildUploadFormData(),
-        });
-        const result = await response.json();
-        if (!response.ok) {
-          throw new Error(result.error || t("documentTranslation.uploadPage.validation.uploadFailed"));
-        }
-        setUploadSuccess(true);
-        if (onSuccess) onSuccess(result);
-        return;
-      }
-
-      // 3b) Standalone mode: strictly deduct 25 wallet credits ($25)
+      // Standalone only (journeys submit from step 1): deduct 25 wallet credits ($25)
       // Check wallet balance first
       if (wallet.balance === null || wallet.balance < 25) {
         const deficit = Math.max(25, 25 - (wallet.balance ?? 0));
@@ -245,23 +218,29 @@ export default function DocumentTranslationTool({
         return;
       }
 
-      // Upload file and create pending request row
-      const uploadRes = await fetch("/api/document-translation/upload", {
-        method: "POST",
-        body: buildUploadFormData(),
-      });
-      const uploadData = await uploadRes.json();
-      if (!uploadRes.ok) {
-        throw new Error(uploadData.error || t("documentTranslation.uploadPage.validation.uploadFailed"));
+      // Upload file and create pending request row (reused on a retry)
+      let docId = pendingDraftRef.current;
+      let uploadData: unknown = { documentId: docId };
+      if (!docId) {
+        const uploadRes = await fetch("/api/document-translation/upload", {
+          method: "POST",
+          body: buildUploadFormData(file, documentType),
+        });
+        uploadData = await uploadRes.json();
+        const created = uploadData as { documentId?: string; error?: string };
+        if (!uploadRes.ok || !created.documentId) {
+          throw new Error(created.error || t("documentTranslation.uploadPage.validation.uploadFailed"));
+        }
+        docId = created.documentId;
+        pendingDraftRef.current = docId;
       }
-
-      const docId = uploadData.documentId;
 
       // Deduct 25 credits atomically for service booking
       try {
         const deductResult = await wallet.deductServiceBooking("document-translation", docId);
 
         if (deductResult.body.success) {
+          pendingDraftRef.current = null;
           setUploadSuccess(true);
           if (onSuccess) onSuccess(uploadData);
           return;
@@ -277,20 +256,13 @@ export default function DocumentTranslationTool({
           return;
         }
 
-        const rawErr = deductResult.body.error || "Failed to deduct service credits";
-        if (rawErr === "NETWORK_ERROR") {
-          throw new Error("Connection error: could not reach the server to process credits. No credits were deducted and your request has not been booked. Please check your connection and try again.");
-        }
-        throw new Error(rawErr);
+        console.error("Credit deduction failed:", deductResult.body.error);
+        setCheckoutError(serviceBookingErrorMessage(deductResult.body.error));
+        setCheckoutLoading(false);
+        return;
       } catch (deductErr: unknown) {
         console.error("Credit deduction failed:", deductErr);
-        const errMsg =
-          deductErr instanceof Error
-            ? deductErr.message === "NETWORK_ERROR"
-              ? "Connection error: could not reach the server to process credits. No credits were deducted and your request has not been booked. Please check your connection and try again."
-              : deductErr.message
-            : "Credit deduction failed. Your request has not been booked. Please try again.";
-        setCheckoutError(errMsg);
+        setCheckoutError(serviceBookingErrorMessage("NETWORK_ERROR"));
         setCheckoutLoading(false);
         return;
       }
@@ -527,8 +499,8 @@ export default function DocumentTranslationTool({
         </header>
       )}
 
-      {/* Step indicator — orients the user across the 2-step flow */}
-      {!uploadSuccess && (
+      {/* Step indicator: orients the user across the 2-step flow (standalone only) */}
+      {!uploadSuccess && !isJourney && (
         <div className="mx-auto mb-8 flex w-full max-w-sm items-center justify-center gap-2 sm:gap-3">
           <div className="flex items-center gap-2">
             <span
@@ -575,7 +547,7 @@ export default function DocumentTranslationTool({
       )}
 
       {!uploadSuccess ? (
-        currentStep === 1 ? (
+        currentStep === 1 || isJourney ? (
           <>
             {/* Requirements Section */}
             {showRequirements && (
@@ -718,6 +690,11 @@ export default function DocumentTranslationTool({
                       return;
                     }
 
+                    if (isJourney) {
+                      void handleUpload();
+                      return;
+                    }
+
                     setCurrentStep(2);
                   }}
                   // disabled={!isLocked && (!file || uploading)}
@@ -771,7 +748,10 @@ export default function DocumentTranslationTool({
             walletBalance={wallet.balance}
             walletLoading={wallet.isLoading}
             onTopup={(deficit) => wallet.openTopup({ amount: deficit })}
-            onBack={() => setCurrentStep(1)}
+            onBack={() => {
+              pendingDraftRef.current = null;
+              setCurrentStep(1);
+            }}
             onSubmit={handleCheckoutSubmit}
           />
         )

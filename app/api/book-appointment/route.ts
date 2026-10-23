@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { E, msg } from "@/lib/errors";
 import { triggerAppointmentNotification } from "@/lib/notifications";
+import { verifyJourneyServiceAccess } from "@/lib/journey/journeyServiceAccess";
 
 export async function POST(req: NextRequest) {
   console.log("=== Starting appointment submission ===");
@@ -23,31 +24,45 @@ export async function POST(req: NextRequest) {
       }
     );
 
-    // Try to get the authenticated user's ID (optional — booking can work without auth)
-    let currentUserId: string | null = null;
-    try {
-      const authClient = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
-          cookies: {
-            getAll() {
-              return req.cookies.getAll();
-            },
-            setAll() {},
+    // A booking is either paid with the user's credits or covered by their journey
+    // plan, so it always needs a signed-in user.
+    const authClient = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return req.cookies.getAll();
           },
-        }
-      );
-      const {
-        data: { user },
-      } = await authClient.auth.getUser();
-      currentUserId = user?.id ?? null;
-    } catch {
-      // Auth is optional for appointment booking
+          setAll() {},
+        },
+      }
+    );
+    const {
+      data: { user },
+    } = await authClient.auth.getUser();
+    if (!user) {
+      return Response.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
+    const currentUserId = user.id;
 
     // Get form data from request
     const formData = await req.json();
+
+    // Payment is decided here, never by the client: a journey booking is covered by
+    // the journey plan once the journey checks out; a standalone booking is a hidden
+    // draft until /api/wallet/deduct-service charges it.
+    const isJourneyBooking = formData.source === "journey";
+    if (isJourneyBooking) {
+      const access = await verifyJourneyServiceAccess(supabase, currentUserId, "medical_booking", {
+        journeyId: formData.journey_id || null,
+        journeyCategory: formData.journey_category || formData.journey_slug || null,
+        candidateId: formData.candidateId || formData.candidate_id || null,
+      });
+      if (!access.allowed) {
+        return Response.json({ error: access.error }, { status: access.status });
+      }
+    }
     console.log("Received form data:", {
       location: formData.location,
       numberOfApplicants: formData.numberOfApplicants,
@@ -140,6 +155,7 @@ export async function POST(req: NextRequest) {
       source?: string | null;
       journey_slug?: string | null;
       awaiting_payment?: boolean;
+      payment_status?: string;
     }
 
     // Prepare appointment data for database insertion
@@ -194,11 +210,10 @@ export async function POST(req: NextRequest) {
       candidate_role: formData.candidateRole || formData.candidate_role || null,
       candidate_name: formData.candidateName || formData.candidate_name || null,
       // Origin tagging: 'journey' rows are hidden from standalone My Resources.
-      source: formData.source === "journey" ? "journey" : "standalone",
-      journey_slug: formData.journey_slug || null,
-      // Draft flag: standalone must-pay bookings are created hidden and revealed by the
-      // Stripe webhook / verify-session once paid. Credit/journey/plan rows stay false.
-      awaiting_payment: formData.awaitingPayment === true,
+      source: isJourneyBooking ? "journey" : "standalone",
+      journey_slug: isJourneyBooking ? formData.journey_slug || null : null,
+      awaiting_payment: !isJourneyBooking,
+      payment_status: isJourneyBooking ? "paid" : "pending",
     };
 
     // Only add case_number if it exists

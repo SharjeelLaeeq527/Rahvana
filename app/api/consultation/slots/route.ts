@@ -1,25 +1,48 @@
 import { NextRequest, NextResponse } from "next/server";
 import { consultationService } from "@/lib/services/consultationService";
 import { E, msg } from "@/lib/errors";
+import { requireAdmin } from "@/lib/api/authGuards";
+
+/** An unpaid standalone draft holds its slot only this long (the payment step). */
+const UNPAID_HOLD_MS = 15 * 60 * 1000;
+
+/** Whether a booking still occupies its slot. */
+function holdsSlot(b: { status?: string; payment_status?: string | null; created_at?: Date | string }) {
+  if (b.status === "canceled" || b.status === "cancelled") return false;
+  if (b.payment_status === "failed") return false;
+  if (b.payment_status === "pending") {
+    const created = b.created_at ? new Date(b.created_at).getTime() : 0;
+    return Date.now() - created < UNPAID_HOLD_MS;
+  }
+  return true;
+}
+
+async function adminOnly() {
+  const { isAdmin, user } = await requireAdmin();
+  if (isAdmin) return null;
+  return NextResponse.json(
+    { error: user ? "Admin access required" : msg(E.AUTH_UNAUTHORIZED) },
+    { status: user ? 403 : 401 }
+  );
+}
 
 // Helper function to handle service errors (localized)
 const handleServiceError = (error: unknown, defaultMessage: string) => {
   console.error(defaultMessage, error);
-  const errorMessage = error instanceof Error ? error.message : String(error);
   if (defaultMessage.toLowerCase().includes("fetch")) {
     return NextResponse.json(
-      { error: msg(E.CONSULTATION_FETCH_FAILED), details: errorMessage },
+      { error: msg(E.CONSULTATION_FETCH_FAILED) },
       { status: 500 }
     );
   }
   if (defaultMessage.toLowerCase().includes("create")) {
     return NextResponse.json(
-      { error: msg(E.CONSULTATION_CREATE_FAILED), details: errorMessage },
+      { error: msg(E.CONSULTATION_CREATE_FAILED) },
       { status: 500 }
     );
   }
   return NextResponse.json(
-    { error: msg(E.CONSULTATION_CREATE_FAILED), details: errorMessage },
+    { error: msg(E.CONSULTATION_CREATE_FAILED) },
     { status: 500 }
   );
 };
@@ -44,17 +67,14 @@ export async function GET(request: NextRequest) {
       const timeStr = String(slot.start_time).substring(0, 8);
       const slotDate = new Date(`${dateStr}T${timeStr}Z`);
       
-      const matchingBooking = bookings.find((b) => {
+      const matchingBookings = bookings.filter((b) => {
         return new Date(b.selected_slot).getTime() === slotDate.getTime();
       });
 
       let displayStatus = slot.status;
-      if (matchingBooking) {
-        if (matchingBooking.status === "canceled" || matchingBooking.status === "cancelled") {
-          displayStatus = "available";
-        } else {
-          displayStatus = "confirmed";
-        }
+      if (matchingBookings.length > 0) {
+        // Cancelled bookings and abandoned unpaid drafts free the slot again.
+        displayStatus = matchingBookings.some(holdsSlot) ? "confirmed" : "available";
       }
 
       return {
@@ -77,6 +97,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const denied = await adminOnly();
+  if (denied) return denied;
   try {
     const data = await request.json();
 
@@ -116,6 +138,8 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
+  const denied = await adminOnly();
+  if (denied) return denied;
   try {
     const { searchParams } = new URL(request.url);
     let id = searchParams.get("id");
@@ -145,6 +169,8 @@ export async function PUT(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+  const denied = await adminOnly();
+  if (denied) return denied;
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");

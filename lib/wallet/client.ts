@@ -186,3 +186,23 @@ export async function requestServiceBookingDeduction(
   }
 }
 
+/**
+ * User-facing message for a failed service charge (402 is handled by the caller
+ * with a top-up). Each booking is charged at most once on the server, so a retry
+ * with the same booking id is always safe.
+ */
+export function serviceBookingErrorMessage(error: unknown): string {
+  switch (error) {
+    case "NETWORK_ERROR":
+      return "We could not confirm your payment because the connection dropped. Please try again; this booking will not be charged twice.";
+    case "BOOKING_UPDATE_FAILED":
+      return "Your payment went through but we could not finish the booking. Please try again; you will not be charged twice.";
+    case "BOOKING_NOT_FOUND":
+      return "We could not find this booking. Please start the booking again.";
+    case "BOOKING_NOT_PAYABLE":
+      return "This booking can no longer be paid. Please start a new booking.";
+    default:
+      return "We could not process the payment. Please try again; this booking will not be charged twice.";
+  }
+}
+

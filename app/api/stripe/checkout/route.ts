@@ -1291,10 +1291,12 @@ export async function POST(request: NextRequest) {
     if (error instanceof Error && error.stack) {
       logDebug("Error stack:", error.stack);
     }
-    const errorMessage =
-      error instanceof Error ? error.message : "Failed to create checkout session";
-    logDebug("Returning 500 with errorMessage:", errorMessage);
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    console.error("[checkout] Failed to create checkout session:", error);
+    // Stripe / DB error text stays in the logs; the client gets a generic message.
+    return NextResponse.json(
+      { error: "We could not start checkout. Please try again." },
+      { status: 500 }
+    );
   } finally {
     // Always release the checkout lock, on success or any error/early return.
     // Pass the ownership token so we never delete another request's lock.

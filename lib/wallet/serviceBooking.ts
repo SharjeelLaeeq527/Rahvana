@@ -8,13 +8,22 @@ import {
   triggerConsultationNotification,
 } from "@/lib/notifications";
 
-const IDEMPOTENCY_KEY_RE = /^[A-Za-z0-9_:.-]{8,100}$/;
+/** The booking row each service charges for, and whether it has a draft flag. */
+const SERVICE_BOOKING_TABLES: Record<string, { table: string; hasDraftFlag: boolean }> = {
+  "book-medical-appointment": { table: "appointments", hasDraftFlag: true },
+  "pcc-filing-service": { table: "police_verification_requests", hasDraftFlag: true },
+  "book-a-consultation": { table: "consultation_bookings", hasDraftFlag: false },
+  "document-translation": { table: "translation_documents", hasDraftFlag: false },
+};
+
+/** Payment states a booking can be charged from. */
+const PAYABLE_STATUSES = new Set<string | null>([null, "pending", "failed"]);
 
 export type ServiceBookingRequest = {
   serviceId: unknown;
   referenceId?: unknown;
+  /** Accepted for compatibility; the key is derived from the booking id. */
   idempotencyKey?: unknown;
-  description?: unknown;
   metadata?: Record<string, unknown>;
 };
 
@@ -24,7 +33,7 @@ export type ServiceBookingResult =
       body: {
         success: true;
         transactionId: string | null;
-        balance: number;
+        balance: number | null;
         serviceId: string;
         referenceId: string | null;
         alreadyProcessed: boolean;
@@ -42,17 +51,28 @@ export type ServiceBookingResult =
       };
     }
   | {
-      status: 400 | 404 | 500;
+      status: 400 | 404 | 409 | 500;
       body: {
         success: false;
         error: string;
       };
     };
 
+const fail = (status: 400 | 404 | 409 | 500, error: string): ServiceBookingResult => ({
+  status,
+  body: { success: false, error },
+});
+
 /**
- * Deduct wallet credits for a standalone service booking.
- * Unlike tools and guides, services are consumable per-booking and NEVER grant
+ * Deduct wallet credits for one standalone service booking.
+ * Unlike tools and guides, services are consumable per booking and NEVER grant
  * permanent unlock rows. Pricing is strictly authoritative from the server catalog.
+ *
+ * One charge per booking: the booking must be the caller's own unpaid row, the
+ * idempotency key is derived from it (a retry after a lost response replays
+ * instead of charging again), and the RPC refuses a second charge for the same
+ * booking. The row is marked paid only after the charge, and a failed update is
+ * reported (a retry replays the charge and finishes the update).
  *
  * Call with the service-role client ONLY after authenticating `userId`.
  */
@@ -62,49 +82,79 @@ export async function deductServiceBooking(
   request: ServiceBookingRequest
 ): Promise<ServiceBookingResult> {
   if (typeof request.serviceId !== "string" || !request.serviceId.trim()) {
-    return { status: 400, body: { success: false, error: "INVALID_SERVICE_ID" } };
+    return fail(400, "INVALID_SERVICE_ID");
   }
 
   const item = getServiceCatalogItem(request.serviceId);
-  if (!item || item.resourceType !== "service") {
-    return { status: 404, body: { success: false, error: "UNKNOWN_SERVICE" } };
-  }
-
-  let idempotencyKey: string | null = null;
-  if (request.idempotencyKey !== undefined && request.idempotencyKey !== null) {
-    if (typeof request.idempotencyKey !== "string" || !IDEMPOTENCY_KEY_RE.test(request.idempotencyKey)) {
-      return { status: 400, body: { success: false, error: "INVALID_IDEMPOTENCY_KEY" } };
-    }
-    idempotencyKey = `service_booking:${userId}:${item.resourceId}:${request.idempotencyKey}`;
+  const target = item ? SERVICE_BOOKING_TABLES[item.resourceId] : undefined;
+  if (!item || item.resourceType !== "service" || !target) {
+    return fail(404, "UNKNOWN_SERVICE");
   }
 
   const referenceId =
     typeof request.referenceId === "string" && request.referenceId.trim().length > 0
       ? request.referenceId.trim()
       : null;
+  if (!referenceId || referenceId.length > 100) {
+    return fail(400, "REFERENCE_REQUIRED");
+  }
 
-  const description =
-    typeof request.description === "string" && request.description.trim().length > 0
-      ? request.description.trim()
-      : `${item.name} - Standalone Service Booking`;
+  // The booking must exist, belong to the caller and still be unpaid.
+  const columns = target.hasDraftFlag ? "id, payment_status, awaiting_payment" : "id, payment_status";
+  const { data: booking, error: bookingError } = await supabase
+    .from(target.table)
+    .select(columns)
+    .eq("id", referenceId)
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (bookingError) {
+    console.error(`[wallet] booking lookup failed for ${item.resourceId} (${referenceId}):`, bookingError);
+    return fail(500, "DEDUCT_SERVICE_FAILED");
+  }
+  if (!booking) return fail(404, "BOOKING_NOT_FOUND");
+
+  const row = booking as unknown as { payment_status: string | null; awaiting_payment?: boolean };
+  if ((row.payment_status === "paid" || row.payment_status === "free") && row.awaiting_payment !== true) {
+    // Already paid (an earlier attempt whose response was lost, or a journey row).
+    return {
+      status: 200,
+      body: {
+        success: true,
+        transactionId: null,
+        balance: null,
+        serviceId: item.resourceId,
+        referenceId,
+        alreadyProcessed: true,
+      },
+    };
+  }
+  if (!PAYABLE_STATUSES.has(row.payment_status ?? null)) {
+    return fail(409, "BOOKING_NOT_PAYABLE");
+  }
+
+  const clientMetadata =
+    request.metadata && typeof request.metadata === "object" && !Array.isArray(request.metadata)
+      ? request.metadata
+      : undefined;
 
   const { data, error } = await supabase.rpc("deduct_service_credits_atomic", {
     p_user_id: userId,
     p_service_id: item.resourceId,
     p_credit_cost: item.credits,
     p_reference_id: referenceId,
-    p_description: description,
-    p_idempotency_key: idempotencyKey,
+    p_description: `${item.name} - Standalone Service Booking`,
+    p_idempotency_key: `service_booking:${userId}:${item.resourceId}:${referenceId}`,
     p_metadata: {
+      // Client fields are nested so they can never overwrite the server's.
+      ...(clientMetadata ? { client: clientMetadata } : {}),
       source: "service_booking",
       catalog_credits: item.credits,
-      ...(request.metadata && typeof request.metadata === "object" ? request.metadata : {}),
     },
   });
 
   if (error || !data) {
     console.error(`[wallet] deduct_service_credits_atomic failed for ${item.resourceId}:`, error);
-    return { status: 500, body: { success: false, error: "DEDUCT_SERVICE_FAILED" } };
+    return fail(500, "DEDUCT_SERVICE_FAILED");
   }
 
   if (data.success === false) {
@@ -123,82 +173,72 @@ export async function deductServiceBooking(
       };
     }
     console.error(`[wallet] deduct_service_credits_atomic refused ${item.resourceId}:`, data);
-    return { status: 500, body: { success: false, error: "DEDUCT_SERVICE_FAILED" } };
+    return fail(500, "DEDUCT_SERVICE_FAILED");
   }
 
-    // Reveal and mark the service record as paid when referenceId is provided
-    if (referenceId) {
-      try {
-        if (item.resourceId === "book-medical-appointment") {
-          await supabase
-            .from("appointments")
-            .update({ payment_status: "paid", awaiting_payment: false })
-            .eq("id", referenceId)
-            .eq("user_id", userId);
-          try {
-            await triggerAppointmentNotification(referenceId);
-          } catch (notifErr) {
-            console.error("[wallet] Failed to trigger appointment notification:", notifErr);
-          }
-        } else if (item.resourceId === "pcc-filing-service") {
-          await supabase
-            .from("police_verification_requests")
-            .update({ payment_status: "paid", awaiting_payment: false })
-            .eq("id", referenceId)
-            .eq("user_id", userId);
-          try {
-            const { data: pccReq } = await supabase
-              .from("police_verification_requests")
-              .select("id, full_name, district, province, request_id")
-              .eq("id", referenceId)
-              .maybeSingle();
-            if (pccReq) {
-              const locationParts = [pccReq.district, pccReq.province].filter(Boolean);
-              const locationText = locationParts.length > 0 ? ` for ${locationParts.join(", ")}` : "";
-              const refText = pccReq.request_id ? ` (${pccReq.request_id})` : "";
-              const body = `${pccReq.full_name} has submitted a new Police Verification request${refText}${locationText}.`;
-              await triggerPCCNotification(pccReq.id, undefined, pccReq.full_name, body);
-            }
-          } catch (notifErr) {
-            console.error("[wallet] Failed to trigger PCC notification:", notifErr);
-          }
-        } else if (item.resourceId === "book-a-consultation") {
-          await supabase
-            .from("consultation_bookings")
-            .update({ payment_status: "paid" })
-            .eq("id", referenceId)
-            .eq("user_id", userId);
-          try {
-            await triggerConsultationNotification(referenceId);
-          } catch (notifErr) {
-            console.error("[wallet] Failed to trigger consultation notification:", notifErr);
-          }
-        } else if (item.resourceId === "document-translation") {
-          await supabase
-            .from("translation_documents")
-            .update({ payment_status: "paid" })
-            .eq("id", referenceId)
-            .eq("user_id", userId);
-          try {
-            await triggerTranslationNotification(referenceId);
-          } catch (notifErr) {
-            console.error("[wallet] Failed to trigger translation notification:", notifErr);
-          }
-        }
-      } catch (tableErr) {
-        console.error(`[wallet] Failed to update service record for ${item.resourceId} (${referenceId}):`, tableErr);
-      }
-    }
+  // Charged (now or on an earlier attempt): reveal the booking as paid.
+  const paidFields = target.hasDraftFlag
+    ? { payment_status: "paid", awaiting_payment: false }
+    : { payment_status: "paid" };
+  const { data: updated, error: updateError } = await supabase
+    .from(target.table)
+    .update(paidFields)
+    .eq("id", referenceId)
+    .eq("user_id", userId)
+    .select("id");
+  if (updateError || !Array.isArray(updated) || updated.length === 0) {
+    console.error(
+      `[wallet] charged but could not mark ${item.resourceId} (${referenceId}) paid:`,
+      updateError
+    );
+    return fail(500, "BOOKING_UPDATE_FAILED");
+  }
 
-    return {
-      status: 200,
-      body: {
-        success: true,
-        transactionId: data.transaction_id ?? null,
-        balance: Number(data.balance ?? 0),
-        serviceId: item.resourceId,
-        referenceId: data.reference_id ?? referenceId,
-        alreadyProcessed: data.already_processed === true,
-      },
-    };
+  await notifyAdmins(supabase, item.resourceId, referenceId, userId);
+
+  return {
+    status: 200,
+    body: {
+      success: true,
+      transactionId: data.transaction_id ?? null,
+      balance: data.balance === undefined || data.balance === null ? null : Number(data.balance),
+      serviceId: item.resourceId,
+      referenceId,
+      alreadyProcessed: data.already_processed === true,
+    },
+  };
+}
+
+/** Admins hear about a standalone booking only once it is paid. Never throws. */
+async function notifyAdmins(
+  supabase: SupabaseClient,
+  serviceId: string,
+  referenceId: string,
+  userId: string
+): Promise<void> {
+  try {
+    if (serviceId === "book-medical-appointment") {
+      await triggerAppointmentNotification(referenceId);
+    } else if (serviceId === "pcc-filing-service") {
+      const { data: pccReq } = await supabase
+        .from("police_verification_requests")
+        .select("id, full_name, district, province, request_id")
+        .eq("id", referenceId)
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (pccReq) {
+        const locationParts = [pccReq.district, pccReq.province].filter(Boolean);
+        const locationText = locationParts.length > 0 ? ` for ${locationParts.join(", ")}` : "";
+        const refText = pccReq.request_id ? ` (${pccReq.request_id})` : "";
+        const body = `${pccReq.full_name} has submitted a new Police Verification request${refText}${locationText}.`;
+        await triggerPCCNotification(pccReq.id, undefined, pccReq.full_name, body);
+      }
+    } else if (serviceId === "book-a-consultation") {
+      await triggerConsultationNotification(referenceId);
+    } else if (serviceId === "document-translation") {
+      await triggerTranslationNotification(referenceId);
+    }
+  } catch (notifErr) {
+    console.error(`[wallet] Failed to notify admins for ${serviceId} (${referenceId}):`, notifErr);
+  }
 }

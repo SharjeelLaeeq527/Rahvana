@@ -25,6 +25,7 @@ import {
   Coins,
 } from "lucide-react";
 import { useWallet } from "@/app/context/WalletContext";
+import { serviceBookingErrorMessage } from "@/lib/wallet/client";
 import type { ToolModeProps } from "@/types/tool-mode";
 import { useResolveToolMode } from "@/lib/hooks/useResolveToolMode";
 import { usePlan, normalizePlanTier } from "@/app/context/PlanContext";
@@ -258,6 +259,9 @@ export default function BookConsultationTool({
   const [useCreditIfAvailable, setUseCreditIfAvailable] = useState<boolean>(true);
 
   const wallet = useWallet();
+  // Standalone draft whose payment failed: a retry pays for this same booking
+  // (never a second one). Cleared once paid or when the form changes.
+  const pendingDraftRef = useRef<{ id: string; referenceId: string } | null>(null);
   const costCredits = 99;
   const hasWalletCredits = wallet.balance !== null && wallet.balance >= costCredits;
   const deficit = Math.max(costCredits, costCredits - (wallet.balance ?? 0));
@@ -661,6 +665,8 @@ export default function BookConsultationTool({
     field: keyof FormData,
     value: string | boolean | Date | Date[] | null
   ) => {
+    // Changed details after a failed payment: book a fresh request with them.
+    pendingDraftRef.current = null;
     setFormData((prev) => ({
       ...prev,
       [field]: value,
@@ -685,6 +691,7 @@ export default function BookConsultationTool({
   };
 
   const handleSlotSelect = (slot: TimeSlot) => {
+    pendingDraftRef.current = null;
     setFormData((prev) => ({
       ...prev,
       selected_slot: slot.date,
@@ -819,9 +826,10 @@ export default function BookConsultationTool({
           attachments: uploadedPaths,
           selected_slot: formData.selected_slot?.toISOString(),
           alternate_slots: formData.alternate_slots?.map((slot) => slot.toISOString()),
-          payment_status: "paid",
           source: "journey",
           journey_slug: journeyContext?.journeySlug || null,
+          journey_id: journeyContext?.backendId || null,
+          journey_category: journeyContext?.journeyCategory || null,
           candidate_id: journeyContext?.candidateId || null,
         };
 
@@ -849,35 +857,42 @@ export default function BookConsultationTool({
           throw new Error(errorData.error || "Failed to submit consultation");
         }
       } else {
-        // Standalone mode: create draft with payment_status: 'pending', then deduct credits atomically
-        const payload = {
-          ...formData,
-          whatsapp_phone: finalPhoneStr,
-          attachments: uploadedPaths,
-          selected_slot: formData.selected_slot?.toISOString(),
-          alternate_slots: formData.alternate_slots?.map((slot) => slot.toISOString()),
-          payment_status: "pending",
-          source: "standalone",
-        };
+        // Standalone mode: create an unpaid draft (the server marks it pending), then
+        // pay for it. A retry after a failed payment reuses the same draft.
+        let draft = pendingDraftRef.current;
+        if (!draft) {
+          const payload = {
+            ...formData,
+            whatsapp_phone: finalPhoneStr,
+            attachments: uploadedPaths,
+            selected_slot: formData.selected_slot?.toISOString(),
+            alternate_slots: formData.alternate_slots?.map((slot) => slot.toISOString()),
+            source: "standalone",
+          };
 
-        const response = await fetch("/api/consultation", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
+          const response = await fetch("/api/consultation", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
 
-        const result = await response.json();
-        if (!response.ok) {
-          throw new Error(result.error || "Failed to create consultation request");
+          const result = await response.json();
+          if (!response.ok) {
+            throw new Error(result.error || "Failed to create consultation request");
+          }
+          draft = { id: result.id as string, referenceId: result.reference_id as string };
+          pendingDraftRef.current = draft;
         }
 
-        const bookingId = result.id;
+        const bookingId = draft.id;
+        const result = { reference_id: draft.referenceId };
 
         // Deduct 99 credits atomically
         try {
           const deductResult = await wallet.deductServiceBooking("book-a-consultation", bookingId);
 
           if (deductResult.body.success) {
+            pendingDraftRef.current = null;
             setReferenceId(result.reference_id);
             setShowConfirmation(true);
             fetchTimeSlots();
@@ -895,22 +910,13 @@ export default function BookConsultationTool({
             return;
           }
 
-          const rawErr = deductResult.body.error || "Failed to deduct service credits";
-          if (rawErr === "NETWORK_ERROR") {
-            throw new Error(
-              "Connection error: could not reach the server to process credits. No credits were deducted and your consultation has not been booked. Please check your connection and try again."
-            );
-          }
-          throw new Error(rawErr);
+          console.error("Credit deduction failed:", deductResult.body.error);
+          showToast(serviceBookingErrorMessage(deductResult.body.error), "error");
+          setLoading(false);
+          return;
         } catch (deductErr: unknown) {
           console.error("Credit deduction failed:", deductErr);
-          const errMsg =
-            deductErr instanceof Error
-              ? deductErr.message === "NETWORK_ERROR"
-                ? "Connection error: could not reach the server to process credits. No credits were deducted and your consultation has not been booked. Please check your connection and try again."
-                : deductErr.message
-              : "Credit deduction failed. Your consultation has not been booked. Please try again.";
-          showToast(errMsg, "error");
+          showToast(serviceBookingErrorMessage("NETWORK_ERROR"), "error");
           setLoading(false);
           return;
         }

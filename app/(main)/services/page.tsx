@@ -659,7 +659,7 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
                 service={service}
                 index={index}
                 onLockedClick={(feature) => setUpgradeModalFeature(feature)}
-                onLaunch={(item) => setLaunchTarget({ item, href: service.href })}
+                onLaunch={() => router.push(service.href)}
               />
             );
           })}
@@ -691,7 +691,7 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
                   service={service}
                   index={index}
                   onLockedClick={(feature) => setUpgradeModalFeature(feature)}
-                  onLaunch={(item) => setLaunchTarget({ item, href: service.href })}
+                  onLaunch={() => router.push(service.href)}
                 />
               ))}
             </div>

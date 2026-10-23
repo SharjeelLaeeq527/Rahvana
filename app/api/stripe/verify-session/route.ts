@@ -495,8 +495,10 @@ export async function GET(request: NextRequest) {
       tier: appliedTier,
     });
   } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : "Unknown error";
-    console.error("[verify-session] Error:", msg);
-    return NextResponse.json({ activated: false, error: msg }, { status: 500 });
+    console.error("[verify-session] Error:", err);
+    return NextResponse.json(
+      { activated: false, error: "VERIFY_SESSION_FAILED" },
+      { status: 500 }
+    );
   }
 }
