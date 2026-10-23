@@ -918,12 +918,7 @@ export default function PassportPhotoTool({
         <UpgradeModal
           feature={"photo_booth"}
           onClose={() => setShowUpgradeModal(false)}
-          onConfirm={(action: "upgrade" | "addon", target?: string) => {
-            if (action === "addon") {
-              const addonId = typeof target === "string" ? target : "photo";
-              window.location.href = `/pricing?mode=tools&addons=${encodeURIComponent(addonId)}`;
-              return;
-            }
+          onConfirm={(_action, target?: string) => {
             const plan = typeof target === "string" ? target : "premium";
             window.location.href = `/pricing?plan=${plan}`;
           }}

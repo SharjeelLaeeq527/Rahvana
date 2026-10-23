@@ -937,7 +937,7 @@ export default function InterviewPreparation({
     setRepurchaseAddonId(null);
   };
 
-  const redirectToInterviewPrepPurchase = (categoryAddonId: string) => {
+  const redirectToInterviewPrepPurchase = () => {
     if (!selectedCategory) {
       return;
     }
@@ -948,28 +948,15 @@ export default function InterviewPreparation({
       return;
     }
 
-    const categorySlug = selectedCategory.categorySlug;
-
-    localStorage.setItem("interview_prep_pending_category", categorySlug);
-
-    if (selectedCountry) {
-      localStorage.setItem("interview_prep_pending_country", selectedCountry);
-    }
-
-    const params = new URLSearchParams({
-      mode: "tools",
-      addons: categoryAddonId,
-      step: "review",
-      interview_category: categorySlug,
-    });
-
-    router.push(`/pricing?${params.toString()}`);
+    // Inside a journey the journey plan decides access; per-category add-ons are no
+    // longer sold, so the way in is a plan upgrade.
+    router.push("/pricing?mode=plans");
   };
 
-  const handlePurchaseRequired = (addon: PurchaseRequiredAddon) => {
+  const handlePurchaseRequired = () => {
     setError(null);
     setRepurchaseAddonId(null);
-    redirectToInterviewPrepPurchase(addon.id);
+    redirectToInterviewPrepPurchase();
   };
 
   const handlePurchaseExhausted = (repurchase: PurchaseExhaustedData) => {
@@ -977,11 +964,11 @@ export default function InterviewPreparation({
     setError(null);
 
     showToast(
-      "You have already used your purchased interview prep session for this category. Purchase another session to continue.",
+      "You have used the interview prep session your purchase included for this category.",
       "info"
     );
 
-    redirectToInterviewPrepPurchase(repurchase.addon_id);
+    redirectToInterviewPrepPurchase();
   };
 
   const handleCategorySelectionNext = async () => {
@@ -993,10 +980,10 @@ export default function InterviewPreparation({
     try {
       if (!ipWallet.unlocked && selectedCategory.purchaseExhausted && selectedCategory.addonId) {
         showToast(
-          "You have already used your purchased interview prep session for this category. Purchase another session to continue.",
+          "You have used the interview prep session your purchase included for this category.",
           "info"
         );
-        redirectToInterviewPrepPurchase(selectedCategory.addonId);
+        redirectToInterviewPrepPurchase();
         return;
       }
 
@@ -1028,7 +1015,7 @@ export default function InterviewPreparation({
         const purchaseError = sessionResult as PurchaseErrorResponse;
 
         if (purchaseError.error === "PURCHASE_REQUIRED" && purchaseError.addon) {
-          handlePurchaseRequired(purchaseError.addon);
+          handlePurchaseRequired();
           return;
         }
 
@@ -1295,7 +1282,7 @@ export default function InterviewPreparation({
             setAvailableCategories([]);
           }}
           onPurchaseAgain={
-            repurchaseAddonId ? () => redirectToInterviewPrepPurchase(repurchaseAddonId) : undefined
+            repurchaseAddonId ? () => redirectToInterviewPrepPurchase() : undefined
           }
           onOpenMySessions={() => {
             if (isEmbedded) {

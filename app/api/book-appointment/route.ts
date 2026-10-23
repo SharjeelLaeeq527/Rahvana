@@ -2,7 +2,11 @@ import { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { E, msg } from "@/lib/errors";
 import { triggerAppointmentNotification } from "@/lib/notifications";
-import { verifyJourneyServiceAccess } from "@/lib/journey/journeyServiceAccess";
+import {
+  spendJourneyServiceUse,
+  verifyJourneyServiceAccess,
+  type JourneyServiceAccess,
+} from "@/lib/journey/journeyServiceAccess";
 
 export async function POST(req: NextRequest) {
   console.log("=== Starting appointment submission ===");
@@ -53,6 +57,7 @@ export async function POST(req: NextRequest) {
     // the journey plan once the journey checks out; a standalone booking is a hidden
     // draft until /api/wallet/deduct-service charges it.
     const isJourneyBooking = formData.source === "journey";
+    let journeyPlan: Extract<JourneyServiceAccess, { allowed: true }> | null = null;
     if (isJourneyBooking) {
       const access = await verifyJourneyServiceAccess(supabase, currentUserId, "medical_booking", {
         journeyId: formData.journey_id || null,
@@ -62,6 +67,7 @@ export async function POST(req: NextRequest) {
       if (!access.allowed) {
         return Response.json({ error: access.error }, { status: access.status });
       }
+      journeyPlan = access;
     }
     console.log("Received form data:", {
       location: formData.location,
@@ -247,6 +253,15 @@ export async function POST(req: NextRequest) {
     }
 
     console.log("✅ Appointment created successfully:", appointment.id);
+
+    // Spend one of the bookings the journey plan includes; none left = undo the booking.
+    if (journeyPlan) {
+      const refused = await spendJourneyServiceUse(currentUserId, "medical_booking", journeyPlan);
+      if (refused) {
+        await supabase.from("appointments").delete().eq("id", appointment.id).eq("user_id", currentUserId);
+        return Response.json({ error: refused.error, code: refused.code }, { status: refused.status });
+      }
+    }
 
     // Trigger admin notification only if not awaiting payment (e.g. journey mode)
     if (!appointmentData.awaiting_payment) {

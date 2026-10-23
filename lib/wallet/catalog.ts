@@ -119,16 +119,14 @@ export const WALLET_CATALOG: readonly WalletCatalogItem[] = [
 ];
 
 /**
- * Credits for a legacy add-on id, so add-on/upgrade UIs can quote the price in
- * wallet credits ($1 = 1 credit) when the purchase maps 1:1 to a catalog item.
- * Returns undefined for items with no wallet counterpart (bundles) and for
- * services, which stay on their per-request Stripe price even though the
- * catalog carries a matching legacy add-on id.
+ * Credits for a legacy add-on id (the ids pricing.ts and the sales pages use), so
+ * UIs can quote the standalone price in wallet credits ($1 = 1 credit). For a tool
+ * or guide that is a one-time unlock; for a service it is the price of one booking.
+ * Returns undefined for ids with no wallet counterpart (e.g. the civil-guide bundle).
  */
 export function getCreditsForLegacyAddon(addonId: unknown): number | undefined {
-  if (typeof addonId !== "string") return undefined;
-  const item = WALLET_CATALOG.find((i) => i.legacyAddonId === addonId);
-  return item && item.resourceType !== "service" ? item.credits : undefined;
+  if (typeof addonId !== "string" || !addonId) return undefined;
+  return WALLET_CATALOG.find((i) => i.legacyAddonId === addonId)?.credits;
 }
 
 export function getCatalogItem(

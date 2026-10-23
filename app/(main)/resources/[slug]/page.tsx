@@ -14,7 +14,7 @@ import {
   getResourceDetail,
 } from "@/app/(main)/pricing/data/resourceDetails";
 import ResourceGallery from "./ResourceGallery";
-import AddToOrderButton from "./AddToOrderButton";
+import { getCreditsForLegacyAddon } from "@/lib/wallet/catalog";
 import BottomCta from "./BottomCta";
 import ResourceLaunchButton from "@/components/pricing/ResourceLaunchButton";
 import ReviewForm from "@/components/resources/ReviewForm";
@@ -98,9 +98,11 @@ export default async function ResourceDetailPage({
   const addon = getAddon(slug);
   if (!detail || !addon) notFound();
 
-  // Services aren't added to the cart — they route to a guided flow page that
-  // collects info and handles payment at checkout (e.g. /book-consultation).
+  // Nothing here is sold for dollars: tools and guides unlock with wallet credits
+  // on their own page, and services are paid with credits per request in their
+  // booking flow (e.g. /book-consultation).
   const serviceFlowHref = addon.kind === "services" ? SERVICE_FLOW_HREF[slug] : undefined;
+  const credits = getCreditsForLegacyAddon(slug);
   const launchHref = getResourceLaunchHref(slug, addon.kind);
 
   const related = detail.related
@@ -192,9 +194,15 @@ export default async function ResourceDetailPage({
                 className="text-[42px] leading-none"
                 style={{ fontFamily: SERIF, color: TEAL_DARK }}
               >
-                ${addon.price}
+                {credits !== undefined ? `${credits} credits` : `$${addon.price}`}
               </span>
-              <span className="text-muted-foreground text-[14px]">{addon.unit}</span>
+              <span className="text-muted-foreground text-[14px]">
+                {credits === undefined
+                  ? addon.unit
+                  : serviceFlowHref
+                    ? "per request"
+                    : "one-time unlock"}
+              </span>
             </div>
             {addon.note && <p className="text-muted-foreground mt-2 text-[13px]">{addon.note}</p>}
 
@@ -206,18 +214,17 @@ export default async function ResourceDetailPage({
                   className="inline-flex items-center justify-center rounded-full px-7 py-3.5 text-[15px] font-semibold text-white transition-all duration-200 hover:-translate-y-0.5"
                   style={{ backgroundColor: TEAL }}
                 >
-                  Add {addon.title} info to checkout
+                  Book with credits
                   <span className="ml-2 font-normal text-white/80">→</span>
                 </Link>
               ) : (
-                <AddToOrderButton slug={slug} price={addon.price} unit={addon.unit} accent={TEAL} />
+                <ResourceLaunchButton href={launchHref} kind={addon.kind} />
               )}
-              <ResourceLaunchButton href={launchHref} kind={addon.kind} />
             </div>
 
             <p className="text-muted-foreground mt-7 text-[12.5px]">
-              No full plan required &nbsp;·&nbsp; Secure checkout &nbsp;·&nbsp; Built around your
-              case
+              No full plan required &nbsp;·&nbsp; Paid with Rahvana credits &nbsp;·&nbsp; Built
+              around your case
             </p>
           </div>
 
@@ -471,11 +478,9 @@ export default async function ResourceDetailPage({
 
         {/* ── Bottom CTA ────────────────────────────────────────────────────── */}
         <BottomCta
-          slug={slug}
           title={addon.title}
-          price={addon.price}
-          kind={addon.kind}
-          serviceFlowHref={serviceFlowHref}
+          href={serviceFlowHref ?? launchHref}
+          isService={Boolean(serviceFlowHref)}
         />
 
         <div className="mt-10">

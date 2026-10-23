@@ -5,20 +5,10 @@ import { useSearchParams } from "next/navigation";
 import CheckoutButton from "@/app/components/payment/CheckoutButton";
 import Link from "next/link";
 import {
-  // Brain, // unused — Case Strength Analyzer commented out
-  LifeBuoy,
-  MessageSquare,
   Zap,
-  Camera,
-  Wand2,
-  Calculator,
-  FileSearch,
   Users,
-  FileUp,
-  UserCheck,
-  Globe,
-  Stethoscope,
   ShieldCheck,
+  Coins,
   ArrowLeft,
   ArrowRight,
   ArrowUpRight,
@@ -45,6 +35,7 @@ import { useToast } from "@/app/components/shared/ToastProvider";
 import { JourneyPlanBadge } from "@/app/components/shared/JourneyPlanBadge";
 import { CustomDropdown, type DropdownOption } from "@/app/components/shared/CustomDropdown";
 import { useCandidate } from "@/app/context/CandidateContext";
+import { useWallet } from "@/app/context/WalletContext";
 import {
   isMultiCandidateCategory,
   getBaseVisaCategory,
@@ -111,43 +102,17 @@ type TierKey = keyof typeof TIER;
 const AVAILABLE_VISA_IDS: string[] = ["IR-1 / CR-1", "IR-5"];
 
 /* ===========================================================================
-   ADDON CONFIG — icons + colors matching resources page system
-   =========================================================================== */
-type AddonConfigEntry = {
-  icon: React.ComponentType<{ className?: string }>;
-  iconBg: string;
-};
-
-const ADDON_CONFIG: Record<string, AddonConfigEntry> = {
-  "221g": { icon: LifeBuoy, iconBg: "bg-violet-600 dark:bg-violet-500" },
-  // Temporarily hidden — Case Strength Analyzer commented out.
-  // "case-strength": { icon: Brain, iconBg: "bg-violet-600 dark:bg-violet-500" },
-  "interview-prep": { icon: MessageSquare, iconBg: "bg-indigo-600 dark:bg-indigo-500" },
-  photo: { icon: Camera, iconBg: "bg-rose-600 dark:bg-rose-500" },
-  smart: { icon: Wand2, iconBg: "bg-cyan-600 dark:bg-cyan-500" },
-  sponsor: { icon: Calculator, iconBg: "bg-emerald-600 dark:bg-emerald-500" },
-  "doc-review": { icon: FileSearch, iconBg: "bg-amber-600 dark:bg-amber-500" },
-  consultation: { icon: Users, iconBg: "bg-indigo-600 dark:bg-indigo-500" },
-  translate: { icon: FileUp, iconBg: "bg-amber-600 dark:bg-amber-500" },
-  medical: { icon: Stethoscope, iconBg: "bg-rose-600 dark:bg-rose-500" },
-  pcc: { icon: ShieldCheck, iconBg: "bg-emerald-600 dark:bg-emerald-500" },
-  "case-manager": {
-    icon: UserCheck,
-    iconBg: "bg-indigo-600 dark:bg-indigo-500",
-  },
-  "civil-guid": { icon: Globe, iconBg: "bg-green-600 dark:bg-green-500" },
-};
-
-/* ===========================================================================
-   RESOURCE TABS + PLAN RECOMMENDATIONS
+   RESOURCE TABS
    ===========================================================================
-   The à la carte resources are split into three top-level tabs by add-on
-   `kind` (tools | services | guides), mirroring the /resources page. */
+   Standalone resources are split into three tabs by `kind` (tools | services |
+   guides), mirroring the /resources page. They are not sold here: tools and guides
+   unlock with wallet credits on their own page and services are paid per booking,
+   so this page only sells journey plans and these tabs link to the resources. */
 type ResourceMode = "tools" | "services" | "guides";
 
-// sessionStorage key for the persisted add-on cart — survives navigation to a
-// tool/service/guide detail page and back. Cleared after a successful checkout.
-const CART_STORAGE_KEY = "rahvana_pricing_cart_addons";
+// The add-on cart this page used to keep. Removed on load so a cart left over from
+// before can never ride along with a plan checkout.
+const LEGACY_CART_STORAGE_KEY = "rahvana_pricing_cart_addons";
 
 type ResourceTabInfo = { label: string; sub: string; heading: string; blurb: string };
 
@@ -155,78 +120,21 @@ const RESOURCE_TABS: Record<ResourceMode, ResourceTabInfo> = {
   tools: {
     label: "Tools",
     sub: "Self-serve tools",
-    heading: "Buy individual tools",
-    blurb: "Self-serve tools you can use right away, no full journey plan required.",
+    heading: "Individual tools",
+    blurb: "Self-serve tools you can use without a journey plan. Unlock each one once with credits.",
   },
   services: {
     label: "Services",
     sub: "Expert help",
     heading: "Expert services",
-    blurb: "Human-delivered help when you want a specialist on your case.",
+    blurb: "Human-delivered help when you want a specialist on your case. Paid with credits per request.",
   },
   guides: {
     label: "Guides",
     sub: "Step-by-step guides",
     heading: "Document guides",
-    blurb: "Country-specific, step-by-step guides for obtaining each required document.",
+    blurb: "Country-specific, step-by-step guides for each required document. Unlock each one once with credits.",
   },
-};
-
-const PLAN_RECS: Record<string, string[]> = {
-  // "case-strength" temporarily hidden — Case Strength Analyzer commented out.
-  basic: ["smart", "sponsor", "interview-prep", "civil-guid"],
-  premium: ["interview-prep", "doc-review", "consultation", "221g"],
-  executive: ["case-manager", "consultation"],
-};
-
-const INTERVIEW_PREP_ADDON_PREFIX = "interview-prep:";
-
-const VISA_TO_INTERVIEW_CATEGORY: Record<string, string> = {
-  "IR-1 / CR-1": "ir-1-spouse",
-  "IR-5": "ir-5-parent",
-};
-
-const getCatalogAddonId = (addonId: string): string => {
-  const normalized = addonId.toLowerCase();
-
-  if (normalized.startsWith(INTERVIEW_PREP_ADDON_PREFIX)) {
-    return "interview-prep";
-  }
-
-  return normalized;
-};
-
-const resolveCheckoutAddonId = (addonId: string, interviewCategory: string | null): string => {
-  const normalized = addonId.toLowerCase();
-
-  if (normalized.startsWith(INTERVIEW_PREP_ADDON_PREFIX)) {
-    return normalized;
-  }
-
-  if (normalized === "interview-prep" && interviewCategory) {
-    return `${INTERVIEW_PREP_ADDON_PREFIX}${interviewCategory}`;
-  }
-
-  return normalized;
-};
-
-const mergeAddonSelections = (current: Set<string>, incoming: string[]): Set<string> => {
-  const next = new Set(current);
-
-  for (const incomingId of incoming) {
-    const catalogId = getCatalogAddonId(incomingId);
-
-    // Remove an existing generic/category-specific variant of the same catalog product.
-    for (const existingId of Array.from(next)) {
-      if (getCatalogAddonId(existingId) === catalogId) {
-        next.delete(existingId);
-      }
-    }
-
-    next.add(incomingId);
-  }
-
-  return next;
 };
 
 /* ===========================================================================
@@ -789,7 +697,6 @@ function PricingContent() {
   const [isManualCheckoutLoading, setIsManualCheckoutLoading] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
-  const isAnyCheckoutLoading = isProcessingAutoCheckout || isManualCheckoutLoading;
 
   const [mode, setMode] = useState<"plans" | ResourceMode>("plans");
   const [purchaseStep, setPurchaseStep] = useState<"browse" | "review">("browse");
@@ -809,13 +716,10 @@ function PricingContent() {
   const billing = "monthly";
 
   const [selectedPlan, setSelectedPlan] = useState("premium");
-  const [selectedAddons, setSelectedAddons] = useState<Set<string>>(new Set());
-
-  const requestedInterviewCategory =
-    searchParams.get("interview_category") || VISA_TO_INTERVIEW_CATEGORY[visa] || null;
 
   const { showToast } = useToast();
   const { candidates, activeCandidate } = useCandidate();
+  const { openTopup } = useWallet();
 
   // Multi-parent sponsorship state for IR-5
   const [parentCount, setParentCount] = useState<number>(() => {
@@ -831,22 +735,8 @@ function PricingContent() {
   });
   const [isEligibilityConfirmed, setIsEligibilityConfirmed] = useState<boolean>(true);
 
-  const checkoutAddonIds = useMemo(
-    () =>
-      Array.from(selectedAddons).map((addonId) =>
-        resolveCheckoutAddonId(addonId, requestedInterviewCategory)
-      ),
-    [selectedAddons, requestedInterviewCategory]
-  );
-
-  const isAddonSelected = (catalogAddonId: string) =>
-    Array.from(selectedAddons).some(
-      (selectedId) => getCatalogAddonId(selectedId) === catalogAddonId
-    );
-
   const [comparePlansOpen, setComparePlansOpen] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState<number>(-1);
-  const [allAddonsOpen, setAllAddonsOpen] = useState(false);
   const [checkoutCanceled, setCheckoutCanceled] = useState(false);
 
   // Derived category & candidate roster
@@ -1199,7 +1089,6 @@ function PricingContent() {
   const activePlans = activeVisaCategory.plans;
   const paidPlans = activePlans.filter((p) => p.id !== "free");
   const currentPlanData = activePlans.find((p) => p.id === selectedPlan) || activePlans[2];
-  const activeAddons = ADDONS.filter((addon) => isAddonSelected(addon.id));
 
   const activeSubscriptionStartDate = useMemo(() => {
     if (isUpgradingIr5 && activeUpgradeCandidate) {
@@ -1279,13 +1168,7 @@ function PricingContent() {
         ? currentPlanUpgradeDiff.diffAnnual
         : currentPlanData.annualPrice * parentMultiplier
       : 0;
-  const summaryAddonsTotal = activeAddons.reduce((s, a) => s + a.price, 0);
-  const summaryTotal = summaryBase + summaryAddonsTotal;
-
-  const reviewAddons = useMemo(
-    () => ADDONS.filter((a) => (PLAN_RECS[selectedPlan] || []).includes(a.id)),
-    [selectedPlan]
-  );
+  const summaryTotal = summaryBase;
 
   const resourcesForMode = useMemo(() => {
     if (mode === "plans") return [];
@@ -1302,7 +1185,7 @@ function PricingContent() {
 
   // Handlers
   const handleCheckout = useCallback(
-    async (uid: string, planOverride?: string, addonsOverride?: string[]) => {
+    async (uid: string, planOverride?: string) => {
       if (isProcessingAutoCheckout) return;
       setIsProcessingAutoCheckout(true);
       setCheckoutError(null);
@@ -1312,11 +1195,6 @@ function PricingContent() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             productTier: planOverride || (mode === "plans" ? selectedPlan : undefined),
-            addons: addonsOverride
-              ? addonsOverride.map((addonId) =>
-                  resolveCheckoutAddonId(addonId, requestedInterviewCategory)
-                )
-              : checkoutAddonIds,
             visaCategory: visa,
             billing,
             userId: uid,
@@ -1368,8 +1246,6 @@ function PricingContent() {
     },
     [
       selectedPlan,
-      checkoutAddonIds,
-      requestedInterviewCategory,
       visa,
       billing,
       isIr5,
@@ -1380,29 +1256,8 @@ function PricingContent() {
     ]
   );
 
-  const toggleAddon = (catalogAddonId: string) => {
-    setSelectedAddons((prev) => {
-      const next = new Set(prev);
-
-      const matchingSelections = Array.from(next).filter(
-        (selectedId) => getCatalogAddonId(selectedId) === catalogAddonId
-      );
-
-      if (matchingSelections.length > 0) {
-        matchingSelections.forEach((selectedId) => {
-          next.delete(selectedId);
-        });
-
-        return next;
-      }
-
-      next.add(resolveCheckoutAddonId(catalogAddonId, requestedInterviewCategory));
-
-      return next;
-    });
-  };
-
-  // Apply deep-link params (mode / plan / addons / visa) into state. This must
+  // Apply deep-link params (mode / plan / visa) into state. Old `addons=` links
+  // only pick the tab; add-ons are no longer sold here. This must
   // run ONLY when the URL actually changes — never when other state (e.g. the
   // recreated handleCheckout callback) changes, otherwise every user edit to the
   // selection would be instantly reverted back to the URL value. We key the
@@ -1427,19 +1282,6 @@ function PricingContent() {
       setMode((found?.kind as ResourceMode) ?? "tools");
     }
     if (plan) setSelectedPlan(plan);
-    // MERGE deep-linked add-ons into the existing cart (don't replace) — opening
-    // a tool's detail page and adding it should keep items already in the order.
-    const urlInterviewCategory =
-      searchParams.get("interview_category") || VISA_TO_INTERVIEW_CATEGORY[visaCat || visa] || null;
-
-    const urlAddons = (addons || "")
-      .split(",")
-      .filter(Boolean)
-      .map((addonId) => resolveCheckoutAddonId(addonId, urlInterviewCategory));
-
-    if (urlAddons.length) {
-      setSelectedAddons((prev) => mergeAddonSelections(prev, urlAddons));
-    }
     if (visaCat && AVAILABLE_VISA_IDS.includes(visaCat)) setVisa(visaCat);
     const parentsParam = searchParams.get("parents") || searchParams.get("candidate_count");
     if (parentsParam) {
@@ -1472,49 +1314,19 @@ function PricingContent() {
     const autoCheckout = searchParams.get("auto_checkout") === "true";
     if (autoCheckout && userId && !isLoadingUser && !isProcessingAutoCheckout) {
       const plan = searchParams.get("plan");
-      const addons = searchParams.get("addons");
       window.history.replaceState({}, "", window.location.pathname);
-      handleCheckout(userId, plan || undefined, addons ? addons.split(",") : undefined);
+      handleCheckout(userId, plan || undefined);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParamsString, userId, isLoadingUser, handleCheckout, isProcessingAutoCheckout]);
 
-  // ── Cart persistence ─────────────────────────────────────────────────────
-  // The selected add-ons (the "cart") live in component state, so navigating to
-  // a tool/service/guide detail page (a separate route) would normally wipe
-  // them. Persist the cart in sessionStorage so it survives navigation, and
-  // restore it on mount. Hydrate via effect (not a lazy initializer) to avoid an
-  // SSR/client hydration mismatch.
   useEffect(() => {
     try {
-      const raw = sessionStorage.getItem(CART_STORAGE_KEY);
-      if (raw) {
-        const stored: string[] = JSON.parse(raw);
-        if (Array.isArray(stored) && stored.length) {
-          setSelectedAddons((prev) => new Set([...prev, ...stored]));
-        }
-      }
+      sessionStorage.removeItem(LEGACY_CART_STORAGE_KEY);
     } catch {
-      /* sessionStorage unavailable — non-fatal */
+      /* sessionStorage unavailable: non-fatal */
     }
   }, []);
-
-  // Persist on every change. Skip the very first run so the initial empty state
-  // doesn't clobber the cart before the hydration effect above has restored it.
-  const cartPersistInitialized = useRef(false);
-  useEffect(() => {
-    if (!cartPersistInitialized.current) {
-      cartPersistInitialized.current = true;
-      return;
-    }
-    try {
-      sessionStorage.setItem(CART_STORAGE_KEY, JSON.stringify(Array.from(selectedAddons)));
-      // Let other routes (e.g. resource detail CTAs) re-read the cart instantly.
-      window.dispatchEvent(new Event("rahvana-cart-change"));
-    } catch {
-      /* sessionStorage unavailable — non-fatal */
-    }
-  }, [selectedAddons]);
 
   // If the user redirects to Stripe and then hits Back, the page is restored
   // from the bfcache with these loading flags still true — leaving the order
@@ -1648,7 +1460,6 @@ function PricingContent() {
       ) : userId ? (
         <CheckoutButton
           productTier={mode === "plans" && selectedPlan !== "free" ? selectedPlan : undefined}
-          addons={checkoutAddonIds}
           visaCategory={visa}
           candidateCount={isIr5 ? (isUpgradingIr5 ? 1 : parentCount) : 1}
           candidateId={
@@ -1675,7 +1486,7 @@ function PricingContent() {
         </CheckoutButton>
       ) : (
         <Link
-          href={`/login?redirect=${encodeURIComponent(`/pricing?auto_checkout=true&plan=${selectedPlan}&addons=${checkoutAddonIds.join(",")}&visa=${encodeURIComponent(visa)}&candidate_count=${parentCount}${isUpgradingIr5 && activeUpgradeCandidate ? `&candidate_id=${encodeURIComponent(activeUpgradeCandidate.id)}` : ""}`)}`}
+          href={`/login?redirect=${encodeURIComponent(`/pricing?auto_checkout=true&plan=${selectedPlan}&visa=${encodeURIComponent(visa)}&candidate_count=${parentCount}${isUpgradingIr5 && activeUpgradeCandidate ? `&candidate_id=${encodeURIComponent(activeUpgradeCandidate.id)}` : ""}`)}`}
           className="bg-primary hover:bg-primary/90 block w-full rounded-full px-5 py-[11px] text-center text-[14px] font-semibold text-white"
         >
           Sign in to Checkout ({activeExplorerCard?.code || activeVisaCategory.id}) →
@@ -1738,7 +1549,6 @@ function PricingContent() {
   ) : userId ? (
     <CheckoutButton
       productTier={mode === "plans" && selectedPlan !== "free" ? selectedPlan : undefined}
-      addons={checkoutAddonIds}
       visaCategory={visa}
       candidateCount={isIr5 ? (isUpgradingIr5 ? 1 : parentCount) : 1}
       candidateId={isUpgradingIr5 && activeUpgradeCandidate ? activeUpgradeCandidate.id : undefined}
@@ -1759,7 +1569,7 @@ function PricingContent() {
     </CheckoutButton>
   ) : (
     <Link
-      href={`/login?redirect=${encodeURIComponent(`/pricing?auto_checkout=true&plan=${selectedPlan}&addons=${checkoutAddonIds.join(",")}&visa=${encodeURIComponent(visa)}&candidate_count=${parentCount}${isUpgradingIr5 && activeUpgradeCandidate ? `&candidate_id=${encodeURIComponent(activeUpgradeCandidate.id)}` : ""}`)}`}
+      href={`/login?redirect=${encodeURIComponent(`/pricing?auto_checkout=true&plan=${selectedPlan}&visa=${encodeURIComponent(visa)}&candidate_count=${parentCount}${isUpgradingIr5 && activeUpgradeCandidate ? `&candidate_id=${encodeURIComponent(activeUpgradeCandidate.id)}` : ""}`)}`}
       className="bg-primary hover:bg-primary/90 block w-full rounded-full px-4 py-2.5 text-center text-[13px] font-semibold text-white"
     >
       Sign in ({activeExplorerCard?.code || activeVisaCategory.id}) →
@@ -1793,7 +1603,7 @@ function PricingContent() {
     </div>
   );
 
-  const reviewItemCount = (currentPlanData.id !== "free" ? 1 : 0) + activeAddons.length;
+  const reviewItemCount = currentPlanData.id !== "free" ? 1 : 0;
 
   return (
     <div className="text-foreground selection:bg-primary/20 min-h-[100dvh] overflow-x-hidden pb-12 font-sans sm:pb-20">
@@ -2888,150 +2698,28 @@ function PricingContent() {
                   );
                 })()}
 
-                {/* Want to add extra help? */}
-                <div>
-                  <div className={eyebrow}>Optional add-ons</div>
-                  <h2 className="m-0 mb-1 text-[21px] font-bold">Want to add extra help?</h2>
-                  <p className="text-muted-foreground mb-5 text-[13.5px]">
-                    Add only what you need. Recommended for the {currentPlanData.name} plan, or
-                    browse all below.
+                {/* Single resources are paid with credits on their own pages. */}
+                <div className="border-border bg-muted/30 rounded-[18px] border border-dashed p-5">
+                  <div className={eyebrow}>Need just one thing?</div>
+                  <h2 className="m-0 mb-1 text-[18px] font-bold">Single tools, guides and services</h2>
+                  <p className="text-muted-foreground mb-4 text-[13.5px]">
+                    These are not part of this checkout. Tools and guides unlock once with Rahvana
+                    credits, and services are paid with credits per request ($1 = 1 credit).
                   </p>
-
-                  {/* Recommended add-ons */}
-                  {reviewAddons.length > 0 && (
-                    <div className="mb-7">
-                      <div className="text-muted-foreground mb-3 text-[11px] font-bold tracking-widest uppercase">
-                        Recommended for {currentPlanData.name}
-                      </div>
-                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                        {reviewAddons.map((addon) => {
-                          const isAdded = isAddonSelected(addon.id);
-                          const cfg = ADDON_CONFIG[addon.id];
-                          const Icon = cfg?.icon ?? Wand2;
-                          return (
-                            <article
-                              key={addon.id}
-                              className={`resource-fcard transition-all ${isAdded ? "is-added shadow-md" : "hover:shadow-sm"}`}
-                            >
-                              <div
-                                className={`resource-fcard-frame ${
-                                  cfg?.iconBg.includes("emerald") || cfg?.iconBg.includes("cyan")
-                                    ? "bg-[#EEF6F0] text-[#3A6E4A]"
-                                    : cfg?.iconBg.includes("indigo") || cfg?.iconBg.includes("blue")
-                                      ? "bg-[#EAF1FB] text-[#1A5FA3]"
-                                      : cfg?.iconBg.includes("amber") ||
-                                          cfg?.iconBg.includes("yellow")
-                                        ? "bg-[#FBF2E3] text-[#9B6220]"
-                                        : cfg?.iconBg.includes("violet") ||
-                                            cfg?.iconBg.includes("purple")
-                                          ? "bg-[#F3EFFE] text-[#5C3DAA]"
-                                          : "bg-[#FEF0F0] text-[#903030]"
-                                }`}
-                              >
-                                <Icon className="h-7 w-7 opacity-70" />
-                              </div>
-
-                              <div className="resource-fcard-body">
-                                <h3 className="resource-fcard-name">{addon.title}</h3>
-                                <p className="resource-fcard-desc">{addon.copy}</p>
-
-                                <div className="resource-fcard-foot">
-                                  <div>
-                                    <div className="resource-fcard-price">${addon.price}</div>
-                                    <div className="resource-fcard-unit">{addon.unit}</div>
-                                  </div>
-                                  <button
-                                    title={isAdded ? "Added to order" : "Add to order"}
-                                    disabled={isAnyCheckoutLoading}
-                                    className={`resource-fbtn ${isAdded ? "is-added" : ""}`}
-                                    onClick={() => toggleAddon(addon.id)}
-                                  >
-                                    {isAdded ? "✓ Added to order" : "+ Add"}
-                                  </button>
-                                </div>
-                              </div>
-                            </article>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* All other add-ons — collapsed by default */}
-                  <div className="border-border mt-4 border-t pt-4">
-                    <button
-                      className="group mb-0 flex w-full cursor-pointer items-center justify-between border-0 bg-transparent p-0"
-                      onClick={() => setAllAddonsOpen(!allAddonsOpen)}
-                    >
-                      <span className="text-muted-foreground group-hover:text-foreground text-[11px] font-bold tracking-widest uppercase transition-colors">
-                        All available add-ons
-                      </span>
-                      <span className="text-muted-foreground group-hover:text-foreground flex items-center gap-1.5 text-[12px] transition-colors">
-                        <span className="font-medium">
-                          {allAddonsOpen ? "Collapse" : "Show all"}
-                        </span>
-                        <IcoChevron
-                          className={`h-3.5 w-3.5 transition-transform duration-200 ${allAddonsOpen ? "rotate-180" : ""}`}
-                        />
-                      </span>
-                    </button>
-                    {allAddonsOpen && (
-                      <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        {ADDONS.filter((a) => !(PLAN_RECS[selectedPlan] || []).includes(a.id)).map(
-                          (addon) => {
-                            const isAdded = isAddonSelected(addon.id);
-                            const cfg = ADDON_CONFIG[addon.id];
-                            const Icon = cfg?.icon ?? Wand2;
-                            return (
-                              <article
-                                key={addon.id}
-                                className={`resource-fcard transition-all ${isAdded ? "is-added shadow-md" : "hover:shadow-sm"}`}
-                              >
-                                <div
-                                  className={`resource-fcard-frame ${
-                                    cfg?.iconBg.includes("emerald") || cfg?.iconBg.includes("cyan")
-                                      ? "bg-[#EEF6F0] text-[#3A6E4A]"
-                                      : cfg?.iconBg.includes("indigo") ||
-                                          cfg?.iconBg.includes("blue")
-                                        ? "bg-[#EAF1FB] text-[#1A5FA3]"
-                                        : cfg?.iconBg.includes("amber") ||
-                                            cfg?.iconBg.includes("yellow")
-                                          ? "bg-[#FBF2E3] text-[#9B6220]"
-                                          : cfg?.iconBg.includes("violet") ||
-                                              cfg?.iconBg.includes("purple")
-                                            ? "bg-[#F3EFFE] text-[#5C3DAA]"
-                                            : "bg-[#FEF0F0] text-[#903030]"
-                                  }`}
-                                >
-                                  <Icon className="h-7 w-7 opacity-70" />
-                                </div>
-
-                                <div className="resource-fcard-body">
-                                  <h3 className="resource-fcard-name">{addon.title}</h3>
-                                  <p className="resource-fcard-desc">{addon.copy}</p>
-
-                                  <div className="resource-fcard-foot">
-                                    <div>
-                                      <div className="resource-fcard-price">${addon.price}</div>
-                                      <div className="resource-fcard-unit">{addon.unit}</div>
-                                    </div>
-
-                                    <button
-                                      title={isAdded ? "Added to order" : "Add to order"}
-                                      disabled={isAnyCheckoutLoading}
-                                      className={`resource-fbtn ${isAdded ? "is-added" : ""}`}
-                                      onClick={() => toggleAddon(addon.id)}
-                                    >
-                                      {isAdded ? "✓ Added to order" : "+ Add"}
-                                    </button>
-                                  </div>
-                                </div>
-                              </article>
-                            );
-                          }
-                        )}
-                      </div>
-                    )}
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { href: "/tools", label: "Browse tools" },
+                      { href: "/guides", label: "Browse guides" },
+                      { href: "/services", label: "Browse services" },
+                    ].map((link) => (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        className="text-primary border-primary/30 hover:bg-primary/5 rounded-full border px-4 py-1.5 text-[12.5px] font-semibold transition-colors"
+                      >
+                        {link.label}
+                      </Link>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -3134,25 +2822,6 @@ function PricingContent() {
                   </div>
                 )} */}
 
-                {activeAddons.map((a) => (
-                  <div
-                    key={a.id}
-                    className="border-border flex justify-between gap-3 border-b border-dashed py-2 text-[13px]"
-                  >
-                    <span className="truncate pr-2 text-[12.5px]">{a.title}</span>
-                    <div className="shrink-0 text-right">
-                      <strong>${a.price}</strong>
-                      <button
-                        disabled={isAnyCheckoutLoading}
-                        className={`text-muted-foreground ml-2 transition-colors ${isAnyCheckoutLoading ? "cursor-not-allowed opacity-30" : "cursor-pointer hover:text-red-500"} text-[11px]`}
-                        onClick={() => toggleAddon(a.id)}
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  </div>
-                ))}
-
                 <div className="border-border mt-4 flex items-end justify-between border-t pt-4">
                   <div className="flex flex-col">
                     <span className="text-muted-foreground text-[12px]">Total commitment</span>
@@ -3188,7 +2857,7 @@ function PricingContent() {
                     <>
                       Billed monthly at $
                       {currentPlanData.id !== "free" ? planDisplayPrice(currentPlanData) : 0}
-                      /mo. Add-ons are one-time. Government fees excluded.
+                      /mo. Government fees excluded.
                     </>
                   )}
                 </p>
@@ -3229,13 +2898,7 @@ function PricingContent() {
               <div>
                 <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
                   {resourcesForMode.map((addon) => (
-                    <ResourceToolCard
-                      key={addon.id}
-                      addon={addon}
-                      isAdded={isAddonSelected(addon.id)}
-                      disabled={isAnyCheckoutLoading}
-                      onToggle={toggleAddon}
-                    />
+                    <ResourceToolCard key={addon.id} addon={addon} />
                   ))}
                 </div>
 
@@ -3250,64 +2913,42 @@ function PricingContent() {
                 </div>
               </div>
 
-              {/* Order summary sidebar */}
+              {/* How standalone resources are paid */}
               <aside className="bg-card border-border rounded-[22px] border p-5 shadow-md lg:sticky lg:top-[88px]">
-                {summaryHeader(activeAddons.length)}
-
-                {activeAddons.length === 0 ? (
-                  <div className="text-muted-foreground py-5 text-center text-[13px]">
-                    No items selected yet.
-                  </div>
+                <div className="border-border mb-3 flex items-center gap-2.5 border-b pb-3">
+                  <Coins className="text-primary h-[18px] w-[18px]" strokeWidth={2} />
+                  <span className="text-muted-foreground text-[11px] font-bold tracking-widest uppercase">
+                    Paid with credits
+                  </span>
+                </div>
+                <p className="text-muted-foreground mb-4 text-[12.5px] leading-relaxed">
+                  {mode === "services"
+                    ? "Each service request is paid from your Rahvana wallet when you book it."
+                    : "Open any item to preview it, then unlock it once from your Rahvana wallet. It stays unlocked for your account."}{" "}
+                  $1 buys 1 credit, and credits never expire.
+                </p>
+                {userId ? (
+                  <button
+                    type="button"
+                    onClick={() => openTopup({ returnUrl: `/pricing?mode=${mode}` })}
+                    className="bg-primary hover:bg-primary/90 w-full cursor-pointer rounded-full px-5 py-[11px] text-center text-[14px] font-semibold text-white"
+                  >
+                    Top up credits
+                  </button>
                 ) : (
-                  activeAddons.map((a) => (
-                    <div
-                      key={a.id}
-                      className="border-border flex justify-between gap-3 border-b border-dashed py-2 text-[13px]"
-                    >
-                      <span className="truncate pr-2 text-[12.5px]">{a.title}</span>
-                      <div className="shrink-0 text-right">
-                        <strong>${a.price}</strong>
-                        <button
-                          type="button"
-                          disabled={isAnyCheckoutLoading}
-                          aria-label={`Remove ${a.title}`}
-                          title={`Remove ${a.title}`}
-                          className={`ml-2 inline-flex items-center justify-center rounded-md p-1 transition-colors ${
-                            isAnyCheckoutLoading
-                              ? "cursor-not-allowed opacity-30"
-                              : "text-muted-foreground cursor-pointer hover:bg-red-50 hover:text-red-500"
-                          }`}
-                          onClick={() => toggleAddon(a.id)}
-                        >
-                          <X className="h-3.5 w-3.5" strokeWidth={2} />
-                        </button>
-                      </div>
-                    </div>
-                  ))
+                  <Link
+                    href={`/login?redirect=${encodeURIComponent(`/pricing?mode=${mode}`)}`}
+                    className="bg-primary hover:bg-primary/90 block w-full rounded-full px-5 py-[11px] text-center text-[14px] font-semibold text-white"
+                  >
+                    Sign in to top up
+                  </Link>
                 )}
-
-                {activeAddons.length > 0 && (
-                  <>
-                    <div className="border-border mt-4 flex items-end justify-between border-t pt-4">
-                      <span className="text-muted-foreground text-[12px]">Total</span>
-                      <span className="text-primary text-[28px] leading-none font-bold tracking-tight">
-                        ${summaryAddonsTotal}
-                      </span>
-                    </div>
-                    <p className="text-muted-foreground bg-muted/40 border-border mt-3 mb-4 rounded-[12px] border border-dashed p-3 text-[11px] leading-relaxed">
-                      Add-ons are one-time charges. Government fees are not included.
-                    </p>
-                    {checkoutBtn}
-                  </>
-                )}
+                <p className="text-muted-foreground mt-3 text-center text-[11px]">
+                  Journey plans include these inside your journey.
+                </p>
               </aside>
             </div>
-
-            {/* Spacer so the last content clears the mobile sticky bar */}
-            {activeAddons.length > 0 && <div className="h-24 lg:hidden" aria-hidden="true" />}
           </div>
-
-          {activeAddons.length > 0 && mobileSummaryBar(activeAddons.length, summaryAddonsTotal)}
         </div>
       )}
 

@@ -1,19 +1,20 @@
 -- Phase 7: keep legacy add-on purchases as standalone unlocks, correctly and
 -- going forward.
 --
--- 20261013_05 was a one-time snapshot with a broad CASE (consumables, services
--- and every interview-prep category became permanent 'tool' rows, unknown ids
--- fell through as-is); 20261014_02 and 20261022_01 then cleaned that up. Gaps
--- that remained:
---   * add-ons bought AFTER that snapshot (the pricing page still sells them
---     through Stripe) never got a row, and
---   * 20261013_05 aborts on a non-array purchased_addons.
+-- Replaces the old one-time backfill (20261013_05_migrate_legacy_addons) and its two
+-- clean-ups (20261014_02_fix_legacy_unlock_mapping,
+-- 20261022_01_scope_legacy_interview_prep_unlocks); those files were removed. The
+-- snapshot used a broad CASE (consumables, services, guides stored as 'tool' and
+-- every interview-prep category became permanent 'tool' rows, unknown ids fell
+-- through as-is), missed add-ons bought after it, and aborted on a non-array
+-- purchased_addons. On a database where those files already ran, the clean-up
+-- below removes whatever they left behind.
 -- Access never depended on the rows (lib/wallet/catalog.ts resolveUnlockedItems
 -- also reads purchased_addons live), but the table is meant to be complete.
 --
 -- This adds ONE mapping, the same as the catalog (`legacyAddonId` with
 -- `legacyGrantsUnlock`), as a re-runnable function, runs it for everyone, keeps it
--- in sync with a trigger, and removes backfilled rows outside that mapping.
+-- in sync with a trigger, and removes backfilled rows the mapping does not grant.
 -- Never mapped: photo (2 uses per purchase), every service (one booking per
 -- purchase), per-category interview prep ("interview-prep:<slug>"), anything
 -- unknown. Existing rows are never changed (ON CONFLICT DO NOTHING), so a revoked
@@ -121,14 +122,28 @@ CREATE TRIGGER trg_sync_legacy_addon_unlocks_upd
   WHEN (NEW.profile_details -> 'purchased_addons' IS DISTINCT FROM OLD.profile_details -> 'purchased_addons')
   EXECUTE FUNCTION public.handle_purchased_addons_changed();
 
--- Remove backfilled rows outside the mapping (leftovers of the 20261013_05 CASE,
--- e.g. retired add-on ids). Only rows the backfill created are touched.
+-- Remove backfilled rows that the mapping does not grant to that user: leftovers of
+-- the old snapshot (photo / service rows, guides stored as 'tool', the whole
+-- interview-prep tool for a per-category purchase, retired ids). Only rows a
+-- backfill created are touched; a credit-paid unlock has a transaction_id. The
+-- sync below re-adds every row the user's add-ons do grant.
 DELETE FROM public.standalone_unlocked_resources r
 WHERE r.transaction_id IS NULL
   AND r.metadata ->> 'migrated_from' = 'user_profiles.profile_details.purchased_addons'
   AND NOT EXISTS (
-    SELECT 1 FROM public.legacy_addon_unlock_map() m
-    WHERE m.resource_type = r.resource_type AND m.resource_id = r.resource_id
+    SELECT 1
+    FROM public.user_profiles up
+    CROSS JOIN LATERAL jsonb_array_elements_text(
+      CASE
+        WHEN jsonb_typeof(up.profile_details -> 'purchased_addons') = 'array'
+        THEN up.profile_details -> 'purchased_addons'
+        ELSE '[]'::jsonb
+      END
+    ) AS addon(addon_id)
+    JOIN public.legacy_addon_unlock_map() m ON m.addon_id = addon.addon_id
+    WHERE up.id = r.user_id
+      AND m.resource_type = r.resource_type
+      AND m.resource_id = r.resource_id
   );
 
 -- Backfill everyone once.

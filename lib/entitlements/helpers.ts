@@ -130,11 +130,11 @@ export function lockHint(feature: string, tier: PlanTier, purchasedAddons: strin
     case "locked_buy":
       if (e.addon) {
         const upgradeName = e.upgradeTarget ? TIER_NAMES[e.upgradeTarget] : null;
-        // Upgrade-first framing: the plan is the recommended path; the
-        // one-time add-on is mentioned as the fallback, never the headline.
+        // Upgrade-first framing: the plan is the recommended path; using the
+        // resource on its own (paid with wallet credits) is the fallback.
         return upgradeName && e.upgradeTarget !== tier
-          ? `Included in the ${upgradeName} plan — or add ${e.addon.name} once for $${e.addon.price}`
-          : `Add ${e.addon.name} once for $${e.addon.price}`;
+          ? `Included in the ${upgradeName} plan, or use ${e.addon.name} on its own with credits`
+          : `Use ${e.addon.name} on its own with credits`;
       }
       return "Available as an add-on";
 

@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ConsultationRequest } from "@/types/consultation";
+import type { PlanTier } from "@/lib/entitlements/config";
 import { consultationService } from "@/lib/services/consultationService";
 import { E, msg } from "@/lib/errors";
 import { triggerConsultationNotification } from "@/lib/notifications";
 import { createClient } from "@/lib/supabase/server";
-import { getAuthenticatedUser, requireAdmin } from "@/lib/api/authGuards";
-import { verifyJourneyServiceAccess } from "@/lib/journey/journeyServiceAccess";
+import { getAuthenticatedUser, getServiceRoleClient, requireAdmin } from "@/lib/api/authGuards";
+import {
+  spendJourneyServiceUse,
+  verifyJourneyServiceAccess,
+} from "@/lib/journey/journeyServiceAccess";
 
 // Helper function to handle service errors (returns localized messages)
 const handleServiceError = (error: unknown, defaultMessage: string) => {
@@ -96,6 +100,7 @@ export async function POST(request: NextRequest) {
     };
     const isJourneyBooking = body.source === "journey";
     const candidateId = body.candidateId ?? body.candidate_id ?? null;
+    let journeyPlan: { tier: PlanTier; addons: string[] } | null = null;
     if (isJourneyBooking) {
       const access = await verifyJourneyServiceAccess(authClient, userId, "expert_consultation", {
         journeyId: body.journey_id ?? null,
@@ -105,6 +110,7 @@ export async function POST(request: NextRequest) {
       if (!access.allowed) {
         return NextResponse.json({ error: access.error }, { status: access.status });
       }
+      journeyPlan = { tier: access.tier, addons: access.addons };
     }
 
     // Create new booking
@@ -130,6 +136,25 @@ export async function POST(request: NextRequest) {
       journey_slug: isJourneyBooking ? (body.journey_slug ?? null) : null,
       candidate_id: candidateId,
     });
+
+    // A journey plan includes a set number of consultations (Executive: 2, plus 1
+    // per consultation add-on). The booking is saved first and one use is spent
+    // after, so a failed save never costs a use; when no use is left (also when two
+    // requests race for the last one) the booking is removed again.
+    if (journeyPlan) {
+      const refused = await spendJourneyServiceUse(userId, "expert_consultation", journeyPlan);
+      if (refused) {
+        await getServiceRoleClient()
+          .from("consultation_bookings")
+          .delete()
+          .eq("id", newBooking.id)
+          .eq("user_id", userId);
+        return NextResponse.json(
+          { error: refused.error, code: refused.code },
+          { status: refused.status }
+        );
+      }
+    }
 
     // In a real app, you would send an email/SMS notification here
     console.log(`New consultation request created: ${newBooking.reference_id}`);

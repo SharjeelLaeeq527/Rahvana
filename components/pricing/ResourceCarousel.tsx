@@ -18,15 +18,11 @@ export type ResourceCardAddon = {
 interface ResourceCarouselProps {
   addons: ResourceCardAddon[];
   addedItems?: string[];
-  disabled?: boolean;
-  onToggle?: (id: string) => void;
 }
 
 export default function ResourceCarousel({
   addons,
   addedItems = [],
-  disabled = false,
-  onToggle,
 }: ResourceCarouselProps) {
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -259,12 +255,7 @@ export default function ResourceCarousel({
                     transformOrigin: "center center",
                   }}
                 >
-                  <ResourceToolCard
-                    addon={addon}
-                    isAdded={isAdded}
-                    disabled={disabled}
-                    onToggle={onToggle ?? (() => {})}
-                  />
+                  <ResourceToolCard addon={addon} isAdded={isAdded} />
                 </motion.div>
               );
             })}

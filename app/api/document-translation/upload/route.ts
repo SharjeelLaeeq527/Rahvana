@@ -6,7 +6,11 @@ import { E, msg } from "@/lib/errors";
 import { triggerTranslationNotification } from "@/lib/notifications";
 import { validateUploadedFile } from "@/lib/security/file-content";
 import { UPLOAD_PROFILES } from "@/lib/security/upload-limits";
-import { verifyJourneyServiceAccess } from "@/lib/journey/journeyServiceAccess";
+import {
+  spendJourneyServiceUse,
+  verifyJourneyServiceAccess,
+  type JourneyServiceAccess,
+} from "@/lib/journey/journeyServiceAccess";
 import { getServiceRoleClient } from "@/lib/api/authGuards";
 export async function POST(request: NextRequest) {
   try {
@@ -56,6 +60,7 @@ export async function POST(request: NextRequest) {
     const source = formData.get("source") === "journey" ? "journey" : "standalone";
     const journeySlug = (formData.get("journey_slug") as string) || null;
     let journeyId: string | null = null;
+    let journeyPlan: Extract<JourneyServiceAccess, { allowed: true }> | null = null;
     if (source === "journey") {
       const access = await verifyJourneyServiceAccess(supabase, user.id, "document_translation", {
         journeyId: (formData.get("journey_id") as string) || null,
@@ -66,6 +71,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: access.error }, { status: access.status });
       }
       journeyId = access.journeyId;
+      journeyPlan = access;
     }
 
     // Extract file name
@@ -149,6 +155,23 @@ export async function POST(request: NextRequest) {
       // Cleanup uploaded file
       await supabase.storage.from("document-vault").remove([storagePath]);
       return NextResponse.json({ error: "Failed to create database record" }, { status: 500 });
+    }
+
+    // Spend one of the translations the journey plan includes; none left = undo the upload.
+    if (journeyPlan) {
+      const refused = await spendJourneyServiceUse(user.id, "document_translation", journeyPlan);
+      if (refused) {
+        await getServiceRoleClient()
+          .from("translation_documents")
+          .delete()
+          .eq("id", document.id)
+          .eq("user_id", user.id);
+        await supabase.storage.from("document-vault").remove([storagePath]);
+        return NextResponse.json(
+          { error: refused.error, code: refused.code },
+          { status: refused.status }
+        );
+      }
     }
 
     // Trigger admin notification only if already paid (journey mode)

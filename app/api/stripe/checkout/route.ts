@@ -123,19 +123,19 @@ export async function POST(request: NextRequest) {
     }
     const topupReturnPath = resolveTopupReturnPath(returnUrl);
 
-    if (Array.isArray(addons)) {
-      const unresolvedInterviewPrep = addons.find(
-        (addonId) => typeof addonId === "string" && addonId.toLowerCase() === "interview-prep"
+    // Add-ons are no longer sold for dollars: standalone tools and guides unlock with
+    // wallet credits and services are paid with credits per booking. Purchases made
+    // before this keep working (the webhook and verify-session still record a paid
+    // add-on session), but no new add-on checkout is started.
+    if (Array.isArray(addons) && addons.length > 0) {
+      return NextResponse.json(
+        {
+          error:
+            "Add-ons are no longer sold here. Tools and guides unlock with Rahvana credits, and services are paid with credits when you book them.",
+          code: "ADDONS_DISCONTINUED",
+        },
+        { status: 400 }
       );
-
-      if (unresolvedInterviewPrep) {
-        return NextResponse.json(
-          {
-            error: "Interview Prep purchases must include a category-specific addon ID.",
-          },
-          { status: 400 }
-        );
-      }
     }
 
     // Get user email from Supabase

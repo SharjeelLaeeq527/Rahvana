@@ -177,7 +177,7 @@ $$;
 REVOKE ALL ON FUNCTION public.deduct_wallet_credits_atomic(UUID, VARCHAR, VARCHAR, NUMERIC, TEXT, TEXT, JSONB) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.deduct_wallet_credits_atomic(UUID, VARCHAR, VARCHAR, NUMERIC, TEXT, TEXT, JSONB) TO service_role;
 
--- Defensive: no permanent service unlocks should exist (20261014_02 removed the
+-- Defensive: no permanent service unlocks should exist (20261023_02 removes the
 -- backfilled ones). Revoke any that slipped in so they grant nothing.
 UPDATE public.standalone_unlocked_resources
 SET status = 'revoked'

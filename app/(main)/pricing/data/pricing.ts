@@ -541,11 +541,11 @@ export const FAQS: [string, string][] = [
   ],
   [
     "Can I upgrade later?",
-    "Yes. You can upgrade from Basic to Premium or Executive at any time during your journey. Your existing progress, data, and add-ons carry over, so you only pay the difference.",
+    "Yes. You can upgrade from Basic to Premium or Executive at any time during your journey. Your existing progress, data, and purchases carry over, so you only pay the difference.",
   ],
   [
-    "What are add-ons and how do they work?",
-    "Add-ons are individual tools or services you can purchase on top of your plan. For example, if you're on Basic and need the Smart Form Filler, you can buy it for $39 without upgrading your entire plan. Add-ons are charged once and remain active for your journey.",
+    "Can I buy a single tool, guide or service?",
+    "Yes, with Rahvana credits ($1 = 1 credit). Top up your wallet, then unlock a tool or guide once from its own page (for example the Smart Form Filler for 39 credits) and it stays unlocked for your account. Services are paid with credits each time you book one. Inside a journey, your journey plan decides what is included. Credits never expire.",
   ],
   [
     "Is my data secure?",

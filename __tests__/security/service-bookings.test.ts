@@ -4,7 +4,8 @@
  * `source: "journey"` tag, every user's bookings readable without login, any
  * booking approved or cancelled by anyone, Medical / PCC journey tags trusted
  * without checking the journey (and PCC filed under a user id from the body),
- * and abandoned unpaid drafts holding a consultation slot forever.
+ * abandoned unpaid drafts holding a consultation slot forever, and journey
+ * consultations never counted against the plan's included number.
  */
 
 import { fakeSupabase, type Row } from '../helpers/fakeSupabase'
@@ -21,6 +22,10 @@ let currentUser: { id: string; email?: string } | null
 let isAdmin: boolean
 let tables: Record<string, Row[]>
 let inserted: Array<{ table: string; row: Row }>
+let deleted: Array<{ table: string; filters: Row }>
+/** feature_usage counters, as increment_feature_usage_atomic keeps them. */
+let usage: Record<string, number>
+let usageRpcFails: boolean
 const mockCreateBooking = jest.fn()
 const mockGetAllBookings = jest.fn()
 const mockGetBookingById = jest.fn()
@@ -31,7 +36,27 @@ function client() {
   const base = fakeSupabase(tables, { user: currentUser }).client
   return {
     ...base,
+    rpc: async (name: string, args: { p_user_id: string; p_feature_key: string; p_limit: number }) => {
+      if (name !== 'increment_feature_usage_atomic') return { data: null, error: { message: 'unknown rpc' } }
+      if (usageRpcFails) return { data: null, error: { message: 'boom' } }
+      const key = `${args.p_user_id}|${args.p_feature_key}`
+      const used = usage[key] ?? 0
+      if (used >= args.p_limit) return { data: { allowed: false, used, remaining: 0 }, error: null }
+      usage[key] = used + 1
+      return { data: { allowed: true, used: used + 1, remaining: args.p_limit - used - 1 }, error: null }
+    },
     from: (table: string) => ({
+      delete: () => {
+        const filters: Row = {}
+        deleted.push({ table, filters })
+        const chain = {
+          eq: (col: string, val: unknown) => {
+            filters[col] = val
+            return chain
+          },
+        }
+        return chain
+      },
       ...base.from(table),
       insert: (rows: Row | Row[]) => {
         const row = Array.isArray(rows) ? rows[0] : rows
@@ -88,6 +113,9 @@ beforeEach(() => {
   currentUser = { id: 'user-1', email: 'me@example.com' }
   isAdmin = false
   inserted = []
+  deleted = []
+  usage = {}
+  usageRpcFails = false
   tables = {
     journeys: [
       { id: EXEC_J, user_id: 'user-1', journey_type: 'IR1', subscription_tier: 'executive', status: 'in_progress' },
@@ -151,6 +179,53 @@ describe('POST /api/consultation', () => {
     const res = await post({ ...consultBody, source: 'journey', journey_id: EXEC_J, journey_slug: 'ir1-journey' })
     expect(res.status).toBe(201)
     expect(mockCreateBooking.mock.calls[0][0]).toMatchObject({ payment_status: 'paid', source: 'journey' })
+  })
+
+  describe('included consultations are counted on the server', () => {
+    const journeyBooking = (journeyId = EXEC_J) =>
+      post({ ...consultBody, source: 'journey', journey_id: journeyId, journey_slug: 'ir1-journey' })
+
+    it('an Executive journey books 2, and the 3rd is refused and removed', async () => {
+      expect((await journeyBooking()).status).toBe(201)
+      expect((await journeyBooking()).status).toBe(201)
+      expect(deleted).toHaveLength(0)
+
+      const res = await journeyBooking()
+      expect(res.status).toBe(403)
+      expect((await res.json()).code).toBe('SERVICE_LIMIT_REACHED')
+      expect(deleted).toEqual([
+        { table: 'consultation_bookings', filters: { id: 'c-1', user_id: 'user-1' } },
+      ])
+      expect(usage['user-1|expert_consultation']).toBe(2)
+    })
+
+    it('each consultation add-on adds one more, counted separately', async () => {
+      tables.user_profiles = [{ id: 'user-1', profile_details: { purchased_addons: ['consultation'] } }]
+      for (let i = 0; i < 3; i++) expect((await journeyBooking()).status).toBe(201)
+      expect((await journeyBooking()).status).toBe(403)
+      expect(usage).toEqual({ 'user-1|expert_consultation': 2, 'user-1|expert_consultation:addon': 1 })
+    })
+
+    it('a Premium journey with an add-on gets exactly that one', async () => {
+      tables.user_profiles = [{ id: 'user-1', profile_details: { purchased_addons: ['consultation'] } }]
+      expect((await journeyBooking(PREMIUM_J)).status).toBe(201)
+      expect((await journeyBooking(PREMIUM_J)).status).toBe(403)
+    })
+
+    it('a counter failure removes the booking instead of giving it away', async () => {
+      usageRpcFails = true
+      const res = await journeyBooking()
+      expect(res.status).toBe(500)
+      expect(deleted).toHaveLength(1)
+    })
+
+    it('standalone bookings are paid with credits and never touch the counter', async () => {
+      await post(consultBody)
+      await post(consultBody)
+      await post(consultBody)
+      expect(usage).toEqual({})
+      expect(deleted).toHaveLength(0)
+    })
   })
 })
 
@@ -271,6 +346,20 @@ describe('POST /api/book-appointment (Medical)', () => {
     expect((await book({ source: 'journey', journey_id: EXEC_J })).status).toBe(200)
     expect(appointment()).toMatchObject({ source: 'journey', awaiting_payment: false, payment_status: 'paid' })
   })
+
+  it('Executive books without limit; one add-on on Premium covers exactly one booking', async () => {
+    for (let i = 0; i < 3; i++) expect((await book({ source: 'journey', journey_id: EXEC_J })).status).toBe(200)
+    expect(usage).toEqual({})
+
+    tables.user_profiles = [{ id: 'user-1', profile_details: { purchased_addons: ['medical'] } }]
+    expect((await book({ source: 'journey', journey_id: PREMIUM_J })).status).toBe(200)
+    const res = await book({ source: 'journey', journey_id: PREMIUM_J })
+    expect(res.status).toBe(403)
+    expect((await res.json()).code).toBe('SERVICE_LIMIT_REACHED')
+    expect(deleted).toEqual([
+      { table: 'appointments', filters: { id: 'appointments-1', user_id: 'user-1' } },
+    ])
+  })
 })
 
 describe('POST /api/police-verification/apply (PCC)', () => {
@@ -291,5 +380,12 @@ describe('POST /api/police-verification/apply (PCC)', () => {
     expect(request()).toBeUndefined()
     expect((await apply({ source: 'journey', journey_id: EXEC_J })).status).toBe(200)
     expect(request()).toMatchObject({ source: 'journey', awaiting_payment: false, payment_status: 'paid' })
+  })
+
+  it('one add-on on Premium covers exactly one filing', async () => {
+    tables.user_profiles = [{ id: 'user-1', profile_details: { purchased_addons: ['pcc'] } }]
+    expect((await apply({ source: 'journey', journey_id: PREMIUM_J })).status).toBe(200)
+    expect((await apply({ source: 'journey', journey_id: PREMIUM_J })).status).toBe(403)
+    expect(deleted.map((d) => d.table)).toEqual(['police_verification_requests'])
   })
 })

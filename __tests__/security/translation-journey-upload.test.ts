@@ -17,6 +17,8 @@ const OTHER_J = '22222222-2222-4222-8222-222222222222'
 let addons: string[]
 let tables: Record<string, Row[]>
 let inserted: Row[]
+let usage: Record<string, number>
+let deletedCount: number
 const mockUpload = jest.fn()
 const mockNotify = jest.fn()
 
@@ -40,10 +42,21 @@ jest.mock('@/lib/supabase/server', () => ({
 }))
 jest.mock('@/lib/api/authGuards', () => ({
   getServiceRoleClient: () => ({
+    rpc: async (_name: string, args: { p_feature_key: string; p_limit: number }) => {
+      const used = usage[args.p_feature_key] ?? 0
+      if (used >= args.p_limit) return { data: { allowed: false }, error: null }
+      usage[args.p_feature_key] = used + 1
+      return { data: { allowed: true, remaining: args.p_limit - used - 1 }, error: null }
+    },
     from: () => ({
       insert: (row: Row) => {
         inserted.push(row)
         return { select: () => ({ single: async () => ({ data: row, error: null }) }) }
+      },
+      delete: () => {
+        const chain = { eq: () => chain }
+        deletedCount++
+        return chain
       },
     }),
   }),
@@ -61,6 +74,8 @@ beforeEach(() => {
   jest.clearAllMocks()
   addons = []
   inserted = []
+  usage = {}
+  deletedCount = 0
   mockUpload.mockResolvedValue({ error: null })
   tables = {
     journeys: [
@@ -148,6 +163,15 @@ describe('POST /api/document-translation/upload', () => {
     const res = await post({ source: 'journey', journey_id: PREMIUM_J })
     expect(res.status).toBe(403)
     expect(inserted).toHaveLength(0)
+  })
+
+  it('one translation add-on on Premium covers exactly one journey upload', async () => {
+    addons = ['translate']
+    expect((await post({ source: 'journey', journey_id: PREMIUM_J })).status).toBe(200)
+    const res = await post({ source: 'journey', journey_id: PREMIUM_J })
+    expect(res.status).toBe(403)
+    expect(deletedCount).toBe(1)
+    expect(usage).toEqual({ 'document_translation:addon': 1 })
   })
 
   it('standalone stays pending (paid later with credits)', async () => {

@@ -2,7 +2,12 @@ import { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { triggerPCCNotification } from "@/lib/notifications";
 import { safeError } from "@/lib/api/safeError";
-import { verifyJourneyServiceAccess } from "@/lib/journey/journeyServiceAccess";
+import {
+  spendJourneyServiceUse,
+  verifyJourneyServiceAccess,
+  type JourneyServiceAccess,
+} from "@/lib/journey/journeyServiceAccess";
+import { getServiceRoleClient } from "@/lib/api/authGuards";
 
 interface PoliceVerificationData {
   user_id?: string;
@@ -106,6 +111,7 @@ export async function POST(req: NextRequest) {
 
     // Payment is decided here, never by the client (see book-appointment).
     const isJourneyRequest = body.source === "journey";
+    let journeyPlan: Extract<JourneyServiceAccess, { allowed: true }> | null = null;
     if (isJourneyRequest) {
       const access = await verifyJourneyServiceAccess(supabase, user.id, "pcc_filing", {
         journeyId: body.journey_id || body.journeyId || null,
@@ -115,6 +121,7 @@ export async function POST(req: NextRequest) {
       if (!access.allowed) {
         return Response.json({ error: access.error }, { status: access.status });
       }
+      journeyPlan = access;
     }
 
     const verificationData: PoliceVerificationData = {
@@ -183,6 +190,19 @@ export async function POST(req: NextRequest) {
     if (error) {
       console.error("Error creating police verification request:", error);
       return safeError(error);
+    }
+
+    // Spend one of the filings the journey plan includes; none left = undo the request.
+    if (journeyPlan) {
+      const refused = await spendJourneyServiceUse(user.id, "pcc_filing", journeyPlan);
+      if (refused) {
+        await getServiceRoleClient()
+          .from("police_verification_requests")
+          .delete()
+          .eq("id", data.id)
+          .eq("user_id", user.id);
+        return Response.json({ error: refused.error, code: refused.code }, { status: refused.status });
+      }
     }
     // Notify admins of the new PCC request only if not awaiting payment (e.g. journey mode)
     if (!verificationData.awaiting_payment) {

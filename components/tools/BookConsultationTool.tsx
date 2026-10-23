@@ -3077,7 +3077,7 @@ export default function BookConsultationTool({
         <UpgradeModal
           feature={"expert_consultation"}
           onClose={() => setShowConsultationUpgradeModal(false)}
-          onConfirm={(action: "upgrade" | "addon", target?: string) => {
+          onConfirm={(_action, target?: string) => {
             // Redirect to pricing page with the selected plan pre-selected
             const plan = typeof target === "string" ? target : "executive";
             window.location.href = `/pricing?plan=${plan}`;
