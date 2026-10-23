@@ -11,7 +11,7 @@ import {
   Globe,
   Syringe,
   ChevronDown,
-  Coins,
+  // Coins, // Unused now — replaced by <CreditTypeIcon kind="guides" /> (kept for reference)
   ArrowRight,
   BookOpen,
   Clock,
@@ -38,6 +38,9 @@ import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 import { useWallet } from "@/app/context/WalletContext";
 import { getGuideCatalogItem, withPreviewMode } from "@/lib/wallet/resourceMapping";
+import { useJourneyEnvironment } from "@/app/context/JourneyEnvironmentContext";
+import CreditTypeIcon from "@/components/resources/CreditTypeIcon";
+import CreditInfoTooltip from "@/components/resources/CreditInfoTooltip";
 import type { WalletCatalogItem } from "@/lib/wallet/catalog";
 import { CreditLaunchModal } from "@/app/components/wallet/CreditLaunchModal";
 import { useQuickAccess } from "@/app/context/QuickAccessContext";
@@ -262,6 +265,11 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
     href: string;
   } | null>(null);
   const plan = usePlan();
+  // Wallet state + journey context drive standalone ownership below: outside a
+  // journey, guides are owned via credit unlock / legacy add-on only (plan tier
+  // does NOT unlock standalone guides).
+  const wallet = useWallet();
+  const { isInsideJourney } = useJourneyEnvironment();
 
   const [sessions, setSessions] = useState<UserGuideSession[]>([]);
   const [sessionsLoading, setSessionsLoading] = useState(false);
@@ -430,13 +438,28 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
   // "My Resources" (embedded) view splits the catalog into two sections:
   //  • "My Guides"     — guides the user owns (plan/add-ons) OR has already started
   //  • "Browse Guides" — everything else, shown as locked/"Unlock" cards to explore
-  const isOwned = (feature?: string) => !feature || (!plan.isLoading && !plan.isLocked(feature));
+  // ORIGINAL (plan-tier ownership) — commented out per product decision:
+  // const isOwned = (feature?: string) => !feature || (!plan.isLoading && !plan.isLocked(feature));
+  // Standalone (outside a journey): catalog guides are owned only through the
+  // wallet (credit unlock or legacy add-on). Guides without a catalog entry and
+  // journey-mounted views keep the plan-based rule.
+  const isOwned = (guide: Guide) => {
+    const catalogItem = getGuideCatalogItem(guide.id);
+    if (catalogItem && !isInsideJourney) {
+      return (
+        !wallet.isLoading && wallet.isUnlocked(catalogItem.resourceId, catalogItem.resourceType)
+      );
+    }
+    return (
+      !guide.entitlementFeature || (!plan.isLoading && !plan.isLocked(guide.entitlementFeature))
+    );
+  };
   const hasSession = (guide: Guide) => {
     const slug = guide.href.split("/").pop();
     return sessions.some((s) => s.guides.slug === slug);
   };
   // A started guide belongs in "My Guides" even if its entitlement is locked.
-  const isMine = (guide: Guide) => isOwned(guide.entitlementFeature) || hasSession(guide);
+  const isMine = (guide: Guide) => isOwned(guide) || hasSession(guide);
   const ownedGuides = filteredGuides.filter(isMine);
   const browseGuides = filteredGuides.filter((guide) => !isMine(guide));
   // Embedded "My Resources" shows owned/started in the first grid; the standalone
@@ -595,7 +618,7 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
         <div className="absolute right-[10%] bottom-[20%] h-[600px] w-[600px] rounded-full bg-[#32e0c4]/5 blur-3xl" />
       </div>
 
-      <div className="w-full mx-auto px-6 py-8">
+      <div className="mx-auto w-full px-6 py-8">
         {/* Hero Section — hidden in the embedded "My Resources" view */}
         {!isEmbedded && (
           <section className="relative mb-5 flex flex-col items-center pt-1 text-center md:mb-10">
@@ -785,6 +808,7 @@ function GuideCard({
 }) {
   const plan = usePlan();
   const wallet = useWallet();
+  const { isInsideJourney } = useJourneyEnvironment();
   const Icon = guide.icon;
   const styles = CATEGORY_STYLES[guide.category];
   const { isInQuickAccess } = useQuickAccess();
@@ -794,7 +818,11 @@ function GuideCard({
   const catalogItem = getGuideCatalogItem(guide.id);
   const walletUnlocked =
     !!catalogItem && wallet.isUnlocked(catalogItem.resourceId, catalogItem.resourceType);
-  const featureLocked = planLocked && !walletUnlocked;
+  // ORIGINAL: const featureLocked = planLocked && !walletUnlocked;
+  // Standalone catalog guides: credits/legacy add-on only — plan tier never
+  // unlocks them outside a journey. Inside a journey, plan entitlement rules.
+  const featureLocked =
+    catalogItem && !isInsideJourney ? !walletUnlocked : planLocked && !walletUnlocked;
 
   const showDualCta = !!catalogItem && featureLocked && !guide.disabled;
 
@@ -931,16 +959,33 @@ function GuideCard({
       <div className="border-border relative z-10 -mt-6 flex flex-col border-t pt-2">
         {showDualCta && catalogItem ? (
           <>
-            <div className="mb-2 flex items-center gap-1.5 text-xs font-bold text-[#0d7377] dark:text-[#32e0c4]">
-              <Coins size={13} aria-hidden="true" /> Cost: {catalogItem.credits} Credits
+            <div className="mb-2.5 flex items-center justify-between gap-2 text-sm font-bold text-[#0d7377] dark:text-[#32e0c4]">
+              <div className="flex min-w-0 items-center gap-2">
+                <CreditTypeIcon kind="tools" size={22} />
+                <span>{catalogItem.credits}</span>
+              </div>
+            
+              <CreditInfoTooltip
+                message="Unlock once: pay these credits one time, then use this guide as much as you like."
+                side="top"
+              />
             </div>
+            {/* Preview CTA removed from My Resources — now links to the resource
+                detail page (preview moved to /resources/[slug]). ORIGINAL:
+                <Link href={withPreviewMode(guide.href)} ...>Preview Guide</Link>
+                (kept for guides without a detail page, e.g. polio — no legacyAddonId yet)
+            */}
             <div className="flex items-center gap-2.5">
               <Link
-                href={withPreviewMode(guide.href)}
+                href={
+                  catalogItem.legacyAddonId
+                    ? `/resources/${catalogItem.legacyAddonId}`
+                    : withPreviewMode(guide.href)
+                }
                 onClick={(e) => e.stopPropagation()}
                 className="flex-1 rounded-xl border-[1.5px] border-slate-200 bg-white px-3 py-2.5 text-center text-sm font-bold text-slate-700 transition-colors hover:border-[#0d7377]/50 hover:text-[#0d7377]"
               >
-                Preview Guide
+                {catalogItem.legacyAddonId ? "View Details" : "Preview Guide"}
               </Link>
               <button
                 type="button"
@@ -950,10 +995,12 @@ function GuideCard({
                 Launch Guide ({catalogItem.credits} Credits)
               </button>
             </div>
-            <p className="mt-2 text-[11px] leading-snug font-medium text-slate-400">
-              Preview is free. Launching permanently unlocks the full guide with your wallet
-              credits.
-            </p>
+            {/* Caption referenced the old Preview CTA — moved to detail page. ORIGINAL:
+                <p className="mt-2 text-[11px] leading-snug font-medium text-slate-400">
+                  Preview is free. Launching permanently unlocks the full guide with your wallet
+                  credits.
+                </p>
+            */}
           </>
         ) : (
           <div className="flex items-center justify-between">
