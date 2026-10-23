@@ -146,6 +146,11 @@ const CART_STORAGE_KEY = "rahvana_pricing_cart_addons";
 
 type ResourceTabInfo = { label: string; sub: string; heading: string; blurb: string };
 
+// Product decision: the pricing page now shows Journey Plans only. The Tools /
+// Guides / Services tabs (and their deep-links) are hidden — set back to true to
+// bring the individual-resource purchase tabs back. Relevant code is kept, gated.
+const SHOW_INDIVIDUAL_RESOURCE_TABS = false;
+
 const RESOURCE_TABS: Record<ResourceMode, ResourceTabInfo> = {
   tools: {
     label: "Tools",
@@ -1292,13 +1297,14 @@ function PricingContent() {
     const visaCat = searchParams.get("visa");
     const modeParam = searchParams.get("mode");
     if (
-      modeParam === "plans" ||
-      modeParam === "tools" ||
-      modeParam === "services" ||
-      modeParam === "guides"
+      (modeParam === "plans" ||
+        modeParam === "tools" ||
+        modeParam === "services" ||
+        modeParam === "guides") &&
+      (SHOW_INDIVIDUAL_RESOURCE_TABS || modeParam === "plans")
     ) {
       setMode(modeParam);
-    } else if (modeParam === "resources") {
+    } else if (modeParam === "resources" && SHOW_INDIVIDUAL_RESOURCE_TABS) {
       // Legacy alias — route to the tab that owns the first deep-linked add-on.
       const firstAddon = addons?.split(",").filter(Boolean)[0];
       const found = firstAddon ? ADDONS.find((a) => a.id === firstAddon) : undefined;
@@ -1630,21 +1636,23 @@ function PricingContent() {
                 label: "Journey Plans",
                 sub: "Full roadmap guidance",
               },
-              {
-                id: "tools" as const,
-                label: RESOURCE_TABS.tools.label,
-                sub: RESOURCE_TABS.tools.sub,
-              },
-              {
-                id: "guides" as const,
-                label: RESOURCE_TABS.guides.label,
-                sub: RESOURCE_TABS.guides.sub,
-              },
-              {
-                id: "services" as const,
-                label: RESOURCE_TABS.services.label,
-                sub: RESOURCE_TABS.services.sub,
-              },
+              // Individual-resource tabs hidden (Journey Plans only) per product
+              // decision. Toggle SHOW_INDIVIDUAL_RESOURCE_TABS to restore.
+              // {
+              //   id: "tools" as const,
+              //   label: RESOURCE_TABS.tools.label,
+              //   sub: RESOURCE_TABS.tools.sub,
+              // },
+              // {
+              //   id: "guides" as const,
+              //   label: RESOURCE_TABS.guides.label,
+              //   sub: RESOURCE_TABS.guides.sub,
+              // },
+              // {
+              //   id: "services" as const,
+              //   label: RESOURCE_TABS.services.label,
+              //   sub: RESOURCE_TABS.services.sub,
+              // },
             ] as const
           ).map(({ id, label, sub }) => (
             <button
@@ -1915,8 +1923,8 @@ function PricingContent() {
                     {isUpgradingIr5 &&
                       activeUpgradeCandidate &&
                       upgradableCategoryCandidates.length > 1 && (
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          <span className="text-muted-foreground text-[11.5px] font-medium shrink-0">
+                        <div className="flex shrink-0 items-center gap-1.5">
+                          <span className="text-muted-foreground shrink-0 text-[11.5px] font-medium">
                             Beneficiary:
                           </span>
                           <CustomDropdown
@@ -2977,7 +2985,7 @@ function PricingContent() {
       {/* ═══════════════════════════════════════════════════════════════════════
           INDIVIDUAL RESOURCES MODE — Tools / Services / Guides tabs
           ═══════════════════════════════════════════════════════════════════════ */}
-      {mode !== "plans" && (
+      {SHOW_INDIVIDUAL_RESOURCE_TABS && mode !== "plans" && (
         <div className="animate-in fade-in duration-300">
           <section className={`${W} pt-7 pb-5`}>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -3092,7 +3100,6 @@ function PricingContent() {
           setPurchaseStep("browse");
         }}
       />
-
     </div>
   );
 }

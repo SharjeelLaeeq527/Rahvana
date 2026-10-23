@@ -9,6 +9,7 @@ import {
 import { useWallet } from "@/app/context/WalletContext";
 import { usePlan } from "@/app/context/PlanContext";
 import { useAuth } from "@/app/context/AuthContext";
+import { useJourneyEnvironment } from "@/app/context/JourneyEnvironmentContext";
 import {
   resolveStandaloneAccess,
   type StandaloneAccessStatus,
@@ -42,9 +43,14 @@ export function useStandaloneAccess(
   const wallet = useWallet();
   const plan = usePlan();
   const { isAuthenticated } = useAuth();
+  const { isInsideJourney } = useJourneyEnvironment();
 
   const walletUnlocked = !!catalogItem && wallet.isUnlocked(resourceId, resourceType);
-  const planAllowed = plan.canUse(feature);
+  // Standalone catalog resources are pay-with-credits only: the plan tier never
+  // unlocks them outside a journey (legacy add-on purchases still count, they
+  // surface through walletUnlocked). Inside a journey the plan entitlement
+  // remains the source of truth, exactly as before.
+  const planAllowed = isInsideJourney && plan.canUse(feature);
 
   return {
     status: resolveStandaloneAccess({
