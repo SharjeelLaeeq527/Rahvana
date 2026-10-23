@@ -1,38 +1,39 @@
+
 {
-  "month": "2026-10",
+  "month": "2026-11",
   "finalActionDates": {
     "family": {
       "F1": {
-        "All": "22JAN20",
-        "China": "22JAN20",
-        "India": "22JAN20",
-        "Mexico": "08SEP08",
+        "All": "22JAN21",
+        "China": "22JAN21",
+        "India": "22JAN21",
+        "Mexico": "22SEP08",
         "Philippines": "01NOV13"
       },
       "F2A": {
-        "All": "22SEP26",
-        "China": "22SEP26",
-        "India": "22SEP26",
-        "Mexico": "22MAR26",
-        "Philippines": "22SEP26"
+        "All": "22OCT26",
+        "China": "22OCT26",
+        "India": "22OCT26",
+        "Mexico": "22APR26",
+        "Philippines": "22OCT26"
       },
       "F2B": {
-        "All": "22AUG19",
-        "China": "22AUG19",
-        "India": "22AUG19",
+        "All": "22AUG20",
+        "China": "22AUG20",
+        "India": "22AUG20",
         "Mexico": "15MAY10",
         "Philippines": "01OCT13"
       },
       "F3": {
-        "All": "22OCT14",
-        "China": "22OCT14",
-        "India": "22OCT14",
-        "Mexico": "01JUL01",
+        "All": "22OCT15",
+        "China": "22OCT15",
+        "India": "22OCT15",
+        "Mexico": "15JUL01",
         "Philippines": "22JUL06"
       },
       "F4": {
-        "All": "22OCT11",
-        "China": "22OCT11",
+        "All": "22OCT12",
+        "China": "22OCT12",
         "India": "15DEC06",
         "Mexico": "22APR01",
         "Philippines": "15MAY08"
@@ -41,30 +42,30 @@
     "employment": {
       "EB-1": {
         "All": "C",
-        "China": "01JUL23",
+        "China": "01AUG23",
         "India": "01FEB23",
         "Mexico": "C",
         "Philippines": "C"
       },
       "EB-2": {
-        "All": "01JAN25",
+        "All": "01APR25",
         "China": "01OCT21",
         "India": "01NOV13",
-        "Mexico": "01JAN25",
-        "Philippines": "01JAN25"
+        "Mexico": "01APR25",
+        "Philippines": "01APR25"
       },
       "EB-3": {
-        "All": "15MAY24",
-        "China": "08JAN22",
-        "India": "01JAN14",
-        "Mexico": "15MAY24",
+        "All": "15JUN24",
+        "China": "22JAN22",
+        "India": "22JAN14",
+        "Mexico": "15JUN24",
         "Philippines": "15AUG23"
       },
       "EB-3 Other Workers": {
-        "All": "01JAN22",
+        "All": "01JUN22",
         "China": "01OCT19",
-        "India": "01JAN14",
-        "Mexico": "01JAN22",
+        "India": "22JAN14",
+        "Mexico": "01JUN22",
         "Philippines": "01JAN22"
       },
       "EB-4": {
@@ -114,9 +115,9 @@
   "datesForFiling": {
     "family": {
       "F1": {
-        "All": "01FEB20",
-        "China": "01FEB20",
-        "India": "01FEB20",
+        "All": "01FEB21",
+        "China": "01FEB21",
+        "India": "01FEB21",
         "Mexico": "01DEC08",
         "Philippines": "22APR15"
       },
@@ -128,22 +129,22 @@
         "Philippines": "C"
       },
       "F2B": {
-        "All": "01SEP19",
-        "China": "01SEP19",
-        "India": "01SEP19",
+        "All": "01SEP20",
+        "China": "01SEP20",
+        "India": "01SEP20",
         "Mexico": "22MAR11",
         "Philippines": "01OCT14"
       },
       "F3": {
-        "All": "01NOV14",
-        "China": "01NOV14",
-        "India": "01NOV14",
+        "All": "01NOV15",
+        "China": "01NOV15",
+        "India": "01NOV15",
         "Mexico": "01DEC02",
         "Philippines": "22OCT06"
       },
       "F4": {
-        "All": "01NOV11",
-        "China": "01NOV11",
+        "All": "01NOV12",
+        "China": "01NOV12",
         "India": "01FEB07",
         "Mexico": "30APR01",
         "Philippines": "22MAR09"
@@ -172,10 +173,10 @@
         "Philippines": "01JAN24"
       },
       "EB-3 Other Workers": {
-        "All": "01JUN22",
+        "All": "01JUL22",
         "China": "01OCT20",
         "India": "15JAN15",
-        "Mexico": "01JUN22",
+        "Mexico": "01JUL22",
         "Philippines": "01JUN22"
       },
       "EB-4": {
