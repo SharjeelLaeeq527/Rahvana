@@ -128,19 +128,22 @@ const RESOURCE_TABS: Record<ResourceMode, ResourceTabInfo> = {
     label: "Tools",
     sub: "Self-serve tools",
     heading: "Individual tools",
-    blurb: "Self-serve tools you can use without a journey plan. Unlock each one once with credits.",
+    blurb:
+      "Self-serve tools you can use without a journey plan. Unlock each one once with credits.",
   },
   services: {
     label: "Services",
     sub: "Expert help",
     heading: "Expert services",
-    blurb: "Human-delivered help when you want a specialist on your case. Paid with credits per request.",
+    blurb:
+      "Human-delivered help when you want a specialist on your case. Paid with credits per request.",
   },
   guides: {
     label: "Guides",
     sub: "Step-by-step guides",
     heading: "Document guides",
-    blurb: "Country-specific, step-by-step guides for each required document. Unlock each one once with credits.",
+    blurb:
+      "Country-specific, step-by-step guides for each required document. Unlock each one once with credits.",
   },
 };
 
@@ -704,7 +707,6 @@ function PricingContent() {
   const [isManualCheckoutLoading, setIsManualCheckoutLoading] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
-
   const [mode, setMode] = useState<"plans" | ResourceMode>("plans");
   const [purchaseStep, setPurchaseStep] = useState<"browse" | "review">("browse");
   const [summaryInfoOpen, setSummaryInfoOpen] = useState(false);
@@ -774,9 +776,7 @@ function PricingContent() {
     const ir5DbJourneys = (userJourneys || []).filter((j) => {
       const raw = String(j.journey_type || "").toLowerCase();
       return (
-        raw.includes("ir5") ||
-        raw.includes("ir-5") ||
-        (raw.startsWith("ir") && raw.includes("5"))
+        raw.includes("ir5") || raw.includes("ir-5") || (raw.startsWith("ir") && raw.includes("5"))
       );
     });
 
@@ -862,8 +862,7 @@ function PricingContent() {
       const altKey = jKey.includes("-") ? jKey.replace(/-/g, "_") : jKey.replace(/_/g, "-");
 
       const foundTier = journeyTiers[jKey] || journeyTiers[cleanKey] || journeyTiers[altKey];
-      if (foundTier && foundTier !== "free")
-        return foundTier.toLowerCase();
+      if (foundTier && foundTier !== "free") return foundTier.toLowerCase();
 
       if (c.isPrimary && journeyTiers.ir5 && journeyTiers.ir5 !== "free")
         return journeyTiers.ir5.toLowerCase();
@@ -883,6 +882,7 @@ function PricingContent() {
   const beneficiaryUpgradeOptions: DropdownOption[] = useMemo(() => {
     return upgradableCategoryCandidates.map((cand) => {
       const tier = getCandidateEffectiveTier(cand);
+      const isExecutive = tier === "executive";
       const name = getCandidateDisplayName(cand);
       const initial = (
         cand.relation && cand.relation !== "Other"
@@ -914,7 +914,9 @@ function PricingContent() {
 
       const avatar = (
         <span
-          className={`flex h-5 w-5 shrink-0 items-center justify-center overflow-hidden rounded-full bg-linear-to-br ${avatarBg} text-[10px] font-bold shadow-xs`}
+          className={`flex h-5 w-5 shrink-0 items-center justify-center overflow-hidden rounded-full bg-linear-to-br ${avatarBg} text-[10px] font-bold shadow-xs ${
+            isExecutive ? "opacity-60 saturate-50" : ""
+          }`}
         >
           {cand.avatarUrl ? (
             <img
@@ -930,30 +932,44 @@ function PricingContent() {
 
       const rightBadge =
         tier && tier !== "free" ? (
-          <JourneyPlanBadge
-            tier={tier}
-            iconOnly={true}
-            className="!h-5 !w-5 shrink-0 [&>img]:!h-3 [&>img]:!w-3"
-          />
+          <div className="flex shrink-0 items-center gap-1.5">
+            {isExecutive && (
+              <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold text-amber-800 dark:bg-amber-900/60 dark:text-amber-200">
+                Max Plan
+              </span>
+            )}
+            <JourneyPlanBadge
+              tier={tier}
+              iconOnly={true}
+              className="!h-5 !w-5 shrink-0 [&>img]:!h-3 [&>img]:!w-3"
+            />
+          </div>
         ) : null;
+
+      const disabledReason = isExecutive
+        ? `${name} is currently on the Executive plan (highest plan) and cannot be upgraded.`
+        : undefined;
 
       return {
         value: cand.id,
         label: name,
         icon: avatar,
         rightElement: rightBadge,
+        disabled: isExecutive,
+        disabledReason,
+        // subLabel: isExecutive ? "Executive plan (highest tier) · Cannot be upgraded" : undefined,
       };
     });
   }, [upgradableCategoryCandidates, getCandidateEffectiveTier, getCandidateDisplayName]);
 
   const [selectedUpgradeCandidateId, setSelectedUpgradeCandidateId] = useState<string | null>(null);
 
-  // Active upgrade candidate selection — ONLY picks among candidates with paid plans
+  // Active upgrade candidate selection — ONLY picks among candidates with paid plans that can be upgraded
   const activeUpgradeCandidate = useMemo(() => {
     if (upgradableCategoryCandidates.length === 0) return null;
     if (selectedUpgradeCandidateId) {
       const found = upgradableCategoryCandidates.find((c) => c.id === selectedUpgradeCandidateId);
-      if (found) return found;
+      if (found && getCandidateEffectiveTier(found) !== "executive") return found;
     }
     // Prefer first upgradable candidate (not executive)
     const upgradable = upgradableCategoryCandidates.find((c) => {
@@ -961,9 +977,10 @@ function PricingContent() {
       return t !== "executive";
     });
     if (upgradable) return upgradable;
-    // Fall back to active candidate from context if in upgradable list
+    // Fall back to active candidate from context if in upgradable list and not executive
     const activeFromCtx = upgradableCategoryCandidates.find((c) => c.id === activeCandidate?.id);
-    if (activeFromCtx) return activeFromCtx;
+    if (activeFromCtx && getCandidateEffectiveTier(activeFromCtx) !== "executive")
+      return activeFromCtx;
     return upgradableCategoryCandidates[0];
   }, [
     upgradableCategoryCandidates,
@@ -1103,7 +1120,10 @@ function PricingContent() {
       if (activeUpgradeCandidate.createdAt) {
         return activeUpgradeCandidate.createdAt;
       }
-      const candKey = getCandidateJourneyKey(canonicalVisa, activeUpgradeCandidate.id).toLowerCase();
+      const candKey = getCandidateJourneyKey(
+        canonicalVisa,
+        activeUpgradeCandidate.id
+      ).toLowerCase();
       const cleanKey = candKey.replace(/[-_]/g, "");
       if (journeyStartDates[candKey]) return journeyStartDates[candKey];
       if (journeyStartDates[cleanKey]) return journeyStartDates[cleanKey];
@@ -1214,8 +1234,12 @@ function PricingContent() {
               : isAddingCandidate || (isIr5 && hasActiveIr5 && ir5Action === "add_candidate")
                 ? "add_candidate"
                 : undefined,
-            upgradeTotal: currentPlanUpgradeDiff ? currentPlanUpgradeDiff.totalNewCommitment : undefined,
-            newMonthlyPrice: currentPlanUpgradeDiff ? currentPlanUpgradeDiff.newMonthlyRate : undefined,
+            upgradeTotal: currentPlanUpgradeDiff
+              ? currentPlanUpgradeDiff.totalNewCommitment
+              : undefined,
+            newMonthlyPrice: currentPlanUpgradeDiff
+              ? currentPlanUpgradeDiff.newMonthlyRate
+              : undefined,
           }),
         });
         const data = await res.json();
@@ -1402,7 +1426,9 @@ function PricingContent() {
 
         // Fallback for base keys if only candidate journeys exist
         if (!tiersMap["ir5"]) {
-          const firstIr5Key = Object.keys(tiersMap).find((k) => k.includes("5") && tiersMap[k] !== "free");
+          const firstIr5Key = Object.keys(tiersMap).find(
+            (k) => k.includes("5") && tiersMap[k] !== "free"
+          );
           if (firstIr5Key) {
             tiersMap["ir5"] = tiersMap[firstIr5Key];
             if (datesMap[firstIr5Key]) datesMap["ir5"] = datesMap[firstIr5Key];
@@ -1413,7 +1439,9 @@ function PricingContent() {
         setJourneyStartDates(datesMap);
 
         // Auto-select IR-5 if user has active IR-5 journey and no active IR-1 or explicit URL parameter
-        const hasActiveIr5InJourneys = Object.keys(tiersMap).some((k) => k.includes("5") && tiersMap[k] !== "free");
+        const hasActiveIr5InJourneys = Object.keys(tiersMap).some(
+          (k) => k.includes("5") && tiersMap[k] !== "free"
+        );
         const hasActiveIr1InJourneys = Boolean(tiersMap.ir1 && tiersMap.ir1 !== "free");
         if (hasActiveIr5InJourneys && !hasActiveIr1InJourneys && typeof window !== "undefined") {
           const explicitVisaParam = new URLSearchParams(window.location.search).get("visa");
@@ -2659,14 +2687,20 @@ function PricingContent() {
                           </div>
                           <div className="text-muted-foreground text-[12px]">
                             {currentPlanUpgradeDiff ? (
-                              <div>
-                                a month ·{" "}
-                                <span className="font-semibold text-emerald-700 dark:text-emerald-400">
-                                  ${currentPlanUpgradeDiff.totalNewCommitment} for 12 months
-                                </span>
-                                <span className="text-muted-foreground/60 ml-1.5 line-through">
-                                  ${currentPlanData.annualPrice}
-                                </span>
+                              <div className="flex flex-col items-end gap-0.5">
+                                <div>
+                                  /mo ·{" "}
+                                  <span className="font-semibold text-emerald-700 dark:text-emerald-400">
+                                    ${currentPlanUpgradeDiff.totalNewCommitment} total (12 mos)
+                                  </span>
+                                  <span className="text-muted-foreground/60 ml-1.5 line-through">
+                                    ${currentPlanData.annualPrice}
+                                  </span>
+                                </div>
+                                <div className="text-muted-foreground text-[10.5px]">
+                                  ${currentPlanUpgradeDiff.targetPlanAnnual} new plan − $
+                                  {currentPlanUpgradeDiff.paidSoFarAmount} paid till now
+                                </div>
                               </div>
                             ) : (
                               <>
@@ -2730,7 +2764,9 @@ function PricingContent() {
                 {/* Single resources are paid with credits on their own pages. */}
                 <div className="border-border bg-muted/30 rounded-[18px] border border-dashed p-5">
                   <div className={eyebrow}>Need just one thing?</div>
-                  <h2 className="m-0 mb-1 text-[18px] font-bold">Single tools, guides and services</h2>
+                  <h2 className="m-0 mb-1 text-[18px] font-bold">
+                    Single tools, guides and services
+                  </h2>
                   <p className="text-muted-foreground mb-4 text-[13.5px]">
                     You can also buy these one at a time, without a journey plan. Tools and guides
                     unlock once with Rahvana credits, and services are paid with credits each time
@@ -2738,9 +2774,9 @@ function PricingContent() {
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {[
-                      { href: "/tools", label: "Browse tools" },
-                      { href: "/guides", label: "Browse guides" },
-                      { href: "/services", label: "Browse services" },
+                      { href: "/resources?tab=toolbox", label: "Browse tools" },
+                      { href: "/resources?tab=guides", label: "Browse guides" },
+                      { href: "/resources?tab=services", label: "Browse services" },
                     ].map((link) => (
                       <Link
                         key={link.href}
@@ -2821,9 +2857,9 @@ function PricingContent() {
                 {/* Simplified 12-month upgrade breakdown */}
                 {currentPlanUpgradeDiff && (
                   <div className="border-border space-y-1.5 border-b border-dashed py-2.5 text-[12px]">
-                    <div className="flex justify-between text-muted-foreground">
-                      <span>{currentPlanData.name} price for 12 months</span>
-                      <span className="font-medium text-foreground">
+                    <div className="text-muted-foreground flex justify-between">
+                      <span>{currentPlanData.name} Yearly Total</span>
+                      <span className="text-foreground font-medium">
                         ${currentPlanUpgradeDiff.targetPlanAnnual}
                       </span>
                     </div>
@@ -2833,10 +2869,12 @@ function PricingContent() {
                         {currentPlanUpgradeDiff.monthsElapsed === 1 ? "month" : "months"} on{" "}
                         <span className="capitalize">{selectedJourneyTier}</span>)
                       </span>
-                      <span className="font-medium">-${currentPlanUpgradeDiff.paidSoFarAmount}</span>
+                      <span className="font-medium">
+                        -${currentPlanUpgradeDiff.paidSoFarAmount}
+                      </span>
                     </div>
-                    <div className="border-border/40 flex justify-between border-t pt-1 font-semibold text-foreground">
-                      <span>New total for 12 months</span>
+                    <div className="border-border/40 text-foreground flex justify-between border-t pt-1 font-semibold">
+                      <span>New 12-Month Total</span>
                       <span>${currentPlanUpgradeDiff.totalNewCommitment}</span>
                     </div>
                   </div>
@@ -2867,13 +2905,51 @@ function PricingContent() {
                 )} */}
 
                 <div className="border-border mt-4 flex items-end justify-between border-t pt-4">
-                  <span className="text-muted-foreground text-[12px]">Total commitment</span>
-                  <span className="text-primary text-[28px] leading-none font-bold tracking-tight">
-                    ${summaryTotal}
-                  </span>
+                  <div className="flex flex-col">
+                    <span className="text-muted-foreground text-[12px]">Total commitment</span>
+                    {currentPlanUpgradeDiff && (
+                      <span className="text-[11px] font-medium text-emerald-700 dark:text-emerald-400">
+                        Fresh 12-month schedule
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <span className="text-primary text-[28px] leading-none font-bold tracking-tight">
+                      ${summaryTotal}
+                    </span>
+                    {currentPlanUpgradeDiff && (
+                      <div className="text-muted-foreground mt-0.5 text-[11px]">
+                        (${planDisplayPrice(currentPlanData)}/mo × 12 mos)
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                <div className="mt-4">{checkoutBtn}</div>
+                <p className="text-muted-foreground bg-muted/40 border-border mt-3 mb-4 rounded-[12px] border border-dashed p-3 text-[11px] leading-relaxed">
+                  {currentPlanUpgradeDiff ? (
+                    <>
+                      Starting today, your plan resets to a fresh 12-month schedule at{" "}
+                      <strong className="text-foreground">
+                        ${planDisplayPrice(currentPlanData)}/mo
+                      </strong>
+                      . Total commitment is{" "}
+                      <strong className="text-foreground">
+                        ${currentPlanUpgradeDiff.totalNewCommitment}
+                      </strong>{" "}
+                      (${currentPlanUpgradeDiff.targetPlanAnnual} new plan yearly − $
+                      {currentPlanUpgradeDiff.paidSoFarAmount} paid till now). Replaces your current{" "}
+                      <strong className="capitalize">{selectedJourneyTier}</strong> plan.
+                    </>
+                  ) : (
+                    <>
+                      Billed monthly at $
+                      {currentPlanData.id !== "free" ? planDisplayPrice(currentPlanData) : 0}
+                      /mo. Government fees excluded.
+                    </>
+                  )}
+                </p>
+
+                {checkoutBtn}
               </aside>
             </div>
 
