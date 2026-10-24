@@ -10,21 +10,23 @@ export default function ResourceLaunchButton({
   size = "detail",
   className = "",
   kind = "tools",
+  label: labelOverride,
 }: {
   href: string;
   className?: string;
   size?: "detail" | "card";
   kind?: "tools" | "guides" | "services";
+  /** Force the button text (e.g. the resource detail page always says "Explore …"). */
+  label?: string;
 }) {
   const router = useRouter();
   const plan = usePlan();
   const noun = kind === "guides" ? "Guide" : kind === "services" ? "Service" : "Tool";
-  const label = `${plan.tier === "free" ? "Explore" : "Launch"} ${noun}`;
+  // ORIGINAL tier-dependent label kept as default when no override is passed:
+  // const label = `${plan.tier === "free" ? "Explore" : "Launch"} ${noun}`;
+  const label = labelOverride ?? `${plan.tier === "free" ? "Explore" : "Launch"} ${noun}`;
 
-  const sizeClasses =
-    size === "card"
-      ? "px-3.5 py-1.5 text-[12px]"
-      : "px-7 py-3.5 text-[15px]";
+  const sizeClasses = size === "card" ? "px-3.5 py-1.5 text-[12px]" : "px-7 py-3.5 text-[15px]";
 
   return (
     <button
@@ -34,7 +36,7 @@ export default function ResourceLaunchButton({
         e.stopPropagation();
         router.push(href);
       }}
-      className={`inline-flex items-center justify-center rounded-full border border-[#0d7377] bg-white font-semibold text-[#0d7377] transition-all duration-200 hover:bg-[#0d7377] hover:text-white hover:shadow-lg hover:shadow-[#0d7377]/20 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-[#0d7377]/20 disabled:cursor-not-allowed disabled:opacity-50 ${sizeClasses} ${className}`}
+      className={`inline-flex items-center justify-center rounded-full border border-[#0d7377] bg-white font-semibold text-[#0d7377] transition-all duration-200 hover:bg-[#0d7377] hover:text-white hover:shadow-lg hover:shadow-[#0d7377]/20 focus:ring-2 focus:ring-[#0d7377]/20 focus:outline-none active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 ${sizeClasses} ${className}`}
     >
       {label}
       <ArrowRight className={`${size === "card" ? "ml-1.5 h-3.5 w-3.5" : "ml-2 h-4 w-4"}`} />

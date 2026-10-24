@@ -8,14 +8,7 @@ import WizardInfoPanel, { InfoPanelData } from "../../../components/guides/Wizar
 import { NarrativeModal } from "../../(visa)/221g-action-planner/components/NarrativeModal";
 import { type WizardState, WizardStepId } from "@/types/guide-wizard";
 import guideData from "@/data/adoption-guide-data.json";
-import {
-  ArrowLeft,
-  ArrowRight,
-  Check,
-  AlertTriangle,
-  Info,
-  CheckCircle2,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, AlertTriangle, Info, CheckCircle2 } from "lucide-react";
 import { Loader } from "@/components/ui/spinner";
 
 import FeedbackButton from "@/app/components/FeedbackButton";
@@ -51,7 +44,7 @@ const AdoptionGuidePage = () => {
   const { isUrdu } = useLanguage();
   const [currentStep, setCurrentStep] = useState(0);
   const [highestReachedStep, setHighestReachedStep] = useState(0);
-  const [showWhatsThis, setShowWhatsThis] = useState(true);
+  const [showWhatsThis, setShowWhatsThis] = useState(false);
   const [dontShowAgain, setDontShowAgain] = useState(
     typeof window !== "undefined" && localStorage.getItem("dont_show_adoption_welcome") === "true"
   );
@@ -343,13 +336,13 @@ const AdoptionGuidePage = () => {
 
             {/* Question 2 */}
             <div className="rounded-2xl border border-slate-100 bg-slate-50/50 p-6">
-            <h3 className="mb-4 flex items-start gap-2 text-base font-bold text-slate-800">
+              <h3 className="mb-4 flex items-start gap-2 text-base font-bold text-slate-800">
                 <span className="mt-0.5 flex h-6 min-h-6 w-6 min-w-6 shrink-0 items-center justify-center rounded-full bg-teal-500 text-xs leading-none font-bold text-white">
                   2
                 </span>
 
                 <span className="flex-1 leading-6">
-                How old was the child when this legal relationship was established?
+                  How old was the child when this legal relationship was established?
                 </span>
               </h3>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -386,13 +379,13 @@ const AdoptionGuidePage = () => {
 
             {/* Question 3 */}
             <div className="rounded-2xl border border-slate-100 bg-slate-50/50 p-6">
-            <h3 className="mb-4 flex items-start gap-2 text-base font-bold text-slate-800">
+              <h3 className="mb-4 flex items-start gap-2 text-base font-bold text-slate-800">
                 <span className="mt-0.5 flex h-6 min-h-6 w-6 min-w-6 shrink-0 items-center justify-center rounded-full bg-teal-500 text-xs leading-none font-bold text-white">
                   3
                 </span>
 
                 <span className="flex-1 leading-6">
-                Have the 2-year legal custody and 2-year co-residence rules been met?
+                  Have the 2-year legal custody and 2-year co-residence rules been met?
                 </span>
               </h3>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -598,8 +591,8 @@ const AdoptionGuidePage = () => {
               <Info className="mt-0.5 h-5 w-5 shrink-0 text-teal-600" />
               <p className="text-xs leading-relaxed text-teal-900">
                 <strong>CRITICAL RULE:</strong> Do not translate the documents yourself. Even if you
-                are bilingual, USCIS requires a third-party certifier to confirm the translation&apos;s
-                completeness and accuracy.
+                are bilingual, USCIS requires a third-party certifier to confirm the
+                translation&apos;s completeness and accuracy.
               </p>
             </div>
 
@@ -629,8 +622,9 @@ const AdoptionGuidePage = () => {
                     Translator Certification Statement
                   </h4>
                   <p className="text-xs leading-normal text-slate-500">
-                    A signed statement stating: &quot;I certify that I am competent to translate from
-                    [Language] into English, and that the translation is complete and accurate.&quot;
+                    A signed statement stating: &quot;I certify that I am competent to translate
+                    from [Language] into English, and that the translation is complete and
+                    accurate.&quot;
                   </p>
                 </div>
               </div>

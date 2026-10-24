@@ -1,12 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { ToolModeProps } from "@/types/tool-mode";
 import { useResolveToolMode } from "@/lib/hooks/useResolveToolMode";
-import { usePlan, normalizePlanTier } from "@/app/context/PlanContext";
+import { normalizePlanTier } from "@/app/context/PlanContext";
 import type { PlanTier } from "@/lib/entitlements/config";
-import { isUnlimited } from "@/lib/entitlements/config";
-import { useFeatureAccess } from "@/lib/usage/useFeatureAccess";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { IR5_ENABLED } from "@/lib/feature-flags";
@@ -18,11 +16,13 @@ import { useAuth } from "@/app/context/AuthContext";
 import { useCandidate } from "@/app/context/CandidateContext";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { useUserProfile } from "@/app/context/UserProfileContext";
+import { useWallet } from "@/app/context/WalletContext";
+import { serviceBookingErrorMessage } from "@/lib/wallet/client";
 import { mapProfileToGenericForm, mapFormToProfile } from "@/lib/autoFill/mapper";
 import MedicalAppointmentCard, {
   type MedicalAppointmentRow,
 } from "@/components/services/MedicalAppointmentCard";
-import { Crown, CreditCard, ShoppingBag, Sparkles, X } from "lucide-react";
+import { Crown, CreditCard, ShoppingBag, Sparkles, X, Coins } from "lucide-react";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 import { PhoneInput } from "@/components/ui/phone-input";
@@ -1930,26 +1930,13 @@ const ReviewStep = ({
     </div>
   );
 };
-
 interface CheckoutStepProps {
   formData: FormData;
   error: string | null;
   loading: boolean;
-  tier: string;
-  isAMC: boolean;
-  isIOM: boolean;
-  onBack: () => void;
-  onSubmit: (e: React.FormEvent) => void;
-  formatDate: (dateString: string) => string;
-}
-
-interface CheckoutStepProps {
-  formData: FormData;
-  error: string | null;
-  loading: boolean;
-  tier: string;
-  remainingCredits: number | null;
-  creditsLoading: boolean;
+  walletBalance: number | null;
+  walletLoading: boolean;
+  onTopup: (amount: number) => void;
   isAMC: boolean;
   isIOM: boolean;
   onBack: () => void;
@@ -1961,18 +1948,18 @@ const CheckoutStep = ({
   formData,
   error,
   loading,
-  tier,
-  remainingCredits,
-  creditsLoading,
+  walletBalance,
+  walletLoading,
+  onTopup,
   isAMC,
   isIOM,
   onBack,
   onSubmit,
   formatDate,
 }: CheckoutStepProps) => {
-  const { t } = useLanguage();
-  const isExecutive = tier === "executive";
-  const hasCredit = !isExecutive && remainingCredits !== null && remainingCredits > 0;
+  const costCredits = 5;
+  const hasWalletCredits = walletBalance !== null && walletBalance >= costCredits;
+  const deficit = Math.max(costCredits, costCredits - (walletBalance ?? 0));
 
   return (
     <div className="space-y-6">
@@ -2031,8 +2018,7 @@ const CheckoutStep = ({
                 Secure Transaction
               </h5>
               <p className="mt-1 text-xs leading-relaxed text-slate-500">
-                Your details are handled securely. One-time card payments are processed securely via
-                Stripe.
+                Standalone bookings are paid with your Rahvana Wallet credits ($1 = 1 credit). If your balance is short, you can top up instantly via Stripe.
               </p>
             </div>
           </div>
@@ -2050,61 +2036,55 @@ const CheckoutStep = ({
               <div className="space-y-4">
                 <div className="flex items-center justify-between text-sm">
                   <span className="font-medium text-slate-600">1x Medical Exam Booking</span>
-                  <span className="font-bold text-slate-800">$5.00</span>
+                  <span className="font-bold text-slate-800">5 Credits ($5.00)</span>
                 </div>
 
-                {isExecutive && (
-                  <div className="flex items-center justify-between text-sm text-green-600">
-                    <span className="flex items-center gap-1 font-semibold">
-                      <Sparkles className="h-3.5 w-3.5" />
-                      Executive Tier Discount
-                    </span>
-                    <span className="font-bold">-$5.00</span>
-                  </div>
-                )}
-
-                {hasCredit && (
-                  <div className="flex items-center justify-between text-sm text-green-600">
-                    <span className="flex items-center gap-1 font-semibold">
-                      <Sparkles className="h-3.5 w-3.5" />
-                      Appointment Credit
-                    </span>
-                    <span className="font-bold">-$5.00</span>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="font-medium text-slate-600">Wallet Balance</span>
+                  <span className="font-bold text-slate-800">
+                    {walletLoading ? "..." : `${walletBalance ?? 0} Credits`}
+                  </span>
+                </div>
+                {hasWalletCredits && (
+                  <div className="flex items-center justify-between text-sm text-[#0d7377]">
+                    <span className="font-medium">Balance After Booking</span>
+                    <span className="font-bold">{(walletBalance ?? 5) - costCredits} Credits</span>
                   </div>
                 )}
 
                 <div className="mt-2 flex items-center justify-between border-t border-slate-200 pt-4">
                   <span className="text-base font-bold text-slate-900">Total Due</span>
-                  <span className="text-xl font-black text-slate-900">
-                    {isExecutive || hasCredit ? "$0.00" : "$5.00"}
-                  </span>
+                  <span className="text-xl font-black text-slate-900">5 Credits ($5.00)</span>
                 </div>
               </div>
 
-              {isExecutive ? (
-                <div className="mt-5 flex items-center gap-2 rounded-xl border border-amber-100 bg-amber-50 p-3">
-                  <Crown className="h-4 w-4 flex-shrink-0 text-amber-500" />
-                  <span className="text-[11px] font-bold text-amber-800">
-                    Free booking included with Executive plan.
+              {hasWalletCredits ? (
+                <div className="mt-5 flex items-center gap-2 rounded-xl border border-teal-200 bg-teal-50 p-3">
+                  <Coins className="h-4 w-4 flex-shrink-0 text-[#0d7377]" />
+                  <span className="text-[11px] font-bold text-teal-800">
+                    5 credits will be deducted from your Rahvana Wallet upon confirmation.
                   </span>
                 </div>
-              ) : hasCredit ? (
-                <div className="mt-5 flex items-center gap-2 rounded-xl border border-amber-100 bg-amber-50 p-3">
-                  <Crown className="h-4 w-4 flex-shrink-0 text-amber-500" />
-                  <span className="text-[11px] font-bold text-amber-800">
-                    1 of your {remainingCredits} appointment credit
-                    {remainingCredits === 1 ? "" : "s"} will be applied — no payment needed.
-                  </span>
+              ) : (
+                <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-3.5">
+                  <div className="flex items-start gap-2">
+                    <Coins className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-600" />
+                    <div>
+                      <p className="text-xs font-bold text-amber-900">Insufficient Wallet Balance</p>
+                      <p className="mt-0.5 text-[11px] text-amber-700">
+                        You have {walletBalance ?? 0} credits. 5 credits are required to book this appointment.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => onTopup(deficit)}
+                        className="mt-2.5 inline-flex items-center gap-1.5 rounded-lg bg-[#0d7377] px-3 py-1.5 text-xs font-bold text-white hover:bg-[#0a5c5f] transition-colors"
+                      >
+                        <Coins size={12} /> Top up {deficit} Credits (${deficit})
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              ) : !creditsLoading ? (
-                <div className="mt-5 rounded-xl border border-slate-200 bg-slate-100 p-3">
-                  <span className="text-[11px] font-bold text-slate-600">
-                    {remainingCredits === 0
-                      ? "No appointment credits left — a one-time $5 fee applies at secure checkout."
-                      : "A one-time $5 fee applies at secure checkout. Buy the appointment add-on to book free with credits next time."}
-                  </span>
-                </div>
-              ) : null}
+              )}
             </div>
 
             {error && (
@@ -2122,17 +2102,15 @@ const CheckoutStep = ({
                 Back
               </Button>
               <Button
-                onClick={onSubmit}
+                onClick={hasWalletCredits ? onSubmit : () => onTopup(deficit)}
                 disabled={loading}
                 className="bg-teal-600 text-white hover:bg-teal-700"
               >
                 {loading
                   ? "Processing..."
-                  : isExecutive
-                    ? "Confirm Booking (Free)"
-                    : hasCredit
-                      ? "Confirm Booking (Free)"
-                      : "Proceed to Payment ($5)"}
+                  : hasWalletCredits
+                    ? "Pay 5 Credits & Confirm"
+                    : `Top up ${deficit} Credits to Book`}
               </Button>
             </div>
           </div>
@@ -2199,13 +2177,10 @@ export default function MedicalAppointmentTool({
     journeyTier: propJourneyTier,
   });
 
-  const accountPlan = usePlan();
+  // Effective tier — only evaluated for journey mode
   const rawJourneyTier = propJourneyTier ?? journeyTier ?? journeyContext?.subscriptionTier;
-
-  // 2) Effective tier — journey tier when embedded, account tier when standalone.
-  const effectiveTier: PlanTier = normalizePlanTier(isJourney ? rawJourneyTier : accountPlan.tier);
-
-  const { checkAccess, consumeAccess } = useFeatureAccess();
+  const journeyTierEffective: PlanTier | null = isJourney && rawJourneyTier ? normalizePlanTier(rawJourneyTier) : null;
+  void journeyTierEffective;
   const [step, setStep] = useState(1);
   // Journey-only intro gate: the overlay first shows a "what is this service" screen
   // (no topbar progress) and only reveals the booking wizard once the user clicks Start.
@@ -2230,7 +2205,7 @@ export default function MedicalAppointmentTool({
     passportExpiryDate: "",
     caseNumber: "",
     preferredLocation: "",
-    destinationCountry: "",
+    destinationCountry: "United States",
     scannedPassport: null,
     kOneLetter: null,
     appointmentConfirmationLetter: null,
@@ -2252,38 +2227,10 @@ export default function MedicalAppointmentTool({
   const { activeCandidate, activeCandidateId, isMultiCandidate } = useCandidate();
   const { t } = useLanguage();
   const { profile, isProfileLoading, updateProfile } = useUserProfile();
-  const { tier } = usePlan();
-
-  // Purchased appointment-credit balance, surfaced on the checkout step.
-  // null = no credit pool for this user (locked tiers without add-on); Executive is unlimited.
-  const [remainingCredits, setRemainingCredits] = useState<number | null>(null);
-  const [creditsLoading, setCreditsLoading] = useState(true);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadCredits = async () => {
-      if (isUnlimited("medical_booking", tier)) {
-        setRemainingCredits(null);
-        setCreditsLoading(false);
-        return;
-      }
-      setCreditsLoading(true);
-      const access = await checkAccess("medical_booking");
-      if (!isMounted) return;
-      const usage = access.data?.data?.usage;
-      setRemainingCredits(
-        access.allowed && usage?.remaining !== undefined ? usage.remaining : null
-      );
-      setCreditsLoading(false);
-    };
-
-    void loadCredits();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [checkAccess, tier]);
+  const wallet = useWallet();
+  // Standalone draft whose payment failed: a retry pays for this same booking
+  // (never a second one). Cleared once paid or when the user goes back to edit.
+  const pendingDraftRef = useRef<string | null>(null);
 
   const saveProgressToProfile = (currentFormData = formData) => {
     if (!user) return;
@@ -2481,6 +2428,13 @@ export default function MedicalAppointmentTool({
       }
       setError(null);
       if (isIOM) {
+        setFormData((prev) => ({
+          ...prev,
+          destinationCountry: prev.destinationCountry || "United States",
+          preferredLocation: prev.preferredLocation || prev.location || "islamabad",
+          fullName: prev.fullName || `${prev.givenName || ""} ${prev.surname || ""}`.trim(),
+          visaType: prev.visaType || "Immigrant Visa",
+        }));
         setStep(9);
         return;
       }
@@ -2610,19 +2564,46 @@ export default function MedicalAppointmentTool({
 
     if (step === 9) {
       // IOM Info step
+      const fullName =
+        formData.fullName?.trim() ||
+        `${formData.givenName || ""} ${formData.surname || ""}`.trim();
+      const destinationCountry = formData.destinationCountry?.trim() || "United States";
+      const preferredLocation =
+        formData.preferredLocation?.trim() || formData.location?.trim() || "islamabad";
+      const visaType = formData.visaType?.trim() || formData.visaCategory?.trim() || "Immigrant Visa";
+      const contactNumber = formData.contactNumber?.trim() || formData.primaryContact?.trim() || "";
+
       if (
-        !formData.fullName ||
-        !formData.passportNumber ||
-        !formData.dateOfBirth ||
-        !formData.visaType ||
-        !formData.contactNumber ||
-        !formData.email ||
-        !formData.preferredLocation ||
-        !formData.destinationCountry
+        !fullName ||
+        !formData.passportNumber?.trim() ||
+        !formData.dateOfBirth?.trim() ||
+        !visaType ||
+        !contactNumber ||
+        !formData.email?.trim() ||
+        !preferredLocation ||
+        !destinationCountry
       ) {
         setError(t("bookAppointment.validation.reqIomFields"));
         return;
       }
+
+      const nameParts = fullName.split(" ");
+      const givenName = formData.givenName?.trim() || nameParts[0] || fullName;
+      const surname =
+        formData.surname?.trim() || nameParts.slice(1).join(" ") || nameParts[0] || fullName;
+
+      setFormData((prev) => ({
+        ...prev,
+        fullName,
+        givenName,
+        surname,
+        destinationCountry,
+        preferredLocation,
+        visaType,
+        contactNumber,
+        primaryContact: prev.primaryContact || contactNumber,
+      }));
+
       setError(null);
       setStep(7); // Go to review step
       return;
@@ -2635,15 +2616,19 @@ export default function MedicalAppointmentTool({
     setError(null);
 
     try {
-      // ── Entitlement check FIRST (before creating any row) ─────────────
-      const unlimited = isUnlimited("medical_booking", tier);
-      let hasCredit = false;
-      if (!isJourney && !unlimited) {
-        const access = await checkAccess("medical_booking");
-        hasCredit = access.allowed && access.data?.data?.usage?.allowed === true;
+      // Standalone: check the balance before creating anything, so a short balance
+      // leaves no hidden draft (or uploaded passport) behind.
+      if (!isJourney && (wallet.balance === null || wallet.balance < 5)) {
+        const deficit = Math.max(5, 5 - (wallet.balance ?? 0));
+        wallet.openTopup({ amount: deficit });
+        setError(
+          `You need 5 credits for this booking (Balance: ${wallet.balance ?? 0} credits). Please top up to proceed.`
+        );
+        return;
       }
-      const mustPay = !isJourney && !unlimited && !hasCredit;
 
+      let appointmentId = pendingDraftRef.current;
+      if (!appointmentId) {
       // First, submit appointment data to API to get the appointment ID
       const appointmentResponse = await fetch("/api/book-appointment", {
         method: "POST",
@@ -2656,10 +2641,16 @@ export default function MedicalAppointmentTool({
           candidate_name:
             activeCandidate.fullName ||
             activeCandidate.label ||
+            formData.fullName ||
             `${formData.givenName} ${formData.surname}`.trim(),
           // Origin tag: journey-embedded bookings are kept out of standalone My Resources.
           ...(isJourney
-            ? { source: "journey", journey_slug: journeyContext?.journeySlug || null }
+            ? {
+                source: "journey",
+                journey_slug: journeyContext?.journeySlug || null,
+                journey_id: journeyContext?.backendId || null,
+                journey_category: journeyContext?.journeyCategory || null,
+              }
             : { source: "standalone" }),
           // Exclude file objects from the initial request
           scannedPassport: undefined,
@@ -2667,8 +2658,6 @@ export default function MedicalAppointmentTool({
           appointmentConfirmationLetter: undefined,
           // Send applicants data separately to prevent circular references
           applicants: formData.applicants,
-          // Draft flag: hidden until Stripe confirms payment (revealed by webhook)
-          awaitingPayment: mustPay,
         }),
       });
 
@@ -2678,7 +2667,7 @@ export default function MedicalAppointmentTool({
         throw new Error(appointmentResult.error || t("bookAppointment.validation.submitError"));
       }
 
-      const appointmentId = appointmentResult.id;
+      appointmentId = appointmentResult.id as string;
       console.log("Appointment created successfully:", appointmentResult);
 
       // Then upload documents separately if they exist
@@ -2736,11 +2725,13 @@ export default function MedicalAppointmentTool({
           throw new Error(errorText || t("bookAppointment.validation.uploadError"));
         }
       }
+      if (!isJourney) pendingDraftRef.current = appointmentId;
+      }
 
-      // 3) MODE BRANCH at the credit gate (was: the unconditional credit/Stripe block).
+      // 3) MODE BRANCH at the credit gate.
       if (isJourney) {
-        // NO credits, NO Stripe. Access was already gated by StepView (tier guard before opening);
-        // here we simply finalize the request for the journey.
+        // NO credits, NO Stripe. Access was already gated by the journey;
+        // finalize the request for the journey.
         onSave?.({
           referenceId: appointmentId,
           referenceDate: formData.preferredAppointmentDate,
@@ -2752,62 +2743,29 @@ export default function MedicalAppointmentTool({
         return;
       }
 
-      // Must-pay path: row exists as hidden draft. Stripe reveals on payment.
-      if (mustPay) {
-        try {
-          const stripeRes = await fetch("/api/stripe/checkout", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ appointmentId }),
-          });
-          const stripeData = await stripeRes.json();
-          if (!stripeRes.ok) {
-            throw new Error(stripeData.error || "Failed to create checkout session");
-          }
-          if (stripeData.url) {
-            window.location.href = stripeData.url;
-            return;
-          }
-          throw new Error("No checkout URL returned");
-        } catch (stripeErr: unknown) {
-          console.error("Checkout redirection failed:", stripeErr);
-          setError(stripeErr instanceof Error ? stripeErr.message : "Checkout redirection failed");
-          setLoading(false);
-          return;
-        }
+      // Standalone mode: deduct 5 credits for this booking (charged at most once).
+      const deductResult = await wallet.deductServiceBooking(
+        "book-medical-appointment",
+        appointmentId
+      );
+
+      if (deductResult.body.success) {
+        pendingDraftRef.current = null;
+        setStep(10); // success step
+        return;
       }
 
-      // Free path: consume one credit (non-unlimited). Race fallback → Stripe.
-      let usedCredit = false;
-      if (!unlimited) {
-        const reservation = await consumeAccess("medical_booking");
-        if (!reservation.allowed || reservation.data?.allowed === false) {
-          try {
-            const stripeRes = await fetch("/api/stripe/checkout", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ appointmentId }),
-            });
-            const stripeData = await stripeRes.json();
-            if (stripeData.url) {
-              window.location.href = stripeData.url;
-              return;
-            }
-          } catch (fallbackErr) {
-            console.error("Credit fallback checkout failed:", fallbackErr);
-            setError("Could not consume your appointment credit. Please try again.");
-            setLoading(false);
-            return;
-          }
-        }
-        usedCredit = true;
-        if (reservation.data?.remaining !== undefined) {
-          setRemainingCredits(reservation.data.remaining);
-        }
+      if (deductResult.status === 402) {
+        const deficit = deductResult.body.deficit ?? 5;
+        wallet.openTopup({ amount: deductResult.body.topupAmount ?? deficit });
+        setError(
+          `Insufficient credits. Please top up ${deficit} credits to complete your booking.`
+        );
+        return;
       }
-      void usedCredit;
 
-      setStep(10);
+      console.error("Credit deduction failed:", deductResult.body.error);
+      setError(serviceBookingErrorMessage(deductResult.body.error));
     } catch (err: unknown) {
       console.error("Error submitting appointment:", err);
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
@@ -2818,6 +2776,8 @@ export default function MedicalAppointmentTool({
   };
 
   const handleGoBack = () => {
+    // Editing after a failed payment books a fresh request with the new details.
+    pendingDraftRef.current = null;
     if (step === 9) {
       setStep(1);
     } else if (step > 1) {
@@ -2864,7 +2824,7 @@ export default function MedicalAppointmentTool({
       passportExpiryDate: "",
       caseNumber: "",
       preferredLocation: "",
-      destinationCountry: "",
+      destinationCountry: "United States",
       scannedPassport: null,
       kOneLetter: null,
       appointmentConfirmationLetter: null,
@@ -2975,9 +2935,9 @@ export default function MedicalAppointmentTool({
             formData={formData}
             error={error}
             loading={loading}
-            tier={tier}
-            remainingCredits={remainingCredits}
-            creditsLoading={creditsLoading}
+            walletBalance={wallet.balance}
+            walletLoading={wallet.isLoading}
+            onTopup={(amount) => wallet.openTopup({ amount })}
             isAMC={isAMC}
             isIOM={isIOM}
             onBack={handleGoBack}
@@ -3235,31 +3195,14 @@ export default function MedicalAppointmentTool({
           )}
 
           {/* Credit visibility (standalone only — journey mode has no credits) */}
-          {!isJourney &&
-            (isUnlimited("medical_booking", tier) ? (
-              <div className="mt-4 flex justify-center">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-bold text-amber-800">
-                  <Crown className="h-3.5 w-3.5" />
-                  Executive — unlimited medical bookings
-                </span>
-              </div>
-            ) : creditsLoading ? null : (
-              <div className="mt-4 flex justify-center">
-                {remainingCredits !== null && remainingCredits > 0 ? (
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-bold text-teal-800">
-                    <Sparkles className="h-3.5 w-3.5" />
-                    {remainingCredits} appointment {remainingCredits === 1 ? "credit" : "credits"}{" "}
-                    available
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-semibold text-gray-600">
-                    {remainingCredits === 0
-                      ? "No appointment credits left — $5 per booking"
-                      : "No appointment credits — $5 per booking"}
-                  </span>
-                )}
-              </div>
-            ))}
+          {!isJourney && (
+            <div className="mt-4 flex justify-center">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-800">
+                <Coins className="h-3.5 w-3.5 text-[#0d7377]" />
+                5 Credits ($5) per booking • Wallet Balance: {wallet.balance ?? 0} Credits
+              </span>
+            </div>
+          )}
 
           {step > 1 && step < 10 && step !== 9 && !isIOM && (!isJourney || embedded) && (
             <div className="mt-6">

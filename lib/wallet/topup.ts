@@ -91,7 +91,24 @@ export type WalletTopupResult =
       alreadyProcessed: boolean;
       transactionId: string | null;
     }
-  | { ok: false; reason: "not_paid" | "invalid_session" | "rpc_failed"; error?: string };
+  | {
+      ok: false;
+      /** rpc_failed = transient (worth a webhook retry); rpc_rejected = permanent. */
+      reason: "not_paid" | "invalid_session" | "rpc_failed" | "rpc_rejected";
+      error?: string;
+    };
+
+/**
+ * Whether an RPC error may succeed on a retry: no SQLSTATE (network / fetch
+ * failure) or a connection, transaction-conflict, resource or timeout class.
+ * Data errors (FK, unique, check, RAISE) fail the same way every time, and
+ * answering 500 for them would make Stripe retry for days.
+ */
+export function isTransientRpcError(error: { code?: string | null } | null | undefined): boolean {
+  if (!error) return false;
+  const code = error.code ?? "";
+  return code === "" || /^(08|40|53|57)/.test(code);
+}
 
 /**
  * Credit a paid top-up session to the buyer's wallet. Safe to call from both the
@@ -144,8 +161,12 @@ export async function applyWalletTopup(
   });
 
   if (error || !data?.success) {
-    console.error(`${logPrefix} credit_wallet_topup_atomic failed for ${session.id}:`, error);
-    return { ok: false, reason: "rpc_failed", error: error?.message };
+    console.error(`${logPrefix} credit_wallet_topup_atomic failed for ${session.id}:`, error ?? data);
+    return {
+      ok: false,
+      reason: isTransientRpcError(error) ? "rpc_failed" : "rpc_rejected",
+      error: error?.message,
+    };
   }
 
   return {
@@ -178,7 +199,11 @@ export type WalletRefundResult =
       balance: number;
       alreadyProcessed: boolean;
     }
-  | { ok: false; reason: "invalid_charge" | "topup_not_found" | "rpc_failed"; error?: string };
+  | {
+      ok: false;
+      reason: "invalid_charge" | "topup_not_found" | "rpc_failed" | "rpc_rejected";
+      error?: string;
+    };
 
 /**
  * Take back the credits of a refunded top-up, in proportion to what Stripe has
@@ -221,7 +246,11 @@ export async function applyWalletRefund(
 
   if (error) {
     console.error(`${logPrefix} reverse_wallet_topup_atomic failed for ${stripeSessionId}:`, error);
-    return { ok: false, reason: "rpc_failed", error: error.message };
+    return {
+      ok: false,
+      reason: isTransientRpcError(error) ? "rpc_failed" : "rpc_rejected",
+      error: error.message,
+    };
   }
   if (!data?.success) {
     return { ok: false, reason: "topup_not_found", error: data?.error };

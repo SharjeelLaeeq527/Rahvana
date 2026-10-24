@@ -1,25 +1,33 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { ArrowLeft } from "lucide-react";
+// ArrowLeft now lives inside <ResourceBackButton /> (back → history, not pricing):
+// import { ArrowLeft } from "lucide-react";
 
 import {
   ADDONS,
-  SERVICE_FLOW_HREF,
+  // SERVICE_FLOW_HREF, // Unused now — checkout CTAs commented out per product decision
   getResourceLaunchHref,
 } from "@/app/(main)/pricing/data/pricing";
 import {
-  RESOURCE_DETAILS,
+  // RESOURCE_DETAILS, // Used only by the commented-out "Pairs well with" section
   RESOURCE_SLUGS,
   getResourceDetail,
 } from "@/app/(main)/pricing/data/resourceDetails";
 import ResourceGallery from "./ResourceGallery";
-import AddToOrderButton from "./AddToOrderButton";
-import BottomCta from "./BottomCta";
+// Add-to-cart / bottom CTA removed per product decision (code kept, commented):
+// import AddToOrderButton from "./AddToOrderButton";
+// import BottomCta from "./BottomCta";
 import ResourceLaunchButton from "@/components/pricing/ResourceLaunchButton";
 import ReviewForm from "@/components/resources/ReviewForm";
 import { getApprovedReviews, getReviewStats } from "@/lib/reviews/data-access";
-import { getSlugTheme, getIcon } from "./iconMap";
+// getSlugTheme/getIcon powered the "Pairs well with" section (now commented out):
+// import { getSlugTheme, getIcon } from "./iconMap";
+import { WALLET_CATALOG } from "@/lib/wallet/catalog";
+import { withPreviewMode } from "@/lib/wallet/resourceMapping";
+import CreditTypeIcon from "@/components/resources/CreditTypeIcon";
+import CreditInfoTooltip from "@/components/resources/CreditInfoTooltip";
+// import ResourceBackButton from "@/components/resources/ResourceBackButton";
 
 // ── Palette ──────────────────────────────────────────────────────────────────
 // A small, deliberate accent set drawn from the site's brand tokens. Each section
@@ -100,12 +108,19 @@ export default async function ResourceDetailPage({
 
   // Services aren't added to the cart — they route to a guided flow page that
   // collects info and handles payment at checkout (e.g. /book-consultation).
-  const serviceFlowHref = addon.kind === "services" ? SERVICE_FLOW_HREF[slug] : undefined;
+  // ORIGINAL (checkout CTAs now commented out per product decision):
+  // const serviceFlowHref = addon.kind === "services" ? SERVICE_FLOW_HREF[slug] : undefined;
   const launchHref = getResourceLaunchHref(slug, addon.kind);
 
-  const related = detail.related
-    .map((rs) => ({ slug: rs, detail: RESOURCE_DETAILS[rs], addon: getAddon(rs) }))
-    .filter((r) => r.detail && r.addon);
+  // Credit price is the only price shown on this page (no $ anywhere).
+  const walletItem = WALLET_CATALOG.find((i) => i.legacyAddonId === slug);
+  const credits = walletItem?.credits ?? addon.price;
+  const noun = addon.kind === "guides" ? "Guide" : addon.kind === "services" ? "Service" : "Tool";
+
+  // Related resources powered the "Pairs well with" section (now commented out):
+  // const related = detail.related
+  //   .map((rs) => ({ slug: rs, detail: RESOURCE_DETAILS[rs], addon: getAddon(rs) }))
+  //   .filter((r) => r.detail && r.addon);
 
   // Real, approved reviews only — no seeded or sample data.
   const [dbReviews, dbStats] = await Promise.all([getApprovedReviews(slug), getReviewStats(slug)]);
@@ -130,25 +145,27 @@ export default async function ResourceDetailPage({
     verified: r.verifiedPurchase,
   }));
 
-  const categoryLabel =
-    addon.kind === "services" ? "Services" : addon.kind === "guides" ? "Guides" : "Tools";
+  // ORIGINAL back-to-pricing label (removed — back now goes to the previous page):
+  // const categoryLabel =
+  //   addon.kind === "services" ? "Services" : addon.kind === "guides" ? "Guides" : "Tools";
 
   return (
     <div className="bg-background text-foreground min-h-screen">
       <div className="mx-auto max-w-[1100px] px-5 pt-[88px] pb-28 sm:px-8 lg:px-10">
-        {/* Back navigation & Breadcrumb */}
-        <nav aria-label="Breadcrumb" className="mb-8 flex flex-wrap items-center gap-2.5 text-[13.5px]">
-          <Link
-            href={`/pricing?mode=${addon.kind}`}
-            className="group inline-flex items-center gap-2 rounded-full border border-border/80 bg-background/80 px-3.5 py-1.5 font-medium text-muted-foreground shadow-xs backdrop-blur-sm transition-all hover:border-foreground/20 hover:bg-muted/50 hover:text-foreground active:scale-[0.98]"
-          >
-            <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
-            <span>Back to Pricing</span>
-            <span className="text-muted-foreground/40">·</span>
-            <span className="font-normal text-muted-foreground group-hover:text-foreground">
-              {categoryLabel}
-            </span>
-          </Link>
+        {/* Back navigation & Breadcrumb — back now returns to the previous page */}
+        <nav
+          aria-label="Breadcrumb"
+          className="mb-8 flex flex-wrap items-center gap-2.5 text-[13.5px]"
+        >
+          {/* ORIGINAL deep-linked to the pricing tab; commented out per decision:
+              <Link href={`/pricing?mode=${addon.kind}`} className="...">
+                <ArrowLeft className="h-4 w-4 ..." />
+                <span>Back to Pricing</span>
+                <span className="text-muted-foreground/40">·</span>
+                <span className="font-normal ...">{categoryLabel}</span>
+              </Link>
+          */}
+          {/* <ResourceBackButton className="group border-border/80 bg-background/80 text-muted-foreground hover:border-foreground/20 hover:bg-muted/50 hover:text-foreground inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 font-medium shadow-xs backdrop-blur-sm transition-all active:scale-[0.98]" /> */}
           <span className="text-border">/</span>
           <span className="text-foreground font-medium">{addon.title}</span>
         </nav>
@@ -186,38 +203,61 @@ export default async function ResourceDetailPage({
               <p className="text-muted-foreground mt-5 text-[13px]">No reviews yet</p>
             )}
 
-            {/* Price */}
-            <div className="mt-9 flex items-baseline gap-2.5">
+            {/* Price — credits only, no $ price anywhere (per product decision) */}
+            <div className="mt-9 flex items-center gap-2.5">
               <span
                 className="text-[42px] leading-none"
                 style={{ fontFamily: SERIF, color: TEAL_DARK }}
               >
-                ${addon.price}
+                {credits}
               </span>
-              <span className="text-muted-foreground text-[14px]">{addon.unit}</span>
+              <span className="text-muted-foreground flex items-center gap-1.5 text-[14px]">
+                <CreditTypeIcon kind={addon.kind} size={18} />
+                Credits
+              </span>
+              <CreditInfoTooltip
+                side="bottom"
+                message={
+                  addon.kind === "services"
+                    ? "Each booking request uses the credits shown."
+                    : "Unlock once: pay these credits one time, then use it as much as you like."
+                }
+              />
             </div>
+            {/* ORIGINAL $ price display (removed — page shows credits only):
+                <div className="mt-9 flex items-baseline gap-2.5">
+                  <span className="text-[42px] leading-none" style={{ fontFamily: SERIF, color: TEAL_DARK }}>
+                    ${addon.price}
+                  </span>
+                  <span className="text-muted-foreground text-[14px]">{addon.unit}</span>
+                </div>
+            */}
             {addon.note && <p className="text-muted-foreground mt-2 text-[13px]">{addon.note}</p>}
 
-            {/* CTAs */}
+            {/* CTAs — Explore + Preview (add-to-cart / checkout removed per product decision) */}
             <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
-              {serviceFlowHref ? (
-                <Link
-                  href={serviceFlowHref}
-                  className="inline-flex items-center justify-center rounded-full px-7 py-3.5 text-[15px] font-semibold text-white transition-all duration-200 hover:-translate-y-0.5"
-                  style={{ backgroundColor: TEAL }}
-                >
-                  Add {addon.title} info to checkout
-                  <span className="ml-2 font-normal text-white/80">→</span>
-                </Link>
-              ) : (
-                <AddToOrderButton slug={slug} price={addon.price} unit={addon.unit} accent={TEAL} />
-              )}
-              <ResourceLaunchButton href={launchHref} kind={addon.kind} />
+              {/* ORIGINAL add-to-cart / checkout CTAs (commented out, code kept):
+                  {serviceFlowHref ? (
+                    <Link href={serviceFlowHref} className="..." style={{ backgroundColor: TEAL }}>
+                      Add {addon.title} info to checkout
+                      <span className="ml-2 font-normal text-white/80">→</span>
+                    </Link>
+                  ) : (
+                    <AddToOrderButton slug={slug} price={addon.price} unit={addon.unit} accent={TEAL} />
+                  )}
+              */}
+              <ResourceLaunchButton href={launchHref} kind={addon.kind} label={`Explore ${noun}`} />
+              <Link
+                href={withPreviewMode(launchHref)}
+                className="inline-flex items-center justify-center rounded-full border-[1.5px] border-slate-200 bg-white px-7 py-3.5 text-[15px] font-semibold text-slate-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-[#0d7377]/50 hover:text-[#0d7377]"
+              >
+                Preview {noun}
+              </Link>
             </div>
 
             <p className="text-muted-foreground mt-7 text-[12.5px]">
-              No full plan required &nbsp;·&nbsp; Secure checkout &nbsp;·&nbsp; Built around your
-              case
+              No full plan required &nbsp;·&nbsp; Paid with Rahvana credits &nbsp;·&nbsp; Built
+              around your case
             </p>
           </div>
 
@@ -423,6 +463,7 @@ export default async function ResourceDetailPage({
         </section>
 
         {/* ── Related ───────────────────────────────────────────────────────── */}
+        {/* ── Related / "Pairs well with" — removed per product decision (code kept) ──
         {related.length > 0 && (
           <section className="mt-24">
             <SectionHeading>Pairs well with</SectionHeading>
@@ -468,24 +509,24 @@ export default async function ResourceDetailPage({
             </div>
           </section>
         )}
+        */}
 
-        {/* ── Bottom CTA ────────────────────────────────────────────────────── */}
+        {/* ── Bottom CTA — removed per product decision (code kept) ──────────
         <BottomCta
-          slug={slug}
           title={addon.title}
-          price={addon.price}
-          kind={addon.kind}
-          serviceFlowHref={serviceFlowHref}
+          href={serviceFlowHref ?? launchHref}
+          isService={Boolean(serviceFlowHref)}
         />
+        */}
 
         <div className="mt-10">
-          <Link
-            href={`/pricing?mode=${addon.kind}`}
-            className="group inline-flex items-center gap-2 text-muted-foreground hover:text-foreground text-[13.5px] font-medium transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
-            <span>Back to Pricing ({categoryLabel})</span>
-          </Link>
+          {/* ORIGINAL back-to-pricing link, commented out per decision:
+              <Link href={`/pricing?mode=${addon.kind}`} className="...">
+                <ArrowLeft className="h-4 w-4 ..." />
+                <span>Back to Pricing ({categoryLabel})</span>
+              </Link>
+          */}
+          {/* <ResourceBackButton className="group text-muted-foreground hover:text-foreground inline-flex items-center gap-2 text-[13.5px] font-medium transition-colors" /> */}
         </div>
       </div>
     </div>

@@ -132,6 +132,7 @@ export async function GET(request: NextRequest) {
         stripeSubscriptionId: (session.subscription as string) || undefined,
         isAddCandidate: isAddCandidateMeta,
         targetCandidateId: targetCandidateIdMeta,
+        isUpgrade,
       });
 
       // ── 2. Compute highest active tier across all user journeys ─────────────
@@ -342,13 +343,15 @@ export async function GET(request: NextRequest) {
         .from("translation_documents")
         .select("id")
         .eq("id", productId)
+        .eq("user_id", userId)
         .maybeSingle();
 
       if (existingDoc) {
         await supabase
           .from("translation_documents")
           .update({ payment_status: "paid", payment_id: paymentId || undefined })
-          .eq("id", productId);
+          .eq("id", productId)
+          .eq("user_id", userId);
       } else {
         // Reconstruct user_notes from split metadata fields.
         let userNotes = "";
@@ -492,8 +495,10 @@ export async function GET(request: NextRequest) {
       tier: appliedTier,
     });
   } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : "Unknown error";
-    console.error("[verify-session] Error:", msg);
-    return NextResponse.json({ activated: false, error: msg }, { status: 500 });
+    console.error("[verify-session] Error:", err);
+    return NextResponse.json(
+      { activated: false, error: "VERIFY_SESSION_FAILED" },
+      { status: 500 }
+    );
   }
 }

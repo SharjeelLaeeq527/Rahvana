@@ -15,6 +15,8 @@ import { ExpandableTooltip } from "@/app/components/shared/ExpandableTooltip";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { usePlan } from "@/app/context/PlanContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
+import { useStandaloneToolUnlock } from "@/lib/wallet/useStandaloneToolUnlock";
+import { getEntitlement } from "@/lib/entitlements/config";
 import { InterviewModeTabs } from "@/app/components/interview-prep/InterviewModeTabs";
 import { MobileBottomSheet } from "@/app/components/shared/table/MobileBottomSheet";
 
@@ -22,9 +24,24 @@ interface ResultPageProps {
   sessionId: string;
   results?: InterviewPrepOutput | null;
   onRestart: () => void;
+  /**
+   * True only for the standalone tool. Standalone ignores the plan tier (it is
+   * paid with credits even by plan holders): a wallet unlock or
+   * `standaloneGranted` gives full access, otherwise the free demo. Journey
+   * runs leave it false and keep the plan rule, never reading wallet unlocks.
+   */
+  isStandalone?: boolean;
+  /** Standalone only: a legacy purchase that covers this session's category. */
+  standaloneGranted?: boolean;
 }
 
-export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) => {
+export const ResultPage = ({
+  sessionId,
+  results,
+  onRestart,
+  isStandalone = false,
+  standaloneGranted = false,
+}: ResultPageProps) => {
   const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -59,13 +76,24 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
   const [showPrepUpgradeModal, setShowPrepUpgradeModal] = useState(false);
 
   const plan = usePlan();
+  const standaloneToolId = isStandalone ? "interview-prep" : undefined;
+  const walletUnlocked = useStandaloneToolUnlock(standaloneToolId).unlocked;
+  const standaloneFull = isStandalone && (walletUnlocked || standaloneGranted);
 
-  // Buying the Interview Prep add-on (any category) unlocks the full tool for
-  // every plan tier — plan.entitlement() resolves purchases to "full".
-  const prepFullAccess = plan.entitlement("basic_interview_prep").state === "full";
-  // Free-plan users without the add-on see the AI Answer Builder as a locked
-  // teaser; a category purchase removes the lock (full access, any plan).
-  const prepLockedForFreeUser = plan.tier === "free" && !prepFullAccess;
+  // Journey: plan.entitlement() (purchases resolve to "full"). Standalone: no
+  // plan tier at all - full with an unlock/purchase, else the free demo.
+  const entitlementFor = (feature: string) =>
+    isStandalone
+      ? standaloneFull
+        ? ({ state: "full" } as const)
+        : getEntitlement(feature, "free")
+      : plan.entitlement(feature);
+
+  const prepFullAccess = entitlementFor("basic_interview_prep").state === "full";
+  // Users without access see the AI Answer Builder as a locked teaser.
+  const prepLockedForFreeUser = isStandalone
+    ? !standaloneFull
+    : plan.tier === "free" && !prepFullAccess;
 
   const canSeePrepQuestion = useCallback(
     (question: GeneratedQuestion) => {
@@ -79,22 +107,22 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
   );
 
   const canAccessRapidFire = (): boolean => {
-    const entitlement = plan.entitlement("interview_rapid_fire");
+    const entitlement = entitlementFor("interview_rapid_fire");
     return entitlement.state === "full" || entitlement.state === "limited";
   };
 
   const canAccessMockInterview = (): boolean => {
-    const entitlement = plan.entitlement("mock_interview");
+    const entitlement = entitlementFor("mock_interview");
     return entitlement.state === "full" || entitlement.state === "limited";
   };
 
   // Check if tier has limited access (should only see free-tier questions)
   const hasLimitedRapidFire = (): boolean => {
-    return plan.entitlement("interview_rapid_fire").state === "limited";
+    return entitlementFor("interview_rapid_fire").state === "limited";
   };
 
   const hasLimitedMockInterview = (): boolean => {
-    return plan.entitlement("mock_interview").state === "limited";
+    return entitlementFor("mock_interview").state === "limited";
   };
 
   // Filter questions for rapid fire mode - limited tiers only see free-tier questions
@@ -104,7 +132,7 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
     }
     return questionsList;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [questionsList, plan.tier, plan.purchasedAddons]);
+  }, [questionsList, plan.tier, plan.purchasedAddons, isStandalone, standaloneFull]);
 
   // Filter questions for mock mode - limited tiers only see free-tier questions
   const mockInterviewQuestions = useMemo(() => {
@@ -113,7 +141,7 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
     }
     return questionsList;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [questionsList, plan.tier, plan.purchasedAddons]);
+  }, [questionsList, plan.tier, plan.purchasedAddons, isStandalone, standaloneFull]);
 
   // Shuffle algorithm
   const shuffleQuestions = (questions: GeneratedQuestion[]): GeneratedQuestion[] => {
@@ -370,6 +398,8 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
           sessionId={sessionId}
           questions={mockInterviewQuestions}
           onExit={handleMockInterviewPageExit}
+          isStandalone={isStandalone}
+          standaloneFull={standaloneFull}
         />
       </div>
     );
@@ -383,6 +413,9 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
         onExit={handleRapidFirePageExit}
         onSwitchToPrep={handleSwitchToPrep}
         savedAnswers={savedAnswers}
+        isStandalone={isStandalone}
+        standaloneFull={standaloneFull}
+        standaloneToolId={standaloneToolId}
       />
     );
   }

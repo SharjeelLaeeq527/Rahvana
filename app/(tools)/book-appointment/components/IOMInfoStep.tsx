@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -46,6 +47,18 @@ const IOMInfoStep = ({
   onBack,
 }: IOMInfoStepProps) => {
   const { t } = useLanguage();
+
+  useEffect(() => {
+    if (!formData.destinationCountry) {
+      onSelectChange("destinationCountry")("United States");
+    }
+    if (!formData.preferredLocation) {
+      onSelectChange("preferredLocation")("islamabad");
+    }
+    if (!formData.visaType) {
+      onSelectChange("visaType")("Immigrant Visa");
+    }
+  }, [formData.destinationCountry, formData.preferredLocation, formData.visaType, onSelectChange]);
 
   return (
     <div className="space-y-6">
@@ -164,7 +177,7 @@ const IOMInfoStep = ({
             <Input
               id="destinationCountry"
               name="destinationCountry"
-              value="United States"
+              value={formData.destinationCountry || "United States"}
               disabled
               className="bg-gray-100 cursor-not-allowed text-gray-700 font-medium"
             />

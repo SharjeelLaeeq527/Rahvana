@@ -102,7 +102,18 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     : UNKNOWN_VISA_CATEGORY;
 
   // Derive the active journey's specific real tier from journeyTiers or fallback
+  const activeJourneyKey = candidateCtx?.activeJourneyKey?.toLowerCase() ?? "";
   const realTier: PlanTier = useMemo(() => {
+    // Candidate 2+ (key "ir5_candidate2") use only their own journey row: one that
+    // was never bought, or was cancelled, must not borrow candidate-1's tier from
+    // the category entry below (which is built from primary rows only).
+    if (activeJourneyKey.includes("_")) {
+      return (
+        journeyTiers[activeJourneyKey] ??
+        journeyTiers[activeJourneyKey.replace(/[^a-z0-9]/g, "")] ??
+        "free"
+      );
+    }
     if (normalizedCategory !== UNKNOWN_VISA_CATEGORY && journeyTiers[normalizedCategory]) {
       return journeyTiers[normalizedCategory];
     }
@@ -112,7 +123,7 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     }
     // Legacy single-journey fallback
     return accountTier;
-  }, [normalizedCategory, journeyTiers, accountTier]);
+  }, [activeJourneyKey, normalizedCategory, journeyTiers, accountTier]);
 
   // Respect the journey-level subscription (realTier).
   // Only force 'free' if the candidate is explicitly marked in Free Preview mode.
@@ -202,8 +213,10 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
               tiersMap[rawKey] = tier;
               tiersMap[cleanKey] = tier;
 
+              // Category entry = best PRIMARY journey (variant rows such as "ir5" /
+              // "ir5-journey" collapse here). Candidate 2+ rows are looked up by key.
               const baseCat = getBaseVisaCategory(j.journey_type);
-              if (baseCat !== UNKNOWN_VISA_CATEGORY) {
+              if (baseCat !== UNKNOWN_VISA_CATEGORY && !rawKey.includes("candidate")) {
                 const currentRank = TIER_RANK[tiersMap[baseCat] || "free"] ?? 0;
                 const newRank = TIER_RANK[tier] ?? 0;
                 if (newRank >= currentRank) {

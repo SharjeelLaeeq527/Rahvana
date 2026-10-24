@@ -11,6 +11,7 @@ import {
   countIncompleteToolSessions,
   countToolSessions,
   getAddonIdForCategory,
+  hasInterviewPrepWalletUnlock,
 } from '@/lib/interview-prep/purchase-validation';
 import { categoryLoader } from '@/lib/interview-prep/category-loader';
 
@@ -35,6 +36,22 @@ export async function GET(request: NextRequest) {
     // Load all active categories
     const categories = await categoryLoader.getActiveCategories(country);
 
+    // A standalone wallet unlock opens every category with unlimited sessions.
+    // Journey callers (?scope=journey) never read wallet data.
+    let walletUnlocked = false;
+    if (searchParams.get('scope') !== 'journey') {
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('profile_details')
+        .eq('id', user.id)
+        .maybeSingle();
+      const addons = profile?.profile_details?.purchased_addons;
+      walletUnlocked = await hasInterviewPrepWalletUnlock(
+        user.id,
+        Array.isArray(addons) ? addons : []
+      );
+    }
+
     // Add purchase status to each category
     const categoriesWithStatus = await Promise.all(
       categories.map(async (category) => {
@@ -45,7 +62,8 @@ export async function GET(request: NextRequest) {
         ]);
 
         const remainingPurchases = Math.max(purchaseCount - usedSessionCount, 0);
-        const hasAvailablePurchase = remainingPurchases > 0 || activeSessionCount > 0;
+        const hasAvailablePurchase =
+          walletUnlocked || remainingPurchases > 0 || activeSessionCount > 0;
         const purchaseExhausted = purchaseCount > 0 && !hasAvailablePurchase;
 
         return {

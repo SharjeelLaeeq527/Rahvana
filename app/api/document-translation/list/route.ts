@@ -32,9 +32,9 @@ export async function GET(request: NextRequest) {
       .from("translation_documents")
       .select("*", { count: "exact" })
       .eq("user_id", user.id)
-      // Only show documents that have been paid for (payment_status='paid')
-      // or documents without a payment requirement (payment_id IS NULL means free/no payment)
-      .or("payment_status.eq.paid,payment_id.is.null")
+      // Only show documents that have been paid for (or legacy rows)
+      .neq("payment_status", "pending")
+      .neq("payment_status", "failed")
       .order("created_at", { ascending: false });
 
     if (error) {

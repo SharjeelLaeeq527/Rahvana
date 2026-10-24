@@ -162,7 +162,9 @@ export async function GET(req: NextRequest) {
     const { data: appointments, error: appointmentsError } = await supabase
       .from("appointments")
       .select("*")
-      .or("payment_status.eq.paid,payment_id.is.null")
+      .neq("awaiting_payment", true)
+      .neq("payment_status", "pending")
+      .neq("payment_status", "failed")
       .order("created_at", { ascending: false });
 
     if (appointmentsError) {

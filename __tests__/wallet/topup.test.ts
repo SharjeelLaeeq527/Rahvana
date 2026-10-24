@@ -10,6 +10,7 @@ import {
   applyWalletTopup,
   applyWalletRefund,
   resolveTopupReturnPath,
+  isTransientRpcError,
   WALLET_MIN_TOPUP,
 } from '@/lib/wallet/topup'
 
@@ -190,5 +191,20 @@ describe('applyWalletRefund', () => {
     expect(await applyWalletRefund(failed.client, args)).toEqual({
       ok: false, reason: 'rpc_failed', error: 'boom',
     })
+  })
+})
+
+describe('isTransientRpcError', () => {
+  // Only transient errors make the webhook answer 500 (Stripe retries for days).
+  it('retries network, connection, conflict, resource and timeout errors', () => {
+    for (const code of [undefined, '', '08006', '40001', '40P01', '53300', '57014']) {
+      expect(isTransientRpcError({ code })).toBe(true)
+    }
+  })
+  it('does not retry data errors that fail the same way every time', () => {
+    for (const code of ['23503', '23505', '23514', '22023', 'P0001', 'PGRST202']) {
+      expect(isTransientRpcError({ code })).toBe(false)
+    }
+    expect(isTransientRpcError(null)).toBe(false)
   })
 })

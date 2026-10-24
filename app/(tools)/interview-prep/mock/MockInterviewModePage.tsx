@@ -37,6 +37,10 @@ interface MockInterviewModePageProps {
   sessionId?: string;
   questions: GeneratedQuestion[];
   onExit: () => void;
+  /** Standalone tool: the plan tier is ignored (see ResultPage). */
+  isStandalone?: boolean;
+  /** Standalone only: wallet unlock or a purchase for this category. */
+  standaloneFull?: boolean;
 }
 
 interface FullscreenElementLike extends HTMLElement {
@@ -62,15 +66,21 @@ export function MockInterviewModePage({
   questions,
   onExit,
   sessionId,
+  isStandalone = false,
+  standaloneFull = false,
 }: MockInterviewModePageProps) {
   // reference sessionId to avoid unused-variable compile errors (kept for telemetry/analytics)
   void sessionId;
   const plan = usePlan();
-  const isExecutiveTier = plan.tier === "executive";
-  const isFreeTier = plan.tier === "free";
+  // Standalone ignores the plan: without access it is the free demo.
+  const isExecutiveTier = !isStandalone && plan.tier === "executive";
+  const isFreeTier = isStandalone ? !standaloneFull : plan.tier === "free";
   // Buying the Interview Prep add-on (any category) unlocks the full mock
   // interview experience regardless of the account-wide plan.
-  const boughtInterviewPrep = hasPurchasedAddon(plan.purchasedAddons, "interview-prep");
+  // Standalone: only a wallet unlock / purchase for this category counts.
+  const boughtInterviewPrep = isStandalone
+    ? standaloneFull
+    : hasPurchasedAddon(plan.purchasedAddons, "interview-prep");
   const isFullMockExperience = isExecutiveTier || boughtInterviewPrep;
   const sessionDurationSeconds = isFullMockExperience ? EXECUTIVE_TOTAL_SECONDS : 3 * 60;
 

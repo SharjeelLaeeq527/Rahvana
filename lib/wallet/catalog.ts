@@ -37,6 +37,20 @@ export type WalletCatalogItem = {
 /** Legacy bundle that unlocks every civil document guide. */
 export const LEGACY_CIVIL_GUIDES_BUNDLE = "civil-guid";
 
+/**
+ * The six civil-document guides the legacy "all guides" add-on covers.
+ * The Polio Vaccination guide is Medical & Exam, was never part of that
+ * bundle, and has no individual legacy add-on - it is credit-unlock only.
+ */
+const CIVIL_GUIDE_RESOURCE_IDS: ReadonlySet<string> = new Set([
+  "guide-passport",
+  "guide-police",
+  "guide-cnic",
+  "guide-birth-cert",
+  "guide-frc",
+  "guide-nikah-nama",
+]);
+
 const tool = (
   resourceId: string,
   name: string,
@@ -53,12 +67,17 @@ const tool = (
   launchable: true,
 });
 
-const guide = (resourceId: string, name: string): WalletCatalogItem => ({
+const guide = (
+  resourceId: string,
+  name: string,
+  /** Empty = never sold as a legacy add-on; credits are the only unlock path. */
+  legacyAddonId = resourceId
+): WalletCatalogItem => ({
   resourceType: "guide",
   resourceId,
   name,
   credits: 5,
-  legacyAddonId: resourceId,
+  legacyAddonId,
   legacyGrantsUnlock: true,
   launchable: true,
 });
@@ -91,11 +110,24 @@ export const WALLET_CATALOG: readonly WalletCatalogItem[] = [
   guide("guide-birth-cert", "Birth Certificate Guide"),
   guide("guide-frc", "FRC Guide"),
   guide("guide-nikah-nama", "Marriage Guide (Nikah Nama)"),
+  // No legacy add-on id: nothing in purchased_addons can ever grant this guide.
+  guide("guide-polio", "Polio Vaccination Guide", ""),
   service("book-medical-appointment", "Book Medical Appointment", 5, "medical"),
   service("pcc-filing-service", "PCC Filing (Sindh Only)", 25, "pcc"),
   service("document-translation", "Document Translation", 25, "translate"),
   service("book-a-consultation", "Expert Consultation", 99, "consultation"),
 ];
+
+/**
+ * Credits for a legacy add-on id (the ids pricing.ts and the sales pages use), so
+ * UIs can quote the standalone price in wallet credits ($1 = 1 credit). For a tool
+ * or guide that is a one-time unlock; for a service it is the price of one booking.
+ * Returns undefined for ids with no wallet counterpart (e.g. the civil-guide bundle).
+ */
+export function getCreditsForLegacyAddon(addonId: unknown): number | undefined {
+  if (typeof addonId !== "string" || !addonId) return undefined;
+  return WALLET_CATALOG.find((i) => i.legacyAddonId === addonId)?.credits;
+}
 
 export function getCatalogItem(
   resourceType: unknown,
@@ -112,10 +144,16 @@ export function getCatalogItem(
 /** Whether a legacy add-on ledger entry grants this item permanently. */
 function legacyAddonMatches(item: WalletCatalogItem, addonId: string): boolean {
   if (!item.legacyGrantsUnlock) return false;
-  if (addonId === item.legacyAddonId) return true;
-  // Interview prep was sold per category ("interview-prep:ir1", ...).
-  if (item.resourceId === "interview-prep" && addonId.startsWith("interview-prep")) return true;
-  return item.resourceType === "guide" && addonId === LEGACY_CIVIL_GUIDES_BUNDLE;
+  if (item.legacyAddonId && addonId === item.legacyAddonId) return true;
+  // Interview prep was sold per category ("interview-prep:ir-1-spouse"). A
+  // category purchase keeps its per-category, per-session access through
+  // lib/interview-prep/purchase-validation.ts; only the bare all-categories
+  // add-on ("interview-prep", matched above) grants the whole tool.
+  return (
+    item.resourceType === "guide" &&
+    CIVIL_GUIDE_RESOURCE_IDS.has(item.resourceId) &&
+    addonId === LEGACY_CIVIL_GUIDES_BUNDLE
+  );
 }
 
 export type UnlockRow = { resource_type: string; resource_id: string; status: string };
@@ -131,9 +169,7 @@ export function resolveUnlockedItems(
 ): WalletCatalogItem[] {
   const active = unlockRows.filter((row) => row.status === "active");
   const addons = purchasedAddons.filter((a): a is string => typeof a === "string");
-  const hasCivilBundleRow = active.some(
-    (row) => row.resource_id === LEGACY_CIVIL_GUIDES_BUNDLE
-  );
+  const hasCivilBundleRow = active.some((row) => row.resource_id === LEGACY_CIVIL_GUIDES_BUNDLE);
 
   return WALLET_CATALOG.filter((item) => {
     if (
@@ -143,7 +179,12 @@ export function resolveUnlockedItems(
     ) {
       return true;
     }
-    if (item.resourceType === "guide" && hasCivilBundleRow) return true;
+    if (
+      item.resourceType === "guide" &&
+      CIVIL_GUIDE_RESOURCE_IDS.has(item.resourceId) &&
+      hasCivilBundleRow
+    )
+      return true;
     return addons.some((addonId) => legacyAddonMatches(item, addonId));
   });
 }

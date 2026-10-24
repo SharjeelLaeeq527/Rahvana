@@ -26,9 +26,9 @@ It does three big things:
 2. **Automates the painful mechanical work** — auto-fills USCIS PDF forms from a single
    profile, extracts data from documents via OCR/vision AI, compresses/generates PDFs,
    makes passport photos, scores "case strength," and predicts timelines.
-3. **Sells expert + tooling services** — tiered subscriptions plus one-off add-ons
-   (consultations, police-certificate filing, document translation, mock interviews),
-   monetized through Stripe.
+3. **Sells expert + tooling services** - tiered journey subscriptions through Stripe, plus
+   standalone tools, guides and services paid with Rahvana wallet credits (consultations,
+   police-certificate filing, document translation, mock interviews).
 
 **Primary users**
 
@@ -114,7 +114,7 @@ errors do **not** fail the build (run `npx tsc --noEmit` manually to check types
 | `data/` | Static domain config. **`visa-category/*.json`** = the live journey source of truth (`ir-1`, `ir-2`, `ir-5`, `f-1`, and student journeys for australia, canada, china, germany, italy, uk). `roadmap.ts` = **legacy** old-schema data used only by home/marketing pages. Also `interview-categories/*`, `visa-checker/*`, and many guide/data JSON files. |
 | `types/` | Shared TypeScript types (`profile.ts` = MasterProfile, `journey-support.ts`, `roadmap.ts`, `notifications.ts`, etc.). |
 | `backend/` | Python FastAPI service: `app/api/v1/*` endpoints, `app/services/*`, `app/core/form_configs/*` (USCIS form field maps), `data/` (visa bulletin + `iv_data.json`), `modnet/` (git submodule, background-removal model). |
-| `supabase/` | `migrations/*` SQL (~89 files) — the database schema, RLS policies, triggers. |
+| `supabase/` | `migrations/*` SQL (~97 files) — the database schema, RLS policies, triggers. |
 | `actions/` | Next.js server actions (currently only `chat-actions.ts`). |
 | `scripts/` | Maintenance/dev scripts (incl. `copy-pdf-worker.mjs`, run on `postinstall`). `scratch/` holds one-off guide-registration `.mjs` scripts. |
 | `__tests__/` | Jest tests: `case-strength/`, `consultation/`, `stripe/`, `candidate/`, `interview-prep/`, `questionnaire/`, `security/`, plus root tests (`candidate-sharing`, `journeyHelpers`, `profile-section-registry`, `resources-entitlement`, `sponsorship-poverty-guidelines`) and `setup.ts`. |
@@ -305,6 +305,33 @@ launched from the Services folder or from their roadmap step card, and they shar
 - **Origin tagging:** journey launches write `source: "journey"` + `journey_slug` + `candidate_id`
   on the row (`app/api/consultation/route.ts` forwards them for consultations), which is how
   `services-status` separates journey requests from standalone / My Resources ones.
+- **Payment is decided on the server, never by the client** (all four services). A journey
+  request (`source: "journey"`, plus `journey_id` / `journey_category` / candidate) is stored as
+  `payment_status: paid` only after `lib/journey/journeyServiceAccess.ts`
+  (`verifyJourneyServiceAccess`) finds an owned, active journey whose tier + add-ons include the
+  feature (`document_translation`, `medical_booking`, `pcc_filing`, `expert_consultation`), else
+  404/403 before anything is saved. Every other request is an unpaid draft (`pending`, and
+  `awaiting_payment = true` for Medical / PCC) until `/api/wallet/deduct-service` charges it. The
+  client's `payment_status` / `awaitingPayment` / `userId` are ignored. All booking routes
+  (`book-appointment`, `police-verification/apply`, `consultation`, translation upload) require a
+  session; PCC files under the session user. Journey UIs show no checkout step.
+  `20261023_04_guard_service_payment_fields.sql` pins `payment_status` / `payment_id` /
+  `awaiting_payment` on all four tables for `authenticated` / `anon` writes (an INSERT is unpaid,
+  an UPDATE keeps the stored values), so a user's own-row write access can't mark a request paid.
+- **Included counts are enforced on the server.** A plan can include a NUMBER of a service
+  (Executive: 2 consultations; on lower tiers each legacy service add-on = 1 request of that
+  service). After saving a journey request the route calls `spendJourneyServiceUse`
+  (`lib/journey/journeyServiceAccess.ts` -> `lib/usage/consumeFeatureCredit.ts`), which spends one
+  use through `increment_feature_usage_atomic` on the same counters `/api/feature-usage` uses (plan
+  pool on `<feature>`, add-on pool on `<feature>:addon`); `full` access (Executive medical / PCC /
+  translation) is unlimited. No use left = the row just saved is deleted and the route answers 403
+  `SERVICE_LIMIT_REACHED`. Saving first means a failed save never costs a use. The counters are per
+  user, not per journey (same as Photo Booth), and a use is not given back when an admin cancels.
+- **Consultation routes:** `GET /api/consultation` = own bookings (by `user_id`, plus pre-login
+  rows with the same email) or every booking for an admin; `PUT` = admin, except a user accepting
+  one of the alternative slots proposed on their own booking; slot POST / PUT / DELETE and
+  `consultation/upload` need admin / a session. A booking holds its slot unless cancelled,
+  `failed`, or an unpaid draft older than 15 minutes (`slots/route.ts holdsSlot`).
 
 **My Journeys (`app/(main)/my-journeys/page.tsx`).** Lists journeys via `listUserJourneys`
 (which now also returns the journey `status`). Opening an IR-5 journey shows
@@ -389,7 +416,10 @@ journey's category**, not just the account. `PlanContext` reads BOTH
 `user_profiles.subscription_tier` (`accountTier`) AND every `journeys.subscription_tier` in
 parallel, building a `journeyTiers` map keyed by base category
 (`getBaseVisaCategory(journey_type)` -> tier), and exposes it. The effective `realTier` for the
-active journey is: the `journeyTiers[activeCategory]` when present; else, if ANY journey has an
+active journey is: for candidate 2+ (`activeJourneyKey` like `ir5_candidate2`) ONLY that
+candidate's own journey row, else `free` (it never borrows candidate-1's tier); otherwise the
+`journeyTiers[activeCategory]` entry, which is the best PRIMARY row of the category (candidate
+rows are excluded from it); else, if ANY journey has an
 explicit tier, an **unpurchased category resolves to `free`** (so an IR-1 candidate added on an
 IR-5-purchased account stays free/preview until IR-1 is bought - the existing Stripe flow, no
 new billing); else the legacy `accountTier` (single-journey / pre-`subscription_tier`-column
@@ -738,13 +768,20 @@ into `user_profiles.profile_details`** so tools share one profile.
 ## 8. State Management
 
 - **Global (React Context, in `app/context/`).** Actual nesting in `app/layout.tsx`:
-  **Toast -> Auth -> UserProfile -> Candidate -> Plan -> QuickAccess -> Language**, wrapping
+  **Toast -> Auth -> UserProfile -> Candidate -> Plan -> QuickAccess -> Wallet -> Language**, wrapping
   `ClientHeader`, `ToolsGuard{children}`, `ClientWidgets`, `Footer` (`PlanTierDevToggle` renders
   inside Plan). `ModalScrollLock` sits outside the providers (see 27).
   - **CandidateContext** — candidate roster, active candidate, `activeJourneyBase` /
     `activeJourneyKey` (see 4.7). Sits ABOVE Plan because Plan resolves the tier per active
     category.
   - **QuickAccessContext** — dashboard quick-access tiles (`/api/quick-access`).
+  - **WalletContext** (`useWallet()`) — Rahvana Wallet display state for STANDALONE use:
+    `balance`, `unlocks`, `isUnlocked(id, type?)`, `refreshWallet`, `launchResource`, and
+    `openTopup({amount?, returnUrl?})`, which renders `app/components/wallet/WalletTopupModal`
+    (packs 10/25/50/100 + custom $5-$1000). Loads `/api/wallet` on sign-in (keyed on user id),
+    re-reads on tab focus at most once per 60s and after a top-up on the payment-success page.
+    Fetch helpers live in `lib/wallet/client.ts`. The balance is display-only: the server
+    re-checks every launch. Never use it to gate journey tools (those follow `useJourneyPlan`).
   - **JourneyEnvironmentContext** — NOT global: provided per journey page by
     `[visa-journey]/JourneyLayoutClient.tsx` (see 4.1).
   - `useJourneyPlan.ts` — hook (not a provider) for per-journey entitlements (see 4.3).
@@ -807,7 +844,7 @@ into `user_profiles.profile_details`** so tools share one profile.
 
 ## 10. Database Architecture (Supabase Postgres)
 
-Schema lives entirely in `supabase/migrations/*` (~89 files; never edit RLS in the
+Schema lives entirely in `supabase/migrations/*` (~97 files; never edit RLS in the
 dashboard — always a migration). The journey core was added in four `20260403_*`
 migrations (`create_{journeys,chapters,steps,case_data}_table.sql`).
 
@@ -865,7 +902,8 @@ translation documents, profiles/roles, `visa_security` questions, interview-prep
   ledger, before/after balances, unique `stripe_session_id` + `idempotency_key`),
   `standalone_unlocked_resources` (unique per user/type/resource), RPCs
   `deduct_wallet_credits_atomic` / `credit_wallet_topup_atomic` / `record_unlocked_resource_usage` /
-  `get_monthly_wallet_statement`, and a backfill of legacy `purchased_addons` into unlocks.
+  `get_monthly_wallet_statement`. (The original one-time backfill `20261013_05` and its clean-ups
+  `20261014_02` / `20261022_01` were folded into `20261023_02` below and deleted.)
   `20261014_01_harden_wallet_rpcs.sql` makes **all four RPCs service_role only** (they take
   `p_user_id`, so an `authenticated` grant let users mint credits / unlock for free), validates
   amounts > 0, and takes the wallet row lock BEFORE the idempotency / already-unlocked checks.
@@ -881,19 +919,41 @@ translation documents, profiles/roles, `visa_security` questions, interview-prep
   Oct 2026):** journey-embedded tools follow the journey plan (`useJourneyPlan`); STANDALONE
   tools/guides cost credits unless the user already owns standalone access (wallet unlock or a
   permanent legacy add-on). The account plan tier does NOT grant free standalone launches.
+  A per-category Interview Prep purchase (`interview-prep:<slug>`) stays per-category (catalog
+  `legacyAddonMatches` never maps it to the whole tool).
+  **Phase 7 (legacy add-ons).** `20261023_02_sync_legacy_addon_unlocks.sql` replaces the one-time
+  backfill with `legacy_addon_unlock_map()` (the catalog's `legacyAddonId` + `legacyGrantsUnlock`
+  items plus `civil-guid`; `__tests__/wallet/legacyBackfill.test.ts` fails on drift) and
+  `sync_legacy_addon_unlocks(user | NULL)` (service_role only, idempotent, never touches existing
+  rows), run for everyone and re-run by a `user_profiles` trigger whenever `purchased_addons`
+  changes. It deletes every backfilled row (no `transaction_id`) the map does not grant to that
+  user's add-ons (photo / service rows, guides stored as 'tool', the whole interview-prep tool for a
+  per-category purchase, retired ids), then re-syncs. Access still also comes from the live
+  `purchased_addons` read in `resolveUnlockedItems`, so the rows are a mirror, not the only source.
+  **`purchased_addons` and the other Stripe-written keys in `profile_details`
+  (`lib/profile/serverOwnedKeys.ts`) are server-owned:** `/api/profile/complete` keeps the stored
+  values whatever the client sends, and `20261023_01_protect_server_owned_profile_keys.sql` makes
+  `guard_user_profile_billing` restore them on any `authenticated` write. Before this, a signed-in
+  user could write their own add-on ledger (every add-on free) and a stale profile save could erase
+  a purchase. Keep the SQL key list and the TS list in sync (tested).
 
-**Security hardening.** `20260715_fix_rls_security_gaps`, `20260731_*`, `20260717/18_*`, and
+**Security hardening.** `20260731_*`, `20260717/18_*`, and
 `20260921_security_hardening_batch1`: triggers `guard_profile_role` (blocks self-setting
 `profiles.role`) and `guard_user_profile_billing` (blocks self-upgrading the tier), revoked
 anon writes on `profiles`/`user_profiles` and authenticated writes on `feature_usage`,
 tightened policies on `police_verification_requests`, `app_notifications`,
-`interview_categories`. `20260915_set_user_plan_free` is a data migration that reset plans to
-free.
+`interview_categories`.
 
-> **Rate limiting is NOT a DB table** — it is code-only (in-memory + optional Upstash
-> Redis). Big "combined"/"run_all" files exist
-> (`20260403_HASHIR_ALL_TABLES_COMBINED.sql`, `20260228_31_run_all_migrations.sql`) — be
-> careful about apply order and duplication.
+**Removed migration files (Oct 2026).** Deleting a file never changes a database it already ran
+on (there is no Supabase CLI migration tracking; files are applied by hand), so these were dropped
+as dead weight: the empty `20260715_fix_rls_security_gaps`, the psql-only
+`20260228_31_run_all_migrations` helper, `20260403_HASHIR_ALL_TABLES_COMBINED` (a second copy of
+the four `20260403_0x_*` tables with different constraint names; the split files are the
+definition), the one-user data patch `20260915_set_user_plan_free`,
+`20260228_23_create_user_journey_progress` (a legacy table no code reads or writes; it still
+exists on databases that ran it), and the wallet backfill trio above.
+
+> **Rate limiting is NOT a DB table** - it is code-only (in-memory + optional Upstash Redis).
 
 **Cross-cutting DB patterns:** RLS on every user table (own-row), GIN indexes on JSONB,
 triggers that cascade step -> chapter -> journey progress and auto-touch `updated_at`,
@@ -939,7 +999,7 @@ Python backend. Highlights:
 | `create-pdf`, `convert-pdf` | PDF generation/conversion | Python backend |
 | `admin/*` | `appointments`, `police-verifications`, `reviews`, `visa-cases`, guide feedback, `announce-feature`, `announce-blog`, `blog-comments`, `audit-logs`, `account-deletion-feedback`, `logout` (translation admin lives under `document-translation/*`) | Supabase, Resend |
 | `dev/*` | dev-only debug (`debug-reminders`, `seed-notifications`); hard-404 in production | Supabase |
-| `analytics`, `notifications`, `feature-usage`, `feedback`, `reviews` | GA4 + app telemetry/feedback (feedback also -> Google Sheets) | GA4, Supabase, Sheets |
+| `analytics`, `notifications`, `feature-usage`, `feedback`, `reviews` | GA4 + app telemetry/feedback (feedback also -> Google Sheets). `feature-usage` resolves the tier server-side from `scope` (`lib/usage/resolveUsageTier.ts`: `journey` = owned journey's tier, `standalone` = no plan + legacy add-on pools, wallet unlock = unlimited, default = account tier); a client `tier` is ignored | GA4, Supabase, Sheets |
 | `v1/journeys/[id]/*`, `v2/ir1-estimate` | RESTful journey-scoped resources; IR-1 estimate | Supabase, ir1-engine |
 
 **Conventions:** auth via Supabase session; shared guards in `lib/api/authGuards.ts` (required
@@ -985,7 +1045,14 @@ Components consume these via hooks/contexts; they should not re-implement domain
   `resolveSubscriptionTier`, `isRahvanaJourneySubscription`). **Plan** —
   `lib/plan/reconcile.ts`. **Payments** — `lib/payments/addon-purchase-ledger.ts`
   (idempotency ledger of processed add-on checkout sessions in `profile_details`).
-- **Wallet** — `lib/wallet/topup.ts`: top-up packs (10/25/50/100), `WALLET_MIN_TOPUP = 5` (an
+- **No more dollar add-ons (Oct 2026).** The pricing page sells journey plans only; its
+  Tools / Guides / Services tabs and the `/resources/[slug]` pages quote credit prices and link to
+  each resource's own page (credit unlock or per-booking payment). `UpgradeModal` offers "upgrade"
+  or "use it on its own with credits" (a link to the standalone page), never a dollar add-on.
+  `/api/stripe/checkout` refuses any `addons` (400 `ADDONS_DISCONTINUED`). Add-ons bought before
+  this keep working: the webhook / verify-session still record paid add-on sessions,
+  `purchased_addons` still grants journey access and legacy unlocks.
+- **Wallet** - `lib/wallet/topup.ts`: top-up packs (10/25/50/100), `WALLET_MIN_TOPUP = 5` (an
   exact deficit below it is lifted to it), whole credits only, max 1000. `applyWalletTopup` is
   called by BOTH the webhook (`checkout.session.completed` + `async_payment_succeeded`) and
   verify-session; it requires `payment_status === "paid"`, derives credits from Stripe's
@@ -1003,8 +1070,22 @@ Components consume these via hooks/contexts; they should not re-implement domain
   decides free standalone access: an active `standalone_unlocked_resources` row OR a legacy
   `purchased_addons` entry that grants permanent access (`legacyGrantsUnlock`; `civil-guid` =
   every guide, `interview-prep:*` = interview prep). Consumables (photo, every service) never
-  grant unlimited access from a legacy purchase. **Services are `launchable: false`**: the deduct
-  RPC writes a permanent unlock, so per-booking credit payment needs its own flow first.
+  grant unlimited access from a legacy purchase. **Services are `launchable: false`**: the unlock
+  RPC refuses them; they are paid per booking through `lib/wallet/serviceBooking.ts`
+  (`deductServiceBooking`, `/api/wallet/deduct-service`). It requires the caller's own unpaid
+  booking id (`referenceId`), derives the idempotency key from it
+  (`service_booking:<user>:<service>:<booking>`), returns success without charging for an
+  already-paid booking, marks the row paid after the charge (a failed update is a 500
+  `BOOKING_UPDATE_FAILED`; a retry replays the charge and finishes it) and only then notifies
+  admins. `deduct_service_credits_atomic` (`20261023_03`) requires the reference, treats an
+  existing charge for (user, service, booking) as the replay, refuses a key reused for another
+  booking, and keeps caller metadata from overwriting `reference_id` (unique index backstop). The
+  booking tools check the balance before creating a draft and reuse the same draft on a retry
+  (`pendingDraftRef`), so a retry never books or charges twice. `CreditLaunchModal` never charges
+  for a service: services cards go straight to the booking form.
+  **Webhook retries:** `applyWalletTopup` / `applyWalletRefund` return `rpc_failed` (webhook 500,
+  Stripe retries) only for transient errors (`isTransientRpcError`: no SQLSTATE, or class 08 / 40 /
+  53 / 57); data errors are `rpc_rejected` (logged, 200).
   `lib/wallet/launch.ts` (`launchResource`) skips the charge for owned items, namespaces the
   client idempotency key as `launch:<user>:<type>:<id>:<key>` (the ledger index is global), and
   maps `INSUFFICIENT_CREDITS` to 402 with `topupAmountForDeficit`. `lib/wallet/state.ts`
@@ -1090,6 +1171,49 @@ lens, compare, confetti).
 - **Shared:** `ModalScrollLock` (global modal scroll lock, see 27), `AuthRequiredModal`, `CountryAutoComplete`, `ConfirmationModal`,
   `MFAPromptModal`, `ToastProvider`, `UrduKeyboard`, `DataTable`.
 - **Chat:** `FloatingChatWidget` -> `ChatInterface`.
+- **Wallet:** `wallet/WalletBalancePill` (SiteHeader, signed-in only, opens the top-up modal),
+  `wallet/WalletTopupModal` (rendered by `WalletProvider`, portalled to `<body>`),
+  `wallet/CreditLaunchModal` (Phase 5: confirm + deduct for a standalone tool/guide, or an
+  exact-deficit / pack top-up straight to Stripe when short). The `/tools` and `/guides` cards
+  show a dual CTA (Preview + Launch N credits) when an item is plan-locked, has a catalog price
+  (`lib/wallet/resourceMapping.ts` maps page ids to catalog ids) and is not wallet-unlocked.
+  **Phase 6 enforcement (tools done; guides/services owned by another developer).** Rule:
+  journey-embedded tools follow the journey plan; STANDALONE priced tools need a wallet unlock
+  (credits, or a permanent legacy add-on reported by `/api/wallet`) even for plan holders.
+  - `ResultGate standaloneToolId` (pass only when `!isJourney`) ignores the plan tier: the result
+    opens for a wallet unlock or `standaloneGranted` (access the caller verified, e.g. a legacy
+    per-category Interview Prep purchase); the lock card offers "Unlock for N credits"
+    (`CreditLaunchModal onLaunched` unlocks in place). Without the prop the plan rule is unchanged.
+    The teammate's `resolveStandaloneAccess` (guides) still lets a plan open; tools do not use it.
+  - Non-`ResultGate` gates use `useStandaloneToolUnlock(id | null)` (`null` in journey mode, so a
+    journey never reads wallet unlocks). `/tools` cards: a priced tool is owned only when
+    wallet-unlocked.
+  - **Photo Booth:** journey = journey tier (Executive unlimited); standalone = wallet unlock
+    unlimited, else only legacy purchased photo credits. Usage goes through `/api/feature-usage`
+    with a `scope` (below).
+  - **Smart Form Filler:** every PDF (preview, download, vault save) goes through
+    `POST /api/visa-forms/[formCode]/pdf`, which decides full vs page 1 server-side
+    (`lib/forms/smartFormAccess.ts`: journey = owned journey's tier + account add-ons, like
+    `useJourneyPlan`; standalone = wallet unlock / legacy "smart") and proxies to the Python
+    `/fill-pdf` with `X-Internal-Token: PDF_FILL_INTERNAL_TOKEN` only for a full fill. The backend
+    refuses a full USCIS form fill without that token (page-1 previews and the public
+    police/authority letters stay open). **The gate is only active once `PDF_FILL_INTERNAL_TOKEN`
+    is set on BOTH the Next.js server and the backend**; until then the backend logs a warning
+    and allows full fills. `MultiStepForm` journey access = `canUse("smart_form_filler",
+    journeyTier, addons)` (Basic journeys get the page-1 demo), standalone = wallet unlock.
+  - **Interview Prep:** `POST /api/interview-prep` with `source: "journey"` calls
+    `validateJourneySessionCreation` (owned journey via `resolveOwnedJourney`, journey still
+    active, `basic_interview_prep` on the journey tier + add-ons) and creates a `source =
+    journey` session (`createJourneyInterviewSession`); it used to create a paid tool session.
+    Standalone sessions (`validateToolSessionCreation`) ignore the plan: a credit unlock or the
+    bare `interview-prep` add-on = unlimited, every category; a per-category purchase
+    (`interview-prep:<slug>`) keeps its per-category session count. `/api/interview-prep/categories
+    ?scope=journey` skips wallet data. Client: `ResultPage isStandalone` + `standaloneGranted`
+    (category purchase) -> free demo without access, full with it; Rapid Fire / Mock take
+    `isStandalone` / `standaloneFull`.
+  - `lib/journey/resolveOwnedJourney.ts` is the shared ownership check: journey row id, or a
+    slug/category + candidate matched on canonical identity, always filtered by `user_id`.
+  - `WalletContext.isLoading` stays true until the first fetch for the signed-in user settles.
 
 Pattern: shadcn primitives at the base, thin custom wrappers, composition over
 inheritance, i18n via `useLanguage().t()`, gating via `usePlan()`.
@@ -1138,7 +1262,8 @@ Permissions-Policy, XSS) are applied globally via `next.config.mjs` `headers()`.
   `NEXT_PUBLIC_API_URL` (Python backend), `NEXT_PUBLIC_ENABLE_IR5` /
   `NEXT_PUBLIC_ENVIRONMENT` (IR-5 flag), `CRON_SECRET`, `NEXT_PUBLIC_APP_URL`,
   `NEXT_PUBLIC_SITE_URL`, `EMAIL_FROM`, `OCR_SPACE_API_KEY`, `NEXT_PUBLIC_PROPERTY_ID` (GA4),
-  `PYTHON_API_URL`, `COMPRESSION_API_URL`, `USCIS_ENV` / `USCIS_CLIENT_ID` /
+  `PYTHON_API_URL`, `COMPRESSION_API_URL`, `PDF_FILL_INTERNAL_TOKEN` (shared secret, set on the
+  Next.js server AND the backend: gates full Smart Form Filler PDFs, see 15), `USCIS_ENV` / `USCIS_CLIENT_ID` /
   `USCIS_CLIENT_SECRET`, `TOOL_WEBHOOK_SECRET`, `EASYPOST_WEBHOOK_SECRET`, `GOOGLE_SHEET_ID`,
   `NEXT_PUBLIC_GEOAPIFY_API_KEY`, and ~30 Stripe price IDs (`STRIPE_*_PRICE_ID`,
   `STRIPE_ADDON_*`, legacy `STRIPE_PRICE_ID_PRO` / `STRIPE_PRICE_ID_PLUS`). Backend `.env`:
@@ -1192,7 +1317,7 @@ Permissions-Policy, XSS) are applied globally via `next.config.mjs` `headers()`.
 ## 21. Application Lifecycle
 
 1. **Frontend boot:** root `app/layout.tsx` mounts `ModalScrollLock`, then providers
-   (Toast -> Auth -> UserProfile -> Candidate -> Plan -> QuickAccess -> Language).
+   (Toast -> Auth -> UserProfile -> Candidate -> Plan -> QuickAccess -> Wallet -> Language).
 2. **Request:** `middleware.ts` refreshes session + guards routes + crawler/body guards.
 3. **Auth resolves:** AuthContext loads user; UserProfileContext loads MasterProfile once;
    CandidateContext resolves the roster + active candidate; PlanContext loads account +
@@ -1420,7 +1545,8 @@ External: Stripe . Resend . EasyPost . Gemini . USCIS . GA4 . Sheets . OCR.space
   backstop).
 - **`outputFileTracingIncludes`** bundles `data/**` into API routes (routes read
   `data/visa-category/*.json` at runtime).
-- Migrations include big "combined"/"run_all" files — mind apply order and duplication.
+- Migrations are applied by hand in filename order (no CLI tracking); a removed file only
+  matters for a fresh database.
 
 ---
 
@@ -1498,7 +1624,7 @@ OCR.space / Upstash** integrations. Deployed on Vercel + Render.
 **Shape.** `app/` has route groups `(auth)`, `(main)`, `(tools)`, `admin/`, and
 **`app/api/*` (~165 handlers, ~45 groups) acting as a BFF**. Domain logic is in **`lib/`**.
 Live journey config is in **`data/visa-category/*.json`**. DB schema is in
-**`supabase/migrations/`** (~89 files). Shared types in **`types/`**.
+**`supabase/migrations/`** (~97 files). Shared types in **`types/`**.
 
 **Core model.** `data/visa-category/*.json` is the **source of truth**: journey ->
 chapters -> **steps**, each step carrying `who` (petitioner/beneficiary/both),
@@ -1512,7 +1638,7 @@ route by slug: IR-1/CR-1 -> `RoadmapLayoutSpouse`, chapters-schema (IR-5+) ->
 `RoadmapLayoutEngine`, old stages-schema -> legacy `Wizard`.
 
 **State.** Global React Contexts (nesting: Toast > Auth > UserProfile > Candidate > Plan >
-QuickAccess > Language): **Candidate** (multi-candidate roster, one journey per candidate,
+QuickAccess > Wallet > Language): **Candidate** (multi-candidate roster, one journey per candidate,
 active journey scope), **Auth**, **Plan** (tier + entitlements; per-journey tier via
 `useJourneyPlan` inside dashboards; DB
 `core/plus/pro` -> `basic/premium/executive`; reconcile throttled to once/24h per user),

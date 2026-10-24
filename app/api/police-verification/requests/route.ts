@@ -43,6 +43,9 @@ export async function GET() {
     const { data, error } = await supabase
       .from("police_verification_requests")
       .select("*")
+      .neq("awaiting_payment", true)
+      .neq("payment_status", "pending")
+      .neq("payment_status", "failed")
       .order("created_at", { ascending: false });
 
     if (error) {
