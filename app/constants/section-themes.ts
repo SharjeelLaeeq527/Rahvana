@@ -48,9 +48,11 @@ export const SECTION_THEMES: Record<
     bgColor: "bg-green-100",
     iconColor: "text-green-700",
     valueBg: "#E8F0ED",
-    valueColor: "#89A4A0",
+    // Darker sage: the old #89A4A0 was too pale for white button text and
+    // made an enabled Next button look disabled.
+    valueColor: "#4F6F69",
 
-    primary: "#89A4A0",
+    primary: "#4F6F69",
     primaryLight: "#E8F0ED",
   },
 

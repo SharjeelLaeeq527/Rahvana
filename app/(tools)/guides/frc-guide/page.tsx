@@ -277,7 +277,7 @@ const FrcGuide = () => {
       <div className="flex min-h-screen flex-col bg-[#f5f7fa] pt-26">
         <WizardHeader onWhatsThis={() => setShowWhatsThis(true)} title={guideData.wizard.title} />
 
-        <div className="grid h-[calc(100vh-56px)] flex-1 grid-cols-1 gap-4 overflow-y-auto xl:h-auto xl:grid-cols-[320px_minmax(0,1fr)_350px] xl:items-start xl:gap-6 xl:overflow-hidden">
+        <div className="grid flex-1 grid-cols-1 gap-4 xl:grid-cols-[320px_minmax(0,1fr)_350px] xl:items-start xl:gap-6">
           <WizardSidebar
             currentStep={STEP_IDS.indexOf(currentStepId)}
             steps={STEP_IDS}
