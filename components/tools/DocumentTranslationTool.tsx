@@ -87,9 +87,15 @@ export default function DocumentTranslationTool({
     setDocumentType("");
     setUserNotes("");
     setError(null);
+    setCheckoutError(null);
     setUploadSuccess(false);
+    setCurrentStep(1);
+    pendingDraftRef.current = null;
 
     if (fileInputRef.current) fileInputRef.current.value = "";
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }, 50);
   };
 
   // Handle file selection
@@ -758,6 +764,7 @@ export default function DocumentTranslationTool({
       ) : (
         <SuccessState
           onGoToRequests={() => (window.location.href = "/document-translation/my-requests")}
+          onUploadAnother={reset}
           isJourney={isJourney}
         />
       )}
