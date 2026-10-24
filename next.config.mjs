@@ -163,6 +163,13 @@ const nextConfig = {
     return config;
   },
 
+  // pdfkit reads its standard-font AFM metrics from <package>/js/data at
+  // runtime. When bundled into .next/server/vendor-chunks that data folder is
+  // never copied (ENOENT Helvetica.afm on every PDF request), so keep pdfkit
+  // external and require it straight from node_modules. Benefits every
+  // server-side PDF route (/api/create-pdf, /api/wallet/transactions/statement).
+  serverExternalPackages: ["pdfkit"],
+
   // Turbopack (used by `next build --turbopack`) doesn't accept `false` as an
   // alias, so point `canvas` at a harmless mock module instead.
   turbopack: {
