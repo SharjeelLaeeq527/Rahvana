@@ -2716,9 +2716,9 @@ function PricingContent() {
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {[
-                      { href: "/tools", label: "Browse tools" },
-                      { href: "/guides", label: "Browse guides" },
-                      { href: "/services", label: "Browse services" },
+                      { href: "/resources?tab=toolbox", label: "Browse tools" },
+                      { href: "/resources?tab=guides", label: "Browse guides" },
+                      { href: "/resources?tab=services", label: "Browse services" },
                     ].map((link) => (
                       <Link
                         key={link.href}
