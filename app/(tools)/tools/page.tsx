@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   Search,
-  Coins,
+  // Coins, // Unused now — replaced by <CreditTypeIcon kind="tools" /> (kept for reference)
   LifeBuoy,
   MessageSquare,
   Calculator,
@@ -27,6 +27,9 @@ import ResourceSectionHeader from "@/components/resources/ResourceSectionHeader"
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 import { useWallet } from "@/app/context/WalletContext";
 import { getToolCatalogItem, withPreviewMode } from "@/lib/wallet/resourceMapping";
+import { useJourneyEnvironment } from "@/app/context/JourneyEnvironmentContext";
+import CreditTypeIcon from "@/components/resources/CreditTypeIcon";
+import CreditInfoTooltip from "@/components/resources/CreditInfoTooltip";
 import type { WalletCatalogItem } from "@/lib/wallet/catalog";
 import { CreditLaunchModal } from "@/app/components/wallet/CreditLaunchModal";
 import { useQuickAccess } from "@/app/context/QuickAccessContext";
@@ -229,7 +232,11 @@ export default function ToolsPage({ isEmbedded = false }: { isEmbedded?: boolean
   } | null>(null);
   const { t } = useLanguage();
   const plan = usePlan();
+  // Wallet state + journey context drive standalone ownership: outside a journey,
+  // catalog tools are owned via credit unlock / legacy add-on only (plan tier does
+  // NOT unlock standalone tools in My Resources).
   const wallet = useWallet();
+  const { isInsideJourney } = useJourneyEnvironment();
 
   const containerRef = React.useRef<HTMLDivElement>(null);
   const measureRef = React.useRef<HTMLDivElement>(null);
@@ -291,13 +298,16 @@ export default function ToolsPage({ isEmbedded = false }: { isEmbedded?: boolean
   //  • "My Tools"     — tools the user owns (free/public, wallet-unlocked, or plan-unlocked
   //                     for tools with no credit price)
   //  • "Browse Tools" — everything else, shown as locked/"Unlock" cards to explore
-  // Priced standalone tools are paid with credits even by plan holders, so for them
-  // only a wallet unlock (incl. grandfathered legacy add-ons) counts as owned.
+  // ORIGINAL (plan-tier ownership) — commented out per product decision:
+  // const isOwned = (feature?: string) => !feature || (!plan.isLoading && !plan.isLocked(feature));
   const isOwned = (tool: Tool) => {
-    const item = getToolCatalogItem(tool.id);
-    if (item) return !wallet.isLoading && wallet.isUnlocked(item.resourceId, item.resourceType);
-    const feature = tool.entitlementFeature;
-    return !feature || (!plan.isLoading && !plan.isLocked(feature));
+    const catalogItem = getToolCatalogItem(tool.id);
+    if (catalogItem && !isInsideJourney) {
+      return (
+        !wallet.isLoading && wallet.isUnlocked(catalogItem.resourceId, catalogItem.resourceType)
+      );
+    }
+    return !tool.entitlementFeature || (!plan.isLoading && !plan.isLocked(tool.entitlementFeature));
   };
   const ownedTools = filteredTools.filter((tool) => isOwned(tool));
   const browseTools = filteredTools.filter((tool) => !isOwned(tool));
@@ -335,7 +345,7 @@ export default function ToolsPage({ isEmbedded = false }: { isEmbedded?: boolean
         <div className="absolute right-[10%] bottom-[20%] h-[600px] w-[600px] rounded-full bg-[#32e0c4]/5 blur-3xl" />
       </div>
 
-      <div className="site-main-px site-main-py">
+      <div className="mx-auto w-full px-6 py-8">
         {/* Hero — hidden in the embedded "My Resources" view */}
         {!isEmbedded && (
           <section className="mb-5 pt-1 text-center md:mb-10">
@@ -556,6 +566,7 @@ function ToolCard({
   const plan = usePlan();
   const wallet = useWallet();
   const { isInQuickAccess } = useQuickAccess();
+  const { isInsideJourney } = useJourneyEnvironment();
 
   const planLocked =
     !!tool.entitlementFeature && !plan.isLoading && plan.isLocked(tool.entitlementFeature);
@@ -565,7 +576,11 @@ function ToolCard({
   const catalogItem = getToolCatalogItem(tool.id);
   const walletUnlocked =
     !!catalogItem && wallet.isUnlocked(catalogItem.resourceId, catalogItem.resourceType);
-  const isLocked = catalogItem ? !wallet.isLoading && !walletUnlocked : planLocked;
+  // ORIGINAL: const isLocked = planLocked && !walletUnlocked;
+  // Standalone catalog tools: credits/legacy add-on only — plan tier never
+  // unlocks them outside a journey. Inside a journey, plan entitlement rules.
+  const isLocked =
+    catalogItem && !isInsideJourney ? !walletUnlocked : planLocked && !walletUnlocked;
 
   // Credit-purchasable and still locked -> the card becomes a dual-CTA card.
   const showDualCta = !!catalogItem && isLocked && !tool.disabled;
@@ -689,20 +704,34 @@ function ToolCard({
       {/* Footer */}
       <div className="border-border relative z-10 mt-auto flex flex-col border-t pt-3">
         {showDualCta && catalogItem && (
-          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2.5">
-            <div className="flex flex-col">
-              <span className="flex items-center gap-1.5 text-sm font-bold text-slate-900 tabular-nums dark:text-white">
-                <Coins size={14} className="text-[#0d7377] dark:text-[#32e0c4]" aria-hidden="true" />
-                {catalogItem.credits} credits
-              </span>
+          <>
+            <div className="mb-2.5 flex items-center justify-between gap-2 text-sm font-bold text-[#0d7377] dark:text-[#32e0c4]">
+              <div className="flex min-w-0 items-center gap-2">
+                <CreditTypeIcon kind="tools" size={22} />
+                <span>{catalogItem.credits}</span>
+              </div>
+
+              <CreditInfoTooltip
+                message="Unlock once: pay these credits one time, then use this tool as much as you like."
+                side="top"
+              />
             </div>
-            <div className="flex items-center gap-2">
+
+            {/* Preview CTA removed from My Resources — now links to the resource
+                detail page (preview moved to /resources/[slug]). ORIGINAL:
+                <Link href={withPreviewMode(tool.href)} ...>Preview Tool</Link>
+            */}
+            <div className="flex items-center gap-2.5">
               <Link
-                href={withPreviewMode(tool.href)}
+                href={
+                  catalogItem.legacyAddonId
+                    ? `/resources/${catalogItem.legacyAddonId}`
+                    : withPreviewMode(tool.href)
+                }
                 onClick={(e) => e.stopPropagation()}
                 className="inline-flex h-9 items-center rounded-lg border border-slate-200 bg-white px-3.5 text-[13px] font-semibold whitespace-nowrap text-slate-700 transition-colors hover:border-[#0d7377]/40 hover:text-[#0d7377]"
               >
-                Preview
+                {catalogItem.legacyAddonId ? "View Details" : "Preview Tool"}
               </Link>
               <button
                 type="button"
@@ -713,7 +742,12 @@ function ToolCard({
                 Launch
               </button>
             </div>
-          </div>
+            {/* Caption referenced the old Preview CTA — moved to detail page. ORIGINAL:
+                <p className="mt-2 text-[11px] leading-snug font-medium text-slate-400">
+                  Preview is free. Launching permanently unlocks full access with your wallet credits.
+                </p>
+            */}
+          </>
         )}
         {!showDualCta && (
           <div className="flex items-center justify-between">

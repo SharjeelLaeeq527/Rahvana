@@ -120,14 +120,14 @@ export function ExplorerJourneyCard({
               </Link>
             )}
 
-            {/* Select Journey */}
+            {/* See Journey Plans */}
             {onSelect && (
               <button
                 type="button"
                 onClick={onSelect}
                 className="inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full border border-[var(--rv-line)] bg-white px-5 py-3 text-xs font-semibold text-[var(--rv-navy)] transition duration-200 hover:-translate-y-0.5 hover:bg-[var(--rv-sky)]"
               >
-                Select Journey
+                See Journey Plans
                 <ArrowRight className="h-4 w-4" />
               </button>
             )}
