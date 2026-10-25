@@ -55,6 +55,12 @@ export default function RoadmapLayoutSpouse({ data, state, actions }: RoadmapLay
   const [view, setView] = useState<ViewType>("dashboard");
   const [selectedChapterIdx, setSelectedChapterIdx] = useState<number>(0);
   const [activeToolKey, setActiveToolKey] = useState<string | null>(null);
+
+  const [activeToolAutoCompleteStep, setActiveToolAutoCompleteStep] = useState<string | null>(null);
+  const launchTool = (toolKey: string, autoCompleteStepKey?: string | null) => {
+    setActiveToolAutoCompleteStep(autoCompleteStepKey ?? null);
+    setActiveToolKey(toolKey);
+  };
   const [journeyOverlayName, setJourneyOverlayName] = useState<string | null>(null);
 
   useEffect(() => {
@@ -64,12 +70,6 @@ export default function RoadmapLayoutSpouse({ data, state, actions }: RoadmapLay
     window.addEventListener("journey-overlay-name", handleOverlayName);
     return () => window.removeEventListener("journey-overlay-name", handleOverlayName);
   }, []);
-
-  const [activeToolAutoCompleteStep, setActiveToolAutoCompleteStep] = useState<string | null>(null);
-  const launchTool = (toolKey: string, autoCompleteStepKey?: string | null) => {
-    setActiveToolAutoCompleteStep(autoCompleteStepKey ?? null);
-    setActiveToolKey(toolKey);
-  };
 
   const { showToast } = useToast();
   const { user } = useAuth();
@@ -367,6 +367,7 @@ export default function RoadmapLayoutSpouse({ data, state, actions }: RoadmapLay
             data={data}
             state={state}
             actions={actions}
+            journeyTier={state.subscriptionTier}
           />
         ) : (
           <>

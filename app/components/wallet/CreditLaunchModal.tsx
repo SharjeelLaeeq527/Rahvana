@@ -22,7 +22,13 @@ import { useAuth } from "@/app/context/AuthContext";
 type Props = {
   item: WalletCatalogItem;
   /** URL to open after the resource launches successfully. */
-  href: string;
+  href?: string;
+  /**
+   * Called instead of navigating when the launch succeeds. Used by an in-tool
+   * lock card: the tool is already open, so it should unlock in place and keep
+   * whatever the user has entered.
+   */
+  onLaunched?: () => void;
   onClose: () => void;
 };
 
@@ -33,7 +39,7 @@ type Insufficient = {
   topupAmount: number;
 };
 
-export function CreditLaunchModal({ item, href, onClose }: Props) {
+export function CreditLaunchModal({ item, href, onLaunched, onClose }: Props) {
   const router = useRouter();
   const { balance, isLoading, launchResource } = useWallet();
   const { isAuthenticated } = useAuth();
@@ -43,8 +49,15 @@ export function CreditLaunchModal({ item, href, onClose }: Props) {
   // Server-declared shortfall (402 on confirm). Only overrides the derived state.
   const [serverShortfall, setServerShortfall] = useState<Insufficient | null>(null);
   const [topupBusy, setTopupBusy] = useState(false);
+  // Top-up option picked in the shortfall state; null = the exact amount.
+  const [pickedTopup, setPickedTopup] = useState<number | null>(null);
 
-  const kind = item.resourceType === "guide" ? "Guide" : "Tool";
+  const kind =
+    item.resourceType === "guide"
+      ? "Guide"
+      : item.resourceType === "service"
+        ? "Service"
+        : "Tool";
   const balanceAfter = balance !== null ? balance - item.credits : null;
 
   // Decide the state from the balance up front instead of round-tripping the
@@ -75,14 +88,25 @@ export function CreditLaunchModal({ item, href, onClose }: Props) {
 
   const handleConfirm = async () => {
     if (charging) return;
+    // Services are charged per booking, by the booking form itself (with the
+    // booking id). Charging here would take credits for no booking, then again.
+    if (item.resourceType === "service") {
+      onClose();
+      if (href) router.push(href);
+      return;
+    }
     setCharging(true);
     setError(null);
     const result = await launchResource(item.resourceType, item.resourceId);
     const body = result.body;
 
     if (body.success) {
+      if (onLaunched) {
+        onLaunched();
+        return;
+      }
       onClose();
-      router.push(href);
+      if (href) router.push(href);
       return;
     }
     if (result.status === 402) {
@@ -124,12 +148,17 @@ export function CreditLaunchModal({ item, href, onClose }: Props) {
     }
   };
 
-  // Show larger bundles that cover the shortfall, but skip the exact amount.
-  const bundles = shortfall
-    ? WALLET_TOPUP_PACKS.filter(
-        (pack) => pack >= shortfall.topupAmount && pack !== shortfall.topupAmount
-      )
+  // Exact amount first, then up to two larger packs that also cover the shortfall.
+  const topupOptions = shortfall
+    ? [
+        shortfall.topupAmount,
+        ...WALLET_TOPUP_PACKS.filter((pack) => pack > shortfall.topupAmount).slice(0, 2),
+      ]
     : [];
+  const selectedTopup =
+    pickedTopup !== null && topupOptions.includes(pickedTopup)
+      ? pickedTopup
+      : (topupOptions[0] ?? 0);
 
   return createPortal(
     <div
@@ -166,12 +195,14 @@ export function CreditLaunchModal({ item, href, onClose }: Props) {
                 id="credit-launch-title"
                 className="text-[18px] font-extrabold tracking-tight text-[#0d7377]"
               >
-                {shortfall ? "Insufficient Credits" : `Launch ${item.name}`}
+                {item.resourceType === "service" ? `Book ${item.name}` : `Launch ${item.name}`}
               </h2>
               <p className="text-[12px] font-medium text-slate-600">
                 {shortfall
-                  ? "Top up to finish launching this standalone resource."
-                  : `Standalone ${kind} - one-time unlock`}
+                  ? "Add credits to continue"
+                  : item.resourceType === "service"
+                    ? "Book this service using your Rahvana credits"
+                    : "Pay once, use it as often as you like"}
               </p>
             </div>
           </div>
@@ -200,7 +231,7 @@ export function CreditLaunchModal({ item, href, onClose }: Props) {
               <p className="flex items-center gap-2 text-[13.5px] font-medium text-slate-500">
                 {isLoading ? (
                   <>
-                    <Loader2 size={15} className="animate-spin" /> Checking your wallet…
+                    <Loader2 size={15} className="animate-spin" /> Checking your wallet...
                   </>
                 ) : (
                   "Could not load your wallet balance. Close and try again."
@@ -208,12 +239,6 @@ export function CreditLaunchModal({ item, href, onClose }: Props) {
               </p>
             ) : (
               <>
-                <p className="text-[13.5px] leading-relaxed text-slate-700">
-                  This standalone {kind.toLowerCase()} requires{" "}
-                  <strong>{item.credits} Rahvana Credits</strong>. Launching will permanently unlock
-                  full access for your account.
-                </p>
-
                 <div className="rounded-2xl border border-slate-200 bg-slate-50/60 px-4 py-3">
                   <div className="flex items-center justify-between py-1.5 text-[13px]">
                     <span className="font-medium text-slate-500">Your Wallet Balance</span>
@@ -226,7 +251,9 @@ export function CreditLaunchModal({ item, href, onClose }: Props) {
                     </span>
                   </div>
                   <div className="flex items-center justify-between border-t border-slate-200 py-1.5 text-[13px]">
-                    <span className="font-medium text-slate-500">Balance After Launch</span>
+                    <span className="font-medium text-slate-500">
+                      Balance After {item.resourceType === "service" ? "Booking" : "Launch"}
+                    </span>
                     <span className="font-extrabold text-[#0d7377] tabular-nums">
                       {balanceAfter} Credits
                     </span>
@@ -242,17 +269,79 @@ export function CreditLaunchModal({ item, href, onClose }: Props) {
             )}
 
             <p className="text-[11.5px] leading-relaxed text-slate-500">
-              $1 = 1 credit. One launch = unlimited standalone use - you will not be charged again.
-              Tools inside your journey never use credits.
+              $1 = 1 credit. {item.resourceType === "service" ? "Services inside your journey never use credits." : "Tools inside your journey never use credits."}
             </p>
           </div>
         ) : (
           <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-5 py-5">
-            <p className="text-[13.5px] leading-relaxed text-slate-700">
-              This {kind.toLowerCase()} requires <strong>{shortfall.required} Credits</strong>, but
-              you only have <strong>{shortfall.available} Credits</strong>. You need{" "}
-              <strong>{Math.ceil(shortfall.deficit)} more credits</strong> to launch it.
-            </p>
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/60 px-4 py-3">
+              <div className="flex items-center justify-between py-1.5 text-[13px]">
+                <span className="font-medium text-slate-500">Your Wallet Balance</span>
+                <span className="font-bold text-slate-900 tabular-nums">
+                  {shortfall.available} Credits
+                </span>
+              </div>
+              <div className="flex items-center justify-between border-t border-slate-200 py-1.5 text-[13px]">
+                <span className="font-medium text-slate-500">{kind} Cost</span>
+                <span className="font-bold text-slate-900 tabular-nums">
+                  {shortfall.required} Credits
+                </span>
+              </div>
+              <div className="flex items-center justify-between border-t border-slate-200 py-1.5 text-[13px]">
+                <span className="font-medium text-slate-500">Credits Needed</span>
+                <span className="font-extrabold text-amber-600 tabular-nums">
+                  {Math.ceil(shortfall.deficit)} Credits
+                </span>
+              </div>
+            </div>
+
+            <div role="radiogroup" aria-label="Top-up amount" className="flex flex-col gap-2">
+              <p className="text-[12px] font-bold text-slate-700">Choose a top-up</p>
+              {topupOptions.map((amount) => {
+                const active = amount === selectedTopup;
+                const leftAfter = amount + shortfall.available - shortfall.required;
+                return (
+                  <button
+                    key={amount}
+                    type="button"
+                    role="radio"
+                    aria-checked={active}
+                    onClick={() => setPickedTopup(amount)}
+                    disabled={topupBusy}
+                    className={`flex items-center justify-between rounded-xl border px-4 py-3 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+                      active
+                        ? "border-[#0d7377] bg-[#0d7377]/5 ring-1 ring-[#0d7377]"
+                        : "border-slate-200 hover:border-[#0d7377]/40"
+                    }`}
+                  >
+                    <span className="flex items-center gap-3">
+                      <span
+                        className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 ${
+                          active ? "border-[#0d7377]" : "border-slate-300"
+                        }`}
+                      >
+                        {active && <span className="h-2 w-2 rounded-full bg-[#0d7377]" />}
+                      </span>
+                      <span>
+                        <span className="block text-[14px] font-bold text-slate-900 tabular-nums">
+                          {amount} credits
+                        </span>
+                        <span className="block text-[11.5px] font-medium text-slate-500">
+                          {/* Spell out the math (balance + top-up - cost) so the
+                              leftover is not read as "top-up minus needed". */}
+                          {leftAfter <= 0
+                            ? `Balance becomes ${shortfall.available + amount}, exactly the ${shortfall.required} you need`
+                            : `Balance becomes ${shortfall.available + amount}, ${leftAfter} left after the ${shortfall.required}-credit unlock`}
+                        </span>
+                      </span>
+                    </span>
+                    <span className="text-[14px] font-bold text-slate-900 tabular-nums">
+                      ${amount}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
 
             {error && (
               <p className="rounded-xl bg-red-50 px-3 py-2 text-[12.5px] font-medium text-red-700">
@@ -260,44 +349,10 @@ export function CreditLaunchModal({ item, href, onClose }: Props) {
               </p>
             )}
 
-            <button
-              type="button"
-              onClick={() => startTopup(shortfall.topupAmount)}
-              disabled={topupBusy}
-              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#0d7377] px-4 py-3 text-[14px] font-bold text-white transition-colors hover:bg-[#0a5c5f] disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {topupBusy ? (
-                <>
-                  <Loader2 size={16} className="animate-spin" /> Opening secure payment…
-                </>
-              ) : (
-                `Top Up Exact Amount: $${shortfall.topupAmount} (${shortfall.topupAmount} Credits)`
-              )}
-            </button>
-
-            {bundles.length > 0 && (
-              <>
-                <p className="text-[12px] font-bold text-slate-700">Or choose a credit bundle:</p>
-                <div className="grid grid-cols-3 gap-2.5">
-                  {bundles.map((pack) => (
-                    <button
-                      key={pack}
-                      type="button"
-                      onClick={() => startTopup(pack)}
-                      disabled={topupBusy}
-                      className="rounded-2xl border border-slate-200 px-3 py-2.5 text-center transition-all hover:border-[#0d7377]/50 hover:bg-[#0d7377]/5 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      <span className="block text-[15px] font-extrabold text-slate-900">
-                        ${pack}
-                      </span>
-                      <span className="block text-[11px] font-medium text-slate-500">
-                        {pack} credits
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
+            <p className="text-[11.5px] leading-relaxed text-slate-500">
+              $1 = 1 credit. Secure payment by Stripe. You come back here after paying and can
+              launch right away.
+            </p>
           </div>
         )}
 
@@ -318,27 +373,48 @@ export function CreditLaunchModal({ item, href, onClose }: Props) {
                   type="button"
                   onClick={handleConfirm}
                   disabled={charging || balance === null || shortfall !== null}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[#0d7377] px-4 py-3 text-[14px] font-bold text-white transition-colors hover:bg-[#0a5c5f] disabled:cursor-not-allowed disabled:opacity-50"
+                  aria-busy={charging}
+                  className={`flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[#0d7377] px-4 py-3 text-[14px] font-bold text-white transition-colors hover:bg-[#0a5c5f] disabled:cursor-not-allowed ${
+                    charging ? "" : "disabled:opacity-50"
+                  }`}
                 >
                   {charging ? (
                     <>
-                      <Loader2 size={16} className="animate-spin" />
-                      Deducting credits
+                      <Loader2 size={16} className="animate-spin" />{" "}
+                      {item.resourceType === "service" ? "Booking..." : "Unlocking..."}
                     </>
+                  ) : item.resourceType === "service" ? (
+                    `Book for ${item.credits} credits`
                   ) : (
-                    <>Confirm &amp; Deduct {item.credits} Credits</>
+                    `Unlock for ${item.credits} credits`
                   )}
                 </button>
               </div>
             ) : (
-              <button
-                type="button"
-                onClick={onClose}
-                disabled={topupBusy}
-                className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-[14px] font-bold text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Cancel
-              </button>
+              <div className="flex gap-2.5">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  disabled={topupBusy}
+                  className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-[14px] font-bold text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => startTopup(selectedTopup)}
+                  disabled={topupBusy || selectedTopup <= 0}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[#0d7377] px-4 py-3 text-[14px] font-bold text-white transition-colors hover:bg-[#0a5c5f] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {topupBusy ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" /> Opening secure payment...
+                    </>
+                  ) : (
+                    `Pay $${selectedTopup} for ${selectedTopup} credits`
+                  )}
+                </button>
+              </div>
             )}
           </div>
         )}

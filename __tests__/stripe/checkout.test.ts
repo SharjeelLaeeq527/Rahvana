@@ -340,36 +340,36 @@ describe('Checkout — wallet top-up', () => {
   })
 })
 
-// --- Standalone add-ons (one-time) ---
+// --- Add-ons are no longer sold for dollars ---
 
-describe('Checkout — standalone add-ons', () => {
+describe('Checkout - add-ons', () => {
   beforeEach(resetAll)
 
   const sessionsCreate = () =>
     require('@/lib/stripe/config').stripe.checkout.sessions.create as jest.Mock
 
-  it('creates a one-time session for a valid add-on (regression: always returned 400)', async () => {
-    sessionsCreate().mockClear()
-    const res = await POST(makeRequest({ addons: ['sponsor'] }))
-    expect(res.status).toBe(200)
-    const params = sessionsCreate().mock.calls[0][0]
-    expect(params.mode).toBe('payment')
-    expect(params.line_items).toHaveLength(1)
-    expect(params.line_items[0].price_data.unit_amount).toBe(1500)
-    expect(params.metadata.product_type).toBe('standalone_addon')
-  })
+  // Standalone tools and guides unlock with wallet credits and services are paid
+  // per booking, so a dollar add-on would be a second, unmetered way to buy them.
+  it.each([[['sponsor']], [['interview-prep:ir-1']], [['does-not-exist']]])(
+    'refuses add-on %p without starting a Stripe session',
+    async (addons) => {
+      sessionsCreate().mockClear()
+      const res = await POST(makeRequest({ addons }))
+      expect(res.status).toBe(400)
+      expect((await res.json()).code).toBe('ADDONS_DISCONTINUED')
+      expect(sessionsCreate()).not.toHaveBeenCalled()
+    }
+  )
 
-  it('resolves category-specific interview prep to the catalog price', async () => {
+  it('refuses add-ons riding along with a plan purchase', async () => {
     sessionsCreate().mockClear()
-    const res = await POST(makeRequest({ addons: ['interview-prep:ir-1'] }))
-    expect(res.status).toBe(200)
-    expect(sessionsCreate().mock.calls[0][0].line_items[0].price_data.unit_amount).toBe(20000)
-  })
-
-  it('rejects when no add-on is purchasable', async () => {
-    sessionsCreate().mockClear()
-    const res = await POST(makeRequest({ addons: ['does-not-exist'] }))
+    const res = await POST(makeRequest({ productTier: 'premium', addons: ['smart'] }))
     expect(res.status).toBe(400)
     expect(sessionsCreate()).not.toHaveBeenCalled()
+  })
+
+  it('an empty add-on list is just a plan purchase', async () => {
+    const res = await POST(makeRequest({ productTier: 'premium', addons: [] }))
+    expect(res.status).not.toBe(400)
   })
 })

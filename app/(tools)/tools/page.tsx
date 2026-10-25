@@ -746,16 +746,6 @@ function ToolCard({
                 <span>{catalogItem.credits}</span>
               </div>
             </div>
-
-            {/* Preview CTA removed from My Resources — now links to the resource
-                detail page (preview moved to /resources/[slug]). ORIGINAL:
-                <Link href={withPreviewMode(tool.href)} ...>Preview Tool</Link>
-            */}
-            {/* Caption referenced the old Preview CTA — moved to detail page. ORIGINAL:
-                <p className="mt-2 text-[11px] leading-snug font-medium text-slate-400">
-                  Preview is free. Launching permanently unlocks full access with your wallet credits.
-                </p>
-            */}
           </>
         )}
         {!showDualCta && (
@@ -787,3 +777,4 @@ function ToolCard({
     </CardWrapper>
   );
 }
+

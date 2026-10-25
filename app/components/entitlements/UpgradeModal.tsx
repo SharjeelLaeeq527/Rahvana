@@ -3,10 +3,10 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { createPortal } from "react-dom";
-import { X, Check, Zap, ShoppingCart, Loader2, BookOpen, Mic } from "lucide-react";
+import { X, Check, Zap, Coins, Loader2, BookOpen, Mic } from "lucide-react";
 import { usePlan } from "@/app/context/PlanContext";
 import { useAuth } from "@/app/context/AuthContext";
-import { getDetailsHref } from "@/lib/entitlements/resourceLinks";
+import { FEATURE_TO_SALES_SLUG, getDetailsHref } from "@/lib/entitlements/resourceLinks";
 import {
   getEntitlement,
   TIER_NAMES,
@@ -17,11 +17,12 @@ import {
 } from "@/lib/entitlements/config";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { getCreditsForLegacyAddon } from "@/lib/wallet/catalog";
+import { ADDONS, getResourceLaunchHref } from "@/app/(main)/pricing/data/pricing";
 
 interface UpgradeModalProps {
   feature: string;
   onClose: () => void;
-  onConfirm?: (action: "upgrade" | "addon", target?: PlanTier | string) => void;
+  onConfirm?: (action: "upgrade", target?: PlanTier | string) => void;
   /** When set, shows interview-prep-specific feature breakdown before the general tier list */
   interviewMode?: "prep" | "rapid" | "mock";
 }
@@ -247,50 +248,27 @@ const UPGRADE_PITCH: Record<string, string> = {
 };
 
 /**
- * Quote a one-off add-on in wallet credits when it maps 1:1 to a credit-catalog
- * resource ($1 = 1 credit) — "5 Credits" for every guide, each tool's own price
- * for tools. Bundles and per-request services keep their dollar label.
+ * The same resource outside a journey plan: its standalone page, paid with wallet
+ * credits ($1 = 1 credit). Tools and guides unlock once; services are paid per
+ * request. Add-ons are no longer sold for dollars. Null when there is no
+ * standalone counterpart (e.g. a bundle or a feature without a page).
  */
-function addonPriceLabel(addonId: string, price: number): string {
-  const credits = getCreditsForLegacyAddon(addonId);
-  return credits !== undefined ? `${credits} Credits` : `$${price}`;
+function getStandaloneOption(
+  feature: string
+): { credits: number; href: string; isService: boolean } | null {
+  const slug = FEATURE_TO_SALES_SLUG[feature];
+  const credits = slug ? getCreditsForLegacyAddon(slug) : undefined;
+  if (!slug || credits === undefined) return null;
+  const kind = ADDONS.find((a) => a.id === slug)?.kind;
+  return { credits, href: getResourceLaunchHref(slug, kind), isService: kind === "services" };
 }
-
-/**
- * Per-resource opportunity cost — what stays unavailable when buying only the
- * resource. Honest limitations only: one-time resources (e.g. medical booking)
- * must NOT get artificial urgency or implied recurring usage.
- */
-const MISSING_OUT: Record<string, string> = {
-  smart:
-    "You'll get this form only — additional forms may each need a separate purchase. Higher plans include unlimited eligible forms.",
-  "interview-prep":
-    "Covers this interview prep, one time. Plans add timed drills, mock sessions, and the rest of your toolkit.",
-  "221g":
-    "One planner for this refusal. Translation, sponsorship calculator, and document tools remain locked.",
-  medical:
-    "Books this appointment only. No plan tools are added — this purchase simply unlocks this resource.",
-  translate:
-    "Covers one document. Most cases need several — each extra document is another purchase.",
-  photo: "2 credits, one time. Later retakes and new applications each require another purchase.",
-  sponsor:
-    "One calculation. Income and household facts change during the journey — plans include re-checks.",
-  "doc-review":
-    "One review, one time. Expert sessions and the tools to act on the feedback stay unavailable.",
-  consultation:
-    "One session, one time. Interview prep tools and every other plan benefit stay unavailable.",
-  pcc: "Support for this one filing request. Other Executive tools remain locked.",
-  "civil-guid":
-    "This guide only. Other civil document guides and the tools that use them remain locked.",
-  "pdf-tool-kit":
-    "One-time toolkit access. Basic and above includes the PDF toolkit for every case document.",
-};
 
 export function UpgradeModal({ feature, onClose, onConfirm, interviewMode }: UpgradeModalProps) {
   const { showToast } = useToast();
   const { tier: currentTier } = usePlan();
   const e = getEntitlement(feature, currentTier);
   const detailsHref = getDetailsHref(feature);
+  const standalone = getStandaloneOption(feature);
 
   const upgradeTiers = TIER_ORDER.filter(
     (t) => t !== "free" && TIER_ORDER.indexOf(t) > TIER_ORDER.indexOf(currentTier)
@@ -310,12 +288,11 @@ export function UpgradeModal({ feature, onClose, onConfirm, interviewMode }: Upg
     interviewMode ?? "prep"
   );
   // ── Separate loading states for each button ──
-  const [isAddonProcessing, setIsAddonProcessing] = useState(false);
   const [isUpgradeProcessing, setIsUpgradeProcessing] = useState(false);
   const { user } = useAuth();
 
   const handleCheckout = async (
-    action: "upgrade" | "addon",
+    action: "upgrade",
     target: string,
     setProcessing: (v: boolean) => void
   ) => {
@@ -333,13 +310,12 @@ export function UpgradeModal({ feature, onClose, onConfirm, interviewMode }: Upg
     setProcessing(true);
 
     try {
-      const isUpgrade = action === "upgrade" && currentTier !== "free";
+      const isUpgrade = currentTier !== "free";
 
       const payload = {
         isUpgrade,
         currentTier: currentTier !== "free" ? currentTier : undefined,
-        productTier: action === "upgrade" ? target : undefined,
-        addons: action === "addon" ? [target] : undefined,
+        productTier: target,
       };
 
       const response = await fetch("/api/stripe/checkout", {
@@ -529,7 +505,7 @@ export function UpgradeModal({ feature, onClose, onConfirm, interviewMode }: Upg
             </div>
             <p className="text-primary/80 text-[12px] font-medium">
               {/* Upgrade-first framing: explain why the plan helps, not just that the resource is included */}
-              {`Recommended: Upgrade to ${TIER_NAMES[selectedTier]} — ${
+              {`Recommended: Upgrade to ${TIER_NAMES[selectedTier]} to ${
                 UPGRADE_PITCH[addon.id] ??
                 `get ${addon.name} plus the tools you'll need throughout your journey.`
               }`}
@@ -639,7 +615,7 @@ export function UpgradeModal({ feature, onClose, onConfirm, interviewMode }: Upg
 
                       {/* Explicitly tie the feature they came for to this plan */}
                       <p className="mb-1 text-[11px] font-semibold text-[#3a4f63]">
-                        ✓ Includes {addon.name} — plus every tool below
+                        ✓ Includes {addon.name}, plus every tool below
                       </p>
 
                       {planPrice && (
@@ -681,7 +657,7 @@ export function UpgradeModal({ feature, onClose, onConfirm, interviewMode }: Upg
                 </div>
 
                 <button
-                  disabled={isAddonProcessing || isUpgradeProcessing}
+                  disabled={isUpgradeProcessing}
                   onClick={() => handleCheckout("upgrade", selectedTier, setIsUpgradeProcessing)}
                   className={`w-full rounded-xl bg-gradient-to-r py-2.5 ${planStyle.button} ${planStyle.buttonHover} flex items-center justify-center gap-2 text-[13px] font-bold text-white shadow-sm transition-colors disabled:opacity-60`}
                 >
@@ -701,7 +677,7 @@ export function UpgradeModal({ feature, onClose, onConfirm, interviewMode }: Upg
             )}
 
             {/* Divider */}
-            {showInclusionSection && (
+            {showInclusionSection && standalone && (
               <div className="flex items-center gap-3">
                 <div className="flex-1 border-t border-neutral-200" />
                 <span className="text-[11px] font-semibold text-neutral-400">
@@ -711,43 +687,37 @@ export function UpgradeModal({ feature, onClose, onConfirm, interviewMode }: Upg
               </div>
             )}
 
-            {/* Buy individually — intentionally neutral: it must not borrow any
-                plan tier's palette (previously executive gold), so the two
-                purchase paths read as primary vs secondary at a glance. */}
-            <div className="rounded-2xl border border-dashed border-neutral-300 bg-neutral-50 p-4">
-              <p className="mb-2 text-[10px] font-bold tracking-widest text-neutral-500 uppercase">
-                Buying this tool only?
-              </p>
-              <div className="mb-1 flex items-baseline gap-1.5">
-                <span className="text-[28px] leading-none font-black text-neutral-800">
-                  {addonPriceLabel(addon.id, addon.price)}
-                </span>
-                {addon.unit && (
-                  <span className="text-[12px] font-medium text-neutral-500 opacity-70">
-                    · {addon.unit}
+            {/* Standalone with credits: intentionally neutral, it must not borrow any
+                plan tier's palette, so the two paths read as primary vs secondary. */}
+            {standalone && (
+              <div className="rounded-2xl border border-dashed border-neutral-300 bg-neutral-50 p-4">
+                <p className="mb-2 text-[10px] font-bold tracking-widest text-neutral-500 uppercase">
+                  {standalone.isService ? "Booking just this one?" : "Using just this one?"}
+                </p>
+                <div className="mb-1 flex items-baseline gap-1.5">
+                  <span className="text-[28px] leading-none font-black text-neutral-800">
+                    {standalone.credits} Credits
                   </span>
-                )}
-              </div>
-              <p className="mb-3 text-[11px] leading-snug text-neutral-500">
-                {MISSING_OUT[addon.id] ??
-                  `Get ${addon.name} only. Your other ${TIER_NAMES[selectedTier]} tools and benefits remain locked.`}
-              </p>
+                  <span className="text-[12px] font-medium text-neutral-500 opacity-70">
+                    · {standalone.isService ? "per request" : "one-time unlock"}
+                  </span>
+                </div>
+                <p className="mb-3 text-[11px] leading-snug text-neutral-500">
+                  {standalone.isService
+                    ? `Book ${addon.name} on its own and pay from your Rahvana wallet ($1 = 1 credit).`
+                    : `Use ${addon.name} on its own, outside a journey plan. Unlock it once from your Rahvana wallet ($1 = 1 credit).`}
+                </p>
 
-              <button
-                disabled={isAddonProcessing || isUpgradeProcessing}
-                onClick={() => handleCheckout("addon", addon.id, setIsAddonProcessing)}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-neutral-700 py-2.5 text-[13px] font-bold text-white shadow-sm transition-colors hover:bg-neutral-600 active:bg-neutral-800 disabled:opacity-60"
-              >
-                {isAddonProcessing ? (
-                  <Loader2 size={14} className="animate-spin" />
-                ) : (
-                  <ShoppingCart size={14} strokeWidth={2.5} />
-                )}
-                {isAddonProcessing
-                  ? "Redirecting to payment..."
-                  : `Get ${addon.name} Only · ${addonPriceLabel(addon.id, addon.price)}`}
-              </button>
-            </div>
+                <Link
+                  href={standalone.href}
+                  onClick={onClose}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-neutral-700 py-2.5 text-[13px] font-bold text-white shadow-sm transition-colors hover:bg-neutral-600 active:bg-neutral-800"
+                >
+                  <Coins size={14} strokeWidth={2.5} />
+                  {standalone.isService ? "Book with credits" : `Open ${addon.name}`}
+                </Link>
+              </div>
+            )}
 
             {detailsHref && (
               <Link

@@ -102,7 +102,18 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     : UNKNOWN_VISA_CATEGORY;
 
   // Derive the active journey's specific real tier from journeyTiers or fallback
+  const activeJourneyKey = candidateCtx?.activeJourneyKey?.toLowerCase() ?? "";
   const realTier: PlanTier = useMemo(() => {
+    // Candidate 2+ (key "ir5_candidate2") use only their own journey row: one that
+    // was never bought, or was cancelled, must not borrow candidate-1's tier from
+    // the category entry below (which is built from primary rows only).
+    if (activeJourneyKey.includes("_")) {
+      return (
+        journeyTiers[activeJourneyKey] ??
+        journeyTiers[activeJourneyKey.replace(/[^a-z0-9]/g, "")] ??
+        "free"
+      );
+    }
     if (normalizedCategory !== UNKNOWN_VISA_CATEGORY && journeyTiers[normalizedCategory]) {
       return journeyTiers[normalizedCategory];
     }
@@ -112,14 +123,12 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     }
     // Legacy single-journey fallback
     return accountTier;
-  }, [normalizedCategory, journeyTiers, accountTier]);
+  }, [activeJourneyKey, normalizedCategory, journeyTiers, accountTier]);
 
-  // If candidate is in Free Preview mode, force effective tier to 'free'
+  // Respect the journey-level subscription (realTier).
+  // Only force 'free' if the candidate is explicitly marked in Free Preview mode.
   const isCandidatePreview = Boolean(
-    candidateCtx &&
-      (candidateCtx.activeCandidate?.isPreview ||
-        candidateCtx.activeCandidateTier === "free" ||
-        candidateCtx.activeCandidate?.tier === "free")
+    candidateCtx?.activeCandidate?.isPreview
   );
 
   const effectiveJourneyTier = isCandidatePreview ? "free" : realTier;
@@ -193,13 +202,26 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
         const addons = profileData?.profile_details?.purchased_addons as string[] | undefined;
         setPurchasedAddons(Array.isArray(addons) ? addons : []);
 
+        const TIER_RANK: Record<string, number> = { free: 0, basic: 1, premium: 2, executive: 3 };
         const tiersMap: Record<string, PlanTier> = {};
         if (Array.isArray(journeysData)) {
           journeysData.forEach((j) => {
             if (j.journey_type && j.subscription_tier) {
+              const tier = normalizePlanTier(j.subscription_tier);
+              const rawKey = j.journey_type.toLowerCase();
+              const cleanKey = rawKey.replace(/[^a-z0-9]/g, "");
+              tiersMap[rawKey] = tier;
+              tiersMap[cleanKey] = tier;
+
+              // Category entry = best PRIMARY journey (variant rows such as "ir5" /
+              // "ir5-journey" collapse here). Candidate 2+ rows are looked up by key.
               const baseCat = getBaseVisaCategory(j.journey_type);
-              if (baseCat !== UNKNOWN_VISA_CATEGORY) {
-                tiersMap[baseCat] = normalizePlanTier(j.subscription_tier);
+              if (baseCat !== UNKNOWN_VISA_CATEGORY && !rawKey.includes("candidate")) {
+                const currentRank = TIER_RANK[tiersMap[baseCat] || "free"] ?? 0;
+                const newRank = TIER_RANK[tier] ?? 0;
+                if (newRank >= currentRank) {
+                  tiersMap[baseCat] = tier;
+                }
               }
             }
           });

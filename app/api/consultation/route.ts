@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ConsultationRequest } from "@/types/consultation";
+import type { PlanTier } from "@/lib/entitlements/config";
 import { consultationService } from "@/lib/services/consultationService";
 import { E, msg } from "@/lib/errors";
 import { triggerConsultationNotification } from "@/lib/notifications";
 import { createClient } from "@/lib/supabase/server";
+import { getAuthenticatedUser, getServiceRoleClient, requireAdmin } from "@/lib/api/authGuards";
+import {
+  spendJourneyServiceUse,
+  verifyJourneyServiceAccess,
+} from "@/lib/journey/journeyServiceAccess";
 
 // Helper function to handle service errors (returns localized messages)
 const handleServiceError = (error: unknown, defaultMessage: string) => {
@@ -22,6 +28,14 @@ const handleServiceError = (error: unknown, defaultMessage: string) => {
 
 export async function GET(request: NextRequest) {
   try {
+    // Bookings carry contact details and case summaries: admins see all, a user
+    // sees only their own.
+    const user = await getAuthenticatedUser();
+    if (!user) {
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
+    }
+    const { isAdmin } = await requireAdmin();
+
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status");
     const search = searchParams.get("search");
@@ -30,6 +44,7 @@ export async function GET(request: NextRequest) {
       status: status || undefined,
       search: search || undefined,
       paidOnly: searchParams.get("paid_only") === "true",
+      owner: isAdmin ? undefined : { userId: user.id, email: user.email },
     };
 
     const bookings = await consultationService.getAllBookings(filters);
@@ -65,16 +80,37 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Retrieve authenticated user from session if any
-    let userId: string | null = null;
-    try {
-      const authClient = await createClient();
-      const { data: { user } } = await authClient.auth.getUser();
-      if (user) {
-        userId = user.id;
+    const authClient = await createClient();
+    const {
+      data: { user },
+    } = await authClient.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
+    }
+    const userId = user.id;
+
+    // Payment is decided here, never by the client. A journey booking is covered by
+    // the journey plan, so it is paid once the journey checks out; a standalone
+    // booking stays pending until /api/wallet/deduct-service charges it.
+    const body = data as ConsultationRequest & {
+      journey_id?: string | null;
+      journey_category?: string | null;
+      candidate_id?: string | null;
+      candidateId?: string | null;
+    };
+    const isJourneyBooking = body.source === "journey";
+    const candidateId = body.candidateId ?? body.candidate_id ?? null;
+    let journeyPlan: { tier: PlanTier; addons: string[] } | null = null;
+    if (isJourneyBooking) {
+      const access = await verifyJourneyServiceAccess(authClient, userId, "expert_consultation", {
+        journeyId: body.journey_id ?? null,
+        journeyCategory: body.journey_category || body.journey_slug || null,
+        candidateId,
+      });
+      if (!access.allowed) {
+        return NextResponse.json({ error: access.error }, { status: access.status });
       }
-    } catch (authError) {
-      console.warn("Could not retrieve session for consultation booking:", authError);
+      journeyPlan = { tier: access.tier, addons: access.addons };
     }
 
     // Create new booking
@@ -93,24 +129,43 @@ export async function POST(request: NextRequest) {
       alternate_slots: data.alternate_slots
         ? data.alternate_slots.map((date) => new Date(date))
         : undefined,
-      payment_status: data.payment_status || "paid",
-      status: data.status || "pending_approval",
+      payment_status: isJourneyBooking ? "paid" : "pending",
+      status: "pending_approval",
       user_id: userId,
-      // Forward journey-scope tags from the client payload 
-      source: data.source ?? "standalone",
-      journey_slug: data.journey_slug ?? null,
-      candidate_id: data.candidateId ?? data.candidate_id ?? null,
-
+      source: isJourneyBooking ? "journey" : "standalone",
+      journey_slug: isJourneyBooking ? (body.journey_slug ?? null) : null,
+      candidate_id: candidateId,
     });
+
+    // A journey plan includes a set number of consultations (Executive: 2, plus 1
+    // per consultation add-on). The booking is saved first and one use is spent
+    // after, so a failed save never costs a use; when no use is left (also when two
+    // requests race for the last one) the booking is removed again.
+    if (journeyPlan) {
+      const refused = await spendJourneyServiceUse(userId, "expert_consultation", journeyPlan);
+      if (refused) {
+        await getServiceRoleClient()
+          .from("consultation_bookings")
+          .delete()
+          .eq("id", newBooking.id)
+          .eq("user_id", userId);
+        return NextResponse.json(
+          { error: refused.error, code: refused.code },
+          { status: refused.status }
+        );
+      }
+    }
 
     // In a real app, you would send an email/SMS notification here
     console.log(`New consultation request created: ${newBooking.reference_id}`);
 
-    // Trigger admin notification for the new request
-    try {
-      await triggerConsultationNotification(newBooking.id);
-    } catch (notifError) {
-      console.error("Failed to trigger consultation notification:", notifError);
+    // Trigger admin notification only for confirmed paid requests (standalone credit bookings will trigger when payment succeeds)
+    if (newBooking.payment_status === "paid") {
+      try {
+        await triggerConsultationNotification(newBooking.id);
+      } catch (notifError) {
+        console.error("Failed to trigger consultation notification:", notifError);
+      }
     }
 
     return NextResponse.json(newBooking, { status: 201 });
@@ -131,11 +186,34 @@ export async function PUT(request: NextRequest) {
       );
     }
 
+    const user = await getAuthenticatedUser();
+    if (!user) {
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
+    }
+    const { isAdmin } = await requireAdmin();
+
     const data = await request.json();
-    const { action, adminNotes } = data;
+    const { action } = data;
 
     // Get the current booking to check its status
     const booking = await consultationService.getBookingById(id);
+
+    // Admins run every action. A user may only accept one of the alternative
+    // slots an admin proposed on their own booking.
+    if (!isAdmin) {
+      const proposed = (booking.alternate_slots ?? []).map((slot) => new Date(slot).getTime());
+      const chosen = data.selected_slot ? new Date(data.selected_slot).getTime() : NaN;
+      const allowed =
+        action === "approve" &&
+        booking.user_id === user.id &&
+        booking.status === "alternatives_proposed" &&
+        proposed.includes(chosen);
+      if (!allowed) {
+        return NextResponse.json({ error: "Admin access required" }, { status: 403 });
+      }
+    }
+    // Admin notes are admin-only; a user's acceptance keeps the existing note.
+    const adminNotes = isAdmin ? data.adminNotes : booking.admin_notes;
 
     switch (action) {
       case "approve":

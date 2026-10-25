@@ -1319,7 +1319,11 @@ export default function SponsorshipCalculatorTool({
 
             if (step === 7) {
               return (
-                <ResultGate feature="sponsorship_calc" planTier={effectiveTier}>
+                <ResultGate
+                  feature="sponsorship_calc"
+                  planTier={effectiveTier}
+                  standaloneToolId={isJourney ? undefined : "sponsorship-calculator"}
+                >
                   <div className="animate-in fade-in slide-in-from-right-4 duration-300">
                     <div className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center" style={{ color: COLORS.primary }}>Step 8 of 11</div>
                     <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6 text-center">Initial Status</h2>
@@ -1400,7 +1404,11 @@ export default function SponsorshipCalculatorTool({
 
             if (step === 8) {
               return (
-                <ResultGate feature="sponsorship_calc" planTier={effectiveTier}>
+                <ResultGate
+                  feature="sponsorship_calc"
+                  planTier={effectiveTier}
+                  standaloneToolId={isJourney ? undefined : "sponsorship-calculator"}
+                >
                   <div className="animate-in fade-in slide-in-from-right-4 duration-300">
                     <div className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center" style={{ color: stepColor }}>Step 9 of 11</div>
                     <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6 text-center">Support Resources</h2>
@@ -1505,7 +1513,11 @@ export default function SponsorshipCalculatorTool({
 
             if (step === 9) {
               return (
-                <ResultGate feature="sponsorship_calc" planTier={effectiveTier}>
+                <ResultGate
+                  feature="sponsorship_calc"
+                  planTier={effectiveTier}
+                  standaloneToolId={isJourney ? undefined : "sponsorship-calculator"}
+                >
                   <div className="animate-in fade-in slide-in-from-right-4 duration-300">
                     <div className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center" style={{ color: COLORS.primary }}>Step 10 of 11</div>
                     <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6 text-center">Alternative Options</h2>
@@ -1602,7 +1614,11 @@ export default function SponsorshipCalculatorTool({
 
             if (step === 10) {
               return (
-                <ResultGate feature="sponsorship_calc" planTier={effectiveTier}>
+                <ResultGate
+                  feature="sponsorship_calc"
+                  planTier={effectiveTier}
+                  standaloneToolId={isJourney ? undefined : "sponsorship-calculator"}
+                >
                   <div className="animate-in fade-in slide-in-from-right-4 duration-300">
                     <div className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center" style={{ color: COLORS.primary }}>Step 11 of 11</div>
                     <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6 text-center">Final Sponsorship Plan</h2>

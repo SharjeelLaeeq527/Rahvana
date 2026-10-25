@@ -1,13 +1,15 @@
 import {
   GUIDE_RESOURCE_IDS,
+  SERVICE_RESOURCE_IDS,
   TOOL_RESOURCE_IDS,
   getGuideCatalogItem,
+  getServiceCatalogItem,
   getToolCatalogItem,
   withPreviewMode,
 } from "@/lib/wallet/resourceMapping";
 import { WALLET_CATALOG, getCatalogItem } from "@/lib/wallet/catalog";
 
-describe("Phase 5 catalog <-> page mapping", () => {
+describe("Phase 5 & 6 catalog <-> page mapping", () => {
   it("maps every tool page id to a launchable tool catalog item", () => {
     for (const [pageId, resourceId] of Object.entries(TOOL_RESOURCE_IDS)) {
       const item = getToolCatalogItem(pageId);
@@ -27,6 +29,15 @@ describe("Phase 5 catalog <-> page mapping", () => {
     }
     expect(getGuideCatalogItem("vaccinations")?.resourceId).toBe("guide-polio"); // 7th paid guide
     expect(getGuideCatalogItem("step-parent")).toBeNull(); // public guides are not credit-payable
+  });
+
+  it("maps all standalone services to their catalog items", () => {
+    for (const [servicePageId, resourceId] of Object.entries(SERVICE_RESOURCE_IDS)) {
+      const item = getServiceCatalogItem(servicePageId);
+      expect(item).not.toBeNull();
+      expect(item!.resourceType).toBe("service");
+      expect(item!.resourceId).toBe(resourceId);
+    }
   });
 
   it("has a page mapping for every launchable tool/guide in the catalog (no drift)", () => {

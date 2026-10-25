@@ -25,6 +25,10 @@ import {
   validateTopupAmount,
   resolveTopupReturnPath,
 } from "@/lib/wallet/topup";
+import {
+  calculateSubscriptionCycle,
+  calculateUpgradeSchedule,
+} from "@/lib/pricing/upgradeScheduleService";
 
 function logDebug(msg: string, obj?: any) {
   // Never write request/session details to disk in production (PII hygiene).
@@ -90,6 +94,8 @@ export async function POST(request: NextRequest) {
       amount,
       returnUrl,
       resourceId,
+      upgradeTotal,
+      newMonthlyPrice,
     } = body;
 
     const candidateId = rawCandidateId || snakeCandidateId || undefined;
@@ -117,19 +123,19 @@ export async function POST(request: NextRequest) {
     }
     const topupReturnPath = resolveTopupReturnPath(returnUrl);
 
-    if (Array.isArray(addons)) {
-      const unresolvedInterviewPrep = addons.find(
-        (addonId) => typeof addonId === "string" && addonId.toLowerCase() === "interview-prep"
+    // Add-ons are no longer sold for dollars: standalone tools and guides unlock with
+    // wallet credits and services are paid with credits per booking. Purchases made
+    // before this keep working (the webhook and verify-session still record a paid
+    // add-on session), but no new add-on checkout is started.
+    if (Array.isArray(addons) && addons.length > 0) {
+      return NextResponse.json(
+        {
+          error:
+            "Add-ons are no longer sold here. Tools and guides unlock with Rahvana credits, and services are paid with credits when you book them.",
+          code: "ADDONS_DISCONTINUED",
+        },
+        { status: 400 }
       );
-
-      if (unresolvedInterviewPrep) {
-        return NextResponse.json(
-          {
-            error: "Interview Prep purchases must include a category-specific addon ID.",
-          },
-          { status: 400 }
-        );
-      }
     }
 
     // Get user email from Supabase
@@ -170,7 +176,7 @@ export async function POST(request: NextRequest) {
     const { data: selectedJourney } = productTier
       ? await supabase
           .from("journeys")
-          .select("subscription_tier, stripe_subscription_id, status")
+          .select("subscription_tier, stripe_subscription_id, status, created_at")
           .eq("user_id", userId)
           .ilike("journey_type", targetCandidateJourneyKey)
           .maybeSingle()
@@ -604,23 +610,81 @@ export async function POST(request: NextRequest) {
       }
 
       let effectiveAnnualPrice = targetAnnualPrice;
+      let monthlyPrice = product.monthlyPrice;
+      let upgradeMonthsElapsed = 0;
+      let upgradeMonthsRemaining = 12;
+
       if (serverIsUpgrade && serverCurrentTier && targetAnnualPrice > currentAnnualPrice) {
-        effectiveAnnualPrice = targetAnnualPrice - currentAnnualPrice;
+        // Resolve active subscription start date for accurate 12-month timeline calculation
+        const activeStartDate =
+          targetCandidateProfile?.createdAt ||
+          selectedJourney?.created_at ||
+          profile?.profile_details?.plan_purchase_date ||
+          null;
+
+        const cycle = calculateSubscriptionCycle(activeStartDate);
+        upgradeMonthsElapsed = cycle.monthsElapsed;
+        upgradeMonthsRemaining = cycle.monthsRemaining;
+
+        const category = VISA_CATEGORIES.find((v) => v.id === effectiveVisaCategory);
+        const curPlanObj = category?.plans.find((p) => p.id === serverCurrentTier);
+        const targetPlanObj = category?.plans.find((p) => p.id === tierLower);
+
+        if (curPlanObj && targetPlanObj) {
+          const schedule = calculateUpgradeSchedule({
+            currentPlan: curPlanObj,
+            targetPlan: targetPlanObj,
+            monthsElapsed: cycle.monthsElapsed,
+            monthsRemaining: cycle.monthsRemaining,
+          });
+
+          if (schedule) {
+            effectiveAnnualPrice = schedule.totalNewCommitment;
+            monthlyPrice = schedule.newMonthlyRate;
+          }
+        } else if (newMonthlyPrice && !isNaN(Number(newMonthlyPrice)) && Number(newMonthlyPrice) > 0) {
+          monthlyPrice = Number(newMonthlyPrice);
+          effectiveAnnualPrice =
+            upgradeTotal && !isNaN(Number(upgradeTotal))
+              ? Number(upgradeTotal)
+              : Math.round(monthlyPrice * 12 * 100) / 100;
+        } else {
+          // Fallback simplified formula: targetAnnual - paidSoFar
+          const curMonthly =
+            currentAnnualPrice > 0 ? Math.round((currentAnnualPrice / 12) * 100) / 100 : 0;
+          const paidSoFar = Math.round(upgradeMonthsElapsed * curMonthly * 100) / 100;
+          effectiveAnnualPrice = Math.max(0, targetAnnualPrice - paidSoFar);
+          monthlyPrice = Math.round((effectiveAnnualPrice / 12) * 100) / 100;
+        }
+      } else {
+        monthlyPrice =
+          effectiveAnnualPrice === product.price
+            ? product.monthlyPrice // $29.08, $58.25, $91.58
+            : Math.round((effectiveAnnualPrice / 12) * 100) / 100;
       }
 
-      // FIX 1: Use exact monthlyPrice from PRODUCTS, or divide custom annual price by 12
-      const monthlyPrice =
-        effectiveAnnualPrice === product.price
-          ? product.monthlyPrice // $29.08, $58.25, $91.58
-          : Math.round((effectiveAnnualPrice / 12) * 100) / 100;
-
-      // Add main plan — use saved recurringPriceId if price matches default
+      // Add main plan — for upgrades, create dynamic 12-month upgrade schedule line item
       const useRecurringId =
+        !serverIsUpgrade &&
         product.recurringPriceId &&
         product.recurringPriceId.length >= 10 &&
-        effectiveAnnualPrice === product.price; // only use saved ID if price is default
+        effectiveAnnualPrice === product.price;
 
-      if (useRecurringId) {
+      if (serverIsUpgrade) {
+        sessionParams.line_items!.push({
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: `${product.name} (Upgrade — 12-Month Schedule)`,
+              description: `12-month upgrade schedule: $${effectiveAnnualPrice} total ($${monthlyPrice}/mo). Replaces ${serverCurrentTier} plan.`,
+              tax_code: (product as any).taxCode || "txcd_10103000",
+            },
+            unit_amount: Math.round(monthlyPrice * 100),
+            recurring: { interval: "month" },
+          },
+          quantity: parsedCandidateCount,
+        });
+      } else if (useRecurringId) {
         sessionParams.line_items!.push({
           price: product.recurringPriceId,
           quantity: parsedCandidateCount,
@@ -642,7 +706,25 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      // FIX 2: Metadata — stripe_customer_id + addons as JSON
+      // Metadata — tag subscription and checkout session with upgrade schedule info
+      sessionParams.subscription_data = {
+        metadata: {
+          user_id: userId,
+          tier: tierLower,
+          visa_category: effectiveVisaCategory,
+          candidate_count: String(parsedCandidateCount),
+          target_candidate_id: candidateId || "",
+          candidate_id: candidateId || "",
+          action: isAddCandidateRequest ? "add_candidate" : isUpgradeAction ? "upgrade" : "",
+          is_add_candidate: isAddCandidateRequest ? "true" : "false",
+          is_upgrade: serverIsUpgrade ? "true" : "false",
+          upgrade_total: serverIsUpgrade ? String(effectiveAnnualPrice) : "",
+          upgrade_monthly_rate: serverIsUpgrade ? String(monthlyPrice) : "",
+          upgrade_months_elapsed: serverIsUpgrade ? String(upgradeMonthsElapsed) : "",
+          upgrade_months_remaining: serverIsUpgrade ? String(upgradeMonthsRemaining) : "",
+        },
+      };
+
       sessionParams.metadata = {
         ...sessionParams.metadata,
         stripe_customer_id: stripeCustomerId!,
@@ -653,9 +735,13 @@ export async function POST(request: NextRequest) {
         candidate_count: String(parsedCandidateCount),
         target_candidate_id: candidateId || "",
         candidate_id: candidateId || "",
-        action: isAddCandidateRequest ? "add_candidate" : "",
+        action: isAddCandidateRequest ? "add_candidate" : isUpgradeAction ? "upgrade" : "",
         is_add_candidate: isAddCandidateRequest ? "true" : "false",
         is_upgrade: serverIsUpgrade ? "true" : "false",
+        upgrade_total: serverIsUpgrade ? String(effectiveAnnualPrice) : "",
+        upgrade_monthly_rate: serverIsUpgrade ? String(monthlyPrice) : "",
+        upgrade_months_elapsed: serverIsUpgrade ? String(upgradeMonthsElapsed) : "",
+        upgrade_months_remaining: serverIsUpgrade ? String(upgradeMonthsRemaining) : "",
         old_subscription_id: serverIsUpgrade ? oldSubscriptionId || "" : "",
       };
 
@@ -897,6 +983,16 @@ export async function POST(request: NextRequest) {
         typeof translationDetails.docId === "string" && translationDetails.docId
           ? translationDetails.docId
           : crypto.randomUUID();
+      // The file must be the caller's own upload from upload-file
+      // (`<userId>/translation-originals/<docId>/...`); never trust a client path.
+      const storagePath = String(translationDetails.storagePath || "");
+      if (
+        !/^[0-9a-f-]{36}$/i.test(docId) ||
+        !storagePath.startsWith(`${userId}/translation-originals/${docId}/`) ||
+        storagePath.includes("..")
+      ) {
+        return NextResponse.json({ error: "Invalid translation upload." }, { status: 400 });
+      }
       const documentTranslationPrice = 25; // $25 per document translation request
 
       // Look up name server-side (never trust client-provided identity).
@@ -939,7 +1035,7 @@ export async function POST(request: NextRequest) {
         product_type: "document_translations",
         product_id: docId,
         t_doc_id: docId,
-        t_storage_path: String(translationDetails.storagePath || ""),
+        t_storage_path: storagePath,
         t_original_filename: String(translationDetails.originalFilename || ""),
         t_original_file_size: String(translationDetails.originalFileSize || ""),
         t_original_mime_type: String(translationDetails.originalMimeType || ""),
@@ -1195,10 +1291,12 @@ export async function POST(request: NextRequest) {
     if (error instanceof Error && error.stack) {
       logDebug("Error stack:", error.stack);
     }
-    const errorMessage =
-      error instanceof Error ? error.message : "Failed to create checkout session";
-    logDebug("Returning 500 with errorMessage:", errorMessage);
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    console.error("[checkout] Failed to create checkout session:", error);
+    // Stripe / DB error text stays in the logs; the client gets a generic message.
+    return NextResponse.json(
+      { error: "We could not start checkout. Please try again." },
+      { status: 500 }
+    );
   } finally {
     // Always release the checkout lock, on success or any error/early return.
     // Pass the ownership token so we never delete another request's lock.

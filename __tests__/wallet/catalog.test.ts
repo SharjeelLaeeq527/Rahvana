@@ -62,12 +62,19 @@ describe("resolveUnlockedItems", () => {
     expect(ids(resolveUnlockedItems(rows, []))).toEqual(["pdf-toolkit"]);
   });
 
-  it("grandfathers permanent legacy add-ons, including per-category interview prep", () => {
-    expect(ids(resolveUnlockedItems([], ["sponsor", "interview-prep:ir1", "guide-cnic"]))).toEqual([
+  it("grandfathers permanent legacy add-ons", () => {
+    expect(ids(resolveUnlockedItems([], ["sponsor", "guide-cnic"]))).toEqual([
       "guide-cnic",
-      "interview-prep",
       "sponsorship-calculator",
     ]);
+  });
+
+  it("keeps a per-category interview prep purchase category-scoped", () => {
+    // "interview-prep:<category>" is one category, handled by purchase-validation;
+    // it must never become an all-categories wallet unlock.
+    expect(ids(resolveUnlockedItems([], ["interview-prep:ir-1-spouse"]))).toEqual([]);
+    // The bare add-on was the all-categories purchase.
+    expect(ids(resolveUnlockedItems([], ["interview-prep"]))).toEqual(["interview-prep"]);
   });
 
   it("expands the legacy civil guides bundle to every civil guide but not polio", () => {

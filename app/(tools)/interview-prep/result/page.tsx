@@ -7,6 +7,7 @@ import { InterviewPrepOutput } from "@/lib/interview-prep";
 import { Loader } from "@/components/ui/spinner";
 import { ToastProvider } from "@/app/components/shared/ToastProvider";
 import { useJourneyEnvironment } from "@/lib/hooks/useJourneyEnvironment";
+import { usePlan } from "@/app/context/PlanContext";
 
 export interface InterviewPrepResultPageProps {
   sessionId?: string | null;
@@ -25,6 +26,8 @@ export default function InterviewPrepResultPage({
   const [error, setError] = useState<string | null>(null);
   const [results, setResults] = useState<InterviewPrepOutput | null>(null);
   const [sessionId, setSessionIdState] = useState<string | null>(propSessionId || null);
+  const [sessionCategory, setSessionCategory] = useState<string | null>(null);
+  const plan = usePlan();
   const router = useRouter();
   const journeyEnv = useJourneyEnvironment();
   const isEmbedded = Boolean(propIsEmbedded || journeyEnv.isInsideJourney);
@@ -61,6 +64,9 @@ export default function InterviewPrepResultPage({
         }
 
         const data = await response.json();
+        setSessionCategory(
+          typeof data.session?.category_slug === "string" ? data.session.category_slug : null
+        );
 
         // Check if session has interview results
         if (data.session && data.session.interview_prep_results) {
@@ -96,6 +102,15 @@ export default function InterviewPrepResultPage({
 
     fetchSessionData();
   }, [propSessionId, toolHref]);
+
+  // Legacy purchase covering this session's category (or the bare
+  // all-categories add-on). Standalone only; the wallet unlock is read in ResultPage.
+  const hasLegacyCategoryPurchase =
+    !isEmbedded &&
+    !!sessionCategory &&
+    plan.purchasedAddons.some(
+      (id) => id === "interview-prep" || id === `interview-prep:${sessionCategory}`
+    );
 
   const handleRestart = () => {
     if (propOnRestart) {
@@ -232,7 +247,13 @@ export default function InterviewPrepResultPage({
   return (
     <div className={`container mx-auto ${isEmbedded ? "mt-2" : "mt-16"}`}>
       <ToastProvider>
-        <ResultPage sessionId={sessionId || ""} results={results} onRestart={handleRestart} />
+        <ResultPage
+          sessionId={sessionId || ""}
+          results={results}
+          onRestart={handleRestart}
+          isStandalone={!isEmbedded}
+          standaloneGranted={hasLegacyCategoryPurchase}
+        />
       </ToastProvider>
     </div>
   );

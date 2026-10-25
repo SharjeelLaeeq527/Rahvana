@@ -1,5 +1,10 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { resolveUnlockedItems, type UnlockRow, type WalletCatalogItem } from "@/lib/wallet/catalog";
+import {
+  resolveUnlockedItems,
+  type UnlockRow,
+  type WalletCatalogItem,
+  type WalletResourceType,
+} from "@/lib/wallet/catalog";
 
 export type WalletState = {
   balance: number;
@@ -39,4 +44,29 @@ export async function loadWalletState(
     purchasedAddons,
     unlocked: resolveUnlockedItems(unlockRows, purchasedAddons),
   };
+}
+
+/**
+ * Whether the user owns standalone access to one catalog item: an active wallet
+ * unlock row or a permanent legacy add-on (same rule as `resolveUnlockedItems`,
+ * so the server agrees with what the wallet shows). Works with the user's own
+ * RLS client (users can SELECT their own unlock rows) or the service-role
+ * client after authenticating `userId`. Fails closed: a read error is "no".
+ */
+export async function hasStandaloneAccess(
+  supabase: SupabaseClient,
+  userId: string,
+  resourceType: WalletResourceType,
+  resourceId: string,
+  purchasedAddons: readonly unknown[] = []
+): Promise<boolean> {
+  const { data, error } = await supabase
+    .from("standalone_unlocked_resources")
+    .select("resource_type, resource_id, status")
+    .eq("user_id", userId);
+  // All rows, not just this id: a legacy bundle row (civil-guid) covers several items.
+  if (error) return false;
+  return resolveUnlockedItems((data ?? []) as UnlockRow[], purchasedAddons).some(
+    (item) => item.resourceType === resourceType && item.resourceId === resourceId
+  );
 }

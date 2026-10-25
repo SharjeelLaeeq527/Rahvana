@@ -31,6 +31,12 @@ interface RapidFireModeProps {
   onExit: () => void;
   onSwitchToPrep: () => void;
   savedAnswers?: Record<string, string>;
+  /** Standalone tool: the plan tier is ignored (see ResultPage). */
+  isStandalone?: boolean;
+  /** Standalone only: wallet unlock or a purchase for this category. */
+  standaloneFull?: boolean;
+  /** Wallet catalog id, set only in standalone mode (see ResultGate). */
+  standaloneToolId?: string;
 }
 
 type QuestionResponse = InterviewPrepQuestionResponse;
@@ -211,14 +217,21 @@ export const RapidFireModePage = ({
   onExit,
   onSwitchToPrep,
   savedAnswers = {},
+  isStandalone = false,
+  standaloneFull = false,
+  standaloneToolId,
 }: RapidFireModeProps) => {
   const plan = usePlan();
-  const isFreeTier = plan.tier === "free";
-  const isBasicTier = plan.tier === "basic";
+  // Standalone ignores the plan: without access it is the free demo.
+  const isFreeTier = isStandalone ? !standaloneFull : plan.tier === "free";
+  const isBasicTier = !isStandalone && plan.tier === "basic";
 
   // Buying the Interview Prep add-on (any category) unlocks the full Rapid
   // Fire experience regardless of the account-wide plan.
-  const boughtInterviewPrep = hasPurchasedAddon(plan.purchasedAddons, "interview-prep");
+  // Standalone: only a wallet unlock / purchase for this category counts.
+  const boughtInterviewPrep = isStandalone
+    ? standaloneFull
+    : hasPurchasedAddon(plan.purchasedAddons, "interview-prep");
 
   // Free and Basic tiers get limited 5 questions per round
   const questionsPerRound =
@@ -763,6 +776,8 @@ export const RapidFireModePage = ({
     return (
       <ResultGate
         feature="interview_rapid_fire"
+        standaloneToolId={standaloneToolId}
+        standaloneGranted={standaloneFull}
         title="Rapid Fire Results Ready"
         description="Upgrade to Basic or above to view your readiness score, question breakdown, and performance review."
         minHeight="400px"

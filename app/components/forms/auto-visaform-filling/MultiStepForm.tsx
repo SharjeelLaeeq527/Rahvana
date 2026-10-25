@@ -24,7 +24,11 @@ import { Loader } from "@/components/ui/spinner";
 import { ExpandableTooltip } from "../../shared/ExpandableTooltip";
 import { AlertCircle } from "lucide-react";
 import { usePlan } from "@/app/context/PlanContext";
+import { canUse as canUseForTier } from "@/lib/entitlements/helpers";
+import { normalizePlanTier } from "@/lib/entitlements/config";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
+import { CreditLaunchModal } from "@/app/components/wallet/CreditLaunchModal";
+import { useStandaloneToolUnlock } from "@/lib/wallet/useStandaloneToolUnlock";
 import { useFreePreview } from "./useFreePreview";
 import { MobileBottomSheet } from "@/app/components/shared/table/MobileBottomSheet";
 import { useResolveToolMode } from "@/lib/hooks/useResolveToolMode";
@@ -167,13 +171,24 @@ export function MultiStepForm({
   onClose,
   isEmbedded = false,
 }: MultiStepFormProps) {
-  const { isJourney, journeyContext } = useResolveToolMode({
+  const { isJourney, journeyContext, journeyTier } = useResolveToolMode({
     mode: propMode,
     journeyContext: propJourneyContext,
     journeyTier: propJourneyTier,
   });
 
   const plan = usePlan();
+  // Journey mode follows the journey's own plan. Standalone is paid with credits
+  // even by plan holders: only a wallet unlock (or a legacy "smart" add-on, which
+  // /api/wallet reports as unlocked) gives the full filler. Journey passes null so
+  // it never reads wallet unlocks. The PDF route re-checks all of this server-side.
+  const formWallet = useStandaloneToolUnlock(isJourney ? null : "form-forge");
+  const journeyPlanTier = normalizePlanTier(
+    journeyTier ?? journeyContext?.subscriptionTier ?? plan.tier
+  );
+  const canUseFullFiller = isJourney
+    ? canUseForTier("smart_form_filler", journeyPlanTier, plan.purchasedAddons)
+    : formWallet.unlocked;
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -183,7 +198,7 @@ export function MultiStepForm({
 
   const { isFreePreview, hasReachedLimit, limit, atOrPastAnchor, pastAnchor, stepPastAnchor } =
     useFreePreview({
-      canUseSmartFormFiller: isJourney ? true : plan.canUse("smart_form_filler"),
+      canUseSmartFormFiller: canUseFullFiller,
       formFields: config?.formFields || [],
       formData,
       configuredLimit: config?.freePreviewLimit,
@@ -1483,9 +1498,32 @@ export function MultiStepForm({
     return payload;
   }, [config, formData]);
 
+  // Every PDF goes through the server route, which decides full vs page 1 from
+  // the user's real entitlement (journey plan, or the standalone wallet unlock).
+  const requestFilledPdf = useCallback(
+    (payload: Record<string, string | undefined>, signal: AbortSignal) =>
+      fetch(`/api/visa-forms/${formCode}/pdf`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          data: payload,
+          ...(isJourney
+            ? {
+                scope: "journey",
+                journeyId: journeyContext?.backendId || journeyContext?.journeySlug,
+                journeyCategory: journeyContext?.journeyCategory,
+                candidateId: journeyContext?.candidateId,
+              }
+            : { scope: "standalone" }),
+        }),
+        signal,
+      }),
+    [formCode, isJourney, journeyContext]
+  );
+
   const handlePreviewPDF = async () => {
     const payload = buildPdfPayload();
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
+    const apiUrl = `/api/visa-forms/${formCode}/pdf`;
     const { controller, timeoutId } = createAbortController(60000); // 60s timeout for preview
 
     // Open the tab synchronously inside the click gesture. Mobile browsers block
@@ -1497,12 +1535,7 @@ export function MultiStepForm({
 
     setIsPreviewing(true);
     try {
-      const res = await fetch(`${apiUrl}/fill-pdf`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ formId: formCode, data: payload, onlyFirstPage: isFreePreview }),
-        signal: controller.signal,
-      });
+      const res = await requestFilledPdf(payload, controller.signal);
 
       clearTimeout(timeoutId);
 
@@ -1541,17 +1574,12 @@ export function MultiStepForm({
 
   const handleDownloadPDF = async () => {
     const payload = buildPdfPayload();
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
+    const apiUrl = `/api/visa-forms/${formCode}/pdf`;
     const { controller, timeoutId } = createAbortController(60000); // 60s timeout for download
 
     setIsDownloading(true);
     try {
-      const res = await fetch(`${apiUrl}/fill-pdf`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ formId: formCode, data: payload, onlyFirstPage: isFreePreview }),
-        signal: controller.signal,
-      });
+      const res = await requestFilledPdf(payload, controller.signal);
 
       clearTimeout(timeoutId);
 
@@ -1597,21 +1625,20 @@ export function MultiStepForm({
       return;
     }
     const payload = buildPdfPayload();
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
+    const apiUrl = `/api/visa-forms/${formCode}/pdf`;
     const { controller, timeoutId } = createAbortController(90000); // 90s timeout for full vault save
 
     setIsSavingToVault(true);
     try {
-      const res = await fetch(`${apiUrl}/fill-pdf`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ formId: formCode, data: payload }),
-        signal: controller.signal,
-      });
+      const res = await requestFilledPdf(payload, controller.signal);
 
       clearTimeout(timeoutId);
 
       if (!res.ok) throw new Error(`${await res.text()} (Endpoint: ${apiUrl})`);
+      // Never store a page-1 demo in the vault as if it were the whole form.
+      if (res.headers.get("X-Pdf-Scope") !== "full") {
+        throw new Error("Saving the full form needs Smart Form Filler access.");
+      }
       const blob = await res.blob();
 
       const file = new File([blob], `${formCode.toUpperCase()}-auto-filled.pdf`, {
@@ -1687,6 +1714,7 @@ export function MultiStepForm({
     vaultConfig,
     formCode,
     buildPdfPayload,
+    requestFilledPdf,
     config?.formTitle,
     reloadDocuments,
     showToast,
@@ -2284,9 +2312,16 @@ export function MultiStepForm({
       )}
 
       {/* Upgrade Modal Hook */}
-      {showUpgradeModal && (
-        <UpgradeModal feature="smart_form_filler" onClose={() => setShowUpgradeModal(false)} />
-      )}
+      {showUpgradeModal &&
+        (formWallet.item ? (
+          <CreditLaunchModal
+            item={formWallet.item}
+            onClose={() => setShowUpgradeModal(false)}
+            onLaunched={() => setShowUpgradeModal(false)}
+          />
+        ) : (
+          <UpgradeModal feature="smart_form_filler" onClose={() => setShowUpgradeModal(false)} />
+        ))}
     </div>
   );
 }

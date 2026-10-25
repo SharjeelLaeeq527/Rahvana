@@ -14,6 +14,7 @@ const mockOr = jest.fn();
 const mockRpc = jest.fn();
 const mockLaunch = jest.fn();
 const mockLoadState = jest.fn();
+const mockDeductService = jest.fn()
 
 jest.mock("@/lib/api/authGuards", () => ({
   getAuthenticatedUser: () => mockUser(),

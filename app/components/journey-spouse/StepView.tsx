@@ -673,7 +673,7 @@ export const StepView: React.FC<StepViewProps> = ({
     isSubmittingCreds,
     showDeleteConfirmation,
     setShowDeleteConfirmation,
-  } = usePortalWallet({ sId, isCompleted, actions, candidateId: activeCandidateId });
+  } = usePortalWallet({ sId, isCompleted, actions, candidateId: "ir1" });
 
   const {
     showQuiz,
@@ -1965,6 +1965,8 @@ export const StepView: React.FC<StepViewProps> = ({
               setIsPrepLaunched={setIsPrepLaunched}
               guard={stepEntitlement.guard}
               journeyId={journeyId}
+              journeyTier={state?.subscriptionTier ?? (state as any)?.subscription_tier ?? plan.tier}
+              plan={plan}
             />
           )}
 

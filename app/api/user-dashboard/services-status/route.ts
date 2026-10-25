@@ -85,16 +85,25 @@ export async function GET(req: NextRequest) {
     let sindhPccRequests = (pccData || []).filter(
       (item: any) =>
         item.awaiting_payment !== true &&
+        item.payment_status !== "pending" &&
+        item.payment_status !== "failed" &&
         (!item.province ||
           item.province.toLowerCase() === "sindh" ||
           item.province.toLowerCase() === "unknown")
     );
 
     let medicalAppointments = (appointmentsData || []).filter(
-      (item: any) => item.awaiting_payment !== true
+      (item: any) =>
+        item.awaiting_payment !== true &&
+        item.payment_status !== "pending" &&
+        item.payment_status !== "failed"
     );
-    let translationDocuments = translationsData || [];
-    let consultationBookings = consultationData || [];
+    let translationDocuments = (translationsData || []).filter(
+      (item: any) => item.payment_status !== "pending" && item.payment_status !== "failed"
+    );
+    let consultationBookings = (consultationData || []).filter(
+      (item: any) => item.payment_status !== "pending" && item.payment_status !== "failed"
+    );
 
     // scope=all -> every request on the account, unfiltered by origin or candidate. Backs the
     // cross-journey "My Requests (all journeys)" directory, which labels each row with the

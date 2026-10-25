@@ -14,6 +14,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
 import { encrypt } from "@/lib/encryption";
 import { validateProfile } from "@/lib/profile/schema";
+import { withServerOwnedKeys } from "@/lib/profile/serverOwnedKeys";
 import type { MasterProfile } from "@/types/profile";
 
 // Sensitive top-level string fields inside the MasterProfile object
@@ -161,16 +162,20 @@ export async function POST(request: Request) {
 
     const { data: existingProfile } = await supabase
       .from("user_profiles")
-      .select("id")
+      .select("id, profile_details")
       .eq("id", user.id)
       .maybeSingle();
+
+    // Purchases and plan fields are server-owned: keep what is stored, whatever
+    // the client sent (this write runs as service_role, past the DB guard).
+    const safeDetails = withServerOwnedKeys(encryptedDetails, existingProfile?.profile_details);
 
     let saveError;
     if (existingProfile) {
       const { error } = await supabaseService
         .from("user_profiles")
         .update({
-          profile_details: encryptedDetails,
+          profile_details: safeDetails,
           updated_at: new Date().toISOString(),
         })
         .eq("id", user.id);
@@ -180,7 +185,7 @@ export async function POST(request: Request) {
         id: user.id,
         subscription_tier: "core",
         subscription_status: "active",
-        profile_details: encryptedDetails,
+        profile_details: safeDetails,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       });

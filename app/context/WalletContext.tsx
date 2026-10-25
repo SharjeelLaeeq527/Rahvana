@@ -6,9 +6,12 @@ import type { WalletResourceType } from "@/lib/wallet/catalog";
 import {
   fetchWalletSnapshot,
   newLaunchIdempotencyKey,
+  newServiceBookingIdempotencyKey,
   requestLaunch,
+  requestServiceBookingDeduction,
   unlockKey,
   type LaunchResponse,
+  type ServiceBookingResponse,
   type WalletUnlock,
 } from "@/lib/wallet/client";
 import { WalletTopupModal } from "@/app/components/wallet/WalletTopupModal";
@@ -39,6 +42,12 @@ interface WalletContextValue {
   isUnlocked: (resourceId: string, resourceType?: WalletResourceType) => boolean;
   refreshWallet: () => Promise<void>;
   launchResource: (resourceType: WalletResourceType, resourceId: string) => Promise<LaunchResponse>;
+  deductServiceBooking: (
+    serviceId: string,
+    referenceId?: string,
+    idempotencyKey?: string,
+    metadata?: Record<string, unknown>
+  ) => Promise<ServiceBookingResponse>;
   openTopup: (options?: OpenTopupOptions) => void;
   closeTopup: () => void;
 }
@@ -57,6 +66,9 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [topup, setTopup] = useState<OpenTopupOptions | null>(null);
+  // User whose first wallet fetch has settled. Until then the wallet counts as
+  // loading, so a gate never flashes "locked" for a user who owns the tool.
+  const [loadedFor, setLoadedFor] = useState<string | null>(null);
 
   const lastFetchRef = useRef(0);
   // Ignores a response that arrives after the user changed (logout / switch).
@@ -80,7 +92,10 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       if (userRef.current !== forUser) return;
       setError(e instanceof Error ? e.message : "Could not load your wallet.");
     } finally {
-      if (userRef.current === forUser) setIsLoading(false);
+      if (userRef.current === forUser) {
+        setIsLoading(false);
+        setLoadedFor(forUser);
+      }
     }
   }, []);
 
@@ -142,23 +157,61 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     []
   );
 
+  const deductServiceBooking = useCallback(
+    async (
+      serviceId: string,
+      referenceId?: string,
+      idempotencyKey?: string,
+      metadata?: Record<string, unknown>
+    ): Promise<ServiceBookingResponse> => {
+      const result = await requestServiceBookingDeduction(
+        serviceId,
+        referenceId,
+        idempotencyKey,
+        metadata
+      );
+      const { body } = result;
+      if (typeof body.balance === "number") setBalance(body.balance);
+      else if (typeof body.available === "number") setBalance(body.available);
+      // Consumable per booking: services never write to unlocks
+      return result;
+    },
+    []
+  );
+
   const openTopup = useCallback((options?: OpenTopupOptions) => setTopup(options ?? {}), []);
   const closeTopup = useCallback(() => setTopup(null), []);
+
+  const walletLoading = isLoading || (userId !== null && loadedFor !== userId);
 
   const value = useMemo<WalletContextValue>(
     () => ({
       balance,
-      isLoading,
+      isLoading: walletLoading,
       error,
       unlocks,
       unlockedResources,
       isUnlocked,
       refreshWallet,
       launchResource,
+      deductServiceBooking,
       openTopup,
       closeTopup,
     }),
-    [balance, isLoading, error, unlocks, unlockedResources, isUnlocked, refreshWallet, launchResource, openTopup, closeTopup]
+    [
+      balance,
+      // isLoading,
+      walletLoading,
+      error,
+      unlocks,
+      unlockedResources,
+      isUnlocked,
+      refreshWallet,
+      launchResource,
+      deductServiceBooking,
+      openTopup,
+      closeTopup,
+    ]
   );
 
   return (

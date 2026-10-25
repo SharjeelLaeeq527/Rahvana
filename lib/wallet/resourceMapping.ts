@@ -27,6 +27,18 @@ export const GUIDE_RESOURCE_IDS: Record<string, string> = {
   vaccinations: "guide-polio",
 };
 
+/** Service IDs from `app/(main)/services/page.tsx` mapped to their catalog resource IDs. */
+export const SERVICE_RESOURCE_IDS: Record<string, string> = {
+  "book-medical-appointment": "book-medical-appointment",
+  "pcc-filing-service": "pcc-filing-service",
+  "pcc-filing-service,-sindh": "pcc-filing-service",
+  "pcc-filing-service-, -sindh": "pcc-filing-service",
+  "document-translation": "document-translation",
+  "urdu-→-english-translation": "document-translation",
+  "book-a-consultation": "book-a-consultation",
+  "expert-consultation": "book-a-consultation",
+};
+
 /** Returns the catalog item for a tool, or null if it isn't mapped. */
 export function getToolCatalogItem(toolId: string): WalletCatalogItem | null {
   const resourceId = TOOL_RESOURCE_IDS[toolId];
@@ -37,6 +49,13 @@ export function getToolCatalogItem(toolId: string): WalletCatalogItem | null {
 export function getGuideCatalogItem(guideId: string): WalletCatalogItem | null {
   const resourceId = GUIDE_RESOURCE_IDS[guideId];
   return resourceId ? getCatalogItem("guide", resourceId) : null;
+}
+
+/** Returns the catalog item for a service, or null if it isn't mapped. */
+export function getServiceCatalogItem(serviceId: string): WalletCatalogItem | null {
+  const resourceId = SERVICE_RESOURCE_IDS[serviceId] ?? serviceId;
+  const item = getCatalogItem("service", resourceId);
+  return item;
 }
 
 /** Adds preview mode to a tool URL. */

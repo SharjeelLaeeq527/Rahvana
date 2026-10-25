@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense, Fragment } from "react";
+import { useState, useEffect, useRef, Suspense, Fragment } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -25,16 +25,15 @@ import {
   Sparkles,
   Crown,
   Loader2,
+  Coins,
 } from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
 import { useCandidate } from "@/app/context/CandidateContext";
 import { useUserProfile } from "@/app/context/UserProfileContext";
 import { Loader } from "@/components/ui/spinner";
 import { useToast } from "@/app/components/shared/ToastProvider";
-import { usePlan } from "@/app/context/PlanContext";
-import { useFeatureAccess } from "@/lib/usage/useFeatureAccess";
-import { isUnlimited } from "@/lib/entitlements/config";
-import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
+import { useWallet } from "@/app/context/WalletContext";
+import { serviceBookingErrorMessage } from "@/lib/wallet/client";
 import { E, msg } from "@/lib/errors";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -117,26 +116,27 @@ interface CheckoutStepProps {
   formData: any;
   error: string | null;
   loading: boolean;
-  isUnlimitedAccess: boolean;
-  hasCredit: boolean;
-  remainingCredits: number | null;
-  creditsLoading: boolean;
+  walletBalance: number | null;
+  walletLoading: boolean;
+  onTopup: (deficit: number) => void;
   onBack: () => void;
-  onSubmit: (e: React.FormEvent) => void;
+  onSubmit: () => void;
 }
 
 const CheckoutStep = ({
   formData,
   error,
   loading,
-  isUnlimitedAccess,
-  hasCredit,
-  remainingCredits,
-  creditsLoading,
+  walletBalance,
+  walletLoading,
+  onTopup,
   onBack,
   onSubmit,
 }: CheckoutStepProps) => {
-  const freeFiling = isUnlimitedAccess || hasCredit;
+  const costCredits = 25;
+  const hasWalletCredits = walletBalance !== null && walletBalance >= costCredits;
+  const deficit = Math.max(costCredits, costCredits - (walletBalance ?? 0));
+
   return (
     <div className="space-y-6 md:space-y-8">
       <div className="mb-6 flex flex-col items-start gap-2 md:flex-row md:items-center">
@@ -176,8 +176,8 @@ const CheckoutStep = ({
               </h5>
             </div>
             <p className="w-full text-xs leading-relaxed text-gray-500">
-              Your details are handled securely. One-time card payments are processed securely via
-              Stripe.
+              Standalone requests are paid with your Rahvana Wallet credits ($1 = 1 credit). If your
+              balance is short, you can top up instantly via Stripe.
             </p>
           </div>
         </div>
@@ -194,62 +194,59 @@ const CheckoutStep = ({
               <div className="space-y-4">
                 <div className="flex items-center justify-between text-sm">
                   <span className="font-medium text-gray-600">1x PCC Filing (Sindh)</span>
-                  <span className="font-bold text-gray-800">$25.00</span>
+                  <span className="font-bold text-gray-800">25 Credits ($25.00)</span>
                 </div>
 
-                {isUnlimitedAccess && (
-                  <div className="flex items-center justify-between text-sm text-green-600">
-                    <span className="flex items-center gap-1 font-semibold">
-                      <Sparkles className="h-3.5 w-3.5" />
-                      Executive Tier Discount
-                    </span>
-                    <span className="font-bold">-$25.00</span>
-                  </div>
-                )}
+                <div className="flex items-center justify-between text-sm">
+                  <span className="font-medium text-gray-600">Wallet Balance</span>
+                  <span className="font-bold text-gray-800">
+                    {walletLoading ? "..." : `${walletBalance ?? 0} Credits`}
+                  </span>
+                </div>
 
-                {hasCredit && (
-                  <div className="flex items-center justify-between text-sm text-green-600">
-                    <span className="flex items-center gap-1 font-semibold">
-                      <Sparkles className="h-3.5 w-3.5" />
-                      PCC Filing Credit
-                    </span>
-                    <span className="font-bold">-$25.00</span>
+                {hasWalletCredits && (
+                  <div className="flex items-center justify-between text-sm text-[#0d7377]">
+                    <span className="font-medium">Balance After Booking</span>
+                    <span className="font-bold">{(walletBalance ?? 25) - costCredits} Credits</span>
                   </div>
                 )}
 
                 <div className="mt-2 flex items-center justify-between border-t border-gray-200 pt-4">
                   <span className="text-base font-bold text-gray-900">Total Due</span>
-                  <span className="text-xl font-black text-gray-900">
-                    {freeFiling ? "$0.00" : "$25.00"}
-                  </span>
+                  <span className="text-xl font-black text-gray-900">25 Credits ($25.00)</span>
                 </div>
               </div>
 
-              {isUnlimitedAccess ? (
-                <div className="mt-5 flex items-center gap-2 rounded-xl border border-amber-100 bg-amber-50 p-3">
-                  <Crown className="h-4 w-4 flex-shrink-0 text-amber-500" />
-                  <span className="text-[11px] font-bold text-amber-800">
-                    PCC filing is included free with your Executive plan.
+              {hasWalletCredits ? (
+                <div className="mt-5 flex items-center gap-2 rounded-xl border border-teal-200 bg-teal-50 p-3">
+                  <Coins className="h-4 w-4 flex-shrink-0 text-[#0d7377]" />
+                  <span className="text-[11px] font-bold text-teal-800">
+                    25 credits will be deducted from your Rahvana Wallet upon confirmation.
                   </span>
                 </div>
-              ) : hasCredit ? (
-                <div className="mt-5 flex items-center gap-2 rounded-xl border border-amber-100 bg-amber-50 p-3">
-                  <Crown className="h-4 w-4 flex-shrink-0 text-amber-500" />
-                  <span className="text-[11px] font-bold text-amber-800">
-                    1 of your {remainingCredits} PCC filing{" "}
-                    {remainingCredits === 1 ? "credit" : "credits"} will be applied — no payment
-                    needed.
-                  </span>
+              ) : (
+                <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-3.5">
+                  <div className="flex items-start gap-2">
+                    <Coins className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-600" />
+                    <div>
+                      <p className="text-xs font-bold text-amber-900">
+                        Insufficient Wallet Balance
+                      </p>
+                      <p className="mt-0.5 text-[11px] text-amber-700">
+                        You have {walletBalance ?? 0} credits. 25 credits are required to file this
+                        PCC request.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => onTopup(deficit)}
+                        className="mt-2.5 inline-flex items-center gap-1.5 rounded-lg bg-[#0d7377] px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-[#0a5c5f]"
+                      >
+                        <Coins size={12} /> Top up {deficit} Credits (${deficit})
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              ) : !creditsLoading ? (
-                <div className="mt-5 rounded-xl border border-gray-200 bg-gray-50 p-3">
-                  <span className="text-[11px] font-bold text-gray-600">
-                    {remainingCredits === 0
-                      ? "No filing credits left — a one-time $25 fee applies at secure checkout."
-                      : "A one-time $25 fee applies at secure checkout. Buy the PCC filing add-on to file free with credits next time."}
-                  </span>
-                </div>
-              ) : null}
+              )}
             </div>
 
             {error && (
@@ -268,17 +265,15 @@ const CheckoutStep = ({
               </button>
               <button
                 type="button"
-                onClick={onSubmit}
+                onClick={hasWalletCredits ? onSubmit : () => onTopup(deficit)}
                 disabled={loading}
                 className="bg-primary hover:bg-primary/90 flex w-full items-center justify-center gap-2 rounded-2xl px-6 py-3.5 text-sm font-bold whitespace-nowrap text-white shadow-sm transition-all active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:px-8 sm:py-3"
               >
                 {loading
                   ? "Processing..."
-                  : isUnlimitedAccess
-                    ? "Confirm Request (Free)"
-                    : hasCredit
-                      ? "Confirm Request (Free)"
-                      : "Proceed to Payment ($25)"}
+                  : hasWalletCredits
+                    ? "Pay 25 Credits & Confirm"
+                    : `Top up ${deficit} Credits to Submit`}
               </button>
             </div>
           </div>
@@ -320,11 +315,10 @@ function PoliceApplyContent({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
-  const plan = usePlan();
-  const { tier } = plan;
-  const { checkAccess, consumeAccess } = useFeatureAccess();
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const isLocked = !plan.isLoading && !plan.canUse("pcc_filing");
+  const wallet = useWallet();
+  // Standalone draft whose payment failed: a retry pays for this same request
+  // (never a second one). Cleared once paid or when the user goes back to edit.
+  const pendingDraftRef = useRef<{ id: string; requestId: string } | null>(null);
   const [referenceId, setReferenceId] = useState("");
 
   // 1) Mode resolution — journey when embedded in StepView, standalone otherwise.
@@ -334,42 +328,11 @@ function PoliceApplyContent({
     journeyTier: propJourneyTier,
   });
 
-  // 2) Effective tier — journey tier when embedded, account tier when standalone.
+  // 2) Effective tier — journey tier when embedded, null otherwise
   const rawJourneyTier = propJourneyTier ?? journeyTier ?? journeyContext?.subscriptionTier;
-  const effectiveTier: PlanTier = normalizePlanTier(isJourney ? rawJourneyTier : tier);
-
-  // Purchased PCC-credit balance, surfaced in the header and on the checkout step.
-  // null = no credit pool (locked tiers without add-on); Executive is unlimited.
-  const [remainingPccCredits, setRemainingPccCredits] = useState<number | null>(null);
-  const [pccCreditsLoading, setPccCreditsLoading] = useState(true);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadCredits = async () => {
-      if (isUnlimited("pcc_filing", tier)) {
-        setRemainingPccCredits(null);
-        setPccCreditsLoading(false);
-        return;
-      }
-      setPccCreditsLoading(true);
-      const access = await checkAccess("pcc_filing");
-      if (!isMounted) return;
-      const usage = access.data?.data?.usage;
-      setRemainingPccCredits(
-        access.allowed && usage?.remaining !== undefined ? usage.remaining : null
-      );
-      setPccCreditsLoading(false);
-    };
-
-    void loadCredits();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [checkAccess, tier]);
-
-  const hasPccCredit = remainingPccCredits !== null && remainingPccCredits > 0;
+  const journeyTierEffective: PlanTier | null =
+    isJourney && rawJourneyTier ? normalizePlanTier(rawJourneyTier) : null;
+  void journeyTierEffective;
 
   const [formData, setFormData] = useState({
     purpose: "Immigration",
@@ -698,29 +661,33 @@ function PoliceApplyContent({
       setCheckoutLoading(true);
       setCheckoutError(null);
 
-      // ── Entitlement check FIRST ──────────────────────────────────────────
-      // Determine whether the user must pay BEFORE creating any DB row, so
-      // must-pay submissions are stored as hidden drafts (awaiting_payment)
-      // and never leak as visible unpaid requests if checkout fails.
-      const unlimited = isUnlimited("pcc_filing", tier);
-      let hasCredit = false;
-      if (!isJourney && !unlimited) {
-        const access = await checkAccess("pcc_filing");
-        hasCredit = !!access.allowed && (access.data?.data?.usage?.allowed ?? false);
+      // Standalone: check the balance before creating anything, so a short balance
+      // leaves no hidden draft (or uploaded documents) behind.
+      if (!isJourney && (wallet.balance === null || wallet.balance < 25)) {
+        const deficit = Math.max(25, 25 - (wallet.balance ?? 0));
+        wallet.openTopup({ amount: deficit });
+        setCheckoutError(
+          `You need 25 credits for PCC filing (Balance: ${wallet.balance ?? 0} credits). Please top up to proceed.`
+        );
+        return;
       }
-      const mustPay = !isJourney && !unlimited && !hasCredit;
 
-      // 1. Save application (as draft when mustPay, visible otherwise)
+      let draft = pendingDraftRef.current;
+      if (!draft) {
+      // 1. Save application (hidden draft in standalone, active in journey; the server decides)
       const payload = {
         ...formData,
-        userId: user?.id,
         candidate_id: activeCandidateId || "candidate-1",
         candidate_name: activeCandidate.fullName || activeCandidate.label || "",
         // Origin tag: journey-embedded requests are kept out of standalone My Resources.
         ...(isJourney
-          ? { source: "journey", journey_slug: journeyContext?.journeySlug || null }
+          ? {
+              source: "journey",
+              journey_slug: journeyContext?.journeySlug || null,
+              journey_id: journeyContext?.backendId || null,
+              journey_category: journeyContext?.journeyCategory || null,
+            }
           : { source: "standalone" }),
-        awaitingPayment: mustPay,
       };
 
       const response = await fetch("/api/police-verification/apply", {
@@ -734,8 +701,9 @@ function PoliceApplyContent({
         throw new Error(result.error || "Submission failed");
       }
 
-      const { id, requestId } = result;
-      setReferenceId(requestId);
+      draft = { id: result.id as string, requestId: result.requestId as string };
+      const { id } = draft;
+      setReferenceId(draft.requestId);
 
       // 2. Upload files (attached regardless of payment status)
       const uploadPromises = Object.entries(files).map(async ([key, file]) => {
@@ -747,8 +715,11 @@ function PoliceApplyContent({
         await fetch("/api/police-verification/upload", { method: "POST", body: fd });
       });
       await Promise.all(uploadPromises);
+      if (!isJourney) pendingDraftRef.current = draft;
+      }
+      const { id, requestId } = draft;
 
-      // 3a) Journey mode: no credits, no Stripe — finalize directly.
+      // 3a) Journey mode: 0 credits, no wallet, no Stripe — finalize directly.
       if (isJourney) {
         onSave?.({
           referenceId: requestId,
@@ -760,195 +731,37 @@ function PoliceApplyContent({
         return;
       }
 
-      // 3b) Must-pay: row exists as hidden draft. Stripe reveals on payment.
-      if (mustPay) {
-        const stripeRes = await fetch("/api/stripe/checkout", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ policeVerificationId: id, userId: user?.id }),
-        });
-        const stripeData = await stripeRes.json();
-        if (!stripeRes.ok) {
-          throw new Error(stripeData.error || "Failed to create checkout session");
-        }
-        if (stripeData.url) {
-          window.location.href = stripeData.url;
-          return;
-        }
-        throw new Error("No checkout URL returned");
+      // 3b) Standalone mode: deduct 25 credits for this request (charged at most once).
+      const deductResult = await wallet.deductServiceBooking("pcc-filing-service", id);
+
+      if (deductResult.body.success) {
+        pendingDraftRef.current = null;
+        setCurrentStep(5);
+        return;
       }
 
-      // 3c) Free path: consume credit (or unlimited — no consume needed).
-      if (!unlimited) {
-        const reservation = await consumeAccess("pcc_filing");
-        if (!reservation.allowed || reservation.data?.allowed === false) {
-          // Raced with another tab — fall back to Stripe against same row.
-          const stripeRes = await fetch("/api/stripe/checkout", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ policeVerificationId: id, userId: user?.id }),
-          });
-          const stripeData = await stripeRes.json();
-          if (stripeData.url) {
-            window.location.href = stripeData.url;
-            return;
-          }
-          setCheckoutError("Could not consume your PCC credit. Please try again.");
-          return;
-        }
-        if (reservation.data?.remaining !== undefined) {
-          setRemainingPccCredits(reservation.data.remaining);
-        }
+      if (deductResult.status === 402) {
+        const deficit = deductResult.body.deficit ?? 25;
+        wallet.openTopup({ amount: deductResult.body.topupAmount ?? deficit });
+        setCheckoutError(
+          `Insufficient credits. Please top up ${deficit} credits to complete your application.`
+        );
+        return;
       }
 
-      setCurrentStep(5);
+      console.error("Credit deduction failed:", deductResult.body.error);
+      setCheckoutError(serviceBookingErrorMessage(deductResult.body.error));
     } catch (err) {
       console.error(err);
-
       setCheckoutError(err instanceof Error ? err.message : "Submission failed");
     } finally {
       setCheckoutLoading(false);
     }
   };
 
-  const handleSubmit = async () => {
-    if (validateStep(3)) {
-      setIsSubmitting(true);
-      try {
-        // 1. Submit text data
-        const payload = {
-          ...formData,
-          userId: user?.id,
-          candidate_id: activeCandidateId || "candidate-1",
-          candidate_name: activeCandidate.fullName || activeCandidate.label || "",
-          // Origin tag: journey-embedded requests are kept out of standalone My Resources.
-          ...(isJourney
-            ? { source: "journey", journey_slug: journeyContext?.journeySlug || null }
-            : { source: "standalone" }),
-        };
-
-        const response = await fetch("/api/police-verification/apply", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.error || "Submission failed");
-
-        const { id, requestId } = result;
-
-        // 2. Upload files
-        const fileUploadPromises = Object.entries(files).map(async ([key, file]) => {
-          if (!file) return;
-
-          const uploadFormData = new FormData();
-          uploadFormData.append("file", file);
-          uploadFormData.append("requestId", id);
-          uploadFormData.append("fileType", key);
-
-          const uploadRes = await fetch("/api/police-verification/upload", {
-            method: "POST",
-            body: uploadFormData,
-          });
-
-          if (!uploadRes.ok) {
-            console.error(`Failed to upload ${key}`);
-          }
-        });
-
-        await Promise.all(fileUploadPromises);
-
-        // 3b) MODE BRANCH at the credit gate — journey mode: no credits, no Stripe.
-        if (isJourney) {
-          onSave?.({
-            referenceId: requestId,
-            referenceDate: new Date().toISOString().slice(0, 10),
-            location: formData.district || "Sindh",
-            status: "requested",
-          });
-          showToast(msg(E.POLICE_SUBMIT_SUCCESS, { requestId }), "success");
-          setCurrentStep(4); // success step (legacy path)
-          return;
-        }
-
-        // 3. Server-side credit check — redirect to Stripe only when no credit balance remains (or the tier isn't Executive-unlimited).
-        const pccAccess = isUnlimited("pcc_filing", tier)
-          ? { allowed: true }
-          : await checkAccess("pcc_filing");
-        const canUsePccFiling =
-          pccAccess.allowed &&
-          (isUnlimited("pcc_filing", tier) || (pccAccess.data?.data?.usage?.allowed ?? false));
-        if (!canUsePccFiling && user?.id) {
-          try {
-            const stripeRes = await fetch("/api/stripe/checkout", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                policeVerificationId: id,
-                userId: user.id,
-              }),
-            });
-
-            const stripeData = await stripeRes.json();
-
-            if (!stripeRes.ok) {
-              throw new Error(stripeData.error || "Failed to create checkout session");
-            }
-
-            if (stripeData.url) {
-              window.location.href = stripeData.url;
-              return; // Redirecting to Stripe
-            } else {
-              throw new Error("No checkout URL returned");
-            }
-          } catch (stripeErr: any) {
-            console.error("Checkout redirection failed:", stripeErr);
-            showToast(stripeErr.message || "Checkout redirection failed", "error");
-            setIsSubmitting(false);
-            return;
-          }
-        }
-
-        // If user has pcc_filing entitlement (or a credit), consume + show success.
-        if (!isUnlimited("pcc_filing", tier)) {
-          const reservation = await consumeAccess("pcc_filing");
-          if (!reservation.allowed || reservation.data?.allowed === false) {
-            const stripeRes = await fetch("/api/stripe/checkout", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ policeVerificationId: id, userId: user?.id }),
-            });
-            const stripeData = await stripeRes.json();
-            if (stripeData.url) {
-              window.location.href = stripeData.url;
-              return;
-            }
-            throw new Error("Could not consume your PCC credit. Please try again.");
-          }
-          if (reservation.data?.remaining !== undefined) {
-            setRemainingPccCredits(reservation.data.remaining);
-          }
-        }
-        showToast(msg(E.POLICE_SUBMIT_SUCCESS, { requestId }), "success");
-
-        setCurrentStep(4); // Move to success step
-      } catch (error) {
-        console.error(error);
-        showToast(
-          "Failed to submit application: " +
-            (error instanceof Error ? error.message : "Unknown error"),
-          "error"
-        );
-      } finally {
-        setIsSubmitting(false);
-      }
-    }
-  };
-
   const handleBack = () => {
+    // Editing after a failed payment files a fresh request with the new details.
+    pendingDraftRef.current = null;
     if (currentStep > 1) setCurrentStep(currentStep - 1);
     else router.back();
   };
@@ -1233,26 +1046,12 @@ function PoliceApplyContent({
               </div>
               <div className="flex shrink-0 items-center gap-2">
                 {/* Credit visibility (standalone only — journey mode has no credits) */}
-                {!isJourney &&
-                  !plan.isLoading &&
-                  (isUnlimited("pcc_filing", tier) ? (
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-bold whitespace-nowrap text-amber-800">
-                      <Crown className="h-3.5 w-3.5" />
-                      Executive — unlimited PCC filings
-                    </span>
-                  ) : pccCreditsLoading ? null : hasPccCredit ? (
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-bold whitespace-nowrap text-teal-800">
-                      <Sparkles className="h-3.5 w-3.5" />
-                      {remainingPccCredits} PCC filing{" "}
-                      {remainingPccCredits === 1 ? "credit" : "credits"} available
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-semibold whitespace-nowrap text-gray-600">
-                      {remainingPccCredits === 0
-                        ? "No filing credits left — $25 per request"
-                        : "No filing credits — $25 per request"}
-                    </span>
-                  ))}
+                {/* {!isJourney && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-bold whitespace-nowrap text-teal-800">
+                    <Coins size={14} className="text-[#0d7377]" />
+                    25 Credits ($25) • Balance: {wallet.isLoading ? "..." : `${wallet.balance ?? 0} Credits`}
+                  </span>
+                )} */}
                 {[1, 2, 3, 4].map((s) => (
                   <div
                     key={s}
@@ -2395,15 +2194,11 @@ function PoliceApplyContent({
                   formData={formData}
                   error={checkoutError}
                   loading={checkoutLoading}
-                  isUnlimitedAccess={isUnlimited("pcc_filing", tier)}
-                  hasCredit={hasPccCredit}
-                  remainingCredits={remainingPccCredits}
-                  creditsLoading={pccCreditsLoading}
+                  walletBalance={wallet.balance}
+                  walletLoading={wallet.isLoading}
+                  onTopup={(deficit) => wallet.openTopup({ amount: deficit })}
                   onBack={() => setCurrentStep(3)}
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    handleCheckoutSubmit();
-                  }}
+                  onSubmit={handleCheckoutSubmit}
                 />
               </motion.div>
             )}
@@ -2426,61 +2221,28 @@ function PoliceApplyContent({
               <ChevronLeft size={20} className="transition-transform group-hover:-translate-x-1" />{" "}
               Back
             </button>
-            {currentStep < 4 ? (
-              <button
-                onClick={handleNext}
-                disabled={
-                  Object.keys(errors).length > 0 ||
-                  (isJourney && currentStep === 3 && checkoutLoading)
-                }
-                className="bg-primary hover:bg-primary/90 group md:shadow-primary/25 flex w-full items-center justify-center gap-2 rounded-2xl px-10 py-4 font-bold text-white transition-all disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto md:not-first:shadow-xl"
-              >
-                {isJourney && currentStep === 3 && checkoutLoading ? (
-                  <>
-                    <Loader2 size={20} className="animate-spin" /> Processing…
-                  </>
-                ) : (
-                  <>
-                    Continue{" "}
-                    <ChevronRight
-                      size={20}
-                      className="transition-transform group-hover:translate-x-1"
-                    />
-                  </>
-                )}
-              </button>
-            ) : (
-              <>
-                <button
-                  onClick={isLocked ? () => setShowUpgradeModal(true) : handleSubmit}
-                  disabled={!isLocked && (Object.keys(errors).length > 0 || isSubmitting)}
-                  className={`bg-primary group flex w-full items-center justify-center gap-2 rounded-2xl px-10 py-4 font-bold text-white shadow-xl transition-all sm:w-auto ${
-                    isLocked
-                      ? "cursor-pointer opacity-80 shadow-none blur-[1.5px] hover:scale-[0.99]"
-                      : "hover:bg-primary/90 shadow-green-600/25 disabled:cursor-not-allowed disabled:opacity-50"
-                  }`}
-                >
-                  {isSubmitting ? (
-                    "Submitting..."
-                  ) : (
-                    <>
-                      Submit Application{" "}
-                      {isLocked ? (
-                        <Lock size={20} />
-                      ) : (
-                        <Send
-                          size={20}
-                          className="transition-transform group-hover:translate-x-1 group-hover:-translate-y-1"
-                        />
-                      )}
-                    </>
-                  )}
-                </button>
-                {showUpgradeModal && (
-                  <UpgradeModal feature="pcc_filing" onClose={() => setShowUpgradeModal(false)} />
-                )}
-              </>
-            )}
+            <button
+              onClick={handleNext}
+              disabled={
+                Object.keys(errors).length > 0 ||
+                (isJourney && currentStep === 3 && checkoutLoading)
+              }
+              className="bg-primary hover:bg-primary/90 group md:shadow-primary/25 flex w-full items-center justify-center gap-2 rounded-2xl px-10 py-4 font-bold text-white transition-all disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto md:not-first:shadow-xl"
+            >
+              {isJourney && currentStep === 3 && checkoutLoading ? (
+                <>
+                  <Loader2 size={20} className="animate-spin" /> Processing...
+                </>
+              ) : (
+                <>
+                  Continue{" "}
+                  <ChevronRight
+                    size={20}
+                    className="transition-transform group-hover:translate-x-1"
+                  />
+                </>
+              )}
+            </button>
           </div>
         )}
       </div>

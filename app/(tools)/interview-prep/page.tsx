@@ -20,6 +20,9 @@ import { DynamicQuestionStep } from "@/app/components/interview-prep/dynamic-que
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import type { InterviewFormData } from "@/app/components/interview-prep/types";
 import { ResultGate } from "@/app/components/entitlements/ResultGate";
+import { CreditLaunchModal } from "@/app/components/wallet/CreditLaunchModal";
+import { useStandaloneToolUnlock } from "@/lib/wallet/useStandaloneToolUnlock";
+import { usePlan } from "@/app/context/PlanContext";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { useCandidate } from "@/app/context/CandidateContext";
 import { Users } from "lucide-react";
@@ -59,6 +62,7 @@ export interface InterviewPreparationProps {
   initialCategorySlug?: string | null;
   initialView?: "prep" | "sessions";
   onClose?: () => void;
+  journeyTier?: string | null;
 }
 
 export default function InterviewPreparation({
@@ -71,11 +75,19 @@ export default function InterviewPreparation({
   initialCategorySlug: propInitialCategorySlug,
   initialView = "prep",
   onClose,
+  journeyTier: propJourneyTier,
 }: InterviewPreparationProps = {}) {
   const router = useRouter();
   const journeyEnv = useJourneyEnvironment();
 
   const isEmbedded = Boolean(propIsEmbedded || journeyEnv.isInsideJourney);
+  // Standalone only: buying with credits replaces the per-category checkout.
+  // Journey runs pass null so they never read wallet unlocks.
+  const ipWallet = useStandaloneToolUnlock(isEmbedded ? null : "interview-prep");
+  const [showCreditModal, setShowCreditModal] = useState(false);
+  const plan = usePlan();
+  // Journey runs ask the categories API without wallet data.
+  const categoriesScopeQuery = isEmbedded ? "scope=journey" : "";
 
   const getEffectiveParam = (key: string): string | null => {
     if (toolHref && toolHref.includes("?")) {
@@ -89,6 +101,12 @@ export default function InterviewPreparation({
     }
     return null;
   };
+
+  const effectiveJourneyTier =
+    propJourneyTier ||
+    getEffectiveParam("journey_tier") ||
+    getEffectiveParam("tier") ||
+    null;
 
   const effectiveJourneyId =
     propJourneyId ||
@@ -269,6 +287,9 @@ export default function InterviewPreparation({
 
   const saveProgressToProfile = (currentFormData = formData) => {
     if (!user) return;
+    // CRITICAL: Standalone interview prep must NOT save to or overwrite the journey case profile!
+    // The user's prompt requires complete data isolation between standalone and journey prep.
+    if (!isJourneySession && !isEmbedded) return;
     try {
       const profileUpdate = mapFormToProfile(currentFormData as Record<string, unknown>);
       updateProfile(profileUpdate, { silent: true });
@@ -281,8 +302,9 @@ export default function InterviewPreparation({
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [step]);
 
-  // Auto-fill profile data (from central context)
+  // Auto-fill profile data (from central context) - ONLY for Journey sessions
   useEffect(() => {
+    if (!isJourneySession && !isEmbedded) return;
     if (isProfileLoading || profileLoaded || !profile) return;
 
     const mappedData = mapProfileToGenericForm(profile, {
@@ -341,7 +363,11 @@ export default function InterviewPreparation({
       const shouldFilterExistingSessions = !isEmbedded && params.get("newSession") === "1";
 
       const [categoriesResponse, sessionsResponse] = await Promise.all([
-        fetch(`/api/interview-prep/categories?country=${encodeURIComponent(country)}`),
+        fetch(
+          `/api/interview-prep/categories?country=${encodeURIComponent(country)}${
+            categoriesScopeQuery ? `&${categoriesScopeQuery}` : ""
+          }`
+        ),
         shouldFilterExistingSessions ? fetch("/api/interview-prep/user-sessions") : null,
       ]);
 
@@ -441,9 +467,9 @@ export default function InterviewPreparation({
 
         // Load questionnaire for the restored category
         const catDataResponse = await fetch(`/api/interview-prep?category_slug=${categorySlug}`);
-        const catData = await catDataResponse.json();
+        const catData = catDataResponse.ok ? await catDataResponse.json().catch(() => null) : null;
 
-        if (catData.success) {
+        if (catData?.success) {
           setQuestionnaire({
             categorySlug: category.categorySlug,
             version: catData.questionnaire?.version || "1.0.0",
@@ -593,13 +619,15 @@ export default function InterviewPreparation({
             const categorySlug =
               journeyData.session.category_slug || targetCategorySlug || "ir-1-spouse";
             const catDataResponse = await fetch(`/api/interview-prep?category_slug=${categorySlug}`);
-            const catData = await catDataResponse.json();
+            const catData = catDataResponse.ok ? await catDataResponse.json().catch(() => null) : null;
 
             if (catData.success) {
-              const categoriesResponse = await fetch(`/api/interview-prep/categories`);
+              const categoriesResponse = await fetch(
+              `/api/interview-prep/categories?${categoriesScopeQuery}`
+            );
               const categoriesData = await categoriesResponse.json();
 
-              if (categoriesData.success && categoriesData.categories) {
+              if (categoriesData?.success && categoriesData.categories) {
                 const category = categoriesData.categories.find(
                   (c: { categorySlug: string }) => c.categorySlug === categorySlug
                 );
@@ -652,7 +680,9 @@ export default function InterviewPreparation({
           }
 
           if (targetCategorySlug) {
-            const categoriesResponse = await fetch(`/api/interview-prep/categories`);
+            const categoriesResponse = await fetch(
+              `/api/interview-prep/categories?${categoriesScopeQuery}`
+            );
             const categoriesData = await categoriesResponse.json();
             if (categoriesData.success && categoriesData.categories) {
               setAvailableCategories(categoriesData.categories);
@@ -684,6 +714,15 @@ export default function InterviewPreparation({
           const sessionData = await response.json();
 
           if (response.ok && sessionData.session && sessionData.session.interview_prep_results) {
+            const sess = sessionData.session;
+            // Strict isolation: do not load journey sessions into standalone, or vice versa
+            if ((isEmbedded && sess.source === "tool") || (!isEmbedded && sess.source === "journey")) {
+              setLoading(false);
+              setLoadingMessage("");
+              setSessionRestorationAttempted(true);
+              return;
+            }
+
             setSessionId(sessionIdParam);
             setGeneratedResults(sessionData.session.interview_prep_results.generated_questions);
             setStep(questionnaire ? questionnaire.sections.length + 2 : 4);
@@ -709,20 +748,26 @@ export default function InterviewPreparation({
           const sessionData = await response.json();
 
           if (response.ok && sessionData.session && sessionData.session.completed === false) {
-            const source = sessionData.session.source || savedSessionSource || (isEmbedded ? "journey" : "tool");
-            setSessionSource(source);
-            if (source === "journey") {
-              setIsJourneySession(true);
-              setJourneyId(sessionData.session.journey_id);
-            }
+            const session = sessionData.session;
+            // Strict isolation check: reject cross-source stored sessions
+            if ((isEmbedded && session.source === "tool") || (!isEmbedded && session.source === "journey")) {
+              clearStoredSession(activeCandidateId, isEmbedded);
+            } else {
+              const source = session.source || savedSessionSource || (isEmbedded ? "journey" : "tool");
+              setSessionSource(source);
+              if (source === "journey") {
+                setIsJourneySession(true);
+                setJourneyId(session.journey_id);
+              }
 
-            await restoreSessionData(sessionData.session, (categorySlug: string) => {
-              const category = availableCategories.find((c) => c.categorySlug === categorySlug);
-              return category;
-            });
-            setLoading(false);
-            setSessionRestorationAttempted(true);
-            return;
+              await restoreSessionData(session, (categorySlug: string) => {
+                const category = availableCategories.find((c) => c.categorySlug === categorySlug);
+                return category;
+              });
+              setLoading(false);
+              setSessionRestorationAttempted(true);
+              return;
+            }
           } else {
             clearStoredSession(activeCandidateId, isEmbedded);
           }
@@ -892,33 +937,26 @@ export default function InterviewPreparation({
     setRepurchaseAddonId(null);
   };
 
-  const redirectToInterviewPrepPurchase = (categoryAddonId: string) => {
+  const redirectToInterviewPrepPurchase = () => {
     if (!selectedCategory) {
       return;
     }
 
-    const categorySlug = selectedCategory.categorySlug;
-
-    localStorage.setItem("interview_prep_pending_category", categorySlug);
-
-    if (selectedCountry) {
-      localStorage.setItem("interview_prep_pending_country", selectedCountry);
+    // Standalone: unlock with credits instead (unlimited sessions, every category).
+    if (ipWallet.item) {
+      setShowCreditModal(true);
+      return;
     }
 
-    const params = new URLSearchParams({
-      mode: "tools",
-      addons: categoryAddonId,
-      step: "review",
-      interview_category: categorySlug,
-    });
-
-    router.push(`/pricing?${params.toString()}`);
+    // Inside a journey the journey plan decides access; per-category add-ons are no
+    // longer sold, so the way in is a plan upgrade.
+    router.push("/pricing?mode=plans");
   };
 
-  const handlePurchaseRequired = (addon: PurchaseRequiredAddon) => {
+  const handlePurchaseRequired = () => {
     setError(null);
     setRepurchaseAddonId(null);
-    redirectToInterviewPrepPurchase(addon.id);
+    redirectToInterviewPrepPurchase();
   };
 
   const handlePurchaseExhausted = (repurchase: PurchaseExhaustedData) => {
@@ -926,11 +964,11 @@ export default function InterviewPreparation({
     setError(null);
 
     showToast(
-      "You have already used your purchased interview prep session for this category. Purchase another session to continue.",
+      "You have used the interview prep session your purchase included for this category.",
       "info"
     );
 
-    redirectToInterviewPrepPurchase(repurchase.addon_id);
+    redirectToInterviewPrepPurchase();
   };
 
   const handleCategorySelectionNext = async () => {
@@ -940,12 +978,12 @@ export default function InterviewPreparation({
     }
 
     try {
-      if (selectedCategory.purchaseExhausted && selectedCategory.addonId) {
+      if (!ipWallet.unlocked && selectedCategory.purchaseExhausted && selectedCategory.addonId) {
         showToast(
-          "You have already used your purchased interview prep session for this category. Purchase another session to continue.",
+          "You have used the interview prep session your purchase included for this category.",
           "info"
         );
-        redirectToInterviewPrepPurchase(selectedCategory.addonId);
+        redirectToInterviewPrepPurchase();
         return;
       }
 
@@ -964,6 +1002,10 @@ export default function InterviewPreparation({
           user_name: localStorage.getItem("userName") || "User",
           source: isEmbedded ? "journey" : "tool",
           journey_id: effectiveJourneyId || undefined,
+          journey_category: isEmbedded
+            ? propJourneyCategory || journeyEnv.journeyCategory || undefined
+            : undefined,
+          candidate_id: isEmbedded ? journeyEnv.candidateId || activeCandidateId : undefined,
         }),
       });
 
@@ -973,7 +1015,7 @@ export default function InterviewPreparation({
         const purchaseError = sessionResult as PurchaseErrorResponse;
 
         if (purchaseError.error === "PURCHASE_REQUIRED" && purchaseError.addon) {
-          handlePurchaseRequired(purchaseError.addon);
+          handlePurchaseRequired();
           return;
         }
 
@@ -983,6 +1025,17 @@ export default function InterviewPreparation({
         }
 
         setError(purchaseError.message || msg(E.TOOL_INTERVIEW_SESSION_FAILED));
+        return;
+      }
+
+      // Journey session refused by the server (not this user's journey, journey
+      // closed, or the journey plan does not include Interview Prep).
+      if (
+        isEmbedded &&
+        (sessionResponse.status === 403 || sessionResponse.status === 404) &&
+        typeof sessionResult?.message === "string"
+      ) {
+        setError(sessionResult.message);
         return;
       }
 
@@ -1172,6 +1225,16 @@ export default function InterviewPreparation({
   };
 
   // Render the appropriate step
+  // Legacy per-category purchase ("interview-prep:<slug>") or the bare
+  // all-categories add-on: standalone access to THIS category only.
+  const selectedSlug = selectedCategory?.categorySlug;
+  const hasLegacyCategoryPurchase =
+    !isEmbedded &&
+    !!selectedSlug &&
+    plan.purchasedAddons.some(
+      (id) => id === "interview-prep" || id === `interview-prep:${selectedSlug}`
+    );
+
   const renderStep = () => {
     if (isRedirectingSession) {
       return (
@@ -1219,7 +1282,7 @@ export default function InterviewPreparation({
             setAvailableCategories([]);
           }}
           onPurchaseAgain={
-            repurchaseAddonId ? () => redirectToInterviewPrepPurchase(repurchaseAddonId) : undefined
+            repurchaseAddonId ? () => redirectToInterviewPrepPurchase() : undefined
           }
           onOpenMySessions={() => {
             if (isEmbedded) {
@@ -1228,6 +1291,8 @@ export default function InterviewPreparation({
               router.push("/interview-prep/my-sessions");
             }
           }}
+          isJourney={isEmbedded || isJourneySession}
+          journeyTier={effectiveJourneyTier}
           error={error}
         />
       );
@@ -1277,6 +1342,8 @@ export default function InterviewPreparation({
       return (
         <ResultGate
           feature="basic_interview_prep"
+          standaloneToolId={isEmbedded ? undefined : "interview-prep"}
+          standaloneGranted={hasLegacyCategoryPurchase}
           title="Your Interview Prep Plan Is Ready"
           description="Upgrade to Basic or above to unlock your personalised interview questions and preparation guide."
           minHeight="400px"
@@ -1284,6 +1351,8 @@ export default function InterviewPreparation({
           <ResultPage
             sessionId={sessionId}
             results={generatedResults}
+            isStandalone={!isEmbedded}
+            standaloneGranted={hasLegacyCategoryPurchase}
             onRestart={() => {
               setStep(0);
               setSessionId(null);
@@ -1520,6 +1589,22 @@ export default function InterviewPreparation({
 
   return (
     <>
+      {showCreditModal && ipWallet.item && (
+        <CreditLaunchModal
+          item={ipWallet.item}
+          onClose={() => setShowCreditModal(false)}
+          onLaunched={() => {
+            setShowCreditModal(false);
+            // Refresh purchase status so the picked category shows as unlocked.
+            const pickedSlug = selectedCategory?.categorySlug;
+            void loadCategories(selectedCountry || "all").then((categories) => {
+              const refreshed = categories.find((c) => c.categorySlug === pickedSlug);
+              if (refreshed) setSelectedCategory(refreshed);
+            });
+            showToast("Interview Prep unlocked. Press Next to start your session.", "success");
+          }}
+        />
+      )}
       {entryMode !== "tool" ? (
         <div className="site-main-px site-main-py mt-12 flex min-h-[60vh] items-center justify-center">
           <Loader size="md" text="Loading interview prep..." />

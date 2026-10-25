@@ -27,7 +27,7 @@ import { WALLET_CATALOG } from "@/lib/wallet/catalog";
 import { withPreviewMode } from "@/lib/wallet/resourceMapping";
 import CreditTypeIcon from "@/components/resources/CreditTypeIcon";
 import CreditInfoTooltip from "@/components/resources/CreditInfoTooltip";
-import ResourceBackButton from "@/components/resources/ResourceBackButton";
+// import ResourceBackButton from "@/components/resources/ResourceBackButton";
 
 // ── Palette ──────────────────────────────────────────────────────────────────
 // A small, deliberate accent set drawn from the site's brand tokens. Each section
@@ -165,7 +165,7 @@ export default async function ResourceDetailPage({
                 <span className="font-normal ...">{categoryLabel}</span>
               </Link>
           */}
-          <ResourceBackButton className="group border-border/80 bg-background/80 text-muted-foreground hover:border-foreground/20 hover:bg-muted/50 hover:text-foreground inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 font-medium shadow-xs backdrop-blur-sm transition-all active:scale-[0.98]" />
+          {/* <ResourceBackButton className="group border-border/80 bg-background/80 text-muted-foreground hover:border-foreground/20 hover:bg-muted/50 hover:text-foreground inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 font-medium shadow-xs backdrop-blur-sm transition-all active:scale-[0.98]" /> */}
           <span className="text-border">/</span>
           <span className="text-foreground font-medium">{addon.title}</span>
         </nav>
@@ -256,8 +256,8 @@ export default async function ResourceDetailPage({
             </div>
 
             <p className="text-muted-foreground mt-7 text-[12.5px]">
-              No full plan required &nbsp;·&nbsp; Secure checkout &nbsp;·&nbsp; Built around your
-              case
+              No full plan required &nbsp;·&nbsp; Paid with Rahvana credits &nbsp;·&nbsp; Built
+              around your case
             </p>
           </div>
 
@@ -513,11 +513,9 @@ export default async function ResourceDetailPage({
 
         {/* ── Bottom CTA — removed per product decision (code kept) ──────────
         <BottomCta
-          slug={slug}
           title={addon.title}
-          price={addon.price}
-          kind={addon.kind}
-          serviceFlowHref={serviceFlowHref}
+          href={serviceFlowHref ?? launchHref}
+          isService={Boolean(serviceFlowHref)}
         />
         */}
 
@@ -528,7 +526,7 @@ export default async function ResourceDetailPage({
                 <span>Back to Pricing ({categoryLabel})</span>
               </Link>
           */}
-          <ResourceBackButton className="group text-muted-foreground hover:text-foreground inline-flex items-center gap-2 text-[13.5px] font-medium transition-colors" />
+          {/* <ResourceBackButton className="group text-muted-foreground hover:text-foreground inline-flex items-center gap-2 text-[13.5px] font-medium transition-colors" /> */}
         </div>
       </div>
     </div>

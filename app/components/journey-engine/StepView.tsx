@@ -1824,6 +1824,8 @@ export const StepView: React.FC<StepViewProps> = ({
               setIsPrepLaunched={setIsPrepLaunched}
               guard={stepEntitlement.guard}
               journeyId={journeyId}
+              journeyTier={state?.subscriptionTier ?? (state as any)?.subscription_tier ?? plan.tier}
+              plan={plan}
             />
           )}
 
