@@ -46,6 +46,7 @@ import {
   List,
   LayoutGrid,
   Compass,
+  Receipt,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuickAccess } from "@/app/context/QuickAccessContext";
@@ -360,8 +361,8 @@ export function SiteHeader({
   const pathname = usePathname();
   const { isInsideJourney, journeyCategory, journeySlug } = useJourneyEnvironment();
   const isJourneyPath = pathname
-  ? /^\/visa-category\/(?:ir1-journey|ir5-journey)/.test(pathname)
-  : false;
+    ? /^\/visa-category\/(?:ir1-journey|ir5-journey)/.test(pathname)
+    : false;
 
   const isJourneyEnvironment = isInsideJourney || isJourneyPath;
 
@@ -789,6 +790,7 @@ export function SiteHeader({
         profile: "/profile",
         settings: "/settings",
         "portal-wallet": "/portal-wallet",
+        transactions: "/wallet/transactions",
         about: "/about",
         blog: "/blog",
       };
@@ -1159,9 +1161,9 @@ export function SiteHeader({
             </span>
           </HydrationSafeButton> */}
 
-          {isLoading && !resolvedUser ? null : isSignedIn && (
-            <WalletBalancePill tone={isHomeHeroState ? "hero" : "default"} />
-          )}
+          {isLoading && !resolvedUser
+            ? null
+            : isSignedIn && !isJourneyEnvironment && <WalletBalancePill tone={isHomeHeroState ? "hero" : "default"} />}
 
           {isLoading && !resolvedUser
             ? null
@@ -1277,7 +1279,8 @@ export function SiteHeader({
                                         {(n.candidate_role || n.candidate_name) && (
                                           <span className="mb-1 inline-flex items-center gap-1 rounded-full border border-teal-500/20 bg-teal-500/10 px-2 py-0.5 text-[9px] font-bold tracking-wider text-teal-700 uppercase dark:text-teal-300">
                                             <span className="h-1.5 w-1.5 rounded-full bg-teal-600 dark:bg-teal-400" />
-                                            {n.candidate_name && n.candidate_name !== n.candidate_role
+                                            {n.candidate_name &&
+                                            n.candidate_name !== n.candidate_role
                                               ? `${n.candidate_role || "Beneficiary"}: ${n.candidate_name}`
                                               : n.candidate_role || "Beneficiary"}
                                           </span>
@@ -1716,6 +1719,13 @@ export function SiteHeader({
                         >
                           <LockIcon className="h-4 w-4 text-indigo-500 dark:text-indigo-400" />
                           Portal Wallet
+                        </button>
+                        <button
+                          onClick={() => handleNav("transactions")}
+                          className="text-muted-foreground hover:bg-muted flex w-full items-center gap-3 px-5 py-2.5 text-sm font-medium transition-colors hover:text-teal-700"
+                        >
+                          <Receipt className="h-4 w-4 text-[#0d7377] dark:text-teal-400" />
+                          Transactions
                         </button>
                       </div>
 
