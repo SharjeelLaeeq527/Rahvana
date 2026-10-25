@@ -39,6 +39,8 @@ interface JourneyServiceModuleProps {
   hideActiveUntilNote?: boolean;
   /** Extra content rendered below the summary card (e.g. PCC pending/received lifecycle cards). */
   afterSummary?: React.ReactNode;
+  journeyTier?: string;
+  onOpenGuide?: (guideUrl: string) => void;
 }
 
 /**
@@ -61,6 +63,8 @@ export const JourneyServiceModule: React.FC<JourneyServiceModuleProps> = ({
   lockedHint,
   hideActiveUntilNote,
   afterSummary,
+  journeyTier,
+  onOpenGuide,
 }) => {
   const [guideOpen, setGuideOpen] = useState(false);
   const hasRecord = Boolean(record && Object.keys(record).length > 0);
@@ -178,6 +182,8 @@ export const JourneyServiceModule: React.FC<JourneyServiceModuleProps> = ({
         onClose={() => setGuideOpen(false)}
         eyebrowPrefix={guideEyebrow}
         steps={guideSteps}
+        journeyTier={journeyTier}
+        onOpenGuide={onOpenGuide}
       />
     </div>
   );

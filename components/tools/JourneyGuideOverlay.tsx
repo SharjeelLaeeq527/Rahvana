@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { X, ArrowLeft, ArrowRight, ExternalLink } from "lucide-react";
+import { X, ArrowLeft, ArrowRight } from "lucide-react";
+import { GuidePageOverlay, preloadGuidePage } from "@/app/components/shared/GuidePageOverlay";
+import { getOverlayPageRoute } from "@/lib/constants/journey-app-groups";
 
 /**
  * A single read-through step from a journey guide (medical / PCC "do it yourself" path).
@@ -26,6 +28,8 @@ interface JourneyGuideOverlayProps {
   /** Small uppercase eyebrow shown above the heading (defaults to "Step N of M"). */
   eyebrowPrefix?: string;
   steps: JourneyGuideStep[];
+  journeyTier?: string;
+  onOpenGuide?: (guideUrl: string) => void;
 }
 
 /**
@@ -37,25 +41,52 @@ export const JourneyGuideOverlay: React.FC<JourneyGuideOverlayProps> = ({
   onClose,
   eyebrowPrefix,
   steps,
+  journeyTier,
+  onOpenGuide,
 }) => {
   const [index, setIndex] = useState(0);
+  const [activeGuideUrl, setActiveGuideUrl] = useState<string | null>(null);
 
   // Reset to the first step each time the overlay opens.
   useEffect(() => {
-    if (open) setIndex(0);
+    if (open) {
+      setIndex(0);
+      setActiveGuideUrl(null);
+    } else {
+      setActiveGuideUrl(null);
+    }
   }, [open]);
 
-  // Lock background scroll while open.
+  // Lock background scroll while open (unless full guide overlay is active).
   useEffect(() => {
-    if (open) {
+    if (open && !activeGuideUrl) {
       document.body.style.overflow = "hidden";
       return () => {
         document.body.style.overflow = "";
       };
     }
-  }, [open]);
+  }, [open, activeGuideUrl]);
 
   if (!open || !steps || steps.length === 0) return null;
+
+  if (activeGuideUrl) {
+    return (
+      <GuidePageOverlay
+        guideUrl={activeGuideUrl}
+        onClose={() => setActiveGuideUrl(null)}
+        tier={journeyTier}
+      />
+    );
+  }
+
+  const handleOpenGuide = (url: string) => {
+    const target = getOverlayPageRoute(url) || url;
+    if (onOpenGuide) {
+      onOpenGuide(target);
+    } else {
+      setActiveGuideUrl(target);
+    }
+  };
 
   const total = steps.length;
   const s = steps[Math.min(index, total - 1)];
@@ -107,14 +138,14 @@ export const JourneyGuideOverlay: React.FC<JourneyGuideOverlayProps> = ({
         )}
 
         {s.guideUrl && (
-          <a
-            href={s.guideUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mb-6 inline-flex items-center gap-1.5 text-sm font-bold text-teal-700 hover:underline"
+          <button
+            type="button"
+            onClick={() => handleOpenGuide(s.guideUrl!)}
+            onMouseEnter={() => preloadGuidePage(getOverlayPageRoute(s.guideUrl!) || s.guideUrl!)}
+            className="mb-6 inline-flex cursor-pointer items-center gap-1.5 text-sm font-bold text-teal-700 hover:underline"
           >
-            Open the full guide <ExternalLink size={14} />
-          </a>
+            Open the full guide <ArrowRight size={14} />
+          </button>
         )}
 
         <div className="mt-8 flex gap-3">
