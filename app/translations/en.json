@@ -3825,6 +3825,8 @@
       "reqApplicantPassportNumber": "Please fill in Passport Number for applicant #{index}",
       "reqApplicantCaseRef": "Please fill in Case Ref for applicant #{index}",
       "reqIomFields": "Please fill in all required fields for IOM",
+      "dobFuture": "Date of birth cannot be in the future",
+      "dobApplicantFuture": "Date of birth for applicant #{index} cannot be in the future",
       "submitError": "Failed to create appointment",
       "uploadError": "Failed to upload some documents"
     },
