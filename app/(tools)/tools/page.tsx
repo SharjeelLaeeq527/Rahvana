@@ -26,7 +26,11 @@ import AddResourceCard from "@/components/resources/AddResourceCard";
 import ResourceSectionHeader from "@/components/resources/ResourceSectionHeader";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 import { useWallet } from "@/app/context/WalletContext";
-import { getToolCatalogItem, withPreviewMode } from "@/lib/wallet/resourceMapping";
+import {
+  getToolCatalogItem,
+  isCatalogItemOwned,
+  withPreviewMode,
+} from "@/lib/wallet/resourceMapping";
 import { useJourneyEnvironment } from "@/app/context/JourneyEnvironmentContext";
 import CreditTypeIcon from "@/components/resources/CreditTypeIcon";
 import CreditInfoTooltip from "@/components/resources/CreditInfoTooltip";
@@ -303,9 +307,7 @@ export default function ToolsPage({ isEmbedded = false }: { isEmbedded?: boolean
   const isOwned = (tool: Tool) => {
     const catalogItem = getToolCatalogItem(tool.id);
     if (catalogItem && !isInsideJourney) {
-      return (
-        !wallet.isLoading && wallet.isUnlocked(catalogItem.resourceId, catalogItem.resourceType)
-      );
+      return !wallet.isLoading && isCatalogItemOwned(catalogItem, wallet.isUnlocked);
     }
     return !tool.entitlementFeature || (!plan.isLoading && !plan.isLocked(tool.entitlementFeature));
   };
@@ -574,16 +576,19 @@ function ToolCard({
   // grandfathered legacy add-ons via /api/wallet) opens them, whatever the plan.
   // Unpriced tools keep the plan rule.
   const catalogItem = getToolCatalogItem(tool.id);
-  const walletUnlocked =
-    !!catalogItem && wallet.isUnlocked(catalogItem.resourceId, catalogItem.resourceType);
+  const walletUnlocked = !!catalogItem && isCatalogItemOwned(catalogItem, wallet.isUnlocked);
   // ORIGINAL: const isLocked = planLocked && !walletUnlocked;
   // Standalone catalog tools: credits/legacy add-on only — plan tier never
   // unlocks them outside a journey. Inside a journey, plan entitlement rules.
   const isLocked =
     catalogItem && !isInsideJourney ? !walletUnlocked : planLocked && !walletUnlocked;
 
-  // Credit-purchasable and still locked -> the card becomes a dual-CTA card.
-  const showDualCta = !!catalogItem && isLocked && !tool.disabled;
+  // Credit-purchasable and still locked -> the card becomes a dual-CTA card. A tool
+  // not sold as a whole (the Smart Form Filler sells each form on its own) stays a
+  // plain link: its page lists the items and each one opens its own credit modal.
+  const sellsWhole = !!catalogItem && catalogItem.launchable;
+  const showDualCta = sellsWhole && isLocked && !tool.disabled;
+  const perItemCredits = catalogItem && !catalogItem.launchable ? catalogItem.credits : null;
 
   const isRouteLocked = isLocked && !showDualCta && ROUTE_FEATURE_MAP[tool.href] !== undefined;
   const isResultLocked = isLocked && !showDualCta && ROUTE_FEATURE_MAP[tool.href] === undefined;
@@ -750,7 +755,14 @@ function ToolCard({
         )}
         {!showDualCta && (
           <div className="flex items-center justify-between">
-            <span className="text-muted-foreground flex items-center gap-1 text-xs font-medium" />
+            <span className="text-muted-foreground flex items-center gap-1 text-xs font-medium">
+              {perItemCredits !== null && !isInsideJourney && (
+                <>
+                  <CreditTypeIcon kind="tools" size={18} />
+                  {perItemCredits} credits per form
+                </>
+              )}
+            </span>
             {isRouteLocked ? (
               <span
                 className={`flex items-center gap-1.5 text-sm font-semibold decoration-2 underline-offset-2 group-hover:underline ${styles.link}`}

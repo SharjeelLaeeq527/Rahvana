@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { Coins, Loader2, LogIn, X } from "lucide-react";
-import type { WalletCatalogItem } from "@/lib/wallet/catalog";
+import { isSmartFormItem, type WalletCatalogItem } from "@/lib/wallet/catalog";
 import { WALLET_MAX_TOPUP, WALLET_MIN_TOPUP, WALLET_TOPUP_PACKS } from "@/lib/wallet/topup";
 import { createTopupCheckout, currentReturnPath } from "@/lib/wallet/client";
 import { useWallet } from "@/app/context/WalletContext";
@@ -202,7 +202,9 @@ export function CreditLaunchModal({ item, href, onLaunched, onClose }: Props) {
                   ? "Add credits to continue"
                   : item.resourceType === "service"
                     ? "Book this service using your Rahvana credits"
-                    : "Pay once, use it as often as you like"}
+                    : isSmartFormItem(item)
+                      ? "Unlocks this form only. Pay once, use it as often as you like"
+                      : "Pay once, use it as often as you like"}
               </p>
             </div>
           </div>

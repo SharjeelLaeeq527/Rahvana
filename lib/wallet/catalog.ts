@@ -97,9 +97,15 @@ const service = (
   launchable: false,
 });
 
+/** The Smart Form Filler tool. Its forms are unlocked one at a time (below). */
+export const SMART_FORM_TOOL_ID = "form-forge";
+
 export const WALLET_CATALOG: readonly WalletCatalogItem[] = [
   tool("sponsorship-calculator", "Sponsorship Calculator", 15, "sponsor"),
-  tool("form-forge", "Smart Form Filler", 39, "smart"),
+  // Not launchable: credits unlock one form at a time (`form-forge:<form code>`).
+  // An unlock row for the whole tool (sold before per-form unlocks) and the legacy
+  // "smart" add-on still open every form.
+  { ...tool(SMART_FORM_TOOL_ID, "Smart Form Filler", 39, "smart"), launchable: false },
   tool("221g-planner", "221(g) Action Planner", 199, "221g"),
   tool("interview-prep", "Interview Prep", 200, "interview-prep"),
   tool("photo-booth", "Photo Booth", 15, "photo", false),
@@ -119,6 +125,67 @@ export const WALLET_CATALOG: readonly WalletCatalogItem[] = [
 ];
 
 /**
+ * Forms in the Smart Form Filler library, by normalized form code. Each one is
+ * unlocked separately for the tool's price. Must match lib/formConfig
+ * (__tests__/wallet/smartFormUnlock.test.ts fails if they drift).
+ */
+export const SMART_FORM_CODES: readonly string[] = [
+  "i130",
+  "i130a",
+  "i129f",
+  "i864",
+  "i864a",
+  "i864ez",
+  "i912",
+  "i693",
+  "ds260",
+  "i485",
+  "g1450",
+  "g1650",
+  "g1651",
+];
+
+const SMART_FORM_PREFIX = `${SMART_FORM_TOOL_ID}:`;
+
+/** Normalized code of a library form ("I-130" -> "i130"), or null for any other form. */
+export function normalizeSmartFormCode(formCode: unknown): string | null {
+  if (typeof formCode !== "string") return null;
+  const code = formCode.toLowerCase().replace(/[^a-z0-9]/g, "");
+  return SMART_FORM_CODES.includes(code) ? code : null;
+}
+
+/** Unlock id of one form (`form-forge:i130`), or null for an unknown form. */
+export function smartFormResourceId(formCode: unknown): string | null {
+  const code = normalizeSmartFormCode(formCode);
+  return code ? `${SMART_FORM_PREFIX}${code}` : null;
+}
+
+/** "i130" -> "I-130", "ds260" -> "DS-260", "i864ez" -> "I-864EZ". */
+function smartFormLabel(code: string): string {
+  const m = /^([a-z]+)(\d+)([a-z]*)$/.exec(code);
+  return m ? `${m[1].toUpperCase()}-${m[2]}${m[3].toUpperCase()}` : code.toUpperCase();
+}
+
+const SMART_FORM_BASE = WALLET_CATALOG.find((i) => i.resourceId === SMART_FORM_TOOL_ID)!;
+
+/** Catalog entry for one Smart Form Filler form: same price as the tool. */
+function smartFormItem(code: string): WalletCatalogItem {
+  return {
+    ...SMART_FORM_BASE,
+    resourceId: `${SMART_FORM_PREFIX}${code}`,
+    name: `Smart Form Filler (${smartFormLabel(code)})`,
+    launchable: true,
+  };
+}
+
+const SMART_FORM_ITEMS: readonly WalletCatalogItem[] = SMART_FORM_CODES.map(smartFormItem);
+
+/** An unlock of one Smart Form Filler form (not the whole tool). */
+export function isSmartFormItem(item: WalletCatalogItem): boolean {
+  return item.resourceType === "tool" && item.resourceId.startsWith(SMART_FORM_PREFIX);
+}
+
+/**
  * Credits for a legacy add-on id (the ids pricing.ts and the sales pages use), so
  * UIs can quote the standalone price in wallet credits ($1 = 1 credit). For a tool
  * or guide that is a one-time unlock; for a service it is the price of one booking.
@@ -135,7 +202,7 @@ export function getCatalogItem(
 ): WalletCatalogItem | null {
   if (typeof resourceType !== "string" || typeof resourceId !== "string") return null;
   return (
-    WALLET_CATALOG.find(
+    [...WALLET_CATALOG, ...SMART_FORM_ITEMS].find(
       (item) => item.resourceType === resourceType && item.resourceId === resourceId
     ) ?? null
   );
@@ -170,8 +237,12 @@ export function resolveUnlockedItems(
   const active = unlockRows.filter((row) => row.status === "active");
   const addons = purchasedAddons.filter((a): a is string => typeof a === "string");
   const hasCivilBundleRow = active.some((row) => row.resource_id === LEGACY_CIVIL_GUIDES_BUNDLE);
+  // An unlock of the whole Smart Form Filler, sold before forms were unlocked one by one.
+  const hasWholeSmartFormRow = active.some(
+    (row) => row.resource_type === "tool" && row.resource_id === SMART_FORM_TOOL_ID
+  );
 
-  return WALLET_CATALOG.filter((item) => {
+  return [...WALLET_CATALOG, ...SMART_FORM_ITEMS].filter((item) => {
     if (
       active.some(
         (row) => row.resource_type === item.resourceType && row.resource_id === item.resourceId
@@ -185,6 +256,7 @@ export function resolveUnlockedItems(
       hasCivilBundleRow
     )
       return true;
+    if (isSmartFormItem(item) && hasWholeSmartFormRow) return true;
     return addons.some((addonId) => legacyAddonMatches(item, addonId));
   });
 }

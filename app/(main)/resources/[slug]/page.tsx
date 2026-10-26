@@ -23,10 +23,9 @@ import ReviewForm from "@/components/resources/ReviewForm";
 import { getApprovedReviews, getReviewStats } from "@/lib/reviews/data-access";
 // getSlugTheme/getIcon powered the "Pairs well with" section (now commented out):
 // import { getSlugTheme, getIcon } from "./iconMap";
-import { WALLET_CATALOG } from "@/lib/wallet/catalog";
+import { SMART_FORM_TOOL_ID, WALLET_CATALOG } from "@/lib/wallet/catalog";
 import { withPreviewMode } from "@/lib/wallet/resourceMapping";
 import CreditTypeIcon from "@/components/resources/CreditTypeIcon";
-import CreditInfoTooltip from "@/components/resources/CreditInfoTooltip";
 import BackButton from "@/components/pricing/BackButton";
 // import ResourceBackButton from "@/components/resources/ResourceBackButton";
 
@@ -211,6 +210,8 @@ export default async function ResourceDetailPage({
               </span>
               <span className="text-muted-foreground flex items-center gap-1.5 text-[14px]">
                 <CreditTypeIcon kind={addon.kind} size={18} />
+                {/* The Smart Form Filler is unlocked one form at a time. */}
+                {walletItem?.resourceId === SMART_FORM_TOOL_ID && <span>per form</span>}
               </span>
             </div>
             {/* ORIGINAL $ price display (removed — page shows credits only):

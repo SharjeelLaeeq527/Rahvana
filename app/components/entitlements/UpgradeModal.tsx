@@ -255,12 +255,18 @@ const UPGRADE_PITCH: Record<string, string> = {
  */
 function getStandaloneOption(
   feature: string
-): { credits: number; href: string; isService: boolean } | null {
+): { credits: number; href: string; isService: boolean; perForm: boolean } | null {
   const slug = FEATURE_TO_SALES_SLUG[feature];
   const credits = slug ? getCreditsForLegacyAddon(slug) : undefined;
   if (!slug || credits === undefined) return null;
   const kind = ADDONS.find((a) => a.id === slug)?.kind;
-  return { credits, href: getResourceLaunchHref(slug, kind), isService: kind === "services" };
+  return {
+    credits,
+    href: getResourceLaunchHref(slug, kind),
+    isService: kind === "services",
+    // The Smart Form Filler is unlocked one form at a time.
+    perForm: slug === "smart",
+  };
 }
 
 export function UpgradeModal({ feature, onClose, onConfirm, interviewMode }: UpgradeModalProps) {
@@ -699,13 +705,20 @@ export function UpgradeModal({ feature, onClose, onConfirm, interviewMode }: Upg
                     {standalone.credits} Credits
                   </span>
                   <span className="text-[12px] font-medium text-neutral-500 opacity-70">
-                    · {standalone.isService ? "per request" : "one-time unlock"}
+                    ·{" "}
+                    {standalone.isService
+                      ? "per request"
+                      : standalone.perForm
+                        ? "per form"
+                        : "one-time unlock"}
                   </span>
                 </div>
                 <p className="mb-3 text-[11px] leading-snug text-neutral-500">
                   {standalone.isService
                     ? `Book ${addon.name} on its own and pay from your Rahvana wallet ($1 = 1 credit).`
-                    : `Use ${addon.name} on its own, outside a journey plan. Unlock it once from your Rahvana wallet ($1 = 1 credit).`}
+                    : standalone.perForm
+                      ? `Use ${addon.name} on its own, outside a journey plan. Unlock each form you need from your Rahvana wallet ($1 = 1 credit).`
+                      : `Use ${addon.name} on its own, outside a journey plan. Unlock it once from your Rahvana wallet ($1 = 1 credit).`}
                 </p>
 
                 <Link

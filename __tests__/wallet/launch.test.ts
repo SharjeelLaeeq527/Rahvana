@@ -61,6 +61,33 @@ describe('launchResource', () => {
     })
   })
 
+  it('Smart Form Filler: refuses the whole tool and charges one form at its price', async () => {
+    const whole = makeSupabase({ wallet: { balance: 100 } })
+    const refused = await launch(whole.client, { resourceType: 'tool', resourceId: 'form-forge' })
+    expect(refused).toEqual({ status: 400, body: { success: false, error: 'RESOURCE_NOT_LAUNCHABLE' } })
+    expect(whole.rpc).not.toHaveBeenCalled()
+
+    const one = makeSupabase(
+      { wallet: { balance: 100 } },
+      { data: { success: true, balance: 61, transaction_id: 'tx_2' }, error: null }
+    )
+    await launch(one.client, { resourceType: 'tool', resourceId: 'form-forge:i485' })
+    expect(one.rpc).toHaveBeenCalledWith(
+      'deduct_wallet_credits_atomic',
+      expect.objectContaining({ p_resource_id: 'form-forge:i485', p_credit_cost: 39 })
+    )
+  })
+
+  it('Smart Form Filler: an earlier whole-tool unlock is not charged again for a form', async () => {
+    const { client, rpc } = makeSupabase({
+      wallet: { balance: 0 },
+      unlocks: [{ resource_type: 'tool', resource_id: 'form-forge', status: 'active' }],
+    })
+    const r = await launch(client, { resourceType: 'tool', resourceId: 'form-forge:i485' })
+    expect(rpc).not.toHaveBeenCalled()
+    expect(r.body).toMatchObject({ success: true, alreadyUnlocked: true })
+  })
+
   it('returns 402 with the exact top-up when credits are short', async () => {
     const { client } = makeSupabase(
       { wallet: { balance: 5 } },

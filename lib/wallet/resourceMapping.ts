@@ -4,7 +4,14 @@
  * Items not listed here have no credit price and use the existing UpgradeModal UI.
  * `__tests__/wallet/resourceMapping.test.ts` checks that these mappings stay in sync.
  */
-import { getCatalogItem, type WalletCatalogItem } from "@/lib/wallet/catalog";
+import {
+  getCatalogItem,
+  SMART_FORM_CODES,
+  SMART_FORM_TOOL_ID,
+  smartFormResourceId,
+  type WalletCatalogItem,
+  type WalletResourceType,
+} from "@/lib/wallet/catalog";
 
 /** Tool IDs from `app/(tools)/tools/page.tsx` mapped to their catalog resource IDs. */
 export const TOOL_RESOURCE_IDS: Record<string, string> = {
@@ -61,4 +68,23 @@ export function getServiceCatalogItem(serviceId: string): WalletCatalogItem | nu
 /** Adds preview mode to a tool URL. */
 export function withPreviewMode(href: string): string {
   return `${href}${href.includes("?") ? "&" : "?"}mode=preview`;
+}
+
+/**
+ * Whether the user owns a priced tool for the resource cards. The Smart Form Filler
+ * unlocks one form at a time, so it counts as owned once any of its forms is
+ * unlocked (its card then opens the forms library, where each form shows its own
+ * lock).
+ */
+export function isCatalogItemOwned(
+  item: WalletCatalogItem,
+  isUnlocked: (resourceId: string, resourceType: WalletResourceType) => boolean
+): boolean {
+  if (item.resourceType === "tool" && item.resourceId === SMART_FORM_TOOL_ID) {
+    return (
+      isUnlocked(SMART_FORM_TOOL_ID, "tool") ||
+      SMART_FORM_CODES.some((code) => isUnlocked(smartFormResourceId(code)!, "tool"))
+    );
+  }
+  return isUnlocked(item.resourceId, item.resourceType);
 }
