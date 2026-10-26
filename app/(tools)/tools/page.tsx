@@ -440,11 +440,11 @@ export default function ToolsPage({ isEmbedded = false }: { isEmbedded?: boolean
             />
             <div className="grid grid-cols-1 gap-x-6 gap-y-10 pt-6 md:grid-cols-2 lg:grid-cols-3">
               {ownedTools.map((tool, index) => renderToolCard(tool, index))}
-              <AddResourceCard
+              {/* <AddResourceCard
                 href="/pricing?mode=tools"
                 label="Add tool"
                 index={ownedTools.length}
-              />
+              /> */}
             </div>
 
             {/* Browse Tools — everything not yet owned */}

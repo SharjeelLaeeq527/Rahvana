@@ -723,13 +723,13 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
         {/* Guides Grid */}
         <div className="grid grid-cols-1 gap-x-6 gap-y-10 pt-6 md:grid-cols-2 lg:grid-cols-3">
           {displayGuides.map((guide, index) => renderGuideCard(guide, index))}
-          {isEmbedded && plan.tier !== "premium" && plan.tier !== "executive" && (
+          {/* {isEmbedded && plan.tier !== "premium" && plan.tier !== "executive" && (
             <AddResourceCard
               href="/pricing?mode=guides"
               label="Add guides"
               index={displayGuides.length}
             />
-          )}
+          )} */}
           {!isEmbedded && displayGuides.length === 0 && (
             <div className="text-muted-foreground col-span-full py-12 text-center">
               No guides found matching your search.

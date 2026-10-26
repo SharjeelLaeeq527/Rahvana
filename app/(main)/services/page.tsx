@@ -668,13 +668,13 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
               />
             );
           })}
-          {isEmbedded && (
+          {/* {isEmbedded && (
             <AddResourceCard
               href="/pricing?mode=services"
               label="Add service"
               index={displayServices.length}
             />
-          )}
+          )} */}
           {!isEmbedded && displayServices.length === 0 && (
             <div className="text-muted-foreground col-span-full py-12 text-center">
               {t("pages.services.noResults")}
