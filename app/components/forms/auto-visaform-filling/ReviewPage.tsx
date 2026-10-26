@@ -181,6 +181,7 @@ export function ReviewPage({
   editedKeys,
 }: ReviewPageProps) {
   const { t } = useLanguage();
+  const isI130 = formCode?.toLowerCase().replace(/[^a-z0-9]/g, "") === "i130";
 
   const [confirmed, setConfirmed] = useState<Set<number>>(new Set());
   const [stillCorrect, setStillCorrect] = useState<Set<string>>(new Set());
@@ -937,7 +938,7 @@ export function ReviewPage({
               }`}
             >
               <Eye className="h-4 w-4" />
-              {isPreviewing ? "Previewing..." : isFreePreview ? "Preview page 1" : "Preview"}
+              {isPreviewing ? "Previewing..." : isFreePreview && isI130 ? "Preview page 1" : "Preview"}
             </button>
 
             <button
@@ -949,7 +950,7 @@ export function ReviewPage({
               }`}
             >
               <Download className="h-4 w-4" />
-              {isDownloading ? "Downloading..." : isFreePreview ? "Download page 1" : "Download"}
+              {isDownloading ? "Downloading..." : isFreePreview && isI130 ? "Download page 1" : "Download"}
             </button>
 
             <button
