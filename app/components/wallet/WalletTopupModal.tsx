@@ -178,7 +178,7 @@ export function WalletTopupModal({ balance, initialAmount, returnUrl, onClose }:
           )}
 
           <p className="text-[11.5px] leading-relaxed text-slate-500">
-            Credits are used for standalone tools and guides. Tools inside your journey are covered
+            Credits are used for standalone tools and guides. Resources inside your journey are covered
             by your journey plan and never use credits.
           </p>
         </div>

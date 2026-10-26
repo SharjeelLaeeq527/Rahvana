@@ -2058,33 +2058,7 @@ const CheckoutStep = ({
                 </div>
               </div>
 
-              {hasWalletCredits ? (
-                <div className="mt-5 flex items-center gap-2 rounded-xl border border-teal-200 bg-teal-50 p-3">
-                  <Coins className="h-4 w-4 flex-shrink-0 text-[#0d7377]" />
-                  <span className="text-[11px] font-bold text-teal-800">
-                    5 credits will be deducted from your Rahvana Wallet upon confirmation.
-                  </span>
-                </div>
-              ) : (
-                <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-3.5">
-                  <div className="flex items-start gap-2">
-                    <Coins className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-600" />
-                    <div>
-                      <p className="text-xs font-bold text-amber-900">Insufficient Wallet Balance</p>
-                      <p className="mt-0.5 text-[11px] text-amber-700">
-                        You have {walletBalance ?? 0} credits. 5 credits are required to book this appointment.
-                      </p>
-                      <button
-                        type="button"
-                        onClick={() => onTopup(deficit)}
-                        className="mt-2.5 inline-flex items-center gap-1.5 rounded-lg bg-[#0d7377] px-3 py-1.5 text-xs font-bold text-white hover:bg-[#0a5c5f] transition-colors"
-                      >
-                        <Coins size={12} /> Top up {deficit} Credits (${deficit})
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
+              
             </div>
 
             {error && (

@@ -167,19 +167,6 @@ const CheckoutStep = ({
               </p>
             </div>
           </div>
-
-          <div className="flex flex-col gap-2 rounded-2xl border border-gray-200/60 bg-gray-50 p-5">
-            <div className="flex items-center gap-2">
-              <CreditCard className="text-primary h-4 w-4 shrink-0" />
-              <h5 className="text-xs font-bold tracking-wide text-gray-900 uppercase">
-                Secure Transaction
-              </h5>
-            </div>
-            <p className="w-full text-xs leading-relaxed text-gray-500">
-              Standalone requests are paid with your Rahvana Wallet credits ($1 = 1 credit). If your
-              balance is short, you can top up instantly via Stripe.
-            </p>
-          </div>
         </div>
 
         {/* Right column: Cart breakdown */}
@@ -216,37 +203,6 @@ const CheckoutStep = ({
                   <span className="text-xl font-black text-gray-900">25 Credits ($25.00)</span>
                 </div>
               </div>
-
-              {hasWalletCredits ? (
-                <div className="mt-5 flex items-center gap-2 rounded-xl border border-teal-200 bg-teal-50 p-3">
-                  <Coins className="h-4 w-4 flex-shrink-0 text-[#0d7377]" />
-                  <span className="text-[11px] font-bold text-teal-800">
-                    25 credits will be deducted from your Rahvana Wallet upon confirmation.
-                  </span>
-                </div>
-              ) : (
-                <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-3.5">
-                  <div className="flex items-start gap-2">
-                    <Coins className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-600" />
-                    <div>
-                      <p className="text-xs font-bold text-amber-900">
-                        Insufficient Wallet Balance
-                      </p>
-                      <p className="mt-0.5 text-[11px] text-amber-700">
-                        You have {walletBalance ?? 0} credits. 25 credits are required to file this
-                        PCC request.
-                      </p>
-                      <button
-                        type="button"
-                        onClick={() => onTopup(deficit)}
-                        className="mt-2.5 inline-flex items-center gap-1.5 rounded-lg bg-[#0d7377] px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-[#0a5c5f]"
-                      >
-                        <Coins size={12} /> Top up {deficit} Credits (${deficit})
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
 
             {error && (
@@ -674,48 +630,48 @@ function PoliceApplyContent({
 
       let draft = pendingDraftRef.current;
       if (!draft) {
-      // 1. Save application (hidden draft in standalone, active in journey; the server decides)
-      const payload = {
-        ...formData,
-        candidate_id: activeCandidateId || "candidate-1",
-        candidate_name: activeCandidate.fullName || activeCandidate.label || "",
-        // Origin tag: journey-embedded requests are kept out of standalone My Resources.
-        ...(isJourney
-          ? {
-              source: "journey",
-              journey_slug: journeyContext?.journeySlug || null,
-              journey_id: journeyContext?.backendId || null,
-              journey_category: journeyContext?.journeyCategory || null,
-            }
-          : { source: "standalone" }),
-      };
+        // 1. Save application (hidden draft in standalone, active in journey; the server decides)
+        const payload = {
+          ...formData,
+          candidate_id: activeCandidateId || "candidate-1",
+          candidate_name: activeCandidate.fullName || activeCandidate.label || "",
+          // Origin tag: journey-embedded requests are kept out of standalone My Resources.
+          ...(isJourney
+            ? {
+                source: "journey",
+                journey_slug: journeyContext?.journeySlug || null,
+                journey_id: journeyContext?.backendId || null,
+                journey_category: journeyContext?.journeyCategory || null,
+              }
+            : { source: "standalone" }),
+        };
 
-      const response = await fetch("/api/police-verification/apply", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+        const response = await fetch("/api/police-verification/apply", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
 
-      const result = await response.json();
-      if (!response.ok) {
-        throw new Error(result.error || "Submission failed");
-      }
+        const result = await response.json();
+        if (!response.ok) {
+          throw new Error(result.error || "Submission failed");
+        }
 
-      draft = { id: result.id as string, requestId: result.requestId as string };
-      const { id } = draft;
-      setReferenceId(draft.requestId);
+        draft = { id: result.id as string, requestId: result.requestId as string };
+        const { id } = draft;
+        setReferenceId(draft.requestId);
 
-      // 2. Upload files (attached regardless of payment status)
-      const uploadPromises = Object.entries(files).map(async ([key, file]) => {
-        if (!file) return;
-        const fd = new FormData();
-        fd.append("file", file);
-        fd.append("requestId", id);
-        fd.append("fileType", key);
-        await fetch("/api/police-verification/upload", { method: "POST", body: fd });
-      });
-      await Promise.all(uploadPromises);
-      if (!isJourney) pendingDraftRef.current = draft;
+        // 2. Upload files (attached regardless of payment status)
+        const uploadPromises = Object.entries(files).map(async ([key, file]) => {
+          if (!file) return;
+          const fd = new FormData();
+          fd.append("file", file);
+          fd.append("requestId", id);
+          fd.append("fileType", key);
+          await fetch("/api/police-verification/upload", { method: "POST", body: fd });
+        });
+        await Promise.all(uploadPromises);
+        if (!isJourney) pendingDraftRef.current = draft;
       }
       const { id, requestId } = draft;
 

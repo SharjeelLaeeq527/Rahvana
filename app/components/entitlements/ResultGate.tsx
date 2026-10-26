@@ -229,7 +229,7 @@ export function ResultGate({
                 {`Unlock for ${creditItem.credits} credits`}
               </button>
               <p className="mt-3 text-[11px] text-[#9aa5b1]">
-                Tools inside your journey use your journey plan instead.
+                Resources inside your journey use your journey plan instead.
               </p>
             </>
           ) : (

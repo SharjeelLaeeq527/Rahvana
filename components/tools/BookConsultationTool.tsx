@@ -923,7 +923,10 @@ export default function BookConsultationTool({
       }
     } catch (error) {
       console.error("Submission error:", error);
-      showToast(error instanceof Error ? error.message : "An error occurred during submission.", "error");
+      showToast(
+        error instanceof Error ? error.message : "An error occurred during submission.",
+        "error"
+      );
     } finally {
       setLoading(false);
     }
@@ -2429,9 +2432,7 @@ export default function BookConsultationTool({
                       {hasWalletCredits && (
                         <div className="flex items-center justify-between text-sm text-[#0d7377]">
                           <span className="font-medium">Balance After Booking</span>
-                          <span className="font-bold">
-                            {(wallet.balance ?? 99) - 99} Credits
-                          </span>
+                          <span className="font-bold">{(wallet.balance ?? 99) - 99} Credits</span>
                         </div>
                       )}
 
@@ -2442,49 +2443,6 @@ export default function BookConsultationTool({
                         </span>
                       </div>
                     </div>
-
-                    {hasWalletCredits ? (
-                      <div className="mt-5 flex items-center gap-2 rounded-xl border border-teal-200 bg-teal-50 p-3">
-                        <Coins className="h-4 w-4 flex-shrink-0 text-[#0d7377]" />
-                        <span className="text-[11px] font-bold text-teal-800">
-                          99 credits will be deducted from your Rahvana Wallet upon confirmation.
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-3.5">
-                        <div className="flex items-start gap-2">
-                          <Coins className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-600" />
-                          <div>
-                            <p className="text-xs font-bold text-amber-900">
-                              Insufficient Wallet Balance
-                            </p>
-                            <p className="mt-0.5 text-[11px] text-amber-700">
-                              You have {wallet.balance ?? 0} credits. 99 credits are required to book this consultation.
-                            </p>
-                            <button
-                              type="button"
-                              onClick={() => wallet.openTopup({ amount: deficit })}
-                              className="mt-2.5 inline-flex items-center gap-1.5 rounded-lg bg-[#0d7377] px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-[#0a5c5f]"
-                            >
-                              <Coins size={12} /> Top up {deficit} Credits (${deficit})
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Secure transaction info */}
-                  <div className="mt-6 flex flex-col gap-2 rounded-xl border border-slate-200/60 bg-white p-4">
-                    <div className="flex items-center gap-2">
-                      <CreditCard className="h-4 w-4 shrink-0 text-teal-600" />
-                      <h5 className="text-xs font-bold tracking-wide text-slate-900 uppercase">
-                        Secure Transaction
-                      </h5>
-                    </div>
-                    <p className="text-xs leading-relaxed text-slate-500">
-                      Standalone requests are paid with your Rahvana Wallet credits ($1 = 1 credit). If your balance is short, you can top up instantly via Stripe.
-                    </p>
                   </div>
                 </div>
               </div>
@@ -3051,7 +3009,11 @@ export default function BookConsultationTool({
                       <Button
                         key="submit-btn"
                         type={isJourney || hasWalletCredits ? "submit" : "button"}
-                        onClick={!isJourney && !hasWalletCredits ? () => wallet.openTopup({ amount: deficit }) : undefined}
+                        onClick={
+                          !isJourney && !hasWalletCredits
+                            ? () => wallet.openTopup({ amount: deficit })
+                            : undefined
+                        }
                         disabled={!formData.selected_slot || loading}
                         className="gap-1 bg-teal-600 px-4 text-xs hover:bg-teal-700 sm:gap-2 sm:px-8 sm:text-sm"
                       >
