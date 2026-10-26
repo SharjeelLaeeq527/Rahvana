@@ -3989,7 +3989,8 @@
       "infoPart1": "Our team will review your document and provide a true English translation. You can check the status of your request anytime in ",
       "infoPart2": "My Translation Requests.",
       "infoPart3": "",
-      "buttonText": "Go to My Requests"
+      "buttonText": "Go to My Requests",
+      "uploadAnother": "Upload Another Document"
     }
   },
   "birthCertificate": {

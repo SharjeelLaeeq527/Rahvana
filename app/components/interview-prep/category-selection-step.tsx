@@ -174,14 +174,7 @@ export function CategorySelectionStep({
 
   return (
     <div className="space-y-8 mx-2">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-slate-900 mb-3">Select Your Visa Category</h2>
-        <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
-          Choose the visa type that best matches your immigration case
-        </p>
-      </div>
-
+      {/* No heading here: the interview-prep page already titles this step. */}
       {error && (
         <div className="p-4 bg-[#fff7f8] border-l-4 border-[#db8090] rounded-lg text-[#9e4a5a]">
           <div className="flex items-start">

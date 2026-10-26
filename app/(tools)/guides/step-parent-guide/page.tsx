@@ -655,7 +655,7 @@ const StepParentGuidePage = () => {
       <WizardHeader onWhatsThis={() => setShowWhatsThis(true)} title={guideData.wizard.title} />
 
       {/* Grid Layout Container matching other guides */}
-      <div className="grid h-[calc(100vh-56px)] flex-1 grid-cols-1 gap-4 overflow-y-auto p-4 md:p-6 xl:h-auto xl:grid-cols-[320px_minmax(0,1fr)_350px] xl:items-start xl:gap-6 xl:overflow-hidden">
+      <div className="grid flex-1 grid-cols-1 gap-4 p-4 md:p-6 xl:grid-cols-[320px_minmax(0,1fr)_350px] xl:items-start xl:gap-6">
         {/* Sidebar */}
         <WizardSidebar
           currentStep={STEP_IDS.indexOf(currentStepId)}

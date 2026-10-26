@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
     // Shared context to avoid redundant auth calls in data-access
     const dbClient = { supabase, user };
 
-    const { journey_type, candidate_id } = await req.json();
+    const { journey_type, candidate_id, journey_db_id } = await req.json();
     if (!journey_type) {
       return NextResponse.json(
         { error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: "[journey_type]" }) },
@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
     const effectiveJourneyType = getCandidateJourneyKey(journey_type, candidate_id);
 
     const bustCache = req.headers.get("x-cache-bust") === "1";
-    const cacheKey = `${user.id}_${normType(effectiveJourneyType)}`;
+    const cacheKey = `${user.id}_${normType(effectiveJourneyType)}_${candidate_id || "candidate-1"}_${journey_db_id || ""}`;
 
     // ── Server cache hit — return immediately (repeat visits ~200ms) ──────────
     if (!bustCache) {
@@ -122,16 +122,173 @@ export async function POST(req: NextRequest) {
 
     // ── Find or create journey ────────────────────────────────────────────────
     const allJourneys = await db.getAllJourneysDB(undefined, dbClient);
+    const baseVisa = getBaseVisaCategory(journey_type);
+    const normBase = normType(baseVisa);
     const normalizedQuery = normType(effectiveJourneyType);
-    const existing = allJourneys.find((j) => {
-      const normJ = normType(j.journey_type);
-      if (normJ === normalizedQuery) return true;
-      // Handle legacy match if journey_type had extra suffix
-      if (candidate_id && candidate_id !== "candidate-1" && normJ.includes(normType(candidate_id))) {
-        return true;
+
+    let existing: (typeof allJourneys)[number] | undefined;
+
+    // 1. Direct DB ID lookup when provided
+    if (journey_db_id) {
+      existing = allJourneys.find((j) => j.id === journey_db_id);
+    }
+
+    // 2. Candidate-isolated lookup
+    if (!existing) {
+      const isCandidate1 = !candidate_id || candidate_id === "candidate-1";
+
+      if (isCandidate1) {
+        // Candidate 1 matches:
+        // - journeys matching base category (e.g. "ir5", "ir-5")
+        // - journeys with candidate1 suffix ("ir5_candidate-1", "ir5_candidate1")
+        // - strictly EXCLUDES secondary candidate journeys (candidate 2, 3, etc.)
+        const candidate1Matches = allJourneys.filter((j) => {
+          const normJ = normType(j.journey_type);
+          const isCategoryMatch =
+            normJ === normBase ||
+            normJ === normalizedQuery ||
+            normJ.startsWith(normBase) ||
+            normJ.includes("candidate1");
+
+          if (!isCategoryMatch) return false;
+
+          // Exclude candidate 2, 3, etc.
+          const isSecondaryCand = /candidate[2-9]/i.test(normJ);
+          return !isSecondaryCand;
+        });
+
+        // Prefer paid journey if one exists
+        existing =
+          candidate1Matches.find(
+            (j) => j.subscription_tier && j.subscription_tier.toLowerCase() !== "free"
+          ) ||
+          candidate1Matches.find((j) => (j.completed_steps_count ?? 0) > 0) ||
+          candidate1Matches[0];
+      } else {
+        // Candidate 2, 3, etc.
+        const candNorm = normType(candidate_id);
+        const candMatches = allJourneys.filter((j) => {
+          const normJ = normType(j.journey_type);
+          return normJ === normalizedQuery || normJ.includes(candNorm);
+        });
+
+        existing =
+          candMatches.find(
+            (j) => j.subscription_tier && j.subscription_tier.toLowerCase() !== "free"
+          ) ||
+          candMatches.find((j) => (j.completed_steps_count ?? 0) > 0) ||
+          candMatches[0];
       }
-      return false;
-    });
+    }
+
+    // ── Check if user has other than free journey plan for this specific journey ──
+    const existingTier = (existing?.subscription_tier || "").toLowerCase();
+    const isExistingPaid = Boolean(existing && existingTier && existingTier !== "free");
+
+    const { data: profileRow } = await supabase
+      .from("user_profiles")
+      .select("profile_details")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    const candidates = (profileRow?.profile_details as any)?.candidates || [];
+    const matchedCand =
+      candidates.find((c: any) => c.id === candidate_id) ||
+      (!candidate_id || candidate_id === "candidate-1" ? candidates[0] : null);
+    const candTier = (matchedCand?.tier || "").toLowerCase();
+    const isCandPaid = Boolean(candTier && candTier !== "free");
+
+    const journeyTiers =
+      (profileRow?.profile_details as any)?.journeyTiers ||
+      (profileRow?.profile_details as any)?.journey_tiers ||
+      {};
+    const targetKey =
+      candidate_id && candidate_id !== "candidate-1"
+        ? getCandidateJourneyKey(journey_type, candidate_id)
+        : normBase;
+    const mappedTier = (
+      journeyTiers[targetKey] ||
+      journeyTiers[baseVisa] ||
+      journeyTiers[normBase] ||
+      ""
+    ).toLowerCase();
+    const isMappedPaid = Boolean(mappedTier && mappedTier !== "free");
+
+    const resolvedPaidTier =
+      (isExistingPaid ? existingTier : null) ||
+      (isCandPaid ? candTier : null) ||
+      (isMappedPaid ? mappedTier : null);
+
+    const isPaid = Boolean(resolvedPaidTier && resolvedPaidTier !== "free");
+
+    // If existing row was in DB with free/empty tier but candidate has paid tier, update it
+    if (
+      existing &&
+      isPaid &&
+      resolvedPaidTier &&
+      (!existing.subscription_tier || existing.subscription_tier.toLowerCase() === "free")
+    ) {
+      try {
+        await supabase
+          .from("journeys")
+          .update({
+            subscription_tier: resolvedPaidTier,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", existing.id);
+        existing.subscription_tier = resolvedPaidTier;
+      } catch (tierUpdateErr) {
+        console.warn("[initialize] Failed to update journey subscription_tier:", tierUpdateErr);
+      }
+    }
+
+    // Free plan users can preview Step 1, but NO journey record should be added to the DB
+    if (!isPaid) {
+      // Do NOT cache virtual free journeys in serverCache so subsequent visits check freshly
+      serverCache.delete(cacheKey);
+
+      // If a legacy empty free journey exists in DB, clean it up so it does not linger
+      if (
+        existing &&
+        (!existing.subscription_tier || existing.subscription_tier === "free") &&
+        (!existing.completed_steps_count || existing.completed_steps_count === 0)
+      ) {
+        try {
+          await supabase.from("journeys").delete().eq("id", existing.id);
+        } catch (delErr) {
+          console.warn("[initialize] Cleaned up legacy default free journey:", delErr);
+        }
+      }
+
+      const virtualJourney = {
+        id: null,
+        user_id: user.id,
+        journey_type: effectiveJourneyType,
+        subscription_tier: "free",
+        filing_method: "online",
+        status: "not_started",
+        completed_steps_count: 0,
+        total_steps_count: 0,
+        completion_percentage: 0,
+        metadata: {},
+        tracking_status: {},
+      };
+
+      const responseData = {
+        journey: virtualJourney,
+        steps: [],
+        case_data: [],
+      };
+
+      return NextResponse.json(
+        { success: true, data: responseData },
+        {
+          headers: {
+            "Cache-Control": "no-store, no-cache, must-revalidate",
+          },
+        }
+      );
+    }
 
     let journeyId: string;
     const configType = configTypeFromJourneyType(journey_type);
@@ -145,6 +302,7 @@ export async function POST(req: NextRequest) {
           configPath,
           {
             journey_type: effectiveJourneyType,
+            subscription_tier: resolvedPaidTier || "diy",
           },
           dbClient
         );
@@ -196,6 +354,13 @@ export async function POST(req: NextRequest) {
         { error: "Journey not found after initialization" },
         { status: 500 }
       );
+    }
+
+    if (
+      resolvedPaidTier &&
+      (!journeyRow.subscription_tier || journeyRow.subscription_tier.toLowerCase() === "free")
+    ) {
+      journeyRow.subscription_tier = resolvedPaidTier;
     }
 
     const responseData = {

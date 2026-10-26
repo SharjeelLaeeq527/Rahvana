@@ -1531,6 +1531,7 @@ export const StepView: React.FC<StepViewProps> = ({
                   tool={tool}
                   record={record}
                   locked={locked}
+                  journeyTier={state?.subscriptionTier}
                   onOpen={() => {
                     if (locked) return; // one active booking per journey
                     if (!stepEntitlement.guard()) return; // journey-tier access gate (no credits)
@@ -1556,6 +1557,7 @@ export const StepView: React.FC<StepViewProps> = ({
                   tool={tool}
                   record={record}
                   locked={locked}
+                  journeyTier={state?.subscriptionTier}
                   onOpen={() => {
                     if (locked) return; // one active PCC application per journey
                     if (!stepEntitlement.guard()) return; // journey-tier access gate (no credits)

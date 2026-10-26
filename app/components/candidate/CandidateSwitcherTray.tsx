@@ -137,9 +137,9 @@ export function CandidateSwitcherTray({
         const targetRoute = getJourneyHrefByType(target.visaCategory);
         const normCurrent = currentPath.replace(/\/+$/, "");
         const normTarget = targetRoute.replace(/\/+$/, "");
-        if (targetRoute && normCurrent !== normTarget) {
-          router.push(targetRoute);
-        }
+        const routeBase = targetRoute && normCurrent !== normTarget ? targetRoute : currentPath;
+        const separator = routeBase.includes("?") ? "&" : "?";
+        router.push(`${routeBase}${separator}candidateId=${encodeURIComponent(candidateId)}`);
       }
     }
   };

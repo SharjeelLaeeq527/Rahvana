@@ -14,9 +14,12 @@ import { cn } from "@/lib/utils";
 export interface DropdownOption {
   value: string;
   label: string;
+  subLabel?: string;
   status?: "uploaded" | "none";
   icon?: React.ReactNode;
   rightElement?: React.ReactNode;
+  disabled?: boolean;
+  disabledReason?: string;
 }
 
 interface CustomDropdownProps {
@@ -75,9 +78,9 @@ export const CustomDropdown = ({
   }
 
   const handleSelect = (selectedValue: string) => {
-    const optionExists = displayOptions.some((option) => option.value === selectedValue);
+    const targetOption = displayOptions.find((option) => option.value === selectedValue);
 
-    if (optionExists && selectedValue !== value) {
+    if (targetOption && !targetOption.disabled && selectedValue !== value) {
       onChange(selectedValue);
     }
   };
@@ -130,7 +133,7 @@ export const CustomDropdown = ({
         <SelectContent
           position="popper"
           sideOffset={2}
-          className="z-[10100] w-[var(--radix-select-trigger-width)] max-w-none min-w-[max(220px,var(--radix-select-trigger-width))] overflow-hidden rounded-lg border border-transparent bg-white p-0 shadow-xl data-[side=bottom]:translate-y-0 data-[side=top]:translate-y-0 [&_[data-radix-select-viewport]]:h-auto [&_[data-radix-select-viewport]]:min-h-0 [&_[data-radix-select-viewport]]:p-0 [&_[data-radix-select-viewport]]:overflow-x-hidden"
+          className="z-[10100] w-[var(--radix-select-trigger-width)] max-w-none min-w-[max(250px,var(--radix-select-trigger-width))] overflow-hidden rounded-lg border border-transparent bg-white p-0 shadow-xl data-[side=bottom]:translate-y-0 data-[side=top]:translate-y-0 [&_[data-radix-select-viewport]]:h-auto [&_[data-radix-select-viewport]]:min-h-0 [&_[data-radix-select-viewport]]:p-0 [&_[data-radix-select-viewport]]:overflow-x-hidden"
         >
           {displayOptions.length > 10 && (
             <div
@@ -156,19 +159,38 @@ export const CustomDropdown = ({
                 <SelectItem
                   key={option.value}
                   value={option.value}
-                  className="cursor-pointer rounded-md px-4 py-3 text-sm font-medium text-slate-700 transition-colors focus:bg-[#EAF5F0] focus:text-[#2E5450] data-[state=checked]:bg-[#EAF5F0] data-[state=checked]:text-[#2E5450] [&>span:first-child]:hidden [&>span:last-child]:w-full [&>span:last-child]:min-w-0 [&>span:last-child]:block"
+                  disabled={option.disabled}
+                  title={
+                    option.disabled
+                      ? option.disabledReason ||
+                        "This candidate has the Executive plan (highest plan) and cannot be upgraded."
+                      : option.label
+                  }
+                  className={cn(
+                    "cursor-pointer rounded-md px-3.5 py-2.5 text-sm font-medium text-slate-700 transition-colors focus:bg-[#EAF5F0] focus:text-[#2E5450] data-[state=checked]:bg-[#EAF5F0] data-[state=checked]:text-[#2E5450] [&>span:first-child]:hidden [&>span:last-child]:w-full [&>span:last-child]:min-w-0 [&>span:last-child]:block",
+                    option.disabled &&
+                      "!pointer-events-auto !cursor-not-allowed opacity-60 hover:!bg-amber-50/50 dark:hover:!bg-amber-950/20 focus:!bg-transparent focus:!text-slate-500 select-none"
+                  )}
                 >
                   <div className="flex w-full min-w-0 items-center justify-between gap-2.5">
                     <div className="flex min-w-0 flex-1 items-center gap-2">
                       {option.icon && <span className="shrink-0">{option.icon}</span>}
-                      <span
-                        className={`truncate ${
-                          option.status === "uploaded" ? "font-bold text-[#2E5450]" : ""
-                        }`}
-                        title={option.label}
-                      >
-                        {option.label}
-                      </span>
+                      <div className="flex min-w-0 flex-1 flex-col">
+                        <span
+                          className={cn(
+                            "truncate",
+                            option.status === "uploaded" ? "font-bold text-[#2E5450]" : "",
+                            option.disabled ? "text-slate-500 font-medium" : ""
+                          )}
+                        >
+                          {option.label}
+                        </span>
+                        {option.subLabel && (
+                          <span className="truncate text-[10.5px] font-normal text-amber-700 dark:text-amber-400/90">
+                            {option.subLabel}
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     <div className="flex shrink-0 items-center gap-1.5">

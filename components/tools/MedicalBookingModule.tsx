@@ -11,6 +11,8 @@ interface MedicalBookingModuleProps {
   record: JourneyServiceRecord | null;
   locked: boolean;
   onOpen: () => void;
+  journeyTier?: string;
+  onOpenGuide?: (guideUrl: string) => void;
 }
 
 const cap = (s?: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
@@ -19,6 +21,8 @@ export const MedicalBookingModule: React.FC<MedicalBookingModuleProps> = ({
   record,
   locked,
   onOpen,
+  journeyTier,
+  onOpenGuide,
 }) => {
   const d = MEDICAL_EXAM_DATA;
   // Explicit, human-readable reason for the lock, so users know why a second
@@ -37,6 +41,8 @@ export const MedicalBookingModule: React.FC<MedicalBookingModuleProps> = ({
       locked={locked}
       lockedHint={lockedHint}
       onOpen={onOpen}
+      journeyTier={journeyTier}
+      onOpenGuide={onOpenGuide}
       summaryTitle="Your Medical Appointment"
       summaryRows={[
         ["Location", cap(record?.location)],
