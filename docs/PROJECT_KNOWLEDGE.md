@@ -1201,6 +1201,17 @@ lens, compare, confetti).
     is set on BOTH the Next.js server and the backend**; until then the backend logs a warning
     and allows full fills. `MultiStepForm` journey access = `canUse("smart_form_filler",
     journeyTier, addons)` (Basic journeys get the page-1 demo), standalone = wallet unlock.
+    **Standalone credits unlock ONE form at a time** (`form-forge:<code>`, 39 credits each;
+    `SMART_FORM_CODES` / `smartFormResourceId` in `lib/wallet/catalog.ts`, kept equal to
+    `lib/formConfig` by `__tests__/wallet/smartFormUnlock.test.ts`). The whole-tool item
+    `form-forge` is `launchable: false` (no longer sold); a whole-tool unlock row bought before
+    this, or the legacy "smart" add-on, still opens every form (`resolveUnlockedItems` expands
+    them to every form). The PDF route checks the requested form's own unlock; the forms library
+    shows Unlock / Start per form, and clicking Unlock opens the credit modal (with top-up when
+    short) for THAT form; the `/tools` card has no Launch / dual CTA for it (the item is not
+    `launchable`): the whole card links to the library and shows "39 credits per form", so the
+    user picks a form before paying. It counts as owned once any form is unlocked
+    (`isCatalogItemOwned`).
   - **Interview Prep:** `POST /api/interview-prep` with `source: "journey"` calls
     `validateJourneySessionCreation` (owned journey via `resolveOwnedJourney`, journey still
     active, `basic_interview_prep` on the journey tier + add-ons) and creates a `source =

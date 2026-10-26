@@ -29,6 +29,7 @@ import { normalizePlanTier } from "@/lib/entitlements/config";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { CreditLaunchModal } from "@/app/components/wallet/CreditLaunchModal";
 import { useStandaloneToolUnlock } from "@/lib/wallet/useStandaloneToolUnlock";
+import { smartFormResourceId } from "@/lib/wallet/catalog";
 import { useFreePreview } from "./useFreePreview";
 import { MobileBottomSheet } from "@/app/components/shared/table/MobileBottomSheet";
 import { useResolveToolMode } from "@/lib/hooks/useResolveToolMode";
@@ -179,10 +180,11 @@ export function MultiStepForm({
 
   const plan = usePlan();
   // Journey mode follows the journey's own plan. Standalone is paid with credits
-  // even by plan holders: only a wallet unlock (or a legacy "smart" add-on, which
-  // /api/wallet reports as unlocked) gives the full filler. Journey passes null so
-  // it never reads wallet unlocks. The PDF route re-checks all of this server-side.
-  const formWallet = useStandaloneToolUnlock(isJourney ? null : "form-forge");
+  // even by plan holders, one form at a time: only an unlock of THIS form (or an
+  // older whole-tool unlock / legacy "smart" add-on, which /api/wallet reports as
+  // every form unlocked) gives the full filler. Journey passes null so it never
+  // reads wallet unlocks. The PDF route re-checks all of this server-side.
+  const formWallet = useStandaloneToolUnlock(isJourney ? null : smartFormResourceId(formCode));
   const journeyPlanTier = normalizePlanTier(
     journeyTier ?? journeyContext?.subscriptionTier ?? plan.tier
   );

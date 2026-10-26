@@ -866,7 +866,7 @@ function GuideCard({
     >
       {/* Ribbon for locked cards */}
       {featureLocked && (
-        <div className="pointer-events-none absolute -top-21 -right-12 z-20 sm:-right-3">
+        <div className="pointer-events-none absolute -top-21 -right-10 z-20 -translate-x-12 sm:-right-3 sm:-translate-x-5">
           <Image
             src="/icons/ribbon.png"
             alt="Premium ribbon"
@@ -903,9 +903,23 @@ function GuideCard({
       {/* Content */}
       <div className="relative z-10 flex flex-col pt-1">
         <div className="flex items-start justify-between gap-3">
-          <h3 className="text-foreground mb-0.5 text-lg leading-tight font-bold transition-colors md:text-xl">
-            {guide.title}
-          </h3>
+          {/* Title + Credit tooltip */}
+          <div className="flex min-w-0 flex-1 items-start justify-between gap-3">
+            <h3 className="text-foreground mb-0.5 min-w-0 text-lg leading-tight font-bold transition-colors md:text-xl">
+              {guide.title}
+            </h3>
+
+            {featureLocked && (
+              <div className="shrink-0">
+                <CreditInfoTooltip
+                  message="Unlock once: spend credits one time, then use this guide as much as you like."
+                  side="top"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Quick Access button for unlocked guides */}
           {!featureLocked && (
             <div className="relative z-50 shrink-0">
               <QuickAccessButton
@@ -933,6 +947,8 @@ function GuideCard({
             </div>
           )}
         </div>
+
+        {/* Subtitle */}
         <p
           className={`mb-4 text-[11px] leading-snug text-zinc-500 dark:text-zinc-400 ${
             guide.subtitle ? "" : "invisible"
@@ -940,19 +956,21 @@ function GuideCard({
         >
           {guide.subtitle || " "}
         </p>
+
+        {/* Category */}
         <div className="mb-2">
           <span className="text-primary/85 bg-primary/10 border-primary/20 rounded border px-2 py-1 text-[10px] font-semibold tracking-[0.08em] uppercase">
             {guide.category}
           </span>
         </div>
+
+        {/* Description */}
         <p
           className="mb-0 pb-0 text-sm font-medium [text-wrap:pretty] text-slate-500 dark:text-slate-400"
           style={{ minHeight: 88, paddingBottom: 0, lineHeight: 1.3 }}
         >
           {guide.description}
         </p>
-
-        <div className="grow" />
       </div>
 
       {/* Footer / Action */}
@@ -960,48 +978,33 @@ function GuideCard({
         {showDualCta && catalogItem ? (
           <>
             <div className="mb-2.5 flex items-center justify-between gap-2 text-sm font-bold text-[#0d7377] dark:text-[#32e0c4]">
+              <div className="flex items-center gap-2.5">
+                <Link
+                  href={
+                    catalogItem.legacyAddonId
+                      ? `/resources/${catalogItem.legacyAddonId}`
+                      : withPreviewMode(guide.href)
+                  }
+                  onClick={(e) => e.stopPropagation()}
+                  className="inline-flex h-9 items-center rounded-lg border border-slate-200 bg-white px-3.5 text-[13px] font-semibold whitespace-nowrap text-slate-700 transition-colors hover:border-[#0d7377]/40 hover:text-[#0d7377]"
+                >
+                  {catalogItem.legacyAddonId ? "View Details" : "Preview Guide"}
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => onLaunch(catalogItem)}
+                  aria-label={`Launch ${guide.title} for ${catalogItem.credits} credits`}
+                  className="inline-flex h-9 items-center rounded-lg bg-[#0d7377] px-4 text-[13px] font-semibold whitespace-nowrap text-white transition-colors hover:bg-[#0a5c5f]"
+                >
+                  Launch
+                </button>
+              </div>
+
               <div className="flex min-w-0 items-center gap-2">
                 <CreditTypeIcon kind="tools" size={22} />
                 <span>{catalogItem.credits}</span>
               </div>
-            
-              <CreditInfoTooltip
-                message="Unlock once: pay these credits one time, then use this guide as much as you like."
-                side="top"
-              />
             </div>
-            {/* Preview CTA removed from My Resources — now links to the resource
-                detail page (preview moved to /resources/[slug]). ORIGINAL:
-                <Link href={withPreviewMode(guide.href)} ...>Preview Guide</Link>
-                (kept for guides without a detail page, e.g. polio — no legacyAddonId yet)
-            */}
-            <div className="flex items-center gap-2.5">
-              <Link
-                href={
-                  catalogItem.legacyAddonId
-                    ? `/resources/${catalogItem.legacyAddonId}`
-                    : withPreviewMode(guide.href)
-                }
-                onClick={(e) => e.stopPropagation()}
-                className="inline-flex h-9 items-center rounded-lg border border-slate-200 bg-white px-3.5 text-[13px] font-semibold whitespace-nowrap text-slate-700 transition-colors hover:border-[#0d7377]/40 hover:text-[#0d7377]"
-              >
-                {catalogItem.legacyAddonId ? "View Details" : "Preview Guide"}
-              </Link>
-              <button
-                type="button"
-                onClick={() => onLaunch(catalogItem)}
-                aria-label={`Launch ${guide.title} for ${catalogItem.credits} credits`}
-                className="inline-flex h-9 items-center rounded-lg bg-[#0d7377] px-4 text-[13px] font-semibold whitespace-nowrap text-white transition-colors hover:bg-[#0a5c5f]"
-              >
-                Launch
-              </button>
-            </div>
-            {/* Caption referenced the old Preview CTA — moved to detail page. ORIGINAL:
-                <p className="mt-2 text-[11px] leading-snug font-medium text-slate-400">
-                  Preview is free. Launching permanently unlocks the full guide with your wallet
-                  credits.
-                </p>
-            */}
           </>
         ) : (
           <div className="flex items-center justify-between">

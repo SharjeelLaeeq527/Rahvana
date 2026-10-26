@@ -23,7 +23,7 @@ import ReviewForm from "@/components/resources/ReviewForm";
 import { getApprovedReviews, getReviewStats } from "@/lib/reviews/data-access";
 // getSlugTheme/getIcon powered the "Pairs well with" section (now commented out):
 // import { getSlugTheme, getIcon } from "./iconMap";
-import { WALLET_CATALOG } from "@/lib/wallet/catalog";
+import { SMART_FORM_TOOL_ID, WALLET_CATALOG } from "@/lib/wallet/catalog";
 import { withPreviewMode } from "@/lib/wallet/resourceMapping";
 import CreditTypeIcon from "@/components/resources/CreditTypeIcon";
 import CreditInfoTooltip from "@/components/resources/CreditInfoTooltip";
@@ -220,7 +220,9 @@ export default async function ResourceDetailPage({
                 message={
                   addon.kind === "services"
                     ? "Each booking request uses the credits shown."
-                    : "Unlock once: pay these credits one time, then use it as much as you like."
+                    : walletItem?.resourceId === SMART_FORM_TOOL_ID
+                      ? "Per form: each form is unlocked on its own for these credits, then you can use that form as much as you like."
+                      : "Unlock once: pay these credits one time, then use it as much as you like."
                 }
               />
             </div>

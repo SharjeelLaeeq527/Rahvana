@@ -23,16 +23,16 @@ describe('canGenerateFullSmartForm', () => {
 
   it('journey: follows the journey plan tier', async () => {
     await expect(
-      canGenerateFullSmartForm(unlocks(), 'user-1', [], { scope: 'journey', journeyId: PREMIUM_J })
+      canGenerateFullSmartForm(unlocks(), 'user-1', [], { scope: 'journey', formCode: 'i130', journeyId: PREMIUM_J })
     ).resolves.toBe(true)
     await expect(
-      canGenerateFullSmartForm(unlocks(), 'user-1', [], { scope: 'journey', journeyId: BASIC_J })
+      canGenerateFullSmartForm(unlocks(), 'user-1', [], { scope: 'journey', formCode: 'i130', journeyId: BASIC_J })
     ).resolves.toBe(false)
   })
 
   it("journey: another user's journey never counts", async () => {
     await expect(
-      canGenerateFullSmartForm(unlocks(), 'user-1', [], { scope: 'journey', journeyId: OTHER_J })
+      canGenerateFullSmartForm(unlocks(), 'user-1', [], { scope: 'journey', formCode: 'i130', journeyId: OTHER_J })
     ).resolves.toBe(false)
   })
 
@@ -41,26 +41,47 @@ describe('canGenerateFullSmartForm', () => {
       { user_id: 'user-1', resource_type: 'tool', resource_id: 'form-forge', status: 'active' },
     ])
     await expect(
-      canGenerateFullSmartForm(client, 'user-1', [], { scope: 'journey', journeyId: BASIC_J })
+      canGenerateFullSmartForm(client, 'user-1', [], { scope: 'journey', formCode: 'i130', journeyId: BASIC_J })
     ).resolves.toBe(false)
   })
 
   it('standalone: needs a wallet unlock, whatever the plan', async () => {
     // No journey or plan input at all: a Premium account gets nothing here.
     await expect(
-      canGenerateFullSmartForm(unlocks(), 'user-1', [], { scope: 'standalone' })
+      canGenerateFullSmartForm(unlocks(), 'user-1', [], { scope: 'standalone', formCode: 'i130' })
     ).resolves.toBe(false)
     const unlocked = unlocks([
       { user_id: 'user-1', resource_type: 'tool', resource_id: 'form-forge', status: 'active' },
     ])
     await expect(
-      canGenerateFullSmartForm(unlocked, 'user-1', [], { scope: 'standalone' })
+      canGenerateFullSmartForm(unlocked, 'user-1', [], { scope: 'standalone', formCode: 'i130' })
     ).resolves.toBe(true)
+  })
+
+  it('standalone: a form unlock opens that form only', async () => {
+    const client = unlocks([
+      { user_id: 'user-1', resource_type: 'tool', resource_id: 'form-forge:i485', status: 'active' },
+    ])
+    const full = (formCode: string) =>
+      canGenerateFullSmartForm(client, 'user-1', [], { scope: 'standalone', formCode })
+    await expect(full('i485')).resolves.toBe(true)
+    await expect(full('I-485')).resolves.toBe(true)
+    await expect(full('i130')).resolves.toBe(false)
+    await expect(full('ds260')).resolves.toBe(false)
+  })
+
+  it('standalone: an unknown form is never full', async () => {
+    const client = unlocks([
+      { user_id: 'user-1', resource_type: 'tool', resource_id: 'form-forge', status: 'active' },
+    ])
+    await expect(
+      canGenerateFullSmartForm(client, 'user-1', ['smart'], { scope: 'standalone', formCode: 'x999' })
+    ).resolves.toBe(false)
   })
 
   it('standalone: a legacy "smart" add-on keeps working', async () => {
     await expect(
-      canGenerateFullSmartForm(unlocks(), 'user-1', ['smart'], { scope: 'standalone' })
+      canGenerateFullSmartForm(unlocks(), 'user-1', ['smart'], { scope: 'standalone', formCode: 'i130' })
     ).resolves.toBe(true)
   })
 })
@@ -121,6 +142,18 @@ describe('POST /api/visa-forms/[formCode]/pdf', () => {
     expect(res.headers.get('X-Pdf-Scope')).toBe('full')
     expect(backendBody()).toMatchObject({ formId: 'i130', onlyFirstPage: false })
     expect(backendHeaders()['X-Internal-Token']).toBe('secret')
+  })
+
+  it('a standalone form unlock gives the full PDF for that form only', async () => {
+    tables.standalone_unlocked_resources = [
+      { user_id: 'user-1', resource_type: 'tool', resource_id: 'form-forge:i485', status: 'active' },
+    ]
+    const own = await call({ data: {}, scope: 'standalone' }, 'i485')
+    expect(own.headers.get('X-Pdf-Scope')).toBe('full')
+    fetchMock.mockClear()
+    const other = await call({ data: {}, scope: 'standalone' }, 'i130')
+    expect(other.headers.get('X-Pdf-Scope')).toBe('first-page')
+    expect(backendBody().onlyFirstPage).toBe(true)
   })
 
   it('signed-out visitors only get the page-1 demo', async () => {

@@ -26,7 +26,11 @@ import AddResourceCard from "@/components/resources/AddResourceCard";
 import ResourceSectionHeader from "@/components/resources/ResourceSectionHeader";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 import { useWallet } from "@/app/context/WalletContext";
-import { getToolCatalogItem, withPreviewMode } from "@/lib/wallet/resourceMapping";
+import {
+  getToolCatalogItem,
+  isCatalogItemOwned,
+  withPreviewMode,
+} from "@/lib/wallet/resourceMapping";
 import { useJourneyEnvironment } from "@/app/context/JourneyEnvironmentContext";
 import CreditTypeIcon from "@/components/resources/CreditTypeIcon";
 import CreditInfoTooltip from "@/components/resources/CreditInfoTooltip";
@@ -303,9 +307,7 @@ export default function ToolsPage({ isEmbedded = false }: { isEmbedded?: boolean
   const isOwned = (tool: Tool) => {
     const catalogItem = getToolCatalogItem(tool.id);
     if (catalogItem && !isInsideJourney) {
-      return (
-        !wallet.isLoading && wallet.isUnlocked(catalogItem.resourceId, catalogItem.resourceType)
-      );
+      return !wallet.isLoading && isCatalogItemOwned(catalogItem, wallet.isUnlocked);
     }
     return !tool.entitlementFeature || (!plan.isLoading && !plan.isLocked(tool.entitlementFeature));
   };
@@ -574,16 +576,19 @@ function ToolCard({
   // grandfathered legacy add-ons via /api/wallet) opens them, whatever the plan.
   // Unpriced tools keep the plan rule.
   const catalogItem = getToolCatalogItem(tool.id);
-  const walletUnlocked =
-    !!catalogItem && wallet.isUnlocked(catalogItem.resourceId, catalogItem.resourceType);
+  const walletUnlocked = !!catalogItem && isCatalogItemOwned(catalogItem, wallet.isUnlocked);
   // ORIGINAL: const isLocked = planLocked && !walletUnlocked;
   // Standalone catalog tools: credits/legacy add-on only — plan tier never
   // unlocks them outside a journey. Inside a journey, plan entitlement rules.
   const isLocked =
     catalogItem && !isInsideJourney ? !walletUnlocked : planLocked && !walletUnlocked;
 
-  // Credit-purchasable and still locked -> the card becomes a dual-CTA card.
-  const showDualCta = !!catalogItem && isLocked && !tool.disabled;
+  // Credit-purchasable and still locked -> the card becomes a dual-CTA card. A tool
+  // not sold as a whole (the Smart Form Filler sells each form on its own) stays a
+  // plain link: its page lists the items and each one opens its own credit modal.
+  const sellsWhole = !!catalogItem && catalogItem.launchable;
+  const showDualCta = sellsWhole && isLocked && !tool.disabled;
+  const perItemCredits = catalogItem && !catalogItem.launchable ? catalogItem.credits : null;
 
   const isRouteLocked = isLocked && !showDualCta && ROUTE_FEATURE_MAP[tool.href] !== undefined;
   const isResultLocked = isLocked && !showDualCta && ROUTE_FEATURE_MAP[tool.href] === undefined;
@@ -625,14 +630,14 @@ function ToolCard({
     >
       {/* Ribbon bookmark for Locked/Premium cards */}
       {(isRouteLocked || isResultLocked) && (
-        <div className="pointer-events-none absolute -top-21 -right-12 z-20 sm:-right-3">
+        <div className="pointer-events-none absolute -top-21 -right-10 z-20 -translate-x-12 sm:-right-3 sm:-translate-x-5">
           <Image
             src="/icons/ribbon.png"
             alt="Premium ribbon"
             width={160}
             height={220}
             priority={false}
-            className="block h-56 w-40 object-contain"
+            className="h-56 w-40 object-contain drop-shadow-lg"
           />
         </div>
       )}
@@ -657,9 +662,23 @@ function ToolCard({
       {/* Content */}
       <div className="relative z-30 flex grow flex-col pt-2">
         <div className="flex items-start justify-between gap-3">
-          <h3 className="text-foreground mb-1 text-xl font-bold transition-colors">
-            {t(`toolsPage.toolsItems.${tool.id}.title`) || tool.title}
-          </h3>
+          {/* Title + Credit tooltip */}
+          <div className="flex min-w-0 flex-1 items-start justify-between gap-3">
+            <h3 className="text-foreground mb-1 min-w-0 text-xl font-bold transition-colors">
+              {t(`toolsPage.toolsItems.${tool.id}.title`) || tool.title}
+            </h3>
+
+            {isLocked && (
+              <div className="shrink-0">
+                <CreditInfoTooltip
+                  message="Unlock once: spend credits one time, then use this tool as much as you like."
+                  side="top"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Quick Access button for unlocked tools */}
           {!isLocked && (
             <div className="relative z-50 shrink-0">
               <QuickAccessButton
@@ -686,17 +705,16 @@ function ToolCard({
             </div>
           )}
         </div>
+
+        {/* Category */}
         <div className="mb-3 flex items-center gap-2">
           <span className="text-muted-foreground/80 bg-muted rounded px-2 py-0.5 text-[11px] font-bold tracking-wide uppercase">
             {t(`toolsPage.categories.${tool.category}`) || tool.category}
           </span>
-          {/* {isResultLocked && (
-            <span className="text-[11px] font-bold uppercase tracking-wide bg-amber-50 text-amber-700 px-2 py-0.5 rounded flex items-center gap-1 border border-amber-200/50">
-              <Crown size={10} className="text-amber-500 fill-amber-500 animate-pulse" /> Premium
-            </span>
-          )} */}
         </div>
-        <p className={`mb-4 grow text-sm leading-relaxed text-slate-900 dark:text-white`}>
+
+        {/* Description */}
+        <p className="mb-4 grow text-sm leading-relaxed text-slate-900 dark:text-white">
           {t(`toolsPage.toolsItems.${tool.id}.desc`) || tool.description}
         </p>
       </div>
@@ -706,52 +724,45 @@ function ToolCard({
         {showDualCta && catalogItem && (
           <>
             <div className="mb-2.5 flex items-center justify-between gap-2 text-sm font-bold text-[#0d7377] dark:text-[#32e0c4]">
+              <div className="flex items-center gap-2.5">
+                <Link
+                  href={
+                    catalogItem.legacyAddonId
+                      ? `/resources/${catalogItem.legacyAddonId}`
+                      : withPreviewMode(tool.href)
+                  }
+                  onClick={(e) => e.stopPropagation()}
+                  className="inline-flex h-9 items-center rounded-lg border border-slate-200 bg-white px-3.5 text-[13px] font-semibold whitespace-nowrap text-slate-700 transition-colors hover:border-[#0d7377]/40 hover:text-[#0d7377]"
+                >
+                  {catalogItem.legacyAddonId ? "View Details" : "Preview Tool"}
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => onLaunch(catalogItem)}
+                  aria-label={`Launch ${tool.title} for ${catalogItem.credits} credits`}
+                  className="inline-flex h-9 items-center rounded-lg bg-[#0d7377] px-4 text-[13px] font-semibold whitespace-nowrap text-white transition-colors hover:bg-[#0a5c5f]"
+                >
+                  Launch
+                </button>
+              </div>
+
               <div className="flex min-w-0 items-center gap-2">
                 <CreditTypeIcon kind="tools" size={22} />
                 <span>{catalogItem.credits}</span>
               </div>
-
-              <CreditInfoTooltip
-                message="Unlock once: pay these credits one time, then use this tool as much as you like."
-                side="top"
-              />
             </div>
-
-            {/* Preview CTA removed from My Resources — now links to the resource
-                detail page (preview moved to /resources/[slug]). ORIGINAL:
-                <Link href={withPreviewMode(tool.href)} ...>Preview Tool</Link>
-            */}
-            <div className="flex items-center gap-2.5">
-              <Link
-                href={
-                  catalogItem.legacyAddonId
-                    ? `/resources/${catalogItem.legacyAddonId}`
-                    : withPreviewMode(tool.href)
-                }
-                onClick={(e) => e.stopPropagation()}
-                className="inline-flex h-9 items-center rounded-lg border border-slate-200 bg-white px-3.5 text-[13px] font-semibold whitespace-nowrap text-slate-700 transition-colors hover:border-[#0d7377]/40 hover:text-[#0d7377]"
-              >
-                {catalogItem.legacyAddonId ? "View Details" : "Preview Tool"}
-              </Link>
-              <button
-                type="button"
-                onClick={() => onLaunch(catalogItem)}
-                aria-label={`Launch ${tool.title} for ${catalogItem.credits} credits`}
-                className="inline-flex h-9 items-center rounded-lg bg-[#0d7377] px-4 text-[13px] font-semibold whitespace-nowrap text-white transition-colors hover:bg-[#0a5c5f]"
-              >
-                Launch
-              </button>
-            </div>
-            {/* Caption referenced the old Preview CTA — moved to detail page. ORIGINAL:
-                <p className="mt-2 text-[11px] leading-snug font-medium text-slate-400">
-                  Preview is free. Launching permanently unlocks full access with your wallet credits.
-                </p>
-            */}
           </>
         )}
         {!showDualCta && (
           <div className="flex items-center justify-between">
-            <span className="text-muted-foreground flex items-center gap-1 text-xs font-medium" />
+            <span className="text-muted-foreground flex items-center gap-1 text-xs font-medium">
+              {perItemCredits !== null && !isInsideJourney && (
+                <>
+                  <CreditTypeIcon kind="tools" size={18} />
+                  {perItemCredits} credits per form
+                </>
+              )}
+            </span>
             {isRouteLocked ? (
               <span
                 className={`flex items-center gap-1.5 text-sm font-semibold decoration-2 underline-offset-2 group-hover:underline ${styles.link}`}

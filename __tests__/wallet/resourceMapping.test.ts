@@ -16,7 +16,13 @@ describe("Phase 5 & 6 catalog <-> page mapping", () => {
       expect(item).not.toBeNull();
       expect(item!.resourceType).toBe("tool");
       expect(item!.resourceId).toBe(resourceId);
-      expect(item!.launchable).toBe(true);
+      // The Smart Form Filler is sold per form (form-forge:<code>), not as a whole.
+      if (resourceId === "form-forge") {
+        expect(item!.launchable).toBe(false);
+        expect(getCatalogItem("tool", "form-forge:i130")?.launchable).toBe(true);
+      } else {
+        expect(item!.launchable).toBe(true);
+      }
     }
   });
 

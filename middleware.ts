@@ -37,6 +37,7 @@ const PRIVATE_PREFIXES = [
   "/settings",
   // Premium tools
   "/portal-wallet",
+  "/wallet",
   "/ir-1-roadmap",
   "/document-vault",
   "/document-translation",
@@ -120,7 +121,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
-  ],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
 };
