@@ -441,7 +441,9 @@ export default function MyInterviewSessions({
   const showInitialLoader = loading && sessions.length === 0;
 
   return (
-    <div className={`site-main-px ${isEmbedded ? "py-4" : "site-main-py"} bg-linear-to-br from-slate-50 to-slate-100 text-gray-800`}>
+    <div
+      className={`site-main-px ${isEmbedded ? "py-4" : "site-main-py"} bg-linear-to-br from-slate-50 to-slate-100 text-gray-800`}
+    >
       <div className={isEmbedded ? "mt-2" : "mt-12"}>
         {!isEmbedded && (
           <NarrativeModal
@@ -564,9 +566,9 @@ export default function MyInterviewSessions({
 
             <Button
               onClick={handleStartNewSession}
-              className="bg-primary shadow-primary/20 hover:bg-primary/90 h-11 rounded-full px-5 text-white shadow-sm"
+              className="bg-primary shadow-primary/20 hover:bg-primary/90 h-9 rounded-full px-3.5 text-sm font-medium text-white shadow-sm transition-colors"
             >
-              <Plus className="mr-2 h-5 w-5" />
+              <Plus className="h-4 w-4" />
               New Session
             </Button>
           </div>
