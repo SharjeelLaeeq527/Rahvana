@@ -760,7 +760,8 @@ export function UpgradeModal({ feature, onClose, onConfirm, interviewMode }: Upg
   }
 
   // ─── Upgrade-only layout ──────────────────────────────────────────────────
-  const tabTiers = fullUpgradeTiers.length > 0 ? fullUpgradeTiers : upgradeTiers;
+  // const tabTiers = fullUpgradeTiers.length > 0 ? fullUpgradeTiers : upgradeTiers;
+  const tabTiers = upgradeTiers;
   const price = TIER_PRICES[selectedTier];
   const style = TIER_STYLE[selectedTier];
 

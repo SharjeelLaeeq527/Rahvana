@@ -19,6 +19,8 @@ interface PccFilingModuleProps {
   onOpen: () => void;
   /** Marks the certificate as received (updates the journey record status). */
   onMarkReceived?: () => void;
+  journeyTier?: string;
+  onOpenGuide?: (guideUrl: string) => void;
 }
 
 const cap = (s?: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
@@ -28,6 +30,8 @@ export const PccFilingModule: React.FC<PccFilingModuleProps> = ({
   locked,
   onOpen,
   onMarkReceived,
+  journeyTier,
+  onOpenGuide,
 }) => {
   const d = POLICE_CLEARANCE_DATA;
   const isReceived = record?.status === "received";
@@ -110,6 +114,8 @@ export const PccFilingModule: React.FC<PccFilingModuleProps> = ({
       lockedHint={lockedHint}
       hideActiveUntilNote
       afterSummary={lifecycle}
+      journeyTier={journeyTier}
+      onOpenGuide={onOpenGuide}
     />
   );
 };

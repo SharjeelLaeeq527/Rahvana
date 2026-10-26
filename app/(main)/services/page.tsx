@@ -2,7 +2,17 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
-import { Search, ArrowRight, ChevronDown, X, Shield, Calendar, Info, Video, Coins } from "lucide-react";
+import {
+  Search,
+  ArrowRight,
+  ChevronDown,
+  X,
+  Shield,
+  Calendar,
+  Info,
+  Video,
+  Coins,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { NAV_DATA } from "@/app/components/layout/navigationData";
 import { getServiceCatalogItem, withPreviewMode } from "@/lib/wallet/resourceMapping";
@@ -34,6 +44,8 @@ import MedicalAppointmentCard, {
 import ConsultationRequestCard, {
   type ConsultationRow,
 } from "@/components/services/ConsultationRequestCard";
+import CreditTypeIcon from "@/components/resources/CreditTypeIcon";
+import CreditInfoTooltip from "@/components/resources/CreditInfoTooltip";
 
 // --- Types ---
 interface Service {
@@ -223,13 +235,6 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
                 >
                   Status: {displayStatus}
                 </span>
-                <Link
-                  href="/book-consultation?tab=requests"
-                  onClick={(e) => e.stopPropagation()}
-                  className="text-teal-650 hover:text-teal-750 dark:hover:text-teal-350 ml-1 font-semibold underline underline-offset-2 dark:text-teal-400"
-                >
-                  Show all requests
-                </Link>
               </div>
             </span>
           ),
@@ -456,7 +461,7 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
         <div className="absolute right-[10%] bottom-[20%] h-[600px] w-[600px] rounded-full bg-[#32e0c4]/5 blur-3xl" />
       </div>
 
-      <div className="site-main-px site-main-py w-full">
+      <div className="mx-auto w-full px-6 py-8">
         {/* Hero Section — hidden in the embedded "My Resources" view */}
         {!isEmbedded && (
           <section className={`mb-4 pt-1 text-center md:mb-6`}>
@@ -1006,31 +1011,44 @@ function ServiceCard({
       {/* Content */}
       <div className="relative z-10 flex grow flex-col pt-2">
         <div className="flex items-start justify-between gap-3">
-          <h3 className="text-foreground mb-1 text-xl font-bold transition-colors">
-            {service.title}
-          </h3>
-          <div className="relative z-50 shrink-0">
-            <QuickAccessButton
-              item={{
-                id: `service-${service.id}`,
-                title: service.title,
-                href: service.href,
-                icon_name: (() => {
-                  const mapping: Record<string, string> = {
-                    "book-a-consultation": "Briefcase",
-                    "expert-consultation": "Briefcase",
-                    "pcc-filing-service-, -sindh": "Shield",
-                    "pcc-filing-service,-sindh": "Shield",
-                    "pcc-filing-service": "Shield",
-                    "book-medical-appointment": "Clock",
-                    "urdu-→-english-translation": "Files",
-                    "document-translation": "Files",
-                  };
-                  return mapping[service.id] || "Briefcase";
-                })(),
-              }}
-              mode="icon"
+          {/* Left: Service title */}
+          <div className="min-w-0 flex-1">
+            <h3 className="text-foreground mb-1 text-xl font-bold transition-colors">
+              {service.title}
+            </h3>
+          </div>
+
+          {/* Right: Credit info + Quick Access */}
+          <div className="flex shrink-0 items-center gap-1">
+            <CreditInfoTooltip
+              message="Each booking or request requires credits. You’ll need to pay again for every new request."
+              side="top"
             />
+
+            <div className="relative z-50">
+              <QuickAccessButton
+                item={{
+                  id: `service-${service.id}`,
+                  title: service.title,
+                  href: service.href,
+                  icon_name: (() => {
+                    const mapping: Record<string, string> = {
+                      "book-a-consultation": "Briefcase",
+                      "expert-consultation": "Briefcase",
+                      "pcc-filing-service-, -sindh": "Shield",
+                      "pcc-filing-service,-sindh": "Shield",
+                      "pcc-filing-service": "Shield",
+                      "book-medical-appointment": "Clock",
+                      "urdu-→-english-translation": "Files",
+                      "document-translation": "Files",
+                    };
+
+                    return mapping[service.id] || "Briefcase";
+                  })(),
+                }}
+                mode="icon"
+              />
+            </div>
           </div>
         </div>
         <div className="mb-3">
@@ -1047,19 +1065,17 @@ function ServiceCard({
       <div className="border-border relative z-10 mt-auto flex flex-col border-t pt-3">
         {showDualCta && catalogItem ? (
           <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2.5">
-            <div className="flex flex-col">
-              <span className="flex items-center gap-1.5 text-sm font-bold text-slate-900 tabular-nums dark:text-white">
-                <Coins size={14} className="text-[#0d7377] dark:text-[#32e0c4]" aria-hidden="true" />
-                {catalogItem.credits} credits
-              </span>
-            </div>
             <div className="flex items-center gap-2">
               <Link
-                href={withPreviewMode(service.href)}
+                href={
+                  catalogItem.legacyAddonId
+                    ? `/resources/${catalogItem.legacyAddonId}`
+                    : withPreviewMode(service.href)
+                }
                 onClick={(e) => e.stopPropagation()}
                 className="inline-flex h-9 items-center rounded-lg border border-slate-200 bg-white px-3.5 text-[13px] font-semibold whitespace-nowrap text-slate-700 transition-colors hover:border-[#0d7377]/40 hover:text-[#0d7377]"
               >
-                Preview
+                {catalogItem.legacyAddonId ? "View Details" : "Preview Guide"}
               </Link>
               <button
                 type="button"
@@ -1069,6 +1085,11 @@ function ServiceCard({
               >
                 Launch
               </button>
+            </div>
+
+            <div className="flex min-w-0 items-center gap-2">
+              <CreditTypeIcon kind="services" size={22} />
+              <span>{catalogItem.credits}</span>
             </div>
           </div>
         ) : (
