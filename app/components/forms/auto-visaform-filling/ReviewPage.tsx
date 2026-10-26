@@ -219,13 +219,16 @@ export function ReviewPage({
 
     if (activeCandidate.label)
       return activeCandidate.label
-        .replace(/candidate\s*(\d+)?/i, (_: string, n: string) => (n ? `Beneficiary ${n}` : "Beneficiary"))
+        .replace(/candidate\s*(\d+)?/i, (_: string, n: string) =>
+          n ? `Beneficiary ${n}` : "Beneficiary"
+        )
         .trim();
     return "Beneficiary";
   }, [activeCandidate, formData]);
 
   const isEdited = (f: Field) =>
-    !!editedKeys && (editedKeys.has(f.key) || !!f.options?.some((o) => editedKeys.has(o.pdfKey || o.value)));
+    !!editedKeys &&
+    (editedKeys.has(f.key) || !!f.options?.some((o) => editedKeys.has(o.pdfKey || o.value)));
 
   const isPersonSpecific = (f: Field, sectionTitle: string) =>
     !!activeCandidate && getFieldCandidateScope(formCode, f, sectionTitle) === "candidate_distinct";
@@ -252,7 +255,11 @@ export function ReviewPage({
             answered++;
             if (isPersonSpecific(f, section.title) && prefilledFromName) {
               if (!isEdited(f))
-                sectionCarried.push({ field: f, stepNum: idx + 1, value: getDisplayValue(f, formData) });
+                sectionCarried.push({
+                  field: f,
+                  stepNum: idx + 1,
+                  value: getDisplayValue(f, formData),
+                });
             }
           } else if (!isOptionalField(f)) {
             requiredBlank++;
@@ -265,7 +272,11 @@ export function ReviewPage({
         if (hasPerson) carried.push(...sectionCarried);
 
         const sig = hashString(
-          rows.map((r) => (r.kind === "field" ? `${r.key}=${getDisplayValue(r.field, formData)}` : r.key)).join("|")
+          rows
+            .map((r) =>
+              r.kind === "field" ? `${r.key}=${getDisplayValue(r.field, formData)}` : r.key
+            )
+            .join("|")
         );
 
         return { idx, title: section.title, rows, total, answered, requiredBlank, hasPerson, sig };
@@ -282,7 +293,9 @@ export function ReviewPage({
    * section's answers have changed since it was checked.
    */
   const candidateKey =
-    (activeCandidate as { id?: string } | null | undefined)?.id ?? activeCandidate?.label ?? "default";
+    (activeCandidate as { id?: string } | null | undefined)?.id ??
+    activeCandidate?.label ??
+    "default";
   const storageKey = `review-progress:${formCode}:${candidateKey}`;
 
   useEffect(() => {
@@ -320,7 +333,9 @@ export function ReviewPage({
   useEffect(() => {
     if (!hydrated) return;
     const sigs = new Map(sectionData.map((sec) => [sec.idx, sec.sig]));
-    const staleSections = [...confirmed].filter((i) => confirmedSigs.current.get(i) !== sigs.get(i));
+    const staleSections = [...confirmed].filter(
+      (i) => confirmedSigs.current.get(i) !== sigs.get(i)
+    );
     if (staleSections.length > 0) {
       staleSections.forEach((i) => confirmedSigs.current.delete(i));
       setConfirmed((prev) => {
@@ -372,7 +387,9 @@ export function ReviewPage({
   const allSectionsConfirmed = sectionData.length > 0 && confirmedCount === sectionData.length;
   const unlocked = allCarriedResolved && allSectionsConfirmed;
   const exportBusy = isPreviewing || isDownloading || isSavingToVault;
-  const progressPercent = sectionData.length ? Math.round((confirmedCount / sectionData.length) * 100) : 0;
+  const progressPercent = sectionData.length
+    ? Math.round((confirmedCount / sectionData.length) * 100)
+    : 0;
   const totalRequiredBlank = sectionData.reduce((n, s) => n + s.requiredBlank, 0);
 
   /* Header message: changes with where the person is */
@@ -393,14 +410,17 @@ export function ReviewPage({
     }
     return `Nice work. ${sectionsLeft} ${plural(sectionsLeft, "section", "sections")} to go.${blankNote}`;
   })();
-  const headerMessage = restored && !unlocked ? `Welcome back. We kept your progress. ${baseMessage}` : baseMessage;
+  const headerMessage =
+    restored && !unlocked ? `Welcome back. We kept your progress. ${baseMessage}` : baseMessage;
 
   /* Tapping a locked export button says what's missing and takes the person there */
   const showLockedHint = () => {
     let hint: string;
     if (carriedLeft > 0) {
       hint = `Confirm the ${carriedLeft} copied ${plural(carriedLeft, "answer", "answers")} at the top first.`;
-      document.getElementById("review-carried")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      document
+        .getElementById("review-carried")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
     } else {
       const next = sectionData.find((s) => !confirmed.has(s.idx));
       if (!next) return;
@@ -439,7 +459,9 @@ export function ReviewPage({
 
   const scrollToSection = (idx: number) => {
     setTimeout(() => {
-      document.getElementById(`review-sec-${idx}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      document
+        .getElementById(`review-sec-${idx}`)
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 60);
   };
 
@@ -447,8 +469,10 @@ export function ReviewPage({
   const firstUnchecked = sectionData.find((s) => !confirmed.has(s.idx))?.idx;
   const defaultOpenIdx =
     confirmed.size > 0
-      ? firstUnchecked ?? null
-      : (prefilledFromName ? sectionData.find((s) => s.hasPerson)?.idx : undefined) ?? sectionData[0]?.idx ?? null;
+      ? (firstUnchecked ?? null)
+      : ((prefilledFromName ? sectionData.find((s) => s.hasPerson)?.idx : undefined) ??
+        sectionData[0]?.idx ??
+        null);
   const currentOpen = openIdx === undefined ? defaultOpenIdx : openIdx;
 
   const toggleOpen = (idx: number) => {
@@ -480,20 +504,20 @@ export function ReviewPage({
   };
 
   return (
-    <div className="w-full pb-4 max-w-3xl mx-auto">
+    <div className="mx-auto w-full max-w-3xl pb-4">
       {/* Free preview banner (teal: amber is reserved for blanks) */}
       {isFreePreview && (
         <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-teal-200 bg-[#e8f6f6] px-4 py-2.5">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <Lock size={15} className="text-[#0d7377] shrink-0" />
+          <div className="flex min-w-0 items-center gap-2.5">
+            <Lock size={15} className="shrink-0 text-[#0d7377]" />
             <p className="text-[13px] text-slate-800">
-              <span className="font-bold">Demo mode.</span> Fill up to {freePreviewLimit} questions and preview the first
-              page of your PDF.
+              <span className="font-bold">Demo mode.</span> Fill up to {freePreviewLimit} questions
+              and preview the first page of your PDF.
             </p>
           </div>
           <button
             onClick={onUpgradeClick}
-            className="px-3 py-1.5 rounded-lg bg-[#0d7377] hover:bg-[#0a5c5f] text-white text-[13px] font-bold shrink-0 cursor-pointer"
+            className="shrink-0 cursor-pointer rounded-lg bg-[#0d7377] px-3 py-1.5 text-[13px] font-bold text-white hover:bg-[#0a5c5f]"
           >
             Unlock full PDF
           </button>
@@ -503,19 +527,23 @@ export function ReviewPage({
       {/* Header card: title, who it's for, a message for where you are, progress */}
       <div className="mb-4 flex gap-3.5 rounded-2xl border border-teal-200 bg-gradient-to-br from-[#e8f6f6] to-white p-4">
         <span
-          className="hidden sm:flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white"
+          className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white sm:flex"
           style={{ background: TEAL }}
         >
-          {unlocked ? <Check className="h-5 w-5" strokeWidth={2.5} /> : <ClipboardCheck className="h-5 w-5" />}
+          {unlocked ? (
+            <Check className="h-5 w-5" strokeWidth={2.5} />
+          ) : (
+            <ClipboardCheck className="h-5 w-5" />
+          )}
         </span>
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2.5 flex-wrap">
+          <div className="flex flex-wrap items-center gap-2.5">
             <h1 className="text-2xl font-bold tracking-tight text-slate-900">
               {unlocked ? "You're all set" : "Check your answers"}
             </h1>
             {activeCandidate && (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
-                <User className="w-3 h-3" />
+                <User className="h-3 w-3" />
                 {candidateName}
               </span>
             )}
@@ -523,7 +551,7 @@ export function ReviewPage({
           <p className="mt-1 text-[13.5px] leading-relaxed text-slate-600">{headerMessage}</p>
 
           <div
-            className="mt-3 h-[6px] rounded-full overflow-hidden"
+            className="mt-3 h-[6px] overflow-hidden rounded-full"
             style={{ background: "rgba(13,115,119,0.15)" }}
             role="progressbar"
             aria-valuenow={progressPercent}
@@ -532,7 +560,10 @@ export function ReviewPage({
           >
             <div
               className="h-full rounded-full transition-all duration-300"
-              style={{ width: `${progressPercent}%`, background: `linear-gradient(90deg, ${TEAL}, ${TEAL_GLOW})` }}
+              style={{
+                width: `${progressPercent}%`,
+                background: `linear-gradient(90deg, ${TEAL}, ${TEAL_GLOW})`,
+              }}
             />
           </div>
           <p className="mt-1.5 text-[12.5px] font-semibold text-[#0d7377]">
@@ -543,32 +574,36 @@ export function ReviewPage({
 
       {/* Carried-over answers (blue: about the beneficiary) */}
       {carriedItems.length > 0 && (
-        <div id="review-carried" className="mb-4 scroll-mt-4 rounded-2xl border border-blue-200 bg-white overflow-hidden shadow-sm">
-          <div className="px-3.5 py-3 bg-blue-50 border-b border-blue-200">
+        <div
+          id="review-carried"
+          className="mb-4 scroll-mt-4 overflow-hidden rounded-2xl border border-blue-200 bg-white shadow-sm"
+        >
+          <div className="border-b border-blue-200 bg-blue-50 px-3.5 py-3">
             <div className="flex items-center justify-between gap-3">
               <h2 className="inline-flex items-center gap-1.5 text-[15px] font-bold text-blue-950">
-                <RefreshCw className="w-4 h-4" />
+                <RefreshCw className="h-4 w-4" />
                 Check these first
               </h2>
               {carriedItems.length > 4 && (
                 <button
                   type="button"
                   onClick={markAllCarried}
-                  className="text-[13px] font-semibold text-blue-800 hover:underline cursor-pointer"
+                  className="cursor-pointer text-[13px] font-semibold text-blue-800 hover:underline"
                 >
                   {allCarriedResolved ? "Clear all" : "Mark all correct"}
                 </button>
               )}
             </div>
             <p className="mt-1 text-[14px] leading-snug text-slate-900">
-              These were copied from <span className="font-bold">{prefilledFromName}</span>. Make sure they are right
-              for <span className="font-bold">{candidateName}</span>, not left over from someone else.
+              These were copied from <span className="font-bold">{prefilledFromName}</span>. Make
+              sure they are right for <span className="font-bold">{candidateName}</span>, not left
+              over from someone else.
             </p>
           </div>
 
           {allCarriedResolved && (
-            <p className="flex items-center gap-1.5 px-3.5 py-2 text-[12.5px] font-semibold text-[#0d7377] bg-[#e8f6f6] border-b border-teal-100">
-              <Check className="w-3.5 h-3.5" strokeWidth={3} />
+            <p className="flex items-center gap-1.5 border-b border-teal-100 bg-[#e8f6f6] px-3.5 py-2 text-[12.5px] font-semibold text-[#0d7377]">
+              <Check className="h-3.5 w-3.5" strokeWidth={3} />
               All copied answers confirmed for {candidateName}.
             </p>
           )}
@@ -582,29 +617,33 @@ export function ReviewPage({
                   className={`flex items-center gap-2 px-3.5 py-2 transition-colors ${ok ? "bg-[#e8f6f6]" : "bg-white"}`}
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="text-[13px] font-medium text-slate-700 leading-snug">{field.label}</p>
-                    <p className="text-sm font-semibold text-slate-900 break-words leading-snug">{value}</p>
+                    <p className="text-[13px] leading-snug font-medium text-slate-700">
+                      {field.label}
+                    </p>
+                    <p className="text-sm leading-snug font-semibold break-words text-slate-900">
+                      {value}
+                    </p>
                   </div>
                   <button
                     type="button"
                     onClick={() => toggleStillCorrect(field.key)}
                     aria-label={ok ? "Marked correct" : "Mark as correct"}
                     aria-pressed={ok}
-                    className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 border transition-colors cursor-pointer ${
+                    className={`flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg border transition-colors ${
                       ok
-                        ? "bg-[#0d7377] border-[#0d7377] text-white"
-                        : "bg-white border-slate-300 text-slate-500 hover:bg-slate-100"
+                        ? "border-[#0d7377] bg-[#0d7377] text-white"
+                        : "border-slate-300 bg-white text-slate-500 hover:bg-slate-100"
                     }`}
                   >
-                    <Check className="w-4 h-4" strokeWidth={2.5} />
+                    <Check className="h-4 w-4" strokeWidth={2.5} />
                   </button>
                   <button
                     type="button"
                     onClick={() => onEditStep(stepNum)}
                     aria-label={`Change ${field.label}`}
-                    className="h-8 w-8 rounded-lg flex items-center justify-center shrink-0 border border-slate-300 bg-white text-slate-500 hover:bg-slate-100 transition-colors cursor-pointer"
+                    className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-500 transition-colors hover:bg-slate-100"
                   >
-                    <Pencil className="w-3.5 h-3.5" />
+                    <Pencil className="h-3.5 w-3.5" />
                   </button>
                 </li>
               );
@@ -614,22 +653,23 @@ export function ReviewPage({
       )}
 
       {/* Sections */}
-      <div className="flex items-center justify-between px-0.5 mb-1.5 text-[12.5px] text-slate-500">
+      <div className="mb-1.5 flex items-center justify-between px-0.5 text-[12.5px] text-slate-500">
         <span>{sectionData.length} sections</span>
         <button
           type="button"
           onClick={() => setAllOpen((v) => !v)}
-          className="font-semibold text-[#0d7377] hover:underline cursor-pointer"
+          className="cursor-pointer font-semibold text-[#0d7377] hover:underline"
         >
           {allOpen ? "Collapse all" : "Expand all"}
         </button>
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden divide-y divide-slate-100 shadow-sm">
+      <div className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         {sectionData.map(({ idx, title, rows, total, answered, requiredBlank, hasPerson }, pos) => {
           const open = allOpen || currentOpen === idx;
           const done = confirmed.has(idx);
-          const isLastToCheck = !done && sectionData.every((s) => s.idx === idx || confirmed.has(s.idx));
+          const isLastToCheck =
+            !done && sectionData.every((s) => s.idx === idx || confirmed.has(s.idx));
 
           return (
             <div key={`sec-${idx}`} id={`review-sec-${idx}`} className="scroll-mt-4">
@@ -637,7 +677,7 @@ export function ReviewPage({
                 type="button"
                 onClick={() => toggleOpen(idx)}
                 aria-expanded={open}
-                className={`w-full flex items-center gap-3 px-4 py-3.5 text-left transition-colors cursor-pointer ${
+                className={`flex w-full cursor-pointer items-center gap-3 px-4 py-3.5 text-left transition-colors ${
                   open ? "" : "bg-white hover:bg-slate-50"
                 }`}
                 style={
@@ -651,30 +691,30 @@ export function ReviewPage({
                 }
               >
                 <span
-                  className={`w-7 h-7 rounded-full text-xs font-semibold flex items-center justify-center shrink-0 transition-shadow ${
+                  className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold transition-shadow ${
                     done
                       ? "bg-[#0d7377] text-white"
                       : open && hasPerson
-                      ? "bg-blue-500 text-white ring-4 ring-blue-500/15"
-                      : open
-                      ? "bg-[#0d7377] text-white ring-4 ring-[#0d7377]/15"
-                      : hasPerson
-                      ? "bg-blue-100 text-blue-700"
-                      : "bg-[#e8f6f6] text-[#0d7377]"
+                        ? "bg-blue-500 text-white ring-4 ring-blue-500/15"
+                        : open
+                          ? "bg-[#0d7377] text-white ring-4 ring-[#0d7377]/15"
+                          : hasPerson
+                            ? "bg-blue-100 text-blue-700"
+                            : "bg-[#e8f6f6] text-[#0d7377]"
                   }`}
                 >
-                  {done ? <Check className="w-3.5 h-3.5" strokeWidth={3} /> : pos + 1}
+                  {done ? <Check className="h-3.5 w-3.5" strokeWidth={3} /> : pos + 1}
                 </span>
 
-                <span className="min-w-0 flex-1 flex items-center gap-2 flex-wrap">
+                <span className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
                   <span className="text-[14.5px] font-semibold text-slate-900">{title}</span>
                   {hasPerson && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-semibold text-blue-700">
-                      <User className="w-3 h-3" />
+                      <User className="h-3 w-3" />
                       About {candidateName}
                     </span>
                   )}
-                  <span className="text-xs text-slate-500 whitespace-nowrap">
+                  <span className="text-xs whitespace-nowrap text-slate-500">
                     {answered} of {total}
                   </span>
                 </span>
@@ -690,8 +730,10 @@ export function ReviewPage({
                 ) : null}
 
                 <ChevronDown
-                  className={`w-4 h-4 shrink-0 transition-transform ${
-                    open ? `rotate-180 ${hasPerson ? "text-blue-500" : "text-[#0d7377]"}` : "text-slate-400"
+                  className={`h-4 w-4 shrink-0 transition-transform ${
+                    open
+                      ? `rotate-180 ${hasPerson ? "text-blue-500" : "text-[#0d7377]"}`
+                      : "text-slate-400"
                   }`}
                 />
               </button>
@@ -700,22 +742,24 @@ export function ReviewPage({
                 <div className="border-t border-slate-200">
                   {/* Note for this section: changes with its state */}
                   {requiredBlank > 0 ? (
-                    <p className="px-4 py-2.5 text-[13px] text-slate-600 bg-[#e8f6f6]/60 border-b border-teal-100">
+                    <p className="border-b border-teal-100 bg-[#e8f6f6]/60 px-4 py-2.5 text-[13px] text-slate-600">
                       <span className="font-semibold text-slate-800">
-                        {requiredBlank} {plural(requiredBlank, "question is", "questions are")} blank.
+                        {requiredBlank} {plural(requiredBlank, "question is", "questions are")}{" "}
+                        blank.
                       </span>{" "}
-                      Tap Add answer to fill {plural(requiredBlank, "it", "them")} in, or continue if{" "}
-                      {plural(requiredBlank, "it doesn't", "they don't")} apply to you.
+                      Tap Add answer to fill {plural(requiredBlank, "it", "them")} in, or continue
+                      if {plural(requiredBlank, "it doesn't", "they don't")} apply to you.
                     </p>
                   ) : done ? (
-                    <p className="flex items-center gap-2 px-4 py-2.5 text-[13px] text-[#0d7377] bg-[#e8f6f6] border-b border-teal-100">
-                      <Check className="w-4 h-4 shrink-0" strokeWidth={2.5} />
+                    <p className="flex items-center gap-2 border-b border-teal-100 bg-[#e8f6f6] px-4 py-2.5 text-[13px] text-[#0d7377]">
+                      <Check className="h-4 w-4 shrink-0" strokeWidth={2.5} />
                       <span>
-                        <span className="font-semibold">Checked.</span> You can still edit this section.
+                        <span className="font-semibold">Checked.</span> You can still edit this
+                        section.
                       </span>
                     </p>
                   ) : (
-                    <p className="px-4 py-2.5 text-[13px] text-slate-600 bg-[#e8f6f6]/60 border-b border-teal-100">
+                    <p className="border-b border-teal-100 bg-[#e8f6f6]/60 px-4 py-2.5 text-[13px] text-slate-600">
                       {hasPerson
                         ? `Everything here is filled in. Check it's right for ${candidateName}, then tap Looks right.`
                         : "Everything here is filled in. Take a look, then tap Looks right."}
@@ -728,7 +772,7 @@ export function ReviewPage({
                         return (
                           <div
                             key={`${row.key}-${ri}`}
-                            className="px-4 py-2 text-[11px] font-bold uppercase tracking-wider text-[#0d7377] bg-[#e8f6f6]/70"
+                            className="bg-[#e8f6f6]/70 px-4 py-2 text-[11px] font-bold tracking-wider text-[#0d7377] uppercase"
                           >
                             {row.label}
                           </div>
@@ -745,23 +789,25 @@ export function ReviewPage({
                       return (
                         <div
                           key={`${row.key}-${ri}`}
-                          className="pr-4 bg-white"
+                          className="bg-white pr-4"
                           style={{ paddingLeft: 16 + (nested ? row.depth * 20 : 0) }}
                         >
                           <div
-                            className={`flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1.5 sm:gap-6 ${
+                            className={`flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between sm:gap-6 ${
                               nested ? "py-2.5" : "py-3.5"
                             }`}
                           >
                             <dt
-                              className={`leading-snug flex items-start gap-1.5 sm:max-w-[60%] ${qColor} ${
+                              className={`flex items-start gap-1.5 leading-snug sm:max-w-[60%] ${qColor} ${
                                 nested ? "text-[13px] font-medium" : "text-[14px] font-medium"
                               }`}
                             >
-                              {nested && <CornerDownRight className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-px" />}
+                              {nested && (
+                                <CornerDownRight className="mt-px h-3.5 w-3.5 shrink-0 text-slate-400" />
+                              )}
                               {f.label}
                             </dt>
-                            <dd className="text-[15px] sm:text-right break-words sm:max-w-[38%] shrink-0">
+                            <dd className="shrink-0 text-[15px] break-words sm:max-w-[38%] sm:text-right">
                               {has ? (
                                 <>
                                   {edited && (
@@ -769,7 +815,9 @@ export function ReviewPage({
                                       Edited
                                     </span>
                                   )}
-                                  <span className="font-bold text-slate-950">{getDisplayValue(f, formData)}</span>
+                                  <span className="font-bold text-slate-950">
+                                    {getDisplayValue(f, formData)}
+                                  </span>
                                 </>
                               ) : optional ? (
                                 <span className="text-slate-400">—</span>
@@ -777,7 +825,7 @@ export function ReviewPage({
                                 <button
                                   type="button"
                                   onClick={() => onEditStep(idx + 1)}
-                                  className="rounded-full border border-amber-300 bg-white px-3 py-1 text-xs font-semibold text-amber-800 hover:bg-amber-100 cursor-pointer"
+                                  className="cursor-pointer rounded-full border border-amber-300 bg-white px-3 py-1 text-xs font-semibold text-amber-800 hover:bg-amber-100"
                                 >
                                   Add answer
                                 </button>
@@ -789,21 +837,22 @@ export function ReviewPage({
                     })}
                   </dl>
 
-                  <div className="flex items-center justify-between gap-3 px-4 py-3 bg-slate-50/80 border-t border-slate-100">
+                  <div className="flex items-center justify-between gap-3 border-t border-slate-100 bg-slate-50/80 px-4 py-3">
                     <button
                       type="button"
                       onClick={() => onEditStep(idx + 1)}
-                      className="inline-flex items-center gap-1.5 h-8 text-[13px] font-semibold text-slate-600 hover:text-[#0d7377] cursor-pointer"
+                      className="inline-flex h-8 cursor-pointer items-center gap-1.5 text-[13px] font-semibold text-slate-600 hover:text-[#0d7377]"
                     >
-                      <Pencil className="w-3.5 h-3.5" />
+                      <Pencil className="h-3.5 w-3.5" />
                       Edit
                     </button>
 
+                    {/* for future use 
                     {done ? (
                       <button
                         type="button"
                         onClick={() => undoConfirm(idx)}
-                        className="h-8 text-[13px] font-semibold text-slate-500 hover:text-slate-800 cursor-pointer"
+                        className="h-8 cursor-pointer text-[13px] font-semibold text-slate-500 hover:text-slate-800"
                       >
                         Undo
                       </button>
@@ -811,15 +860,15 @@ export function ReviewPage({
                       <button
                         type="button"
                         onClick={() => confirmSection(idx)}
-                        className="h-9 px-5 rounded-xl text-[13px] font-semibold text-white bg-[#0d7377] hover:bg-[#0a5c5f] shadow-sm shadow-[#0d7377]/25 transition-colors cursor-pointer"
+                        className="h-9 cursor-pointer rounded-xl bg-[#0d7377] px-5 text-[13px] font-semibold text-white shadow-sm shadow-[#0d7377]/25 transition-colors hover:bg-[#0a5c5f]"
                       >
                         {requiredBlank > 0
                           ? `Continue with ${requiredBlank} blank`
                           : isLastToCheck
-                          ? "Looks right, finish"
-                          : "Looks right, next →"}
+                            ? "Looks right, finish"
+                            : "Looks right, next →"}
                       </button>
-                    )}
+                    )} */}
                   </div>
                 </div>
               )}
@@ -840,8 +889,9 @@ export function ReviewPage({
           <div>
             <p className="text-[15px] font-bold text-slate-900">You're all set</p>
             <p className="mt-0.5 text-[13px] text-slate-600">
-              Every section is checked{totalRequiredBlank > 0 ? ", and the blanks are ones you chose to skip" : ""}. Use
-              the buttons below to preview your PDF, download it, or save it to your vault.
+              Every section is checked
+              {totalRequiredBlank > 0 ? ", and the blanks are ones you chose to skip" : ""}. Use the
+              buttons below to preview your PDF, download it, or save it to your vault.
             </p>
           </div>
         </div>
@@ -849,10 +899,11 @@ export function ReviewPage({
 
       {/* Sticky bottom bar */}
       <div
-        className="sticky bottom-0 -mx-3 mt-6 border-t border-slate-200 bg-white/95 px-4 py-3 backdrop-blur-md md:-mx-6 md:px-6 z-30"
+        className="sticky bottom-0 z-30 -mx-3 mt-6 border-t border-slate-200 bg-white/95 px-4 py-3 backdrop-blur-md md:-mx-6 md:px-6"
         style={{ boxShadow: "0 -4px 20px rgba(0,0,0,0.05)" }}
       >
-        <div className="flex items-center gap-2 flex-wrap max-w-3xl mx-auto">
+        <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-2">
+          {/*  for future use
           <p
             role="status"
             aria-live="polite"
@@ -867,51 +918,59 @@ export function ReviewPage({
               : sectionsLeft > 0
               ? `${sectionsLeft} ${plural(sectionsLeft, "section", "sections")} left to check before you can download.`
               : `Confirm the ${carriedLeft} copied ${plural(carriedLeft, "answer", "answers")} above to continue.`}
-          </p>
+          </p> */}
 
           <button
             onClick={onBackToForm}
-            className="inline-flex items-center gap-1.5 h-[34px] px-3 rounded-[9px] text-[13px] font-semibold text-slate-500 hover:bg-slate-100 cursor-pointer"
+            className="inline-flex h-[34px] cursor-pointer items-center gap-1.5 rounded-[9px] px-3 text-[13px] font-semibold text-slate-500 hover:bg-slate-100"
           >
             <ArrowLeft className="h-4 w-4" />
             Back
           </button>
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 md:gap-4">
+            <button
+              onClick={guarded(onPreviewPDF)}
+              disabled={exportBusy}
+              // aria-disabled={!unlocked}
+              className={`inline-flex h-[34px] items-center gap-1.5 rounded-[9px] border border-[#0d7377] bg-white px-3.5 text-[13px] font-semibold text-[#0d7377] hover:bg-[#e8f6f6] disabled:cursor-not-allowed disabled:opacity-40 ${
+                unlocked ? "cursor-pointer" : "cursor-pointer" //"opacity-40 cursor-not-allowed"
+              }`}
+            >
+              <Eye className="h-4 w-4" />
+              {isPreviewing ? "Previewing..." : isFreePreview ? "Preview page 1" : "Preview"}
+            </button>
 
-          <button
-            onClick={guarded(onPreviewPDF)}
-            disabled={exportBusy}
-            aria-disabled={!unlocked}
-            className={`inline-flex items-center gap-1.5 h-[34px] px-3.5 rounded-[9px] text-[13px] font-semibold text-[#0d7377] bg-white border border-[#0d7377] hover:bg-[#e8f6f6] disabled:opacity-40 disabled:cursor-not-allowed ${
-              unlocked ? "cursor-pointer" : "opacity-40 cursor-not-allowed"
-            }`}
-          >
-            <Eye className="h-4 w-4" />
-            {isPreviewing ? "Previewing..." : isFreePreview ? "Preview page 1" : "Preview"}
-          </button>
+            <button
+              onClick={guarded(onDownloadPDF)}
+              disabled={exportBusy}
+              // aria-disabled={!unlocked}
+              className={`inline-flex h-[34px] items-center gap-1.5 rounded-[9px] bg-slate-800 px-3.5 text-[13px] font-semibold text-white hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-40 ${
+                unlocked ? "cursor-pointer" : "cursor-pointer" //"opacity-40 cursor-not-allowed"
+              }`}
+            >
+              <Download className="h-4 w-4" />
+              {isDownloading ? "Downloading..." : isFreePreview ? "Download page 1" : "Download"}
+            </button>
 
-          <button
-            onClick={guarded(onDownloadPDF)}
-            disabled={exportBusy}
-            aria-disabled={!unlocked}
-            className={`inline-flex items-center gap-1.5 h-[34px] px-3.5 rounded-[9px] text-[13px] font-semibold text-white bg-slate-800 hover:bg-slate-900 disabled:opacity-40 disabled:cursor-not-allowed ${
-              unlocked ? "cursor-pointer" : "opacity-40 cursor-not-allowed"
-            }`}
-          >
-            <Download className="h-4 w-4" />
-            {isDownloading ? "Downloading..." : isFreePreview ? "Download page 1" : "Download"}
-          </button>
-
-          <button
-            onClick={isFreePreview ? onUpgradeClick : guarded(onSaveToVault)}
-            disabled={!isFreePreview && exportBusy}
-            aria-disabled={!unlocked && !isFreePreview}
-            className={`inline-flex items-center gap-1.5 h-[34px] px-3.5 rounded-[9px] text-[13px] font-semibold text-white bg-[#0d7377] hover:bg-[#0a5c5f] disabled:opacity-40 disabled:cursor-not-allowed ${
-              unlocked || isFreePreview ? "cursor-pointer" : "opacity-40 cursor-not-allowed"
-            }`}
-          >
-            {isFreePreview ? <Lock className="h-4 w-4" /> : <Save className="h-4 w-4" />}
-            {isFreePreview ? "Unlock save to vault" : isSavingToVault ? "Saving..." : "Save to vault"}
-          </button>
+            <button
+              onClick={isFreePreview ? onUpgradeClick : guarded(onSaveToVault)}
+              disabled={!isFreePreview && exportBusy}
+              aria-disabled={
+                // !unlocked &&
+                !isFreePreview
+              }
+              className={`inline-flex h-[34px] items-center gap-1.5 rounded-[9px] bg-[#0d7377] px-3.5 text-[13px] font-semibold text-white hover:bg-[#0a5c5f] disabled:cursor-not-allowed disabled:opacity-40 ${
+                unlocked || isFreePreview ? "cursor-pointer" : "cursor-pointer" //"opacity-40 cursor-not-allowed"
+              }`}
+            >
+              {isFreePreview ? <Lock className="h-4 w-4" /> : <Save className="h-4 w-4" />}
+              {isFreePreview
+                ? "Unlock save to vault"
+                : isSavingToVault
+                  ? "Saving..."
+                  : "Save to vault"}
+            </button>
+          </div>
         </div>
 
         <div className="mt-2 flex items-center justify-center gap-1 text-[10.5px] font-semibold text-slate-500">
