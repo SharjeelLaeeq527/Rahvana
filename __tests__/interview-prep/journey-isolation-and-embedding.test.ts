@@ -73,4 +73,18 @@ describe("Interview Prep Standalone vs Journey Storage and Session Isolation", (
     expect(canRestore(journeySession, true)).toBe(true);
     expect(canRestore(standaloneSession, true)).toBe(false);
   });
+
+  it("treats category access as included for paid journey tiers and skips purchase requirements", () => {
+    const isCategoryUnlockedInJourney = (isJourney: boolean, journeyTier: string | null | undefined) => {
+      if (!isJourney) return false;
+      return Boolean(journeyTier && journeyTier.toLowerCase() !== "free");
+    };
+
+    expect(isCategoryUnlockedInJourney(true, "basic")).toBe(true);
+    expect(isCategoryUnlockedInJourney(true, "premium")).toBe(true);
+    expect(isCategoryUnlockedInJourney(true, "executive")).toBe(true);
+    expect(isCategoryUnlockedInJourney(true, "free")).toBe(false);
+    expect(isCategoryUnlockedInJourney(false, "executive")).toBe(false); // standalone requires purchase
+  });
 });
+
