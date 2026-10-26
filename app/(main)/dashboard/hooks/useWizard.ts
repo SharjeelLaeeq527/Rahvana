@@ -62,6 +62,7 @@ interface UseWizardOptions {
   journeyId?: string;
   candidateId?: string;
   roadmapData?: any;
+  journeyDbId?: string | null;
 }
 
 export function useWizard(options: UseWizardOptions = {}) {
@@ -72,7 +73,7 @@ export function useWizard(options: UseWizardOptions = {}) {
   const { activeCandidateId } = useCandidate();
   const effectiveCandidateId = options.candidateId || activeCandidateId || "candidate-1";
 
-  const { userId, journeyId = routeJourneyId, roadmapData: externalRoadmapData } = options;
+  const { userId, journeyId = routeJourneyId, roadmapData: externalRoadmapData, journeyDbId } = options;
   const { profile, updateProfile } = useUserProfile();
 
   const activeRoadmap = externalRoadmapData;
@@ -190,6 +191,7 @@ export function useWizard(options: UseWizardOptions = {}) {
           body: JSON.stringify({
             journey_type: journeyId,
             candidate_id: effectiveCandidateId,
+            journey_db_id: journeyDbId || undefined,
           }),
         });
 
@@ -289,7 +291,7 @@ export function useWizard(options: UseWizardOptions = {}) {
     };
     // activeRoadmap intentionally excluded — API starts immediately on userId
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId, journeyId, effectiveCandidateId]);
+  }, [userId, journeyId, effectiveCandidateId, journeyDbId]);
 
   // Synchronize MasterProfile standard fields back into wizard metadata in-memory
   useEffect(() => {

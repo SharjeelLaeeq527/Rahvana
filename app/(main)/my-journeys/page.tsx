@@ -541,6 +541,7 @@ export default function MyJourneysPage() {
         candidateBadge?: string;
         candidateRelation?: string;
         isCurrentActive?: boolean;
+        journeyDbId?: string;
       };
       status: {
         label: string;
@@ -668,6 +669,7 @@ export default function MyJourneysPage() {
             candidateId: cand.id,
             candidateRelation: formattedRel || "Parent",
             isCurrentActive: Boolean(isCurrentActive),
+            journeyDbId: j.id,
           },
           status: getJourneyStatus(j, progress, candTier),
           subscriptionTier: candTier,
@@ -740,6 +742,7 @@ export default function MyJourneysPage() {
             canonicalId: canonicalKey,
             candidateId: candForJourney?.id,
             isCurrentActive: Boolean(isCurrentActive),
+            journeyDbId: j.id,
           },
           status: getJourneyStatus(j, progress, jTier),
           subscriptionTier: jTier,
@@ -867,6 +870,7 @@ export default function MyJourneysPage() {
     meta: JourneyMeta & {
       canonicalId: string;
       candidateId?: string;
+      journeyDbId?: string;
     }
   ) => {
     let targetCandidateId = meta.candidateId;
@@ -888,15 +892,23 @@ export default function MyJourneysPage() {
     }
 
     const separator = meta.route.includes("?") ? "&" : "?";
-    return targetCandidateId
+    let url = targetCandidateId
       ? `${meta.route}${separator}candidateId=${encodeURIComponent(targetCandidateId)}`
       : meta.route;
+
+    if (meta.journeyDbId) {
+      const sep = url.includes("?") ? "&" : "?";
+      url = `${url}${sep}journeyId=${encodeURIComponent(meta.journeyDbId)}`;
+    }
+
+    return url;
   };
 
   const handleOpenJourney = (
     meta: JourneyMeta & {
       canonicalId: string;
       candidateId?: string;
+      journeyDbId?: string;
     },
     e?: React.MouseEvent
   ) => {

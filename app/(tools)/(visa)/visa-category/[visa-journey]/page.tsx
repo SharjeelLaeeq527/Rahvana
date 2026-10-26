@@ -97,6 +97,7 @@ export default function IR1JourneyPage() {
   const { activeCandidate, setActiveCandidateId } = useCandidate();
   const searchParams = useSearchParams();
   const candidateIdFromUrl = searchParams?.get("candidateId");
+  const journeyDbIdFromUrl = searchParams?.get("journeyId");
   const effectiveCandidateId = candidateIdFromUrl || activeCandidate?.id;
 
   useEffect(() => {
@@ -166,6 +167,7 @@ export default function IR1JourneyPage() {
     userId,
     journeyId: visaJourney,
     candidateId: effectiveCandidateId,
+    journeyDbId: journeyDbIdFromUrl,
     roadmapData,
   });
 
