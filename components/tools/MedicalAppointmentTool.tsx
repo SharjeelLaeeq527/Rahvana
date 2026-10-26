@@ -3168,15 +3168,7 @@ export default function MedicalAppointmentTool({
             </div>
           )}
 
-          {/* Credit visibility (standalone only — journey mode has no credits) */}
-          {!isJourney && (
-            <div className="mt-4 flex justify-center">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-800">
-                <Coins className="h-3.5 w-3.5 text-[#0d7377]" />
-                5 Credits ($5) per booking • Wallet Balance: {wallet.balance ?? 0} Credits
-              </span>
-            </div>
-          )}
+          
 
           {step > 1 && step < 10 && step !== 9 && !isIOM && (!isJourney || embedded) && (
             <div className="mt-6">
