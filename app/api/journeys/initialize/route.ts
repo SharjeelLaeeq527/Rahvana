@@ -133,6 +133,72 @@ export async function POST(req: NextRequest) {
       return false;
     });
 
+    // ── Check if user has other than free journey plan for this specific journey ──
+    const existingTier = (existing?.subscription_tier || "").toLowerCase();
+    const isExistingPaid = Boolean(existing && existingTier && existingTier !== "free");
+
+    const { data: profileRow } = await supabase
+      .from("user_profiles")
+      .select("profile_details")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    const candidates = (profileRow?.profile_details as any)?.candidates || [];
+    const matchedCand =
+      candidates.find((c: any) => c.id === candidate_id) ||
+      (candidate_id === "candidate-1" ? candidates[0] : null);
+    const candTier = (matchedCand?.tier || "").toLowerCase();
+    const isCandPaid = Boolean(candTier && candTier !== "free");
+
+    const isPaid = isExistingPaid || isCandPaid;
+
+    // Free plan users can preview Step 1, but NO journey record should be added to the DB
+    if (!isPaid) {
+      // If a legacy empty free journey exists in DB, clean it up so it does not linger
+      if (
+        existing &&
+        (!existing.subscription_tier || existing.subscription_tier === "free") &&
+        (!existing.completed_steps_count || existing.completed_steps_count === 0)
+      ) {
+        try {
+          await supabase.from("journeys").delete().eq("id", existing.id);
+        } catch (delErr) {
+          console.warn("[initialize] Cleaned up legacy default free journey:", delErr);
+        }
+      }
+
+      const virtualJourney = {
+        id: null,
+        user_id: user.id,
+        journey_type: effectiveJourneyType,
+        subscription_tier: "free",
+        filing_method: "online",
+        status: "not_started",
+        completed_steps_count: 0,
+        total_steps_count: 0,
+        completion_percentage: 0,
+        metadata: {},
+        tracking_status: {},
+      };
+
+      const responseData = {
+        journey: virtualJourney,
+        steps: [],
+        case_data: [],
+      };
+
+      serverCache.set(cacheKey, { data: responseData, cachedAt: Date.now() });
+
+      return NextResponse.json(
+        { success: true, data: responseData },
+        {
+          headers: {
+            "Cache-Control": "private, max-age=15, stale-while-revalidate=30",
+          },
+        }
+      );
+    }
+
     let journeyId: string;
     const configType = configTypeFromJourneyType(journey_type);
 
@@ -145,6 +211,7 @@ export async function POST(req: NextRequest) {
           configPath,
           {
             journey_type: effectiveJourneyType,
+            subscription_tier: candTier || "diy",
           },
           dbClient
         );

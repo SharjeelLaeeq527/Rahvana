@@ -1001,6 +1001,7 @@ export class JourneyService {
       filing_method?: "online" | "paper";
       visa_category?: string;
       journey_type?: string;
+      subscription_tier?: string;
     },
     client?: { supabase: any; user: any }
   ) {
@@ -1023,6 +1024,9 @@ export class JourneyService {
       }
       if (overrides?.journey_type) {
         journeyInput.journey_type = overrides.journey_type;
+      }
+      if (overrides?.subscription_tier) {
+        journeyInput.subscription_tier = overrides.subscription_tier;
       }
 
       console.log(`Loaded: ${journeyInput.journey_name} with ${chaptersInput.length} chapters`);

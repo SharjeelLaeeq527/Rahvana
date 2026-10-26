@@ -31,7 +31,7 @@ function resolveJourneyData(visaJourney: string): any | null {
 import { useAuth } from "@/app/context/AuthContext";
 import { useWizard, type WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { IR5_ENABLED } from "@/lib/feature-flags";
 import { motion } from "framer-motion";
 import {
@@ -94,7 +94,17 @@ import { useCandidate } from "@/app/context/CandidateContext";
 export default function IR1JourneyPage() {
   const { user } = useAuth();
   const userId = user?.id ?? null;
-  const { activeCandidate } = useCandidate();
+  const { activeCandidate, setActiveCandidateId } = useCandidate();
+  const searchParams = useSearchParams();
+  const candidateIdFromUrl = searchParams?.get("candidateId");
+  const effectiveCandidateId = candidateIdFromUrl || activeCandidate?.id;
+
+  useEffect(() => {
+    if (candidateIdFromUrl && activeCandidate?.id !== candidateIdFromUrl) {
+      setActiveCandidateId(candidateIdFromUrl);
+    }
+  }, [candidateIdFromUrl, activeCandidate?.id, setActiveCandidateId]);
+
   const { t, language } = useLanguage();
   const params = useParams();
   const visaJourneyParam = (params?.["visa-journey"] as string) || "ir-1";
@@ -155,7 +165,7 @@ export default function IR1JourneyPage() {
   const { state, actions, isLoaded, hasExistingProgress, isSyncing, error } = useWizard({
     userId,
     journeyId: visaJourney,
-    candidateId: activeCandidate?.id,
+    candidateId: effectiveCandidateId,
     roadmapData,
   });
 

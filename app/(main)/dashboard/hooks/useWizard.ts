@@ -257,22 +257,22 @@ export function useWizard(options: UseWizardOptions = {}) {
 
         setState((prev) => ({
           ...prev,
-          backendId: journey.id,
-          subscriptionTier: journey.subscription_tier || "free", 
+          backendId: journey?.id || undefined,
+          subscriptionTier: journey?.subscription_tier || "free", 
           stepMap,
           stepTimestamps,
           completedSteps: completedSet,
           metadata: {
             ...metadata,
-            tracking_status: journey.tracking_status || {},
+            tracking_status: journey?.tracking_status || {},
           },
-          filingType: (journey.filing_method as any) || prev.filingType,
+          filingType: (journey?.filing_method as any) || prev.filingType,
           currentStage: derivedStage,
           currentStep: derivedStep,
-          started: journey.status !== "not_started",
+          started: journey?.status ? journey.status !== "not_started" : false,
         }));
 
-        setHasExistingProgress(journey.status !== "not_started");
+        setHasExistingProgress(journey?.status ? journey.status !== "not_started" : false);
         setIsLoaded(true);
       } catch (err) {
         if (cancelled) return;
@@ -406,6 +406,17 @@ export function useWizard(options: UseWizardOptions = {}) {
         if (isLocked) {
           showToast(
             `${msg(E.DASH_JOURNEY_STEP_LOCKED)}.\nThis journey is in read-only mode. The 14-day window following your interview outcome has ended.`,
+            "error",
+            { duration: 4000 }
+          );
+          return;
+        }
+
+        // Restrict free plan users from marking steps as completed to avoid inserting journey into DB
+        const currentTier = (currentState.subscriptionTier || "free").toLowerCase();
+        if (currentTier === "free") {
+          showToast(
+            "Please upgrade your plan to mark steps as completed and save your journey progress.",
             "error",
             { duration: 4000 }
           );

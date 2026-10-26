@@ -863,30 +863,43 @@ export default function MyJourneysPage() {
     router.push("/visa-category");
   };
 
-  const handleOpenJourney = (
+  const getJourneyUrl = (
     meta: JourneyMeta & {
       canonicalId: string;
       candidateId?: string;
     }
   ) => {
-    // Netflix-style Candidate Profile Launcher Modal kept commented out for future use
-    /*
-    const isMultiCandidateCategory =
-      meta.canonicalId === "ir5" ||
-      meta.code.toUpperCase().includes("IR-5") ||
-      meta.code.toUpperCase().includes("IR5");
+    let targetCandidateId = meta.candidateId;
 
-    if (isMultiCandidateCategory && !meta.candidateId) {
-      setLauncherModal({
-        isOpen: true,
-        journeyCode: meta.code,
-        journeyName: meta.name,
-        journeyRoute: meta.route,
-      });
-      return;
+    if (!targetCandidateId) {
+      const baseCategory = getBaseVisaCategory(meta.code || meta.canonicalId);
+      const match =
+        (activeCandidate && getBaseVisaCategory(activeCandidate.visaCategory) === baseCategory
+          ? activeCandidate
+          : null) ||
+        candidates.find((c) => getBaseVisaCategory(c.visaCategory) === baseCategory) ||
+        (baseCategory === "IR-1" ? candidates.find((c) => c.relation === "Spouse") : null) ||
+        candidates.find((c) => c.isPrimary) ||
+        candidates[0];
+
+      if (match?.id) {
+        targetCandidateId = match.id;
+      }
     }
-    */
 
+    const separator = meta.route.includes("?") ? "&" : "?";
+    return targetCandidateId
+      ? `${meta.route}${separator}candidateId=${encodeURIComponent(targetCandidateId)}`
+      : meta.route;
+  };
+
+  const handleOpenJourney = (
+    meta: JourneyMeta & {
+      canonicalId: string;
+      candidateId?: string;
+    },
+    e?: React.MouseEvent
+  ) => {
     let targetCandidateId = meta.candidateId;
 
     // Safety fallback: if candidateId was not directly on meta, resolve the appropriate candidate
@@ -910,7 +923,15 @@ export default function MyJourneysPage() {
       setActiveCandidateId(targetCandidateId);
     }
 
-    router.push(meta.route);
+    const routeWithCandidate = getJourneyUrl(meta);
+
+    // Support Ctrl+Click, Cmd+Click (Mac), or middle mouse click (button === 1) to open in a new tab
+    if (e && (e.ctrlKey || e.metaKey || e.button === 1)) {
+      window.open(routeWithCandidate, "_blank");
+      return;
+    }
+
+    router.push(routeWithCandidate);
   };
 
   if (authLoading) {
@@ -1030,7 +1051,8 @@ export default function MyJourneysPage() {
                             activity={activity}
                             isMultiCandidate={false}
                             candidateCount={0}
-                            onOpen={() => handleOpenJourney(meta)}
+                            href={getJourneyUrl(meta)}
+                            onOpen={(e) => handleOpenJourney(meta, e)}
                             onUpdateJourneyName={(newName) =>
                               handleUpdateJourneyName(meta.canonicalId, newName, meta.candidateId, id)
                             }
@@ -1087,7 +1109,8 @@ interface JourneyCardProps {
   activity: string;
   candidateCount?: number;
   isMultiCandidate?: boolean;
-  onOpen: () => void;
+  href?: string;
+  onOpen: (e?: React.MouseEvent) => void;
   onUpdateJourneyName?: (newName: string) => Promise<void> | void;
   onUpdateJourneyImage?: (file: File) => Promise<void> | void;
 }
@@ -1102,6 +1125,7 @@ function JourneyCard({
   activity,
   candidateCount,
   isMultiCandidate,
+  href,
   onOpen,
   onUpdateJourneyName,
   onUpdateJourneyImage,
@@ -1194,7 +1218,22 @@ function JourneyCard({
         ) {
           return;
         }
-        onOpen();
+        onOpen(e);
+      }}
+      onAuxClick={(e) => {
+        if (e.button === 1) {
+          const target = e.target as HTMLElement | SVGElement | null;
+          if (
+            target?.closest?.("button") ||
+            target?.closest?.("input") ||
+            isEditingName ||
+            isUploadingImage ||
+            isMenuOpen
+          ) {
+            return;
+          }
+          onOpen(e);
+        }
       }}
       onKeyDown={(event) => {
         if (event.key === "Enter" || event.key === " ") {
@@ -1212,6 +1251,22 @@ function JourneyCard({
           : "border-slate-200/70 bg-slate-100/60 opacity-60 shadow-xs grayscale-[0.75] hover:border-slate-300 hover:opacity-95 hover:shadow-[0_18px_50px_rgba(15,61,63,0.1)] hover:grayscale-0"
       }`}
     >
+      {/* Native clickable link overlay so Ctrl+click, Cmd+click, and middle-click open in a new tab */}
+      {href && !isEditingName && (
+        <a
+          href={href}
+          aria-hidden="true"
+          tabIndex={-1}
+          className="absolute inset-0 z-0"
+          onClick={(e) => {
+            if (!e.ctrlKey && !e.metaKey && e.button !== 1) {
+              e.preventDefault();
+              onOpen(e);
+            }
+          }}
+        />
+      )}
+
       {/* Hidden File Input for Cover Photo */}
       <input
         type="file"
@@ -1424,14 +1479,23 @@ function JourneyCard({
                   title={meta.name}
                   className="line-clamp-1 text-xl font-semibold tracking-[-0.02em] text-white md:text-[1.35rem]"
                 >
-                  {meta.name}
+                  {href ? (
+                    <a
+                      href={href}
+                      onClick={(e) => {
+                        if (!e.ctrlKey && !e.metaKey && e.button !== 1) {
+                          e.preventDefault();
+                          onOpen(e);
+                        }
+                      }}
+                      className="hover:underline focus:outline-none"
+                    >
+                      {meta.name}
+                    </a>
+                  ) : (
+                    meta.name
+                  )}
                 </h2>
-                {/* {meta.candidateRelation &&
-                  meta.candidateRelation.toLowerCase() !== meta.name.toLowerCase() && (
-                    <Badge className="shrink-0 rounded-full border border-teal-300/40 bg-teal-950/70 px-2 py-0.5 text-[10px] font-medium text-teal-200 backdrop-blur-md">
-                      {meta.candidateRelation}
-                    </Badge>
-                  )} */}
               </div>
             </div>
           )}

@@ -158,6 +158,15 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       );
     }
 
+    // Check journey subscription tier — free plan users cannot complete steps
+    const journey = await db.getJourneyDB(chapter.journey_id);
+    if (!journey || !journey.subscription_tier || journey.subscription_tier === "free") {
+      return NextResponse.json(
+        { error: "Upgrade required to complete steps", code: "UPGRADE_REQUIRED" },
+        { status: 403 }
+      );
+    }
+
     // Complete step with journey context
     const result = await stepService.completeStep(stepId, chapter.journey_id, body);
 
