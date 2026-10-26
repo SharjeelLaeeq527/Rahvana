@@ -27,6 +27,7 @@ import { WALLET_CATALOG } from "@/lib/wallet/catalog";
 import { withPreviewMode } from "@/lib/wallet/resourceMapping";
 import CreditTypeIcon from "@/components/resources/CreditTypeIcon";
 import CreditInfoTooltip from "@/components/resources/CreditInfoTooltip";
+import BackButton from "@/components/pricing/BackButton";
 // import ResourceBackButton from "@/components/resources/ResourceBackButton";
 
 // ── Palette ──────────────────────────────────────────────────────────────────
@@ -153,20 +154,17 @@ export default async function ResourceDetailPage({
     <div className="bg-background text-foreground min-h-screen">
       <div className="mx-auto max-w-[1100px] px-5 pt-[88px] pb-28 sm:px-8 lg:px-10">
         {/* Back navigation & Breadcrumb — back now returns to the previous page */}
+
         <nav
           aria-label="Breadcrumb"
           className="mb-8 flex flex-wrap items-center gap-2.5 text-[13.5px]"
         >
-          {/* ORIGINAL deep-linked to the pricing tab; commented out per decision:
-              <Link href={`/pricing?mode=${addon.kind}`} className="...">
-                <ArrowLeft className="h-4 w-4 ..." />
-                <span>Back to Pricing</span>
-                <span className="text-muted-foreground/40">·</span>
-                <span className="font-normal ...">{categoryLabel}</span>
-              </Link>
-          */}
-          {/* <ResourceBackButton className="group border-border/80 bg-background/80 text-muted-foreground hover:border-foreground/20 hover:bg-muted/50 hover:text-foreground inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 font-medium shadow-xs backdrop-blur-sm transition-all active:scale-[0.98]" /> */}
-          <span className="text-border">/</span>
+          <BackButton fallbackHref="/resources" />
+
+          <span className="text-border" aria-hidden="true">
+            /
+          </span>
+
           <span className="text-foreground font-medium">{addon.title}</span>
         </nav>
 
@@ -213,16 +211,7 @@ export default async function ResourceDetailPage({
               </span>
               <span className="text-muted-foreground flex items-center gap-1.5 text-[14px]">
                 <CreditTypeIcon kind={addon.kind} size={18} />
-                Credits
               </span>
-              <CreditInfoTooltip
-                side="bottom"
-                message={
-                  addon.kind === "services"
-                    ? "Each booking request uses the credits shown."
-                    : "Unlock once: pay these credits one time, then use it as much as you like."
-                }
-              />
             </div>
             {/* ORIGINAL $ price display (removed — page shows credits only):
                 <div className="mt-9 flex items-baseline gap-2.5">
