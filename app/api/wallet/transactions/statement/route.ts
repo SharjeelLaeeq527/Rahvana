@@ -41,10 +41,7 @@ const PAGE_MARGIN = 42;
 const HEADER_BAND_H = 64;
 const BOTTOM_LIMIT_OFFSET = 60;
 
-const shortRef = (id: string) => id.slice(0, 8).toUpperCase();
 const creditsFmt = (n: number) => Math.abs(n).toLocaleString("en-US");
-const usdFmt = (n: number) =>
-  `$${Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 const dateFmt = (iso: string) =>
   new Date(iso).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
 const timeFmt = (iso: string) =>
@@ -191,13 +188,12 @@ export type StatementInput = {
 
 // Table columns (widths in pt, sum = 511 = A4 width - 2 * margin)
 const COLS = [
-  { key: "date", label: "DATE", width: 62 },
-  { key: "description", label: "DESCRIPTION", width: 150 },
-  { key: "category", label: "CATEGORY", width: 62 },
-  { key: "reference", label: "REFERENCE", width: 78 },
-  { key: "status", label: "STATUS", width: 50 },
-  { key: "credits", label: "CREDITS", width: 58 },
-  { key: "balance", label: "BALANCE", width: 51 },
+  { key: "date", label: "DATE", width: 72 },
+  { key: "description", label: "DESCRIPTION", width: 165 },
+  { key: "category", label: "CATEGORY", width: 78 },
+  { key: "status", label: "STATUS", width: 65 },
+  { key: "credits", label: "CREDITS", width: 65 },
+  { key: "balance", label: "BALANCE", width: 58 },
 ] as const;
 
 function wrapDescription(
@@ -417,8 +413,6 @@ export function renderStatement(input: StatementInput): Promise<Buffer> {
 
     for (const r of input.rows) {
       const amount = toNumber(r.amount);
-      const usd =
-        r.amount_usd !== null && r.amount_usd !== undefined ? toNumber(r.amount_usd) : null;
       const descW = COLS[1].width - 10;
 
       doc.font("Helvetica").fontSize(7.8);
@@ -465,52 +459,43 @@ export function renderStatement(input: StatementInput): Promise<Buffer> {
 
       x += COLS[1].width;
 
-      doc
-        .font("Helvetica")
-        .fontSize(7)
-        .fillColor(MUTED)
-        .text(categoryLabel(r).toUpperCase(), x, baseline, { width: COLS[2].width - 8 });
-      x += COLS[2].width;
+doc
+  .font("Helvetica")
+  .fontSize(7)
+  .fillColor(MUTED)
+  .text(categoryLabel(r).toUpperCase(), x, baseline, {
+    width: COLS[2].width - 8,
+  });
+x += COLS[2].width;
 
-      doc
-        .font("Helvetica")
-        .fontSize(7.2)
-        .fillColor(MUTED)
-        .text(shortRef(r.id), x, baseline, { width: COLS[3].width - 8 });
-      x += COLS[3].width;
+doc
+  .font("Helvetica")
+  .fontSize(7.2)
+  .fillColor(r.status === "completed" ? GREEN : MUTED)
+  .text(r.status.toUpperCase(), x, baseline, {
+    width: COLS[3].width - 8,
+  });
+x += COLS[3].width;
 
-      doc
-        .font("Helvetica")
-        .fontSize(7)
-        .fillColor(r.status === "completed" ? GREEN : MUTED)
-        .text(r.status, x, baseline, { width: COLS[4].width - 8 });
-      x += COLS[4].width;
+doc
+  .font("Helvetica-Bold")
+  .fontSize(8)
+  .fillColor(amount >= 0 ? GREEN : INK)
+  .text(`${amount >= 0 ? "+" : "-"}${creditsFmt(amount)}`, x, baseline, {
+    width: COLS[4].width - 8,
+    align: "right",
+  });
 
-      doc
-        .font("Helvetica-Bold")
-        .fontSize(8)
-        .fillColor(amount >= 0 ? GREEN : INK)
-        .text(`${amount >= 0 ? "+" : "-"}${creditsFmt(amount)}`, x, baseline, {
-          width: COLS[5].width - 8,
-          align: "right",
-        });
-      if (usd !== null) {
-        doc
-          .font("Helvetica")
-          .fontSize(6.4)
-          .fillColor(FAINT)
-          .text(usdFmt(usd), x, baseline + 10, { width: COLS[5].width - 8, align: "right" });
-      }
-      x += COLS[5].width;
+x += COLS[4].width;
 
-      doc
-        .font("Helvetica")
-        .fontSize(7.6)
-        .fillColor(INK)
-        .text(creditsFmt(toNumber(r.balance_after)), x, baseline, {
-          width: COLS[6].width - 8,
-          align: "right",
-        });
+doc
+  .font("Helvetica")
+  .fontSize(7.6)
+  .fillColor(INK)
+  .text(creditsFmt(toNumber(r.balance_after)), x, baseline, {
+    width: COLS[5].width - 8,
+    align: "right",
+  });
 
       y += rowH + 0.5;
       rowIndex += 1;
