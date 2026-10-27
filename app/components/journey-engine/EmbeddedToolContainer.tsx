@@ -710,6 +710,8 @@ export function EmbeddedToolContainer({
       case "birth_certificate_guide":
       case "frc_guide":
       case "marriage_guide":
+      case "step_parent_guide":
+      case "adoptive_parent_guide":
         return (
           <InlineJourneyGuidePage
             toolKey={toolKey}

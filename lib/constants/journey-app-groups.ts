@@ -1,4 +1,5 @@
 import { AppGroup } from "@/types/app-groups";
+import { getGuideById, isGuideRelevantToVisaCategory } from "@/lib/guides/guideRegistry";
 
 export const JOURNEY_APP_GROUPS: AppGroup[] = [
   {
@@ -139,6 +140,22 @@ export const JOURNEY_APP_GROUPS: AppGroup[] = [
         category: "guides",
         componentKey: "polio_vaccination_guide",
       },
+      {
+        id: "step-parent-guide",
+        label: "Step-Parent Guide",
+        description: "USCIS roadmap for sponsoring step-parents and marriage rules.",
+        iconName: "BookOpen",
+        category: "guides",
+        componentKey: "step_parent_guide",
+      },
+      {
+        id: "adoptive-parent-guide",
+        label: "Adoptive Parent Guide",
+        description: "USCIS adoption criteria and legal guardianship requirements.",
+        iconName: "BookOpen",
+        category: "guides",
+        componentKey: "adoptive_parent_guide",
+      },
     ],
   },
   {
@@ -205,6 +222,8 @@ export const TOOL_FEATURE_MAP: Record<string, string | null> = {
   marriage_guide: "guide_nikah_nama",
   pcc_guide: "guide_police",
   polio_vaccination_guide: "polio_certificate",
+  step_parent_guide: null,
+  adoptive_parent_guide: null,
 
   // Services
   expert_consultation: "expert_consultation",
@@ -212,7 +231,6 @@ export const TOOL_FEATURE_MAP: Record<string, string | null> = {
   medical_appointment: "medical_booking",
   doc_translation: "document_translation",
 };
-
 
 /**
  * Guide/service app-group items that are real pages under `app/(tools)/...`.
@@ -229,9 +247,26 @@ export const OVERLAY_PAGE_ROUTES: Record<string, string> = {
   marriage_guide: "/guides/nikah-nama-guide",
   pcc_guide: "/guides/police-verification-guide",
   polio_vaccination_guide: "/guides/polio-vaccination-guide",
+  step_parent_guide: "/guides/step-parent-guide",
+  adoptive_parent_guide: "/guides/adoptive-parent-guide",
 
   // Services that have their own tool page
   police_verification: "/police-verification",
+};
+
+/**
+ * Maps app-group component keys to their registered guide ID in guideRegistry.
+ */
+export const COMPONENT_KEY_TO_GUIDE_ID: Record<string, string> = {
+  passport_guide: "passport",
+  cnic_guide: "cnic",
+  birth_certificate_guide: "birth-certificate",
+  frc_guide: "frc",
+  marriage_guide: "marriage-certificate",
+  pcc_guide: "police-verification",
+  polio_vaccination_guide: "vaccinations",
+  step_parent_guide: "step-parent",
+  adoptive_parent_guide: "adoptive-parent",
 };
 
 /** Returns the in-place overlay route for a componentKey, or null if it has none. */
@@ -249,5 +284,32 @@ export function getAppGroupItemLabel(componentKey: string): string {
     const item = group.items.find((i) => i.componentKey === componentKey);
     if (item) return item.label;
   }
-  return componentKey.replace(/_/g, " ").replace(/\w/g, (c) => c.toUpperCase());
+  return componentKey.replace(/_/g, " ").replace(/ \w/g, (c) => c.toUpperCase());
+}
+
+/**
+ * Returns journey app groups with the Guides group dynamically filtered
+ * to only include guides relevant to the given visa category.
+ *
+ * @param visaCategory The active visa category (e.g. "IR-5", "IR-1", "CR-1")
+ */
+export function getJourneyAppGroups(visaCategory?: string | null): AppGroup[] {
+  if (!visaCategory) return JOURNEY_APP_GROUPS;
+
+  return JOURNEY_APP_GROUPS.map((group) => {
+    if (group.id !== "guides") return group;
+
+    const filteredItems = group.items.filter((item) => {
+      const guideId = COMPONENT_KEY_TO_GUIDE_ID[item.componentKey];
+      if (!guideId) return true; // Keep unmapped guides by default
+      const guideMeta = getGuideById(guideId);
+      if (!guideMeta) return true;
+      return isGuideRelevantToVisaCategory(guideMeta, visaCategory);
+    });
+
+    return {
+      ...group,
+      items: filteredItems,
+    };
+  });
 }
