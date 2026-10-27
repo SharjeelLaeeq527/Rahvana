@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { Coins, Loader2, LogIn, X } from "lucide-react";
 import { isSmartFormItem, type WalletCatalogItem } from "@/lib/wallet/catalog";
-import { WALLET_MAX_TOPUP, WALLET_MIN_TOPUP, WALLET_TOPUP_PACKS } from "@/lib/wallet/topup";
+import { WALLET_MAX_TOPUP, WALLET_MIN_TOPUP } from "@/lib/wallet/topup";
 import { createTopupCheckout, currentReturnPath } from "@/lib/wallet/client";
 import { useWallet } from "@/app/context/WalletContext";
 import { useAuth } from "@/app/context/AuthContext";
@@ -148,17 +148,9 @@ export function CreditLaunchModal({ item, href, onLaunched, onClose }: Props) {
     }
   };
 
-  // Exact amount first, then up to two larger packs that also cover the shortfall.
-  const topupOptions = shortfall
-    ? [
-        shortfall.topupAmount,
-        ...WALLET_TOPUP_PACKS.filter((pack) => pack > shortfall.topupAmount).slice(0, 2),
-      ]
-    : [];
-  const selectedTopup =
-    pickedTopup !== null && topupOptions.includes(pickedTopup)
-      ? pickedTopup
-      : (topupOptions[0] ?? 0);
+  // Only the exact credits amount needed to cover the shortfall.
+  const topupOptions = shortfall ? [shortfall.topupAmount] : [];
+  const selectedTopup = shortfall ? shortfall.topupAmount : 0;
 
   return createPortal(
     <div
@@ -298,7 +290,7 @@ export function CreditLaunchModal({ item, href, onLaunched, onClose }: Props) {
             </div>
 
             <div role="radiogroup" aria-label="Top-up amount" className="flex flex-col gap-2">
-              <p className="text-[12px] font-bold text-slate-700">Choose a top-up</p>
+              <p className="text-[12px] font-bold text-slate-700">Top-up needed</p>
               {topupOptions.map((amount) => {
                 const active = amount === selectedTopup;
                 const leftAfter = amount + shortfall.available - shortfall.required;
