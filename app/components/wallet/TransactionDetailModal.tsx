@@ -130,28 +130,8 @@ export function TransactionDetailModal({ transaction: t, onClose }: Props) {
           </Row>
           {resource && <Row label="Resource">{resource}</Row>}
           <Row label="Date & Time">{formatFullDateTime(t.created_at)}</Row>
-          <Row label="Reference ID">
-            <button
-              type="button"
-              onClick={copyReference}
-              title="Copy full reference"
-              className="inline-flex max-w-full items-center gap-1.5 rounded-lg bg-slate-50 px-2 py-1 font-mono text-[11.5px] font-medium text-slate-600 transition-colors hover:bg-slate-100"
-            >
-              <span className="truncate">{t.id}</span>
-              {copied ? (
-                <Check size={12} className="shrink-0 text-emerald-600" />
-              ) : (
-                <Copy size={12} className="shrink-0" />
-              )}
-            </button>
-          </Row>
           <Row label="Amount">
             <span className="tabular-nums">{formatSignedCredits(t.amount)}</span>
-            {formatUsd(t.amount_usd) && (
-              <span className="ml-1.5 text-[12px] font-medium text-slate-400">
-                ({formatUsd(t.amount_usd)})
-              </span>
-            )}
           </Row>
           <Row label="Balance Before">
             <span className="tabular-nums">{formatCredits(t.balance_before)} Credits</span>
@@ -161,25 +141,10 @@ export function TransactionDetailModal({ transaction: t, onClose }: Props) {
               {formatCredits(t.balance_after)} Credits
             </span>
           </Row>
-          <Row label="Payment Method">{paymentMethodFor(t)}</Row>
-          {t.stripe_invoice_id && (
-            <Row label="Invoice Reference">
-              <span className="font-mono text-[12px]">{t.stripe_invoice_id}</span>
-            </Row>
-          )}
-          {(t.actor_type === "admin" || t.actor_type === "system") && (
-            <Row label="Initiated By">
-              {t.actor_type === "admin" ? "Rahvana support" : "Rahvana system"}
-            </Row>
-          )}
         </dl>
 
         {/* Footer */}
         <div className="shrink-0 border-t border-slate-100 px-5 py-4">
-          <p className="mb-3 text-[11.5px] leading-relaxed text-slate-500">
-            $1 USD = 1 Rahvana Credit. Balances are recalculated server-side on every transaction;
-            this record is part of your official statement.
-          </p>
           <button
             type="button"
             onClick={onClose}
