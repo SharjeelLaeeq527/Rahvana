@@ -164,7 +164,9 @@ export default function ResourceToolCard({
                   ? "per request"
                   : addon.id === "smart"
                     ? "per form"
-                    : "one-time unlock"}
+                    : addon.id === "photo"
+                      ? "for 2 photos"
+                      : "one-time unlock"}
             </div>
           </div>
 

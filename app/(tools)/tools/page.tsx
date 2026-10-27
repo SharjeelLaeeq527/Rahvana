@@ -34,7 +34,7 @@ import {
 import { useJourneyEnvironment } from "@/app/context/JourneyEnvironmentContext";
 import CreditTypeIcon from "@/components/resources/CreditTypeIcon";
 import CreditInfoTooltip from "@/components/resources/CreditInfoTooltip";
-import type { WalletCatalogItem } from "@/lib/wallet/catalog";
+import { isPhotoBoothItem, type WalletCatalogItem } from "@/lib/wallet/catalog";
 import { CreditLaunchModal } from "@/app/components/wallet/CreditLaunchModal";
 import { useQuickAccess } from "@/app/context/QuickAccessContext";
 
@@ -751,6 +751,11 @@ function ToolCard({
                 <span>{catalogItem.credits}</span>
               </div>
             </div>
+            {isPhotoBoothItem(catalogItem) && (
+              <p className="text-muted-foreground -mt-1 mb-1 text-xs font-medium">
+                {catalogItem.credits} credits gives you 2 photos. Buy again when both are used.
+              </p>
+            )}
           </>
         )}
         {!showDualCta && (

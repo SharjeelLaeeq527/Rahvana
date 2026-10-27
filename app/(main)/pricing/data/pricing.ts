@@ -331,9 +331,9 @@ export const ADDONS = [
     kind: "tools",
     title: "Photo Booth",
     price: 15,
-    unit: "for 2 credits",
+    unit: "for 2 photos",
     copy: "Make a fully compliant biometric passport or visa photo in minutes, no studio visit needed.",
-    note: "2 compliant photo outputs per purchase, on any plan",
+    note: "Each purchase gives you 2 photos. Buy again when both are used",
   },
   {
     id: "smart",

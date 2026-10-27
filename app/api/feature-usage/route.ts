@@ -5,10 +5,18 @@ import { checkFeatureUsage } from "@/lib/usage/checkFeatureUsage";
 import { type PlanTier, normalizePlanTier } from "@/lib/entitlements/config";
 import { getEffectiveEntitlement, getCreditPools, addonPoolKey } from "@/lib/entitlements/helpers";
 import { resolveUsageTier } from "@/lib/usage/resolveUsageTier";
+import { supabaseAdmin } from "@/lib/supabase/admin";
+import { getPhotoBoothPack, spendPhotoBoothPhoto } from "@/lib/wallet/photoBoothPack";
 
 // The tier is always resolved server-side (lib/usage/resolveUsageTier.ts). A
 // `tier` sent by the client is ignored: it used to be trusted, which let any
 // user claim Executive and skip usage limits.
+
+/** Uses left in the legacy purchased add-on pools (0 when there are none). */
+async function legacyRemaining(userId: string, feature: string, tier: PlanTier, addons: string[]) {
+  const usage = await checkFeatureUsage(userId, feature, tier, addons);
+  return usage.allowed ? (usage.remaining ?? 0) : 0;
+}
 
 // GET /api/feature-usage?feature=xyz - Check feature usage for the authenticated user
 export async function GET(request: Request) {
@@ -67,11 +75,18 @@ export async function GET(request: Request) {
     }
     const userTier: PlanTier = resolved.tier;
 
-    if (resolved.walletUnlimited) {
+    // Standalone Photo Booth: photos bought with credits plus any legacy add-on pool.
+    if (resolved.walletPack) {
+      const pack = await getPhotoBoothPack(supabaseAdmin, user.id);
+      const remaining =
+        pack.remaining + (await legacyRemaining(user.id, feature, userTier, purchasedAddons));
       return NextResponse.json(
         {
           success: true,
-          data: { feature, usage: { allowed: true, reason: "Wallet unlock" } },
+          data: {
+            feature,
+            usage: { allowed: remaining > 0, used: pack.used, limit: pack.limit, remaining },
+          },
         },
         { status: 200 }
       );
@@ -140,12 +155,24 @@ export async function POST(request: Request) {
     }
     const userTier: PlanTier = resolved.tier;
 
-    // Standalone wallet unlock: unlimited, nothing to count.
-    if (resolved.walletUnlimited) {
-      return NextResponse.json({ success: true, allowed: true, unlimited: true });
-    }
-
     const entitlement = getEffectiveEntitlement(feature, userTier, purchasedAddons);
+
+    // Standalone Photo Booth: spend a photo bought with credits first; when those
+    // are used up, a legacy add-on pool (if any) is spent below.
+    if (resolved.walletPack) {
+      const spent = await spendPhotoBoothPhoto(supabaseAdmin, user.id);
+      if (spent.allowed || entitlement.state !== "limited") {
+        const remaining =
+          spent.remaining + (await legacyRemaining(user.id, feature, userTier, purchasedAddons));
+        return NextResponse.json({
+          success: true,
+          allowed: spent.allowed,
+          used: spent.used,
+          limit: spent.limit,
+          remaining,
+        });
+      }
+    }
 
     // Handle access types
     if (entitlement.state === "locked_upgrade" || entitlement.state === "executive_only") {

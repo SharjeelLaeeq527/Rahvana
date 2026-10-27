@@ -4,7 +4,12 @@ import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { Coins, Loader2, LogIn, X } from "lucide-react";
-import { isSmartFormItem, type WalletCatalogItem } from "@/lib/wallet/catalog";
+import {
+  PHOTO_BOOTH_PHOTOS_PER_PURCHASE,
+  isPhotoBoothItem,
+  isSmartFormItem,
+  type WalletCatalogItem,
+} from "@/lib/wallet/catalog";
 import { WALLET_MAX_TOPUP, WALLET_MIN_TOPUP } from "@/lib/wallet/topup";
 import { createTopupCheckout, currentReturnPath } from "@/lib/wallet/client";
 import { useWallet } from "@/app/context/WalletContext";
@@ -196,7 +201,9 @@ export function CreditLaunchModal({ item, href, onLaunched, onClose }: Props) {
                     ? "Book this service using your Rahvana credits"
                     : isSmartFormItem(item)
                       ? "Unlocks this form only. Pay once, use it as often as you like"
-                      : "Pay once, use it as often as you like"}
+                      : isPhotoBoothItem(item)
+                        ? `Gives you ${PHOTO_BOOTH_PHOTOS_PER_PURCHASE} passport photos. When both are used, buy again for 2 more`
+                        : "Pay once, use it as often as you like"}
               </p>
             </div>
           </div>

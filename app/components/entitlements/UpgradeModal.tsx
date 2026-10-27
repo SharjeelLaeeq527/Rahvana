@@ -255,7 +255,13 @@ const UPGRADE_PITCH: Record<string, string> = {
  */
 function getStandaloneOption(
   feature: string
-): { credits: number; href: string; isService: boolean; perForm: boolean } | null {
+): {
+  credits: number;
+  href: string;
+  isService: boolean;
+  perForm: boolean;
+  photoPack: boolean;
+} | null {
   const slug = FEATURE_TO_SALES_SLUG[feature];
   const credits = slug ? getCreditsForLegacyAddon(slug) : undefined;
   if (!slug || credits === undefined) return null;
@@ -266,6 +272,8 @@ function getStandaloneOption(
     isService: kind === "services",
     // The Smart Form Filler is unlocked one form at a time.
     perForm: slug === "smart",
+    // Photo Booth is sold in packs of 2 photos.
+    photoPack: slug === "photo",
   };
 }
 
@@ -710,7 +718,9 @@ export function UpgradeModal({ feature, onClose, onConfirm, interviewMode }: Upg
                       ? "per request"
                       : standalone.perForm
                         ? "per form"
-                        : "one-time unlock"}
+                        : standalone.photoPack
+                          ? "for 2 photos"
+                          : "one-time unlock"}
                   </span>
                 </div>
                 <p className="mb-3 text-[11px] leading-snug text-neutral-500">
@@ -718,7 +728,9 @@ export function UpgradeModal({ feature, onClose, onConfirm, interviewMode }: Upg
                     ? `Book ${addon.name} on its own and pay from your Rahvana wallet ($1 = 1 credit).`
                     : standalone.perForm
                       ? `Use ${addon.name} on its own, outside a journey plan. Unlock each form you need from your Rahvana wallet ($1 = 1 credit).`
-                      : `Use ${addon.name} on its own, outside a journey plan. Unlock it once from your Rahvana wallet ($1 = 1 credit).`}
+                      : standalone.photoPack
+                        ? `Use ${addon.name} on its own, outside a journey plan. Each purchase from your Rahvana wallet gives you 2 photos ($1 = 1 credit). When both are used, buy again for 2 more.`
+                        : `Use ${addon.name} on its own, outside a journey plan. Unlock it once from your Rahvana wallet ($1 = 1 credit).`}
                 </p>
 
                 <Link
