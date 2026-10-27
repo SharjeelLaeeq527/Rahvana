@@ -23,7 +23,7 @@ import ReviewForm from "@/components/resources/ReviewForm";
 import { getApprovedReviews, getReviewStats } from "@/lib/reviews/data-access";
 // getSlugTheme/getIcon powered the "Pairs well with" section (now commented out):
 // import { getSlugTheme, getIcon } from "./iconMap";
-import { SMART_FORM_TOOL_ID, WALLET_CATALOG } from "@/lib/wallet/catalog";
+import { PHOTO_BOOTH_TOOL_ID, SMART_FORM_TOOL_ID, WALLET_CATALOG } from "@/lib/wallet/catalog";
 import { withPreviewMode } from "@/lib/wallet/resourceMapping";
 import CreditTypeIcon from "@/components/resources/CreditTypeIcon";
 import BackButton from "@/components/pricing/BackButton";
@@ -212,6 +212,8 @@ export default async function ResourceDetailPage({
                 <CreditTypeIcon kind={addon.kind} size={18} />
                 {/* The Smart Form Filler is unlocked one form at a time. */}
                 {walletItem?.resourceId === SMART_FORM_TOOL_ID && <span>per form</span>}
+                {/* Photo Booth is sold in packs of 2 photos. */}
+                {walletItem?.resourceId === PHOTO_BOOTH_TOOL_ID && <span>for 2 photos</span>}
               </span>
             </div>
             {/* ORIGINAL $ price display (removed — page shows credits only):

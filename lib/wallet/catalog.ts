@@ -97,6 +97,17 @@ const service = (
   launchable: false,
 });
 
+/**
+ * Photo Booth is sold in packs: one purchase gives this many photos, then it can
+ * be bought again (lib/wallet/photoBoothPack.ts counts the uses).
+ */
+export const PHOTO_BOOTH_TOOL_ID = "photo-booth";
+export const PHOTO_BOOTH_PHOTOS_PER_PURCHASE = 2;
+
+export function isPhotoBoothItem(item: Pick<WalletCatalogItem, "resourceType" | "resourceId">): boolean {
+  return item.resourceType === "tool" && item.resourceId === PHOTO_BOOTH_TOOL_ID;
+}
+
 /** The Smart Form Filler tool. Its forms are unlocked one at a time (below). */
 export const SMART_FORM_TOOL_ID = "form-forge";
 
@@ -108,7 +119,8 @@ export const WALLET_CATALOG: readonly WalletCatalogItem[] = [
   { ...tool(SMART_FORM_TOOL_ID, "Smart Form Filler", 39, "smart"), launchable: false },
   tool("221g-planner", "221(g) Action Planner", 199, "221g"),
   tool("interview-prep", "Interview Prep", 200, "interview-prep"),
-  tool("photo-booth", "Photo Booth", 15, "photo", false),
+  // Each purchase = PHOTO_BOOTH_PHOTOS_PER_PURCHASE photos, then buy again.
+  tool(PHOTO_BOOTH_TOOL_ID, "Photo Booth", 15, "photo", false),
   tool("pdf-toolkit", "PDF Tool Kit", 69, "pdf"),
   guide("guide-passport", "Passport Guide"),
   guide("guide-police", "Police Verification Guide"),
