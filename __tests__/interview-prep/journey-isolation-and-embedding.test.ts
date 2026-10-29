@@ -158,8 +158,7 @@ describe("Category Selection Filtering in Multi-Candidate Journeys (Phase 7)", (
 
   const filterCategories = (
     allCategories: Array<{ categorySlug: string; categoryName: string }>,
-    userSessions: Array<{ category_slug: string; candidate_id?: string; completed?: boolean }>,
-    currentCandidateId: string
+    userSessions: Array<{ category_slug: string; candidate_id?: string; completed?: boolean }>
   ) => {
     const usedCategorySlugs = new Set<string>();
     for (const s of userSessions) {
@@ -167,11 +166,6 @@ describe("Category Selection Filtering in Multi-Candidate Journeys (Phase 7)", (
       const isMulti = isMultiCandidateCategorySlug(s.category_slug);
       if (!isMulti) {
         usedCategorySlugs.add(s.category_slug);
-      } else {
-        const sessionCandId = s.candidate_id || "candidate-1";
-        if (sessionCandId === currentCandidateId && !s.completed) {
-          usedCategorySlugs.add(s.category_slug);
-        }
       }
     }
 
@@ -184,40 +178,33 @@ describe("Category Selection Filtering in Multi-Candidate Journeys (Phase 7)", (
     { categorySlug: "ir-2-child", categoryName: "IR-2 Child" },
   ];
 
-  it("permits Candidate 2 (Father) to select IR-5 even if Candidate 1 (Mother) has an active IR-5 session", () => {
+  it("permits multi-candidate IR-5 to remain selectable for multiple sessions / candidates (adoptive, step parents, etc.)", () => {
     const sessions = [
       { category_slug: "ir-5-parent", candidate_id: "candidate-1", completed: false },
+      { category_slug: "ir-5-parent", candidate_id: "candidate-2", completed: false },
     ];
 
-    // For Candidate 1, IR-5 should be filtered out (already has active session)
-    const cand1Available = filterCategories(categories, sessions, "candidate-1");
-    expect(cand1Available.some((c) => c.categorySlug === "ir-5-parent")).toBe(false);
-
-    // For Candidate 2 (Father), IR-5 MUST be available
-    const cand2Available = filterCategories(categories, sessions, "candidate-2");
-    expect(cand2Available.some((c) => c.categorySlug === "ir-5-parent")).toBe(true);
+    // IR-5 MUST remain available even after 2 sessions
+    const available = filterCategories(categories, sessions);
+    expect(available.some((c) => c.categorySlug === "ir-5-parent")).toBe(true);
   });
 
-  it("permits Candidate 2 (Child 2) to select IR-2 even if Candidate 1 (Child 1) has an IR-2 session", () => {
+  it("permits multi-candidate IR-2 to remain selectable for multiple child candidates", () => {
     const sessions = [
       { category_slug: "ir-2-child", candidate_id: "candidate-1", completed: false },
     ];
 
-    const child2Available = filterCategories(categories, sessions, "candidate-2");
-    expect(child2Available.some((c) => c.categorySlug === "ir-2-child")).toBe(true);
+    const available = filterCategories(categories, sessions);
+    expect(available.some((c) => c.categorySlug === "ir-2-child")).toBe(true);
   });
 
-  it("strictly filters single-candidate IR-1 categories for any new session attempt", () => {
+  it("strictly filters single-candidate IR-1 categories once a session exists", () => {
     const sessions = [
       { category_slug: "ir-1-spouse", candidate_id: "candidate-1", completed: false },
     ];
 
-    // IR-1 is single-candidate, so it should be filtered out regardless of candidate
-    const cand1Available = filterCategories(categories, sessions, "candidate-1");
-    const cand2Available = filterCategories(categories, sessions, "candidate-2");
-
-    expect(cand1Available.some((c) => c.categorySlug === "ir-1-spouse")).toBe(false);
-    expect(cand2Available.some((c) => c.categorySlug === "ir-1-spouse")).toBe(false);
+    const available = filterCategories(categories, sessions);
+    expect(available.some((c) => c.categorySlug === "ir-1-spouse")).toBe(false);
   });
 });
 

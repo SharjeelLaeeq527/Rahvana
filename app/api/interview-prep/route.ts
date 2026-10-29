@@ -20,6 +20,7 @@ import {
   countToolSessions,
 } from "@/lib/interview-prep/purchase-validation";
 import { getInterviewSessionByCategory } from "@/lib/interview-prep/data-access";
+import { isMultiCandidateCategorySlug } from "@/lib/interview-prep/journey-category-map";
 import { createClient } from "@/lib/supabase/server";
 import { getServiceRoleClient } from "@/lib/api/authGuards";
 import { topupAmountForDeficit } from "@/lib/wallet/launch";
@@ -43,7 +44,7 @@ import { E, msg } from "@/lib/errors";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { category_slug, user_email, user_name, source, journey_id, journey_category, candidate_id } =
+    const { category_slug, user_email, user_name, source, journey_id, journey_category, candidate_id, forceNew } =
       body ?? {};
 
     // Validate required fields
@@ -106,21 +107,53 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Standalone: check if active incomplete session already exists
-    const existingSession = await getInterviewSessionByCategory(
-      category_slug,
-      typeof candidate_id === "string" ? candidate_id : undefined
-    );
-    if (existingSession && !existingSession.completed) {
-      return NextResponse.json(
-        {
-          success: true,
-          alreadyExists: true,
-          session: existingSession,
-          source: "tool",
-        },
-        { status: 200 }
+    const serviceSupabase = getServiceRoleClient();
+    const isMultiCandidate = isMultiCandidateCategorySlug(category_slug);
+    let resolvedCandidateId = typeof candidate_id === "string" ? candidate_id : "candidate-1";
+
+    // For multi-candidate categories (e.g. IR-5 Parent, IR-2 Child) in standalone mode:
+    // Determine if candidate_id needs to advance to the next candidate (e.g. candidate-2, candidate-3...)
+    if (isMultiCandidate) {
+      const { data: catSessions } = await serviceSupabase
+        .from("interview_prep_sessions")
+        .select("candidate_id, completed")
+        .eq("user_id", user.id)
+        .eq("category_slug", category_slug)
+        .eq("source", "tool");
+
+      const existingCandIds = new Set((catSessions || []).map((s) => s.candidate_id || "candidate-1"));
+      const currentHasIncomplete = (catSessions || []).some(
+        (s) => (s.candidate_id || "candidate-1") === resolvedCandidateId && !s.completed
       );
+
+      if (forceNew || currentHasIncomplete) {
+        let maxNum = 0;
+        for (const cId of existingCandIds) {
+          const match = cId.match(/candidate-?([0-9]+)/i);
+          const num = match ? parseInt(match[1], 10) : 1;
+          if (num > maxNum) maxNum = num;
+        }
+        resolvedCandidateId = `candidate-${Math.max(maxNum + 1, 1)}`;
+      }
+    }
+
+    // Standalone: check if active incomplete session already exists for this candidate
+    if (!forceNew) {
+      const existingSession = await getInterviewSessionByCategory(
+        category_slug,
+        resolvedCandidateId
+      );
+      if (existingSession && !existingSession.completed) {
+        return NextResponse.json(
+          {
+            success: true,
+            alreadyExists: true,
+            session: existingSession,
+            source: "tool",
+          },
+          { status: 200 }
+        );
+      }
     }
 
     // Creating a NEW session: check for legacy unused purchases first
@@ -133,7 +166,7 @@ export async function POST(request: NextRequest) {
         category_slug,
         user_email: user_email,
         user_name: user_name,
-        candidate_id: typeof candidate_id === "string" ? candidate_id : undefined,
+        candidate_id: resolvedCandidateId,
       });
 
       return NextResponse.json(
@@ -148,7 +181,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Each new session requires 200 credits from the wallet
-    const serviceSupabase = getServiceRoleClient();
     const { data: walletData } = await serviceSupabase
       .from("user_wallets")
       .select("balance")
@@ -179,7 +211,7 @@ export async function POST(request: NextRequest) {
       category_slug,
       user_email: user_email,
       user_name: user_name,
-      candidate_id: typeof candidate_id === "string" ? candidate_id : undefined,
+      candidate_id: resolvedCandidateId,
     });
 
     const { data: deductResult, error: deductError } = await serviceSupabase.rpc(
@@ -194,7 +226,7 @@ export async function POST(request: NextRequest) {
         p_metadata: {
           source: "interview_prep_session",
           category_slug,
-          candidate_id: typeof candidate_id === "string" ? candidate_id : "candidate-1",
+          candidate_id: resolvedCandidateId,
           session_id: result.session.id,
         },
       }

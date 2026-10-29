@@ -197,6 +197,7 @@ export default function InterviewPreparation({
     null
   );
   const [isRedirectingSession, setIsRedirectingSession] = useState(false);
+  const [existingSessions, setExistingSessions] = useState<any[]>([]);
 
   const { user } = useAuth();
   const { profile, isProfileLoading, updateProfile } = useUserProfile();
@@ -400,7 +401,7 @@ export default function InterviewPreparation({
             categoriesScopeQuery ? `&${categoriesScopeQuery}` : ""
           }`
         ),
-        shouldFilterExistingSessions ? fetch("/api/interview-prep/user-sessions") : null,
+        !isEmbedded ? fetch("/api/interview-prep/user-sessions") : null,
       ]);
 
       const data = await categoriesResponse.json();
@@ -418,30 +419,28 @@ export default function InterviewPreparation({
           filteredCategories = loadedCategories.filter(
             (category) => category.categorySlug === targetCategorySlug
           );
-        } else if (shouldFilterExistingSessions && sessionsResponse?.ok) {
+        } else if (!isEmbedded && sessionsResponse?.ok) {
           const sessionsData = await sessionsResponse.json();
           const rawSessions = Array.isArray(sessionsData.sessions) ? sessionsData.sessions : [];
+          setExistingSessions(rawSessions);
 
-          // Multi-candidate categories (IR-5, IR-2) allow multiple sessions (one per candidate).
-          // For single-candidate categories (IR-1), filter out if any session exists.
-          // For multi-candidate categories, only filter if the CURRENT candidate already has an incomplete session.
-          const usedCategorySlugs = new Set<string>();
-          for (const s of rawSessions) {
-            if (!s.category_slug) continue;
-            const isMulti = isMultiCandidateCategorySlug(s.category_slug);
-            if (!isMulti) {
-              usedCategorySlugs.add(s.category_slug);
-            } else {
-              const sessionCandId = s.candidate_id || "candidate-1";
-              if (sessionCandId === activeCandidateId && !s.completed) {
+          if (shouldFilterExistingSessions) {
+            // Single-candidate categories (IR-1) filter out if any session exists.
+            // Multi-candidate categories (IR-5, IR-2) are NEVER filtered out because
+            // users can sponsor multiple candidates (Mother, Father, Stepparent, Adoptive Parent, etc.)
+            const usedCategorySlugs = new Set<string>();
+            for (const s of rawSessions) {
+              if (!s.category_slug) continue;
+              const isMulti = isMultiCandidateCategorySlug(s.category_slug);
+              if (!isMulti) {
                 usedCategorySlugs.add(s.category_slug);
               }
             }
-          }
 
-          filteredCategories = loadedCategories.filter(
-            (category) => !usedCategorySlugs.has(category.categorySlug)
-          );
+            filteredCategories = loadedCategories.filter(
+              (category) => !usedCategorySlugs.has(category.categorySlug)
+            );
+          }
         }
 
         setAvailableCategories(filteredCategories);
@@ -1048,18 +1047,57 @@ export default function InterviewPreparation({
     setStep(1);
   };
 
+  const resolveTargetCandidateId = (categorySlug: string) => {
+    const isMulti = isMultiCandidateCategorySlug(categorySlug);
+    if (!isMulti || isEmbedded) {
+      return journeyEnv.candidateId || activeCandidateId || "candidate-1";
+    }
+
+    const catSessions = existingSessions.filter((s) => s.category_slug === categorySlug);
+    const usedCandIds = new Set(catSessions.map((s) => s.candidate_id || "candidate-1"));
+
+    // If currently active candidate in context hasn't used this category yet, use it
+    if (activeCandidateId && !usedCandIds.has(activeCandidateId)) {
+      return activeCandidateId;
+    }
+
+    // Otherwise calculate next candidate-N
+    let maxNum = 0;
+    for (const s of catSessions) {
+      const cId = s.candidate_id || "candidate-1";
+      const match = cId.match(/candidate-?([0-9]+)/i);
+      const num = match ? parseInt(match[1], 10) : 1;
+      if (num > maxNum) maxNum = num;
+    }
+    for (const cId of usedCandIds) {
+      const match = cId.match(/candidate-?([0-9]+)/i);
+      const num = match ? parseInt(match[1], 10) : 1;
+      if (num > maxNum) maxNum = num;
+    }
+    return `candidate-${Math.max(maxNum + 1, 1)}`;
+  };
+
   const handleCategorySelectionNext = async () => {
     if (!selectedCategory) {
       setError(msg(E.TOOL_INTERVIEW_SELECT_CATEGORY));
       return;
     }
 
+    const isMulti = isMultiCandidateCategorySlug(selectedCategory.categorySlug);
+    const isNewSessionFlow =
+      !isEmbedded &&
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get("newSession") === "1";
+
     // In standalone mode, if the user doesn't already have an active session for this
-    // category and it requires purchase (no legacy prepaid session), open the credit modal
+    // category and it requires purchase (no legacy prepaid session), open the credit modal.
+    // For multi-candidate categories in "new session" flow, starting a new candidate session
+    // always costs 200 credits if there is no legacy prepaid remaining.
     if (
       !isEmbedded &&
-      !selectedCategory.activeSessionCount &&
-      selectedCategory.requiresPurchase
+      (isMulti
+        ? (isNewSessionFlow || selectedCategory.requiresPurchase)
+        : (!selectedCategory.activeSessionCount && selectedCategory.requiresPurchase))
     ) {
       setShowCreditModal(true);
       return;
@@ -1069,6 +1107,7 @@ export default function InterviewPreparation({
       setLoading(true);
 
       const categorySlug = selectedCategory.categorySlug;
+      const targetCandidateId = resolveTargetCandidateId(categorySlug);
 
       const sessionResponse = await fetch("/api/interview-prep", {
         method: "POST",
@@ -1084,7 +1123,8 @@ export default function InterviewPreparation({
           journey_category: isEmbedded
             ? propJourneyCategory || journeyEnv.journeyCategory || undefined
             : undefined,
-          candidate_id: journeyEnv.candidateId || activeCandidateId || "candidate-1",
+          candidate_id: targetCandidateId,
+          forceNew: isNewSessionFlow,
         }),
       });
 
@@ -1626,6 +1666,8 @@ export default function InterviewPreparation({
             if (!selectedCategory) {
               return { success: false, error: "Please select a category first." };
             }
+            const targetCandidateId = resolveTargetCandidateId(selectedCategory.categorySlug);
+
             const sessionResponse = await fetch("/api/interview-prep", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -1634,7 +1676,8 @@ export default function InterviewPreparation({
                 user_email: localStorage.getItem("userEmail") || "test@example.com",
                 user_name: localStorage.getItem("userName") || "User",
                 source: "tool",
-                candidate_id: journeyEnv.candidateId || activeCandidateId || "candidate-1",
+                candidate_id: targetCandidateId,
+                forceNew: true,
               }),
             });
             const sessionResult = await sessionResponse.json();
@@ -1678,10 +1721,32 @@ export default function InterviewPreparation({
             if (createdSessionRef.current && selectedCategory) {
               const session = createdSessionRef.current;
               createdSessionRef.current = null;
+              const sessionCandId = session.candidate_id || "candidate-1";
+
+              // Sync candidate to CandidateContext if not already present
+              if (
+                candidateCtx?.addCandidate &&
+                !candidateCtx.candidates.some((c) => c.id === sessionCandId)
+              ) {
+                try {
+                  candidateCtx.addCandidate({
+                    relation: "Other",
+                    fullName: `Candidate ${sessionCandId.replace(/[^0-9]/g, "")}`,
+                    visaCategory: selectedCategory.displayName || "IR-5",
+                  });
+                } catch (err) {
+                  console.warn("Could not sync candidate to context:", err);
+                }
+              }
+              if (candidateCtx?.setActiveCandidateId) {
+                candidateCtx.setActiveCandidateId(sessionCandId);
+              }
+
               setSessionId(session.id);
               setSessionSource("tool");
               setIsJourneySession(false);
-              setStoredSession(activeCandidateId, session.id, "tool", null);
+              setStoredSession(sessionCandId, session.id, "tool", null);
+              setExistingSessions((prev) => [session, ...prev]);
               setError(null);
               setStep(1);
               showToast("Interview Prep session started! 200 credits deducted.", "success");
