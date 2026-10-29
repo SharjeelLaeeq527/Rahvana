@@ -4,7 +4,11 @@
 import React, { useState } from "react";
 import { Star, StarOff, Heart, HeartOff } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useQuickAccess, QuickAccessItem } from "@/app/context/QuickAccessContext";
+import {
+  useQuickAccess,
+  QuickAccessItem,
+  QuickAccessScope,
+} from "@/app/context/QuickAccessContext";
 import { useAuth } from "@/app/context/AuthContext";
 
 interface QuickAccessButtonProps {
@@ -16,6 +20,12 @@ interface QuickAccessButtonProps {
    */
   mode?: "button" | "icon";
   className?: string;
+  /**
+   * Which favorites list this button reads/writes.
+   * Omit for account-wide (existing standalone behavior).
+   * Inside a journey, pass { type: "journey", journeyId }.
+   */
+  scope?: QuickAccessScope;
 }
 
 /**
@@ -31,9 +41,10 @@ export function QuickAccessButton({
   item,
   mode = "button",
   className = "",
+  scope,
 }: QuickAccessButtonProps) {
   const { user } = useAuth();
-  const { items, addItem, removeItem, isPending: contextPending } = useQuickAccess();
+  const { items, addItem, removeItem, isPending: contextPending } = useQuickAccess(scope);
   const [localPending, setLocalPending] = useState(false);
 
   // Only show for signed-in users
@@ -69,11 +80,11 @@ export function QuickAccessButton({
           onClick={handleToggle}
           disabled={isPending}
           aria-label={pinned ? "Remove from Favorites" : "Add to Favorites"}
-          className={`relative flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0d7377]/50 ${
+          className={`relative flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0d7377]/50 ${
             pinned
               ? "text-[#0d7377] hover:text-red-500"
-              : "bg-transparent text-muted-foreground hover:text-[#0d7377]"
-          } ${isPending ? "opacity-60 cursor-wait" : "cursor-pointer"} ${className}`}
+              : "text-muted-foreground bg-transparent hover:text-[#0d7377]"
+          } ${isPending ? "cursor-wait opacity-60" : "cursor-pointer"} ${className}`}
         >
           <AnimatePresence mode="wait" initial={false}>
             {pinned ? (
@@ -85,7 +96,7 @@ export function QuickAccessButton({
                 transition={{ duration: 0.15 }}
                 className="flex"
               >
-                <Heart className="w-5.5 h-5.5 fill-current" />
+                <Heart className="h-5.5 w-5.5 fill-current" />
               </motion.span>
             ) : (
               <motion.span
@@ -96,7 +107,7 @@ export function QuickAccessButton({
                 transition={{ duration: 0.15 }}
                 className="flex"
               >
-                <Heart className="w-5 h-5" />
+                <Heart className="h-5 w-5" />
               </motion.span>
             )}
           </AnimatePresence>
@@ -113,11 +124,11 @@ export function QuickAccessButton({
         onClick={handleToggle}
         disabled={isPending}
         aria-label={pinned ? "Remove from Favorites" : "Add to Favorites"}
-        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0d7377]/50 ${
+        className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0d7377]/50 ${
           pinned
-            ? "bg-[#0d7377]/10 text-[#0d7377] hover:bg-red-50 hover:text-red-500 border border-[#0d7377]/20 hover:border-red-200"
-            : "bg-transparent text-muted-foreground hover:bg-[#0d7377]/10 hover:text-[#0d7377] border border-border hover:border-[#0d7377]/30"
-        } ${isPending ? "opacity-60 cursor-wait" : "cursor-pointer"} ${className}`}
+            ? "border border-[#0d7377]/20 bg-[#0d7377]/10 text-[#0d7377] hover:border-red-200 hover:bg-red-50 hover:text-red-500"
+            : "text-muted-foreground border-border border bg-transparent hover:border-[#0d7377]/30 hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
+        } ${isPending ? "cursor-wait opacity-60" : "cursor-pointer"} ${className}`}
       >
         <AnimatePresence mode="wait" initial={false}>
           {pinned ? (
@@ -129,7 +140,7 @@ export function QuickAccessButton({
               transition={{ duration: 0.15 }}
               className="flex shrink-0"
             >
-              <HeartOff className="w-3.5 h-3.5" />
+              <HeartOff className="h-3.5 w-3.5" />
             </motion.span>
           ) : (
             <motion.span
@@ -140,7 +151,7 @@ export function QuickAccessButton({
               transition={{ duration: 0.15 }}
               className="flex shrink-0"
             >
-              <Heart className="w-3.5 h-3.5" />
+              <Heart className="h-3.5 w-3.5" />
             </motion.span>
           )}
         </AnimatePresence>
@@ -159,7 +170,11 @@ export function QuickAccessButton({
       </motion.button>
 
       {/* Tooltip */}
-      <div className="absolute top-full left-0 mt-3 w-72 rounded-lg border border-slate-700 bg-slate-800 p-3 text-xs text-white shadow-xl z-[999] hidden group-hover:block">
+      <div
+        className={`absolute top-full z-[999] mt-3 hidden w-72 max-w-[calc(100vw-2rem)] rounded-lg border border-slate-700 bg-slate-800 p-3 text-xs text-white shadow-xl group-hover:block ${
+          className.includes("!text-white") ? "right-0" : "left-0"
+        }`}
+      >
         <div className="mb-1 flex items-center gap-1 font-medium text-[#afdbdb]">
           <Heart size={14} className="text-[#afdbdb]" />
 
@@ -172,7 +187,11 @@ export function QuickAccessButton({
             : "Save this resource to your Favorites for quick access from the header menu."}
         </p>
 
-        <div className="absolute bottom-full left-6 border-8 border-transparent border-b-slate-800" />
+        <div
+          className={`absolute bottom-full border-8 border-transparent border-b-slate-800 ${
+            className.includes("!text-white") ? "right-6" : "left-6"
+          }`}
+        />
       </div>
     </div>
   );

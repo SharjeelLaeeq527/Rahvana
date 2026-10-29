@@ -46,11 +46,11 @@ export const STEP_PRIMARY_FEATURE: Record<string, string | null> = {
   // ── Chapter 3 ──────────────────────────────────────────────────────────────
   step_3_1: "medical_booking", // Schedule Medical — guide + booking service locked
   step_3_2: "polio_certificate", // Obtain Polio Certificate — locked for Basic AND Premium (executive-only)
-  step_3_3: "step_guides", // Obtain PCC — guide locked
+  step_3_3: "pcc_filing", // Obtain PCC
   step_3_4: "step_guides", // Attend Medical Exam — guide locked
   step_3_5: "step_guides", // Courier Registration — guide locked; credential save OK
   step_3_6: "step_guides", // Gather Original Documents
-  step_3_7: "step_guides", // Prepare for Interview — guide locked
+  step_3_7: "basic_interview_prep", // Prepare for Interview — Interview Prep Tool (Basic+)
   step_3_8: "step_guides", // Attend Visa Interview — interview day guide locked
   step_3_9: null, // Confirm Interview Outcome — always accessible
   step_3_10: "tracker_reminders", // Track Visa Issuance — tracking locked

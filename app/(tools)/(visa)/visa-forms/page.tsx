@@ -19,8 +19,15 @@ import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 import { IR5_ENABLED } from "@/lib/feature-flags";
 import { CfrExplanationModal } from "@/app/components/shared/CfrExplanationModal";
 import { ExpandableTooltip } from "@/app/components/shared/ExpandableTooltip";
-import { usePlan } from "@/app/context/PlanContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
+import { CreditLaunchModal } from "@/app/components/wallet/CreditLaunchModal";
+import { useWallet } from "@/app/context/WalletContext";
+import {
+  getCatalogItem,
+  SMART_FORM_CODES,
+  SMART_FORM_TOOL_ID,
+  smartFormResourceId,
+} from "@/lib/wallet/catalog";
 
 interface VisaForm {
   id?: string;
@@ -675,13 +682,26 @@ export default function VisaFormSelector() {
 
   // Plan gating: Free & Basic can only *start* the I-130 demo in the
   // Smart Form Filler; Premium & Executive start every form in the library.
-  const plan = usePlan();
-  const hasFullFormAccess = plan.canUse("smart_form_filler");
+  // This library is the standalone tool, paid with credits even by plan holders.
+  // Each form is unlocked on its own (`form-forge:<code>`): unlocking the I-485
+  // opens the I-485 only. An older unlock of the whole tool and the legacy "smart"
+  // add-on still open every form (/api/wallet reports each form as unlocked).
+  // Without an unlock only the I-130 demo starts. Journey runs use MultiStepForm
+  // with the journey plan instead.
+  const wallet = useWallet();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [unlockFormCode, setUnlockFormCode] = useState<string | null>(null);
   const DEMO_FORM_CODE = "i130";
   const normalizeCode = (formCode: string) => formCode.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+  // Forms with no Smart Form Filler wizard have no per-form unlock; they keep the
+  // old rule (open only with the whole tool).
+  const isFormUnlocked = (formCode: string) =>
+    wallet.isUnlocked(smartFormResourceId(formCode) ?? SMART_FORM_TOOL_ID, "tool");
   const isFormLocked = (formCode: string) =>
-    !hasFullFormAccess && normalizeCode(formCode) !== DEMO_FORM_CODE;
+    !isFormUnlocked(formCode) && normalizeCode(formCode) !== DEMO_FORM_CODE;
+  const unlockItem = unlockFormCode
+    ? getCatalogItem("tool", smartFormResourceId(unlockFormCode))
+    : null;
 
   const renderFormDescription = (text: string) => {
     if (!text || !text.includes("31 C.F.R. Part 208")) {
@@ -732,7 +752,8 @@ export default function VisaFormSelector() {
     // Free & Basic: only the I-130 demo is startable — other forms prompt
     // an upgrade. Premium & Executive (and anyone who bought the add-on) pass.
     if (isFormLocked(formCode)) {
-      setShowUpgradeModal(true);
+      if (smartFormResourceId(formCode)) setUnlockFormCode(normalizeCode(formCode));
+      else setShowUpgradeModal(true);
       return;
     }
     window.location.href = `/visa-forms/${normalizeCode(formCode)}/wizard`;
@@ -836,13 +857,13 @@ export default function VisaFormSelector() {
         </div>
 
         {/* Free & Basic preview disclaimer */}
-        {!hasFullFormAccess && (
+        {!wallet.isLoading && SMART_FORM_CODES.some((code) => isFormLocked(code)) && (
           <div className="mx-auto max-w-3xl">
             <ExpandableTooltip
               icon={"i"}
               defaultOpen={false}
-              title="Demo on Free & Basic plans: I-130 only"
-              message="On the Free and Basic plans you get a limited demo of the Smart Form Filler on the I-130 form only: answer a few questions, review your answers, and preview the first page of the completed PDF. Upgrade to Premium or Executive to start every form in the library and download complete, multi-page PDFs."
+              title="Demo: I-130 only"
+              message="Without an unlock you get a limited demo of the Smart Form Filler on the I-130 form only: answer a few questions, review your answers, and preview the first page of the completed PDF. Unlock a form with credits to start it and download its complete, multi-page PDF. Each form is unlocked on its own. Forms inside your journey follow your journey plan."
             />
           </div>
         )}
@@ -1265,9 +1286,9 @@ export default function VisaFormSelector() {
                               {isFormLocked(form.code) ? (
                                 <>
                                   <Lock className="h-4 w-4 shrink-0" />
-                                  Upgrade
+                                  {smartFormResourceId(form.code) ? "Unlock" : "Upgrade"}
                                 </>
-                              ) : hasFullFormAccess ? (
+                              ) : isFormUnlocked(form.code) ? (
                                 "Start"
                               ) : (
                                 /* Free/Basic can only start the I-130 — label it as the limited demo */
@@ -1684,6 +1705,13 @@ export default function VisaFormSelector() {
 
         <CfrExplanationModal open={isCfrModalOpen} onOpenChange={setIsCfrModalOpen} />
 
+        {unlockItem && unlockFormCode && (
+          <CreditLaunchModal
+            item={unlockItem}
+            href={`/visa-forms/${unlockFormCode}/wizard`}
+            onClose={() => setUnlockFormCode(null)}
+          />
+        )}
         {showUpgradeModal && (
           <UpgradeModal feature="smart_form_filler" onClose={() => setShowUpgradeModal(false)} />
         )}

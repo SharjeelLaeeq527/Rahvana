@@ -251,7 +251,10 @@ export async function getLatestIncompleteSessionDB(): Promise<InterviewSession |
 // Get all sessions for current user (with optional filters)
 export async function getAllUserSessionsDB(
   limit?: number,
-  completed?: boolean
+  completed?: boolean,
+  category_slug?: string,
+  journey_id?: string,
+  source?: "journey" | "tool"
 ): Promise<InterviewSession[]> {
   const { supabase, user } = await getSupabaseWithUser();
 
@@ -262,10 +265,28 @@ export async function getAllUserSessionsDB(
     query = query.eq("completed", completed);
   }
 
+  // Optional filter by category
+  if (category_slug) {
+    query = query.eq("category_slug", category_slug);
+  }
+
+  // Optional filter by journey_id
+  if (journey_id) {
+    query = query.eq("journey_id", journey_id);
+  }
+
+  // Optional filter by source
+  if (source) {
+    query = query.eq("source", source);
+    if (source === "tool") {
+      query = query.is("journey_id", null);
+    }
+  }
+
   // Order by journey / tool sessions first
   query = query
-  .order("source", { ascending: false })
-  .order("updated_at", { ascending: false });
+    .order("source", { ascending: false })
+    .order("updated_at", { ascending: false });
 
   // Apply limit if specified
   if (limit) {
@@ -278,6 +299,7 @@ export async function getAllUserSessionsDB(
 
   return data as InterviewSession[];
 }
+
 
 // Update session
 export async function updateInterviewSessionDB(

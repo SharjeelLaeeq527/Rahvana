@@ -2,6 +2,11 @@ import { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { E, msg } from "@/lib/errors";
 import { triggerAppointmentNotification } from "@/lib/notifications";
+import {
+  spendJourneyServiceUse,
+  verifyJourneyServiceAccess,
+  type JourneyServiceAccess,
+} from "@/lib/journey/journeyServiceAccess";
 
 export async function POST(req: NextRequest) {
   console.log("=== Starting appointment submission ===");
@@ -23,29 +28,47 @@ export async function POST(req: NextRequest) {
       }
     );
 
-    // Try to get the authenticated user's ID (optional — booking can work without auth)
-    let currentUserId: string | null = null;
-    try {
-      const authClient = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
-          cookies: {
-            getAll() {
-              return req.cookies.getAll();
-            },
-            setAll() {},
+    // A booking is either paid with the user's credits or covered by their journey
+    // plan, so it always needs a signed-in user.
+    const authClient = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return req.cookies.getAll();
           },
-        }
-      );
-      const { data: { user } } = await authClient.auth.getUser();
-      currentUserId = user?.id ?? null;
-    } catch {
-      // Auth is optional for appointment booking
+          setAll() {},
+        },
+      }
+    );
+    const {
+      data: { user },
+    } = await authClient.auth.getUser();
+    if (!user) {
+      return Response.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
+    const currentUserId = user.id;
 
     // Get form data from request
     const formData = await req.json();
+
+    // Payment is decided here, never by the client: a journey booking is covered by
+    // the journey plan once the journey checks out; a standalone booking is a hidden
+    // draft until /api/wallet/deduct-service charges it.
+    const isJourneyBooking = formData.source === "journey";
+    let journeyPlan: Extract<JourneyServiceAccess, { allowed: true }> | null = null;
+    if (isJourneyBooking) {
+      const access = await verifyJourneyServiceAccess(supabase, currentUserId, "medical_booking", {
+        journeyId: formData.journey_id || null,
+        journeyCategory: formData.journey_category || formData.journey_slug || null,
+        candidateId: formData.candidateId || formData.candidate_id || null,
+      });
+      if (!access.allowed) {
+        return Response.json({ error: access.error }, { status: access.status });
+      }
+      journeyPlan = access;
+    }
     console.log("Received form data:", {
       location: formData.location,
       numberOfApplicants: formData.numberOfApplicants,
@@ -53,8 +76,52 @@ export async function POST(req: NextRequest) {
       applicantsLength: formData.applicants?.length,
     });
 
-    // Extract the full name from given name and surname
-    const fullName = `${formData.givenName} ${formData.surname}`;
+    // Validate preferred appointment date
+    if (formData.preferredAppointmentDate) {
+      const selectedDateString = String(formData.preferredAppointmentDate);
+
+      // Expected format: YYYY-MM-DD
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(selectedDateString)) {
+        return Response.json(
+          { error: "Please provide a valid preferred appointment date." },
+          { status: 400 }
+        );
+      }
+
+      // Get today's date in Pakistan (YYYY-MM-DD)
+      const pakistanToday = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Karachi",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }).format(new Date());
+
+      // Date must be tomorrow or later
+      const today = new Date(`${pakistanToday}T00:00:00`);
+      const selectedDate = new Date(`${selectedDateString}T00:00:00`);
+
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      if (selectedDate < tomorrow) {
+        return Response.json(
+          {
+            error: "Preferred appointment date must be tomorrow or a future date.",
+          },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Extract the full name from given name, surname, or direct fullName
+    const fullName =
+      formData.fullName?.trim() ||
+      `${formData.givenName || ""} ${formData.surname || ""}`.trim() ||
+      "Applicant";
+    const nameParts = fullName.split(" ");
+    const givenName = formData.givenName || nameParts[0] || fullName;
+    const surname = formData.surname || nameParts.slice(1).join(" ") || nameParts[0] || fullName;
+    const phoneNumber = formData.primaryContact || formData.contactNumber || "";
 
     // Define types for our data structures
     interface AppointmentData {
@@ -86,14 +153,22 @@ export async function POST(req: NextRequest) {
       original_passport: string | null;
       status: string;
       case_number?: string;
+      admin_notes?: string;
       user_id?: string | null;
+      candidate_id?: string | null;
+      candidate_role?: string | null;
+      candidate_name?: string | null;
+      source?: string | null;
+      journey_slug?: string | null;
+      awaiting_payment?: boolean;
+      payment_status?: string;
     }
 
     // Prepare appointment data for database insertion
     const appointmentData: AppointmentData = {
       full_name: fullName,
       email: formData.email,
-      phone_number: formData.primaryContact, // ✅ Correct column name
+      phone_number: phoneNumber, // ✅ Uses primaryContact or contactNumber
       medical_website:
         formData.location === "islamabad"
           ? formData.islamabadProvider === "amc"
@@ -105,8 +180,8 @@ export async function POST(req: NextRequest) {
       appointment_type: formData.appointmentType || null,
       visa_type: formData.visaType || null,
       medical_type: formData.medicalType || null,
-      surname: formData.surname,
-      given_name: formData.givenName,
+      surname: surname,
+      given_name: givenName,
       gender: formData.gender || null,
       date_of_birth: formData.dateOfBirth ? new Date(formData.dateOfBirth).toISOString() : null,
       passport_number: formData.passportNumber || null,
@@ -134,6 +209,17 @@ export async function POST(req: NextRequest) {
       original_passport: formData.originalPassport || null,
       status: "pending",
       user_id: currentUserId,
+      admin_notes: formData.candidate_id
+        ? `[Candidate: ${formData.candidate_id}] ${formData.candidate_name || ""}`.trim()
+        : "",
+      candidate_id: formData.candidateId || formData.candidate_id || null,
+      candidate_role: formData.candidateRole || formData.candidate_role || null,
+      candidate_name: formData.candidateName || formData.candidate_name || null,
+      // Origin tagging: 'journey' rows are hidden from standalone My Resources.
+      source: isJourneyBooking ? "journey" : "standalone",
+      journey_slug: isJourneyBooking ? formData.journey_slug || null : null,
+      awaiting_payment: !isJourneyBooking,
+      payment_status: isJourneyBooking ? "paid" : "pending",
     };
 
     // Only add case_number if it exists
@@ -168,11 +254,22 @@ export async function POST(req: NextRequest) {
 
     console.log("✅ Appointment created successfully:", appointment.id);
 
-    // Trigger admin notification for the new request
-    try {
-      await triggerAppointmentNotification(appointment.id);
-    } catch (notifError) {
-      console.error("Failed to trigger appointment notification:", notifError);
+    // Spend one of the bookings the journey plan includes; none left = undo the booking.
+    if (journeyPlan) {
+      const refused = await spendJourneyServiceUse(currentUserId, "medical_booking", journeyPlan);
+      if (refused) {
+        await supabase.from("appointments").delete().eq("id", appointment.id).eq("user_id", currentUserId);
+        return Response.json({ error: refused.error, code: refused.code }, { status: refused.status });
+      }
+    }
+
+    // Trigger admin notification only if not awaiting payment (e.g. journey mode)
+    if (!appointmentData.awaiting_payment) {
+      try {
+        await triggerAppointmentNotification(appointment.id);
+      } catch (notifError) {
+        console.error("Failed to trigger appointment notification:", notifError);
+      }
     }
 
     // If there are additional applicants, save them to the database

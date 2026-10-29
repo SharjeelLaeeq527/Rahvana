@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Lock, ArrowRight } from "lucide-react";
+import { Coins, Lock, ArrowRight } from "lucide-react";
 import { usePlan } from "@/app/context/PlanContext";
 import { useJourneyPlan } from "@/app/context/useJourneyPlan";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
@@ -15,14 +15,13 @@ interface PageGateProps {
   title?: string;
   /** Optional override for the description text on the lock screen */
   description?: string;
-  /**
-   * When provided, entitlement is evaluated against the relevant journey tier instead of the
-   * account-wide plan. Omit to preserve the current account-plan behavior.
-   */
-  planTier?: string | null;
+  /** Force-unlock bypass — e.g. a standalone wallet unlock row grants access without a plan. */
+  allow?: boolean;
+  /** When set, the lock screen gains a primary "Unlock with N Credits" CTA and the upgrade CTA becomes secondary. */
+  creditUnlock?: { credits: number; onUnlock: () => void };
 }
 
-export function PageGate({ feature, children, title, description, planTier }: PageGateProps) {
+export function PageGate({ feature, children, title, description, allow, creditUnlock }: PageGateProps) {
   const router = useRouter();
   const accountPlan = usePlan();
   // Reuse the journey plan API when a tier is supplied; otherwise fall back to account plan.
@@ -46,7 +45,7 @@ export function PageGate({ feature, children, title, description, planTier }: Pa
   }
 
   // If user has access or the feature is fully open, render normally
-  if (plan.canUse(feature)) {
+  if (allow || plan.canUse(feature)) {
     return <>{children}</>;
   }
 
@@ -125,24 +124,42 @@ export function PageGate({ feature, children, title, description, planTier }: Pa
               : "Upgrading your plan unlocks this tool along with your full journey toolkit — the recommended way to get more from Rahvana.")}
         </p>
 
-        <p className="mb-6 text-[12px] text-[#9aa5b1]">{hint}</p>
+        {!creditUnlock && <p className="mb-6 text-[12px] text-[#9aa5b1]">{hint}</p>}
 
         <div className="flex flex-col gap-3">
-          <button
-            onClick={() => setShowUpgradeModal(true)}
-            className={`group flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-[14px] font-bold shadow-md transition-all ${
-              targetTier === "executive"
-                ? "bg-[#0c1b33] text-white hover:bg-[#1a2b4a]"
-                : "bg-primary hover:bg-primary/90 text-white"
-            }`}
-          >
-            {cta}
-            <ArrowRight
-              size={16}
-              strokeWidth={2.5}
-              className="transition-transform group-hover:translate-x-1"
-            />
-          </button>
+          {creditUnlock ? (
+            <>
+              <button
+                onClick={creditUnlock.onUnlock}
+                className="group flex w-full items-center justify-center gap-2 rounded-xl bg-[#0d7377] py-3.5 text-[14px] font-bold text-white shadow-md transition-all hover:bg-[#0a5c5f]"
+              >
+                Unlock with {creditUnlock.credits} Credits
+                <Coins size={16} strokeWidth={2.5} className="transition-transform group-hover:scale-110" />
+              </button>
+              <button
+                onClick={() => setShowUpgradeModal(true)}
+                className="w-full rounded-xl border border-[#d0e4f7] bg-white py-3.5 text-[14px] font-bold text-[#0c1b33] transition-colors hover:bg-[#f4f7fb]"
+              >
+                Or upgrade your plan
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => setShowUpgradeModal(true)}
+              className={`group flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-[14px] font-bold text-white shadow-md transition-all ${
+                targetTier === "executive"
+                  ? "bg-[#0c1b33] text-white hover:bg-[#1a2b4a]"
+                  : "bg-primary hover:bg-primary/90 text-white"
+              }`}
+            >
+              {cta}
+              <ArrowRight
+                size={16}
+                strokeWidth={2.5}
+                className="transition-transform group-hover:translate-x-1"
+              />
+            </button>
+          )}
 
           <button
             onClick={() => router.back()}

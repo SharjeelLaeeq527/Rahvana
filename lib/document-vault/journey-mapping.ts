@@ -1,5 +1,12 @@
 import { ALL_DOCUMENTS } from "./document-definitions";
 import { VisaCategory, ScenarioFlags } from "./types";
+import {
+  getBaseVisaCategory,
+  getCandidateJourneyKey,
+  UNKNOWN_VISA_CATEGORY,
+} from "@/lib/candidate/candidateSyncService";
+
+export { getBaseVisaCategory };
 
 /**
  * Check whether any vault document matches a journey doc item,
@@ -327,7 +334,6 @@ export function mapDocumentNameToId(name: string): string {
     cnic: "cnic-beneficiary",
     "divorce decree": "divorce-decree-beneficiary",
     "talaq nama": "divorce-decree-beneficiary",
-    "certified english translations": "certified-translations",
     "translated nikah nama": "nikah-nama-translation",
     "translated nadra mrc": "nadra-mrc-translation",
     "translated birth certificate": "birth-cert-translation",
@@ -364,32 +370,172 @@ export const FRIENDLY_JOURNEY_NAMES: Record<string, string> = {
   "IR-1": "IR-1 Spouse Visa Journey",
   ir5: "IR-5 Parent Visa Journey",
   "ir-5": "IR-5 Parent Visa Journey",
+  "IR-5": "IR-5 Parent Visa Journey",
+  ir2: "IR-2 Child Visa Journey",
+  "ir-2": "IR-2 Child Visa Journey",
+  "IR-2": "IR-2 Child Visa Journey",
+  cr1: "CR-1 Spouse Visa Journey",
+  "cr-1": "CR-1 Spouse Visa Journey",
+  "CR-1": "CR-1 Spouse Visa Journey",
 };
 
 export function getFriendlyJourneyName(journeyType: string, defaultName?: string): string {
   if (!journeyType) return defaultName || "Immigration Journey";
-  const key = journeyType.toLowerCase().replace(/[^a-z0-9]/g, "");
-  return FRIENDLY_JOURNEY_NAMES[key] || defaultName || `${journeyType.toUpperCase()} Journey`;
+  const baseVisa = getBaseVisaCategory(journeyType);
+  // Unresolvable category: fall back to the provided journey name / a neutral label rather
+  // than rendering "UNKNOWN Journey".
+  if (baseVisa === UNKNOWN_VISA_CATEGORY) return defaultName || "Immigration Journey";
+  const key = baseVisa.toLowerCase().replace(/[^a-z0-9]/g, "");
+  return FRIENDLY_JOURNEY_NAMES[key] || defaultName || `${baseVisa} Journey`;
+}
+
+/** Minimal candidate shape needed to label a journey (subset of CandidateProfile). */
+export interface CandidateLike {
+  id: string;
+  label?: string;
+  fullName?: string;
+  visaCategory?: string;
+}
+
+/**
+ * Find the candidate roster entry that owns a given journey, by matching the journey's
+ * `journey_type` to the candidate's derived journey key (candidate-1 -> base "ir5",
+ * candidate-2 -> "ir5_candidate2", ...). Returns null when there is no roster match
+ * (e.g. a legacy journey with no candidate, or a single-candidate account).
+ */
+export function getCandidateForJourneyType(
+  journeyType: string,
+  candidates?: CandidateLike[] | null
+): CandidateLike | null {
+  if (!journeyType || !candidates || candidates.length === 0) return null;
+  const base = getBaseVisaCategory(journeyType);
+  return (
+    candidates.find((c) => {
+      const candBase = c.visaCategory || base;
+      return isSameJourneyType(getCandidateJourneyKey(candBase, c.id), journeyType);
+    }) || null
+  );
+}
+
+/**
+ * Short human identity for a candidate journey, used to disambiguate two journeys of the
+ * SAME base category (e.g. two IR-5 parents). Prefers the user-typed name and always keeps
+ * the numbered label so the user can tell Candidate 1 from Candidate 2:
+ *   - named:   "Candidate 2 - Nadeem"
+ *   - unnamed: "Candidate 2"
+ * Returns null when the journey has no matching candidate (nothing to disambiguate).
+ */
+export function getCandidateJourneyTag(
+  journeyType: string,
+  candidates?: CandidateLike[] | null
+): string | null {
+  const cand = getCandidateForJourneyType(journeyType, candidates);
+  if (!cand) return null;
+  const name = (cand.fullName || "").trim();
+  const label = (cand.label || "").trim();
+  if (name && label) return `${label} - ${name}`;
+  return name || label || null;
+}
+
+/**
+ * Resolves the dynamic display name for a Document Vault card corresponding to a journey.
+ * If the candidate has a user-saved fullName, returns that name.
+ * If no name is set, falls back to a placeholder like "Candidate 1" or "Candidate 2" based on their order.
+ */
+export function getCandidateDisplayNameForJourney(
+  journeyType: string,
+  candidates?: CandidateLike[] | null
+): string {
+  const cand = getCandidateForJourneyType(journeyType, candidates);
+  if (cand) {
+    const trimmedName = (cand.fullName || "").trim();
+    const DEFAULT_NAME_RE = /^(mother|father|child|spouse|stepparent|adoptive ?parent)\s*\d*$/i;
+    if (trimmedName && !DEFAULT_NAME_RE.test(trimmedName)) {
+      return trimmedName;
+    }
+    const num = (cand.id || "").replace(/[^0-9]/g, "") || "1";
+    return cand.label || `Candidate ${num}`;
+  }
+
+  // Fallback from journey_type string if candidate not in roster
+  const match = (journeyType || "").toLowerCase().match(/candidate[-_]?(\d+)/);
+  const num = match ? match[1] : "1";
+  return `Candidate ${num}`;
+}
+
+/**
+ * Canonical de-dupe key for a journey: base visa category + candidate number.
+ *
+ * A raw string compare (`ir5` vs `ir5-journey` vs `IR-5`) leaves near-duplicate rows of the
+ * SAME journey intact, so the same category renders twice (e.g. in the cross-share list).
+ * Collapsing on the base category fixes that, while the candidate number keeps genuinely
+ * distinct siblings apart (`ir5` = candidate-1, `ir5_candidate-2` = candidate-2 stay separate).
+ * Unknown categories (student visas, etc.) fall back to the old normalized-string key.
+ */
+function journeyDedupeKey(journeyType?: string | null): string {
+  const raw = journeyType || "";
+  const base = getBaseVisaCategory(raw);
+  const candMatch = raw.toLowerCase().match(/candidate[-_ ]?(\d+)/);
+  const cand = candMatch ? candMatch[1] : "";
+  const baseKey =
+    base === UNKNOWN_VISA_CATEGORY
+      ? raw.toLowerCase().replace(/[^a-z0-9]/g, "")
+      : base.toLowerCase().replace(/[^a-z0-9]/g, "");
+  return `${baseKey}#${cand}`;
+}
+
+/**
+ * De-duplicate a list of journeys by their canonical journey identity (base category +
+ * candidate number), keeping the first occurrence. Guards the cross-share list and the vault
+ * card grid against duplicate/variant journey rows (the per-row filter only compares each
+ * journey to the ACTIVE one, never to its siblings, so without this two rows of the same
+ * journey would both render).
+ */
+export function dedupeJourneysByType<T extends { journey_type?: string | null }>(
+  journeys: T[]
+): T[] {
+  const seen = new Set<string>();
+  const out: T[] = [];
+  for (const j of journeys) {
+    const key = journeyDedupeKey(j.journey_type);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(j);
+  }
+  return out;
 }
 
 export const JOURNEY_TYPE_TO_VISA: Record<string, string> = {
   ir1: "IR-1",
   "ir-1": "IR-1",
+  "IR-1": "IR-1",
   ir5: "IR-5",
   "ir-5": "IR-5",
+  "IR-5": "IR-5",
+  ir2: "IR-2",
+  "ir-2": "IR-2",
+  "IR-2": "IR-2",
+  cr1: "CR-1",
+  "cr-1": "CR-1",
+  "CR-1": "CR-1",
 };
 
 export function journeyTypeToVisaCategory(journeyType: string): VisaCategory | null {
   if (!journeyType) return null;
-  const key = journeyType.toLowerCase().replace(/[^a-z0-9]/g, "");
-  return (JOURNEY_TYPE_TO_VISA[key] as VisaCategory) || null;
+  const base = getBaseVisaCategory(journeyType);
+  // Treat an unresolved category as "no category" (null) so isDocumentApplicableToJourney
+  // stays permissive (shows all docs) for a journey we cannot classify, rather than matching
+  // it against applicableVisas and hiding everything.
+  return base === UNKNOWN_VISA_CATEGORY ? null : base;
 }
 
 export function isSameJourneyType(typeA?: string | null, typeB?: string | null): boolean {
   if (!typeA || !typeB) return false;
-  const normA = typeA.toLowerCase().replace(/[^a-z0-9]/g, "");
-  const normB = typeB.toLowerCase().replace(/[^a-z0-9]/g, "");
-  return normA === normB && normA.length > 0;
+  // Compare canonical journey identity (base category + candidate number) so variants of the
+  // same journey ("ir5" / "ir5-journey" / "IR-5") count as equal, while distinct candidates
+  // ("ir5" vs "ir5_candidate-2") stay different. Keeps the active journey (and any duplicate
+  // row of it) out of the cross-share list.
+  return journeyDedupeKey(typeA) === journeyDedupeKey(typeB);
 }
 
 export function isDocumentApplicableToJourney(

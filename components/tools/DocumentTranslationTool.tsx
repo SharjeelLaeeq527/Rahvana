@@ -1,27 +1,40 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { Upload, AlertCircle, CheckCircle, X, FileText, Lock } from "lucide-react";
+import { useState, useRef } from "react";
+import {
+  Upload,
+  AlertCircle,
+  CheckCircle,
+  X,
+  FileText,
+  CreditCard,
+  ShoppingBag,
+  Coins,
+} from "lucide-react";
 import SuccessState from "@/app/components/document-translation/SuccessState";
 import { AuthRequiredModal } from "@/app/components/shared/AuthRequiredModal";
 import { useAuth } from "@/app/context/AuthContext";
+import { useCandidate } from "@/app/context/CandidateContext";
 import { useLanguage } from "@/app/context/LanguageContext";
-import { usePlan } from "@/app/context/PlanContext";
-import { useFeatureAccess } from "@/lib/usage/useFeatureAccess";
-import { isUnlimited } from "@/lib/entitlements/config";
-import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
-import { CreditCard, ShoppingBag, Sparkles, Crown } from "lucide-react";
+import { useWallet } from "@/app/context/WalletContext";
+import { serviceBookingErrorMessage } from "@/lib/wallet/client";
+import { normalizePlanTier } from "@/app/context/PlanContext";
+import type { PlanTier } from "@/lib/entitlements/config";
 
 import { Button } from "@/components/ui/button";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 
-interface DocumentTranslationToolProps {
+import type { ToolModeProps } from "@/types/tool-mode";
+import { useResolveToolMode } from "@/lib/hooks/useResolveToolMode";
+
+interface DocumentTranslationToolProps extends ToolModeProps {
   showHeader?: boolean;
   showRequirements?: boolean;
   showRequestsLink?: boolean;
   className?: string;
   onSuccess?: (data: any) => void;
+  journeyTier?: string | null;
 }
 
 export default function DocumentTranslationTool({
@@ -30,7 +43,15 @@ export default function DocumentTranslationTool({
   showRequestsLink = true,
   className = "",
   onSuccess,
+  mode: propMode,
+  journeyContext: propContext,
+  journeyTier: propJourneyTier,
 }: DocumentTranslationToolProps) {
+  const { isJourney, journeyContext, journeyTier } = useResolveToolMode({
+    mode: propMode,
+    journeyContext: propContext,
+    journeyTier: propJourneyTier,
+  });
   const [file, setFile] = useState<File | null>(null);
   const [documentType, setDocumentType] = useState<string>("");
   const [userNotes, setUserNotes] = useState("");
@@ -44,41 +65,19 @@ export default function DocumentTranslationTool({
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   const { isAuthenticated } = useAuth();
+  const { activeCandidate, activeCandidateId } = useCandidate();
   const { t } = useLanguage();
-  const plan = usePlan();
-  const { checkAccess, consumeAccess } = useFeatureAccess();
+  const wallet = useWallet();
+  // Standalone draft whose payment failed: a retry pays for this same request
+  // (never a second one). Cleared once paid or when the user goes back to edit.
+  const pendingDraftRef = useRef<string | null>(null);
   const { user } = useAuth();
 
-  // Credit balance (mirrors Medical / PCC): plan.canUse() reflects pool
-  // existence, not remaining balance — displays read the server usage counter.
-  const [remainingCredits, setRemainingCredits] = useState<number | null>(null);
-  const [creditsLoading, setCreditsLoading] = useState(true);
-
-  useEffect(() => {
-    if (!isAuthenticated || !user?.id) {
-      setRemainingCredits(null);
-      setCreditsLoading(false);
-      return;
-    }
-    if (isUnlimited("document_translation", plan.tier)) {
-      setCreditsLoading(false);
-      return;
-    }
-    let cancelled = false;
-    setCreditsLoading(true);
-    (async () => {
-      const access = await checkAccess("document_translation");
-      if (cancelled) return;
-      const usage = access?.data?.data?.usage;
-      setRemainingCredits(usage?.remaining ?? 0);
-      setCreditsLoading(false);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [isAuthenticated, user?.id, plan.tier, checkAccess]);
-  // const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  // const isLocked = !plan.isLoading && !plan.canUse("document_translation");
+  // Effective tier — journey tier when embedded, null otherwise
+  const rawJourneyTier = propJourneyTier ?? journeyTier ?? journeyContext?.subscriptionTier;
+  const journeyTierEffective: PlanTier | null =
+    isJourney && rawJourneyTier ? normalizePlanTier(rawJourneyTier) : null;
+  void journeyTierEffective;
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -88,9 +87,15 @@ export default function DocumentTranslationTool({
     setDocumentType("");
     setUserNotes("");
     setError(null);
+    setCheckoutError(null);
     setUploadSuccess(false);
+    setCurrentStep(1);
+    pendingDraftRef.current = null;
 
     if (fileInputRef.current) fileInputRef.current.value = "";
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }, 50);
   };
 
   // Handle file selection
@@ -114,8 +119,31 @@ export default function DocumentTranslationTool({
     setError(null);
   };
 
-  // Handle upload
+  // Origin tag: journey-embedded requests are kept out of standalone My Resources (mirrors PCC / Medical).
+  // A journey request also names its journey, which the server checks for ownership + plan.
+  const buildUploadFormData = (selected: File, type: string) => {
+    const requestData = new FormData();
+    requestData.append("file", selected);
+    requestData.append("documentType", type);
+    requestData.append("candidateId", activeCandidateId || "candidate-1");
+    requestData.append("candidateName", activeCandidate.fullName || activeCandidate.label || "");
+    if (isJourney) {
+      requestData.append("source", "journey");
+      requestData.append("journey_slug", journeyContext?.journeySlug || "");
+      requestData.append("journey_id", journeyContext?.backendId || "");
+      requestData.append("journey_category", journeyContext?.journeyCategory || "");
+    } else {
+      requestData.append("source", "standalone");
+    }
+    if (userNotes) {
+      requestData.append("userNotes", userNotes);
+    }
+    return requestData;
+  };
+
+  // Journey submit: covered by the journey plan, so no checkout step and no credits.
   const handleUpload = async () => {
+    if (uploading) return;
     if (!isAuthenticated) {
       setShowAuthModal(true);
       return;
@@ -130,16 +158,9 @@ export default function DocumentTranslationTool({
     setError(null);
 
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("documentType", documentType);
-      if (userNotes) {
-        formData.append("userNotes", userNotes);
-      }
-
       const response = await fetch("/api/document-translation/upload", {
         method: "POST",
-        body: formData,
+        body: buildUploadFormData(file, documentType),
       });
 
       const data = await response.json();
@@ -191,69 +212,68 @@ export default function DocumentTranslationTool({
       setCheckoutLoading(true);
       setCheckoutError(null);
 
-      // Create translation request first
-      const requestData = new FormData();
-
-      requestData.append("file", file);
-      requestData.append("documentType", documentType);
-
-      if (userNotes) {
-        requestData.append("userNotes", userNotes);
+      // Standalone only (journeys submit from step 1): deduct 25 wallet credits ($25)
+      // Check wallet balance first
+      if (wallet.balance === null || wallet.balance < 25) {
+        const deficit = Math.max(25, 25 - (wallet.balance ?? 0));
+        wallet.openTopup({ amount: deficit });
+        setCheckoutError(
+          `You need 25 credits for document translation (Balance: ${wallet.balance ?? 0} credits). Please top up to proceed.`
+        );
+        setCheckoutLoading(false);
+        return;
       }
 
-      const response = await fetch("/api/document-translation/upload", {
-        method: "POST",
-        body: requestData,
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error);
+      // Upload file and create pending request row (reused on a retry)
+      let docId = pendingDraftRef.current;
+      let uploadData: unknown = { documentId: docId };
+      if (!docId) {
+        const uploadRes = await fetch("/api/document-translation/upload", {
+          method: "POST",
+          body: buildUploadFormData(file, documentType),
+        });
+        uploadData = await uploadRes.json();
+        const created = uploadData as { documentId?: string; error?: string };
+        if (!uploadRes.ok || !created.documentId) {
+          throw new Error(created.error || t("documentTranslation.uploadPage.validation.uploadFailed"));
+        }
+        docId = created.documentId;
+        pendingDraftRef.current = docId;
       }
 
-      // Free path: Executive (unlimited) or one available credit. The POST
-      // endpoint checks + consumes atomically, so no separate pre-check here.
-      const unlimited = isUnlimited("document_translation", plan.tier);
+      // Deduct 25 credits atomically for service booking
+      try {
+        const deductResult = await wallet.deductServiceBooking("document-translation", docId);
 
-      if (!unlimited) {
-        const reservation = await consumeAccess("document_translation");
-
-        if (!reservation.allowed || reservation.data?.allowed === false) {
-          // No credits left (or raced with another tab) — pay $25 via Stripe.
-          try {
-            // The upload API returns { documentId } (not id). Send that to Stripe.
-            const stripeRes = await fetch("/api/stripe/checkout", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ documentTranslationId: String(result.documentId) }),
-            });
-            const stripeData = await stripeRes.json();
-            if (stripeData.url) {
-              window.location.href = stripeData.url;
-              return;
-            }
-            setCheckoutError("Could not start the payment. Please try again.");
-            return;
-          } catch (stripeErr) {
-            console.error("Checkout redirection failed:", stripeErr);
-            setCheckoutError("Checkout redirection failed");
-            return;
-          }
+        if (deductResult.body.success) {
+          pendingDraftRef.current = null;
+          setUploadSuccess(true);
+          if (onSuccess) onSuccess(uploadData);
+          return;
         }
 
-        // Credit applied — keep the displayed balance in sync.
-        if (reservation.data?.remaining !== undefined) {
-          setRemainingCredits(reservation.data.remaining);
+        if (deductResult.status === 402) {
+          const deficit = deductResult.body.deficit ?? 25;
+          wallet.openTopup({ amount: deductResult.body.topupAmount ?? deficit });
+          setCheckoutError(
+            `Insufficient credits. Please top up ${deficit} credits to complete your translation request.`
+          );
+          setCheckoutLoading(false);
+          return;
         }
-      }
 
-      setUploadSuccess(true);
-
-      if (onSuccess) {
-        onSuccess(result);
+        console.error("Credit deduction failed:", deductResult.body.error);
+        setCheckoutError(serviceBookingErrorMessage(deductResult.body.error));
+        setCheckoutLoading(false);
+        return;
+      } catch (deductErr: unknown) {
+        console.error("Credit deduction failed:", deductErr);
+        setCheckoutError(serviceBookingErrorMessage("NETWORK_ERROR"));
+        setCheckoutLoading(false);
+        return;
       }
     } catch (err) {
+      console.error(err);
       setCheckoutError(err instanceof Error ? err.message : "Checkout failed");
     } finally {
       setCheckoutLoading(false);
@@ -263,15 +283,12 @@ export default function DocumentTranslationTool({
   interface CheckoutStepProps {
     file: File | null;
     documentType: string;
-    // sourceLanguage: string;
-    // targetLanguage: string;
     userNotes: string;
     error: string | null;
     loading: boolean;
-    isUnlimitedAccess: boolean;
-    hasCredit: boolean;
-    remainingCredits: number | null;
-    creditsLoading: boolean;
+    walletBalance: number | null;
+    walletLoading: boolean;
+    onTopup: (deficit: number) => void;
     onBack: () => void;
     onSubmit: () => void;
   }
@@ -279,19 +296,18 @@ export default function DocumentTranslationTool({
   const CheckoutStep = ({
     file,
     documentType,
-    // sourceLanguage,
-    // targetLanguage,
     userNotes,
     error,
     loading,
-    isUnlimitedAccess,
-    hasCredit,
-    remainingCredits,
-    creditsLoading,
+    walletBalance,
+    walletLoading,
+    onTopup,
     onBack,
     onSubmit,
   }: CheckoutStepProps) => {
-    const freeTranslation = isUnlimitedAccess || hasCredit;
+    const costCredits = 25;
+    const hasWalletCredits = walletBalance !== null && walletBalance >= costCredits;
+    const deficit = Math.max(costCredits, costCredits - (walletBalance ?? 0));
 
     return (
       <div className="space-y-6">
@@ -315,22 +331,8 @@ export default function DocumentTranslationTool({
                 <p className="text-sm font-semibold text-slate-800">{file?.name}</p>
 
                 <p className="text-xs text-slate-500">
-                  Document Type: <span className="font-medium text-slate-700">{documentType}</span>
+                  Document Type: <span className="font-medium text-slate-700 capitalize">{documentType}</span>
                 </p>
-
-                {/* <p className="text-xs text-slate-500">
-                Source Language:{" "}
-                <span className="font-medium text-slate-700">
-                  {sourceLanguage}
-                </span>
-              </p>
-
-              <p className="text-xs text-slate-500">
-                Target Language:{" "}
-                <span className="font-medium text-slate-700">
-                  {targetLanguage}
-                </span>
-              </p> */}
 
                 {userNotes && (
                   <p className="text-xs text-slate-500">
@@ -340,21 +342,6 @@ export default function DocumentTranslationTool({
               </div>
             </div>
 
-            {/* Secure Transaction Card */}
-            <div className="flex items-start gap-3 rounded-2xl border border-slate-200/60 bg-slate-50 p-5">
-              <CreditCard className="mt-0.5 h-5 w-5 flex-shrink-0 text-teal-600" />
-
-              <div>
-                <h5 className="text-xs font-bold tracking-wide text-slate-900 uppercase">
-                  Secure Transaction
-                </h5>
-
-                <p className="mt-1 text-xs leading-relaxed text-slate-500">
-                  Your details are handled securely. One-time card payments are processed securely
-                  via Stripe.
-                </p>
-              </div>
-            </div>
           </div>
 
           {/* RIGHT COLUMN */}
@@ -372,28 +359,20 @@ export default function DocumentTranslationTool({
                       1x Document Translation Service
                     </span>
 
-                    <span className="font-bold text-slate-800">$25.00</span>
+                    <span className="font-bold text-slate-800">25 Credits ($25.00)</span>
                   </div>
 
-                  {isUnlimitedAccess && (
-                    <div className="flex items-center justify-between text-sm text-green-600">
-                      <span className="flex items-center gap-1 font-semibold">
-                        <Crown className="h-3.5 w-3.5" />
-                        Executive Plan Benefit
-                      </span>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium text-slate-600">Wallet Balance</span>
+                    <span className="font-bold text-slate-800">
+                      {walletLoading ? "..." : `${walletBalance ?? 0} Credits`}
+                    </span>
+                  </div>
 
-                      <span className="font-bold">-$25.00</span>
-                    </div>
-                  )}
-
-                  {!isUnlimitedAccess && hasCredit && (
-                    <div className="flex items-center justify-between text-sm text-green-600">
-                      <span className="flex items-center gap-1 font-semibold">
-                        <Sparkles className="h-3.5 w-3.5" />
-                        Translation Credit
-                      </span>
-
-                      <span className="font-bold">-$25.00</span>
+                  {hasWalletCredits && (
+                    <div className="flex items-center justify-between text-sm text-[#0d7377]">
+                      <span className="font-medium">Balance After Booking</span>
+                      <span className="font-bold">{(walletBalance ?? 25) - costCredits} Credits</span>
                     </div>
                   )}
 
@@ -401,38 +380,12 @@ export default function DocumentTranslationTool({
                     <span className="text-base font-bold text-slate-900">Total Due</span>
 
                     <span className="text-xl font-black text-slate-900">
-                      {freeTranslation ? "$0.00" : "$25.00"}
+                      25 Credits ($25.00)
                     </span>
                   </div>
                 </div>
 
-                {isUnlimitedAccess ? (
-                  <div className="mt-5 flex items-center gap-2 rounded-xl border border-amber-100 bg-amber-50 p-3">
-                    <Crown className="h-4 w-4 flex-shrink-0 text-amber-500" />
-
-                    <span className="text-[11px] font-bold text-amber-800">
-                      Document translation is included free with your Executive plan.
-                    </span>
-                  </div>
-                ) : hasCredit ? (
-                  <div className="mt-5 flex items-center gap-2 rounded-xl border border-amber-100 bg-amber-50 p-3">
-                    <Sparkles className="h-4 w-4 flex-shrink-0 text-teal-600" />
-
-                    <span className="text-[11px] font-bold text-amber-800">
-                      1 of your {remainingCredits} translation{" "}
-                      {remainingCredits === 1 ? "credit" : "credits"} will be applied — no payment
-                      needed.
-                    </span>
-                  </div>
-                ) : !creditsLoading ? (
-                  <div className="mt-5 rounded-xl border border-slate-200 bg-slate-100 p-3">
-                    <span className="text-[11px] font-bold text-slate-600">
-                      {remainingCredits === 0
-                        ? "No translation credits left — a one-time $25 fee applies at secure checkout."
-                        : "A one-time $25 fee applies at secure checkout. Buy the translation add-on to translate free with credits next time."}
-                    </span>
-                  </div>
-                ) : null}
+                
               </div>
 
               {error && (
@@ -451,17 +404,15 @@ export default function DocumentTranslationTool({
                 </Button>
 
                 <Button
-                  onClick={onSubmit}
+                  onClick={hasWalletCredits ? onSubmit : () => onTopup(deficit)}
                   disabled={loading}
                   className="w-full bg-teal-600 text-white hover:bg-teal-700 sm:w-auto"
                 >
                   {loading
                     ? "Processing..."
-                    : isUnlimitedAccess
-                      ? "Confirm Request (Free)"
-                      : hasCredit
-                        ? "Confirm Request (Free)"
-                        : "Proceed to Payment ($25)"}
+                    : hasWalletCredits
+                      ? "Pay 25 Credits & Confirm"
+                      : `Top up ${deficit} Credits to Submit`}
                 </Button>
               </div>
             </div>
@@ -472,7 +423,11 @@ export default function DocumentTranslationTool({
   };
 
   return (
-    <div className={`flex w-full flex-col items-center ${className}`}>
+    <div
+      className={`flex w-full flex-col items-center ${
+        uploadSuccess ? "flex-1 justify-center" : ""
+      } ${className}`}
+    >
       {/* Header */}
       {showHeader && (
         <header className="mb-8 w-full max-w-4xl text-center md:mb-10">
@@ -482,48 +437,34 @@ export default function DocumentTranslationTool({
           <p className="mx-auto mt-3 max-w-2xl text-base text-gray-600 sm:text-lg">
             {t("documentTranslation.uploadPage.subtitle")}
           </p>
-          <div className="mt-4 flex justify-center">
-            <QuickAccessButton
-              item={{
-                id: "service-urdu-→-english-translation",
-                title:
-                  t("documentTranslation.uploadPage.title") || "Certified Document Translation",
-                href: "/document-translation",
-                icon_name: "Files",
-              }}
-            />
-          </div>
-
-          {/* Credit visibility (mirrors Medical / PCC credit chips) */}
-          {isUnlimited("document_translation", plan.tier) ? (
+          {!isJourney && (
             <div className="mt-4 flex justify-center">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-bold text-amber-800">
-                <Crown className="h-3.5 w-3.5" />
-                Executive — unlimited document translations
+              <QuickAccessButton
+                item={{
+                  id: "service-urdu-→-english-translation",
+                  title:
+                    t("documentTranslation.uploadPage.title") || "Certified Document Translation",
+                  href: "/document-translation",
+                  icon_name: "Files",
+                }}
+              />
+            </div>
+          )}
+
+          {/* Credit visibility for standalone */}
+          {/* {!isJourney && isAuthenticated && (
+            <div className="mt-4 flex justify-center">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-bold text-teal-800">
+                <Coins size={14} className="text-[#0d7377]" />
+                25 Credits ($25) per translation • Balance: {wallet.isLoading ? "..." : `${wallet.balance ?? 0} Credits`}
               </span>
             </div>
-          ) : isAuthenticated && !creditsLoading ? (
-            <div className="mt-4 flex justify-center">
-              {remainingCredits !== null && remainingCredits > 0 ? (
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-bold text-teal-800">
-                  <Sparkles className="h-3.5 w-3.5" />
-                  {remainingCredits} translation {remainingCredits === 1 ? "credit" : "credits"}{" "}
-                  available
-                </span>
-              ) : (
-                <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-semibold text-gray-600">
-                  {remainingCredits === 0
-                    ? "No translation credits left — $25 per translation"
-                    : "No translation credits — $25 per translation"}
-                </span>
-              )}
-            </div>
-          ) : null}
+          )} */}
         </header>
       )}
 
-      {/* Step indicator — orients the user across the 2-step flow */}
-      {!uploadSuccess && (
+      {/* Step indicator: orients the user across the 2-step flow (standalone only) */}
+      {!uploadSuccess && !isJourney && (
         <div className="mx-auto mb-8 flex w-full max-w-sm items-center justify-center gap-2 sm:gap-3">
           <div className="flex items-center gap-2">
             <span
@@ -570,7 +511,7 @@ export default function DocumentTranslationTool({
       )}
 
       {!uploadSuccess ? (
-        currentStep === 1 ? (
+        currentStep === 1 || isJourney ? (
           <>
             {/* Requirements Section */}
             {showRequirements && (
@@ -713,6 +654,11 @@ export default function DocumentTranslationTool({
                       return;
                     }
 
+                    if (isJourney) {
+                      void handleUpload();
+                      return;
+                    }
+
                     setCurrentStep(2);
                   }}
                   // disabled={!isLocked && (!file || uploading)}
@@ -760,22 +706,24 @@ export default function DocumentTranslationTool({
           <CheckoutStep
             file={file}
             documentType={documentType}
-            // sourceLanguage={sourceLanguage}
-            // targetLanguage={targetLanguage}
             userNotes={userNotes}
             error={checkoutError}
             loading={checkoutLoading}
-            isUnlimitedAccess={isUnlimited("document_translation", plan.tier)}
-            hasCredit={remainingCredits !== null && remainingCredits > 0}
-            remainingCredits={remainingCredits}
-            creditsLoading={creditsLoading}
-            onBack={() => setCurrentStep(1)}
+            walletBalance={wallet.balance}
+            walletLoading={wallet.isLoading}
+            onTopup={(deficit) => wallet.openTopup({ amount: deficit })}
+            onBack={() => {
+              pendingDraftRef.current = null;
+              setCurrentStep(1);
+            }}
             onSubmit={handleCheckoutSubmit}
           />
         )
       ) : (
         <SuccessState
           onGoToRequests={() => (window.location.href = "/document-translation/my-requests")}
+          onUploadAnother={reset}
+          isJourney={isJourney}
         />
       )}
 

@@ -15,19 +15,15 @@ import { Button } from "@/components/ui/button";
 import Pagination from "@/components/ui/pagination";
 import { ElementType } from "react";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { useCandidate } from "@/app/context/CandidateContext";
 import { Loader } from "@/components/ui/spinner";
 import { DataTable, Column } from "@/app/components/shared/table/DataTable";
 import { FilterPanel, FilterField } from "@/app/components/shared/FilterPanel";
 import ActionMenu from "@/app/components/shared/ActionMenu";
-import { PageGate } from "@/app/components/entitlements/PageGate";
+// import { PageGate } from "@/app/components/entitlements/PageGate";
 
 type TranslationStatus =
-  | "PENDING"
-  | "IN_REVIEW"
-  | "TRANSLATED"
-  | "USER_CONFIRMED"
-  | "CHANGES_REQUESTED"
-  | "VERIFIED";
+  "PENDING" | "IN_REVIEW" | "TRANSLATED" | "USER_CONFIRMED" | "CHANGES_REQUESTED" | "VERIFIED";
 
 interface Requests {
   id: string;
@@ -35,6 +31,8 @@ interface Requests {
   created_at: string;
   status: TranslationStatus;
   version: number;
+  candidate_id?: string;
+  candidate_name?: string;
 }
 
 const StatusBadge = ({ status, version }: { status: TranslationStatus; version: number }) => {
@@ -83,9 +81,9 @@ const StatusBadge = ({ status, version }: { status: TranslationStatus; version: 
 
   return (
     <span
-      className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${config.color}`}
+      className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium ${config.color}`}
     >
-      <Icon className="w-3 h-3" />
+      <Icon className="h-3 w-3" />
       {displayLabel}
     </span>
   );
@@ -93,6 +91,7 @@ const StatusBadge = ({ status, version }: { status: TranslationStatus; version: 
 
 export default function MyTranslationRequests() {
   const { t } = useLanguage();
+  const { activeCandidate, activeCandidateId, isMultiCandidate } = useCandidate();
   const [requests, setRequests] = useState<Requests[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<Record<string, string>>({
@@ -105,12 +104,19 @@ export default function MyTranslationRequests() {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const ITEMS_PER_PAGE = 10;
 
-  // fetch
+  // fetch candidate-scoped translation requests
   useEffect(() => {
+    let isCancelled = false;
     const fetchRequests = async () => {
+      setLoading(true);
       try {
-        const response = await fetch(`/api/document-translation/list`);
+        const queryParam = activeCandidateId
+          ? `?candidateId=${encodeURIComponent(activeCandidateId)}`
+          : "";
+        const response = await fetch(`/api/document-translation/list${queryParam}`);
         const data = await response.json();
+
+        if (isCancelled) return;
 
         if (response.ok) {
           setRequests(data.documents || []);
@@ -119,15 +125,21 @@ export default function MyTranslationRequests() {
           setRequests([]);
         }
       } catch (error) {
+        if (isCancelled) return;
         console.error("Error fetching requests:", error);
         setRequests([]);
       } finally {
-        setLoading(false);
+        if (!isCancelled) {
+          setLoading(false);
+        }
       }
     };
 
     fetchRequests();
-  }, []);
+    return () => {
+      isCancelled = true;
+    };
+  }, [activeCandidateId]);
 
   // Helper function to calculate date range for date filters
   const getDateRange = (filterValue: string): { start: Date; end: Date } | null => {
@@ -245,10 +257,10 @@ export default function MyTranslationRequests() {
       label: t("documentTranslation.myRequestsPage.table.documentType"),
       render: (request: Requests) => (
         <div className="flex items-center">
-          <FileText className="w-5 h-5 text-primary/80 mr-2 shrink-0" />
-          <div className="text-xs sm:text-sm font-medium text-gray-900 truncate max-w-30 sm:max-w-none">
+          <FileText className="text-primary/80 mr-2 h-5 w-5 shrink-0" />
+          <div className="max-w-30 truncate text-xs font-medium text-gray-900 sm:max-w-none sm:text-sm">
             {t(`documentTranslation.uploadPage.types.${request.document_type}`)}
-            <div className="sm:hidden text-[10px] text-gray-500 font-normal mt-0.5">
+            <div className="mt-0.5 text-[10px] font-normal text-gray-500 sm:hidden">
               {formatDate(request.created_at)}
             </div>
           </div>
@@ -261,7 +273,7 @@ export default function MyTranslationRequests() {
       className: "hidden sm:table-cell",
       render: (request: Requests) => (
         <div className="flex items-center">
-          <Calendar className="w-4 h-4 text-gray-400 mr-2" />
+          <Calendar className="mr-2 h-4 w-4 text-gray-400" />
           <div className="text-sm text-gray-500">{formatDate(request.created_at)}</div>
         </div>
       ),
@@ -286,27 +298,41 @@ export default function MyTranslationRequests() {
   ];
 
   return (
-    <PageGate
-      feature="document_translation"
-      title="My Requests Locked"
-      description="Upgrade your plan to view your submitted translation requests, track review statuses, and download your translated/certified PDF documents."
-    >
-      <div className="min-h-[50vh] bg-linear-to-br from-slate-50 to-slate-100 text-gray-800 site-main-px site-main-py mt-[55px]">
+    // <PageGate
+    //   feature="document_translation"
+    //   title="My Requests Locked"
+    //   description="Upgrade your plan to view your submitted translation requests, track review statuses, and download your translated/certified PDF documents."
+    // >
+    <>
+      <div className="site-main-px site-main-py mt-[55px] min-h-[50vh] bg-linear-to-br from-slate-50 to-slate-100 text-gray-800">
         <div className="">
           <header className="mb-8 md:mb-10">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary/90">
+            <h1 className="text-primary/90 text-2xl font-bold sm:text-3xl md:text-4xl">
               {t("documentTranslation.myRequestsPage.title")}
             </h1>
-            <p className="mt-2 text-sm sm:text-base text-gray-600">
+            <p className="mt-2 text-sm text-gray-600 sm:text-base">
               {t("documentTranslation.myRequestsPage.subtitle")}
             </p>
+            {isMultiCandidate && (
+              <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-medium text-teal-800">
+                <span className="h-2 w-2 animate-pulse rounded-full bg-teal-500" />
+                <span>
+                  Showing requests for:{" "}
+                  <strong>
+                    {activeCandidate.fullName
+                      ? `${activeCandidate.fullName} (${activeCandidate.label})`
+                      : activeCandidate.label}
+                  </strong>
+                </span>
+              </div>
+            )}
           </header>
 
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-800">
+          <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className="text-lg font-semibold text-gray-800 sm:text-xl">
               {t("documentTranslation.myRequestsPage.allRequests")}
             </h2>
-            <div className="flex flex-col sm:flex-row sm:items-center gap-4 w-full sm:w-auto">
+            <div className="flex w-full flex-col gap-4 sm:w-auto sm:flex-row sm:items-center">
               {requests.length > 0 && (
                 <FilterPanel
                   fields={filterFields}
@@ -320,24 +346,24 @@ export default function MyTranslationRequests() {
               )}
               <Button
                 onClick={() => (window.location.href = "/document-translation")}
-                className="bg-primary hover:bg-primary/90 cursor-pointer w-full sm:w-auto"
+                className="bg-primary hover:bg-primary/90 w-full cursor-pointer sm:w-auto"
               >
-                <Upload className="w-4 h-4 mr-2" />
+                <Upload className="mr-2 h-4 w-4" />
                 {t("documentTranslation.myRequestsPage.uploadNewBtn")}
               </Button>
             </div>
           </div>
 
           {loading ? (
-            <div className="flex justify-center items-center h-64">
+            <div className="flex h-64 items-center justify-center">
               <Loader size="md" text="Loading translation requests..." />
             </div>
           ) : (
             <>
               {requests.length === 0 ? (
-                <div className="bg-white rounded-xl shadow-md overflow-hidden text-center py-10 px-4 sm:py-12">
-                  <FileText className="w-10 h-10 sm:w-12 sm:h-12 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-1">
+                <div className="overflow-hidden rounded-xl bg-white px-4 py-10 text-center shadow-md sm:py-12">
+                  <FileText className="mx-auto mb-4 h-10 w-10 text-gray-300 sm:h-12 sm:w-12" />
+                  <h3 className="mb-1 text-base font-medium text-gray-900 sm:text-lg">
                     {t("documentTranslation.myRequestsPage.noRequestsTitle")}
                   </h3>
                   <p className="text-sm text-gray-500">
@@ -345,27 +371,25 @@ export default function MyTranslationRequests() {
                   </p>
                   <div className="mt-6">
                     <Button
-                      onClick={() =>
-                        (window.location.href = "/document-translation")
-                      }
+                      onClick={() => (window.location.href = "/document-translation")}
                       className="bg-primary hover:bg-primary/90 w-full sm:w-auto"
                     >
-                      <Upload className="w-4 h-4 mr-2" />
+                      <Upload className="mr-2 h-4 w-4" />
                       {t("documentTranslation.myRequestsPage.uploadFirstBtn")}
                     </Button>
                   </div>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <div className="bg-white rounded-xl shadow-md overflow-visible border border-slate-100">
+                  <div className="overflow-visible rounded-xl border border-slate-100 bg-white shadow-md">
                     <DataTable<Requests>
                       columns={columns}
                       data={currentRequests}
                       rowKey={(item: Requests) => item.id}
                       loading={false}
                       emptyState={
-                        <div className="text-center py-10 px-4">
-                          <FileText className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+                        <div className="px-4 py-10 text-center">
+                          <FileText className="mx-auto mb-3 h-10 w-10 text-gray-300" />
                           <p className="text-sm text-gray-500">
                             {t("documentTranslation.myRequestsPage.noResults")}
                           </p>
@@ -375,7 +399,7 @@ export default function MyTranslationRequests() {
 
                     {/* Pagination - only show if there are filtered requests and multiple pages */}
                     {filteredRequests.length > 0 && totalPages > 1 && (
-                      <div className="w-full flex justify-center py-4 overflow-x-auto border-t border-slate-100">
+                      <div className="flex w-full justify-center overflow-x-auto border-t border-slate-100 py-4">
                         <Pagination
                           currentPage={currentPage}
                           totalItems={filteredRequests.length}
@@ -391,6 +415,7 @@ export default function MyTranslationRequests() {
           )}
         </div>
       </div>
-    </PageGate>
+      {/* </PageGate> */}
+    </>
   );
 }

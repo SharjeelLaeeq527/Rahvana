@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -46,6 +47,21 @@ const IOMInfoStep = ({
   onBack,
 }: IOMInfoStepProps) => {
   const { t } = useLanguage();
+  const today = new Date().toISOString().split("T")[0];
+  const isFutureDob = Boolean(formData.dateOfBirth && formData.dateOfBirth > today);
+  const hasValidationError = Boolean(error || isFutureDob);
+
+  useEffect(() => {
+    if (!formData.destinationCountry) {
+      onSelectChange("destinationCountry")("United States");
+    }
+    if (!formData.preferredLocation) {
+      onSelectChange("preferredLocation")("islamabad");
+    }
+    if (!formData.visaType) {
+      onSelectChange("visaType")("Immigrant Visa");
+    }
+  }, [formData.destinationCountry, formData.preferredLocation, formData.visaType, onSelectChange]);
 
   return (
     <div className="space-y-6">
@@ -94,9 +110,18 @@ const IOMInfoStep = ({
               id="dateOfBirth"
               name="dateOfBirth"
               type="date"
+              max={today}
               value={formData.dateOfBirth || ""}
               onChange={onChange}
+              className={isFutureDob ? "border-red-500 focus-visible:ring-red-500" : ""}
             />
+            {isFutureDob && (
+              <p className="text-xs font-medium text-red-500">
+                {t("bookAppointment.validation.dobFuture") !== "bookAppointment.validation.dobFuture"
+                  ? t("bookAppointment.validation.dobFuture")
+                  : "Date of birth cannot be in the future"}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -164,7 +189,7 @@ const IOMInfoStep = ({
             <Input
               id="destinationCountry"
               name="destinationCountry"
-              value="United States"
+              value={formData.destinationCountry || "United States"}
               disabled
               className="bg-gray-100 cursor-not-allowed text-gray-700 font-medium"
             />
@@ -185,7 +210,11 @@ const IOMInfoStep = ({
           >
             {t("bookAppointment.iomInfoStep.backBtn")}
           </Button>
-          <Button onClick={onNext} className="bg-teal-600 hover:bg-teal-700 text-white">
+          <Button
+            onClick={onNext}
+            disabled={hasValidationError}
+            className="bg-teal-600 hover:bg-teal-700 text-white disabled:cursor-not-allowed disabled:opacity-50"
+          >
             {t("bookAppointment.iomInfoStep.submitBtn")}
           </Button>
         </div>

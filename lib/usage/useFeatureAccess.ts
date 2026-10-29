@@ -32,12 +32,26 @@ type FeatureUsageResponse = {
   };
 };
 
+/**
+ * Where the check runs. The server resolves the tier from this (journey plan,
+ * no plan for standalone, or the account plan by default); it never trusts a
+ * tier sent by the client.
+ */
+export type FeatureAccessOptions = {
+  scope?: "journey" | "standalone";
+  /** Journey row id (or slug) when scope is "journey". */
+  journeyId?: string | null;
+  journeyCategory?: string | null;
+  candidateId?: string | null;
+};
+
 export function useFeatureAccess() {
   const [loading, setLoading] = useState(false);
 
   const checkAccess = useCallback(
     async (
-      feature: string
+      feature: string,
+      options?: FeatureAccessOptions
     ): Promise<{
       allowed: boolean;
       data?: FeatureUsageResponse;
@@ -45,7 +59,13 @@ export function useFeatureAccess() {
       try {
         setLoading(true);
 
-        const res = await fetch(`/api/feature-usage?feature=${encodeURIComponent(feature)}`, {
+        const params = new URLSearchParams({ feature });
+        if (options?.scope) params.set("scope", options.scope);
+        if (options?.journeyId) params.set("journeyId", options.journeyId);
+        if (options?.journeyCategory) params.set("journeyCategory", options.journeyCategory);
+        if (options?.candidateId) params.set("candidateId", options.candidateId);
+
+        const res = await fetch(`/api/feature-usage?${params.toString()}`, {
           method: "GET",
         });
 
@@ -79,7 +99,8 @@ export function useFeatureAccess() {
 
   const consumeAccess = useCallback(
     async (
-      feature: string
+      feature: string,
+      options?: FeatureAccessOptions
     ): Promise<{
       allowed: boolean;
       data?: FeatureUsageResponse;
@@ -92,7 +113,13 @@ export function useFeatureAccess() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ feature }),
+          body: JSON.stringify({
+            feature,
+            scope: options?.scope,
+            journeyId: options?.journeyId,
+            journeyCategory: options?.journeyCategory,
+            candidateId: options?.candidateId,
+          }),
         });
 
         const data = (await res.json()) as FeatureUsageResponse;

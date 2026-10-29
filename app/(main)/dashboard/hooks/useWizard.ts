@@ -8,6 +8,7 @@ import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { mapDocumentNameToId } from "@/lib/document-vault/journey-mapping";
 import { getJourneyLockStatus } from "@/lib/journey-lock";
 import { useUserProfile } from "@/app/context/UserProfileContext";
+import { useCandidate } from "@/app/context/CandidateContext";
 import { syncCaseDataToProfile, syncProfileToCaseData } from "@/lib/autoFill/journeyProfileBridge";
 
 export interface WizardState {
@@ -59,7 +60,9 @@ const DEFAULT_STATE: WizardState = {
 interface UseWizardOptions {
   userId?: string | null;
   journeyId?: string;
+  candidateId?: string;
   roadmapData?: any;
+  journeyDbId?: string | null;
 }
 
 export function useWizard(options: UseWizardOptions = {}) {
@@ -67,7 +70,10 @@ export function useWizard(options: UseWizardOptions = {}) {
   const routeJourney = params?.["visa-journey"];
   const routeJourneyId = typeof routeJourney === "string" ? routeJourney.replace("-", "").toLowerCase() : undefined;
 
-  const { userId, journeyId = routeJourneyId, roadmapData: externalRoadmapData } = options;
+  const { activeCandidateId } = useCandidate();
+  const effectiveCandidateId = options.candidateId || activeCandidateId || "candidate-1";
+
+  const { userId, journeyId = routeJourneyId, roadmapData: externalRoadmapData, journeyDbId } = options;
   const { profile, updateProfile } = useUserProfile();
 
   const activeRoadmap = externalRoadmapData;
@@ -79,6 +85,15 @@ export function useWizard(options: UseWizardOptions = {}) {
   const [error, setError] = useState<Error | null>(null);
 
   const {showToast} = useToast();
+
+  // Abort controller ref — cancelled on unmount to silence "Failed to fetch"
+  // errors caused by in-flight requests surviving hot-reloads or navigation.
+  const abortControllerRef = useRef<AbortController | null>(null);
+  useEffect(() => {
+    return () => {
+      abortControllerRef.current?.abort();
+    };
+  }, []);
 
   // Keep a ref to the latest state to use in stable memoized actions
   const stateRef = useRef(state);
@@ -173,7 +188,11 @@ export function useWizard(options: UseWizardOptions = {}) {
         const res = await fetch("/api/journeys/initialize", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ journey_type: journeyId }),
+          body: JSON.stringify({
+            journey_type: journeyId,
+            candidate_id: effectiveCandidateId,
+            journey_db_id: journeyDbId || undefined,
+          }),
         });
 
         if (!res.ok) throw new Error(`Initialize failed: HTTP ${res.status}`);
@@ -240,22 +259,22 @@ export function useWizard(options: UseWizardOptions = {}) {
 
         setState((prev) => ({
           ...prev,
-          backendId: journey.id,
-          subscriptionTier: journey.subscription_tier || "free", 
+          backendId: journey?.id || undefined,
+          subscriptionTier: journey?.subscription_tier || "free", 
           stepMap,
           stepTimestamps,
           completedSteps: completedSet,
           metadata: {
             ...metadata,
-            tracking_status: journey.tracking_status || {},
+            tracking_status: journey?.tracking_status || {},
           },
-          filingType: (journey.filing_method as any) || prev.filingType,
+          filingType: (journey?.filing_method as any) || prev.filingType,
           currentStage: derivedStage,
           currentStep: derivedStep,
-          started: journey.status !== "not_started",
+          started: journey?.status ? journey.status !== "not_started" : false,
         }));
 
-        setHasExistingProgress(journey.status !== "not_started");
+        setHasExistingProgress(journey?.status ? journey.status !== "not_started" : false);
         setIsLoaded(true);
       } catch (err) {
         if (cancelled) return;
@@ -272,7 +291,7 @@ export function useWizard(options: UseWizardOptions = {}) {
     };
     // activeRoadmap intentionally excluded — API starts immediately on userId
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId, journeyId]);
+  }, [userId, journeyId, effectiveCandidateId, journeyDbId]);
 
   // Synchronize MasterProfile standard fields back into wizard metadata in-memory
   useEffect(() => {
@@ -304,7 +323,10 @@ export function useWizard(options: UseWizardOptions = {}) {
           "Content-Type": "application/json",
           "x-cache-bust": "1",
         },
-        body: JSON.stringify({ journey_type: journeyId }),
+        body: JSON.stringify({
+          journey_type: journeyId,
+          candidate_id: effectiveCandidateId,
+        }),
       }).catch(() => {}); // Non-blocking
     };
 
@@ -392,6 +414,17 @@ export function useWizard(options: UseWizardOptions = {}) {
           return;
         }
 
+        // Restrict free plan users from marking steps as completed to avoid inserting journey into DB
+        const currentTier = (currentState.subscriptionTier || "free").toLowerCase();
+        if (currentTier === "free") {
+          showToast(
+            "Please upgrade your plan to mark steps as completed and save your journey progress.",
+            "error",
+            { duration: 4000 }
+          );
+          return;
+        }
+
         const isCompleted = currentState.completedSteps.has(stepKey);
 
         // ENFORCE SEQUENTIAL ORDERING — runs before backendId check so the
@@ -462,16 +495,52 @@ export function useWizard(options: UseWizardOptions = {}) {
           return;
         }
 
-        if (!currentState.stepMap[stepKey]) {
-          console.warn(
-            "[useWizard] toggleComplete: stepKey not found in stepMap, attempting sync..."
-          );
-          // (Rest of the sync logic skipped for brevity, but would use functional updates)
-          showToast(msg(E.DASH_JOURNEY_STEP_LOCKED), "error");
-          return;
-        }
+        let stepUuid = currentState.stepMap[stepKey];
 
-        const stepUuid = currentState.stepMap[stepKey];
+        if (!stepUuid) {
+          console.warn(
+            `[useWizard] toggleComplete: stepKey "${stepKey}" not found in stepMap, attempting sync...`
+          );
+          try {
+            setIsSyncing(true);
+            // Create a fresh controller for the auto-heal fetch
+            const healController = new AbortController();
+            abortControllerRef.current = healController;
+            const res = await fetch("/api/journeys/initialize", {
+              method: "POST",
+              headers: { "Content-Type": "application/json", "x-cache-bust": "1" },
+              body: JSON.stringify({
+                journey_type: journeyId,
+                candidate_id: effectiveCandidateId,
+              }),
+              signal: healController.signal,
+            });
+            if (res.ok) {
+              const { data } = await res.json();
+              if (data?.steps) {
+                const refreshedMap: Record<string, string> = {};
+                data.steps.forEach((s: any) => {
+                  refreshedMap[s.step_key] = s.id;
+                });
+                setState((prev) => ({
+                  ...prev,
+                  stepMap: { ...prev.stepMap, ...refreshedMap },
+                }));
+                stepUuid = refreshedMap[stepKey];
+              }
+            }
+          } catch (syncErr) {
+            if ((syncErr as any)?.name === "AbortError") return; // unmount — no-op
+            console.error("[useWizard] auto-heal stepMap error:", syncErr);
+          } finally {
+            setIsSyncing(false);
+          }
+
+          if (!stepUuid) {
+            showToast(msg(E.DASH_CLOUD_SYNC_FAILED), "error");
+            return;
+          }
+        }
 
         // Optimistic update
         setState((prev) => {
@@ -501,19 +570,29 @@ export function useWizard(options: UseWizardOptions = {}) {
           const method = !isCompleted ? "POST" : "PATCH";
           const body = JSON.stringify(!isCompleted ? {} : { status: "not_started" });
 
+          // Fresh abort controller for this sync request
+          const syncController = new AbortController();
+          abortControllerRef.current = syncController;
+
           try {
             const res = await fetch(url, {
               method,
               headers: { "Content-Type": "application/json" },
               body,
+              signal: syncController.signal,
             });
             if (res.ok) {
               window.dispatchEvent(new CustomEvent("refresh-reminders"));
               invalidateJourneyCache();
             } else {
-              throw new Error("Sync failed");
+              throw new Error(`Sync failed: HTTP ${res.status}`);
             }
           } catch (err) {
+            if ((err as any)?.name === "AbortError") {
+              // Request was cancelled (unmount / hot-reload) — leave optimistic state as-is
+              setIsSyncing(false);
+              return;
+            }
             console.error("[useWizard] sync failed:", err);
             // Rollback (including the optimistic completed_at stamp)
             setState((prev) => {
@@ -681,7 +760,10 @@ export function useWizard(options: UseWizardOptions = {}) {
       },
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId, journeyId, activeRoadmap]); // STABLE DEPENDENCIES
+  }, [userId, journeyId, activeRoadmap, effectiveCandidateId]); // STABLE DEPENDENCIES
+  // ^ effectiveCandidateId MUST be here: the actions close over it (cache-bust refetch posts
+  //   candidate_id: effectiveCandidateId). Without it, switching the active candidate left the
+  //   actions bound to the previous candidate, so refetches/writes hit the wrong journey.
 
   return { state, actions, isLoaded, hasExistingProgress, isSyncing, error };
 }

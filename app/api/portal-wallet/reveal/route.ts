@@ -1,3 +1,4 @@
+
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { decrypt } from "@/lib/encryption";
@@ -21,7 +22,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { portalType, type, questionId } = body;
+    const { portalType, type, questionId, credentialId, candidateId } = body;
 
     if (!portalType || !type) {
       return NextResponse.json(
@@ -30,10 +31,11 @@ export async function POST(req: Request) {
       );
     }
 
-    const { data: credential, error } = await supabase
+    let query = supabase
       .from("portal_wallet_credentials")
       .select(
         `
+        id,
         encrypted_password,
         nvc_case_number,
         nvc_invoice_id,
@@ -45,8 +47,19 @@ export async function POST(req: Request) {
       `
       )
       .eq("user_id", user.id)
-      .eq("portal_type", portalType)
-      .single();
+      .eq("portal_type", portalType);
+
+    if (credentialId) {
+      query = query.eq("id", credentialId);
+    } else if (candidateId) {
+      if (candidateId === "ir1") {
+        query = query.or("candidate_id.eq.ir1,candidate_id.is.null");
+      } else {
+        query = query.eq("candidate_id", candidateId);
+      }
+    }
+
+    const { data: credential, error } = await query.maybeSingle();
 
     if (error || !credential) {
       // Return 200 with null instead of 404 to avoid console errors in the browser

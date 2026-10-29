@@ -3233,6 +3233,8 @@
     "errors": {
       "invalid": "Please upload a valid image file.",
       "large": "Image size must be under 10 MB.",
+      "network": "Could not reach the photo service. Please check your connection and try again.",
+      "timeout": "The request timed out. Please try again.",
       "general": "An unknown error occurred."
     },
     "presets": {
@@ -3823,6 +3825,8 @@
       "reqApplicantPassportNumber": "Please fill in Passport Number for applicant #{index}",
       "reqApplicantCaseRef": "Please fill in Case Ref for applicant #{index}",
       "reqIomFields": "Please fill in all required fields for IOM",
+      "dobFuture": "Date of birth cannot be in the future",
+      "dobApplicantFuture": "Date of birth for applicant #{index} cannot be in the future",
       "submitError": "Failed to create appointment",
       "uploadError": "Failed to upload some documents"
     },
@@ -3987,7 +3991,8 @@
       "infoPart1": "Our team will review your document and provide a true English translation. You can check the status of your request anytime in ",
       "infoPart2": "My Translation Requests.",
       "infoPart3": "",
-      "buttonText": "Go to My Requests"
+      "buttonText": "Go to My Requests",
+      "uploadAnother": "Upload Another Document"
     }
   },
   "birthCertificate": {

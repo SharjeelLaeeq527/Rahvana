@@ -3,15 +3,17 @@
 
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { getFormConfig } from "@/lib/formConfig";
+import { getFormConfig, extractInheritableCandidateData } from "@/lib/formConfig";
+import { getCandidateJourneyKey, getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
 import { Header } from "./Header";
 import { ProgressFooter } from "./ProgressFooter";
 import { FormStep } from "./FormStep";
 import { ReviewPage } from "./ReviewPage";
 import type { Field as ConfigField } from "@/lib/formConfig/types";
-import { ChevronLeft, ChevronRight, Check, Sparkles, FileText, Lock } from "lucide-react";
+import { ChevronLeft, ChevronRight, Check, FileText, Lock } from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
 import { useUserProfile } from "@/app/context/UserProfileContext";
+import { useCandidate } from "@/app/context/CandidateContext";
 import { autoFillForm, mapFormToProfile } from "@/lib/autoFill/mapper";
 import { getFormFieldOverrides, firstProfileValue } from "@/lib/autoFill/formOverrides";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
@@ -22,9 +24,16 @@ import { Loader } from "@/components/ui/spinner";
 import { ExpandableTooltip } from "../../shared/ExpandableTooltip";
 import { AlertCircle } from "lucide-react";
 import { usePlan } from "@/app/context/PlanContext";
+import { canUse as canUseForTier } from "@/lib/entitlements/helpers";
+import { normalizePlanTier } from "@/lib/entitlements/config";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
+import { CreditLaunchModal } from "@/app/components/wallet/CreditLaunchModal";
+import { useStandaloneToolUnlock } from "@/lib/wallet/useStandaloneToolUnlock";
+import { smartFormResourceId } from "@/lib/wallet/catalog";
 import { useFreePreview } from "./useFreePreview";
 import { MobileBottomSheet } from "@/app/components/shared/table/MobileBottomSheet";
+import { useResolveToolMode } from "@/lib/hooks/useResolveToolMode";
+import type { ToolMode, JourneyToolContext, ToolModeProps } from "@/types/tool-mode";
 
 // ============ TYPE DEFINITIONS ============
 interface FormProgressDraft {
@@ -61,10 +70,20 @@ const readDraftBackup = (formCode: string, journeyKey = "global") => {
 
   try {
     const raw = window.localStorage.getItem(buildDraftStorageKey(formCode, journeyKey));
-    if (!raw) return null;
-
-    const parsed = JSON.parse(raw) as { draft?: FormProgressDraft };
-    return parsed.draft ?? null;
+    if (raw) {
+      const parsed = JSON.parse(raw) as { draft?: FormProgressDraft };
+      if (parsed?.draft) return parsed.draft;
+    }
+    // Fallback to legacy global backup only for journey candidate keys — never for
+    // "global" itself (avoids double-read) or "standalone" (must stay isolated).
+    if (journeyKey !== "global" && journeyKey !== "standalone") {
+      const fallbackRaw = window.localStorage.getItem(buildDraftStorageKey(formCode, "global"));
+      if (fallbackRaw) {
+        const parsed = JSON.parse(fallbackRaw) as { draft?: FormProgressDraft };
+        return parsed?.draft ?? null;
+      }
+    }
+    return null;
   } catch {
     return null;
   }
@@ -124,9 +143,11 @@ const fieldHasAnswer = (
   return (f.subQuestions ?? []).some((sub) => fieldHasAnswer(sub as ConfigField, data));
 };
 
-type MultiStepFormProps = {
+export interface MultiStepFormProps extends ToolModeProps {
   formCode: string;
-};
+  onClose?: () => void;
+  isEmbedded?: boolean;
+}
 
 const getLastAnsweredIndex = (fields: ConfigField[], data: Record<string, string>) => {
   let lastIndex = 0;
@@ -143,8 +164,33 @@ const getLastAnsweredIndex = (fields: ConfigField[], data: Record<string, string
   return lastIndex;
 };
 
-export function MultiStepForm({ formCode }: MultiStepFormProps) {
+export function MultiStepForm({
+  formCode,
+  mode: propMode,
+  journeyContext: propJourneyContext,
+  journeyTier: propJourneyTier,
+  onClose,
+  isEmbedded = false,
+}: MultiStepFormProps) {
+  const { isJourney, journeyContext, journeyTier } = useResolveToolMode({
+    mode: propMode,
+    journeyContext: propJourneyContext,
+    journeyTier: propJourneyTier,
+  });
+
   const plan = usePlan();
+  // Journey mode follows the journey's own plan. Standalone is paid with credits
+  // even by plan holders, one form at a time: only an unlock of THIS form (or an
+  // older whole-tool unlock / legacy "smart" add-on, which /api/wallet reports as
+  // every form unlocked) gives the full filler. Journey passes null so it never
+  // reads wallet unlocks. The PDF route re-checks all of this server-side.
+  const formWallet = useStandaloneToolUnlock(isJourney ? null : smartFormResourceId(formCode));
+  const journeyPlanTier = normalizePlanTier(
+    journeyTier ?? journeyContext?.subscriptionTier ?? plan.tier
+  );
+  const canUseFullFiller = isJourney
+    ? canUseForTier("smart_form_filler", journeyPlanTier, plan.purchasedAddons)
+    : formWallet.unlocked;
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -154,7 +200,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
   const { isFreePreview, hasReachedLimit, limit, atOrPastAnchor, pastAnchor, stepPastAnchor } =
     useFreePreview({
-      canUseSmartFormFiller: plan.canUse("smart_form_filler"),
+      canUseSmartFormFiller: canUseFullFiller,
       formFields: config?.formFields || [],
       formData,
       configuredLimit: config?.freePreviewLimit,
@@ -174,7 +220,18 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   const [cameFromIntro, setCameFromIntro] = useState(false);
   const savedScrollPosition = useRef<number>(0);
   const hasShownInitialIntro = useRef(false);
-  const draftJourneyKey = "global";
+  const candidateCtx = useCandidate();
+  // Isolate candidate details strictly to Journey mode
+  const activeCandidate = isJourney ? candidateCtx.activeCandidate : null;
+  const candidates = isJourney ? candidateCtx.candidates : [];
+  const setActiveCandidateId = candidateCtx.setActiveCandidateId;
+  const isMultiCandidate = isJourney ? candidateCtx.isMultiCandidate : false;
+
+  const draftJourneyKey = isJourney
+    ? (journeyContext?.candidateId
+        ? getCandidateJourneyKey(journeyContext.journeyCategory, journeyContext.candidateId)
+        : (candidateCtx.activeJourneyKey || "candidate-1"))
+    : "standalone";
   const { user, isLoading: isAuthLoading } = useAuth();
   const {
     profile: userProfile,
@@ -192,6 +249,14 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   const [isNavigating, setIsNavigating] = useState(false);
   const [isAutoSaving, setIsAutoSaving] = useState(false);
   const [draftStatus, setDraftStatus] = useState<"draft" | "completed">("draft");
+  const [inheritedInfo, setInheritedInfo] = useState<{
+    isInherited: boolean;
+    count: number;
+    sourceName: string;
+  } | null>(null);
+  // Keys of fields the user has edited themselves this session. The review page uses this
+  // to tell which carried-over (pre-filled) answers the user has NOT touched yet.
+  const [editedKeys, setEditedKeys] = useState<Set<string>>(new Set());
   // Mirror of draftStatus for reads inside dependency-free callbacks (handleChange).
   const draftStatusRef = useRef(draftStatus);
   useEffect(() => {
@@ -236,13 +301,15 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     if (!isClient || !config || isAuthLoading) return;
 
     const userId = user?.id ?? null;
-    const hydrationKey = `${formCode}:${userId ?? "anon"}`;
+    const hydrationKey = `${formCode}:${userId ?? "anon"}:${draftJourneyKey}`;
     if (hydratedKeyRef.current === hydrationKey) return;
     // Claim the key synchronously (before any await) so a concurrent re-render
     // or React StrictMode double-invoke can't kick off a second hydration.
     hydratedKeyRef.current = hydrationKey;
 
     let isMounted = true;
+    setDraftLoaded(false);
+    setProfileLoaded(false);
 
     const initializeForm = async () => {
       try {
@@ -270,6 +337,127 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
           draftData = readDraftBackup(formCode, draftJourneyKey);
         }
 
+        let inheritedPayload: Record<string, string> | null = null;
+
+        // If in JOURNEY mode, attempt to inherit data from any sibling candidate.
+        // Same-journey siblings (same visa category base) get a full clone — all fields are copied
+        // and the user just corrects the candidate-distinct ones (DOB, passport, name etc.).
+        // Cross-journey siblings only share petitioner/household fields.
+        if (isJourney) {
+          const currentCandId =
+            journeyContext?.candidateId || activeCandidate?.id || candidateCtx?.activeCandidateId || "candidate-1";
+          const activeBase = getBaseVisaCategory(
+            activeCandidate?.visaCategory || journeyContext?.journeyCategory || "IR-5"
+          );
+          const normBase = activeBase.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+          const candidateKeysToCheck: { key: string; name: string; sameJourney: boolean }[] = [];
+          const seenKeys = new Set<string>([draftJourneyKey]);
+
+          // 1. Structured candidate profiles in roster
+          const siblingCandidates = (candidates || []).filter((c) => c.id !== currentCandId);
+          if (siblingCandidates.length > 0) {
+            siblingCandidates.forEach((s) => {
+              const sBase = getBaseVisaCategory(s.visaCategory || activeBase);
+              const sKey = getCandidateJourneyKey(s.visaCategory || activeBase, s.id);
+              if (!seenKeys.has(sKey)) {
+                seenKeys.add(sKey);
+                const sName = s.fullName || s.label || s.name?.first || "Another Candidate";
+                const sameJourney = sBase === activeBase;
+                candidateKeysToCheck.push({ key: sKey, name: sName, sameJourney });
+              }
+            });
+          }
+
+          // 2. Add canonical fallback candidate keys (handles unfilled rosters & order-agnostic filling)
+          const fallbackCandidates: { key: string; name: string; sameJourney: boolean }[] = [];
+          if (currentCandId !== "candidate-1") {
+            // Target is Candidate 2 / 3 -> check Candidate 1 first
+            fallbackCandidates.push({ key: normBase, name: "Candidate 1", sameJourney: true });
+            fallbackCandidates.push({ key: `${normBase}-journey`, name: "Candidate 1", sameJourney: true });
+            fallbackCandidates.push({ key: "candidate-1", name: "Candidate 1", sameJourney: true });
+            fallbackCandidates.push({ key: "global", name: "Primary Candidate", sameJourney: true });
+          } else {
+            // Target is Candidate 1 -> check Candidate 2 / 3
+            fallbackCandidates.push({ key: `${normBase}_candidate2`, name: "Candidate 2", sameJourney: true });
+            fallbackCandidates.push({ key: `${normBase}_candidate-2`, name: "Candidate 2", sameJourney: true });
+            fallbackCandidates.push({ key: `${normBase}_candidate3`, name: "Candidate 3", sameJourney: true });
+            fallbackCandidates.push({ key: "candidate-2", name: "Candidate 2", sameJourney: true });
+          }
+
+          // Cross-journey fallbacks (e.g. IR-1 <-> IR-5 share petitioner fields)
+          const crossCategoryBases = ["ir5", "ir1", "ir2"].filter((b) => b !== normBase);
+          crossCategoryBases.forEach((cBase) => {
+            fallbackCandidates.push({ key: cBase, name: "Other Journey", sameJourney: false });
+            fallbackCandidates.push({ key: `${cBase}_candidate2`, name: "Other Journey Candidate", sameJourney: false });
+          });
+
+          fallbackCandidates.forEach((entry) => {
+            if (!seenKeys.has(entry.key)) {
+              seenKeys.add(entry.key);
+              candidateKeysToCheck.push(entry);
+            }
+          });
+
+          for (const candInfo of candidateKeysToCheck) {
+            let siblingDraft: FormProgressDraft | null = null;
+            if (user) {
+              try {
+                const sRes = await fetch(
+                  `/api/visa-forms/${formCode}/progress?journey_key=${candInfo.key}`,
+                  { signal: AbortSignal.timeout(3000) }
+                );
+                if (sRes.ok) {
+                  const sData = (await sRes.json()) as FormProgressResponse;
+                  if (sData.draft?.payload && Object.keys(sData.draft.payload).length > 0) {
+                    siblingDraft = sData.draft;
+                  }
+                }
+              } catch {
+                // Ignore network issues for fallback inheritance
+              }
+            }
+            if (!siblingDraft) {
+              siblingDraft = readDraftBackup(formCode, candInfo.key);
+            }
+
+            if (siblingDraft?.payload) {
+              const hasValues = Object.values(siblingDraft.payload).some(
+                (v) => typeof v === "string" && v.trim() !== ""
+              );
+              if (!hasValues) continue;
+
+              const { inheritedData, inheritedKeys } = extractInheritableCandidateData(
+                formCode,
+                config.formFields,
+                siblingDraft.payload,
+                activeCandidate
+                  ? {
+                      fullName: activeCandidate.fullName,
+                      name: activeCandidate.name,
+                      dateOfBirth: activeCandidate.dateOfBirth,
+                      placeOfBirth: activeCandidate.placeOfBirth,
+                      passportNumber: activeCandidate.passportNumber,
+                      cnic: activeCandidate.cnic,
+                    }
+                  : undefined,
+                { sameJourney: candInfo.sameJourney }
+              );
+              if (inheritedKeys.length > 0) {
+                inheritedPayload = inheritedData;
+                if (isMounted) {
+                  setInheritedInfo({
+                    isInherited: true,
+                    count: inheritedKeys.length,
+                    sourceName: candInfo.name,
+                  });
+                }
+                break; // Inherited from first valid sibling with data
+              }
+            }
+          }
+        }
+
         if (!isMounted) return;
 
         // Build sections for validation
@@ -283,8 +471,16 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
           .filter(([, fields]) => fields.length > 0)
           .map(([title, fields]) => ({ title, fields }));
 
+        // Check whether current draft is empty (no user entered fields other than default relationship)
+        const isCurrentDraftEmpty =
+          !draftData ||
+          !draftData.payload ||
+          !Object.entries(draftData.payload).some(
+            ([k, v]) => typeof v === "string" && v.trim() !== "" && k !== "relationship"
+          );
+
         // Validate and restore draft or initialize fresh
-        if (draftData && sections.length > 0) {
+        if (draftData && sections.length > 0 && !isCurrentDraftEmpty) {
           // Validate step is within bounds
           const validStep = Math.min(Math.max(1, draftData.current_step || 1), sections.length);
 
@@ -327,24 +523,88 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
             validatedPayload[key] = value;
           });
 
+          // Merge inherited fields for any fields that are empty in the current draft
+          if (inheritedPayload) {
+            Object.entries(inheritedPayload).forEach(([key, value]) => {
+              if (validKeys.has(key) && (!validatedPayload[key] || validatedPayload[key].trim() === "")) {
+                validatedPayload[key] = value;
+              }
+            });
+          }
+
+          // Journey-mode I-130: auto-seed the relationship from the visa category.
+          let journeySkippedRelationship = false;
+          if (isJourney && formCode === "i130") {
+            const cat = (journeyContext?.journeyCategory || activeCandidate?.visaCategory || "").toUpperCase();
+            let defaultRel: string | null = null;
+            if (cat.includes("IR-5") || cat.includes("IR5")) defaultRel = "Parent";
+            else if (
+              cat.includes("IR-1") ||
+              cat.includes("CR-1") ||
+              cat.includes("IR1") ||
+              cat.includes("CR1")
+            )
+              defaultRel = "Spouse";
+            else if (cat.includes("IR-2") || cat.includes("IR2")) defaultRel = "Child";
+            else if (cat.includes("F-4") || cat.includes("F4")) defaultRel = "BrotherSister";
+
+            if (defaultRel) {
+              validatedPayload.relationship = defaultRel;
+              journeySkippedRelationship = true;
+            }
+          }
+
           if (isMounted) {
             setFormData(validatedPayload);
             setCurrentStep(validStep);
-            setCurrentQuestionIndex(validQuestionIndex);
+            const resolvedQuestionIndex =
+              journeySkippedRelationship && validStep === 1 && validQuestionIndex === 0
+                ? 1
+                : validQuestionIndex;
+            setCurrentQuestionIndex(resolvedQuestionIndex);
             setView((draftData.view_mode || "form") as ViewType);
             setDraftStatus(draftData.completed ? "completed" : "draft");
             setProgressiveSubQuestionIndices(draftData.progressive_sub_question_indices || {});
             setLastSavedAt(draftData.last_saved_at || null);
           }
         } else {
-          // Fresh form initialization
+          // Fresh form initialization (pre-filled with Candidate shared / cloned data)
+          const initialData = {
+            ...config.getInitialFormData(),
+            ...(inheritedPayload || {}),
+          };
+          const initialSubs: Record<string, number> = {};
+
+          // Journey-mode I-130: auto-seed the relationship from the visa category and
+          // skip straight past the locked relationship card (start at question index 1).
+          let freshJourneySkippedRelationship = false;
+          if (isJourney && formCode === "i130") {
+            const cat = (journeyContext?.journeyCategory || activeCandidate?.visaCategory || "").toUpperCase();
+            let defaultRel: string | null = null;
+            if (cat.includes("IR-5") || cat.includes("IR5")) defaultRel = "Parent";
+            else if (
+              cat.includes("IR-1") ||
+              cat.includes("CR-1") ||
+              cat.includes("IR1") ||
+              cat.includes("CR1")
+            )
+              defaultRel = "Spouse";
+            else if (cat.includes("IR-2") || cat.includes("IR2")) defaultRel = "Child";
+            else if (cat.includes("F-4") || cat.includes("F4")) defaultRel = "BrotherSister";
+
+            if (defaultRel) {
+              initialData.relationship = defaultRel;
+              freshJourneySkippedRelationship = true;
+            }
+          }
+
           if (isMounted) {
-            setFormData(config.getInitialFormData());
+            setFormData(initialData);
             setCurrentStep(1);
-            setCurrentQuestionIndex(0);
+            setCurrentQuestionIndex(freshJourneySkippedRelationship ? 1 : 0);
             setView("form");
             setDraftStatus("draft");
-            setProgressiveSubQuestionIndices({});
+            setProgressiveSubQuestionIndices(initialSubs);
             setLastSavedAt(null);
           }
         }
@@ -372,7 +632,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     // new reference on every auth re-emit, which used to re-run this whole
     // initializer and wipe the form. The ref guard above enforces once-per-key.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isClient, config, user?.id, formCode, isAuthLoading]);
+  }, [isClient, config, user?.id, formCode, isAuthLoading, draftJourneyKey]);
 
   // ============ SESSION VALIDATION ============
   useEffect(() => {
@@ -422,7 +682,35 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       // in the form — a previously-saved draft, or a wrong-person value the global
       // mapper filled (I-130A / DS-260 "you" = beneficiary, not petitioner). We only
       // overwrite when the profile actually has a value, so we never blank a field.
-      const profileForOverride = userProfile as unknown as Record<string, unknown>;
+      const profileForOverride: Record<string, unknown> = {
+        ...(userProfile as unknown as Record<string, unknown>),
+      };
+
+      if (activeCandidate) {
+        const candBeneficiary: Record<string, unknown> = {
+          ...((profileForOverride.beneficiary as Record<string, unknown>) || {}),
+        };
+        if (activeCandidate.fullName) {
+          candBeneficiary.fullName = activeCandidate.fullName;
+        }
+        // Structured name is on the candidate's `name` (PersonName), not flat first/last fields.
+        const candName = activeCandidate.name;
+        if (candName?.first || candName?.middle || candName?.last) {
+          candBeneficiary.name = {
+            ...((candBeneficiary.name as Record<string, unknown>) || {}),
+            ...(candName?.first ? { first: candName.first } : {}),
+            ...(candName?.middle ? { middle: candName.middle } : {}),
+            ...(candName?.last ? { last: candName.last } : {}),
+          };
+        }
+        if (activeCandidate.dateOfBirth) candBeneficiary.dateOfBirth = activeCandidate.dateOfBirth;
+        if (activeCandidate.placeOfBirth) candBeneficiary.placeOfBirth = activeCandidate.placeOfBirth;
+        if (activeCandidate.passportNumber) candBeneficiary.passportNumber = activeCandidate.passportNumber;
+        if (activeCandidate.cnic) candBeneficiary.cnic = activeCandidate.cnic;
+
+        profileForOverride.beneficiary = candBeneficiary;
+      }
+
       for (const [formKey, paths] of Object.entries(overrides)) {
         const val = firstProfileValue(profileForOverride, paths);
         if (val) merged[formKey] = val;
@@ -431,7 +719,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       return merged;
     });
     setProfileLoaded(true);
-  }, [userProfile, isContextProfileLoading, profileLoaded, draftLoaded]);
+  }, [userProfile, isContextProfileLoading, profileLoaded, draftLoaded, activeCandidate, formCode]);
 
   const sections = useMemo(() => {
     if (!config) return [];
@@ -596,6 +884,10 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
         setDraftStatus("draft");
       }
 
+      // Remember that the user touched this field (used by the review page to flag
+      // carried-over answers that were never looked at).
+      setEditedKeys((prev) => (prev.has(name) ? prev : new Set(prev).add(name)));
+
       setFormData((prev) => {
         const newData = {
           ...prev,
@@ -652,9 +944,6 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   ]);
 
   // ============ DEBOUNCED AUTOSAVE EFFECT ============
-  // Separated from saveDraft callback to avoid re-creating effect on data changes
-  const lastSaveTimeRef = useRef<number>(0);
-
   useEffect(() => {
     if (!draftLoaded || !user || !isSessionValid || draftStatus === "completed") {
       return;
@@ -666,13 +955,6 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
     saveTimerRef.current = window.setTimeout(async () => {
       if (!user || !isSessionValid) return;
-
-      // THROTTLE: enforce minimum 5s gap between API calls
-      const now = Date.now();
-      if (now - lastSaveTimeRef.current < 5000) {
-        return;
-      }
-      lastSaveTimeRef.current = now;
 
       setSaveError(null);
       setIsAutoSaving(true);
@@ -689,7 +971,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
             current_question_index: currentQuestionIndex,
             view_mode: view,
             progressive_sub_question_indices: progressiveSubQuestionIndices,
-            journey_key: "global",
+            journey_key: draftJourneyKey,
             config_version: "v1",
             completed: false,
           }),
@@ -745,6 +1027,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     view,
     progressiveSubQuestionIndices,
     draftStatus,
+    draftJourneyKey,
   ]);
 
   const finalizeDraft = useCallback(async () => {
@@ -764,7 +1047,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
           current_question_index: currentQuestionIndex,
           view_mode: "review",
           progressive_sub_question_indices: progressiveSubQuestionIndices,
-          journey_key: "global",
+          journey_key: draftJourneyKey,
           config_version: "v1",
           completed: true,
         }),
@@ -810,6 +1093,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     currentStep,
     currentQuestionIndex,
     progressiveSubQuestionIndices,
+    draftJourneyKey,
     userProfile,
     updateProfile,
   ]);
@@ -817,6 +1101,35 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   const handleNext = () => {
     if (isNavigating) return; // ← Rate limiting
     setNavigationDirection("next");
+
+    // If user is locked out, check if warning needs to be displayed after every 10 questions
+    // if (isFreePreview) {
+    //   let nextField = null;
+    //   if (currentQuestionIndex < visibleFields.length - 1) {
+    //     nextField = visibleFields[currentQuestionIndex + 1];
+    //   } else if (currentStep < totalSteps) {
+    //     const nextSection = sections[currentStep];
+    //     if (nextSection) {
+    //       const nextVisible = nextSection.fields.filter(
+    //         (f) => !f.condition || f.condition(formData)
+    //       );
+    //       nextField = nextVisible[0];
+    //     }
+    //   }
+
+    //   const isNextFieldEmpty =
+    //     !nextField || !formData[nextField.key] || formData[nextField.key].trim() === "";
+
+    //   if (filledFieldsCount >= 15 && isNextFieldEmpty) {
+    //     showToast(
+    //       "Free Preview: You've reached the 15-question limit. Redirecting to review page...",
+    //       "info",
+    //       { duration: 6000 }
+    //     );
+    //     setView("review");
+    //     return;
+    //   }
+    // }
 
     const currentField = visibleFields[currentQuestionIndex];
     if (currentField) {
@@ -934,6 +1247,27 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
     if (currentQuestionIndex > 0) {
       const prevIndex = currentQuestionIndex - 1;
+
+      // Journey I-130: relationship is auto-seeded and skipped — never navigate back to it.
+      const isLockedRelationshipCard =
+        isJourney &&
+        formCode === "i130" &&
+        prevIndex === 0 &&
+        currentStep === 1 &&
+        visibleFields[0]?.key === "relationship" &&
+        !!formData.relationship;
+
+      if (isLockedRelationshipCard) {
+        // Already at the first meaningful question — go back to section intro or
+        // previous step instead of showing the locked relationship card.
+        if (cameFromIntro) {
+          setShowSectionIntro(true);
+          setIntroVisible(true);
+          setCameFromIntro(false);
+        }
+        return;
+      }
+
       const prevField = visibleFields[prevIndex];
       if (prevField?.subQuestions && prevField.subQuestions.length > 0) {
         const applicablePrev = prevField.subQuestions.filter(
@@ -1166,9 +1500,32 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     return payload;
   }, [config, formData]);
 
+  // Every PDF goes through the server route, which decides full vs page 1 from
+  // the user's real entitlement (journey plan, or the standalone wallet unlock).
+  const requestFilledPdf = useCallback(
+    (payload: Record<string, string | undefined>, signal: AbortSignal) =>
+      fetch(`/api/visa-forms/${formCode}/pdf`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          data: payload,
+          ...(isJourney
+            ? {
+                scope: "journey",
+                journeyId: journeyContext?.backendId || journeyContext?.journeySlug,
+                journeyCategory: journeyContext?.journeyCategory,
+                candidateId: journeyContext?.candidateId,
+              }
+            : { scope: "standalone" }),
+        }),
+        signal,
+      }),
+    [formCode, isJourney, journeyContext]
+  );
+
   const handlePreviewPDF = async () => {
     const payload = buildPdfPayload();
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
+    const apiUrl = `/api/visa-forms/${formCode}/pdf`;
     const { controller, timeoutId } = createAbortController(60000); // 60s timeout for preview
 
     // Open the tab synchronously inside the click gesture. Mobile browsers block
@@ -1180,12 +1537,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
     setIsPreviewing(true);
     try {
-      const res = await fetch(`${apiUrl}/fill-pdf`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ formId: formCode, data: payload, onlyFirstPage: isFreePreview }),
-        signal: controller.signal,
-      });
+      const res = await requestFilledPdf(payload, controller.signal);
 
       clearTimeout(timeoutId);
 
@@ -1224,17 +1576,12 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
   const handleDownloadPDF = async () => {
     const payload = buildPdfPayload();
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
+    const apiUrl = `/api/visa-forms/${formCode}/pdf`;
     const { controller, timeoutId } = createAbortController(60000); // 60s timeout for download
 
     setIsDownloading(true);
     try {
-      const res = await fetch(`${apiUrl}/fill-pdf`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ formId: formCode, data: payload, onlyFirstPage: isFreePreview }),
-        signal: controller.signal,
-      });
+      const res = await requestFilledPdf(payload, controller.signal);
 
       clearTimeout(timeoutId);
 
@@ -1280,21 +1627,20 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       return;
     }
     const payload = buildPdfPayload();
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
+    const apiUrl = `/api/visa-forms/${formCode}/pdf`;
     const { controller, timeoutId } = createAbortController(90000); // 90s timeout for full vault save
 
     setIsSavingToVault(true);
     try {
-      const res = await fetch(`${apiUrl}/fill-pdf`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ formId: formCode, data: payload }),
-        signal: controller.signal,
-      });
+      const res = await requestFilledPdf(payload, controller.signal);
 
       clearTimeout(timeoutId);
 
       if (!res.ok) throw new Error(`${await res.text()} (Endpoint: ${apiUrl})`);
+      // Never store a page-1 demo in the vault as if it were the whole form.
+      if (res.headers.get("X-Pdf-Scope") !== "full") {
+        throw new Error("Saving the full form needs Smart Form Filler access.");
+      }
       const blob = await res.blob();
 
       const file = new File([blob], `${formCode.toUpperCase()}-auto-filled.pdf`, {
@@ -1318,12 +1664,15 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
       formDataUpload.append("role", role);
       formDataUpload.append("caseId", vaultConfig.caseId || "CASE");
+      if (draftJourneyKey && draftJourneyKey !== "global") {
+        formDataUpload.append("journeyId", draftJourneyKey);
+      }
 
       let personName = "Unknown";
       if (role === "PETITIONER" && vaultConfig.petitionerName) {
         personName = vaultConfig.petitionerName;
-      } else if (role === "BENEFICIARY" && vaultConfig.beneficiaryName) {
-        personName = vaultConfig.beneficiaryName;
+      } else if (role === "BENEFICIARY") {
+        personName = activeCandidate?.fullName || vaultConfig.beneficiaryName || "Beneficiary";
       } else if (role === "HOUSEHOLD_MEMBER" && vaultConfig.jointSponsorName) {
         personName = vaultConfig.jointSponsorName;
       }
@@ -1367,6 +1716,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     vaultConfig,
     formCode,
     buildPdfPayload,
+    requestFilledPdf,
     config?.formTitle,
     reloadDocuments,
     showToast,
@@ -1632,6 +1982,13 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
         showMenu={view === "form"}
         isAutoSaving={isAutoSaving}
         lastSavedAt={lastSavedAt}
+        activeCandidate={activeCandidate}
+        candidates={candidates}
+        onSelectCandidate={(id) => setActiveCandidateId(id)}
+        isMultiCandidate={isMultiCandidate}
+        isStandalone={!isJourney}
+        isEmbedded={isEmbedded}
+        onClose={onClose}
       />
 
       {/* Mobile Bottom Tray */}
@@ -1808,6 +2165,37 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                         transition={{ duration: 0.3, ease: "easeOut" }}
                         className="space-y-6"
                       >
+                        {inheritedInfo?.isInherited && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="flex items-start justify-between gap-3 rounded-xl border border-teal-200 bg-linear-to-r from-teal-50 to-emerald-50/50 p-3.5 shadow-xs"
+                          >
+                            <div className="flex items-start gap-2.5">
+                              <div className="rounded-lg bg-teal-100 p-1.5 text-teal-800 shrink-0 mt-0.5">
+                                <FileText className="h-4 w-4" />
+                              </div>
+                              <div>
+                                <p className="text-xs font-bold text-teal-950">
+                                  Smart Pre-Fill Active ({inheritedInfo.count} fields copied)
+                                </p>
+                                <p className="text-[11px] text-teal-800 leading-relaxed mt-0.5">
+                                  Shared petitioner and household answers were automatically populated from{" "}
+                                  <strong>{inheritedInfo.sourceName}</strong>. Candidate-distinct details (Name, DOB,
+                                  Passport #) are marked with caution badges for individual review.
+                                </p>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setInheritedInfo(null)}
+                              className="text-xs font-semibold text-teal-700 hover:text-teal-900 shrink-0 px-2 py-1 rounded hover:bg-teal-100/60"
+                            >
+                              Dismiss
+                            </button>
+                          </motion.div>
+                        )}
+
                         <FormStep
                           stepNumber={currentStep}
                           sectionTitle={currentSection.title}
@@ -1818,6 +2206,8 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                           currentQuestionIndex={currentQuestionIndex}
                           navigationDirection={navigationDirection}
                           progressiveSubQuestionIndices={progressiveSubQuestionIndices}
+                          formCode={formCode}
+                          activeCandidate={activeCandidate}
                         />
 
                         {/* Navigation Buttons */}
@@ -1870,7 +2260,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
               {view === "review" && (
                 <div
-                  className="animated-border rounded-2xl border-2 bg-white p-4 md:p-8"
+                  className="animated-border rounded-2xl border-2 bg-white px-4 py-5 md:px-8 md:py-7 -mx-2 md:-mx-8 lg:-mx-16"
                   style={{
                     boxShadow:
                       "0 1px 3px rgba(0,0,0,0.03), 0 12px 40px -16px rgba(13,115,119,0.12)",
@@ -1890,6 +2280,10 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                     isFreePreview={isFreePreview}
                     freePreviewLimit={limit}
                     onUpgradeClick={() => setShowUpgradeModal(true)}
+                    formCode={formCode}
+                    activeCandidate={activeCandidate}
+                    prefilledFromName={inheritedInfo?.sourceName}
+                    editedKeys={editedKeys}
                   />
                 </div>
               )}
@@ -1920,9 +2314,16 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       )}
 
       {/* Upgrade Modal Hook */}
-      {showUpgradeModal && (
-        <UpgradeModal feature="smart_form_filler" onClose={() => setShowUpgradeModal(false)} />
-      )}
+      {showUpgradeModal &&
+        (formWallet.item ? (
+          <CreditLaunchModal
+            item={formWallet.item}
+            onClose={() => setShowUpgradeModal(false)}
+            onLaunched={() => setShowUpgradeModal(false)}
+          />
+        ) : (
+          <UpgradeModal feature="smart_form_filler" onClose={() => setShowUpgradeModal(false)} />
+        ))}
     </div>
   );
 }

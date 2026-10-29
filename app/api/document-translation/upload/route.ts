@@ -6,6 +6,12 @@ import { E, msg } from "@/lib/errors";
 import { triggerTranslationNotification } from "@/lib/notifications";
 import { validateUploadedFile } from "@/lib/security/file-content";
 import { UPLOAD_PROFILES } from "@/lib/security/upload-limits";
+import {
+  spendJourneyServiceUse,
+  verifyJourneyServiceAccess,
+  type JourneyServiceAccess,
+} from "@/lib/journey/journeyServiceAccess";
+import { getServiceRoleClient } from "@/lib/api/authGuards";
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
@@ -41,6 +47,31 @@ export async function POST(request: NextRequest) {
         { error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: "[file, documentType]" }) },
         { status: 400 }
       );
+    }
+
+    const candidateId =
+      (formData.get("candidateId") as string) ||
+      (formData.get("candidate_id") as string) ||
+      "candidate-1";
+    const candidateName =
+      (formData.get("candidateName") as string) || (formData.get("candidate_name") as string) || "";
+
+    // A journey request is stored as already paid, so verify the journey before trusting the tag.
+    const source = formData.get("source") === "journey" ? "journey" : "standalone";
+    const journeySlug = (formData.get("journey_slug") as string) || null;
+    let journeyId: string | null = null;
+    let journeyPlan: Extract<JourneyServiceAccess, { allowed: true }> | null = null;
+    if (source === "journey") {
+      const access = await verifyJourneyServiceAccess(supabase, user.id, "document_translation", {
+        journeyId: (formData.get("journey_id") as string) || null,
+        journeyCategory: (formData.get("journey_category") as string) || journeySlug,
+        candidateId,
+      });
+      if (!access.allowed) {
+        return NextResponse.json({ error: access.error }, { status: access.status });
+      }
+      journeyId = access.journeyId;
+      journeyPlan = access;
     }
 
     // Extract file name
@@ -89,7 +120,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Create database record
-    const { data: document, error: dbError } = await supabase
+    // Service role: the payment fields are server-owned (the DB guard resets them
+    // for authenticated writes), and this insert decides them above.
+    const { data: document, error: dbError } = await getServiceRoleClient()
       .from("translation_documents")
       .insert({
         id: docId,
@@ -103,9 +136,15 @@ export async function POST(request: NextRequest) {
         original_mime_type: checked.detectedMime,
         user_notes: userNotes,
         status: "PENDING",
+        payment_status: source === "journey" ? "paid" : "pending",
         metadata: {
           upload_ip: request.headers.get("x-forwarded-for") || "unknown",
           user_agent: request.headers.get("user-agent") || "unknown",
+          candidate_id: candidateId,
+          candidate_name: candidateName,
+          source,
+          journey_slug: journeySlug,
+          journey_id: journeyId,
         },
       })
       .select()
@@ -118,11 +157,30 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Failed to create database record" }, { status: 500 });
     }
 
-    // Trigger admin notification
-    try {
-      await triggerTranslationNotification(document.id);
-    } catch (notifError) {
-      console.error("Failed to trigger admin notification:", notifError);
+    // Spend one of the translations the journey plan includes; none left = undo the upload.
+    if (journeyPlan) {
+      const refused = await spendJourneyServiceUse(user.id, "document_translation", journeyPlan);
+      if (refused) {
+        await getServiceRoleClient()
+          .from("translation_documents")
+          .delete()
+          .eq("id", document.id)
+          .eq("user_id", user.id);
+        await supabase.storage.from("document-vault").remove([storagePath]);
+        return NextResponse.json(
+          { error: refused.error, code: refused.code },
+          { status: refused.status }
+        );
+      }
+    }
+
+    // Trigger admin notification only if already paid (journey mode)
+    if (document.payment_status === "paid") {
+      try {
+        await triggerTranslationNotification(document.id);
+      } catch (notifError) {
+        console.error("Failed to trigger admin notification:", notifError);
+      }
     }
 
     return NextResponse.json({

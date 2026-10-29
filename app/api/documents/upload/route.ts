@@ -15,6 +15,8 @@ import { DocumentDatabaseStorage } from "@/lib/document-vault/storage-database";
 import { calculateExpirationDate } from "@/lib/document-vault/expiration-tracker";
 import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
 import { UploadedDocument, DocumentRole, DocumentCategory } from "@/lib/document-vault/types";
+import { isDocumentApplicableToJourney } from "@/lib/document-vault/journey-mapping";
+import { isDocumentShareableAcrossCandidates } from "@/lib/document-vault/candidate-sharing";
 import { createClient as createClientJs } from "@supabase/supabase-js";
 import { encryptFile } from "@/lib/document-vault/file-encryption";
 import { assertRequestBodySize } from "@/lib/security/request-body";
@@ -149,9 +151,27 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Validate required fields
-    if (!file || !documentDefId || !role || !personName) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    // Validate required fields — Document Vault is strictly tied to an active journey
+    if (!file || !documentDefId || !role || !personName || !journeyId) {
+      return NextResponse.json(
+        { error: "Missing required fields: Document Vault uploads strictly require an active journey." },
+        { status: 400 }
+      );
+    }
+
+    // Verify journey exists and belongs to the authenticated user
+    const { data: journeyRow, error: journeyError } = await supabase
+      .from("journeys")
+      .select("id")
+      .eq("id", journeyId)
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (journeyError || !journeyRow) {
+      return NextResponse.json(
+        { error: "Invalid journey. Document Vault is strictly tied to an active journey." },
+        { status: 403 }
+      );
     }
 
     // Fast reject on declared MIME/extension (keep — cheap first pass)
@@ -415,9 +435,35 @@ export async function POST(request: NextRequest) {
     // Save document metadata to database
     const savedDocument = await dbStorage.saveDocument(uploadedDocument);
 
-    // Save duplicates for each shared journey (cross-sharing without files duplication)
+    // Save duplicates for each shared journey (cross-sharing without files duplication).
+    //
+    // SERVER-SIDE ENFORCEMENT: never trust the client's share list. Each target journey must
+    //   (a) belong to THIS user (own-row lookup below inherently drops any foreign id), and
+    //   (b) actually accept this document: it must be a shareable petitioner/sponsor-side
+    //       document AND applicable to the target journey's visa category.
+    // Beneficiary-specific documents, or documents that do not apply to a target category, are
+    // silently dropped even if a tampered request asks to share them.
     if (shareWithJourneyIds && shareWithJourneyIds.length > 0) {
-      for (const sharedJourneyId of shareWithJourneyIds) {
+      // Own journeys only (RLS-scoped authenticated client) -> id => journey_type map.
+      const { data: ownJourneys } = await supabase
+        .from("journeys")
+        .select("id, journey_type")
+        .eq("user_id", user.id);
+      const ownJourneyType = new Map<string, string>(
+        (ownJourneys ?? []).map((j: { id: string; journey_type: string }) => [j.id, j.journey_type])
+      );
+
+      const isShareableDoc = isDocumentShareableAcrossCandidates(documentDef);
+
+      const allowedShareIds = shareWithJourneyIds.filter((targetId) => {
+        if (targetId === journeyId) return false; // never re-share to the source journey
+        const targetType = ownJourneyType.get(targetId);
+        if (!targetType) return false; // not the user's journey
+        if (!isShareableDoc) return false; // beneficiary-specific: never cross-shared
+        return isDocumentApplicableToJourney(documentDefId, documentDef.name, targetType);
+      });
+
+      for (const sharedJourneyId of allowedShareIds) {
         try {
           // Calculate version for this definition in the target shared journey
           const sharedExisting = await dbStorage.getDocumentsByDefId(

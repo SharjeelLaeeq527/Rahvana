@@ -6,6 +6,27 @@
  */
 
 import { createClient } from '@/lib/supabase/server';
+import { hasStandaloneAccess } from '@/lib/wallet/state';
+import { resolveOwnedJourney, type JourneyRef } from '@/lib/journey/resolveOwnedJourney';
+import { canUse } from '@/lib/entitlements/helpers';
+import { normalizePlanTier } from '@/lib/entitlements/config';
+
+/** Wallet catalog id of the standalone Interview Prep tool. */
+const WALLET_RESOURCE_ID = 'interview-prep';
+
+/**
+ * Standalone wallet unlock: unlimited standalone sessions in every category.
+ * Counts a credit unlock or the bare all-categories "interview-prep" add-on.
+ * A per-category purchase ("interview-prep:<slug>") is NOT a wallet unlock: it
+ * keeps its per-category session count below. Journey sessions never come here.
+ */
+export async function hasInterviewPrepWalletUnlock(
+  userId: string,
+  purchasedAddons: readonly unknown[] = []
+): Promise<boolean> {
+  const supabase = await createClient();
+  return hasStandaloneAccess(supabase, userId, 'tool', WALLET_RESOURCE_ID, purchasedAddons);
+}
 
 //  Addon ID format for interview prep categories
 export function getAddonIdForCategory(categorySlug: string): string {
@@ -148,7 +169,12 @@ export async function countIncompleteToolSessions(
 //  Validation result type
 export interface ValidationResult {
   allowed: boolean;
-  reason: 'subscription' | 'purchase_available' | 'NO_PURCHASE' | 'PURCHASE_EXHAUSTED';
+  reason:
+    | 'subscription'
+    | 'wallet_unlock'
+    | 'purchase_available'
+    | 'NO_PURCHASE'
+    | 'PURCHASE_EXHAUSTED';
   message?: string;
 }
 
@@ -194,6 +220,20 @@ export async function validateToolSessionCreation(
   //     };
   //   }
   
+  const purchasedAddons = profile.profile_details?.purchased_addons;
+  if (
+    await hasInterviewPrepWalletUnlock(
+      userId,
+      Array.isArray(purchasedAddons) ? purchasedAddons : []
+    )
+  ) {
+    return {
+      allowed: true,
+      reason: 'wallet_unlock',
+      message: 'Unlimited standalone access via wallet unlock'
+    };
+  }
+
   // Count purchases
   const purchaseCount = await countCategoryPurchases(userId, categorySlug);
   
@@ -231,4 +271,56 @@ export async function validateToolSessionCreation(
     reason: 'purchase_available',
     message: `${purchaseCount - sessionCount} session(s) remaining`
   };
+}
+
+export type JourneySessionValidation =
+  | { allowed: true; journeyId: string }
+  | {
+      allowed: false;
+      status: 403 | 404;
+      reason: 'JOURNEY_NOT_FOUND' | 'JOURNEY_INACTIVE' | 'JOURNEY_PLAN_REQUIRED';
+      message: string;
+    };
+
+/**
+ * Validate a JOURNEY interview session. Journey sessions follow the journey's
+ * own plan tier (like useJourneyPlan: journey tier + account add-ons) and never
+ * the wallet or standalone category purchases. The journey must belong to the
+ * user and still be active (journey sessions are blocked once it completes).
+ */
+export async function validateJourneySessionCreation(
+  userId: string,
+  ref: JourneyRef
+): Promise<JourneySessionValidation> {
+  const supabase = await createClient();
+  const journey = await resolveOwnedJourney(supabase, userId, ref);
+  if (!journey) {
+    return { allowed: false, status: 404, reason: 'JOURNEY_NOT_FOUND', message: 'Journey not found' };
+  }
+  if (journey.status && !['in_progress', 'not_started'].includes(journey.status)) {
+    return {
+      allowed: false,
+      status: 403,
+      reason: 'JOURNEY_INACTIVE',
+      message: 'This journey is no longer active.',
+    };
+  }
+
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('profile_details')
+    .eq('id', userId)
+    .maybeSingle();
+  const raw = profile?.profile_details?.purchased_addons;
+  const addons = Array.isArray(raw) ? raw.filter((a: unknown): a is string => typeof a === 'string') : [];
+
+  if (!canUse('basic_interview_prep', normalizePlanTier(journey.subscription_tier), addons)) {
+    return {
+      allowed: false,
+      status: 403,
+      reason: 'JOURNEY_PLAN_REQUIRED',
+      message: 'Interview Prep is not included in this journey plan. Upgrade the journey to use it.',
+    };
+  }
+  return { allowed: true, journeyId: journey.id };
 }

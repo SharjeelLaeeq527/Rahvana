@@ -38,7 +38,7 @@ export async function GET(request: NextRequest, { params }: { params: { formCode
       return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from("visa_forms_draft")
       .select("*")
       .eq("user_id", user.id)
@@ -49,6 +49,21 @@ export async function GET(request: NextRequest, { params }: { params: { formCode
     if (error) {
       console.error("/api/visa-forms progress GET db error:", error);
       return NextResponse.json({ error: msg(E.AUTH_UNEXPECTED_ERROR) }, { status: 500 });
+    }
+
+    // Fallback: If no draft exists for this specific journey_key, and journeyKey is not 'global' and not 'standalone', check for a legacy 'global' draft
+    if (!data && journeyKey !== "global" && journeyKey !== "standalone") {
+      const fallback = await supabase
+        .from("visa_forms_draft")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("form_code", formCode)
+        .eq("journey_key", "global")
+        .maybeSingle();
+
+      if (!fallback.error && fallback.data) {
+        data = fallback.data;
+      }
     }
 
     return NextResponse.json({ draft: data ?? null });

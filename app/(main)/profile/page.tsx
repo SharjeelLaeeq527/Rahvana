@@ -110,50 +110,39 @@ function ProfileSection({
   return (
     <div
       className={cn(
-        "rounded-2xl border bg-white shadow-sm overflow-hidden transition-all duration-200",
+        "overflow-hidden rounded-2xl border bg-white shadow-sm transition-all duration-200",
         colors.border,
-        isOpen ? `ring-1 ${colors.ring} shadow-md` : "hover:shadow-md",
+        isOpen ? `ring-1 ${colors.ring} shadow-md` : "hover:shadow-md"
       )}
     >
-      <button
-        type="button"
-        onClick={onToggle}
-        className="w-full text-left"
-        aria-expanded={isOpen}
-      >
-        <div className="px-5 py-4 sm:px-6 sm:py-5 flex items-center gap-4">
+      <button type="button" onClick={onToggle} className="w-full text-left" aria-expanded={isOpen}>
+        <div className="flex items-center gap-4 px-5 py-4 sm:px-6 sm:py-5">
           <div
             className={cn(
               "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl",
               colors.iconBg,
-              colors.iconColor,
+              colors.iconColor
             )}
           >
             {icon}
           </div>
 
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="text-base font-semibold text-slate-900">
-                {title}
-              </h3>
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="text-base font-semibold text-slate-900">{title}</h3>
               {badge && (
                 <span
                   className={cn(
                     "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
                     colors.badgeBg,
-                    colors.badgeText,
+                    colors.badgeText
                   )}
                 >
                   {badge}
                 </span>
               )}
             </div>
-            {description && (
-              <p className="text-sm text-slate-500 mt-0.5 truncate">
-                {description}
-              </p>
-            )}
+            {description && <p className="mt-0.5 truncate text-sm text-slate-500">{description}</p>}
           </div>
 
           <div
@@ -161,7 +150,7 @@ function ProfileSection({
               "flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-transform duration-200",
               colors.chevronBg,
               colors.chevronColor,
-              isOpen ? "rotate-180" : "",
+              isOpen ? "rotate-180" : ""
             )}
           >
             <ChevronDown className="h-5 w-5" />
@@ -187,7 +176,7 @@ function ProfileSection({
             transition={{ duration: 0.25, ease: "easeInOut" }}
             className="overflow-hidden"
           >
-            <div className="px-5 pb-5 sm:px-6 sm:pb-6 pt-2">{children}</div>
+            <div className="px-5 pt-2 pb-5 sm:px-6 sm:pb-6">{children}</div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -287,7 +276,7 @@ export default function ProfilePage() {
   useEffect(() => {
     if (!isLoading && !user) {
       router.push(
-        `/login?redirectTo=${encodeURIComponent(window.location.pathname + window.location.search)}`,
+        `/login?redirectTo=${encodeURIComponent(window.location.pathname + window.location.search)}`
       );
       return;
     }
@@ -357,38 +346,31 @@ export default function ProfilePage() {
   // All write through RHF via setField(). Signatures are unchanged so the field
   // bindings throughout the form stay exactly as they were; RHF handles the
   // nested-object immutability that these used to do by hand.
-  const updateField = <T extends keyof MasterProfile>(
-    field: T,
-    value: MasterProfile[T],
-  ) => setField(field as string, value);
+  const updateField = <T extends keyof MasterProfile>(field: T, value: MasterProfile[T]) =>
+    setField(field as string, value);
 
-  const updateStrictField = <T extends keyof MasterProfile>(
-    field: T,
-    value: string,
-  ) => setField(field as string, value);
+  const updateStrictField = <T extends keyof MasterProfile>(field: T, value: string) =>
+    setField(field as string, value);
 
   const updateNested = (parent: string, field: string, value: unknown) =>
     setField(`${parent}.${field}`, value);
 
-  const updateAddress = (
-    field: keyof MasterProfile["currentAddress"],
-    value: string,
-  ) => setField(`currentAddress.${String(field)}`, value);
+  const updateAddress = (field: keyof MasterProfile["currentAddress"], value: string) =>
+    setField(`currentAddress.${String(field)}`, value);
 
   // Sponsor section helpers — sponsor.* holds the US petitioner's own data
   // (the top-level fields are the account holder's / beneficiary's).
-  const updateSponsor = (field: string, value: unknown) =>
-    setField(`sponsor.${field}`, value);
+  const updateSponsor = (field: string, value: unknown) => setField(`sponsor.${field}`, value);
 
   const updateSponsorSub = (
     sub: "name" | "placeOfBirth" | "address",
     field: string,
-    value: string,
+    value: string
   ) => setField(`sponsor.${sub}.${field}`, value);
 
   if (isLoading || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="flex min-h-screen items-center justify-center bg-slate-50">
         <Loader size="md" />
       </div>
     );
@@ -399,67 +381,60 @@ export default function ProfilePage() {
   const completeness = formData.name ? getProfileCompleteness(formData) : 0;
 
   const hasErrors = Object.keys(errors).length > 0;
-  const isSuccess =
-    Boolean(message) && !message.includes("Error") && !hasErrors;
+  const isSuccess = Boolean(message) && !message.includes("Error") && !hasErrors;
 
   return (
     <div className="w-full">
       {/* ── Hero band: title + actions + completeness in one clean card ── */}
-      <div className="mb-5 rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+      <div className="mb-5 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div className="p-5 sm:p-6">
-          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             <div className="flex items-start gap-3">
-              <div className="hidden sm:flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <div className="bg-primary/10 text-primary hidden h-11 w-11 shrink-0 items-center justify-center rounded-xl sm:flex">
                 <UserIcon className="h-5 w-5" />
               </div>
               <div>
-                <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
+                <h1 className="text-xl font-bold tracking-tight text-slate-900 md:text-2xl">
                   {t("profile.title")}
                 </h1>
-                <p className="text-slate-500 text-sm mt-0.5">
-                  {t("profile.subtitle")}
-                </p>
+                <p className="mt-0.5 text-sm text-slate-500">{t("profile.subtitle")}</p>
               </div>
             </div>
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full md:w-auto">
+            <div className="flex w-full flex-col items-stretch gap-2 sm:flex-row sm:items-center md:w-auto">
               <Button
                 variant="outline"
                 onClick={() => router.push("/complete-profile")}
-                className="w-full sm:w-auto h-9 text-sm px-4 border-primary/20 hover:bg-primary/5 text-primary"
+                className="border-primary/20 hover:bg-primary/5 text-primary h-9 w-full px-4 text-sm sm:w-auto"
               >
-                <Check className="w-4 h-4 mr-2" />
+                <Check className="mr-2 h-4 w-4" />
                 {t("profile.buttons.completeProfile")}
               </Button>
               {isEditing ? (
-                <div className="grid grid-cols-2 gap-2 w-full sm:w-auto sm:flex sm:flex-row">
+                <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-row">
                   <Button
                     variant="outline"
                     onClick={handleCancel}
                     disabled={saving}
-                    className="w-full sm:w-auto h-9 text-sm px-4 bg-transparent"
+                    className="h-9 w-full bg-transparent px-4 text-sm sm:w-auto"
                   >
-                    <X className="w-4 h-4 mr-2" />
+                    <X className="mr-2 h-4 w-4" />
                     {t("profile.buttons.cancel")}
                   </Button>
                   <Button
                     onClick={handleSave}
                     disabled={saving || !isDirty}
-                    className="w-full sm:w-auto h-9 text-sm px-4"
+                    className="h-9 w-full px-4 text-sm sm:w-auto"
                   >
-                    {saving ? (
-                      <Loader size="sm" />
-                    ) : (
-                      <Check className="w-4 h-4 mr-2" />
-                    )}
+                    {saving ? <Loader size="sm" /> : <Check className="mr-2 h-4 w-4" />}
                     {t("profile.buttons.save")}
                   </Button>
                 </div>
               ) : (
                 <Button
                   onClick={() => setIsEditing(true)}
-                  className="w-full sm:w-auto h-9 text-sm px-4"
+                  className="h-9 w-full px-4 text-sm sm:w-auto"
                 >
-                  <Pencil className="w-4 h-4 mr-2" />
+                  <Pencil className="mr-2 h-4 w-4" />
                   {t("profile.buttons.editProfile")}
                 </Button>
               )}
@@ -469,17 +444,15 @@ export default function ProfilePage() {
           {/* Profile Completeness */}
           {formData.name && (
             <div className="mt-5">
-              <div className="flex items-center justify-between mb-1.5">
+              <div className="mb-1.5 flex items-center justify-between">
                 <span className="text-xs font-medium text-slate-600">
                   {t("profile.completeness")}
                 </span>
-                <span className="text-sm font-semibold text-primary">
-                  {completeness}%
-                </span>
+                <span className="text-primary text-sm font-semibold">{completeness}%</span>
               </div>
-              <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
                 <div
-                  className="h-full bg-primary transition-all duration-500 rounded-full"
+                  className="bg-primary h-full rounded-full transition-all duration-500"
                   style={{ width: `${completeness}%` }}
                 />
               </div>
@@ -491,16 +464,16 @@ export default function ProfilePage() {
       {/* Success / Error / Validation banner */}
       {message && (
         <div
-          className={`mb-4 flex items-start gap-2 px-3.5 py-2.5 rounded-lg text-sm border ${
+          className={`mb-4 flex items-start gap-2 rounded-lg border px-3.5 py-2.5 text-sm ${
             isSuccess
-              ? "bg-green-50 text-green-700 border-green-200"
-              : "bg-red-50 text-red-700 border-red-200"
+              ? "border-green-200 bg-green-50 text-green-700"
+              : "border-red-200 bg-red-50 text-red-700"
           }`}
         >
           {isSuccess ? (
-            <Check className="h-4 w-4 mt-0.5 shrink-0" />
+            <Check className="mt-0.5 h-4 w-4 shrink-0" />
           ) : (
-            <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
           )}
           <span>{message}</span>
         </div>
@@ -517,7 +490,7 @@ export default function ProfilePage() {
           onToggle={() => toggleSection("personal")}
           colorScheme="teal"
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
             <FormField
               label={t("profile.fields.firstName")}
               value={formData.name?.first || ""}
@@ -557,9 +530,7 @@ export default function ProfilePage() {
             <FormField
               label={t("profile.fields.countryOfBirth")}
               value={formData.placeOfBirth?.country || ""}
-              onChange={(v: string) =>
-                updateNested("placeOfBirth", "country", v)
-              }
+              onChange={(v: string) => updateNested("placeOfBirth", "country", v)}
               readOnly={!isEditing}
               placeholder={t("profile.placeholders.country")}
             />
@@ -598,15 +569,11 @@ export default function ProfilePage() {
               <FormSelect
                 label={t("profile.fields.citizenshipStatus.label")}
                 value={formData.citizenshipStatus || "Other"}
-                onChange={(v: string) =>
-                  updateStrictField("citizenshipStatus", v)
-                }
+                onChange={(v: string) => updateStrictField("citizenshipStatus", v)}
                 options={[
                   {
                     value: "USCitizen",
-                    label: t(
-                      "profile.fields.citizenshipStatus.options.usCitizen",
-                    ),
+                    label: t("profile.fields.citizenshipStatus.options.usCitizen"),
                   },
                   {
                     value: "LPR",
@@ -703,11 +670,12 @@ export default function ProfilePage() {
             />
 
             {/* Legal Identifiers */}
-            <div className="sm:col-span-2 md:col-span-3 pt-4 border-t border-slate-100 mt-4">
-              <h4 className="text-xs font-medium text-slate-600 mb-3">
-                {t("profile.fields.legalIdentifiers")}
+            <div className="mt-4 border-t border-slate-100 pt-4 sm:col-span-2 md:col-span-3">
+              <h4 className="mb-3 text-xs font-medium text-slate-600">
+                {/* {t("profile.fields.legalIdentifiers")} */}
+                Legal Identifiers
               </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
                 <FormField
                   label={t("profile.fields.ssn")}
                   value={formData.ssn || ""}
@@ -751,7 +719,7 @@ export default function ProfilePage() {
           onToggle={() => toggleSection("sponsor")}
           colorScheme="coral"
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
             <FormField
               label="First name"
               value={formData.sponsor?.name?.first || ""}
@@ -781,17 +749,13 @@ export default function ProfilePage() {
             <FormField
               label="City of birth"
               value={formData.sponsor?.placeOfBirth?.city || ""}
-              onChange={(v: string) =>
-                updateSponsorSub("placeOfBirth", "city", v)
-              }
+              onChange={(v: string) => updateSponsorSub("placeOfBirth", "city", v)}
               readOnly={!isEditing}
             />
             <FormField
               label="Country of birth"
               value={formData.sponsor?.placeOfBirth?.country || ""}
-              onChange={(v: string) =>
-                updateSponsorSub("placeOfBirth", "country", v)
-              }
+              onChange={(v: string) => updateSponsorSub("placeOfBirth", "country", v)}
               readOnly={!isEditing}
             />
             {isEditing ? (
@@ -853,25 +817,19 @@ export default function ProfilePage() {
             />
 
             {/* US address */}
-            <div className="sm:col-span-2 md:col-span-3 pt-4 border-t border-slate-100 mt-4">
-              <h4 className="text-xs font-medium text-slate-600 mb-3">
-                U.S. address
-              </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="mt-4 border-t border-slate-100 pt-4 sm:col-span-2 md:col-span-3">
+              <h4 className="mb-3 text-xs font-medium text-slate-600">U.S. address</h4>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
                 <FormField
                   label="Street"
                   value={formData.sponsor?.address?.street || ""}
-                  onChange={(v: string) =>
-                    updateSponsorSub("address", "street", v)
-                  }
+                  onChange={(v: string) => updateSponsorSub("address", "street", v)}
                   readOnly={!isEditing}
                 />
                 <FormField
                   label="City"
                   value={formData.sponsor?.address?.city || ""}
-                  onChange={(v: string) =>
-                    updateSponsorSub("address", "city", v)
-                  }
+                  onChange={(v: string) => updateSponsorSub("address", "city", v)}
                   readOnly={!isEditing}
                 />
                 {isEditing ? (
@@ -880,9 +838,7 @@ export default function ProfilePage() {
                     // Resolve a legacy free-text value (full name) to its code so
                     // it still pre-selects in the dropdown; new saves store codes.
                     value={
-                      US_STATES.find(
-                        (s) => s.value === formData.sponsor?.address?.state
-                      )?.value ||
+                      US_STATES.find((s) => s.value === formData.sponsor?.address?.state)?.value ||
                       US_STATES.find(
                         (s) =>
                           s.label.toLowerCase() ===
@@ -898,9 +854,7 @@ export default function ProfilePage() {
                   <FormField
                     label="State"
                     value={
-                      US_STATES.find(
-                        (s) => s.value === formData.sponsor?.address?.state
-                      )?.label ||
+                      US_STATES.find((s) => s.value === formData.sponsor?.address?.state)?.label ||
                       formData.sponsor?.address?.state ||
                       ""
                     }
@@ -911,17 +865,13 @@ export default function ProfilePage() {
                 <FormField
                   label="ZIP code"
                   value={formData.sponsor?.address?.zipCode || ""}
-                  onChange={(v: string) =>
-                    updateSponsorSub("address", "zipCode", v)
-                  }
+                  onChange={(v: string) => updateSponsorSub("address", "zipCode", v)}
                   readOnly={!isEditing}
                 />
                 <FormField
                   label="Country"
                   value={formData.sponsor?.address?.country || ""}
-                  onChange={(v: string) =>
-                    updateSponsorSub("address", "country", v)
-                  }
+                  onChange={(v: string) => updateSponsorSub("address", "country", v)}
                   readOnly={!isEditing}
                 />
               </div>
@@ -938,7 +888,7 @@ export default function ProfilePage() {
           onToggle={() => toggleSection("contact")}
           colorScheme="periwinkle"
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormField
               label={t("profile.fields.phone")}
               value={formData.phone || ""}
@@ -963,10 +913,8 @@ export default function ProfilePage() {
           </div>
 
           <div className="border-t border-slate-100 pt-4">
-            <h4 className="text-xs font-medium text-slate-600 mb-3">
-              Current Address
-            </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <h4 className="mb-3 text-xs font-medium text-slate-600">Current Address</h4>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="sm:col-span-2">
                 <FormField
                   label={t("profile.fields.address")}
@@ -1008,8 +956,8 @@ export default function ProfilePage() {
           </div>
 
           {/* Mailing Address */}
-          <div className="border-t border-slate-100 pt-4 mt-4">
-            <div className="flex items-center gap-2 mb-3">
+          <div className="mt-4 border-t border-slate-100 pt-4">
+            <div className="mb-3 flex items-center gap-2">
               <h4 className="text-xs font-medium text-slate-600">
                 {t("profile.fields.mailingAddress")}
               </h4>
@@ -1028,52 +976,42 @@ export default function ProfilePage() {
             />
 
             {!(formData.sameAsCurrentAddress || false) && (
-              <div className="space-y-4 mt-4 p-4 bg-slate-50 rounded-lg border border-slate-100">
+              <div className="mt-4 space-y-4 rounded-lg border border-slate-100 bg-slate-50 p-4">
                 <FormField
                   label={t("profile.fields.address")}
                   value={formData.mailingAddress?.street || ""}
-                  onChange={(v: string) =>
-                    updateNested("mailingAddress", "street", v)
-                  }
+                  onChange={(v: string) => updateNested("mailingAddress", "street", v)}
                   readOnly={!isEditing}
                   placeholder={t("profile.placeholders.poBox")}
                 />
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <FormField
                     label={t("profile.fields.city")}
                     value={formData.mailingAddress?.city || ""}
-                    onChange={(v: string) =>
-                      updateNested("mailingAddress", "city", v)
-                    }
+                    onChange={(v: string) => updateNested("mailingAddress", "city", v)}
                     readOnly={!isEditing}
                     placeholder={t("profile.placeholders.newYork")}
                   />
                   <FormField
                     label={t("profile.fields.state")}
                     value={formData.mailingAddress?.state || ""}
-                    onChange={(v: string) =>
-                      updateNested("mailingAddress", "state", v)
-                    }
+                    onChange={(v: string) => updateNested("mailingAddress", "state", v)}
                     readOnly={!isEditing}
                     placeholder={t("profile.placeholders.ny")}
                   />
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <FormField
                     label={t("profile.fields.zipCode")}
                     value={formData.mailingAddress?.zipCode || ""}
-                    onChange={(v: string) =>
-                      updateNested("mailingAddress", "zipCode", v)
-                    }
+                    onChange={(v: string) => updateNested("mailingAddress", "zipCode", v)}
                     readOnly={!isEditing}
                     placeholder={t("profile.placeholders.zip10001")}
                   />
                   <FormField
                     label={t("profile.fields.country")}
                     value={formData.mailingAddress?.country || ""}
-                    onChange={(v: string) =>
-                      updateNested("mailingAddress", "country", v)
-                    }
+                    onChange={(v: string) => updateNested("mailingAddress", "country", v)}
                     readOnly={!isEditing}
                     placeholder={t("profile.placeholders.usa")}
                   />
@@ -1094,10 +1032,10 @@ export default function ProfilePage() {
         >
           {/* Father's Details */}
           <div>
-            <h4 className="text-xs font-medium text-slate-600 mb-3">
+            <h4 className="mb-3 text-xs font-medium text-slate-600">
               {t("profile.fields.father.header")}
             </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
               <FormField
                 label={t("profile.fields.father.firstName")}
                 value={formData.father?.name?.first || ""}
@@ -1135,14 +1073,12 @@ export default function ProfilePage() {
                 placeholder={t("profile.placeholders.lastName")}
               />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <FormField
                 label={t("profile.fields.dob")}
                 type="date"
                 value={formData.father?.dateOfBirth || ""}
-                onChange={(v: string) =>
-                  updateNested("father", "dateOfBirth", v)
-                }
+                onChange={(v: string) => updateNested("father", "dateOfBirth", v)}
                 readOnly={!isEditing}
               />
               <div className="flex items-end pb-2">
@@ -1150,14 +1086,12 @@ export default function ProfilePage() {
                   id="fatherDeceased"
                   label={t("profile.fields.deceased")}
                   checked={formData.father?.isDeceased || false}
-                  onCheckedChange={(v) =>
-                    updateNested("father", "isDeceased", v)
-                  }
+                  onCheckedChange={(v) => updateNested("father", "isDeceased", v)}
                   disabled={!isEditing}
                 />
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <FormField
                 label={t("profile.fields.cityOfBirth")}
                 value={formData.father?.placeOfBirth?.city || ""}
@@ -1184,22 +1118,18 @@ export default function ProfilePage() {
               />
             </div>
             {!(formData.father?.isDeceased || false) && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+              <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <FormField
                   label={t("profile.fields.cityOfResidence")}
                   value={formData.father?.cityOfResidence || ""}
-                  onChange={(v: string) =>
-                    updateNested("father", "cityOfResidence", v)
-                  }
+                  onChange={(v: string) => updateNested("father", "cityOfResidence", v)}
                   readOnly={!isEditing}
                   placeholder={t("profile.placeholders.city")}
                 />
                 <FormField
                   label={t("profile.fields.countryOfResidence")}
                   value={formData.father?.countryOfResidence || ""}
-                  onChange={(v: string) =>
-                    updateNested("father", "countryOfResidence", v)
-                  }
+                  onChange={(v: string) => updateNested("father", "countryOfResidence", v)}
                   readOnly={!isEditing}
                   placeholder={t("profile.placeholders.country")}
                 />
@@ -1209,10 +1139,10 @@ export default function ProfilePage() {
 
           {/* Mother's Details */}
           <div>
-            <h4 className="text-xs font-medium text-slate-600 mb-3">
+            <h4 className="mb-3 text-xs font-medium text-slate-600">
               {t("profile.fields.mother.header")}
             </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
               <FormField
                 label={t("profile.fields.mother.firstName")}
                 value={formData.mother?.name?.first || ""}
@@ -1250,14 +1180,12 @@ export default function ProfilePage() {
                 placeholder={t("profile.placeholders.lastName")}
               />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <FormField
                 label={t("profile.fields.dob")}
                 type="date"
                 value={formData.mother?.dateOfBirth || ""}
-                onChange={(v: string) =>
-                  updateNested("mother", "dateOfBirth", v)
-                }
+                onChange={(v: string) => updateNested("mother", "dateOfBirth", v)}
                 readOnly={!isEditing}
               />
               <div className="flex items-end pb-2">
@@ -1265,14 +1193,12 @@ export default function ProfilePage() {
                   id="motherDeceased"
                   label={t("profile.fields.deceased")}
                   checked={formData.mother?.isDeceased || false}
-                  onCheckedChange={(v) =>
-                    updateNested("mother", "isDeceased", v)
-                  }
+                  onCheckedChange={(v) => updateNested("mother", "isDeceased", v)}
                   disabled={!isEditing}
                 />
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <FormField
                 label="City of Birth"
                 value={formData.mother?.placeOfBirth?.city || ""}
@@ -1299,22 +1225,18 @@ export default function ProfilePage() {
               />
             </div>
             {!(formData.mother?.isDeceased || false) && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+              <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <FormField
                   label="Current City of Residence"
                   value={formData.mother?.cityOfResidence || ""}
-                  onChange={(v: string) =>
-                    updateNested("mother", "cityOfResidence", v)
-                  }
+                  onChange={(v: string) => updateNested("mother", "cityOfResidence", v)}
                   readOnly={!isEditing}
                   placeholder="City"
                 />
                 <FormField
                   label="Current Country of Residence"
                   value={formData.mother?.countryOfResidence || ""}
-                  onChange={(v: string) =>
-                    updateNested("mother", "countryOfResidence", v)
-                  }
+                  onChange={(v: string) => updateNested("mother", "countryOfResidence", v)}
                   readOnly={!isEditing}
                   placeholder="Country"
                 />
@@ -1332,7 +1254,7 @@ export default function ProfilePage() {
           onToggle={() => toggleSection("employment")}
           colorScheme="teal"
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
             <FormField
               label={t("profile.fields.occupation")}
               value={formData.occupation || ""}
@@ -1369,15 +1291,11 @@ export default function ProfilePage() {
                 options={[
                   {
                     value: "Technology",
-                    label: t(
-                      "profile.fields.industrySector.options.technology",
-                    ),
+                    label: t("profile.fields.industrySector.options.technology"),
                   },
                   {
                     value: "Healthcare",
-                    label: t(
-                      "profile.fields.industrySector.options.healthcare",
-                    ),
+                    label: t("profile.fields.industrySector.options.healthcare"),
                   },
                   {
                     value: "Education",
@@ -1389,15 +1307,11 @@ export default function ProfilePage() {
                   },
                   {
                     value: "Construction",
-                    label: t(
-                      "profile.fields.industrySector.options.construction",
-                    ),
+                    label: t("profile.fields.industrySector.options.construction"),
                   },
                   {
                     value: "Manufacturing",
-                    label: t(
-                      "profile.fields.industrySector.options.manufacturing",
-                    ),
+                    label: t("profile.fields.industrySector.options.manufacturing"),
                   },
                   {
                     value: "Retail",
@@ -1405,9 +1319,7 @@ export default function ProfilePage() {
                   },
                   {
                     value: "Government",
-                    label: t(
-                      "profile.fields.industrySector.options.government",
-                    ),
+                    label: t("profile.fields.industrySector.options.government"),
                   },
                   {
                     value: "Military/Defense",
@@ -1436,21 +1348,15 @@ export default function ProfilePage() {
                 options={[
                   {
                     value: "Did not graduate high school",
-                    label: t(
-                      "profile.fields.educationLevel.options.notGraduate",
-                    ),
+                    label: t("profile.fields.educationLevel.options.notGraduate"),
                   },
                   {
                     value: "High School",
-                    label: t(
-                      "profile.fields.educationLevel.options.highSchool",
-                    ),
+                    label: t("profile.fields.educationLevel.options.highSchool"),
                   },
                   {
                     value: "Some College",
-                    label: t(
-                      "profile.fields.educationLevel.options.someCollege",
-                    ),
+                    label: t("profile.fields.educationLevel.options.someCollege"),
                   },
                   {
                     value: "Associate Degree",
@@ -1501,9 +1407,7 @@ export default function ProfilePage() {
           <FormCheckbox
             id="pva"
             label={t("profile.fields.immigrationHistory.previousVisa")}
-            checked={
-              formData.immigrationHistory?.previousVisaApplications || false
-            }
+            checked={formData.immigrationHistory?.previousVisaApplications || false}
             onCheckedChange={(c) =>
               updateNested("immigrationHistory", "previousVisaApplications", c)
             }
@@ -1513,9 +1417,7 @@ export default function ProfilePage() {
             id="pvd"
             label={t("profile.fields.immigrationHistory.visaDenial")}
             checked={formData.immigrationHistory?.previousVisaDenial || false}
-            onCheckedChange={(c) =>
-              updateNested("immigrationHistory", "previousVisaDenial", c)
-            }
+            onCheckedChange={(c) => updateNested("immigrationHistory", "previousVisaDenial", c)}
             disabled={!isEditing}
             variant="warning"
           />
@@ -1523,9 +1425,7 @@ export default function ProfilePage() {
             id="ov"
             label={t("profile.fields.immigrationHistory.overstay")}
             checked={formData.immigrationHistory?.overstayOrViolation || false}
-            onCheckedChange={(c) =>
-              updateNested("immigrationHistory", "overstayOrViolation", c)
-            }
+            onCheckedChange={(c) => updateNested("immigrationHistory", "overstayOrViolation", c)}
             disabled={!isEditing}
             variant="warning"
           />
@@ -1533,9 +1433,7 @@ export default function ProfilePage() {
             id="cr"
             label={t("profile.fields.immigrationHistory.criminalRecord")}
             checked={formData.immigrationHistory?.criminalRecord || false}
-            onCheckedChange={(c) =>
-              updateNested("immigrationHistory", "criminalRecord", c)
-            }
+            onCheckedChange={(c) => updateNested("immigrationHistory", "criminalRecord", c)}
             disabled={!isEditing}
             variant="warning"
           />
@@ -1543,9 +1441,7 @@ export default function ProfilePage() {
             id="rd"
             label={t("profile.fields.immigrationHistory.removal")}
             checked={formData.immigrationHistory?.removedOrDeported || false}
-            onCheckedChange={(c) =>
-              updateNested("immigrationHistory", "removedOrDeported", c)
-            }
+            onCheckedChange={(c) => updateNested("immigrationHistory", "removedOrDeported", c)}
             disabled={!isEditing}
             variant="warning"
           />
@@ -1553,35 +1449,23 @@ export default function ProfilePage() {
             id="ms"
             label={t("profile.fields.immigrationHistory.militaryService")}
             checked={formData.immigrationHistory?.priorMilitaryService || false}
-            onCheckedChange={(c) =>
-              updateNested("immigrationHistory", "priorMilitaryService", c)
-            }
+            onCheckedChange={(c) => updateNested("immigrationHistory", "priorMilitaryService", c)}
             disabled={!isEditing}
           />
           <FormCheckbox
             id="swt"
             label={t("profile.fields.immigrationHistory.weaponsTraining")}
-            checked={
-              formData.immigrationHistory?.specializedWeaponsTraining || false
-            }
+            checked={formData.immigrationHistory?.specializedWeaponsTraining || false}
             onCheckedChange={(c) =>
-              updateNested(
-                "immigrationHistory",
-                "specializedWeaponsTraining",
-                c,
-              )
+              updateNested("immigrationHistory", "specializedWeaponsTraining", c)
             }
             disabled={!isEditing}
           />
           <FormCheckbox
             id="uag"
             label={t("profile.fields.immigrationHistory.armedGroups")}
-            checked={
-              formData.immigrationHistory?.unofficialArmedGroups || false
-            }
-            onCheckedChange={(c) =>
-              updateNested("immigrationHistory", "unofficialArmedGroups", c)
-            }
+            checked={formData.immigrationHistory?.unofficialArmedGroups || false}
+            onCheckedChange={(c) => updateNested("immigrationHistory", "unofficialArmedGroups", c)}
             disabled={!isEditing}
           />
         </ProfileSection>
@@ -1595,7 +1479,7 @@ export default function ProfilePage() {
           onToggle={() => toggleSection("relationship")}
           colorScheme="periwinkle"
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+          <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormSelect
               label={t("profile.fields.relationshipType.label")}
               value={formData.relationship?.type || ""}
@@ -1622,7 +1506,7 @@ export default function ProfilePage() {
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+          <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormField
               label={t("profile.fields.marriageDate")}
               type="date"
@@ -1632,15 +1516,9 @@ export default function ProfilePage() {
             />
             <FormField
               label={t("profile.fields.visits")}
-              value={
-                formData.relationship?.numberOfInPersonVisits?.toString() || ""
-              }
+              value={formData.relationship?.numberOfInPersonVisits?.toString() || ""}
               onChange={(v) =>
-                updateNested(
-                  "relationship",
-                  "numberOfInPersonVisits",
-                  v ? Number(v) : null,
-                )
+                updateNested("relationship", "numberOfInPersonVisits", v ? Number(v) : null)
               }
               type="number"
               placeholder="0"
@@ -1656,62 +1534,50 @@ export default function ProfilePage() {
             placeholder={t("profile.placeholders.relMeet")}
           />
 
-          <h4 className="text-xs font-medium text-slate-600 mt-4 mb-3">
+          <h4 className="mt-4 mb-3 text-xs font-medium text-slate-600">
             {t("profile.fields.evidence.header")}
           </h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <FormCheckbox
               id="coh"
               label={t("profile.fields.evidence.cohabitation")}
               checked={formData.relationship?.cohabitationProof || false}
-              onCheckedChange={(c) =>
-                updateNested("relationship", "cohabitationProof", c)
-              }
+              onCheckedChange={(c) => updateNested("relationship", "cohabitationProof", c)}
               disabled={!isEditing}
             />
             <FormCheckbox
               id="fin"
               label={t("profile.fields.evidence.sharing")}
               checked={formData.relationship?.sharedFinancialAccounts || false}
-              onCheckedChange={(c) =>
-                updateNested("relationship", "sharedFinancialAccounts", c)
-              }
+              onCheckedChange={(c) => updateNested("relationship", "sharedFinancialAccounts", c)}
               disabled={!isEditing}
             />
             <FormCheckbox
               id="wed"
               label={t("profile.fields.evidence.wedding")}
               checked={formData.relationship?.weddingPhotos || false}
-              onCheckedChange={(c) =>
-                updateNested("relationship", "weddingPhotos", c)
-              }
+              onCheckedChange={(c) => updateNested("relationship", "weddingPhotos", c)}
               disabled={!isEditing}
             />
             <FormCheckbox
               id="comm"
               label={t("profile.fields.evidence.comm")}
               checked={formData.relationship?.communicationLogs || false}
-              onCheckedChange={(c) =>
-                updateNested("relationship", "communicationLogs", c)
-              }
+              onCheckedChange={(c) => updateNested("relationship", "communicationLogs", c)}
               disabled={!isEditing}
             />
             <FormCheckbox
               id="money"
               label={t("profile.fields.evidence.money")}
               checked={formData.relationship?.moneyTransferReceipts || false}
-              onCheckedChange={(c) =>
-                updateNested("relationship", "moneyTransferReceipts", c)
-              }
+              onCheckedChange={(c) => updateNested("relationship", "moneyTransferReceipts", c)}
               disabled={!isEditing}
             />
             <FormCheckbox
               id="meet"
               label={t("profile.fields.evidence.meet")}
               checked={formData.relationship?.meetingProof || false}
-              onCheckedChange={(c) =>
-                updateNested("relationship", "meetingProof", c)
-              }
+              onCheckedChange={(c) => updateNested("relationship", "meetingProof", c)}
               disabled={!isEditing}
             />
           </div>
@@ -1726,9 +1592,9 @@ export default function ProfilePage() {
           onToggle={() => toggleSection("documents")}
           colorScheme="mint"
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <div>
-              <h4 className="text-xs font-medium text-slate-600 mb-3 block">
+              <h4 className="mb-3 block text-xs font-medium text-slate-600">
                 {t("profile.fields.identityDocs")}
               </h4>
               <div className="space-y-3">
@@ -1736,42 +1602,34 @@ export default function ProfilePage() {
                   id="ppt"
                   label={t("profile.fields.docs.passport")}
                   checked={formData.documents?.hasPassport || false}
-                  onCheckedChange={(c) =>
-                    updateNested("documents", "hasPassport", c)
-                  }
+                  onCheckedChange={(c) => updateNested("documents", "hasPassport", c)}
                   disabled={!isEditing}
                 />
                 <FormCheckbox
                   id="bc"
                   label={t("profile.fields.docs.birth")}
                   checked={formData.documents?.hasBirthCertificate || false}
-                  onCheckedChange={(c) =>
-                    updateNested("documents", "hasBirthCertificate", c)
-                  }
+                  onCheckedChange={(c) => updateNested("documents", "hasBirthCertificate", c)}
                   disabled={!isEditing}
                 />
                 <FormCheckbox
                   id="mc"
                   label={t("profile.fields.docs.marriage")}
                   checked={formData.documents?.hasMarriageCertificate || false}
-                  onCheckedChange={(c) =>
-                    updateNested("documents", "hasMarriageCertificate", c)
-                  }
+                  onCheckedChange={(c) => updateNested("documents", "hasMarriageCertificate", c)}
                   disabled={!isEditing}
                 />
                 <FormCheckbox
                   id="pc"
                   label={t("profile.fields.docs.police")}
                   checked={formData.documents?.hasPoliceCertificate || false}
-                  onCheckedChange={(c) =>
-                    updateNested("documents", "hasPoliceCertificate", c)
-                  }
+                  onCheckedChange={(c) => updateNested("documents", "hasPoliceCertificate", c)}
                   disabled={!isEditing}
                 />
               </div>
             </div>
             <div>
-              <h4 className="text-xs font-medium text-slate-600 mb-3 block">
+              <h4 className="mb-3 block text-xs font-medium text-slate-600">
                 {t("profile.fields.financialDocs")}
               </h4>
               <div className="space-y-3">
@@ -1779,29 +1637,21 @@ export default function ProfilePage() {
                   id="tr"
                   label={t("profile.fields.financial.tax")}
                   checked={formData.financialProfile?.hasTaxReturns || false}
-                  onCheckedChange={(c) =>
-                    updateNested("financialProfile", "hasTaxReturns", c)
-                  }
+                  onCheckedChange={(c) => updateNested("financialProfile", "hasTaxReturns", c)}
                   disabled={!isEditing}
                 />
                 <FormCheckbox
                   id="ps"
                   label={t("profile.fields.financial.paystubs")}
                   checked={formData.financialProfile?.hasPaystubs || false}
-                  onCheckedChange={(c) =>
-                    updateNested("financialProfile", "hasPaystubs", c)
-                  }
+                  onCheckedChange={(c) => updateNested("financialProfile", "hasPaystubs", c)}
                   disabled={!isEditing}
                 />
                 <FormCheckbox
                   id="bs"
                   label={t("profile.fields.financial.bank")}
-                  checked={
-                    formData.financialProfile?.hasBankStatements || false
-                  }
-                  onCheckedChange={(c) =>
-                    updateNested("financialProfile", "hasBankStatements", c)
-                  }
+                  checked={formData.financialProfile?.hasBankStatements || false}
+                  onCheckedChange={(c) => updateNested("financialProfile", "hasBankStatements", c)}
                   disabled={!isEditing}
                 />
               </div>
@@ -1818,14 +1668,12 @@ export default function ProfilePage() {
           onToggle={() => toggleSection("affidavit")}
           colorScheme="teal"
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {isEditing ? (
               <FormSelect
                 label={t("profile.fields.sponsorStatus.label")}
                 value={formData.sponsorStatus || ""}
-                onChange={(v: string) =>
-                  updateField("sponsorStatus", v as "citizen" | "greenCard")
-                }
+                onChange={(v: string) => updateField("sponsorStatus", v as "citizen" | "greenCard")}
                 options={[
                   {
                     value: "citizen",
@@ -1855,7 +1703,7 @@ export default function ProfilePage() {
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormCheckbox
               id="married"
               label={t("profile.fields.married")}
@@ -1867,21 +1715,17 @@ export default function ProfilePage() {
               label={t("profile.fields.numChildren")}
               type="number"
               value={formData.numberOfChildren?.toString() || "0"}
-              onChange={(v: string) =>
-                updateField("numberOfChildren", v ? Number(v) : 0)
-              }
+              onChange={(v: string) => updateField("numberOfChildren", v ? Number(v) : 0)}
               readOnly={!isEditing}
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormField
               label={t("profile.fields.taxDependents")}
               type="number"
               value={formData.taxDependents?.toString() || "0"}
-              onChange={(v: string) =>
-                updateField("taxDependents", v ? Number(v) : 0)
-              }
+              onChange={(v: string) => updateField("taxDependents", v ? Number(v) : 0)}
               readOnly={!isEditing}
             />
             <FormCheckbox
@@ -1898,21 +1742,17 @@ export default function ProfilePage() {
               label={t("profile.fields.prevSponsorshipCount")}
               type="number"
               value={formData.previousSponsoredCount?.toString() || "0"}
-              onChange={(v: string) =>
-                updateField("previousSponsoredCount", v ? Number(v) : 0)
-              }
+              onChange={(v: string) => updateField("previousSponsoredCount", v ? Number(v) : 0)}
               readOnly={!isEditing}
             />
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
             <FormCheckbox
               id="sponsorApplicant"
               label={t("profile.fields.sponsoringApplicant")}
               checked={formData.currentSponsoredApplicant !== false} // defaults to true
-              onCheckedChange={(c) =>
-                updateField("currentSponsoredApplicant", c)
-              }
+              onCheckedChange={(c) => updateField("currentSponsoredApplicant", c)}
               disabled={!isEditing}
             />
             <FormCheckbox
@@ -1926,14 +1766,12 @@ export default function ProfilePage() {
               label={t("profile.fields.sponsoringChildren")}
               type="number"
               value={formData.currentSponsoredChildren?.toString() || "0"}
-              onChange={(v: string) =>
-                updateField("currentSponsoredChildren", v ? Number(v) : 0)
-              }
+              onChange={(v: string) => updateField("currentSponsoredChildren", v ? Number(v) : 0)}
               readOnly={!isEditing}
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormCheckbox
               id="sponsorDeceased"
               label={t("profile.fields.sponsorDeceased")}
@@ -1945,9 +1783,7 @@ export default function ProfilePage() {
               label={t("profile.fields.assetValue")}
               type="number"
               value={formData.assetValue?.toString() || "0"}
-              onChange={(v: string) =>
-                updateField("assetValue", v ? Number(v) : 0)
-              }
+              onChange={(v: string) => updateField("assetValue", v ? Number(v) : 0)}
               readOnly={!isEditing}
             />
           </div>
@@ -1960,7 +1796,7 @@ export default function ProfilePage() {
             placeholder={t("profile.placeholders.selectGeneric")}
           />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
             <FormCheckbox
               id="vawa"
               label={t("profile.fields.vawa")}
@@ -1995,10 +1831,10 @@ export default function ProfilePage() {
           colorScheme="coral"
         >
           <div>
-            <h4 className="text-xs font-medium text-slate-600 mb-3 block">
+            <h4 className="mb-3 block text-xs font-medium text-slate-600">
               {t("profile.fields.applicationDetails")}
             </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {isEditing ? (
                 <FormSelect
                   label={t("profile.fields.visaType.label")}
@@ -2059,16 +1895,14 @@ export default function ProfilePage() {
           </div>
 
           <div className="border-t border-slate-100 pt-5">
-            <h4 className="text-xs font-medium text-slate-600 mb-3 block">
+            <h4 className="mb-3 block text-xs font-medium text-slate-600">
               {t("profile.fields.sponsorHeader")}
             </h4>
             {/* Read-only mirror of the Sponsor section (single source of truth).
                 Sponsor details are edited there; shown here only for case context
                 so the same field can't be edited in two places. */}
-            <p className="text-xs text-slate-400 mb-3">
-              Edit these in the Sponsor section above.
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <p className="mb-3 text-xs text-slate-400">Edit these in the Sponsor section above.</p>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
               <FormField
                 label={t("profile.fields.sponsorFirstName")}
                 value={formData.sponsor?.name?.first || ""}
@@ -2091,7 +1925,7 @@ export default function ProfilePage() {
                 placeholder={t("profile.placeholders.lastName")}
               />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <FormField
                 label={t("profile.fields.dob")}
                 type="date"
@@ -2110,10 +1944,8 @@ export default function ProfilePage() {
           </div>
 
           <div className="border-t border-slate-100 pt-5">
-            <h4 className="text-xs font-medium text-slate-600 mb-3 block">
-              Beneficiary Details
-            </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <h4 className="mb-3 block text-xs font-medium text-slate-600">Beneficiary Details</h4>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
               <FormField
                 label={t("profile.fields.beneficiaryFirstName")}
                 value={formData.beneficiary?.name?.first || ""}
@@ -2151,22 +1983,18 @@ export default function ProfilePage() {
                 placeholder={t("profile.placeholders.lastName")}
               />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <FormField
                 label={t("profile.fields.dob")}
                 type="date"
                 value={formData.beneficiary?.dateOfBirth || ""}
-                onChange={(v: string) =>
-                  updateNested("beneficiary", "dateOfBirth", v)
-                }
+                onChange={(v: string) => updateNested("beneficiary", "dateOfBirth", v)}
                 readOnly={!isEditing}
               />
               <FormField
                 label={t("profile.fields.countryOfResidence")}
                 value={formData.beneficiary?.countryOfResidence || ""}
-                onChange={(v: string) =>
-                  updateNested("beneficiary", "countryOfResidence", v)
-                }
+                onChange={(v: string) => updateNested("beneficiary", "countryOfResidence", v)}
                 readOnly={!isEditing}
                 placeholder={t("profile.placeholders.country")}
               />
@@ -2184,23 +2012,19 @@ export default function ProfilePage() {
           colorScheme="periwinkle"
         >
           <div>
-            <h4 className="text-xs font-medium text-slate-600 mb-3 block">
+            <h4 className="mb-3 block text-xs font-medium text-slate-600">
               {t("profile.fields.petitionerDetails")}
             </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {isEditing ? (
                 <FormSelect
                   label={t("profile.fields.petitionerStatus.label")}
                   value={formData.visaEligibility?.petitionerStatus || ""}
-                  onChange={(v: string) =>
-                    updateNested("visaEligibility", "petitionerStatus", v)
-                  }
+                  onChange={(v: string) => updateNested("visaEligibility", "petitionerStatus", v)}
                   options={[
                     {
                       value: "US_CITIZEN",
-                      label: t(
-                        "profile.fields.petitionerStatus.options.usCitizen",
-                      ),
+                      label: t("profile.fields.petitionerStatus.options.usCitizen"),
                     },
                     {
                       value: "LPR",
@@ -2225,9 +2049,7 @@ export default function ProfilePage() {
                 <FormSelect
                   label={t("profile.fields.petitionerAge.label")}
                   value={formData.visaEligibility?.petitionerAgeGroup || ""}
-                  onChange={(v: string) =>
-                    updateNested("visaEligibility", "petitionerAgeGroup", v)
-                  }
+                  onChange={(v: string) => updateNested("visaEligibility", "petitionerAgeGroup", v)}
                   options={[
                     {
                       value: "UNDER_21",
@@ -2252,17 +2074,15 @@ export default function ProfilePage() {
           </div>
 
           <div className="border-t border-slate-100 pt-5">
-            <h4 className="text-xs font-medium text-slate-600 mb-3 block">
+            <h4 className="mb-3 block text-xs font-medium text-slate-600">
               {t("profile.fields.statusIntent")}
             </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {isEditing ? (
                 <FormSelect
                   label={t("profile.fields.statusOrigin.label")}
                   value={formData.visaEligibility?.statusOrigin || ""}
-                  onChange={(v: string) =>
-                    updateNested("visaEligibility", "statusOrigin", v)
-                  }
+                  onChange={(v: string) => updateNested("visaEligibility", "statusOrigin", v)}
                   options={[
                     {
                       value: "BIRTH",
@@ -2270,9 +2090,7 @@ export default function ProfilePage() {
                     },
                     {
                       value: "NATURALIZED",
-                      label: t(
-                        "profile.fields.statusOrigin.options.naturalized",
-                      ),
+                      label: t("profile.fields.statusOrigin.options.naturalized"),
                     },
                     {
                       value: "GREEN_CARD",
@@ -2293,9 +2111,7 @@ export default function ProfilePage() {
                 <FormSelect
                   label={t("profile.fields.intent.label")}
                   value={formData.visaEligibility?.intent || ""}
-                  onChange={(v: string) =>
-                    updateNested("visaEligibility", "intent", v)
-                  }
+                  onChange={(v: string) => updateNested("visaEligibility", "intent", v)}
                   options={[
                     {
                       value: "PERMANENT",
@@ -2317,14 +2133,12 @@ export default function ProfilePage() {
                 />
               )}
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
               {isEditing ? (
                 <FormSelect
                   label={t("profile.fields.sponsorBase.label")}
                   value={formData.visaEligibility?.sponsorBase || ""}
-                  onChange={(v: string) =>
-                    updateNested("visaEligibility", "sponsorBase", v)
-                  }
+                  onChange={(v: string) => updateNested("visaEligibility", "sponsorBase", v)}
                   options={[
                     {
                       value: "FAMILY",
@@ -2340,9 +2154,7 @@ export default function ProfilePage() {
                     },
                     {
                       value: "HUMANITARIAN",
-                      label: t(
-                        "profile.fields.sponsorBase.options.humanitarian",
-                      ),
+                      label: t("profile.fields.sponsorBase.options.humanitarian"),
                     },
                   ]}
                   placeholder={t("profile.placeholders.selectGeneric")}
@@ -2359,17 +2171,15 @@ export default function ProfilePage() {
           </div>
 
           <div className="border-t border-slate-100 pt-5">
-            <h4 className="text-xs font-medium text-slate-600 mb-3 block">
+            <h4 className="mb-3 block text-xs font-medium text-slate-600">
               {t("profile.fields.historyLegal")}
             </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {isEditing ? (
                 <FormSelect
                   label={t("profile.fields.violationHistory.label")}
                   value={formData.visaEligibility?.violationHistory || ""}
-                  onChange={(v: string) =>
-                    updateNested("visaEligibility", "violationHistory", v)
-                  }
+                  onChange={(v: string) => updateNested("visaEligibility", "violationHistory", v)}
                   options={[
                     {
                       value: "NO",
@@ -2381,9 +2191,7 @@ export default function ProfilePage() {
                     },
                     {
                       value: "NOT_SURE",
-                      label: t(
-                        "profile.fields.violationHistory.options.unsure",
-                      ),
+                      label: t("profile.fields.violationHistory.options.unsure"),
                     },
                   ]}
                   placeholder={t("profile.placeholders.selectGeneric")}
@@ -2401,9 +2209,7 @@ export default function ProfilePage() {
                 <FormSelect
                   label={t("profile.fields.legalStatus.label")}
                   value={formData.visaEligibility?.legalStatus || ""}
-                  onChange={(v: string) =>
-                    updateNested("visaEligibility", "legalStatus", v)
-                  }
+                  onChange={(v: string) => updateNested("visaEligibility", "legalStatus", v)}
                   options={[
                     {
                       value: "MARRIAGE_REGISTERED",

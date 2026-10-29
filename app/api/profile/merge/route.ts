@@ -205,17 +205,30 @@ export async function POST(request: NextRequest) {
     const current = (existing?.profile_details || {}) as Record<string, unknown>;
     const merged = deepMerge({ ...current }, delta);
 
-    const { error: upsertError } = await supabase.from("user_profiles").upsert(
-      {
+    let saveError;
+    if (existing) {
+      const { error } = await supabase
+        .from("user_profiles")
+        .update({
+          profile_details: merged,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", user.id);
+      saveError = error;
+    } else {
+      const { error } = await supabase.from("user_profiles").insert({
         id: user.id,
+        subscription_tier: "core",
+        subscription_status: "active",
         profile_details: merged,
+        created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-      },
-      { onConflict: "id" }
-    );
+      });
+      saveError = error;
+    }
 
-    if (upsertError) {
-      console.error("[profile/merge] upsert failed:", upsertError);
+    if (saveError) {
+      console.error("[profile/merge] save failed:", saveError);
       return NextResponse.json({ error: msg(E.PROFILE_SAVE_FAILED) }, { status: 500 });
     }
 

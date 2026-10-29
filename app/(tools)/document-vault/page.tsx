@@ -56,6 +56,8 @@ import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Plus, Info, LayoutTemplate } from "lucide-react";
 import { useWizard } from "@/app/(main)/dashboard/hooks/useWizard";
+import { useCandidate } from "@/app/context/CandidateContext";
+import { getJourneyKeyForCandidate, getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
 import Link from "next/link";
 import Image from "next/image";
 import { PageGate } from "@/app/components/entitlements/PageGate";
@@ -63,30 +65,14 @@ import { ir1journeyHref, ir5journeyHref } from "@/lib/constants/routes";
 import type { Journey } from "@/lib/journey/types";
 import {
   getFriendlyJourneyName,
+  journeyTypeToVisaCategory,
   setCachedUserJourneys,
   syncQuestionnaireAnswersToFlags,
   mapDocumentNameToId,
+  dedupeJourneysByType,
+  getCandidateDisplayNameForJourney,
+  getCandidateForJourneyType,
 } from "@/lib/document-vault/journey-mapping";
-
-// ── Journey → Visa Category mapping ──────────────────────────────────────────
-const JOURNEY_TYPE_TO_VISA: Record<string, VisaCategory> = {
-  IR1: "IR-1",
-  "IR-1": "IR-1",
-  ir1: "IR-1",
-  "ir-1": "IR-1",
-  IR5: "IR-5",
-  "IR-5": "IR-5",
-  ir5: "IR-5",
-  "ir-5": "IR-5",
-};
-
-function journeyTypeToVisaCategory(journeyType: string): VisaCategory | null {
-  if (!journeyType) return null;
-  const clean = journeyType.toUpperCase().replace(/[^A-Z0-9]/g, ""); // e.g., "ir-5" -> "IR5"
-  if (clean === "IR1") return "IR-1";
-  if (clean === "IR5") return "IR-5";
-  return JOURNEY_TYPE_TO_VISA[journeyType] ?? null;
-}
 
 // Session-storage key for persisted journey choice (Case 3)
 const SESSION_KEY = "doc_vault_active_journey";
@@ -112,6 +98,7 @@ export default function DocumentVaultPage() {
     refreshDocumentStatuses,
     refreshNotifications,
     reloadDocuments,
+    deleteDocument,
     addDynamicSlot,
     renameDynamicSlot,
     deleteDynamicSlot,
@@ -183,10 +170,67 @@ export default function DocumentVaultPage() {
    */
   const journeyGateEvaluated = useRef(false);
 
+  /**
+   * Tracks the last candidate we auto-resolved to a journey. The candidate->journey sync
+   * effect must only run when the CANDIDATE changes, otherwise "Back to Journeys"
+   * (which sets activeJourneyId to null) is instantly undone by the effect re-selecting the
+   * candidate's journey.
+   */
+  const lastResolvedCandidateRef = useRef<string | null>(null);
+
+  const { activeCandidate, activeCandidateId, isMultiCandidate, candidates, setActiveCandidateId } =
+    useCandidate();
+
+  // Derive active candidate journey key
+  const activeCandidateJourneyKey = useMemo(() => {
+    if (!activeCandidate) return undefined;
+    return getJourneyKeyForCandidate(activeCandidate.visaCategory || "IR-5", activeCandidate.id);
+  }, [activeCandidate]);
+
   // Derive active journey for labelling and wizard loading
   const activeJourney = useMemo(() => {
     return userJourneys.find((j) => j.id === activeJourneyId) ?? null;
   }, [userJourneys, activeJourneyId]);
+
+  // Deduplicates exact duplicate journey rows while preserving distinct candidate journeys
+  // (e.g. multiple beneficiaries under IR-5), then filters out orphaned journey rows that
+  // have no matching candidate in the roster. This ensures the vault card count always
+  // matches the actual number of candidate profiles (Issue 2 fix).
+  const dedupedUserJourneys = useMemo(() => {
+    const deduped = dedupeJourneysByType(userJourneys);
+
+    // When there are candidates, filter journeys to only those with a matching candidate
+    // profile. This prevents orphaned DB journey rows from showing extra vault cards.
+    if (candidates && candidates.length > 0) {
+      return deduped.filter((j) => {
+        // Always keep journeys that have a candidate match
+        const matchedCandidate = getCandidateForJourneyType(j.journey_type, candidates);
+        if (matchedCandidate) return true;
+
+        // For single-candidate accounts, keep the primary journey (it maps to candidate-1
+        // implicitly even if getCandidateForJourneyType can't resolve it via key matching)
+        if (candidates.length === 1) {
+          const journeyBase = getBaseVisaCategory(j.journey_type);
+          const candidateBase = getBaseVisaCategory(candidates[0].visaCategory);
+          return journeyBase === candidateBase;
+        }
+
+        return false;
+      });
+    }
+
+    return deduped;
+  }, [userJourneys, candidates]);
+
+  // Candidate switching is category-AGNOSTIC now (decision 2): any account can have multiple
+  // candidates/journeys, including IR-1. This flag just means "the active journey is a
+  // recognized candidate-capable journey"; the "whose vault" chip below is still additionally
+  // gated on isMultiCandidate, so it only appears once there are genuinely 2+ candidates.
+  const isCandidateJourney = useMemo(() => {
+    if (!activeJourney?.journey_type) return false;
+    const base = getBaseVisaCategory(activeJourney.journey_type);
+    return ["IR-5", "IR-2", "IR-1", "CR-1"].includes(base);
+  }, [activeJourney]);
 
   const journeyRoadmapHref = useMemo(() => {
     const type = activeJourney?.journey_type?.toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -197,8 +241,9 @@ export default function DocumentVaultPage() {
   }, [activeJourney]);
 
   const wizard = useWizard({
-    userId: journeysLoading ? null : user?.id,
+    userId: journeysLoading || !activeJourneyId ? null : user?.id,
     journeyId: activeJourney?.journey_type || undefined,
+    candidateId: activeCandidateId,
   });
 
   // Filter documents based on search query
@@ -327,27 +372,32 @@ export default function DocumentVaultPage() {
         setUserJourneys(journeys);
         setCachedUserJourneys(journeys);
 
+        // Deduplicate exact duplicate journey rows while keeping distinct candidate journeys
+        // so multiple beneficiaries under the same category each get their own vault card.
+        const distinctJourneys = dedupeJourneysByType(journeys);
+
         if (journeys.length === 0) {
           // ── Case 1: No journey at all ──────────────────────────────────
           setNoJourneyModalOpen(true);
+          setActiveJourneyId(null);
           setJourneyGateReady(true);
-        } else if (journeys.length === 1) {
-          // ── Case 2: Exactly one journey — auto-configure ───────────────
-          setActiveJourneyId(journeys[0].id);
+        } else if (distinctJourneys.length === 1) {
+          // ── Case 2: Exactly one journey — auto-select it ───────────────
+          setActiveJourneyId(distinctJourneys[0].id);
           setJourneyGateReady(true);
         } else {
-          // ── Case 3: Multiple journeys — check session storage ──────────
+          // ── Case 3: Multiple journeys (different categories or candidates) ──
           const saved = typeof window !== "undefined" ? sessionStorage.getItem(SESSION_KEY) : null;
           if (saved && journeys.some((j) => j.id === saved)) {
             setActiveJourneyId(saved);
-            setJourneyGateReady(true);
-          } else {
-            setJourneyGateReady(true);
           }
+          setJourneyGateReady(true);
         }
       } catch (err) {
         console.error("[DocumentVault] Journey gate error:", err);
-        // On error, allow access with generic config
+        // Strict journey dependency: if loading fails, block access
+        setNoJourneyModalOpen(true);
+        setActiveJourneyId(null);
         setJourneyGateReady(true);
       } finally {
         setJourneysLoading(false);
@@ -360,16 +410,21 @@ export default function DocumentVaultPage() {
   // ── Auto-configure vault based on active journey ──────────────────────────
   const { setConfig: setVaultConfig } = useDocumentVaultStore();
   useEffect(() => {
-    if (!activeJourneyId || !journeyGateReady || !user || !wizard.isLoaded) return;
-    // Safety check: ensure wizard has loaded the active journey
-    if (wizard.state.backendId !== activeJourneyId) return;
+    if (!activeJourneyId || !journeyGateReady || !user) return;
     const activeJourney = userJourneys.find((j) => j.id === activeJourneyId);
-    if (!activeJourney) return;
-    const visaCategory = journeyTypeToVisaCategory(activeJourney.journey_type);
-    if (!visaCategory) return;
+    // Canonicalize the category to the exact form the document engine matches on ("IR-1",
+    // "IR-5", ...). A raw candidate value like "IR1"/"ir-1" would fail the engine's exact
+    // `applicableVisas.includes(...)` check and collapse the required list to zero docs, so
+    // both the journey type AND the candidate fallback go through journeyTypeToVisaCategory.
+    const visaCategory =
+      (activeJourney ? journeyTypeToVisaCategory(activeJourney.journey_type) : null) ||
+      (activeCandidate?.visaCategory
+        ? journeyTypeToVisaCategory(activeCandidate.visaCategory)
+        : null) ||
+      "IR-5";
 
     // Retrieve questionnaire answers from journey metadata if available
-    const metadata = wizard.state?.metadata || {};
+    const metadata = (wizard.state?.backendId === activeJourneyId ? wizard.state?.metadata : {}) || {};
     const hasQuestionnaire = metadata.docQuestionnaireCompleted === true;
     const questionnaireAnswers = (metadata.docQuestionnaireAnswers as Record<string, string>) || {};
 
@@ -425,17 +480,33 @@ export default function DocumentVaultPage() {
     mappedFlags.hhCount = hhCount;
     mappedFlags.hhRelationships = metadata.hhRelationships || {};
 
+    const beneficiaryDisplayName =
+      activeCandidate?.fullName ||
+      (metadata.beneficiaryName as string) ||
+      activeCandidate?.label ||
+      "Beneficiary";
+
     if (!config) {
-      // No vault config saved yet for this user — create a minimal one from the
-      // journey's visa category so the document list can populate immediately.
-      setVaultConfig({ userId: user.id, visaCategory, scenarioFlags: mappedFlags });
+      // No vault config saved yet for this user — create a minimal one immediately
+      // from the journey's visa category so the document checklist renders immediately.
+      setVaultConfig({
+        userId: user.id,
+        journeyId: activeJourneyId,
+        beneficiaryName: beneficiaryDisplayName,
+        visaCategory,
+        scenarioFlags: mappedFlags,
+      });
     } else if (
       config.visaCategory !== visaCategory ||
+      config.journeyId !== activeJourneyId ||
+      config.beneficiaryName !== beneficiaryDisplayName ||
       JSON.stringify(config.scenarioFlags) !== JSON.stringify(mappedFlags)
     ) {
-      // Config exists but points to a different visa category or flags have changed — update it.
+      // Config exists but points to a different visa category, journey, or flags have changed — update it.
       setVaultConfig({
         ...config,
+        journeyId: activeJourneyId,
+        beneficiaryName: beneficiaryDisplayName,
         visaCategory,
         scenarioFlags: {
           ...config.scenarioFlags,
@@ -453,7 +524,71 @@ export default function DocumentVaultPage() {
     wizard.isLoaded,
     wizard.state?.metadata,
     wizard.state?.backendId,
+    activeCandidate,
   ]);
+
+  // ── Synchronize active journey with active candidate profile ─────────────
+  useEffect(() => {
+    if (!userJourneys || userJourneys.length === 0 || !activeCandidate) return;
+
+    // Only react to an actual CANDIDATE change. Without this guard, clicking
+    // "Back to Journeys" (which sets activeJourneyId to null) would be instantly
+    // reverted here, and picking a different journey folder would bounce back.
+    if (activeCandidateId === lastResolvedCandidateRef.current) return;
+
+    const visaCategory = activeCandidate.visaCategory || "IR-5";
+    const candidateJourneyKey = getJourneyKeyForCandidate(visaCategory, activeCandidate.id);
+    const normCandidateKey = candidateJourneyKey.toLowerCase().replace(/[-:_]/g, "");
+    const normBaseKey = visaCategory.toLowerCase().replace(/[-:_]/g, "");
+
+    const matched = userJourneys.find((j) => {
+      // Never match a journey from a different visa category. Without this, the primary
+      // candidate's loose fallback below would wrongly grab an unrelated journey (e.g. an
+      // IR-1 journey), making Mother's IR-5 vault show "IR-1". Normalize both sides so
+      // "IR-5" / "IR5" / "ir-5" all compare equal.
+      if (getBaseVisaCategory(j.journey_type) !== getBaseVisaCategory(visaCategory)) return false;
+
+      const normJ = j.journey_type.toLowerCase().replace(/[-:_]/g, "");
+      if (activeCandidate.isPrimary) {
+        // The primary candidate owns the base journey (e.g. "ir5"), which is never
+        // candidate-scoped. Any journey_type containing "candidate" belongs to a sibling
+        // (candidate-2, candidate-3, ... candidate-N), so exclude all of them regardless of
+        // number - hardcoding candidate2/3/4 leaked a 5th+ candidate's journey to the primary.
+        return (
+          normJ === normBaseKey ||
+          normJ === normCandidateKey ||
+          !normJ.includes("candidate")
+        );
+      }
+      return normJ === normCandidateKey || (normJ.includes(normCandidateKey) && !normJ.includes("candidate1"));
+    });
+
+    // Only mark this candidate resolved once we actually found a journey for it, so a
+    // late-arriving journey (e.g. a freshly created 2nd-parent journey) is still picked up.
+    if (matched) {
+      lastResolvedCandidateRef.current = activeCandidateId;
+      if (matched.id !== activeJourneyId) {
+        setActiveJourneyId(matched.id);
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem(SESSION_KEY, matched.id);
+        }
+      }
+    } else if (wizard.state.backendId) {
+      // No journey for this candidate is in userJourneys yet (e.g. a freshly added parent
+      // whose journey row is still being created). Fall back to the candidate-scoped
+      // wizard's backendId, but do NOT pin lastResolvedCandidateRef here: pinning froze the
+      // candidate on whatever backendId existed at switch time (often the PREVIOUS
+      // candidate's journey), permanently blocking the correct journey from being adopted
+      // once it appears. Leaving it unpinned lets this effect re-run as wizard.state.backendId
+      // converges to this candidate's journey and, later, as userJourneys gains the real row.
+      if (wizard.state.backendId !== activeJourneyId) {
+        setActiveJourneyId(wizard.state.backendId);
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem(SESSION_KEY, wizard.state.backendId);
+        }
+      }
+    }
+  }, [activeCandidateId, activeCandidate, userJourneys, activeJourneyId, wizard.state.backendId]);
 
   // ── Case 3 picker confirmation handler ────────────────────────────────────
   const handlePickJourney = useCallback((journeyId: string) => {
@@ -641,17 +776,10 @@ export default function DocumentVaultPage() {
         id: "delete-doc",
       });
 
-      const response = await fetch(`/api/documents/${selectedDeleteId}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        throw new Error("Delete failed");
-      }
-
-      if (user) {
-        await initialize(user.id, t);
-      }
+      // Optimistic store delete: removes the row from state and refreshes statuses/
+      // notifications in place. Avoids the old full initialize(user.id) re-fetch, which
+      // reset the whole vault and felt like a page refresh.
+      await deleteDocument(selectedDeleteId);
 
       showToast(t("documentVaultPage.page.messages.deleted"), "success", {
         id: "delete-doc",
@@ -780,7 +908,23 @@ export default function DocumentVaultPage() {
   //   }
   // };
 
-  if (noJourneyModalOpen) {
+  if (journeysLoading || !journeyGateReady) {
+    return (
+      <div className="flex items-center justify-center min-h-[calc(100vh-55px)] bg-slate-50/50 dark:bg-slate-950/50 mt-[55px]">
+        <div className="flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-300">
+          <Loader size="lg" className="text-primary mb-4" />
+          <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">
+            Loading Document Vault...
+          </h3>
+          <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
+            Verifying your active immigration journey
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (noJourneyModalOpen || (journeyGateReady && userJourneys.length === 0)) {
     return (
       <div
         className="relative mt-13.75 flex min-h-[calc(100vh-55px)] items-center justify-center overflow-hidden p-6 transition-all duration-500 selection:bg-amber-500/20"
@@ -815,8 +959,7 @@ export default function DocumentVaultPage() {
             <p className="relative z-10 mb-2 text-[15px] leading-relaxed text-slate-600 dark:text-slate-400">
               The{" "}
               <span className="font-bold text-slate-800 dark:text-slate-200">Document Vault</span>{" "}
-              is a journey-specific tool. It organizes and tracks the exact documents you need based
-              on your immigration journey.
+              is strictly associated with an active immigration journey. Users cannot purchase or access the Document Vault independently as a standalone feature.
             </p>
             <p className="relative z-10 mb-8 text-sm leading-relaxed text-slate-500 dark:text-slate-500">
               You don&apos;t have an active immigration journey yet. Please start a journey first,
@@ -830,7 +973,6 @@ export default function DocumentVaultPage() {
                 <Button className="bg-primary hover:bg-primary/90 shadow-primary/20 h-14 w-full rounded-2xl text-base font-bold text-white shadow-lg transition-all hover:scale-[1.02] active:scale-95">
                   <Route className="mr-2 h-5 w-5" />
                   Browse Visa Journey
-                  {/* Browse Available Journeys */}
                 </Button>
               </Link>
               <p className="pt-3 text-xs text-slate-400 dark:text-slate-500">
@@ -843,7 +985,7 @@ export default function DocumentVaultPage() {
     );
   }
 
-  if (userJourneys.length > 1 && !activeJourneyId) {
+  if (dedupedUserJourneys.length > 1 && !activeJourneyId) {
     return (
       <div className="mt-[55px] min-h-[calc(100vh-55px)] bg-slate-50/50 px-6 py-12 dark:bg-slate-950/50">
         <div className="container mx-auto max-w-5xl">
@@ -863,6 +1005,7 @@ export default function DocumentVaultPage() {
             {userJourneys.map((journey) => {
               const visaCategory = journeyTypeToVisaCategory(journey.journey_type);
               const isActive = journey.status === "in_progress";
+              const candidateName = getCandidateDisplayNameForJourney(journey.journey_type, candidates);
 
               // Determine card image and description for better visualization
               let cardImage = "";
@@ -1000,13 +1143,13 @@ export default function DocumentVaultPage() {
                           className="bg-primary/5 hover:bg-primary/5 text-primary border-primary/20 px-2.5 py-0.5 font-bold"
                         >
                           {config?.visaCategory
-                            ? config.visaCategory
+                            ? `${config.visaCategory} Journey`
                             : activeJourney
                               ? getFriendlyJourneyName(
                                   activeJourney.journey_type,
                                   activeJourney.journey_name
                                 )
-                              : ""}
+                              : `${activeCandidate?.visaCategory || "IR-5"} Journey`}
                         </Badge>
                         <span className="text-xs font-medium text-slate-500">
                           {t("documentVaultPage.page.subtitle")}

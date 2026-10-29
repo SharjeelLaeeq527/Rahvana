@@ -8,8 +8,8 @@ export interface SubmissionStep {
   label: string;
   heading: string;
   instruction: string;
-  vlabel: string;
-  visual: string;
+  vlabel?: string;
+  visual?: string;
   note: string | null;
 }
 

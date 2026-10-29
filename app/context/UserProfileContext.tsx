@@ -48,7 +48,7 @@ interface UserProfileContextType {
    */
   updateProfile: (
     partial: Partial<MasterProfile>,
-    options?: { silent?: boolean; immediate?: boolean }
+    options?: { silent?: boolean; immediate?: boolean; localOnly?: boolean }
   ) => void;
 
   /**
@@ -64,7 +64,7 @@ interface UserProfileContextType {
   refreshProfile: () => Promise<void>;
 }
 
-const UserProfileContext = createContext<UserProfileContextType | undefined>(undefined);
+export const UserProfileContext = createContext<UserProfileContextType | undefined>(undefined);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Deep merge utility (1 level deep objects, arrays replaced not merged)
@@ -138,7 +138,9 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
     try {
       setIsProfileLoading(true);
 
-      const response = await fetch("/api/profile");
+      const response = await fetch("/api/profile", {
+        signal: AbortSignal.timeout(8000),
+      });
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
         throw new Error(data.error || "Failed to fetch profile");
@@ -150,8 +152,10 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
       } else {
         setProfile(null);
       }
-    } catch (err) {
-      console.error("[UserProfileContext] Unexpected error fetching profile:", err);
+    } catch (err: any) {
+      if (err?.name !== "AbortError" && err?.name !== "TimeoutError") {
+        console.warn("[UserProfileContext] Fetch profile note:", err?.message || err);
+      }
       // Keep any previously-loaded profile on a transient fetch error (e.g. a
       // dev-server hiccup). Nulling it here would blank dependent UI such as the
       // Ch.1 Step 4 consistency baseline right after the user saved their DOB.
@@ -177,11 +181,14 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
 
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
-        throw new Error(data.error || "Failed to save profile");
+        const detailedMsg = data.fieldErrors && typeof data.fieldErrors === "object"
+          ? `Validation error: ${Object.entries(data.fieldErrors).map(([k, v]) => `${k} (${v})`).join(", ")}`
+          : (data.error || "Failed to save profile");
+        throw new Error(detailedMsg);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("[UserProfileContext] Error saving profile:", err);
-      showToast("Failed to save your information. Please try again.", "error");
+      showToast(err?.message || "Failed to save your information. Please try again.", "error");
       throw err; // Rethrow to prevent subsequent success toast
     } finally {
       setIsSaving(false);
@@ -191,7 +198,10 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
   // ── Update profile (optimistic merge + debounced save) ──────────────────
 
   const updateProfile = useCallback(
-    (partial: Partial<MasterProfile>, options?: { silent?: boolean; immediate?: boolean }) => {
+    (
+      partial: Partial<MasterProfile>,
+      options?: { silent?: boolean; immediate?: boolean; localOnly?: boolean }
+    ) => {
       if (!user?.id) return;
 
       // Optimistic local merge
@@ -201,6 +211,12 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
         profileRef.current = merged;
         return merged;
       });
+
+      // If localOnly is requested (e.g. candidate state mutations managed by dedicated APIs),
+      // do not schedule a save back to /api/profile/complete.
+      if (options?.localOnly) {
+        return;
+      }
 
       // Cancel existing debounce timer
       if (debounceTimerRef.current) {
@@ -303,7 +319,14 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
 export function useUserProfile() {
   const context = useContext(UserProfileContext);
   if (context === undefined) {
-    throw new Error("useUserProfile must be used within a UserProfileProvider");
+    return {
+      profile: null,
+      isProfileLoading: false,
+      isSaving: false,
+      updateProfile: () => {},
+      saveProfile: async () => {},
+      refreshProfile: async () => {},
+    };
   }
   return context;
 }

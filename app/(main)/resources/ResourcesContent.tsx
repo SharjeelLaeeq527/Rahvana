@@ -9,6 +9,7 @@ import ServicesPage from "@/app/(main)/services/page";
 import { Wrench, BookOpen, Briefcase } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/app/context/AuthContext";
+import { useCandidate } from "@/app/context/CandidateContext";
 
 export type ResourceTab = "toolbox" | "guides" | "services";
 
@@ -21,6 +22,7 @@ const tabs: { id: ResourceTab; icon: React.ElementType; label: string }[] = [
 export default function ResourcesContent({ initialTab }: { initialTab: ResourceTab }) {
   const router = useRouter();
   const { user } = useAuth();
+  const { activeCandidateId } = useCandidate();
   const [activeTab, setActiveTab] = useState<ResourceTab>(initialTab);
   const [hasActiveRequests, setHasActiveRequests] = useState(false);
   const [hasStartedGuides, setHasStartedGuides] = useState(false);
@@ -55,7 +57,8 @@ export default function ResourcesContent({ initialTab }: { initialTab: ResourceT
 
     const fetchGuidesStatus = async () => {
       try {
-        const res = await fetch("/api/guides/my-guides");
+        const currentCandidateId = activeCandidateId || "candidate-1";
+        const res = await fetch(`/api/guides/my-guides?candidateId=${currentCandidateId}`);
         if (res.ok) {
           const data = await res.json();
           setHasStartedGuides(data.sessions && data.sessions.length > 0);
@@ -67,7 +70,7 @@ export default function ResourcesContent({ initialTab }: { initialTab: ResourceT
 
     fetchStatus();
     fetchGuidesStatus();
-  }, [user]);
+  }, [user, activeCandidateId]);
 
   const handleTabChange = (tab: ResourceTab) => {
     setActiveTab(tab);
@@ -75,11 +78,11 @@ export default function ResourcesContent({ initialTab }: { initialTab: ResourceT
   };
 
   return (
-    <div className="bg-background text-foreground font-sans overflow-x-hidden selection:bg-primary selection:text-primary-foreground min-h-screen">
+    <div className="bg-background text-foreground selection:bg-primary selection:text-primary-foreground min-h-screen overflow-x-hidden font-sans">
       {/* Ambient Glow */}
-      <div className="fixed top-0 left-0 w-full h-full pointer-events-none -z-10">
-        <div className="absolute top-[10%] left-[15%] w-[30rem] h-[30rem] bg-[#0d7377]/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-[20%] right-[10%] w-[40rem] h-[40rem] bg-[#32e0c4]/5 rounded-full blur-3xl" />
+      <div className="pointer-events-none fixed top-0 left-0 -z-10 h-full w-full">
+        <div className="absolute top-[10%] left-[15%] h-[30rem] w-[30rem] rounded-full bg-[#0d7377]/5 blur-3xl" />
+        <div className="absolute right-[10%] bottom-[20%] h-[40rem] w-[40rem] rounded-full bg-[#32e0c4]/5 blur-3xl" />
       </div>
 
       {/* Page heading */}
@@ -95,7 +98,7 @@ export default function ResourcesContent({ initialTab }: { initialTab: ResourceT
 
       {/* Tab Selector Section */}
       <div className="flex justify-center pt-6 pb-8">
-        <div className="flex gap-2 bg-slate-100 dark:bg-slate-800/50 p-1.5 rounded-full border border-slate-200 dark:border-slate-700/50 shadow-sm backdrop-blur-md relative">
+        <div className="relative flex gap-2 rounded-full border border-slate-200 bg-slate-100 p-1.5 shadow-sm backdrop-blur-md dark:border-slate-700/50 dark:bg-slate-800/50">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
             const Icon = tab.icon;
@@ -104,7 +107,7 @@ export default function ResourcesContent({ initialTab }: { initialTab: ResourceT
               <button
                 key={tab.id}
                 onClick={() => handleTabChange(tab.id)}
-                className={`relative px-4 sm:px-6 py-2.5 flex items-center gap-2 rounded-full font-medium text-sm transition-colors duration-300 z-10 ${
+                className={`relative z-10 flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium transition-colors duration-300 sm:px-6 ${
                   isActive
                     ? "text-slate-900 dark:text-white"
                     : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
@@ -113,7 +116,7 @@ export default function ResourcesContent({ initialTab }: { initialTab: ResourceT
                 {isActive && (
                   <motion.div
                     layoutId="active-resource-tab"
-                    className="absolute inset-0 bg-white dark:bg-slate-700 rounded-full shadow-sm border border-slate-200/50 dark:border-slate-600/50"
+                    className="absolute inset-0 rounded-full border border-slate-200/50 bg-white shadow-sm dark:border-slate-600/50 dark:bg-slate-700"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -135,10 +138,10 @@ export default function ResourcesContent({ initialTab }: { initialTab: ResourceT
 
                 {/* animate-pulse */}
                 {tab.id === "services" && hasActiveRequests && (
-                  <span className="absolute top-1.5 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border border-white" />
+                  <span className="absolute top-1.5 right-2 h-2.5 w-2.5 rounded-full border border-white bg-red-500" />
                 )}
                 {tab.id === "guides" && hasStartedGuides && (
-                  <span className="absolute top-1.5 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border border-white" />
+                  <span className="absolute top-1.5 right-2 h-2.5 w-2.5 rounded-full border border-white bg-red-500" />
                 )}
               </button>
             );
@@ -147,7 +150,7 @@ export default function ResourcesContent({ initialTab }: { initialTab: ResourceT
       </div>
 
       {/* Content Section */}
-      <div className="w-full relative min-h-[50vh]">
+      <div className="relative min-h-[50vh] w-full">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
@@ -155,7 +158,7 @@ export default function ResourcesContent({ initialTab }: { initialTab: ResourceT
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -15 }}
             transition={{ duration: 0.25, ease: "easeInOut" }}
-            className="w-full h-full"
+            className="h-full w-full"
           >
             {activeTab === "toolbox" && <ToolsPage isEmbedded />}
             {activeTab === "guides" && <GuidesPage isEmbedded />}

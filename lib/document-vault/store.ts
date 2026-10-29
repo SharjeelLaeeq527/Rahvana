@@ -266,13 +266,15 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()((set, get) => 
 
     try {
       // Try to persist to DB (best effort — store is already updated above)
-      await fetch("/api/documents/config", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(configWithJourney),
-      });
+      if (configWithJourney.userId && configWithJourney.userId !== "session") {
+        await fetch("/api/documents/config", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(configWithJourney),
+        });
+      }
     } catch (error) {
-      console.error("Failed to persist config to DB (config still active for session):", error);
+      console.warn("Failed to persist config to DB (config still active for session):", error);
     }
   },
 
@@ -396,11 +398,28 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()((set, get) => 
       const defsMap = new Map(ALL_DOCUMENTS.map((d) => [d.id, d]));
       const updatedDocs = updateDocumentStatuses(documents, defsMap);
 
-      // 3. Regenerate requiredDocuments if config is available
-      if (config) {
-        const requiredDocs = generateRequiredDocuments(config, true, updatedDocs);
+      // 3. Determine active configuration (do not wipe config to null if already in store or initializing)
+      const existingConfig = get().config;
+      const activeConfig =
+        config ||
+        (existingConfig
+          ? {
+              ...existingConfig,
+              journeyId: targetJourneyId !== undefined ? targetJourneyId : existingConfig.journeyId,
+            }
+          : targetJourneyId
+            ? {
+                userId: "session",
+                journeyId: targetJourneyId,
+                visaCategory: "IR-5" as VisaCategory,
+                scenarioFlags: {},
+              }
+            : null);
+
+      if (activeConfig) {
+        const requiredDocs = generateRequiredDocuments(activeConfig, true, updatedDocs);
         set({
-          config,
+          config: activeConfig,
           uploadedDocuments: updatedDocs,
           requiredDocuments: requiredDocs,
           isReloadingDocs: false,
@@ -408,9 +427,7 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()((set, get) => 
         });
       } else {
         set({
-          config: null,
           uploadedDocuments: updatedDocs,
-          requiredDocuments: [],
           isReloadingDocs: false,
           hasLoadedDocsInitial: true,
         });

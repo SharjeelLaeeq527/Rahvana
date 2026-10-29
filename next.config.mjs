@@ -94,7 +94,6 @@ const nextConfig = {
 
               // Scripts
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://js.stripe.com https://www.googletagmanager.com",
-
               // Workers (required by canvas-confetti)
               "worker-src 'self' blob:",
               "child-src 'self' blob:",
@@ -134,14 +133,14 @@ const nextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://js.stripe.com",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://js.stripe.com https://www.googletagmanager.com",
               "worker-src 'self' blob:",
               "child-src 'self' blob:",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com data:",
-              "img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com",
-              "connect-src 'self' https://*.supabase.co https://*.stripe.com https://*.google-analytics.com https://rahvana-1.onrender.com wss://*.supabase.co https://api.geoapify.com",
-              "frame-src 'self' blob: https://js.stripe.com",
+              "img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com https://www.googletagmanager.com https://*.google-analytics.com",
+              "connect-src 'self' https://*.supabase.co https://*.stripe.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://rahvana-1.onrender.com wss://*.supabase.co https://api.geoapify.com",
+              "frame-src 'self' https://js.stripe.com",
               "object-src 'none'",
               "base-uri 'self'",
               "form-action 'self'",
@@ -163,6 +162,13 @@ const nextConfig = {
     };
     return config;
   },
+
+  // pdfkit reads its standard-font AFM metrics from <package>/js/data at
+  // runtime. When bundled into .next/server/vendor-chunks that data folder is
+  // never copied (ENOENT Helvetica.afm on every PDF request), so keep pdfkit
+  // external and require it straight from node_modules. Benefits every
+  // server-side PDF route (/api/create-pdf, /api/wallet/transactions/statement).
+  serverExternalPackages: ["pdfkit"],
 
   // Turbopack (used by `next build --turbopack`) doesn't accept `false` as an
   // alias, so point `canvas` at a harmless mock module instead.

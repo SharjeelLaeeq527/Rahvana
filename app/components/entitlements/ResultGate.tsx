@@ -1,10 +1,19 @@
 "use client";
 
 import React, { useState } from "react";
-import { Lock, ArrowRight } from "lucide-react";
+import { Lock, ArrowRight, Coins } from "lucide-react";
 import { usePlan } from "@/app/context/PlanContext";
+import { CreditLaunchModal } from "@/app/components/wallet/CreditLaunchModal";
+import { useStandaloneToolUnlock } from "@/lib/wallet/useStandaloneToolUnlock";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { Loader } from "@/components/ui/spinner";
+import {
+  canUse as canUseForTier,
+  lockHint as lockHintForTier,
+  upgradeCTA as upgradeCTAForTier,
+  getEffectiveEntitlement,
+} from "@/lib/entitlements/helpers";
+import { normalizePlanTier, type PlanTier } from "@/lib/entitlements/config";
 
 interface ResultGateProps {
   /** The entitlement feature key (must exist in ENTITLEMENTS config). */
@@ -31,6 +40,26 @@ interface ResultGateProps {
    * Optional custom override to force the gate into a locked/blurred state.
    */
   isLocked?: boolean;
+  /**
+   * Explicit plan tier to evaluate entitlement against — e.g. a journey's
+   * Executive tier that differs from the account plan. When provided it
+   * overrides the account-derived `usePlan().tier`, so journey results unlock
+   * correctly. Omit to fall back to the account plan.
+   */
+  planTier?: PlanTier | string | null;
+  /**
+   * Wallet catalog id of the tool (e.g. "sponsorship-calculator"). Pass it ONLY
+   * in standalone mode. Standalone tools are paid with credits even by plan
+   * holders, so the plan tier is ignored: the result opens for a wallet unlock
+   * (or `standaloneGranted`), and the lock card offers a credit unlock. Leave it
+   * undefined in journey mode so journey results follow the journey plan alone.
+   */
+  standaloneToolId?: string;
+  /**
+   * Standalone only: access the caller already verified outside the wallet,
+   * e.g. a legacy per-category Interview Prep purchase or a paid photo credit.
+   */
+  standaloneGranted?: boolean;
 }
 
 /**
@@ -53,12 +82,34 @@ export function ResultGate({
   blurStrength = "md",
   minHeight = "300px",
   isLocked,
+  planTier,
+  standaloneToolId,
+  standaloneGranted = false,
 }: ResultGateProps) {
   const plan = usePlan();
+  const wallet = useStandaloneToolUnlock(standaloneToolId);
   const [showModal, setShowModal] = useState(false);
+  const [showCreditModal, setShowCreditModal] = useState(false);
+
+  // Evaluate entitlement against the caller-provided tier (e.g. a journey's
+  // Executive tier) when present, otherwise the account-derived plan tier.
+  const tier = planTier != null ? normalizePlanTier(planTier) : plan.tier;
+  const addons = plan.purchasedAddons;
+
+  // A priced standalone tool ignores the plan: only a wallet unlock (or access
+  // the caller verified) opens it. Everything else keeps the plan rule.
+  const isStandalone = !!wallet.item;
+  const standaloneOpen = wallet.unlocked || standaloneGranted;
+  const planAllowed =
+    !isStandalone && !plan.isLoading && canUseForTier(feature, tier, addons) && !isLocked;
+  const creditItem =
+    isStandalone && !standaloneOpen && wallet.item?.launchable ? wallet.item : null;
+  const checking = isStandalone
+    ? wallet.loading && !standaloneOpen
+    : plan.isLoading;
 
   /* ── Loading state ─────────────────────────────────────────────────────── */
-  if (plan.isLoading) {
+  if (checking) {
     return (
       <div className="flex items-center justify-center" style={{ minHeight }}>
         <Loader size="md" text="Verifying access..." />
@@ -67,15 +118,18 @@ export function ResultGate({
   }
 
   /* ── Accessible — render normally ───────────────────────────────────────── */
-  if (plan.canUse(feature) && !isLocked) return <>{children}</>;
+  if (planAllowed || (isStandalone && standaloneOpen)) return <>{children}</>;
 
   /* ── Locked — blur children + floating upgrade card ─────────────────────── */
   const blurClass =
     blurStrength === "sm" ? "blur-sm" : blurStrength === "lg" ? "blur-lg" : "blur-md";
 
-  const cta = plan.upgradeCTA(feature) || "Upgrade to Unlock";
-  const hint = hintOverride || plan.lockHint(feature) || "Upgrade your plan to view your results.";
-  const ent = plan.entitlement(feature);
+  const cta = upgradeCTAForTier(feature, tier, addons) || "Upgrade to Unlock";
+  const hint =
+    hintOverride ||
+    lockHintForTier(feature, tier, addons) ||
+    "Upgrade your plan to view your results.";
+  const ent = getEffectiveEntitlement(feature, tier, addons);
   const targetTier = ent?.upgradeTarget;
   // Only mention a one-time add-on when the feature actually has one.
   const canBuyAddon = (ent?.state === "locked_buy" || ent?.state === "limited") && !!ent?.addon;
@@ -113,6 +167,13 @@ export function ResultGate({
     <div className="relative" style={{ minHeight }}>
       {/* UpgradeModal (rendered at root so it can portal above everything) */}
       {showModal && <UpgradeModal feature={feature} onClose={() => setShowModal(false)} />}
+      {showCreditModal && creditItem && (
+        <CreditLaunchModal
+          item={creditItem}
+          onClose={() => setShowCreditModal(false)}
+          onLaunched={() => setShowCreditModal(false)}
+        />
+      )}
 
       {/* Blurred, non-interactive children */}
       <div className={`${blurClass} pointer-events-none opacity-40 select-none`} aria-hidden="true">
@@ -148,27 +209,44 @@ export function ResultGate({
 
           {/* Description */}
           <p className="mb-3 text-[13px] leading-relaxed text-[#6b8097]">
-            {description ||
-              "You've completed every step — your personalised results are waiting. Upgrading your plan unlocks them instantly, plus every tool behind them."}
+            {creditItem
+              ? `Unlock ${creditItem.name} for ${creditItem.credits} credits and use it as often as you like.`
+              : description ||
+                "You've completed every step. Your personalised results are waiting. Upgrading your plan unlocks them instantly, plus every tool behind them."}
           </p>
 
           {/* Hint */}
-          <p className="mb-5 text-[11px] text-[#9aa5b1]">{hint}</p>
+          {!creditItem && <p className="mb-5 text-[11px] text-[#9aa5b1]">{hint}</p>}
 
           {/* CTA */}
-          <button
-            onClick={() => setShowModal(true)}
-            className={`group flex w-full items-center justify-center gap-2 rounded-xl py-3 text-[14px] font-bold text-white shadow-md transition-all ${tierColors.btn}`}
-          >
-            {cta}
-            <ArrowRight
-              size={15}
-              strokeWidth={2.5}
-              className="transition-transform group-hover:translate-x-1"
-            />
-          </button>
+          {creditItem ? (
+            <>
+              <button
+                onClick={() => setShowCreditModal(true)}
+                className="group mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-[#0d7377] py-3 text-[14px] font-bold text-white shadow-md transition-colors hover:bg-[#0a5c5f]"
+              >
+                <Coins size={15} strokeWidth={2.5} />
+                {`Unlock for ${creditItem.credits} credits`}
+              </button>
+              <p className="mt-3 text-[11px] text-[#9aa5b1]">
+                Resources inside your journey use your journey plan instead.
+              </p>
+            </>
+          ) : (
+            <button
+              onClick={() => setShowModal(true)}
+              className={`group flex w-full items-center justify-center gap-2 rounded-xl py-3 text-[14px] font-bold text-white shadow-md transition-all ${tierColors.btn}`}
+            >
+              {cta}
+              <ArrowRight
+                size={15}
+                strokeWidth={2.5}
+                className="transition-transform group-hover:translate-x-1"
+              />
+            </button>
+          )}
 
-          {canBuyAddon && (
+          {canBuyAddon && !creditItem && (
             <p className="mt-3 text-[11px] text-[#9aa5b1]">
               Just need this result? A one-time add-on is also available.
             </p>

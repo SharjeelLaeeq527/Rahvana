@@ -1,13 +1,32 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, CheckCircle2, Clock3, Plus, Route } from "lucide-react";
+import {
+  ArrowRight,
+  Plus,
+  Route,
+  Users,
+  Camera,
+  Pencil,
+  Check,
+  X,
+  Loader2,
+  MoreVertical,
+} from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
+import { useCandidate } from "@/app/context/CandidateContext";
+import { useUserProfile } from "@/app/context/UserProfileContext";
+import { PlanContext } from "@/app/context/PlanContext";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { JourneyProgressRecord, listUserJourneys } from "@/lib/journey/journeyProgressService";
+import { createClient } from "@/lib/supabase/client";
+import {
+  getCandidateJourneyKey,
+  getBaseVisaCategory,
+} from "@/lib/candidate/candidateSyncService";
 import { getJourneyHrefByType, ir1journeyHref, ir5journeyHref } from "@/lib/constants/routes";
 import { IR5_ENABLED } from "@/lib/feature-flags";
 import { Loader } from "@/components/ui/spinner";
@@ -15,6 +34,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { JourneyPlanBadge } from "@/app/components/shared/JourneyPlanBadge";
+import { uploadJourneyImage } from "@/lib/journey/imageUploadHelper";
 
 const JOURNEY_ALIASES: Record<string, string> = {
   "ir-1": "ir1",
@@ -60,12 +80,15 @@ const JOURNEY_META: Record<string, JourneyMeta> = {
 
 const resolveJourneyMeta = (rawId: string): JourneyMeta & { canonicalId: string } => {
   const canonical = normalizeJourneyId(rawId);
-  const meta = JOURNEY_META[canonical];
+  const baseVisa = getBaseVisaCategory(rawId);
+  const baseCanonical = baseVisa === "IR-5" ? "ir5" : baseVisa === "IR-1" ? "ir1" : canonical;
+
+  const meta = JOURNEY_META[baseCanonical] || JOURNEY_META[canonical];
 
   if (meta) {
     return {
       ...meta,
-      canonicalId: canonical,
+      canonicalId: baseCanonical,
     };
   }
 
@@ -147,7 +170,11 @@ const getActivityLabel = (journey: JourneyProgressRecord) => {
   });
 };
 
-const getJourneyStatus = (journey: JourneyProgressRecord, progress: number) => {
+const getJourneyStatus = (
+  journey?: JourneyProgressRecord | null,
+  progress: number = 0,
+  tier?: string
+) => {
   if (progress >= 100) {
     return {
       label: "Completed",
@@ -156,21 +183,18 @@ const getJourneyStatus = (journey: JourneyProgressRecord, progress: number) => {
     };
   }
 
-  if (!journey.started || progress === 0) {
-    return {
-      label: "Draft",
-      className: "border-white/25 bg-slate-900/55 text-white backdrop-blur-md",
-      dotClassName: "bg-slate-300",
-    };
-  }
+  const normTier = (tier || journey?.subscription_tier || "free").toLowerCase();
+  const hasPaidTier = normTier !== "free";
+  const isExplicitlyActive =
+    journey?.status === "in_progress" || journey?.status === "active" || Boolean(journey?.started);
 
-  const rawUpdatedAt = journey.last_updated_at || journey.updated_at || journey.started_at;
+  const rawUpdatedAt = journey?.last_updated_at || journey?.updated_at || journey?.started_at;
 
   const updatedAt = rawUpdatedAt ? new Date(rawUpdatedAt).getTime() : Number.NaN;
 
   const isPaused = Number.isFinite(updatedAt) && Date.now() - updatedAt > 1000 * 60 * 60 * 24 * 10;
 
-  if (isPaused) {
+  if (isPaused && progress > 0) {
     return {
       label: "Paused",
       className: "border-amber-300/40 bg-amber-500/90 text-white",
@@ -178,21 +202,205 @@ const getJourneyStatus = (journey: JourneyProgressRecord, progress: number) => {
     };
   }
 
+  // A journey is Active if it has a paid plan, is marked active/in_progress, or has progress
+  if (hasPaidTier || isExplicitlyActive || progress > 0) {
+    return {
+      label: "Active",
+      className: "border-[#5ce8d4]/30 bg-[#0d7377]/90 text-white",
+      dotClassName: "bg-[#70f1dd]",
+    };
+  }
+
   return {
-    label: "Active",
-    className: "border-[#5ce8d4]/30 bg-[#0d7377]/90 text-white",
-    dotClassName: "bg-[#70f1dd]",
+    label: "Draft",
+    className: "border-white/25 bg-slate-900/55 text-white backdrop-blur-md",
+    dotClassName: "bg-slate-300",
   };
+};
+
+const tierHierarchy: Record<string, number> = {
+  executive: 3,
+  premium: 2,
+  basic: 1,
+  free: 0,
+};
+
+const resolveHighestTier = (...tiers: (string | null | undefined)[]): string => {
+  let highest = "free";
+  for (const t of tiers) {
+    if (!t) continue;
+    const norm = t.toLowerCase().trim();
+    if ((tierHierarchy[norm] ?? -1) > (tierHierarchy[highest] ?? 0)) {
+      highest = norm;
+    }
+  }
+  return highest;
+};
+
+/**
+ * Resolves the journey tier strictly per journey / per candidate:
+ * 1. Primary: Direct subscription_tier from the `journeys` table row.
+ * 2. Fallback: Candidate's own roster tier or journey-specific tier.
+ * (Account-level plan is completely avoided).
+ */
+const resolveJourneyTier = ({
+  dbJourneyTier,
+  candRosterTier,
+  journeyTiersTier,
+}: {
+  dbJourneyTier?: string | null;
+  candRosterTier?: string | null;
+  journeyTiersTier?: string | null;
+}): string => {
+  // 1. Primary check: If journeys table has an explicit paid tier, use it directly
+  if (dbJourneyTier) {
+    const norm = dbJourneyTier.toLowerCase().trim();
+    if (norm !== "free" && (tierHierarchy[norm] ?? -1) > 0) {
+      return norm;
+    }
+  }
+
+  // 2. Fallback check: Candidate's own roster tier (from candidate profile)
+  if (candRosterTier) {
+    const norm = candRosterTier.toLowerCase().trim();
+    if (norm !== "free" && (tierHierarchy[norm] ?? -1) > 0) {
+      return norm;
+    }
+  }
+
+  // 3. Fallback check: Journey-specific tier from PlanContext.journeyTiers
+  if (journeyTiersTier) {
+    const norm = journeyTiersTier.toLowerCase().trim();
+    if ((tierHierarchy[norm] ?? -1) > 0) {
+      return norm;
+    }
+  }
+
+  return (dbJourneyTier || candRosterTier || "free").toLowerCase().trim();
 };
 
 export default function MyJourneysPage() {
   const { user, isLoading: authLoading } = useAuth();
+  const { profile, updateProfile } = useUserProfile();
+  const planCtx = useContext(PlanContext);
   const { showToast } = useToast();
   const router = useRouter();
+  const {
+    candidates,
+    setActiveCandidateId,
+    activeCandidateId,
+    activeCandidate,
+    isMultiCandidate,
+    updateCandidate,
+  } = useCandidate();
 
   const [journeys, setJourneys] = useState<JourneyProgressRecord[]>([]);
+  const [dbCandidates, setDbCandidates] = useState<any[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [hasFetched, setHasFetched] = useState(false);
+
+  const handleUpdateJourneyName = useCallback(
+    async (canonicalKey: string, newName: string, candidateId?: string, journeyId?: string) => {
+      if (candidateId) {
+        updateCandidate(candidateId, { customName: newName, fullName: newName });
+      }
+      const existing = profile?.journeyCustomizations || {};
+      const updated = { ...existing };
+
+      if (candidateId) {
+        updated[candidateId] = {
+          ...existing[candidateId],
+          name: newName,
+          updatedAt: new Date().toISOString(),
+        };
+        updated[`ir5_${candidateId}`] = {
+          ...existing[`ir5_${candidateId}`],
+          name: newName,
+          updatedAt: new Date().toISOString(),
+        };
+      } else if (canonicalKey) {
+        updated[canonicalKey] = {
+          ...existing[canonicalKey],
+          name: newName,
+          updatedAt: new Date().toISOString(),
+        };
+      }
+
+      if (journeyId) {
+        updated[journeyId] = {
+          ...existing[journeyId],
+          name: newName,
+          updatedAt: new Date().toISOString(),
+        };
+      }
+
+      updateProfile({ journeyCustomizations: updated }, { immediate: true });
+      showToast("Journey name updated!", "success");
+    },
+    [profile?.journeyCustomizations, updateProfile, updateCandidate, showToast]
+  );
+
+  const handleUpdateJourneyImage = useCallback(
+    async (canonicalKey: string, file: File, candidateId?: string, journeyId?: string) => {
+      try {
+        const uploadKey = candidateId || canonicalKey || journeyId || "journey";
+        const { url } = await uploadJourneyImage(file, "journey", uploadKey);
+        if (url) {
+          if (candidateId) {
+            updateCandidate(candidateId, { avatarUrl: url });
+          }
+          const existing = profile?.journeyCustomizations || {};
+          const updated = { ...existing };
+
+          if (candidateId) {
+            updated[candidateId] = {
+              ...existing[candidateId],
+              image: url,
+              updatedAt: new Date().toISOString(),
+            };
+            updated[`ir5_${candidateId}`] = {
+              ...existing[`ir5_${candidateId}`],
+              image: url,
+              updatedAt: new Date().toISOString(),
+            };
+          } else if (canonicalKey) {
+            updated[canonicalKey] = {
+              ...existing[canonicalKey],
+              image: url,
+              updatedAt: new Date().toISOString(),
+            };
+          }
+
+          if (journeyId) {
+            updated[journeyId] = {
+              ...existing[journeyId],
+              image: url,
+              updatedAt: new Date().toISOString(),
+            };
+          }
+
+          updateProfile({ journeyCustomizations: updated }, { immediate: true });
+          showToast("Journey cover photo updated!", "success");
+        }
+      } catch (err) {
+        console.error("Failed to upload journey image:", err);
+        showToast("Failed to upload image. Please try again.", "error");
+      }
+    },
+    [profile?.journeyCustomizations, updateProfile, updateCandidate, showToast]
+  );
+
+  const [launcherModal, setLauncherModal] = useState<{
+    isOpen: boolean;
+    journeyCode: string;
+    journeyName: string;
+    journeyRoute: string;
+  }>({
+    isOpen: false,
+    journeyCode: "IR-5",
+    journeyName: "IR-5 Parents Visa",
+    journeyRoute: ir5journeyHref,
+  });
 
   const isMounted = useRef(true);
 
@@ -212,32 +420,82 @@ export default function MyJourneysPage() {
     setLoading(true);
 
     try {
-      const data = await listUserJourneys(user.id);
+      const supabase = createClient();
+      // Primary: Query the journeys table directly to get all available journeys and their tiers for the logged-in user
+      // Secondary / Fallback: Enriched step counts and user_profiles table
+      const [journeysQueryRes, progressData, profileRes] = await Promise.all([
+        supabase
+          .from("journeys")
+          .select("id, journey_type, subscription_tier, completed_steps_count, total_steps_count, updated_at, filing_method, status")
+          .eq("user_id", user.id)
+          .order("updated_at", { ascending: false }),
+        listUserJourneys(user.id).catch((err) => {
+          console.warn("[my-journeys] listUserJourneys fallback:", err);
+          return [] as JourneyProgressRecord[];
+        }),
+        supabase
+          .from("user_profiles")
+          .select("subscription_tier, profile_details")
+          .eq("id", user.id)
+          .maybeSingle(),
+      ]);
 
       if (!isMounted.current) {
         return;
       }
 
-      const seen = new Set<string>();
+      const rawDbJourneys = journeysQueryRes.data || [];
+      const progressMap = new Map((progressData || []).map((p) => [p.id, p]));
 
-      const unique = data.filter((journey) => {
-        const canonical = normalizeJourneyId(journey.journey_id);
-
-        if (seen.has(canonical)) {
-          return false;
-        }
-
-        seen.add(canonical);
-        return true;
+      // Merge DB journeys with progress calculations while preserving journeys table as primary source of truth
+      const mappedJourneys: JourneyProgressRecord[] = rawDbJourneys.map((raw: any) => {
+        const enriched = progressMap.get(raw.id);
+        return {
+          id: raw.id,
+          user_id: user.id,
+          journey_id: raw.journey_type,
+          subscription_tier: raw.subscription_tier || enriched?.subscription_tier || "free",
+          status: raw.status || enriched?.status || "not_started",
+          current_stage: enriched?.current_stage || 0,
+          current_step: enriched?.current_step || 0,
+          completed_steps: enriched?.completed_steps || [],
+          completed_steps_count: enriched?.completed_steps_count || raw.completed_steps_count || 0,
+          total_steps_count: enriched?.total_steps_count || raw.total_steps_count || 28,
+          collapsed_steps: enriched?.collapsed_steps || {},
+          role: enriched?.role || "both",
+          filing_type: (raw.filing_method || enriched?.filing_type || "online") as any,
+          document_checklist: enriched?.document_checklist || {},
+          notes: enriched?.notes || {},
+          started:
+            raw.status === "in_progress" ||
+            (raw.completed_steps_count || 0) > 0 ||
+            enriched?.started ||
+            false,
+          started_at: enriched?.started_at || raw.updated_at || new Date().toISOString(),
+          last_updated_at: raw.updated_at || enriched?.last_updated_at || new Date().toISOString(),
+          updated_at: raw.updated_at,
+          doc_uploads: enriched?.doc_uploads || {},
+        };
       });
 
-      // IR-5 is hidden on production (see lib/feature-flags): drop any existing
-      // IR-5 journey so it cannot be re-opened while the category is gated.
-      const gated = IR5_ENABLED
-        ? unique
-        : unique.filter((journey) => normalizeJourneyId(journey.journey_id) !== "ir5");
+      // If progressData contained journeys not returned by direct query (edge cases), include them
+      if (progressData && progressData.length > 0) {
+        const existingIds = new Set(mappedJourneys.map((j) => j.id));
+        for (const p of progressData) {
+          if (!existingIds.has(p.id)) {
+            mappedJourneys.push(p);
+          }
+        }
+      }
 
-      setJourneys(gated);
+      setJourneys(mappedJourneys);
+
+      if (profileRes.data) {
+        const candRoster = (profileRes.data.profile_details as any)?.candidates;
+        if (Array.isArray(candRoster) && candRoster.length > 0) {
+          setDbCandidates(candRoster);
+        }
+      }
     } catch (error) {
       console.error("Error fetching journeys:", error);
 
@@ -270,35 +528,422 @@ export default function MyJourneysPage() {
     }
   }, [user, user?.id, authLoading, router, fetchJourneys, hasFetched]);
 
-  const visibleJourneys = useMemo(
-    () =>
-      journeys.map((journey) => {
-        const progress = getProgressPercent(journey);
-        const completedSteps = getCompletedSteps(journey);
-        const totalSteps = getTotalSteps(journey);
-        const meta = resolveJourneyMeta(journey.journey_id);
-        const status = getJourneyStatus(journey, progress);
+  const visibleJourneys = useMemo(() => {
+    const result: Array<{
+      id: string;
+      journey?: JourneyProgressRecord;
+      progress: number;
+      completedSteps: number;
+      totalSteps: number;
+      meta: JourneyMeta & {
+        canonicalId: string;
+        candidateId?: string;
+        candidateBadge?: string;
+        candidateRelation?: string;
+        isCurrentActive?: boolean;
+        journeyDbId?: string;
+      };
+      status: {
+        label: string;
+        className: string;
+        dotClassName: string;
+      };
+      subscriptionTier: string;
+      activity: string;
+    }> = [];
 
-        return {
-          journey,
-          progress,
-          completedSteps,
-          totalSteps,
-          meta,
-          status,
-          subscriptionTier: journey.subscription_tier || "free",
-          activity: getActivityLabel(journey),
+    // ── 1. Render Each DB-backed Journey (1 Card Per DB Record) ──────────────
+    // For multi-candidate visas (IR-5), map each journey row to its respective candidate profile
+    const assignedCandidateIds = new Set<string>();
+
+    journeys.forEach((j) => {
+      const baseCategory = getBaseVisaCategory(j.journey_id);
+      const canonical = normalizeJourneyId(j.journey_id);
+      const meta = resolveJourneyMeta(j.journey_id);
+      const isIr5 = IR5_ENABLED && baseCategory === "IR-5";
+
+      if (isIr5) {
+        // Multi-candidate (IR-5) candidate resolution:
+        // 1. Check if journey_id explicitly specifies candidate index (e.g. "ir5_candidate-2")
+        const candIdMatch = (j.journey_id || "").match(/candidate[-_]?(\d+)/i);
+        const targetCandId = candIdMatch ? `candidate-${candIdMatch[1]}` : null;
+
+        // 2. Only consider candidates that are actually for IR-5 (or parents), NOT spouse/IR-1 candidates!
+        const validIr5Candidates = candidates.filter((c) => {
+          const cat = getBaseVisaCategory(c.visaCategory);
+          return (
+            cat === "IR-5" ||
+            c.relation === "Mother" ||
+            c.relation === "Father" ||
+            c.relation === "Stepparent" ||
+            c.relation === "AdoptiveParent" ||
+            (!c.visaCategory && c.relation !== "Spouse")
+          );
+        });
+
+        // 3. Look up matching candidate profile
+        let cand = targetCandId
+          ? validIr5Candidates.find((c) => c.id.toLowerCase() === targetCandId.toLowerCase())
+          : null;
+
+        // 4. If no candidate suffix (e.g. legacy "IR-5"), pick the first candidate not yet assigned
+        if (!cand) {
+          cand = validIr5Candidates.find((c) => !assignedCandidateIds.has(c.id));
+        }
+
+        // 5. If still no candidate, synthesize fallback candidate profile with unique ID
+        if (!cand) {
+          const nextNum = assignedCandidateIds.size + 1;
+          cand = {
+            id: targetCandId || `candidate-${nextNum}`,
+            label: `Candidate ${nextNum}`,
+            relation: "Other",
+            fullName: "",
+            isPrimary: assignedCandidateIds.size === 0,
+            tier: (j.subscription_tier as any) || "free",
+          };
+        }
+
+        assignedCandidateIds.add(cand.id);
+
+        const formatCandidateRelation = (rel?: string) => {
+          if (!rel) return "";
+          if (rel === "AdoptiveParent") return "Adoptive Parent";
+          if (rel === "Stepparent") return "Stepparent";
+          if (rel === "Other") return "Parent";
+          return rel;
         };
-      }),
-    [journeys]
-  );
+
+        // Strictly isolated lookup per candidate & per journey row
+        // NEVER look up generic "IR-5" or "ir5" as that bleeds across candidate cards!
+        const candCustom =
+          profile?.journeyCustomizations?.[cand.id] ||
+          profile?.journeyCustomizations?.[`ir5_${cand.id}`] ||
+          profile?.journeyCustomizations?.[j.id];
+
+        const formattedRel = formatCandidateRelation(cand.relation);
+        const defaultLabel = cand.label || `Candidate ${assignedCandidateIds.size}`;
+        const specificRel =
+          formattedRel && formattedRel !== "Parent" && formattedRel !== "Other"
+            ? formattedRel
+            : null;
+
+        const candName =
+          candCustom?.name ||
+          cand.customName ||
+          cand.fullName ||
+          specificRel ||
+          defaultLabel;
+
+        const cardImage = candCustom?.image || cand.avatarUrl || meta.image;
+
+        const candRosterTier =
+          cand.tier ||
+          dbCandidates?.find((c) => c.id === cand.id)?.tier ||
+          (profile as any)?.candidates?.find((c: any) => c.id === cand.id)?.tier;
+
+        const candTier = resolveJourneyTier({
+          dbJourneyTier: j.subscription_tier,
+          candRosterTier,
+          journeyTiersTier:
+            planCtx?.journeyTiers?.[j.journey_id] ||
+            planCtx?.journeyTiers?.[cand.id] ||
+            planCtx?.journeyTiers?.[`ir5_${cand.id}`],
+        });
+
+        const progress = getProgressPercent(j);
+        const isCurrentActive =
+          activeCandidateId === cand.id || (!activeCandidateId && cand.isPrimary);
+
+        result.push({
+          id: j.id,
+          journey: j,
+          progress,
+          completedSteps: getCompletedSteps(j),
+          totalSteps: getTotalSteps(j),
+          meta: {
+            ...meta,
+            name: candName,
+            image: cardImage,
+            canonicalId: `ir5_${cand.id}`,
+            candidateId: cand.id,
+            candidateRelation: formattedRel || "Parent",
+            isCurrentActive: Boolean(isCurrentActive),
+            journeyDbId: j.id,
+          },
+          status: getJourneyStatus(j, progress, candTier),
+          subscriptionTier: candTier,
+          activity: getActivityLabel(j),
+        });
+      } else {
+        // Non-multi-candidate visa (IR-1, CR-1, K-1, B1/B2, F-1, etc.)
+        const canonicalKey = baseCategory === "IR-1" ? `ir1_${j.id}` : j.journey_id || canonical;
+
+        // ONLY match a candidate if their category matches this journey's baseCategory
+        // or if baseCategory is IR-1 and candidate relation is "Spouse".
+        // NEVER match an IR-5 parent candidate!
+        const candForJourney =
+          candidates.find((c) => getBaseVisaCategory(c.visaCategory) === baseCategory) ||
+          (baseCategory === "IR-1" ? candidates.find((c) => c.relation === "Spouse") : null) ||
+          null;
+
+        // Strictly isolated lookup: journey DB ID first, then candidate ID, then canonical key
+        const jCustom =
+          profile?.journeyCustomizations?.[j.id] ||
+          (candForJourney?.id ? profile?.journeyCustomizations?.[candForJourney.id] : undefined) ||
+          profile?.journeyCustomizations?.[canonicalKey];
+
+        const defaultCandName =
+          candForJourney?.customName ||
+          candForJourney?.fullName ||
+          candForJourney?.label ||
+          meta.name;
+
+        // If no candidate matched, card name defaults to meta.name ("IR-1 Spouse Visa"),
+        // NEVER to an IR-5 parent candidate!
+        const customName =
+          jCustom?.name || (candForJourney ? defaultCandName : meta.name);
+        const customImage =
+          jCustom?.image || candForJourney?.avatarUrl || meta.image;
+
+        const candRosterTier =
+          candForJourney?.tier ||
+          (candForJourney ? dbCandidates?.find((c) => c.id === candForJourney.id)?.tier : null) ||
+          (candForJourney
+            ? (profile as any)?.candidates?.find((c: any) => c.id === candForJourney.id)?.tier
+            : null);
+
+        const jTier = resolveJourneyTier({
+          dbJourneyTier: j.subscription_tier,
+          candRosterTier,
+          journeyTiersTier:
+            planCtx?.journeyTiers?.[j.journey_id] ||
+            planCtx?.journeyTiers?.[baseCategory],
+        });
+
+        const progress = getProgressPercent(j);
+        const isCurrentActive =
+          activeCandidate && candForJourney
+            ? activeCandidate.id === candForJourney.id
+            : baseCategory === "IR-1"
+              ? activeCandidate && getBaseVisaCategory(activeCandidate.visaCategory) === "IR-1"
+              : true;
+
+        result.push({
+          id: j.id,
+          journey: j,
+          progress,
+          completedSteps: getCompletedSteps(j),
+          totalSteps: getTotalSteps(j),
+          meta: {
+            ...meta,
+            name: customName,
+            image: customImage,
+            canonicalId: canonicalKey,
+            candidateId: candForJourney?.id,
+            isCurrentActive: Boolean(isCurrentActive),
+            journeyDbId: j.id,
+          },
+          status: getJourneyStatus(j, progress, jTier),
+          subscriptionTier: jTier,
+          activity: getActivityLabel(j),
+        });
+      }
+    });
+
+    // ── 2. Fallback for Profile-declared Visa ONLY if 0 DB journeys exist ──────
+    const profileVisa = profile?.visaType || profile?.visaCategory;
+    if (profileVisa && result.length === 0) {
+      const baseCategory = getBaseVisaCategory(profileVisa);
+      const isIr5 = IR5_ENABLED && baseCategory === "IR-5";
+      const canonicalKey = isIr5 ? "ir5" : baseCategory === "IR-1" ? "ir1" : profileVisa.toLowerCase();
+      const meta = resolveJourneyMeta(profileVisa);
+      const fbCustom =
+        profile?.journeyCustomizations?.[canonicalKey] ||
+        profile?.journeyCustomizations?.[profileVisa.toLowerCase()];
+
+      const candForProfile = isIr5
+        ? candidates.find((c) => c.isPrimary || c.id === "candidate-1") || candidates[0]
+        : (baseCategory === "IR-1" ? candidates.find((c) => c.relation === "Spouse") : null) ||
+          candidates.find((c) => getBaseVisaCategory(c.visaCategory) === baseCategory) ||
+          null;
+
+      const defaultCandName =
+        candForProfile?.customName ||
+        candForProfile?.fullName ||
+        candForProfile?.label ||
+        meta.name;
+
+      const customName = fbCustom?.name || (candForProfile ? defaultCandName : meta.name);
+      const customImage = fbCustom?.image || candForProfile?.avatarUrl || meta.image;
+
+      const candRosterTier =
+        candForProfile?.tier ||
+        (candForProfile ? dbCandidates?.find((c) => c.id === candForProfile.id)?.tier : null);
+
+      const fbTier = resolveJourneyTier({
+        dbJourneyTier: null,
+        candRosterTier,
+        journeyTiersTier:
+          planCtx?.journeyTiers?.[baseCategory] ||
+          planCtx?.journeyTiers?.[canonicalKey],
+      });
+
+      result.push({
+        id: `profile_${canonicalKey}`,
+        progress: 0,
+        completedSteps: 0,
+        totalSteps: canonicalKey === "ir1" ? 29 : 28,
+        meta: {
+          ...meta,
+          name: customName,
+          image: customImage,
+          canonicalId: canonicalKey,
+          candidateId: candForProfile?.id,
+          isCurrentActive: false,
+        },
+        status: getJourneyStatus(null, 0, fbTier),
+        subscriptionTier: fbTier,
+        activity: "Not started",
+      });
+    }
+
+    // ── 3. Deterministic Sort: Never allow cards to jump positions ─────────────
+    const VISA_ORDER: Record<string, number> = {
+      "ir-1": 1,
+      "ir1": 1,
+      "ir-5": 2,
+      "ir5": 2,
+      "cr-1": 3,
+      "cr1": 3,
+      "k-1": 4,
+      "k1": 4,
+      "b1/b2": 5,
+      "b1b2": 5,
+      "f-1": 6,
+      "f1": 6,
+    };
+
+    const getCandidateSortIndex = (candId?: string): number => {
+      if (!candId) return 0;
+      const match = candId.match(/\d+/);
+      return match ? parseInt(match[0], 10) : 999;
+    };
+
+    result.sort((a, b) => {
+      const catA = (a.meta.code || a.meta.canonicalId || "").toLowerCase();
+      const catB = (b.meta.code || b.meta.canonicalId || "").toLowerCase();
+      const orderA = VISA_ORDER[catA] ?? 50;
+      const orderB = VISA_ORDER[catB] ?? 50;
+
+      if (orderA !== orderB) {
+        return orderA - orderB;
+      }
+
+      // Same category: sort by candidate index (candidate-1 < candidate-2 < ...)
+      const candA = getCandidateSortIndex(a.meta.candidateId);
+      const candB = getCandidateSortIndex(b.meta.candidateId);
+      if (candA !== candB) {
+        return candA - candB;
+      }
+
+      // Fallback to deterministic string id comparison
+      return a.id.localeCompare(b.id);
+    });
+
+    return result;
+  }, [
+    candidates,
+    journeys,
+    activeCandidateId,
+    activeCandidate,
+    profile,
+    dbCandidates,
+    planCtx?.journeyTiers,
+  ]);
 
   const startNewJourney = () => {
     router.push("/visa-category");
   };
 
-  const handleOpenJourney = (route: string) => {
-    router.push(route);
+  const getJourneyUrl = (
+    meta: JourneyMeta & {
+      canonicalId: string;
+      candidateId?: string;
+      journeyDbId?: string;
+    }
+  ) => {
+    let targetCandidateId = meta.candidateId;
+
+    if (!targetCandidateId) {
+      const baseCategory = getBaseVisaCategory(meta.code || meta.canonicalId);
+      const match =
+        (activeCandidate && getBaseVisaCategory(activeCandidate.visaCategory) === baseCategory
+          ? activeCandidate
+          : null) ||
+        candidates.find((c) => getBaseVisaCategory(c.visaCategory) === baseCategory) ||
+        (baseCategory === "IR-1" ? candidates.find((c) => c.relation === "Spouse") : null) ||
+        candidates.find((c) => c.isPrimary) ||
+        candidates[0];
+
+      if (match?.id) {
+        targetCandidateId = match.id;
+      }
+    }
+
+    const separator = meta.route.includes("?") ? "&" : "?";
+    let url = targetCandidateId
+      ? `${meta.route}${separator}candidateId=${encodeURIComponent(targetCandidateId)}`
+      : meta.route;
+
+    if (meta.journeyDbId) {
+      const sep = url.includes("?") ? "&" : "?";
+      url = `${url}${sep}journeyId=${encodeURIComponent(meta.journeyDbId)}`;
+    }
+
+    return url;
+  };
+
+  const handleOpenJourney = (
+    meta: JourneyMeta & {
+      canonicalId: string;
+      candidateId?: string;
+      journeyDbId?: string;
+    },
+    e?: React.MouseEvent
+  ) => {
+    let targetCandidateId = meta.candidateId;
+
+    // Safety fallback: if candidateId was not directly on meta, resolve the appropriate candidate
+    if (!targetCandidateId) {
+      const baseCategory = getBaseVisaCategory(meta.code || meta.canonicalId);
+      const match =
+        (activeCandidate && getBaseVisaCategory(activeCandidate.visaCategory) === baseCategory
+          ? activeCandidate
+          : null) ||
+        candidates.find((c) => getBaseVisaCategory(c.visaCategory) === baseCategory) ||
+        (baseCategory === "IR-1" ? candidates.find((c) => c.relation === "Spouse") : null) ||
+        candidates.find((c) => c.isPrimary) ||
+        candidates[0];
+
+      if (match?.id) {
+        targetCandidateId = match.id;
+      }
+    }
+
+    if (targetCandidateId) {
+      setActiveCandidateId(targetCandidateId);
+    }
+
+    const routeWithCandidate = getJourneyUrl(meta);
+
+    // Support Ctrl+Click, Cmd+Click (Mac), or middle mouse click (button === 1) to open in a new tab
+    if (e && (e.ctrlKey || e.metaKey || e.button === 1)) {
+      window.open(routeWithCandidate, "_blank");
+      return;
+    }
+
+    router.push(routeWithCandidate);
   };
 
   if (authLoading) {
@@ -310,14 +955,14 @@ export default function MyJourneysPage() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#f7fbfb]">
+    <main className="relative overflow-hidden bg-[#f7fbfb]">
       {/* Background */}
       <div className="pointer-events-none absolute inset-0">
         <div className="grid-bg absolute inset-0" />
 
-        <div className="absolute -left-44 -top-52 h-[520px] w-[520px] rounded-full bg-[#14a0a6]/10 blur-[130px]" />
+        <div className="absolute -top-52 -left-44 h-[520px] w-[520px] rounded-full bg-[#14a0a6]/10 blur-[130px]" />
 
-        <div className="absolute -right-52 top-36 h-[560px] w-[560px] rounded-full bg-[#32e0c4]/10 blur-[150px]" />
+        <div className="absolute top-36 -right-52 h-[560px] w-[560px] rounded-full bg-[#32e0c4]/10 blur-[150px]" />
 
         <div className="absolute bottom-0 left-1/3 h-[400px] w-[400px] rounded-full bg-[#0d7377]/5 blur-[130px]" />
 
@@ -326,25 +971,25 @@ export default function MyJourneysPage() {
 
       <div className="relative z-10">
         {/* Page header */}
-        <section className="site-main-px pt-12 md:pt-16 lg:pt-20">
+        <section className="site-main-px pt-16 md:pt-16 lg:pt-20">
           <div className="mx-auto max-w-7xl">
             <div className="flex flex-col justify-between gap-8 lg:flex-row lg:items-end">
-              <div className="max-w-3xl">
-                <div className="mb-4 flex mt-6 md:mt-3 lg:mt-0 items-center gap-2 text-sm font-semibold text-[#0d7377]">
+              <div className="max-w-6xl">
+                {/* <div className="mt-6 mb-4 flex items-center gap-2 text-sm font-semibold text-[#0d7377] md:mt-3 lg:mt-0">
                   <span className="h-2 w-2 rounded-full bg-[#32e0c4] shadow-[0_0_0_5px_rgba(50,224,196,0.14)]" />
                   Your immigration dashboard
-                </div>
+                </div> */}
 
                 <h1 className="text-4xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-5xl lg:text-[3.6rem] lg:leading-[1.05]">
-                  My Immigration
-                  <span className="block bg-linear-to-r from-[#0a5a5d] via-[#0d7377] to-[#14a0a6] bg-clip-text text-transparent">
+                  My Immigration{" "}
+                  <span className="bg-linear-to-r from-[#0a5a5d] via-[#0d7377] to-[#14a0a6] bg-clip-text text-transparent">
                     Journeys
                   </span>
                 </h1>
 
-                <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 md:text-lg md:leading-8">
-                  Continue your active applications, review your progress and manage every
-                  immigration journey from one secure workspace.
+                <p className="mt-5 max-w-5xl text-base leading-7 text-slate-600 md:text-lg md:leading-8">
+                  Continue your active journeys, review your progress and manage every immigration
+                  journey from one secure workspace.
                 </p>
               </div>
 
@@ -362,7 +1007,7 @@ export default function MyJourneysPage() {
         </section>
 
         {/* Journey content */}
-        <section className="site-main-px pb-24 pt-10 md:pt-12">
+        <section className="site-main-px pt-4 pb-24">
           <div className="mx-auto max-w-7xl">
             {loading && journeys.length === 0 ? (
               <JourneyCardsSkeleton />
@@ -371,14 +1016,23 @@ export default function MyJourneysPage() {
                 {visibleJourneys.length === 0 ? (
                   <EmptyJourneyState onStartJourney={startNewJourney} />
                 ) : (
-                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {visibleJourneys.map(
                       (
-                        { journey, progress, completedSteps, totalSteps, meta, status, subscriptionTier, activity },
+                        {
+                          id,
+                          progress,
+                          completedSteps,
+                          totalSteps,
+                          meta,
+                          status,
+                          subscriptionTier,
+                          activity,
+                        },
                         index
                       ) => (
                         <motion.div
-                          key={journey.id}
+                          key={id}
                           layout
                           initial={{
                             opacity: 0,
@@ -407,7 +1061,16 @@ export default function MyJourneysPage() {
                             status={status}
                             subscriptionTier={subscriptionTier}
                             activity={activity}
-                            onOpen={() => handleOpenJourney(meta.route)}
+                            isMultiCandidate={false}
+                            candidateCount={0}
+                            href={getJourneyUrl(meta)}
+                            onOpen={(e) => handleOpenJourney(meta, e)}
+                            onUpdateJourneyName={(newName) =>
+                              handleUpdateJourneyName(meta.canonicalId, newName, meta.candidateId, id)
+                            }
+                            onUpdateJourneyImage={(file) =>
+                              handleUpdateJourneyImage(meta.canonicalId, file, meta.candidateId, id)
+                            }
                           />
                         </motion.div>
                       )
@@ -418,6 +1081,19 @@ export default function MyJourneysPage() {
             )}
           </div>
         </section>
+
+        {/* New-style Candidate Profile Launcher Modal (commented out for now - each beneficiary card is shown individually) */}
+        {/*
+        <CandidateProfileLauncherModal
+          isOpen={launcherModal.isOpen}
+          onClose={() => setLauncherModal((prev) => ({ ...prev, isOpen: false }))}
+          journeyCode={launcherModal.journeyCode}
+          journeyName={launcherModal.journeyName}
+          journeyRoute={launcherModal.journeyRoute}
+          candidates={candidates}
+          journeys={journeys}
+        />
+        */}
       </div>
     </main>
   );
@@ -427,7 +1103,15 @@ interface JourneyCardProps {
   progress: number;
   completedSteps: number;
   totalSteps: number;
-  meta: JourneyMeta & { canonicalId: string };
+  meta: JourneyMeta & {
+    canonicalId: string;
+    candidateId?: string;
+    candidateBadge?: string;
+    candidateRelation?: string;
+    isCurrentActive?: boolean;
+    customName?: string;
+    customImage?: string;
+  };
   status: {
     label: string;
     className: string;
@@ -435,7 +1119,12 @@ interface JourneyCardProps {
   };
   subscriptionTier?: string;
   activity: string;
-  onOpen: () => void;
+  candidateCount?: number;
+  isMultiCandidate?: boolean;
+  href?: string;
+  onOpen: (e?: React.MouseEvent) => void;
+  onUpdateJourneyName?: (newName: string) => Promise<void> | void;
+  onUpdateJourneyImage?: (file: File) => Promise<void> | void;
 }
 
 function JourneyCard({
@@ -446,116 +1135,461 @@ function JourneyCard({
   status,
   subscriptionTier = "free",
   activity,
+  candidateCount,
+  isMultiCandidate,
+  href,
   onOpen,
+  onUpdateJourneyName,
+  onUpdateJourneyImage,
 }: JourneyCardProps) {
+  const isPaid = subscriptionTier && subscriptionTier.toLowerCase() !== "free";
+  const hasCandidates = Boolean(isMultiCandidate && candidateCount && candidateCount > 0);
+  const isActiveJourney =
+    status.label === "Active" ||
+    status.label === "Completed" ||
+    status.label === "Paused" ||
+    progress > 0 ||
+    isPaid ||
+    hasCandidates;
+
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [nameInput, setNameInput] = useState(meta.name);
+  const [imgSrc, setImgSrc] = useState(meta.image);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    setNameInput(meta.name);
+  }, [meta.name]);
+
+  useEffect(() => {
+    setImgSrc(meta.image);
+  }, [meta.image]);
+
+  const isUnoptimized = Boolean(
+    imgSrc &&
+      (imgSrc.startsWith("data:") ||
+        imgSrc.startsWith("blob:") ||
+        imgSrc.startsWith("/api/") ||
+        imgSrc.includes("/api/journey/media"))
+  );
+
+  useEffect(() => {
+    if (!isMenuOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isMenuOpen]);
+
+  const handleSaveName = async () => {
+    const trimmed = nameInput.trim();
+    if (!trimmed) {
+      setIsEditingName(false);
+      setNameInput(meta.name);
+      return;
+    }
+    setIsEditingName(false);
+    if (onUpdateJourneyName) {
+      await onUpdateJourneyName(trimmed);
+    }
+  };
+
+  const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploadingImage(true);
+    try {
+      if (onUpdateJourneyImage) {
+        await onUpdateJourneyImage(file);
+      }
+    } finally {
+      setIsUploadingImage(false);
+      e.target.value = "";
+    }
+  };
+
   return (
     <Card
       role="button"
       tabIndex={0}
       aria-label={`Open ${meta.name}`}
-      onClick={onOpen}
-      onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          onOpen();
+      onClick={(e) => {
+        const target = e.target as HTMLElement | SVGElement | null;
+        if (
+          target?.closest?.("button") ||
+          target?.closest?.("input") ||
+          isEditingName ||
+          isUploadingImage ||
+          isMenuOpen
+        ) {
+          return;
+        }
+        onOpen(e);
+      }}
+      onAuxClick={(e) => {
+        if (e.button === 1) {
+          const target = e.target as HTMLElement | SVGElement | null;
+          if (
+            target?.closest?.("button") ||
+            target?.closest?.("input") ||
+            isEditingName ||
+            isUploadingImage ||
+            isMenuOpen
+          ) {
+            return;
+          }
+          onOpen(e);
         }
       }}
-      className="relative flex h-full cursor-pointer flex-col overflow-hidden rounded-3xl border border-white/80 bg-white/75 p-0 shadow-[0_18px_55px_rgba(15,61,63,0.08)] backdrop-blur-xl transition-all duration-500 hover:-translate-y-1.5 hover:border-[#14a0a6]/30 hover:shadow-[0_28px_70px_rgba(13,115,119,0.16)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14a0a6]/50"
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          if (!isEditingName) {
+            event.preventDefault();
+            onOpen();
+          }
+        }
+      }}
+      className={`group relative flex h-full cursor-pointer flex-col gap-0 overflow-hidden rounded-3xl border p-0 backdrop-blur-xl transition-all duration-500 hover:-translate-y-1.5 focus-visible:ring-2 focus-visible:ring-[#14a0a6]/50 focus-visible:outline-none ${
+        isActiveJourney
+          ? meta.isCurrentActive
+            ? "border-[#0d7377]/40 bg-white/90 shadow-[0_20px_60px_rgba(13,115,119,0.18)] ring-2 ring-[#0d7377]/25 hover:border-[#0d7377]/60 hover:shadow-[0_28px_70px_rgba(13,115,119,0.24)]"
+            : "border-white/80 bg-white/75 shadow-[0_18px_55px_rgba(15,61,63,0.08)] hover:border-[#14a0a6]/30 hover:shadow-[0_28px_70px_rgba(13,115,119,0.16)]"
+          : "border-slate-200/70 bg-slate-100/60 opacity-60 shadow-xs grayscale-[0.75] hover:border-slate-300 hover:opacity-95 hover:shadow-[0_18px_50px_rgba(15,61,63,0.1)] hover:grayscale-0"
+      }`}
     >
+      {/* Native clickable link overlay so Ctrl+click, Cmd+click, and middle-click open in a new tab */}
+      {href && !isEditingName && (
+        <a
+          href={href}
+          aria-hidden="true"
+          tabIndex={-1}
+          className="absolute inset-0 z-0"
+          onClick={(e) => {
+            if (!e.ctrlKey && !e.metaKey && e.button !== 1) {
+              e.preventDefault();
+              onOpen(e);
+            }
+          }}
+        />
+      )}
+
+      {/* Hidden File Input for Cover Photo */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        accept="image/png,image/jpeg,image/webp,image/gif"
+        className="hidden"
+        onClick={(e) => e.stopPropagation()}
+        onChange={handleImageFileChange}
+      />
+
       {/* Image */}
-      <div className="relative h-44 overflow-hidden bg-[#dbeeee]">
+      <div
+        className={`relative h-58 overflow-hidden ${
+          isActiveJourney ? "bg-[#dbeeee]" : "bg-slate-200"
+        }`}
+      >
         <Image
-          src={meta.image}
+          src={imgSrc}
           alt={`${meta.name} journey cover`}
           fill
+          unoptimized={isUnoptimized}
+          onError={() => {
+            const fallback = resolveJourneyMeta(meta.canonicalId || meta.code || "IR-1").image;
+            if (imgSrc !== fallback) {
+              setImgSrc(fallback);
+            }
+          }}
           sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
-          className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]"
+          className={`object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06] ${
+            !isActiveJourney
+              ? "opacity-80 grayscale-[0.5] group-hover:opacity-100 group-hover:grayscale-0"
+              : ""
+          }`}
         />
 
-        <div className="absolute inset-0 bg-linear-to-t from-[#062f31]/90 via-[#083e41]/25 to-slate-950/10" />
+        <div
+          className={`absolute inset-0 transition-opacity duration-500 ${
+            isActiveJourney
+              ? "bg-linear-to-t from-[#062f31]/90 via-[#083e41]/25 to-slate-950/10"
+              : "bg-linear-to-t from-slate-950/85 via-slate-900/35 to-slate-950/15"
+          }`}
+        />
 
-        <div className="absolute inset-0 bg-linear-to-br from-[#0d7377]/15 via-transparent to-[#32e0c4]/10" />
+        <div
+          className={`absolute inset-0 transition-opacity duration-500 ${
+            isActiveJourney
+              ? "bg-linear-to-br from-[#0d7377]/15 via-transparent to-[#32e0c4]/10"
+              : "bg-transparent"
+          }`}
+        />
 
-        {/* Image badges */}
-        <div className="absolute left-4 right-4 top-4 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1.5">
-            <Badge className="rounded-full border border-white/25 bg-white/90 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-[#0a5a5d] shadow-lg shadow-slate-950/10 backdrop-blur-md hover:bg-white">
-              {meta.code}
-            </Badge>
-            <JourneyPlanBadge tier={subscriptionTier} />
+        {/* Upload Spinner Overlay */}
+        {isUploadingImage && (
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs">
+            <Loader2 className="h-7 w-7 animate-spin text-white" />
           </div>
+        )}
 
-          <Badge
-            className={`rounded-full border px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] shadow-lg shadow-slate-950/10 backdrop-blur-md hover:${status.className} ${status.className}`}
-          >
-            <span className={`mr-2 h-1.5 w-1.5 rounded-full ${status.dotClassName}`} />
-            {status.label}
-          </Badge>
+        {/* Image badges and quick options menu */}
+        <div className="absolute top-4 right-4 left-4 z-10 flex items-center justify-between gap-2">
+          {!(isMultiCandidate && candidateCount && candidateCount > 0) ? (
+            <div className="flex items-center gap-2">
+              <JourneyPlanBadge tier={subscriptionTier} iconOnly={true} />
+              {meta.code && (
+                <Badge className="rounded-full border border-white/25 bg-slate-950/70 px-2 py-0.5 text-[10px] font-semibold text-white shadow-lg backdrop-blur-md">
+                  {meta.code}
+                </Badge>
+              )}
+            </div>
+          ) : (
+            <div />
+          )}
+
+          <div className="flex items-center gap-1.5">
+            {/* {isMultiCandidate && candidateCount && candidateCount > 0 ? (
+              <Badge className="rounded-full border border-teal-300/40 bg-slate-950/70 px-2.5 py-1 text-[10px] font-semibold text-teal-300 shadow-lg backdrop-blur-md hover:bg-slate-950/80">
+                <Users className="mr-1 h-3 w-3 text-teal-300" />
+                {candidateCount} {candidateCount === 1 ? "Profile" : "Profiles"}
+              </Badge>
+            ) : null} */}
+
+            {/* Quick Actions Dropdown Menu */}
+            <div ref={menuRef} className="relative">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsMenuOpen((prev) => !prev);
+                }}
+                onMouseDown={(e) => e.stopPropagation()}
+                onPointerDown={(e) => e.stopPropagation()}
+                title="Journey options"
+                className={`flex h-7 w-7 items-center justify-center rounded-full border border-white/25 bg-slate-950/70 text-white shadow-lg backdrop-blur-md transition-all hover:scale-105 hover:border-teal-300 hover:bg-[#0d7377] active:scale-95 ${
+                  isMenuOpen
+                    ? "border-teal-300 bg-[#0d7377] opacity-100 ring-2 ring-teal-400/40"
+                    : "opacity-85 sm:opacity-0 sm:group-hover:opacity-100"
+                }`}
+              >
+                <MoreVertical className="h-3.5 w-3.5 text-teal-300" />
+              </button>
+
+              <AnimatePresence>
+                {isMenuOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.94, y: -4 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.94, y: -4 }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
+                    className="absolute top-full right-0 z-30 mt-1.5 min-w-[175px] rounded-2xl border border-white/20 bg-slate-950/95 p-1.5 shadow-2xl backdrop-blur-xl"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setIsMenuOpen(false);
+                        fileInputRef.current?.click();
+                      }}
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onPointerDown={(e) => e.stopPropagation()}
+                      disabled={isUploadingImage}
+                      className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-slate-200 transition-colors hover:bg-teal-500/20 hover:text-white disabled:opacity-50"
+                    >
+                      <Camera className="h-3.5 w-3.5 text-teal-300" />
+                      <span>Change cover</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setIsMenuOpen(false);
+                        setNameInput(meta.name);
+                        setIsEditingName(true);
+                      }}
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onPointerDown={(e) => e.stopPropagation()}
+                      className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-slate-200 transition-colors hover:bg-teal-500/20 hover:text-white"
+                    >
+                      <Pencil className="h-3.5 w-3.5 text-teal-300" />
+                      <span>Rename journey</span>
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
         </div>
 
-        {/* Image title */}
-        <div className="absolute inset-x-0 bottom-0 p-5">
-          <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#8ff5e6]">
-            Immigration pathway
-          </p>
-
-          <h2 className="text-xl font-semibold tracking-[-0.02em] text-white md:text-[1.35rem]">
-            {meta.name}
-          </h2>
+        {/* Image title & rename option */}
+        <div className="absolute inset-x-0 bottom-0 z-10 p-5">
+          {isEditingName ? (
+            <div
+              className="flex items-center gap-1.5 rounded-xl border border-teal-400/40 bg-slate-950/85 p-1.5 shadow-lg backdrop-blur-md"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <input
+                type="text"
+                value={nameInput}
+                onChange={(e) => setNameInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleSaveName();
+                  } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    setIsEditingName(false);
+                  }
+                }}
+                placeholder="Journey name"
+                className="flex-1 rounded-lg border border-teal-400/30 bg-slate-900/90 px-2.5 py-1 text-sm font-semibold text-white placeholder-slate-400 focus:ring-2 focus:ring-teal-400/50 focus:outline-none"
+                autoFocus
+              />
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleSaveName();
+                }}
+                onMouseDown={(e) => e.stopPropagation()}
+                onPointerDown={(e) => e.stopPropagation()}
+                className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#0d7377] text-white transition-colors hover:bg-[#14a0a6]"
+                title="Save Name"
+              >
+                <Check className="h-3.5 w-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsEditingName(false);
+                }}
+                onMouseDown={(e) => e.stopPropagation()}
+                onPointerDown={(e) => e.stopPropagation()}
+                className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-700 text-slate-300 transition-colors hover:bg-slate-600"
+                title="Cancel"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          ) : (
+            <div>
+              <div className="flex items-center gap-2">
+                <h2
+                  title={meta.name}
+                  className="line-clamp-1 text-xl font-semibold tracking-[-0.02em] text-white md:text-[1.35rem]"
+                >
+                  {href ? (
+                    <a
+                      href={href}
+                      onClick={(e) => {
+                        if (!e.ctrlKey && !e.metaKey && e.button !== 1) {
+                          e.preventDefault();
+                          onOpen(e);
+                        }
+                      }}
+                      className="hover:underline focus:outline-none"
+                    >
+                      {meta.name}
+                    </a>
+                  ) : (
+                    meta.name
+                  )}
+                </h2>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
-      <CardContent className="relative flex flex-1 flex-col px-4 py-2">
+      <CardContent className="relative flex flex-1 flex-col px-4 pt-2 pb-2.5">
         {/* Decorative card glow */}
-        <div className="pointer-events-none absolute -right-16 -top-20 h-40 w-40 rounded-full bg-[#32e0c4]/8 blur-3xl" />
+        {/* {isActiveJourney && (
+          <div className="pointer-events-none absolute -top-20 -right-16 h-40 w-40 rounded-full bg-[#32e0c4]/8 blur-3xl" />
+        )} */}
 
-        <p className="relative line-clamp-2 min-h-[44px] text-sm leading-6 text-slate-600">
-          {meta.description}
-        </p>
-
-        {/* Progress block */}
-        <div className="relative mt-4 rounded-[20px] border border-[#0d7377]/8 bg-linear-to-br from-[#f2fbfb] to-white px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
-          <div className="flex items-end justify-between gap-4">
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">
-                Overall progress
-              </p>
-
-              <div className="mt-1 flex items-baseline gap-1">
-                <span className="text-2xl font-bold tracking-[-0.04em] text-[#0a5a5d]">
-                  {progress}
-                </span>
-                <span className="text-sm font-semibold text-[#0d7377]">%</span>
+        {/* Progress block / Multi-Candidate Profile summary */}
+        {isMultiCandidate && candidateCount && candidateCount > 0 ? (
+          <div className="relative mt-1 flex items-center justify-between rounded-[20px] border border-[#0d7377]/10 bg-linear-to-br from-[#f2fbfb] to-white p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#e8f6f6] text-[#0d7377] shadow-xs">
+                <Users className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <p className="truncate text-xs font-bold text-slate-800">
+                  {candidateCount} Beneficiary {candidateCount === 1 ? "Profile" : "Profiles"}
+                </p>
+                <p className="mt-0.5 text-[11px] text-slate-500">
+                  Select a profile to view progress
+                </p>
               </div>
             </div>
+            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#0d7377]/10 px-2.5 py-1 text-[11px] font-semibold text-[#0d7377] transition-colors group-hover:bg-[#0d7377] group-hover:text-white">
+              Launch <ArrowRight className="h-3 w-3" />
+            </span>
+          </div>
+        ) : (
+          <div className="my-0.5">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-[10px] font-semibold tracking-wider text-slate-500 uppercase">
+                  Progress
+                </span>
+                <span
+                  className={`text-[13px] font-bold tracking-tight ${
+                    isActiveJourney ? "text-[#0a5a5d]" : "text-slate-700"
+                  }`}
+                >
+                  {progress}%
+                </span>
+              </div>
 
-            <div className="text-right">
-              <p className="text-xs font-medium text-slate-500">
-                {completedSteps} of {totalSteps}
+              <p className="text-[11px] font-medium text-slate-500">
+                <span className="font-semibold text-slate-700">{completedSteps}</span>
+                <span className="text-slate-400">/{totalSteps} steps</span>
               </p>
-              <p className="mt-0.5 text-[11px] text-slate-400">steps completed</p>
+            </div>
+
+            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#dceeed]">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${progress}%` }}
+                transition={{
+                  duration: 0.8,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+                className={`relative h-full rounded-full ${
+                  isActiveJourney
+                    ? "bg-linear-to-r from-[#0a5a5d] via-[#0d7377] to-[#32e0c4]"
+                    : "bg-linear-to-r from-slate-400 to-slate-500"
+                }`}
+              >
+                <div className="absolute inset-0 bg-linear-to-b from-white/25 to-transparent" />
+              </motion.div>
             </div>
           </div>
-
-          <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-[#dceeed] shadow-inner">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${progress}%` }}
-              transition={{
-                duration: 0.8,
-                ease: [0.22, 1, 0.36, 1],
-              }}
-              className="relative h-full rounded-full bg-linear-to-r from-[#0a5a5d] via-[#0d7377] to-[#32e0c4]"
-            >
-              <div className="absolute inset-0 bg-linear-to-b from-white/25 to-transparent" />
-            </motion.div>
-          </div>
-        </div>
+        )}
 
         {/* Activity */}
-        <div className="relative mt-4 flex items-center justify-between gap-3 border-t border-slate-100 pt-3">
+        {/* <div className="relative mt-4 flex items-center justify-between gap-3 border-t border-slate-100 pt-3">
           <div className="flex min-w-0 items-center gap-2.5 text-xs text-slate-500">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#e8f6f6] text-[#0d7377]">
+            <span
+              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
+                isActiveJourney ? "bg-[#e8f6f6] text-[#0d7377]" : "bg-slate-100 text-slate-500"
+              }`}
+            >
               {progress >= 100 ? (
                 <CheckCircle2 className="h-4 w-4" />
               ) : (
@@ -564,17 +1598,23 @@ function JourneyCard({
             </span>
 
             <div className="min-w-0">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+              <p className="text-[10px] font-semibold tracking-[0.14em] text-slate-400 uppercase">
                 Last updated
               </p>
               <p className="truncate font-medium text-slate-600">{activity}</p>
             </div>
           </div>
 
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#0d7377] text-white shadow-[0_8px_20px_rgba(13,115,119,0.22)] transition-all duration-300 group-hover:translate-x-0.5 group-hover:bg-[#0a5a5d] group-hover:shadow-[0_10px_26px_rgba(13,115,119,0.3)]">
+          <span
+            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white transition-all duration-300 group-hover:translate-x-0.5 ${
+              isActiveJourney
+                ? "bg-[#0d7377] shadow-[0_8px_20px_rgba(13,115,119,0.22)] group-hover:bg-[#0a5a5d] group-hover:shadow-[0_10px_26px_rgba(13,115,119,0.3)]"
+                : "bg-slate-400 shadow-sm group-hover:bg-[#0d7377]"
+            }`}
+          >
             <ArrowRight className="h-4 w-4" />
           </span>
-        </div>
+        </div> */}
       </CardContent>
     </Card>
   );
@@ -584,9 +1624,7 @@ interface EmptyJourneyStateProps {
   onStartJourney: () => void;
 }
 
-function EmptyJourneyState({
-  onStartJourney,
-}: EmptyJourneyStateProps) {
+function EmptyJourneyState({ onStartJourney }: EmptyJourneyStateProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 14 }}
@@ -599,7 +1637,7 @@ function EmptyJourneyState({
       className="relative overflow-hidden rounded-[28px] border border-[#0d7377]/10 bg-white/85 shadow-[0_24px_70px_rgba(15,61,63,0.08)] backdrop-blur-xl"
     >
       {/* Subtle decorative glow */}
-      <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-[#32e0c4]/10 blur-3xl" />
+      <div className="pointer-events-none absolute -top-24 -right-20 h-64 w-64 rounded-full bg-[#32e0c4]/10 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-28 -left-20 h-64 w-64 rounded-full bg-[#0d7377]/5 blur-3xl" />
 
       <div className="relative flex flex-col items-center px-6 py-14 text-center sm:px-10 sm:py-16 lg:py-20">
@@ -610,7 +1648,7 @@ function EmptyJourneyState({
 
         {/* Content */}
         <div className="mt-6 max-w-xl">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#0d7377]">
+          <p className="text-xs font-semibold tracking-[0.2em] text-[#0d7377] uppercase">
             No journeys yet
           </p>
 
@@ -619,8 +1657,8 @@ function EmptyJourneyState({
           </h2>
 
           <p className="mx-auto mt-4 max-w-lg text-sm leading-7 text-slate-600 sm:text-base">
-            Select your visa category and receive a clear, step-by-step
-            roadmap for your immigration process.
+            Select your visa category and receive a clear, step-by-step roadmap for your immigration
+            process.
           </p>
         </div>
 
@@ -643,58 +1681,43 @@ function EmptyJourneyState({
 
 function JourneyCardsSkeleton() {
   return (
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-      {Array.from({ length: 6 }).map((_, index) => (
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {Array.from({ length: 8 }).map((_, index) => (
         <Card
           key={index}
-          className="overflow-hidden rounded-[28px] border border-white/80 bg-white/75 p-0 shadow-[0_18px_55px_rgba(15,61,63,0.07)]"
+          className="relative flex h-full flex-col gap-0 overflow-hidden rounded-3xl border border-white/80 bg-white/75 p-0 shadow-[0_18px_55px_rgba(15,61,63,0.08)]"
         >
-          <div className="relative h-52 overflow-hidden bg-slate-100">
-            <div className="absolute inset-0 animate-pulse bg-linear-to-r from-slate-100 via-slate-50 to-slate-100" />
+          {/* Image skeleton */}
+          <div className="relative h-58 overflow-hidden bg-slate-200/70">
+            <div className="absolute inset-0 animate-pulse bg-linear-to-r from-slate-200/60 via-slate-100/80 to-slate-200/60" />
 
-            <div className="absolute left-4 right-4 top-4 flex justify-between">
-              <div className="h-7 w-16 animate-pulse rounded-full bg-white/70" />
-              <div className="h-7 w-20 animate-pulse rounded-full bg-white/70" />
+            {/* Top badges */}
+            <div className="absolute top-4 right-4 left-4 z-10 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <div className="h-7 w-7 animate-pulse rounded-full bg-white/70" />
+                <div className="h-5 w-14 animate-pulse rounded-full bg-white/60" />
+              </div>
+              <div className="h-7 w-7 animate-pulse rounded-full bg-white/70" />
             </div>
 
-            <div className="absolute bottom-5 left-5 space-y-2">
-              <div className="h-3 w-24 animate-pulse rounded-full bg-white/50" />
-              <div className="h-6 w-44 animate-pulse rounded-full bg-white/70" />
+            {/* Bottom Title */}
+            <div className="absolute right-5 bottom-4 left-5">
+              <div className="h-6 w-36 animate-pulse rounded-lg bg-white/75" />
             </div>
           </div>
 
-          <CardContent className="space-y-5 p-5 md:p-6">
-            <div className="space-y-2">
-              <div className="h-4 w-full animate-pulse rounded-full bg-slate-100" />
-              <div className="h-4 w-4/5 animate-pulse rounded-full bg-slate-100" />
-            </div>
-
-            <div className="rounded-[20px] border border-slate-100 bg-slate-50/70 p-4">
-              <div className="flex items-end justify-between">
-                <div className="space-y-2">
-                  <div className="h-3 w-24 animate-pulse rounded-full bg-slate-200" />
-                  <div className="h-7 w-14 animate-pulse rounded-full bg-slate-200" />
+          {/* Compact Progress Content skeleton */}
+          <CardContent className="relative flex flex-1 flex-col px-4 pt-2 pb-2.5">
+            <div className="my-0.5 space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5">
+                  <div className="h-3 w-12 animate-pulse rounded-full bg-slate-200" />
+                  <div className="h-3.5 w-7 animate-pulse rounded-full bg-slate-200" />
                 </div>
-
-                <div className="space-y-2">
-                  <div className="ml-auto h-3 w-14 animate-pulse rounded-full bg-slate-200" />
-                  <div className="h-3 w-20 animate-pulse rounded-full bg-slate-200" />
-                </div>
+                <div className="h-3 w-16 animate-pulse rounded-full bg-slate-200" />
               </div>
 
-              <div className="mt-4 h-2.5 animate-pulse rounded-full bg-slate-200" />
-            </div>
-
-            <div className="flex items-center justify-between border-t border-slate-100 pt-4">
-              <div className="flex items-center gap-3">
-                <div className="h-8 w-8 animate-pulse rounded-full bg-slate-100" />
-                <div className="space-y-1.5">
-                  <div className="h-2.5 w-20 animate-pulse rounded-full bg-slate-100" />
-                  <div className="h-3 w-24 animate-pulse rounded-full bg-slate-100" />
-                </div>
-              </div>
-
-              <div className="h-10 w-10 animate-pulse rounded-full bg-slate-100" />
+              <div className="h-1.5 w-full animate-pulse rounded-full bg-[#dceeed]/80" />
             </div>
           </CardContent>
         </Card>

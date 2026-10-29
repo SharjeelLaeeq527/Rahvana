@@ -22,7 +22,7 @@ function Loader({ size = "md", text, subText, fullScreen = false, className }: L
     <div
       className={cn(
         "flex flex-col items-center justify-center",
-        text || subText ? "gap-4" : "gap-0",
+        text || subText ? (size === "sm" ? "gap-2" : size === "md" ? "gap-2.5" : "gap-3") : "gap-0",
         className
       )}
     >

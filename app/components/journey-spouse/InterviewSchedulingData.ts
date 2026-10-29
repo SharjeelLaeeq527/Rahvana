@@ -59,7 +59,7 @@ export const INTERVIEW_SCHEDULING_DATA = {
   howItWorks: [
     "NVC schedules interviews based on the post's appointment capacity and the applicant's DQ month",
     "Cases with earlier DQ dates are generally scheduled before cases with later DQ dates in the same category",
-    "The State Department publishes a monthly immigrant visa bulletin showing which DQ months are being scheduled, this is the authoritative source",
+    "The State Department's IV Scheduling Status Tool is published monthly and shows which DQ month each embassy is currently scheduling interviews for — this is the authoritative source",
     "Once your DQ month is reached, NVC will issue an interview appointment letter to the petitioner's address",
   ],
   disclaimer:

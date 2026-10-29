@@ -1,23 +1,85 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { MessageSquare, ExternalLink } from "lucide-react";
+import { ToolPageOverlay } from "@/app/components/shared/ToolPageOverlay";
+
+import { useJourneyEnvironment } from "@/lib/hooks/useJourneyEnvironment";
+import { resolveCategorySlug } from "@/lib/interview-prep/journey-category-map";
+
+export const DEFAULT_PREP_TOOL_DATA = {
+  type: "interview_prep",
+  launch_module: {
+    title: "Rahvana Interview Prep Tool",
+    heading: "Practice questions, review facts, build confidence",
+    icon: "message",
+    cues: [
+      "Review likely interview questions and ideal answers",
+      "Review your DS-260 responses for consistency",
+      "Strengthen recall of your relationship timeline",
+      "Practice concise, truthful, confident answers",
+    ],
+  },
+  readiness_grid: [
+    {
+      title: "Review before your interview",
+      items: [
+        "DS-260 answers, know every section you completed",
+        "Relationship timeline, dates, meetings, visits",
+        "Sponsor income and financial details",
+        "Civil document details, names, dates, record history",
+        "Travel history and prior U.S. visa history if any",
+      ],
+    },
+    {
+      title: "Mindset and approach",
+      items: [
+        "Answer only what is asked, do not volunteer extra information",
+        "Answer truthfully and consistently with your filed documents",
+        "Stay calm, the officer is doing their job, not targeting you",
+        "If unsure, say so calmly, do not guess",
+        "Practice out loud, not just in your head",
+      ],
+    },
+  ],
+};
 
 interface InterviewPrepToolProps {
-  tool: any;
-  isPrepLaunched: boolean;
-  setIsPrepLaunched: (launched: boolean) => void;
+  tool?: any;
+  isPrepLaunched?: boolean;
+  setIsPrepLaunched?: (launched: boolean) => void;
   guard?: () => boolean;
   journeyId?: string;
+  journeyTier?: string;
+  plan?: any;
 }
 
 export const InterviewPrepTool: React.FC<InterviewPrepToolProps> = ({
   tool,
-  isPrepLaunched,
-  setIsPrepLaunched,
+  isPrepLaunched: propIsPrepLaunched,
+  setIsPrepLaunched: propSetIsPrepLaunched,
   guard,
   journeyId,
+  journeyTier,
+  plan,
 }) => {
+  const [internalPrepLaunched, setInternalPrepLaunched] = useState(false);
+  const isPrepLaunched = propIsPrepLaunched !== undefined ? propIsPrepLaunched : internalPrepLaunched;
+  const setIsPrepLaunched = propSetIsPrepLaunched || setInternalPrepLaunched;
+
+  const [toolHref, setToolHref] = useState<string | null>(null);
+  const journeyEnv = useJourneyEnvironment();
+  const journeyCategory =
+    journeyEnv.journeyCategory ||
+    journeyEnv.journeyDataKey ||
+    (journeyEnv.journeySlug?.includes("5") ? "IR-5" : "IR-1");
+  const categorySlug = resolveCategorySlug(journeyCategory);
+
+  const safeTool = tool || DEFAULT_PREP_TOOL_DATA;
+  const launchModule = safeTool.launch_module || DEFAULT_PREP_TOOL_DATA.launch_module;
+  const readinessGrid = safeTool.readiness_grid || DEFAULT_PREP_TOOL_DATA.readiness_grid;
+  const effectiveTier = journeyTier ?? plan?.tier ?? journeyEnv.journeyCategory ?? "basic";
+
   return (
     <div className="flex flex-col mt-4">
       {/* Launcher Card (Large) */}
@@ -31,10 +93,10 @@ export const InterviewPrepTool: React.FC<InterviewPrepToolProps> = ({
             </div>
             <div>
               <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/35 mb-1">
-                {tool.launch_module.title}
+                {launchModule.title}
               </div>
               <h3 className=" text-[20px] sm:text-[22px] text-white/95 leading-tight">
-                {tool.launch_module.heading}
+                {launchModule.heading}
               </h3>
             </div>
           </div>
@@ -42,7 +104,7 @@ export const InterviewPrepTool: React.FC<InterviewPrepToolProps> = ({
           <div className="h-px bg-white/10 mb-[18px]" />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-6">
-            {tool.launch_module?.cues?.map((cue: string, i: number) => (
+            {launchModule?.cues?.map((cue: string, i: number) => (
               <div
                 key={i}
                 className="bg-white/5 border border-white/10 rounded-[10px] p-2.5 flex items-start gap-2"
@@ -57,12 +119,15 @@ export const InterviewPrepTool: React.FC<InterviewPrepToolProps> = ({
             onClick={() => {
               if (guard && !guard()) return;
               setIsPrepLaunched(true);
-              // Build URL with journey_id if available
               const baseUrl = "/interview-prep";
-              const url = journeyId ? `${baseUrl}?journey_id=${journeyId}` : baseUrl;
-              window.open(url, "_blank", "noopener,noreferrer");
+              const queryParams = new URLSearchParams();
+              if (journeyId) queryParams.set("journey_id", journeyId);
+              if (categorySlug) queryParams.set("category_slug", categorySlug);
+              const qs = queryParams.toString();
+              const url = qs ? `${baseUrl}?${qs}` : baseUrl;
+              setToolHref(url);
             }}
-            className="w-full p-4 bg-[#3b7dd8] text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[#3b7dd8] transition-all shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:-translate-y-0.5 active:translate-y-0"
+            className="w-full p-4 bg-[#3b7dd8] text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[#3b7dd8] transition-all shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
           >
             <span>Launch Interview Prep Tool</span>
             <ExternalLink size={15} strokeWidth={2.5} />
@@ -80,9 +145,9 @@ export const InterviewPrepTool: React.FC<InterviewPrepToolProps> = ({
       )}
 
       {/* Readiness Grid */}
-      {tool.readiness_grid && (
+      {readinessGrid && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-[22px]">
-          {tool.readiness_grid.map((card: any, idx: number) => (
+          {readinessGrid.map((card: any, idx: number) => (
             <div
               key={idx}
               className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-4.5"
@@ -102,6 +167,17 @@ export const InterviewPrepTool: React.FC<InterviewPrepToolProps> = ({
           ))}
         </div>
       )}
+
+      {/* Tool Overlay */}
+      <ToolPageOverlay
+        toolHref={toolHref}
+        onClose={() => setToolHref(null)}
+        showJourneyHeader
+        tier={effectiveTier}
+        plan={plan}
+        toolProps={{ journeyId, categorySlug, journeyCategory, journeyTier: effectiveTier }}
+      />
     </div>
   );
 };
+

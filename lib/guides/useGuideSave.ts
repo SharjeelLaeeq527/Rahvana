@@ -1,14 +1,19 @@
 import { useState } from "react";
 import { useToast } from "@/app/components/shared/ToastProvider";
+import { useCandidate } from "@/app/context/CandidateContext";
+import { patchGuideSessionCache } from "./useGuideSession";
 
 export function useGuideSave() {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const { showToast } = useToast();
+  const { activeCandidateId } = useCandidate();
 
-  const saveGuide = async (slug: string) => {
+  const saveGuide = async (slug: string, explicitCandidateId?: string) => {
     setSaving(true);
     setSaveError(null);
+
+    const candidateId = explicitCandidateId || activeCandidateId || "candidate-1";
 
     try {
       const response = await fetch("/api/guides/save", {
@@ -16,7 +21,7 @@ export function useGuideSave() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ slug }),
+        body: JSON.stringify({ slug, candidateId }),
       });
 
       if (!response.ok) {
@@ -25,8 +30,32 @@ export function useGuideSave() {
       }
 
       const result = await response.json();
-      console.log("Guide saved successfully:", result);
       showToast("Guide saved to My Guides successfully!", "success");
+
+      // Update local storage cache to mark saved
+      if (typeof window !== "undefined") {
+        try {
+          const raw = localStorage.getItem(`rahvana_guide_${slug}_${candidateId}`);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            parsed.saved = true;
+            localStorage.setItem(`rahvana_guide_${slug}_${candidateId}`, JSON.stringify(parsed));
+            patchGuideSessionCache(slug, candidateId, { session: parsed });
+
+            const listRaw = localStorage.getItem(`rahvana_guide_sessions_${candidateId}`);
+            const list = listRaw ? JSON.parse(listRaw) : [];
+            const filtered = list.filter(
+              (s: any) => (s.guides?.slug && s.guides.slug !== slug) && s.id !== parsed.id
+            );
+            localStorage.setItem(
+              `rahvana_guide_sessions_${candidateId}`,
+              JSON.stringify([parsed, ...filtered])
+            );
+          }
+        } catch {
+          // Ignore
+        }
+      }
 
       return result;
     } catch (error) {

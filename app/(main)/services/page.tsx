@@ -2,10 +2,22 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
-import { Search, ArrowRight, ChevronDown, X, Shield, Calendar } from "lucide-react";
+import {
+  Search,
+  ArrowRight,
+  ChevronDown,
+  X,
+  Shield,
+  Calendar,
+  Info,
+  Video,
+  Coins,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { NAV_DATA } from "@/app/components/layout/navigationData";
+import { getServiceCatalogItem, withPreviewMode } from "@/lib/wallet/resourceMapping";
+import type { WalletCatalogItem } from "@/lib/wallet/catalog";
+import { CreditLaunchModal } from "@/app/components/wallet/CreditLaunchModal";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,10 +31,21 @@ import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import AddResourceCard from "@/components/resources/AddResourceCard";
 import ResourceSectionHeader from "@/components/resources/ResourceSectionHeader";
 import StatCard from "@/app/components/shared/StatCard";
+import { ExpandableTooltip } from "@/app/components/shared/ExpandableTooltip";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Loader } from "@/components/ui/spinner";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 import { useQuickAccess } from "@/app/context/QuickAccessContext";
+import { useCandidate } from "@/app/context/CandidateContext";
+import PccRequestCard, { type PccRequestRow } from "@/components/services/PccRequestCard";
+import MedicalAppointmentCard, {
+  type MedicalAppointmentRow,
+} from "@/components/services/MedicalAppointmentCard";
+import ConsultationRequestCard, {
+  type ConsultationRow,
+} from "@/components/services/ConsultationRequestCard";
+import CreditTypeIcon from "@/components/resources/CreditTypeIcon";
+import CreditInfoTooltip from "@/components/resources/CreditInfoTooltip";
 
 // --- Types ---
 interface Service {
@@ -38,38 +61,13 @@ interface Service {
   entitlementFeature?: string;
 }
 
-interface PCCRequest {
-  id: string;
-  request_id: string;
-  full_name: string;
-  status: string;
-  district: string;
-  purpose: string;
-  province: string;
-  admin_notes?: string;
-  created_at?: string;
-}
+// Request row types now live in the shared card components (single source of truth).
+type PCCRequest = PccRequestRow;
 
-interface MedicalAppointment {
-  id: string;
-  medical_website?: string;
-  location: string;
-  status: string;
-  full_name: string;
-  passport_number?: string;
-  preferred_date?: string;
-  preferred_time?: string;
-  notes?: string;
-  admin_notes?: string;
-  created_at?: string;
-}
+type MedicalAppointment = MedicalAppointmentRow;
 
-interface ConsultationBooking {
-  id: string;
-  selected_slot: string;
-  status: string;
-  created_at?: string;
-}
+// 7.11 — single source of truth for the row shape lives in the shared card component.
+type ConsultationBooking = ConsultationRow;
 
 interface TranslationDocument {
   id: string;
@@ -82,10 +80,14 @@ interface TranslationDocument {
  */
 const SERVICE_ENTITLEMENT_MAP: Record<string, string> = {
   "book-a-consultation": "expert_consultation",
+  "expert-consultation": "expert_consultation",
   // "expert-case-review":           "expert_doc_review",
   "pcc-filing-service-, -sindh": "pcc_filing",
+  "pcc-filing-service,-sindh": "pcc_filing",
+  "pcc-filing-service": "pcc_filing",
   "book-medical-appointment": "medical_booking",
   "urdu-→-english-translation": "document_translation",
+  "document-translation": "document_translation",
 };
 /** Maps service ID → minimum required plan tier */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -112,6 +114,10 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
   const [selectedCategoryId, setSelectedCategoryId] = useState("All");
   const [visibleCount, setVisibleCount] = useState(7); // Default to all
   const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
+  const [launchTarget, setLaunchTarget] = useState<{
+    item: WalletCatalogItem;
+    href: string;
+  } | null>(null);
   const plan = usePlan();
 
   const [pccRequests, setPccRequests] = useState<PCCRequest[]>([]);
@@ -120,7 +126,11 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
   const [translationDocuments, setTranslationDocuments] = useState<TranslationDocument[]>([]);
   const [loadingStatus, setLoadingStatus] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedModalType, setSelectedModalType] = useState<"pcc" | "medical" | null>(null);
+  const [selectedModalType, setSelectedModalType] = useState<
+    "pcc" | "medical" | "consultation" | null
+  >(null);
+
+  const { activeCandidate, activeCandidateId, isMultiCandidate } = useCandidate();
 
   useEffect(() => {
     if (!user) {
@@ -130,7 +140,11 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
 
     const fetchServicesStatus = async () => {
       try {
-        const res = await fetch("/api/user-dashboard/services-status");
+        setLoadingStatus(true);
+        const url = activeCandidateId
+          ? `/api/user-dashboard/services-status?candidateId=${encodeURIComponent(activeCandidateId)}`
+          : "/api/user-dashboard/services-status";
+        const res = await fetch(url);
         if (!res.ok) throw new Error("Failed to fetch services status");
         const data = await res.json();
         setPccRequests(data.pccRequests || []);
@@ -145,7 +159,7 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
     };
 
     fetchServicesStatus();
-  }, [user]);
+  }, [user, activeCandidateId]);
 
   const getActiveBookingData = (serviceId: string) => {
     if (!user) return null;
@@ -158,14 +172,16 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
           consultationBookings
             .filter(
               (b: ConsultationBooking) =>
-                new Date(b.selected_slot) >= now && b.status !== "canceled"
+                !!b.selected_slot &&
+                new Date(b.selected_slot as string) >= now &&
+                b.status !== "canceled"
             )
             .sort(
               (a: ConsultationBooking, b: ConsultationBooking) =>
-                new Date(a.selected_slot).getTime() - new Date(b.selected_slot).getTime()
+                new Date(a.selected_slot ?? 0).getTime() - new Date(b.selected_slot ?? 0).getTime()
             )[0] || consultationBookings[0];
 
-        const slotDate = upcoming ? new Date(upcoming.selected_slot) : null;
+        const slotDate = upcoming?.selected_slot ? new Date(upcoming.selected_slot) : null;
         const formattedDate = slotDate
           ? slotDate.toLocaleDateString(undefined, {
               weekday: "short",
@@ -202,6 +218,11 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
           count: consultationBookings.length,
           countLabel: consultationBookings.length === 1 ? "session booked" : "sessions booked",
           href: "/book-consultation?tab=requests",
+          extraContent: undefined as React.ReactNode,
+          onClick: () => {
+            setSelectedModalType("consultation");
+            setIsModalOpen(true);
+          },
           description: (
             <span className="block text-slate-600 dark:text-slate-300">
               Next session:{" "}
@@ -210,17 +231,10 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
               </span>{" "}
               <div className="flex items-center justify-between">
                 <span
-                  className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider mx-1 ${statusClass}`}
+                  className={`mx-1 inline-block rounded px-1.5 py-0.5 text-[10px] font-bold tracking-wider uppercase ${statusClass}`}
                 >
                   Status: {displayStatus}
                 </span>
-                <Link
-                  href="/book-consultation?tab=requests"
-                  onClick={(e) => e.stopPropagation()}
-                  className="text-teal-650 hover:text-teal-750 dark:text-teal-400 dark:hover:text-teal-350 font-semibold underline underline-offset-2 ml-1"
-                >
-                  Show all requests
-                </Link>
               </div>
             </span>
           ),
@@ -231,7 +245,11 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
         };
       }
     }
-    if (serviceId === "pcc-filing-service-, -sindh") {
+    if (
+      serviceId === "pcc-filing-service-, -sindh" ||
+      serviceId === "pcc-filing-service,-sindh" ||
+      serviceId === "pcc-filing-service"
+    ) {
       if (pccRequests.length > 0) {
         return {
           count: pccRequests.length,
@@ -411,21 +429,16 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
     .sort((a, b) => a.title.localeCompare(b.title));
 
   // "My Resources" (embedded) view splits the catalog into two sections:
-  //  • "My Services"     — services the user owns (plan/add-ons) OR has an active booking
-  //  • "Browse Services" — everything else, shown as locked/"Unlock" cards to explore
-  const isOwned = (feature?: string) => !feature || (!plan.isLoading && !plan.isLocked(feature));
+  //  • "My Services"     — services the user has an active request or booking for
+  //  • "Browse Services" — all other services with Preview & Launch dual CTAs
   const hasBooking = (service: Service) => getActiveBookingData(service.id) !== null;
-  // A service with an active request/booking belongs in "My Services" even if locked.
-  const isMine = (service: Service) => isOwned(service.entitlementFeature) || hasBooking(service);
-  const ownedServices = filteredServices.filter(isMine);
-  const browseServices = filteredServices.filter((service) => !isMine(service));
-  // Embedded "My Resources" shows owned/booked in the first grid; the standalone
-  // page shows the full filtered list.
-  const displayServices = isEmbedded ? ownedServices : filteredServices;
+  const bookedServices = filteredServices.filter(hasBooking);
+  const browseServices = filteredServices.filter((service) => !hasBooking(service));
+  const displayServices = isEmbedded ? bookedServices : filteredServices;
 
   return (
     <div
-      className={`bg-background text-foreground font-sans overflow-x-hidden selection:bg-primary selection:text-primary-foreground ${
+      className={`bg-background text-foreground selection:bg-primary selection:text-primary-foreground overflow-x-hidden font-sans ${
         isEmbedded ? "" : "pt-16"
       }`}
     >
@@ -434,70 +447,94 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
         <UpgradeModal feature={upgradeModalFeature} onClose={() => setUpgradeModalFeature(null)} />
       )}
 
+      {launchTarget && (
+        <CreditLaunchModal
+          item={launchTarget.item}
+          href={launchTarget.href}
+          onClose={() => setLaunchTarget(null)}
+        />
+      )}
+
       {/* Ambient Glow */}
-      <div className="fixed top-0 left-0 w-full h-full pointer-events-none -z-10">
-        <div className="absolute top-[10%] left-[15%] w-[500px] h-[500px] bg-[#0d7377]/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-[20%] right-[10%] w-[600px] h-[600px] bg-[#32e0c4]/5 rounded-full blur-3xl" />
+      <div className="pointer-events-none fixed top-0 left-0 -z-10 h-full w-full">
+        <div className="absolute top-[10%] left-[15%] h-[500px] w-[500px] rounded-full bg-[#0d7377]/5 blur-3xl" />
+        <div className="absolute right-[10%] bottom-[20%] h-[600px] w-[600px] rounded-full bg-[#32e0c4]/5 blur-3xl" />
       </div>
 
-      <div className="w-full site-main-px site-main-py">
+      <div className="mx-auto w-full px-6 py-8">
         {/* Hero Section — hidden in the embedded "My Resources" view */}
         {!isEmbedded && (
-          <section className={`text-center mb-5 md:mb-10 pt-1`}>
-            <h1 className="text-3xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-linear-to-r from-foreground to-muted-foreground animate-fade-up">
+          <section className={`mb-4 pt-1 text-center md:mb-6`}>
+            <h1 className="from-foreground to-muted-foreground animate-fade-up mb-4 bg-linear-to-r bg-clip-text text-3xl font-bold text-transparent md:text-5xl">
               {t("pages.services.heroTitle")}
             </h1>
-            <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto animate-fade-up [animation-delay:100ms]">
+            <p className="text-muted-foreground animate-fade-up mx-auto max-w-2xl text-base [animation-delay:100ms] md:text-lg">
               {t("pages.services.heroDescription")}
             </p>
           </section>
         )}
 
+        {/* Active Candidate Context Indicator (Global Switcher reactive) */}
+        {isMultiCandidate && (
+          <div className="mb-6 flex justify-center">
+            <div className="inline-flex items-center gap-2 rounded-full border border-teal-200 bg-teal-50/90 px-3.5 py-1.5 text-xs font-semibold text-teal-800 shadow-sm backdrop-blur-sm dark:border-teal-900/60 dark:bg-teal-950/40 dark:text-teal-300">
+              <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-teal-500" />
+              <span>
+                Showing service requests & applications for:{" "}
+                <strong className="text-teal-950 dark:text-teal-100">
+                  {activeCandidate.label || "Beneficiary"} (
+                  {activeCandidate.fullName || "Primary Candidate"})
+                </strong>
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* Search Bar */}
         {!isEmbedded && (
-          <div className="relative max-w-lg mx-auto mb-10 animate-scale-in [animation-delay:200ms]">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 pointer-events-none" />
+          <div className="animate-scale-in relative mx-auto mb-10 max-w-lg [animation-delay:200ms]">
+            <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2" />
             <input
               type="text"
               placeholder={t("pages.services.searchPlaceholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-card border-2 border-border pl-11 pr-4 py-3 rounded-full text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all shadow-sm placeholder:text-muted-foreground"
+              className="bg-card border-border text-foreground focus:border-primary focus:ring-primary/10 placeholder:text-muted-foreground w-full rounded-full border-2 py-3 pr-4 pl-11 shadow-sm transition-all focus:ring-4 focus:outline-none"
             />
           </div>
         )}
 
         {/* Categories — hidden in the embedded "My Resources" view */}
         {!isEmbedded && (
-          <div ref={containerRef} className="relative w-full mb-8 flex justify-center">
+          <div ref={containerRef} className="relative mb-8 flex w-full justify-center">
             {/* Hidden container for measuring */}
             <div
               ref={measureRef}
               aria-hidden="true"
-              className="absolute top-0 left-0 w-full flex flex-wrap gap-3 pointer-events-none opacity-0 z-[-1]"
+              className="pointer-events-none absolute top-0 left-0 z-[-1] flex w-full flex-wrap gap-3 opacity-0"
             >
               {/* Render all categories to measure them */}
               {categories.map((cat) => (
                 <div
                   key={cat.id}
-                  className="px-5 py-2.5 text-sm font-medium whitespace-nowrap border"
+                  className="border px-5 py-2.5 text-sm font-medium whitespace-nowrap"
                 >
                   {cat.label}
                 </div>
               ))}
               {/* Force render the More button to measure it */}
-              <div className="px-5 py-2.5 text-sm font-medium whitespace-nowrap border flex items-center gap-1">
-                {t("pages.services.more")} <ChevronDown className="w-4 h-4 ml-1" />
+              <div className="flex items-center gap-1 border px-5 py-2.5 text-sm font-medium whitespace-nowrap">
+                {t("pages.services.more")} <ChevronDown className="ml-1 h-4 w-4" />
               </div>
             </div>
 
             {/* Visible Container */}
-            <div className="flex flex-wrap gap-3 animate-fade-in [animation-delay:300ms]">
+            <div className="animate-fade-in flex flex-wrap gap-3 [animation-delay:300ms]">
               {visibleCategories.map((cat) => (
                 <button
                   key={cat.id}
                   onClick={() => setSelectedCategoryId(cat.id)}
-                  className={`px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap border transition-all duration-200 ${
+                  className={`rounded-full border px-5 py-2.5 text-sm font-medium whitespace-nowrap transition-all duration-200 ${
                     selectedCategoryId === cat.id
                       ? "bg-primary text-primary-foreground border-primary shadow-md"
                       : "bg-card text-muted-foreground border-border hover:border-primary hover:bg-primary/5 hover:text-primary"
@@ -511,13 +548,13 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button
-                      className={`px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap border transition-all duration-200 flex items-center gap-1 ${
+                      className={`flex items-center gap-1 rounded-full border px-5 py-2.5 text-sm font-medium whitespace-nowrap transition-all duration-200 ${
                         isMoreSelected
                           ? "bg-primary text-primary-foreground border-primary shadow-md"
                           : "bg-card text-muted-foreground border-border hover:border-primary hover:bg-primary/5 hover:text-primary"
                       }`}
                     >
-                      {t("pages.services.more")} <ChevronDown className="w-4 h-4 ml-1" />
+                      {t("pages.services.more")} <ChevronDown className="ml-1 h-4 w-4" />
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start" className="w-[200px]">
@@ -541,17 +578,28 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
           </div>
         )}
 
+        {/* Journey-scope explainer — embedded "My Resources" view only. Mirrors the banner in EmbeddedToolContainer so both surfaces tell the same story. */}
+        {isEmbedded && (
+          <div className="-mt-8">
+            <ExpandableTooltip
+              icon={<Info size={12} />}
+              title="Requests made from a Journey"
+              message="Requests you make while working on a Journey are saved there. This tab only shows requests you made outside of a Journey."
+              defaultOpen={true}
+            />
+          </div>
+        )}
+
         {/* My Services — owned or with an active booking (embedded view only) */}
         {isEmbedded && (
           <ResourceSectionHeader
             title="My Services"
             subtitle="Services you've unlocked or already have an active request for."
-            className="-mt-16"
           />
         )}
 
         {/* Services Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-6 pt-6">
+        <div className="grid grid-cols-1 gap-x-6 gap-y-10 pt-6 md:grid-cols-2 lg:grid-cols-3">
           {displayServices.map((service, index) => {
             const bookingData = getActiveBookingData(service.id);
             if (bookingData) {
@@ -583,9 +631,13 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
                           icon_name: (() => {
                             const mapping: Record<string, string> = {
                               "book-a-consultation": "Briefcase",
+                              "expert-consultation": "Briefcase",
                               "pcc-filing-service-, -sindh": "Shield",
+                              "pcc-filing-service,-sindh": "Shield",
+                              "pcc-filing-service": "Shield",
                               "book-medical-appointment": "Clock",
                               "urdu-→-english-translation": "Files",
+                              "document-translation": "Files",
                             };
                             return mapping[service.id] || "Briefcase";
                           })(),
@@ -612,18 +664,19 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
                 service={service}
                 index={index}
                 onLockedClick={(feature) => setUpgradeModalFeature(feature)}
+                onLaunch={() => router.push(service.href)}
               />
             );
           })}
-          {isEmbedded && (
+          {/* {isEmbedded && (
             <AddResourceCard
               href="/pricing?mode=services"
               label="Add service"
               index={displayServices.length}
             />
-          )}
+          )} */}
           {!isEmbedded && displayServices.length === 0 && (
-            <div className="col-span-full text-center py-12 text-muted-foreground">
+            <div className="text-muted-foreground col-span-full py-12 text-center">
               {t("pages.services.noResults")}
             </div>
           )}
@@ -634,15 +687,16 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
           <>
             <ResourceSectionHeader
               title="Browse Services"
-              subtitle="Explore more services, unlock them when you're ready."
+              subtitle="Explore more services, preview them or book with credits."
             />
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-6 pt-6">
+            <div className="grid grid-cols-1 gap-x-6 gap-y-10 pt-6 md:grid-cols-2 lg:grid-cols-3">
               {browseServices.map((service, index) => (
                 <ServiceCard
                   key={service.id}
                   service={service}
                   index={index}
                   onLockedClick={(feature) => setUpgradeModalFeature(feature)}
+                  onLaunch={() => router.push(service.href)}
                 />
               ))}
             </div>
@@ -652,11 +706,11 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
 
       {/* Dialog modal to show requests and statuses */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="w-[calc(100%-2rem)] md:w-full max-w-2xl bg-white rounded-2xl p-0 shadow-xl max-h-[85vh] overflow-hidden border border-gray-100 flex flex-col text-slate-900">
+        <DialogContent className="flex max-h-[85vh] w-[calc(100%-2rem)] max-w-2xl flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white p-0 text-slate-900 shadow-xl md:w-full">
           {/* Close button in top-right */}
           <button
             onClick={() => setIsModalOpen(false)}
-            className="absolute right-4 top-4 rounded-full p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors focus:outline-none z-10060 cursor-pointer"
+            className="absolute top-4 right-4 z-10060 cursor-pointer rounded-full p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 focus:outline-none"
             aria-label="Close"
           >
             <X className="h-5 w-5" />
@@ -665,29 +719,38 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
           {selectedModalType === "pcc" ? (
             <>
               {/* Static Header */}
-              <div className="flex items-center gap-3 border-b border-gray-100 px-6 py-5 shrink-0 pr-12">
-                <Shield className="h-6 w-6 text-teal-650 flex-shrink-0" />
-                <div>
-                  <DialogTitle className="text-xl font-bold text-gray-900">
-                    Sindh PCC Requests
-                  </DialogTitle>
-                  <DialogDescription className="text-sm text-gray-500 mt-1">
-                    Track the status of your Police Character Certificate filing for Sindh.
-                  </DialogDescription>
+              <div className="flex shrink-0 items-center justify-between border-b border-gray-100 px-6 py-5 pr-12">
+                <div className="flex items-center gap-3">
+                  <Shield className="text-teal-650 h-6 w-6 flex-shrink-0" />
+                  <div>
+                    <DialogTitle className="text-xl font-bold text-gray-900">
+                      Sindh PCC Requests
+                    </DialogTitle>
+                    <DialogDescription className="mt-1 text-sm text-gray-500">
+                      Track the status of your Police Character Certificate filing for Sindh.
+                    </DialogDescription>
+                  </div>
                 </div>
+                {isMultiCandidate && (
+                  <span className="hidden items-center gap-1.5 rounded-full border border-teal-200 bg-teal-50 px-2.5 py-1 text-xs font-semibold text-teal-800 sm:inline-flex">
+                    <span className="h-1.5 w-1.5 rounded-full bg-teal-500" />
+                    {activeCandidate.label || "Beneficiary"}:{" "}
+                    {activeCandidate.fullName || "Primary"}
+                  </span>
+                )}
               </div>
 
               {/* Scrollable Content */}
-              <div className="flex-1 overflow-y-auto scrollbar-premium px-6 py-5">
+              <div className="scrollbar-premium flex-1 overflow-y-auto px-6 py-5">
                 {loadingStatus ? (
                   <div className="flex justify-center py-8">
                     <Loader size="md" />
                   </div>
                 ) : pccRequests.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Shield className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                    <p className="text-gray-600 font-medium">No active PCC requests found</p>
-                    <p className="text-sm text-gray-400 mt-1 mb-4">
+                  <div className="py-8 text-center">
+                    <Shield className="mx-auto mb-3 h-12 w-12 text-gray-300" />
+                    <p className="font-medium text-gray-600">No active PCC requests found</p>
+                    <p className="mt-1 mb-4 text-sm text-gray-400">
                       You haven&apos;t requested any Sindh PCC filing yet.
                     </p>
                     <button
@@ -695,7 +758,7 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
                         setIsModalOpen(false);
                         router.push("/police-verification/apply?province=Sindh");
                       }}
-                      className="inline-flex items-center justify-center px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-medium text-sm transition cursor-pointer"
+                      className="inline-flex cursor-pointer items-center justify-center rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-teal-700"
                     >
                       Apply for PCC Sindh
                     </button>
@@ -703,51 +766,63 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
                 ) : (
                   <div className="space-y-4">
                     {pccRequests.map((req) => (
-                      <div
-                        key={req.id}
-                        className="border border-gray-200 rounded-xl p-4 bg-gray-50/50 hover:bg-gray-50 transition"
-                      >
-                        <div className="flex justify-between items-start mb-2">
-                          <div>
-                            <span className="font-mono text-xs font-bold text-teal-700 bg-teal-50 px-2 py-0.5 rounded">
-                              {req.request_id}
-                            </span>
-                            <h4 className="font-semibold text-gray-900 mt-1">{req.full_name}</h4>
-                          </div>
-                          <span
-                            className={`text-xs font-semibold px-2.5 py-0.5 rounded-full capitalize ${
-                              req.status === "completed"
-                                ? "bg-green-100 text-green-700"
-                                : req.status === "in_progress"
-                                  ? "bg-blue-100 text-blue-700"
-                                  : req.status === "action_required"
-                                    ? "bg-red-100 text-red-700"
-                                    : "bg-amber-100 text-amber-700"
-                            }`}
-                          >
-                            {req.status?.replace("_", " ") || "Pending"}
-                          </span>
-                        </div>
-                        <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-500 mt-2 border-t pt-2">
-                          <div>
-                            <span className="font-medium">District:</span> {req.district}
-                          </div>
-                          <div>
-                            <span className="font-medium">Purpose:</span> {req.purpose}
-                          </div>
-                          {req.created_at && (
-                            <div className="col-span-2 mt-1">
-                              <span className="font-medium">Filed On:</span>{" "}
-                              {new Date(req.created_at).toLocaleDateString(undefined, {
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                              })}
-                            </div>
-                          )}
-                        </div>
-                        {req.admin_notes && <CollapsibleAdminNotes notes={req.admin_notes} />}
-                      </div>
+                      <PccRequestCard key={req.id} req={req} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </>
+          ) : selectedModalType === "consultation" ? (
+            <>
+              {/* Static Header — same anatomy as the PCC / medical dialogs */}
+              <div className="flex shrink-0 items-center justify-between border-b border-gray-100 px-6 py-5 pr-12">
+                <div className="flex items-center gap-3">
+                  <Video className="h-6 w-6 flex-shrink-0 text-teal-600" />
+                  <div>
+                    <DialogTitle className="text-xl font-bold text-gray-900">
+                      Expert Consultations
+                    </DialogTitle>
+                    <DialogDescription className="mt-1 text-sm text-gray-500">
+                      Track the status of your booked expert consultation sessions.
+                    </DialogDescription>
+                  </div>
+                </div>
+                {isMultiCandidate && (
+                  <span className="hidden items-center gap-1.5 rounded-full border border-teal-200 bg-teal-50 px-2.5 py-1 text-xs font-semibold text-teal-800 sm:inline-flex">
+                    <span className="h-1.5 w-1.5 rounded-full bg-teal-500" />
+                    {activeCandidate.label || "Beneficiary"}:{" "}
+                    {activeCandidate.fullName || "Primary"}
+                  </span>
+                )}
+              </div>
+
+              {/* Scrollable Content */}
+              <div className="scrollbar-premium flex-1 overflow-y-auto px-6 py-5">
+                {loadingStatus ? (
+                  <div className="flex justify-center py-8">
+                    <Loader size="md" />
+                  </div>
+                ) : consultationBookings.length === 0 ? (
+                  <div className="py-8 text-center">
+                    <Video className="mx-auto mb-3 h-12 w-12 text-gray-300" />
+                    <p className="font-medium text-gray-600">No consultation bookings found</p>
+                    <p className="mt-1 mb-4 text-sm text-gray-400">
+                      You haven&apos;t booked an expert consultation yet.
+                    </p>
+                    <button
+                      onClick={() => {
+                        setIsModalOpen(false);
+                        router.push("/book-consultation");
+                      }}
+                      className="inline-flex cursor-pointer items-center justify-center rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-teal-700"
+                    >
+                      Book Consultation
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {consultationBookings.map((req) => (
+                      <ConsultationRequestCard key={req.id} req={req} />
                     ))}
                   </div>
                 )}
@@ -756,29 +831,38 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
           ) : (
             <>
               {/* Static Header */}
-              <div className="flex items-center gap-3 border-b border-gray-100 px-6 py-5 shrink-0 pr-12">
-                <Calendar className="h-6 w-6 text-emerald-600 flex-shrink-0" />
-                <div>
-                  <DialogTitle className="text-xl font-bold text-gray-900">
-                    Medical Appointments
-                  </DialogTitle>
-                  <DialogDescription className="text-sm text-gray-500 mt-1">
-                    Manage and view the status of your booked medical examinations.
-                  </DialogDescription>
+              <div className="flex shrink-0 items-center justify-between border-b border-gray-100 px-6 py-5 pr-12">
+                <div className="flex items-center gap-3">
+                  <Calendar className="h-6 w-6 flex-shrink-0 text-emerald-600" />
+                  <div>
+                    <DialogTitle className="text-xl font-bold text-gray-900">
+                      Medical Appointments
+                    </DialogTitle>
+                    <DialogDescription className="mt-1 text-sm text-gray-500">
+                      Manage and view the status of your booked medical examinations.
+                    </DialogDescription>
+                  </div>
                 </div>
+                {isMultiCandidate && (
+                  <span className="hidden items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-800 sm:inline-flex">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                    {activeCandidate.label || "Beneficiary"}:{" "}
+                    {activeCandidate.fullName || "Primary"}
+                  </span>
+                )}
               </div>
 
               {/* Scrollable Content */}
-              <div className="flex-1 overflow-y-auto scrollbar-premium px-6 py-5">
+              <div className="scrollbar-premium flex-1 overflow-y-auto px-6 py-5">
                 {loadingStatus ? (
                   <div className="flex justify-center py-8">
                     <Loader size="md" />
                   </div>
                 ) : medicalAppointments.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                    <p className="text-gray-600 font-medium">No medical appointments booked</p>
-                    <p className="text-sm text-gray-400 mt-1 mb-4">
+                  <div className="py-8 text-center">
+                    <Calendar className="mx-auto mb-3 h-12 w-12 text-gray-300" />
+                    <p className="font-medium text-gray-600">No medical appointments booked</p>
+                    <p className="mt-1 mb-4 text-sm text-gray-400">
                       You haven&apos;t scheduled a medical appointment yet.
                     </p>
                     <button
@@ -786,7 +870,7 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
                         setIsModalOpen(false);
                         router.push("/book-appointment");
                       }}
-                      className="inline-flex items-center justify-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium text-sm transition cursor-pointer"
+                      className="inline-flex cursor-pointer items-center justify-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-700"
                     >
                       Book Appointment
                     </button>
@@ -794,78 +878,7 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
                 ) : (
                   <div className="space-y-4">
                     {medicalAppointments.map((appointment) => (
-                      <div
-                        key={appointment.id}
-                        className="border border-gray-200 rounded-xl p-4 bg-gray-50/50 hover:bg-gray-50 transition"
-                      >
-                        <div className="flex justify-between items-start mb-2">
-                          <div>
-                            <span className="font-semibold text-gray-900">
-                              {appointment.medical_website || "Medical Examination"}
-                            </span>
-                            <p className="text-xs text-gray-500 capitalize mt-0.5">
-                              Location: {appointment.location}
-                            </p>
-                          </div>
-                          <span
-                            className={`text-xs font-semibold px-2.5 py-0.5 rounded-full capitalize ${
-                              appointment.status === "completed"
-                                ? "bg-green-100 text-green-700"
-                                : appointment.status === "in_progress"
-                                  ? "bg-blue-100 text-blue-700"
-                                  : appointment.status === "cancelled"
-                                    ? "bg-gray-100 text-gray-700"
-                                    : "bg-amber-100 text-amber-700"
-                            }`}
-                          >
-                            {appointment.status || "Pending"}
-                          </span>
-                        </div>
-                        <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-500 mt-2 border-t pt-2">
-                          <div>
-                            <span className="font-medium">Applicant:</span> {appointment.full_name}
-                          </div>
-                          <div>
-                            <span className="font-medium">Passport:</span>{" "}
-                            {appointment.passport_number || "N/A"}
-                          </div>
-                          <div>
-                            {appointment.preferred_date ? (
-                              <>
-                                <span className="font-medium">Appointment Date:</span>{" "}
-                                {new Date(appointment.preferred_date).toLocaleDateString(
-                                  undefined,
-                                  {
-                                    month: "short",
-                                    day: "numeric",
-                                    year: "numeric",
-                                  }
-                                )}
-                              </>
-                            ) : (
-                              "N/A"
-                            )}
-                          </div>
-                          <div>
-                            {appointment.preferred_time ? (
-                              <>
-                                <span className="font-medium">Appointment Time:</span>{" "}
-                                {appointment.preferred_time}
-                              </>
-                            ) : (
-                              "N/A"
-                            )}
-                          </div>
-                        </div>
-                        {appointment.notes && (
-                          <div className="mt-2 text-xs text-gray-600 bg-gray-100/50 p-2 rounded">
-                            <span className="font-semibold">Note:</span> {appointment.notes}
-                          </div>
-                        )}
-                        {appointment.admin_notes && (
-                          <CollapsibleAdminNotes notes={appointment.admin_notes} />
-                        )}
-                      </div>
+                      <MedicalAppointmentCard key={appointment.id} appointment={appointment} />
                     ))}
                   </div>
                 )}
@@ -938,73 +951,47 @@ function ServiceCard({
   service,
   index,
   onLockedClick,
+  onLaunch,
 }: {
   service: Service;
   index: number;
   onLockedClick: (feature: string) => void;
+  onLaunch: (item: WalletCatalogItem) => void;
 }) {
   const { t } = useLanguage();
-  const plan = usePlan();
   const styles = CATEGORY_STYLES[service.categoryId] || CATEGORY_STYLES["Default"];
   const { isInQuickAccess } = useQuickAccess();
 
-  // Entitlement check
-  const featureLocked =
-    !!service.entitlementFeature && !plan.isLoading && plan.isLocked(service.entitlementFeature);
+  const catalogItem = getServiceCatalogItem(service.id);
+  const showDualCta = !!catalogItem && !service.disabled;
   const isNavigable = !service.disabled;
 
-  const isPinned = isInQuickAccess(`service-${service.id}`);
-
-  const CardWrapper = isNavigable ? Link : "div";
-
   const handleClick = (e: React.MouseEvent) => {
-    if (featureLocked && service.entitlementFeature) {
+    if (!showDualCta && service.entitlementFeature) {
       e.preventDefault();
       onLockedClick(service.entitlementFeature);
     }
   };
 
+  const CardWrapper = (showDualCta || !isNavigable ? "div" : Link) as React.ElementType;
+
   return (
     <CardWrapper
-      href={isNavigable ? service.href : "#"}
+      href={showDualCta ? undefined : isNavigable ? service.href : "#"}
       onClick={handleClick}
-      className={`group relative flex flex-col bg-card rounded-[30px] p-6 pt-7 mt-6 mx-2 md:mx-0
-      transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]
-      ${
-        // isPinned
-        //   ? "border-[3px] border-[#0d7377] dark:border-[#32e0c4] shadow-md hover:-translate-y-2 hover:shadow-xl cursor-pointer"
-        //   : 
-          featureLocked
-            ? "border border-border cursor-pointer shadow-md hover:-translate-y-1"
-            : isNavigable
-              ? "border border-border hover:-translate-y-2 hover:shadow-xl cursor-pointer"
-              : "border border-border opacity-80 cursor-not-allowed grayscale-[0.5]"
-      }
-      animate-fade-up`}
+      className={`group bg-card relative mx-2 mt-6 flex flex-col rounded-[30px] p-6 pt-7 transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] md:mx-0 ${
+        isNavigable
+          ? "border-border cursor-pointer border hover:-translate-y-2 hover:shadow-xl"
+          : "border-border cursor-not-allowed border opacity-80 grayscale-[0.5]"
+      } animate-fade-up`}
       style={{ animationDelay: `${index * 100}ms` }}
     >
-      {/* Ribbon for locked cards */}
-      {featureLocked && (
-        <div className="absolute -top-21 -right-12 sm:-right-3 z-20 pointer-events-none">
-          <Image
-            src="/icons/ribbon.png"
-            alt="Premium ribbon"
-            width={260}
-            height={320}
-            priority={false}
-            className="w-40 h-56 object-contain drop-shadow-lg"
-          />
-        </div>
-      )}
-
       {/* Floating Icon Box */}
       <div
-        className={`absolute -top-6 left-6 w-12 h-12 md:w-14 md:h-14 rounded-2xl border flex items-center justify-center shadow-md transition-all duration-400 z-10
-        group-hover:-translate-y-1 group-hover:-rotate-3 group-hover:shadow-lg
-        ${styles.iconBox}`}
+        className={`absolute -top-6 left-6 z-10 flex h-12 w-12 items-center justify-center rounded-2xl border shadow-md transition-all duration-400 group-hover:-translate-y-1 group-hover:-rotate-3 group-hover:shadow-lg md:h-14 md:w-14 ${styles.iconBox}`}
       >
         <div
-          className={`absolute inset-1 rounded-[10px] -z-10 transition-colors duration-300 ${styles.innerBox}`}
+          className={`absolute inset-1 -z-10 rounded-[10px] transition-colors duration-300 ${styles.innerBox}`}
         />
         {React.isValidElement(service.icon)
           ? React.cloneElement(service.icon as React.ReactElement<{ className?: string }>, {
@@ -1013,26 +1000,32 @@ function ServiceCard({
           : service.icon}
       </div>
 
-      {/* (Removed tier badge — ribbon now indicates locked state) */}
-
       {/* Hover overlay with light category-specific background & border */}
-      {!featureLocked && (
-        <div
-          className={`absolute inset-0 rounded-[30px] border border-transparent transition-all duration-400 pointer-events-none z-0 ${styles.hoverBg} ${styles.hoverBorder}`}
-        />
-      )}
+      <div
+        className={`pointer-events-none absolute inset-0 z-0 rounded-[30px] border border-transparent transition-all duration-400 ${styles.hoverBg} ${styles.hoverBorder}`}
+      />
 
       {/* Radial Glow */}
-      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-0 bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(13,115,119,0.04),transparent_40%)] dark:bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(255,255,255,0.03),transparent_40%)]" />
+      <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(13,115,119,0.04),transparent_40%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100 dark:bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(255,255,255,0.03),transparent_40%)]" />
 
       {/* Content */}
-      <div className="relative z-10 flex flex-col grow pt-2">
-        <div className="flex justify-between items-start gap-3">
-          <h3 className="text-xl font-bold text-foreground mb-1 transition-colors">
-            {service.title}
-          </h3>
-          {!featureLocked && (
-            <div className="relative z-50 shrink-0">
+      <div className="relative z-10 flex grow flex-col pt-2">
+        <div className="flex items-start justify-between gap-3">
+          {/* Left: Service title */}
+          <div className="min-w-0 flex-1">
+            <h3 className="text-foreground mb-1 text-xl font-bold transition-colors">
+              {service.title}
+            </h3>
+          </div>
+
+          {/* Right: Credit info + Quick Access */}
+          <div className="flex shrink-0 items-center gap-1">
+            <CreditInfoTooltip
+              message="Each booking or request requires credits. You’ll need to pay again for every new request."
+              side="top"
+            />
+
+            <div className="relative z-50">
               <QuickAccessButton
                 item={{
                   id: `service-${service.id}`,
@@ -1041,70 +1034,83 @@ function ServiceCard({
                   icon_name: (() => {
                     const mapping: Record<string, string> = {
                       "book-a-consultation": "Briefcase",
+                      "expert-consultation": "Briefcase",
                       "pcc-filing-service-, -sindh": "Shield",
+                      "pcc-filing-service,-sindh": "Shield",
+                      "pcc-filing-service": "Shield",
                       "book-medical-appointment": "Clock",
                       "urdu-→-english-translation": "Files",
+                      "document-translation": "Files",
                     };
+
                     return mapping[service.id] || "Briefcase";
                   })(),
                 }}
                 mode="icon"
               />
             </div>
-          )}
+          </div>
         </div>
         <div className="mb-3">
-          <span className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground/80 bg-muted px-2 py-0.5 rounded">
+          <span className="text-muted-foreground/80 bg-muted rounded px-2 py-0.5 text-[11px] font-bold tracking-wide uppercase">
             {service.categoryLabel}
           </span>
         </div>
-        <p className="text-slate-900 dark:text-white text-sm leading-relaxed mb-6 grow">
+        <p className="mb-6 grow text-sm leading-relaxed text-slate-900 dark:text-white">
           {service.description}
         </p>
       </div>
 
       {/* Footer / Action */}
-      <div className="relative z-10 flex items-center justify-between pt-4 border-t border-border mt-auto">
-        <span className="text-xs font-medium text-muted-foreground flex items-center gap-1" />
+      <div className="border-border relative z-10 mt-auto flex flex-col border-t pt-3">
+        {showDualCta && catalogItem ? (
+          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2.5">
+            <div className="flex items-center gap-2">
+              <Link
+                href={
+                  catalogItem.legacyAddonId
+                    ? `/resources/${catalogItem.legacyAddonId}`
+                    : withPreviewMode(service.href)
+                }
+                onClick={(e) => e.stopPropagation()}
+                className="inline-flex h-9 items-center rounded-lg border border-slate-200 bg-white px-3.5 text-[13px] font-semibold whitespace-nowrap text-slate-700 transition-colors hover:border-[#0d7377]/40 hover:text-[#0d7377]"
+              >
+                {catalogItem.legacyAddonId ? "View Details" : "Preview Guide"}
+              </Link>
+              <button
+                type="button"
+                onClick={() => onLaunch(catalogItem)}
+                aria-label={`Launch ${service.title} for ${catalogItem.credits} credits`}
+                className="inline-flex h-9 items-center rounded-lg bg-[#0d7377] px-4 text-[13px] font-semibold whitespace-nowrap text-white transition-colors hover:bg-[#0a5c5f]"
+              >
+                Launch
+              </button>
+            </div>
 
-        {featureLocked ? (
-          <span aria-hidden="true" className="h-5" />
-        ) : isNavigable ? (
-          <span
-            className={`text-sm font-semibold flex items-center gap-1.5 group-hover:underline decoration-2 underline-offset-2 ${styles.link}`}
-          >
-            {t("pages.services.openService")} <ArrowRight className="w-4 h-4" />
-          </span>
+            <div className="flex min-w-0 items-center gap-2">
+              <CreditTypeIcon kind="services" size={22} />
+              <span>{catalogItem.credits}</span>
+            </div>
+          </div>
         ) : (
-          <span className="text-sm font-semibold text-muted-foreground/50 flex items-center gap-1.5 cursor-not-allowed">
-            {t("pages.services.comingSoon")}
-          </span>
+          <div className="flex items-center justify-between">
+            <span className="text-muted-foreground flex items-center gap-1 text-xs font-medium" />
+            {isNavigable ? (
+              <span
+                className={`flex items-center gap-1.5 text-sm font-semibold decoration-2 underline-offset-2 group-hover:underline ${styles.link}`}
+              >
+                {t("pages.services.openService")} <ArrowRight className="h-4 w-4" />
+              </span>
+            ) : (
+              <span className="text-muted-foreground/50 flex cursor-not-allowed items-center gap-1.5 text-sm font-semibold">
+                {t("pages.services.comingSoon")}
+              </span>
+            )}
+          </div>
         )}
       </div>
     </CardWrapper>
   );
 }
 
-// --- Collapsible Admin Notes component ---
-function CollapsibleAdminNotes({ notes }: { notes: string }) {
-  const [isOpen, setIsOpen] = useState(false);
-  return (
-    <div className="mt-2 border border-teal-100 rounded-lg overflow-hidden">
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between px-3 py-2 bg-teal-50/70 hover:bg-teal-50 text-xs font-bold text-teal-800 transition-colors focus:outline-none"
-      >
-        <span>Admin Message</span>
-        <ChevronDown
-          className={`w-3.5 h-3.5 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
-        />
-      </button>
-      {isOpen && (
-        <div className="px-3 py-2.5 bg-white text-xs text-slate-700 border-t border-teal-50 leading-relaxed">
-          {notes}
-        </div>
-      )}
-    </div>
-  );
-}
+// --- Collapsible Admin Notes: shared component from @/components/services/PccRequestCard ---

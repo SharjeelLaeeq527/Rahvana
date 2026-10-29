@@ -14,8 +14,8 @@
  * the only option that works across serverless/multi-instance hosts. When
  * Upstash is absent we fall back to a best-effort in-process lock (correct only
  * within a single instance). Either way this is defence-in-depth: the
- * verify-session / webhook `cancelDuplicateSubscriptions` cleanup is the
- * backstop that guarantees a single live sub even if the lock fails open.
+ * verify-session / webhook `cancelSupersededSubscriptions` cleanup is the
+ * backstop that guarantees a single live sub per journey even if the lock fails open.
  *
  * The lock auto-expires after LOCK_TTL_MS, so a crash mid-checkout can never
  * deadlock a user out of purchasing.

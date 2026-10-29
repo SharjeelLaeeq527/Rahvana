@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { IR5_ENABLED } from "@/lib/feature-flags";
+import { JourneyLayoutClient } from "./JourneyLayoutClient";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://rahvana.com";
 
@@ -210,7 +211,9 @@ export default async function VisaJourneyLayout({
   return (
     <>
       {howToSchema && <JsonLd schema={howToSchema} />}
-      {children}
+      <JourneyLayoutClient journeySlug={slug}>
+        {children}
+      </JourneyLayoutClient>
     </>
   );
 }

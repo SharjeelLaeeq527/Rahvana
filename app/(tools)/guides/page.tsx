@@ -11,7 +11,7 @@ import {
   Globe,
   Syringe,
   ChevronDown,
-  LayoutGrid,
+  // Coins, // Unused now — replaced by <CreditTypeIcon kind="guides" /> (kept for reference)
   ArrowRight,
   BookOpen,
   Clock,
@@ -36,7 +36,24 @@ import { useAuth } from "@/app/context/AuthContext";
 import { motion } from "framer-motion";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
+import { useWallet } from "@/app/context/WalletContext";
+import { getGuideCatalogItem, withPreviewMode } from "@/lib/wallet/resourceMapping";
+import { useJourneyEnvironment } from "@/app/context/JourneyEnvironmentContext";
+import CreditTypeIcon from "@/components/resources/CreditTypeIcon";
+import CreditInfoTooltip from "@/components/resources/CreditInfoTooltip";
+import type { WalletCatalogItem } from "@/lib/wallet/catalog";
+import { CreditLaunchModal } from "@/app/components/wallet/CreditLaunchModal";
 import { useQuickAccess } from "@/app/context/QuickAccessContext";
+
+import { useCandidate } from "@/app/context/CandidateContext";
+
+import {
+  GUIDE_REGISTRY,
+  GuideMetadata,
+  type GuideCategory as RegistryGuideCategory,
+  type GuideIconName,
+} from "@/lib/guides/guideRegistry";
+import { hasJourneyEntitlementForGuide } from "@/lib/guides/guideAccessService";
 
 interface UserGuideSession {
   id: string;
@@ -54,115 +71,27 @@ interface UserGuideSession {
 
 type GuideCategory = "Pakistan Document" | "Medical & Exam";
 
-interface Guide {
-  id: string;
-  title: string;
-  subtitle?: string;
-  description: string;
-  category: GuideCategory;
-  href: string;
+interface Guide extends GuideMetadata {
   icon: React.ElementType;
-  disabled?: boolean;
-  comingSoon?: boolean;
-  entitlementFeature?: string;
 }
 
-const GUIDES: Guide[] = [
-  {
-    id: "passport",
-    title: "Passport",
-    subtitle: "",
-    description:
-      "DGIP roadmap for MRP and ePassport applications, renewals, and lost or damaged cases.",
-    category: "Pakistan Document",
-    href: "/guides/passport-guide",
-    icon: Globe,
-    entitlementFeature: "guide_passport",
-  },
-  {
-    id: "police-verification",
-    icon: Shield,
-    title: "Police Character Certificate",
-    subtitle: "",
-    description:
-      "Province-wise PCC workflow with required documents, fee tiers, and verification steps.",
-    href: "/guides/police-verification-guide",
-    category: "Pakistan Document",
-    entitlementFeature: "guide_police",
-  },
-  {
-    id: "cnic",
-    title: "CNIC",
-    subtitle: "Computerized National Identity Card",
-    description:
-      "NADRA CNIC workflow for new issuance, corrections, and replacement or renewal applications.",
-    category: "Pakistan Document",
-    href: "/guides/cnic-guide",
-    icon: FileText,
-    entitlementFeature: "guide_cnic",
-  },
-  {
-    id: "birth-certificate",
-    title: "Birth Certificate",
-    subtitle: "",
-    description: "Union Council CBRC process for birth registration, correction, and replacement",
-    category: "Pakistan Document",
-    href: "/guides/birth-certificate-guide",
-    icon: FileText,
-    entitlementFeature: "guide_birth_cert",
-  },
-  {
-    id: "frc",
-    title: "FRC",
-    subtitle: "NADRA Family Registration Certificate",
-    description: "NADRA process to apply for an FRC and review registered family details.",
-    category: "Pakistan Document",
-    href: "/guides/frc-guide",
-    icon: Globe,
-    entitlementFeature: "guide_frc",
-  },
-  {
-    id: "marriage-certificate",
-    title: "Marriage Registration",
-    subtitle: "",
-    description:
-      "Nikah Nama registration through Union Council and NADRA MRC issuance with attestation pathway.",
-    category: "Pakistan Document",
-    href: "/guides/nikah-nama-guide",
-    icon: Heart,
-    entitlementFeature: "guide_nikah_nama",
-  },
-  {
-    id: "vaccinations",
-    title: "Polio Vaccination",
-    subtitle: "",
-    description: "Polio vaccination workflow with NIMS entry and travel certificate issuance.",
-    category: "Medical & Exam",
-    href: "/guides/polio-vaccination-guide",
-    icon: Syringe,
-    entitlementFeature: "polio_certificate",
-  },
-  {
-    id: "step-parent",
-    title: "Step-Parent",
-    subtitle: "USCIS Eligibility & Document Compilation",
-    description: "USCIS roadmap for sponsoring step-parents, marriage rules, and document requirements.",
-    category: "Pakistan Document",
-    href: "/guides/step-parent-guide",
-    icon: BookOpen,
-  },
-  {
-    id: "adoptive-parent",
-    title: "Adoptive Parent & Guardianship",
-    subtitle: "USCIS Eligibility & Document Requirements",
-    description: "USCIS adoption criteria, 2-year custody rule, and legal guardianship vs. U.S. adoption.",
-    category: "Pakistan Document",
-    href: "/guides/adoptive-parent-guide",
-    icon: BookOpen,
-  },
-];
+const ICON_MAP: Record<GuideIconName, React.ElementType> = {
+  Globe,
+  Shield,
+  FileText,
+  Heart,
+  Syringe,
+  BookOpen,
+  Users: BookOpen,
+};
+
+const GUIDES: Guide[] = GUIDE_REGISTRY.map((meta) => ({
+  ...meta,
+  icon: ICON_MAP[meta.iconName] || BookOpen,
+}));
 
 const CATEGORIES: ("All" | GuideCategory)[] = ["All", "Pakistan Document", "Medical & Exam"];
+
 
 // --- Tier-aware card styles ------------------------------------------------
 // Card border, shadow, and gradient border all follow the tier
@@ -244,11 +173,21 @@ const TIER_GRADIENT_BORDER_STYLE: Record<string, React.CSSProperties> = {
 
 export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolean }) {
   const { user } = useAuth();
+  const { activeCandidateId } = useCandidate();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<"All" | GuideCategory>("All");
   const [visibleCount, setVisibleCount] = useState(7);
   const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
+  const [launchTarget, setLaunchTarget] = useState<{
+    item: WalletCatalogItem;
+    href: string;
+  } | null>(null);
   const plan = usePlan();
+  // Wallet state + journey context drive standalone ownership below: outside a
+  // journey, guides are owned via credit unlock / legacy add-on only (plan tier
+  // does NOT unlock standalone guides).
+  const wallet = useWallet();
+  const { isInsideJourney } = useJourneyEnvironment();
 
   const [sessions, setSessions] = useState<UserGuideSession[]>([]);
   const [sessionsLoading, setSessionsLoading] = useState(false);
@@ -264,11 +203,43 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
     const fetchMyGuides = async () => {
       try {
         setSessionsLoading(true);
-        const res = await fetch("/api/guides/my-guides");
-        if (res.ok) {
-          const data = await res.json();
-          setSessions(data.sessions || []);
+        const currentCandidateId = activeCandidateId || "candidate-1";
+
+        // 1. Fetch from server API
+        let apiSessions: UserGuideSession[] = [];
+        try {
+          const res = await fetch(`/api/guides/my-guides?candidateId=${currentCandidateId}`);
+          if (res.ok) {
+            const data = await res.json();
+            apiSessions = data.sessions || [];
+          }
+        } catch (e) {
+          console.error("API error fetching guides:", e);
         }
+
+        // 2. Read local candidate sessions cache
+        let localSessions: UserGuideSession[] = [];
+        if (typeof window !== "undefined") {
+          try {
+            const raw = localStorage.getItem(`rahvana_guide_sessions_${currentCandidateId}`);
+            if (raw) {
+              localSessions = JSON.parse(raw);
+            }
+          } catch {
+            // Ignore storage errors
+          }
+        }
+
+        // 3. Merge sessions cleanly by guide slug
+        const sessionMap = new Map<string, UserGuideSession>();
+        for (const s of localSessions) {
+          if (s.guides?.slug) sessionMap.set(s.guides.slug, s);
+        }
+        for (const s of apiSessions) {
+          if (s.guides?.slug) sessionMap.set(s.guides.slug, s);
+        }
+
+        setSessions(Array.from(sessionMap.values()));
       } catch (error) {
         console.error("Failed to fetch my guides:", error);
       } finally {
@@ -276,12 +247,31 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
       }
     };
     fetchMyGuides();
-  }, [user]);
+  }, [user, activeCandidateId]);
 
   const handleDelete = async () => {
     if (!selectedSessionId) return;
     try {
       setDeleting(true);
+
+      // Clean local storage cache
+      if (typeof window !== "undefined") {
+        const currentCandidateId = activeCandidateId || "candidate-1";
+        try {
+          const raw = localStorage.getItem(`rahvana_guide_sessions_${currentCandidateId}`);
+          if (raw) {
+            const list: UserGuideSession[] = JSON.parse(raw);
+            const updated = list.filter((s) => s.id !== selectedSessionId);
+            localStorage.setItem(
+              `rahvana_guide_sessions_${currentCandidateId}`,
+              JSON.stringify(updated)
+            );
+          }
+        } catch {
+          // Ignore
+        }
+      }
+
       const res = await fetch("/api/guides/delete", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
@@ -363,16 +353,38 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
     return matchesSearch && matchesCategory;
   }).sort((a, b) => a.title.localeCompare(b.title));
 
-  // "My Resources" (embedded) view splits the catalog into two sections:
-  //  • "My Guides"     — guides the user owns (plan/add-ons) OR has already started
-  //  • "Browse Guides" — everything else, shown as locked/"Unlock" cards to explore
-  const isOwned = (feature?: string) => !feature || (!plan.isLoading && !plan.isLocked(feature));
+  // Outside a journey, guides are accessible if:
+  // 1. The user owns an eligible journey plan (Premium or Executive) for any category mapped to this guide.
+  // 2. OR the user unlocked it via wallet credits / legacy add-on.
+  // 3. OR the guide is a free/public guide with no entitlement lock.
+  // Inside a journey, standard feature entitlement applies.
+  const isOwned = (guide: Guide) => {
+    // 1. Check if user holds an active journey plan for any of this guide's visa categories
+    const journeyAccess = hasJourneyEntitlementForGuide(guide, plan.journeyTiers);
+    if (journeyAccess.hasAccess) {
+      return true;
+    }
+
+    // 2. Check wallet credit unlock / legacy add-on
+    const catalogItem = getGuideCatalogItem(guide.id);
+    if (catalogItem && !isInsideJourney) {
+      return (
+        !wallet.isLoading && wallet.isUnlocked(catalogItem.resourceId, catalogItem.resourceType)
+      );
+    }
+
+    // 3. Fallback: free guide or in-journey entitlement check
+    return (
+      !guide.entitlementFeature || (!plan.isLoading && !plan.isLocked(guide.entitlementFeature))
+    );
+  };
+
   const hasSession = (guide: Guide) => {
     const slug = guide.href.split("/").pop();
     return sessions.some((s) => s.guides.slug === slug);
   };
   // A started guide belongs in "My Guides" even if its entitlement is locked.
-  const isMine = (guide: Guide) => isOwned(guide.entitlementFeature) || hasSession(guide);
+  const isMine = (guide: Guide) => isOwned(guide) || hasSession(guide);
   const ownedGuides = filteredGuides.filter(isMine);
   const browseGuides = filteredGuides.filter((guide) => !isMine(guide));
   // Embedded "My Resources" shows owned/started in the first grid; the standalone
@@ -391,17 +403,16 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: index * 0.1 }}
           key={session.id}
-          className="group bg-white rounded-3xl border border-slate-200 p-6 shadow-sm hover:shadow-xl hover:border-teal-200 transition-all flex flex-col relative overflow-hidden mt-6"
+          className="group relative mt-6 flex flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:border-teal-200 hover:shadow-xl"
         >
-          <div className="flex justify-between items-start mb-4">
-            <div className="p-3 bg-teal-50 rounded-2xl text-teal-600 group-hover:bg-teal-600 group-hover:text-white transition-colors duration-300">
+          <div className="mb-4 flex items-start justify-between">
+            <div className="rounded-2xl bg-teal-50 p-3 text-teal-600 transition-colors duration-300 group-hover:bg-teal-600 group-hover:text-white">
               <BookOpen size={24} />
             </div>
             <div className="flex flex-col items-end gap-2">
               <div className="flex items-center gap-2">
                 <span
-                  className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full
-                  ${session.status === "completed" ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-700"}`}
+                  className={`rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase ${session.status === "completed" ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-700"}`}
                 >
                   {session.status.replace("_", " ")}
                 </span>
@@ -411,21 +422,21 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
                     setSelectedSessionId(session.id);
                     setShowConfirmDelete(true);
                   }}
-                  className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                  className="rounded-lg p-1.5 text-slate-400 transition-all hover:bg-red-50 hover:text-red-500"
                   title="Delete this progress"
                 >
                   <Trash2 size={16} />
                 </button>
               </div>
-              <span className="text-[10px] text-slate-400 flex items-center gap-1 font-medium">
+              <span className="flex items-center gap-1 text-[10px] font-medium text-slate-400">
                 <Clock size={10} />
                 {new Date(session.last_updated_at).toLocaleDateString()}
               </span>
             </div>
           </div>
 
-          <div className="flex justify-between items-start gap-3 mb-2">
-            <h3 className="text-xl font-bold text-slate-900 group-hover:text-teal-700 transition-colors">
+          <div className="mb-2 flex items-start justify-between gap-3">
+            <h3 className="text-xl font-bold text-slate-900 transition-colors group-hover:text-teal-700">
               {session.guides.title}
             </h3>
             <div className="relative z-50 shrink-0">
@@ -434,44 +445,33 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
                   id: `guide-${guide.id}`,
                   title: `${guide.title} Guide`,
                   href: guide.href,
-                  icon_name: (() => {
-                    const mapping: Record<string, string> = {
-                      passport: "Globe",
-                      "police-verification": "Shield",
-                      cnic: "FileText",
-                      "birth-certificate": "FileText",
-                      frc: "Globe",
-                      "marriage-certificate": "Heart",
-                      vaccinations: "Syringe",
-                    };
-                    return mapping[guide.id] || "BookOpen";
-                  })(),
+                  icon_name: guide.iconName || "BookOpen",
                 }}
                 mode="icon"
               />
             </div>
           </div>
-          <p className="text-slate-500 text-sm leading-relaxed mb-6 line-clamp-2">
+          <p className="mb-6 line-clamp-2 text-sm leading-relaxed text-slate-500">
             {session.guides.description}
           </p>
 
           <div className="mt-auto">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-tighter">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-xs font-bold tracking-tighter text-slate-400 uppercase">
                 Progress
               </span>
               <span className="text-xs font-black text-teal-600">{session.progress_percent}%</span>
             </div>
-            <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden mb-6">
+            <div className="mb-6 h-1.5 overflow-hidden rounded-full bg-slate-100">
               <div
-                className="h-full bg-teal-500 rounded-full transition-all duration-1000"
+                className="h-full rounded-full bg-teal-500 transition-all duration-1000"
                 style={{ width: `${session.progress_percent}%` }}
               />
             </div>
 
             <Link
               href={`/guides/${session.guides.slug}`}
-              className="flex items-center justify-center gap-2 w-full py-3.5 bg-slate-900 text-white rounded-2xl text-sm font-bold hover:bg-teal-600 transition-all shadow-lg shadow-slate-200 hover:shadow-teal-100 group/btn"
+              className="group/btn flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 py-3.5 text-sm font-bold text-white shadow-lg shadow-slate-200 transition-all hover:bg-teal-600 hover:shadow-teal-100"
             >
               {session.status === "completed" ? (
                 <>
@@ -482,14 +482,14 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
                 <>
                   <PlayCircle
                     size={18}
-                    className="group-hover/btn:scale-110 transition-transform"
+                    className="transition-transform group-hover/btn:scale-110"
                   />
                   Resume Guide
                 </>
               )}
               <ChevronRight
                 size={16}
-                className="ml-1 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all"
+                className="ml-1 -translate-x-2 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100"
               />
             </Link>
           </div>
@@ -503,13 +503,14 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
         guide={guide}
         index={index}
         onLockedClick={(feature) => setUpgradeModalFeature(feature)}
+        onLaunch={(item) => setLaunchTarget({ item, href: guide.href })}
       />
     );
   };
 
   return (
     <div
-      className={`bg-background text-foreground font-sans overflow-x-hidden selection:bg-primary selection:text-primary-foreground ${
+      className={`bg-background text-foreground selection:bg-primary selection:text-primary-foreground overflow-x-hidden font-sans ${
         isEmbedded ? "" : "pt-16"
       }`}
     >
@@ -517,20 +518,28 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
         <UpgradeModal feature={upgradeModalFeature} onClose={() => setUpgradeModalFeature(null)} />
       )}
 
+      {launchTarget && (
+        <CreditLaunchModal
+          item={launchTarget.item}
+          href={launchTarget.href}
+          onClose={() => setLaunchTarget(null)}
+        />
+      )}
+
       {/* Ambient Glow */}
-      <div className="fixed top-0 left-0 w-full h-full pointer-events-none -z-10">
-        <div className="absolute top-[10%] left-[15%] w-[500px] h-[500px] bg-[#0d7377]/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-[20%] right-[10%] w-[600px] h-[600px] bg-[#32e0c4]/5 rounded-full blur-3xl" />
+      <div className="pointer-events-none fixed top-0 left-0 -z-10 h-full w-full">
+        <div className="absolute top-[10%] left-[15%] h-[500px] w-[500px] rounded-full bg-[#0d7377]/5 blur-3xl" />
+        <div className="absolute right-[10%] bottom-[20%] h-[600px] w-[600px] rounded-full bg-[#32e0c4]/5 blur-3xl" />
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="mx-auto w-full px-6 py-8">
         {/* Hero Section — hidden in the embedded "My Resources" view */}
         {!isEmbedded && (
-          <section className="text-center mb-5 md:mb-10 pt-1 relative flex flex-col items-center">
-            <h1 className="text-3xl md:text-5xl font-bold mb-4 mt-2 md:mt-0 bg-clip-text text-transparent bg-linear-to-r from-foreground to-muted-foreground animate-fade-up">
+          <section className="relative mb-5 flex flex-col items-center pt-1 text-center md:mb-10">
+            <h1 className="from-foreground to-muted-foreground animate-fade-up mt-2 mb-4 bg-linear-to-r bg-clip-text text-3xl font-bold text-transparent md:mt-0 md:text-5xl">
               Master the Paperwork.
             </h1>
-            <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto animate-fade-up [animation-delay:100ms]">
+            <p className="text-muted-foreground animate-fade-up mx-auto max-w-2xl text-base [animation-delay:100ms] md:text-lg">
               Step-by-step guides for every document you need. Clear instructions, timelines, and
               common pitfalls to avoid.
             </p>
@@ -539,42 +548,42 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
 
         {/* Search Bar */}
         {!isEmbedded && (
-          <div className="relative max-w-lg mx-auto mb-10 animate-scale-in [animation-delay:200ms]">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 pointer-events-none" />
+          <div className="animate-scale-in relative mx-auto mb-10 max-w-lg [animation-delay:200ms]">
+            <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2" />
             <input
               type="text"
               placeholder="Search guides... (e.g., 'passport', 'police')"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-card border-2 border-border pl-11 pr-4 py-3 rounded-full text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all shadow-sm placeholder:text-muted-foreground"
+              className="bg-card border-border text-foreground focus:border-primary focus:ring-primary/10 placeholder:text-muted-foreground w-full rounded-full border-2 py-3 pr-4 pl-11 shadow-sm transition-all focus:ring-4 focus:outline-none"
             />
           </div>
         )}
 
         {/* Categories — hidden in the embedded "My Resources" view */}
         {!isEmbedded && (
-          <div ref={containerRef} className="relative w-full mb-8 flex justify-center">
+          <div ref={containerRef} className="relative mb-8 flex w-full justify-center">
             <div
               ref={measureRef}
               aria-hidden="true"
-              className="absolute top-0 left-0 w-full flex flex-wrap gap-3 pointer-events-none opacity-0 z-[-1]"
+              className="pointer-events-none absolute top-0 left-0 z-[-1] flex w-full flex-wrap gap-3 opacity-0"
             >
               {CATEGORIES.map((cat) => (
-                <div key={cat} className="px-5 py-2.5 text-sm font-medium whitespace-nowrap border">
+                <div key={cat} className="border px-5 py-2.5 text-sm font-medium whitespace-nowrap">
                   {cat}
                 </div>
               ))}
-              <div className="px-5 py-2.5 text-sm font-medium whitespace-nowrap border flex items-center gap-1">
-                More <ChevronDown className="w-4 h-4 ml-1" />
+              <div className="flex items-center gap-1 border px-5 py-2.5 text-sm font-medium whitespace-nowrap">
+                More <ChevronDown className="ml-1 h-4 w-4" />
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-3 animate-fade-in [animation-delay:300ms]">
+            <div className="animate-fade-in flex flex-wrap gap-3 [animation-delay:300ms]">
               {visibleCategories.map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
-                  className={`px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap border transition-all duration-200 ${
+                  className={`rounded-full border px-5 py-2.5 text-sm font-medium whitespace-nowrap transition-all duration-200 ${
                     selectedCategory === cat
                       ? "bg-primary text-primary-foreground border-primary shadow-md"
                       : "bg-card text-muted-foreground border-border hover:border-primary hover:bg-primary/5 hover:text-primary"
@@ -588,13 +597,13 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button
-                      className={`px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap border transition-all duration-200 flex items-center gap-1 ${
+                      className={`flex items-center gap-1 rounded-full border px-5 py-2.5 text-sm font-medium whitespace-nowrap transition-all duration-200 ${
                         isMoreSelected
                           ? "bg-primary text-primary-foreground border-primary shadow-md"
                           : "bg-card text-muted-foreground border-border hover:border-primary hover:bg-primary/5 hover:text-primary"
                       }`}
                     >
-                      More <ChevronDown className="w-4 h-4 ml-1" />
+                      More <ChevronDown className="ml-1 h-4 w-4" />
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start" className="w-[200px]">
@@ -626,17 +635,17 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
         )}
 
         {/* Guides Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 pt-6">
+        <div className="grid grid-cols-1 gap-x-6 gap-y-10 pt-6 md:grid-cols-2 lg:grid-cols-3">
           {displayGuides.map((guide, index) => renderGuideCard(guide, index))}
-          {isEmbedded && plan.tier !== "premium" && plan.tier !== "executive" && (
+          {/* {isEmbedded && plan.tier !== "premium" && plan.tier !== "executive" && (
             <AddResourceCard
               href="/pricing?mode=guides"
               label="Add guides"
               index={displayGuides.length}
             />
-          )}
+          )} */}
           {!isEmbedded && displayGuides.length === 0 && (
-            <div className="col-span-full text-center py-12 text-muted-foreground">
+            <div className="text-muted-foreground col-span-full py-12 text-center">
               No guides found matching your search.
             </div>
           )}
@@ -649,7 +658,7 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
               title="Browse Guides"
               subtitle="Explore more guides, preview them or unlock the full version."
             />
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 pt-6">
+            <div className="grid grid-cols-1 gap-x-6 gap-y-10 pt-6 md:grid-cols-2 lg:grid-cols-3">
               {browseGuides.map((guide, index) => renderGuideCard(guide, index))}
             </div>
           </>
@@ -704,24 +713,42 @@ function GuideCard({
   guide,
   index,
   onLockedClick,
+  onLaunch,
 }: {
   guide: Guide;
   index: number;
   onLockedClick: (feature: string) => void;
+  onLaunch: (item: WalletCatalogItem) => void;
 }) {
   const plan = usePlan();
+  const wallet = useWallet();
+  const { isInsideJourney } = useJourneyEnvironment();
   const Icon = guide.icon;
   const styles = CATEGORY_STYLES[guide.category];
   const { isInQuickAccess } = useQuickAccess();
 
-  const featureLocked =
+  const planLocked =
     !!guide.entitlementFeature && !plan.isLoading && plan.isLocked(guide.entitlementFeature);
+  const catalogItem = getGuideCatalogItem(guide.id);
+  const walletUnlocked =
+    !!catalogItem && wallet.isUnlocked(catalogItem.resourceId, catalogItem.resourceType);
+
+  // Check journey entitlement across guide.visaCategories
+  const journeyAccess = hasJourneyEntitlementForGuide(guide, plan.journeyTiers);
+  const hasJourneyPlanAccess = journeyAccess.hasAccess;
+
+  // Feature is locked if neither journey plan nor wallet unlock grants access
+  const featureLocked =
+    catalogItem && !isInsideJourney
+      ? !walletUnlocked && !hasJourneyPlanAccess
+      : planLocked && !walletUnlocked && !hasJourneyPlanAccess;
+
+  const showDualCta = !!catalogItem && featureLocked && !guide.disabled;
 
   const upgradeTarget: string =
     (guide.entitlementFeature ? plan.entitlement(guide.entitlementFeature).upgradeTarget : null) ??
     "premium";
 
-  // All tier-specific card styles derived from upgradeTarget
   const tierStyle = TIER_CARD_STYLE[upgradeTarget] ?? TIER_CARD_STYLE.premium;
   const tierGradientBorderStyle =
     TIER_GRADIENT_BORDER_STYLE[upgradeTarget] ?? TIER_GRADIENT_BORDER_STYLE.premium;
@@ -732,55 +759,52 @@ function GuideCard({
   const isPinned = isInQuickAccess(`guide-${guide.id}`);
 
   const handleClick = (e: React.MouseEvent) => {
-    if (featureLocked && guide.entitlementFeature) {
+    if (!showDualCta && featureLocked && guide.entitlementFeature) {
       e.preventDefault();
       onLockedClick(guide.entitlementFeature);
     }
   };
 
-  const CardWrapper = isNavigable ? Link : "div";
+  const CardWrapper = (showDualCta || !isNavigable ? "div" : Link) as React.ElementType;
 
   return (
     <CardWrapper
-      href={isNavigable ? guide.href : "#"}
+      href={showDualCta ? undefined : isNavigable ? guide.href : "#"}
       onClick={handleClick}
-      className={`group relative flex flex-col bg-card rounded-2xl p-8 pt-8 mt-6 mx-2 md:mx-0
-      transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]
-      ${
+      className={`group bg-card relative mx-2 mt-6 flex flex-col rounded-2xl p-8 pt-8 transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] md:mx-0 ${
         // isPinned
         //   ? "border-[3px] border-[#0d7377] dark:border-[#32e0c4] shadow-md hover:-translate-y-2 hover:shadow-xl cursor-pointer"
-        //   : 
-          featureLocked
-            ? "border border-border cursor-pointer shadow-md hover:-translate-y-1"
-            : isNavigable
-              ? "border border-border hover:-translate-y-2 hover:shadow-xl cursor-pointer"
-              : "border border-border opacity-80 cursor-not-allowed grayscale-[0.5]"
-      }
-      animate-fade-up`}
+        //   :
+        featureLocked
+          ? "border-border cursor-pointer border shadow-md hover:-translate-y-1"
+          : isNavigable
+            ? "border-border cursor-pointer border hover:-translate-y-2 hover:shadow-xl"
+            : "border-border cursor-not-allowed border opacity-80 grayscale-[0.5]"
+      } animate-fade-up`}
       style={{ animationDelay: `${index * 100}ms` }}
     >
       {/* Ribbon for locked cards */}
       {featureLocked && (
-        <div className="absolute -top-21 -right-12 sm:-right-3 z-20 pointer-events-none">
+        <div className="pointer-events-none absolute -top-21 -right-10 z-20 -translate-x-12 sm:-right-3 sm:-translate-x-5">
           <Image
             src="/icons/ribbon.png"
             alt="Premium ribbon"
             width={240}
             height={300}
             priority={false}
-            className="w-40 h-56 object-contain drop-shadow-lg"
+            className="h-56 w-40 object-contain drop-shadow-lg"
           />
         </div>
       )}
 
-{/* Floating icon box */}
+      {/* Floating icon box */}
       <div
-        className={`absolute -top-6 left-6 w-12 h-12 md:w-14 md:h-14 rounded-2xl border flex items-center justify-center shadow-md transition-all duration-400 z-40 group-hover:-translate-y-1 group-hover:-rotate-3 group-hover:shadow-lg ${styles.iconBox}`}
+        className={`absolute -top-6 left-6 z-40 flex h-12 w-12 items-center justify-center rounded-2xl border shadow-md transition-all duration-400 group-hover:-translate-y-1 group-hover:-rotate-3 group-hover:shadow-lg md:h-14 md:w-14 ${styles.iconBox}`}
       >
         <div
-          className={`absolute inset-1 rounded-[10px] -z-10 transition-colors duration-300 ${styles.innerBox}`}
+          className={`absolute inset-1 -z-10 rounded-[10px] transition-colors duration-300 ${styles.innerBox}`}
         />
-        <Icon className="w-5 h-5 md:w-6 md:h-6 stroke-2" />
+        <Icon className="h-5 w-5 stroke-2 md:h-6 md:w-6" />
       </div>
 
       {/* (Removed tier badge — ribbon now indicates locked state) */}
@@ -788,19 +812,33 @@ function GuideCard({
       {/* Hover overlay with light category-specific background & border */}
       {!featureLocked && (
         <div
-          className={`absolute inset-0 rounded-2xl border border-transparent transition-all duration-400 pointer-events-none z-0 ${styles.hoverBg} ${styles.hoverBorder}`}
+          className={`pointer-events-none absolute inset-0 z-0 rounded-2xl border border-transparent transition-all duration-400 ${styles.hoverBg} ${styles.hoverBorder}`}
         />
       )}
 
       {/* Radial Glow */}
-      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-0 bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(13,115,119,0.04),transparent_40%)] dark:bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(255,255,255,0.03),transparent_40%)]" />
+      <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(13,115,119,0.04),transparent_40%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100 dark:bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(255,255,255,0.03),transparent_40%)]" />
 
       {/* Content */}
       <div className="relative z-10 flex flex-col pt-1">
-        <div className="flex justify-between items-start gap-3">
-          <h3 className="text-lg md:text-xl leading-tight font-bold text-foreground mb-0.5 transition-colors">
-            {guide.title}
-          </h3>
+        <div className="flex items-start justify-between gap-3">
+          {/* Title + Credit tooltip */}
+          <div className="flex min-w-0 flex-1 items-start justify-between gap-3">
+            <h3 className="text-foreground mb-0.5 min-w-0 text-lg leading-tight font-bold transition-colors md:text-xl">
+              {guide.title}
+            </h3>
+
+            {featureLocked && (
+              <div className="shrink-0">
+                <CreditInfoTooltip
+                  message="Unlock once: spend credits one time, then use this guide as much as you like."
+                  side="top"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Quick Access button for unlocked guides */}
           {!featureLocked && (
             <div className="relative z-50 shrink-0">
               <QuickAccessButton
@@ -808,70 +846,112 @@ function GuideCard({
                   id: `guide-${guide.id}`,
                   title: `${guide.title} Guide`,
                   href: guide.href,
-                  icon_name: (() => {
-                    const mapping: Record<string, string> = {
-                      passport: "Globe",
-                      "police-verification": "Shield",
-                      cnic: "FileText",
-                      "birth-certificate": "FileText",
-                      frc: "Globe",
-                      "marriage-certificate": "Heart",
-                      vaccinations: "Syringe",
-                      "step-parent": "BookOpen",
-                      "adoptive-parent": "BookOpen",
-                    };
-                    return mapping[guide.id] || "BookOpen";
-                  })(),
+                  icon_name: guide.iconName || "BookOpen",
                 }}
                 mode="icon"
               />
             </div>
           )}
         </div>
+
+        {/* Subtitle */}
         <p
-          className={`text-[11px] leading-snug text-zinc-500 dark:text-zinc-400 mb-4 ${
+          className={`mb-4 text-[11px] leading-snug text-zinc-500 dark:text-zinc-400 ${
             guide.subtitle ? "" : "invisible"
           }`}
         >
           {guide.subtitle || " "}
         </p>
-        <div className="mb-2">
-          <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-primary/85 bg-primary/10 border border-primary/20 px-2 py-1 rounded">
+
+        {/* Category & Unlock Badges */}
+        <div className="mb-2 flex flex-wrap items-center gap-2">
+          <span className="text-primary/85 bg-primary/10 border-primary/20 rounded border px-2 py-1 text-[10px] font-semibold tracking-[0.08em] uppercase">
             {guide.category}
           </span>
+          {hasJourneyPlanAccess &&
+            !isInsideJourney &&
+            guide.creditPayable !== false &&
+            !!guide.entitlementFeature && (
+              <span className="inline-flex items-center gap-1 rounded-full border border-teal-200 bg-teal-50 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-teal-800 uppercase dark:border-teal-800/40 dark:bg-teal-950/40 dark:text-teal-300">
+                <CheckCircle2 size={11} className="text-teal-600 dark:text-teal-400" />
+                Included with {journeyAccess.unlockedViaCategory || "Plan"}
+              </span>
+            )}
+          {walletUnlocked && !hasJourneyPlanAccess && !isInsideJourney && (
+            <span className="inline-flex items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-blue-800 uppercase dark:border-blue-800/40 dark:bg-blue-950/40 dark:text-blue-300">
+              <CheckCircle2 size={11} className="text-blue-600 dark:text-blue-400" />
+              Unlocked with Credits
+            </span>
+          )}
         </div>
+
+
+
+        {/* Description */}
         <p
-          className="text-sm font-medium text-slate-500 dark:text-slate-400 [text-wrap:pretty] mb-0 pb-0"
+          className="mb-0 pb-0 text-sm font-medium [text-wrap:pretty] text-slate-500 dark:text-slate-400"
           style={{ minHeight: 88, paddingBottom: 0, lineHeight: 1.3 }}
         >
           {guide.description}
         </p>
-
-        <div className="grow" />
       </div>
 
       {/* Footer / Action */}
-      <div className="relative z-10 flex items-center justify-between pt-2 border-t border-border mt-auto">
-        <span className="text-xs font-medium text-muted-foreground flex items-center gap-1" />
+      <div className="border-border relative z-10 -mt-6 flex flex-col border-t pt-2">
+        {showDualCta && catalogItem ? (
+          <>
+            <div className="mb-2.5 flex items-center justify-between gap-2 text-sm font-bold text-[#0d7377] dark:text-[#32e0c4]">
+              <div className="flex items-center gap-2.5">
+                <Link
+                  href={
+                    catalogItem.legacyAddonId
+                      ? `/resources/${catalogItem.legacyAddonId}`
+                      : withPreviewMode(guide.href)
+                  }
+                  onClick={(e) => e.stopPropagation()}
+                  className="inline-flex h-9 items-center rounded-lg border border-slate-200 bg-white px-3.5 text-[13px] font-semibold whitespace-nowrap text-slate-700 transition-colors hover:border-[#0d7377]/40 hover:text-[#0d7377]"
+                >
+                  {catalogItem.legacyAddonId ? "View Details" : "Preview Guide"}
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => onLaunch(catalogItem)}
+                  aria-label={`Launch ${guide.title} for ${catalogItem.credits} credits`}
+                  className="inline-flex h-9 items-center rounded-lg bg-[#0d7377] px-4 text-[13px] font-semibold whitespace-nowrap text-white transition-colors hover:bg-[#0a5c5f]"
+                >
+                  Launch
+                </button>
+              </div>
 
-        {featureLocked ? (
-          <button
-            type="button"
-            onClick={() => guide.entitlementFeature && onLockedClick(guide.entitlementFeature)}
-            className="text-sm font-semibold flex items-center gap-1.5 group-hover:underline decoration-2 underline-offset-2 text-[#0d7377] dark:text-[#32e0c4]"
-          >
-            <Lock size={14} className="mb-[1px]" /> Unlock
-          </button>
-        ) : isNavigable ? (
-          <span
-            className={`text-sm font-semibold flex items-center gap-1.5 group-hover:underline decoration-2 underline-offset-2 ${styles.link}`}
-          >
-            Read Guide <ArrowRight className="w-4 h-4" />
-          </span>
+              <div className="flex min-w-0 items-center gap-2">
+                <CreditTypeIcon kind="guides" size={22} />
+                <span>{catalogItem.credits}</span>
+              </div>
+            </div>
+          </>
         ) : (
-          <span className="text-sm font-semibold text-muted-foreground/50 flex items-center gap-1.5 cursor-not-allowed">
-            {guide.comingSoon ? "Coming Soon" : "Unavailable"}
-          </span>
+          <div className="flex items-center justify-between">
+            <span className="text-muted-foreground flex items-center gap-1 text-xs font-medium" />
+            {featureLocked ? (
+              <button
+                type="button"
+                onClick={() => guide.entitlementFeature && onLockedClick(guide.entitlementFeature)}
+                className="flex items-center gap-1.5 text-sm font-semibold text-[#0d7377] decoration-2 underline-offset-2 group-hover:underline dark:text-[#32e0c4]"
+              >
+                <Lock size={14} className="mb-[1px]" /> Unlock
+              </button>
+            ) : isNavigable ? (
+              <span
+                className={`flex items-center gap-1.5 text-sm font-semibold decoration-2 underline-offset-2 group-hover:underline ${styles.link}`}
+              >
+                Read Guide <ArrowRight className="h-4 w-4" />
+              </span>
+            ) : (
+              <span className="text-muted-foreground/50 flex cursor-not-allowed items-center gap-1.5 text-sm font-semibold">
+                {guide.comingSoon ? "Coming Soon" : "Unavailable"}
+              </span>
+            )}
+          </div>
         )}
       </div>
     </CardWrapper>

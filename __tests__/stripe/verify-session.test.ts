@@ -18,7 +18,7 @@ jest.mock('@/lib/stripe/config', () => ({
 }))
 
 jest.mock('@/lib/stripe/subscriptionCleanup', () => ({
-  cancelDuplicateSubscriptions: (...a: any[]) => mockCancelDuplicates(...a),
+  cancelSupersededSubscriptions: (...a: any[]) => mockCancelDuplicates(...a),
 }))
 
 jest.mock('resend', () => ({ Resend: jest.fn(() => ({ emails: { send: jest.fn() } })) }))
@@ -27,6 +27,12 @@ jest.mock('@/lib/services/consultationService', () => ({
 }))
 jest.mock('@/lib/payments/addon-purchase-ledger', () => ({
   buildAddonPurchaseUpdate: jest.fn(() => ({ alreadyProcessed: false, profileDetails: {} })),
+}))
+
+const mockApplyWalletTopup = jest.fn()
+jest.mock('@/lib/wallet/topup', () => ({
+  ...jest.requireActual('@/lib/wallet/topup'),
+  applyWalletTopup: (...a: any[]) => mockApplyWalletTopup(...a),
 }))
 
 let profile: any = null
@@ -41,6 +47,11 @@ function makeChain(): any {
   o.then = (res: any) => res({ data: null, error: null }) // awaitable
   return o
 }
+
+const mockGetAuthenticatedUser = jest.fn()
+jest.mock('@/lib/api/authGuards', () => ({
+  getAuthenticatedUser: () => mockGetAuthenticatedUser(),
+}))
 
 jest.mock('@supabase/supabase-js', () => ({
   createClient: () => ({
@@ -109,7 +120,10 @@ describe('verify-session — journey plan activation', () => {
       expect.objectContaining({ subscription_tier: 'premium', subscription_status: 'active' })
     )
     // Cleanup keeps the just-paid subscription
-    expect(mockCancelDuplicates).toHaveBeenCalledWith('cus_1', 'sub_new', '[verify-session]')
+    expect(mockCancelDuplicates).toHaveBeenCalledWith({
+      customerId: 'cus_1', keepSubId: 'sub_new', visaCategory: 'IR-1',
+      isAddCandidate: false, oldSubscriptionId: 'sub_old', logPrefix: '[verify-session]',
+    })
     // Sub id written to its own column, not stripe_payment_id
     const paymentsUpdate = updateSpy.mock.calls.find(
       (c: any[]) => c[0] && 'stripe_subscription_id' in c[0]
@@ -134,6 +148,54 @@ describe('verify-session — journey plan activation', () => {
     const res = await GET(makeRequest('cs_1'))
     const body = await res.json()
     expect(body.activated).toBe(true)
-    expect(mockCancelDuplicates).toHaveBeenCalledWith('cus_1', 'sub_existing', '[verify-session]')
+    expect(mockCancelDuplicates).toHaveBeenCalledWith(
+      expect.objectContaining({ customerId: 'cus_1', keepSubId: 'sub_existing', oldSubscriptionId: null })
+    )
+  })
+})
+
+describe('verify-session — wallet top-up', () => {
+  const topupSession = {
+    id: 'cs_w', status: 'complete', payment_status: 'paid', customer: 'cus_1',
+    payment_intent: 'pi_1', amount_subtotal: 2500,
+    metadata: { user_id: 'user-1', product_type: 'wallet_topup', credits: '25', return_to: '/resources?tab=tools' },
+  }
+
+  it('credits the wallet and returns balance + return path, without touching the tier', async () => {
+    sessionData = topupSession
+    mockGetAuthenticatedUser.mockResolvedValue({ id: 'user-1' })
+    mockApplyWalletTopup.mockResolvedValue({
+      ok: true, credits: 25, balance: 40, alreadyProcessed: false, transactionId: 'tx_1',
+    })
+    const res = await GET(makeRequest('cs_w'))
+    const body = await res.json()
+    expect(body).toEqual(expect.objectContaining({
+      activated: true, productType: 'wallet_topup', credits: 25, balance: 40, returnTo: '/resources?tab=tools',
+    }))
+    expect(updateSpy).not.toHaveBeenCalledWith(expect.objectContaining({ subscription_tier: expect.anything() }))
+    expect(mockCancelDuplicates).not.toHaveBeenCalled()
+  })
+
+  it('does not mark the payment succeeded when credits did not land', async () => {
+    sessionData = topupSession
+    mockApplyWalletTopup.mockResolvedValue({ ok: false, reason: 'rpc_failed' })
+    const res = await GET(makeRequest('cs_w'))
+    expect(res.status).toBe(500)
+    expect((await res.json()).activated).toBe(false)
+    expect(updateSpy).not.toHaveBeenCalledWith(expect.objectContaining({ status: 'succeeded' }))
+  })
+
+  it('still credits, but hides amount, balance and tier from a caller who is not the buyer', async () => {
+    sessionData = topupSession
+    mockApplyWalletTopup.mockResolvedValue({
+      ok: true, credits: 25, balance: 40, alreadyProcessed: false, transactionId: 'tx_1',
+    })
+    for (const viewer of [null, { id: 'someone-else' }]) {
+      mockGetAuthenticatedUser.mockResolvedValue(viewer)
+      const res = await GET(makeRequest('cs_w'))
+      expect(res.status).toBe(200)
+      expect(await res.json()).toEqual({ activated: true, productType: 'wallet_topup' })
+    }
+    expect(mockApplyWalletTopup).toHaveBeenCalledTimes(2)
   })
 })

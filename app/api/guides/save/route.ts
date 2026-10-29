@@ -18,7 +18,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
-    const { slug } = await request.json();
+    const { slug, candidateId = "candidate-1" } = await request.json();
 
     if (!slug) {
       return NextResponse.json(
@@ -38,13 +38,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: msg(E.CASE_DATA_NOT_FOUND) }, { status: 404 });
     }
 
-    // 3. Get user session
-    const { data: session, error: sessionError } = await supabase
+    // 3. Get user session for this candidate
+    let sessionQuery = supabase
       .from("user_guides")
       .select("id, saved")
       .eq("guide_id", guide.id)
-      .eq("user_id", user.id)
-      .maybeSingle();
+      .eq("user_id", user.id);
+
+    if (candidateId === "candidate-1") {
+      sessionQuery = sessionQuery.or(`candidate_id.eq.candidate-1,candidate_id.is.null`);
+    } else {
+      sessionQuery = sessionQuery.eq("candidate_id", candidateId);
+    }
+
+    const { data: session, error: sessionError } = await sessionQuery.maybeSingle();
 
     if (sessionError) {
       console.error("Error checking session:", sessionError);
@@ -56,6 +63,7 @@ export async function POST(request: Request) {
       const { error: insertError } = await supabase.from("user_guides").insert({
         user_id: user.id,
         guide_id: guide.id,
+        candidate_id: candidateId,
         saved: true,
         status: "not_started",
       });
@@ -70,6 +78,7 @@ export async function POST(request: Request) {
         .from("user_guides")
         .update({
           saved: true,
+          candidate_id: candidateId,
           last_updated_at: new Date().toISOString(),
         })
         .eq("id", session.id);

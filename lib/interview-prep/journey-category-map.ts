@@ -39,12 +39,29 @@ export function getSupportedJourneyTypes(): string[] {
   return Object.keys(JOURNEY_CATEGORY_MAP);
 }
 
-/**
- * Check if a journey type is supported
- * 
- * @param journeyType - The journey type to check
- * @returns True if journey type has a category mapping
- */
 export function isJourneyTypeSupported(journeyType: string): boolean {
-  return journeyType in JOURNEY_CATEGORY_MAP;
+  return journeyType in JOURNEY_CATEGORY_MAP || resolveCategorySlug(journeyType) !== null;
 }
+
+export function resolveCategorySlug(input?: string | null): string | null {
+  if (!input) return null;
+  const clean = input.trim();
+  if (clean === "ir-1-spouse" || clean === "ir-5-parent") return clean;
+  
+  // If it's a UUID, it's a database journey_id, not a category name
+  if (/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(clean)) {
+    return null;
+  }
+
+  const upper = clean.toUpperCase().replace(/[^A-Z0-9]/g, "");
+  if (upper.includes("IR5") || upper.includes("PARENT") || upper === "5" || upper.includes("IR5JOURNEY")) {
+    return "ir-5-parent";
+  }
+  if (upper.includes("IR1") || upper.includes("SPOUSE") || upper === "1" || upper.includes("CR1") || upper.includes("IR1JOURNEY")) {
+    return "ir-1-spouse";
+  }
+  
+  return JOURNEY_CATEGORY_MAP[upper] || null;
+}
+
+

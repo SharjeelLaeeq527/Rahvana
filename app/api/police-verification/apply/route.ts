@@ -2,6 +2,12 @@ import { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { triggerPCCNotification } from "@/lib/notifications";
 import { safeError } from "@/lib/api/safeError";
+import {
+  spendJourneyServiceUse,
+  verifyJourneyServiceAccess,
+  type JourneyServiceAccess,
+} from "@/lib/journey/journeyServiceAccess";
+import { getServiceRoleClient } from "@/lib/api/authGuards";
 
 interface PoliceVerificationData {
   user_id?: string;
@@ -50,6 +56,11 @@ interface PoliceVerificationData {
 
   request_id: string;
   status: "pending";
+  admin_notes?: string;
+  source?: string | null;
+  journey_slug?: string | null;
+  awaiting_payment?: boolean;
+  payment_status?: string;
 }
 
 function generateRequestId() {
@@ -74,11 +85,47 @@ export async function POST(req: NextRequest) {
       }
     );
 
+    // The request is filed for the signed-in user (never a user id from the body),
+    // paid with their credits or covered by their journey plan.
+    const authClient = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return req.cookies.getAll();
+          },
+          setAll() {},
+        },
+      }
+    );
+    const {
+      data: { user },
+    } = await authClient.auth.getUser();
+    if (!user) {
+      return Response.json({ error: "Authentication required" }, { status: 401 });
+    }
+
     const body = await req.json();
     const requestId = generateRequestId();
 
+    // Payment is decided here, never by the client (see book-appointment).
+    const isJourneyRequest = body.source === "journey";
+    let journeyPlan: Extract<JourneyServiceAccess, { allowed: true }> | null = null;
+    if (isJourneyRequest) {
+      const access = await verifyJourneyServiceAccess(supabase, user.id, "pcc_filing", {
+        journeyId: body.journey_id || body.journeyId || null,
+        journeyCategory: body.journey_category || body.journey_slug || null,
+        candidateId: body.candidateId || body.candidate_id || null,
+      });
+      if (!access.allowed) {
+        return Response.json({ error: access.error }, { status: access.status });
+      }
+      journeyPlan = access;
+    }
+
     const verificationData: PoliceVerificationData = {
-      user_id: body.userId || null,
+      user_id: user.id,
       full_name: body.fullName,
       father_name: body.fatherName,
       email: body.email,
@@ -124,6 +171,14 @@ export async function POST(req: NextRequest) {
 
       request_id: requestId,
       status: "pending",
+      admin_notes: body.candidate_id
+        ? `[Candidate: ${body.candidate_id}] ${body.candidate_name || ""}`.trim()
+        : "",
+      // Origin tagging: 'journey' rows are hidden from standalone My Resources.
+      source: isJourneyRequest ? "journey" : "standalone",
+      journey_slug: isJourneyRequest ? body.journey_slug || null : null,
+      awaiting_payment: !isJourneyRequest,
+      payment_status: isJourneyRequest ? "paid" : "pending",
     };
 
     const { data, error } = await supabase
@@ -136,21 +191,36 @@ export async function POST(req: NextRequest) {
       console.error("Error creating police verification request:", error);
       return safeError(error);
     }
-    // Notify admins of the new PCC request (non-blocking)
-    const locationParts = [verificationData.district, verificationData.province].filter(Boolean);
-    const locationText = locationParts.length > 0 ? ` for ${locationParts.join(", ")}` : "";
-    const refText = verificationData.request_id ? ` (${verificationData.request_id})` : "";
 
-    const pccNotificationBody = `${verificationData.full_name} has submitted a new Police Verification request${refText}${locationText}.`;
+    // Spend one of the filings the journey plan includes; none left = undo the request.
+    if (journeyPlan) {
+      const refused = await spendJourneyServiceUse(user.id, "pcc_filing", journeyPlan);
+      if (refused) {
+        await getServiceRoleClient()
+          .from("police_verification_requests")
+          .delete()
+          .eq("id", data.id)
+          .eq("user_id", user.id);
+        return Response.json({ error: refused.error, code: refused.code }, { status: refused.status });
+      }
+    }
+    // Notify admins of the new PCC request only if not awaiting payment (e.g. journey mode)
+    if (!verificationData.awaiting_payment) {
+      const locationParts = [verificationData.district, verificationData.province].filter(Boolean);
+      const locationText = locationParts.length > 0 ? ` for ${locationParts.join(", ")}` : "";
+      const refText = verificationData.request_id ? ` (${verificationData.request_id})` : "";
 
-    triggerPCCNotification(
-      data.id,
-      body.journeyId || undefined,
-      verificationData.full_name,
-      pccNotificationBody
-    ).catch((err) => {
-      console.error("[PCCNotif] Error triggering admin notification:", err);
-    });
+      const pccNotificationBody = `${verificationData.full_name} has submitted a new Police Verification request${refText}${locationText}.`;
+
+      triggerPCCNotification(
+        data.id,
+        body.journeyId || undefined,
+        verificationData.full_name,
+        pccNotificationBody
+      ).catch((err) => {
+        console.error("[PCCNotif] Error triggering admin notification:", err);
+      });
+    }
 
     return Response.json({ success: true, id: data.id, requestId: data.request_id });
   } catch (error) {

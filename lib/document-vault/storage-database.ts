@@ -152,6 +152,29 @@ export class DocumentDatabaseStorage {
   }
 
   /**
+   * Gets all document rows that reference the same physical file (storage_path) for a user.
+   * Used to reference-count a shared blob before deleting it, so removing one journey's copy
+   * of a cross-shared document never orphans the file for the others.
+   */
+  async getDocumentsByStoragePath(
+    storagePath: string,
+    userId: string
+  ): Promise<UploadedDocument[]> {
+    const { data, error } = await this.supabase
+      .from("documents")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("storage_path", storagePath);
+
+    if (error) {
+      console.error("Error fetching documents by storage path:", error);
+      throw error;
+    }
+
+    return (data || []).map((row) => this.mapDatabaseToDocument(row));
+  }
+
+  /**
    * Updates document status
    */
   async updateDocumentStatus(

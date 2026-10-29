@@ -1,0 +1,315 @@
+import { AppGroup } from "@/types/app-groups";
+import { getGuideById, isGuideRelevantToVisaCategory } from "@/lib/guides/guideRegistry";
+
+export const JOURNEY_APP_GROUPS: AppGroup[] = [
+  {
+    id: "tools",
+    title: "Tools",
+    description: "Calculator, passport photo, smart form filler, and prep simulators",
+    iconName: "Wrench",
+    color: "#0d7377",
+    bgColor: "bg-teal-500/10 text-[#0d7377]",
+    items: [
+      {
+        id: "221g-action-planner",
+        label: "221(g) Action Planner",
+        description: "Step-by-step next moves after 221(g) or Administrative Processing.",
+        iconName: "LifeBuoy",
+        category: "tools",
+        componentKey: "action_221g",
+      },
+      {
+        id: "interview-prep",
+        label: "Interview Prep",
+        description: "Prepare smarter and deliver confident answers when it matters most.",
+        iconName: "MessageSquare",
+        category: "tools",
+        componentKey: "interview_prep",
+      },
+      {
+        id: "sponsorship-calculator",
+        label: "Sponsorship Calculator",
+        description: "Auto-check income/assets and tell you what you still need.",
+        iconName: "Calculator",
+        category: "tools",
+        componentKey: "sponsorship_calculator",
+      },
+      {
+        id: "dq-status-check",
+        label: "DQ Status Check",
+        description: "Track interview scheduling movement and trends by category.",
+        iconName: "Clock",
+        category: "tools",
+        componentKey: "dq_status_check",
+      },
+      {
+        id: "photo-booth",
+        label: "Photo Booth",
+        description: "Make a compliant passport/visa photo in minutes.",
+        iconName: "Camera",
+        category: "tools",
+        componentKey: "passport_photo",
+      },
+      {
+        id: "pdf-toolkit",
+        label: "PDF Tool Kit",
+        description: "Merge • compress • convert • edit, all in one toolkit.",
+        iconName: "Files",
+        category: "tools",
+        componentKey: "pdf_toolkit",
+      },
+      {
+        id: "snap-and-sign",
+        label: "Snap & Sign",
+        description: "Create a clean digital signature for your forms.",
+        iconName: "PenTool",
+        category: "tools",
+        componentKey: "snap_and_sign",
+      },
+      {
+        id: "smart-form-filler",
+        label: "Smart Form Filler",
+        description: "Auto-fills your official form and generates a ready-to-upload PDF.",
+        iconName: "Wand2",
+        category: "tools",
+        componentKey: "visa_forms",
+      },
+    ],
+  },
+  {
+    id: "guides",
+    title: "Guides",
+    description: "Civil document requirements, and official workflows",
+    iconName: "BookOpen",
+    color: "#0284c7",
+    bgColor: "bg-sky-500/10 text-sky-600",
+    items: [
+      {
+        id: "passport-guide",
+        label: "Passport Guide",
+        description: "DGIP MRP/ePassport application and renewal workflow.",
+        iconName: "Globe",
+        category: "guides",
+        componentKey: "passport_guide",
+      },
+      {
+        id: "cnic-guide",
+        label: "CNIC Guide",
+        description: "NADRA CNIC issuance, correction, and renewal workflow.",
+        iconName: "FileText",
+        category: "guides",
+        componentKey: "cnic_guide",
+      },
+      {
+        id: "birth-certificate-guide",
+        label: "Birth Certificate",
+        description: "Union Council and CBRC birth certificate process.",
+        iconName: "FileText",
+        category: "guides",
+        componentKey: "birth_certificate_guide",
+      },
+      {
+        id: "frc-guide",
+        label: "FRC Guide",
+        description: "FRC application and family record guide.",
+        iconName: "Globe",
+        category: "guides",
+        componentKey: "frc_guide",
+      },
+      {
+        id: "marriage-registration-guide",
+        label: "Marriage Registration",
+        description: "Union Council Nikah registration and NADRA MRC issuance.",
+        iconName: "Heart",
+        category: "guides",
+        componentKey: "marriage_guide",
+      },
+      {
+        id: "pcc-guide",
+        label: "Police Character Certificate",
+        description: "Province-wise PCC verification workflow and requirements.",
+        iconName: "Shield",
+        category: "guides",
+        componentKey: "pcc_guide",
+      },
+      {
+        id: "polio-vaccination-guide",
+        label: "Polio Vaccination",
+        description: "Polio vaccination and NIMS travel certificate workflow.",
+        iconName: "Syringe",
+        category: "guides",
+        componentKey: "polio_vaccination_guide",
+      },
+      {
+        id: "step-parent-guide",
+        label: "Step-Parent Guide",
+        description: "USCIS roadmap for sponsoring step-parents and marriage rules.",
+        iconName: "BookOpen",
+        category: "guides",
+        componentKey: "step_parent_guide",
+      },
+      {
+        id: "adoptive-parent-guide",
+        label: "Adoptive Parent Guide",
+        description: "USCIS adoption criteria and legal guardianship requirements.",
+        iconName: "BookOpen",
+        category: "guides",
+        componentKey: "adoptive_parent_guide",
+      },
+    ],
+  },
+  {
+    id: "services",
+    title: "Services",
+    description: "Expert consultation, province filings, medical appointments, and certified translations",
+    iconName: "Briefcase",
+    color: "#d97706",
+    bgColor: "bg-amber-500/10 text-amber-600",
+    items: [
+      {
+        id: "expert-consultation",
+        label: "Expert Consultation",
+        description: "Book a 1-on-1 strategic consultation call with an immigration expert.",
+        iconName: "MessageSquare",
+        category: "services",
+        componentKey: "expert_consultation",
+      },
+      {
+        id: "pcc-filing-sindh",
+        label: "PCC Filing Service, Sindh",
+        description: "Done-for-you police certificate filing for Sindh province.",
+        iconName: "Shield",
+        category: "services",
+        componentKey: "police_verification",
+      },
+      {
+        id: "book-medical-appointment",
+        label: "Book Medical Appointment",
+        description: "Book your official panel physician medical exam appointment.",
+        iconName: "Heart",
+        category: "services",
+        componentKey: "medical_appointment",
+      },
+      {
+        id: "urdu-english-translation",
+        label: "Urdu → English Translation",
+        description: "Request certified translation + formatting for submission.",
+        iconName: "FileUp",
+        category: "services",
+        componentKey: "doc_translation",
+      },
+    ],
+  },
+];
+
+export const TOOL_FEATURE_MAP: Record<string, string | null> = {
+  // Tools
+  action_221g: "action_221g",
+  interview_prep: "basic_interview_prep",
+  sponsorship_calculator: "sponsorship_calc",
+  dq_status_check: "dq_status_check",
+  passport_photo: "photo_booth",
+  pdf_toolkit: "pdf_toolkit",
+  snap_and_sign: "snap_sign",
+  visa_forms: "smart_form_filler",
+  passport_ocr: "document_vault",
+
+  // Guides
+  passport_guide: "guide_passport",
+  cnic_guide: "guide_cnic",
+  birth_certificate_guide: "guide_birth_cert",
+  frc_guide: "guide_frc",
+  marriage_guide: "guide_nikah_nama",
+  pcc_guide: "guide_police",
+  polio_vaccination_guide: "polio_certificate",
+  step_parent_guide: null,
+  adoptive_parent_guide: null,
+
+  // Services
+  expert_consultation: "expert_consultation",
+  police_verification: "pcc_filing",
+  medical_appointment: "medical_booking",
+  doc_translation: "document_translation",
+};
+
+/**
+ * Guide/service app-group items that are real pages under `app/(tools)/...`.
+ * These are mounted in-place by `GuidePageOverlay` (no route change) instead of
+ * being rendered as an embedded tool, so the journey dashboard stays behind them
+ * exactly like a guide opened from a step.
+ */
+export const OVERLAY_PAGE_ROUTES: Record<string, string> = {
+  // Guides
+  passport_guide: "/guides/passport-guide",
+  cnic_guide: "/guides/cnic-guide",
+  birth_certificate_guide: "/guides/birth-certificate-guide",
+  frc_guide: "/guides/frc-guide",
+  marriage_guide: "/guides/nikah-nama-guide",
+  pcc_guide: "/guides/police-verification-guide",
+  polio_vaccination_guide: "/guides/polio-vaccination-guide",
+  step_parent_guide: "/guides/step-parent-guide",
+  adoptive_parent_guide: "/guides/adoptive-parent-guide",
+
+  // Services that have their own tool page
+  police_verification: "/police-verification",
+};
+
+/**
+ * Maps app-group component keys to their registered guide ID in guideRegistry.
+ */
+export const COMPONENT_KEY_TO_GUIDE_ID: Record<string, string> = {
+  passport_guide: "passport",
+  cnic_guide: "cnic",
+  birth_certificate_guide: "birth-certificate",
+  frc_guide: "frc",
+  marriage_guide: "marriage-certificate",
+  pcc_guide: "police-verification",
+  polio_vaccination_guide: "vaccinations",
+  step_parent_guide: "step-parent",
+  adoptive_parent_guide: "adoptive-parent",
+};
+
+/** Returns the in-place overlay route for a componentKey, or null if it has none. */
+export function getOverlayPageRoute(componentKey: string): string | null {
+  return OVERLAY_PAGE_ROUTES[componentKey] || null;
+}
+
+/**
+ * The label shown for a launched toolbox item (journey nav breadcrumb), taken from
+ * the app-group catalog so the breadcrumb matches the card the user clicked.
+ * Falls back to a title-cased componentKey for keys that are not in a group.
+ */
+export function getAppGroupItemLabel(componentKey: string): string {
+  for (const group of JOURNEY_APP_GROUPS) {
+    const item = group.items.find((i) => i.componentKey === componentKey);
+    if (item) return item.label;
+  }
+  return componentKey.replace(/_/g, " ").replace(/ \w/g, (c) => c.toUpperCase());
+}
+
+/**
+ * Returns journey app groups with the Guides group dynamically filtered
+ * to only include guides relevant to the given visa category.
+ *
+ * @param visaCategory The active visa category (e.g. "IR-5", "IR-1", "CR-1")
+ */
+export function getJourneyAppGroups(visaCategory?: string | null): AppGroup[] {
+  if (!visaCategory) return JOURNEY_APP_GROUPS;
+
+  return JOURNEY_APP_GROUPS.map((group) => {
+    if (group.id !== "guides") return group;
+
+    const filteredItems = group.items.filter((item) => {
+      const guideId = COMPONENT_KEY_TO_GUIDE_ID[item.componentKey];
+      if (!guideId) return true; // Keep unmapped guides by default
+      const guideMeta = getGuideById(guideId);
+      if (!guideMeta) return true;
+      return isGuideRelevantToVisaCategory(guideMeta, visaCategory);
+    });
+
+    return {
+      ...group,
+      items: filteredItems,
+    };
+  });
+}

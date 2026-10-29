@@ -20,12 +20,18 @@ const JOURNEY_DATA_MAP: Record<string, any> = {
 };
 
 function resolveJourneyData(visaJourney: string): any | null {
+  if (!visaJourney) return null;
+  const norm = String(visaJourney).toLowerCase().replace(/[^a-z0-9]/g, "");
+  if (norm.startsWith("ir5")) return ir5Data;
+  if (norm.startsWith("ir1") || norm.startsWith("cr1")) return ir1Data;
+  if (norm.startsWith("f1")) return f1Data;
+  if (norm.includes("germany")) return germanyData;
   return JOURNEY_DATA_MAP[visaJourney] ?? null;
 }
 import { useAuth } from "@/app/context/AuthContext";
 import { useWizard, type WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { IR5_ENABLED } from "@/lib/feature-flags";
 import { motion } from "framer-motion";
 import {
@@ -83,10 +89,23 @@ import ScenarioSelectionModal from "./components/ScenarioSelectionModal";
 import VisaCategoryTooltip from "./components/VisaCategoryToolTip";
 import RoadmapLayoutSpouse from "@/app/components/journey-spouse/RoadmapLayoutSpouse";
 import RoadmapLayoutEngine from "@/app/components/journey-engine/RoadmapLayoutEngine";
+import { useCandidate } from "@/app/context/CandidateContext";
 
 export default function IR1JourneyPage() {
   const { user } = useAuth();
   const userId = user?.id ?? null;
+  const { activeCandidate, setActiveCandidateId } = useCandidate();
+  const searchParams = useSearchParams();
+  const candidateIdFromUrl = searchParams?.get("candidateId");
+  const journeyDbIdFromUrl = searchParams?.get("journeyId");
+  const effectiveCandidateId = candidateIdFromUrl || activeCandidate?.id;
+
+  useEffect(() => {
+    if (candidateIdFromUrl && activeCandidate?.id !== candidateIdFromUrl) {
+      setActiveCandidateId(candidateIdFromUrl);
+    }
+  }, [candidateIdFromUrl, activeCandidate?.id, setActiveCandidateId]);
+
   const { t, language } = useLanguage();
   const params = useParams();
   const visaJourneyParam = (params?.["visa-journey"] as string) || "ir-1";
@@ -97,6 +116,15 @@ export default function IR1JourneyPage() {
   // stable hook order across renders.
   const router = useRouter();
   const isIr5Route = visaJourneyParam === "ir-5" || visaJourneyParam === "ir5-journey";
+
+  // The journey URL is AUTHORITATIVE for the category (PROJECT_KNOWLEDGE 4.7: "URL base is
+  // authoritative ... deliberately NOT candidate-authoritative"). We deliberately do NOT
+  // auto-push the URL to follow the active candidate's visaCategory here. The primary
+  // candidate's category DEFAULTS to "IR-5" when profile.visaType is unset
+  // (getDefaultCandidatesForVisa), so a candidate-authoritative redirect bounced the user off
+  // ir1-journey to ir5-journey and made it impossible to switch back to IR-1. Navigation on an
+  // explicit switch is owned solely by CandidateSwitcherTray; adding a candidate navigates from
+  // AddCandidateModal. Keeping the URL authoritative here removes the bounce.
 
   useEffect(() => {
     if (isIr5Route && !IR5_ENABLED) {
@@ -138,12 +166,19 @@ export default function IR1JourneyPage() {
   const { state, actions, isLoaded, hasExistingProgress, isSyncing, error } = useWizard({
     userId,
     journeyId: visaJourney,
+    candidateId: effectiveCandidateId,
+    journeyDbId: journeyDbIdFromUrl,
     roadmapData,
   });
 
   const isSignedIn = !!user;
   const [journeyDecisionMade, setJourneyDecisionMade] = useState(false);
   const [startFreshModalOpen, setStartFreshModalOpen] = useState(false);
+
+  // Reset decision state when active candidate changes so fresh candidate journeys start properly
+  useEffect(() => {
+    setJourneyDecisionMade(false);
+  }, [activeCandidate?.id]);
 
   const showDecisionScreen = isLoaded && isSignedIn && hasExistingProgress && !journeyDecisionMade;
 
@@ -250,16 +285,29 @@ export default function IR1JourneyPage() {
   }
 
   // IR-1/CR-1 keep the dedicated (legacy) spouse UI.
-  if (visaJourney === "ir-1" || visaJourney === "cr-1") {
-    return <RoadmapLayoutSpouse data={roadmapData} state={state} actions={actions as any} />;
+  const normCategory = (visaJourney || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  if (normCategory.startsWith("ir1") || normCategory.startsWith("cr1")) {
+    return (
+      <RoadmapLayoutSpouse
+        key={`${visaJourney}_${activeCandidate?.id || "default"}`}
+        data={roadmapData}
+        state={state}
+        actions={actions as any}
+      />
+    );
   }
 
   // Any JSON-driven journey (chapters-schema) renders through the generic engine —
-  // ir-5 today, and ANY future category whose JSON follows the chapters schema, with
-  // NO routing change needed. Old-schema journeys (f-1, germany: `stages`/no `chapters`)
-  // fall through to the legacy UI below.
-  if (Array.isArray((roadmapData as any).chapters)) {
-    return <RoadmapLayoutEngine data={roadmapData as any} state={state} actions={actions as any} />;
+  // ir-5 today, and ANY future category whose JSON follows the chapters schema.
+  if (roadmapData && Array.isArray((roadmapData as any).chapters)) {
+    return (
+      <RoadmapLayoutEngine
+        key={`${visaJourney}_${activeCandidate?.id || "default"}`}
+        data={roadmapData as any}
+        state={state}
+        actions={actions as any}
+      />
+    );
   }
 
   // Fallback for old-schema journeys (Old UI)

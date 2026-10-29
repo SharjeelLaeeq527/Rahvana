@@ -19,6 +19,7 @@ import {
   computeDocumentStage,
   type DocumentEscalationConfig,
 } from "@/lib/case-strength/alert-gating";
+import { getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
 
 const DAY_MS = 86_400_000;
 
@@ -735,16 +736,11 @@ export class ReminderEngine {
     },
   };
 
-  /** Normalize journey_type → config key (tolerant: "IR-5"/"IR5"/"ir5" → "ir-5"). */
+  /** Normalize journey_type → config key (tolerant: "IR-5"/"IR5"/"ir5"/"ir5_candidate2" → "ir-5"). */
   private static normalizeJourneyType(raw: string | null | undefined): string {
-    return (
-      String(raw ?? "")
-        .trim()
-        .toLowerCase()
-        .replace(/[_\s]+/g, "-")
-        // "ir1" → "ir-1", "cr1" → "cr-1" etc.
-        .replace(/^(ir|cr)(\d)$/, "$1-$2")
-    );
+    if (!raw) return "";
+    const base = getBaseVisaCategory(raw);
+    return base.toLowerCase();
   }
 
   private async checkStep2GatheringPending(journeyId: string): Promise<ReminderCandidate[]> {

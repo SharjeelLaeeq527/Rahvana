@@ -1,163 +1,316 @@
 // app/context/QuickAccessContext.tsx
 "use client";
 
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-  useRef,
-} from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "./AuthContext";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 export interface QuickAccessItem {
-  /** Unique stable identifier for the tool, e.g. "pdf", "interview-prep" */
+  /** Unique stable identifier for the tool, e.g. "pdf", "interview_prep" */
   id: string;
   /** Display name shown in the dropdown */
   title: string;
-  /** Navigation path, e.g. "/pdf-processing" */
+  /** Navigation path, e.g. "/pdf-processing" or a journey route */
   href: string;
   /** Lucide icon name (string), optional */
   icon_name?: string;
 }
 
-interface QuickAccessContextType {
-  items: QuickAccessItem[];
-  isLoading: boolean;
-  addItem: (item: QuickAccessItem) => Promise<void>;
-  removeItem: (id: string) => Promise<void>;
-  isInQuickAccess: (id: string) => boolean;
+export type QuickAccessScope = { type: "account" } | { type: "journey"; journeyId: string };
+
+/** Stable identity for a scope; also used as the localStorage namespace. */
+export function scopeKeyOf(scope: QuickAccessScope): string {
+  return scope.type === "account" ? "account" : `journey:${scope.journeyId}`;
 }
 
-// ─── Context ─────────────────────────────────────────────────────────────────
+const ACCOUNT_SCOPE: QuickAccessScope = { type: "account" };
+const BACKUP_PREFIX = "rahvana_quick_access_items";
 
-const QuickAccessContext = createContext<QuickAccessContextType>({
+// ─── Local backup (per-scope) ────────────────────────────────────────────────
+
+const readBackup = (key: string): QuickAccessItem[] => {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(`${BACKUP_PREFIX}:${key}`);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+};
+
+const writeBackup = (key: string, items: QuickAccessItem[]) => {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(`${BACKUP_PREFIX}:${key}`, JSON.stringify(items));
+  } catch {
+    /* ignore quota errors */
+  }
+};
+
+// ─── Internal store shape ────────────────────────────────────────────────────
+
+interface ScopeState {
+  items: QuickAccessItem[];
+  isLoading: boolean;
+  isPending: boolean;
+  loaded: boolean;
+}
+
+const EMPTY_STATE: ScopeState = {
   items: [],
   isLoading: false,
-  addItem: async () => {},
-  removeItem: async () => {},
-  isInQuickAccess: () => false,
-});
+  isPending: false,
+  loaded: false,
+};
 
-// ─── Provider ─────────────────────────────────────────────────────────────────
+interface QuickAccessStore {
+  states: Record<string, ScopeState>;
+  ensureLoaded: (scope: QuickAccessScope) => void;
+  addItem: (scope: QuickAccessScope, item: QuickAccessItem) => Promise<void>;
+  removeItem: (scope: QuickAccessScope, id: string) => Promise<void>;
+  clearAll: (scope: QuickAccessScope) => Promise<void>;
+}
+
+const StoreContext = createContext<QuickAccessStore | null>(null);
+
+// ─── Provider ────────────────────────────────────────────────────────────────
 
 export function QuickAccessProvider({ children }: { children: React.ReactNode }) {
-  const { user, isLoading: authLoading } = useAuth();
-  const [items, setItems] = useState<QuickAccessItem[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  // Prevent double-fetching on strict-mode double effects
-  const fetchedForUser = useRef<string | null>(null);
+  const { user } = useAuth();
+  const [states, setStates] = useState<Record<string, ScopeState>>({});
 
-  // ── Fetch all items on user login ──────────────────────────────────────────
-  const fetchItems = useCallback(async () => {
-    if (!user) return;
-    setIsLoading(true);
-    try {
-      const res = await fetch("/api/quick-access");
-      if (res.ok) {
-        const data = await res.json();
-        // Map DB columns → QuickAccessItem shape
-        const mapped: QuickAccessItem[] = (data.items ?? []).map((row: any) => ({
-          id: row.item_id,
-          title: row.title,
-          href: row.href,
-          icon_name: row.icon_name ?? undefined,
-        }));
-        setItems(mapped);
-      }
-    } catch (err) {
-      console.error("[QuickAccessContext] fetchItems:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user]);
+  const loadedRef = useRef<Set<string>>(new Set());
+  const inFlightRef = useRef<Set<string>>(new Set());
 
+  // Reset everything when the signed-in user changes (or on logout).
   useEffect(() => {
-    if (authLoading) return;
-    if (!user) {
-      setItems([]);
-      fetchedForUser.current = null;
-      return;
-    }
-    // Only fetch once per user session to avoid request storms
-    if (fetchedForUser.current === user.id) return;
-    fetchedForUser.current = user.id;
-    fetchItems();
-  }, [user, authLoading, fetchItems]);
+    loadedRef.current = new Set();
+    inFlightRef.current = new Set();
+    setStates({});
+  }, [user?.id]);
 
-  // ── Add item ──────────────────────────────────────────────────────────────
-  const addItem = useCallback(
-    async (item: QuickAccessItem) => {
+  // Persist each loaded scope back to its own localStorage namespace.
+  useEffect(() => {
+    Object.entries(states).forEach(([k, s]) => {
+      if (s.loaded) writeBackup(k, s.items);
+    });
+  }, [states]);
+
+  const patch = useCallback((key: string, updater: (s: ScopeState) => ScopeState) => {
+    setStates((prev) => {
+      const cur = prev[key] ?? EMPTY_STATE;
+      return { ...prev, [key]: updater(cur) };
+    });
+  }, []);
+
+  const ensureLoaded = useCallback(
+    (scope: QuickAccessScope) => {
       if (!user) return;
-      // Optimistic update
-      setItems((prev) =>
-        prev.some((i) => i.id === item.id) ? prev : [...prev, item]
+      if (scope.type === "journey" && !scope.journeyId) return; // not ready yet
+      const key = scopeKeyOf(scope);
+
+      // Seed optimistically from this scope's backup so the tray opens instantly.
+      setStates((prev) =>
+        prev[key] ? prev : { ...prev, [key]: { ...EMPTY_STATE, items: readBackup(key) } }
       );
+
+      if (loadedRef.current.has(key) || inFlightRef.current.has(key)) return;
+      inFlightRef.current.add(key);
+      patch(key, (s) => ({ ...s, isLoading: true }));
+
+      (async () => {
+        const url =
+          scope.type === "account"
+            ? "/api/quick-access?scope=account"
+            : `/api/quick-access?scope=journey&journey_id=${encodeURIComponent(scope.journeyId)}`;
+        try {
+          const res = await fetch(url, { signal: AbortSignal.timeout(6000) });
+          if (res.ok) {
+            const data = await res.json();
+            const mapped: QuickAccessItem[] = (data.items ?? []).map((row: any) => ({
+              id: row.item_id,
+              title: row.title,
+              href: row.href,
+              icon_name: row.icon_name ?? undefined,
+            }));
+            loadedRef.current.add(key);
+            patch(key, (s) => ({ ...s, items: mapped, isLoading: false, loaded: true }));
+          } else {
+            patch(key, (s) => ({ ...s, isLoading: false }));
+          }
+        } catch (err: any) {
+          if (err?.name !== "AbortError" && err?.name !== "TimeoutError") {
+            console.warn("[QuickAccessContext] fetchItems fallback:", err?.message || err);
+          }
+          patch(key, (s) => ({ ...s, isLoading: false }));
+        } finally {
+          inFlightRef.current.delete(key);
+        }
+      })();
+    },
+    [user, patch]
+  );
+
+  const addItem = useCallback(
+    async (scope: QuickAccessScope, item: QuickAccessItem) => {
+      if (!user) return;
+      const key = scopeKeyOf(scope);
+      // Optimistic add
+      patch(key, (s) => ({
+        ...s,
+        isPending: true,
+        items: s.items.some((i) => i.id === item.id) ? s.items : [...s.items, item],
+      }));
       try {
         const res = await fetch("/api/quick-access", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(item),
+          body: JSON.stringify({
+            id: item.id,
+            title: item.title,
+            href: item.href,
+            icon_name: item.icon_name,
+            scope_type: scope.type,
+            journey_id: scope.type === "journey" ? scope.journeyId : null,
+          }),
+          signal: AbortSignal.timeout(6000),
         });
         if (!res.ok) {
-          // Roll back on failure
-          setItems((prev) => prev.filter((i) => i.id !== item.id));
-          console.error("[QuickAccessContext] addItem failed:", await res.text());
+          // Roll back
+          patch(key, (s) => ({ ...s, items: s.items.filter((i) => i.id !== item.id) }));
+          console.warn("[QuickAccessContext] addItem failed:", await res.text());
         }
       } catch (err) {
-        setItems((prev) => prev.filter((i) => i.id !== item.id));
-        console.error("[QuickAccessContext] addItem:", err);
+        patch(key, (s) => ({ ...s, items: s.items.filter((i) => i.id !== item.id) }));
+        console.warn("[QuickAccessContext] addItem error:", err);
+      } finally {
+        patch(key, (s) => ({ ...s, isPending: false }));
       }
     },
-    [user]
+    [user, patch]
   );
 
-  // ── Remove item ───────────────────────────────────────────────────────────
   const removeItem = useCallback(
-    async (id: string) => {
+    async (scope: QuickAccessScope, id: string) => {
       if (!user) return;
-      // Optimistic update
-      const prev = items;
-      setItems((p) => p.filter((i) => i.id !== id));
+      const key = scopeKeyOf(scope);
+      let snapshot: QuickAccessItem[] = [];
+      patch(key, (s) => {
+        snapshot = s.items;
+        return { ...s, isPending: true, items: s.items.filter((i) => i.id !== id) };
+      });
       try {
         const res = await fetch("/api/quick-access", {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id }),
+          body: JSON.stringify({
+            id,
+            scope_type: scope.type,
+            journey_id: scope.type === "journey" ? scope.journeyId : null,
+          }),
+          signal: AbortSignal.timeout(6000),
         });
         if (!res.ok) {
-          // Roll back
-          setItems(prev);
-          console.error("[QuickAccessContext] removeItem failed:", await res.text());
+          patch(key, (s) => ({ ...s, items: snapshot })); // roll back
+          console.warn("[QuickAccessContext] removeItem failed:", await res.text());
         }
       } catch (err) {
-        setItems(prev);
-        console.error("[QuickAccessContext] removeItem:", err);
+        patch(key, (s) => ({ ...s, items: snapshot }));
+        console.warn("[QuickAccessContext] removeItem error:", err);
+      } finally {
+        patch(key, (s) => ({ ...s, isPending: false }));
       }
     },
-    [user, items]
+    [user, patch]
   );
 
-  // ── Helper ────────────────────────────────────────────────────────────────
-  const isInQuickAccess = useCallback(
-    (id: string) => items.some((i) => i.id === id),
-    [items]
+  const clearAll = useCallback(
+    async (scope: QuickAccessScope) => {
+      if (!user) return;
+      const key = scopeKeyOf(scope);
+      let snapshot: QuickAccessItem[] = [];
+      patch(key, (s) => {
+        snapshot = s.items;
+        return { ...s, isPending: true, items: [] };
+      });
+      try {
+        const res = await fetch("/api/quick-access", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            all: true,
+            scope_type: scope.type,
+            journey_id: scope.type === "journey" ? scope.journeyId : null,
+          }),
+          signal: AbortSignal.timeout(6000),
+        });
+        if (!res.ok) {
+          patch(key, (s) => ({ ...s, items: snapshot }));
+          console.warn("[QuickAccessContext] clearAll failed:", await res.text());
+        }
+      } catch (err) {
+        patch(key, (s) => ({ ...s, items: snapshot }));
+        console.warn("[QuickAccessContext] clearAll error:", err);
+      } finally {
+        patch(key, (s) => ({ ...s, isPending: false }));
+      }
+    },
+    [user, patch]
   );
 
-  return (
-    <QuickAccessContext.Provider
-      value={{ items, isLoading, addItem, removeItem, isInQuickAccess }}
-    >
-      {children}
-    </QuickAccessContext.Provider>
-  );
+  const store: QuickAccessStore = {
+    states,
+    ensureLoaded,
+    addItem,
+    removeItem,
+    clearAll,
+  };
+
+  return <StoreContext.Provider value={store}>{children}</StoreContext.Provider>;
 }
 
-// ─── Hook ─────────────────────────────────────────────────────────────────────
+// ─── Hook (scope-aware; defaults to account for backward compatibility) ───────
 
-export function useQuickAccess() {
-  return useContext(QuickAccessContext);
+export function useQuickAccess(scope: QuickAccessScope = ACCOUNT_SCOPE) {
+  const store = useContext(StoreContext);
+  const key = scopeKeyOf(scope);
+  const isValid = scope.type === "account" || (scope.type === "journey" && !!scope.journeyId);
+
+  useEffect(() => {
+    if (store && isValid) store.ensureLoaded(scope);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [store, key, isValid]);
+
+  const state = store?.states[key] ?? EMPTY_STATE;
+
+  const addItem = useCallback(
+    (item: QuickAccessItem) => store?.addItem(scope, item),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [store, key]
+  );
+  const removeItem = useCallback(
+    (id: string) => store?.removeItem(scope, id),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [store, key]
+  );
+  const clearAll = useCallback(
+    () => store?.clearAll(scope),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [store, key]
+  );
+  const isInQuickAccess = useCallback(
+    (id: string) => state.items.some((i) => i.id === id),
+    [state.items]
+  );
+
+  return {
+    items: state.items,
+    isLoading: state.isLoading,
+    isPending: state.isPending,
+    addItem,
+    removeItem,
+    clearAll,
+    isInQuickAccess,
+  };
 }

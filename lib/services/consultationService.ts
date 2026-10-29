@@ -21,9 +21,20 @@ if (!supabase) {
   console.error("Supabase client failed to initialize");
 }
 
+/** A value that is safe inside a PostgREST or() filter (no separators or quotes). */
+const SAFE_FILTER_VALUE = /^[^\s,()"\\]+$/;
+
 export const consultationService = {
   // Get all consultation bookings with optional filtering
-  async getAllBookings(filters: { status?: string; search?: string; paidOnly?: boolean } = {}) {
+  async getAllBookings(
+    filters: {
+      status?: string;
+      search?: string;
+      paidOnly?: boolean;
+      /** Only this user's bookings (plus their pre-login bookings made with this email). */
+      owner?: { userId: string; email?: string | null };
+    } = {}
+  ) {
     if (!supabase) {
       console.error("Supabase client not initialized");
       return [];
@@ -34,6 +45,14 @@ export const consultationService = {
       .select("*")
       .order("created_at", { ascending: false });
 
+    if (filters.owner) {
+      const email = filters.owner.email?.trim().toLowerCase();
+      query =
+        email && SAFE_FILTER_VALUE.test(email)
+          ? query.or(`user_id.eq.${filters.owner.userId},and(user_id.is.null,email.eq.${email})`)
+          : query.eq("user_id", filters.owner.userId);
+    }
+
     if (filters.status) {
       query = query.eq("status", filters.status);
     }
@@ -42,9 +61,11 @@ export const consultationService = {
       query = query.or("payment_status.eq.paid,payment_status.eq.free");
     }
 
-    if (filters.search) {
+    // Characters that would break out of the or() filter are dropped.
+    const search = filters.search?.replace(/[,()*%\\"]/g, " ").trim();
+    if (search) {
       query = query.or(
-        `full_name.ilike.%${filters.search}%,email.ilike.%${filters.search}%,reference_id.ilike.%${filters.search}%`
+        `full_name.ilike.%${search}%,email.ilike.%${search}%,reference_id.ilike.%${search}%`
       );
     }
 
@@ -112,7 +133,8 @@ export const consultationService = {
     const normalizedUrgency =
       bookingData.urgency && bookingData.urgency.startsWith("urgent") ? "urgent" : "normal";
     const bookingStatus = bookingData.status || "pending_approval";
-    const bookingPaymentStatus = bookingData.payment_status ?? "paid";
+    // Unpaid unless the caller (after verifying a journey or a payment) says otherwise.
+    const bookingPaymentStatus = bookingData.payment_status ?? "pending";
 
     // Map camelCase to snake_case for Supabase
     const newBooking = {
@@ -136,6 +158,10 @@ export const consultationService = {
       payment_status: bookingPaymentStatus,
       payment_id: bookingData.payment_id || null,
       user_id: bookingData.user_id || null,
+      // Journey-scope tagging
+      source: bookingData.source ?? "standalone",
+      journey_slug: bookingData.journey_slug ?? null,
+      candidate_id: bookingData.candidate_id ?? null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Expires in 24 hours if not approved

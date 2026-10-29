@@ -1,7 +1,8 @@
 /**
  * subscriptionCleanup tests.
  * Risk: the cleanup cancels an UNRELATED subscription, cancels the sub we mean to
- * keep, misreads a legacy sub's tier, or misses live subs past the first page.
+ * keep, misreads a legacy sub's tier, misses live subs past the first page, or
+ * (per-journey plans) cancels a plan belonging to ANOTHER journey or candidate.
  */
 
 jest.mock("@/lib/stripe/config", () => ({
@@ -22,7 +23,9 @@ import { stripe } from "@/lib/stripe/config";
 import {
   resolveSubscriptionTier,
   isRahvanaJourneySubscription,
-  cancelDuplicateSubscriptions,
+  cancelSupersededSubscriptions,
+  journeyTypeForVisaCategory,
+  isAddCandidateSubscription,
 } from "@/lib/stripe/subscriptionCleanup";
 
 const mockList = (stripe as any).subscriptions.list as jest.Mock;
@@ -91,73 +94,164 @@ describe("isRahvanaJourneySubscription", () => {
   });
 });
 
-describe("cancelDuplicateSubscriptions", () => {
+describe("journey helpers", () => {
+  it("maps visa categories to the journey that owns the plan", () => {
+    expect(journeyTypeForVisaCategory("IR-1 / CR-1")).toBe("IR1");
+    expect(journeyTypeForVisaCategory("ir1")).toBe("IR1");
+    expect(journeyTypeForVisaCategory("IR-5")).toBe("IR5");
+    expect(journeyTypeForVisaCategory("ir5")).toBe("IR5");
+  });
+  it("recognizes add-candidate plans by either metadata tag", () => {
+    expect(isAddCandidateSubscription(sub({ metadata: { is_add_candidate: "true" } }))).toBe(true);
+    expect(isAddCandidateSubscription(sub({ metadata: { action: "add_candidate" } }))).toBe(true);
+    expect(isAddCandidateSubscription(sub({ metadata: { is_add_candidate: "false" } }))).toBe(false);
+  });
+});
+
+describe("cancelSupersededSubscriptions", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockCancel.mockResolvedValue({});
     setPages([]);
   });
 
-  it("cancels other LIVE Rahvana subs but keeps keepSubId", async () => {
-    setPages([
-      sub({ id: "sub_keep", metadata: { tier: "executive" } }),
-      sub({ id: "sub_dupe", metadata: { tier: "premium" } }),
-    ]);
-    const cancelled = await cancelDuplicateSubscriptions("cus_1", "sub_keep");
-    expect(cancelled).toEqual(["sub_dupe"]);
-    expect(mockCancel).toHaveBeenCalledWith("sub_dupe");
-    expect(mockCancel).not.toHaveBeenCalledWith("sub_keep");
+  const ir1 = (id: string, tier = "basic", extra: any = {}) =>
+    sub({ id, metadata: { tier, visa_category: "IR-1", ...extra } });
+  const ir5 = (id: string, tier = "basic", extra: any = {}) =>
+    sub({ id, metadata: { tier, visa_category: "IR-5", ...extra } });
+
+  it("upgrade: retires the old plan of the SAME journey and keeps the new one", async () => {
+    setPages([ir1("sub_new", "premium"), ir1("sub_old", "basic")]);
+    const cancelled = await cancelSupersededSubscriptions({
+      customerId: "cus_1",
+      keepSubId: "sub_new",
+      visaCategory: "IR-1",
+      oldSubscriptionId: "sub_old",
+    });
+    expect(cancelled).toEqual(["sub_old"]);
+    expect(mockCancel).not.toHaveBeenCalledWith("sub_new");
   });
 
-  it("NEVER cancels an unrelated (non-Rahvana) subscription", async () => {
-    setPages([
-      sub({ id: "sub_keep", metadata: { tier: "premium" } }),
-      sub({ id: "sub_unrelated", items: { data: [{ price: { id: "price_other" } }] } }),
-    ]);
-    const cancelled = await cancelDuplicateSubscriptions("cus_1", "sub_keep");
+  it("never cancels a plan for a DIFFERENT journey (IR-1 purchase keeps IR-5)", async () => {
+    setPages([ir1("sub_new", "basic"), ir5("sub_ir5", "premium")]);
+    const cancelled = await cancelSupersededSubscriptions({
+      customerId: "cus_1",
+      keepSubId: "sub_new",
+      visaCategory: "IR-1",
+    });
     expect(cancelled).toEqual([]);
     expect(mockCancel).not.toHaveBeenCalled();
   });
 
-  it("skips non-live statuses (canceled/incomplete) and cancels only live dupes", async () => {
+  it("add-candidate purchase replaces nothing (existing IR-5 plan survives)", async () => {
     setPages([
-      sub({ id: "sub_keep", metadata: { tier: "premium" } }),
-      sub({ id: "sub_dead", status: "canceled", metadata: { tier: "premium" } }),
-      sub({ id: "sub_incomplete", status: "incomplete", metadata: { tier: "premium" } }),
-      sub({ id: "sub_live_dupe", status: "past_due", metadata: { tier: "basic" } }),
+      ir5("sub_cand2", "basic", { is_add_candidate: "true" }),
+      ir5("sub_primary", "premium"),
     ]);
-    const cancelled = await cancelDuplicateSubscriptions("cus_1", "sub_keep");
-    expect(cancelled).toEqual(["sub_live_dupe"]);
+    const cancelled = await cancelSupersededSubscriptions({
+      customerId: "cus_1",
+      keepSubId: "sub_cand2",
+      visaCategory: "IR-5",
+      isAddCandidate: true,
+    });
+    expect(cancelled).toEqual([]);
+    expect(mockList).not.toHaveBeenCalled();
   });
 
-  it("walks ALL pages (auto-pagination) so a dupe past page 1 is still cancelled", async () => {
-    const pages = [sub({ id: "sub_keep", metadata: { tier: "executive" } })];
-    for (let i = 0; i < 120; i++) {
-      pages.push(sub({ id: `sub_${i}`, metadata: { tier: "premium" } }));
-    }
+  it("IR-5 primary upgrade keeps other candidates' add-candidate plans", async () => {
+    setPages([
+      ir5("sub_new", "premium"),
+      ir5("sub_old_primary", "basic", { is_add_candidate: "true" }), // first IR-5 purchase
+      ir5("sub_cand2", "executive", { action: "add_candidate" }),
+    ]);
+    const cancelled = await cancelSupersededSubscriptions({
+      customerId: "cus_1",
+      keepSubId: "sub_new",
+      visaCategory: "IR-5",
+      oldSubscriptionId: "sub_old_primary",
+    });
+    expect(cancelled).toEqual(["sub_old_primary"]);
+  });
+
+  it("heals a same-journey duplicate even without an upgrade hint", async () => {
+    setPages([ir1("sub_keep", "premium"), ir1("sub_dupe", "premium")]);
+    const cancelled = await cancelSupersededSubscriptions({
+      customerId: "cus_1",
+      keepSubId: "sub_keep",
+      visaCategory: "IR-1",
+    });
+    expect(cancelled).toEqual(["sub_dupe"]);
+  });
+
+  it("leaves untagged legacy plans alone unless they are the upgrade hint", async () => {
+    const legacy = (id: string) => sub({ id, items: { data: [{ price: { id: "price_basic" } }] } });
+    setPages([ir1("sub_new", "premium"), legacy("sub_legacy_hint"), legacy("sub_legacy_other")]);
+    const cancelled = await cancelSupersededSubscriptions({
+      customerId: "cus_1",
+      keepSubId: "sub_new",
+      visaCategory: "IR-1",
+      oldSubscriptionId: "sub_legacy_hint",
+    });
+    expect(cancelled).toEqual(["sub_legacy_hint"]);
+  });
+
+  it("NEVER cancels an unrelated (non-Rahvana) subscription, even as the hint", async () => {
+    setPages([
+      ir1("sub_keep", "premium"),
+      sub({ id: "sub_unrelated", items: { data: [{ price: { id: "price_other" } }] } }),
+    ]);
+    const cancelled = await cancelSupersededSubscriptions({
+      customerId: "cus_1",
+      keepSubId: "sub_keep",
+      visaCategory: "IR-1",
+      oldSubscriptionId: "sub_unrelated",
+    });
+    expect(cancelled).toEqual([]);
+  });
+
+  it("skips non-live statuses and walks ALL pages", async () => {
+    const pages = [
+      ir1("sub_keep", "executive"),
+      sub({
+        id: "sub_dead",
+        status: "canceled",
+        metadata: { tier: "premium", visa_category: "IR-1" },
+      }),
+    ];
+    for (let i = 0; i < 120; i++) pages.push(ir1(`sub_${i}`, "premium"));
     setPages(pages);
-    const cancelled = await cancelDuplicateSubscriptions("cus_1", "sub_keep");
+    const cancelled = await cancelSupersededSubscriptions({
+      customerId: "cus_1",
+      keepSubId: "sub_keep",
+      visaCategory: "IR-1",
+    });
     expect(cancelled).toHaveLength(120);
-    expect(cancelled).not.toContain("sub_keep");
+    expect(cancelled).not.toContain("sub_dead");
   });
 
   it("is best-effort: a cancel failure does not throw and others still cancel", async () => {
-    setPages([
-      sub({ id: "sub_keep", metadata: { tier: "premium" } }),
-      sub({ id: "sub_bad", metadata: { tier: "basic" } }),
-      sub({ id: "sub_ok", metadata: { tier: "basic" } }),
-    ]);
+    setPages([ir1("sub_keep", "premium"), ir1("sub_bad"), ir1("sub_ok")]);
     mockCancel.mockImplementation((id: string) =>
       id === "sub_bad" ? Promise.reject(new Error("stripe boom")) : Promise.resolve({})
     );
-    const cancelled = await cancelDuplicateSubscriptions("cus_1", "sub_keep");
-    expect(cancelled).toEqual(["sub_ok"]); // sub_bad failed but did not break the run
+    const cancelled = await cancelSupersededSubscriptions({
+      customerId: "cus_1",
+      keepSubId: "sub_keep",
+      visaCategory: "IR-1",
+    });
+    expect(cancelled).toEqual(["sub_ok"]);
   });
 
   it("never throws even if listing blows up", async () => {
     mockList.mockImplementationOnce(() => {
       throw new Error("list exploded");
     });
-    await expect(cancelDuplicateSubscriptions("cus_1", "sub_keep")).resolves.toEqual([]);
+    await expect(
+      cancelSupersededSubscriptions({
+        customerId: "cus_1",
+        keepSubId: "sub_keep",
+        visaCategory: "IR-1",
+      })
+    ).resolves.toEqual([]);
   });
 });

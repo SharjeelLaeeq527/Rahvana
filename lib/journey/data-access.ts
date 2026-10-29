@@ -290,12 +290,13 @@ export async function updateJourneyProgressDB(
 // Create a new chapter for a journey
 export async function createChapterDB(
   journeyId: string,
-  chapterData: ChapterInput
+  chapterData: ChapterInput,
+  client?: { supabase: any; user: any }
 ): Promise<Chapter> {
-  const { supabase, user } = await getSupabaseWithUser();
+  const { supabase, user } = await getSupabaseWithUser(client);
 
   // Check if journey exists and belongs to user before adding chapter
-  const existingJourney = await getJourneyDB(journeyId);
+  const existingJourney = await getJourneyDB(journeyId, { supabase, user });
   if (!existingJourney) throw new Error("Journey not found or not owned");
 
   // Create new chapter
@@ -325,8 +326,11 @@ export async function createChapterDB(
   return data as Chapter;
 }
 
-export async function getChapterDB(chapterId: string): Promise<Chapter | null> {
-  const { supabase, user } = await getSupabaseWithUser();
+export async function getChapterDB(
+  chapterId: string,
+  client?: { supabase: any; user: any }
+): Promise<Chapter | null> {
+  const { supabase, user } = await getSupabaseWithUser(client);
 
   const { data, error } = await supabase
     .from("chapters")
@@ -341,7 +345,7 @@ export async function getChapterDB(chapterId: string): Promise<Chapter | null> {
     .single();
 
   if (error) {
-    if (error.code === "PGRST116") return null;
+    if (error.code === "PGRST116") return null; // No rows found
     throw new Error(error.message);
   }
 
@@ -474,11 +478,15 @@ export async function deleteChapterDB(chapterId: string): Promise<boolean> {
 
 // Step Operations
 // Create a new step for a chapter
-export async function createStepDB(chapterId: string, stepData: StepInput): Promise<Step> {
-  const { supabase, user } = await getSupabaseWithUser();
+export async function createStepDB(
+  chapterId: string,
+  stepData: StepInput,
+  client?: { supabase: any; user: any }
+): Promise<Step> {
+  const { supabase, user } = await getSupabaseWithUser(client);
 
   // Check if chapter exists
-  const existingChapter = await getChapterDB(chapterId);
+  const existingChapter = await getChapterDB(chapterId, { supabase, user });
   if (!existingChapter) throw new Error("Chapter not found or not owned");
 
   const { data, error } = await supabase
@@ -515,6 +523,50 @@ export async function createStepDB(chapterId: string, stepData: StepInput): Prom
   if (error) throw new Error(error.message);
 
   return data as Step;
+}
+
+// Batch create steps for a chapter (1 network query instead of N sequential calls)
+export async function createStepsBatchDB(
+  chapterId: string,
+  stepsData: StepInput[],
+  client?: { supabase: any; user: any }
+): Promise<Step[]> {
+  if (!stepsData || stepsData.length === 0) return [];
+  const { supabase } = await getSupabaseWithUser(client);
+
+  const payload = stepsData.map((stepData) => ({
+    chapter_id: chapterId,
+    step_key: stepData.step_key,
+    step_number: stepData.step_number,
+    step_name: stepData.step_name,
+    step_description: stepData.step_description || null,
+    step_type: stepData.step_type,
+    status: "not_started",
+    substatus: null,
+    completion_percentage: 0.0,
+    display_order: stepData.display_order || stepData.step_number,
+    is_visible: true,
+    is_required: stepData.is_required !== false,
+    visible_when: stepData.visible_when || null,
+    visibility_rules: stepData.visibility_rules || null,
+    dependencies: stepData.dependencies || [],
+    tool_integration: stepData.tool_integration || null,
+    tool_key: stepData.tool_key || null,
+    estimated_duration_days: stepData.estimated_duration_days || null,
+    started_at: null,
+    completed_at: null,
+    due_date: stepData.due_date || null,
+    metadata: stepData.metadata || {},
+  }));
+
+  const { data, error } = await supabase
+    .from("steps")
+    .insert(payload)
+    .select();
+
+  if (error) throw new Error(error.message);
+
+  return (data as Step[]) || [];
 }
 
 // Get a specific step by ID

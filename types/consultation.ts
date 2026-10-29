@@ -28,6 +28,12 @@ export interface ConsultationBooking {
   updated_at: Date;
   expires_at?: Date;
   user_id?: string | null;
+  /** Origin tag: 'journey' when created from inside a journey, 'standalone' otherwise. */
+  source?: "journey" | "standalone";
+  /** Journey slug (e.g. "ir5-journey") when `source === "journey"`. */
+  journey_slug?: string | null;
+  /** Candidate this booking belongs to (multi-candidate journeys). */
+  candidate_id?: string | null;
 }
 
 export interface TimeSlot {

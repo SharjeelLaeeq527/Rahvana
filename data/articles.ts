@@ -237,7 +237,8 @@ export const ARTICLES: Article[] = [
         image: {
           url: "/assets/images/blog/blog1-sec4.png",
           alt: "Mandatory Civil Documents Checklist for NVC Pakistan",
-          caption: "Essential Pakistani Civil Documents: Nikah Nama, NADRA MRC, Police Certificate, and FRC",
+          caption:
+            "Essential Pakistani Civil Documents: Nikah Nama, NADRA MRC, Police Certificate, and FRC",
           imageType: "sided",
         },
         paragraphs: [
@@ -260,7 +261,8 @@ export const ARTICLES: Article[] = [
         image: {
           url: "/assets/images/blog/blog1-sec5.png",
           alt: "Financial Support & Joint Sponsor Rules Form I-864",
-          caption: "Form I-864 Affidavit of Support Income Requirements and Joint Sponsorship Rules",
+          caption:
+            "Form I-864 Affidavit of Support Income Requirements and Joint Sponsorship Rules",
         },
         paragraphs: [
           "The U.S. citizen petitioner must meet at least 125% of the Federal Poverty Guidelines for their household size. For a 2-person household (petitioner + immigrating spouse), the minimum annual gross income required is $25,550 (2026 guideline estimate).",
@@ -343,6 +345,335 @@ export const ARTICLES: Article[] = [
     },
     sidebarCta: {
       title: "Need Direct Assistance?",
+      description: "Book a strategy consultation with our U.S. visa case managers.",
+      buttonText: "Book Consultation →",
+      buttonHref: "/book-consultation",
+    },
+    showSocialShare: true,
+    showTableOfContents: true,
+    showFaqs: true,
+    relatedSlugs: ["ir5-visa-guide-bring-parents-to-united-states"],
+  },
+  {
+    id: "art-002",
+    slug: "ir5-visa-guide-bring-parents-to-united-states",
+    title: "IR-5 Visa Guide: How to Bring Your Parents to the United States",
+    bluf: "The IR-5 is an immediate relative immigrant visa for the parent of a U.S. citizen who is at least 21 years old. It allows parents to immigrate to the United States as lawful permanent residents (green card holders) without annual numerical visa caps, following Form I-130 petition approval, NVC processing, financial sponsorship (Form I-864), and consular interview.",
+    description:
+      "Comprehensive guide to the IR-5 parent immigrant visa. Learn eligibility requirements, Form I-130 petitioning, NVC document processing, I-864 financial sponsorship, civil documents, and embassy interview preparation.",
+    category: "Parent Visa (IR-5)",
+    author: {
+      name: "Rahvana Legal Research & Consular Strategy Team",
+      title: "Senior U.S. Consular Immigration Strategists",
+    },
+    publishedAt: "2026-09-15",
+    updatedAt: "2026-10-18",
+    readTime: "10 min read",
+    keywords: [
+      "IR-5 visa guide",
+      "how to bring parents to United States",
+      "IR-5 parent visa Pakistan",
+      "sponsor parents green card",
+      "IR5 visa requirements",
+      "Form I-130 for parents",
+      "I-864 affidavit of support parent",
+      "DS-260 consular processing parent",
+      "US Embassy Islamabad parent visa",
+      "IR-5 civil documents checklist",
+    ],
+    heroImage: "/assets/images/ir5-image.png",
+    heroImageAlt: "IR-5 Visa Guide: How to Bring Your Parents to the United States",
+    tableOfContents: [
+      { id: "intro-overview", title: "1. Introduction & Overview" },
+      { id: "what-is-ir5-visa", title: "2. What Is the IR-5 Visa?" },
+      { id: "who-qualifies", title: "3. Who Qualifies for an IR-5 Visa?" },
+      { id: "step-by-step-process", title: "4. Step-by-Step: How the IR-5 Visa Process Works" },
+      { id: "timeline", title: "5. How Long Does the IR-5 Visa Process Take?" },
+      { id: "common-mistakes", title: "6. Common Mistakes to Avoid" },
+      { id: "faq-section", title: "7. Frequently Asked Questions" },
+      { id: "next-steps", title: "8. Make the Immigration Process Easier to Navigate" },
+    ],
+    sections: [
+      {
+        id: "intro-overview",
+        h2: "Bringing Your Parents to the United States",
+        paragraphs: [
+          "For many families, moving to the United States is not the end of the immigration journey. It is the beginning of a new question: How can I bring my parents here so we can finally live closer together?",
+          "If you are a U.S. citizen aged 21 or older hoping to help your mother or father immigrate from Pakistan or another country, the IR-5 visa may be the pathway you need to understand.",
+          "The IR-5 is an immigrant visa for the eligible mother or father of a U.S. citizen who is at least 21 years old. It allows the parent to immigrate to the United States as a lawful permanent resident (green card holder), provided all applicable eligibility requirements are met.",
+          "However, sponsoring a parent involves more than submitting one application. You will need to establish the qualifying family relationship, prepare financial sponsorship documents, complete the immigrant visa application, and help your parents navigate the required documentation and interview process.",
+          "This guide explains how the IR-5 visa works, who qualifies, which documents may be required, and what families should prepare for throughout the process.",
+        ],
+      },
+      {
+        id: "what-is-ir5-visa",
+        h2: "What Is the IR-5 Visa?",
+        paragraphs: [
+          "The IR-5 visa is an immediate relative immigrant visa for the parent of a U.S. citizen who is at least 21 years old.",
+          "Unlike temporary visitor visas, the IR-5 is intended for parents who want to immigrate to the United States permanently. Once admitted to the United States with the immigrant visa, the parent generally becomes a lawful permanent resident.",
+          "The IR-5 falls under the U.S. immediate relative immigration categories. These categories are not subject to the annual numerical limits that apply to many family-preference visas. That does not mean the process is immediate: petition review, document processing, interview scheduling, security checks, and other requirements can still take time.",
+          "Official overview: [U.S. Department of State — Family Immigration](https://travel.state.gov/content/travel/en/us-visas/immigrate/family-immigration.html).",
+        ],
+      },
+      {
+        id: "who-qualifies",
+        h2: "Who Qualifies for an IR-5 Visa?",
+        paragraphs: [
+          "The first step is determining whether the U.S. citizen and parent meet the eligibility requirements.",
+        ],
+        numberedList: [
+          "The sponsoring child must be a U.S. citizen: The person filing the petition must be a U.S. citizen. A lawful permanent resident, or green card holder, cannot sponsor a parent through the IR-5 category.",
+          "The U.S. citizen must be at least 21 years old: You must have reached your 21st birthday before petitioning your parents.",
+          "You must establish the qualifying parent-child relationship: The required evidence depends on the family relationship. For example, a biological parent’s birth record may establish the connection between the petitioner and parent. Other circumstances, such as a stepparent or adoptive parent relationship, can involve additional legal requirements. If your family history includes adoption, a stepparent relationship, a name change, or discrepancies between official records, review the applicable requirements carefully before filing.",
+          "The parent must be eligible for an immigrant visa: An approved family petition establishes the qualifying relationship, but it does not automatically guarantee visa issuance. The parent must also complete the immigrant visa process and meet the applicable admissibility requirements.",
+        ],
+        callout: {
+          type: "warning",
+          title: "Important: Each Parent Requires a Separate Petition",
+          text: "If you want to sponsor both your mother and father, you generally must file one Form I-130 for each parent. A parent’s spouse does not automatically receive an IR-5 visa as a dependent on the same petition.",
+        },
+      },
+      {
+        id: "step-by-step-process",
+        h2: "Step-by-Step: How the IR-5 Visa Process Works",
+        paragraphs: [
+          "The process generally moves through several stages, beginning with U.S. Citizenship and Immigration Services (USCIS) and continuing through the National Visa Center (NVC) and the appropriate U.S. embassy or consulate.",
+        ],
+      },
+      {
+        id: "step-1-form-i130",
+        h3: "Step 1: File Form I-130",
+        paragraphs: [
+          "The U.S. citizen begins by filing Form I-130, Petition for Alien Relative, with USCIS.",
+          "This petition establishes that the petitioner is a qualifying U.S. citizen and that the beneficiary is their eligible parent.",
+          "Depending on your circumstances, supporting evidence may include:",
+        ],
+        bulletList: [
+          "Proof of the petitioner's U.S. citizenship, such as a U.S. passport or naturalization certificate.",
+          "The petitioner's birth certificate showing the parent-child relationship.",
+          "Relevant adoption, marriage, or legal records when applicable.",
+          "Evidence explaining name changes or differences across official documents, if necessary.",
+        ],
+        callout: {
+          type: "info",
+          title: "Filing Instructions & Official Portal",
+          text: "Follow the current USCIS form instructions to determine which evidence applies to your case and how to submit it. You can find the form and filing instructions on the [official USCIS website](https://www.uscis.gov/i-130).",
+        },
+      },
+      {
+        id: "step-2-uscis-review",
+        h3: "Step 2: Wait for USCIS to review the petition",
+        paragraphs: [
+          "USCIS reviews the petition and supporting evidence. It may approve the petition, deny it, or request additional evidence.",
+          "Processing times vary. They can depend on the type of case, the reviewing office, and other factors. Avoid relying on another family's timeline as a guarantee for your own case.",
+          "You can check the relevant estimates using the [USCIS Processing Times tool](https://egov.uscis.gov/processing-times/).",
+        ],
+      },
+      {
+        id: "step-3-nvc-processing",
+        h3: "Step 3: Complete National Visa Center processing",
+        paragraphs: [
+          "After USCIS approves the petition and forwards the case for consular processing, the National Visa Center generally handles the next stage.",
+          "The NVC provides instructions for paying the applicable fees and submitting the required information and documents.",
+          "At this stage, the petitioner and parent may need to coordinate several tasks, including financial sponsorship, the immigrant visa application, and civil documentation.",
+          "Keep copies of receipts, submitted forms, and official correspondence. Make sure the email address and contact information associated with the case remain current.",
+        ],
+      },
+      {
+        id: "step-4-financial-sponsorship",
+        h3: "Step 4: Prepare the financial sponsorship documents",
+        paragraphs: [
+          "Financial sponsorship is an important part of the IR-5 process.",
+          "In most cases, the U.S. citizen petitioner must submit Form I-864, Affidavit of Support, along with the required financial evidence. By signing this form, the sponsor accepts legally binding financial responsibilities under the applicable rules.",
+          "The sponsor generally must demonstrate sufficient income or qualifying assets under the relevant requirements. The amount depends on factors such as household size and the applicable income guidelines.",
+          "Financial evidence may include:",
+        ],
+        bulletList: [
+          "Federal income tax information or tax transcripts.",
+          "Proof of current income, such as employment or income documentation.",
+          "Additional evidence requested by the NVC or required by the case.",
+          "Qualifying asset documentation, where applicable.",
+        ],
+        callout: {
+          type: "tip",
+          title: "Joint Sponsor Rules",
+          text: "If the petitioner does not meet the financial requirements alone, a qualifying joint sponsor may be an option. The joint sponsor must independently satisfy the applicable requirements and accept the obligations associated with the Affidavit of Support. \n\nDo not assume that having a job or submitting a tax return automatically satisfies the requirements. Review the current instructions and calculate the applicable household size and income threshold. \n\nFor more guidance, consult the [Department of State's Affidavit of Support information](https://travel.state.gov/content/travel/en/us-visas/immigrate/the-immigrant-visa-process/step-4-affidavit-of-support.html).",
+        },
+      },
+      {
+        id: "step-5-ds-260",
+        h3: "Step 5: Complete Form DS-260",
+        paragraphs: [
+          "Once the case is ready for the immigrant visa application stage and the applicable fee requirements are met, the parent generally completes Form DS-260, Immigrant Visa and Alien Registration Application, through the Consular Electronic Application Center (CEAC).",
+          "The form requests personal, family, travel, and background information. Answers should be accurate and consistent with the parent's supporting records.",
+          "Before submitting, carefully review details such as:",
+        ],
+        bulletList: [
+          "Full legal name and any previous names.",
+          "Date and place of birth.",
+          "Marriage and family history.",
+          "Residential and travel history.",
+          "Previous U.S. immigration or visa history, where applicable.",
+        ],
+        callout: {
+          type: "info",
+          title: "CEAC Application Portal",
+          text: "Errors or inconsistencies may require clarification and can delay processing. Save the DS-260 confirmation page because it is generally required for the interview. \n\nOfficial application portal: [Consular Electronic Application Center](https://ceac.state.gov/).",
+        },
+      },
+      {
+        id: "step-6-civil-documents",
+        h3: "Step 6: Collect the required civil documents",
+        paragraphs: [
+          "The parent must gather the civil documents required for their case and country of processing. The exact checklist can vary according to the applicant's history and the instructions of the responsible embassy or consulate.",
+          "Documents may include:",
+        ],
+        bulletList: [
+          "Birth certificate.",
+          "Valid passport.",
+          "Marriage certificate, if applicable.",
+          "Final divorce decrees or death certificates relating to previous marriages, if applicable.",
+          "Police certificates, where required.",
+          "Court or military records, if applicable.",
+          "The petitioner's birth certificate or other evidence establishing the parent-child relationship.",
+          "Any required translations or additional supporting records.",
+        ],
+        callout: {
+          type: "tip",
+          title: "Country-Specific Instructions & Practical Tip",
+          text: "For families applying from Pakistan, it is particularly important to check the current country-specific civil document instructions. The correct issuing authority, acceptable document format, and translation requirements matter. \n\nUse the [Department of State's Civil Documents guidance](https://travel.state.gov/content/travel/en/us-visas/immigrate/the-immigrant-visa-process/step-7-collect-civil-documents.html) and its [country-specific reciprocity and civil documents directory](https://travel.state.gov/content/travel/en/us-visas/Visa-Reciprocity-and-Civil-Documents-by-Country.html). \n\nA practical tip: Check names, dates, and places across every document before submission. If the parent's passport uses a different spelling from the birth certificate, for example, determine whether supporting documentation or an explanation is needed. Do not alter official records simply to make them match.",
+        },
+      },
+      {
+        id: "step-7-medical-and-interview",
+        h3: "Step 7: Complete the medical examination and prepare for the interview",
+        paragraphs: [
+          "Once an interview is scheduled, follow the embassy or consulate's specific instructions. The parent will generally need to complete an immigration medical examination with an authorized panel physician and bring the required documents to the interview.",
+          "Depending on the case instructions, the interview package may include:",
+        ],
+        bulletList: [
+          "A valid passport.",
+          "The DS-260 confirmation page.",
+          "The interview appointment letter.",
+          "Original or certified civil documents, as instructed.",
+          "Financial sponsorship documents or updated evidence, if required.",
+          "Medical examination information and any other requested records.",
+        ],
+        callout: {
+          type: "info",
+          title: "Consular Interview Guidelines",
+          text: "The consular officer reviews the application and determines whether the parent qualifies for the visa. The officer may ask questions about the family relationship, the petitioner's circumstances, or information in the application. Answer truthfully. If a question is unclear, ask for clarification rather than guessing. For the official process, see the [Department of State's immigrant visa interview guidance](https://travel.state.gov/content/travel/en/us-visas/immigrate/the-immigrant-visa-process/step-10-prepare-for-the-interview.html).",
+        },
+      },
+      {
+        id: "step-8-outcome",
+        h3: "Step 8: Understand the outcome after the interview",
+        paragraphs: [
+          "An interview does not always result in immediate visa issuance.",
+          "If the application is approved and all required processing is complete, the parent will receive instructions about passport return and visa use. If additional documentation or administrative processing is needed, the consular post will provide instructions.",
+          "Do not make irreversible travel or financial commitments until the immigrant visa has been issued and the parent has reviewed its validity and entry instructions.",
+          "After the parent enters the United States using the immigrant visa, they generally become a lawful permanent resident. The physical green card is then produced and delivered according to the applicable procedures.",
+        ],
+      },
+      {
+        id: "timeline",
+        h2: "How Long Does the IR-5 Visa Process Take?",
+        paragraphs: [
+          "There is no single timeline that applies to every IR-5 case.",
+          "The total process can depend on:",
+        ],
+        bulletList: [
+          "USCIS petition processing.",
+          "How quickly the petitioner and parent complete required steps.",
+          "Whether the NVC requests corrections or additional documents.",
+          "The availability of interview appointments at the relevant embassy or consulate.",
+          "Medical, security, or administrative processing requirements.",
+        ],
+        callout: {
+          type: "info",
+          title: "Monitoring Official Updates",
+          text: "The IR-5 category is not subject to the annual numerical limits that affect many family-preference categories. However, that does not eliminate the time required to review petitions and complete consular processing. Rather than relying on a fixed number of months, monitor official case updates and use the appropriate government tools for current processing information. If your parent is applying through Islamabad, consult the current instructions for that post.",
+        },
+      },
+      {
+        id: "common-mistakes",
+        h2: "Common Mistakes to Avoid",
+        paragraphs: [
+          "Even when the family relationship is straightforward, missing details can create avoidable delays.",
+        ],
+        bulletList: [
+          "Submitting incomplete financial evidence. Review the current Affidavit of Support requirements, household size, and applicable income threshold before submitting the financial package.",
+          "Assuming one petition covers both parents. Each parent generally needs a separate I-130 petition and their own immigrant visa application.",
+          "Ignoring document inconsistencies. Differences in spelling, dates, names, or other biographical information should be addressed appropriately rather than overlooked.",
+          "Using outdated checklists. Embassy instructions, forms, fees, and document requirements can change. Confirm the current requirements before each major stage.",
+          "Making travel plans too early. A petition approval or interview appointment is not the same as an issued immigrant visa. Wait until the visa is issued before making permanent commitments.",
+          "Treating every case as identical. Prior marriages, adoption, missing civil records, previous immigration issues, and other individual circumstances can affect what evidence or legal guidance is needed.",
+        ],
+      },
+      {
+        id: "next-steps",
+        h2: "Make the Immigration Process Easier to Navigate",
+        paragraphs: [
+          "Bringing a parent to the United States can involve months of paperwork, coordination, and waiting. For families managing the process across countries, keeping documents organized and understanding what comes next can make the experience less overwhelming.",
+          "Rahvana is building tools to help families navigate complex immigration processes with clearer guidance and more organized preparation. If you are preparing for a family-based immigration journey, explore [Rahvana](https://www.rahvana.com/) to learn more about the platform and its resources.",
+        ],
+        callout: {
+          type: "info",
+          title: "Legal Disclaimer",
+          text: "This article is for general informational purposes only and is not legal advice. Immigration requirements, government fees, processing procedures, and embassy instructions can change. Always confirm current requirements through USCIS, the U.S. Department of State, and the relevant U.S. embassy or consulate. Consider consulting a qualified immigration attorney about complex or case-specific issues.",
+        },
+      },
+    ],
+    faqs: [
+      {
+        question: "Can a green card holder sponsor their parents?",
+        answer:
+          "No. The IR-5 category is for parents sponsored by U.S. citizens who are at least 21 years old. A lawful permanent resident cannot petition for a parent through this category.",
+      },
+      {
+        question: "Can I sponsor both of my parents?",
+        answer:
+          "Yes, if both qualify. You generally must file a separate Form I-130 for each parent, and each parent completes their own immigrant visa process.",
+      },
+      {
+        question: "Can my parent bring their spouse on the same IR-5 petition?",
+        answer:
+          "No. A parent's spouse does not automatically qualify as a derivative beneficiary under the IR-5 petition. The spouse would need to qualify through an appropriate separate immigration pathway.",
+      },
+      {
+        question: "Does an approved I-130 mean my parent will receive a green card?",
+        answer:
+          "No. Approval establishes the qualifying family relationship for the petition, but the parent must still complete the immigrant visa process and meet the applicable eligibility and admissibility requirements.",
+      },
+      {
+        question: "Can my parents visit the United States while the IR-5 case is pending?",
+        answer:
+          "A pending immigrant petition does not automatically prevent someone from applying for a temporary visitor visa. However, a visitor visa has separate requirements, and the applicant must qualify for the requested temporary visit. A visa or entry is never guaranteed.",
+      },
+      {
+        question: "Is the IR-5 visa only for parents living in Pakistan?",
+        answer:
+          "No. The IR-5 is available to eligible parents regardless of their country of residence, subject to the applicable immigration requirements and consular processing procedures. The civil documents and interview instructions will depend in part on the country handling the case.",
+      },
+    ],
+    cta: {
+      headline: "Make Your Parents' IR-5 Visa Journey Seamless",
+      description:
+        "Track Form I-130 filings, organize civil documents, and prepare for consular processing with Rahvana's guided immigration roadmaps.",
+      buttonText: "Check Your Visa Eligibility →",
+      buttonHref: "/visa-eligibility",
+      badge: "Family Immigration Roadmap",
+    },
+    // midArticleCta: {
+    //   badge: "Document Preparation",
+    //   headline: "Organize Civil Documents Before NVC Submission",
+    //   description:
+    //     "Ensure birth certificates, NADRA records, and translations meet consular requirements before uploading to CEAC. Included with any Rahvana Journey Plan.",
+    //   buttonText: "Explore Document Vault →",
+    //   buttonHref: "/document-vault",
+    // },
+    sidebarCta: {
+      title: "Sponsoring Your Parents?",
       description: "Book a strategy consultation with our U.S. visa case managers.",
       buttonText: "Book Consultation →",
       buttonHref: "/book-consultation",

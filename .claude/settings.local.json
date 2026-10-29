@@ -11,7 +11,9 @@
       "Bash(npx jest *)",
       "Bash(npx eslint *)",
       "mcp__ide__getDiagnostics",
-      "WebSearch"
+      "WebSearch",
+      "Bash(cd *)",
+      "Bash(xargs grep -l \"from \\\\\"zustand\\\\\"\\\\|from 'zustand'\")"
     ]
   }
 }

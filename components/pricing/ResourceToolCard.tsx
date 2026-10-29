@@ -2,12 +2,13 @@
 
 import type { CSSProperties, KeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Check, ExternalLink, Plus } from "lucide-react";
+import { ArrowRight, Check, ExternalLink } from "lucide-react";
 
 import { RESOURCE_DETAILS } from "@/app/(main)/pricing/data/resourceDetails";
 import { getResourceLaunchHref } from "@/app/(main)/pricing/data/pricing";
 import { getSlugTheme, getIcon } from "@/app/(main)/resources/[slug]/iconMap";
 import ResourceLaunchButton from "./ResourceLaunchButton";
+import { getCreditsForLegacyAddon } from "@/lib/wallet/catalog";
 
 export type ResourceCardAddon = {
   id: string;
@@ -18,16 +19,17 @@ export type ResourceCardAddon = {
   kind?: string;
 };
 
+/**
+ * A standalone tool, guide or service. These are paid with wallet credits on their
+ * own pages (tools and guides unlock once, services are paid per booking), so the
+ * card quotes the credit price and opens the resource; nothing is added to a cart.
+ */
 export default function ResourceToolCard({
   addon,
-  isAdded,
-  disabled = false,
-  onToggle,
+  isAdded = false,
 }: {
   addon: ResourceCardAddon;
-  isAdded: boolean;
-  disabled?: boolean;
-  onToggle: (id: string) => void;
+  isAdded?: boolean;
 }) {
   const router = useRouter();
 
@@ -40,6 +42,7 @@ export default function ResourceToolCard({
   const launchHref = getResourceLaunchHref(addon.id, addon.kind);
 
   const isService = addon.kind === "services";
+  const credits = getCreditsForLegacyAddon(addon.id);
   const navigable = Boolean(detail);
 
   const handleCardClick = () => {
@@ -151,11 +154,19 @@ export default function ResourceToolCard({
                 fontFamily: '"DM Serif Display", serif',
               }}
             >
-              ${addon.price}
+              {credits !== undefined ? `${credits} credits` : `$${addon.price}`}
             </div>
 
             <div className="mt-1 whitespace-nowrap text-[8px] text-muted-foreground sm:text-[10px]">
-              {addon.unit}
+              {credits === undefined
+                ? addon.unit
+                : isService
+                  ? "per request"
+                  : addon.id === "smart"
+                    ? "per form"
+                    : addon.id === "photo"
+                      ? "for 2 photos"
+                      : "one-time unlock"}
             </div>
           </div>
 
@@ -213,64 +224,6 @@ export default function ResourceToolCard({
               </>
             ) : (
               <>
-                {/* MOBILE Add */}
-                <button
-                  type="button"
-                  disabled={disabled}
-                  title={isAdded ? "Added to order" : "Add to order"}
-                  aria-label={isAdded ? "Added to order" : "Add to order"}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    onToggle(addon.id);
-                  }}
-                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-all disabled:cursor-not-allowed disabled:opacity-50 sm:hidden"
-                  style={
-                    {
-                      color: accent,
-                      borderColor: accent,
-                    } as CSSProperties
-                  }
-                >
-                  {isAdded ? (
-                    <Check className="h-3.5 w-3.5" />
-                  ) : (
-                    <Plus className="h-3.5 w-3.5" />
-                  )}
-                </button>
-
-                {/* DESKTOP Add */}
-                <button
-                  type="button"
-                  disabled={disabled}
-                  title={isAdded ? "Added to order" : "Add to order"}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    onToggle(addon.id);
-                  }}
-                  className={`addon-pill hidden items-center gap-1 rounded-full border px-3.5 py-1.5 text-[12px] font-semibold transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50 sm:inline-flex ${
-                    isAdded ? "is-added" : ""
-                  }`}
-                  style={
-                    {
-                      "--pill": accent,
-                    } as CSSProperties
-                  }
-                >
-                  {isAdded ? (
-                    <>
-                      <Check className="h-3.5 w-3.5" />
-                      Added
-                    </>
-                  ) : (
-                    <>
-                      <Plus className="h-3.5 w-3.5" />
-                      Add
-                    </>
-                  )}
-                </button>
-
                 {/* MOBILE Launch */}
                 <button
                   type="button"

@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useEffect } from "react";
 import { X, Check } from "lucide-react";
 import { SafeHtml } from "../shared/SafeHTML";
@@ -20,6 +19,14 @@ export const CivilDocGuideOverlay: React.FC<DocumentGuideProps> = ({
   onMarkReviewed,
 }) => {
   const isReviewed = status === "reviewed";
+
+  useEffect(() => {
+    if (isOpen) document.body.style.overflow = "hidden";
+    else document.body.style.overflow = "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 

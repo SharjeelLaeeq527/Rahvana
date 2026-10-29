@@ -9,11 +9,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Search, CheckCircle2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export interface DropdownOption {
   value: string;
   label: string;
+  subLabel?: string;
   status?: "uploaded" | "none";
+  icon?: React.ReactNode;
+  rightElement?: React.ReactNode;
+  disabled?: boolean;
+  disabledReason?: string;
 }
 
 interface CustomDropdownProps {
@@ -22,6 +28,7 @@ interface CustomDropdownProps {
   options: DropdownOption[];
   placeholder?: string;
   className?: string;
+  triggerClassName?: string;
   disabled?: boolean;
   /**
    * When only one option is available, render it as a static field (and
@@ -29,6 +36,10 @@ interface CustomDropdownProps {
    * category list can shrink to one entry, e.g. IR-5 hidden on production.
    */
   collapseWhenSingle?: boolean;
+  /** Optional max-width class for the label in trigger before truncating (e.g. max-w-[140px]) */
+  maxLabelWidth?: string;
+  /** Whether to show rightElement inside the closed trigger. Defaults to false. */
+  showRightElementInTrigger?: boolean;
 }
 
 export const CustomDropdown = ({
@@ -37,18 +48,18 @@ export const CustomDropdown = ({
   options,
   placeholder = "Select an option",
   className = "",
+  triggerClassName = "",
   disabled = false,
   collapseWhenSingle = false,
+  maxLabelWidth,
+  showRightElementInTrigger = false,
 }: CustomDropdownProps) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const displayOptions = (options ?? []).filter(
-    (option) => option.value !== ""
-  );
+  const displayOptions = (options ?? []).filter((option) => option.value !== "");
 
   // When collapsed to a single option, auto-select it so any dependent form
   // validation (e.g. "category is required") still passes.
-  const soleOption =
-    collapseWhenSingle && displayOptions.length === 1 ? displayOptions[0] : null;
+  const soleOption = collapseWhenSingle && displayOptions.length === 1 ? displayOptions[0] : null;
 
   useEffect(() => {
     if (soleOption && value !== soleOption.value) {
@@ -58,7 +69,7 @@ export const CustomDropdown = ({
 
   if (soleOption) {
     return (
-      <div className={`w-full max-w-full ${className}`}>
+      <div className={cn("w-full max-w-full", className)}>
         <div className="flex min-h-[42px] w-full items-center rounded-lg border border-transparent bg-white px-3 py-2 text-[13.5px] font-semibold text-slate-700 shadow-sm">
           {soleOption.label}
         </div>
@@ -67,21 +78,22 @@ export const CustomDropdown = ({
   }
 
   const handleSelect = (selectedValue: string) => {
-    const optionExists = displayOptions.some((option) => option.value === selectedValue);
+    const targetOption = displayOptions.find((option) => option.value === selectedValue);
 
-    if (optionExists && selectedValue !== value) {
+    if (targetOption && !targetOption.disabled && selectedValue !== value) {
       onChange(selectedValue);
     }
   };
 
-  const selectedLabel = displayOptions.find((option) => option.value === value)?.label;
+  const selectedOption = displayOptions.find((option) => option.value === value);
+  const selectedLabel = selectedOption?.label;
 
   const filteredOptions = displayOptions.filter((option) =>
     option.label.toLowerCase().includes(searchTerm.trim().toLowerCase())
   );
 
   return (
-    <div className={`w-full max-w-full ${className}`}>
+    <div className={cn("w-full max-w-full", className)}>
       <Select
         value={value || undefined}
         onValueChange={handleSelect}
@@ -93,76 +105,39 @@ export const CustomDropdown = ({
         }}
       >
         <SelectTrigger
-          className="
-            h-auto
-            min-h-[42px]
-            w-full
-            min-w-0
-            max-w-full
-            rounded-lg
-            border
-            border-transparent
-            bg-white
-            px-3
-            py-2
-            text-left
-            text-[13.5px]
-            font-semibold
-            text-slate-700
-            shadow-sm
-            transition-colors
-            hover:border-transparent
-            focus:ring-2
-            focus:ring-slate-200
-            focus:ring-offset-0
-            disabled:cursor-not-allowed
-            disabled:opacity-60
-            [&>svg]:text-slate-500
-          "
+          className={cn(
+            "h-auto min-h-[42px] w-full max-w-full min-w-0 rounded-lg border border-transparent bg-white px-3 py-2 text-left text-[13.5px] font-semibold text-slate-700 shadow-sm transition-colors hover:border-transparent focus:ring-2 focus:ring-slate-200 focus:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-60 [&>svg]:text-slate-500",
+            triggerClassName
+          )}
         >
           <SelectValue placeholder={placeholder}>
-            {selectedLabel ? (
-              <span className="block min-w-0 flex-1 truncate text-slate-700">{selectedLabel}</span>
+            {selectedOption ? (
+              <span className="inline-flex min-w-0 items-center gap-1.5">
+                {selectedOption.icon && <span className="shrink-0">{selectedOption.icon}</span>}
+                <span
+                  className={cn(
+                    "truncate text-inherit",
+                    maxLabelWidth || "max-w-[130px] sm:max-w-[170px]"
+                  )}
+                >
+                  {selectedOption.label}
+                </span>
+                {showRightElementInTrigger && selectedOption.rightElement && (
+                  <span className="shrink-0">{selectedOption.rightElement}</span>
+                )}
+              </span>
             ) : null}
           </SelectValue>
         </SelectTrigger>
 
         <SelectContent
           position="popper"
-          sideOffset={1}
-          className="
-            z-[10100]
-            w-[var(--radix-select-trigger-width)]
-            min-w-[var(--radix-select-trigger-width)]
-            max-w-none
-            overflow-hidden
-            rounded-lg
-            border
-            border-transparent
-            bg-white
-            p-0
-            shadow-xl
-            data-[side=bottom]:translate-y-0
-            data-[side=top]:translate-y-0
-            [&_[data-radix-select-viewport]]:h-auto
-            [&_[data-radix-select-viewport]]:min-h-0
-            [&_[data-radix-select-viewport]]:p-0
-          "
+          sideOffset={2}
+          className="z-[10100] w-[var(--radix-select-trigger-width)] max-w-none min-w-[max(250px,var(--radix-select-trigger-width))] overflow-hidden rounded-lg border border-transparent bg-white p-0 shadow-xl data-[side=bottom]:translate-y-0 data-[side=top]:translate-y-0 [&_[data-radix-select-viewport]]:h-auto [&_[data-radix-select-viewport]]:min-h-0 [&_[data-radix-select-viewport]]:p-0 [&_[data-radix-select-viewport]]:overflow-x-hidden"
         >
           {displayOptions.length > 10 && (
             <div
-              className="
-                sticky
-                top-0
-                z-10
-                flex
-                items-center
-                border-b
-                border-transparent
-                bg-white
-                px-3
-                py-2.5
-              "
+              className="sticky top-0 z-10 flex items-center border-b border-transparent bg-white px-3 py-2.5"
               onPointerDown={(event) => event.stopPropagation()}
               onKeyDown={(event) => event.stopPropagation()}
             >
@@ -173,75 +148,62 @@ export const CustomDropdown = ({
                 value={searchTerm}
                 placeholder="Search..."
                 onChange={(event) => setSearchTerm(event.target.value)}
-                className="
-                  min-w-0
-                  flex-1
-                  bg-transparent
-                  text-sm
-                  font-medium
-                  text-slate-700
-                  outline-none
-                  placeholder:font-normal
-                  placeholder:text-slate-400
-                "
+                className="min-w-0 flex-1 bg-transparent text-sm font-medium text-slate-700 outline-none placeholder:font-normal placeholder:text-slate-400"
               />
             </div>
           )}
 
-          <div className="max-h-[250px] overflow-y-auto py-1">
+          <div className="max-h-[250px] overflow-y-auto overflow-x-hidden py-1">
             {filteredOptions.length > 0 ? (
               filteredOptions.map((option) => (
                 <SelectItem
                   key={option.value}
                   value={option.value}
-                  className="
-                    cursor-pointer
-                    rounded-md
-                    px-4
-                    py-3
-                    text-sm
-                    font-medium
-                    text-slate-700
-                    transition-colors
-                    focus:bg-[#EAF5F0]
-                    focus:text-[#2E5450]
-                    data-[state=checked]:bg-[#EAF5F0]
-                    data-[state=checked]:text-[#2E5450]
-                    [&>span:first-child]:hidden
-                  "
+                  disabled={option.disabled}
+                  title={
+                    option.disabled
+                      ? option.disabledReason ||
+                        "This candidate has the Executive plan (highest plan) and cannot be upgraded."
+                      : option.label
+                  }
+                  className={cn(
+                    "cursor-pointer rounded-md px-3.5 py-2.5 text-sm font-medium text-slate-700 transition-colors focus:bg-[#EAF5F0] focus:text-[#2E5450] data-[state=checked]:bg-[#EAF5F0] data-[state=checked]:text-[#2E5450] [&>span:first-child]:hidden [&>span:last-child]:w-full [&>span:last-child]:min-w-0 [&>span:last-child]:block",
+                    option.disabled &&
+                      "!pointer-events-auto !cursor-not-allowed opacity-60 hover:!bg-amber-50/50 dark:hover:!bg-amber-950/20 focus:!bg-transparent focus:!text-slate-500 select-none"
+                  )}
                 >
-                  <div className="flex w-full min-w-0 items-center justify-between gap-3">
-                    <span
-                      className={`min-w-0 flex-1 truncate ${
-                        option.status === "uploaded" ? "font-bold text-[#2E5450]" : ""
-                      }`}
-                    >
-                      {option.label}
-                    </span>
-
-                    {option.status === "uploaded" && (
-                      <div
-                        className="
-                          ml-auto
-                          flex
-                          shrink-0
-                          items-center
-                          gap-1
-                          rounded-md
-                          bg-[#EAF5F0]
-                          px-1.5
-                          py-0.5
-                          text-[10px]
-                          font-black
-                          uppercase
-                          tracking-wider
-                          text-[#2E5450]
-                        "
-                      >
-                        <CheckCircle2 size={10} strokeWidth={3} />
-                        Uploaded
+                  <div className="flex w-full min-w-0 items-center justify-between gap-2.5">
+                    <div className="flex min-w-0 flex-1 items-center gap-2">
+                      {option.icon && <span className="shrink-0">{option.icon}</span>}
+                      <div className="flex min-w-0 flex-1 flex-col">
+                        <span
+                          className={cn(
+                            "truncate",
+                            option.status === "uploaded" ? "font-bold text-[#2E5450]" : "",
+                            option.disabled ? "text-slate-500 font-medium" : ""
+                          )}
+                        >
+                          {option.label}
+                        </span>
+                        {option.subLabel && (
+                          <span className="truncate text-[10.5px] font-normal text-amber-700 dark:text-amber-400/90">
+                            {option.subLabel}
+                          </span>
+                        )}
                       </div>
-                    )}
+                    </div>
+
+                    <div className="flex shrink-0 items-center gap-1.5">
+                      {option.rightElement && (
+                        <span className="shrink-0">{option.rightElement}</span>
+                      )}
+                      {option.status === "uploaded" && (
+                        <div className="flex shrink-0 items-center gap-1 rounded-md bg-[#EAF5F0] px-1.5 py-0.5 text-[10px] font-black tracking-wider text-[#2E5450] uppercase">
+                          <CheckCircle2 size={10} strokeWidth={3} />
+                          Uploaded
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </SelectItem>
               ))
