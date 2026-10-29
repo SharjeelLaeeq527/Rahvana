@@ -178,4 +178,30 @@ describe('POST /api/interview-prep', () => {
     expect(mockCreateTool).toHaveBeenCalled()
     expect(mockCreateJourney).not.toHaveBeenCalled()
   })
+
+  it('creates a JOURNEY session with candidate_id when specified', async () => {
+    const res = await post({
+      category_slug: 'ir-5-parent',
+      source: 'journey',
+      journey_id: J_BASIC,
+      candidate_id: 'candidate-2',
+    })
+    expect(res.status).toBe(201)
+    expect(mockCreateJourney).toHaveBeenCalledWith(J_BASIC, 'ir-5-parent', 'candidate-2')
+  })
+
+  it('passes candidate_id to createInterviewSession for standalone creation', async () => {
+    addons = ['interview-prep:ir-5-parent']
+    const res = await post({
+      category_slug: 'ir-5-parent',
+      candidate_id: 'candidate-2',
+    })
+    expect(res.status).toBe(201)
+    expect(mockCreateTool).toHaveBeenCalledWith(
+      expect.objectContaining({
+        category_slug: 'ir-5-parent',
+        candidate_id: 'candidate-2',
+      })
+    )
+  })
 })

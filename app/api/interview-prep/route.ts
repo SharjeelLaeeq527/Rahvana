@@ -16,8 +16,13 @@ import {
   validateToolSessionCreation,
   validateJourneySessionCreation,
   getAddonIdForCategory,
+  countCategoryPurchases,
+  countToolSessions,
 } from "@/lib/interview-prep/purchase-validation";
+import { getInterviewSessionByCategory } from "@/lib/interview-prep/data-access";
 import { createClient } from "@/lib/supabase/server";
+import { getServiceRoleClient } from "@/lib/api/authGuards";
+import { topupAmountForDeficit } from "@/lib/wallet/launch";
 import { E, msg } from "@/lib/errors";
 
 /**
@@ -83,7 +88,13 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      const journeyResult = await createJourneyInterviewSession(journeyCheck.journeyId, category_slug);
+      const journeyResult = candidate_id
+        ? await createJourneyInterviewSession(
+            journeyCheck.journeyId,
+            category_slug,
+            typeof candidate_id === "string" ? candidate_id : undefined
+          )
+        : await createJourneyInterviewSession(journeyCheck.journeyId, category_slug);
       return NextResponse.json(
         {
           success: true,
@@ -95,59 +106,127 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Standalone: validate purchase BEFORE creating session
-    const validation = await validateToolSessionCreation(user.id, category_slug);
-
-    if (!validation.allowed) {
-      if (validation.reason === "NO_PURCHASE") {
-        return NextResponse.json(
-          {
-            success: false,
-            error: "PURCHASE_REQUIRED",
-            message: validation.message,
-            addon: {
-              id: getAddonIdForCategory(category_slug),
-              name: `Interview Prep - ${category.categoryName || category_slug}`,
-              price: 200,
-            },
-          },
-          { status: 402 }
-        );
-      }
-
-      if (validation.reason === "PURCHASE_EXHAUSTED") {
-        return NextResponse.json(
-          {
-            success: false,
-            error: "PURCHASE_EXHAUSTED",
-            message: validation.message,
-            repurchase: {
-              addon_id: getAddonIdForCategory(category_slug),
-              message: "Purchase again to create another session",
-            },
-          },
-          { status: 402 }
-        );
-      }
+    // Standalone: check if active incomplete session already exists
+    const existingSession = await getInterviewSessionByCategory(
+      category_slug,
+      typeof candidate_id === "string" ? candidate_id : undefined
+    );
+    if (existingSession && !existingSession.completed) {
+      return NextResponse.json(
+        {
+          success: true,
+          alreadyExists: true,
+          session: existingSession,
+          source: "tool",
+        },
+        { status: 200 }
+      );
     }
 
-    // Create session
+    // Creating a NEW session: check for legacy unused purchases first
+    const purchaseCount = await countCategoryPurchases(user.id, category_slug);
+    const sessionCount = await countToolSessions(user.id, category_slug);
+    const hasLegacyPrepaid = purchaseCount > sessionCount;
+
+    if (hasLegacyPrepaid) {
+      const result = await createInterviewSession({
+        category_slug,
+        user_email: user_email,
+        user_name: user_name,
+        candidate_id: typeof candidate_id === "string" ? candidate_id : undefined,
+      });
+
+      return NextResponse.json(
+        {
+          success: true,
+          alreadyExists: false,
+          session: result.session,
+          source: "tool",
+        },
+        { status: 201 }
+      );
+    }
+
+    // Each new session requires 200 credits from the wallet
+    const serviceSupabase = getServiceRoleClient();
+    const { data: walletData } = await serviceSupabase
+      .from("user_wallets")
+      .select("balance")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    const currentBalance = Number(walletData?.balance ?? 0);
+    const requiredCredits = 200;
+
+    if (currentBalance < requiredCredits) {
+      const deficit = requiredCredits - currentBalance;
+      return NextResponse.json(
+        {
+          success: false,
+          error: "INSUFFICIENT_CREDITS",
+          message: "You need 200 credits to start a new interview prep session.",
+          required: requiredCredits,
+          available: currentBalance,
+          deficit,
+          topupAmount: topupAmountForDeficit(deficit),
+        },
+        { status: 402 }
+      );
+    }
+
+    // Balance is sufficient: create new session and deduct 200 credits
     const result = await createInterviewSession({
       category_slug,
       user_email: user_email,
       user_name: user_name,
+      candidate_id: typeof candidate_id === "string" ? candidate_id : undefined,
     });
+
+    const { data: deductResult, error: deductError } = await serviceSupabase.rpc(
+      "deduct_wallet_credits_atomic",
+      {
+        p_user_id: user.id,
+        p_resource_type: "tool",
+        p_resource_id: `interview-prep:session:${result.session.id}`,
+        p_credit_cost: requiredCredits,
+        p_description: `Interview Prep Session - ${category.categoryName || category_slug}`,
+        p_idempotency_key: `interview_prep_session:${result.session.id}`,
+        p_metadata: {
+          source: "interview_prep_session",
+          category_slug,
+          candidate_id: typeof candidate_id === "string" ? candidate_id : "candidate-1",
+          session_id: result.session.id,
+        },
+      }
+    );
+
+    if (deductError || (deductResult && deductResult.success === false)) {
+      await serviceSupabase.from("interview_prep_sessions").delete().eq("id", result.session.id);
+      const deficit = Number(deductResult?.deficit ?? requiredCredits);
+      return NextResponse.json(
+        {
+          success: false,
+          error: "INSUFFICIENT_CREDITS",
+          message: "Insufficient credits to start session.",
+          required: requiredCredits,
+          available: Number(deductResult?.available ?? currentBalance),
+          deficit,
+          topupAmount: topupAmountForDeficit(deficit),
+        },
+        { status: 402 }
+      );
+    }
 
     return NextResponse.json(
       {
         success: true,
-        alreadyExists: result.alreadyExists,
+        alreadyExists: false,
         session: result.session,
-        source: result.source || "tool",
+        source: "tool",
+        charged: requiredCredits,
+        balance: deductResult?.balance,
       },
-      {
-        status: result.alreadyExists ? 200 : 201,
-      }
+      { status: 201 }
     );
   } catch (error) {
     console.error("Error creating interview session:", error);

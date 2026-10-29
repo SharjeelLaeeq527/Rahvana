@@ -26,6 +26,7 @@ export async function GET(request: NextRequest) {
     const journeyId = searchParams.get("journey_id") || undefined;
     const journeyType = searchParams.get("journey_type");
     const sourceParam = searchParams.get("source") as "journey" | "tool" | null;
+    const candidateId = searchParams.get("candidate_id") || undefined;
 
     const completed = completedParam ? completedParam === "true" : undefined;
     const limit = limitParam ? parseInt(limitParam, 10) : undefined;
@@ -33,7 +34,7 @@ export async function GET(request: NextRequest) {
     const source = sourceParam || undefined;
 
     // Get all user sessions with optional filters
-    const sessions = await getAllUserSessionsDB(limit, completed, categorySlug, journeyId, source);
+    const sessions = await getAllUserSessionsDB(limit, completed, categorySlug, journeyId, source, candidateId);
 
 
     // Enrich sessions with answer counts and category information

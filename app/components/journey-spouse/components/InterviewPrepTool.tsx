@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import { MessageSquare, ExternalLink } from "lucide-react";
 import { ToolPageOverlay } from "@/app/components/shared/ToolPageOverlay";
+import { useCandidate } from "@/app/context/CandidateContext";
+import { resolveCategorySlug } from "@/lib/interview-prep/journey-category-map";
 
 export const DEFAULT_PREP_TOOL_DATA = {
   type: "interview_prep",
@@ -49,6 +51,7 @@ interface InterviewPrepToolProps {
   journeyId?: string;
   journeyTier?: string;
   plan?: any;
+  candidateId?: string;
 }
 
 export const InterviewPrepTool: React.FC<InterviewPrepToolProps> = ({
@@ -59,12 +62,30 @@ export const InterviewPrepTool: React.FC<InterviewPrepToolProps> = ({
   journeyId,
   journeyTier,
   plan,
+  candidateId: propCandidateId,
 }) => {
   const [internalPrepLaunched, setInternalPrepLaunched] = useState(false);
   const isPrepLaunched = propIsPrepLaunched !== undefined ? propIsPrepLaunched : internalPrepLaunched;
   const setIsPrepLaunched = propSetIsPrepLaunched || setInternalPrepLaunched;
 
   const [toolHref, setToolHref] = useState<string | null>(null);
+
+  let candidateCtx;
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    candidateCtx = useCandidate();
+  } catch {
+    candidateCtx = undefined;
+  }
+
+  const activeCandidate = candidateCtx?.activeCandidate;
+  const activeCandidateId =
+    propCandidateId ||
+    candidateCtx?.activeCandidateId ||
+    "candidate-1";
+  const isMultiCandidate = candidateCtx?.isMultiCandidate || false;
+
+  const categorySlug = resolveCategorySlug(activeCandidate?.visaCategory) || "ir-1-spouse";
 
   const safeTool = tool || DEFAULT_PREP_TOOL_DATA;
   const launchModule = safeTool.launch_module || DEFAULT_PREP_TOOL_DATA.launch_module;
@@ -79,13 +100,22 @@ export const InterviewPrepTool: React.FC<InterviewPrepToolProps> = ({
 
         <div className="p-7 sm:p-8">
           <div className="flex flex-col gap-2 mb-5">
-            <div className="flex items-center gap-3">
-              <div className="w-[44px] h-[44px] rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
-                <MessageSquare className="text-white/75" size={21} strokeWidth={1.6} />
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div className="flex items-center gap-3">
+                <div className="w-[44px] h-[44px] rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
+                  <MessageSquare className="text-white/75" size={21} strokeWidth={1.6} />
+                </div>
+                <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/35">
+                  {launchModule.title}
+                </div>
               </div>
-              <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/35">
-                {launchModule.title}
-              </div>
+              {isMultiCandidate && activeCandidate && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#6aa8f0]/15 text-[#93c5fd] border border-[#6aa8f0]/30 shadow-xs">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#6aa8f0]" />
+                  Preparing for: {activeCandidate.fullName || activeCandidate.label}
+                  {activeCandidate.relation ? ` (${activeCandidate.relation})` : ""}
+                </span>
+              )}
             </div>
             <h3 className="w-full text-[20px] sm:text-[22px] text-white/95 leading-tight">
               {launchModule.heading}
@@ -113,7 +143,8 @@ export const InterviewPrepTool: React.FC<InterviewPrepToolProps> = ({
               const baseUrl = "/interview-prep";
               const queryParams = new URLSearchParams();
               if (journeyId) queryParams.set("journey_id", journeyId);
-              queryParams.set("category_slug", "ir-1-spouse");
+              queryParams.set("category_slug", categorySlug);
+              if (activeCandidateId) queryParams.set("candidate_id", activeCandidateId);
               const qs = queryParams.toString();
               const url = `${baseUrl}?${qs}`;
               setToolHref(url);
@@ -165,7 +196,13 @@ export const InterviewPrepTool: React.FC<InterviewPrepToolProps> = ({
         onClose={() => setToolHref(null)}
         tier={effectiveTier}
         plan={plan}
-        toolProps={{ journeyId, categorySlug: "ir-1-spouse", journeyCategory: "IR-1", journeyTier: effectiveTier }}
+        toolProps={{
+          journeyId,
+          categorySlug,
+          journeyCategory: "IR-1",
+          journeyTier: effectiveTier,
+          candidateId: activeCandidateId,
+        }}
       />
     </div>
   );

@@ -35,6 +35,18 @@ type Props = {
    */
   onLaunched?: () => void;
   onClose: () => void;
+  /**
+   * Optional custom confirm callback for consumable actions (e.g. per-session credit deduction).
+   * When provided, CreditLaunchModal delegates charging to this function instead of launchResource.
+   */
+  onConfirm?: () => Promise<{
+    success: boolean;
+    error?: string;
+    required?: number;
+    available?: number;
+    deficit?: number;
+    topupAmount?: number;
+  }>;
 };
 
 type Insufficient = {
@@ -44,7 +56,7 @@ type Insufficient = {
   topupAmount: number;
 };
 
-export function CreditLaunchModal({ item, href, onLaunched, onClose }: Props) {
+export function CreditLaunchModal({ item, href, onLaunched, onClose, onConfirm }: Props) {
   const router = useRouter();
   const { balance, isLoading, launchResource } = useWallet();
   const { isAuthenticated } = useAuth();
@@ -93,6 +105,38 @@ export function CreditLaunchModal({ item, href, onLaunched, onClose }: Props) {
 
   const handleConfirm = async () => {
     if (charging) return;
+    if (onConfirm) {
+      setCharging(true);
+      setError(null);
+      try {
+        const result = await onConfirm();
+        if (result.success) {
+          if (onLaunched) {
+            onLaunched();
+            return;
+          }
+          onClose();
+          if (href) router.push(href);
+          return;
+        }
+        if (result.error === "INSUFFICIENT_CREDITS") {
+          setServerShortfall({
+            required: Number(result.required ?? item.credits),
+            available: Number(result.available ?? 0),
+            deficit: Number(result.deficit ?? item.credits),
+            topupAmount: Number(result.topupAmount ?? item.credits),
+          });
+          setCharging(false);
+          return;
+        }
+        setError(result.error || "Something went wrong. Please try again.");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      } finally {
+        setCharging(false);
+      }
+      return;
+    }
     // Services are charged per booking, by the booking form itself (with the
     // booking id). Charging here would take credits for no booking, then again.
     if (item.resourceType === "service") {
@@ -270,7 +314,7 @@ export function CreditLaunchModal({ item, href, onLaunched, onClose }: Props) {
             )}
 
             <p className="text-[11.5px] leading-relaxed text-slate-500">
-              $1 = 1 credit. {item.resourceType === "service" ? "Services inside your journey never use credits." : "Tools inside your journey never use credits."}
+              $1 = 1 credit. {item.resourceType === "service" ? "Services inside your journey never use credits." : "Resources inside your journey never use credits."}
             </p>
           </div>
         ) : (

@@ -88,3 +88,137 @@ describe("Interview Prep Standalone vs Journey Storage and Session Isolation", (
   });
 });
 
+describe("Multi-Candidate Category Resolution & Query Param Generation (Phase 6)", () => {
+  const { resolveCategorySlug } = require("@/lib/interview-prep/journey-category-map");
+  const { getBaseVisaCategory, UNKNOWN_VISA_CATEGORY } = require("@/lib/candidate/candidateSyncService");
+
+  const buildLaunchUrl = (opts: {
+    journeyId?: string;
+    rawCategory?: string;
+    candidateId?: string;
+  }) => {
+    const baseCat = getBaseVisaCategory(opts.rawCategory);
+    const effectiveCat = baseCat !== UNKNOWN_VISA_CATEGORY ? baseCat : "IR-1";
+    const categorySlug = resolveCategorySlug(effectiveCat) || "ir-1-spouse";
+
+    const queryParams = new URLSearchParams();
+    if (opts.journeyId) queryParams.set("journey_id", opts.journeyId);
+    if (categorySlug) queryParams.set("category_slug", categorySlug);
+    if (opts.candidateId) queryParams.set("candidate_id", opts.candidateId);
+
+    const qs = queryParams.toString();
+    return qs ? `/interview-prep?${qs}` : "/interview-prep";
+  };
+
+  it("resolves IR-5 candidate 1 (Mother) and candidate 2 (Father) correctly", () => {
+    const motherUrl = buildLaunchUrl({
+      journeyId: "j-uuid-mother",
+      rawCategory: "ir5",
+      candidateId: "candidate-1",
+    });
+    const fatherUrl = buildLaunchUrl({
+      journeyId: "j-uuid-father",
+      rawCategory: "ir5_candidate-2",
+      candidateId: "candidate-2",
+    });
+
+    expect(motherUrl).toBe("/interview-prep?journey_id=j-uuid-mother&category_slug=ir-5-parent&candidate_id=candidate-1");
+    expect(fatherUrl).toBe("/interview-prep?journey_id=j-uuid-father&category_slug=ir-5-parent&candidate_id=candidate-2");
+  });
+
+  it("resolves IR-2 child journeys without falling back to IR-1", () => {
+    const child1Url = buildLaunchUrl({
+      journeyId: "j-uuid-child1",
+      rawCategory: "ir2",
+      candidateId: "candidate-1",
+    });
+    const child2Url = buildLaunchUrl({
+      journeyId: "j-uuid-child2",
+      rawCategory: "ir2_candidate-2",
+      candidateId: "candidate-2",
+    });
+
+    expect(child1Url).toBe("/interview-prep?journey_id=j-uuid-child1&category_slug=ir-2-child&candidate_id=candidate-1");
+    expect(child2Url).toBe("/interview-prep?journey_id=j-uuid-child2&category_slug=ir-2-child&candidate_id=candidate-2");
+  });
+
+  it("resolves IR-1 spouse journeys as candidate-1 ir-1-spouse", () => {
+    const spouseUrl = buildLaunchUrl({
+      journeyId: "j-uuid-spouse",
+      rawCategory: "IR-1",
+      candidateId: "candidate-1",
+    });
+
+    expect(spouseUrl).toBe("/interview-prep?journey_id=j-uuid-spouse&category_slug=ir-1-spouse&candidate_id=candidate-1");
+  });
+});
+
+describe("Category Selection Filtering in Multi-Candidate Journeys (Phase 7)", () => {
+  const { isMultiCandidateCategorySlug } = require("@/lib/interview-prep/journey-category-map");
+
+  const filterCategories = (
+    allCategories: Array<{ categorySlug: string; categoryName: string }>,
+    userSessions: Array<{ category_slug: string; candidate_id?: string; completed?: boolean }>,
+    currentCandidateId: string
+  ) => {
+    const usedCategorySlugs = new Set<string>();
+    for (const s of userSessions) {
+      if (!s.category_slug) continue;
+      const isMulti = isMultiCandidateCategorySlug(s.category_slug);
+      if (!isMulti) {
+        usedCategorySlugs.add(s.category_slug);
+      } else {
+        const sessionCandId = s.candidate_id || "candidate-1";
+        if (sessionCandId === currentCandidateId && !s.completed) {
+          usedCategorySlugs.add(s.category_slug);
+        }
+      }
+    }
+
+    return allCategories.filter((cat) => !usedCategorySlugs.has(cat.categorySlug));
+  };
+
+  const categories = [
+    { categorySlug: "ir-1-spouse", categoryName: "IR-1/CR-1 Spouse" },
+    { categorySlug: "ir-5-parent", categoryName: "IR-5 Parent" },
+    { categorySlug: "ir-2-child", categoryName: "IR-2 Child" },
+  ];
+
+  it("permits Candidate 2 (Father) to select IR-5 even if Candidate 1 (Mother) has an active IR-5 session", () => {
+    const sessions = [
+      { category_slug: "ir-5-parent", candidate_id: "candidate-1", completed: false },
+    ];
+
+    // For Candidate 1, IR-5 should be filtered out (already has active session)
+    const cand1Available = filterCategories(categories, sessions, "candidate-1");
+    expect(cand1Available.some((c) => c.categorySlug === "ir-5-parent")).toBe(false);
+
+    // For Candidate 2 (Father), IR-5 MUST be available
+    const cand2Available = filterCategories(categories, sessions, "candidate-2");
+    expect(cand2Available.some((c) => c.categorySlug === "ir-5-parent")).toBe(true);
+  });
+
+  it("permits Candidate 2 (Child 2) to select IR-2 even if Candidate 1 (Child 1) has an IR-2 session", () => {
+    const sessions = [
+      { category_slug: "ir-2-child", candidate_id: "candidate-1", completed: false },
+    ];
+
+    const child2Available = filterCategories(categories, sessions, "candidate-2");
+    expect(child2Available.some((c) => c.categorySlug === "ir-2-child")).toBe(true);
+  });
+
+  it("strictly filters single-candidate IR-1 categories for any new session attempt", () => {
+    const sessions = [
+      { category_slug: "ir-1-spouse", candidate_id: "candidate-1", completed: false },
+    ];
+
+    // IR-1 is single-candidate, so it should be filtered out regardless of candidate
+    const cand1Available = filterCategories(categories, sessions, "candidate-1");
+    const cand2Available = filterCategories(categories, sessions, "candidate-2");
+
+    expect(cand1Available.some((c) => c.categorySlug === "ir-1-spouse")).toBe(false);
+    expect(cand2Available.some((c) => c.categorySlug === "ir-1-spouse")).toBe(false);
+  });
+});
+
+

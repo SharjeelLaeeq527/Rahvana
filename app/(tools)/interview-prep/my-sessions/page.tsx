@@ -24,6 +24,7 @@ import { NarrativeModal } from "../../(visa)/221g-action-planner/components/Narr
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 import { useJourneyEnvironment } from "@/lib/hooks/useJourneyEnvironment";
 import { resolveCategorySlug } from "@/lib/interview-prep/journey-category-map";
+import { useCandidate } from "@/app/context/CandidateContext";
 
 type SessionStatus = "COMPLETED" | "IN_PROGRESS" | "NOT_STARTED";
 type TimeFilter = "all" | "today" | "week" | "month";
@@ -41,6 +42,7 @@ interface SessionWithDetails {
   completionPercentage: number;
   source?: "tool" | "journey";
   journey_id?: string | null;
+  candidate_id?: string | null;
 }
 
 export interface MyInterviewSessionsProps {
@@ -56,6 +58,8 @@ export interface MyInterviewSessionsProps {
 const CategoryLabel: Record<string, string> = {
   "ir-1-spouse": "IR-1/CR-1 Spouse",
   "ir-5-parent": "IR-5 Parent",
+  "ir-2-child": "IR-2 Child",
+  "f1-student": "F-1 Student",
 };
 
 const getCategoryLabel = (slug: string): string => {
@@ -159,8 +163,18 @@ export default function MyInterviewSessions({
 
   const { showToast } = useToast();
 
+  let candidateCtx;
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    candidateCtx = useCandidate();
+  } catch {
+    candidateCtx = undefined;
+  }
+  const { candidates = [], activeCandidateId, isMultiCandidate = false } = candidateCtx || {};
+
   // Filter states
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedCandidate, setSelectedCandidate] = useState<string>("all");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [selectedTime, setSelectedTime] = useState<TimeFilter>("all");
   const [showNarrative, setShowNarrative] = useState(false);
@@ -177,6 +191,16 @@ export default function MyInterviewSessions({
     }
     return sessions;
   }, [sessions, isEmbedded, targetCategorySlug]);
+
+  const uniqueCandidateIds = useMemo(() => {
+    return Array.from(
+      new Set(
+        sessions
+          .map((s) => s.candidate_id)
+          .filter((c): c is string => Boolean(c))
+      )
+    );
+  }, [sessions]);
 
   // fetch user sessions
   const fetchUserSessions = async (isRefresh = false) => {
@@ -197,6 +221,10 @@ export default function MyInterviewSessions({
         }
         if (effectiveJourneyId) {
           params.set("journey_id", effectiveJourneyId);
+        }
+        const cId = journeyEnv.candidateId || activeCandidateId;
+        if (cId) {
+          params.set("candidate_id", cId);
         }
       } else {
         // Standalone must strictly load only standalone tool sessions
@@ -263,6 +291,11 @@ export default function MyInterviewSessions({
       filtered = filtered.filter((s) => s.category_slug === selectedCategory);
     }
 
+    // Candidate filter
+    if (selectedCandidate !== "all") {
+      filtered = filtered.filter((s) => (s.candidate_id || "candidate-1") === selectedCandidate);
+    }
+
     // Status filter
     if (selectedStatus !== "all") {
       filtered = filtered.filter((s) => getSessionStatus(s) === selectedStatus);
@@ -292,7 +325,7 @@ export default function MyInterviewSessions({
 
     setFilteredSessions(filtered);
     setCurrentPage(1);
-  }, [selectedCategory, selectedStatus, selectedTime, visibleSessions, isEmbedded]);
+  }, [selectedCategory, selectedCandidate, selectedStatus, selectedTime, visibleSessions, isEmbedded]);
 
   const hasShownToast = useRef(false);
 
@@ -305,7 +338,9 @@ export default function MyInterviewSessions({
 
       if (message === "session-exists") {
         showToast(
-          "You already have a session for this visa category. Only one session per category is allowed.",
+          isMultiCandidate
+            ? "An active session already exists for this candidate. Resume below or select another candidate."
+            : "You already have a session for this visa category. Only one session per category is allowed.",
           "info"
         );
 
@@ -314,7 +349,7 @@ export default function MyInterviewSessions({
         }
       }
     }
-  }, [isEmbedded]);
+  }, [isEmbedded, isMultiCandidate]);
 
   // pagination calculations
   const totalPages = Math.max(1, Math.ceil(filteredSessions.length / ITEMS_PER_PAGE));
@@ -364,14 +399,30 @@ export default function MyInterviewSessions({
       width: "25%",
       render: (session) => {
         const Icon = getCategoryIcon(session.category_slug);
+        const candidateProfile = candidates?.find((c) => c.id === session.candidate_id);
+        const candidateLabel =
+          candidateProfile?.fullName ||
+          candidateProfile?.label ||
+          (session.candidate_id && session.candidate_id !== "candidate-1"
+            ? session.candidate_id.replace("-", " ").replace(/\b\w/g, (l) => l.toUpperCase())
+            : null);
+
         return (
           <div className="flex items-center">
             <div className="mr-3 flex h-10 w-10 items-center justify-center rounded-full bg-transparent text-teal-800 sm:bg-teal-100">
               <Icon className="h-5 w-5 text-teal-600" />
             </div>
 
-            <div className="text-base font-semibold text-slate-900">
-              {getCategoryLabel(session.category_slug)}
+            <div className="flex flex-col">
+              <div className="text-base font-semibold text-slate-900 flex items-center gap-2 flex-wrap">
+                <span>{getCategoryLabel(session.category_slug)}</span>
+                {candidateLabel && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-teal-50 text-teal-700 border border-teal-200">
+                    {candidateLabel}
+                    {candidateProfile?.relation ? ` (${candidateProfile.relation})` : ""}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         );
@@ -531,6 +582,29 @@ export default function MyInterviewSessions({
                         },
                       ]
                     : []),
+                  ...(uniqueCandidateIds.length > 1
+                    ? [
+                        {
+                          key: "candidate",
+                          label: "Candidate",
+                          options: [
+                            { value: "all", label: "All Candidates" },
+                            ...uniqueCandidateIds.map((cId) => {
+                              const prof = candidates?.find((c) => c.id === cId);
+                              const label =
+                                prof?.fullName ||
+                                prof?.label ||
+                                (cId ? cId.replace("-", " ").replace(/\b\w/g, (l) => l.toUpperCase()) : "Candidate");
+                              return {
+                                value: cId,
+                                label: prof?.relation ? `${label} (${prof.relation})` : label,
+                              };
+                            }),
+                          ],
+                          value: selectedCandidate,
+                        },
+                      ]
+                    : []),
                   {
                     key: "status",
                     label: "Status",
@@ -556,6 +630,7 @@ export default function MyInterviewSessions({
                 ]}
                 onFilterChange={(filters) => {
                   setSelectedCategory(filters.category || "all");
+                  setSelectedCandidate(filters.candidate || "all");
                   setSelectedStatus(filters.status || "all");
                   setSelectedTime((filters.time || "all") as TimeFilter);
                 }}

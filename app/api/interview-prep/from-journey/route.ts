@@ -25,7 +25,7 @@ import { E, msg } from "@/lib/errors";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { journey_id, category_slug } = body;
+    const { journey_id, category_slug, candidate_id } = body;
 
     // Validate required fields
     if (!journey_id || !category_slug) {
@@ -63,7 +63,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Create or get existing journey session
-    const result = await createJourneyInterviewSession(journey_id, category_slug);
+    const result = candidate_id
+      ? await createJourneyInterviewSession(journey_id, category_slug, candidate_id)
+      : await createJourneyInterviewSession(journey_id, category_slug);
 
     return NextResponse.json(
       {
@@ -91,6 +93,7 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const journey_id = searchParams.get("journey_id");
+  const candidate_id = searchParams.get("candidate_id") || undefined;
 
   if (!journey_id) {
     return NextResponse.json(
@@ -128,7 +131,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get session (authentication handled by data-access)
-    const session = await getInterviewSessionByJourney(journey_id);
+    const session = await getInterviewSessionByJourney(journey_id, candidate_id);
 
     if (!session) {
       return NextResponse.json(

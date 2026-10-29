@@ -118,7 +118,8 @@ export const WALLET_CATALOG: readonly WalletCatalogItem[] = [
   // "smart" add-on still open every form.
   { ...tool(SMART_FORM_TOOL_ID, "Smart Form Filler", 39, "smart"), launchable: false },
   tool("221g-planner", "221(g) Action Planner", 199, "221g"),
-  tool("interview-prep", "Interview Prep", 200, "interview-prep"),
+  // Not launchable from the tools page: credits unlock one session at a time in-tool.
+  { ...tool("interview-prep", "Interview Prep", 200, "interview-prep"), launchable: false },
   // Each purchase = PHOTO_BOOTH_PHOTOS_PER_PURCHASE photos, then buy again.
   tool(PHOTO_BOOTH_TOOL_ID, "Photo Booth", 15, "photo", false),
   tool("pdf-toolkit", "PDF Tool Kit", 69, "pdf"),
