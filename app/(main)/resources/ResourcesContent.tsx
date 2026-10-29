@@ -1,4 +1,5 @@
 "use client";
+import StandardHeader from "../../components/headers/Standard-Header"
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -83,12 +84,10 @@ export default function ResourcesContent({ initialTab }: { initialTab: ResourceT
 
       {/* Page heading */}
       <div className="text-center pt-24 pb-2">
-        <h1 className="text-3xl md:text-5xl font-bold bg-clip-text text-transparent bg-linear-to-r from-foreground to-muted-foreground animate-fade-up">
-          My Resources
-        </h1>
-        <p className="mt-3 text-muted-foreground text-base md:text-lg max-w-2xl mx-auto animate-fade-up [animation-delay:100ms] hidden md:block">
-          Everything you&apos;ve added, plus the full catalog to browse and try anytime.
-        </p>
+        <StandardHeader 
+          title= "My Resources"
+          subtitle= "Everything you've added, plus the full catalog to browse and try anytime."
+        />
         <p className="mt-3 text-muted-foreground text-base md:text-lg max-w-2xl mx-auto animate-fade-up [animation-delay:100ms] block md:hidden">
         Your unlocked tools, guides & services.
         </p>

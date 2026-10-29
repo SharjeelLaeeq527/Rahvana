@@ -23,7 +23,6 @@ import {
   ArrowRight,
   ArrowUpRight,
   ShoppingCart,
-  X,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { E, msg, errorCode } from "@/lib/errors";
