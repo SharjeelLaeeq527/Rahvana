@@ -198,6 +198,7 @@ export default function InterviewPreparation({
   );
   const [isRedirectingSession, setIsRedirectingSession] = useState(false);
   const [existingSessions, setExistingSessions] = useState<any[]>([]);
+  const [hoveredProgressIndex, setHoveredProgressIndex] = useState<number | null>(null);
 
   const { user } = useAuth();
   const { profile, isProfileLoading, updateProfile } = useUserProfile();
@@ -1499,61 +1500,185 @@ export default function InterviewPreparation({
           ></div>
         </div>
 
-        {/* Desktop View */}
-        <div className="mt-4 hidden md:grid md:grid-cols-4 lg:grid-cols-5 gap-3">
+        {/* Desktop View: Single-Row Interactive Accordion Cards */}
+        <div
+          className="mt-4 hidden md:flex flex-row items-stretch gap-2 w-full py-1"
+          onMouseLeave={() => setHoveredProgressIndex(null)}
+        >
           {sections.map((section, index) => {
             const isActive = index === currentSectionIndex;
             const isCompleted = index < currentSectionIndex;
             const { color, lightColor } = getSectionColor(section.id);
+            const isHovered = hoveredProgressIndex === index;
+            const isOther = hoveredProgressIndex !== null && !isHovered;
+
+            // When hovered, expand the card smoothly; other cards shrink gracefully.
+            // Active (current) step gets slight natural weight if nothing is hovered.
+            let flexGrow = 1;
+            if (hoveredProgressIndex !== null) {
+              flexGrow = isHovered ? 2.4 : 0.65;
+            } else if (isActive) {
+              flexGrow = 1.35;
+            }
 
             return (
               <div
-                key={index}
-                className="p-3 rounded-lg text-center text-xs font-medium transition-all border-2"
-                style={
-                  isActive
-                    ? { backgroundColor: color, borderColor: color, color: "white" }
+                key={section.id || index}
+                onMouseEnter={() => setHoveredProgressIndex(index)}
+                className="group relative cursor-pointer overflow-hidden rounded-xl p-2.5 text-center transition-all border-2 flex flex-col justify-center select-none"
+                style={{
+                  flexGrow,
+                  flexShrink: 1,
+                  flexBasis: 0,
+                  minWidth: "60px",
+                  backgroundColor: isActive
+                    ? color
                     : isCompleted
-                      ? { backgroundColor: lightColor, borderColor: lightColor, color }
-                      : { backgroundColor: "#f1f5f9", borderColor: "#e2e8f0", color: "#64748b" }
-                }
+                      ? lightColor
+                      : "#f8fafc",
+                  borderColor: isActive
+                    ? color
+                    : isCompleted
+                      ? lightColor
+                      : "#e2e8f0",
+                  color: isActive ? "white" : isCompleted ? color : "#64748b",
+                  opacity: isOther ? 0.75 : 1,
+                  transform: isHovered ? "translateY(-2px)" : isOther ? "scale(0.98)" : "translateY(0)",
+                  boxShadow: isHovered
+                    ? `0 6px 18px -4px ${color}35`
+                    : isActive
+                      ? `0 4px 12px -2px ${color}30`
+                      : "none",
+                  transition:
+                    "flex-grow 400ms cubic-bezier(0.4, 0, 0.2, 1), transform 280ms ease, opacity 280ms ease, box-shadow 280ms ease",
+                }}
               >
-                <div className="font-semibold truncate">
-                  {section.title.substring(0, 20)}
-                  {section.title.length > 20 ? "..." : ""}
+                <div
+                  className={`text-xs font-semibold leading-snug transition-all duration-300 ${
+                    isHovered || isActive ? "whitespace-normal line-clamp-2" : "truncate"
+                  }`}
+                  title={section.title}
+                >
+                  {section.title}
                 </div>
-                <div className="text-[10px] mt-1 opacity-80">Step {index + 1}</div>
+                <div
+                  className="text-[10px] mt-1 font-medium tracking-wide uppercase transition-opacity duration-200"
+                  style={{ opacity: isActive || isHovered ? 0.95 : 0.7 }}
+                >
+                  Step {index + 1}
+                </div>
               </div>
             );
           })}
 
           {/* Review Step Indicator */}
-          <div
-            className="p-3 rounded-lg text-center text-xs font-medium transition-all border-2"
-            style={
-              step === sections.length + 1
-                ? { backgroundColor: "#0d7377", borderColor: "#0d7377", color: "white" }
-                : step > sections.length + 1
-                  ? { backgroundColor: "#e8f6f6", borderColor: "#e8f6f6", color: "#0d7377" }
-                  : { backgroundColor: "#f1f5f9", borderColor: "#e2e8f0", color: "#64748b" }
+          {(() => {
+            const reviewIndex = sections.length;
+            const isReviewActive = step === sections.length + 1;
+            const isReviewCompleted = step > sections.length + 1;
+            const isHovered = hoveredProgressIndex === reviewIndex;
+            const isOther = hoveredProgressIndex !== null && !isHovered;
+
+            let flexGrow = 1;
+            if (hoveredProgressIndex !== null) {
+              flexGrow = isHovered ? 2.2 : 0.65;
+            } else if (isReviewActive) {
+              flexGrow = 1.35;
             }
-          >
-            <div className="font-semibold">Review</div>
-            <div className="text-[10px] mt-1 opacity-80">Step {sections.length + 1}</div>
-          </div>
+
+            return (
+              <div
+                onMouseEnter={() => setHoveredProgressIndex(reviewIndex)}
+                className="group relative cursor-pointer overflow-hidden rounded-xl p-2.5 text-center transition-all border-2 flex flex-col justify-center select-none"
+                style={{
+                  flexGrow,
+                  flexShrink: 1,
+                  flexBasis: 0,
+                  minWidth: "60px",
+                  backgroundColor: isReviewActive
+                    ? "#0d7377"
+                    : isReviewCompleted
+                      ? "#e8f6f6"
+                      : "#f8fafc",
+                  borderColor: isReviewActive
+                    ? "#0d7377"
+                    : isReviewCompleted
+                      ? "#e8f6f6"
+                      : "#e2e8f0",
+                  color: isReviewActive ? "white" : isReviewCompleted ? "#0d7377" : "#64748b",
+                  opacity: isOther ? 0.75 : 1,
+                  transform: isHovered ? "translateY(-2px)" : isOther ? "scale(0.98)" : "translateY(0)",
+                  boxShadow: isHovered
+                    ? "0 6px 18px -4px rgba(13, 115, 119, 0.25)"
+                    : isReviewActive
+                      ? "0 4px 12px -2px rgba(13, 115, 119, 0.2)"
+                      : "none",
+                  transition:
+                    "flex-grow 400ms cubic-bezier(0.4, 0, 0.2, 1), transform 280ms ease, opacity 280ms ease, box-shadow 280ms ease",
+                }}
+              >
+                <div className="text-xs font-semibold truncate" title="Review">
+                  Review
+                </div>
+                <div
+                  className="text-[10px] mt-1 font-medium tracking-wide uppercase"
+                  style={{ opacity: isReviewActive || isHovered ? 0.95 : 0.7 }}
+                >
+                  Step {sections.length + 1}
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Results Step Indicator */}
-          <div
-            className="p-3 rounded-lg text-center text-xs font-medium transition-all border-2"
-            style={
-              step === sections.length + 2
-                ? { backgroundColor: "#0d7377", borderColor: "#0d7377", color: "white" }
-                : { backgroundColor: "#f1f5f9", borderColor: "#e2e8f0", color: "#64748b" }
+          {(() => {
+            const resultsIndex = sections.length + 1;
+            const isResultsActive = step === sections.length + 2;
+            const isHovered = hoveredProgressIndex === resultsIndex;
+            const isOther = hoveredProgressIndex !== null && !isHovered;
+
+            let flexGrow = 1;
+            if (hoveredProgressIndex !== null) {
+              flexGrow = isHovered ? 2.2 : 0.65;
+            } else if (isResultsActive) {
+              flexGrow = 1.35;
             }
-          >
-            <div className="font-semibold">Results</div>
-            <div className="text-[10px] mt-1 opacity-80">Step {sections.length + 2}</div>
-          </div>
+
+            return (
+              <div
+                onMouseEnter={() => setHoveredProgressIndex(resultsIndex)}
+                className="group relative cursor-pointer overflow-hidden rounded-xl p-2.5 text-center transition-all border-2 flex flex-col justify-center select-none"
+                style={{
+                  flexGrow,
+                  flexShrink: 1,
+                  flexBasis: 0,
+                  minWidth: "60px",
+                  backgroundColor: isResultsActive ? "#0d7377" : "#f8fafc",
+                  borderColor: isResultsActive ? "#0d7377" : "#e2e8f0",
+                  color: isResultsActive ? "white" : "#64748b",
+                  opacity: isOther ? 0.75 : 1,
+                  transform: isHovered ? "translateY(-2px)" : isOther ? "scale(0.98)" : "translateY(0)",
+                  boxShadow: isHovered
+                    ? "0 6px 18px -4px rgba(13, 115, 119, 0.25)"
+                    : isResultsActive
+                      ? "0 4px 12px -2px rgba(13, 115, 119, 0.2)"
+                      : "none",
+                  transition:
+                    "flex-grow 400ms cubic-bezier(0.4, 0, 0.2, 1), transform 280ms ease, opacity 280ms ease, box-shadow 280ms ease",
+                }}
+              >
+                <div className="text-xs font-semibold truncate" title="Results">
+                  Results
+                </div>
+                <div
+                  className="text-[10px] mt-1 font-medium tracking-wide uppercase"
+                  style={{ opacity: isResultsActive || isHovered ? 0.95 : 0.7 }}
+                >
+                  Step {sections.length + 2}
+                </div>
+              </div>
+            );
+          })()}
         </div>
 
         {/* Mobile View with Sheet */}
