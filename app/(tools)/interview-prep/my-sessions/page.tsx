@@ -376,11 +376,16 @@ export default function MyInterviewSessions({
     return UsersRound;
   };
 
-  const handleOpenSession = (sessionId: string) => {
+  const handleOpenSession = (session: SessionWithDetails) => {
     if (isEmbedded && onSelectSession) {
-      onSelectSession(sessionId);
+      onSelectSession(session.id);
     } else {
-      window.location.href = `/interview-prep/result?sessionId=${sessionId}`;
+      const isCompleted = session.completed || Boolean(session.interview_prep_results);
+      if (isCompleted) {
+        window.location.href = `/interview-prep/result?sessionId=${session.id}`;
+      } else {
+        window.location.href = `/interview-prep?sessionId=${session.id}`;
+      }
     }
   };
 
@@ -454,15 +459,18 @@ export default function MyInterviewSessions({
       label: "Actions",
       width: "25%",
       className: "text-left",
-      render: (session) => (
-        <Button
-          size="sm"
-          onClick={() => handleOpenSession(session.id)}
-          className="bg-[#0d7377] text-white hover:bg-[#0a5a5d]"
-        >
-          View Session
-        </Button>
-      ),
+      render: (session) => {
+        const isCompleted = session.completed || Boolean(session.interview_prep_results);
+        return (
+          <Button
+            size="sm"
+            onClick={() => handleOpenSession(session)}
+            className="bg-[#0d7377] text-white hover:bg-[#0a5a5d]"
+          >
+            {isCompleted ? "View Results" : "Resume Session"}
+          </Button>
+        );
+      },
     },
   ];
 

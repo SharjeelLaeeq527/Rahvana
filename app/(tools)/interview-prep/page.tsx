@@ -497,7 +497,21 @@ export default function InterviewPreparation({
     try {
       setSessionId(session.id);
       const categorySlug = session.category_slug;
-      const category = getCategoryFn(categorySlug);
+      let category = getCategoryFn(categorySlug);
+
+      if (!category) {
+        try {
+          const catRes = await fetch(`/api/interview-prep/categories`);
+          const catResData = await catRes.json().catch(() => null);
+          if (catResData?.success && Array.isArray(catResData.categories)) {
+            category = catResData.categories.find(
+              (c: { categorySlug: string }) => c.categorySlug === categorySlug
+            );
+          }
+        } catch {
+          // ignore
+        }
+      }
 
       if (!category && availableCategories.length > 0) {
         clearStoredSession(activeCandidateId);
@@ -745,10 +759,10 @@ export default function InterviewPreparation({
           }
         }
 
-        // Check for sessionId parameter (completed session revisit)
+        // Check for sessionId parameter (session revisit or resume)
         if (sessionIdParam) {
           setLoading(true);
-          setLoadingMessage("Loading your completed interview...");
+          setLoadingMessage("Loading your interview session...");
           const userEmail =
             typeof window !== "undefined"
               ? localStorage.getItem("userEmail") || "test@example.com"
@@ -758,7 +772,7 @@ export default function InterviewPreparation({
           );
           const sessionData = await response.json();
 
-          if (response.ok && sessionData.session && sessionData.session.interview_prep_results) {
+          if (response.ok && sessionData.session) {
             const sess = sessionData.session;
             // Strict isolation: do not load journey sessions into standalone, or vice versa
             if ((isEmbedded && sess.source === "tool") || (!isEmbedded && sess.source === "journey")) {
@@ -769,17 +783,34 @@ export default function InterviewPreparation({
             }
 
             setSessionId(sessionIdParam);
-            setGeneratedResults(sessionData.session.interview_prep_results.generated_questions);
-            setStep(questionnaire ? questionnaire.sections.length + 2 : 4);
+            const source = sess.source || (isEmbedded ? "journey" : "tool");
+            setSessionSource(source);
+            if (source === "journey") {
+              setIsJourneySession(true);
+              setJourneyId(sess.journey_id);
+            }
+            if (sess.candidate_id) {
+              setStoredSession(sess.candidate_id, sessionIdParam, source, sess.journey_id);
+            }
+
+            // If session already has generated results, show results step
+            if (sess.interview_prep_results) {
+              setGeneratedResults(sess.interview_prep_results.generated_questions);
+              setStep(questionnaire ? questionnaire.sections.length + 2 : 4);
+              setLoading(false);
+              setLoadingMessage("");
+              setSessionRestorationAttempted(true);
+              return;
+            }
+
+            // Incomplete session without results: restore questionnaire and any saved answers
+            await restoreSessionData(sess, (categorySlug: string) => {
+              const category = availableCategories.find((c) => c.categorySlug === categorySlug);
+              return category;
+            });
             setLoading(false);
             setLoadingMessage("");
             setSessionRestorationAttempted(true);
-
-            if (sessionData.session.source === "journey") {
-              setSessionSource("journey");
-              setIsJourneySession(true);
-              setJourneyId(sessionData.session.journey_id);
-            }
             return;
           }
         }
