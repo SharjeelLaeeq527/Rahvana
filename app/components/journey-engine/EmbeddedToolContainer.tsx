@@ -292,24 +292,8 @@ function JourneyVisaFormsEmbeddedTool({
 
   // ── Form editor: MultiStepForm ───────────────────────────────────────────────
   return (
-    <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-2 sm:px-4">
-      {/* Back bar */}
-      <div className="flex items-center gap-2 pt-1">
-        <button
-          onClick={() => setActiveFormCode(null)}
-          className="flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-xs transition-colors hover:border-teal-400 hover:text-[#0d7377] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
-        >
-          <ChevronLeft className="h-4 w-4" />
-          Back to Forms Library
-        </button>
-        <span className="text-xs text-slate-400">/</span>
-        <span className="text-xs font-semibold uppercase text-slate-700 dark:text-slate-300">
-          Form {activeFormCode.toUpperCase()}
-        </span>
-      </div>
-
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
-        <MultiStepForm
+    <div className="w-full">
+      <MultiStepForm
           key={`${activeFormCode}_${journeyContext?.candidateId || "candidate-1"}`}
           formCode={activeFormCode}
           mode="journey"
@@ -321,9 +305,9 @@ function JourneyVisaFormsEmbeddedTool({
           }}
           journeyTier={effectiveJourneyTier}
           isEmbedded={true}
+          showHeader={false}
           onClose={onClose}
         />
-      </div>
     </div>
   );
 }

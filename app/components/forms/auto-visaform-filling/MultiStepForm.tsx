@@ -147,6 +147,7 @@ export interface MultiStepFormProps extends ToolModeProps {
   formCode: string;
   onClose?: () => void;
   isEmbedded?: boolean;
+  showHeader?: boolean;
 }
 
 const getLastAnsweredIndex = (fields: ConfigField[], data: Record<string, string>) => {
@@ -171,12 +172,15 @@ export function MultiStepForm({
   journeyTier: propJourneyTier,
   onClose,
   isEmbedded = false,
+  showHeader,
 }: MultiStepFormProps) {
   const { isJourney, journeyContext, journeyTier } = useResolveToolMode({
     mode: propMode,
     journeyContext: propJourneyContext,
     journeyTier: propJourneyTier,
   });
+
+  const shouldShowHeader = showHeader ?? !isJourney;
 
   const plan = usePlan();
   // Journey mode follows the journey's own plan. Standalone is paid with credits
@@ -2013,7 +2017,8 @@ export function MultiStepForm({
   return (
     <div className="flex min-h-screen w-full flex-col" style={{ backgroundColor: "#f7fbfb" }}>
       {/* Sticky Header */}
-      <Header
+      {shouldShowHeader && (
+        <Header
         formTitle={config.formTitle}
         formSubtitle={config.formSubtitle}
         onOpenMenu={() => setIsDrawerOpen(true)}
@@ -2027,7 +2032,8 @@ export function MultiStepForm({
         isStandalone={!isJourney}
         isEmbedded={isEmbedded}
         onClose={onClose}
-      />
+        />
+      )}
 
       {/* Mobile Bottom Tray */}
       <MobileBottomSheet
@@ -2054,7 +2060,7 @@ export function MultiStepForm({
             className="-ml-4 hidden shrink-0 md:-ml-8 lg:block"
           >
             <aside
-              className="sticky top-16 mt-12 h-[calc(100vh-280px)] w-full overflow-hidden"
+              className={`sticky ${shouldShowHeader ? "top-16 mt-12" : "top-4 mt-6"} h-[calc(100vh-280px)] w-full overflow-hidden`}
               aria-hidden={false}
             >
               <div

@@ -22,6 +22,11 @@ import { ExpandableTooltip } from "@/app/components/shared/ExpandableTooltip";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { CreditLaunchModal } from "@/app/components/wallet/CreditLaunchModal";
 import { useWallet } from "@/app/context/WalletContext";
+import { usePlan, normalizePlanTier } from "@/app/context/PlanContext";
+import { useCandidate } from "@/app/context/CandidateContext";
+import { canUse } from "@/lib/entitlements/helpers";
+import { useResolveToolMode } from "@/lib/hooks/useResolveToolMode";
+import { useStandaloneToolUnlock } from "@/lib/wallet/useStandaloneToolUnlock";
 import {
   getCatalogItem,
   SMART_FORM_CODES,
@@ -698,11 +703,6 @@ export default function VisaFormSelector({
     : false;
 
   const hasFullFormAccess = isJourney ? journeyHasAccess : formWallet.unlocked;
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const DEMO_FORM_CODE = "i130";
-  const normalizeCode = (formCode: string) => formCode.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
-  const isFormLocked = (formCode: string) =>
-    !hasFullFormAccess && normalizeCode(formCode) !== DEMO_FORM_CODE;
 
   const initialJourney = useMemo(() => {
     if (!isJourney) return "IR1-CR1";
@@ -751,7 +751,10 @@ export default function VisaFormSelector({
   const normalizeCode = (formCode: string) => formCode.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
   // Forms with no Smart Form Filler wizard have no per-form unlock; they keep the
   // old rule (open only with the whole tool).
+  // In journey mode, access is granted by the journey tier (hasFullFormAccess),
+  // so wallet checks are skipped entirely for journey users.
   const isFormUnlocked = (formCode: string) =>
+    (isJourney && hasFullFormAccess) ||
     wallet.isUnlocked(smartFormResourceId(formCode) ?? SMART_FORM_TOOL_ID, "tool");
   const isFormLocked = (formCode: string) =>
     !isFormUnlocked(formCode) && normalizeCode(formCode) !== DEMO_FORM_CODE;
