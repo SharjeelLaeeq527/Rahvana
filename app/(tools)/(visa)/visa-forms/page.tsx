@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import {
   FileText,
   CheckCircle,
@@ -22,6 +22,11 @@ import { ExpandableTooltip } from "@/app/components/shared/ExpandableTooltip";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { CreditLaunchModal } from "@/app/components/wallet/CreditLaunchModal";
 import { useStandaloneToolUnlock } from "@/lib/wallet/useStandaloneToolUnlock";
+import { useResolveToolMode } from "@/lib/hooks/useResolveToolMode";
+import { usePlan } from "@/app/context/PlanContext";
+import { normalizePlanTier } from "@/lib/entitlements/config";
+import { canUse } from "@/lib/entitlements/helpers";
+import { useCandidate } from "@/app/context/CandidateContext";
 
 interface VisaForm {
   id?: string;
@@ -649,7 +654,63 @@ const VISA_FORMS: VisaForm[] = [
   // },
 ];
 
-export default function VisaFormSelector() {
+export interface VisaFormSelectorProps {
+  mode?: "standalone" | "journey";
+  journeyContext?: any;
+  journeyTier?: string;
+  onSelectForm?: (formCode: string) => void;
+  isEmbedded?: boolean;
+}
+
+export default function VisaFormSelector({
+  mode: propMode,
+  journeyContext: propJourneyContext,
+  journeyTier: propJourneyTier,
+  onSelectForm,
+  isEmbedded = false,
+}: VisaFormSelectorProps = {}) {
+  const { isJourney, journeyContext, journeyTier } = useResolveToolMode({
+    mode: propMode,
+    journeyContext: propJourneyContext,
+    journeyTier: propJourneyTier,
+  });
+
+  const { activeCandidate } = useCandidate();
+  const plan = usePlan();
+  const formWallet = useStandaloneToolUnlock(isJourney ? null : "form-forge");
+
+  const candidateTier = isJourney ? activeCandidate?.tier : null;
+  const journeyTiersTier = isJourney
+    ? (plan?.journeyTiers?.[(journeyContext as any)?.journeyId || journeyContext?.backendId || journeyContext?.journeySlug || ""] ||
+       plan?.journeyTiers?.[activeCandidate?.id || ""] ||
+       plan?.journeyTiers?.[journeyContext?.candidateId || ""])
+    : null;
+
+  const effectiveTier = normalizePlanTier(
+    isJourney
+      ? (journeyTier ?? journeyContext?.subscriptionTier ?? candidateTier ?? journeyTiersTier ?? (plan?.tier !== "free" ? plan.tier : "free"))
+      : plan.tier
+  );
+
+  const journeyHasAccess = isJourney
+    ? canUse("smart_form_filler", effectiveTier, plan.purchasedAddons)
+    : false;
+
+  const hasFullFormAccess = isJourney ? journeyHasAccess : formWallet.unlocked;
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const DEMO_FORM_CODE = "i130";
+  const normalizeCode = (formCode: string) => formCode.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+  const isFormLocked = (formCode: string) =>
+    !hasFullFormAccess && normalizeCode(formCode) !== DEMO_FORM_CODE;
+
+  const initialJourney = useMemo(() => {
+    if (!isJourney) return "IR1-CR1";
+    const cat = (journeyContext?.journeyCategory || "").toUpperCase();
+    if (cat.includes("IR-5") || cat.includes("IR5")) return "IR5";
+    if (cat.includes("IR-1") || cat.includes("CR-1") || cat.includes("IR1") || cat.includes("CR1")) return "IR1-CR1";
+    return "IR1-CR1";
+  }, [isJourney, journeyContext?.journeyCategory]);
+
   const [activeFilters, setActiveFilters] = useState<{
     agency: string[];
     category: string[];
@@ -660,7 +721,7 @@ export default function VisaFormSelector() {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [currentView, setCurrentView] = useState<"journey" | "all">("journey");
-  const [currentJourney, setCurrentJourney] = useState("IR1-CR1");
+  const [currentJourney, setCurrentJourney] = useState(initialJourney);
   const [currentStage, setCurrentStage] = useState("USCIS Filing");
   // const [isGuideOpen, setIsGuideOpen] = useState(false);
   // const [isFeaturesOpen, setIsFeaturesOpen] = useState(false);
@@ -673,20 +734,6 @@ export default function VisaFormSelector() {
   const [isFilterPopoverOpen, setIsFilterPopoverOpen] = useState(false);
   const filterPopoverRef = useRef<HTMLDivElement>(null);
   const filterButtonRef = useRef<HTMLButtonElement>(null);
-
-  // Plan gating: Free & Basic can only *start* the I-130 demo in the
-  // Smart Form Filler; Premium & Executive start every form in the library.
-  // This library is the standalone tool, paid with credits even by plan holders:
-  // only a wallet unlock (incl. a legacy "smart" add-on) opens every form.
-  // Without one, only the I-130 demo starts. Journey runs use MultiStepForm with
-  // the journey plan instead.
-  const formWallet = useStandaloneToolUnlock("form-forge");
-  const hasFullFormAccess = formWallet.unlocked;
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const DEMO_FORM_CODE = "i130";
-  const normalizeCode = (formCode: string) => formCode.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
-  const isFormLocked = (formCode: string) =>
-    !hasFullFormAccess && normalizeCode(formCode) !== DEMO_FORM_CODE;
 
   const renderFormDescription = (text: string) => {
     if (!text || !text.includes("31 C.F.R. Part 208")) {
@@ -740,7 +787,12 @@ export default function VisaFormSelector() {
       setShowUpgradeModal(true);
       return;
     }
-    window.location.href = `/visa-forms/${normalizeCode(formCode)}/wizard`;
+    const normalized = normalizeCode(formCode);
+    if (onSelectForm) {
+      onSelectForm(normalized);
+      return;
+    }
+    window.location.href = `/visa-forms/${normalized}/wizard`;
   };
 
   const toggleFilter = (type: "agency" | "category", value: string) => {
@@ -810,8 +862,14 @@ export default function VisaFormSelector() {
   });
 
   return (
-    <div className="from-primary/10 to-primary/5 mt-10 min-h-screen bg-linear-to-br via-white">
-      <div className="site-main-px site-main-py">
+    <div
+      className={
+        isEmbedded
+          ? "w-full"
+          : "from-primary/10 to-primary/5 mt-10 min-h-screen bg-linear-to-br via-white"
+      }
+    >
+      <div className={isEmbedded ? "px-2 py-4 sm:px-4" : "site-main-px site-main-py"}>
         {/* Header */}
         <div className="mb-8 text-center md:mb-12">
           <div className="bg-primary/10 mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full md:h-16 md:w-16">
@@ -824,16 +882,18 @@ export default function VisaFormSelector() {
             Browse all forms organized by your journey stage, or search instantly to find exactly
             what you need.
           </p>
-          <div className="mt-4 flex justify-center">
-            <QuickAccessButton
-              item={{
-                id: "form-forge",
-                title: "Smart Form Filler",
-                href: "/visa-forms",
-                icon_name: "Wand2",
-              }}
-            />
-          </div>
+          {!isEmbedded && (
+            <div className="mt-4 flex justify-center">
+              <QuickAccessButton
+                item={{
+                  id: "form-forge",
+                  title: "Smart Form Filler",
+                  href: "/visa-forms",
+                  icon_name: "Wand2",
+                }}
+              />
+            </div>
+          )}
           {/* <p className="text-gray-500 max-w-2xl mx-auto">
             Fill out official U.S. visa forms with helpful guidance at every
             step

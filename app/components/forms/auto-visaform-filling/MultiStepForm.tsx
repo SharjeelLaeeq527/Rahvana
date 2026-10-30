@@ -183,8 +183,26 @@ export function MultiStepForm({
   // /api/wallet reports as unlocked) gives the full filler. Journey passes null so
   // it never reads wallet unlocks. The PDF route re-checks all of this server-side.
   const formWallet = useStandaloneToolUnlock(isJourney ? null : "form-forge");
+  const candidateCtx = useCandidate();
+  // Isolate candidate details strictly to Journey mode
+  const activeCandidate = isJourney ? candidateCtx.activeCandidate : null;
+  const candidates = isJourney ? candidateCtx.candidates : [];
+  const setActiveCandidateId = candidateCtx.setActiveCandidateId;
+  const isMultiCandidate = isJourney ? candidateCtx.isMultiCandidate : false;
+
+  const candidateTier = isJourney ? activeCandidate?.tier : null;
+  const journeyTiersTier = isJourney
+    ? (plan?.journeyTiers?.[(journeyContext as any)?.journeyId || journeyContext?.backendId || journeyContext?.journeySlug || ""] ||
+       plan?.journeyTiers?.[activeCandidate?.id || ""] ||
+       plan?.journeyTiers?.[journeyContext?.candidateId || ""])
+    : null;
+
+  // In journey mode: use the journey's own tier (journeyTier or journeyContext.subscriptionTier,
+  // falling back to activeCandidate.tier or plan.journeyTiers).
   const journeyPlanTier = normalizePlanTier(
-    journeyTier ?? journeyContext?.subscriptionTier ?? plan.tier
+    isJourney
+      ? (journeyTier ?? journeyContext?.subscriptionTier ?? candidateTier ?? journeyTiersTier ?? (plan?.tier !== "free" ? plan.tier : "free"))
+      : plan.tier
   );
   const canUseFullFiller = isJourney
     ? canUseForTier("smart_form_filler", journeyPlanTier, plan.purchasedAddons)
@@ -218,16 +236,16 @@ export function MultiStepForm({
   const [cameFromIntro, setCameFromIntro] = useState(false);
   const savedScrollPosition = useRef<number>(0);
   const hasShownInitialIntro = useRef(false);
-  const candidateCtx = useCandidate();
-  // Isolate candidate details strictly to Journey mode
-  const activeCandidate = isJourney ? candidateCtx.activeCandidate : null;
-  const candidates = isJourney ? candidateCtx.candidates : [];
-  const setActiveCandidateId = candidateCtx.setActiveCandidateId;
-  const isMultiCandidate = isJourney ? candidateCtx.isMultiCandidate : false;
 
+  const activeCandId = isJourney
+    ? (activeCandidate?.id || journeyContext?.candidateId || candidateCtx.activeCandidateId)
+    : null;
+  const activeCategory = isJourney
+    ? (activeCandidate?.visaCategory || journeyContext?.journeyCategory || "IR-5")
+    : "";
   const draftJourneyKey = isJourney
-    ? (journeyContext?.candidateId
-        ? getCandidateJourneyKey(journeyContext.journeyCategory, journeyContext.candidateId)
+    ? (activeCandId
+        ? getCandidateJourneyKey(activeCategory, activeCandId)
         : (candidateCtx.activeJourneyKey || "candidate-1"))
     : "standalone";
   const { user, isLoading: isAuthLoading } = useAuth();
@@ -655,8 +673,26 @@ export function MultiStepForm({
   // the async initialization effect; if auto-fill ran before that, the later
   // setFormData(draft) would overwrite (wipe) the auto-filled values. Gating on
   // draftLoaded guarantees we merge INTO the loaded form data instead of racing it.
+  //
+  // STANDALONE mode: no profile pre-fill at all — the user starts with a blank form.
+  // JOURNEY mode: candidate-specific fields (beneficiary name, DOB, passport, CNIC)
+  //   are overridden from the active candidate; global autoFillForm also runs to
+  //   populate petitioner/sponsor fields from the user profile.
   useEffect(() => {
-    if (isContextProfileLoading || profileLoaded || !userProfile || !draftLoaded) return;
+    if (isContextProfileLoading || profileLoaded || !draftLoaded) return;
+
+    // Standalone: skip all profile pre-fill; just mark as loaded so the gate
+    // doesn't block further renders.
+    if (!isJourney) {
+      setProfileLoaded(true);
+      return;
+    }
+
+    // Journey: proceed with profile + candidate pre-fill.
+    if (!userProfile) {
+      setProfileLoaded(true);
+      return;
+    }
 
     setFormData((prev) => {
       // Use current form structure as template for auto-fill
@@ -684,6 +720,8 @@ export function MultiStepForm({
         ...(userProfile as unknown as Record<string, unknown>),
       };
 
+      // activeCandidate is already null in standalone (see line ~223), so this
+      // block only runs in journey mode — but guard it anyway for safety.
       if (activeCandidate) {
         const candBeneficiary: Record<string, unknown> = {
           ...((profileForOverride.beneficiary as Record<string, unknown>) || {}),
@@ -717,7 +755,7 @@ export function MultiStepForm({
       return merged;
     });
     setProfileLoaded(true);
-  }, [userProfile, isContextProfileLoading, profileLoaded, draftLoaded, activeCandidate, formCode]);
+  }, [isJourney, userProfile, isContextProfileLoading, profileLoaded, draftLoaded, activeCandidate, formCode]);
 
   const sections = useMemo(() => {
     if (!config) return [];

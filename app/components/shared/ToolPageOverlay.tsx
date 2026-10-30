@@ -64,7 +64,7 @@ function safeDynamic(
         }
         throw error;
       }),
-    { loading: loadingComponent }
+    { loading: () => React.createElement(loadingComponent) }
   );
 }
 
@@ -319,7 +319,9 @@ export const ToolPageOverlay: React.FC<ToolPageOverlayProps> = ({
   useEffect(() => {
     if (!overlayTitle || !showJourneyHeader) return;
     window.dispatchEvent(new CustomEvent("journey-overlay-name", { detail: overlayTitle }));
-    return () => window.dispatchEvent(new CustomEvent("journey-overlay-name", { detail: null }));
+    return () => {
+      window.dispatchEvent(new CustomEvent("journey-overlay-name", { detail: null }));
+    };
   }, [overlayTitle, showJourneyHeader]);
 
   if (!toolHref) return null;
@@ -352,6 +354,15 @@ export const ToolPageOverlay: React.FC<ToolPageOverlayProps> = ({
                 formCode={detectedFormCode}
                 onClose={onClose}
                 isEmbedded={true}
+                mode="journey"
+                journeyTier={(extraProps?.journeyTier as string) || effectivePlan.tier}
+                journeyContext={{
+                  journeySlug: (extraProps?.journeyContext as any)?.journeySlug || "journey",
+                  journeyCategory: (extraProps?.journeyContext as any)?.journeyCategory || "IR-5",
+                  candidateId: (extraProps?.journeyContext as any)?.candidateId || "candidate-1",
+                  subscriptionTier: (extraProps?.journeyTier as string) || effectivePlan.tier,
+                  ...((extraProps?.journeyContext as any) || {}),
+                }}
                 {...(extraProps || {})}
               />
             </main>
