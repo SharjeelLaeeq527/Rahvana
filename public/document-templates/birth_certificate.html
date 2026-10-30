@@ -1,0 +1,930 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Birth Certificate True Translation | Rahvana</title>
+<style>
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Times New Roman', Times, serif;
+    color: #111;
+    line-height: 1.25;
+    background-color: #f1f5f9;
+    margin: 0;
+    padding: 15px;
+  }
+
+  /* Top Control & Action Bar */
+  .control-bar {
+    max-width: 210mm;
+    margin: 0 auto 16px auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #0f172a;
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  .control-title-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .template-badge {
+    background-color: #006363;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 999px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .control-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #f8fafc;
+  }
+
+  .btn-print {
+    background-color: #2563eb;
+    color: #fff;
+    border: none;
+    padding: 8px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: inherit;
+  }
+
+  .btn-print:hover {
+    background-color: #1d4ed8;
+  }
+
+  /* Bottom Navigation Switcher */
+  .nav-bar {
+    max-width: 210mm;
+    margin: 20px auto 30px auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    padding: 12px 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  .nav-btn {
+    background-color: #006363;
+    color: #ffffff;
+    border: none;
+    padding: 9px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .nav-btn:hover {
+    background-color: #004d4d;
+  }
+
+  .nav-btn:disabled {
+    background-color: #94a3b8;
+    cursor: not-allowed;
+  }
+
+  .nav-indicator {
+    font-size: 13px;
+    font-weight: 600;
+    color: #334155;
+  }
+
+  /* Document Template Wrappers */
+  .template-view {
+    display: none;
+  }
+
+  .template-view.active {
+    display: block;
+  }
+
+  /* Standard A4 Page Container */
+  .page-container {
+    background: #fff;
+    width: 210mm;
+    min-height: 297mm;
+    max-height: 297mm;
+    margin: 0 auto;
+    padding: 8mm 12mm 9mm 12mm;
+    box-sizing: border-box;
+    box-shadow: 0 0 12px rgba(0,0,0,0.12);
+    position: relative;
+    page-break-after: always;
+    page-break-inside: avoid;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+  }
+
+  /* Formal Decorative Outer Border */
+  .ornamental-border {
+    border: 2px solid #006363;
+    padding: 10px 14px;
+    box-sizing: border-box;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  /* Standardized Corporate Header */
+  .corporate-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #006363;
+    padding-bottom: 6px;
+    margin-bottom: 6px;
+  }
+
+  .brand-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .brand-logo-svg {
+    height: 32px;
+    width: auto;
+  }
+
+  .brand-subtext {
+    font-size: 8.5px;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #006363;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    line-height: 1.2;
+  }
+
+  .brand-subtext .urdu-title {
+    font-size: 10.5px;
+    color: #222;
+    font-weight: bold;
+    display: block;
+    margin-top: 1px;
+  }
+
+  .header-right {
+    text-align: right;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 8px;
+    color: #444;
+    line-height: 1.35;
+  }
+
+  .header-right .certified-tag {
+    font-weight: 800;
+    color: #006363;
+    font-size: 9.5px;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+  }
+
+  /* True Translation Gold Ribbon Badge */
+  .badge-container {
+    text-align: center;
+    margin: 3px 0 4px 0;
+  }
+
+  .true-translation-badge {
+    display: inline-block;
+    border: 2px solid #b8860b;
+    color: #996515;
+    background-color: #fffdf5;
+    font-weight: 900;
+    font-size: 14.5px;
+    letter-spacing: 2px;
+    padding: 2.5px 22px;
+    border-radius: 4px;
+    text-transform: uppercase;
+  }
+
+  /* Titles */
+  .header-section {
+    text-align: center;
+    margin-bottom: 6px;
+  }
+
+  .lang-title {
+    font-size: 11px;
+    font-weight: bold;
+    text-decoration: underline;
+    letter-spacing: 0.6px;
+    margin-bottom: 2px;
+  }
+
+  .sub-title {
+    font-size: 9.5px;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin: 1px 0;
+  }
+
+  .main-heading {
+    font-size: 15px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-decoration: underline;
+    margin: 2px 0;
+  }
+
+  /* Meta header bar */
+  .meta-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    font-size: 10px;
+    font-weight: bold;
+    margin: 3px 0 6px 0;
+    border-bottom: 1px dashed #006363;
+    padding-bottom: 4px;
+  }
+
+  /* Tables */
+  table.form-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10px;
+    margin-bottom: 5px;
+  }
+
+  table.form-table th,
+  table.form-table td {
+    border: 1px solid #222;
+    padding: 4px 6px;
+    vertical-align: middle;
+  }
+
+  table.form-table th.section-th {
+    background-color: #f1f5f9;
+    color: #006363;
+    text-align: left;
+    font-size: 10.5px;
+    font-weight: bold;
+    padding: 4.5px 7px;
+    letter-spacing: 0.5px;
+  }
+
+  .label-cell {
+    font-weight: 600;
+    background-color: #fcfcfc;
+    width: 25%;
+  }
+
+  .value-cell {
+    font-weight: normal;
+    background-color: #ffffff;
+    width: 25%;
+  }
+
+  /* Seal & Signatures Box */
+  .signature-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9.5px;
+    margin-top: 4px;
+  }
+
+  .signature-table td {
+    border: 1px solid #222;
+    padding: 6px 8px;
+    vertical-align: top;
+    height: 42px;
+  }
+
+  .sign-label {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 4px;
+    line-height: 1.15;
+  }
+
+  .sign-line {
+    display: inline-block;
+    border-bottom: 1px solid #222;
+    min-width: 130px;
+    padding: 0 4px;
+    font-style: italic;
+    color: #111;
+  }
+
+  /* Certificate of Translation Accuracy Box */
+  .cert-box {
+    border: 1.5px solid #006363;
+    padding: 6px 10px;
+    margin-top: 6px;
+    background: #fafcfc;
+  }
+
+  .cert-box-title {
+    font-size: 10.5px;
+    font-weight: bold;
+    text-align: center;
+    letter-spacing: 1px;
+    color: #006363;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+    text-decoration: underline;
+  }
+
+  .cert-box p {
+    font-size: 8.8px;
+    line-height: 1.25;
+    margin: 2px 0 3px 0;
+    text-align: justify;
+  }
+
+  .cert-sign-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 5px;
+    font-size: 8.8px;
+    font-weight: 600;
+  }
+
+  /* Clean Uniform Corporate Footer */
+  .corporate-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1.5px solid #006363;
+    padding-top: 4px;
+    margin-top: 6px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 8.5px;
+    font-weight: bold;
+    color: #333;
+  }
+
+  .corporate-footer a {
+    color: #006363;
+    text-decoration: none;
+  }
+
+  .corporate-footer .links-group {
+    display: flex;
+    gap: 16px;
+  }
+
+  .footer-icon-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #006363;
+    text-decoration: none;
+  }
+
+  .footer-icon-link svg {
+    width: 11px !important;
+    height: 11px !important;
+    max-width: 11px;
+    max-height: 11px;
+    vertical-align: middle;
+    flex-shrink: 0;
+  }
+
+  /* Manual Certificate Specific Narrative Section */
+  .manual-cert-header-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10.5px;
+    margin: 6px 0 10px 0;
+  }
+
+  .manual-cert-header-table td {
+    border: 1px solid #222;
+    padding: 8px 10px;
+    text-align: center;
+    font-weight: bold;
+    vertical-align: middle;
+  }
+
+  .manual-narrative {
+    font-size: 11px;
+    line-height: 1.6;
+    margin: 12px 4px;
+    text-align: justify;
+  }
+
+  .manual-meta-fields {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10.5px;
+    margin: 8px 0 12px 0;
+  }
+
+  .manual-meta-fields td {
+    padding: 6px 8px;
+    border: 1px solid #222;
+    vertical-align: middle;
+  }
+
+  .disclaimer-italics {
+    font-style: italic;
+    font-weight: bold;
+    text-decoration: underline;
+    margin: 10px 0;
+    font-size: 10.5px;
+  }
+
+  /* Contenteditable focus styles */
+  [contenteditable="true"] {
+    outline: none;
+    transition: background-color 0.15s ease;
+  }
+
+  [contenteditable="true"]:hover {
+    background-color: #fff9e6;
+  }
+
+  [contenteditable="true"]:focus {
+    background-color: #fff3cd;
+    box-shadow: 0 0 2px #ffc107;
+  }
+
+  /* Print Media Styles */
+  @media print {
+    body {
+      background-color: #fff !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+
+    .control-bar,
+    .nav-bar {
+      display: none !important;
+    }
+
+    .template-view {
+      display: none !important;
+    }
+
+    .template-view.active {
+      display: block !important;
+    }
+
+    .page-container {
+      width: 210mm !important;
+      height: 297mm !important;
+      min-height: 297mm !important;
+      max-height: 297mm !important;
+      box-shadow: none !important;
+      margin: 0 !important;
+      padding: 8mm 12mm 9mm 12mm !important;
+      page-break-after: avoid !important;
+      break-after: avoid !important;
+      overflow: hidden !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- Top Action & Print Bar -->
+<div class="control-bar">
+  <div class="control-title-box">
+    <span class="template-badge" id="badgeText">Computerized NADRA Sample</span>
+    <span class="control-title" id="headingText">Birth Certificate True Translation (NADRA CRMS)</span>
+  </div>
+  <button class="btn-print" onclick="triggerBrowserPrint()"><svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Browser Print Dialog</button>
+</div>
+
+<!-- ================= TEMPLATE 1: COMPUTERIZED (NADRA) BIRTH CERTIFICATE ================= -->
+<div id="template-computerized" class="template-view active">
+  <div class="page-container">
+    <div class="ornamental-border">
+
+      <!-- Rahvana Standard Corporate Header -->
+      <div class="corporate-header">
+        <div class="brand-left">
+          <img src="/assets/images/RahvanaLogo.png" alt="Rahvana Logo" width="100" height="40">
+        </div>
+        <div class="header-right">
+          <div class="certified-tag">Official Certified True Translation</div>
+          <div>Reference: <strong>[RAHVANA-ORDER-REF-NO]</strong></div>
+          <div>Support: <strong>support@rahvana.com</strong></div>
+        </div>
+      </div>
+
+      <!-- Top True Translation Badge -->
+      <div class="badge-container">
+        <div class="true-translation-badge" contenteditable="true">TRUE TRANSLATION</div>
+      </div>
+
+      <!-- Title Headings matching government NADRA layout -->
+      <div class="header-section">
+        <div class="lang-title" contenteditable="true">CERTIFIED TRANSLATION OF COMPUTERIZED BIRTH REGISTRATION CERTIFICATE (FROM URDU)</div>
+        <div class="sub-title" contenteditable="true">GOVERNMENT OF SINDH / LOCAL GOVERNMENT PAKISTAN (NADRA CRMS)</div>
+        <div class="main-heading" contenteditable="true">BIRTH REGISTRATION CERTIFICATE</div>
+      </div>
+
+      <!-- NADRA Metadata Grid -->
+      <div class="meta-grid">
+        <div>Tracking ID: <span contenteditable="true"><strong>[TRACKING-ID-NUMBER]</strong></span></div>
+        <div>CRMS No: <span contenteditable="true"><strong>[CRMS-REGISTRATION-NO]</strong></span></div>
+        <div>Old / M Reg #: <span contenteditable="true"><strong>[OLD-MANUAL-REG-NO]</strong></span></div>
+      </div>
+
+      <!-- 1. Child's Details -->
+      <table class="form-table">
+        <thead>
+          <tr>
+            <th colspan="4" class="section-th">1. Child's Details (بچے کے کوائف)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="label-cell">Child's Full Name:</td>
+            <td class="value-cell" contenteditable="true"><strong>[CHILD-FULL-NAME]</strong></td>
+            <td class="label-cell">Date of Birth:</td>
+            <td class="value-cell" contenteditable="true"><strong>[DATE-OF-BIRTH]</strong></td>
+          </tr>
+          <tr>
+            <td class="label-cell">Gender:</td>
+            <td class="value-cell" contenteditable="true">Male / Female</td>
+            <td class="label-cell">Religion:</td>
+            <td class="value-cell" contenteditable="true">Islam</td>
+          </tr>
+          <tr>
+            <td class="label-cell">District of Birth:</td>
+            <td class="value-cell" colspan="3" contenteditable="true">Karachi East, Sindh, Pakistan</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- 2. Parental Information -->
+      <table class="form-table">
+        <thead>
+          <tr>
+            <th colspan="4" class="section-th">2. Parental Information (والدین کے کوائف)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="label-cell">Father's Name:</td>
+            <td class="value-cell" contenteditable="true"><strong>[FATHER-FULL-NAME]</strong></td>
+            <td class="label-cell">Father's Nationality:</td>
+            <td class="value-cell" contenteditable="true">Pakistani</td>
+          </tr>
+          <tr>
+            <td class="label-cell">Father's CNIC No:</td>
+            <td class="value-cell" contenteditable="true"><strong>[FATHER-CNIC-NUMBER]</strong></td>
+            <td class="label-cell">Mother's Name:</td>
+            <td class="value-cell" contenteditable="true"><strong>[MOTHER-FULL-NAME]</strong></td>
+          </tr>
+          <tr>
+            <td class="label-cell">Mother's Nationality:</td>
+            <td class="value-cell" contenteditable="true">Pakistani</td>
+            <td class="label-cell">Mother's CNIC No:</td>
+            <td class="value-cell" contenteditable="true"><strong>[MOTHER-CNIC-NUMBER]</strong></td>
+          </tr>
+          <tr>
+            <td class="label-cell">Grandfather's Name:</td>
+            <td class="value-cell" contenteditable="true"><strong>[GRANDFATHER-FULL-NAME]</strong></td>
+            <td class="label-cell">Grandfather's CNIC:</td>
+            <td class="value-cell" contenteditable="true"><strong>[GRANDFATHER-CNIC-OR-NIL]</strong></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- 3. Address Information -->
+      <table class="form-table">
+        <thead>
+          <tr>
+            <th colspan="4" class="section-th">3. Address Information (پتہ)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="label-cell">Residential Address:</td>
+            <td class="value-cell" colspan="3" contenteditable="true">House No. [XYZ], Street [ABC], Sector [123], Karachi East, Pakistan</td>
+          </tr>
+          <tr>
+            <td class="label-cell">Tehsil / Town:</td>
+            <td class="value-cell" contenteditable="true">Karachi East</td>
+            <td class="label-cell">District:</td>
+            <td class="value-cell" contenteditable="true">Karachi East</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- 4. Applicant's & Registration Details -->
+      <table class="form-table">
+        <thead>
+          <tr>
+            <th colspan="4" class="section-th">4. Applicant's &amp; Registration Details (درخواست دہندہ اور اندارج کے کوائف)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="label-cell">Applicant Name:</td>
+            <td class="value-cell" contenteditable="true"><strong>[APPLICANT-NAME]</strong></td>
+            <td class="label-cell">Applicant CNIC No:</td>
+            <td class="value-cell" contenteditable="true"><strong>[APPLICANT-CNIC]</strong></td>
+          </tr>
+          <tr>
+            <td class="label-cell">Relation with Child:</td>
+            <td class="value-cell" contenteditable="true">Father / Mother / Self</td>
+            <td class="label-cell">Entry Date:</td>
+            <td class="value-cell" contenteditable="true">[ENTRY-DATE]</td>
+          </tr>
+          <tr>
+            <td class="label-cell">Issue Date:</td>
+            <td class="value-cell" contenteditable="true">[ISSUE-DATE]</td>
+            <td class="label-cell">Entry Status:</td>
+            <td class="value-cell" contenteditable="true">Normal / Verified</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Attestation & Official Issuance Seal -->
+      <table class="signature-table">
+        <tbody>
+          <tr>
+            <td style="width: 50%;">
+              <span class="sign-label">Signature of Secretary Union Committee:</span>
+              <span class="sign-line" contenteditable="true">Signed &amp; Stamped</span>
+              <div style="font-size: 8.5px; color: #555; margin-top: 3px;">Union Committee / Council Office, Karachi</div>
+            </td>
+            <td style="width: 50%;">
+              <span class="sign-label">Official Seal of Union Committee / Council:</span>
+              <span class="sign-line" contenteditable="true">Official Seal Affixed</span>
+              <div style="font-size: 8.5px; color: #555; margin-top: 3px;">Govt of Sindh / NADRA CRMS Verified</div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Certificate of Translation Accuracy -->
+      <div class="cert-box">
+        <div class="cert-box-title" contenteditable="true">CERTIFICATE OF TRANSLATION ACCURACY</div>
+        <p contenteditable="true">
+          I, <strong contenteditable="true">[TRANSLATOR-FULL-NAME]</strong>, certify that I am competent to translate from Urdu to English, and that the above document is a true, complete, and accurate English translation of the attached <strong>Computerized Birth Registration Certificate (NADRA CRMS)</strong> originally issued in Urdu to the best of my knowledge and ability.
+        </p>
+        <div class="cert-sign-row">
+          <div>
+            Translator Name: <strong contenteditable="true">[TRANSLATOR-FULL-NAME]</strong><br>
+            Job Reference No: <span contenteditable="true"><strong>[RAHVANA-JOB-REF-ID]</strong></span><br>
+            Date: <span contenteditable="true">[DATE-OF-TRANSLATION]</span>
+          </div>
+          <div style="text-align: right;">
+            Translator Signature: <span class="sign-line" style="min-width: 130px;" contenteditable="true">Signed</span><br>
+            Verification ID: <strong contenteditable="true">[RAHVANA-VERIFICATION-TOKEN]</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Clean Rahvana Corporate Footer -->
+      <div class="corporate-footer">
+        <div>Official Certified Translation • Computerized Birth Certificate</div>
+        <div class="links-group">
+          <a class="footer-icon-link" href="mailto:support@rahvana.com">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#006363" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+              <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+            <span>support@rahvana.com</span>
+          </a>
+          <a class="footer-icon-link" href="https://www.rahvana.com" target="_blank">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#006363" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="2" y1="12" x2="22" y2="12"></line>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+            </svg>
+            <span>www.rahvana.com</span>
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ================= TEMPLATE 2: MANUAL BIRTH CERTIFICATE ================= -->
+<div id="template-manual" class="template-view">
+  <div class="page-container">
+    <div class="ornamental-border">
+
+      <!-- Rahvana Standard Corporate Header -->
+      <div class="corporate-header">
+        <div class="brand-left">
+            <img src="/assets/images/RahvanaLogo.png" alt="Rahvana Logo" width="100" height="40">
+        </div>
+        <div class="header-right">
+          <div class="certified-tag">Certified English Translation</div>
+          <div>Reference: <strong>[RAHVANA-ORDER-REF-NO]</strong></div>
+          <div>Support: <strong>support@rahvana.com</strong></div>
+        </div>
+      </div>
+
+      <!-- Top True Translation Badge -->
+      <div class="badge-container">
+        <div class="true-translation-badge" contenteditable="true">TRUE TRANSLATION</div>
+      </div>
+
+      <div class="header-section">
+        <div class="lang-title" contenteditable="true">CERTIFIED TRUE TRANSLATION OF BIRTH CERTIFICATE FROM URDU</div>
+      </div>
+
+      <!-- Manual Union Council Formal Header Table matching sample -->
+      <table class="manual-cert-header-table">
+        <tr>
+          <td style="width: 32%;">
+            [Logo / Monogram]<br>
+            <span style="font-size: 9.5px; font-weight: normal;" contenteditable="true">(Government of the Punjab / Sindh)</span>
+          </td>
+          <td style="width: 36%; font-size: 15px; font-weight: bold; letter-spacing: 1px;" contenteditable="true">
+            Birth Certificate
+          </td>
+          <td style="width: 32%;">
+            <span contenteditable="true">Official Seal of Union Council</span><br>
+            <span style="font-size: 9.5px; font-weight: normal;" contenteditable="true">([DATE-OF-ORIGINAL-REGISTRATION])</span>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Register & Serial No Row -->
+      <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: bold; margin: 8px 4px 10px 4px;">
+        <div>Union Council: <span contenteditable="true"><strong>[UNION-COUNCIL-NAME-OR-NO]</strong></span></div>
+        <div>Serial No: <span contenteditable="true"><strong>[SERIAL-NUMBER-FROM-REGISTER]</strong></span></div>
+      </div>
+
+      <!-- Legal Attestation Statement -->
+      <div class="manual-narrative" contenteditable="true">
+        This is to certify that, with reference to <strong>Entry No. [ENTRY-NO]</strong> for the year <strong>[YEAR]</strong> recorded in the Birth Register of <strong>[MOUZA-OR-VILLAGE-NAME]</strong>, Union Council <strong>[UNION-COUNCIL-NAME]</strong>, Tehsil and District <strong>[TEHSIL-AND-DISTRICT-NAME]</strong>:
+      </div>
+
+      <!-- Structured Birth Record Fields -->
+      <table class="manual-meta-fields">
+        <tbody>
+          <tr>
+            <td style="width: 30%; font-weight: bold;">Name of Child:</td>
+            <td style="width: 70%;" contenteditable="true"><strong>[CHILD-FULL-NAME]</strong></td>
+          </tr>
+          <tr>
+            <td style="font-weight: bold;">Father's Name:</td>
+            <td contenteditable="true"><strong>[FATHER-FULL-NAME]</strong></td>
+          </tr>
+          <tr>
+            <td style="font-weight: bold;">Place of Residence:</td>
+            <td contenteditable="true">[RESIDENCE-VILLAGE-OR-STREET], Tehsil &amp; District [DISTRICT-NAME]</td>
+          </tr>
+          <tr>
+            <td style="font-weight: bold;">Date of Birth:</td>
+            <td contenteditable="true"><strong>[DATE-OF-BIRTH]</strong></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Standard Statutory Disclaimer -->
+      <div class="disclaimer-italics" contenteditable="true">
+        No alteration, cutting, or addition has been made.
+      </div>
+
+      <!-- Secretary Union Council Signature Box matching the exact sample layout -->
+      <div style="display: flex; justify-content: flex-end; margin: 12px 0 16px 0;">
+        <div style="border: 1px solid #222; padding: 10px 16px; width: 330px; font-size: 10px; text-align: center;">
+          <div style="font-weight: bold; margin-bottom: 8px;" contenteditable="true">Seal and Signature of the Secretary, Union Council</div>
+          <div style="margin-top: 14px;"><span class="sign-line" style="min-width: 220px;" contenteditable="true">Signed &amp; Stamped</span></div>
+          <div style="font-size: 9px; color: #444; margin-top: 5px;" contenteditable="true">Union Council No. [UC-NO], District [DISTRICT]</div>
+        </div>
+      </div>
+
+      <!-- Certificate of Translation Accuracy -->
+      <div class="cert-box">
+        <div class="cert-box-title" contenteditable="true">CERTIFICATE OF TRANSLATION ACCURACY</div>
+        <p contenteditable="true">
+          I, <strong contenteditable="true">[TRANSLATOR-FULL-NAME]</strong>, certify that I am competent to translate from Urdu to English, and that the above document is a true, complete, and accurate English translation of the attached <strong>Computerized Birth Registration Certificate (NADRA CRMS)</strong> originally issued in Urdu to the best of my knowledge and ability.
+        </p>
+        <div class="cert-sign-row">
+          <div>
+            Translator Name: <strong contenteditable="true">[TRANSLATOR-FULL-NAME]</strong><br>
+            Job Reference No: <span contenteditable="true"><strong>[RAHVANA-JOB-REF-ID]</strong></span><br>
+            Date: <span contenteditable="true">[DATE-OF-TRANSLATION]</span>
+          </div>
+          <div style="text-align: right;">
+            Translator Signature: <span class="sign-line" style="min-width: 130px;" contenteditable="true">Signed</span><br>
+            Verification ID: <strong contenteditable="true">[RAHVANA-VERIFICATION-TOKEN]</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Clean Rahvana Corporate Footer -->
+      <div class="corporate-footer">
+        <div>Certified Document Translation • Manual Birth Certificate</div>
+        <div class="links-group">
+          <a class="footer-icon-link" href="mailto:support@rahvana.com">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#006363" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+              <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+            <span>support@rahvana.com</span>
+          </a>
+          <a class="footer-icon-link" href="https://www.rahvana.com" target="_blank">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#006363" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="2" y1="12" x2="22" y2="12"></line>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+            </svg>
+            <span>www.rahvana.com</span>
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Bottom Navigation Bar with Previous and Next Controls -->
+<div class="nav-bar">
+  <button class="nav-btn" id="btnPrev" onclick="showTemplate('computerized')" disabled>
+    <svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg> Previous Template
+  </button>
+  <div class="nav-indicator" id="navIndicator">
+    Template 1 of 2: <strong>Computerized (NADRA) Birth Certificate</strong>
+  </div>
+  <button class="nav-btn" id="btnNext" onclick="showTemplate('manual')">
+    Next Template <svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+  </button>
+</div>
+
+<script>
+  let currentTemplate = 'computerized';
+
+  function showTemplate(type) {
+    currentTemplate = type;
+    const viewComp = document.getElementById('template-computerized');
+    const viewManual = document.getElementById('template-manual');
+    const badgeText = document.getElementById('badgeText');
+    const headingText = document.getElementById('headingText');
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const navIndicator = document.getElementById('navIndicator');
+
+    if (type === 'computerized') {
+      viewComp.classList.add('active');
+      viewManual.classList.remove('active');
+      badgeText.textContent = 'Computerized NADRA Sample';
+      headingText.textContent = 'Birth Certificate True Translation (NADRA CRMS)';
+      btnPrev.disabled = true;
+      btnNext.disabled = false;
+      navIndicator.innerHTML = 'Template 1 of 2: <strong>Computerized (NADRA) Birth Certificate</strong>';
+    } else {
+      viewComp.classList.remove('active');
+      viewManual.classList.add('active');
+      badgeText.textContent = 'Manual Union Council Sample';
+      headingText.textContent = 'Birth Certificate True Translation (Manual Record)';
+      btnPrev.disabled = false;
+      btnNext.disabled = true;
+      navIndicator.innerHTML = 'Template 2 of 2: <strong>Manual Union Council Birth Certificate</strong>';
+    }
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function triggerBrowserPrint() {
+    window.print();
+  }
+</script>
+
+</body>
+</html>
