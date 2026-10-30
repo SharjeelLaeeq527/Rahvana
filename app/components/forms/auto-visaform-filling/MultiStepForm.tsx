@@ -2015,7 +2015,7 @@ export function MultiStepForm({
   }
 
   return (
-    <div className="flex min-h-screen w-full flex-col" style={{ backgroundColor: "#f7fbfb" }}>
+    <div className={`flex w-full flex-col ${isEmbedded ? "min-h-[calc(100vh-160px)]" : "min-h-screen"}`} style={{ backgroundColor: "#f7fbfb" }}>
       {/* Sticky Header */}
       {shouldShowHeader && (
         <Header
@@ -2060,7 +2060,7 @@ export function MultiStepForm({
             className="-ml-4 hidden shrink-0 md:-ml-8 lg:block"
           >
             <aside
-              className={`sticky ${shouldShowHeader ? "top-16 mt-12" : "top-4 mt-6"} h-[calc(100vh-280px)] w-full overflow-hidden`}
+              className={`sticky ${shouldShowHeader ? "top-16 mt-12" : "top-2 mt-2"} h-[calc(100vh-280px)] w-full overflow-hidden`}
               aria-hidden={false}
             >
               <div
@@ -2118,7 +2118,8 @@ export function MultiStepForm({
 
         {/* Right Content Area */}
         <div className="flex min-w-0 flex-1 flex-col">
-          <div className="flex w-full flex-1 items-start justify-center py-6">
+          <div className={`flex w-full flex-1 items-start justify-center ${shouldShowHeader ? "py-6" : "pt-2 pb-6"}`}>
+
             <div className="w-full max-w-2xl px-4 md:px-0">
               {view === "form" && currentSection && (
                 <>

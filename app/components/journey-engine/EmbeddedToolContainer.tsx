@@ -784,11 +784,16 @@ export function EmbeddedToolContainer({
   };
 
   const isDocTranslation = toolKey === "doc_translation" || toolKey === "document_translation";
+  const isFullBleedTool = toolKey === "visa_forms" || toolKey === "interview_prep";
 
   return (
     <div
-      className={`animate-in fade-in w-full pb-10 duration-200 ${
-        isDocTranslation ? "pt-10" : "pt-4 sm:pt-6"
+      className={`animate-in fade-in w-full duration-200 ${
+        isFullBleedTool
+          ? "pt-0 pb-0"
+          : isDocTranslation
+            ? "pt-10 pb-10"
+            : "pt-4 sm:pt-6 pb-10"
       }`}
     >
       <Suspense fallback={<ToolSkeleton />}>{renderToolComponent()}</Suspense>
