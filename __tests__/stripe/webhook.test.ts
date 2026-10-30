@@ -291,6 +291,59 @@ describe('Webhook — checkout.session.completed (subscription activation)', () 
 
     expect((stripeConfig.stripe as any).subscriptions.cancel).not.toHaveBeenCalled()
   })
+
+  // IR-2 regression (docs/ir2-implementation-plan.md B1): "IR-2 / CR-2" used to be filed
+  // under IR-1, so an IR-2 purchase's cleanup cancelled the customer's IR-1 plan.
+  // `clearAllMocks` keeps queued `mockReturnValueOnce` values, and earlier tests leave one
+  // unconsumed (add-candidate cleanup never lists). These tests install their own list.
+  function useLiveSubs(subs: any[]) {
+    const list = (stripeConfig.stripe as any).subscriptions.list as jest.Mock
+    list.mockReset()
+    list.mockImplementation(() => ({
+      async *[Symbol.asyncIterator]() {
+        for (const s of subs) yield s
+      },
+    }))
+    return list
+  }
+  function restoreNoLiveSubs() {
+    useLiveSubs([])
+  }
+
+  it('an IR-2 purchase never cancels the live IR-1 plan', async () => {
+    paymentService.getPaymentBySessionId.mockResolvedValueOnce({ id: 'pay_1' })
+    const list = useLiveSubs([
+      { id: 'sub_ir1', status: 'active', metadata: { tier: 'executive', visa_category: 'IR-1 / CR-1' }, items: { data: [] } },
+    ])
+    const base = buildCheckoutSession()
+    const session = { ...base, metadata: { ...base.metadata, visa_category: 'IR-2 / CR-2' } }
+    mockConstructEvent.mockReturnValue({ type: 'checkout.session.completed', data: { object: session } })
+    setProfile({ subscription_tier: 'executive' })
+
+    await POST(makeRequest({}))
+
+    expect(list).toHaveBeenCalled() // the cleanup really saw the IR-1 plan
+    expect((stripeConfig.stripe as any).subscriptions.cancel).not.toHaveBeenCalled()
+    restoreNoLiveSubs()
+  })
+
+  it('an IR-1 purchase never cancels a live IR-2 plan', async () => {
+    paymentService.getPaymentBySessionId.mockResolvedValueOnce({ id: 'pay_1' })
+    const list = useLiveSubs([
+      { id: 'sub_ir2', status: 'active', metadata: { tier: 'premium', visa_category: 'IR-2 / CR-2' }, items: { data: [] } },
+    ])
+    mockConstructEvent.mockReturnValue({
+      type: 'checkout.session.completed',
+      data: { object: buildCheckoutSession() },
+    })
+    setProfile({ subscription_tier: 'premium' })
+
+    await POST(makeRequest({}))
+
+    expect(list).toHaveBeenCalled()
+    expect((stripeConfig.stripe as any).subscriptions.cancel).not.toHaveBeenCalled()
+    restoreNoLiveSubs()
+  })
 })
 
 // --- Cancellation against a stateful fake DB (per-journey plans) ---
@@ -436,6 +489,62 @@ describe('Webhook — customer.subscription.deleted (per-journey plans)', () => 
       { id: 'candidate-2', visaCategory: 'IR-5', tier: 'free' },
     ])
     expect(rosterUpdate.subscription_tier).toBeUndefined()
+  })
+
+  it('cancelling the IR-2 plan revokes only the IR-2 children; IR-1 and its spouse stay', async () => {
+    const journeys = [
+      journey('j1', 'IR1', 'premium', 'sub_ir1'),
+      journey('j2', 'ir2', 'basic', 'sub_ir2'),
+      journey('j2c2', 'ir2_candidate2', 'basic', 'sub_ir2'),
+    ]
+    const { profileUpdates } = useFakeDb(
+      buildUserProfile({
+        subscription_tier: 'premium',
+        profile_details: {
+          stripe_subscription_id: 'sub_ir1',
+          purchased_addons: [],
+          candidates: [
+            { id: 'candidate-1', visaCategory: 'IR-1', tier: 'premium' },
+            { id: 'candidate-2', visaCategory: 'IR-2', tier: 'basic' },
+          ],
+        },
+      }),
+      journeys
+    )
+    cancelEvent('sub_ir2')
+
+    await POST(makeRequest({}))
+
+    expect(journeys[0]).toMatchObject({ subscription_tier: 'premium', stripe_subscription_id: 'sub_ir1' })
+    expect(journeys[1]).toMatchObject({ subscription_tier: 'free', stripe_subscription_id: null })
+    expect(journeys[2]).toMatchObject({ subscription_tier: 'free', stripe_subscription_id: null })
+    expect(profileUpdates.some((u) => 'subscription_tier' in u)).toBe(false)
+    const rosterUpdate = profileUpdates.find((u) => u.profile_details?.candidates)
+    expect(rosterUpdate.profile_details.candidates).toEqual([
+      { id: 'candidate-1', visaCategory: 'IR-1', tier: 'premium' },
+      { id: 'candidate-2', visaCategory: 'IR-2', tier: 'free' },
+    ])
+    expect((stripeConfig.stripe as any).subscriptions.cancel).not.toHaveBeenCalled()
+  })
+
+  it('cancelling the IR-1 plan leaves the IR-2 journey paid', async () => {
+    const journeys = [
+      journey('j1', 'IR1', 'premium', 'sub_ir1'),
+      journey('j2', 'ir2', 'executive', 'sub_ir2'),
+    ]
+    useFakeDb(
+      buildUserProfile({
+        subscription_tier: 'executive',
+        profile_details: { stripe_subscription_id: 'sub_ir2', purchased_addons: [] },
+      }),
+      journeys
+    )
+    cancelEvent('sub_ir1')
+
+    await POST(makeRequest({}))
+
+    expect(journeys[0].subscription_tier).toBe('free')
+    expect(journeys[1]).toMatchObject({ subscription_tier: 'executive', stripe_subscription_id: 'sub_ir2' })
   })
 
   it("an upgrade's retired plan changes nothing", async () => {

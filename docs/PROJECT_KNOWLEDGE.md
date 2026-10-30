@@ -973,7 +973,7 @@ Python backend. Highlights:
 | `auth/*` | login (rate-limited + lockout), signup, callback, confirm-email, forgot/reset/change-password, signout, delete-account, `mfa/*`, check-admin | Supabase Auth, Resend, Redis |
 | `stripe/*` | `checkout` (takes `visaCategory` / `candidateCount` / `action`, or `productType: "wallet_topup"` + whole-dollar `amount` + `returnUrl`), `verify-session` (idempotent self-heal & source of truth), `webhook`, `portal`; both confirm paths call `provisionCandidateJourneysAndVaults` (see 4.3) and, for top-ups, `applyWalletTopup` (`lib/wallet/topup.ts`) | Stripe |
 | `plan/*` | `plan/reconcile` (never-downgrade tier self-heal) | Supabase |
-| `wallet/*` | `wallet` (GET balance + resources usable without paying), `wallet/launch-tool` (POST `{resourceType, resourceId, idempotencyKey?}`; unlocks a tool/guide at the `lib/wallet/catalog.ts` price, 402 + `deficit` / `topupAmount` when short), `wallet/transactions` (paginated own ledger, max 50/page). All auth-required, service-role after auth, filtered by the session user | Supabase |
+| `wallet/*` | `wallet` (GET balance + resources usable without paying), `wallet/launch-tool` (POST `{resourceType, resourceId, idempotencyKey?}`; unlocks a tool/guide at the `lib/wallet/catalog.ts` price, 402 + `deficit` / `topupAmount` when short; for Photo Booth one launch = one pack of 2 photos, see 15), `wallet/transactions` (paginated own ledger, max 50/page). All auth-required, service-role after auth, filtered by the session user | Supabase |
 | `journeys|chapters|steps|case_data` | journey CRUD, `journeys/initialize` (combined load + bg step-sync), `journeys/[id]/document-checklist` (`DocumentChecklistEngine`), `case_data/validate` | Supabase, journey engines |
 | `candidate/*` | `candidate/create` (server-side upsert candidate into `profile_details.candidates` + lazy-insert its suffixed `journeys` row; the authoritative save path so candidates survive refresh), `candidate/delete` (remove candidate from `profile_details.candidates` + cleanup its `user_guides` and suffixed `journeys` rows; candidate-1 protected) | Supabase |
 | `journey/*` | `journey/marriage-check` (singular; distinct from `journeys`), `journey/upload-image` (journey cover / candidate avatar upload, auth + 5MB image cap), `journey/media` (owner-only: session required, path must be the caller's `journey-media/<userId>/`, see 4.1) | Supabase, Storage |
@@ -1086,7 +1086,8 @@ Components consume these via hooks/contexts; they should not re-implement domain
   **Webhook retries:** `applyWalletTopup` / `applyWalletRefund` return `rpc_failed` (webhook 500,
   Stripe retries) only for transient errors (`isTransientRpcError`: no SQLSTATE, or class 08 / 40 /
   53 / 57); data errors are `rpc_rejected` (logged, 200).
-  `lib/wallet/launch.ts` (`launchResource`) skips the charge for owned items, namespaces the
+  `lib/wallet/launch.ts` (`launchResource`) skips the charge for owned items (for Photo Booth it
+  first closes a used-up pack via `getPhotoBoothPack`, so "owned" means photos are still left), namespaces the
   client idempotency key as `launch:<user>:<type>:<id>:<key>` (the ledger index is global), and
   maps `INSUFFICIENT_CREDITS` to 402 with `topupAmountForDeficit`. `lib/wallet/state.ts`
   (`loadWalletState`) reads balance + unlocks + add-ons for one user.
@@ -1195,6 +1196,12 @@ lens, compare, confetti).
     `photo_booth:wallet` (spent via `increment_feature_usage_atomic`). When the last photo is used
     the server sets the unlock row to `revoked` (only if it still points at the purchase it
     counted), so the deduct RPC charges and re-activates it on the next purchase; no migration.
+    `getPhotoBoothPack` (GET `/api/feature-usage`, and `launchResource` before its owned check)
+    also closes a used-up pack it finds, so a failed close never blocks buying again. While photos
+    are left, a new purchase is refused as already owned (no charge). The ledger line reads
+    "Photo Booth - 2 photos". Buyers from before this change (when an unlock meant unlimited)
+    now get 2 photos per purchase, counted from this change on. Tests:
+    `__tests__/wallet/photoBoothPack.test.ts`.
     Legacy purchased photo add-on pools are spent after the packs. Usage goes through
     `/api/feature-usage` with a `scope` (below). UI copy says "photos", never "credits", for uses.
   - **Smart Form Filler:** every PDF (preview, download, vault save) goes through

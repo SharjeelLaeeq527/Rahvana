@@ -24,3 +24,13 @@ export const IR5_ENABLED =
   process.env.NEXT_PUBLIC_ENABLE_IR5 === "true" ||
   (process.env.NEXT_PUBLIC_ENABLE_IR5 !== "false" &&
     process.env.NEXT_PUBLIC_ENVIRONMENT !== "production");
+
+/**
+ * IR-2 (child of U.S. citizen) follows the same pattern as IR-5, via NEXT_PUBLIC_ENABLE_IR2:
+ * "true" forces it on, "false" forces it off, unset shows it everywhere except production.
+ * Checkout also refuses IR-2 plan purchases while this is off (server-side, not only UI).
+ */
+export const IR2_ENABLED =
+  process.env.NEXT_PUBLIC_ENABLE_IR2 === "true" ||
+  (process.env.NEXT_PUBLIC_ENABLE_IR2 !== "false" &&
+    process.env.NEXT_PUBLIC_ENVIRONMENT !== "production");
