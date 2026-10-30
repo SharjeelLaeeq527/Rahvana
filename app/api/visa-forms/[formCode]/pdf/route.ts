@@ -51,6 +51,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const addons = profile?.profile_details?.purchased_addons;
     full = await canGenerateFullSmartForm(supabase, user.id, Array.isArray(addons) ? addons : [], {
       scope: body.scope,
+      formCode,
       journeyId: typeof body.journeyId === "string" ? body.journeyId : null,
       journeyCategory: typeof body.journeyCategory === "string" ? body.journeyCategory : null,
       candidateId: typeof body.candidateId === "string" ? body.candidateId : null,

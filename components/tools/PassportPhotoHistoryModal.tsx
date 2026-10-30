@@ -102,7 +102,7 @@ export function PassportPhotoHistoryModal({
                 </div>
                 <h4 className="text-base font-semibold text-slate-800">No saved photos yet</h4>
                 <p className="text-xs text-slate-500 max-w-sm mt-1">
-                  When you generate photos using your credits, they will be preserved here so you can download and reuse them at any time.
+                  When you generate photos, they will be preserved here so you can download and reuse them at any time.
                 </p>
               </div>
             ) : (

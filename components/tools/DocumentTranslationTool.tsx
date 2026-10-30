@@ -87,9 +87,15 @@ export default function DocumentTranslationTool({
     setDocumentType("");
     setUserNotes("");
     setError(null);
+    setCheckoutError(null);
     setUploadSuccess(false);
+    setCurrentStep(1);
+    pendingDraftRef.current = null;
 
     if (fileInputRef.current) fileInputRef.current.value = "";
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }, 50);
   };
 
   // Handle file selection
@@ -336,20 +342,6 @@ export default function DocumentTranslationTool({
               </div>
             </div>
 
-            {/* Secure Transaction Card */}
-            <div className="flex items-start gap-3 rounded-2xl border border-slate-200/60 bg-slate-50 p-5">
-              <CreditCard className="mt-0.5 h-5 w-5 flex-shrink-0 text-teal-600" />
-
-              <div>
-                <h5 className="text-xs font-bold tracking-wide text-slate-900 uppercase">
-                  Secure Transaction
-                </h5>
-
-                <p className="mt-1 text-xs leading-relaxed text-slate-500">
-                  Standalone requests are paid with your Rahvana Wallet credits ($1 = 1 credit). If your balance is short, you can top up instantly via Stripe.
-                </p>
-              </div>
-            </div>
           </div>
 
           {/* RIGHT COLUMN */}
@@ -393,35 +385,7 @@ export default function DocumentTranslationTool({
                   </div>
                 </div>
 
-                {hasWalletCredits ? (
-                  <div className="mt-5 flex items-center gap-2 rounded-xl border border-teal-200 bg-teal-50 p-3">
-                    <Coins className="h-4 w-4 flex-shrink-0 text-[#0d7377]" />
-                    <span className="text-[11px] font-bold text-teal-800">
-                      25 credits will be deducted from your Rahvana Wallet upon confirmation.
-                    </span>
-                  </div>
-                ) : (
-                  <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-3.5">
-                    <div className="flex items-start gap-2">
-                      <Coins className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-600" />
-                      <div>
-                        <p className="text-xs font-bold text-amber-900">
-                          Insufficient Wallet Balance
-                        </p>
-                        <p className="mt-0.5 text-[11px] text-amber-700">
-                          You have {walletBalance ?? 0} credits. 25 credits are required to submit this translation request.
-                        </p>
-                        <button
-                          type="button"
-                          onClick={() => onTopup(deficit)}
-                          className="mt-2.5 inline-flex items-center gap-1.5 rounded-lg bg-[#0d7377] px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-[#0a5c5f]"
-                        >
-                          <Coins size={12} /> Top up {deficit} Credits (${deficit})
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                
               </div>
 
               {error && (
@@ -758,6 +722,7 @@ export default function DocumentTranslationTool({
       ) : (
         <SuccessState
           onGoToRequests={() => (window.location.href = "/document-translation/my-requests")}
+          onUploadAnother={reset}
           isJourney={isJourney}
         />
       )}

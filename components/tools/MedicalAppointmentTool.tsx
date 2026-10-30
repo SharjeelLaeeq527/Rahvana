@@ -530,6 +530,9 @@ interface ApplicantInfoProps {
 
 const ApplicantInfo = ({ applicant, index, onChange }: ApplicantInfoProps) => {
   const { t } = useLanguage();
+  const today = new Date().toISOString().split("T")[0];
+  const isFutureDob = Boolean(applicant.dateOfBirth && applicant.dateOfBirth > today);
+
   return (
     <div className="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-4 sm:p-6">
       <h3 className="mb-4 text-lg font-semibold text-slate-900">Applicant {index + 1}</h3>
@@ -583,9 +586,18 @@ const ApplicantInfo = ({ applicant, index, onChange }: ApplicantInfoProps) => {
           <Input
             id={`applicant-${index}-dateOfBirth`}
             type="date"
+            max={today}
             value={applicant.dateOfBirth}
             onChange={(e) => onChange(index, "dateOfBirth", e.target.value)}
+            className={isFutureDob ? "border-red-500 focus-visible:ring-red-500" : ""}
           />
+          {isFutureDob && (
+            <p className="text-xs font-medium text-red-500">
+              {t("bookAppointment.validation.dobFuture") !== "bookAppointment.validation.dobFuture"
+                ? t("bookAppointment.validation.dobFuture")
+                : "Date of birth cannot be in the future"}
+            </p>
+          )}
         </div>
       </div>
     </div>
@@ -612,6 +624,14 @@ const PersonalInfoStep = ({
   onBack,
 }: PersonalInfoStepProps) => {
   const { t } = useLanguage();
+  const today = new Date().toISOString().split("T")[0];
+  const isPrimaryDobFuture = Boolean(formData.dateOfBirth && formData.dateOfBirth > today);
+  const hasApplicantDobFuture =
+    parseInt(formData.numberOfApplicants) > 1 &&
+    formData.applicants.some((a) => a.dateOfBirth && a.dateOfBirth > today);
+
+  const hasValidationError = Boolean(error || isPrimaryDobFuture || hasApplicantDobFuture);
+
   return (
     <div className="space-y-6">
       <div className="mb-6 flex items-center gap-2">
@@ -676,9 +696,18 @@ const PersonalInfoStep = ({
                 id="dateOfBirth"
                 name="dateOfBirth"
                 type="date"
+                max={today}
                 value={formData.dateOfBirth}
                 onChange={onChange}
+                className={isPrimaryDobFuture ? "border-red-500 focus-visible:ring-red-500" : ""}
               />
+              {isPrimaryDobFuture && (
+                <p className="text-xs font-medium text-red-500">
+                  {t("bookAppointment.validation.dobFuture") !== "bookAppointment.validation.dobFuture"
+                    ? t("bookAppointment.validation.dobFuture")
+                    : "Date of birth cannot be in the future"}
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -714,7 +743,11 @@ const PersonalInfoStep = ({
           >
             {t("bookAppointment.personalInfoStep.prevBtn")}
           </Button>
-          <Button onClick={onNext} className="bg-teal-600 text-white hover:bg-teal-700">
+          <Button
+            onClick={onNext}
+            disabled={hasValidationError}
+            className="bg-teal-600 text-white hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
             {t("bookAppointment.personalInfoStep.nextBtn")}
           </Button>
         </div>
@@ -2058,33 +2091,7 @@ const CheckoutStep = ({
                 </div>
               </div>
 
-              {hasWalletCredits ? (
-                <div className="mt-5 flex items-center gap-2 rounded-xl border border-teal-200 bg-teal-50 p-3">
-                  <Coins className="h-4 w-4 flex-shrink-0 text-[#0d7377]" />
-                  <span className="text-[11px] font-bold text-teal-800">
-                    5 credits will be deducted from your Rahvana Wallet upon confirmation.
-                  </span>
-                </div>
-              ) : (
-                <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-3.5">
-                  <div className="flex items-start gap-2">
-                    <Coins className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-600" />
-                    <div>
-                      <p className="text-xs font-bold text-amber-900">Insufficient Wallet Balance</p>
-                      <p className="mt-0.5 text-[11px] text-amber-700">
-                        You have {walletBalance ?? 0} credits. 5 credits are required to book this appointment.
-                      </p>
-                      <button
-                        type="button"
-                        onClick={() => onTopup(deficit)}
-                        className="mt-2.5 inline-flex items-center gap-1.5 rounded-lg bg-[#0d7377] px-3 py-1.5 text-xs font-bold text-white hover:bg-[#0a5c5f] transition-colors"
-                      >
-                        <Coins size={12} /> Top up {deficit} Credits (${deficit})
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
+              
             </div>
 
             {error && (
@@ -2324,11 +2331,13 @@ export default function MedicalAppointmentTool({
   const isWilcare = formData.location === "karachi" || formData.location === "lahore";
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (error) setError(null);
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSelectChange = (name: keyof FormData) => (value: string) => {
+    if (error) setError(null);
     setFormData((prev) => {
       const updatedData = { ...prev, [name]: value };
 
@@ -2378,6 +2387,7 @@ export default function MedicalAppointmentTool({
   };
 
   const handleApplicantChange = (index: number, field: keyof Applicant, value: string) => {
+    if (error) setError(null);
     setFormData((prev) => {
       const updatedApplicants = [...prev.applicants];
       updatedApplicants[index] = {
@@ -2392,6 +2402,7 @@ export default function MedicalAppointmentTool({
   };
 
   const handleLocationChange = (location: Location) => {
+    if (error) setError(null);
     setFormData((prev) => ({ ...prev, location, islamabadProvider: "" }));
   };
 
@@ -2465,9 +2476,15 @@ export default function MedicalAppointmentTool({
     }
 
     if (step === 3) {
+      const today = new Date().toISOString().split("T")[0];
       // Validate primary applicant
       if (!formData.surname || !formData.givenName || !formData.gender || !formData.dateOfBirth) {
         setError(t("bookAppointment.validation.reqPrimaryApplicantFields"));
+        return;
+      }
+
+      if (formData.dateOfBirth > today) {
+        setError(t("bookAppointment.validation.dobFuture"));
         return;
       }
 
@@ -2483,6 +2500,16 @@ export default function MedicalAppointmentTool({
           ) {
             setError(
               t("bookAppointment.validation.reqApplicantIndexFields").replace(
+                "{index}",
+                (i + 1).toString()
+              )
+            );
+            return;
+          }
+
+          if (applicant.dateOfBirth > today) {
+            setError(
+              t("bookAppointment.validation.dobApplicantFuture").replace(
                 "{index}",
                 (i + 1).toString()
               )
@@ -2564,6 +2591,7 @@ export default function MedicalAppointmentTool({
 
     if (step === 9) {
       // IOM Info step
+      const today = new Date().toISOString().split("T")[0];
       const fullName =
         formData.fullName?.trim() ||
         `${formData.givenName || ""} ${formData.surname || ""}`.trim();
@@ -2584,6 +2612,11 @@ export default function MedicalAppointmentTool({
         !destinationCountry
       ) {
         setError(t("bookAppointment.validation.reqIomFields"));
+        return;
+      }
+
+      if (formData.dateOfBirth > today) {
+        setError(t("bookAppointment.validation.dobFuture"));
         return;
       }
 
@@ -3194,15 +3227,7 @@ export default function MedicalAppointmentTool({
             </div>
           )}
 
-          {/* Credit visibility (standalone only — journey mode has no credits) */}
-          {!isJourney && (
-            <div className="mt-4 flex justify-center">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-800">
-                <Coins className="h-3.5 w-3.5 text-[#0d7377]" />
-                5 Credits ($5) per booking • Wallet Balance: {wallet.balance ?? 0} Credits
-              </span>
-            </div>
-          )}
+          
 
           {step > 1 && step < 10 && step !== 9 && !isIOM && (!isJourney || embedded) && (
             <div className="mt-6">

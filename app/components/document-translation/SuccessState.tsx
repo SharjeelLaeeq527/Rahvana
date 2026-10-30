@@ -5,11 +5,13 @@ import { useLanguage } from "@/app/context/LanguageContext";
 
 interface SuccessStateProps {
   onGoToRequests: () => void;
+  onUploadAnother?: () => void;
   isJourney?: boolean;
 }
 
 export default function SuccessState({
   onGoToRequests,
+  onUploadAnother,
   isJourney,
 }: SuccessStateProps) {
   const { t } = useLanguage();
@@ -36,6 +38,18 @@ export default function SuccessState({
             {t("documentTranslation.successState.pendingStatus")}
           </span>
         </div>
+
+        {isJourney && (
+          <Button
+            onClick={onUploadAnother || (() => window.location.reload())}
+            className="w-full py-3 bg-primary text-white rounded-xl font-semibold hover:bg-primary/90 transition-colors cursor-pointer"
+          >
+            {t("documentTranslation.successState.uploadAnother") !==
+            "documentTranslation.successState.uploadAnother"
+              ? t("documentTranslation.successState.uploadAnother")
+              : "Upload Another Document"}
+          </Button>
+        )}
 
         {!isJourney && (
           <p className="text-gray-700 mb-8">

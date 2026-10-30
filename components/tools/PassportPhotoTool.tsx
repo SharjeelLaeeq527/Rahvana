@@ -23,6 +23,8 @@ import type { PlanTier } from "@/lib/entitlements/config";
 import { ResultGate } from "@/app/components/entitlements/ResultGate";
 import { CreditLaunchModal } from "@/app/components/wallet/CreditLaunchModal";
 import { useStandaloneToolUnlock } from "@/lib/wallet/useStandaloneToolUnlock";
+import { useWallet } from "@/app/context/WalletContext";
+import { PHOTO_BOOTH_PHOTOS_PER_PURCHASE, PHOTO_BOOTH_TOOL_ID } from "@/lib/wallet/catalog";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { PassportPhotoHistoryModal } from "@/components/tools/PassportPhotoHistoryModal";
@@ -179,12 +181,16 @@ export default function PassportPhotoTool({
   const { checkAccess, consumeAccess } = useFeatureAccess();
 
   // Journey mode follows the journey plan (Executive = unlimited). Standalone is
-  // paid with credits even for plan holders: a wallet unlock = unlimited, else
-  // only legacy purchased photo credits remain. Journey passes null so it never
-  // reads wallet unlocks.
-  const photoWallet = useStandaloneToolUnlock(isJourney ? null : "photo-booth");
+  // paid with credits even for plan holders: each purchase gives
+  // PHOTO_BOOTH_PHOTOS_PER_PURCHASE photos (counted on the server), then the tool
+  // is bought again. Journey passes null so it never reads wallet unlocks.
+  const photoWallet = useStandaloneToolUnlock(isJourney ? null : PHOTO_BOOTH_TOOL_ID);
+  const { refreshWallet } = useWallet();
   const [showCreditModal, setShowCreditModal] = useState(false);
-  const hasUnlimitedPhotos = isJourney ? effectiveTier === "executive" : photoWallet.unlocked;
+  // Re-reads the photos left after a purchase.
+  const [photosReloadKey, setPhotosReloadKey] = useState(0);
+  const hasUnlimitedPhotos = isJourney && effectiveTier === "executive";
+  const buysPhotoPacks = !isJourney && !!photoWallet.item;
   // The server resolves the tier from this scope; it never trusts a client tier.
   const usageOptions = useMemo(
     () =>
@@ -228,7 +234,7 @@ export default function PassportPhotoTool({
     let isMounted = true;
 
     const loadCredits = async () => {
-      // Executive journey or a standalone wallet unlock: access is unlimited
+      // Executive journey: access is unlimited
       if (hasUnlimitedPhotos) {
         setRemainingCredits(null);
         setCreditStatusLoading(false);
@@ -263,7 +269,7 @@ export default function PassportPhotoTool({
     return () => {
       isMounted = false;
     };
-  }, [checkAccess, hasUnlimitedPhotos, usageOptions]);
+  }, [checkAccess, hasUnlimitedPhotos, usageOptions, photoWallet.unlocked, photosReloadKey]);
 
   // Reset current upload form
   const reset = () => {
@@ -329,8 +335,8 @@ export default function PassportPhotoTool({
 
   // Process image with passport-photo endpoint.
   // Order: check access, generate, then spend a credit only once the photo is
-  // ready, so a failed generation never costs a credit. Unlimited users
-  // (Executive, or a standalone wallet unlock) skip the credit pool entirely.
+  // ready, so a failed generation never costs a credit. Executive journeys skip
+  // the count entirely.
   const handleProcess = async () => {
     if (!file) return;
 
@@ -405,6 +411,9 @@ export default function PassportPhotoTool({
         } else {
           setRemainingCredits((prev) => (typeof prev === "number" ? Math.max(prev - 1, 0) : 0));
         }
+        // Last photo of the pack used: the server closed the unlock, so the
+        // wallet must show the tool as buyable again.
+        if (buysPhotoPacks && (reservation.data?.remaining ?? 0) <= 0) void refreshWallet();
       }
 
       // 4. Save the paid photo to history (data URL so it survives reloads).
@@ -561,7 +570,7 @@ export default function PassportPhotoTool({
                 title="View saved photo history"
               >
                 <Clock className="h-3.5 w-3.5 text-[#0d7377]" />
-                <span>Photo History</span>
+                <span>My Album</span>
                 {mounted && history.length > 0 && (
                   <span className="rounded-full bg-[#0d7377] px-1.5 py-0.5 text-[10px] leading-none font-bold text-white">
                     {history.length}
@@ -639,20 +648,24 @@ export default function PassportPhotoTool({
             <div
               onClick={openPhotoUnlock}
               className="flex cursor-pointer flex-col items-start justify-between gap-4 rounded-xl border border-[#0d7377]/20 bg-white/90 px-4 py-3 shadow-sm backdrop-blur-sm transition-all hover:border-[#0d7377]/40 hover:bg-white hover:shadow-md active:scale-[0.99] md:flex-row md:items-center"
-              title="Click to view upgrade options"
+              title={buysPhotoPacks ? "Buy photos" : "Click to view upgrade options"}
             >
               <div>
-                <p className="text-sm font-semibold text-[#0d7377]">Photo credits</p>
+                <p className="text-sm font-semibold text-[#0d7377]">Photos left</p>
                 <p className="text-xs text-gray-500">
                   {creditStatusLoading
-                    ? "Checking your remaining credits..."
-                    : remainingCredits !== null
-                      ? remainingCredits > 0
-                        ? `${remainingCredits} photo credit${remainingCredits === 1 ? "" : "s"} remaining`
-                        : effectiveTier === "premium"
-                          ? "No credits left. Buy more credits or upgrade to Executive."
-                          : "No credits left. Buy more credits or upgrade to unlock."
-                      : "Photo Booth is not included in your plan — buy credits or upgrade."}
+                    ? "Checking how many photos you have left..."
+                    : buysPhotoPacks
+                      ? remainingCredits !== null && remainingCredits > 0
+                        ? `You can make ${remainingCredits} more photo${remainingCredits === 1 ? "" : "s"}. Each photo you make uses 1.`
+                        : `Buy Photo Booth for ${photoWallet.item?.credits} credits to make ${PHOTO_BOOTH_PHOTOS_PER_PURCHASE} photos. When both are used, buy again for ${PHOTO_BOOTH_PHOTOS_PER_PURCHASE} more.`
+                      : remainingCredits !== null
+                        ? remainingCredits > 0
+                          ? `You can make ${remainingCredits} more photo${remainingCredits === 1 ? "" : "s"}.`
+                          : effectiveTier === "premium"
+                            ? "No photos left. Upgrade to Executive for unlimited photos."
+                            : "No photos left. Upgrade to continue."
+                        : "Photo Booth is not included in your plan. Upgrade to continue."}
                 </p>
               </div>
               <div
@@ -670,7 +683,7 @@ export default function PassportPhotoTool({
                   : remainingCredits !== null
                     ? remainingCredits > 0
                       ? `${remainingCredits} left`
-                      : "No credits left"
+                      : "0 left"
                     : "Locked"}
               </div>
             </div>
@@ -783,12 +796,12 @@ export default function PassportPhotoTool({
                 type="button"
                 onClick={openPhotoUnlock}
                 className="mt-6 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#0d7377] py-3.5 font-semibold text-white shadow-[0_4px_18px_rgba(217,119,6,0.3)] transition-all hover:bg-[#0a5f63] active:scale-[0.99]"
-                title="Credits required to generate photo"
+                title={buysPhotoPacks ? "Buy photos to continue" : "Upgrade to generate a photo"}
               >
                 <Lock className="h-5 w-5" />
                 <span>
-                  {photoWallet.item
-                    ? `Unlock for ${photoWallet.item.credits} credits`
+                  {buysPhotoPacks && photoWallet.item
+                    ? `Buy ${PHOTO_BOOTH_PHOTOS_PER_PURCHASE} photos for ${photoWallet.item.credits} credits`
                     : effectiveTier === "premium"
                       ? "Upgrade to Executive"
                       : "Upgrade to continue"}
@@ -830,7 +843,7 @@ export default function PassportPhotoTool({
               feature="photo_booth"
               isLocked={resultLocked}
               planTier={effectiveTier}
-              standaloneToolId={isJourney ? undefined : "photo-booth"}
+              standaloneToolId={isJourney ? undefined : PHOTO_BOOTH_TOOL_ID}
               standaloneGranted={!resultLocked}
             >
               <div
@@ -909,7 +922,10 @@ export default function PassportPhotoTool({
         <CreditLaunchModal
           item={photoWallet.item}
           onClose={() => setShowCreditModal(false)}
-          onLaunched={() => setShowCreditModal(false)}
+          onLaunched={() => {
+            setShowCreditModal(false);
+            setPhotosReloadKey((k) => k + 1);
+          }}
         />
       )}
 

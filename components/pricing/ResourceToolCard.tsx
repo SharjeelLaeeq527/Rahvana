@@ -158,7 +158,15 @@ export default function ResourceToolCard({
             </div>
 
             <div className="mt-1 whitespace-nowrap text-[8px] text-muted-foreground sm:text-[10px]">
-              {credits === undefined ? addon.unit : isService ? "per request" : "one-time unlock"}
+              {credits === undefined
+                ? addon.unit
+                : isService
+                  ? "per request"
+                  : addon.id === "smart"
+                    ? "per form"
+                    : addon.id === "photo"
+                      ? "for 2 photos"
+                      : "one-time unlock"}
             </div>
           </div>
 

@@ -16,7 +16,13 @@ describe("Phase 5 & 6 catalog <-> page mapping", () => {
       expect(item).not.toBeNull();
       expect(item!.resourceType).toBe("tool");
       expect(item!.resourceId).toBe(resourceId);
-      expect(item!.launchable).toBe(true);
+      // The Smart Form Filler is sold per form (form-forge:<code>), not as a whole.
+      if (resourceId === "form-forge") {
+        expect(item!.launchable).toBe(false);
+        expect(getCatalogItem("tool", "form-forge:i130")?.launchable).toBe(true);
+      } else {
+        expect(item!.launchable).toBe(true);
+      }
     }
   });
 
@@ -29,7 +35,24 @@ describe("Phase 5 & 6 catalog <-> page mapping", () => {
     }
     expect(getGuideCatalogItem("vaccinations")?.resourceId).toBe("guide-polio"); // 7th paid guide
     expect(getGuideCatalogItem("step-parent")).toBeNull(); // public guides are not credit-payable
+    expect(getGuideCatalogItem("adoptive-parent")).toBeNull(); // public guides are not credit-payable
   });
+
+  it("verifies GUIDE_REGISTRY credit-payable guides match the wallet catalog without drift", () => {
+    const { GUIDE_REGISTRY } = require("@/lib/guides/guideRegistry");
+    for (const guide of GUIDE_REGISTRY) {
+      if (guide.creditPayable) {
+        expect(GUIDE_RESOURCE_IDS[guide.id]).toBe(guide.resourceId);
+        const catalogItem = getCatalogItem("guide", guide.resourceId);
+        expect(catalogItem).not.toBeNull();
+        expect(catalogItem!.credits).toBe(5);
+        expect(catalogItem!.launchable).toBe(true);
+      } else {
+        expect(getGuideCatalogItem(guide.id)).toBeNull();
+      }
+    }
+  });
+
 
   it("maps all standalone services to their catalog items", () => {
     for (const [servicePageId, resourceId] of Object.entries(SERVICE_RESOURCE_IDS)) {

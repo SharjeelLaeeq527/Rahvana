@@ -74,19 +74,17 @@ describe('resolveUsageTier', () => {
     const r = await resolveUsageTier(client, 'user-1', 'photo_booth', 'executive', addons, {
       scope: 'standalone',
     })
-    expect(r).toMatchObject({ ok: true, tier: 'free', walletUnlimited: false })
+    expect(r).toMatchObject({ ok: true, tier: 'free', walletPack: true })
   })
 
-  it('standalone wallet unlock of Photo Booth means unlimited', async () => {
-    const { client } = fakeSupabase({
-      standalone_unlocked_resources: [
-        { user_id: 'user-1', resource_type: 'tool', resource_id: 'photo-booth', status: 'active' },
-      ],
-    })
-    const r = await resolveUsageTier(client, 'user-1', 'photo_booth', 'free', addons, {
-      scope: 'standalone',
-    })
-    expect(r).toMatchObject({ ok: true, walletUnlimited: true })
+  it('standalone Photo Booth counts credit packs; journeys and other features never do', async () => {
+    const { client } = fakeSupabase({ journeys })
+    await expect(
+      resolveUsageTier(client, 'user-1', 'interview_prep', 'free', addons, { scope: 'standalone' })
+    ).resolves.toMatchObject({ ok: true, walletPack: false })
+    await expect(
+      resolveUsageTier(client, 'user-1', 'photo_booth', 'free', addons, { scope: 'journey', journeyId: J1 })
+    ).resolves.toMatchObject({ ok: true, walletPack: false })
   })
 })
 

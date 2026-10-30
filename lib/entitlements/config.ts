@@ -128,9 +128,9 @@ export const ADDON: Record<string, AddonInfo> = {
   },
   photo: {
     id: "photo",
-    name: "Photo Booth Credits",
+    name: "Photo Booth",
     price: 15,
-    unit: "for 2 credits",
+    unit: "for 2 photos",
   },
   sponsor: {
     id: "sponsor",

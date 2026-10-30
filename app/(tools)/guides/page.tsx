@@ -47,6 +47,14 @@ import { useQuickAccess } from "@/app/context/QuickAccessContext";
 
 import { useCandidate } from "@/app/context/CandidateContext";
 
+import {
+  GUIDE_REGISTRY,
+  GuideMetadata,
+  type GuideCategory as RegistryGuideCategory,
+  type GuideIconName,
+} from "@/lib/guides/guideRegistry";
+import { hasJourneyEntitlementForGuide } from "@/lib/guides/guideAccessService";
+
 interface UserGuideSession {
   id: string;
   status: string;
@@ -63,117 +71,27 @@ interface UserGuideSession {
 
 type GuideCategory = "Pakistan Document" | "Medical & Exam";
 
-interface Guide {
-  id: string;
-  title: string;
-  subtitle?: string;
-  description: string;
-  category: GuideCategory;
-  href: string;
+interface Guide extends GuideMetadata {
   icon: React.ElementType;
-  disabled?: boolean;
-  comingSoon?: boolean;
-  entitlementFeature?: string;
 }
 
-const GUIDES: Guide[] = [
-  {
-    id: "passport",
-    title: "Passport",
-    subtitle: "",
-    description:
-      "DGIP roadmap for MRP and ePassport applications, renewals, and lost or damaged cases.",
-    category: "Pakistan Document",
-    href: "/guides/passport-guide",
-    icon: Globe,
-    entitlementFeature: "guide_passport",
-  },
-  {
-    id: "police-verification",
-    icon: Shield,
-    title: "Police Character Certificate",
-    subtitle: "",
-    description:
-      "Province-wise PCC workflow with required documents, fee tiers, and verification steps.",
-    href: "/guides/police-verification-guide",
-    category: "Pakistan Document",
-    entitlementFeature: "guide_police",
-  },
-  {
-    id: "cnic",
-    title: "CNIC",
-    subtitle: "Computerized National Identity Card",
-    description:
-      "NADRA CNIC workflow for new issuance, corrections, and replacement or renewal applications.",
-    category: "Pakistan Document",
-    href: "/guides/cnic-guide",
-    icon: FileText,
-    entitlementFeature: "guide_cnic",
-  },
-  {
-    id: "birth-certificate",
-    title: "Birth Certificate",
-    subtitle: "",
-    description: "Union Council CBRC process for birth registration, correction, and replacement",
-    category: "Pakistan Document",
-    href: "/guides/birth-certificate-guide",
-    icon: FileText,
-    entitlementFeature: "guide_birth_cert",
-  },
-  {
-    id: "frc",
-    title: "FRC",
-    subtitle: "NADRA Family Registration Certificate",
-    description: "NADRA process to apply for an FRC and review registered family details.",
-    category: "Pakistan Document",
-    href: "/guides/frc-guide",
-    icon: Globe,
-    entitlementFeature: "guide_frc",
-  },
-  {
-    id: "marriage-certificate",
-    title: "Marriage Registration",
-    subtitle: "",
-    description:
-      "Nikah Nama registration through Union Council and NADRA MRC issuance with attestation pathway.",
-    category: "Pakistan Document",
-    href: "/guides/nikah-nama-guide",
-    icon: Heart,
-    entitlementFeature: "guide_nikah_nama",
-  },
-  {
-    id: "vaccinations",
-    title: "Polio Vaccination",
-    subtitle: "",
-    description: "Polio vaccination workflow with NIMS entry and travel certificate issuance.",
-    category: "Medical & Exam",
-    href: "/guides/polio-vaccination-guide",
-    icon: Syringe,
-    entitlementFeature: "polio_certificate",
-  },
-  {
-    id: "step-parent",
-    title: "Step-Parent",
-    subtitle: "USCIS Eligibility & Document Compilation",
-    description:
-      "USCIS roadmap for sponsoring step-parents, marriage rules, and document requirements.",
-    category: "Pakistan Document",
-    href: "/guides/step-parent-guide",
-    icon: BookOpen,
-  },
-  {
-    id: "adoptive-parent",
-    title: "Adoptive Parent & Guardianship",
-    subtitle: "USCIS Eligibility & Document Requirements",
-    description:
-      "USCIS adoption criteria, 2-year custody rule, and legal guardianship vs. U.S. adoption.",
-    category: "Pakistan Document",
-    href: "/guides/adoptive-parent-guide",
-    icon: BookOpen,
-  },
-];
+const ICON_MAP: Record<GuideIconName, React.ElementType> = {
+  Globe,
+  Shield,
+  FileText,
+  Heart,
+  Syringe,
+  BookOpen,
+  Users: BookOpen,
+};
+
+const GUIDES: Guide[] = GUIDE_REGISTRY.map((meta) => ({
+  ...meta,
+  icon: ICON_MAP[meta.iconName] || BookOpen,
+}));
 
 const CATEGORIES: ("All" | GuideCategory)[] = ["All", "Pakistan Document", "Medical & Exam"];
+
 
 // --- Tier-aware card styles ------------------------------------------------
 // Card border, shadow, and gradient border all follow the tier
@@ -435,25 +353,32 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
     return matchesSearch && matchesCategory;
   }).sort((a, b) => a.title.localeCompare(b.title));
 
-  // "My Resources" (embedded) view splits the catalog into two sections:
-  //  • "My Guides"     — guides the user owns (plan/add-ons) OR has already started
-  //  • "Browse Guides" — everything else, shown as locked/"Unlock" cards to explore
-  // ORIGINAL (plan-tier ownership) — commented out per product decision:
-  // const isOwned = (feature?: string) => !feature || (!plan.isLoading && !plan.isLocked(feature));
-  // Standalone (outside a journey): catalog guides are owned only through the
-  // wallet (credit unlock or legacy add-on). Guides without a catalog entry and
-  // journey-mounted views keep the plan-based rule.
+  // Outside a journey, guides are accessible if:
+  // 1. The user owns an eligible journey plan (Premium or Executive) for any category mapped to this guide.
+  // 2. OR the user unlocked it via wallet credits / legacy add-on.
+  // 3. OR the guide is a free/public guide with no entitlement lock.
+  // Inside a journey, standard feature entitlement applies.
   const isOwned = (guide: Guide) => {
+    // 1. Check if user holds an active journey plan for any of this guide's visa categories
+    const journeyAccess = hasJourneyEntitlementForGuide(guide, plan.journeyTiers);
+    if (journeyAccess.hasAccess) {
+      return true;
+    }
+
+    // 2. Check wallet credit unlock / legacy add-on
     const catalogItem = getGuideCatalogItem(guide.id);
     if (catalogItem && !isInsideJourney) {
       return (
         !wallet.isLoading && wallet.isUnlocked(catalogItem.resourceId, catalogItem.resourceType)
       );
     }
+
+    // 3. Fallback: free guide or in-journey entitlement check
     return (
       !guide.entitlementFeature || (!plan.isLoading && !plan.isLocked(guide.entitlementFeature))
     );
   };
+
   const hasSession = (guide: Guide) => {
     const slug = guide.href.split("/").pop();
     return sessions.some((s) => s.guides.slug === slug);
@@ -520,18 +445,7 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
                   id: `guide-${guide.id}`,
                   title: `${guide.title} Guide`,
                   href: guide.href,
-                  icon_name: (() => {
-                    const mapping: Record<string, string> = {
-                      passport: "Globe",
-                      "police-verification": "Shield",
-                      cnic: "FileText",
-                      "birth-certificate": "FileText",
-                      frc: "Globe",
-                      "marriage-certificate": "Heart",
-                      vaccinations: "Syringe",
-                    };
-                    return mapping[guide.id] || "BookOpen";
-                  })(),
+                  icon_name: guide.iconName || "BookOpen",
                 }}
                 mode="icon"
               />
@@ -723,13 +637,13 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
         {/* Guides Grid */}
         <div className="grid grid-cols-1 gap-x-6 gap-y-10 pt-6 md:grid-cols-2 lg:grid-cols-3">
           {displayGuides.map((guide, index) => renderGuideCard(guide, index))}
-          {isEmbedded && plan.tier !== "premium" && plan.tier !== "executive" && (
+          {/* {isEmbedded && plan.tier !== "premium" && plan.tier !== "executive" && (
             <AddResourceCard
               href="/pricing?mode=guides"
               label="Add guides"
               index={displayGuides.length}
             />
-          )}
+          )} */}
           {!isEmbedded && displayGuides.length === 0 && (
             <div className="text-muted-foreground col-span-full py-12 text-center">
               No guides found matching your search.
@@ -818,11 +732,16 @@ function GuideCard({
   const catalogItem = getGuideCatalogItem(guide.id);
   const walletUnlocked =
     !!catalogItem && wallet.isUnlocked(catalogItem.resourceId, catalogItem.resourceType);
-  // ORIGINAL: const featureLocked = planLocked && !walletUnlocked;
-  // Standalone catalog guides: credits/legacy add-on only — plan tier never
-  // unlocks them outside a journey. Inside a journey, plan entitlement rules.
+
+  // Check journey entitlement across guide.visaCategories
+  const journeyAccess = hasJourneyEntitlementForGuide(guide, plan.journeyTiers);
+  const hasJourneyPlanAccess = journeyAccess.hasAccess;
+
+  // Feature is locked if neither journey plan nor wallet unlock grants access
   const featureLocked =
-    catalogItem && !isInsideJourney ? !walletUnlocked : planLocked && !walletUnlocked;
+    catalogItem && !isInsideJourney
+      ? !walletUnlocked && !hasJourneyPlanAccess
+      : planLocked && !walletUnlocked && !hasJourneyPlanAccess;
 
   const showDualCta = !!catalogItem && featureLocked && !guide.disabled;
 
@@ -866,7 +785,7 @@ function GuideCard({
     >
       {/* Ribbon for locked cards */}
       {featureLocked && (
-        <div className="pointer-events-none absolute -top-21 -right-12 z-20 sm:-right-3">
+        <div className="pointer-events-none absolute -top-21 -right-10 z-20 -translate-x-12 sm:-right-3 sm:-translate-x-5">
           <Image
             src="/icons/ribbon.png"
             alt="Premium ribbon"
@@ -903,9 +822,23 @@ function GuideCard({
       {/* Content */}
       <div className="relative z-10 flex flex-col pt-1">
         <div className="flex items-start justify-between gap-3">
-          <h3 className="text-foreground mb-0.5 text-lg leading-tight font-bold transition-colors md:text-xl">
-            {guide.title}
-          </h3>
+          {/* Title + Credit tooltip */}
+          <div className="flex min-w-0 flex-1 items-start justify-between gap-3">
+            <h3 className="text-foreground mb-0.5 min-w-0 text-lg leading-tight font-bold transition-colors md:text-xl">
+              {guide.title}
+            </h3>
+
+            {featureLocked && (
+              <div className="shrink-0">
+                <CreditInfoTooltip
+                  message="Unlock once: spend credits one time, then use this guide as much as you like."
+                  side="top"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Quick Access button for unlocked guides */}
           {!featureLocked && (
             <div className="relative z-50 shrink-0">
               <QuickAccessButton
@@ -913,26 +846,15 @@ function GuideCard({
                   id: `guide-${guide.id}`,
                   title: `${guide.title} Guide`,
                   href: guide.href,
-                  icon_name: (() => {
-                    const mapping: Record<string, string> = {
-                      passport: "Globe",
-                      "police-verification": "Shield",
-                      cnic: "FileText",
-                      "birth-certificate": "FileText",
-                      frc: "Globe",
-                      "marriage-certificate": "Heart",
-                      vaccinations: "Syringe",
-                      "step-parent": "BookOpen",
-                      "adoptive-parent": "BookOpen",
-                    };
-                    return mapping[guide.id] || "BookOpen";
-                  })(),
+                  icon_name: guide.iconName || "BookOpen",
                 }}
                 mode="icon"
               />
             </div>
           )}
         </div>
+
+        {/* Subtitle */}
         <p
           className={`mb-4 text-[11px] leading-snug text-zinc-500 dark:text-zinc-400 ${
             guide.subtitle ? "" : "invisible"
@@ -940,19 +862,38 @@ function GuideCard({
         >
           {guide.subtitle || " "}
         </p>
-        <div className="mb-2">
+
+        {/* Category & Unlock Badges */}
+        <div className="mb-2 flex flex-wrap items-center gap-2">
           <span className="text-primary/85 bg-primary/10 border-primary/20 rounded border px-2 py-1 text-[10px] font-semibold tracking-[0.08em] uppercase">
             {guide.category}
           </span>
+          {hasJourneyPlanAccess &&
+            !isInsideJourney &&
+            guide.creditPayable !== false &&
+            !!guide.entitlementFeature && (
+              <span className="inline-flex items-center gap-1 rounded-full border border-teal-200 bg-teal-50 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-teal-800 uppercase dark:border-teal-800/40 dark:bg-teal-950/40 dark:text-teal-300">
+                <CheckCircle2 size={11} className="text-teal-600 dark:text-teal-400" />
+                Included with {journeyAccess.unlockedViaCategory || "Plan"}
+              </span>
+            )}
+          {walletUnlocked && !hasJourneyPlanAccess && !isInsideJourney && (
+            <span className="inline-flex items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-blue-800 uppercase dark:border-blue-800/40 dark:bg-blue-950/40 dark:text-blue-300">
+              <CheckCircle2 size={11} className="text-blue-600 dark:text-blue-400" />
+              Unlocked with Credits
+            </span>
+          )}
         </div>
+
+
+
+        {/* Description */}
         <p
           className="mb-0 pb-0 text-sm font-medium [text-wrap:pretty] text-slate-500 dark:text-slate-400"
           style={{ minHeight: 88, paddingBottom: 0, lineHeight: 1.3 }}
         >
           {guide.description}
         </p>
-
-        <div className="grow" />
       </div>
 
       {/* Footer / Action */}
@@ -960,48 +901,33 @@ function GuideCard({
         {showDualCta && catalogItem ? (
           <>
             <div className="mb-2.5 flex items-center justify-between gap-2 text-sm font-bold text-[#0d7377] dark:text-[#32e0c4]">
+              <div className="flex items-center gap-2.5">
+                <Link
+                  href={
+                    catalogItem.legacyAddonId
+                      ? `/resources/${catalogItem.legacyAddonId}`
+                      : withPreviewMode(guide.href)
+                  }
+                  onClick={(e) => e.stopPropagation()}
+                  className="inline-flex h-9 items-center rounded-lg border border-slate-200 bg-white px-3.5 text-[13px] font-semibold whitespace-nowrap text-slate-700 transition-colors hover:border-[#0d7377]/40 hover:text-[#0d7377]"
+                >
+                  {catalogItem.legacyAddonId ? "View Details" : "Preview Guide"}
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => onLaunch(catalogItem)}
+                  aria-label={`Launch ${guide.title} for ${catalogItem.credits} credits`}
+                  className="inline-flex h-9 items-center rounded-lg bg-[#0d7377] px-4 text-[13px] font-semibold whitespace-nowrap text-white transition-colors hover:bg-[#0a5c5f]"
+                >
+                  Launch
+                </button>
+              </div>
+
               <div className="flex min-w-0 items-center gap-2">
-                <CreditTypeIcon kind="tools" size={22} />
+                <CreditTypeIcon kind="guides" size={22} />
                 <span>{catalogItem.credits}</span>
               </div>
-            
-              <CreditInfoTooltip
-                message="Unlock once: pay these credits one time, then use this guide as much as you like."
-                side="top"
-              />
             </div>
-            {/* Preview CTA removed from My Resources — now links to the resource
-                detail page (preview moved to /resources/[slug]). ORIGINAL:
-                <Link href={withPreviewMode(guide.href)} ...>Preview Guide</Link>
-                (kept for guides without a detail page, e.g. polio — no legacyAddonId yet)
-            */}
-            <div className="flex items-center gap-2.5">
-              <Link
-                href={
-                  catalogItem.legacyAddonId
-                    ? `/resources/${catalogItem.legacyAddonId}`
-                    : withPreviewMode(guide.href)
-                }
-                onClick={(e) => e.stopPropagation()}
-                className="inline-flex h-9 items-center rounded-lg border border-slate-200 bg-white px-3.5 text-[13px] font-semibold whitespace-nowrap text-slate-700 transition-colors hover:border-[#0d7377]/40 hover:text-[#0d7377]"
-              >
-                {catalogItem.legacyAddonId ? "View Details" : "Preview Guide"}
-              </Link>
-              <button
-                type="button"
-                onClick={() => onLaunch(catalogItem)}
-                aria-label={`Launch ${guide.title} for ${catalogItem.credits} credits`}
-                className="inline-flex h-9 items-center rounded-lg bg-[#0d7377] px-4 text-[13px] font-semibold whitespace-nowrap text-white transition-colors hover:bg-[#0a5c5f]"
-              >
-                Launch
-              </button>
-            </div>
-            {/* Caption referenced the old Preview CTA — moved to detail page. ORIGINAL:
-                <p className="mt-2 text-[11px] leading-snug font-medium text-slate-400">
-                  Preview is free. Launching permanently unlocks the full guide with your wallet
-                  credits.
-                </p>
-            */}
           </>
         ) : (
           <div className="flex items-center justify-between">

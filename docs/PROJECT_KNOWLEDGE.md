@@ -998,7 +998,7 @@ Python backend. Highlights:
 | `create-pdf`, `convert-pdf` | PDF generation/conversion | Python backend |
 | `admin/*` | `appointments`, `police-verifications`, `reviews`, `visa-cases`, guide feedback, `announce-feature`, `announce-blog`, `blog-comments`, `audit-logs`, `account-deletion-feedback`, `logout` (translation admin lives under `document-translation/*`) | Supabase, Resend |
 | `dev/*` | dev-only debug (`debug-reminders`, `seed-notifications`); hard-404 in production | Supabase |
-| `analytics`, `notifications`, `feature-usage`, `feedback`, `reviews` | GA4 + app telemetry/feedback (feedback also -> Google Sheets). `feature-usage` resolves the tier server-side from `scope` (`lib/usage/resolveUsageTier.ts`: `journey` = owned journey's tier, `standalone` = no plan + legacy add-on pools, wallet unlock = unlimited, default = account tier); a client `tier` is ignored | GA4, Supabase, Sheets |
+| `analytics`, `notifications`, `feature-usage`, `feedback`, `reviews` | GA4 + app telemetry/feedback (feedback also -> Google Sheets). `feature-usage` resolves the tier server-side from `scope` (`lib/usage/resolveUsageTier.ts`: `journey` = owned journey's tier, `standalone` = no plan + legacy add-on pools, Photo Booth credit packs of 2 photos, default = account tier); a client `tier` is ignored | GA4, Supabase, Sheets |
 | `v1/journeys/[id]/*`, `v2/ir1-estimate` | RESTful journey-scoped resources; IR-1 estimate | Supabase, ir1-engine |
 
 **Conventions:** auth via Supabase session; shared guards in `lib/api/authGuards.ts` (required
@@ -1187,9 +1187,15 @@ lens, compare, confetti).
   - Non-`ResultGate` gates use `useStandaloneToolUnlock(id | null)` (`null` in journey mode, so a
     journey never reads wallet unlocks). `/tools` cards: a priced tool is owned only when
     wallet-unlocked.
-  - **Photo Booth:** journey = journey tier (Executive unlimited); standalone = wallet unlock
-    unlimited, else only legacy purchased photo credits. Usage goes through `/api/feature-usage`
-    with a `scope` (below).
+  - **Photo Booth:** journey = journey tier (Executive unlimited). Standalone is sold in packs:
+    each 15-credit purchase gives `PHOTO_BOOTH_PHOTOS_PER_PURCHASE` = 2 photos, then the user buys
+    it again (`lib/wallet/photoBoothPack.ts`). Photos allowed = 2 x completed `tool_launch`
+    purchases of `photo-booth` in `credit_transactions`; used = `feature_usage` key
+    `photo_booth:wallet` (spent via `increment_feature_usage_atomic`). When the last photo is used
+    the server sets the unlock row to `revoked` (only if it still points at the purchase it
+    counted), so the deduct RPC charges and re-activates it on the next purchase; no migration.
+    Legacy purchased photo add-on pools are spent after the packs. Usage goes through
+    `/api/feature-usage` with a `scope` (below). UI copy says "photos", never "credits", for uses.
   - **Smart Form Filler:** every PDF (preview, download, vault save) goes through
     `POST /api/visa-forms/[formCode]/pdf`, which decides full vs page 1 server-side
     (`lib/forms/smartFormAccess.ts`: journey = owned journey's tier + account add-ons, like
@@ -1200,6 +1206,17 @@ lens, compare, confetti).
     is set on BOTH the Next.js server and the backend**; until then the backend logs a warning
     and allows full fills. `MultiStepForm` journey access = `canUse("smart_form_filler",
     journeyTier, addons)` (Basic journeys get the page-1 demo), standalone = wallet unlock.
+    **Standalone credits unlock ONE form at a time** (`form-forge:<code>`, 39 credits each;
+    `SMART_FORM_CODES` / `smartFormResourceId` in `lib/wallet/catalog.ts`, kept equal to
+    `lib/formConfig` by `__tests__/wallet/smartFormUnlock.test.ts`). The whole-tool item
+    `form-forge` is `launchable: false` (no longer sold); a whole-tool unlock row bought before
+    this, or the legacy "smart" add-on, still opens every form (`resolveUnlockedItems` expands
+    them to every form). The PDF route checks the requested form's own unlock; the forms library
+    shows Unlock / Start per form, and clicking Unlock opens the credit modal (with top-up when
+    short) for THAT form; the `/tools` card has no Launch / dual CTA for it (the item is not
+    `launchable`): the whole card links to the library and shows "39 credits per form", so the
+    user picks a form before paying. It counts as owned once any form is unlocked
+    (`isCatalogItemOwned`).
   - **Interview Prep:** `POST /api/interview-prep` with `source: "journey"` calls
     `validateJourneySessionCreation` (owned journey via `resolveOwnedJourney`, journey still
     active, `basic_interview_prep` on the journey tier + add-ons) and creates a `source =

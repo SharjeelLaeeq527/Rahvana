@@ -20,7 +20,9 @@ import {
   Plus,
   Heart,
   ChevronDown,
+  Info,
 } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { createClient } from "@/lib/supabase/client";
 import { E, msg, errorCode } from "@/lib/errors";
 import { VISA_CATEGORIES, HELPER_DATA, COMPARISON_GROUPS, ADDONS, FAQS } from "./data/pricing";
@@ -126,19 +128,22 @@ const RESOURCE_TABS: Record<ResourceMode, ResourceTabInfo> = {
     label: "Tools",
     sub: "Self-serve tools",
     heading: "Individual tools",
-    blurb: "Self-serve tools you can use without a journey plan. Unlock each one once with credits.",
+    blurb:
+      "Self-serve tools you can use without a journey plan. Unlock each one once with credits.",
   },
   services: {
     label: "Services",
     sub: "Expert help",
     heading: "Expert services",
-    blurb: "Human-delivered help when you want a specialist on your case. Paid with credits per request.",
+    blurb:
+      "Human-delivered help when you want a specialist on your case. Paid with credits per request.",
   },
   guides: {
     label: "Guides",
     sub: "Step-by-step guides",
     heading: "Document guides",
-    blurb: "Country-specific, step-by-step guides for each required document. Unlock each one once with credits.",
+    blurb:
+      "Country-specific, step-by-step guides for each required document. Unlock each one once with credits.",
   },
 };
 
@@ -702,9 +707,9 @@ function PricingContent() {
   const [isManualCheckoutLoading, setIsManualCheckoutLoading] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
-
   const [mode, setMode] = useState<"plans" | ResourceMode>("plans");
   const [purchaseStep, setPurchaseStep] = useState<"browse" | "review">("browse");
+  const [summaryInfoOpen, setSummaryInfoOpen] = useState(false);
 
   const [visa, setVisa] = useState<string>(() => {
     if (typeof window === "undefined") {
@@ -771,9 +776,7 @@ function PricingContent() {
     const ir5DbJourneys = (userJourneys || []).filter((j) => {
       const raw = String(j.journey_type || "").toLowerCase();
       return (
-        raw.includes("ir5") ||
-        raw.includes("ir-5") ||
-        (raw.startsWith("ir") && raw.includes("5"))
+        raw.includes("ir5") || raw.includes("ir-5") || (raw.startsWith("ir") && raw.includes("5"))
       );
     });
 
@@ -859,8 +862,7 @@ function PricingContent() {
       const altKey = jKey.includes("-") ? jKey.replace(/-/g, "_") : jKey.replace(/_/g, "-");
 
       const foundTier = journeyTiers[jKey] || journeyTiers[cleanKey] || journeyTiers[altKey];
-      if (foundTier && foundTier !== "free")
-        return foundTier.toLowerCase();
+      if (foundTier && foundTier !== "free") return foundTier.toLowerCase();
 
       if (c.isPrimary && journeyTiers.ir5 && journeyTiers.ir5 !== "free")
         return journeyTiers.ir5.toLowerCase();
@@ -880,6 +882,7 @@ function PricingContent() {
   const beneficiaryUpgradeOptions: DropdownOption[] = useMemo(() => {
     return upgradableCategoryCandidates.map((cand) => {
       const tier = getCandidateEffectiveTier(cand);
+      const isExecutive = tier === "executive";
       const name = getCandidateDisplayName(cand);
       const initial = (
         cand.relation && cand.relation !== "Other"
@@ -911,7 +914,9 @@ function PricingContent() {
 
       const avatar = (
         <span
-          className={`flex h-5 w-5 shrink-0 items-center justify-center overflow-hidden rounded-full bg-linear-to-br ${avatarBg} text-[10px] font-bold shadow-xs`}
+          className={`flex h-5 w-5 shrink-0 items-center justify-center overflow-hidden rounded-full bg-linear-to-br ${avatarBg} text-[10px] font-bold shadow-xs ${
+            isExecutive ? "opacity-60 saturate-50" : ""
+          }`}
         >
           {cand.avatarUrl ? (
             <img
@@ -927,30 +932,44 @@ function PricingContent() {
 
       const rightBadge =
         tier && tier !== "free" ? (
-          <JourneyPlanBadge
-            tier={tier}
-            iconOnly={true}
-            className="!h-5 !w-5 shrink-0 [&>img]:!h-3 [&>img]:!w-3"
-          />
+          <div className="flex shrink-0 items-center gap-1.5">
+            {isExecutive && (
+              <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold text-amber-800 dark:bg-amber-900/60 dark:text-amber-200">
+                Max Plan
+              </span>
+            )}
+            <JourneyPlanBadge
+              tier={tier}
+              iconOnly={true}
+              className="!h-5 !w-5 shrink-0 [&>img]:!h-3 [&>img]:!w-3"
+            />
+          </div>
         ) : null;
+
+      const disabledReason = isExecutive
+        ? `${name} is currently on the Executive plan (highest plan) and cannot be upgraded.`
+        : undefined;
 
       return {
         value: cand.id,
         label: name,
         icon: avatar,
         rightElement: rightBadge,
+        disabled: isExecutive,
+        disabledReason,
+        // subLabel: isExecutive ? "Executive plan (highest tier) · Cannot be upgraded" : undefined,
       };
     });
   }, [upgradableCategoryCandidates, getCandidateEffectiveTier, getCandidateDisplayName]);
 
   const [selectedUpgradeCandidateId, setSelectedUpgradeCandidateId] = useState<string | null>(null);
 
-  // Active upgrade candidate selection — ONLY picks among candidates with paid plans
+  // Active upgrade candidate selection — ONLY picks among candidates with paid plans that can be upgraded
   const activeUpgradeCandidate = useMemo(() => {
     if (upgradableCategoryCandidates.length === 0) return null;
     if (selectedUpgradeCandidateId) {
       const found = upgradableCategoryCandidates.find((c) => c.id === selectedUpgradeCandidateId);
-      if (found) return found;
+      if (found && getCandidateEffectiveTier(found) !== "executive") return found;
     }
     // Prefer first upgradable candidate (not executive)
     const upgradable = upgradableCategoryCandidates.find((c) => {
@@ -958,9 +977,10 @@ function PricingContent() {
       return t !== "executive";
     });
     if (upgradable) return upgradable;
-    // Fall back to active candidate from context if in upgradable list
+    // Fall back to active candidate from context if in upgradable list and not executive
     const activeFromCtx = upgradableCategoryCandidates.find((c) => c.id === activeCandidate?.id);
-    if (activeFromCtx) return activeFromCtx;
+    if (activeFromCtx && getCandidateEffectiveTier(activeFromCtx) !== "executive")
+      return activeFromCtx;
     return upgradableCategoryCandidates[0];
   }, [
     upgradableCategoryCandidates,
@@ -1100,7 +1120,10 @@ function PricingContent() {
       if (activeUpgradeCandidate.createdAt) {
         return activeUpgradeCandidate.createdAt;
       }
-      const candKey = getCandidateJourneyKey(canonicalVisa, activeUpgradeCandidate.id).toLowerCase();
+      const candKey = getCandidateJourneyKey(
+        canonicalVisa,
+        activeUpgradeCandidate.id
+      ).toLowerCase();
       const cleanKey = candKey.replace(/[-_]/g, "");
       if (journeyStartDates[candKey]) return journeyStartDates[candKey];
       if (journeyStartDates[cleanKey]) return journeyStartDates[cleanKey];
@@ -1211,8 +1234,12 @@ function PricingContent() {
               : isAddingCandidate || (isIr5 && hasActiveIr5 && ir5Action === "add_candidate")
                 ? "add_candidate"
                 : undefined,
-            upgradeTotal: currentPlanUpgradeDiff ? currentPlanUpgradeDiff.totalNewCommitment : undefined,
-            newMonthlyPrice: currentPlanUpgradeDiff ? currentPlanUpgradeDiff.newMonthlyRate : undefined,
+            upgradeTotal: currentPlanUpgradeDiff
+              ? currentPlanUpgradeDiff.totalNewCommitment
+              : undefined,
+            newMonthlyPrice: currentPlanUpgradeDiff
+              ? currentPlanUpgradeDiff.newMonthlyRate
+              : undefined,
           }),
         });
         const data = await res.json();
@@ -1399,7 +1426,9 @@ function PricingContent() {
 
         // Fallback for base keys if only candidate journeys exist
         if (!tiersMap["ir5"]) {
-          const firstIr5Key = Object.keys(tiersMap).find((k) => k.includes("5") && tiersMap[k] !== "free");
+          const firstIr5Key = Object.keys(tiersMap).find(
+            (k) => k.includes("5") && tiersMap[k] !== "free"
+          );
           if (firstIr5Key) {
             tiersMap["ir5"] = tiersMap[firstIr5Key];
             if (datesMap[firstIr5Key]) datesMap["ir5"] = datesMap[firstIr5Key];
@@ -1410,7 +1439,9 @@ function PricingContent() {
         setJourneyStartDates(datesMap);
 
         // Auto-select IR-5 if user has active IR-5 journey and no active IR-1 or explicit URL parameter
-        const hasActiveIr5InJourneys = Object.keys(tiersMap).some((k) => k.includes("5") && tiersMap[k] !== "free");
+        const hasActiveIr5InJourneys = Object.keys(tiersMap).some(
+          (k) => k.includes("5") && tiersMap[k] !== "free"
+        );
         const hasActiveIr1InJourneys = Boolean(tiersMap.ir1 && tiersMap.ir1 !== "free");
         if (hasActiveIr5InJourneys && !hasActiveIr1InJourneys && typeof window !== "undefined") {
           const explicitVisaParam = new URLSearchParams(window.location.search).get("visa");
@@ -1503,9 +1534,10 @@ function PricingContent() {
   );
 
   // Order-summary header — a cart glyph with a live item-count badge, matching
-  // the pattern shoppers expect from any standard cart. Reused by both the
-  // journey-review and resources summaries so the two never drift apart.
-  const summaryHeader = (count: number) => (
+  // the pattern shoppers expect from any standard cart. `info` (how the total is
+  // worked out) shows in a tooltip beside the title instead of repeating it in
+  // the summary body; it also opens on tap, since touch has no hover.
+  const summaryHeader = (count: number, info?: React.ReactNode) => (
     <div className="border-border mb-4 flex items-center gap-2.5 border-b pb-3">
       <span className="relative inline-flex shrink-0">
         <ShoppingCart className="text-primary h-[18px] w-[18px]" strokeWidth={2} />
@@ -1518,10 +1550,28 @@ function PricingContent() {
       <span className="text-muted-foreground text-[11px] font-bold tracking-widest uppercase">
         Order Summary
       </span>
-      {count > 0 && (
-        <span className="text-muted-foreground ml-auto text-[11px] font-medium">
-          {count} {count === 1 ? "item" : "items"}
-        </span>
+      {info && (
+        <TooltipProvider delayDuration={100}>
+          <Tooltip open={summaryInfoOpen} onOpenChange={setSummaryInfoOpen}>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                onClick={() => setSummaryInfoOpen((o) => !o)}
+                className="text-muted-foreground hover:text-foreground inline-flex cursor-pointer items-center border-0 bg-transparent p-0 transition-colors"
+                aria-label="How your total is calculated"
+              >
+                <Info className="h-3.5 w-3.5" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent
+              side="bottom"
+              align="start"
+              className="max-w-[260px] text-[11.5px] leading-relaxed"
+            >
+              {info}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       )}
     </div>
   );
@@ -1614,7 +1664,11 @@ function PricingContent() {
   return (
     <div className="text-foreground selection:bg-primary/20 min-h-[100dvh] overflow-x-hidden pb-12 font-sans sm:pb-20">
       {/* ── Mode Toggle ──────────────────────────────────────────────────────── */}
+      {/* The tab bar is hidden while the page sells journey plans only (a lone
+          "Journey Plans" tab added nothing). Toggle SHOW_INDIVIDUAL_RESOURCE_TABS
+          to bring it back with the resource tabs. */}
       <div className={`${W} pt-[88px] pb-0`}>
+        {SHOW_INDIVIDUAL_RESOURCE_TABS && (
         <nav
           className="border-border/40 flex scrollbar-none items-center justify-between gap-4 overflow-x-auto border-b px-1 sm:justify-start sm:gap-8 md:grid md:grid-cols-4 md:gap-1 md:px-0"
           aria-label="Pricing mode"
@@ -1626,23 +1680,21 @@ function PricingContent() {
                 label: "Journey Plans",
                 sub: "Full roadmap guidance",
               },
-              // Individual-resource tabs hidden (Journey Plans only) per product
-              // decision. Toggle SHOW_INDIVIDUAL_RESOURCE_TABS to restore.
-              // {
-              //   id: "tools" as const,
-              //   label: RESOURCE_TABS.tools.label,
-              //   sub: RESOURCE_TABS.tools.sub,
-              // },
-              // {
-              //   id: "guides" as const,
-              //   label: RESOURCE_TABS.guides.label,
-              //   sub: RESOURCE_TABS.guides.sub,
-              // },
-              // {
-              //   id: "services" as const,
-              //   label: RESOURCE_TABS.services.label,
-              //   sub: RESOURCE_TABS.services.sub,
-              // },
+              {
+                id: "tools" as const,
+                label: RESOURCE_TABS.tools.label,
+                sub: RESOURCE_TABS.tools.sub,
+              },
+              {
+                id: "guides" as const,
+                label: RESOURCE_TABS.guides.label,
+                sub: RESOURCE_TABS.guides.sub,
+              },
+              {
+                id: "services" as const,
+                label: RESOURCE_TABS.services.label,
+                sub: RESOURCE_TABS.services.sub,
+              },
             ] as const
           ).map(({ id, label, sub }) => (
             <button
@@ -1677,6 +1729,7 @@ function PricingContent() {
             </button>
           ))}
         </nav>
+        )}
       </div>
 
       {/* ── Checkout-canceled notice — shown when the user returns from Stripe
@@ -2311,12 +2364,11 @@ function PricingContent() {
                                     </span>
                                   ) : (
                                     <>
-                                      ${plan.annualPrice * parentMultiplier} total
+                                      ${plan.annualPrice * parentMultiplier} for 12 months
                                       {!isUpgradingIr5 && isIr5 && parentCount > 1 && (
-                                        <span>
-                                          {" "}
-                                          ({parentCount}x ${plan.annualPrice}/ea)
-                                        </span>
+                                        <div>
+                                          ${plan.annualPrice} per parent x {parentCount} parents
+                                        </div>
                                       )}
                                     </>
                                   )}
@@ -2645,15 +2697,18 @@ function PricingContent() {
                                     ${currentPlanData.annualPrice}
                                   </span>
                                 </div>
-                                <div className="text-[10.5px] text-muted-foreground">
-                                  ${currentPlanUpgradeDiff.targetPlanAnnual} new plan − ${currentPlanUpgradeDiff.paidSoFarAmount} paid till now
+                                <div className="text-muted-foreground text-[10.5px]">
+                                  ${currentPlanUpgradeDiff.targetPlanAnnual} new plan − $
+                                  {currentPlanUpgradeDiff.paidSoFarAmount} paid till now
                                 </div>
                               </div>
                             ) : (
                               <>
-                                /mo · ${currentPlanData.annualPrice * parentMultiplier} total
+                                a month · ${currentPlanData.annualPrice * parentMultiplier} for 12 months
                                 {!isUpgradingIr5 && isIr5 && parentCount > 1 && (
-                                  <span> (${currentPlanData.annualPrice}/ea)</span>
+                                  <div>
+                                    ${currentPlanData.annualPrice} per parent x {parentCount} parents
+                                  </div>
                                 )}
                               </>
                             )}
@@ -2709,16 +2764,19 @@ function PricingContent() {
                 {/* Single resources are paid with credits on their own pages. */}
                 <div className="border-border bg-muted/30 rounded-[18px] border border-dashed p-5">
                   <div className={eyebrow}>Need just one thing?</div>
-                  <h2 className="m-0 mb-1 text-[18px] font-bold">Single tools, guides and services</h2>
+                  <h2 className="m-0 mb-1 text-[18px] font-bold">
+                    Single tools, guides and services
+                  </h2>
                   <p className="text-muted-foreground mb-4 text-[13.5px]">
-                    These are not part of this checkout. Tools and guides unlock once with Rahvana
-                    credits, and services are paid with credits per request ($1 = 1 credit).
+                    You can also buy these one at a time, without a journey plan. Tools and guides
+                    unlock once with Rahvana credits, and services are paid with credits each time
+                    you book one ($1 = 1 credit).
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {[
-                      { href: "/tools", label: "Browse tools" },
-                      { href: "/guides", label: "Browse guides" },
-                      { href: "/services", label: "Browse services" },
+                      { href: "/resources?tab=toolbox", label: "Browse tools" },
+                      { href: "/resources?tab=guides", label: "Browse guides" },
+                      { href: "/resources?tab=services", label: "Browse services" },
                     ].map((link) => (
                       <Link
                         key={link.href}
@@ -2734,7 +2792,25 @@ function PricingContent() {
 
               {/* Right: sticky order summary */}
               <aside className="bg-card border-border rounded-[22px] border p-5 shadow-md lg:sticky lg:top-[88px]">
-                {summaryHeader(reviewItemCount)}
+                {summaryHeader(
+                  reviewItemCount,
+                  currentPlanUpgradeDiff ? (
+                    <>
+                      You pay ${planDisplayPrice(currentPlanData)} a month for the next 12 months,
+                      starting today. We take the new plan&apos;s 12-month price and subtract what you
+                      already paid. This plan replaces your current{" "}
+                      <span className="capitalize">{selectedJourneyTier}</span> plan.
+                    </>
+                  ) : (
+                    <>
+                      You pay $
+                      {currentPlanData.id !== "free" ? planDisplayPrice(currentPlanData) : 0} a month
+                      for 12 months
+                      {isIr5 && parentCount > 1 ? `, covering all ${parentCount} parents` : ""}.
+                      Government fees are not included.
+                    </>
+                  )
+                )}
 
                 <div className="border-border flex justify-between gap-3 border-b border-dashed py-2.5 text-[13px]">
                   <span className="text-muted-foreground">Visa</span>
@@ -2769,13 +2845,9 @@ function PricingContent() {
                         {currentPlanData.name}
                       </strong>
                       <span className="text-muted-foreground text-[11px]">
-                        ${planDisplayPrice(currentPlanData)}/mo · $
-                        {currentPlanUpgradeDiff
-                          ? currentPlanUpgradeDiff.totalNewCommitment
-                          : currentPlanData.annualPrice * parentMultiplier}{" "}
-                        {currentPlanUpgradeDiff ? "12-month total" : "total"}
+                        ${planDisplayPrice(currentPlanData)} a month
                         {!currentPlanUpgradeDiff && isIr5 && parentCount > 1 && (
-                          <span> (${currentPlanData.annualPrice}/ea)</span>
+                          <span> for {parentCount} parents</span>
                         )}
                       </span>
                     </div>
@@ -2785,21 +2857,23 @@ function PricingContent() {
                 {/* Simplified 12-month upgrade breakdown */}
                 {currentPlanUpgradeDiff && (
                   <div className="border-border space-y-1.5 border-b border-dashed py-2.5 text-[12px]">
-                    <div className="flex justify-between text-muted-foreground">
+                    <div className="text-muted-foreground flex justify-between">
                       <span>{currentPlanData.name} Yearly Total</span>
-                      <span className="font-medium text-foreground">
+                      <span className="text-foreground font-medium">
                         ${currentPlanUpgradeDiff.targetPlanAnnual}
                       </span>
                     </div>
                     <div className="flex justify-between text-emerald-700 dark:text-emerald-400">
                       <span>
-                        Paid till now ({currentPlanUpgradeDiff.monthsElapsed}{" "}
+                        Already paid ({currentPlanUpgradeDiff.monthsElapsed}{" "}
                         {currentPlanUpgradeDiff.monthsElapsed === 1 ? "month" : "months"} on{" "}
                         <span className="capitalize">{selectedJourneyTier}</span>)
                       </span>
-                      <span className="font-medium">-${currentPlanUpgradeDiff.paidSoFarAmount}</span>
+                      <span className="font-medium">
+                        -${currentPlanUpgradeDiff.paidSoFarAmount}
+                      </span>
                     </div>
-                    <div className="border-border/40 flex justify-between border-t pt-1 font-semibold text-foreground">
+                    <div className="border-border/40 text-foreground flex justify-between border-t pt-1 font-semibold">
                       <span>New 12-Month Total</span>
                       <span>${currentPlanUpgradeDiff.totalNewCommitment}</span>
                     </div>
@@ -2834,7 +2908,7 @@ function PricingContent() {
                   <div className="flex flex-col">
                     <span className="text-muted-foreground text-[12px]">Total commitment</span>
                     {currentPlanUpgradeDiff && (
-                      <span className="text-emerald-700 dark:text-emerald-400 text-[11px] font-medium">
+                      <span className="text-[11px] font-medium text-emerald-700 dark:text-emerald-400">
                         Fresh 12-month schedule
                       </span>
                     )}
@@ -2844,7 +2918,7 @@ function PricingContent() {
                       ${summaryTotal}
                     </span>
                     {currentPlanUpgradeDiff && (
-                      <div className="text-muted-foreground text-[11px] mt-0.5">
+                      <div className="text-muted-foreground mt-0.5 text-[11px]">
                         (${planDisplayPrice(currentPlanData)}/mo × 12 mos)
                       </div>
                     )}
@@ -2855,11 +2929,16 @@ function PricingContent() {
                   {currentPlanUpgradeDiff ? (
                     <>
                       Starting today, your plan resets to a fresh 12-month schedule at{" "}
-                      <strong className="text-foreground">${planDisplayPrice(currentPlanData)}/mo</strong>.
-                      Total commitment is{" "}
-                      <strong className="text-foreground">${currentPlanUpgradeDiff.totalNewCommitment}</strong>{" "}
-                      (${currentPlanUpgradeDiff.targetPlanAnnual} new plan yearly − ${currentPlanUpgradeDiff.paidSoFarAmount} paid till now).
-                      Replaces your current <strong className="capitalize">{selectedJourneyTier}</strong> plan.
+                      <strong className="text-foreground">
+                        ${planDisplayPrice(currentPlanData)}/mo
+                      </strong>
+                      . Total commitment is{" "}
+                      <strong className="text-foreground">
+                        ${currentPlanUpgradeDiff.totalNewCommitment}
+                      </strong>{" "}
+                      (${currentPlanUpgradeDiff.targetPlanAnnual} new plan yearly − $
+                      {currentPlanUpgradeDiff.paidSoFarAmount} paid till now). Replaces your current{" "}
+                      <strong className="capitalize">{selectedJourneyTier}</strong> plan.
                     </>
                   ) : (
                     <>
