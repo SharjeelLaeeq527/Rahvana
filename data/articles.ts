@@ -352,7 +352,10 @@ export const ARTICLES: Article[] = [
     showSocialShare: true,
     showTableOfContents: true,
     showFaqs: true,
-    relatedSlugs: ["ir5-visa-guide-bring-parents-to-united-states"],
+    relatedSlugs: [
+      "ir5-visa-guide-bring-parents-to-united-states",
+      "221g-visa-refusal-ir1-cr1-spouse-visa",
+    ],
   },
   {
     id: "art-002",
@@ -390,8 +393,8 @@ export const ARTICLES: Article[] = [
       { id: "step-by-step-process", title: "4. Step-by-Step: How the IR-5 Visa Process Works" },
       { id: "timeline", title: "5. How Long Does the IR-5 Visa Process Take?" },
       { id: "common-mistakes", title: "6. Common Mistakes to Avoid" },
-      { id: "faq-section", title: "7. Frequently Asked Questions" },
-      { id: "next-steps", title: "8. Make the Immigration Process Easier to Navigate" },
+      { id: "next-steps", title: "7. Make the Immigration Process Easier to Navigate" },
+      { id: "faq-section", title: "8. Frequently Asked Questions" },
     ],
     sections: [
       {
@@ -681,7 +684,272 @@ export const ARTICLES: Article[] = [
     showSocialShare: true,
     showTableOfContents: true,
     showFaqs: true,
-    relatedSlugs: ["ir1-vs-cr1-visa-difference-pakistan"],
+    relatedSlugs: ["ir1-vs-cr1-visa-difference-pakistan", "221g-visa-refusal-ir1-cr1-spouse-visa"],
+  },
+  {
+    id: "art-003",
+    slug: "221g-visa-refusal-ir1-cr1-spouse-visa",
+    title: "221(g) Visa Refusal: What It Means for Your IR-1 or CR-1 Spouse Visa",
+    bluf: "A Section 221(g) visa refusal does not automatically mean your immigrant visa is permanently denied; it means the consular officer cannot establish eligibility at this stage due to missing documents or required administrative processing. What happens next depends on the specific instructions provided on your refusal notice.",
+    description:
+      "Received a 221(g) refusal after your U.S. visa interview? Learn what it means, why it happens, and how to understand your next steps—especially if you're applying for a spousal visa from Pakistan.",
+    category: "Consular Interview & 221(g)",
+    author: {
+      name: "Rahvana Legal Research & Consular Strategy Team",
+      title: "Senior U.S. Consular Immigration Strategists",
+    },
+    publishedAt: "2026-10-20",
+    updatedAt: "2026-10-30",
+    readTime: "9 min read",
+    keywords: [
+      "221g visa refusal",
+      "221g refusal Pakistan",
+      "IR-1 221g administrative processing",
+      "CR-1 221g Islamabad",
+      "221g yellow slip Islamabad",
+      "US Embassy Islamabad 221g refusal",
+      "CEAC refused administrative processing",
+      "221g missing documents checklist",
+      "how long does 221g take Pakistan",
+      "spouse visa 221g next steps",
+    ],
+    heroImage: "/assets/images/blog/blog-hero-image.png",
+    heroImageAlt: "221(g) Visa Refusal: What It Means for Your IR-1 or CR-1 Spouse Visa",
+    tableOfContents: [
+      { id: "intro-overview", title: "1. Understanding 221(g) Refusals" },
+      { id: "what-is-221g", title: "2. What Is a 221(g) Visa Refusal?" },
+      { id: "permanently-denied", title: "3. Does 221(g) Mean Permanent Denial?" },
+      { id: "why-refusals-happen", title: "4. Why Do IR-1 and CR-1 Applicants Receive 221(g)?" },
+      { id: "what-to-do", title: "5. What Should You Do After Receiving a 221(g)?" },
+      { id: "administrative-timeline", title: "6. How Long Does Administrative Processing Take?" },
+      { id: "common-misconceptions", title: "7. Common Misconceptions About 221(g)" },
+      { id: "next-steps", title: "8. Making an Unfamiliar Process Easier to Navigate" },
+      { id: "faq-section", title: "9. Frequently Asked Questions" },
+    ],
+    sections: [
+      {
+        id: "intro-overview",
+        h2: "Understanding Your 221(g) Refusal Notice",
+        paragraphs: [
+          "Received a 221(g) refusal after your U.S. visa interview? Learn what it means, why it happens, and how to understand your next steps—especially if you're applying for a spousal visa from Pakistan.",
+          "You prepare your documents, complete your medical examination, attend your visa interview, and wait for an answer that could bring you and your spouse closer to living together. Instead, you receive a paper referencing Section 221(g) of U.S. immigration law.",
+          "Suddenly, you have more questions than answers.",
+          "Does this mean your visa has been denied permanently? Do you need to submit more documents? How long will you have to wait? And if your case is being processed through the U.S. Embassy in Islamabad, what should you do next?",
+          "For couples pursuing an IR-1 or CR-1 spousal visa, uncertainty can be especially difficult when every update feels like a step toward—or away from—reuniting with family.",
+          "The important thing to understand is that a 221(g) refusal does not automatically mean your visa journey is over. It means the consular officer has not established your eligibility for a visa at that stage. What happens next depends on the reason for the refusal and the instructions you receive.",
+          "Understanding that distinction can help you approach the situation with a clearer plan.",
+        ],
+      },
+      {
+        id: "what-is-221g",
+        h2: "What Is a 221(g) Visa Refusal?",
+        paragraphs: [
+          "Section 221(g) of the Immigration and Nationality Act allows a consular officer to refuse a visa application when the officer does not yet have all the information needed to determine whether the applicant qualifies.",
+          "According to the U.S. Department of State, this can happen for two principal reasons:",
+        ],
+        bulletList: [
+          "Missing information or documentation: The application is incomplete, or additional documents or information are needed.",
+          "Administrative processing: The application requires further review before a decision can be made.",
+        ],
+        callout: {
+          type: "info",
+          title: "Official U.S. Department of State Guidance",
+          text: "These situations are not identical, and they may require different responses. \n\nIf additional documents are required, the consular officer should provide instructions explaining what is needed and how to submit it. If the case requires administrative processing, the applicant generally must wait for that review to be completed. \n\nYou can read the official explanation on the [U.S. Department of State's Visa Denials page](https://travel.state.gov/content/travel/en/us-visas/visa-information-resources/visa-denials.html).",
+        },
+      },
+      {
+        id: "permanently-denied",
+        h2: "Does a 221(g) mean your visa has been permanently denied?",
+        paragraphs: [
+          "Not necessarily.",
+          "A 221(g) refusal means that your visa has not been issued. In some cases, the officer may reconsider the application after receiving the requested information or completing administrative processing.",
+          "However, approval is not guaranteed. After reviewing the additional information, the consular officer may determine that you qualify for the visa or that you remain ineligible.",
+          "This is why it is important to understand the specific reason for your refusal rather than assuming that every 221(g) case will have the same outcome.",
+        ],
+      },
+      {
+        id: "why-refusals-happen",
+        h2: "Why Do IR-1 and CR-1 Applicants Receive 221(g) Refusals?",
+        paragraphs: [
+          "IR-1 and CR-1 visas allow eligible spouses of U.S. citizens to immigrate to the United States. Although the two categories differ in their treatment of conditional permanent residence, both involve establishing eligibility for an immigrant visa.",
+          "A 221(g) refusal can arise at the interview stage for several reasons.",
+        ],
+      },
+      {
+        id: "reason-1-documents",
+        h3: "1. Additional documents are required",
+        paragraphs: [
+          "A consular officer may need documents or information that were not available or sufficient at the time of the interview.",
+          "For family based immigrant visa applicants, relevant records can include civil documents, financial sponsorship evidence, or other supporting information. The particular request depends on the individual case.",
+          "Applicants processing through Islamabad should pay close attention to the embassy’s document instructions. These may specify which original documents, translations, photocopies, or other materials are required.",
+          "The embassy’s [official immigrant visa instructions for Pakistan](https://travel.state.gov/content/travel/en/us-visas/Supplements/Supplements_by_Post/ISL-Islamabad.html) explain the general requirements for applicants processing there.",
+        ],
+        callout: {
+          type: "tip",
+          title: "Focus on Requested Documents",
+          text: "Remember that a 221(g) notice is not a reason to submit every document you can find. Focus on the information actually requested.",
+        },
+      },
+      {
+        id: "reason-2-admin-processing",
+        h3: "2. Administrative processing is necessary",
+        paragraphs: [
+          "Some applications require additional review after the interview. This is known as administrative processing.",
+          "The review may involve circumstances that the applicant cannot resolve simply by uploading another document. The consular officer will provide relevant instructions, and the case remains pending a final determination.",
+          "Administrative processing does not have one guaranteed completion date. The time required varies according to the circumstances of the individual application.",
+        ],
+      },
+      {
+        id: "reason-3-clarification",
+        h3: "3. Further clarification is needed",
+        paragraphs: [
+          "The consular officer may need additional information to assess an applicant's eligibility. Depending on the case, the applicant may be asked to clarify information or provide further evidence.",
+          "It is important not to assume that a particular question, document, or interview answer automatically causes a 221(g) refusal. Without knowing the details of an individual case, it is impossible to identify the reason with certainty.",
+        ],
+      },
+      {
+        id: "what-to-do",
+        h2: "What Should You Do After Receiving a 221(g) Refusal?",
+        paragraphs: [
+          "The most useful first step is to understand exactly what the consular officer has asked you to do.",
+          "Rather than relying on another applicant's experience or trying to predict the outcome, work through your own instructions carefully.",
+        ],
+      },
+      {
+        id: "step-1-read-notice",
+        h3: "Step 1: Read the refusal notice carefully",
+        paragraphs: [
+          "Keep the notice and review every instruction. Determine whether the embassy has requested specific documents, provided a method for submitting additional information, or indicated that administrative processing is required.",
+          "If the instructions are unclear, consult the official guidance or seek clarification through the appropriate channel.",
+        ],
+      },
+      {
+        id: "step-2-checklist",
+        h3: "Step 2: Make a checklist of outstanding requirements",
+        paragraphs: [
+          "If documents are requested, list each item individually. Check whether the embassy requires an original, a photocopy, a translation, or a particular submission format.",
+          "For applicants in Pakistan, the embassy's instructions are particularly important because civil documents and submission procedures may have specific requirements.",
+          "Do not assume that a document accepted in another applicant's case will necessarily satisfy the requirements of yours.",
+        ],
+      },
+      {
+        id: "step-3-submit-correctly",
+        h3: "Step 3: Submit the requested information correctly",
+        paragraphs: [
+          "Follow the submission instructions provided by the consular officer.",
+          "The U.S. Embassy in Islamabad specifically instructs applicants who must submit additional documents after their interview not to mail them directly to the embassy. Instead, applicants should follow the instructions provided during the interview.",
+          "Keep copies of your documents and any available proof of submission. These records can help you track what has been provided if you need to follow up later.",
+        ],
+      },
+      {
+        id: "step-4-monitor-case",
+        h3: "Step 4: Monitor your case and keep your records organized",
+        paragraphs: [
+          "Keep your case number, refusal notice, submission confirmations, and relevant correspondence in one place.",
+          "You can use the [Consular Electronic Application Center (CEAC)](https://ceac.state.gov/CEACStatTracker/Status.aspx) to check your immigrant visa case status.",
+          "A status of “Refused” does not, by itself, explain the full circumstances of your case. A 221(g) case undergoing administrative processing may continue to display that status while the review is underway.",
+          "Follow any instructions issued by the embassy, and avoid interpreting a status change—or the absence of one—as a guarantee of the final outcome.",
+        ],
+      },
+      {
+        id: "step-5-professional-guidance",
+        h3: "Step 5: Seek professional guidance if necessary",
+        paragraphs: [
+          "If you are unsure how to respond, cannot obtain a requested document, or believe your case involves a more complicated legal issue, consider consulting a qualified U.S. immigration attorney.",
+          "A professional may help you understand the applicable requirements and evaluate possible next steps. Be cautious of anyone who guarantees approval or claims to have a way to bypass consular processing.",
+        ],
+      },
+      {
+        id: "administrative-timeline",
+        h2: "How Long Does 221(g) Administrative Processing Take?",
+        paragraphs: [
+          "For many couples, the waiting period is the hardest part.",
+          "Unfortunately, there is no universal timeline for resolving a 221(g) refusal. The time required depends on the circumstances of the application and the review involved.",
+          "Experiences shared in online communities may offer insight into what other applicants have experienced, but they cannot predict when your own case will be resolved. Two applicants interviewed at the same embassy may experience very different timelines.",
+          "The Department of State advises applicants to wait at least 180 days from the date of the interview or submission of supplemental documents, whichever is later, before making inquiries about the status of administrative processing. An exception applies to emergency travel involving serious illness, injury, or death in the immediate family.",
+          "This guidance concerns inquiries about administrative processing. It does not mean you should delay submitting documents when the embassy has specifically requested them.",
+          "For the latest guidance, consult the Department of State's [After the Interview page](https://travel.state.gov/content/travel/en/us-visas/immigrate/the-immigrant-visa-process/step-10-prepare-for-the-interview/step-12-after-the-interview.html).",
+          "While waiting, keep your information organized, monitor official communications, and avoid making nonrefundable travel arrangements before your visa is issued.",
+        ],
+      },
+      {
+        id: "common-misconceptions",
+        h2: "Common Misconceptions About 221(g) Refusals",
+        bulletList: [
+          "“My visa says refused, so my application is over.” \nNot necessarily. A refusal under Section 221(g) may be followed by further review and reconsideration. The final outcome depends on whether you establish eligibility.",
+          "“Administrative processing always takes a few weeks.” \nThere is no guaranteed processing period. Other applicants' experiences are not reliable predictions of your timeline.",
+          "“Submitting more documents will make my case move faster.” \nNot necessarily. If the embassy has requested specific documents, follow those instructions. If the case is undergoing administrative processing, sending unsolicited documents may not resolve the outstanding issue.",
+          "“If another applicant received their visa, mine should be issued soon too.” \nEach application is assessed individually. Similar circumstances or interview dates do not guarantee similar outcomes.",
+          "“I can wait indefinitely before responding to a document request.” \nDo not assume that you have unlimited time. The Department of State states that applicants generally have one year from the date of a 221(g) refusal to submit requested additional information. Failure to provide the information within that period can require a new application and another application fee. Check your specific instructions and applicable requirements.",
+        ],
+      },
+      {
+        id: "next-steps",
+        h2: "Making an Unfamiliar Process Easier to Navigate",
+        paragraphs: [
+          "When a visa application is refused under Section 221(g), it can be difficult to know which information to trust or what to do first. Government instructions, document requirements, online discussions, and other applicants' experiences can be scattered across different sources.",
+          "The goal is not to predict every possible outcome. It is to understand your instructions, keep your documents organized, and identify the next step that applies to your circumstances.",
+          "That is the problem Rahvana is working to address.",
+          "Rahvana brings immigration guidance, practical tools, and resources together to help people better understand and organize their immigration journeys. For couples navigating a U.S. spousal visa, having a clearer view of the process can make it easier to manage documents, understand requirements, and keep track of what comes next.",
+          "If you are still learning about the spousal visa process, start with our [IR-1 vs. CR-1 Spouse Visa Guide for Pakistan](https://www.rahvana.com/blog/ir1-vs-cr1-visa-difference-pakistan), which explains the differences between the two visa categories and the broader application journey.",
+          "You can also explore [Rahvana's immigration resources](https://www.rahvana.com/) for practical guidance and tools.",
+          "Your immigration journey may involve uncertainty, but your next step can still be informed.",
+        ],
+        callout: {
+          type: "info",
+          title: "Legal Disclaimer",
+          text: "This article is for general educational purposes only and is not legal advice. Immigration requirements and procedures may change. Always consult current official government instructions for your individual case. Rahvana is not a law firm and cannot guarantee visa approval or processing times.",
+        },
+      },
+    ],
+    faqs: [
+      {
+        question: "Can a 221(g) refusal happen after an IR-1 or CR-1 interview in Islamabad?",
+        answer:
+          "Yes. The U.S. Embassy in Islamabad explains that an application may be refused under Section 221(g) when additional documents or administrative processing are required. The reason and next steps depend on the individual case.",
+      },
+      {
+        question: "Should I submit additional documents if the embassy has not requested them?",
+        answer:
+          "Do not assume that unsolicited documents will help. Follow the instructions in your refusal notice. If you believe important information is missing from your application, seek clarification through the appropriate official channel before deciding how to proceed.",
+      },
+      {
+        question: "Can I contact the embassy to ask about my case?",
+        answer:
+          "Follow the instructions provided by the embassy and the Department of State's guidance on status inquiries. For cases undergoing administrative processing, the Department of State recommends waiting at least 180 days, subject to the stated emergency exception.",
+      },
+      {
+        question: "Can a 221(g) refusal be overcome?",
+        answer:
+          "Some 221(g) cases can proceed after the applicant supplies the requested information or the required review is completed. Others may result in a determination that the applicant remains ineligible. The outcome depends on the circumstances of the case.",
+      },
+      {
+        question: "Can anyone guarantee that my visa will be approved?",
+        answer:
+          "No. An attorney or immigration resource may help you understand the process and prepare a response, but no one can guarantee a consular decision or promise a specific processing time.",
+      },
+    ],
+    cta: {
+      headline: "Received a 221(g) or Preparing for Your Consular Interview?",
+      description:
+        "Organize your missing civil documents, track submission checklists, and practice targeted consular interview questions with Rahvana's guided tools.",
+      buttonText: "Explore Interview Preparation →",
+      buttonHref: "/interview-prep",
+      badge: "221(g) Recovery & Interview Tool",
+    },
+    sidebarCta: {
+      title: "Facing 221(g) Delays?",
+      description: "Book a strategy consultation with our U.S. visa case managers.",
+      buttonText: "Book Consultation →",
+      buttonHref: "/book-consultation",
+    },
+    showSocialShare: true,
+    showTableOfContents: true,
+    showFaqs: true,
+    relatedSlugs: [
+      "ir1-vs-cr1-visa-difference-pakistan",
+      "ir5-visa-guide-bring-parents-to-united-states",
+    ],
   },
 ];
 

@@ -482,7 +482,9 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
                           {section.bulletList.map((item, bIdx) => (
                             <li key={bIdx} className="flex items-start gap-2.5">
                               <CheckCircle2 className="text-primary mt-0.5 h-4 w-4 shrink-0" />
-                              <span className="flex-1 leading-relaxed">{renderFormattedContent(item)}</span>
+                              <span className="flex-1 leading-relaxed whitespace-pre-line">
+                                {renderFormattedContent(item)}
+                              </span>
                             </li>
                           ))}
                         </ul>
@@ -496,7 +498,9 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
                               <span className="bg-primary/10 text-primary mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold">
                                 {nIdx + 1}
                               </span>
-                              <span className="flex-1 leading-relaxed">{renderFormattedContent(item)}</span>
+                              <span className="flex-1 leading-relaxed whitespace-pre-line">
+                                {renderFormattedContent(item)}
+                              </span>
                             </li>
                           ))}
                         </ol>
