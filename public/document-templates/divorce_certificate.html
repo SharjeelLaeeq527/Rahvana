@@ -1,0 +1,626 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Divorce Certificate True Translation | Rahvana</title>
+<style>
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Times New Roman', Times, serif;
+    color: #111;
+    line-height: 1.25;
+    background-color: #f1f5f9;
+    margin: 0;
+    padding: 15px;
+  }
+
+  /* Top Control Bar */
+  .control-bar {
+    max-width: 210mm;
+    margin: 0 auto 16px auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #0f172a;
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  .control-title-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .template-badge {
+    background-color: #006363;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 999px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .control-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #f8fafc;
+  }
+
+  .btn-print {
+    background-color: #2563eb;
+    color: #fff;
+    border: none;
+    padding: 8px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: inherit;
+  }
+
+  .btn-print:hover {
+    background-color: #1d4ed8;
+  }
+
+  /* Standard A4 Page Container */
+  .page-container {
+    background: #fff;
+    width: 210mm;
+    min-height: 297mm;
+    max-height: 297mm;
+    margin: 0 auto;
+    padding: 8mm 12mm 9mm 12mm;
+    box-sizing: border-box;
+    box-shadow: 0 0 12px rgba(0,0,0,0.12);
+    position: relative;
+    page-break-after: avoid;
+    page-break-inside: avoid;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+  }
+
+  /* Formal Decorative Outer Border */
+  .ornamental-border {
+    border: 2px solid #006363;
+    padding: 9px 13px;
+    box-sizing: border-box;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  /* Corporate Header */
+  .corporate-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #006363;
+    padding-bottom: 5px;
+    margin-bottom: 5px;
+  }
+
+  .brand-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .brand-logo-svg {
+    height: 30px;
+    width: auto;
+  }
+
+  .brand-subtext {
+    font-size: 8.5px;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #006363;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    line-height: 1.2;
+  }
+
+  .brand-subtext .urdu-title {
+    font-size: 10px;
+    color: #222;
+    font-weight: bold;
+    display: block;
+    margin-top: 1px;
+  }
+
+  .header-right {
+    text-align: right;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 8px;
+    color: #444;
+    line-height: 1.35;
+  }
+
+  .header-right .certified-tag {
+    font-weight: 800;
+    color: #006363;
+    font-size: 9.5px;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+  }
+
+  /* Gold True Translation Badge */
+  .badge-container {
+    text-align: center;
+    margin: 2px 0 3px 0;
+  }
+
+  .true-translation-badge {
+    display: inline-block;
+    border: 2px solid #b8860b;
+    color: #996515;
+    background-color: #fffdf5;
+    font-weight: 900;
+    font-size: 13.5px;
+    letter-spacing: 2px;
+    padding: 2px 20px;
+    border-radius: 4px;
+    text-transform: uppercase;
+  }
+
+  /* Header Section */
+  .header-section {
+    text-align: center;
+    margin-bottom: 4px;
+  }
+
+  .lang-title {
+    font-size: 10.5px;
+    font-weight: bold;
+    text-decoration: underline;
+    letter-spacing: 0.6px;
+    margin-bottom: 2px;
+  }
+
+  .sub-title {
+    font-size: 9px;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin: 1px 0;
+  }
+
+  .main-heading {
+    font-size: 14.5px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-decoration: underline;
+    margin: 2px 0;
+  }
+
+  /* Meta header bar */
+  .meta-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    font-size: 9.5px;
+    font-weight: bold;
+    margin: 2px 0 5px 0;
+    border-bottom: 1px dashed #006363;
+    padding-bottom: 3px;
+  }
+
+  /* Tables */
+  table.form-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9.5px;
+    margin-bottom: 4px;
+  }
+
+  table.form-table th,
+  table.form-table td {
+    border: 1px solid #222;
+    padding: 3.2px 5px;
+    vertical-align: middle;
+  }
+
+  table.form-table th.section-th {
+    background-color: #f1f5f9;
+    color: #006363;
+    text-align: left;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 3.5px 6px;
+    letter-spacing: 0.4px;
+  }
+
+  .label-cell {
+    font-weight: 600;
+    background-color: #fcfcfc;
+    width: 25%;
+  }
+
+  .value-cell {
+    font-weight: normal;
+    background-color: #ffffff;
+    width: 25%;
+  }
+
+  /* Seal & Signatures Box */
+  .signature-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9px;
+    margin-top: 3px;
+  }
+
+  .signature-table td {
+    border: 1px solid #222;
+    padding: 4px 7px;
+    vertical-align: top;
+    height: 38px;
+  }
+
+  .sign-label {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 3px;
+    line-height: 1.15;
+  }
+
+  .sign-line {
+    display: inline-block;
+    border-bottom: 1px solid #222;
+    min-width: 120px;
+    padding: 0 4px;
+    font-style: italic;
+    color: #111;
+  }
+
+  /* Certificate of Translation Accuracy Box */
+  .cert-box {
+    border: 1.5px solid #006363;
+    padding: 5px 8px;
+    margin-top: 4px;
+    background: #fafcfc;
+  }
+
+  .cert-box-title {
+    font-size: 10px;
+    font-weight: bold;
+    text-align: center;
+    letter-spacing: 1px;
+    color: #006363;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+    text-decoration: underline;
+  }
+
+  .cert-box p {
+    font-size: 8.5px;
+    line-height: 1.25;
+    margin: 1px 0 2px 0;
+    text-align: justify;
+  }
+
+  .cert-sign-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 3px;
+    font-size: 8.5px;
+    font-weight: 600;
+  }
+
+  /* Clean Corporate Footer */
+  .corporate-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1.5px solid #006363;
+    padding-top: 3px;
+    margin-top: 4px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 8px;
+    font-weight: bold;
+    color: #333;
+  }
+
+  .corporate-footer .links-group {
+    display: flex;
+    gap: 16px;
+  }
+
+  .footer-icon-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #006363;
+    text-decoration: none;
+  }
+
+  .footer-icon-link svg {
+    width: 11px !important;
+    height: 11px !important;
+    max-width: 11px;
+    max-height: 11px;
+    vertical-align: middle;
+    flex-shrink: 0;
+  }
+
+  /* Editable cues */
+  [contenteditable="true"] {
+    outline: none;
+    transition: background-color 0.15s ease;
+  }
+
+  [contenteditable="true"]:hover {
+    background-color: #fff9e6;
+  }
+
+  [contenteditable="true"]:focus {
+    background-color: #fff3cd;
+    box-shadow: 0 0 2px #ffc107;
+  }
+
+  @media print {
+    body {
+      background-color: #fff !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+
+    .control-bar {
+      display: none !important;
+    }
+
+    .page-container {
+      width: 210mm !important;
+      height: 297mm !important;
+      min-height: 297mm !important;
+      max-height: 297mm !important;
+      box-shadow: none !important;
+      margin: 0 !important;
+      padding: 8mm 12mm 9mm 12mm !important;
+      page-break-after: avoid !important;
+      break-after: avoid !important;
+      overflow: hidden !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="control-bar">
+  <div class="control-title-box">
+    <span class="template-badge">NADRA CRMS Standard</span>
+    <span class="control-title">Divorce Certificate True Translation</span>
+  </div>
+  <button class="btn-print" onclick="window.print()"><svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Browser Print Dialog</button>
+</div>
+
+<div class="page-container">
+  <div class="ornamental-border">
+
+    <!-- Header -->
+    <div class="corporate-header">
+      <div class="brand-left">
+        <img src="/assets/images/RahvanaLogo.png" alt="Rahvana Logo" width="100" height="40">
+      </div>
+      <div class="header-right">
+        <div class="certified-tag">Certified English Translation</div>
+        <div>Reference: <strong>[RAHVANA-ORDER-REF-NO]</strong></div>
+        <div>Support: <strong>support@rahvana.com</strong></div>
+      </div>
+    </div>
+
+    <!-- Gold Badge -->
+    <div class="badge-container">
+      <div class="true-translation-badge" contenteditable="true">TRUE TRANSLATION</div>
+    </div>
+
+    <!-- Headings -->
+    <div class="header-section">
+      <div class="lang-title" contenteditable="true">CERTIFIED TRANSLATION OF DIVORCE REGISTRATION CERTIFICATE (FROM URDU)</div>
+      <div class="sub-title" contenteditable="true">LOCAL GOVERNMENT PAKISTAN (NADRA CRMS)</div>
+      <div class="main-heading" contenteditable="true">DIVORCE REGISTRATION CERTIFICATE</div>
+    </div>
+
+    <!-- Meta Grid -->
+    <div class="meta-grid">
+      <div>Tracking Id: <span contenteditable="true"><strong>[TRACKING-ID-NUMBER]</strong></span></div>
+      <div>CRMS No: <span contenteditable="true"><strong>[CRMS-REGISTRATION-NO]</strong></span></div>
+      <div>Mode of Divorce: <span contenteditable="true"><strong>Talaq / Khula</strong></span></div>
+      <div>Registration Office / UC: <span contenteditable="true"><strong>[UC-CHAKRA-GOTH-35]</strong></span></div>
+    </div>
+
+    <!-- 1. Divorcer's Details -->
+    <table class="form-table">
+      <thead>
+        <tr>
+          <th colspan="4" class="section-th">1. Divorcer's Details (طلاق دہندہ کے کوائف)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="label-cell">Name:</td>
+          <td class="value-cell" contenteditable="true"><strong>[DIVORCER-FULL-NAME]</strong></td>
+          <td class="label-cell">Nationality:</td>
+          <td class="value-cell" contenteditable="true">Pakistani</td>
+        </tr>
+        <tr>
+          <td class="label-cell">CNIC No:</td>
+          <td class="value-cell" contenteditable="true"><strong>[DIVORCER-CNIC-NUMBER]</strong></td>
+          <td class="label-cell">Religion:</td>
+          <td class="value-cell" contenteditable="true">Islam</td>
+        </tr>
+        <tr>
+          <td class="label-cell">Father's Name:</td>
+          <td class="value-cell" contenteditable="true"><strong>[DIVORCER-FATHER-NAME]</strong></td>
+          <td class="label-cell">Father's CNIC No:</td>
+          <td class="value-cell" contenteditable="true">[FATHER-CNIC-OR-NIL]</td>
+        </tr>
+        <tr>
+          <td class="label-cell">Address:</td>
+          <td class="value-cell" colspan="3" contenteditable="true">[DIVORCER-RESIDENTIAL-ADDRESS]</td>
+        </tr>
+        <tr>
+          <td class="label-cell">Tehsil:</td>
+          <td class="value-cell" contenteditable="true">D.I. Khan / Karachi East</td>
+          <td class="label-cell">District:</td>
+          <td class="value-cell" contenteditable="true">D.I. Khan / Karachi East</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- 2. Divorcee's Details -->
+    <table class="form-table">
+      <thead>
+        <tr>
+          <th colspan="4" class="section-th">2. Divorcee's Details (مطلقہ کے کوائف)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="label-cell">Name:</td>
+          <td class="value-cell" contenteditable="true"><strong>[DIVORCEE-FULL-NAME]</strong></td>
+          <td class="label-cell">Nationality:</td>
+          <td class="value-cell" contenteditable="true">Pakistani</td>
+        </tr>
+        <tr>
+          <td class="label-cell">CNIC No:</td>
+          <td class="value-cell" contenteditable="true"><strong>[DIVORCEE-CNIC-NUMBER]</strong></td>
+          <td class="label-cell">Religion:</td>
+          <td class="value-cell" contenteditable="true">Islam</td>
+        </tr>
+        <tr>
+          <td class="label-cell">Father's Name:</td>
+          <td class="value-cell" contenteditable="true"><strong>[DIVORCEE-FATHER-NAME]</strong></td>
+          <td class="label-cell">Father's CNIC No:</td>
+          <td class="value-cell" contenteditable="true">[FATHER-CNIC-OR-NIL]</td>
+        </tr>
+        <tr>
+          <td class="label-cell">Address:</td>
+          <td class="value-cell" colspan="3" contenteditable="true">[DIVORCEE-RESIDENTIAL-ADDRESS]</td>
+        </tr>
+        <tr>
+          <td class="label-cell">Tehsil:</td>
+          <td class="value-cell" contenteditable="true">Karachi East</td>
+          <td class="label-cell">District:</td>
+          <td class="value-cell" contenteditable="true">Karachi East</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- 3. Divorce Effectiveness & Registration Details -->
+    <table class="form-table">
+      <thead>
+        <tr>
+          <th colspan="4" class="section-th">3. Legal Statutory Proceedings (مجاز برائے عطائے طلاق اور کارروائی کے کوائف)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="label-cell">Authority Granting Divorce:</td>
+          <td class="value-cell" colspan="3" contenteditable="true"><strong>[ARBITRATION-COUNCIL-UNION-COMMITTEE]</strong></td>
+        </tr>
+        <tr>
+          <td class="label-cell">Date of Notice for Divorce:</td>
+          <td class="value-cell" contenteditable="true"><strong>[DATE-OF-NOTICE-E-G-21-OCT-2021]</strong></td>
+          <td class="label-cell">Date of Failure of Conciliation:</td>
+          <td class="value-cell" contenteditable="true"><strong>[DATE-OF-FAILURE-E-G-21-OCT-2021]</strong></td>
+        </tr>
+        <tr>
+          <td class="label-cell">Date of Effectiveness of Divorce:</td>
+          <td class="value-cell" colspan="3" contenteditable="true">
+            <strong>[DATE-OF-EFFECTIVENESS-E-G-21-OCT-2021]</strong>
+            <span style="font-size: 8.5px; color: #555; margin-left: 6px;">(Under Section 7 of Muslim Family Laws Ordinance, 1961)</span>
+          </td>
+        </tr>
+        <tr>
+          <td class="label-cell">Entry Date:</td>
+          <td class="value-cell" contenteditable="true">[ENTRY-DATE-E-G-26-OCT-2021]</td>
+          <td class="label-cell">Issue Date:</td>
+          <td class="value-cell" contenteditable="true">[ISSUE-DATE-E-G-26-OCT-2021]</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Attestation Table -->
+    <table class="signature-table">
+      <tbody>
+        <tr>
+          <td style="width: 50%;">
+            <span class="sign-label">Signature of Secretary Union Committee:</span>
+            <span class="sign-line" contenteditable="true">Signed &amp; Stamped</span>
+            <div style="font-size: 8px; color: #555; margin-top: 2px;">Union Committee No. 35, Chakra Goth, Korangi, Karachi</div>
+          </td>
+          <td style="width: 50%;">
+            <span class="sign-label">Official Seal of Union Committee / Council:</span>
+            <span class="sign-line" contenteditable="true">Official Seal Affixed</span>
+            <div style="font-size: 8px; color: #555; margin-top: 2px;">Government of Sindh / NADRA CRMS Verified</div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Certificate of Translation Accuracy -->
+    <div class="cert-box">
+      <div class="cert-box-title" contenteditable="true">CERTIFICATE OF TRANSLATION ACCURACY</div>
+      <p contenteditable="true">
+        I, <strong contenteditable="true">[TRANSLATOR-FULL-NAME]</strong>, certify that I am competent to translate from Urdu to English, and that the above document is a true, complete, and accurate English translation of the attached <strong>Divorce Registration Certificate (NADRA CRMS)</strong> originally issued in Urdu to the best of my knowledge and ability.
+      </p>
+      <div class="cert-sign-row">
+        <div>
+          Translator Name: <strong contenteditable="true">[TRANSLATOR-FULL-NAME]</strong><br>
+          Job Reference No: <span contenteditable="true"><strong>[RAHVANA-JOB-REF-ID]</strong></span><br>
+          Date: <span contenteditable="true">[DATE-OF-TRANSLATION]</span>
+        </div>
+        <div style="text-align: right;">
+          Translator Signature: <span class="sign-line" style="min-width: 120px;" contenteditable="true">Signed</span><br>
+          Verification ID: <strong contenteditable="true">[RAHVANA-VERIFICATION-TOKEN]</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Corporate Footer -->
+    <div class="corporate-footer">
+      <div>Certified Document Translation • Divorce Certificate</div>
+      <div class="links-group">
+        <a class="footer-icon-link" href="mailto:support@rahvana.com">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#006363" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+            <polyline points="22,6 12,13 2,6"></polyline>
+          </svg>
+          <span>support@rahvana.com</span>
+        </a>
+        <a class="footer-icon-link" href="https://www.rahvana.com" target="_blank">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#006363" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+          <span>www.rahvana.com</span>
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

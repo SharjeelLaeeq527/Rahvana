@@ -56,10 +56,10 @@ const nextConfig = {
         // Apply to ALL routes
         source: "/(.*)",
         headers: [
-          // Prevent your site from being embedded in iframes (clickjacking protection)
+          // Allow only Same origins
           {
             key: "X-Frame-Options",
-            value: "DENY",
+            value: "SAMEORIGIN",
           },
           // Prevent MIME-type sniffing attacks
           {
@@ -116,7 +116,7 @@ const nextConfig = {
               "object-src 'none'",
               "base-uri 'self'",
               "form-action 'self'",
-              "frame-ancestors 'none'",
+              "frame-ancestors 'self' http://localhost:3000 https://rahvana-test.vercel.app https://rahvana.com",
             ].join("; "),
           },
         ],
@@ -144,7 +144,7 @@ const nextConfig = {
               "object-src 'none'",
               "base-uri 'self'",
               "form-action 'self'",
-              "frame-ancestors 'self'",
+              "frame-ancestors 'self' http://localhost:3000 https://rahvana-test.vercel.app https://rahvana.com",
             ].join("; "),
           },
         ],
