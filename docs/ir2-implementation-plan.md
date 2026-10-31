@@ -1,7 +1,8 @@
 # IR-2 (Child of U.S. Citizen) Journey - Implementation Plan
 
-**Status**: Phase 0a DONE (2026-10-30). Phase 0b not started.
-**Date**: 2026-10-28 (updated 2026-10-30)
+**Status**: Phase 0a DONE (2026-10-30, commit bf849244). Phase 0b DONE (2026-10-31, uncommitted).
+Phase 1 not started.
+**Date**: 2026-10-28 (updated 2026-10-31)
 
 > **Phase 0a result.** Stripe mapping (`journeyTypeForVisaCategory` -> `IR1 | IR2 | IR5`),
 > checkout `CATEGORY_NOT_AVAILABLE` gate (`IR2_ENABLED`), shared config resolver
@@ -11,6 +12,19 @@
 > IR-2 / CR-2 journeys, candidates or payments; production not checked.
 > `docs/PROJECT_KNOWLEDGE.md` still needs the Stripe / config-resolver note (held back because
 > that file has unrelated uncommitted edits).
+>
+> **Phase 0b result.** `ir2-journey` route (flag redirect, slug maps, protected route,
+> `getJourneyHrefByType` for IR-2 / CR-2), Add Candidate "Child" hidden while `IR2_ENABLED` is off,
+> legal-review notice in `RoadmapLayoutEngine` (renders only when a JSON has an unapproved
+> `content_review`). `ir-2.json` is now a chapters-schema skeleton with the IR-5 step keys: 19
+> steps reused verbatim, 10 `who`-only, 18 set to `step_type: "informational"` with the original
+> kept in `pending_step_type` (their parent-specific `tool_data` / `quest_data` / `guide_data` /
+> `document_items` were removed and are rebuilt in Phase 1). `step_1_3` (filing chooser) and
+> `step_2_10` (DQ recorder) keep working minus one IR-5 note each. Old draft kept at
+> `docs/ir2-content-draft.json`. Tests: `__tests__/ir2/ir2-skeleton.test.ts`,
+> `__tests__/ir2/no-ir1-fallback.test.ts` (5 `it.todo` = open fallbacks F4-F7, F12).
+> For the legal reviewer: draft line in `step_1_1` ("must remain ... under 21 at the time of visa
+> issuance") may conflict with the CSPA age-freeze assumption in section 3.
 **Branch**: `hashir`
 **Goal**: Ship IR-2 as a full live journey on the same architecture IR-5 uses (chapters-schema JSON
 -> `RoadmapLayoutEngine`, multi-candidate, per-journey tier, case strength, vault, reminders,

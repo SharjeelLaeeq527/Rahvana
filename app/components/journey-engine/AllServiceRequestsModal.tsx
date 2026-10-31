@@ -97,7 +97,7 @@ export function AllServiceRequestsModal({
   const router = useRouter();
   const { candidates, activeCandidateId, setActiveCandidateId } = useCandidate();
   const { journeyCategory, journeySlug, candidateId: envCandidateId } = useJourneyEnvironment();
-  const { items, loading, error } = useServiceRequestDirectory(isOpen);
+  const { items, loading, error } = useServiceRequestDirectory(isOpen, { excludeAccountWide: true });
 
   const [filter, setFilter] = useState<ServiceKind | "all">("all");
   const [selected, setSelected] = useState<ServiceRequestItem | null>(null);
@@ -137,10 +137,11 @@ export function AllServiceRequestsModal({
     [journeyCategory, journeySlug, activeCandidateId, envCandidateId]
   );
 
-  const filtered = useMemo(
-    () => (filter === "all" ? items : items.filter((i) => i.service === filter)),
-    [items, filter]
-  );
+  const filtered = useMemo(() => {
+    // When accessed for the journey, account-wide requests are excluded.
+    const nonAccount = items.filter((i) => i.context.kind !== "account");
+    return filter === "all" ? nonAccount : nonAccount.filter((i) => i.service === filter);
+  }, [items, filter]);
 
   // Group by where each request lives; the journey being viewed comes first.
   const groups = useMemo(() => {

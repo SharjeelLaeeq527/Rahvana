@@ -83,6 +83,10 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
     [data.journey_type]
   );
 
+  // Legal-review state of the journey's content (`content_review` in its JSON, e.g. ir-2.json).
+  const reviewStatus = (data as { content_review?: { status?: string } }).content_review?.status;
+  const contentUnderReview = !!reviewStatus && reviewStatus !== "approved";
+
   const { showToast } = useToast();
   const { user } = useAuth();
 
@@ -363,6 +367,18 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
           )}
         </div>
       </nav>
+
+      {/* Journeys whose guidance is still in legal review (ir-2.json `content_review`) say so.
+          Journeys without the field (IR-5 today) render nothing here. */}
+      {contentUnderReview && (
+        <div
+          role="note"
+          className="border-b border-amber-200 bg-amber-50 px-5 py-2 text-center text-[12px] font-medium text-amber-900"
+        >
+          This journey&apos;s guidance is being reviewed by a U.S. immigration attorney and may
+          change. Check the official USCIS and Department of State sources before you act on it.
+        </div>
+      )}
 
       {/* ── Main Content ── */}
       <main className="roadmap-main">

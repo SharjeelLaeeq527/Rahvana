@@ -50,6 +50,7 @@ export async function updateSession(request: NextRequest) {
     "/visa-eligibility",
     "/visa-category/ir1-journey",
     "/visa-category/ir5-journey",
+    "/visa-category/ir2-journey",
     "/interview-prep",
     "/interview-prep/my-sessions",
     "/document-translation",

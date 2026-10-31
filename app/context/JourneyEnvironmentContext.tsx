@@ -39,10 +39,12 @@ const STANDALONE_DEFAULTS: JourneyEnvironmentContextType = {
 const SLUG_TO_DATA_KEY: Record<string, string> = {
   "ir1-journey": "ir-1",
   "ir5-journey": "ir-5",
+  "ir2-journey": "ir-2",
   "f1": "f-1",
   "germany-student": "germany-student-journey",
   "ir-1": "ir-1",
   "ir-5": "ir-5",
+  "ir-2": "ir-2",
 };
 
 function resolveDataKey(slug: string): string {

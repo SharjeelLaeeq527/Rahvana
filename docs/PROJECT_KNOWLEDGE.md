@@ -273,11 +273,10 @@ where-resolution lives in `lib/services/serviceRequestDirectory.ts` (tested in
 `__tests__/service-request-directory.test.ts`) because each table tags origin differently:
 Medical/PCC use `source` + `journey_slug` (authoritative category) + a candidate tag
 (`candidate_id` / `metadata.candidate_id` / `[Candidate: x]` in `admin_notes`); Translation has only
-`metadata.candidate_id` (category comes from that candidate's `visaCategory`); Consultation is
-still shown account-wide under its own `visa_category` by the directory resolver, even though
-`consultation_bookings` now carries `source` / `journey_slug` / `candidate_id` (`20261006`, see
-10) and `services-status` already filters consultations by them for `scope=journey` and by
-candidate. Untagged legacy rows resolve to `candidate-1`, matching `services-status`.
+`metadata.candidate_id` (category comes from that candidate's `visaCategory`); Consultation uses
+`source` + `journey_slug` when journey-scoped (with candidate from `candidate_id` / `admin_notes`).
+When accessed for the journey, account-wide requests (`kind: 'account'`) are excluded by default.
+Untagged legacy rows resolve to `candidate-1`, matching `services-status`.
 
 **Journey-embedded services (Medical / PCC / Consultation).** All three are tier-gated services
 launched from the Services folder or from their roadmap step card, and they share one pattern:

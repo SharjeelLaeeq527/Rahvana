@@ -8,12 +8,21 @@ import {
   type ServicesStatusPayload,
 } from "@/lib/services/serviceRequestDirectory";
 
+export interface UseServiceRequestDirectoryOptions {
+  /** When true (default), account-wide requests are omitted when accessed for the journey. */
+  excludeAccountWide?: boolean;
+}
+
 /**
- * Every service request on the account across all journeys/candidates
- * (services-status?scope=all), normalized + labeled with where it lives.
+ * Service requests across journeys/candidates (services-status?scope=all),
+ * normalized + labeled with where it lives. Account-wide requests are excluded
+ * by default when accessed for the journey.
  * Fetches only while `enabled` (the directory modal is open).
  */
-export function useServiceRequestDirectory(enabled: boolean): {
+export function useServiceRequestDirectory(
+  enabled: boolean,
+  options?: UseServiceRequestDirectoryOptions
+): {
   items: ServiceRequestItem[];
   loading: boolean;
   error: boolean;
@@ -22,6 +31,7 @@ export function useServiceRequestDirectory(enabled: boolean): {
   const [payload, setPayload] = useState<ServicesStatusPayload | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
+  const excludeAccountWide = options?.excludeAccountWide ?? true;
 
   useEffect(() => {
     if (!enabled) return;
@@ -47,8 +57,11 @@ export function useServiceRequestDirectory(enabled: boolean): {
   }, [enabled]);
 
   const items = useMemo(
-    () => (payload ? buildServiceRequestDirectory(payload, candidates) : []),
-    [payload, candidates]
+    () =>
+      payload
+        ? buildServiceRequestDirectory(payload, candidates, { excludeAccountWide })
+        : [],
+    [payload, candidates, excludeAccountWide]
   );
 
   return { items, loading, error };

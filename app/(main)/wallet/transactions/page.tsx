@@ -20,6 +20,7 @@ import {
   SlidersHorizontal,
   Wallet,
   Wrench,
+  Info,
 } from "lucide-react";
 import { Loader } from "@/components/ui/spinner";
 import Pagination from "@/components/ui/pagination";
@@ -401,7 +402,7 @@ export default function WalletTransactionsPage() {
               </div>
               <p className="mt-1 text-[13px] text-slate-500">
                 Complete audit trail of top-ups, tool &amp; guide unlocks, booked services, and
-                refunds. Hover a filter to see exactly what it covers.
+                refunds.
               </p>
             </div>
             <button
@@ -530,7 +531,6 @@ export default function WalletTransactionsPage() {
                         "Transaction Details",
                         "Date & Time",
                         "Category",
-                        "Reference ID",
                         "Status",
                         "Amount",
                         "",
@@ -587,22 +587,7 @@ export default function WalletTransactionsPage() {
                               {category.label}
                             </span>
                           </td>
-                          <td className="px-4 py-3.5 whitespace-nowrap">
-                            <button
-                              type="button"
-                              onClick={() => void copyReference(t)}
-                              title="Copy full reference"
-                              className="inline-flex items-center gap-1.5 rounded-lg px-1.5 py-0.5 font-mono text-[12px] font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700"
-                            >
-                              {shortRef(t.id)}
-                              {copiedId === t.id ? (
-                                <Check size={12} className="text-emerald-600" aria-hidden="true" />
-                              ) : (
-                                <Copy size={12} aria-hidden="true" />
-                              )}
-                            </button>
-                          </td>
-                          <td className="px-4 py-3.5">
+                  <td className="px-4 py-3.5">
                             <span
                               className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold whitespace-nowrap ${status.pill}`}
                             >
@@ -615,12 +600,6 @@ export default function WalletTransactionsPage() {
                             >
                               {formatSignedCredits(t.amount)}
                             </span>
-                            {formatUsd(t.amount_usd) && (
-                              <span className="ml-1.5 text-[11.5px] font-medium text-slate-400 tabular-nums">
-                                ({debit ? "-" : "+"}
-                                {formatUsd(t.amount_usd)})
-                              </span>
-                            )}
                           </td>
                           {/* Action: full record in a modal */}
                           <td className="px-4 py-3.5 text-right">
@@ -631,7 +610,7 @@ export default function WalletTransactionsPage() {
                               title="View transaction details"
                               className="hover:border-rahvana-primary/40 hover:bg-rahvana-primary-pale hover:text-rahvana-primary-dark inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-sm transition-colors"
                             >
-                              <ExternalLink size={13.5} strokeWidth={2.25} aria-hidden="true" />
+                              <Info size={15} strokeWidth={2.25} aria-hidden="true" />
                             </button>
                           </td>
                         </tr>
@@ -661,7 +640,7 @@ export default function WalletTransactionsPage() {
 
         <p className="mt-4 text-center text-[11.5px] text-slate-400">
           Journey tools on your subscription plan never spend wallet credits. Every line here is a
-          standalone purchase or top-up, recorded server-side.
+          standalone purchase or top-up.
         </p>
       </div>
 

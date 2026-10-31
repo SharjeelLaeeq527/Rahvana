@@ -9,12 +9,14 @@ import { isJourneySlug } from "../data/journeys";
 // journey. Other journeys remain dynamic since they are rarely used.
 import ir1Data from "@/data/visa-category/ir-1.json";
 import ir5Data from "@/data/visa-category/ir-5.json";
+import ir2Data from "@/data/visa-category/ir-2.json";
 import f1Data from "@/data/visa-category/f-1.json";
 import germanyData from "@/data/visa-category/germany-student-journey.json";
 
 const JOURNEY_DATA_MAP: Record<string, any> = {
   "ir-1": ir1Data,
   "ir-5": ir5Data,
+  "ir-2": ir2Data,
   "f-1": f1Data,
   "germany-student-journey": germanyData,
 };
@@ -23,6 +25,8 @@ function resolveJourneyData(visaJourney: string): any | null {
   if (!visaJourney) return null;
   const norm = String(visaJourney).toLowerCase().replace(/[^a-z0-9]/g, "");
   if (norm.startsWith("ir5")) return ir5Data;
+  // CR-2 shares the IR-2 journey (decision D1).
+  if (norm.startsWith("ir2") || norm.startsWith("cr2")) return ir2Data;
   if (norm.startsWith("ir1") || norm.startsWith("cr1")) return ir1Data;
   if (norm.startsWith("f1")) return f1Data;
   if (norm.includes("germany")) return germanyData;
@@ -32,7 +36,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import { useWizard, type WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { IR5_ENABLED } from "@/lib/feature-flags";
+import { IR2_ENABLED, IR5_ENABLED } from "@/lib/feature-flags";
 import { motion } from "framer-motion";
 import {
   ChevronDown,
@@ -115,7 +119,21 @@ export default function IR1JourneyPage() {
   // link cannot open IR-5. Hooks are declared before any early return to keep a
   // stable hook order across renders.
   const router = useRouter();
+
+  // Strip candidateId / journeyId from the URL once they've been consumed so
+  // the address bar shows a clean path and bookmarks / shares don't leak IDs.
+  useEffect(() => {
+    if (!candidateIdFromUrl && !journeyDbIdFromUrl) return;
+    const url = new URL(window.location.href);
+    url.searchParams.delete("candidateId");
+    url.searchParams.delete("journeyId");
+    router.replace(url.pathname + (url.search || ""), { scroll: false });
+  }, [candidateIdFromUrl, journeyDbIdFromUrl, router]);
+
   const isIr5Route = visaJourneyParam === "ir-5" || visaJourneyParam === "ir5-journey";
+  // IR-2 is gated the same way (lib/feature-flags), covering both slugs.
+  const isIr2Route = visaJourneyParam === "ir-2" || visaJourneyParam === "ir2-journey";
+  const isHiddenRoute = (isIr5Route && !IR5_ENABLED) || (isIr2Route && !IR2_ENABLED);
 
   // The journey URL is AUTHORITATIVE for the category (PROJECT_KNOWLEDGE 4.7: "URL base is
   // authoritative ... deliberately NOT candidate-authoritative"). We deliberately do NOT
@@ -127,13 +145,13 @@ export default function IR1JourneyPage() {
   // AddCandidateModal. Keeping the URL authoritative here removes the bounce.
 
   useEffect(() => {
-    if (isIr5Route && !IR5_ENABLED) {
+    if (isHiddenRoute) {
       router.replace("/visa-category/ir1-journey");
       // router.replace("/visa-category");
     }
-  }, [isIr5Route, router]);
+  }, [isHiddenRoute, router]);
 
-  if (isIr5Route && !IR5_ENABLED) {
+  if (isHiddenRoute) {
     return null;
   }
 
@@ -144,6 +162,7 @@ export default function IR1JourneyPage() {
   const journeyMapping: Record<string, string> = {
     "ir1-journey": "ir-1",
     "ir5-journey": "ir-5",
+    "ir2-journey": "ir-2",
     f1: "f-1",
     "germany-student": "germany-student-journey",
   };

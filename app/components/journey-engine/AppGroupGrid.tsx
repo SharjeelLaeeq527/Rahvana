@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   Wrench,
   Camera,
@@ -32,10 +32,16 @@ import {
   FileUp,
 } from "lucide-react";
 import { AppGroup } from "@/types/app-groups";
-import { JOURNEY_APP_GROUPS, getOverlayPageRoute } from "@/lib/constants/journey-app-groups";
+import {
+  JOURNEY_APP_GROUPS,
+  getJourneyAppGroups,
+  getOverlayPageRoute,
+} from "@/lib/constants/journey-app-groups";
 import { AppGroupModal } from "./AppGroupModal";
 import { preloadGuidePage } from "@/app/components/shared/GuidePageOverlay";
 import { useCandidate } from "@/app/context/CandidateContext";
+import { useJourneyEnvironment } from "@/app/context/JourneyEnvironmentContext";
+import { getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
 
 interface AppGroupGridProps {
   onLaunchTool: (componentKey: string) => void;
@@ -77,12 +83,22 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
 
 export function AppGroupGrid({
   onLaunchTool,
-  groups = JOURNEY_APP_GROUPS,
+  groups,
   className = "",
   state,
 }: AppGroupGridProps) {
   const [selectedGroup, setSelectedGroup] = useState<AppGroup | null>(null);
-  const { activeCandidateId } = useCandidate();
+  const { activeCandidateId, activeCandidate } = useCandidate();
+  const { journeyCategory } = useJourneyEnvironment();
+
+  const resolvedCategory =
+    journeyCategory ||
+    (activeCandidate?.visaCategory ? getBaseVisaCategory(activeCandidate.visaCategory) : null);
+
+  const effectiveGroups = useMemo(() => {
+    if (groups) return groups;
+    return getJourneyAppGroups(resolvedCategory);
+  }, [groups, resolvedCategory]);
 
   // Warming starts on hover, before the folder is even open, so a guide clicked
   // straight afterwards still has its chunk and its saved progress ready.
@@ -107,7 +123,8 @@ export function AppGroupGrid({
         </div>
 
         <div className="flex items-start gap-5 sm:gap-6 ms-auto">
-          {groups.map((group) => {
+          {effectiveGroups.map((group) => {
+
             // Folder thumbnail: the first four item icons, like an app-group on a phone.
             const previewItems = group.items.slice(0, 4);
 
