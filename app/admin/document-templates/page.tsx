@@ -24,7 +24,7 @@ function templateSrc(file: string) {
 }
 
 export default function DocumentTemplatesPage() {
-  const { user, isAdmin, isLoading: authLoading } = useAuth();
+  const { user, isAdmin, isLoading: authLoading, isAdminLoading } = useAuth();
   const router = useRouter();
 
   const [selectedKey, setSelectedKey] = useState<string>("birth-certificate");
@@ -56,7 +56,7 @@ export default function DocumentTemplatesPage() {
     router.replace(`/admin/document-templates?template=${key}`, { scroll: false });
   };
 
-  if (authLoading) {
+  if (authLoading || isAdminLoading) {
     return (
       <div className="bg-background flex min-h-screen items-center justify-center p-6">
         <Loader size="md" text="Checking authorization..." />
