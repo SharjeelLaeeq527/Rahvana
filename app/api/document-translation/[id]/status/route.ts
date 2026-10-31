@@ -57,6 +57,5 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   } catch (error) {
     console.error("Get document error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
-    return NextResponse.json({ error: msg(E.AUTH_UNEXPECTED_ERROR) }, { status: 500 });
   }
 }
