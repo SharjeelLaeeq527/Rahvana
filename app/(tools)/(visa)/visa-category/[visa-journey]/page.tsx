@@ -115,6 +115,17 @@ export default function IR1JourneyPage() {
   // link cannot open IR-5. Hooks are declared before any early return to keep a
   // stable hook order across renders.
   const router = useRouter();
+
+  // Strip candidateId / journeyId from the URL once they've been consumed so
+  // the address bar shows a clean path and bookmarks / shares don't leak IDs.
+  useEffect(() => {
+    if (!candidateIdFromUrl && !journeyDbIdFromUrl) return;
+    const url = new URL(window.location.href);
+    url.searchParams.delete("candidateId");
+    url.searchParams.delete("journeyId");
+    router.replace(url.pathname + (url.search || ""), { scroll: false });
+  }, [candidateIdFromUrl, journeyDbIdFromUrl, router]);
+
   const isIr5Route = visaJourneyParam === "ir-5" || visaJourneyParam === "ir5-journey";
 
   // The journey URL is AUTHORITATIVE for the category (PROJECT_KNOWLEDGE 4.7: "URL base is

@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Globe,
-  TrendingUp,
   FileText,
   Calendar,
   MessageSquare,
@@ -18,7 +17,6 @@ import {
   Star,
   Trash2,
 } from "lucide-react";
-import Link from "next/link";
 import { Loader } from "@/components/ui/spinner";
 
 import TranslationQueueTable from "./components/translation-queue/TranslationQueueTable";
@@ -34,6 +32,7 @@ import BlogCommentsTable from "./components/blog-comments/BlogCommentsTable";
 import { FeatureAnnouncementModal } from "./components/feature-announcement/FeatureAnnouncementModal";
 import { BlogAnnouncementModal } from "./components/blog-announcement/BlogAnnouncementModal";
 import AccountDeletionFeedbackTable from "./components/account-deletion-feedback/AccountDeletionFeedbackTable";
+import { AdminProfileTray } from "./components/AdminProfileTray";
 
 export default function AdminPanel() {
   const { user, isAdmin, isLoading: authLoading, signOut } = useAuth();
@@ -107,35 +106,13 @@ export default function AdminPanel() {
                   timeZoneName: "short",
                 })}
               </span>
-              <span className="text-muted-foreground text-sm">Admin: {user?.email}</span>
-              <Link
-                href="/admin/dashboard"
-                className="flex items-center gap-1.5 rounded-lg bg-teal-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-teal-700"
-              >
-                <TrendingUp className="h-4 w-4" />
-                View Analytics
-              </Link>
-              <button
-                onClick={() => setOpenFeatureModal(true)}
-                className="rounded-lg border-2 border-teal-600 p-1 text-teal-600 hover:bg-teal-100 hover:text-teal-700"
-              >
-                Feature Announcement
-              </button>
-              <button
-                onClick={() => setOpenBlogModal(true)}
-                className="rounded-lg bg-teal-600 px-2.5 py-1 text-sm font-medium text-white transition-colors hover:bg-teal-700"
-              >
-                Blog Announcement
-              </button>
-              <Button
-                onClick={handleLogout}
-                variant="outline"
-                size="sm"
-                className="border-red-600 text-red-600 hover:bg-red-50 hover:text-red-700"
-              >
-                Logout
-              </Button>
               <AdminNotificationBell adminUserId={user.id} />
+              <AdminProfileTray
+                userEmail={user?.email}
+                onOpenFeatureModal={() => setOpenFeatureModal(true)}
+                onOpenBlogModal={() => setOpenBlogModal(true)}
+                onLogout={handleLogout}
+              />
             </div>
           </div>
         </div>

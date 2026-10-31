@@ -340,6 +340,14 @@ function extractFormCode(href: string | null): string | null {
                   formCode={detectedFormCode}
                   onClose={onClose}
                   isEmbedded={true}
+                  mode="journey"
+                  journeyTier={effectivePlan.tier}
+                  journeyContext={{
+                    journeySlug: "journey",
+                    journeyCategory: "IR-5",
+                    candidateId: "candidate-1",
+                    subscriptionTier: effectivePlan.tier,
+                  }}
                 />
               </main>
             </PlanContext.Provider>
