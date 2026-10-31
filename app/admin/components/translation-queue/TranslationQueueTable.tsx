@@ -31,12 +31,7 @@ import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 
 // Translation Queue Types
 type TranslationStatus =
-  | "PENDING"
-  | "IN_REVIEW"
-  | "TRANSLATED"
-  | "USER_CONFIRMED"
-  | "CHANGES_REQUESTED"
-  | "VERIFIED";
+  "PENDING" | "IN_REVIEW" | "TRANSLATED" | "USER_CONFIRMED" | "CHANGES_REQUESTED" | "VERIFIED";
 
 interface TranslationRequest {
   id: string;
@@ -48,6 +43,24 @@ interface TranslationRequest {
   version: number;
   original_filename: string;
   translated_filename?: string;
+}
+
+// Full row + admin-signed file URLs from GET /api/document-translation/admin/[id]
+interface TranslationDetail extends TranslationRequest {
+  updated_at?: string;
+  payment_status?: string | null;
+  original_file_size?: number;
+  original_mime_type?: string;
+  translated_file_size?: number | null;
+  translated_mime_type?: string | null;
+  translated_uploaded_at?: string | null;
+  user_confirmed_at?: string | null;
+  admin_verified_at?: string | null;
+  user_notes?: string | null;
+  admin_notes?: string | null;
+  rejection_reason?: string | null;
+  originalFileUrl?: string | null;
+  translatedFileUrl?: string | null;
 }
 
 // interface UploadModalProps {
@@ -74,6 +87,12 @@ export default function TranslationQueueTable() {
   const [verifyNotes, setVerifyNotes] = useState("");
   const [verifying, setVerifying] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  // Admin-side detail modal (replaces the old "View" jump to the user portal)
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [viewLoading, setViewLoading] = useState(false);
+  const [viewDetail, setViewDetail] = useState<TranslationDetail | null>(null);
+  const [viewError, setViewError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc"); // 'desc' for latest first, 'asc' for oldest first
 
@@ -189,6 +208,87 @@ export default function TranslationQueueTable() {
     setUploadModalOpen(true);
   };
 
+  // Admin-only detail endpoint (service role) — unlike the user-side /status
+  // route this can sign URLs for other users' files, so downloads work.
+  const fetchAdminDetail = async (requestId: string): Promise<TranslationDetail> => {
+    const response = await fetch(`/api/document-translation/admin/${requestId}`);
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error || "Failed to load document details");
+    }
+    return data as TranslationDetail;
+  };
+
+  const handleViewClick = async (requestId: string) => {
+    setViewDetail(null);
+    setViewError(null);
+    setViewLoading(true);
+    setViewModalOpen(true);
+    try {
+      setViewDetail(await fetchAdminDetail(requestId));
+    } catch (error: any) {
+      setViewError(error.message || "Failed to load document details");
+    } finally {
+      setViewLoading(false);
+    }
+  };
+
+  // "Preview Text" row action: opens the original document in a new tab
+  // (browser's inline PDF viewer) for reading.
+  const handlePreviewTextClick = async (requestId: string) => {
+    try {
+      const detail = await fetchAdminDetail(requestId);
+      if (detail.originalFileUrl) {
+        window.open(detail.originalFileUrl, "_blank");
+      } else {
+        console.error("No previewable original file for request:", requestId);
+        showToast(`${msg(E.VAULT_DOWNLOAD_FAILED)}`, "error", { duration: 3000 });
+      }
+    } catch (error: any) {
+      console.error("Error previewing document:", error);
+      showToast(error.message || `${msg(E.VAULT_DOWNLOAD_FAILED)}`, "error", { duration: 3000 });
+    }
+  };
+
+  // Force an actual file download (blob + <a download>) instead of letting
+  // the browser open the PDF inline in a new tab.
+  const forceDownload = async (url: string, filename?: string | null) => {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`Fetch failed with status ${response.status}`);
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = objectUrl;
+      anchor.download = filename || "document.pdf";
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(objectUrl);
+    } catch (error) {
+      console.error("Error downloading document:", error);
+      showToast(`${msg(E.VAULT_DOWNLOAD_FAILED)}`, "error", { duration: 3000 });
+    }
+  };
+
+  const formatDateTime = (dateString?: string | null) =>
+    dateString
+      ? new Date(dateString).toLocaleString("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      : "—";
+
+  const formatFileSize = (bytes?: number | null) => {
+    if (!bytes && bytes !== 0) return "—";
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
   const formatTranslationDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
@@ -199,16 +299,16 @@ export default function TranslationQueueTable() {
 
   return (
     <>
-      <Card className="max-w-6xl mx-auto mt-4">
+      <Card className="mx-auto mt-4 max-w-6xl">
         <CardHeader className="flex flex-row items-center justify-between">
           {/* Search Field - Left side */}
-          <div className="relative border border-gray-300 rounded-lg p-2">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <div className="relative rounded-lg border border-gray-300 p-2">
+            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
             <Input
               placeholder="Search by name or email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 w-80"
+              className="w-80 pl-10"
             />
           </div>
 
@@ -258,7 +358,7 @@ export default function TranslationQueueTable() {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="flex justify-center items-center h-64">
+            <div className="flex h-64 items-center justify-center">
               <Loader size="md" text="Loading translation queue..." />
             </div>
           ) : (
@@ -304,9 +404,7 @@ export default function TranslationQueueTable() {
                             className="cursor-pointer"
                             variant="outline"
                             size="sm"
-                            onClick={() =>
-                              window.open(`/document-translation/request/${request.id}`, "_blank")
-                            }
+                            onClick={() => handleViewClick(request.id)}
                           >
                             View
                           </Button>
@@ -314,32 +412,9 @@ export default function TranslationQueueTable() {
                             className="cursor-pointer"
                             variant="outline"
                             size="sm"
-                            onClick={async () => {
-                              try {
-                                // Get the document details to get the file URL
-                                const response = await fetch(
-                                  `/api/document-translation/${request.id}/status`
-                                );
-                                const data = await response.json();
-
-                                if (response.ok && data.originalFileUrl) {
-                                  // Open the original file URL in a new tab
-                                  window.open(data.originalFileUrl, "_blank");
-                                } else {
-                                  console.error("Error getting document URL:", data.error);
-                                  showToast(`${msg(E.VAULT_DOWNLOAD_FAILED)}`, "error", {
-                                    duration: 3000,
-                                  });
-                                }
-                              } catch (error) {
-                                console.error("Error downloading document:", error);
-                                showToast(`${msg(E.VAULT_DOWNLOAD_FAILED)}`, "error", {
-                                  duration: 3000,
-                                });
-                              }
-                            }}
+                            onClick={() => handlePreviewTextClick(request.id)}
                           >
-                            Download
+                            Preview
                           </Button>
                           <Button
                             className="cursor-pointer"
@@ -368,14 +443,14 @@ export default function TranslationQueueTable() {
                                   <DialogTitle>Verify Translation</DialogTitle>
                                 </DialogHeader>
                                 <div className="py-4">
-                                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                                  <label className="mb-2 block text-sm font-medium text-gray-700">
                                     Verification Notes (Optional)
                                   </label>
                                   <textarea
                                     value={verifyNotes}
                                     onChange={(e) => setVerifyNotes(e.target.value)}
                                     placeholder="Add any verification notes..."
-                                    className="w-full border border-gray-300 rounded-lg p-3 min-h-20 focus:ring-2 focus:ring-primary focus:border-transparent"
+                                    className="focus:ring-primary min-h-20 w-full rounded-lg border border-gray-300 p-3 focus:border-transparent focus:ring-2"
                                     maxLength={500}
                                   />
                                 </div>
@@ -387,7 +462,7 @@ export default function TranslationQueueTable() {
                                       setVerifyNotes("");
                                     }}
                                     disabled={verifying}
-                                    className="px-4 cursor-pointer"
+                                    className="cursor-pointer px-4"
                                   >
                                     Cancel
                                   </Button>
@@ -473,7 +548,7 @@ export default function TranslationQueueTable() {
                                       }
                                     }}
                                     disabled={verifying}
-                                    className="px-4 cursor-pointer bg-green-600 hover:bg-green-700"
+                                    className="cursor-pointer bg-green-600 px-4 hover:bg-green-700"
                                   >
                                     {verifying ? "Verifying..." : "Verify"}
                                   </Button>
@@ -491,7 +566,7 @@ export default function TranslationQueueTable() {
                   <TableFooter>
                     <TableRow>
                       <TableCell colSpan={6}>
-                        <div className="w-full flex justify-center py-4">
+                        <div className="flex w-full justify-center py-4">
                           <Pagination
                             currentPage={currentPage}
                             totalItems={filteredTranslationRequests.length}
@@ -510,7 +585,7 @@ export default function TranslationQueueTable() {
       </Card>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6 mt-8 max-w-6xl mx-auto">
+      <div className="mx-auto mt-8 mb-6 grid max-w-6xl grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-500">Total Requests</CardTitle>
@@ -553,6 +628,195 @@ export default function TranslationQueueTable() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Request Detail Modal — admin-side, replaces the user-portal navigation */}
+      <Dialog
+        open={viewModalOpen}
+        onOpenChange={(open) => {
+          setViewModalOpen(open);
+          if (!open) {
+            setViewDetail(null);
+            setViewError(null);
+          }
+        }}
+      >
+        <DialogContent className="max-h-[85vh] max-w-2xl overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              Translation Request Detail
+              {viewDetail && (
+                <Badge className={getStatusColor(viewDetail.status)}>
+                  {viewDetail.status === "TRANSLATED"
+                    ? `Proof_V${viewDetail.version}`
+                    : viewDetail.status.replace("_", " ")}
+                </Badge>
+              )}
+            </DialogTitle>
+          </DialogHeader>
+
+          {viewLoading ? (
+            <div className="flex h-64 items-center justify-center">
+              <Loader size="md" text="Loading request details..." />
+            </div>
+          ) : viewError ? (
+            <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+              <p className="text-sm font-medium text-red-700">{viewError}</p>
+            </div>
+          ) : viewDetail ? (
+            <div className="space-y-5">
+              {/* Requester & classification */}
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <p className="text-xs font-semibold tracking-wider text-gray-500 uppercase">
+                    User
+                  </p>
+                  <p className="mt-1 text-sm font-medium text-gray-900">
+                    {viewDetail.user_name || "—"}
+                  </p>
+                  <p className="text-sm text-gray-600">{viewDetail.user_email || "—"}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold tracking-wider text-gray-500 uppercase">
+                    Document
+                  </p>
+                  <p className="mt-1 text-sm font-medium text-gray-900 capitalize">
+                    {viewDetail.document_type} Certificate
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    Version {viewDetail.version} · Payment:{" "}
+                    <span className="capitalize">{viewDetail.payment_status || "n/a"}</span>
+                  </p>
+                </div>
+              </div>
+
+              {/* Timeline */}
+              <div className="grid grid-cols-2 gap-x-4 gap-y-3 rounded-lg border border-gray-200 bg-gray-50 p-4 sm:grid-cols-3">
+                {[
+                  ["Submitted", formatDateTime(viewDetail.created_at)],
+                  ["Last Updated", formatDateTime(viewDetail.updated_at)],
+                  ["Translated At", formatDateTime(viewDetail.translated_uploaded_at)],
+                  ["User Confirmed", formatDateTime(viewDetail.user_confirmed_at)],
+                  ["Verified At", formatDateTime(viewDetail.admin_verified_at)],
+                  ["Request ID", viewDetail.id.slice(0, 8)],
+                ].map(([label, value]) => (
+                  <div key={label}>
+                    <p className="text-[11px] font-semibold tracking-wider text-gray-500 uppercase">
+                      {label}
+                    </p>
+                    <p className="text-sm text-gray-900">{value}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Files */}
+              <div className="space-y-3">
+                <p className="text-xs font-semibold tracking-wider text-gray-500 uppercase">
+                  Files
+                </p>
+
+                {/* Original (uploaded by user) */}
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-gray-200 p-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-gray-900">
+                      Original: {viewDetail.original_filename}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {formatFileSize(viewDetail.original_file_size)} ·{" "}
+                      {viewDetail.original_mime_type || "application/pdf"}
+                    </p>
+                  </div>
+                  {viewDetail.originalFileUrl && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="cursor-pointer"
+                      onClick={() =>
+                        forceDownload(viewDetail.originalFileUrl!, viewDetail.original_filename)
+                      }
+                    >
+                      Download
+                    </Button>
+                  )}
+                </div>
+
+                {/* Translated (uploaded by admin), if any */}
+                {viewDetail.translated_filename ? (
+                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-gray-200 p-3">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-gray-900">
+                        Translated: {viewDetail.translated_filename}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {formatFileSize(viewDetail.translated_file_size)} ·{" "}
+                        {viewDetail.translated_mime_type || "application/pdf"} ·{" "}
+                        {formatDateTime(viewDetail.translated_uploaded_at)}
+                      </p>
+                    </div>
+                    {viewDetail.translatedFileUrl && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="cursor-pointer"
+                        onClick={() =>
+                          forceDownload(
+                            viewDetail.translatedFileUrl!,
+                            viewDetail.translated_filename
+                          )
+                        }
+                      >
+                        Download
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    No translated file uploaded yet for this version.
+                  </p>
+                )}
+              </div>
+
+              {/* Notes */}
+              {(viewDetail.user_notes || viewDetail.admin_notes || viewDetail.rejection_reason) && (
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold tracking-wider text-gray-500 uppercase">
+                    Notes
+                  </p>
+                  {viewDetail.user_notes && (
+                    <div className="rounded-lg border border-blue-100 bg-blue-50 p-3">
+                      <p className="text-[11px] font-semibold tracking-wider text-blue-700 uppercase">
+                        User Notes
+                      </p>
+                      <p className="mt-1 text-sm whitespace-pre-wrap text-gray-800">
+                        {viewDetail.user_notes}
+                      </p>
+                    </div>
+                  )}
+                  {viewDetail.admin_notes && (
+                    <div className="rounded-lg border border-teal-100 bg-teal-50 p-3">
+                      <p className="text-[11px] font-semibold tracking-wider text-teal-700 uppercase">
+                        Admin Notes
+                      </p>
+                      <p className="mt-1 text-sm whitespace-pre-wrap text-gray-800">
+                        {viewDetail.admin_notes}
+                      </p>
+                    </div>
+                  )}
+                  {viewDetail.rejection_reason && (
+                    <div className="rounded-lg border border-orange-100 bg-orange-50 p-3">
+                      <p className="text-[11px] font-semibold tracking-wider text-orange-700 uppercase">
+                        Rejection Reason (Changes Requested)
+                      </p>
+                      <p className="mt-1 text-sm whitespace-pre-wrap text-gray-800">
+                        {viewDetail.rejection_reason}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ) : null}
+        </DialogContent>
+      </Dialog>
 
       {/* Upload Modal */}
       <TranslationUploadModal
