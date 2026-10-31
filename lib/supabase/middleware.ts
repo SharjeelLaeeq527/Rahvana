@@ -213,13 +213,17 @@ export async function updateSession(request: NextRequest) {
   if (user && isAdminAuthRoute) {
     const { data: profile } = await supabaseAdmin
       .from("profiles")
-      .select("email")
+      .select("email, role")
       .eq("id", user.id)
       .single();
 
     const url = request.nextUrl.clone();
 
-    if (profile && ADMIN_EMAILS.includes(profile.email)) {
+    // MUST match the /admin gate exactly (email whitelist AND role === "admin").
+    const isAuthorizedAdmin =
+      !!profile && ADMIN_EMAILS.includes(profile.email) && profile.role === "admin";
+
+    if (isAuthorizedAdmin) {
       url.pathname = "/admin";
     } else {
       url.pathname = "/user-dashboard";
