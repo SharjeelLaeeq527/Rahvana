@@ -17,6 +17,17 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://rahvana.com";
  *   3. X-Robots-Tag    — server-enforced header (middleware.ts)
  */
 export default function robots(): MetadataRoute.Robots {
+  const env = (process.env.NEXT_PUBLIC_ENVIRONMENT || "").toLowerCase().trim();
+
+  // On staging, block all search engines and crawlers completely
+  if (env === "development") {
+    return {
+      rules: {
+        userAgent: "*",
+        disallow: "/",
+      },
+    };
+  }
   const privatePaths = [
     // Auth / personal
     "/dashboard",

@@ -3,6 +3,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { auditLog } from "@/lib/security/audit-log";
+import { isStagingEmailAllowed } from "@/lib/security/staging-access";
 
 // =============================
 // Admin Emails
@@ -119,6 +120,24 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // =============================
+  // Staging Access Session Check
+  // =============================
+  if (user && !isStagingEmailAllowed(user.email)) {
+    if (isProtectedRoute || isAdminRoute || isApiAdminRoute) {
+      if (isApiAdminRoute || pathname.startsWith("/api/")) {
+        return NextResponse.json(
+          { error: "Staging access denied: account not authorized on this environment." },
+          { status: 403 }
+        );
+      }
+      const url = request.nextUrl.clone();
+      url.pathname = "/login";
+      url.searchParams.set("error", "staging_access_denied");
+      return NextResponse.redirect(url);
+    }
+  }
+
   if (isAdminRoute || isApiAdminRoute) {
     if (!user) {
       if (isApiAdminRoute) {
@@ -189,7 +208,7 @@ export async function updateSession(request: NextRequest) {
   // =============================
   // Logged-in user accessing login/signup
   // =============================
-  if (user && isAuthRoute) {
+  if (user && isAuthRoute && isStagingEmailAllowed(user.email)) {
     // Allow MFA flow - don't redirect if user has MFA credentials in session
     if (request.nextUrl.searchParams.get("mfa") === "true") {
       return response;
