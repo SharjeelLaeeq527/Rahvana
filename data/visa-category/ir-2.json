@@ -1,8 +1,8 @@
 {
   "journey_type": "IR2",
   "journey_name": "IR-2 Child Visa Journey",
-  "journey_description": "Step-by-step roadmap for U.S. citizens petitioning for an unmarried child under 21 to immigrate via consular processing.",
-  "total_estimated_months": "Varies",
+  "journey_description": "Comprehensive step-by-step roadmap for U.S. citizens petitioning for an unmarried child under 21 to immigrate via consular processing.",
+  "total_estimated_months": "22 - 31",
   "content_review": {
     "status": "pending_legal_review",
     "reviewer": null,
@@ -5342,9 +5342,9 @@
       "chapter_key": "chapter_3",
       "chapter_number": 3,
       "chapter_name": "Chapter 3: Medical + Interview",
-      "chapter_description": "Complete medical exam -> Attend consular interview -> Visa decision",
+      "chapter_description": "Medical examination, document gathering, courier setup, interview preparation, and attendance.",
       "timeline": "Interview within 2-4 weeks of letter",
-      "estimated_duration_months": "Varies",
+      "estimated_duration_months": "8 - 10",
       "display_order": 3,
       "steps": [
         {
