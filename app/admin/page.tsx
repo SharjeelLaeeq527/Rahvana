@@ -35,13 +35,15 @@ import AccountDeletionFeedbackTable from "./components/account-deletion-feedback
 import { AdminProfileTray } from "./components/AdminProfileTray";
 
 export default function AdminPanel() {
-  const { user, isAdmin, isLoading: authLoading, signOut } = useAuth();
+  const { user, isAdmin, isLoading: authLoading, isAdminLoading, signOut } = useAuth();
   const router = useRouter();
 
   const [openFeatureModal, setOpenFeatureModal] = useState(false);
   const [openBlogModal, setOpenBlogModal] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = async () => {
+    setIsLoggingOut(true);
     try {
       // Call the admin logout API
       const response = await fetch("/api/admin/logout", {
@@ -56,12 +58,12 @@ export default function AdminPanel() {
     } finally {
       // Sign out from the auth context
       await signOut();
-      // Redirect to admin login
-      router.push("/admin-login");
+      // Redirect to admin login (replace so "back" doesn't return to /admin)
+      router.replace("/admin-login");
     }
   };
 
-  if (authLoading) {
+  if (authLoading || isAdminLoading || isLoggingOut) {
     return (
       <div className="bg-background flex min-h-screen items-center justify-center p-6">
         <Loader size="md" text="Checking authorization..." />
