@@ -764,7 +764,9 @@ function ToolCard({
               {perItemCredits !== null && !isInsideJourney && (
                 <>
                   <CreditTypeIcon kind="tools" size={18} />
-                  {perItemCredits} credits per form
+                  {tool.id === "interview-prep"
+                    ? `${perItemCredits} credits per session`
+                    : `${perItemCredits} credits per form`}
                 </>
               )}
             </span>

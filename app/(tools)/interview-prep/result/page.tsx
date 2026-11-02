@@ -87,6 +87,14 @@ export default function InterviewPrepResultPage({
             },
           };
           setResults(prepOutput);
+        } else if (data.session && !data.session.completed) {
+          // Session is incomplete / in-progress (questions not finished yet):
+          // Immediately redirect to the questionnaire so user continues where they left off!
+          const targetUrl = isEmbedded
+            ? `/interview-prep?sessionId=${sId}&source=journey`
+            : `/interview-prep?sessionId=${sId}`;
+          router.replace(targetUrl);
+          return;
         } else {
           setError(
             "No interview results found for this session. Please complete the interview preparation first."
@@ -115,6 +123,8 @@ export default function InterviewPrepResultPage({
   const handleRestart = () => {
     if (propOnRestart) {
       propOnRestart();
+    } else if (sessionId) {
+      router.push(`/interview-prep?sessionId=${sessionId}`);
     } else if (!isEmbedded) {
       router.push("/interview-prep");
     }
@@ -171,7 +181,7 @@ export default function InterviewPrepResultPage({
                     onClick={handleRestart}
                     className="inline-flex h-11 items-center justify-center rounded-full bg-[#0d7377] px-6 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-[#0a5a5d] hover:shadow-md focus:ring-2 focus:ring-[#0d7377]/30 focus:ring-offset-2 focus:outline-none"
                   >
-                    Start New Interview Prep
+                    Resume Interview Prep
                   </button>
                 </div>
 

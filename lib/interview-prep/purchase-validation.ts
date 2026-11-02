@@ -146,17 +146,24 @@ export async function countToolSessions(
  */
 export async function countIncompleteToolSessions(
   userId: string,
-  categorySlug: string
+  categorySlug: string,
+  candidateId?: string | null
 ): Promise<number> {
   const supabase = await createClient();
 
-  const { data: sessions, error } = await supabase
+  let query = supabase
     .from('interview_prep_sessions')
     .select('id')
     .eq('user_id', userId)
     .eq('category_slug', categorySlug)
     .eq('source', 'tool')
     .eq('completed', false);
+
+  if (candidateId) {
+    query = query.eq('candidate_id', candidateId);
+  }
+
+  const { data: sessions, error } = await query;
 
   if (error) {
     console.error('Failed to count incomplete tool sessions:', error);
@@ -187,11 +194,13 @@ export interface ValidationResult {
  * 
  * @param userId - User ID
  * @param categorySlug - Category slug
+ * @param candidateId - Optional candidate ID for multi-candidate context
  * @returns Validation result
  */
 export async function validateToolSessionCreation(
   userId: string,
-  categorySlug: string
+  categorySlug: string,
+  candidateId?: string | null
 ): Promise<ValidationResult> {
   const supabase = await createClient();
   
@@ -245,7 +254,7 @@ export async function validateToolSessionCreation(
     };
   }
 
-  const incompleteSessionCount = await countIncompleteToolSessions(userId, categorySlug);
+  const incompleteSessionCount = await countIncompleteToolSessions(userId, categorySlug, candidateId);
 
   if (incompleteSessionCount > 0) {
     return {
