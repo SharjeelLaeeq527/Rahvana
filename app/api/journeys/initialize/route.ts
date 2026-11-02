@@ -18,6 +18,7 @@ import { ConfigLoader } from "@/lib/journey/config-loader";
 import { decrypt } from "@/lib/encryption";
 import { E, msg } from "@/lib/errors";
 import { getCandidateJourneyKey, getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
+import { journeyConfigKeyFor } from "@/lib/journey/journeyConfig";
 
 // ── In-memory server cache (resets on cold start, fine for Vercel) ───────────
 const serverCache = new Map<string, { data: any; cachedAt: number }>();
@@ -27,9 +28,10 @@ function normType(t: string) {
   return t.toLowerCase().replace(/[-:_]/g, "");
 }
 
+// Shared with post-payment provisioning so every seeding path loads the same config
+// (CR-2 reuses ir-2.json instead of looking for a cr-2.json that does not exist).
 function configTypeFromJourneyType(journeyType: string) {
-  const base = getBaseVisaCategory(journeyType);
-  return base.toLowerCase();
+  return journeyConfigKeyFor(journeyType);
 }
 
 // Runs to ensure all chapters and steps from the config JSON exist in the DB

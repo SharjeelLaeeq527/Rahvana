@@ -182,3 +182,41 @@ describe('/api/feature-usage standalone Photo Booth', () => {
     expect(tables.standalone_unlocked_resources[0].status).toBe('revoked')
   })
 })
+
+describe('launchResource for Photo Booth', () => {
+  const { launchResource } = jest.requireActual('@/lib/wallet/launch') as typeof import('@/lib/wallet/launch')
+
+  const setup = (usageCount: number) => {
+    const tables: Record<string, Row[]> = {
+      user_wallets: [{ user_id: 'user-1', balance: 30 }],
+      user_profiles: [{ id: 'user-1', profile_details: { purchased_addons: [] } }],
+      credit_transactions: [purchase('tx-1', '2026-10-01')],
+      standalone_unlocked_resources: [unlockRow('tx-1')],
+      feature_usage: [{ user_id: 'user-1', feature_key: PHOTO_BOOTH_WALLET_USAGE_KEY, usage_count: usageCount }],
+    }
+    const deducts: unknown[] = []
+    const client = fakeSupabase(tables, {
+      rpc: (name, args) => {
+        if (name !== 'deduct_wallet_credits_atomic') return null
+        deducts.push(args)
+        return { success: true, balance: 15, transaction_id: 'tx-2' }
+      },
+    }).client
+    return { client, deducts, tables }
+  }
+
+  it('photos left: buying again is not charged', async () => {
+    const { client, deducts } = setup(1)
+    const r = await launchResource(client, 'user-1', { resourceType: 'tool', resourceId: 'photo-booth' })
+    expect(r.body).toMatchObject({ success: true, alreadyUnlocked: true, charged: 0 })
+    expect(deducts).toHaveLength(0)
+  })
+
+  it('both photos used: buying again charges 15 credits, even if the pack was never closed', async () => {
+    const { client, deducts, tables } = setup(2)
+    const r = await launchResource(client, 'user-1', { resourceType: 'tool', resourceId: 'photo-booth' })
+    expect(tables.standalone_unlocked_resources[0].status).toBe('revoked')
+    expect(r.body).toMatchObject({ success: true, charged: 15 })
+    expect(deducts[0]).toMatchObject({ p_credit_cost: 15, p_description: 'Photo Booth - 2 photos' })
+  })
+})

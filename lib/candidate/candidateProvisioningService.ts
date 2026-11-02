@@ -8,13 +8,35 @@
 // ============================================================================
 
 import { SupabaseClient } from "@supabase/supabase-js";
-import {
-  getCandidateJourneyKey,
-  getBaseVisaCategory,
-  isMultiCandidateCategory,
-} from "./candidateSyncService";
+import { getCandidateJourneyKey, isMultiCandidateCategory } from "./candidateSyncService";
+import type { CandidateProfile, CandidateRelation, CandidateTier } from "@/types/candidate";
 import { DocumentDatabaseStorage } from "@/lib/document-vault/storage-database";
 import { journeyService } from "@/lib/journey/service";
+import {
+  hasJourneyConfig,
+  journeyBaseCategory,
+  journeyConfigPathFor,
+} from "@/lib/journey/journeyConfig";
+
+/**
+ * Config a paid journey is seeded from. Categories without their own config keep the
+ * historical default (ir-1.json) so nothing outside IR-1 / IR-2 / IR-5 changes.
+ */
+function provisioningConfigPath(canonicalVisa: string): string {
+  return hasJourneyConfig(canonicalVisa)
+    ? journeyConfigPathFor(canonicalVisa)
+    : "data/visa-category/ir-1.json";
+}
+
+/** Candidate-1 defaults when the roster is empty (IR-1 / IR-5 values are unchanged). */
+function primaryCandidateDefaults(canonicalVisa: string): {
+  relation: CandidateRelation;
+  colorTag: CandidateProfile["colorTag"];
+} {
+  if (canonicalVisa === "IR-5") return { relation: "Other", colorTag: "purple" };
+  if (canonicalVisa === "IR-2") return { relation: "Child", colorTag: "blue" };
+  return { relation: "Spouse", colorTag: "emerald" };
+}
 
 export interface ProvisionCandidatesParams {
   supabase: SupabaseClient;
@@ -53,11 +75,8 @@ export async function provisionCandidateJourneysAndVaults({
 }: ProvisionCandidatesParams): Promise<ProvisionResult> {
   try {
     const isMultiCandidate = isMultiCandidateCategory(visaCategory);
-    const isIr5 =
-      visaCategory.toUpperCase().includes("IR-5") ||
-      visaCategory.toUpperCase().includes("IR5");
-
-    const canonicalVisa = getBaseVisaCategory(visaCategory);
+    // CR-2 is provisioned as the IR-2 journey (same config, journey_type and candidate keys).
+    const canonicalVisa = journeyBaseCategory(visaCategory);
     const normVisaType = canonicalVisa.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
     const effectiveCount = isMultiCandidate ? Math.max(1, candidateCount) : 1;
 
@@ -117,9 +136,7 @@ export async function provisionCandidateJourneysAndVaults({
       }
     } else {
       // Seed a full journey from the template config
-      const configPath = isIr5
-        ? "data/visa-category/ir-5.json"
-        : "data/visa-category/ir-1.json";
+      const configPath = provisioningConfigPath(canonicalVisa);
 
       try {
         const created = await journeyService.createJourneyFromConfig(
@@ -211,14 +228,14 @@ export async function provisionCandidateJourneysAndVaults({
       updatedCandidates.unshift({
         id: "candidate-1",
         label: "Candidate 1",
-        relation: isIr5 ? "Other" : "Spouse",
+        relation: primaryCandidateDefaults(canonicalVisa).relation,
         fullName: "",
         visaCategory: canonicalVisa,
         tier: tier as CandidateTier,
         isPrimary: true,
         isPreview: false,
         createdAt: new Date().toISOString(),
-        colorTag: isIr5 ? "purple" : "emerald",
+        colorTag: primaryCandidateDefaults(canonicalVisa).colorTag,
       });
     }
 
@@ -229,10 +246,7 @@ export async function provisionCandidateJourneysAndVaults({
 
     // ── 4. Provision Additional Candidates & Vaults (Multi-candidate journeys) ──────
     if (isMultiCandidate) {
-      const configPath =
-        normVisaType === "IR5"
-          ? "data/visa-category/ir-5.json"
-          : "data/visa-category/ir-1.json";
+      const configPath = provisioningConfigPath(canonicalVisa);
       const defaultRelation: CandidateRelation =
         canonicalVisa === "IR-2" || canonicalVisa === "CR-2" ? "Child" : "Other";
 

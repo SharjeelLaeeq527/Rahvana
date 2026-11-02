@@ -10,6 +10,7 @@ import { NextRequest } from 'next/server'
 // Mutable DB profile the supabase mock returns (read at call-time).
 let mockTier = 'free'
 let mockStatus = 'inactive'
+const mockIlike = jest.fn()
 
 jest.mock('@/lib/api/authGuards', () => ({
   getAuthenticatedUser: jest.fn().mockResolvedValue({ id: 'user-123', email: 'test@test.com' }),
@@ -32,7 +33,8 @@ jest.mock('@supabase/supabase-js', () => ({
     from: () => ({
       select: jest.fn().mockReturnThis(),
       eq: jest.fn().mockReturnThis(),
-      ilike: jest.fn().mockReturnThis(),
+      // Recorded so tests can assert WHICH journey row the tier guard reads.
+      ilike: function (this: any, ...a: any[]) { mockIlike(...a); return this },
       // Per-journey lookup (journeys row for the selected visa category): the tier
       // guard compares against THIS journey's plan, not the account summary.
       maybeSingle: () =>
@@ -130,6 +132,7 @@ function makeRequest(body: object) {
 }
 
 function resetAll() {
+  mockIlike.mockClear()
   mockTier = 'free'
   mockStatus = 'inactive'
   mockCustomerId = null
@@ -371,5 +374,80 @@ describe('Checkout - add-ons', () => {
   it('an empty add-on list is just a plan purchase', async () => {
     const res = await POST(makeRequest({ productTier: 'premium', addons: [] }))
     expect(res.status).not.toBe(400)
+  })
+})
+
+// --- IR-2 is its own journey (docs/ir2-implementation-plan.md, blocker B1) ---
+// Risk: "IR-2 / CR-2" was mapped to IR1, so an IR-1 plan counted as the IR-2 plan (blocking
+// or mis-pricing an IR-2 purchase) and an IR-2 plan counted as the IR-1 plan.
+
+describe('Checkout - IR-2 plans are scoped to the IR-2 journey', () => {
+  beforeEach(resetAll)
+
+  it('reads the IR-2 journey row, not the IR-1 row, for the tier guard', async () => {
+    mockCustomerId = 'cus_1'
+    await POST(makeRequest({ productTier: 'basic', visaCategory: 'IR-2 / CR-2' }))
+    expect(mockIlike).toHaveBeenCalledWith('journey_type', 'IR2')
+    expect(mockIlike).not.toHaveBeenCalledWith('journey_type', 'IR1')
+  })
+
+  it('reads the child candidate row when a candidate is targeted', async () => {
+    mockCustomerId = 'cus_1'
+    await POST(makeRequest({ productTier: 'basic', visaCategory: 'IR-2 / CR-2', candidateId: 'candidate-2' }))
+    expect(mockIlike).toHaveBeenCalledWith('journey_type', 'ir2_candidate2')
+  })
+
+  it('an IR-2 basic -> premium upgrade is not blocked by an IR-1 executive plan', async () => {
+    mockTier = 'basic'; mockStatus = 'active'; mockCustomerId = 'cus_1'
+    mockSubsList.mockImplementation(() =>
+      asyncSubs([
+        { id: 'sub_ir1', status: 'active', metadata: { tier: 'executive', visa_category: 'IR-1 / CR-1' }, items: { data: [] } },
+      ])
+    )
+    const res = await POST(makeRequest({ productTier: 'premium', visaCategory: 'IR-2 / CR-2', action: 'upgrade' }))
+    expect(res.status).toBe(200)
+  })
+
+  it('an IR-2 premium plan does not block buying IR-1 basic', async () => {
+    mockCustomerId = 'cus_1'
+    mockSubsList.mockImplementation(() =>
+      asyncSubs([
+        { id: 'sub_ir2', status: 'active', metadata: { tier: 'premium', visa_category: 'IR-2 / CR-2' }, items: { data: [] } },
+      ])
+    )
+    const res = await POST(makeRequest({ productTier: 'basic', visaCategory: 'IR-1 / CR-1' }))
+    expect(res.status).toBe(200)
+  })
+
+  it('still blocks a same-tier duplicate inside IR-2', async () => {
+    mockTier = 'premium'; mockStatus = 'active'; mockCustomerId = 'cus_1'
+    mockSubsList.mockImplementation(() =>
+      asyncSubs([
+        { id: 'sub_ir2', status: 'active', metadata: { tier: 'premium', visa_category: 'IR-2 / CR-2' }, items: { data: [] } },
+      ])
+    )
+    const res = await POST(makeRequest({ productTier: 'premium', visaCategory: 'IR-2 / CR-2', action: 'upgrade' }))
+    expect(res.status).toBeGreaterThanOrEqual(400)
+  })
+
+  it('refuses an IR-2 plan purchase while IR-2 is switched off', async () => {
+    const prev = process.env.NEXT_PUBLIC_ENABLE_IR2
+    process.env.NEXT_PUBLIC_ENABLE_IR2 = 'false'
+    try {
+      let isolatedPOST: typeof POST = POST
+      jest.isolateModules(() => {
+        isolatedPOST = require('@/app/api/stripe/checkout/route').POST
+      })
+      const res = await isolatedPOST(makeRequest({ productTier: 'basic', visaCategory: 'IR-2 / CR-2' }))
+      expect(res.status).toBe(400)
+      const body = await res.json()
+      expect(body.code).toBe('CATEGORY_NOT_AVAILABLE')
+      // IR-1 is unaffected by the IR-2 switch.
+      const ir1 = await isolatedPOST(makeRequest({ productTier: 'basic', visaCategory: 'IR-1 / CR-1' }))
+      expect(ir1.status).toBe(200)
+    } finally {
+      if (prev === undefined) delete process.env.NEXT_PUBLIC_ENABLE_IR2
+      else process.env.NEXT_PUBLIC_ENABLE_IR2 = prev
+    }
   })
 })

@@ -24,6 +24,7 @@ import { useCandidate } from "@/app/context/CandidateContext";
 import type { CandidateRelation } from "@/types/candidate";
 import { getVisaCategoryForRelation, getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
 import { getJourneyHrefByType } from "@/lib/constants/routes";
+import { IR2_ENABLED } from "@/lib/feature-flags";
 
 interface AddCandidateModalProps {
   isOpen: boolean;
@@ -123,7 +124,11 @@ export function AddCandidateModal({
   // Category-agnostic: offer every relation (the exact visa category is derived from the
   // relation via getVisaCategoryForRelation). The only exclusion is a SECOND spouse - USCIS
   // permits only one spouse at a time - so Spouse is dropped once one already exists.
-  const relationOptions = allRelationOptions.filter((o) => !(o.value === "Spouse" && hasSpouse));
+  // Child (IR-2) is offered only while IR-2 is switched on (lib/feature-flags); otherwise it would
+  // create a candidate whose journey route redirects away.
+  const relationOptions = allRelationOptions.filter(
+    (o) => !(o.value === "Spouse" && hasSpouse) && !(o.value === "Child" && !IR2_ENABLED)
+  );
 
   const modal = (
     <AnimatePresence>
