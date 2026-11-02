@@ -22,7 +22,7 @@
           "step_key": "step_1_1",
           "step_number": 1,
           "step_name": "Determine Eligibility",
-          "step_type": "informational",
+          "step_type": "quest",
           "who": "Petitioner and Child beneficiary",
           "where": "Self-assessment",
           "dependencies": [],
@@ -31,14 +31,13 @@
           "is_required": true,
           "display_order": 1,
           "actions": [
-            "Confirm petitioner is a U.S. citizen (by birth, naturalization, or acquisition)",
-            "Locate proof of citizenship: U.S. passport, U.S. birth certificate, or USCIS naturalization/citizenship certificate",
-            "Review the immediate relative child definition at uscis.gov/green-card/green-card-eligibility/green-card-immediate-relative-us-citizen",
-            "Confirm the child is unmarried and under 21 years of age at the time of filing",
-            "Read the visa category definitions at travel.state.gov (Immigrant Visa Types)",
-            "Confirm the child qualifies as an immediate relative (unmarried, under 21, child of U.S. citizen)",
-            "Note that the child must remain unmarried and under 21 at the time of visa issuance and U.S. admission",
-            "If the child may turn 21 before the process completes, research the Child Status Protection Act (CSPA) at uscis.gov"
+            "Verify the petitioner is a U.S. citizen",
+            "Identify the qualifying parent-child relationship",
+            "Confirm the child is unmarried and under 21",
+            "Check relationship-specific rules for a father, stepparent, or adoptive parent",
+            "Confirm core relationship evidence is available",
+            "Screen for possible immigrant visa ineligibility issues",
+            "Plan for financial sponsorship and U.S. domicile"
           ],
           "output": "Eligibility confirmed",
           "relevant_tools": [
@@ -49,53 +48,1311 @@
               "type": "tool"
             }
           ],
-          "step_short_description": "Confirm the petitioner and the child qualify for IR-2",
-          "step_description": "Only U.S. citizens may petition for an immediate relative child (IR-2). Lawful permanent residents cannot petition under the IR-2 immediate relative category, they must use a different family preference category (F-2A). The petitioner must be a U.S. citizen. IR-2 is the immediate relative immigrant visa category for an unmarried child under 21 of a U.S. citizen. As an immediate relative, there is no visa number waiting line, the visa is available immediately upon I-130 approval and NVC completion. Note on CR-2: The CR-2 category refers to a child who immigrates as a derivative of a conditional resident (CR-1) parent. If you are petitioning your child directly as a U.S. citizen, the applicable category is IR-2, not CR-2.",
+          "step_short_description": "Confirm IR-2 child visa qualification",
+          "step_description": "Check whether the petitioner and the child qualify for an IR-2 immigrant visa petition. The child must be unmarried and under 21, and the petitioner must be the child's U.S. citizen parent, stepparent, or adoptive parent under U.S. immigration law.",
           "legal_review": "pending",
-          "pending_step_type": "quest"
+          "quest_data": {
+            "id": "eligibility-suite",
+            "title": "Determine Eligibility",
+            "subtitle": "Before filing, confirm that the U.S. citizen petitioner, the parent-child relationship, and the child meet the core conditions for an IR-2 child petition. Complete each section below.",
+            "quests": [
+              {
+                "id": "q1",
+                "title": "Petitioner is the child's U.S. citizen parent",
+                "subtitle": "Confirm the petitioner can file an IR-2 petition for a child",
+                "screens": [
+                  {
+                    "id": "q1s1",
+                    "label": "Petitioner Status",
+                    "question": "What is the petitioner's current U.S. immigration or citizenship status?",
+                    "helper": "Only a U.S. citizen parent can file in the IR-2 category. A green card holder parent files for a child in a different, preference category (F-2A), which this journey does not cover.",
+                    "type": "single",
+                    "options": [
+                      {
+                        "label": "U.S. citizen",
+                        "value": "citizen",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "Lawful Permanent Resident (green card holder)",
+                        "value": "lpr",
+                        "outcome": "stop",
+                        "sub": "A green card holder parent cannot file an IR-2 petition. The child may qualify in the F-2A category instead."
+                      },
+                      {
+                        "label": "Not sure",
+                        "value": "unsure",
+                        "outcome": "review"
+                      },
+                      {
+                        "label": "Other / none of these",
+                        "value": "other",
+                        "outcome": "review"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "q1s3",
+                    "label": "How Citizenship Was Obtained",
+                    "question": "How did the petitioner become a U.S. citizen?",
+                    "helper": "Citizenship by birth, acquisition, derivation, or naturalization may qualify. Select the path that applies.",
+                    "type": "single",
+                    "options": [
+                      {
+                        "label": "Born in the United States",
+                        "value": "birth_us",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "Born abroad and acquired or derived U.S. citizenship",
+                        "value": "birth_abroad",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "Naturalized as a U.S. citizen",
+                        "value": "naturalized",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "Not sure",
+                        "value": "unsure",
+                        "outcome": "review"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "q1s4",
+                    "label": "Proof of Citizenship",
+                    "question": "Does the petitioner have accepted proof of U.S. citizenship?",
+                    "helper": "The petitioner generally needs one valid document proving U.S. citizenship.",
+                    "type": "single",
+                    "hint": {
+                      "intro": "Common proof includes:",
+                      "items": [
+                        "U.S. birth certificate",
+                        "Valid or previously issued U.S. passport",
+                        "Certificate of Naturalization",
+                        "Certificate of Citizenship",
+                        "Consular Report of Birth Abroad"
+                      ]
+                    },
+                    "options": [
+                      {
+                        "label": "Yes, at least one accepted document is available",
+                        "value": "yes",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "Not yet, but it can be obtained",
+                        "value": "can_get",
+                        "outcome": "caution"
+                      },
+                      {
+                        "label": "No, and obtaining proof may be difficult",
+                        "value": "no",
+                        "outcome": "caution"
+                      },
+                      {
+                        "label": "Not sure",
+                        "value": "unsure",
+                        "outcome": "caution"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "q1s5",
+                    "label": "Identity Consistency",
+                    "question": "Do the petitioner's citizenship records and the child's birth record show the petitioner's name the same way?",
+                    "helper": "Differences may be explainable, but legal name-change or discrepancy evidence should be prepared before filing.",
+                    "type": "single",
+                    "options": [
+                      {
+                        "label": "Yes, the records are consistent",
+                        "value": "match",
+                        "outcome": "pass"
+                      },
+                      {
+                        "label": "There is a difference, but legal supporting evidence is available",
+                        "value": "diff_proof",
+                        "outcome": "pass"
+                      },
+                      {
+                        "label": "There is a difference and supporting evidence is not available yet",
+                        "value": "diff_no_proof",
+                        "outcome": "caution"
+                      },
+                      {
+                        "label": "Not sure",
+                        "value": "unsure",
+                        "outcome": "caution"
+                      }
+                    ]
+                  }
+                ],
+                "result_logic": "(function() { if (answers['q1s1'] === 'lpr') return { state: \"stop\", title: \"The petitioner cannot file an IR-2 petition\", body: \"IR-2 requires a U.S. citizen parent. A green card holder parent can petition for an unmarried child in the F-2A preference category, which has its own wait and is not covered by this journey.\" }; if (answers['q1s1'] === 'unsure' || answers['q1s1'] === 'other' || answers['q1s3'] === 'unsure') return { state: \"review\", title: \"Petitioner eligibility needs clarification\", body: \"The petitioner's citizenship status or citizenship path is unclear. Confirm these facts before preparing Form I-130.\" }; if (answers['q1s4'] === 'no' || answers['q1s4'] === 'unsure' || answers['q1s4'] === 'can_get' || answers['q1s5'] === 'diff_no_proof' || answers['q1s5'] === 'unsure') return { state: \"caution\", title: \"Petitioner eligibility appears present, documentation needs attention\", body: \"The petitioner appears to be a U.S. citizen, but citizenship proof or name-consistency evidence should be obtained and organized before filing.\" }; return { state: \"pass\", title: \"Petitioner eligibility looks solid\", body: \"The petitioner appears to be a U.S. citizen with identifiable citizenship proof. Continue to the child section.\" }; })()"
+              },
+              {
+                "id": "q2",
+                "title": "The child qualifies as a child under immigration law",
+                "subtitle": "Confirm the relationship, the child's age, and the child's marital status",
+                "screens": [
+                  {
+                    "id": "q2s1",
+                    "label": "Relationship to the Petitioner",
+                    "question": "How is the child related to the U.S. citizen petitioner?",
+                    "helper": "The evidence and legal rules differ for a biological child, a stepchild, and an adopted child.",
+                    "type": "single",
+                    "options": [
+                      {
+                        "label": "The petitioner is the child's biological mother",
+                        "value": "bio_mother",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "The petitioner is the child's biological father, and the parents were married to each other when the child was born",
+                        "value": "bio_father_married",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "The petitioner is the child's biological father, and the parents were not married to each other when the child was born",
+                        "value": "bio_father_unmarried",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "The petitioner is the child's stepparent",
+                        "value": "stepchild",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "The petitioner adopted the child",
+                        "value": "adopted",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "The petitioner is a guardian, foster parent, or relative without a qualifying legal relationship",
+                        "value": "guardian_other",
+                        "outcome": "stop"
+                      },
+                      {
+                        "label": "Not sure",
+                        "value": "unsure",
+                        "outcome": "review"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "q2s2",
+                    "label": "Child's Age",
+                    "question": "How old is the child today?",
+                    "helper": "IR-2 is for a child under 21. For immediate relatives, the child's age is generally treated as fixed on the date the I-130 is filed, so filing before the 21st birthday matters. Confirm this rule on the official USCIS sources for your case.",
+                    "type": "single",
+                    "options": [
+                      {
+                        "label": "Under 14",
+                        "value": "under_14",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "14 or 15",
+                        "value": "14_15",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "16 or 17",
+                        "value": "16_17",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "18, 19, or 20",
+                        "value": "18_20",
+                        "outcome": "next",
+                        "sub": "File as early as possible. Do not wait until close to the 21st birthday."
+                      },
+                      {
+                        "label": "21 or older",
+                        "value": "21_plus",
+                        "outcome": "review",
+                        "sub": "A son or daughter aged 21 or older does not qualify as IR-2 unless an I-130 was already filed before the 21st birthday."
+                      },
+                      {
+                        "label": "Not sure",
+                        "value": "unsure",
+                        "outcome": "review"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "q2s3",
+                    "label": "Marital Status",
+                    "question": "Has the child ever been married?",
+                    "helper": "IR-2 is only for an unmarried child. If the child marries before immigrating, the child no longer qualifies as IR-2.",
+                    "type": "single",
+                    "options": [
+                      {
+                        "label": "No, the child has never been married",
+                        "value": "never_married",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "Yes, the child is married now",
+                        "value": "married",
+                        "outcome": "stop",
+                        "sub": "A married son or daughter of a U.S. citizen does not qualify as IR-2."
+                      },
+                      {
+                        "label": "The child was married before, but the marriage has ended",
+                        "value": "previously_married",
+                        "outcome": "review",
+                        "sub": "Confirm the child's current unmarried status with official divorce or death records."
+                      },
+                      {
+                        "label": "Not sure",
+                        "value": "unsure",
+                        "outcome": "review"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "q2s4",
+                    "label": "Birth Record",
+                    "question": "Does the child's birth certificate name the petitioner as a parent?",
+                    "helper": "A birth record naming the petitioner is primary relationship evidence in most IR-2 cases. Stepchild and adoption cases also need the marriage or adoption records.",
+                    "type": "single",
+                    "options": [
+                      {
+                        "label": "Yes, the petitioner is correctly named",
+                        "value": "yes",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "The petitioner is named, but there are spelling, date, or identity differences",
+                        "value": "mismatch",
+                        "outcome": "caution"
+                      },
+                      {
+                        "label": "No, the petitioner is not named",
+                        "value": "no",
+                        "outcome": "review"
+                      },
+                      {
+                        "label": "The birth record is unavailable",
+                        "value": "unavailable",
+                        "outcome": "review"
+                      },
+                      {
+                        "label": "Not sure",
+                        "value": "unsure",
+                        "outcome": "review"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "q2s5",
+                    "label": "Relationship Authenticity",
+                    "question": "Is the claimed parent-child relationship genuine and supported by truthful civil or family records?",
+                    "helper": "USCIS requires a real qualifying relationship. False parentage, altered records, or material misrepresentation can cause denial and serious immigration consequences.",
+                    "type": "single",
+                    "options": [
+                      {
+                        "label": "Yes, the relationship and records are genuine",
+                        "value": "yes",
+                        "outcome": "pass"
+                      },
+                      {
+                        "label": "There may be inaccurate or conflicting information in the records",
+                        "value": "conflict",
+                        "outcome": "review"
+                      },
+                      {
+                        "label": "No, the claimed relationship is not legally or factually genuine",
+                        "value": "no",
+                        "outcome": "stop"
+                      },
+                      {
+                        "label": "Not sure",
+                        "value": "unsure",
+                        "outcome": "review"
+                      }
+                    ]
+                  }
+                ],
+                "result_logic": "(function() { if (answers['q2s1'] === 'guardian_other' || answers['q2s5'] === 'no') return { state: \"stop\", title: \"A qualifying parent-child relationship has not been established\", body: \"A guardian, foster parent, or relative who raises a child does not automatically qualify as a parent for IR-2. The relationship must meet the immigration-law definition of a child. Speak with a qualified U.S. immigration attorney about other options.\" }; if (answers['q2s3'] === 'married') return { state: \"stop\", title: \"A married child does not qualify for IR-2\", body: \"IR-2 is only for an unmarried child under 21. A married son or daughter of a U.S. citizen files in the F-3 preference category, which this journey does not cover.\" }; if (answers['q2s2'] === '21_plus') return { state: \"review\", title: \"The child's age needs review\", body: \"A son or daughter aged 21 or older does not qualify as IR-2 unless an I-130 was already filed before the 21st birthday. Check the filing date and confirm the age rule with a qualified U.S. immigration attorney.\" }; if (answers['q2s1'] === 'unsure' || answers['q2s2'] === 'unsure' || answers['q2s3'] === 'previously_married' || answers['q2s3'] === 'unsure' || answers['q2s4'] === 'no' || answers['q2s4'] === 'unavailable' || answers['q2s4'] === 'unsure' || answers['q2s5'] === 'conflict' || answers['q2s5'] === 'unsure') return { state: \"review\", title: \"The child's eligibility needs closer review\", body: \"The relationship type, the child's age or marital status, or the main birth record is unclear, missing, or inconsistent. Confirm these before filing.\" }; if (answers['q2s2'] === '18_20') return { state: \"caution\", title: \"The child qualifies, but timing matters\", body: \"The child is close to 21. File the I-130 as soon as possible, because the child's age is generally fixed on the filing date for immediate relatives.\" }; if (answers['q2s4'] === 'mismatch') return { state: \"caution\", title: \"The relationship appears plausible, record differences need documentation\", body: \"The birth record names the petitioner, but identity differences should be resolved with corrected civil records, NADRA records, or other credible evidence.\" }; return { state: \"pass\", title: \"The child appears to qualify\", body: \"The relationship type, age, and marital status appear to fit IR-2, and the main birth record is identifiable. Complete the relationship-specific section next.\" }; })()"
+              },
+              {
+                "id": "q3",
+                "title": "Relationship-specific requirements are satisfied",
+                "subtitle": "Check the rules for a father, a stepparent, an adoptive parent, and custody",
+                "screens": [
+                  {
+                    "id": "q3s1",
+                    "label": "Parents' Marriage",
+                    "question": "If the petitioner is the child's biological father, were the child's parents married to each other when the child was born?",
+                    "helper": "For a father's petition, the parents' marriage changes what evidence is needed. Select not applicable for a mother, stepparent, or adoption case.",
+                    "type": "single",
+                    "options": [
+                      {
+                        "label": "Yes, the parents were legally married",
+                        "value": "yes",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "No, the parents were not legally married",
+                        "value": "no",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "Not applicable, this is not a biological-father case",
+                        "value": "na",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "Not sure",
+                        "value": "unsure",
+                        "outcome": "review"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "q3s2",
+                    "label": "Legitimation or Father-Child Relationship",
+                    "question": "If the parents were not married, was the child legitimated, or does a genuine father-child relationship exist?",
+                    "helper": "Evidence may include legitimation under the law of the place of residence, financial support, living together, regular contact, school or medical involvement, and recognition of the child.",
+                    "type": "single",
+                    "options": [
+                      {
+                        "label": "Yes, the child was legitimated or a genuine father-child relationship exists",
+                        "value": "yes",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "No, neither applies",
+                        "value": "no",
+                        "outcome": "review"
+                      },
+                      {
+                        "label": "Not applicable, the parents were married or this is not a biological-father case",
+                        "value": "na",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "Not sure",
+                        "value": "unsure",
+                        "outcome": "review"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "q3s3",
+                    "label": "Stepparent Marriage Timing",
+                    "question": "If the petitioner is the child's stepparent, did the petitioner marry the child's parent before the child turned 18?",
+                    "helper": "The marriage that creates the step-relationship must have happened before the child's 18th birthday.",
+                    "type": "single",
+                    "options": [
+                      {
+                        "label": "Yes, the marriage happened before the child turned 18",
+                        "value": "yes",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "No, the marriage happened on or after the child's 18th birthday",
+                        "value": "no",
+                        "outcome": "stop"
+                      },
+                      {
+                        "label": "Not applicable, this is not a stepchild case",
+                        "value": "na",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "Not sure",
+                        "value": "unsure",
+                        "outcome": "review"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "q3s4",
+                    "label": "Length of the Stepparent Marriage",
+                    "question": "If the petitioner is the stepparent, will the marriage to the child's parent be at least 2 years old when the child receives the visa?",
+                    "helper": "When the parents' marriage is less than 2 years old, the child may receive a conditional (CR-2) visa instead of IR-2, with a later step to remove the conditions. Confirm this on the official sources for your case.",
+                    "type": "single",
+                    "options": [
+                      {
+                        "label": "Yes, the marriage will be 2 years old or more",
+                        "value": "yes",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "No, the marriage will be less than 2 years old",
+                        "value": "no",
+                        "outcome": "caution",
+                        "sub": "The child may be issued a CR-2 visa. CR-2 has its own rules, which Rahvana shows separately."
+                      },
+                      {
+                        "label": "Not applicable, this is not a stepchild case",
+                        "value": "na",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "Not sure",
+                        "value": "unsure",
+                        "outcome": "review"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "q3s5",
+                    "label": "Adoption Timing",
+                    "question": "If the petitioner adopted the child, was the adoption completed before the child turned 16?",
+                    "helper": "Family-based adoption rules are technical. A narrow exception may apply to siblings adopted before 18. An adoption completed after the age limit generally does not qualify.",
+                    "type": "single",
+                    "options": [
+                      {
+                        "label": "Yes, the adoption met the age rule",
+                        "value": "yes",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "No, the adoption happened after the age limit",
+                        "value": "no",
+                        "outcome": "stop"
+                      },
+                      {
+                        "label": "Not applicable, this is not an adoption case",
+                        "value": "na",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "Not sure",
+                        "value": "unsure",
+                        "outcome": "review"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "q3s6",
+                    "label": "Adoption Custody and Residence",
+                    "question": "If the petitioner adopted the child, has the petitioner had at least 2 years of legal custody of the child and lived with the child for at least 2 years?",
+                    "helper": "Both 2-year requirements must be met. The evidence and rules should be reviewed carefully.",
+                    "type": "single",
+                    "options": [
+                      {
+                        "label": "Yes, both 2-year requirements are met",
+                        "value": "yes",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "No, one or both are not met",
+                        "value": "no",
+                        "outcome": "stop"
+                      },
+                      {
+                        "label": "Not applicable, this is not an adoption case",
+                        "value": "na",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "Not sure",
+                        "value": "unsure",
+                        "outcome": "review"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "q3s7",
+                    "label": "Adoption or Guardianship",
+                    "question": "If the petitioner adopted the child, is there a final adoption decree, or is the arrangement a guardianship order (for example under Pakistan's Guardians and Wards Act)?",
+                    "helper": "Guardianship (for example a guardianship order from a Pakistani court) is not automatically treated as an adoption for IR-2. If the child is in your care under guardianship, speak with a qualified U.S. immigration attorney before filing.",
+                    "type": "single",
+                    "options": [
+                      {
+                        "label": "There is a final adoption decree",
+                        "value": "decree",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "It is a guardianship order",
+                        "value": "guardianship",
+                        "outcome": "review",
+                        "sub": "Guardianship is not automatically an adoption for IR-2. Speak with a qualified U.S. immigration attorney before filing."
+                      },
+                      {
+                        "label": "Not applicable, this is not an adoption case",
+                        "value": "na",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "Not sure",
+                        "value": "unsure",
+                        "outcome": "review"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "q3s8",
+                    "label": "Custody and the Other Parent",
+                    "question": "If the child's parents are divorced or separated, is there a custody order or written consent from the other parent?",
+                    "helper": "The consulate may ask for custody papers or the other parent's consent before issuing a visa to a minor. Confirm what the embassy requires for your case.",
+                    "type": "single",
+                    "options": [
+                      {
+                        "label": "Yes, a custody order or written consent is available",
+                        "value": "yes",
+                        "outcome": "pass"
+                      },
+                      {
+                        "label": "No, not yet",
+                        "value": "no",
+                        "outcome": "caution"
+                      },
+                      {
+                        "label": "Not applicable, the parents live together or this does not apply",
+                        "value": "na",
+                        "outcome": "pass"
+                      },
+                      {
+                        "label": "Not sure",
+                        "value": "unsure",
+                        "outcome": "caution"
+                      }
+                    ]
+                  }
+                ],
+                "result_logic": "(function() { if (answers['q2s1'] === 'stepchild' && answers['q3s3'] === 'no') return { state: \"stop\", title: \"The step-relationship was created too late for IR-2\", body: \"For a stepchild to qualify, the petitioner must have married the child's parent before the child turned 18.\" }; if (answers['q2s1'] === 'adopted' && (answers['q3s5'] === 'no' || answers['q3s6'] === 'no')) return { state: \"stop\", title: \"The adoption requirements do not appear to be met\", body: \"An adoption-based IR-2 petition generally requires an adoption before the child turned 16, plus 2 years of legal custody and 2 years of living together. Do not file without review by a qualified U.S. immigration attorney.\" }; if (answers['q3s7'] === 'guardianship') return { state: \"review\", title: \"Guardianship is not automatically an adoption for IR-2\", body: \"A Pakistani guardianship order is not treated as an adoption by default. Do not file on this basis until a qualified U.S. immigration attorney has reviewed the case. You can book a consultation from the Services folder.\" }; if (answers['q2s1'] === 'bio_father_unmarried' && (answers['q3s2'] === 'no' || answers['q3s2'] === 'unsure')) return { state: \"review\", title: \"The father-child relationship needs legal and evidence review\", body: \"Where the parents were not married, eligibility depends on legitimation or proof of a genuine father-child relationship. Gather evidence and get legal review if the history is unclear.\" }; if (answers['q3s1'] === 'unsure' || answers['q3s3'] === 'unsure' || answers['q3s4'] === 'unsure' || answers['q3s5'] === 'unsure' || answers['q3s6'] === 'unsure' || answers['q3s7'] === 'unsure') return { state: \"review\", title: \"A relationship-specific rule needs clarification\", body: \"The selected relationship involves a marriage, adoption, custody, or timing question that should be resolved before filing.\" }; if (answers['q3s4'] === 'no') return { state: \"caution\", title: \"The child may receive a conditional (CR-2) visa\", body: \"Because the stepparent marriage will be less than 2 years old, the child may be issued a CR-2 visa. The petition steps are the same, and Rahvana will show the CR-2 differences separately.\" }; if (answers['q3s8'] === 'no' || answers['q3s8'] === 'unsure') return { state: \"caution\", title: \"Custody papers may be needed\", body: \"Prepare a custody order or the other parent's written consent if the embassy asks for it. Check the embassy's current requirements for a minor applicant.\" }; return { state: \"pass\", title: \"Relationship-specific requirements appear on track\", body: \"No disqualifying issue was identified under the relationship-specific rules in this assessment.\" }; })()"
+              },
+              {
+                "id": "q4",
+                "title": "Core relationship evidence can be documented",
+                "subtitle": "Confirm that the petitioner can prove the qualifying parent-child relationship",
+                "screens": [
+                  {
+                    "id": "q4s1",
+                    "label": "Primary Relationship Documents",
+                    "question": "Which primary relationship records are currently available?",
+                    "helper": "Select all that apply. The exact combination depends on the relationship type.",
+                    "type": "multi",
+                    "multiPassLogic": "(function(values) { if (values.includes('none')) return 'caution'; if (values.length >= 2) return 'next_strong'; return 'next_medium'; })(answers['q4s1'] || [])",
+                    "options": [
+                      {
+                        "label": "Child's birth certificate naming the petitioner",
+                        "value": "child_birth"
+                      },
+                      {
+                        "label": "NADRA Child Registration Certificate (CRC / B-Form)",
+                        "value": "crc"
+                      },
+                      {
+                        "label": "Parents' marriage certificate (Nikah Nama / NADRA MRC)",
+                        "value": "parents_marriage"
+                      },
+                      {
+                        "label": "Stepparent marriage certificate",
+                        "value": "step_marriage"
+                      },
+                      {
+                        "label": "Final adoption decree",
+                        "value": "adoption_decree"
+                      },
+                      {
+                        "label": "Legal-custody and joint-residence evidence",
+                        "value": "custody_residence"
+                      },
+                      {
+                        "label": "None of these are currently available",
+                        "value": "none"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "q4s2",
+                    "label": "Secondary Evidence",
+                    "question": "If a primary record is unavailable or inconsistent, is credible secondary evidence available?",
+                    "helper": "Secondary evidence may help when a civil record is unavailable, late-registered, or inconsistent. USCIS may also ask for more evidence or suggest DNA testing in some cases.",
+                    "type": "multi",
+                    "options": [
+                      {
+                        "label": "NADRA Family Registration Certificate (FRC)",
+                        "value": "frc"
+                      },
+                      {
+                        "label": "School, medical, vaccination, or religious records",
+                        "value": "early_records"
+                      },
+                      {
+                        "label": "Financial support, photographs, or proof of living together",
+                        "value": "relationship_history"
+                      },
+                      {
+                        "label": "Affidavits from people with personal knowledge of the birth",
+                        "value": "affidavits"
+                      },
+                      {
+                        "label": "Official record-unavailability letter",
+                        "value": "unavailability"
+                      },
+                      {
+                        "label": "Not needed, complete primary evidence is available",
+                        "value": "not_needed"
+                      },
+                      {
+                        "label": "No secondary evidence is available",
+                        "value": "none"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "q4s3",
+                    "label": "Translations",
+                    "question": "Are complete English translations available for documents that are not in English?",
+                    "helper": "Any foreign-language document submitted to USCIS must include a full English translation with the translator's certification of competence and accuracy.",
+                    "type": "single",
+                    "options": [
+                      {
+                        "label": "Yes, translations are complete and certified",
+                        "value": "yes",
+                        "outcome": "pass"
+                      },
+                      {
+                        "label": "Not yet, translations can be prepared",
+                        "value": "can_get",
+                        "outcome": "caution"
+                      },
+                      {
+                        "label": "No, translation arrangements are unclear",
+                        "value": "no",
+                        "outcome": "caution"
+                      },
+                      {
+                        "label": "Not applicable, all records are in English",
+                        "value": "na",
+                        "outcome": "pass"
+                      }
+                    ]
+                  }
+                ],
+                "result_logic": "(function() { if ((answers['q4s1'] || []).includes('none') && ((answers['q4s2'] || []).includes('none') || (answers['q4s2'] || []).length === 0)) return { state: \"review\", title: \"Relationship evidence is currently insufficient\", body: \"No primary or credible secondary evidence was identified. Do not file until the required records have been obtained or their unavailability is properly documented.\" }; if ((answers['q4s1'] || []).includes('none') || (answers['q4s2'] || []).includes('none') || answers['q4s3'] === 'can_get' || answers['q4s3'] === 'no') return { state: \"caution\", title: \"The relationship may qualify, evidence preparation is incomplete\", body: \"Some civil records, secondary evidence, or translations still need to be gathered. Address these gaps before filing to reduce the risk of a rejection, a request for evidence, or a denial.\" }; return { state: \"pass\", title: \"The relationship appears documentable\", body: \"Primary records or credible backup evidence are identifiable, and translation needs appear manageable.\" }; })()"
+              },
+              {
+                "id": "q5",
+                "title": "Additional IR-2 planning and visa ineligibility screening",
+                "subtitle": "Screen for common admissibility, sponsorship, domicile, and case-structure concerns",
+                "screens": [
+                  {
+                    "id": "q5s1",
+                    "label": "Child's Immigration History",
+                    "question": "Has the child ever been refused a U.S. visa, denied an immigration benefit, removed, deported, ordered to leave, or accused of fraud or misrepresentation?",
+                    "helper": "A prior refusal does not automatically prevent approval, but fraud, removal, or misrepresentation may create serious legal issues.",
+                    "type": "single",
+                    "options": [
+                      {
+                        "label": "No, none of these apply",
+                        "value": "no",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "Yes, at least one applies",
+                        "value": "yes",
+                        "outcome": "review"
+                      },
+                      {
+                        "label": "Not sure",
+                        "value": "unsure",
+                        "outcome": "review"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "q5s2",
+                    "label": "Criminal History",
+                    "question": "Has the child ever been arrested, charged, convicted, or involved in a criminal case anywhere in the world?",
+                    "helper": "Even old, dismissed, or juvenile cases may need to be disclosed and documented.",
+                    "type": "single",
+                    "options": [
+                      {
+                        "label": "No, no criminal history",
+                        "value": "no",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "Yes, at least one incident exists",
+                        "value": "yes",
+                        "outcome": "review"
+                      },
+                      {
+                        "label": "Not sure",
+                        "value": "unsure",
+                        "outcome": "review"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "q5s3",
+                    "label": "Prior U.S. Presence",
+                    "question": "Has the child ever entered the United States without inspection, overstayed, worked without authorization, or violated U.S. immigration status?",
+                    "helper": "Some violations may affect eligibility. Special rules can apply to time spent in the U.S. as a minor, so get advice if any of these apply.",
+                    "type": "single",
+                    "options": [
+                      {
+                        "label": "No, none of these apply",
+                        "value": "no",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "Yes, at least one applies",
+                        "value": "yes",
+                        "outcome": "review"
+                      },
+                      {
+                        "label": "Not sure",
+                        "value": "unsure",
+                        "outcome": "review"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "q5s4",
+                    "label": "Health and Vaccination",
+                    "question": "Is there a known medical, communicable-disease, or vaccination issue that may come up during the immigrant visa medical exam?",
+                    "helper": "The panel physician makes the medical decision and checks age-appropriate vaccinations. A health condition does not automatically mean the child is ineligible.",
+                    "type": "single",
+                    "options": [
+                      {
+                        "label": "No known issue",
+                        "value": "no",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "Yes, a medical or vaccination concern may come up",
+                        "value": "yes",
+                        "outcome": "review"
+                      },
+                      {
+                        "label": "Not sure",
+                        "value": "unsure",
+                        "outcome": "review"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "q5s5",
+                    "label": "Financial Sponsorship",
+                    "question": "Can the petitioner likely submit Form I-864 and meet the financial sponsorship requirement through income, assets, household income, or a joint sponsor?",
+                    "helper": "The petitioner generally must submit Form I-864. Some children who will become U.S. citizens automatically on arrival may not need one; confirm the current rule on the official sources before relying on it. Financial sponsorship is handled mainly at the NVC stage, but planning should start now.",
+                    "type": "single",
+                    "options": [
+                      {
+                        "label": "Yes, sponsorship appears manageable",
+                        "value": "yes",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "Possibly, a joint sponsor or assets may be needed",
+                        "value": "possible",
+                        "outcome": "caution"
+                      },
+                      {
+                        "label": "No, no viable sponsorship plan is currently available",
+                        "value": "no",
+                        "outcome": "caution"
+                      },
+                      {
+                        "label": "Not sure",
+                        "value": "unsure",
+                        "outcome": "caution"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "q5s6",
+                    "label": "U.S. Domicile",
+                    "question": "Does the petitioner live in the U.S., or have a concrete plan to re-establish U.S. domicile no later than the child's arrival?",
+                    "helper": "A petitioner living abroad may still file Form I-130, but must meet the U.S. domicile requirement for Form I-864 before the visa is issued.",
+                    "type": "single",
+                    "options": [
+                      {
+                        "label": "Yes, U.S. domicile is established",
+                        "value": "yes",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "Petitioner lives abroad but has a documented plan to re-establish domicile",
+                        "value": "reestablish",
+                        "outcome": "caution"
+                      },
+                      {
+                        "label": "No, there is currently no U.S. domicile plan",
+                        "value": "no",
+                        "outcome": "caution"
+                      },
+                      {
+                        "label": "Not sure",
+                        "value": "unsure",
+                        "outcome": "caution"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "q5s7",
+                    "label": "Separate Petition for Each Child",
+                    "question": "If more than one child will immigrate, is the petitioner prepared to file a separate Form I-130 for each child?",
+                    "helper": "Each child needs a separate I-130. Rahvana tracks each child as a separate journey.",
+                    "type": "single",
+                    "options": [
+                      {
+                        "label": "Yes, only one child is immigrating or separate petitions will be filed",
+                        "value": "yes",
+                        "outcome": "pass"
+                      },
+                      {
+                        "label": "No, we expected one petition to cover several children",
+                        "value": "no",
+                        "outcome": "caution"
+                      },
+                      {
+                        "label": "Not sure",
+                        "value": "unsure",
+                        "outcome": "caution"
+                      }
+                    ]
+                  }
+                ],
+                "result_logic": "(function() { if (['q5s1','q5s2','q5s3','q5s4'].some(k => answers[k] === 'yes' || answers[k] === 'unsure')) return { state: \"review\", title: \"One or more possible visa ineligibility issues were flagged\", body: \"The child's immigration, criminal, U.S. presence, or medical history needs individual review. These answers do not automatically mean the child is ineligible, but this should not be treated as a routine case.\" }; if (['possible','no','unsure'].includes(answers['q5s5']) || ['reestablish','no','unsure'].includes(answers['q5s6']) || ['no','unsure'].includes(answers['q5s7'])) return { state: \"caution\", title: \"Core eligibility may exist, later-stage planning is needed\", body: \"No relationship disqualification was identified, but financial sponsorship, U.S. domicile, or separate-petition planning needs attention before the case reaches NVC.\" }; return { state: \"pass\", title: \"No major IR-2 eligibility or planning concerns identified\", body: \"Based on this early screening, the petitioner and child appear suitable for an IR-2 petition, with no major admissibility or sponsorship concerns flagged. This is an educational screening, not a legal decision.\" }; })()"
+              }
+            ]
+          },
+          "notes": "The petitioner must be the child's U.S. citizen parent. The child must be unmarried and under 21 and qualify as the petitioner's child under U.S. immigration law. Each child needs a separate Form I-130 and IR-2 case.",
+          "risk_signals": {
+            "disclaimer": "Educational screening based on USCIS and Department of State requirements. It is not an official USCIS or consular eligibility determination and is not legal advice. Pending review by a qualified U.S. immigration attorney.",
+            "patterns": [
+              {
+                "id": "petitioner_not_us_citizen",
+                "title": "Petitioner is not a U.S. citizen",
+                "trigger_field": "eligibility_quest_q1s1",
+                "condition": "value != citizen",
+                "severity": "critical",
+                "advisory": "Only a U.S. citizen parent can file an IR-2 petition. A green card holder parent files for an unmarried child in the F-2A category.",
+                "source_basis": "INA 201(b)(2)(A)(i); INA 203(a)(2)(A)"
+              },
+              {
+                "id": "child_married",
+                "title": "Child is married",
+                "trigger_field": "eligibility_quest_q2s3",
+                "condition": "value == married",
+                "severity": "critical",
+                "advisory": "IR-2 is only for an unmarried child. A married son or daughter of a U.S. citizen files in the F-3 category. If the child marries before immigrating, the IR-2 case ends.",
+                "source_basis": "INA 101(b)(1); INA 203(a)(3)"
+              },
+              {
+                "id": "child_21_or_older",
+                "title": "Child is 21 or older",
+                "trigger_field": "eligibility_quest_q2s2",
+                "condition": "value == 21_plus",
+                "severity": "critical",
+                "advisory": "A son or daughter aged 21 or older does not qualify as IR-2 unless an I-130 was filed before the 21st birthday. Confirm the filing date and the age rule.",
+                "source_basis": "INA 101(b)(1); INA 201(f)(1)"
+              },
+              {
+                "id": "child_close_to_21",
+                "title": "Child is close to 21",
+                "trigger_field": "eligibility_quest_q2s2",
+                "condition": "value == 18_20",
+                "severity": "warning",
+                "advisory": "File the I-130 as soon as possible. For immediate relatives, the child's age is generally fixed on the filing date.",
+                "source_basis": "INA 201(f)(1)"
+              },
+              {
+                "id": "birth_record_missing_or_mismatch",
+                "title": "Birth record is missing or inconsistent",
+                "trigger_field": "eligibility_quest_q2s4",
+                "severity": "warning",
+                "advisory": "Obtain the correct civil birth record if available. If it is unavailable or inconsistent, prepare record-unavailability evidence, NADRA CRC / FRC records, other early records, and a clear explanation of the differences.",
+                "source_basis": "Form I-130 Instructions; USCIS Policy Manual Vol. 6, Part B"
+              },
+              {
+                "id": "father_born_out_of_wedlock",
+                "title": "Father's petition for a child born outside marriage",
+                "trigger_field": "eligibility_quest_q2s1",
+                "condition": "value == bio_father_unmarried",
+                "severity": "warning",
+                "advisory": "Gather legitimation evidence or proof of a genuine father-child relationship. These cases need relationship-specific evidence.",
+                "source_basis": "INA 101(b)(1)(C) and (D); Form I-130 Instructions"
+              },
+              {
+                "id": "late_step_relationship",
+                "title": "Step-relationship created after age 18",
+                "trigger_field": "eligibility_quest_q3s3",
+                "condition": "value == no",
+                "severity": "critical",
+                "advisory": "The marriage that creates the step-relationship must happen before the child turns 18. A later marriage does not create an IR-2 stepchild relationship.",
+                "source_basis": "INA 101(b)(1)(B); Form I-130 Instructions"
+              },
+              {
+                "id": "stepchild_conditional_cr2",
+                "title": "Child may receive a conditional CR-2 visa",
+                "trigger_field": "eligibility_quest_q3s4",
+                "condition": "value == no",
+                "severity": "advisory",
+                "advisory": "When the parents' marriage is less than 2 years old at the time of admission, the child may receive conditional residence (CR-2) and must later apply to remove the conditions.",
+                "source_basis": "INA 216"
+              },
+              {
+                "id": "adoption_requirements_unclear",
+                "title": "Adoption age, custody, or residence requirements are not established",
+                "trigger_field": "eligibility_quest_q3s5_or_q3s6",
+                "severity": "critical",
+                "advisory": "An adoption-based IR-2 petition generally requires an adoption before age 16, plus 2 years of legal custody and 2 years of living together. Get specialist legal review before filing if any part is uncertain.",
+                "source_basis": "INA 101(b)(1)(E); Form I-130 Instructions"
+              },
+              {
+                "id": "guardianship_not_adoption",
+                "title": "Guardianship order instead of an adoption decree",
+                "trigger_field": "eligibility_quest_q3s7",
+                "condition": "value == guardianship",
+                "severity": "critical",
+                "advisory": "Guardianship (for example a guardianship order from a Pakistani court) is not automatically treated as an adoption for IR-2. If the child is in your care under guardianship, speak with a qualified U.S. immigration attorney before filing.",
+                "source_basis": "INA 101(b)(1)(E); USCIS adoption guidance"
+              },
+              {
+                "id": "guardian_not_parent",
+                "title": "Petitioner is only a guardian, foster parent, or relative",
+                "trigger_field": "eligibility_quest_q2s1",
+                "condition": "value == guardian_other",
+                "severity": "critical",
+                "advisory": "Guardianship, foster care, financial support, or raising a child does not by itself create a qualifying parent-child relationship for IR-2.",
+                "source_basis": "INA 101(b); USCIS family-based relationship rules"
+              },
+              {
+                "id": "custody_consent_missing",
+                "title": "Custody papers or other parent's consent may be missing",
+                "trigger_field": "eligibility_quest_q3s8",
+                "condition": "value == no",
+                "severity": "warning",
+                "advisory": "The consulate may ask for a custody order or the other parent's written consent for a minor. Check the embassy's current requirements and prepare the papers early.",
+                "source_basis": "Department of State immigrant visa guidance (pending confirmation)"
+              },
+              {
+                "id": "separate_i130_required",
+                "title": "Several children expected to use one petition",
+                "trigger_field": "eligibility_quest_q5s7",
+                "condition": "value == no",
+                "severity": "warning",
+                "advisory": "File a separate Form I-130 for each child. IR-2 has no derivative beneficiaries.",
+                "source_basis": "Form I-130 filing structure; immediate-relative classification rules"
+              },
+              {
+                "id": "child_immigration_or_fraud_history",
+                "title": "Child has prior removal, fraud, or misrepresentation history",
+                "trigger_field": "eligibility_quest_q5s1",
+                "severity": "critical",
+                "advisory": "Obtain all prior decisions, visa records, removal documents, and immigration filings. Fraud or willful misrepresentation may create a permanent inadmissibility ground unless a waiver is available.",
+                "source_basis": "INA 212(a)(6)(C); INA 212(a)(9)"
+              },
+              {
+                "id": "child_criminal_history",
+                "title": "Child has an arrest, charge, or conviction",
+                "trigger_field": "eligibility_quest_q5s2",
+                "severity": "critical",
+                "advisory": "Collect certified court and police records for every incident and get legal analysis before filing or consular processing.",
+                "source_basis": "INA 212(a)(2)"
+              },
+              {
+                "id": "unlawful_presence_or_status_violation",
+                "title": "Child has U.S. presence or status-violation history",
+                "trigger_field": "eligibility_quest_q5s3",
+                "severity": "critical",
+                "advisory": "Some U.S. presence or status violations can affect eligibility. Review the full entry, exit, and status history with a qualified attorney before choosing consular processing.",
+                "source_basis": "INA 212(a)(9)(B) and related provisions"
+              },
+              {
+                "id": "financial_sponsorship_concern",
+                "title": "Financial sponsorship may be insufficient",
+                "trigger_field": "eligibility_quest_q5s5",
+                "severity": "warning",
+                "advisory": "The petitioner generally must submit Form I-864. If income is not enough, review assets, household income, or a joint sponsor. A joint sponsor does not replace the petitioner's own I-864.",
+                "source_basis": "INA 213A; Form I-864 Instructions"
+              },
+              {
+                "id": "domicile_concern",
+                "title": "Petitioner may not meet U.S. domicile",
+                "trigger_field": "eligibility_quest_q5s6",
+                "severity": "warning",
+                "advisory": "A petitioner living abroad must show U.S. domicile, or concrete steps to re-establish it, no later than the child's admission as a permanent resident.",
+                "source_basis": "INA 213A; Form I-864 Instructions"
+              }
+            ]
+          }
         },
         {
           "step_key": "step_1_2",
           "step_number": 2,
           "step_name": "Gather Required Documents",
-          "step_type": "informational",
+          "step_type": "docs",
           "who": "Petitioner and Child beneficiary",
           "where": "USCIS, U.S. vital-record offices, Pakistani civil authorities, and other issuing authorities",
           "timeline": "4-8 weeks",
           "actions": [
-            "Locate the child's birth certificate showing both parents' names",
-            "Confirm petitioner is named as a parent on the birth certificate",
-            "If the child was born out of wedlock to the father: review uscis.gov requirements for legitimation and legal relationship",
-            "Gather any additional documentation if parentage is not reflected on the birth certificate (e.g., DNA evidence, court-ordered parentage)",
-            "Review INA Sec. 101(b)(1)(A) and (C) definitions at uscis.gov",
-            "Locate the marriage certificate showing the marriage between the U.S. citizen and the child's biological parent",
-            "Confirm the marriage occurred before the child's 18th birthday",
-            "Gather any divorce decrees or death certificates if either parent had a prior marriage",
-            "Locate the child's birth certificate identifying the biological parent",
-            "Confirm the marriage is currently valid and legally recognized",
-            "Review INA Sec. 101(b)(1)(B) at uscis.gov for the stepchild definition",
-            "Locate the final adoption decree (court order) finalized before the child turned 16",
-            "Confirm the child has been in legal custody and physical residence with the petitioner for at least 2 years",
-            "Gather evidence of 2 years of joint residence (school records, medical records, utility bills naming both parties, etc.)",
-            "Confirm the adoption is recognized in both the country where it occurred and the United States",
-            "Review INA Sec. 101(b)(1)(E) and the relevant USCIS adoption guidance at uscis.gov/adoption",
-            "For international adoptions: determine if the Hague Convention process or the non-Hague orphan process applies",
-            "Consult an immigration attorney given the complexity of adoption-based petitions",
-            "Petitioner's proof of U.S. citizenship (passport, birth certificate, or naturalization certificate)",
-            "Child's birth certificate (certified copy), for biological or stepchild cases",
-            "For stepchild: marriage certificate of petitioner and child's biological parent; divorce decrees / death certificates for any prior marriages",
-            "For adopted child: final adoption decree; evidence of 2 years of legal custody and joint residence",
-            "Certified English translations for all documents not in English",
-            "Review the I-130 instructions at uscis.gov for the current required document list",
-            "Guardianship (for example a guardianship order from a Pakistani court) is not automatically treated as an adoption for IR-2. If the child is in your care under guardianship, speak with a qualified U.S. immigration attorney before filing."
+            "Get the petitioner's proof of U.S. citizenship",
+            "Get the child's computerized birth certificate naming the petitioner",
+            "Get the child's NADRA CRC (B-Form)",
+            "Add the parents' Nikah Nama and MRC, legitimation evidence, stepparent marriage records, or adoption decree, as your case needs",
+            "Prepare custody papers or the other parent's consent if the parents are divorced or separated",
+            "Order certified English translations for non-English documents",
+            "Check the current I-130 instructions at uscis.gov for the required document list"
           ],
           "stageWarnings": [
             "Do not obtain time-sensitive police or medical documents unnecessarily early."
           ],
           "step_short_description": "Relationship and civil documents for an IR-2 child petition",
-          "step_description": "Biological child: For a biological child, the petitioner must be the legal (natural) parent. A child born in wedlock requires proof of the parent-child blood relationship and that the parents were married at or before the child's birth. Stepchild: A stepchild qualifies as a 'child' for immigration purposes if the marriage creating the step-relationship occurred before the child's 18th birthday. The petitioner (the stepparent) must be the U.S. citizen who is married to the child's biological parent. See INA Sec. 101(b)(1)(B). Important: The qualifying marriage must have taken place BEFORE the child turned 18. If the marriage occurred after the child's 18th birthday, the stepchild does not qualify as an IR-2 under this rule. Adopted child: An adopted child qualifies if the adoption was legally completed before the child turned 16 (or before age 18 if the child is an orphan or adopted with a sibling), and the child has been in the legal custody of and resided with the adopting parent(s) for at least 2 years. See INA Sec. 101(b)(1)(E). Adoption cases can be complex. Requirements vary based on when the adoption was finalized, which country the child is from (Hague Convention vs. non-Hague), and whether the '2-year custody and residence' requirement is met. Consulting an immigration attorney is strongly recommended for adoption-based petitions. Guardianship (for example a guardianship order from a Pakistani court) is not automatically treated as an adoption for IR-2. If the child is in your care under guardianship, speak with a qualified U.S. immigration attorney before filing. Before filing Form I-130, collect all civil documents needed to prove the qualifying relationship and the petitioner's citizenship. Documents not in English must be accompanied by a certified English translation.",
+          "step_description": "Before filing Form I-130, collect the documents that prove the petitioner's U.S. citizenship and the qualifying parent-child relationship. Which relationship documents you need depends on whether the child is a biological child, a stepchild, or an adopted child. Guardianship (for example a guardianship order from a Pakistani court) is not automatically treated as an adoption for IR-2. If the child is in your care under guardianship, speak with a qualified U.S. immigration attorney before filing. Documents not in English need a certified English translation.",
           "legal_review": "pending",
-          "pending_step_type": "docs"
+          "document_items": [
+            {
+              "id": "doc_citizenship",
+              "name": "Proof of U.S. Citizenship",
+              "subtitle": "Establishes that the petitioner is a U.S. citizen who can file an IR-2 petition for a child",
+              "tag": "petitioner",
+              "guideUrl": "/guides",
+              "icon": "ShieldCheck",
+              "group": "Required Now",
+              "status": "not-started",
+              "required": true
+            },
+            {
+              "id": "doc_child_birth_cert",
+              "name": "Child's Birth Certificate",
+              "subtitle": "Computerized Union Council birth certificate naming the petitioner as the child's parent",
+              "tag": "beneficiary",
+              "guideUrl": "/guides/birth-certificate-guide",
+              "icon": "ClipboardList",
+              "group": "Required Now",
+              "status": "not-started",
+              "required": true
+            },
+            {
+              "id": "doc_child_crc",
+              "name": "Child Registration Certificate (CRC / B-Form)",
+              "subtitle": "NADRA record that links the child to both parents and supports the birth certificate",
+              "tag": "beneficiary",
+              "guideUrl": "/guides",
+              "icon": "FileText",
+              "group": "Required Now",
+              "status": "not-started",
+              "required": true
+            },
+            {
+              "id": "doc_parents_marriage",
+              "name": "Parents' Marriage Certificate (Nikah Nama and NADRA MRC)",
+              "subtitle": "Needed when a father files and the child was born to married parents",
+              "tag": "both",
+              "guideUrl": "/guides/nikah-nama-guide",
+              "icon": "FileCheck",
+              "group": "Required if Applicable",
+              "status": "not-started",
+              "required": false
+            },
+            {
+              "id": "doc_legitimation",
+              "name": "Legitimation or Father-Child Relationship Evidence",
+              "subtitle": "Needed when a father files for a child whose parents were not married to each other",
+              "tag": "both",
+              "guideUrl": "/guides",
+              "icon": "FileText",
+              "group": "Required if Applicable",
+              "status": "not-started",
+              "required": false
+            },
+            {
+              "id": "doc_stepparent_marriage",
+              "name": "Marriage Certificate Creating the Step-Relationship",
+              "subtitle": "Shows the petitioner married the child's parent before the child turned 18",
+              "tag": "both",
+              "guideUrl": "/guides/step-parent-guide",
+              "icon": "FileCheck",
+              "group": "Required if Applicable",
+              "status": "not-started",
+              "required": false
+            },
+            {
+              "id": "doc_stepparent_prior_marriages",
+              "name": "Termination of Prior Marriages",
+              "subtitle": "Divorce or death records showing that earlier marriages of the petitioner and the child's parent ended first",
+              "tag": "both",
+              "guideUrl": "/guides",
+              "icon": "Scale",
+              "group": "Required if Applicable",
+              "status": "not-started",
+              "required": false
+            },
+            {
+              "id": "doc_adoption_decree",
+              "name": "Final Adoption Decree",
+              "subtitle": "Court decree of a full adoption completed before the child turned 16. A guardianship order is not an adoption decree.",
+              "tag": "both",
+              "guideUrl": "/guides/adoptive-parent-guide",
+              "icon": "FileCheck",
+              "group": "Required if Applicable",
+              "status": "not-started",
+              "required": false
+            },
+            {
+              "id": "doc_adoption_custody_residence",
+              "name": "Legal Custody and Joint Residence Evidence",
+              "subtitle": "Shows 2 years of legal custody and 2 years of living together in an adoption case",
+              "tag": "both",
+              "guideUrl": "/guides/adoptive-parent-guide",
+              "icon": "FileText",
+              "group": "Required if Applicable",
+              "status": "not-started",
+              "required": false
+            },
+            {
+              "id": "doc_custody_consent",
+              "name": "Custody Order or Other Parent's Consent",
+              "subtitle": "May be asked for when the child's parents are divorced or separated, or the other parent has custody rights",
+              "tag": "both",
+              "guideUrl": "/guides",
+              "icon": "Scale",
+              "group": "Required if Applicable",
+              "status": "not-started",
+              "required": false
+            },
+            {
+              "id": "doc_name_change",
+              "name": "Name Change or Identity Discrepancy Evidence",
+              "subtitle": "Explains different names, spellings, or dates across the child's and the petitioner's records",
+              "tag": "both",
+              "guideUrl": "/guides",
+              "icon": "FileText",
+              "group": "Required if Applicable",
+              "status": "not-started",
+              "required": false
+            },
+            {
+              "id": "doc_secondary_relationship",
+              "name": "Secondary Parent-Child Relationship Evidence",
+              "subtitle": "Used when the birth record is unavailable, late-registered, or inconsistent (FRC, school, medical, vaccination records)",
+              "tag": "both",
+              "guideUrl": "/guides/frc-guide",
+              "icon": "FileText",
+              "group": "Required if Applicable",
+              "status": "not-started",
+              "required": false
+            },
+            {
+              "id": "doc_record_unavailability",
+              "name": "Record Unavailability Evidence",
+              "subtitle": "Official explanation when a required civil record genuinely cannot be obtained",
+              "tag": "both",
+              "guideUrl": "/guides",
+              "icon": "FileText",
+              "group": "Required if Applicable",
+              "status": "not-started",
+              "required": false
+            },
+            {
+              "id": "doc_translations",
+              "name": "Certified English Translations",
+              "subtitle": "Complete English translations of every submitted non-English document",
+              "tag": "both",
+              "guideUrl": "/guides",
+              "icon": "Globe",
+              "group": "Required if Applicable",
+              "status": "not-started",
+              "required": false
+            },
+            {
+              "id": "doc_child_passport",
+              "name": "Child's Passport",
+              "subtitle": "The child's Pakistani passport, needed at the NVC and interview stages. Check the passport office's current rules for a minor's application.",
+              "tag": "beneficiary",
+              "guideUrl": "/guides/passport-guide",
+              "icon": "User",
+              "group": "Gather Now for Later",
+              "status": "not-started",
+              "required": false
+            },
+            {
+              "id": "doc_frc",
+              "name": "Family Registration Certificate (FRC)",
+              "subtitle": "NADRA family record, useful as supporting evidence and often asked for later",
+              "tag": "beneficiary",
+              "guideUrl": "/guides/frc-guide",
+              "icon": "FileText",
+              "group": "Gather Now for Later",
+              "status": "not-started",
+              "required": false
+            },
+            {
+              "id": "doc_police_cert",
+              "name": "Police Character Certificate",
+              "subtitle": "Only if the child is 16 or older. Get it at the NVC stage, not now, so it is still valid at the interview.",
+              "tag": "beneficiary",
+              "guideUrl": "/guides/police-verification-guide",
+              "icon": "Lock",
+              "group": "Gather Now for Later",
+              "status": "not-started",
+              "required": false
+            },
+            {
+              "id": "doc_passport_photos",
+              "name": "Passport-Style Photos",
+              "subtitle": "Needed later for the medical exam and the immigrant visa application",
+              "tag": "beneficiary",
+              "guideUrl": "/guides",
+              "icon": "Camera",
+              "group": "Gather Now for Later",
+              "status": "not-started",
+              "required": false
+            }
+          ],
+          "pakistanSpecific": "For Pakistani records, use documents issued by the competent local civil authority, such as the relevant Union Council, municipal authority, cantonment board, or NADRA. The child's birth certificate is the central IR-2 relationship document. The NADRA CRC (B-Form) and FRC, plus school, medical, and vaccination records, can support a case where the birth certificate is late-registered or inconsistent. A Pakistani guardianship order is not automatically an adoption under U.S. immigration law; speak with a qualified U.S. immigration attorney before filing on that basis.",
+          "relevantTools": [
+            {
+              "label": "Birth Certificate Guide",
+              "labelUr": "برتھ سرٹیفکیٹ گائیڈ",
+              "href": "/guides/birth-certificate-guide",
+              "type": "guide"
+            },
+            {
+              "label": "FRC Guide",
+              "href": "/guides/frc-guide",
+              "type": "guide"
+            },
+            {
+              "label": "Step-Parent Guide",
+              "href": "/guides/step-parent-guide",
+              "type": "guide"
+            },
+            {
+              "label": "Adoptive Parent Guide",
+              "href": "/guides/adoptive-parent-guide",
+              "type": "guide"
+            },
+            {
+              "label": "Marriage Record Guide",
+              "labelUr": "شادی کے ریکارڈ کی گائیڈ",
+              "href": "/guides/nikah-nama-guide",
+              "type": "guide"
+            },
+            {
+              "label": "Passport Guide",
+              "labelUr": "پاسپورٹ گائیڈ",
+              "href": "/guides/passport-guide",
+              "type": "guide"
+            },
+            {
+              "label": "Urdu -> English Translation",
+              "labelUr": "اردو سے انگریزی ترجمہ",
+              "href": "/document-translation",
+              "type": "service"
+            },
+            {
+              "label": "Photo Booth",
+              "labelUr": "فوٹو بوتھ",
+              "href": "/passport",
+              "type": "tool"
+            }
+          ]
         },
         {
           "step_key": "step_1_3",
@@ -303,7 +1560,7 @@
           "step_name": "Fill Form I-130",
           "step_short_description": "via Rahvana wizard",
           "step_description": "Use Rahvana's guided Autoform Filler to complete the I-130 Petition for Alien Relative, with structured step-by-step support, clear prompts, and a built-in review flow.",
-          "step_type": "informational",
+          "step_type": "tool",
           "visible_when": {},
           "who": "Petitioner",
           "where": "my.uscis.gov",
@@ -337,7 +1594,61 @@
               "link": "https://www.uscis.gov/i-130"
             }
           ],
-          "pending_step_type": "tool"
+          "tool_data": {
+            "id": "i130-filler-online",
+            "eyebrow": "Fill Form I-130",
+            "title": "Fill Form I-130",
+            "subtitle": "Use Rahvana's guided Autoform Filler to complete the I-130 Petition for Alien Relative, with structured step-by-step support, clear prompts, and a built-in review flow.",
+            "chips": [
+              {
+                "label": "Petitioner",
+                "type": "role"
+              },
+              {
+                "label": "Rahvana Tool",
+                "type": "tool"
+              },
+              {
+                "label": "Opens in new tab",
+                "type": "newtab"
+              }
+            ],
+            "launch_module": {
+              "icon": "form",
+              "eyebrow": "Autoform Filler · USCIS Form I-130",
+              "heading": "Guided completion, start to finish",
+              "features": [
+                "Question-by-question guided flow",
+                "Plain-language prompts for every field",
+                "Built-in review before you finalize",
+                "Pakistan-context defaults where relevant"
+              ],
+              "button_label": "Launch I-130 Autoform Filler",
+              "href": "/visa-forms/i130/wizard",
+              "note": "Opens in a new browser tab, you can return to the roadmap anytime"
+            },
+            "support_cards": [
+              {
+                "label": "Have these ready",
+                "items": [
+                  "Petitioner's U.S. citizenship proof",
+                  "Child's birth certificate naming the petitioner as a parent",
+                  "Child beneficiary's passport or NADRA CRC (B-Form) details",
+                  "Parents' marriage certificate, stepparent marriage records, or adoption decree, if applicable",
+                  "Addresses and employment history for the periods requested on Form I-130"
+                ]
+              },
+              {
+                "label": "Good to know",
+                "items": [
+                  "A separate Form I-130 is required for each child",
+                  "You can save progress and return",
+                  "USCIS account setup and final filing are separate steps"
+                ]
+              }
+            ],
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Consult a licensed immigration attorney for case-specific decisions."
+          }
         },
         {
           "step_key": "step_1_5",
@@ -2313,7 +3624,7 @@
           "step_number": 19,
           "step_name": "Respond to RFE",
           "step_short_description": "Request for Evidence · Prepare & submit response",
-          "step_type": "informational",
+          "step_type": "guide",
           "visible_when": {
             "uscisNoticeType": "rfe"
           },
@@ -2327,7 +3638,166 @@
           "display_order": 19,
           "step_description": "USCIS may issue a Request for Evidence (RFE) or Notice of Intent to Deny (NOID) if additional information or documents are needed. Respond fully before the stated deadline.",
           "legal_review": "pending",
-          "pending_step_type": "guide"
+          "guide_data": {
+            "id": "step_1_19",
+            "title": "Respond to USCIS RFE",
+            "subtitle": "A Request for Evidence (RFE) means USCIS needs more information before deciding your child petition. This is your opportunity to provide the evidence that closes the gap.",
+            "chips": [
+              {
+                "label": "Petitioner",
+                "type": "role"
+              },
+              {
+                "label": "RFE Response",
+                "type": "urgent"
+              },
+              {
+                "label": "Time-sensitive",
+                "type": "deadline"
+              }
+            ],
+            "alert": {
+              "type": "info",
+              "heading": "An RFE does not mean your petition was denied",
+              "body": "Receiving an RFE means USCIS is giving you a chance to provide additional evidence before making a final decision. Many child petitions are approved after a successful RFE response."
+            },
+            "warning_banner": {
+              "type": "warning",
+              "text": "Submit your complete RFE response before the deadline printed on your notice. Do not send documents in pieces, USCIS treats a partial response as a request for a decision on the existing record."
+            },
+            "common_rfe_reasons": {
+              "title": "Common reasons USCIS issues an IR-2 child I-130 RFE",
+              "subtitle": "Read your RFE notice first to identify exactly what USCIS is requesting. The categories below describe common areas for child petitions, your response should address your specific notice, not all of these.",
+              "categories": [
+                {
+                  "id": "parent_child_relationship",
+                  "label": "Proof of qualifying parent-child relationship",
+                  "description": "USCIS may require stronger evidence establishing the legal parent-child relationship between the U.S. citizen petitioner and the child beneficiary.",
+                  "evidence_examples": [
+                    "Child's official birth certificate naming the petitioner as a parent",
+                    "Mother petitioning: child's birth certificate showing the mother's name",
+                    "Father petitioning (parents married): child's birth certificate + parents' marriage certificate (Nikah Nama & NADRA MRC)",
+                    "Father petitioning (parents not married): proof of legitimation, or evidence of a genuine father-child relationship",
+                    "Stepparent petitioning: marriage certificate showing the marriage to the child's parent took place before the child turned 18",
+                    "Adoptive parent petitioning: adoption decree from before the child turned 16 + proof of 2 years of legal custody and joint residence",
+                    "NADRA Child Registration Certificate (CRC / B-Form) and Family Registration Certificate (FRC)",
+                    "DNA relationship testing (only if explicitly requested or suggested by USCIS from an AABB-accredited lab)"
+                  ],
+                  "important_note": "Do not automatically send all of these. Read exactly what your RFE requests and provide evidence relevant to that specific relationship type."
+                },
+                {
+                  "id": "civil_documents",
+                  "label": "Missing, incomplete, or secondary civil documentation",
+                  "description": "USCIS may determine that submitted birth or marriage documentation is insufficient, late-registered, or missing required civil registration details.",
+                  "evidence_examples": [
+                    "NADRA-issued computerized birth certificate",
+                    "Union Council official birth certificate",
+                    "Certified English translations with translator certification",
+                    "Secondary evidence for a late-registered birth (school, vaccination, or hospital records)",
+                    "Affidavits of birth from older relatives with personal knowledge of the birth",
+                    "NADRA Family Registration Certificate (FRC)"
+                  ],
+                  "important_note": "For Pakistani civil documents, USCIS frequently requests NADRA-issued certificates alongside certified English translations and secondary birth evidence if the primary birth was registered late."
+                },
+                {
+                  "id": "petitioner_status",
+                  "label": "Petitioner citizenship verification",
+                  "description": "USCIS may request additional proof that the petitioner is a U.S. citizen.",
+                  "evidence_examples": [
+                    "Unexpired U.S. passport (copy of all biographical pages)",
+                    "Certificate of Naturalization or Certificate of Citizenship",
+                    "U.S. Birth Certificate (if born in the United States)",
+                    "Consular Report of Birth Abroad (CRBA)"
+                  ]
+                },
+                {
+                  "id": "inconsistencies",
+                  "label": "Inconsistencies across documents",
+                  "description": "If names, parent names, or dates of birth differ across documents (such as the child's birth certificate, CRC, FRC, passport, and Form I-130), USCIS may request clarification.",
+                  "evidence_examples": [
+                    "Explanation letter addressing specific discrepancies",
+                    "One and the same affidavit explaining name spelling variations",
+                    "Certified civil or NADRA correction records",
+                    "Official legal name change documentation"
+                  ],
+                  "important_note": "Name spelling variations and date discrepancies across Pakistani identity documents (CRC, CNIC, passport, Nikah Nama, FRC) are common. Address each discrepancy directly and specifically."
+                }
+              ]
+            },
+            "guide_steps": [
+              {
+                "label": "RFE Response · Step 1",
+                "title": "Don't panic, read your RFE first",
+                "text": "An RFE does not mean your petition is denied. USCIS is asking for additional evidence before making a decision. Your first task is to obtain the actual RFE notice and read it carefully, every word of it.",
+                "note": "Get the notice from your USCIS online account at my.uscis.gov or from physical mail. The online account is the recommended first place to check."
+              },
+              {
+                "label": "RFE Response · Step 2",
+                "title": "Identify exactly what USCIS is requesting",
+                "text": "Do not randomly gather documents. The RFE will specifically identify what is deficient and what USCIS needs. Your response must directly address the specific issue identified in the RFE, nothing more, nothing less.",
+                "note": "For example: 'Submit evidence demonstrating the parent-child relationship between petitioner and beneficiary' is different from 'Submit a certified English translation of the birth certificate.' Each requires a different response."
+              },
+              {
+                "label": "RFE Response · Step 3",
+                "title": "Check the deadline printed on your notice",
+                "text": "The response deadline is printed on your RFE notice. Do not assume you have a specific number of days, the actual notice controls your deadline. USCIS policy states that extensions beyond the permitted response period are generally not granted.",
+                "note": "Mark the deadline in your calendar immediately. Build in time to organize, review, and submit your response well before the deadline."
+              },
+              {
+                "label": "RFE Response · Step 4",
+                "title": "Organize your evidence by RFE request",
+                "text": "Structure your evidence to match each item USCIS requested. Group documents under the specific request they address. For example, USCIS Request: Proof of parent-child relationship: Exhibit A, child's NADRA birth certificate, Exhibit B, parents' Nikah Nama & MRC, Exhibit C, Child Registration Certificate (CRC), Exhibit D, Family Registration Certificate (FRC). This structure makes it easy for the USCIS officer to match your response to their request.",
+                "note": "Clear organization significantly helps the reviewing officer understand your response and reduces the chance of important evidence being overlooked."
+              },
+              {
+                "label": "RFE Response · Step 5",
+                "title": "Write a cover letter",
+                "text": "Prepare a brief cover letter that explains: (1) what USCIS requested, (2) how your response addresses each specific request, and (3) what evidence is included and how it is organized. The cover letter is the roadmap for your response package.",
+                "note": "The cover letter does not need to be lengthy. It should clearly summarize the response contents and make it easy for the officer to navigate your package."
+              },
+              {
+                "label": "RFE Response · Step 6",
+                "title": "Assemble one complete response package",
+                "text": "Gather your cover letter and all evidence together into one complete response package before submitting. USCIS policy states that when responding to an RFE, materials should generally be submitted together. A partial response is treated as a request for a decision on the record, USCIS does not wait for additional packages or issue another RFE.",
+                "note": "Double-check that every document is included, every translation is certified, and the cover letter is accurate before you submit."
+              },
+              {
+                "label": "RFE Response · Step 7",
+                "title": "Choose the correct submission method",
+                "text": "Check whether your USCIS online account provides an RFE response portal for your case. If it does, follow the online submission instructions. If your case requires a mailed response, use the address and instructions specified in your RFE notice.",
+                "note": "USCIS has specifically stated that users who respond online should NOT also mail a duplicate response. Follow the method indicated on your notice or in your USCIS account."
+              },
+              {
+                "label": "RFE Response · Step 8",
+                "title": "Keep a complete copy of everything you submit",
+                "text": "Before submitting, make copies of your complete response package, including the cover letter and all evidence. If submitting by mail, use a trackable carrier and save the tracking number. If submitting online, save a copy of the confirmation.",
+                "note": "Your copy of the response is important if questions arise later about what was submitted and when."
+              }
+            ],
+            "citations": [
+              {
+                "text": "USCIS Policy Manual - Request For Evidence",
+                "link": "https://www.uscis.gov/sites/default/files/document/policy-manual-updates/20210609-RFEs%26NOIDs.pdf"
+              }
+            ],
+            "after_submission": {
+              "heading": "After you submit your RFE response",
+              "body": "Your case returns to USCIS review. USCIS will consider the submitted evidence and issue one of these outcomes.",
+              "outcomes": [
+                {
+                  "icon": "approved",
+                  "label": "Approval",
+                  "description": "USCIS approves the I-130 petition. For consular processing, the case moves toward the National Visa Center (NVC) stage."
+                },
+                {
+                  "icon": "denied",
+                  "label": "Denial",
+                  "description": "If the response does not establish eligibility, USCIS may deny the petition. The denial notice will explain available appeal and motion options."
+                }
+              ]
+            },
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. If your RFE involves complex legal issues or you are uncertain how to respond, consider consulting a qualified immigration attorney."
+          }
         },
         {
           "step_key": "step_1_20",
@@ -2583,7 +4053,7 @@
           "step_number": 23,
           "step_name": "Await USCIS Decision After Response",
           "step_short_description": "Response submitted · awaiting USCIS decision",
-          "step_type": "informational",
+          "step_type": "tool",
           "visible_when": {
             "uscisNoticeResponseSubmitted": true
           },
@@ -2600,7 +4070,55 @@
           ],
           "is_required": false,
           "display_order": 23,
-          "pending_step_type": "tool"
+          "tool_data": {
+            "id": "step_1_23",
+            "type": "awaiting_decision",
+            "title": "Awaiting USCIS Decision",
+            "subtitle": "Your response has been submitted. USCIS is now reviewing your response alongside the original petition. Monitor your case status and be ready for the next update.",
+            "chips": [
+              {
+                "label": "Petitioner",
+                "type": "role"
+              },
+              {
+                "label": "Awaiting Decision",
+                "type": "track"
+              },
+              {
+                "label": "Response Submitted",
+                "type": "status"
+              }
+            ],
+            "status_card": {
+              "heading": "Response submitted, USCIS is reviewing",
+              "body": "After receiving your response, USCIS will review the submitted evidence and issue a decision. There is no set timeline for this review. Continue monitoring your case status.",
+              "badge": "Pending decision"
+            },
+            "possible_outcomes": [
+              {
+                "icon": "approved",
+                "label": "Approval",
+                "description": "USCIS approves your I-130 petition. For a child living outside the U.S. pursuing consular processing, the case generally moves to the National Visa Center (NVC) stage. USCIS sends the approved petition to the Department of State/NVC."
+              },
+              {
+                "icon": "denied",
+                "label": "Denial",
+                "description": "If the response does not establish eligibility, USCIS may deny the petition. Review the denial notice carefully, it will explain the specific reasons and what appeal or motion options may be available."
+              },
+              {
+                "icon": "notice",
+                "label": "Further Action",
+                "description": "In some cases, USCIS may issue additional requests before making a final decision. Continue monitoring your USCIS online account."
+              }
+            ],
+            "monitoring_tips": [
+              "Check your USCIS online account regularly for status updates.",
+              "Keep a copy of your submitted response accessible in case it is needed again.",
+              "If USCIS issues a denial, the denial notice will explain available appeal or motion options.",
+              "Use the waiting period to stay prepared for the NVC stage in case the petition is approved."
+            ],
+            "footer_note": "Rahvana will help you navigate the next step based on the outcome USCIS provides."
+          }
         },
         {
           "step_key": "step_1_24",
@@ -2722,7 +4240,7 @@
           "step_number": 25,
           "step_name": "Respond to Other USCIS Notice",
           "step_short_description": "General notice guidance · Biometrics, interview, or appointment",
-          "step_type": "informational",
+          "step_type": "guide",
           "visible_when": {
             "uscisNoticeType": "other"
           },
@@ -2735,7 +4253,121 @@
           ],
           "is_required": false,
           "display_order": 25,
-          "pending_step_type": "guide"
+          "guide_data": {
+            "id": "step_1_25",
+            "title": "Respond to Other USCIS Notice or Request",
+            "subtitle": "USCIS issues various types of notices during petition processing. Identify your specific notice type, follow the required instructions, and ensure timely compliance.",
+            "chips": [
+              {
+                "label": "Petitioner / Beneficiary",
+                "type": "role"
+              },
+              {
+                "label": "General Notice",
+                "type": "track"
+              },
+              {
+                "label": "Action May Be Required",
+                "type": "urgent"
+              }
+            ],
+            "alert": {
+              "type": "info",
+              "heading": "Identify the Form Number and Heading",
+              "body": "Official USCIS notices are usually issued on Form I-797C (Notice of Action) or Form I-797. Look at the top-right header and notice type line to understand whether action is required or if it is purely informational."
+            },
+            "common_rfe_reasons": {
+              "title": "Common notice types you may receive",
+              "subtitle": "USCIS sends several standard communication types. Find your notice type below:",
+              "categories": [
+                {
+                  "id": "biometrics",
+                  "label": "Biometrics / ASC Appointment Notice (Form I-797C)",
+                  "description": "USCIS schedules an appointment at an Application Support Center (ASC) to capture fingerprints, photo, and signature. This is common if biometric verification is needed.",
+                  "evidence_examples": [
+                    "Bring the original appointment notice with barcode.",
+                    "Bring government-issued photo ID (valid passport, driver's license).",
+                    "If you cannot attend, follow the reschedule instructions on the notice immediately before the appointment date."
+                  ],
+                  "important_note": "Failing to appear for a biometrics appointment without rescheduling can result in petition abandonment and denial."
+                },
+                {
+                  "id": "interview",
+                  "label": "Interview Notice (Form I-797C)",
+                  "description": "While most consular I-130 petitions are decided without an in-person USCIS interview, USCIS occasionally requests a petitioner interview.",
+                  "evidence_examples": [
+                    "Original civil documents (child's birth certificate, parents' marriage certificate).",
+                    "Proof of ongoing parent-child relationship (photos over time, travel records, communication).",
+                    "Valid government-issued photo identification."
+                  ],
+                  "important_note": "Carefully review the checklist of items to bring on the interview notice and arrive 15 minutes before the scheduled time."
+                },
+                {
+                  "id": "transfer",
+                  "label": "Service Center Transfer Notice (Form I-797C)",
+                  "description": "USCIS frequently transfers cases between service centers (e.g., Nebraska, Texas, Potomac, California, Vermont) to balance processing workloads across the agency.",
+                  "evidence_examples": [
+                    "No action is required on your part.",
+                    "Your receipt number remains unchanged.",
+                    "Future correspondence will come from the new service center."
+                  ],
+                  "important_note": "A case transfer does not mean anything is wrong with your petition. It is routine workload management by USCIS."
+                },
+                {
+                  "id": "fee_rejection",
+                  "label": "Fee Correction / Rejection Notice",
+                  "description": "If payment could not be processed or an essential document was missing at intake, USCIS issues a notice explaining the intake issue.",
+                  "evidence_examples": [
+                    "Check the specific rejection reason printed on the notice.",
+                    "Submit corrected fee payment or missing signature promptly.",
+                    "Ensure payment instrument (check, credit card authorization Form G-1450) is valid and funded."
+                  ],
+                  "important_note": "Pay close attention to any refiling instructions and deadline dates provided on the notice."
+                }
+              ]
+            },
+            "guide_steps": [
+              {
+                "label": "General Notice · Step 1",
+                "title": "Read the entire notice thoroughly",
+                "text": "Check the notice type in the header, read all instructions, and verify whether USCIS requires a response, an appearance, or if the notice is purely informational.",
+                "note": "Look for specific keywords such as 'Action Required', 'Notice of Action', or 'Appointment Scheduled'."
+              },
+              {
+                "label": "General Notice · Step 2",
+                "title": "Check your USCIS online account",
+                "text": "Log in to my.uscis.gov and check the 'Documents' tab for an electronic PDF copy of the notice. Online notices are often available days before physical mail arrives.",
+                "note": "Ensure your mailing address in your USCIS account is completely accurate and up to date."
+              },
+              {
+                "label": "General Notice · Step 3",
+                "title": "Note any deadlines or appointment dates",
+                "text": "If the notice specifies an appointment date, time, and location, or gives a deadline to submit documents, mark it on your calendar immediately.",
+                "note": "Never wait until the last week. If rescheduling is needed, USCIS generally requires requests to be submitted well ahead of the appointment date."
+              },
+              {
+                "label": "General Notice · Step 4",
+                "title": "Comply with the exact instructions and retain proof",
+                "text": "Attend the appointment or submit the requested documentation according to the exact mailing or online upload instructions. Keep copies of everything submitted, along with delivery tracking numbers or stamped appointment notices.",
+                "note": "Save your stamped biometrics confirmation sheet or mailing receipt in your immigration records binder."
+              }
+            ],
+            "citations": [
+              {
+                "text": "USCIS Contact Center & Live Assistance",
+                "link": "https://www.uscis.gov/contactcenter"
+              },
+              {
+                "text": "USCIS Check Case Processing Times",
+                "link": "https://egov.uscis.gov/processing-times/"
+              },
+              {
+                "text": "USCIS Change of Address Online (Form AR-11)",
+                "link": "https://www.uscis.gov/addresschange"
+              }
+            ],
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. If you receive an uncommon notice or need clarification on complex instructions, consider contacting USCIS or consulting a qualified immigration attorney."
+          }
         },
         {
           "step_key": "step_1_17",
@@ -2743,7 +4375,7 @@
           "step_name": "Receive Approval Notice (I-797)",
           "step_short_description": "I-130 petition approved",
           "step_description": "Your I-130 approval notice confirms that USCIS approved the petition. Save this notice, keep the original safe, and start preparing for NVC while you wait for the next contact.",
-          "step_type": "informational",
+          "step_type": "tool",
           "chips": [
             {
               "label": "Petitioner",
@@ -2768,7 +4400,198 @@
             "step_1_16",
             "step_1_18"
           ],
-          "pending_step_type": "tool"
+          "tool_data": {
+            "eyebrow": {
+              "chapter": "Chapter 1 · USCIS Petition Filing",
+              "step": "Receive Approval Notice (I-797)"
+            },
+            "title": "Receive Approval Notice (I-797)",
+            "description": "Your I-130 approval notice confirms that USCIS approved the petition. Save this notice, keep the original safe, and start preparing for NVC while you wait for the next contact.",
+            "chips": [
+              {
+                "label": "Petitioner",
+                "type": "role"
+              },
+              {
+                "label": "Mail or online account",
+                "type": "waiting"
+              },
+              {
+                "label": "USCIS approved",
+                "type": "purple"
+              }
+            ],
+            "launchModule": {
+              "eyebrow": "USCIS milestone · petition approved",
+              "heading": "Your petition has moved past the USCIS stage",
+              "copy": "After USCIS approves the I-130, the approved petition is sent forward for National Visa Center processing. This page helps you save the approval notice and get ready for what usually comes next.",
+              "badge": "Approved"
+            },
+            "metrics": [
+              {
+                "label": "Notice type",
+                "value": "Form I-797",
+                "sub": "Approval notice from USCIS"
+              },
+              {
+                "label": "Stage reached",
+                "value": "USCIS complete",
+                "sub": "NVC should be next"
+              },
+              {
+                "label": "What to save",
+                "value": "Digital + original",
+                "sub": "Keep a backup copy too"
+              },
+              {
+                "label": "Next contact",
+                "value": "NVC welcome",
+                "sub": "Case creation comes after transfer"
+              }
+            ],
+            "savePanel": {
+              "title": "Save Your Approval Notice",
+              "copy": "Keep one digital copy inside Rahvana, keep the physical original in a safe place, and keep a backup copy for your records.",
+              "tag": "Save first",
+              "uploadHead": "Upload a copy to Rahvana",
+              "uploadCopy": "Save the approval notice here so it stays connected to the roadmap and is easier to find later during NVC preparation.",
+              "savedState": {
+                "title": "Approval notice saved"
+              },
+              "safeItems": [
+                {
+                  "title": "Keep the original safe",
+                  "copy": "Store the paper notice with your core immigration records.",
+                  "icon": "check"
+                },
+                {
+                  "title": "Keep a backup copy",
+                  "copy": "A duplicate PDF or printed copy makes later paperwork easier.",
+                  "icon": "file"
+                },
+                {
+                  "title": "Save the approval date",
+                  "copy": "You may want it later when organizing the full case timeline.",
+                  "icon": "calendar"
+                }
+              ]
+            },
+            "timeline": {
+              "title": "What Happens Next",
+              "copy": "USCIS approval does not end the immigration journey. The next handoff is usually to the National Visa Center.",
+              "tag": "Next phase",
+              "items": [
+                {
+                  "title": "USCIS forwards the approved petition",
+                  "copy": "After approval, USCIS sends the approved petition to the National Visa Center for immigrant visa pre-processing."
+                },
+                {
+                  "title": "NVC creates the case",
+                  "copy": "Once the petition reaches NVC and the case is entered into its system, the case is prepared for the next visa-processing steps."
+                },
+                {
+                  "title": "You receive the NVC Welcome Letter",
+                  "copy": "The Welcome Letter is the signal that the case is now in the NVC stage and ready for fee, CEAC, and document-preparation work."
+                }
+              ],
+              "infoStrip": "Use current NVC timeframes for timing context rather than relying on one fixed wait estimate."
+            },
+            "prepCards": {
+              "title": "Get Ready for NVC",
+              "copy": "You do not need to stay idle while waiting. These are the highest-value prep areas to start now.",
+              "tag": "Prepare ahead",
+              "cards": [
+                {
+                  "title": "Civil documents",
+                  "copy": "Make sure birth, marriage, passport, and translation records are clean and ready for the NVC stage.",
+                  "type": "green",
+                  "icon": "book"
+                },
+                {
+                  "title": "Affidavit of support",
+                  "copy": "Review sponsor income, tax returns, and household details so the financial phase is less stressful later.",
+                  "type": "purple",
+                  "icon": "dollar"
+                },
+                {
+                  "title": "Contact details",
+                  "copy": "Make sure petitioner and beneficiary email access stays active so future NVC messages are not missed.",
+                  "type": "amber",
+                  "icon": "mail"
+                }
+              ],
+              "actions": [
+                {
+                  "label": "What happens at NVC?",
+                  "type": "info"
+                },
+                {
+                  "label": "Continue to NVC preparation",
+                  "type": "next"
+                }
+              ]
+            },
+            "modal": {
+              "title": "Save approval notice details",
+              "sub": "Add the core details so this milestone stays connected to the rest of your roadmap.",
+              "helper": "For IR-2, the priority date is useful to save for your records, but as an immediate relative, the child does not wait for a visa number."
+            },
+            "guideSteps": [
+              {
+                "label": "Step 1, Approval confirmed",
+                "title": "The I-797 tells you USCIS approved the petition",
+                "copy": "This notice confirms the I-130 petition was approved. It is a milestone record that you should save and keep with your immigration file.",
+                "head": "Approval notice",
+                "media": {
+                  "type": "image",
+                  "src": "/assets/images/ir1-journey/c1_step13/approvalnotice.png",
+                  "alt": "Approval notice example"
+                },
+                "pills": [
+                  "Save a digital copy",
+                  "Keep the original safe"
+                ],
+                "note": "This is a USCIS milestone notice. The next major handoff is usually to the National Visa Center."
+              },
+              {
+                "label": "Step 2, Save the important details",
+                "title": "Keep the approval date and receipt number easy to find",
+                "copy": "Those details help you preserve the case timeline and make later recordkeeping easier. You can save them inside Rahvana now.",
+                "head": "Case details",
+                "media": {
+                  "type": "video",
+                  "src": "/assets/videos/ir1-journey/c1_step13/savedetails.mp4"
+                },
+                "pills": [
+                  "Approval date",
+                  "Receipt number",
+                  "Priority date if shown"
+                ],
+                "note": "For IR-2, save the priority date as a record, but do not treat it like the main wait-list driver."
+              },
+              {
+                "label": "Step 3, Get ready for NVC",
+                "title": "The next stage is usually NVC case creation",
+                "copy": "After USCIS forwards the approved petition, NVC creates the case and later sends the Welcome Letter. Use this time to prepare your next-stage documents and financial records.",
+                "head": "What comes next",
+                "media": {
+                  "type": "image",
+                  "src": "/assets/images/ir1-journey/c1_step13/flowchart.png",
+                  "alt": "Approval to NVC flowchart",
+                  "frame": false
+                },
+                "pills": [
+                  "Civil documents",
+                  "Financial prep",
+                  "Contact details"
+                ],
+                "note": "Use live NVC timeframes for timing context instead of assuming one fixed waiting window."
+              }
+            ],
+            "id": "step_1_17",
+            "type": "approval_notice",
+            "disclaimer": "USCIS approval is a major milestone. Save the notice, keep the original safe, and use the waiting period to get ready for the NVC stage."
+          }
         }
       ]
     },

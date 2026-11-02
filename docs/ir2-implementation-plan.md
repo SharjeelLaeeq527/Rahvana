@@ -1,7 +1,7 @@
 # IR-2 (Child of U.S. Citizen) Journey - Implementation Plan
 
-**Status**: Phase 0a DONE (2026-10-30, commit bf849244). Phase 0b DONE (2026-10-31, uncommitted).
-Phase 1 not started.
+**Status**: Phase 0a DONE (2026-10-30, commit bf849244). Phase 0b DONE (2026-10-31, commit
+3b3b96d8). Phase 1 IN PROGRESS: chapter 1 DONE (2026-11-02, uncommitted); chapters 2 and 3 next.
 **Date**: 2026-10-28 (updated 2026-10-31)
 
 > **Phase 0a result.** Stripe mapping (`journeyTypeForVisaCategory` -> `IR1 | IR2 | IR5`),
@@ -24,7 +24,29 @@ Phase 1 not started.
 > `docs/ir2-content-draft.json`. Tests: `__tests__/ir2/ir2-skeleton.test.ts`,
 > `__tests__/ir2/no-ir1-fallback.test.ts` (5 `it.todo` = open fallbacks F4-F7, F12).
 > For the legal reviewer: draft line in `step_1_1` ("must remain ... under 21 at the time of visa
-> issuance") may conflict with the CSPA age-freeze assumption in section 3.
+> issuance") may conflict with the CSPA age-freeze assumption in section 3. (Removed in Phase 1:
+> step_1_1 now describes the age freeze as "generally" applying and points to official sources.)
+>
+> **Phase 1 chapter 1 result.** All 7 placeholder steps restored (`pending_step_type` gone from
+> chapter 1). `step_1_1`: new IR-2 eligibility quest (suite id `eligibility-suite`, q1-q5; q1s2
+> petitioner-age screen dropped; q2 = relationship / age band / marital status / birth record /
+> authenticity; q3 adds CR-2 marriage-length `q3s4`, guardianship `q3s7` (D4, never passes) and
+> custody / other-parent consent `q3s8`; shared q5s1/q5s2/q5s3/q5s5 ids kept so the shared
+> detectors still read them) + 18 IR-2 `risk_signals`. `step_1_2`: 18 IR-2 `document_items`
+> (new ids `doc_child_birth_cert`, `doc_child_crc`, `doc_legitimation`, `doc_custody_consent`,
+> `doc_child_passport`, `doc_frc`; tags only `petitioner` / `beneficiary` / `both`; groups only
+> those StepView renders; guide links only to existing guide pages). `step_1_4`, `step_1_17`,
+> `step_1_19`, `step_1_23`, `step_1_25`: IR-5 fields with asserted parent -> child text swaps
+> (RFE: petitioner-age category removed, IR-2 is not age-limited for the petitioner). Built by a
+> one-off scratchpad script; tests `__tests__/ir2/ir2-chapter1.test.ts`.
+> Not yet wired (by design, later phases): the quest's age band (`q2s2`) is NOT yet copied to a
+> `childAgeBand` case_data key (Phase 2, needed before step_3_3 can use it); the new document ids
+> are not yet in the evidence-gap / vault / reminder / questionnaire maps (Phases 4-5); StepView
+> falls back to `IR1_QUESTIONNAIRE_CONFIG` when a category has no questionnaire (new F14, Phase 5).
+> IR-5 issues seen while doing this, NOT fixed (out of IR-2 scope): IR-5 step_1_2 tags parent docs
+> `"parent beneficiary"` (rendered as a third-party chip), uses two groups StepView never renders
+> ("Prepare for Later, Do Not Obtain Too Early", "Gather Later"), and links
+> `/guides/parent-relationship-guide`, which does not exist.
 **Branch**: `hashir`
 **Goal**: Ship IR-2 as a full live journey on the same architecture IR-5 uses (chapters-schema JSON
 -> `RoadmapLayoutEngine`, multi-candidate, per-journey tier, case strength, vault, reminders,

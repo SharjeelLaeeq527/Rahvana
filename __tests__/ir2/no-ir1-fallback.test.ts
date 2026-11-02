@@ -62,4 +62,7 @@ describe("open: closed by a later phase", () => {
   it.todo("F6 StepView milestones use the IR-5 step layout for IR-2 (Phase 2)");
   it.todo("F7 interview prep for an IR-2 journey resolves ir-2-child (Phase 7)");
   it.todo("F12 vault Required tab lists IR-2 documents (Phase 4)");
+  it.todo(
+    "F14 StepView document questionnaire for IR-2 is not IR1_QUESTIONNAIRE_CONFIG (StepView `?? IR1_QUESTIONNAIRE_CONFIG`, Phase 5)"
+  );
 });
