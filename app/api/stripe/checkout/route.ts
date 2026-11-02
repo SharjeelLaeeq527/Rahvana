@@ -11,6 +11,8 @@ import * as crypto from "crypto";
 import { E, msg } from "@/lib/errors";
 import { getAuthenticatedUser } from "@/lib/api/authGuards";
 import { acquireCheckoutLock, releaseCheckoutLock } from "@/lib/stripe/checkoutLock";
+import { IR2_ENABLED } from "@/lib/feature-flags";
+import { journeyBaseCategory } from "@/lib/journey/journeyConfig";
 import {
   isMultiCandidateCategory,
   getCandidateJourneyKey,
@@ -166,11 +168,22 @@ export async function POST(request: NextRequest) {
       profile?.profile_details?.plan_visa_category || profile?.profile_details?.visa_category;
     const effectiveVisaCategory = visaCategory || dbVisaCategory || "IR-1 / CR-1";
     const selectedJourneyType = journeyTypeForVisaCategory(effectiveVisaCategory);
+
+    // IR-2 is not on sale while its flag is off. The pricing page hides it, but the
+    // category arrives from the client, so refuse it here too (before any Stripe call).
+    if (productTier && selectedJourneyType === "IR2" && !IR2_ENABLED) {
+      return NextResponse.json(
+        { error: "This visa category is not available yet.", code: "CATEGORY_NOT_AVAILABLE" },
+        { status: 400 }
+      );
+    }
+
     const isMultiCand =
       isMultiCandidateCategory(effectiveVisaCategory) || selectedJourneyType === "IR5";
+    // Keyed on the journey's canonical category (CR-2 -> IR-2), matching provisioning.
     const targetCandidateJourneyKey =
       isMultiCand && candidateId
-        ? getCandidateJourneyKey(effectiveVisaCategory, candidateId)
+        ? getCandidateJourneyKey(journeyBaseCategory(effectiveVisaCategory), candidateId)
         : selectedJourneyType;
 
     const { data: selectedJourney } = productTier

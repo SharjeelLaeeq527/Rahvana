@@ -1,5 +1,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { getCatalogItem, isItemUnlocked } from "@/lib/wallet/catalog";
+import {
+  PHOTO_BOOTH_PHOTOS_PER_PURCHASE,
+  getCatalogItem,
+  isItemUnlocked,
+  isPhotoBoothItem,
+} from "@/lib/wallet/catalog";
+import { getPhotoBoothPack } from "@/lib/wallet/photoBoothPack";
 import { loadWalletState } from "@/lib/wallet/state";
 import { WALLET_MAX_TOPUP, WALLET_MIN_TOPUP } from "@/lib/wallet/topup";
 
@@ -80,6 +86,10 @@ export async function launchResource(
     idempotencyKey = `launch:${userId}:${item.resourceType}:${item.resourceId}:${request.idempotencyKey}`;
   }
 
+  // Photo Booth is sold in packs of photos: a used-up pack is closed first, so
+  // it can be bought again even if closing it after the last photo failed.
+  if (isPhotoBoothItem(item)) await getPhotoBoothPack(supabase, userId);
+
   // Legacy purchases and earlier wallet unlocks are never charged again.
   const state = await loadWalletState(supabase, userId);
   if (isItemUnlocked(item, state.unlockRows, state.purchasedAddons)) {
@@ -104,7 +114,9 @@ export async function launchResource(
     p_resource_type: item.resourceType,
     p_resource_id: item.resourceId,
     p_credit_cost: item.credits,
-    p_description: `${item.name} - Standalone Access Unlock`,
+    p_description: isPhotoBoothItem(item)
+      ? `${item.name} - ${PHOTO_BOOTH_PHOTOS_PER_PURCHASE} photos`
+      : `${item.name} - Standalone Access Unlock`,
     p_idempotency_key: idempotencyKey,
     p_metadata: { source: "wallet_launch", catalog_credits: item.credits },
   });
