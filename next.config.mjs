@@ -34,6 +34,10 @@ const nextConfig = {
   // stack to attackers during reconnaissance.
   poweredByHeader: false,
 
+  // Disable browser source maps in staging/production builds so proprietary
+  // frontend code and internal comments cannot be downloaded via _next/static.
+  productionBrowserSourceMaps: false,
+
   images: {
     remotePatterns: [
       {
