@@ -76,8 +76,22 @@ export function assertStagingBasicAuth(request: NextRequest): NextResponse | nul
           ? atob(b64)
           : Buffer.from(b64, "base64").toString("utf-8");
 
-      if (validPairs.includes(decoded)) {
-        return null; // Authenticated
+      const colonIdx = decoded.indexOf(":");
+      if (colonIdx !== -1) {
+        const inputUser = decoded.substring(0, colonIdx).trim().toLowerCase();
+        const inputPass = decoded.substring(colonIdx + 1);
+
+        const isMatch = validPairs.some((pair) => {
+          const pColon = pair.indexOf(":");
+          if (pColon === -1) return false;
+          const pairUser = pair.substring(0, pColon).trim().toLowerCase();
+          const pairPass = pair.substring(pColon + 1);
+          return inputUser === pairUser && inputPass === pairPass;
+        });
+
+        if (isMatch) {
+          return null; // Authenticated
+        }
       }
     } catch {
       // Decode error -> fall through to 401
