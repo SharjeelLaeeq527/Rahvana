@@ -21,7 +21,7 @@ export function isStagingRestrictionActive(): boolean {
   }
 
   // Active in staging
-  if (env === "development") {
+  if (env === "staging" || env === "development") {
     return true;
   }
 

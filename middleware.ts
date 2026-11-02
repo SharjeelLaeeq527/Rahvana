@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { updateSession } from "./lib/supabase/middleware";
 import { assertMiddlewareBodySize } from "@/lib/security/request-body";
+import { assertStagingBasicAuth } from "@/lib/security/staging-basic-auth";
 
 /**
  * Paid/private route prefixes.
@@ -91,6 +92,9 @@ function isPrivatePath(pathname: string): boolean {
 }
 
 export async function middleware(request: NextRequest) {
+  // Layer 2: HTTP Basic Authentication for Staging Environment
+  const basicAuthBlock = assertStagingBasicAuth(request);
+  if (basicAuthBlock) return basicAuthBlock;
   if (request.nextUrl.pathname.startsWith("/api/")) {
     const blocked = assertMiddlewareBodySize(request);
     if (blocked) return blocked;
