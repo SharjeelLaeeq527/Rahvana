@@ -5079,22 +5079,198 @@
         },
         {
           "step_key": "step_2_5",
+          "financial_requirements": {
+            "disclaimer": "Affidavit of Support thresholds are established by the annual HHS Poverty Guidelines and Form I-864 instructions. Children qualifying for automatic citizenship under INA Section 320 are exempt via Form I-864W.",
+            "minimum_income_percent": 125,
+            "active_duty_exception_percent": 100,
+            "guidance": [
+              "Child Citizenship Act Exemption (INA Section 320): Biological or legally adopted unmarried children under age 18 who will reside in the United States in the legal and physical custody of their U.S. citizen parent automatically acquire U.S. citizenship upon admission. These children are EXEMPT from Form I-864 and file Form I-864W instead. No minimum income threshold or joint sponsor is required.",
+              "Affidavit of Support Fee Exemption: Intending immigrants filing Form I-864W are exempt from paying the $120 Affidavit of Support fee. If CEAC automatically generates an AOS fee invoice for an I-864W-eligible child, submit an inquiry to NVC via their Public Inquiry Form to request the fee be waived before paying.",
+              "Stepchildren Require Form I-864: Stepchildren do NOT acquire automatic citizenship under INA Section 320. The U.S. citizen stepparent must submit a standard Form I-864 (or Form I-864EZ if eligible), pay the $120 AOS fee, and meet the 125% poverty guideline.",
+              "Adult Children (Ages 18-20) Require Form I-864: Beneficiaries who are 18 or older at admission do NOT qualify for automatic citizenship under INA Section 320. They must be sponsored using Form I-864 (or I-864EZ), pay the $120 AOS fee, and meet the 125% poverty guideline.",
+              "Active-Duty Military 100% Exception: Under INA Section 213A(f)(3), if the petitioner is on active duty in the U.S. Armed Forces petitioning for their child, the minimum income threshold is 100% of the HHS Poverty Guidelines rather than 125%.",
+              "Joint Sponsors and Household Members: For cases requiring Form I-864 (stepchildren and adult children), if the petitioner does not meet the income guideline, they may use a qualified household member (Form I-864A) or a joint sponsor (separate Form I-864). The petitioner must still submit their own Form I-864 regardless of income."
+            ],
+            "source_basis": "INA Section 213A, INA Section 320 (Child Citizenship Act of 2000), 8 CFR 213a; HHS Poverty Guidelines; Form I-864 and Form I-864W instructions."
+          },
           "step_number": 5,
-          "step_name": "Affidavit of Support",
-          "step_short_description": "Determine and prepare sponsorship",
-          "step_description": "First determine the sponsorship setup using Rahvana's calculator, then the correct affidavit forms are generated for your case.",
-          "step_type": "informational",
+          "step_name": "Affidavit of Support & Exemption (Form I-864 / I-864W)",
+          "step_short_description": "Determine sponsorship setup or Form I-864W citizenship exemption",
+          "step_description": "Determine whether your child qualifies for automatic U.S. citizenship under the Child Citizenship Act (Form I-864W exemption) or requires standard financial sponsorship (Form I-864) using Rahvana's calculator.",
+          "step_type": "tool",
           "who": "Petitioner",
-          "where": "Sponsorship Calculator",
+          "where": "Sponsorship Calculator & CEAC",
           "estimated_duration_days": 2,
           "is_required": true,
           "display_order": 5,
           "actions": [
-            "Check petitioner qualification",
-            "Evaluate joint sponsor need",
-            "Generate Form I-864 and any applicable I-864A or joint sponsor I-864 forms",
-            "Review supporting financials"
+            "Determine INA Section 320 Child Citizenship Act exemption eligibility (Form I-864W) vs standard Form I-864",
+            "Check petitioner qualification against HHS Poverty Guidelines (125% or 100% military) if Form I-864 is required",
+            "Evaluate need for household member (Form I-864A) or joint sponsor (for stepchildren and children aged 18-20)",
+            "Generate Form I-864W or Form I-864 and gather supporting tax and custody evidence"
           ],
+          "tool_data": {
+            "id": "step_2_5",
+            "type": "sponsorship_calculator",
+            "title": "Complete Affidavit of Support or Exemption (Form I-864 / I-864W)",
+            "subtitle": "Determine whether your child qualifies for the INA Section 320 citizenship exemption (Form I-864W) or requires standard financial sponsorship (Form I-864).",
+            "launch_module": {
+              "label": "Affidavit Support & Exemption Calculator",
+              "title": "Determine your sponsorship setup or exemption status",
+              "icon": "calculator",
+              "features": [
+                "Check if child qualifies for automatic citizenship under INA Section 320 (Form I-864W exemption)",
+                "Determine if standard Form I-864 is required (stepchildren and adult children ages 18-20)",
+                "Calculate if petitioner meets 125% HHS poverty guidelines (or 100% for active-duty military)",
+                "Evaluate need for household member income (Form I-864A) or a joint sponsor",
+                "Generate the correct forms (Form I-864W, Form I-864, or Form I-864A) for CEAC upload"
+              ],
+              "buttonText": "Start Sponsorship & Exemption Calculator"
+            },
+            "guide_card": {
+              "title": "Step-by-Step Affidavit of Support & Exemption Guide",
+              "subtitle": "Walk through determining I-864 vs I-864W, fee payment or waiver, gathering tax and custody evidence, and uploading to CEAC."
+            },
+            "tutorial_steps": [
+              {
+                "label": "Step 1 of 8, Determine AOS fee payment vs Form I-864W exemption",
+                "heading": "Check AOS fee requirement or request I-864W exemption",
+                "screenTitle": "Check AOS fee requirement or request I-864W exemption",
+                "instruction": "In CEAC, check the Affidavit of Support fee section. If your child qualifies for automatic citizenship under the Child Citizenship Act (biological/adopted child under 18 entering petitioner's custody), they file Form I-864W and are exempt from the $120 AOS fee. If CEAC bills this fee, contact NVC via the Public Inquiry Form to clear it. If sponsoring a stepchild or child aged 18-20, Form I-864 is required and the $120 AOS fee must be paid.",
+                "url": "ceac.state.gov",
+                "ss_label": "Fee Payment / Exemption",
+                "ss_headline": "Affidavit of Support Fee Status",
+                "ss_desc": "$120 fee for Form I-864 or fee-exempt for Form I-864W",
+                "ss_highlight": null,
+                "caption": "Under INA Section 320, children who will automatically acquire citizenship on entry do not pay the AOS fee. Stepchildren and adult children (18-20) must pay the $120 fee.",
+                "note": null,
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step5/01-pay-aos-fees.png"
+                }
+              },
+              {
+                "label": "Step 2 of 8, Confirm payment or exemption clearance",
+                "heading": "Confirm payment receipt or exemption acknowledgment",
+                "screenTitle": "Confirm payment receipt or exemption acknowledgment",
+                "instruction": "If you paid the $120 AOS fee (required for Form I-864), CEAC will display a payment confirmation showing status 'PAID' once cleared (typically 2-3 business days). If exempt under Form I-864W, ensure NVC has updated the status or proceed as directed. Keep payment receipts or inquiry correspondence in your records.",
+                "url": "ceac.state.gov",
+                "ss_label": "Receipt / Clearance",
+                "ss_headline": "AOS Fee Status Confirmed",
+                "ss_desc": "Paid status or exemption cleared",
+                "ss_highlight": null,
+                "caption": "A paid or cleared status unlocks the Affidavit of Support document upload section in CEAC.",
+                "note": null,
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step5/02-aos-payment-receipt.png"
+                }
+              },
+              {
+                "label": "Step 3 of 8, Start AOS and financial document submission",
+                "heading": "Begin Affidavit of Support document submission",
+                "screenTitle": "Begin Affidavit of Support document submission",
+                "instruction": "Once fee status permits, navigate to the Affidavit of Support section in CEAC. This is where you will upload either Form I-864W with citizenship/custody proof (for exempt children) or Form I-864/I-864EZ with complete financial evidence for the petitioner and any joint sponsors or household members.",
+                "url": "ceac.state.gov",
+                "ss_label": "AOS Submission",
+                "ss_headline": "Start Financial / Exemption Documents",
+                "ss_desc": "Prepare Form I-864W or Form I-864 package",
+                "ss_highlight": null,
+                "caption": "Have your signed Form I-864W or Form I-864 ready along with all necessary supporting tax transcripts, income proof, or custody documents.",
+                "note": null,
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step5/03-start-submission-aos-and-financial-docs.png"
+                }
+              },
+              {
+                "label": "Step 4 of 8, Select and verify document type",
+                "heading": "Select correct document category in CEAC dropdown",
+                "screenTitle": "Select correct document category in CEAC dropdown",
+                "instruction": "CEAC requires you to specify the exact document type for each upload. For an exempt child, select 'I-864W Intending Immigrant Exemption' and supporting citizenship/custody records. For Form I-864, select 'Affidavit of Support (I-864)', 'IRS Tax Transcript / Tax Return', 'W-2', or 'Proof of Domicile' under the appropriate sponsor role.",
+                "url": "ceac.state.gov",
+                "ss_label": "Document Type",
+                "ss_headline": "Select Document Category",
+                "ss_desc": "Verify I-864W or I-864 type before uploading",
+                "ss_highlight": null,
+                "caption": "Selecting the wrong document category can trigger an NVC rejection or delay review. Always double-check the dropdown selection.",
+                "note": null,
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step5/04-check-doc-type.png"
+                }
+              },
+              {
+                "label": "Step 5 of 8, Upload form and supporting documentation",
+                "heading": "Upload completed form and required evidence",
+                "screenTitle": "Upload completed form and required evidence",
+                "instruction": "Upload the signed sponsorship form and required evidence. If filing Form I-864W: upload signed I-864W, petitioner's U.S. passport/citizenship proof, and custody/legitimation evidence. If filing Form I-864: upload signed I-864, the most recent IRS tax transcript or tax return with W-2s, recent pay stubs, employment letter, and any household-member (I-864A) or joint sponsor documents.",
+                "url": "ceac.state.gov",
+                "ss_label": "Upload Evidence",
+                "ss_headline": "Submit Form & Evidence",
+                "ss_desc": "I-864W with citizenship/custody or I-864 with tax transcripts",
+                "ss_highlight": null,
+                "caption": "Ensure all pages are included in order and scans are clear, in PDF or high-quality image format under 2 MB (or CEAC limit).",
+                "note": "Do not navigate away or close the browser tab while files are uploading.",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step5/05-upload-docs.png"
+                }
+              },
+              {
+                "label": "Step 6 of 8, Verify submission completeness",
+                "heading": "Confirm all required AOS documents are submitted",
+                "screenTitle": "Confirm all required AOS documents are submitted",
+                "instruction": "After uploading all files, review the CEAC Affidavit of Support dashboard. Confirm that every required document row displays a status of 'Submitted' (or 'Uploaded'). For cases requiring multiple sponsors, verify that each sponsor's row has its corresponding form and tax documents attached.",
+                "url": "ceac.state.gov",
+                "ss_label": "Verification",
+                "ss_headline": "Submission Complete",
+                "ss_desc": "All required AOS documents marked Submitted",
+                "ss_highlight": null,
+                "caption": "A complete AOS or I-864W submission is required before NVC can proceed with documentary qualification review.",
+                "note": null,
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step5/06-check-submission.png"
+                }
+              },
+              {
+                "label": "Step 7 of 8, Review document rejection reason if flagged",
+                "heading": "Check rejection notes if NVC flags a document",
+                "screenTitle": "Check rejection notes if NVC flags a document",
+                "instruction": "If NVC marks a document as 'Rejected' or 'Incomplete', click the message or note icon to read the specific reason. Common issues include: missing handwritten signature on Form I-864/I-864W, missing W-2 schedules with Form 1040, unclear scan quality, file exceeding size limits, or missing joint sponsor domicile proof.",
+                "url": "ceac.state.gov",
+                "ss_label": "Rejection Review",
+                "ss_headline": "Document Rejected / Incomplete",
+                "ss_desc": "Read NVC feedback and note required corrections",
+                "ss_highlight": null,
+                "caption": "Carefully review NVC's exact written feedback before re-scanning or obtaining new documentation.",
+                "note": null,
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step5/07-if-rejected-any-doc.png"
+                }
+              },
+              {
+                "label": "Step 8 of 8, Replace and re-upload rejected document",
+                "heading": "Re-upload corrected form or financial evidence",
+                "screenTitle": "Re-upload corrected form or financial evidence",
+                "instruction": "After fixing the flagged issue, use the 'Replace' or re-upload button in CEAC to submit the corrected document. Verify that the new file is legible, correctly oriented, under 2 MB, and accurately addresses the reviewer's instructions. Once submitted, NVC will review the updated file in order of receipt.",
+                "url": "ceac.state.gov",
+                "ss_label": "Resubmission",
+                "ss_headline": "Upload Corrected Document",
+                "ss_desc": "Resubmit corrected AOS or I-864W document",
+                "ss_highlight": null,
+                "caption": "After resubmitting, monitor CEAC periodically until the document status changes to 'Accepted'.",
+                "note": null,
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step5/08-replace-the-doc.png"
+                }
+              }
+            ],
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Consult a licensed immigration attorney for case-specific decisions."
+          },
           "url": "/affidavit-support/i-864",
           "relevantTools": [
             {
@@ -5107,8 +5283,7 @@
               "href": "/signature-image-processing",
               "type": "tool"
             }
-          ],
-          "pending_step_type": "tool"
+          ]
         },
         {
           "step_key": "step_2_6",
