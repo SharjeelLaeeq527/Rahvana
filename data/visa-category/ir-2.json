@@ -1363,9 +1363,7 @@
           "step_description": "Decide between Online vs. Paper filing",
           "who": "Petitioner",
           "where": "Rahvana tool",
-          "dependencies": [
-            "step_1_2"
-          ],
+          "dependencies": ["step_1_2"],
           "visible_when": {},
           "estimated_duration_days": 1,
           "is_required": true,
@@ -1565,9 +1563,7 @@
           "who": "Petitioner",
           "where": "my.uscis.gov",
           "timeline": "2-4 hours",
-          "dependencies": [
-            "step_1_3"
-          ],
+          "dependencies": ["step_1_3"],
           "estimated_duration_days": 2,
           "is_required": true,
           "display_order": 4,
@@ -1663,9 +1659,7 @@
           },
           "step_description": "Set up the petitioner's USCIS online account, the gateway for filing Form I-130 digitally, tracking the case, and responding to any USCIS requests.",
           "who": "Petitioner",
-          "dependencies": [
-            "step_1_3"
-          ],
+          "dependencies": ["step_1_3"],
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 5,
@@ -1743,9 +1737,7 @@
           "step_description": "Sign in to your USCIS account and begin the online I-130 petition. From your account dashboard, click \"File a Form Online\" to start the form and enter your prepared information.",
           "who": "Petitioner",
           "where": "myaccount.uscis.gov",
-          "dependencies": [
-            "step_1_5"
-          ],
+          "dependencies": ["step_1_5"],
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 6,
@@ -1967,9 +1959,7 @@
           "step_description": "Attach your supporting documents inside the USCIS online portal. This is the evidence-upload phase, your documents become part of the official I-130 filing record.",
           "who": "Petitioner",
           "where": "myaccount.uscis.gov",
-          "dependencies": [
-            "step_1_6"
-          ],
+          "dependencies": ["step_1_6"],
           "visible_when": {
             "filingMethodConfirmed": true,
             "filingMethod": "online"
@@ -2101,13 +2091,7 @@
             "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Always verify current requirements at uscis.gov before submitting.",
             "quality_requirements": {
               "max_file_size_mb": 12,
-              "accepted_formats": [
-                "PDF",
-                "JPG",
-                "JPEG",
-                "TIF",
-                "TIFF"
-              ],
+              "accepted_formats": ["PDF", "JPG", "JPEG", "TIF", "TIFF"],
               "guidance": [
                 "Each individual file must be 12 MB or smaller (USCIS portal limit)",
                 "Scans must be clear and legible, USCIS commonly issues RFEs for unreadable documents",
@@ -2133,9 +2117,7 @@
           "who": "Petitioner",
           "where": "my.uscis.gov / pay.gov",
           "timeline": "Same session as submission",
-          "dependencies": [
-            "step_1_7"
-          ],
+          "dependencies": ["step_1_7"],
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 8,
@@ -2294,9 +2276,7 @@
           "who": "Petitioner",
           "where": "my.uscis.gov",
           "timeline": "Same session as payment",
-          "dependencies": [
-            "step_1_8"
-          ],
+          "dependencies": ["step_1_8"],
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 9,
@@ -2483,9 +2463,7 @@
           "who": "Petitioner",
           "where": "uscis.gov/i-130",
           "timeline": "1-2 hours",
-          "dependencies": [
-            "step_1_3"
-          ],
+          "dependencies": ["step_1_3"],
           "is_required": true,
           "display_order": 10,
           "action_data": {
@@ -2616,9 +2594,7 @@
           "who": "Petitioner",
           "where": "uscis.gov/g-1055?form=i-130",
           "timeline": "1-2 hours",
-          "dependencies": [
-            "step_1_10"
-          ],
+          "dependencies": ["step_1_10"],
           "is_required": true,
           "display_order": 11,
           "action_data": {
@@ -2770,9 +2746,7 @@
           "who": "Petitioner",
           "where": "uscis.gov/i-130",
           "timeline": "1-2 hours",
-          "dependencies": [
-            "step_1_11"
-          ],
+          "dependencies": ["step_1_11"],
           "is_required": true,
           "display_order": 12,
           "action_data": {
@@ -2838,14 +2812,14 @@
               {
                 "label": "Assembly guide · Step 3",
                 "title": "Add core supporting evidence",
-                "text": "After the forms, add the documents that support the petition, including citizenship proof and marriage evidence.",
+                "text": "After the forms, add the documents that support the petition, including citizenship proof and relationship evidence.",
                 "visual": "<img src=\"/assets/images/ir1-journey/c1_step8_mail/step3.png\" alt=\"Add core supporting evidence\" style=\"width:100%; \" />",
                 "note": "This is Rahvana's recommended assembly order for clarity. Make sure all required evidence is included."
               },
               {
                 "label": "Assembly guide · Step 4",
                 "title": "Add translations and relationship evidence",
-                "text": "Place translations and any additional bona fide marriage evidence behind the core civil documents.",
+                "text": "Place translations and any additional relationship evidence behind the core civil documents.",
                 "visual": "<img src=\"/assets/images/ir1-journey/c1_step8_mail/step4.png\" alt=\"Add translations and relationship evidence\" style=\"width:100%; \" />",
                 "note": "Keep translated copies with the document they support whenever that makes the packet easier to review."
               },
@@ -2893,7 +2867,7 @@
                 },
                 {
                   "id": "bona_fide_evidence",
-                  "label": "Bona fide marriage evidence (joint financial documents, photos, third-party affidavits)",
+                  "label": "Evidence of a bona fide parent-child relationship (financial support, shared residence, correspondence, photos)",
                   "position": "supporting section",
                   "required": true
                 },
@@ -2930,9 +2904,7 @@
           "who": "Petitioner",
           "where": "uscis.gov/mailing-addresses",
           "timeline": "1-2 hours",
-          "dependencies": [
-            "step_1_12"
-          ],
+          "dependencies": ["step_1_12"],
           "is_required": true,
           "display_order": 13,
           "action_data": {
@@ -3044,10 +3016,7 @@
           "who": "Petitioner",
           "where": "ceac.state.gov",
           "timeline": "1-2 days after receipt",
-          "dependencies": [
-            "step_1_9",
-            "step_1_13"
-          ],
+          "dependencies": ["step_1_9", "step_1_13"],
           "is_required": true,
           "display_order": 14,
           "tool_data": {
@@ -3084,7 +3053,7 @@
             ],
             "launch_cues": [
               "Receipt numbers use 3 letters followed by 10 numbers.",
-              "Priority date can be saved for recordkeeping, but it is not the main driver for IR-1 cases.",
+              "Priority date can be saved for recordkeeping, but it is not the main driver for IR-2 cases.",
               "Upload and manual entry are both supported.",
               "Tracking should be treated as monitored status lookup, not a guaranteed USCIS API feed."
             ],
@@ -3118,7 +3087,7 @@
                 },
                 {
                   "label": "Case Label (optional)",
-                  "placeholder": "IR-1 I-130 · March 2026 filing"
+                  "placeholder": "IR-2 I-130 · March 2026 filing"
                 }
               ],
               "upload_fields": [
@@ -3244,9 +3213,7 @@
           "who": "Petitioner",
           "where": "ceac.state.gov",
           "timeline": "Ongoing after registration",
-          "dependencies": [
-            "step_1_15"
-          ],
+          "dependencies": ["step_1_15"],
           "is_required": true,
           "display_order": 15,
           "tool_data": {
@@ -3287,7 +3254,7 @@
                 {
                   "label": "Priority date",
                   "value": "Saved if provided",
-                  "sub": "Useful record, not the center of IR-1"
+                  "sub": "Useful record, not the center of IR-2"
                 },
                 {
                   "label": "Next likely phase",
@@ -3387,19 +3354,13 @@
                 "icon": "green",
                 "title": "Add new evidence entries",
                 "copy": "Log visits, upload new photos, and keep a clean timeline of the relationship as it continues.",
-                "buttons": [
-                  "Add note",
-                  "Mark planned"
-                ]
+                "buttons": ["Add note", "Mark planned"]
               },
               {
                 "icon": "rose",
                 "title": "Track household or income changes",
                 "copy": "If finances, employment, or household size change while waiting, keeping that organized now can make later sponsorship steps easier.",
-                "buttons": [
-                  "Save reminder",
-                  "Open notes"
-                ]
+                "buttons": ["Save reminder", "Open notes"]
               }
             ],
             "community": [
@@ -3423,11 +3384,7 @@
                 "kicker": "Official USCIS tracking",
                 "head": "Case Status Online",
                 "copy": "Track your case using the 13-character receipt number.",
-                "pills": [
-                  "Receipt number required",
-                  "Last action shown",
-                  "Official USCIS tool"
-                ],
+                "pills": ["Receipt number required", "Last action shown", "Official USCIS tool"],
                 "note": "A quiet status page does not necessarily mean nothing is happening internally. It usually means there has been no new official outward-facing update yet."
               },
               {
@@ -3438,12 +3395,7 @@
                 "kicker": "Status guide",
                 "head": "Status meanings",
                 "copy": "Separate passive waiting from states that require action.",
-                "pills": [
-                  "Received",
-                  "Actively reviewed",
-                  "RFE",
-                  "Approved"
-                ],
+                "pills": ["Received", "Actively reviewed", "RFE", "Approved"],
                 "note": "Use this guide to understand whether you need to act now or simply stay prepared."
               },
               {
@@ -3454,11 +3406,7 @@
                 "kicker": "While-you-wait tools",
                 "head": "Stay prepared while waiting",
                 "copy": "A prep checklist, next-step preview, and useful modules for this waiting period.",
-                "pills": [
-                  "Prep checklist",
-                  "Coming next",
-                  "Useful right now"
-                ],
+                "pills": ["Prep checklist", "Coming next", "Useful right now"],
                 "note": "A few small tasks now can make the next phase feel much easier when the case moves forward."
               },
               {
@@ -3469,11 +3417,7 @@
                 "kicker": "Next-step guide",
                 "head": "Pivot when USCIS changes the status",
                 "copy": "RFE and approval should each unlock their own dedicated next-step experiences.",
-                "pills": [
-                  "Conditional branches",
-                  "Next step unlocks",
-                  "Action clarity"
-                ],
+                "pills": ["Conditional branches", "Next step unlocks", "Action clarity"],
                 "note": "Your next task should match the actual update USCIS gives you."
               }
             ],
@@ -3499,9 +3443,7 @@
           "who": "Petitioner",
           "where": "my.uscis.gov / mail",
           "timeline": "Varies by notice type",
-          "dependencies": [
-            "step_1_16"
-          ],
+          "dependencies": ["step_1_16"],
           "is_required": false,
           "display_order": 17,
           "tool_data": {
@@ -3631,9 +3573,7 @@
           "who": "Petitioner",
           "where": "my.uscis.gov / mail",
           "timeline": "Before deadline on notice",
-          "dependencies": [
-            "step_1_18"
-          ],
+          "dependencies": ["step_1_18"],
           "is_required": false,
           "display_order": 19,
           "step_description": "USCIS may issue a Request for Evidence (RFE) or Notice of Intent to Deny (NOID) if additional information or documents are needed. Respond fully before the stated deadline.",
@@ -3812,9 +3752,7 @@
           "who": "Petitioner",
           "where": "my.uscis.gov / mail",
           "timeline": "Before deadline on notice",
-          "dependencies": [
-            "step_1_18"
-          ],
+          "dependencies": ["step_1_18"],
           "is_required": false,
           "display_order": 20,
           "guide_data": {
@@ -3882,9 +3820,7 @@
           "who": "Petitioner",
           "where": "my.uscis.gov / mail",
           "timeline": "Before deadline on notice",
-          "dependencies": [
-            "step_1_18"
-          ],
+          "dependencies": ["step_1_18"],
           "is_required": false,
           "display_order": 21,
           "guide_data": {
@@ -3952,9 +3888,7 @@
           "who": "Petitioner",
           "where": "my.uscis.gov / mail",
           "timeline": "Before deadline on notice",
-          "dependencies": [
-            "step_1_18"
-          ],
+          "dependencies": ["step_1_18"],
           "is_required": false,
           "display_order": 22,
           "guide_data": {
@@ -4061,13 +3995,7 @@
           "who": "Petitioner",
           "where": "my.uscis.gov",
           "timeline": "Varies by case",
-          "dependencies": [
-            "step_1_19",
-            "step_1_20",
-            "step_1_21",
-            "step_1_22",
-            "step_1_25"
-          ],
+          "dependencies": ["step_1_19", "step_1_20", "step_1_21", "step_1_22", "step_1_25"],
           "is_required": false,
           "display_order": 23,
           "tool_data": {
@@ -4133,9 +4061,7 @@
           "who": "Petitioner",
           "where": "my.uscis.gov / EOIR",
           "timeline": "Varies, deadlines apply",
-          "dependencies": [
-            "step_1_23"
-          ],
+          "dependencies": ["step_1_23"],
           "is_required": false,
           "display_order": 24,
           "guide_data": {
@@ -4248,9 +4174,7 @@
           "who": "Petitioner / Beneficiary",
           "where": "my.uscis.gov / mail",
           "timeline": "Before deadline on notice",
-          "dependencies": [
-            "step_1_18"
-          ],
+          "dependencies": ["step_1_18"],
           "is_required": false,
           "display_order": 25,
           "guide_data": {
@@ -4396,10 +4320,7 @@
           },
           "is_required": false,
           "who": "Petitioner",
-          "dependencies": [
-            "step_1_16",
-            "step_1_18"
-          ],
+          "dependencies": ["step_1_16", "step_1_18"],
           "tool_data": {
             "eyebrow": {
               "chapter": "Chapter 1 · USCIS Petition Filing",
@@ -4547,10 +4468,7 @@
                   "src": "/assets/images/ir1-journey/c1_step13/approvalnotice.png",
                   "alt": "Approval notice example"
                 },
-                "pills": [
-                  "Save a digital copy",
-                  "Keep the original safe"
-                ],
+                "pills": ["Save a digital copy", "Keep the original safe"],
                 "note": "This is a USCIS milestone notice. The next major handoff is usually to the National Visa Center."
               },
               {
@@ -4562,11 +4480,7 @@
                   "type": "video",
                   "src": "/assets/videos/ir1-journey/c1_step13/savedetails.mp4"
                 },
-                "pills": [
-                  "Approval date",
-                  "Receipt number",
-                  "Priority date if shown"
-                ],
+                "pills": ["Approval date", "Receipt number", "Priority date if shown"],
                 "note": "For IR-2, save the priority date as a record, but do not treat it like the main wait-list driver."
               },
               {
@@ -4580,11 +4494,7 @@
                   "alt": "Approval to NVC flowchart",
                   "frame": false
                 },
-                "pills": [
-                  "Civil documents",
-                  "Financial prep",
-                  "Contact details"
-                ],
+                "pills": ["Civil documents", "Financial prep", "Contact details"],
                 "note": "Use live NVC timeframes for timing context instead of assuming one fixed waiting window."
               }
             ],
@@ -4676,7 +4586,7 @@
                 "label": "Step 2 of 5, Locate your NVC Case Number",
                 "heading": "Locate your NVC Case Number",
                 "screenTitle": "Locate your NVC Case Number",
-                "instruction": "The NVC Case Number appears clearly in the Welcome Letter or email. For IR-1 spouse cases from Pakistan, it typically follows a format like <strong>ISL2026XXXXXX</strong>, beginning with your consulate code, followed by the year and case digits.",
+                "instruction": "The NVC Case Number appears clearly in the Welcome Letter or email. For IR-2 child cases from Pakistan, it typically follows a format like <strong>ISL2026XXXXXX</strong>, beginning with your consulate code, followed by the year and case digits.",
                 "url": "NVC Case Number Location",
                 "ss_label": "NVC Case Number Location",
                 "ss_headline": "Notice of NVC Receipt",
@@ -5352,7 +5262,7 @@
           "step_number": 1,
           "step_name": "Schedule Medical Examination",
           "step_short_description": "Required medical examination",
-          "step_description": "Every immigrant visa applicant must complete a medical examination with an embassy-approved physician before their interview.",
+          "step_description": "Every immigrant visa applicant, regardless of age, must complete a medical examination with an Embassy-approved physician before their interview. The physician will assess age-appropriate health screening and vaccination requirements.",
           "step_type": "tool",
           "who": "Child beneficiary",
           "where": "Approved Panel Physicians",
@@ -5373,7 +5283,7 @@
               "step": "Step 1, Schedule Medical Exam"
             },
             "title": "Schedule Medical Examination",
-            "description": "Book your consular medical exam with an embassy-approved physician. You can use Rahvana's booking service or schedule it yourself with the guide.",
+            "description": "Book your child's consular medical exam with an embassy-approved physician. You can use Rahvana's booking service or schedule it yourself with the guide.",
             "chips": [
               {
                 "label": "Medical",
@@ -5390,7 +5300,7 @@
             ],
             "decisionModule": {
               "eyebrow": "Medical Exam Scheduling",
-              "heading": "How would you like to schedule your medical exam?",
+              "heading": "How would you like to schedule your child's medical exam?",
               "paths": [
                 {
                   "id": "service",
@@ -5409,7 +5319,7 @@
             "serviceSteps": [
               {
                 "label": "Step 1 of 3, Rahvana Booking Service",
-                "heading": "Book your medical exam through Rahvana",
+                "heading": "Book your child's medical exam through Rahvana",
                 "sub": "Rahvana will connect you with an embassy-approved physician in your area. Click below to open the booking service.",
                 "card": {
                   "title": "Rahvana Medical Booking Service",
@@ -5455,8 +5365,8 @@
               {
                 "label": "Step 2 of 3, Contact and book the appointment",
                 "heading": "Contact the physician and book directly",
-                "sub": "Call or visit the approved physician's office to schedule your immigrant visa medical examination. Bring your appointment letter and passport.",
-                "info": "Contact the selected approved physician directly and follow that clinic's current booking instructions. Appointment methods, fees, timing, and required documents vary by clinic.",
+                "sub": "Call or visit the approved physician's office to schedule your child's immigrant visa medical examination. Bring the appointment letter and passport.",
+                "info": "Prepare the child's passport, interview appointment letter, DS-260 confirmation page, six recent passport-sized photographs, and available immunization records. The physician will determine age-appropriate vaccination and TB screening requirements. In Pakistan, TB testing is required from age two, and blood tests are required from age 15 under the Islamabad medical instructions.",
                 "alert": "Ensure the physician is currently active on the approved list, lists are updated periodically. A medical exam from a removed physician will not be accepted.",
                 "nav": {
                   "back": true,
@@ -5480,7 +5390,7 @@
             },
             "reminderSync": {
               "title": "Reminder active on your dashboard",
-              "sub": "Your medical appointment is pinned to your dashboard. You'll be reminded as the date approaches."
+              "sub": "Your child's medical appointment is pinned to your dashboard. You'll be reminded as the date approaches."
             },
             "disclaimer": "Rahvana provides scheduling assistance only. Always confirm approved physician status with your embassy directly.",
             "id": "step_3_1",
@@ -5488,7 +5398,7 @@
             "subtitle": "Every immigrant visa applicant must complete a medical exam with an embassy-approved physician before their interview.",
             "launch_module": {
               "label": "Medical Appointment Service",
-              "title": "Book your panel-physician medical exam",
+              "title": "Book your child's panel-physician medical exam",
               "icon": "calculator",
               "buttonText": "Start Booking Service",
               "features": [
@@ -5538,11 +5448,11 @@
             ],
             "launchModule": {
               "eyebrow": "Rahvana Polio Vaccination Guide",
-              "heading": "Follow the step-by-step guide to obtain your certificate",
+              "heading": "Follow the step-by-step guide to obtain your child's certificate",
               "cues": [
                 "Where to get the polio vaccination",
                 "What the certificate looks like and what to verify",
-                "Timing relative to your medical exam date",
+                "Timing relative to your child's medical exam date",
                 "Common mistakes and how to avoid them"
               ],
               "buttonLabels": {
@@ -5556,7 +5466,7 @@
             },
             "returnNote": {
               "title": "✓ Guide completed",
-              "sub": "Use the checklist below to mark your polio certificate as obtained once you have it in hand."
+              "sub": "Use the checklist below to mark your child's polio certificate as obtained once you have it in hand."
             },
             "completionCard": {
               "title": "Mark your progress",
@@ -5571,7 +5481,7 @@
               {
                 "label": "Step 1 of 5",
                 "heading": "What is the polio vaccination requirement?",
-                "instruction": "Typical cases from Pakistan will require a polio certificate for the medical examination. Therefore, it is highly recommended and advisable to obtain it beforehand to avoid any delays in your medical process.",
+                "instruction": "Typical cases from Pakistan will require a polio certificate for the medical examination. Therefore, it is highly recommended and advisable to obtain it beforehand to avoid any delays in your child's medical process.",
                 "vLabel": "Requirement Overview",
                 "visual": {
                   "title": "Why this is required",
@@ -5586,18 +5496,18 @@
                 "note": "Do not go to a general doctor or hospital for this, you must use a government-approved site for the certificate to be accepted.",
                 "visual": {
                   "title": "Approved Vaccination Sites",
-                  "sub": "Government immunization centres in major cities typically administer this vaccine and issue the official certificate. Contact your local district health office or check with your panel physician for the nearest site."
+                  "sub": "Government immunization centres in major cities typically administer this vaccine and issue the official certificate. Contact your local district health office or check with your child's panel physician for the nearest site."
                 }
               },
               {
                 "label": "Step 3 of 5",
                 "heading": "What the certificate looks like",
-                "instruction": "The official polio vaccination certificate is typically a printed card or letter issued at the vaccination site. It should include your name, vaccination date, and the type of vaccine received.",
+                "instruction": "The official polio vaccination certificate is typically a printed card or letter issued at the vaccination site. It should include your child's name, vaccination date, and the type of vaccine received.",
                 "vLabel": "Certificate Format",
                 "visual": {
                   "title": "Certificate Details to Verify",
                   "items": [
-                    "Your full legal name (matching passport)",
+                    "Your child's full legal name (matching passport)",
                     "Date of vaccination",
                     "Vaccine type, oral polio vaccine (OPV)",
                     "Official stamp or signature"
@@ -5607,18 +5517,18 @@
               {
                 "label": "Step 4 of 5",
                 "heading": "Timing, when to get vaccinated",
-                "instruction": "Get your polio vaccination at least a few days before your medical exam appointment so you can bring the original certificate to the exam. The panel physician will record it as part of your medical packet.",
+                "instruction": "Get your child's polio vaccination at least a few days before your child's medical exam appointment so you can bring the original certificate to the exam. The panel physician will record it as part of your child's medical packet.",
                 "vLabel": "Timing Guidance",
-                "note": "Do not get vaccinated the same day as the medical exam unless your physician specifically confirms this is acceptable.",
+                "note": "Do not get vaccinated the same day as the medical exam unless your child's panel physician specifically confirms this is acceptable.",
                 "visual": {
                   "title": "Recommended Timing",
-                  "sub": "Vaccinate -> Receive certificate -> Bring original to medical exam. Budget at least 1-3 days between vaccination and your scheduled medical exam date."
+                  "sub": "Vaccinate -> Receive certificate -> Bring original to medical exam. Budget at least 1-3 days between vaccination and your child's scheduled medical exam date."
                 }
               },
               {
                 "label": "Step 5 of 5",
-                "heading": "Bring the original certificate to your medical exam",
-                "instruction": "Bring the original polio vaccination certificate to your medical exam appointment. Your panel physician will review it and include documentation in the sealed medical packet sent to the embassy.",
+                "heading": "Bring the original certificate to your child's medical exam",
+                "instruction": "Bring the original polio vaccination certificate to your child's medical exam appointment. Your child's panel physician will review it and include documentation in the sealed medical packet sent to the embassy.",
                 "vLabel": "What to Bring",
                 "visual": {
                   "completed": true,
@@ -5643,11 +5553,14 @@
         {
           "step_key": "step_3_3",
           "step_number": 3,
-          "step_name": "Obtain Fresh Police Clearance Certificate",
+          "step_name": "Obtain Required Police Clearance Certificate",
           "step_short_description": "Required for interview",
-          "step_description": "A fresh police clearance certificate (PCC) is required for the consular interview. Apply now, this can take several weeks and must be tracked until received.",
+          "step_description": "Applicants aged 16 or older may need police certificate(s) based on their nationality, current and previous countries of residence, and criminal history. Review the Department of State's residence-duration requirements and the U.S. Embassy Islamabad checklist to determine which certificates are required for your case.",
           "step_type": "tool",
           "who": "Child beneficiary",
+          "visible_when": {
+            "childAgeBand": ["16_17", "18_20"]
+          },
           "where": "Pakistan police authorities / Rahvana Sindh Service",
           "timeline": "3-14 days",
           "actions": [
@@ -5679,7 +5592,7 @@
             ],
             "decisionModule": {
               "eyebrow": "Police Clearance Certificate",
-              "heading": "How would you like to apply for your PCC?",
+              "heading": "How would you like to apply for your child's PCC?",
               "paths": [
                 {
                   "id": "service",
@@ -5716,12 +5629,12 @@
             },
             "pendingCard": {
               "title": "PCC still pending, dashboard reminder active",
-              "body": "Your police certificate application is recorded but the certificate has not yet been received. This reminder will stay on your dashboard until you mark it as received below.\n\nFollow up with the police department regularly to check status. Don't wait until the last moment.",
+              "body": "Your child's police certificate application is recorded but the certificate has not yet been received. This reminder will stay on your dashboard until you mark it as received below.\n\nFollow up with the police department regularly to check status. Don't wait until the last moment.",
               "buttonLabel": "Mark Certificate as Received ->"
             },
             "receivedCard": {
               "title": "Fresh PCC received, save to Document Vault",
-              "body": "Your police clearance certificate has been received. Save it to the Document Vault for easy access during the interview and upload stages.",
+              "body": "Your child's police clearance certificate has been received. Save it to the Document Vault for easy access during the interview and upload stages.",
               "buttonLabel": "Save PCC to Document Vault",
               "vaultUrl": "/document-vault"
             },
@@ -5729,7 +5642,7 @@
             "serviceSteps": [
               {
                 "label": "Step 1 of 3",
-                "heading": "Rahvana submits your PCC application",
+                "heading": "Rahvana submits your child's PCC application",
                 "instruction": "This service is available for Sindh residents only. Rahvana will handle the application submission. You must still pick up the certificate yourself when ready.",
                 "info": "To proceed, Rahvana needs your details. Fill in the tracking section on the main page after submission to store your receipt number.",
                 "warn": "Important: This service is for Sindh residents only. If you reside in another province, use the self-application guide instead.",
@@ -5740,8 +5653,8 @@
               {
                 "label": "Step 2 of 3",
                 "heading": "What happens after submission",
-                "instruction": "After Rahvana submits your application, you will receive a receipt number. Use that number to track your application status with the relevant police department.",
-                "info": "Keep the receipt number safe. You will need it to follow up with the police department and eventually collect your certificate.",
+                "instruction": "After Rahvana submits your child's application, you will receive a receipt number. Use that number to track your application status with the relevant police department.",
+                "info": "Keep the receipt number safe. You will need it to follow up with the police department and eventually collect your child's certificate.",
                 "nav": {
                   "back": true,
                   "next": "Save tracking details ->"
@@ -5770,7 +5683,7 @@
               },
               {
                 "label": "Step 2 of 3",
-                "heading": "Submit your PCC application",
+                "heading": "Submit your child's PCC application",
                 "instruction": "Visit the relevant police station or submit through the government's online portal if available in your district.",
                 "info": "For detailed district-specific instructions, use the Rahvana Police Certificate Guide:\n\nOpen Full PCC Guide ->",
                 "guideUrl": "/guides/police-verification-guide",
@@ -5794,13 +5707,13 @@
             "type": "pcc_filing",
             "launch_module": {
               "label": "Police Character Certificate (Sindh)",
-              "title": "Apply for your Police Character Certificate",
+              "title": "Apply for your child's Police Character Certificate",
               "icon": "shield-check",
               "buttonText": "Start PCC Filing Service",
               "features": [
-                "Rahvana submits your PCC application on your behalf",
+                "Rahvana submits your child's PCC application on your behalf",
                 "Available for applicants in Sindh",
-                "Track your application and certificate collection status"
+                "Track your child's application and certificate collection status"
               ]
             }
           }
@@ -5811,19 +5724,19 @@
           "step_type": "tool",
           "step_name": "Attend Medical Exam",
           "step_short_description": "Medical screening and vaccinations",
-          "step_description": "Attend your scheduled medical examination with an embassy-approved panel physician. This is a mandatory health screening and vaccination review for all immigrants.",
+          "step_description": "Attend your child's scheduled medical examination with an Embassy-approved panel physician. All immigrant visa applicants, including children, must complete this examination. The physician will review the child's medical history, vaccination records, and age-appropriate health screening requirements.",
           "who": "Child beneficiary",
           "where": "U.S. Embassy-approved Panel Physician",
           "timeline": "2-4 hours at clinic",
           "actions": [
-            "Arrive on time with documents",
-            "Complete intake forms",
-            "Pay fees",
-            "Physical examination",
-            "Chest X-ray",
-            "Blood tests",
-            "Vaccination review",
-            "Physician interview"
+            "Arrive on time with the required documents",
+            "Complete registration and medical intake forms",
+            "Pay the medical examination fees",
+            "Complete the medical history review",
+            "Undergo a physical examination",
+            "Complete required TB screening and other tests based on age and medical history",
+            "Complete vaccination review and receive any required vaccinations",
+            "Follow any additional instructions from the panel physician"
           ],
           "output": "Medical results sent directly to the embassy or provided in a sealed envelope",
           "relevantTools": [
@@ -5840,23 +5753,24 @@
               "Passport (original)",
               "NVC interview appointment letter",
               "DS-260 confirmation page",
-              "Polio vaccination certificate (original)",
+              "Available immunization records, including polio vaccination documentation",
               "6 recent passport-sized color photographs",
-              "Medical exam fee (confirm with physician)",
-              "Current medication list and relevant medical records for chronic conditions, prior tuberculosis, major surgery, psychiatric treatment, or ongoing care"
+              "Medical examination fee (confirm the amount and accepted payment method with the physician)",
+              "Relevant medical records and test results for previous or ongoing medical conditions, major illnesses, surgeries, or treatments",
+              "Current medication list, if applicable"
             ],
             "pitfalls": [
-              "Forgetting the polio vaccination certificate",
-              "Arriving late, exams may not accommodate latecomers",
-              "Not having the exam fee ready in the accepted form",
-              "Using an unapproved or removed panel physician",
-              "Not confirming medical results were sent to the embassy"
+              "Forgetting the child's available immunization records",
+              "Arriving late for the scheduled appointment",
+              "Not having the medical examination fee ready in the accepted payment method",
+              "Using a physician who is not currently approved by the U.S. Embassy",
+              "Not confirming how and when the medical results will be provided or transmitted"
             ],
             "tips": [
               "Arrive 15-20 minutes early to handle registration",
               "Bring a snack and water, exams can take several hours",
               "Wear comfortable, easy-to-remove clothing for physical examination",
-              "After the exam, confirm the physician will send results before your interview date"
+              "After the exam, confirm the physician will send results before your child's interview date"
             ],
             "tutorial": [
               {
@@ -5864,7 +5778,7 @@
                 "heading": "What to bring to the exam",
                 "instruction": "Gather all required items the day before. Arriving without required documents may mean rescheduling.",
                 "vlabel": "Required Items",
-                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Bring checklist</div><div class=\"mock-row\">Passport (original) <span class=\"mock-badge-green\">Required</span></div><div class=\"mock-row\">NVC appointment letter <span class=\"mock-badge-green\">Required</span></div><div class=\"mock-row\">Polio vaccination certificate <span class=\"mock-badge-green\">Required</span></div><div class=\"mock-row\">Passport photos (2-4) <span class=\"mock-badge-green\">Required</span></div><div class=\"mock-row\">Exam fee (cash/form per physician) <span class=\"mock-badge-green\">Required</span></div></div>"
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Bring checklist</div><div class=\"mock-row\">Passport (original) <span class=\"mock-badge-green\">Required</span></div><div class=\"mock-row\">NVC appointment letter <span class=\"mock-badge-green\">Required</span></div><div class=\"mock-row\">Polio vaccination certificate <span class=\"mock-badge-green\">Required</span></div><div class=\"mock-row\">6 recent passport-sized color photographs <span class=\"mock-badge-green\">Required</span></div><div class=\"mock-row\">Exam fee (cash/form per physician) <span class=\"mock-badge-green\">Required</span></div></div>"
               },
               {
                 "label": "Step 2 of 6",
@@ -5876,32 +5790,32 @@
               },
               {
                 "label": "Step 3 of 6",
-                "heading": "How the exam typically proceeds",
-                "instruction": "The panel physician will conduct a physical exam, review vaccination records, check medical history, and may order blood or other tests as required by the embassy.",
+                "heading": "How the medical examination proceeds",
+                "instruction": "The panel physician will review the child's medical history, conduct a physical examination, and assess vaccination records. Required screenings and laboratory tests, including TB screening and blood tests, depend on the child's age and medical history.",
                 "vlabel": "Exam Flow",
-                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Typical exam sequence</div><div class=\"mock-row\">Registration and document review</div><div class=\"mock-row\">Physical examination</div><div class=\"mock-row\">Vaccination review and administration if needed</div><div class=\"mock-row\">Blood / lab tests if required</div><div class=\"mock-row\">Results transmitted to the embassy or provided in a sealed envelope</div></div>"
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Typical exam sequence</div><div class=\"mock-row\">Registration and document review</div><div class=\"mock-row\">Medical history review</div><div class=\"mock-row\">Physical examination</div><div class=\"mock-row\">Vaccination record review</div><div class=\"mock-row\">Age-appropriate TB screening and laboratory tests, if required</div><div class=\"mock-row\">Medical results prepared for the Embassy</div></div>"
               },
               {
                 "label": "Step 4 of 6",
                 "heading": "Vaccinations at the exam",
-                "instruction": "The physician may administer required vaccinations during the exam. Required vaccines vary by immigration category and age. The polio certificate you bring will be reviewed here.",
-                "vlabel": "Vaccinations",
-                "note": "Bring your polio vaccination certificate, the physician needs to confirm and document it as part of the medical packet.",
-                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Vaccination at the exam</div><div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">Required vaccinations are administered by the physician if not already received. The physician documents all vaccinations as part of the sealed medical packet sent to the embassy.</div></div>"
+                "instruction": "The panel physician will review the child's immunization history and determine which vaccinations are required based on age, medical history, and applicable immigration vaccination requirements. Bring all available immunization records, including polio vaccination documentation.",
+                "vlabel": "Vaccination Review",
+                "note": "Bring the child's available vaccination records to help the physician verify previously received vaccines and determine whether additional vaccinations are needed.",
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Vaccination review</div><div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">The physician reviews existing vaccination records, identifies any missing required vaccinations, and documents the vaccination assessment as part of the immigrant medical examination.</div></div>"
               },
               {
                 "label": "Step 5 of 6",
                 "heading": "The fee, confirm in advance",
-                "instruction": "The medical exam fee is paid directly to the physician. It is not part of the visa fee. Confirm the amount and accepted payment methods with your physician before the exam day.",
+                "instruction": "The medical exam fee is paid directly to the physician. It is not part of the visa fee. Confirm the amount and accepted payment methods with the child's panel physician before the exam day.",
                 "vlabel": "Fee Payment",
                 "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Fee guidance</div><div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">Fees vary by physician and exam complexity. Confirm the current fee and payment method (cash vs card) directly with the physician's office before your appointment.</div></div>"
               },
               {
                 "label": "Step 6 of 6",
-                "heading": "After the exam, confirm results will be sent",
-                "instruction": "Before leaving, confirm with the physician's office that the sealed medical results will be forwarded to the embassy before your interview date. Do not assume this happens automatically.",
+                "heading": "After the exam, confirm how results will be provided",
+                "instruction": "Before leaving, confirm with the physician's office whether your child's medical results will be sent directly to the Embassy or provided to you in a sealed envelope. If you receive a sealed envelope, keep it closed and bring it to your child's visa interview.",
                 "vlabel": "Post-Exam",
-                "visual": "<div style=\"background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--radius-sm);padding:14px 16px\"><div style=\"font-size:13px;font-weight:600;color:var(--green);margin-bottom:4px\">Exam complete</div><div style=\"font-size:12px;color:var(--ink-soft);line-height:1.5\">Confirm the physician's office will transmit the sealed results to the embassy before your interview date. Follow up if you have not received confirmation.</div></div>"
+                "visual": "<div style=\"background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--radius-sm);padding:14px 16px\"><div style=\"font-size:13px;font-weight:600;color:var(--green);margin-bottom:4px\">Exam complete</div><div style=\"font-size:12px;color:var(--ink-soft);line-height:1.5\">Confirm how your child's medical results will be delivered. If the physician gives you a sealed envelope, do not open it. Bring it to your child's visa interview.</div></div>"
               }
             ]
           }
@@ -5911,15 +5825,16 @@
           "step_number": 5,
           "step_type": "tool",
           "step_name": "Courier Registration",
-          "step_description": "Register online before your immigrant visa interview and select your document pick-up location so the Embassy has the information needed to return your passport after the interview. Complete the sign-up, follow the guide, and save your credentials and confirmation.",
+          "step_description": "Register for the Embassy's passport and document return service before your child's immigrant visa interview. Select an available document pick-up or delivery option, complete the registration, and save your confirmation. Also prepare any applicable original adoption, custody, or parental-consent documents for the child's interview.",
           "step_short_description": "Register for visa packet delivery",
           "who": "Child beneficiary",
           "where": "Home preparation",
           "actions": [
             "Register at usvisascheduling.com",
-            "Select your preferred passport delivery option: Avari Tower pickup or home delivery",
+            "Select an available passport and document return option",
             "Save your login credentials securely",
-            "Save confirmation page to Document Vault"
+            "Save the registration confirmation in Document Vault",
+            "Prepare applicable original adoption, custody, or parental-consent documents for the interview"
           ],
           "relevantTools": [
             {
@@ -5936,7 +5851,7 @@
                 "heading": "Open the courier registration portal",
                 "instruction": "Click 'Open Courier Registration' on the main page to open the USVisaScheduling sign-up portal. This is the official courier service for U.S. visa delivery in Pakistan.",
                 "vlabel": "Courier Portal",
-                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">usvisascheduling.com</div><div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">Create a new account or sign in to register your courier delivery preferences for your visa packet.</div></div>"
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">usvisascheduling.com</div><div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">Create a new account or sign in to register your courier delivery preferences for your child's visa packet.</div></div>"
               },
               {
                 "label": "Step 2 of 5",
@@ -5965,36 +5880,531 @@
                 "heading": "Return here and save your credentials",
                 "instruction": "Return to this step and use the credential vault card to save your courier account email and password in the Portal Wallet.",
                 "vlabel": "Save Credentials",
-                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Save to Portal Wallet</div><div style=\"font-size:13px;color:var(--ink-soft);line-height:1.5;margin-top:4px\">Save your courier account email and password so you can access it later when your visa is ready for delivery.</div></div>"
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Save to Portal Wallet</div><div style=\"font-size:13px;color:var(--ink-soft);line-height:1.5;margin-top:4px\">Save your courier account email and password so you can access it later when your child's visa is ready for delivery.</div></div>"
               }
-            ]
+            ],
+            "childDocumentReminder": {
+              "title": "Additional documents for child beneficiaries",
+              "description": "Depending on the child's circumstances, prepare applicable original adoption papers, legal custody documents, court orders, and parental-consent or travel documents. Bring English translations and photocopies where required. Check the Embassy's current checklist for the documents applicable to your case."
+            }
           }
         },
+
         {
           "step_key": "step_3_6",
           "step_number": 6,
           "step_name": "Gather Original Documents",
-          "step_short_description": "Official document compilation",
-          "step_type": "informational",
-          "who": "Child beneficiary",
+          "step_short_description": "Child beneficiary document compilation",
+          "step_description": "Assemble the original or certified civil documents, relationship evidence, and applicable financial sponsorship records needed for the child's IR-2 immigrant visa interview at U.S. Embassy Islamabad. Prepare the child's documents, verify translations and consistency with the records submitted through CEAC, and organize any additional documents required for a biological-child, stepchild, or other qualifying relationship case.",
+          "step_type": "tool",
+          "who": "Child Beneficiary (with parent or guardian assistance)",
           "where": "Document compilation",
-          "timeline": "2-3 days",
+          "timeline": "2-3 days (estimated; obtaining missing or updated records may take longer)",
           "actions": [
-            "Child's valid passport",
-            "DS-260 confirmation page(print from CEAC)",
-            "NVC fee payment receipts",
-            "All original civil documents (birth certificate, police certificates if applicable) and translations",
-            "Stepchild: marriage certificate + divorce decrees/death certificates",
-            "Adopted child: final adoption decree + custody/residence evidence",
-            "Form I-864 Affidavit of Support (original signed copy)",
-            "Petitioner's proof of U.S. citizenship (copy)",
-            "Sealed medical examination envelope (if provided; do not open)",
-            "Two passport-style photographs per consulate instructions",
-            "Interview appointment letter"
+            "Collect the child's original or certified civil documents",
+            "Collect the petitioner's and financial sponsors' supporting documents",
+            "Prepare relationship-specific documents for the child's case, if applicable",
+            "Obtain required police, court, or other records based on the child's age and history",
+            "Prepare English translations and photocopies",
+            "Compare the originals with the documents submitted through CEAC",
+            "Organize the documents into clearly labelled sections"
           ],
-          "step_description": "Assemble all documents needed for the consular interview. Review the specific consulate's instructions for any locally required additions.",
-          "legal_review": "pending",
-          "pending_step_type": "tool"
+          "tool_data": {
+            "type": "gathering_checklist",
+            "doc_gathering": {
+              "groups": [
+                {
+                  "id": "civil",
+                  "label": "Bring, Original Civil Documents",
+                  "badge": "Required",
+                  "items": [
+                    {
+                      "id": "passport",
+                      "icon": "passport",
+                      "title": "Child's Current Passport and Relevant Prior Passports",
+                      "sub": "Current unexpired passport, biographic-page photocopy, and relevant prior passports",
+                      "sections": [
+                        {
+                          "t": "What to bring",
+                          "c": "<p>Bring the child's current, original, unexpired passport. It should be valid for at least six months beyond the intended date of entry into the United States. Also bring relevant prior passports, especially those containing previous U.S. visas, entry or exit stamps, visa refusals, or other relevant immigration and travel history.</p>"
+                        },
+                        {
+                          "t": "Photocopy",
+                          "c": "<p>Bring one clear photocopy of the current passport's biographic page (the page showing the photograph, name, date of birth, passport number, and expiry date). Keep it separate from the original passport.</p>"
+                        },
+                        {
+                          "t": "Important",
+                          "c": "<div class=\"note-box\"><p>Check that the child's name, date of birth, place of birth, and passport details are consistent with the DS-260 and civil documents. For a minor, the parent or legal guardian should follow the applicable passport-signing and issuance rules; do not assume that the child must personally sign the passport.</p></div>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "child-birth-cert",
+                      "icon": "birth",
+                      "title": "Child's Original Birth Certificate or Accepted Alternate Record",
+                      "sub": "Primary civil record establishing the child's identity and recorded parentage",
+                      "sections": [
+                        {
+                          "t": "What to bring",
+                          "c": "<p>Bring the child's original Birth Registration Certificate or a certified copy issued by the relevant Pakistani local government authority. Depending on the place of registration, this may be issued by the Union Council, Municipal Corporation, Capital Development Authority (CDA) in Islamabad, or Cantonment Board.</p><p>The U.S. Department of State's Pakistan reciprocity schedule also identifies the NADRA Child Registration Certificate (CRC, commonly called the B-Form) and Family Registration Certificate (FRC) as alternate documents. Bring the relevant original or officially issued record that was submitted to NVC, together with any additional record requested in your case.</p>"
+                        },
+                        {
+                          "t": "Translation and photocopy",
+                          "c": "<p>Bring the original or certified civil record, an English translation where the document is not in English, and a clear photocopy. Keep the original, translation, and photocopy together. Make sure all pages and any information printed on the reverse are included.</p>"
+                        },
+                        {
+                          "t": "If the birth was not registered",
+                          "c": "<p>If the child's birth was not registered, bring the Non-Availability Certificate (NAC) and the secondary evidence submitted to NVC or requested by the Embassy. Depending on the case, this may include a CRC/B-Form, FRC, school records, hospital or vaccination records, or other contemporaneous records. Do not assume that an affidavit or a single secondary record automatically replaces the required civil evidence.</p>"
+                        },
+                        {
+                          "t": "Consistency",
+                          "c": "<div class=\"note-box\"><p>Check the child's full name, date and place of birth, and the names of both parents against the passport, DS-260, petition, and CEAC documents. If spellings, dates, or parent details differ, prepare the official supporting records that explain the discrepancy.</p></div>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "applicant-children-birth-certs",
+                      "icon": "family",
+                      "title": "Birth Certificates for the Child Beneficiary's Children, If Applicable",
+                      "sub": "Required if the principal applicant has children, including children who are not immigrating",
+                      "sections": [
+                        {
+                          "t": "What to bring",
+                          "c": "<p>If the child beneficiary has children, bring the original or certified birth certificates for all of them, including those who are not immigrating with the applicant. Include English translations and photocopies where required.</p>"
+                        },
+                        {
+                          "t": "Important",
+                          "c": "<p>This requirement applies only if the principal applicant has children. It does not mean that every IR-2 applicant must bring the birth certificates of their siblings.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "petitioner-birth-cert",
+                      "icon": "relationship",
+                      "title": "Petitioner's Birth Certificate or Relevant Relationship Evidence",
+                      "sub": "Additional family-based document listed in the Islamabad pre-interview checklist",
+                      "sections": [
+                        {
+                          "t": "What to bring",
+                          "c": "<p>For family-based immigrant visa cases, the Islamabad pre-interview checklist asks for the petitioner's original birth certificate, an English translation, and a photocopy. Bring the petitioner's birth certificate or the corresponding official civil record available for the petitioner's place of birth.</p>"
+                        },
+                        {
+                          "t": "How it relates to an IR-2 case",
+                          "c": "<p>In an IR-2 case, the petitioner's birth certificate is not normally the primary document establishing the petitioner's relationship to the child. The child's own birth record and the relationship evidence applicable to the approved I-130 are central. Keep the petitioner's birth certificate as part of the Islamabad family-based checklist, and bring any additional relationship evidence requested for the case.</p>"
+                        },
+                        {
+                          "t": "Translation and copy",
+                          "c": "<p>If the petitioner's birth certificate is not in English, bring the original or certified record, a complete English translation, and a photocopy.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "pcc",
+                      "icon": "pcc",
+                      "title": "Police Certificates, If Required",
+                      "sub": "Police certificate(s), if required based on the applicant's age, nationality, residence history, and criminal history",
+                      "sections": [
+                        {
+                          "t": "Who needs a police certificate",
+                          "c": "<p>Do not assume that every IR-2 child needs a police certificate. The U.S. Embassy Islamabad specifically requires an original Pakistan police certificate from applicants older than 16 years of age. Police certificates may also be required from other countries based on the applicant's residence history and applicable Department of State rules.</p>"
+                        },
+                        {
+                          "t": "Pakistan police certificate",
+                          "c": "<p>The Pakistani document is called a <strong>Character Certificate</strong>. It is issued by a Police Facilitation Center or local police office in the applicant's home province or current province of residence, as listed on the CNIC. The issuing procedure and format vary by location.</p>"
+                        },
+                        {
+                          "t": "Other countries and updated certificates",
+                          "c": "<p>If the child has lived in other countries, check the applicable residence-duration and age requirements for each country. Follow the current Islamabad post instructions for obtaining an updated certificate. The post-specific checklist has additional one-year update conditions in certain circumstances, while general Department of State guidance describes a two-year validity period with an exception for some former countries of residence. Do not apply a single validity rule to every country and situation.</p>"
+                        },
+                        {
+                          "t": "What to bring",
+                          "c": "<div class=\"note-box\"><p>When a police certificate is required, bring the original certificate and any required English translation and photocopy. Follow the Embassy's instructions for updated certificates; general Department of State guidance says not to send new or updated police certificates to NVC.</p></div>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "interview-letter",
+                      "icon": "mail",
+                      "title": "NVC Interview Appointment Letter",
+                      "sub": "Printed copy of the child's immigrant visa interview appointment notice",
+                      "sections": [
+                        {
+                          "t": "What to bring",
+                          "c": "<p>Print and bring the child's NVC interview appointment letter. Check that the applicant's name, case details, interview date, and location are correct.</p>"
+                        },
+                        {
+                          "t": "Accompanying person",
+                          "c": "<p>If a parent, guardian, or other authorized person will accompany the minor child, check the Embassy's current accompanying-person rules and appointment-letter requirements. The Islamabad instructions state that anyone whose name is not listed on the appointment letter will not be allowed to enter.</p>"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "financial",
+                  "label": "Bring, Financial & Sponsor Documents",
+                  "badge": "Required for family-based cases",
+                  "items": [
+                    {
+                      "id": "i864-petitioner",
+                      "icon": "banknote",
+                      "title": "Form I-864, Petitioner's Affidavit of Support",
+                      "sub": "The petitioner's completed Affidavit of Support package",
+                      "sections": [
+                        {
+                          "t": "What to bring",
+                          "c": "<p>For this family-based immigrant visa case, prepare the petitioner's completed and signed Form I-864 and the supporting evidence requested in the Islamabad pre-interview checklist. The petitioner must submit the appropriate Affidavit of Support even if a joint sponsor is also being used.</p>"
+                        },
+                        {
+                          "t": "Joint sponsor",
+                          "c": "<p>If the petitioner's income does not meet the applicable requirements and a joint sponsor is used, the petitioner must still submit the petitioner's own I-864. The joint sponsor must submit a separate I-864 and supporting evidence.</p>"
+                        },
+                        {
+                          "t": "Form and signature check",
+                          "c": "<div class=\"note-box\"><p>Check that the form is complete, signed, and consistent with the version submitted through CEAC. Follow the current Form I-864 instructions for the permitted signature format. Do not assume that every case requires a wet-ink original unless the Embassy or case-specific instructions say so.</p></div>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "tax-docs-petitioner",
+                      "icon": "calculator",
+                      "title": "Petitioner's Most Recent Tax and Income Evidence",
+                      "sub": "IRS tax transcript or federal tax return and related income records",
+                      "sections": [
+                        {
+                          "t": "What to bring",
+                          "c": "<p>The Islamabad family-based checklist asks for a photocopy of the sponsor's IRS tax transcript or most recent U.S. federal income tax return, together with related W-2s. Bring the relevant evidence for the petitioner's financial sponsorship and keep it organized with Form I-864.</p>"
+                        },
+                        {
+                          "t": "Updated tax year",
+                          "c": "<p>If a more recent tax year has ended since the financial documents were submitted to NVC, consider preparing the latest available tax evidence. Follow any specific request from NVC or the Embassy about updated financial documents.</p>"
+                        },
+                        {
+                          "t": "Current income",
+                          "c": "<p>If the petitioner's employment or income has changed significantly since the I-864 was submitted, additional current evidence may help explain the sponsor's financial circumstances. Examples include recent pay statements and an employer verification letter. These are supporting examples, not a universal substitute for the required tax evidence.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "petitioner-status-domicile",
+                      "icon": "home",
+                      "title": "Petitioner's U.S. Immigration Status and Domicile Evidence",
+                      "sub": "Evidence of the petitioner's qualifying U.S. status and U.S. domicile",
+                      "sections": [
+                        {
+                          "t": "What to bring, U.S. status",
+                          "c": "<p>Bring a photocopy of the petitioner's evidence of U.S. citizenship or lawful permanent resident status, as applicable. Examples include a U.S. passport biographic page, U.S. birth certificate, Certificate of Naturalization, Certificate of Citizenship, or both sides of a Permanent Resident Card.</p>"
+                        },
+                        {
+                          "t": "What to bring, U.S. domicile",
+                          "c": "<p>Prepare evidence that the petitioner is domiciled in the United States. Depending on the circumstances, this may include a U.S. residence lease or mortgage statement, utility bills, employment records, U.S. driver's license, bank statements, voter registration, or property records.</p>"
+                        },
+                        {
+                          "t": "Petitioner living abroad",
+                          "c": "<div class=\"note-box\"><p>If the petitioner currently lives outside the United States, prepare evidence showing that the petitioner has maintained U.S. domicile or has taken concrete steps to re-establish it no later than the child's immigration. Examples may include a U.S. job offer, a signed residential lease, or other credible relocation arrangements. A joint sponsor does not remove the petitioner's own domicile requirement.</p></div>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "joint-sponsor-package",
+                      "icon": "users",
+                      "title": "Joint Sponsor or Household Member Package",
+                      "sub": "Required only if a joint sponsor or household member is included in the financial sponsorship",
+                      "sections": [
+                        {
+                          "t": "Joint sponsor",
+                          "c": "<p>If a joint sponsor is used, prepare the joint sponsor's separately completed and signed Form I-864 and the supporting documents requested for that sponsor. These generally include the most recent IRS tax transcript or federal tax return, related W-2s, evidence of U.S. citizenship or lawful permanent resident status, and evidence of U.S. domicile.</p>"
+                        },
+                        {
+                          "t": "Household member",
+                          "c": "<p>If a household member's income is being used, prepare the completed and signed Form I-864A where required, along with the household member's relevant tax and current income evidence. Check that the household member qualifies under the I-864A rules and that the documents match the package submitted to NVC.</p>"
+                        },
+                        {
+                          "t": "Important",
+                          "c": "<p>Bring the documents applicable to the actual sponsorship arrangement in the child's case. Do not prepare a joint-sponsor or household-member package if no such person is being used.</p>"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "interview-day",
+                  "label": "Bring, Interview Day and Conditional Documents",
+                  "badge": "Required if applicable",
+                  "items": [
+                    {
+                      "id": "ds260-original",
+                      "icon": "file-text",
+                      "title": "DS-260 Confirmation Page",
+                      "sub": "Printed Immigrant Visa Application confirmation page",
+                      "sections": [
+                        {
+                          "t": "What to bring",
+                          "c": "<p>Bring the printed DS-260 confirmation page with its barcode for the child. This confirms that the child's online immigrant visa application was submitted.</p>"
+                        },
+                        {
+                          "t": "Important notes",
+                          "c": "<p>Review the child's DS-260 details and check that the information is consistent with the passport, birth certificate, relationship evidence, and other civil documents submitted through CEAC.</p>"
+                        },
+                        {
+                          "t": "Where to get it",
+                          "c": "<p>Download and print the confirmation page from the Consular Electronic Application Center (CEAC) after the child's DS-260 has been submitted.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "photos",
+                      "icon": "camera",
+                      "title": "Two Recent Visa Photographs of the Child",
+                      "sub": "Two identical 5 cm × 5 cm color photographs",
+                      "sections": [
+                        {
+                          "t": "What to bring",
+                          "c": "<p>Bring two recent, identical color photographs of the child, taken within the period specified by the U.S. visa photo requirements. Islamabad requires two photographs of every person applying for a visa. The photographs must measure 5 cm × 5 cm (2 inches × 2 inches) and meet the current U.S. visa photograph specifications.</p>"
+                        },
+                        {
+                          "t": "Photo requirements",
+                          "c": "<p>The photograph should have a plain white or off-white background, show the child facing the camera, and meet the official head-size and image-quality requirements. Do not use eyeglasses. Follow the official photo guidance for infants and young children who may not be able to maintain a neutral expression or position.</p>"
+                        },
+                        {
+                          "t": "Where to get them",
+                          "c": "<p>Use a photo studio familiar with U.S. visa photograph specifications. Confirm the dimensions and requirements before printing. The six photographs requested for the Islamabad medical examination are a separate requirement and should not be confused with the two photographs for the visa interview.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "medical-packet",
+                      "icon": "medical",
+                      "title": "Medical Examination Results",
+                      "sub": "Sealed medical results provided by the panel physician or sent directly to the Embassy",
+                      "sections": [
+                        {
+                          "t": "How this works",
+                          "c": "<p>The child must complete the immigrant visa medical examination with a physician approved by U.S. Embassy Islamabad. The physician will either send the results directly to the Embassy or provide the applicant with a sealed envelope. Confirm the result-delivery method with the clinic.</p>"
+                        },
+                        {
+                          "t": "If a sealed envelope is provided",
+                          "c": "<div class=\"note-box\"><p><strong>Do not open the sealed medical envelope.</strong> If the panel physician gives the results to the applicant in a sealed envelope, keep it sealed and bring it to the interview for the consular officer.</p></div>"
+                        },
+                        {
+                          "t": "X-rays and medical records",
+                          "c": "<p>The panel physician will give the applicant any X-rays taken. Islamabad's instructions state that X-rays generally do not need to be brought to the interview unless the applicant has tuberculosis. The applicant must carry the X-rays when travelling to the United States for the first time. Keep relevant medical records and test results available if requested.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "stepchild-records",
+                      "icon": "relationship",
+                      "title": "Stepchild Relationship Records",
+                      "sub": "Required when the petitioner qualifies as the child's stepparent",
+                      "sections": [
+                        {
+                          "t": "What to bring",
+                          "c": "<p>Bring the original marriage certificate of the petitioner and the child's biological parent. Islamabad specifically requests this document for applicants immigrating as a petitioner's stepchild. Bring the required English translation and a photocopy.</p>"
+                        },
+                        {
+                          "t": "Marriage timing",
+                          "c": "<p>The marriage creating the stepparent-stepchild relationship must have taken place before the child turned 18 for the relationship to qualify under the applicable immigration definition of a child. Check that the marriage date and the child's date of birth support the relationship claimed in the approved I-130 petition.</p>"
+                        },
+                        {
+                          "t": "Previous marriages",
+                          "c": "<p>Bring divorce, annulment, or death records showing the legal termination of all previous marriages of either the petitioner or the child's biological parent, as applicable. Include English translations and photocopies.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "biological-parent-relationship",
+                      "icon": "family",
+                      "title": "Additional Biological Parent-Child Relationship Evidence",
+                      "sub": "Required only when the child's relationship or eligibility requires additional proof",
+                      "sections": [
+                        {
+                          "t": "When needed",
+                          "c": "<p>For a biological-child case, the child's birth certificate will generally be central evidence of the parent-child relationship. However, additional records may be needed if the petition involves a biological father and the child was born outside marriage, if the parentage details are incomplete, or if the approved petition relied on additional evidence to establish the qualifying relationship.</p>"
+                        },
+                        {
+                          "t": "Examples",
+                          "c": "<p>Bring the original or certified versions of the relationship evidence that was submitted with the I-130 or requested by USCIS, NVC, or the Embassy. Depending on the circumstances, this may include parents' marriage records, legitimation records, court orders, or contemporaneous records showing the claimed parent-child relationship.</p>"
+                        },
+                        {
+                          "t": "Important",
+                          "c": "<div class=\"note-box\"><p>Do not treat every example as mandatory for every biological-child case. Use the documents relevant to the child's actual relationship, the approved petition, and any case-specific request.</p></div>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "adoption-guardianship-records",
+                      "icon": "adoption",
+                      "title": "Adoption or Guardianship Records, If Applicable",
+                      "sub": "Requires careful review under U.S. immigration law; Pakistani guardianship alone does not establish an adoptive parent-child relationship",
+                      "sections": [
+                        {
+                          "t": "What to bring",
+                          "c": "<p>If the approved immigration petition relies on an adoption or another qualifying legal relationship, bring the relevant original or certified adoption decree, custody records, and supporting evidence requested for the case. Include English translations and photocopies.</p>"
+                        },
+                        {
+                          "t": "Pakistan-specific caution",
+                          "c": "<div class=\"note-box\"><p>The U.S. Department of State's Pakistan reciprocity schedule states that adoption certificates are unavailable in Pakistan and that Pakistani guardianship orders do not create a permanent parent-child relationship for U.S. immigration purposes. A Pakistani guardianship order or affidavit must not be presented as automatically establishing an IR-2 adoptive relationship.</p></div>"
+                        },
+                        {
+                          "t": "Before relying on these records",
+                          "c": "<p>If the child is being petitioned based on adoption, guardianship, or an adoption intended to be finalized in the United States, obtain case-specific guidance from a qualified U.S. immigration attorney or U.S. Embassy Islamabad. Bring the documents relevant to the approved petition and follow any specific Embassy instructions.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "parent-marriage-records",
+                      "icon": "marriage",
+                      "title": "Parents' Marriage or Marital History Records",
+                      "sub": "Required only when relevant to the claimed relationship or specifically requested",
+                      "sections": [
+                        {
+                          "t": "What to bring",
+                          "c": "<p>If the child's case relies on a stepparent relationship, bring the petitioner's marriage certificate to the child's biological parent and the termination records for any previous marriages of either parent. For other biological-child cases, bring marriage or marital-history records when they were used to establish the relationship or are requested by the Embassy.</p>"
+                        },
+                        {
+                          "t": "Pakistan records",
+                          "c": "<p>For a Pakistani Muslim marriage, the relevant records may include the original Urdu Nikah Nama and the Marriage Registration Certificate (MRC) issued by the appropriate local authority. Bring the required English translation and photocopies. Document formats and issuing authorities can vary.</p>"
+                        },
+                        {
+                          "t": "Divorce or death records",
+                          "c": "<p>Where a prior marriage ended, bring the applicable original or certified divorce, annulment, or death record, together with its English translation and photocopy. For Pakistani Muslim divorces, the Department of State reciprocity schedule explains the applicable 90-day Union Council process and the Divorce Registration Certificate.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "name-change",
+                      "icon": "name-change",
+                      "title": "Name Change or Identity-Linking Records",
+                      "sub": "Required when names, spellings, dates, or identity details differ across records",
+                      "sections": [
+                        {
+                          "t": "What to bring",
+                          "c": "<p>Bring original or certified official records that explain differences in the child's or petitioner's name, spelling, date of birth, or other identity details across the passport, birth certificate, NADRA records, DS-260, and petition. Depending on the issue, this may include a court order, official correction record, or other recognized identity-linking document.</p>"
+                        },
+                        {
+                          "t": "Important",
+                          "c": "<p>An affidavit alone should not be assumed to correct an official civil record or resolve every identity discrepancy. Bring the official supporting documents relevant to the difference and follow any case-specific instructions.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "court-criminal-records",
+                      "icon": "court",
+                      "title": "Court and Criminal Records",
+                      "sub": "Required if the child has an applicable arrest, charge, conviction, or court history",
+                      "sections": [
+                        {
+                          "t": "What to bring",
+                          "c": "<p>If the child has ever been arrested, charged, or convicted, bring the applicable original or certified court and criminal records, including records of the final disposition. Include English translations and photocopies where required.</p>"
+                        },
+                        {
+                          "t": "Important",
+                          "c": "<p>Do not assume that a police certificate replaces court records when court or criminal records are required. If a record is unavailable, follow the relevant country reciprocity instructions and obtain case-specific guidance.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "military-records",
+                      "icon": "military",
+                      "title": "Military Service Records",
+                      "sub": "Required only if the applicant has served in a country's military",
+                      "sections": [
+                        {
+                          "t": "What to bring",
+                          "c": "<p>If the applicant has served in any country's military, prepare the available military service, discharge, or retirement records, together with English translations and photocopies where required.</p>"
+                        },
+                        {
+                          "t": "Pakistan-specific note",
+                          "c": "<p>The Pakistan reciprocity schedule lists military records as unavailable but notes that a discharge certificate is issued upon discharge, retirement, or resignation from military service. If this applies, bring the available discharge certificate and follow the Embassy's instructions for any additional record.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "courier-registration-certificate",
+                      "icon": "truck",
+                      "title": "Passport Delivery Registration Confirmation",
+                      "sub": "Proof of the required online passport return or pickup registration",
+                      "sections": [
+                        {
+                          "t": "What to bring",
+                          "c": "<p>Keep a printed or accessible copy of the passport delivery registration confirmation and the selected document pickup or return details. The registration must be completed through the current portal linked by the Embassy.</p>"
+                        },
+                        {
+                          "t": "Important",
+                          "c": "<p>Check that the child's case and passport information, contact details, and delivery or pickup selection are accurate. Follow the current portal and appointment instructions if the registration confirmation is not issued as a printable document.</p>"
+                        },
+                        {
+                          "t": "Where to register",
+                          "c": "<p>Use the official U.S. visa scheduling and passport return registration portal linked from the U.S. Embassy Islamabad immigrant visa instructions.</p>"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "organization",
+                  "label": "Recommended, Organization Items",
+                  "badge": "Recommended",
+                  "items": [
+                    {
+                      "id": "folders",
+                      "icon": "folder",
+                      "title": "Labeled Folder System",
+                      "sub": "Separate originals, translations, photocopies, and conditional relationship records",
+                      "sections": [
+                        {
+                          "t": "Why this matters",
+                          "c": "<p>A clearly organized document packet helps the parent or guardian assist the child and makes it easier to present the requested records at the consular window.</p>"
+                        },
+                        {
+                          "t": "Suggested approach",
+                          "c": "<ul><li>Use lightweight folders or clearly labelled document sleeves.</li><li>Separate Passport and Appointment / Child's Civil Records / Relationship Evidence / Financial Sponsor / Conditional Records / Medical and Courier.</li><li>Keep each original or certified document together with its English translation and photocopy.</li><li>Keep conditional documents separate so they can be produced when relevant.</li></ul>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "copies-set",
+                      "icon": "copy",
+                      "title": "Complete Photocopy Set",
+                      "sub": "One clear photocopy of each required civil and supporting document",
+                      "sections": [
+                        {
+                          "t": "Why bring copies",
+                          "c": "<p>The Islamabad checklist requests photocopies alongside several original or certified civil records. The Embassy may retain photocopies while returning original documents after the interview.</p>"
+                        },
+                        {
+                          "t": "What to check",
+                          "c": "<p>Make sure copies are complete, readable, and include both sides of documents where information, stamps, or endorsements appear on the reverse. Keep translations paired with the corresponding original.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "ceac-match-check",
+                      "icon": "check",
+                      "title": "CEAC-to-Original Match Check",
+                      "sub": "Verify that the interview documents match the records submitted to NVC",
+                      "sections": [
+                        {
+                          "t": "Final review",
+                          "c": "<p>Compare each original or certified civil document with the corresponding document submitted through CEAC. Islamabad states that, in most cases, required and updated documents must also be uploaded through CEAC before the interview. Follow any case-specific instructions about updated records.</p>"
+                        },
+                        {
+                          "t": "Check carefully",
+                          "c": "<p>Confirm names, dates of birth, parent details, issuing authorities, translations, document completeness, and any police-certificate requirements. Pay particular attention to the child's birth record and the relationship evidence supporting the approved I-130.</p>"
+                        },
+                        {
+                          "t": "Conditional-document review",
+                          "c": "<p>Confirm whether the case involves a biological parent, stepparent, or another qualifying relationship. Include only the applicable supporting records, such as a step-parent marriage certificate, prior-marriage termination records, or adoption-related documents where legally relevant.</p>"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. The petitioner or accompanying parent or guardian must follow the current U.S. Embassy Islamabad pre-interview checklist, CEAC instructions, Department of State reciprocity schedule, and any case-specific instructions in the appointment letter. Document requirements depend on the child's age, residence history, and the relationship basis of the approved petition. Conditional documents are not required in every IR-2 case."
+          }
         },
         {
           "step_key": "step_3_7",
@@ -6008,9 +6418,7 @@
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 7,
-          "dependencies": [
-            "step_3_6"
-          ],
+          "dependencies": ["step_3_6"],
           "tool_data": {
             "id": "step_3_7",
             "type": "document_checklist",
@@ -6020,58 +6428,271 @@
         {
           "step_key": "step_3_8",
           "step_number": 8,
-          "step_type": "informational",
+          "step_type": "tool",
           "step_name": "Prepare for Interview",
-          "step_description": "Use Rahvana's interview prep tool to practice questions, review your case history, and build confidence before interview day.",
+          "step_description": "Prepare the child for the immigrant visa interview using Rahvana's IR-2 Child Interview Prep tool. Review the parent-child relationship, family background, DS-260 information, and relevant case documents. A parent or guardian should help the child prepare according to their age and understanding.",
           "step_short_description": "Practice questions and build confidence",
           "who": "Child beneficiary",
           "where": "Home preparation",
           "actions": [
-            "Review DS-260 answers",
-            "Practice common questions",
-            "Check document checklist",
-            "Plan appropriate interview clothing",
-            "Arrange travel to Islamabad if needed"
+            "Review the child's DS-260 answers and submitted information",
+            "Practice age-appropriate interview questions",
+            "Review the parent-child relationship and family history",
+            "Review applicable adoption, custody, or step-parent relationship documents",
+            "Confirm all required original documents are ready",
+            "Arrange travel to Islamabad and accompanying-person arrangements if needed"
           ],
-          "pending_step_type": "tool"
+          "tool_data": {
+            "type": "interview_prep",
+            "chips": [
+              {
+                "label": "Interview Prep",
+                "type": "purple"
+              },
+              {
+                "label": "Practice Tool",
+                "type": "sky"
+              },
+              {
+                "label": "Build Confidence",
+                "type": "green"
+              }
+            ],
+            "launch_module": {
+              "title": "Rahvana IR-2 Child Interview Prep",
+              "heading": "Prepare the child for the immigrant visa interview",
+              "icon": "message",
+              "module_slug": "ir-2-child",
+              "cues": [
+                "Practice age-appropriate questions about the child's relationship with the petitioner",
+                "Review the child's family and personal background",
+                "Review the petitioner's identity, residence, and occupation",
+                "Practice truthful and age-appropriate answers",
+                "Review relevant adoption, custody, or step-parent relationship details where applicable"
+              ]
+            },
+            "readiness_grid": [
+              {
+                "title": "Review before your child's interview",
+                "items": [
+                  "DS-260 answers, know every section you completed",
+                  "Parent-child relationship, including the child's birth, upbringing, communication, family history, and relationship with the petitioner",
+                  "Petitioner's identity, U.S. address, occupation, and household details",
+                  "Sponsor income, joint sponsor, and Affidavit of Support details",
+                  "The child's biological parents' relationship and marriage history, where relevant, including any divorce or death records",
+                  "Civil documents, names, dates, issuing authorities, and any discrepancies",
+                  "Prior U.S. visits, visa refusals, overstays, petitions, or immigration history",
+                  "Parent or guardian accompaniment: A minor child may be accompanied by one person for assistance, subject to the Embassy's entry requirements. Confirm that the accompanying person's name is included on the appointment letter."
+                ]
+              },
+              {
+                "title": "Mindset and approach",
+                "items": [
+                  "Understand the purpose of the interview in an age-appropriate way",
+                  "Answer questions truthfully and in the child's own words",
+                  "Do not memorize scripted answers or guess when unsure",
+                  "Ask the parent or guardian for help understanding preparation instructions",
+                  "Stay calm and answer only what the consular officer asks"
+                ]
+              }
+            ],
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice, always verify with official sources."
+          }
         },
         {
           "step_key": "step_3_9",
           "step_number": 9,
-          "step_type": "informational",
+          "step_type": "tool",
           "step_name": "Attend Visa Interview",
-          "step_description": "Your interview day has arrived. Know exactly what to bring, how to prepare at the door, and what to expect inside the consular window.",
+          "step_description": "The child's immigrant visa interview takes place at U.S. Embassy Islamabad. Review what to bring, understand the interview-day process, and prepare for age-appropriate questions. A minor child may be accompanied by one person, subject to the Embassy's entry requirements.",
           "step_short_description": "What to expect on interview day",
           "who": "Child beneficiary",
           "where": "U.S. Embassy Islamabad",
           "timeline": "5-20 minutes interview",
           "actions": [
-            "Arrive 30+ minutes early",
+            "Plan to arrive at the Embassy approximately 20–30 minutes before your scheduled appointment",
             "Pass security (NO electronics)",
             "Submit documents at window",
-            "Fingerprints taken",
+            "Fingerprints taken, if required for the applicant's age",
             "Wait for consular officer call",
-            "Take oath",
+            "Take oath, or have it completed on your child's behalf if they are under 14",
+            "Participate in the interview with age-appropriate assistance where permitted",
             "Answer questions honestly",
             "Receive the officer's instructions or case outcome"
           ],
-          "pakistanSpecific": "Address: Diplomatic Enclave, Ramna 5, Islamabad. NO mobile phones allowed.",
-          "pending_step_type": "tool"
+          "tool_data": {
+            "type": "interview_day",
+            "chips": [
+              {
+                "label": "Consular Interview",
+                "type": "purple"
+              },
+              {
+                "label": "What to Expect",
+                "type": "sky"
+              },
+              {
+                "label": "Interview Day",
+                "type": "gold"
+              }
+            ],
+            "launch_module": {
+              "title": "Interview Day Walkthrough",
+              "heading": "Step-by-step guide from arrival to outcome",
+              "icon": "building",
+              "cues": [
+                "Arrival timing and embassy entry is strict",
+                "Security, biometrics, and document intake",
+                "Consular interview flow and common questions",
+                "Possible outcomes and what happens next"
+              ]
+            },
+            "tutorial": [
+              {
+                "label": "Step 1 of 8",
+                "heading": "Prepare the night before",
+                "instruction": "The night before the interview, organize the child's complete document packet. Confirm that the interview appointment letter is printed, the child's passport and required original civil documents are ready, and transport to the Embassy is arranged. If a parent or guardian will accompany the child, confirm that the person's name is included on the appointment letter.",
+                "vlabel": "Pre-Interview Checklist",
+                "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">Night-before checklist</div>\n      <div class=\"mock-row\">Appointment letter printed <span class=\"mock-badge-green\">Ready</span></div>\n      <div class=\"mock-row\">Document packet organized <span class=\"mock-badge-green\">Ready</span></div>\n      <div class=\"mock-row\">Transport arranged <span class=\"mock-badge-green\">Confirmed</span></div>\n      <div class=\"mock-row\">Passport photos packed <span class=\"mock-badge-green\">Ready</span></div>\n      <div class=\"mock-row\">Originals and copies separated <span class=\"mock-badge-green\">Done</span></div>\n    </div>"
+              },
+              {
+                "label": "Step 2 of 8",
+                "heading": "Arrive early, embassy entry is strict",
+                "instruction": "Arrive at the embassy at least 20–30 minutes before your scheduled appointment time. Embassy security queues can be slow. Latecomers may not be admitted for their scheduled slot.",
+                "vlabel": "Arrival Timing",
+                "note": "Do not carry electronics beyond what is permitted by the embassy. Check the specific embassy's guidelines on phones and devices before arrival.",
+                "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">Arrival guidance</div>\n      <div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">\n        Plan for 20-30 minutes of buffer time. Factor in travel to the Diplomatic Enclave, transport arrangements, and security screening at U.S. Embassy Islamabad.\n      </div>\n      <div class=\"hl-box\" style=\"margin-top:12px\">Earlier is always safer than exactly on time</div>\n    </div>"
+              },
+              {
+                "label": "Step 3 of 8",
+                "heading": "Security screening and document intake",
+                "instruction": "At entry, your child's appointment letter and passport will be checked. You will pass through security screening. Some items, including certain electronics, may need to be left outside or checked in.",
+                "vlabel": "Security & Entry",
+                "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">Entry sequence</div>\n      <div class=\"mock-row\">Appointment letter check at gate</div>\n      <div class=\"mock-row\">Security screening (bag + personal)</div>\n      <div class=\"mock-row\">Document receipt / number assignment</div>\n      <div class=\"mock-row\">Wait in designated area</div>\n    </div>"
+              },
+              {
+                "label": "Step 4 of 8",
+                "heading": "Biometrics, fingerprints and photo",
+                "instruction": "Fingerprinting is generally required for immigrant visa applicants aged 14 and older. In limited cases, children aged 7 or older may also be asked to provide fingerprints. For applicants under 14, a parent or legal guardian may complete the required oath and biometric signature on the child's behalf.\n\nYour child must still follow the applicable interview attendance instructions, even if they are not required to provide fingerprints.",
+                "vlabel": "Biometrics",
+                "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">Biometric collection</div>\n      <div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">\n        Fingerprints are scanned digitally when they are required, and a digital photograph is taken. This takes only a few minutes. Follow the staff instructions exactly.\n      </div>\n    </div>"
+              },
+              {
+                "label": "Step 5 of 8",
+                "heading": "The consular interview window",
+                "instruction": "The child may be asked questions about their identity, relationship with the petitioner, family background, and plans in the United States. Questions will depend on the child's age, circumstances, and case history. A minor may receive assistance from an authorized accompanying person where permitted, but the child should answer in their own words when able.",
+                "vlabel": "Interview at the Window",
+                "note": "The child's answers should be truthful and consistent with the DS-260 and submitted civil documents. Do not memorize scripted answers or guess when unsure.",
+                "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">Common IR-2 child interview topics</div>\n      <div class=\"mock-row\">What is your name and when were you born?</div>\n      <div class=\"mock-row\">Who is petitioning for you?</div>\n      <div class=\"mock-row\">How do you know the petitioner?</div>\n      <div class=\"mock-row\">When did you last speak to or see the petitioner?</div>\n      <div class=\"mock-row\">Who do you currently live with?</div>\n      <div class=\"mock-row\">Where will you live in the United States?</div>\n      <div class=\"mock-row\">Have you travelled to the United States before?</div>\n    </div>"
+              },
+              {
+                "label": "Step 6 of 8",
+                "heading": "Document review at the window",
+                "instruction": "The consular officer may ask to see the child's original civil documents and other supporting evidence. Present them calmly and in the order requested. Having a well-organized packet makes this faster and smoother.",
+                "vlabel": "Document Review",
+                "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">Documents to have ready</div>\n      <div class=\"mock-row\">Child's current passport and relevant prior passports</div>\n      <div class=\"mock-row\">Child's original birth certificate</div>\n      <div class=\"mock-row\">Petitioner's birth certificate or other relevant relationship evidence</div>\n      <div class=\"mock-row\">Original or certified adoption or custody documents, if applicable</div>\n      <div class=\"mock-row\">Petitioner's marriage certificate and relevant prior marriage records, if the petitioner is a stepparent</div>\n      <div class=\"mock-row\">Police certificate, if required</div>\n      <div class=\"mock-row\">Form I-864 and current financial sponsorship evidence</div>\n      <div class=\"mock-row\">DS-260 confirmation page and two visa photographs</div>\n <div class=\"mock-row\">Required English translations and photocopies</div>\n    </div>"
+              },
+              {
+                "label": "Step 7 of 8",
+                "heading": "Stay calm, the officer is doing their job",
+                "instruction": "Consular officers ask direct questions. Their tone is professional, not personal. Nervousness is expected and normal. Answer clearly and calmly. If you do not understand a question, politely ask for clarification.",
+                "vlabel": "Interview Mindset",
+                "visual": "<div class=\"calm-box\">\n      Answer only what is asked. Be honest. Be calm. Be concise. You have prepared for this, trust your preparation.\n    </div>"
+              },
+              {
+                "label": "Step 8 of 8",
+                "heading": "Possible outcomes after the interview",
+                "instruction": "The officer will indicate the outcome at the window or shortly after. After the interview, your child's application may be approved, refused under applicable law (including 221(g) where applicable), or require further administrative processing before a final determination is completed. If you were given a 221(g) refusal letter, continue to Step 10 for Rahvana’s AP guidance.",
+                "vlabel": "Interview Outcomes",
+                "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">Possible case outcomes</div>\n      <div class=\"mock-row\">Approved, visa issuance processing begins <span class=\"mock-badge-green\">Approved</span></div>\n      <div class=\"mock-row\">221(g) refusal, documents or administrative processing required <span class=\"mock-badge-amber\">Further action</span></div>\n      <div class=\"mock-row\">Refused under another legal ground, review the written notice <span class=\"mock-badge-blue\">Legal ground</span></div>\n    </div>"
+              }
+            ],
+            "checklists": [
+              {
+                "type": "bring",
+                "title": "What to bring",
+                "items": [
+                  "Printed NVC interview appointment letter",
+                  "Child beneficiary's current passport",
+                  "Relevant prior passports containing U.S. visa or immigration history",
+                  "Child's original birth certificate, English translation, and photocopies",
+                  "Petitioner's birth certificate or relevant relationship evidence",
+                  "Original or certified adoption papers or custody documents, if applicable",
+                  "Petitioner's original marriage certificate and previous marriage termination records, if the petitioner is a stepparent",
+                  "Original police certificate, if required under the applicable age and residence-history rules",
+                  "DS-260 Confirmation Page",
+                  "Required English translations and photocopies",
+                  "Two recent 5 cm × 5 cm visa photographs",
+                  "Form I-864 and current sponsor evidence",
+                  "Joint sponsor or household member package, if applicable",
+                  "Sealed medical envelope, only if provided by the panel physician",
+                  "Passport delivery registration confirmation"
+                ]
+              },
+              {
+                "type": "pitfalls",
+                "title": "Common pitfalls",
+                "items": [
+                  "Arriving without the printed appointment letter",
+                  "Bringing prohibited electronic devices",
+                  "Arriving late or ignoring the appointment's entry instructions",
+                  "Disorganized documents that make original records difficult to retrieve",
+                  "Providing answers that conflict with the child's DS-260 or submitted documents",
+                  "Failing to bring the child's required original or certified civil documents",
+                  "Missing applicable adoption, custody, or step-parent relationship documents",
+                  "Failing to bring a required police certificate",
+                  "Bringing incomplete English translations or missing photocopies",
+                  "Opening a sealed medical envelope"
+                ]
+              }
+            ],
+            "tips": [
+              "Arrive 20-30 minutes before your appointment time",
+              "Keep the child's documents organized with labeled sections",
+              "Answer only what is asked, concisely and truthfully",
+              "Stay calm, nervousness is normal and expected",
+              "Have originals on top and copies in a separate section",
+              "If unsure of an answer, say so calmly, do not guess",
+              "Confirm that any accompanying person's name is included on the appointment letter"
+            ],
+            "outcomes": [
+              {
+                "label": "Visa approved",
+                "type": "approved",
+                "icon": "check-circle",
+                "sub": "The officer approved the application. The passport may be retained for visa printing and returned through the registered passport delivery or pickup process."
+              },
+              {
+                "label": "Administrative Processing (AP / 221g)",
+                "type": "ap",
+                "icon": "clipboard",
+                "sub": "The officer needs more time or additional documents. This is not a refusal. Proceed to Step 10 to track and manage the AP process."
+              },
+              {
+                "label": "Visa refused",
+                "type": "refused",
+                "icon": "x-circle",
+                "sub": "The officer denies the visa under a specific ground. A refusal typically comes with a written reason. Consult an immigration attorney if this occurs."
+              }
+            ],
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice, always verify with official sources."
+          },
+          "pakistanSpecific": "U.S. Embassy Islamabad is located at Diplomatic Enclave, Ramna 5, Islamabad. All applicants must use the designated shuttle service from 3rd Avenue, Quaid-e-Azam University Road, to reach the Embassy. Mobile phones, cameras, and other electronic equipment are not permitted inside. Only persons authorized under the Embassy's accompanying-person policy may enter, and their names must appear on the appointment letter."
         },
         {
           "step_key": "step_3_10",
           "step_number": 10,
           "step_type": "tool",
           "step_name": "Confirm Interview Outcome",
-          "step_description": "Record what happened at your consular interview. Your selection unlocks the correct next steps for your specific situation.",
-          "step_short_description": "Record your interview result",
+          "step_description": "Record the outcome of the child's consular interview. A parent or guardian can help record the result and any instructions provided by the consular officer. Your selection unlocks the relevant next steps for the case.",
+          "step_short_description": "Record your child's interview result",
           "who": "Child beneficiary",
           "where": "Post-interview",
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 10,
           "actions": [
-            "Select your interview outcome",
+            "Select your child's interview outcome",
             "If 221(g), record situation type",
             "Unlock relevant next steps"
           ],
@@ -6095,13 +6716,13 @@
               {
                 "id": "approved",
                 "label": "Approved",
-                "description": "The officer approved your visa application. The Embassy will keep your passport to issue the visa and then return it to you by courier.",
+                "description": "The officer approved your child's visa application. The Embassy will keep your child's passport to issue the visa and then return it to you by courier.",
                 "icon": "check-circle"
               },
               {
                 "id": "221g",
                 "label": "221(g) Refusal",
-                "description": "The officer issued a 221(g) notice. This is not a final denial, your case may require additional documents or further review.",
+                "description": "The officer issued a 221(g) notice. This is not a final denial, your child's case may require additional documents or further review.",
                 "badge": "More steps ahead",
                 "badgeType": "amber",
                 "icon": "clipboard"
@@ -6178,7 +6799,7 @@
               },
               {
                 "id": "passport_kept",
-                "question": "Was your passport kept at the embassy or returned to you?",
+                "question": "Was your child's passport kept at the embassy or returned to you?",
                 "options": [
                   {
                     "value": "kept",
@@ -6229,7 +6850,7 @@
           "step_number": 11,
           "step_type": "tool",
           "step_name": "Track Visa Issuance",
-          "step_description": "Your visa has been approved. Track the delivery of your passport and visa packet via your registered courier service.",
+          "step_description": "Your child's visa has been approved. Track the delivery of your child's passport and visa packet via registered courier service.",
           "step_short_description": "Passport delivery and visa issuance",
           "who": "Child beneficiary",
           "where": "USVisaScheduling courier portal",
@@ -6264,15 +6885,14 @@
             ],
             "congratulations": {
               "eyebrow": "Visa approved",
-              "title": "Your visa has been approved, congratulations.",
-              "body": "The consular officer has approved your immigrant visa. Your passport will be delivered via the courier service you registered. Track the shipment, verify the visa details once received, and prepare for your move."
+              "title": "Your child's visa has been approved, congratulations.",
+              "body": "The consular officer has approved your child's immigrant visa. The child's passport will be delivered via the courier service you registered. Track the shipment, verify the visa details once received, and prepare for the child's move."
             },
             "checklist": [
               "Log into your USVisaScheduling account and confirm the delivery address",
               "Track the shipment, delivery typically takes a few business days",
-              "When received, verify your name, date of birth, and visa category are correct",
-              "Check the visa expiry date, you must use it before it expires",
-              "Note your priority date and any conditions listed on the visa"
+              "When received, verify your child's name, date of birth, and visa category are correct",
+              "Check the visa expiry date, your child must use it before it expires"
             ],
             "disclaimer": "Rahvana provides structured guidance only. This is not legal advice, always verify with official sources."
           }
@@ -6281,8 +6901,8 @@
           "step_key": "step_3_11b",
           "step_number": 11,
           "step_type": "tool",
-          "step_name": "Review Your 221(g) Letter",
-          "step_description": "Open your 221(g) letter and select every item the embassy requested. This generates your personalized action plan for the next step.",
+          "step_name": "Review Your Child's 221(g) Letter",
+          "step_description": "Open your child's 221(g) letter and select every item the embassy requested. This generates your personalized action plan for the next step.",
           "step_short_description": "Select what the embassy requested from your letter",
           "who": "Child beneficiary",
           "where": "Your 221(g) letter",
@@ -6293,7 +6913,7 @@
             "interviewOutcome": "221g"
           },
           "actions": [
-            "Open your 221(g) letter",
+            "Open your child's 221(g) letter",
             "Select every item the embassy has requested",
             "Fill in any required names or details",
             "Save, your personalized action plan will be generated"
@@ -6317,8 +6937,8 @@
           "step_key": "step_3_12",
           "step_number": 12,
           "step_type": "tool",
-          "step_name": "Submit Your 221(g) Documents",
-          "step_description": "Gather exactly what the embassy requested, submit your packet via the specified method, and log your submission to stay organized.",
+          "step_name": "Submit 221(g) Documents",
+          "step_description": "Gather exactly what the embassy requested, submit your child's 221(g) packet via the specified method, and log your submission to stay organized.",
           "step_short_description": "Gather, submit, and track your requested documents",
           "who": "Child beneficiary",
           "where": "Embassy / CEAC",
@@ -6327,13 +6947,10 @@
           "display_order": 12,
           "visible_when": {
             "interviewOutcome": "221g",
-            "outcome221gSubtype": [
-              "docs_requested",
-              "both"
-            ]
+            "outcome221gSubtype": ["docs_requested", "both"]
           },
           "actions": [
-            "Read your 221(g) letter thoroughly",
+            "Read your child's 221(g) letter thoroughly",
             "Gather every item that was requested, exactly as specified",
             "Submit through the exact method, location, portal, email address, or courier channel stated in the refusal notice",
             "Log your submission date and method in the tracker below"
@@ -6432,7 +7049,7 @@
           "step_number": 13,
           "step_type": "tool",
           "step_name": "Track Administrative Processing",
-          "step_description": "Monitor your CEAC case status, track updates, and stay informed while the U.S. embassy completes post-interview processing.",
+          "step_description": "Monitor your child's CEAC case status, track updates, and stay informed while the U.S. embassy completes post-interview processing.",
           "step_short_description": "Administrative processing tracker",
           "who": "Child beneficiary",
           "where": "ceac.state.gov",
@@ -6441,18 +7058,14 @@
           "display_order": 13,
           "visible_when": {
             "interviewOutcome": "221g",
-            "outcome221gSubtype": [
-              "docs_requested",
-              "further_review",
-              "both"
-            ]
+            "outcome221gSubtype": ["docs_requested", "further_review", "both"]
           },
           "actions": [
-            "Monitor CEAC status weekly",
+            "Monitor your child's CEAC status weekly",
             "Monitor your registered email for embassy correspondence",
             "Record significant status updates",
             "Respond promptly if additional information is requested",
-            "Keep your passport and supporting documents readily available"
+            "Keep your child's passport and supporting documents readily available"
           ],
           "tool_data": {
             "type": "adm_processing",
@@ -6475,23 +7088,23 @@
               "variants": {
                 "further_review": {
                   "eyebrow": "Administrative Processing",
-                  "title": "Your case is currently under additional review",
-                  "body": "Your interview is complete and the embassy is conducting additional administrative processing. No additional documents have been requested at this time. Continue monitoring your case status and your registered email until a final decision is made."
+                  "title": "Your child's case is currently under additional review",
+                  "body": "Your child's interview is complete and the embassy is conducting additional administrative processing. No additional documents have been requested at this time. Continue monitoring your case status and your registered email until a final decision is made."
                 },
                 "docs_requested": {
                   "eyebrow": "Documents Submitted",
-                  "title": "Your documents have been submitted and are under review",
-                  "body": "The embassy has received your requested documents and is now reviewing them alongside any required administrative processing. Continue monitoring your case status and your registered email while awaiting the next update."
+                  "title": "Your child's documents have been submitted and are under review",
+                  "body": "The embassy has received your child's requested documents and is now reviewing them alongside any required administrative processing. Continue monitoring your case status and your registered email while awaiting the next update."
                 },
                 "both": {
                   "eyebrow": "Administrative Processing",
-                  "title": "Your case remains under embassy review",
-                  "body": "Your case is currently undergoing administrative processing. Continue monitoring CEAC and your registered email for any updates or additional instructions from the embassy."
+                  "title": "Your child's case remains under embassy review",
+                  "body": "Your child's case is currently undergoing administrative processing. Continue monitoring CEAC and your registered email for any updates or additional instructions from the embassy."
                 }
               }
             },
             "recorder": {
-              "title": "Track your case progress",
+              "title": "Track your child's case progress",
               "subtitle": "Log each CEAC status update to maintain a complete history",
               "ceac_options": [
                 {
@@ -6522,10 +7135,10 @@
                 "type": "sky",
                 "icon": "info",
                 "items": [
-                  "Check your CEAC status approximately once a week and record any changes.",
+                  "Check your child's CEAC status approximately once a week and record any changes.",
                   "Monitor the email address registered with the embassy for additional requests or updates.",
                   "Respond promptly if the embassy requests further documents or information.",
-                  "Ensure your passport remains valid throughout the review process.",
+                  "Ensure your child's passport remains valid throughout the review process.",
                   "For Administrative Processing inquiries, follow the Embassy's current instructions for your case. The Department of State generally recommends allowing up to 180 days from the interview or submission of supplemental documents, whichever is later, for Administrative Processing. This is a general guideline, not a requirement to wait 180 days before making an inquiry. If you have concerns about your case or believe an inquiry is appropriate, check the Embassy's latest guidance and contact them through the appropriate channel."
                 ]
               },
@@ -6534,10 +7147,10 @@
                 "type": "teal",
                 "icon": "check",
                 "items": [
-                  "Issued, Your visa has been approved and printed.",
-                  "Administrative Processing, Your case may remain refused under 221(g) while additional processing is underway.",
+                  "Issued, Your child's visa has been approved and printed.",
+                  "Administrative Processing, Your child's case may remain refused under 221(g) while additional processing is underway.",
                   "Additional Documents Requested, The embassy requires more information.",
-                  "Refused, Review your 221(g) notice or other written instructions carefully. CEAC may continue to show 'Refused' while a case is undergoing Administrative Processing."
+                  "Refused, Review your child's 221(g) notice or other written instructions carefully. CEAC may continue to show 'Refused' while a case is undergoing Administrative Processing."
                 ]
               }
             ],
@@ -6559,7 +7172,7 @@
     "Divorce Decrees/ Death Certificates (if applicable)",
     "Final Adoption Decree (for adopted child cases)",
     "Evidence of 2-Year Legal Custody and Joint Residence (for adopted child)",
-    "Police Certificates (if child lived in any country for 6+ months since age 16)",
+    "Police Certificates, if required based on residence history (If the applicant is aged 16 or older, police certificate(s) may be required based on residence history: more than 6 months in the country of nationality at any time; more than 6 months in a different country of current residence while aged 16 or older; 12 months or more in a previous country while aged 16 or older; or any country where the applicant was arrested, regardless of age or length of residence. Follow the additional U.S. Embassy Islamabad requirements)",
     "Form I-864 Affidavit of Support (Signed Original)",
     "Tax Returns (IRS Transcripts- 3 years)",
     "Employment Verification Letter",
