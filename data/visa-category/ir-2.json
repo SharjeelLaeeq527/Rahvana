@@ -1363,9 +1363,7 @@
           "step_description": "Decide between Online vs. Paper filing",
           "who": "Petitioner",
           "where": "Rahvana tool",
-          "dependencies": [
-            "step_1_2"
-          ],
+          "dependencies": ["step_1_2"],
           "visible_when": {},
           "estimated_duration_days": 1,
           "is_required": true,
@@ -1565,9 +1563,7 @@
           "who": "Petitioner",
           "where": "my.uscis.gov",
           "timeline": "2-4 hours",
-          "dependencies": [
-            "step_1_3"
-          ],
+          "dependencies": ["step_1_3"],
           "estimated_duration_days": 2,
           "is_required": true,
           "display_order": 4,
@@ -1663,9 +1659,7 @@
           },
           "step_description": "Set up the petitioner's USCIS online account, the gateway for filing Form I-130 digitally, tracking the case, and responding to any USCIS requests.",
           "who": "Petitioner",
-          "dependencies": [
-            "step_1_3"
-          ],
+          "dependencies": ["step_1_3"],
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 5,
@@ -1743,9 +1737,7 @@
           "step_description": "Sign in to your USCIS account and begin the online I-130 petition. From your account dashboard, click \"File a Form Online\" to start the form and enter your prepared information.",
           "who": "Petitioner",
           "where": "myaccount.uscis.gov",
-          "dependencies": [
-            "step_1_5"
-          ],
+          "dependencies": ["step_1_5"],
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 6,
@@ -1967,9 +1959,7 @@
           "step_description": "Attach your supporting documents inside the USCIS online portal. This is the evidence-upload phase, your documents become part of the official I-130 filing record.",
           "who": "Petitioner",
           "where": "myaccount.uscis.gov",
-          "dependencies": [
-            "step_1_6"
-          ],
+          "dependencies": ["step_1_6"],
           "visible_when": {
             "filingMethodConfirmed": true,
             "filingMethod": "online"
@@ -2101,13 +2091,7 @@
             "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Always verify current requirements at uscis.gov before submitting.",
             "quality_requirements": {
               "max_file_size_mb": 12,
-              "accepted_formats": [
-                "PDF",
-                "JPG",
-                "JPEG",
-                "TIF",
-                "TIFF"
-              ],
+              "accepted_formats": ["PDF", "JPG", "JPEG", "TIF", "TIFF"],
               "guidance": [
                 "Each individual file must be 12 MB or smaller (USCIS portal limit)",
                 "Scans must be clear and legible, USCIS commonly issues RFEs for unreadable documents",
@@ -2133,9 +2117,7 @@
           "who": "Petitioner",
           "where": "my.uscis.gov / pay.gov",
           "timeline": "Same session as submission",
-          "dependencies": [
-            "step_1_7"
-          ],
+          "dependencies": ["step_1_7"],
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 8,
@@ -2294,9 +2276,7 @@
           "who": "Petitioner",
           "where": "my.uscis.gov",
           "timeline": "Same session as payment",
-          "dependencies": [
-            "step_1_8"
-          ],
+          "dependencies": ["step_1_8"],
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 9,
@@ -2483,9 +2463,7 @@
           "who": "Petitioner",
           "where": "uscis.gov/i-130",
           "timeline": "1-2 hours",
-          "dependencies": [
-            "step_1_3"
-          ],
+          "dependencies": ["step_1_3"],
           "is_required": true,
           "display_order": 10,
           "action_data": {
@@ -2616,9 +2594,7 @@
           "who": "Petitioner",
           "where": "uscis.gov/g-1055?form=i-130",
           "timeline": "1-2 hours",
-          "dependencies": [
-            "step_1_10"
-          ],
+          "dependencies": ["step_1_10"],
           "is_required": true,
           "display_order": 11,
           "action_data": {
@@ -2770,9 +2746,7 @@
           "who": "Petitioner",
           "where": "uscis.gov/i-130",
           "timeline": "1-2 hours",
-          "dependencies": [
-            "step_1_11"
-          ],
+          "dependencies": ["step_1_11"],
           "is_required": true,
           "display_order": 12,
           "action_data": {
@@ -2930,9 +2904,7 @@
           "who": "Petitioner",
           "where": "uscis.gov/mailing-addresses",
           "timeline": "1-2 hours",
-          "dependencies": [
-            "step_1_12"
-          ],
+          "dependencies": ["step_1_12"],
           "is_required": true,
           "display_order": 13,
           "action_data": {
@@ -3044,10 +3016,7 @@
           "who": "Petitioner",
           "where": "ceac.state.gov",
           "timeline": "1-2 days after receipt",
-          "dependencies": [
-            "step_1_9",
-            "step_1_13"
-          ],
+          "dependencies": ["step_1_9", "step_1_13"],
           "is_required": true,
           "display_order": 14,
           "tool_data": {
@@ -3244,9 +3213,7 @@
           "who": "Petitioner",
           "where": "ceac.state.gov",
           "timeline": "Ongoing after registration",
-          "dependencies": [
-            "step_1_15"
-          ],
+          "dependencies": ["step_1_15"],
           "is_required": true,
           "display_order": 15,
           "tool_data": {
@@ -3387,19 +3354,13 @@
                 "icon": "green",
                 "title": "Add new evidence entries",
                 "copy": "Log visits, upload new photos, and keep a clean timeline of the relationship as it continues.",
-                "buttons": [
-                  "Add note",
-                  "Mark planned"
-                ]
+                "buttons": ["Add note", "Mark planned"]
               },
               {
                 "icon": "rose",
                 "title": "Track household or income changes",
                 "copy": "If finances, employment, or household size change while waiting, keeping that organized now can make later sponsorship steps easier.",
-                "buttons": [
-                  "Save reminder",
-                  "Open notes"
-                ]
+                "buttons": ["Save reminder", "Open notes"]
               }
             ],
             "community": [
@@ -3423,11 +3384,7 @@
                 "kicker": "Official USCIS tracking",
                 "head": "Case Status Online",
                 "copy": "Track your case using the 13-character receipt number.",
-                "pills": [
-                  "Receipt number required",
-                  "Last action shown",
-                  "Official USCIS tool"
-                ],
+                "pills": ["Receipt number required", "Last action shown", "Official USCIS tool"],
                 "note": "A quiet status page does not necessarily mean nothing is happening internally. It usually means there has been no new official outward-facing update yet."
               },
               {
@@ -3438,12 +3395,7 @@
                 "kicker": "Status guide",
                 "head": "Status meanings",
                 "copy": "Separate passive waiting from states that require action.",
-                "pills": [
-                  "Received",
-                  "Actively reviewed",
-                  "RFE",
-                  "Approved"
-                ],
+                "pills": ["Received", "Actively reviewed", "RFE", "Approved"],
                 "note": "Use this guide to understand whether you need to act now or simply stay prepared."
               },
               {
@@ -3454,11 +3406,7 @@
                 "kicker": "While-you-wait tools",
                 "head": "Stay prepared while waiting",
                 "copy": "A prep checklist, next-step preview, and useful modules for this waiting period.",
-                "pills": [
-                  "Prep checklist",
-                  "Coming next",
-                  "Useful right now"
-                ],
+                "pills": ["Prep checklist", "Coming next", "Useful right now"],
                 "note": "A few small tasks now can make the next phase feel much easier when the case moves forward."
               },
               {
@@ -3469,11 +3417,7 @@
                 "kicker": "Next-step guide",
                 "head": "Pivot when USCIS changes the status",
                 "copy": "RFE and approval should each unlock their own dedicated next-step experiences.",
-                "pills": [
-                  "Conditional branches",
-                  "Next step unlocks",
-                  "Action clarity"
-                ],
+                "pills": ["Conditional branches", "Next step unlocks", "Action clarity"],
                 "note": "Your next task should match the actual update USCIS gives you."
               }
             ],
@@ -3499,9 +3443,7 @@
           "who": "Petitioner",
           "where": "my.uscis.gov / mail",
           "timeline": "Varies by notice type",
-          "dependencies": [
-            "step_1_16"
-          ],
+          "dependencies": ["step_1_16"],
           "is_required": false,
           "display_order": 17,
           "tool_data": {
@@ -3631,9 +3573,7 @@
           "who": "Petitioner",
           "where": "my.uscis.gov / mail",
           "timeline": "Before deadline on notice",
-          "dependencies": [
-            "step_1_18"
-          ],
+          "dependencies": ["step_1_18"],
           "is_required": false,
           "display_order": 19,
           "step_description": "USCIS may issue a Request for Evidence (RFE) or Notice of Intent to Deny (NOID) if additional information or documents are needed. Respond fully before the stated deadline.",
@@ -3812,9 +3752,7 @@
           "who": "Petitioner",
           "where": "my.uscis.gov / mail",
           "timeline": "Before deadline on notice",
-          "dependencies": [
-            "step_1_18"
-          ],
+          "dependencies": ["step_1_18"],
           "is_required": false,
           "display_order": 20,
           "guide_data": {
@@ -3882,9 +3820,7 @@
           "who": "Petitioner",
           "where": "my.uscis.gov / mail",
           "timeline": "Before deadline on notice",
-          "dependencies": [
-            "step_1_18"
-          ],
+          "dependencies": ["step_1_18"],
           "is_required": false,
           "display_order": 21,
           "guide_data": {
@@ -3952,9 +3888,7 @@
           "who": "Petitioner",
           "where": "my.uscis.gov / mail",
           "timeline": "Before deadline on notice",
-          "dependencies": [
-            "step_1_18"
-          ],
+          "dependencies": ["step_1_18"],
           "is_required": false,
           "display_order": 22,
           "guide_data": {
@@ -4061,13 +3995,7 @@
           "who": "Petitioner",
           "where": "my.uscis.gov",
           "timeline": "Varies by case",
-          "dependencies": [
-            "step_1_19",
-            "step_1_20",
-            "step_1_21",
-            "step_1_22",
-            "step_1_25"
-          ],
+          "dependencies": ["step_1_19", "step_1_20", "step_1_21", "step_1_22", "step_1_25"],
           "is_required": false,
           "display_order": 23,
           "tool_data": {
@@ -4133,9 +4061,7 @@
           "who": "Petitioner",
           "where": "my.uscis.gov / EOIR",
           "timeline": "Varies, deadlines apply",
-          "dependencies": [
-            "step_1_23"
-          ],
+          "dependencies": ["step_1_23"],
           "is_required": false,
           "display_order": 24,
           "guide_data": {
@@ -4248,9 +4174,7 @@
           "who": "Petitioner / Beneficiary",
           "where": "my.uscis.gov / mail",
           "timeline": "Before deadline on notice",
-          "dependencies": [
-            "step_1_18"
-          ],
+          "dependencies": ["step_1_18"],
           "is_required": false,
           "display_order": 25,
           "guide_data": {
@@ -4396,10 +4320,7 @@
           },
           "is_required": false,
           "who": "Petitioner",
-          "dependencies": [
-            "step_1_16",
-            "step_1_18"
-          ],
+          "dependencies": ["step_1_16", "step_1_18"],
           "tool_data": {
             "eyebrow": {
               "chapter": "Chapter 1 · USCIS Petition Filing",
@@ -4547,10 +4468,7 @@
                   "src": "/assets/images/ir1-journey/c1_step13/approvalnotice.png",
                   "alt": "Approval notice example"
                 },
-                "pills": [
-                  "Save a digital copy",
-                  "Keep the original safe"
-                ],
+                "pills": ["Save a digital copy", "Keep the original safe"],
                 "note": "This is a USCIS milestone notice. The next major handoff is usually to the National Visa Center."
               },
               {
@@ -4562,11 +4480,7 @@
                   "type": "video",
                   "src": "/assets/videos/ir1-journey/c1_step13/savedetails.mp4"
                 },
-                "pills": [
-                  "Approval date",
-                  "Receipt number",
-                  "Priority date if shown"
-                ],
+                "pills": ["Approval date", "Receipt number", "Priority date if shown"],
                 "note": "For IR-2, save the priority date as a record, but do not treat it like the main wait-list driver."
               },
               {
@@ -4580,11 +4494,7 @@
                   "alt": "Approval to NVC flowchart",
                   "frame": false
                 },
-                "pills": [
-                  "Civil documents",
-                  "Financial prep",
-                  "Contact details"
-                ],
+                "pills": ["Civil documents", "Financial prep", "Contact details"],
                 "note": "Use live NVC timeframes for timing context instead of assuming one fixed waiting window."
               }
             ],
@@ -4608,7 +4518,7 @@
           "step_number": 1,
           "step_name": "Access CEAC Case",
           "step_short_description": "Secure case details & sign in",
-          "step_description": "Your NVC Welcome Letter contains the case number and invoice ID needed to access CEAC, the online portal where NVC processing continues.",
+          "step_description": "Your NVC Welcome Letter contains the case number and invoice ID needed to access CEAC, the online portal where NVC processing continues for your child.",
           "step_type": "tool",
           "who": "Petitioner",
           "where": "NVC Welcome Letter / ceac.state.gov",
@@ -4626,7 +4536,7 @@
           "tool_data": {
             "id": "step_2_1",
             "title": "Access CEAC Case",
-            "subtitle": "Your NVC Welcome Letter contains the case number and invoice ID needed to access CEAC, the online portal where NVC processing continues.",
+            "subtitle": "Your NVC Welcome Letter contains the case number and invoice ID needed to access CEAC, the online portal where NVC processing continues for your child.",
             "chips": [
               {
                 "label": "Petitioner",
@@ -4647,10 +4557,11 @@
               "eyebrow": "Official NVC / CEAC Portal",
               "heading": "Open your CEAC case access page",
               "features": [
-                "Find your NVC Case Number in the Welcome Letter",
+                "Find your child's NVC Case Number in the Welcome Letter",
                 "Find your Invoice ID Number in the same letter",
                 "Use both to sign in to CEAC",
-                "First-time login begins your NVC processing"
+                "If petitioning multiple children, each child has their own NVC Case Number",
+                "First-time login begins NVC processing for your child"
               ],
               "button_label": "Open CEAC Portal",
               "href": "https://ceac.state.gov/IV/Login.aspx",
@@ -4661,12 +4572,12 @@
                 "label": "Step 1 of 5, Find your NVC Welcome Letter",
                 "heading": "Find your NVC Welcome Letter",
                 "screenTitle": "Find your NVC Welcome Letter",
-                "instruction": "After USCIS approves your I-130 petition, your case is transferred to the National Visa Center (NVC). The NVC sends a Welcome Letter or email to the petitioner's address, this communication contains the two key details you need to access CEAC.",
+                "instruction": "After USCIS approves your I-130 petition for your child, your case is transferred to the National Visa Center (NVC). The NVC sends a Welcome Letter or email to the petitioner and designated email address. This communication contains the two key credentials you need to access CEAC.",
                 "url": "NVC Welcome Communication",
                 "ss_label": "NVC Welcome Communication",
                 "ss_headline": "Notice of NVC Receipt",
-                "ss_desc": "Check both physical mail and email. The letter may arrive weeks after I-130 approval. The subject line typically references your NVC Case Number.",
-                "note": "Check both physical mail and email. The letter may arrive weeks after I-130 approval. The subject line typically references your NVC Case Number.",
+                "ss_desc": "Check both physical mail and email. The letter may arrive a few weeks after I-130 approval. If you filed for multiple children, watch for a separate Welcome Letter for each child.",
+                "note": "Check both physical mail and email. The letter may arrive a few weeks after I-130 approval. If you filed for multiple children, watch for a separate Welcome Letter for each child.",
                 "media": {
                   "type": "img",
                   "src": "/assets/images/ir1-journey/c2_step1/01-nvc-welcome-letter.png"
@@ -4676,7 +4587,7 @@
                 "label": "Step 2 of 5, Locate your NVC Case Number",
                 "heading": "Locate your NVC Case Number",
                 "screenTitle": "Locate your NVC Case Number",
-                "instruction": "The NVC Case Number appears clearly in the Welcome Letter or email. For IR-1 spouse cases from Pakistan, it typically follows a format like <strong>ISL2026XXXXXX</strong>, beginning with your consulate code, followed by the year and case digits.",
+                "instruction": "The NVC Case Number appears clearly in the Welcome Letter or email. For IR-2 child visa cases from Pakistan (processed at U.S. Embassy Islamabad), it typically follows a format like <strong>ISL2026XXXXXX</strong>, beginning with the Islamabad consulate code (ISL), followed by the year and case digits.",
                 "url": "NVC Case Number Location",
                 "ss_label": "NVC Case Number Location",
                 "ss_headline": "Notice of NVC Receipt",
@@ -4703,7 +4614,7 @@
               {
                 "label": "Step 4 of 5, Enter your details into CEAC",
                 "heading": "Enter your case details into CEAC",
-                "instruction": "Go to the CEAC portal and enter your NVC Case Number and Invoice ID Number to access your case for the first time. This creates your CEAC session and allows you to begin the immigrant visa application process.",
+                "instruction": "Go to the CEAC portal and enter your NVC Case Number and Invoice ID Number to access your child's case for the first time. This creates your CEAC session and allows you to begin fee payments and the immigrant visa application process.",
                 "url": "ceac.state.gov",
                 "ss_label": "CEAC Portal Login",
                 "ss_headline": "Immigrant Visa Case, CEAC Login",
@@ -4716,7 +4627,7 @@
               {
                 "label": "Step 5 of 5, Return and save your details",
                 "heading": "Return here and save your CEAC details",
-                "instruction": "Once you have located your case number and invoice ID and accessed CEAC, return to this Rahvana step and save both details in the Portal Wallet. This keeps them secure and easy to retrieve throughout your NVC processing.",
+                "instruction": "Once you have located your case number and invoice ID and accessed CEAC, return to this Rahvana step and save both details in the Portal Wallet. This keeps them secure and easy to retrieve throughout your child's NVC processing.",
                 "url": "Save to Portal Wallet",
                 "ss_label": "Save to Portal Wallet",
                 "ss_headline": "CEAC accessed successfully",
@@ -4734,8 +4645,8 @@
           "step_key": "step_2_2",
           "step_number": 2,
           "step_name": "Pay NVC Fees",
-          "step_short_description": "AOS & IV fee payment",
-          "step_description": "NVC fee payment must be completed in CEAC before document submission and later processing can continue.",
+          "step_short_description": "AOS ($120) & IV ($325) fee payment",
+          "step_description": "Pay the required NVC fees through CEAC using a U.S. bank checking or savings account. The $120 Affidavit of Support fee and $325 Immigrant Visa fee must show as PAID (typically 2-3 business days) before your child's DS-260 unlocks.",
           "step_type": "tool",
           "who": "Petitioner",
           "where": "CEAC Portal",
@@ -4745,16 +4656,16 @@
           "is_required": true,
           "display_order": 2,
           "actions": [
-            "Log into CEAC portal",
+            "Log into CEAC portal with case number and invoice ID",
             "Open fee payment area",
-            "Pay Affidavit of Support fee ($120)",
-            "Pay Immigrant Visa fee ($325)",
-            "Save payment status"
+            "Pay the $120 Affidavit of Support (AOS) fee (one fee covers siblings billed together)",
+            "Pay the $325 Immigrant Visa (IV) fee for the child beneficiary",
+            "Allow 2-3 business days for payment to clear and save status to Portal Wallet"
           ],
           "tool_data": {
             "id": "step_2_2",
             "title": "Pay Your NVC Fees",
-            "subtitle": "NVC fee payment must be completed in CEAC before document submission and later processing can continue.",
+            "subtitle": "Pay the required NVC fees in CEAC. The $120 AOS fee and $325 IV fee must show as PAID (typically 2-3 business days) before your child's DS-260 unlocks.",
             "chips": [
               {
                 "label": "Petitioner",
@@ -4775,10 +4686,11 @@
               "eyebrow": "Official NVC / CEAC Portal",
               "heading": "Open CEAC to pay your required fees",
               "features": [
-                "Sign in with your CEAC case details",
-                "Open the fee payment area",
-                "Review the available fee invoices",
-                "Return here after payment is submitted"
+                "Pay using a U.S. bank account (routing and account number)",
+                "$120 Affidavit of Support fee (one fee covers siblings billed together)",
+                "$325 Immigrant Visa application fee per child beneficiary",
+                "Payments take 2-3 business days to change from 'In Process' to 'PAID'",
+                "Record payment status in your Portal Wallet to track clearance"
               ],
               "button_label": "Open CEAC Portal",
               "href": "https://ceac.state.gov/IV/Login.aspx",
@@ -4841,12 +4753,12 @@
                 "label": "Step 4 of 6, Review fee invoices",
                 "heading": "Review the required fee invoices",
                 "screenTitle": "Review the required fee invoices",
-                "instruction": "CEAC will display the required fee invoices for your case. Review both the Affidavit of Support fee and the Immigrant Visa fee before proceeding.",
+                "instruction": "CEAC displays the required fee invoices: the $120 Affidavit of Support (AOS) fee and the $325 Immigrant Visa (IV) application fee. If petitioning multiple children simultaneously, one AOS fee typically covers siblings billed under the same invoice group, but the $325 IV fee is required for each child.",
                 "url": "ceac.state.gov",
                 "ss_label": "Fee Invoices",
                 "ss_headline": "Review Fees",
                 "ss_desc": "Affidavit of Support Fee / Immigrant Visa Fee",
-                "note": "Confirm the exact amounts shown in your CEAC portal before paying. Do not rely on third-party estimates.",
+                "note": "Payment must be made from a U.S. bank checking or savings account using an ACH routing number and account number. Credit cards and international cards are not accepted.",
                 "media": {
                   "type": "video",
                   "src": "/assets/videos/ir1-journey/c2_step2/04-payment-method.mp4"
@@ -4861,7 +4773,7 @@
                 "ss_label": "Payment",
                 "ss_headline": "Confirm and Pay",
                 "ss_desc": "Submit Payment",
-                "note": "Do not close the browser tab during payment processing. Wait for the confirmation screen.",
+                "note": "Payments take 2 to 3 business days to clear. Do not attempt duplicate payments while the status shows 'In Process'. Once status turns 'PAID', Form DS-260 unlocks.",
                 "media": {
                   "type": "img",
                   "src": "/assets/images/ir1-journey/c2_step2/05-payment-confirmation.png"
@@ -4870,7 +4782,7 @@
               {
                 "label": "Step 6 of 6, Return and save",
                 "heading": "Return here and save your payment record",
-                "instruction": "Once payment is submitted, return to this Rahvana step and save the fee status in the Portal Wallet for reference throughout your NVC processing.",
+                "instruction": "Once payment is submitted in CEAC, return to this Rahvana step and record your payment status in the Portal Wallet. When CEAC marks the fees as 'PAID' after 2-3 days, your next step (DS-260) will be ready.",
                 "url": "Save to Portal Wallet",
                 "ss_label": "Payment Submitted",
                 "ss_headline": "Return to Rahvana",
@@ -4878,7 +4790,13 @@
               }
             ],
             "disclaimer": "Rahvana provides structured guidance only. This is not legal advice.\nFee availability and status must be confirmed in CEAC. Saved data is local/session-based."
-          }
+          },
+          "citations": [
+            {
+              "text": "NVC Fee Payment Information (Department of State)",
+              "link": "https://travel.state.gov/content/travel/en/us-visas/immigrate/the-immigrant-visa-process/step-1-submit-a-petition/step-3-pay-fees.html"
+            }
+          ]
         },
         {
           "step_key": "step_2_3",
@@ -4886,8 +4804,8 @@
             "disclaimer": "Advisory consistency framework. The DS-260 must repeat the same facts filed on the I-130; form-to-form divergence is a leading cause of NVC delays and interview RFEs. Not an official adjudication rubric.",
             "match_fields": [
               {
-                "id": "marriage_date",
-                "label": "Marriage date",
+                "id": "beneficiary_dob",
+                "label": "Child date of birth",
                 "baseline_source": "I-130 baseline captured at step_1_4",
                 "severity_on_mismatch": "critical"
               },
@@ -4898,84 +4816,90 @@
                 "severity_on_mismatch": "critical"
               },
               {
-                "id": "beneficiary_dob",
-                "label": "Beneficiary date of birth",
-                "baseline_source": "I-130 baseline captured at step_1_4",
+                "id": "child_relationship_type",
+                "label": "Qualifying child relationship",
+                "baseline_source": "I-130 Part 1/Part 2 relationship classification",
+                "severity_on_mismatch": "critical"
+              },
+              {
+                "id": "parents_marriage_date",
+                "label": "Parents' marriage date (stepchild)",
+                "baseline_source": "Stepchild qualifying marriage before 18th birthday",
                 "severity_on_mismatch": "critical"
               }
             ],
             "mandatory_disclosures": [
               {
-                "id": "prior_marriage",
-                "trigger": "Any prior marriage declared at eligibility (q3.q3s1)",
-                "requirement": "List every prior marriage and how it ended; must match the I-130 and termination documents.",
-                "source_basis": "9 FAM 504.4; INA 212(a)(6)(C), material misrepresentation"
+                "id": "unmarried_status",
+                "trigger": "Child marital status verification (INA 101(b)(1))",
+                "requirement": "Confirm the child is currently unmarried. Any marriage prior to U.S. admission automatically revokes IR-2 eligibility.",
+                "source_basis": "INA 101(b)(1); 9 FAM 502.2-2(B)"
               },
               {
                 "id": "prior_visa_refusal",
                 "trigger": "Prior U.S. visa refusal or application declared (q5.q5s1)",
-                "requirement": "Declare every prior U.S. visa refusal or application. Omission risks a misrepresentation finding.",
+                "requirement": "Declare every prior U.S. visa refusal or application for the child. Omission risks a material misrepresentation finding.",
                 "source_basis": "9 FAM 504.4; INA 212(a)(6)(C), 8 USC 1182(a)(6)(C)"
               },
               {
                 "id": "criminal_record",
-                "trigger": "Arrest, charge, or court/police record declared (q5.q5s2)",
-                "requirement": "Declare any arrest or charge and bring certified court and police records to the interview.",
-                "source_basis": "9 FAM 504.4; INA 212(a)(2), 8 USC 1182(a)(2) criminal grounds"
+                "trigger": "Arrest, charge, or juvenile record declared (q5.q5s2)",
+                "requirement": "Declare any arrest, charge, or citation and obtain certified court/police disposition records for the interview.",
+                "source_basis": "9 FAM 504.4; INA 212(a)(2), 8 USC 1182(a)(2)"
               },
               {
                 "id": "prior_overstay",
-                "trigger": "Prior U.S. overstay / unlawful presence declared (q5.q5s4)",
-                "requirement": "Declare any unlawful presence; a provisional waiver (I-601A) may be needed before the interview.",
-                "source_basis": "9 FAM 504.4; INA 212(a)(9)(B), 8 USC 1182(a)(9)(B) unlawful presence bars"
+                "trigger": "Prior U.S. overstay or unlawful presence declared (q5.q5s3)",
+                "requirement": "Declare any prior U.S. stay, visa overstay, or unlawful presence. Minors under 18 do not accrue unlawful presence for 3/10 year bars, but truthfulness is mandatory.",
+                "source_basis": "INA 212(a)(9)(B)(iii)(I); 9 FAM 504.4"
               }
             ],
-            "source_basis": "U.S. Department of State 9 FAM 504.4 (DS-260 adjudication); INA 212(a)(6)(C)."
+            "source_basis": "U.S. Department of State 9 FAM 504.4 (DS-260 adjudication); INA 101(b)(1); INA 212(a)(6)(C)."
           },
           "step_number": 3,
           "step_name": "Complete Form DS-260",
           "step_short_description": "Immigrant visa application",
-          "step_description": "Use Rahvana's guided Autoform Filler to prepare your answers first, then use the generated PDF as an answer key when completing the DS-260 inside CEAC, or fill the form directly in the portal.",
+          "step_description": "Use Rahvana's guided Autoform Filler to prepare your DS-260 answers first, then enter them in CEAC. For children under 16, a parent or legal guardian completes and signs the form on the child's behalf; adult children (18+) complete and sign their own form.",
           "step_type": "tool",
-          "who": "Child beneficiary",
+          "who": "Child beneficiary (or parent/guardian on behalf of a minor)",
           "where": "CEAC Portal",
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 3,
           "actions": [
             "Launch DS-260 Autoform Filler",
-            "Complete guided sections",
-            "Review and generate PDF",
-            "Enter answers in CEAC",
-            "Submit DS-260 and save confirmation"
+            "Complete guided sections for child beneficiary",
+            "Review and verify consistency with Form I-130",
+            "Parent/guardian signs for minor under 16, or adult child signs directly",
+            "Submit DS-260 in CEAC and save confirmation"
           ],
           "tool_data": {
             "id": "step_2_3",
             "title": "Complete Form DS-260",
-            "subtitle": "Use Rahvana's guided Autoform Filler to prepare your answers first, then use the generated PDF as an answer key when completing the DS-260 inside CEAC, or fill the form directly in the portal.",
+            "subtitle": "Complete the child's DS-260 online immigrant visa application in CEAC. A parent or legal guardian completes and signs for children under 16; applicants aged 18+ sign their own form.",
             "chips": [
               {
-                "label": "Beneficiary",
-                "role": "role"
+                "label": "Child Beneficiary",
+                "type": "role"
               },
               {
-                "label": "Rahvana Tool",
-                "tool": "tool"
+                "label": "Parent / Guardian",
+                "type": "role"
               },
               {
                 "label": "CEAC Portal",
-                "uscis": "uscis"
+                "type": "tool"
               }
             ],
-            "alert_note": "The DS-260 becomes available in CEAC only after NVC fee payment has been successfully processed.",
+            "alert_note": "Form DS-260 becomes available in CEAC only after NVC fee payments have cleared and show as PAID.",
             "launch_module": {
               "icon": "file",
               "eyebrow": "Autoform Filler · DS-260",
               "heading": "Complete DS-260 in simpler guided language",
               "features": [
-                "Easier question flow than the portal",
-                "Plain-language guidance for each section",
-                "Built-in review before finalizing",
+                "Child-tailored questionnaire with plain-language explanations",
+                "Guided rules for parent/guardian signature on behalf of a minor",
+                "Consistency check against Form I-130 baseline facts",
                 "Generate a PDF answer key for CEAC entry"
               ],
               "button_label": "Launch DS-260 Autoform Filler",
@@ -4987,16 +4911,16 @@
                 "label": "Two ways to complete",
                 "items": [
                   "Option 1: Fill in Rahvana first, then use the generated PDF as your CEAC answer key",
-                  "Option 2: Fill the DS-260 directly in CEAC"
+                  "Option 2: Fill the DS-260 directly in the CEAC portal"
                 ]
               },
               {
-                "label": "Good to know",
+                "label": "Essential child rules",
                 "items": [
-                  "DS-260 is completed by the immigrant visa applicant",
-                  "You can review answers before submitting",
-                  "Keep answers consistent across immigration forms",
-                  "Submit only after a careful final review"
+                  "Parent signature: Parent or guardian signs for children under 16",
+                  "Adult children (18-20): Must review and sign their own DS-260",
+                  "Unmarried status: Child must remain unmarried through entry into the U.S.",
+                  "Confirmation page: Save the confirmation page for medical and interview"
                 ]
               }
             ],
@@ -5064,7 +4988,7 @@
                 "label": "Step 4 of 7, Complete section by section",
                 "heading": "Complete section by section",
                 "screenTitle": "Complete section by section",
-                "instruction": "Move through each DS-260 section in sequence. Enter your information carefully. Keep answers consistent with other immigration forms in your case.",
+                "instruction": "Move through each DS-260 section in sequence: Personal Information, Address & Phone, Family Information (parents' details), Previous U.S. Travel, and Work/Education. For school-age children, provide current or recent school information; for young children, mark employment as Not Applicable.",
                 "ss_label": "Form Progress",
                 "ss_headline": "Section-by-Section",
                 "ss_desc": "Personal info -> Travel history -> Work/education -> Security questions -> Review",
@@ -5091,11 +5015,11 @@
                 "label": "Step 6 of 7, Sign and submit the DS-260",
                 "heading": "Sign and submit the DS-260",
                 "screenTitle": "Sign and submit the DS-260",
-                "instruction": "The final step requires certification. Read carefully before submitting, changes after submission are not straightforward.",
+                "instruction": "The final section requires certification and electronic signature. For children under 16, a parent or legal guardian must complete and sign the application by selecting the option indicating they assisted the applicant and signing as parent/guardian. Applicants aged 18 and older must review and sign the application themselves.",
                 "ss_label": "Certification",
                 "ss_headline": "Sign and Submit",
                 "ss_desc": "Certify accuracy of your application before final submission.",
-                "note": "Submission is final. Contact the NVC if corrections are needed after submitting.",
+                "note": "DS-260 submission is final. Ensure all dates, parent names, and passport details match your I-130 and NADRA birth records exactly. Any post-submission correction requires contacting NVC or the Embassy.",
                 "media": {
                   "type": "img",
                   "src": "/assets/images/ir1-journey/c2_step3/06-sign-and-submit.png"
@@ -5105,7 +5029,7 @@
                 "label": "Step 7 of 7, Save your confirmation page",
                 "heading": "Save your confirmation page",
                 "screenTitle": "Save your confirmation page",
-                "instruction": "After submission, CEAC displays a confirmation page. Save or print this for your records as proof that DS-260 has been received.",
+                "instruction": "After electronic submission, CEAC displays the DS-260 Confirmation Page with a unique barcode. Print and save this page immediately to your Document Vault; it is mandatory for both the panel physician medical exam and the consular interview.",
                 "ss_label": "Certification",
                 "ss_headline": "DS-260 Submitted",
                 "ss_desc": "Application Received",
@@ -5119,8 +5043,12 @@
           },
           "citations": [
             {
-              "text": "Consular Electronic Application Center (CEAC)",
+              "text": "Consular Electronic Application Center (CEAC) - DS-260",
               "link": "https://ceac.state.gov/IV"
+            },
+            {
+              "text": "Department of State FAQs on Form DS-260",
+              "link": "https://travel.state.gov/content/travel/en/us-visas/immigrate/the-immigrant-visa-process/step-5-collect-financial-evidence-and-other-supporting-documents/step-5-faq.html"
             }
           ]
         },
@@ -6008,9 +5936,7 @@
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 7,
-          "dependencies": [
-            "step_3_6"
-          ],
+          "dependencies": ["step_3_6"],
           "tool_data": {
             "id": "step_3_7",
             "type": "document_checklist",
@@ -6327,10 +6253,7 @@
           "display_order": 12,
           "visible_when": {
             "interviewOutcome": "221g",
-            "outcome221gSubtype": [
-              "docs_requested",
-              "both"
-            ]
+            "outcome221gSubtype": ["docs_requested", "both"]
           },
           "actions": [
             "Read your 221(g) letter thoroughly",
@@ -6441,11 +6364,7 @@
           "display_order": 13,
           "visible_when": {
             "interviewOutcome": "221g",
-            "outcome221gSubtype": [
-              "docs_requested",
-              "further_review",
-              "both"
-            ]
+            "outcome221gSubtype": ["docs_requested", "further_review", "both"]
           },
           "actions": [
             "Monitor CEAC status weekly",
