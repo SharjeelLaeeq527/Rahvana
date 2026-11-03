@@ -5056,26 +5056,722 @@
           "step_key": "step_2_4",
           "step_number": 4,
           "step_name": "Prepare Civil Documents",
-          "step_type": "informational",
-          "who": "Child beneficiary, with petitioner support",
-          "where": "Document gathering",
+          "step_short_description": "Gather and prepare child civil documents",
+          "step_description": "Gather, verify, translate, and upload the complete civil document set for the IR-2 child beneficiary to CEAC, including Pakistan birth records, NADRA registration, custody/consent evidence, and police certificates (if age 16+).",
+          "step_type": "tool",
+          "who": "Child beneficiary & U.S. citizen petitioner",
+          "where": "Document gathering & CEAC",
           "estimated_duration_days": 10,
           "is_required": true,
           "display_order": 4,
           "actions": [
-            "Review the NVC required document list at travel.state.gov for the IR-2 category",
-            "Upload child's birth certificate (certified copy)",
-            "Upload child's valid passport (copy of bio page)",
-            "Upload police certificate(s), required if the child is old enough to have lived in any country for 6+ months since age 16",
-            "For stepchild: upload marriage certificate and any divorce decrees or death certificates",
-            "For adopted child: upload final adoption decree and supporting custody/residence evidence",
-            "Obtain certified English translations for all non-English documents",
-            "Scan documents clearly and upload to CEAC under the correct categories"
+            "Review the NVC required civil document checklist for the IR-2 child category",
+            "Obtain child's valid passport biographic page and 2x2 visa photographs",
+            "Obtain child's Union Council birth registration and NADRA Computerized Birth Certificate",
+            "Obtain NADRA Child Registration Certificate (CRC / B-Form) or Family Registration Certificate (FRC)",
+            "Obtain Police Character Certificate if child is age 16 or older (children under 16 are exempt)",
+            "Gather parentage evidence (parents' Nikah Nama/MRC, legitimation, stepparent records, or adoption decree)",
+            "Obtain court custody decree or notarized NOC consent letter from non-accompanying parent (for minors under 18)",
+            "Obtain certified English translations for all Urdu and non-English documents",
+            "Scan documents clearly in color (<2 MB each) and upload to CEAC under the correct categories"
           ],
-          "step_short_description": "The child's civil documents for NVC",
-          "step_description": "NVC requires the child's civil supporting documents uploaded to CEAC. Documents must be certified copies with certified English translations if not in English.",
-          "legal_review": "pending",
-          "pending_step_type": "tool"
+          "tool_data": {
+            "id": "step_2_4",
+            "type": "doc_list",
+            "title": "Prepare Civil Documents",
+            "subtitle": "Review and prepare the civil documents needed for the IR-2 child beneficiary's NVC / CEAC upload and consular interview readiness.",
+            "doc_list": {
+              "groups": [
+                {
+                  "id": "required",
+                  "label": "Required",
+                  "badge": "req",
+                  "items": [
+                    {
+                      "id": "passport",
+                      "icon": "passport",
+                      "title": "Child Beneficiary Passport Biographic Page",
+                      "sub": "Current passport page showing the child's photo, full name, date of birth, and nationality",
+                      "tags": [
+                        "bene",
+                        "govt"
+                      ],
+                      "external_href": "/guides/passport-guide",
+                      "status": "not-started",
+                      "required": true,
+                      "sections": [
+                        {
+                          "t": "Requirement",
+                          "c": "<p>Upload a clear, high-resolution color scan of the biographic data page of the child beneficiary's current, unexpired passport. All four corners must be visible with no glare or obstruction.</p>"
+                        },
+                        {
+                          "t": "Validity",
+                          "c": "<p>The passport must be valid for at least six months beyond the child's intended date of entry into the United States. If the passport will expire soon, renew it prior to the immigrant visa interview.</p>"
+                        },
+                        {
+                          "t": "Consistency",
+                          "c": "<div class=\"note-box\"><p>The child's name, date of birth, place of birth, and parents' names in the passport must match Form DS-260, the Form I-130 petition, and Pakistan NADRA civil records exactly.</p></div>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "child-birth",
+                      "icon": "birth",
+                      "title": "Child Beneficiary Birth Certificate",
+                      "sub": "Official Union Council registration and NADRA Computerized Birth Certificate",
+                      "tags": [
+                        "bene",
+                        "govt"
+                      ],
+                      "external_href": "/guides/birth-certificate-guide",
+                      "status": "not-started",
+                      "required": true,
+                      "sections": [
+                        {
+                          "t": "What to provide",
+                          "c": "<p>Submit both the official local Union Council birth registration (in Urdu with certified English translation) and the NADRA Computerized Birth Certificate. The certificate must clearly list the child's full name, exact date and place of birth, and the full names of both biological parents.</p>"
+                        },
+                        {
+                          "t": "Late registration",
+                          "c": "<p>If the birth was registered more than one year after the date of birth, consular officers at Embassy Islamabad will scrutinize the record. Submit secondary contemporaneous evidence such as hospital birth records, school leaving certificates, or childhood vaccination records.</p>"
+                        },
+                        {
+                          "t": "Pakistan reciprocity",
+                          "c": "<div class=\"note-box\"><p>Under the U.S. Department of State Reciprocity Schedule for Pakistan, hospital birth slips alone are not acceptable civil documents. An official Union Council / Cantonment Board registration certificate is mandatory.</p></div>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "nadra-crc",
+                      "icon": "relationship",
+                      "title": "NADRA Child Registration Certificate (CRC / B-Form) or FRC",
+                      "sub": "Official NADRA family registry document showing parent-child relationship",
+                      "tags": [
+                        "bene",
+                        "govt"
+                      ],
+                      "external_href": "/guides/birth-certificate-guide",
+                      "status": "not-started",
+                      "required": true,
+                      "sections": [
+                        {
+                          "t": "Document Purpose",
+                          "c": "<p>The NADRA Child Registration Certificate (CRC, commonly known as the B-Form for minors) or Family Registration Certificate (FRC with parents) officially verifies the child's registration under their parents in Pakistan's national civil database.</p>"
+                        },
+                        {
+                          "t": "Why U.S. Embassy Islamabad requires it",
+                          "c": "<p>Consular officers at Embassy Islamabad routinely request the NADRA CRC or FRC to corroborate birth certificates and confirm lawful family composition, preventing identity fraud.</p>"
+                        },
+                        {
+                          "t": "Translation & Verification",
+                          "c": "<div class=\"note-box\"><p>Ensure the NADRA CRC/B-Form is in English or accompanied by a certified English translation. Verify that the parent CNIC numbers and child's date of birth match all other submitted records.</p></div>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "photos",
+                      "icon": "photo",
+                      "title": "Passport-Style Photographs (2x2 Inches)",
+                      "sub": "Two identical recent color photographs of the child meeting State Department standards",
+                      "tags": [
+                        "bene",
+                        "photo"
+                      ],
+                      "external_href": "/guides/photo-guide",
+                      "status": "not-started",
+                      "required": true,
+                      "sections": [
+                        {
+                          "t": "Photo Specifications",
+                          "c": "<p>Two identical 2 x 2 inch (51 x 51 mm) color photos taken within the last 6 months against a plain white or off-white background. The child must have a neutral facial expression with both eyes open, facing directly toward the camera.</p>"
+                        },
+                        {
+                          "t": "Infants and Young Children",
+                          "c": "<p>No other person should appear in the photo. For infants, the child may be placed on a plain white sheet or in a car seat covered with a white sheet. Eyes must be open for the shot, but minor head tilt is acceptable for very young babies.</p>"
+                        },
+                        {
+                          "t": "No Eyeglasses or Head Coverings",
+                          "c": "<div class=\"note-box\"><p>Eyeglasses are not allowed. Head coverings are permitted only for religious reasons, and the full face from forehead to chin must remain completely visible.</p></div>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "police",
+                      "icon": "police",
+                      "title": "Police Certificate (Ages 16+ Only)",
+                      "sub": "Pakistan Police Character Certificate from PKM; children under 16 are completely EXEMPT",
+                      "tags": [
+                        "bene",
+                        "govt"
+                      ],
+                      "external_href": "/guides/police-verification-guide",
+                      "status": "not-started",
+                      "required": true,
+                      "sections": [
+                        {
+                          "t": "Age Exemption (Under 16 Exempt)",
+                          "c": "<p><strong>IMPORTANT:</strong> Under U.S. Department of State regulations (9 FAM 504.4-4(B)), <strong>children under 16 years of age are NOT required to submit police certificates</strong>. If your child is 15 or younger, this requirement is waived.</p>"
+                        },
+                        {
+                          "t": "Ages 16 and 17 (Required)",
+                          "c": "<p>If the child has reached their 16th birthday, a Police Character Certificate is required from Pakistan (obtained through Police Khidmat Markaz - PKM) and from any country of nationality or residence where the youth has resided for 6 months or more after age 16.</p>"
+                        },
+                        {
+                          "t": "Validity & Interview Readiness",
+                          "c": "<div class=\"note-box\"><p>Police certificates are valid for two years for U.S. immigrant visa processing. Ensure the certificate remains unexpired through the consular interview date at Embassy Islamabad.</p></div>"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "conditional",
+                  "label": "Required if Applicable",
+                  "badge": "sit",
+                  "items": [
+                    {
+                      "id": "petitioner-citizenship",
+                      "icon": "relationship",
+                      "title": "Petitioner's Proof of U.S. Citizenship",
+                      "sub": "U.S. passport, Certificate of Naturalization, Certificate of Citizenship, or U.S. birth certificate",
+                      "tags": [
+                        "pet",
+                        "govt"
+                      ],
+                      "external_href": "/guides/citizenship-guide",
+                      "status": "not-started",
+                      "required": false,
+                      "sections": [
+                        {
+                          "t": "Why this is required",
+                          "c": "<p>The IR-2 visa category is exclusively for children of U.S. citizens. Proof of petitioner's citizenship confirms qualification for IR-2 classification and establishes eligibility for automatic citizenship under INA Section 320 upon admission.</p>"
+                        },
+                        {
+                          "t": "Accepted documents",
+                          "c": "<p>Upload a color copy of the petitioner's unexpired U.S. passport biographic page, U.S. birth certificate, Certificate of Naturalization, or Certificate of Citizenship.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "parents-marriage",
+                      "icon": "marriage",
+                      "title": "Parents' Marriage Certificate (Nikah Nama & NADRA MRC)",
+                      "sub": "Required if child was born to married parents or if father is petitioning",
+                      "tags": [
+                        "pet",
+                        "bene",
+                        "govt"
+                      ],
+                      "external_href": "/guides/marriage-certificate-guide",
+                      "status": "not-started",
+                      "required": false,
+                      "sections": [
+                        {
+                          "t": "When required",
+                          "c": "<p>Required if the child was born during the parents' marriage, or if a biological father is petitioning for a child born of a lawful marriage in Pakistan.</p>"
+                        },
+                        {
+                          "t": "Pakistan format",
+                          "c": "<p>Submit both the original Urdu Nikah Nama with certified English translation and the NADRA Computerized Marriage Registration Certificate (MRC).</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "father-relationship",
+                      "icon": "relationship",
+                      "title": "Legitimation or Bona Fide Father-Child Relationship Evidence",
+                      "sub": "Required if child was born out of wedlock and biological father is petitioning",
+                      "tags": [
+                        "pet",
+                        "bene"
+                      ],
+                      "external_href": "/guides/relationship-evidence-guide",
+                      "status": "not-started",
+                      "required": false,
+                      "sections": [
+                        {
+                          "t": "When required",
+                          "c": "<p>If the child was born out of wedlock to a U.S. citizen father, INA Section 101(b)(1)(C) or (D) requires proof that the child was legitimated before age 18, or that a bona fide parent-child emotional or financial relationship was established before the child turned 21.</p>"
+                        },
+                        {
+                          "t": "Types of evidence",
+                          "c": "<p>Submit proof of emotional/financial support: money remittance receipts, school fee payments, medical bills, joint photos over the years, communication logs, and sworn affidavits from relatives.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "stepparent-records",
+                      "icon": "marriage",
+                      "title": "Stepparent Marriage and Relationship Records",
+                      "sub": "Required if petition is filed by a stepparent; marriage must have occurred before child's 18th birthday",
+                      "tags": [
+                        "pet",
+                        "govt"
+                      ],
+                      "external_href": "/guides/marriage-certificate-guide",
+                      "status": "not-started",
+                      "required": false,
+                      "sections": [
+                        {
+                          "t": "Statutory Rule (Age 18 Cutoff)",
+                          "c": "<p>Under INA Section 101(b)(1)(B), a stepchild relationship exists only if the marriage creating the relationship occurred <strong>before the child reached 18 years of age</strong>. Submit the marriage certificate proving the date.</p>"
+                        },
+                        {
+                          "t": "Termination of Prior Marriages",
+                          "c": "<p>Submit official divorce decrees, annulments, or death certificates proving the legal termination of all prior marriages for both the stepparent and the biological parent.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "adoption-records",
+                      "icon": "court",
+                      "title": "Adoption Decree, Legal Custody, and 2-Year Joint Residence",
+                      "sub": "Required if child is adopted; adoption must be finalized before age 16 with 2 years legal/physical custody",
+                      "tags": [
+                        "bene",
+                        "court"
+                      ],
+                      "external_href": "/guides/adoption-guide",
+                      "status": "not-started",
+                      "required": false,
+                      "sections": [
+                        {
+                          "t": "Statutory Requirements (INA Section 101(b)(1)(E))",
+                          "c": "<p>The child must have been adopted before age 16 (or before 18 if adopted alongside a biological sibling under 16). The adoptive U.S. citizen parent must demonstrate at least 2 years of legal custody and 2 years of joint physical residence with the child.</p>"
+                        },
+                        {
+                          "t": "Documentation to provide",
+                          "c": "<p>Certified copy of the final adoption court decree, guardianship orders, school records, rental agreements, or utility records proving 2 years of joint cohabitation.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "custody-consent",
+                      "icon": "court",
+                      "title": "Legal Custody Decree or Non-Accompanying Parent Consent Letter (NOC)",
+                      "sub": "Required for minor children travelling without one biological parent",
+                      "tags": [
+                        "bene",
+                        "court",
+                        "govt"
+                      ],
+                      "external_href": "/guides/custody-consent-guide",
+                      "status": "not-started",
+                      "required": false,
+                      "sections": [
+                        {
+                          "t": "Consular Custody Requirement",
+                          "c": "<p>When a minor child (under age 18) immigrates without one of their biological parents, U.S. Embassy Islamabad strictly enforces child protection and parental rights standards.</p>"
+                        },
+                        {
+                          "t": "What to provide",
+                          "c": "<p>Submit a certified family court custody decree awarding sole legal custody to the petitioning/accompanying parent, or an official notarized No Objection Certificate (NOC) / Affidavit of Consent signed by the non-accompanying biological parent with a copy of their CNIC or passport.</p>"
+                        },
+                        {
+                          "t": "Deceased parent",
+                          "c": "<p>If the other biological parent is deceased, upload their official Union Council / NADRA death certificate with certified English translation.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "namechange",
+                      "icon": "court",
+                      "title": "Name Change or Identity Discrepancy Documents",
+                      "sub": "Required if child's or parent's name differs across submitted records",
+                      "tags": [
+                        "bene",
+                        "court"
+                      ],
+                      "external_href": "/guides/civil-documents-guide",
+                      "status": "not-started",
+                      "required": false,
+                      "sections": [
+                        {
+                          "t": "When required",
+                          "c": "<p>If the child's name, parents' names, or dates of birth differ between the birth certificate, passport, B-Form, or petition, provide official documentation explaining the discrepancy.</p>"
+                        },
+                        {
+                          "t": "Accepted documents",
+                          "c": "<p>Official court name change decree, NADRA revised registration certificate, gazette notification, or sworn one-and-the-same person affidavit.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "court-juvenile",
+                      "icon": "court",
+                      "title": "Court and Juvenile Records",
+                      "sub": "Required if beneficiary has ever been arrested, charged, or convicted of an offense",
+                      "tags": [
+                        "bene",
+                        "court"
+                      ],
+                      "external_href": "/guides/court-records-guide",
+                      "status": "not-started",
+                      "required": false,
+                      "sections": [
+                        {
+                          "t": "When required",
+                          "c": "<p>If the beneficiary (typically older youths aged 16+) has ever been arrested, cited, charged, or convicted anywhere in the world, even if records were expunged or dismissed.</p>"
+                        },
+                        {
+                          "t": "Records to submit",
+                          "c": "<p>Certified copies of police reports, court complaints, plea agreements, final judgments, and sentencing or rehabilitation records with certified English translations.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "military",
+                      "icon": "court",
+                      "title": "Military or Service Records",
+                      "sub": "Required if the child beneficiary has served in any military or armed forces",
+                      "tags": [
+                        "bene",
+                        "govt"
+                      ],
+                      "external_href": "/guides/military-records-guide",
+                      "status": "not-started",
+                      "required": false,
+                      "sections": [
+                        {
+                          "t": "When required",
+                          "c": "<p>Only applies if the beneficiary (ages 17+) has served in any military or defense force. Upload a certified copy of the service record, discharge book, or release certificate.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "missing",
+                      "icon": "warning",
+                      "title": "Missing Document / Record Unavailability Evidence",
+                      "sub": "Required if any primary civil record cannot be obtained",
+                      "tags": [
+                        "bene",
+                        "govt"
+                      ],
+                      "external_href": "/guides/unavailability-guide",
+                      "status": "not-started",
+                      "required": false,
+                      "sections": [
+                        {
+                          "t": "Official Non-Availability",
+                          "c": "<p>Obtain an official Certificate of Non-Availability from the competent Union Council or civil registrar stating that the record does not exist after a diligent search.</p>"
+                        },
+                        {
+                          "t": "Secondary Evidence",
+                          "c": "<p>Submit strong secondary evidence such as hospital birth records, school certificates, baptismal records, and sworn affidavits from relatives with personal knowledge of the event.</p>"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "recommended",
+                  "label": "Recommended to Improve Readiness",
+                  "badge": "rec",
+                  "items": [
+                    {
+                      "id": "transet",
+                      "icon": "document",
+                      "title": "Organized Certified English Translations",
+                      "sub": "Translations with certificate of accuracy for every Urdu civil document",
+                      "tags": [
+                        "process"
+                      ],
+                      "external_href": "/guides/translation-guide",
+                      "status": "not-started",
+                      "required": false,
+                      "sections": [
+                        {
+                          "t": "Translation Rule",
+                          "c": "<p>Any document not in English must be accompanied by a full English translation. The translator must sign a certification statement confirming they are competent to translate and that the translation is accurate and complete.</p>"
+                        },
+                        {
+                          "t": "Urdu documents in Pakistan",
+                          "c": "<p>Common documents needing certified translation include Urdu Nikah Nama, Union Council birth records, court decrees, and custody affidavits.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "upload-copies",
+                      "icon": "document",
+                      "title": "Upload-Ready Digital Scans (<2 MB)",
+                      "sub": "Clean, color PDF or JPEG scans formatted for CEAC upload",
+                      "tags": [
+                        "process"
+                      ],
+                      "external_href": "/guides/ceac-upload-guide",
+                      "status": "not-started",
+                      "required": false,
+                      "sections": [
+                        {
+                          "t": "CEAC Upload Standards",
+                          "c": "<p>Files must be in PDF or JPEG format, under 2 MB each (or CEAC current maximum). Color scans are strongly recommended. Both front and back of multi-page documents must be scanned and merged into a single multi-page PDF.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "interview-originals",
+                      "icon": "document",
+                      "title": "Interview Originals and Certified Copies Set",
+                      "sub": "Physical folder of original documents ready for Embassy Islamabad interview",
+                      "tags": [
+                        "process"
+                      ],
+                      "external_href": "/guides/interview-prep-guide",
+                      "status": "not-started",
+                      "required": false,
+                      "sections": [
+                        {
+                          "t": "Embassy Requirement",
+                          "c": "<p>Even though documents are submitted electronically to CEAC, consular officers at U.S. Embassy Islamabad require the applicant to bring original or certified copies of all civil documents, NADRA certificates, consent letters, and translations to the interview.</p>"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "guide_card": {
+              "title": "Step-by-Step IR-2 Civil Document Preparation Guide",
+              "subtitle": "Walk through reviewing, scanning, translating, uploading, correcting, and preserving the child beneficiary's civil documents for CEAC and the Islamabad interview."
+            },
+            "tutorial_steps": [
+              {
+                "label": "Step 1 of 13, Sign in to CEAC",
+                "heading": "Sign in to CEAC",
+                "screenTitle": "Sign in to CEAC",
+                "instruction": "Enter CEAC using the NVC Case Number and Invoice ID from the child's Welcome Letter. Confirm that the required fees show as paid and that the child beneficiary's Form DS-260 has been completed and submitted before preparing civil document uploads.",
+                "url": "ceac.state.gov",
+                "ss_label": "CEAC Login",
+                "ss_headline": "Access Your Case",
+                "ss_desc": "Sign in with Case Number and Invoice ID",
+                "ss_highlight": null,
+                "caption": "Case credentials are found in your NVC Welcome Letter.",
+                "note": "If multiple children are immigrating, ensure you are using the correct NVC Case Number and Invoice ID for this specific child. Each child has an individual case number, DS-260, and civil document portal.",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step4/01-case-into-ceac.png"
+                }
+              },
+              {
+                "label": "Step 2 of 13, Confirm IV and AOS fee clearance",
+                "heading": "Confirm all fees are paid or cleared",
+                "screenTitle": "Confirm all fees are paid or cleared",
+                "instruction": "Before document submission begins, verify in CEAC that the $325 Immigrant Visa fee is paid for the child. Verify that the $120 Affidavit of Support fee is paid, or that the fee exemption for Form I-864W (Child Citizenship Act) has been cleared by NVC.",
+                "url": "ceac.state.gov",
+                "ss_label": "Fee Status",
+                "ss_headline": "NVC Fees Cleared",
+                "ss_desc": "IV fee paid; AOS fee paid or I-864W fee exemption acknowledged",
+                "ss_highlight": null,
+                "caption": "If payment was made recently, allow 2-3 business days for clearance. Document upload is unlocked once fees show 'PAID'.",
+                "note": "The $325 IV fee is required per child beneficiary. The $120 AOS fee is billed once per petitioner when cases are processed together, or exempt under INA Section 320.",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step4/02-submit-iv-fees.png"
+                }
+              },
+              {
+                "label": "Step 3 of 13, Start civil document upload",
+                "heading": "Navigate to the civil documents section",
+                "screenTitle": "Navigate to the civil documents section",
+                "instruction": "In CEAC, locate and open the child beneficiary's civil documents upload area. This is where you will attach the child's passport biographic page, birth certificate, NADRA CRC/FRC, photos, police certificates (if 16+), custody/consent records, and parentage evidence.",
+                "url": "ceac.state.gov",
+                "ss_label": "Document Upload",
+                "ss_headline": "Civil Documents Section",
+                "ss_desc": "Begin document submission for child beneficiary",
+                "ss_highlight": null,
+                "caption": "Review the checklist generated by CEAC for the child beneficiary before uploading.",
+                "note": null,
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step4/03-start-civil-doc.png"
+                }
+              },
+              {
+                "label": "Step 4 of 13, Upload documents to CEAC",
+                "heading": "Upload each document individually",
+                "screenTitle": "Upload each document individually",
+                "instruction": "Select and upload each civil document under the correct CEAC document category. Each file must be under 2 MB (or CEAC limit). For Urdu documents (such as Nikah Nama or Union Council certificates), combine the original scan and the certified English translation into a single multi-page PDF.",
+                "url": "ceac.state.gov",
+                "ss_label": "File Upload",
+                "ss_headline": "Select Files to Upload",
+                "ss_desc": "PDF or JPG files, under 2 MB each",
+                "ss_highlight": null,
+                "caption": "Combine original language documents and their certified English translations into one complete file in order.",
+                "note": null,
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step4/04-upload-the-doc.png"
+                }
+              },
+              {
+                "label": "Step 5 of 13, Upload documents one by one",
+                "heading": "Process each upload sequentially",
+                "screenTitle": "Process each upload sequentially",
+                "instruction": "Continue uploading each remaining document under its matching CEAC category. After each upload, confirm that the correct file name and upload status appear before moving to the next document.",
+                "url": "ceac.state.gov",
+                "ss_label": "Sequential Upload",
+                "ss_headline": "Upload Queue",
+                "ss_desc": "One document at a time, wait for confirmation",
+                "ss_highlight": null,
+                "caption": "Review each category carefully so a document is not uploaded under the wrong heading.",
+                "note": "Do not close or refresh the browser while a file is actively uploading.",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step4/05-upload-1-by-1.png"
+                }
+              },
+              {
+                "label": "Step 6 of 13, Upload all required documents",
+                "heading": "Complete the full civil document set",
+                "screenTitle": "Complete the full civil document set",
+                "instruction": "Upload every document listed as required for the child beneficiary in CEAC. The core IR-2 set includes the child's passport biographic page, birth certificate (Union Council + NADRA Computerized), NADRA CRC / B-Form, 2x2 photos, and police certificate (if 16+; exempt if under 16). Add parents' marriage certificate, stepparent records, adoption decree, or custody/consent NOC where applicable.",
+                "url": "ceac.state.gov",
+                "ss_label": "Complete Set",
+                "ss_headline": "All Documents Uploaded",
+                "ss_desc": "Required documents checklist completed",
+                "ss_highlight": null,
+                "caption": "Use Rahvana's IR-2 civil document checklist together with the case-specific CEAC document list.",
+                "note": null,
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step4/06-upload-all-req-doc.png"
+                }
+              },
+              {
+                "label": "Step 7 of 13, Document unavailable? Use comments",
+                "heading": "Report missing or unavailable documents",
+                "screenTitle": "Report missing or unavailable documents",
+                "instruction": "If a required record is genuinely unavailable under Pakistan's civil document rules (for example, if a birth was never registered), use the CEAC unavailable option or comments area. Explain the reason briefly and upload official Certificate of Non-Availability plus secondary evidence (hospital records, school records).",
+                "url": "ceac.state.gov",
+                "ss_label": "Comments Section",
+                "ss_headline": "Explain Missing Documents",
+                "ss_desc": "Use comments to document unavailability",
+                "ss_highlight": null,
+                "caption": "Check the Department of State reciprocity schedule for Pakistan before marking a document unavailable.",
+                "note": null,
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step4/07-documnet-unavailable.png"
+                }
+              },
+              {
+                "label": "Step 8 of 13, Document explanation in comments",
+                "heading": "Document your explanation in comments",
+                "screenTitle": "Document your explanation in comments",
+                "instruction": "When using the comments feature, be clear, concise, and factual. For example: 'Primary birth record unavailable from Union Council due to non-registration at birth. Official Certificate of Non-Availability and secondary hospital/school records uploaded.'",
+                "url": "ceac.state.gov",
+                "ss_label": "Comment Entry",
+                "ss_headline": "Factual Explanation",
+                "ss_desc": "Explain reason and identify substitute evidence",
+                "ss_highlight": null,
+                "caption": "State facts clearly: identify what document is missing, why, and what secondary records are provided.",
+                "note": null,
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step4/08-in-comment-section-write-the-reason.png"
+                }
+              },
+              {
+                "label": "Step 9 of 13, Document rejected? Review and correct",
+                "heading": "Review rejection reasons and correct issues",
+                "screenTitle": "Review rejection reasons and correct issues",
+                "instruction": "If NVC marks a document as 'Rejected' or 'Invalid Doc', click the Response Note in CEAC. Common reasons include: missing NADRA computerized version, missing English translation, illegible or cut-off scans, wrong upload category, or missing custody/NOC consent from non-accompanying parent.",
+                "url": "ceac.state.gov",
+                "ss_label": "Rejection Notice",
+                "ss_headline": "Document Rejected",
+                "ss_desc": "Review rejection reason and resubmit corrected file",
+                "ss_highlight": null,
+                "caption": "Follow the specific NVC Response Note rather than assuming the problem is only file size or image quality.",
+                "note": null,
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step4/09-if-civil-doc-rejected.png"
+                }
+              },
+              {
+                "label": "Step 10 of 13, Re-upload rejected documents",
+                "heading": "Upload the corrected document",
+                "screenTitle": "Upload the corrected document",
+                "instruction": "After correcting the issue identified by NVC, upload the replacement document under the correct category and submit it again. If the file exceeds 2 MB, compress it without sacrificing legibility. If the scan was blurry or cut off, rescan it in color with all stamps, signatures, and borders clearly visible.",
+                "url": "ceac.state.gov",
+                "ss_label": "Resubmission",
+                "ss_headline": "Upload Corrected File",
+                "ss_desc": "Resubmit corrected document",
+                "ss_highlight": null,
+                "caption": "Use Rahvana's Document Vault compression tool if file size is the issue.",
+                "note": null,
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step4/10-upload-again.png"
+                }
+              },
+              {
+                "label": "Step 11 of 13, Document accepted",
+                "heading": "Confirmation that document was accepted",
+                "screenTitle": "Confirmation that document was accepted",
+                "instruction": "When NVC accepts a document, CEAC will display the status as 'Accepted.' This means NVC found no correction necessary for that document at the time of review. Continue resolving all remaining document and financial requirements.",
+                "url": "ceac.state.gov",
+                "ss_label": "Acceptance",
+                "ss_headline": "Document Accepted",
+                "ss_desc": "File is now in case record",
+                "ss_highlight": null,
+                "caption": "An Accepted status applies to that document; documentary completion requires the entire case package to be complete.",
+                "note": null,
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step4/11-approval-msg.png"
+                }
+              },
+              {
+                "label": "Step 12 of 13, Check submission status",
+                "heading": "Verify your overall submission status",
+                "screenTitle": "Verify your overall submission status",
+                "instruction": "After uploading and submitting all civil documents, verify that each item shows the appropriate CEAC status. 'Uploaded' means the file is attached but not yet submitted; 'Submitted' means it is awaiting NVC review; 'Accepted' means NVC approved the document.",
+                "url": "ceac.state.gov",
+                "ss_label": "Status Check",
+                "ss_headline": "Submission Status",
+                "ss_desc": "Confirm documents are Submitted or Accepted",
+                "ss_highlight": null,
+                "caption": "Do not stop at 'Uploaded.' Uploaded files must be submitted for NVC review.",
+                "note": null,
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step4/12-check-status.png"
+                }
+              },
+              {
+                "label": "Step 13 of 13, Case ready for NVC review",
+                "heading": "Your case is ready for NVC processing",
+                "screenTitle": "Your case is ready for NVC processing",
+                "instruction": "Once fees, Form I-864/I-864W package, financial evidence, Form DS-260, and all civil documents have been submitted, NVC can review the complete case. If all requirements are satisfied, NVC issues a Documentary Qualification (DQ) notice and places the case in the queue for interview scheduling at U.S. Embassy Islamabad.",
+                "url": "ceac.state.gov",
+                "ss_label": "Ready for Review",
+                "ss_headline": "Case Pending NVC Review",
+                "ss_desc": "Awaiting Documentary Qualification determination",
+                "ss_highlight": null,
+                "caption": "Check official NVC Timeframes for current document review dates.",
+                "note": "Documentary qualification does not mean the interview is immediately scheduled. Scheduling depends on U.S. Embassy Islamabad appointment availability.",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c2_step4/13-case-ready.png"
+                }
+              }
+            ],
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Consult a licensed immigration attorney for case-specific decisions."
+          },
+          "url": "/documents/civil",
+          "relevantTools": [
+            {
+              "label": "Document Vault",
+              "href": "/documents/vault",
+              "type": "tool"
+            },
+            {
+              "label": "Upload Assistance",
+              "href": "/documents/civil",
+              "type": "tool"
+            }
+          ]
         },
         {
           "step_key": "step_2_5",
