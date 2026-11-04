@@ -6702,22 +6702,208 @@
         },
         {
           "step_key": "step_2_7",
+          "joint_sponsor_requirements": {
+            "disclaimer": "A joint sponsor or household member is ONLY applicable if Form I-864 is required (stepchildren and adult children ages 18-20). Children qualifying for automatic citizenship under INA Section 320 file Form I-864W and do not need a joint sponsor or household member.",
+            "guidance": [
+              "Child Citizenship Act Exemption (INA Section 320): If the beneficiary is a biological or legally adopted child under age 18 who will reside in the legal and physical custody of the U.S. citizen parent, they file Form I-864W. No joint sponsor or household member is needed or permitted.",
+              "When Applicable: A joint sponsor or household member is only used for stepchildren or adult children (ages 18-20) when the U.S. citizen petitioner cannot meet the 125% HHS Poverty Guidelines (or 100% for active-duty military) on their own.",
+              "Joint Sponsor Requirements: A joint sponsor must be a U.S. citizen or LPR, at least 18 years old, and domiciled in the U.S. The joint sponsor must independently satisfy 125% of the HHS Poverty Guidelines for their household size plus the child. The petitioner's income cannot be combined with the joint sponsor's income.",
+              "Household Member (Form I-864A): An eligible relative living in the petitioner's principal residence (such as the petitioner's spouse or adult child) can combine income with the petitioner by signing Form I-864A.",
+              "Petitioner Always Required: Even when a joint sponsor is used, the petitioner must still submit their own signed Form I-864 and most recent tax transcript showing their individual income (even if $0)."
+            ],
+            "source_basis": "Form I-864 / I-864A instructions; INA Section 213A, INA Section 320 (Child Citizenship Act of 2000), 8 CFR 213a.2."
+          },
           "step_number": 7,
           "step_name": "Add Household Member or Joint Sponsor",
-          "step_short_description": "Add participants in CEAC",
-          "step_description": "If the petitioner cannot qualify using their own income and qualifying assets, add any eligible household member or joint sponsor and prepare the correct Form I-864A or separate Form I-864 package.",
-          "step_type": "informational",
-          "who": "Petitioner or financial sponsor",
-          "where": "CEAC Portal / Rahvana",
+          "step_short_description": "Add financial co-sponsor if Form I-864 is required",
+          "step_description": "If sponsoring a stepchild or adult child (ages 18-20) and the petitioner's income is insufficient, add an eligible household member (Form I-864A) or a joint sponsor (Form I-864) in CEAC. Not applicable if qualifying for the INA Section 320 citizenship exemption via Form I-864W.",
+          "step_type": "tool",
+          "who": "Petitioner, household member, or joint sponsor",
+          "where": "CEAC Portal (ceac.state.gov)",
           "estimated_duration_days": 2,
           "is_required": false,
           "display_order": 7,
           "actions": [
-            "Login to CEAC portal",
-            "Add Joint Sponsor / Household Member",
-            "Define scenario in Rahvana",
-            "Review relationship proof items"
+            "Verify necessity (only applicable for stepchildren and adult children 18-20; not applicable for Form I-864W)",
+            "Sign in to CEAC and open the Affidavit of Support section",
+            "Select whether to add a household member (Form I-864A) or a joint sponsor (Form I-864)",
+            "Enter sponsor contact and immigration status details in CEAC",
+            "Upload signed sponsorship form and complete supporting financial evidence",
+            "Verify submission status in CEAC dashboard shows Received or Accepted"
           ],
+          "tool_data": {
+            "id": "step_2_7",
+            "type": "household_member",
+            "title": "Add Household Member or Joint Sponsor",
+            "tutorial_steps": {
+              "common": [
+                {
+                  "label": "Step 1 of 6",
+                  "heading": "Open CEAC and sign in",
+                  "screenTitle": "Open CEAC and sign in",
+                  "instruction": "Sign in to CEAC at <strong>ceac.state.gov</strong> using your NVC Case Number and Invoice ID from the child's Welcome Letter.",
+                  "url": "ceac.state.gov",
+                  "ss_label": "CEAC Login",
+                  "ss_headline": "CEAC, Immigrant Visa Application",
+                  "ss_desc": "Use your case number and invoice ID to enter CEAC.",
+                  "ss_highlight": null,
+                  "caption": "Sign in first, then move into the sponsorship section.",
+                  "note": null,
+                  "media": {
+                    "type": "img",
+                    "src": "/assets/images/ir1-journey/c2_step4/01-case-into-ceac.png"
+                  }
+                },
+                {
+                  "label": "Step 2 of 6",
+                  "heading": "Go to the affidavit support area",
+                  "screenTitle": "Go to the affidavit support area",
+                  "instruction": "After signing in, navigate to the <strong>Affidavit of Support</strong> or sponsorship section inside your CEAC case. This is where sponsorship participants are managed.",
+                  "url": "ceac.state.gov",
+                  "ss_label": "CEAC Case",
+                  "ss_headline": "Your CEAC Case",
+                  "ss_desc": "Open the sponsorship area inside the case.",
+                  "ss_highlight": null,
+                  "caption": "This is the section where participants are managed.",
+                  "note": null,
+                  "media": {
+                    "type": "img",
+                    "src": "/assets/images/ir1-journey/c2_step7/locate_affidavit.png"
+                  }
+                },
+                {
+                  "label": "Step 3 of 6",
+                  "heading": "Choose to add a household member or joint sponsor",
+                  "screenTitle": "Choose to add a household member or joint sponsor",
+                  "instruction": "Choose the person you are adding. Rahvana will open the right branch and checklist after you pick the path.",
+                  "url": "ceac.state.gov",
+                  "ss_label": "Choose route",
+                  "ss_headline": "Add Sponsorship Participant",
+                  "ss_desc": "Choose the option that matches the participant you are adding.",
+                  "ss_highlight": null,
+                  "caption": "Choose the option that matches the person you are adding.",
+                  "note": null,
+                  "choiceOptions": [
+                    {
+                      "label": "Add a household member",
+                      "path": "household_member"
+                    },
+                    {
+                      "label": "Add a joint sponsor",
+                      "path": "joint_sponsor"
+                    }
+                  ]
+                }
+              ],
+              "household_member": [
+                {
+                  "label": "Step 4 of 6, Add household member",
+                  "heading": "Add a household member to your sponsorship",
+                  "screenTitle": "Add a household member to your sponsorship",
+                  "instruction": "Add an eligible household member only when their income or assets will be combined with the petitioner's sponsorship for a stepchild or adult child (18-20). The household member must qualify under Form I-864A rules and sign Form I-864A, making their income or assets available to support the child beneficiary.",
+                  "url": "ceac.state.gov",
+                  "ss_label": "Add Member",
+                  "ss_headline": "Household Member Addition",
+                  "ss_desc": "Add a person living in the petitioner's household",
+                  "ss_highlight": null,
+                  "caption": "Eligibility depends on the person's relationship to the sponsor, shared residence, tax and income evidence, and completion of Form I-864A.",
+                  "note": null,
+                  "media": {
+                    "type": "img",
+                    "src": "/assets/images/ir1-journey/c2_step6a/01-add-household-member.png"
+                  }
+                },
+                {
+                  "label": "Step 5 of 6, Add household member documents",
+                  "heading": "Upload household member's financial documents",
+                  "screenTitle": "Upload household member's financial documents",
+                  "instruction": "Upload the household member's signed Form I-864A and applicable supporting evidence, including the required tax transcript, proof of current qualifying income, and proof of the household relationship or shared residence. Include asset evidence only if assets are being relied upon.",
+                  "url": "ceac.state.gov",
+                  "ss_label": "Document Upload",
+                  "ss_headline": "Financial Documentation",
+                  "ss_desc": "Tax returns, W-2s, pay stubs, bank statements",
+                  "ss_highlight": null,
+                  "caption": "Ensure documents are under 2 MB (or CEAC limit) and clearly labeled before upload.",
+                  "note": null,
+                  "media": {
+                    "type": "img",
+                    "src": "/assets/images/ir1-journey/c2_step6a/02-add-join-sponser-docs.png"
+                  }
+                },
+                {
+                  "label": "Step 6 of 6, Finish the household member flow",
+                  "heading": "Confirm the household member path is complete",
+                  "screenTitle": "Confirm the household member path is complete",
+                  "instruction": "Use the CEAC status screen to confirm the household member entry and documents were received. Save the confirmation for your records.",
+                  "url": "ceac.state.gov",
+                  "ss_label": "Confirmation",
+                  "ss_headline": "Household member flow complete",
+                  "ss_desc": "Submission status confirmed",
+                  "ss_highlight": null,
+                  "caption": "This shared flow ends when CEAC shows the submission as received or accepted.",
+                  "note": null,
+                  "media": {
+                    "type": "img",
+                    "src": "/assets/images/ir1-journey/c2_step6a/07-check-status.png"
+                  }
+                }
+              ],
+              "joint_sponsor": [
+                {
+                  "label": "Step 4 of 6, Click on joint sponsor option",
+                  "heading": "Select the joint sponsor option in CEAC",
+                  "screenTitle": "Select the joint sponsor option in CEAC",
+                  "instruction": "Select the joint sponsor option when an eligible third party will independently meet the financial sponsorship requirement for a stepchild or adult child (18-20). The petitioner must still submit their own Form I-864, and the joint sponsor submits a separate Form I-864 with separate supporting tax and status evidence.",
+                  "url": "ceac.state.gov",
+                  "ss_label": "Joint Sponsor",
+                  "ss_headline": "Add Joint Sponsor",
+                  "ss_desc": "Select joint sponsor addition option",
+                  "ss_highlight": null,
+                  "caption": "A joint sponsor may be used when the petitioner cannot meet the requirement through qualifying income or assets. The petitioner remains a required primary sponsor.",
+                  "note": null,
+                  "media": {
+                    "type": "img",
+                    "src": "/assets/images/ir1-journey/c2_step6b/01-click-on-joint-sponser.png"
+                  }
+                },
+                {
+                  "label": "Step 5 of 6, Add joint sponsor documents",
+                  "heading": "Upload joint sponsor's financial documents",
+                  "screenTitle": "Upload joint sponsor's financial documents",
+                  "instruction": "Upload the joint sponsor's signed Form I-864, proof of U.S. citizenship or lawful permanent resident status, proof of U.S. domicile, the required most recent tax transcript, and any additional W-2s, pay stubs, employment verification, or asset records.",
+                  "url": "ceac.state.gov",
+                  "ss_label": "Document Upload",
+                  "ss_headline": "Joint Sponsor Financial Documentation",
+                  "ss_desc": "Complete financial package for joint sponsor",
+                  "ss_highlight": null,
+                  "caption": "Ensure all documents are current, clear, and properly labeled.",
+                  "note": null,
+                  "media": {
+                    "type": "img",
+                    "src": "/assets/images/ir1-journey/c2_step6b/02-add-joint-sponser-doc.png"
+                  }
+                },
+                {
+                  "label": "Step 6 of 6, Finish the joint sponsor flow",
+                  "heading": "Confirm the joint sponsor path is complete",
+                  "screenTitle": "Confirm the joint sponsor path is complete",
+                  "instruction": "Use the CEAC status screen to confirm the joint sponsor entry and documents were received. Save the confirmation for your records.",
+                  "url": "ceac.state.gov",
+                  "ss_label": "Confirmation",
+                  "ss_headline": "Joint sponsor flow complete",
+                  "ss_desc": "Submission status confirmed",
+                  "ss_highlight": null,
+                  "caption": "This flow is complete when all required sponsor documents have been uploaded, submitted to NVC, and marked Accepted.",
+                  "note": null,
+                  "media": {
+                    "type": "img",
+                    "src": "/assets/images/ir1-journey/c2_step6b/07-check-status.png"
+                  }
+                }
+              ]
+            },
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Consult a licensed immigration attorney for case-specific decisions."
+          },
           "citations": [
             {
               "text": "Affidavit of Support (Department of State)",
@@ -6727,8 +6913,7 @@
               "text": "USCIS Affidavit of Support Guidance",
               "link": "https://www.uscis.gov/green-card/green-card-processes-and-procedures/affidavit-of-support"
             }
-          ],
-          "pending_step_type": "tool"
+          ]
         },
         {
           "step_key": "step_2_8",
