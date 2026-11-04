@@ -5985,21 +5985,720 @@
           "step_key": "step_2_6",
           "step_number": 6,
           "step_name": "Gather Financial Support Documents",
-          "step_short_description": "Build financial evidence checklist",
-          "step_description": "Based on your sponsorship structure, Rahvana builds a personalized financial evidence checklist for each person involved.",
-          "step_type": "informational",
-          "who": "Petitioner or joint sponsor",
-          "where": "Rahvana Checklist",
+          "step_short_description": "Build financial or I-864W exemption checklist",
+          "step_description": "Based on whether your child qualifies for the INA Section 320 citizenship exemption (Form I-864W) or requires standard financial sponsorship (Form I-864), Rahvana builds a personalized document checklist.",
+          "step_type": "tool",
+          "who": "Petitioner, child, or joint sponsor",
+          "where": "Financial Evidence Checklist & CEAC",
           "estimated_duration_days": 4,
           "is_required": true,
           "display_order": 6,
           "actions": [
-            "Review Petitioner financials",
-            "Review Joint Sponsor documents",
-            "Verify household member income",
-            "Organize for CEAC upload"
+            "Select sponsorship setup (Form I-864W exemption vs Form I-864)",
+            "Review required documentation for Form I-864W (petitioner citizenship and custody proof)",
+            "Review petitioner tax transcripts and proof of income (if Form I-864 is required)",
+            "Review joint sponsor or household member documents (for stepchildren and 18+ beneficiaries)",
+            "Organize, name, and verify all financial files for CEAC upload"
           ],
-          "pending_step_type": "tool"
+          "tool_data": {
+            "id": "step_2_6",
+            "type": "financial_checklist",
+            "title": "Financial Documents & Exemption Checklist",
+            "groups": [
+              {
+                "id": "required",
+                "label": "Required",
+                "badge": "badge-req",
+                "items": []
+              },
+              {
+                "id": "conditional",
+                "label": "Required if Applicable",
+                "badge": "badge-cond",
+                "items": []
+              },
+              {
+                "id": "recommended",
+                "label": "Recommended to Strengthen Readiness",
+                "badge": "badge-rec",
+                "items": []
+              }
+            ],
+            "scenarios": {
+              "ina-320-exempt": {
+                "label": "Child Citizenship Act Exemption (Form I-864W — Under 18 Biological/Adopted Child)",
+                "sponsors": [
+                  "Child Beneficiary (Exemption)"
+                ],
+                "householdMembers": [],
+                "jointSponsors": [],
+                "forms": [
+                  "Form I-864W"
+                ],
+                "taxYears": [],
+                "taxEvidenceLabel": "Exempt from IRS tax filing evidence under INA Section 320"
+              },
+              "pet-only": {
+                "label": "Petitioner only (Form I-864 — Stepchild or Adult Child 18-20, qualifies alone)",
+                "sponsors": [
+                  "Petitioner"
+                ],
+                "householdMembers": [],
+                "jointSponsors": [],
+                "forms": [
+                  "Form I-864 (or I-864EZ)"
+                ],
+                "taxYears": [
+                  2025
+                ],
+                "taxEvidenceLabel": "IRS Tax Transcript (most recent tax year)"
+              },
+              "pet-hm": {
+                "label": "Petitioner + Household Member (Form I-864 + Form I-864A)",
+                "sponsors": [
+                  "Petitioner"
+                ],
+                "householdMembers": [
+                  "Household Member 1"
+                ],
+                "jointSponsors": [],
+                "forms": [
+                  "Form I-864",
+                  "Form I-864A"
+                ],
+                "taxYears": [
+                  2025
+                ],
+                "taxEvidenceLabel": "IRS Tax Transcript (most recent tax year)"
+              },
+              "pet-js1": {
+                "label": "Petitioner + 1 Joint Sponsor (Form I-864 + Joint Sponsor Form I-864)",
+                "sponsors": [
+                  "Petitioner",
+                  "Joint Sponsor 1"
+                ],
+                "householdMembers": [],
+                "jointSponsors": [
+                  "Joint Sponsor 1"
+                ],
+                "forms": [
+                  "Form I-864 (Petitioner)",
+                  "Form I-864 (Joint Sponsor)"
+                ],
+                "taxYears": [
+                  2025
+                ],
+                "taxEvidenceLabel": "IRS Tax Transcripts for each sponsor"
+              },
+              "pet-hm-js": {
+                "label": "Petitioner + Household Member + Joint Sponsor",
+                "sponsors": [
+                  "Petitioner",
+                  "Joint Sponsor 1"
+                ],
+                "householdMembers": [
+                  "Household Member 1"
+                ],
+                "jointSponsors": [
+                  "Joint Sponsor 1"
+                ],
+                "forms": [
+                  "Form I-864 (Petitioner)",
+                  "Form I-864A",
+                  "Form I-864 (Joint Sponsor)"
+                ],
+                "taxYears": [
+                  2025
+                ],
+                "taxEvidenceLabel": "IRS Tax Transcripts for petitioner, household member, and joint sponsor"
+              }
+            },
+            "templates": {
+              "ina_320_required": [
+                {
+                  "id": "i864w-bene",
+                  "icon": "file-text",
+                  "title": "Form I-864W (Intending Immigrant's Affidavit of Support Exemption)",
+                  "sub": "Exemption claim under Child Citizenship Act of 2000 (INA Section 320)",
+                  "tags": [
+                    {
+                      "cls": "tag-pet",
+                      "label": "Child Beneficiary"
+                    },
+                    {
+                      "cls": "tag-tax",
+                      "label": "Exemption Form"
+                    }
+                  ],
+                  "guide": {
+                    "intro": "Under INA Section 320, a child who will automatically acquire U.S. citizenship upon admission is exempt from Form I-864 and submits Form I-864W instead.",
+                    "sections": [
+                      {
+                        "title": "Who Qualifies",
+                        "body": "The child qualifies for the INA Section 320 exemption if: <ul><li>At least one parent is a U.S. citizen by birth or naturalization.</li><li>The child is under 18 years of age at the time of admission to the U.S.</li><li>The child is unmarried.</li><li>The child will reside in the United States in the legal and physical custody of the U.S. citizen parent.</li></ul>"
+                      },
+                      {
+                        "title": "Signing Rules by Age",
+                        "body": "For children under 16, the U.S. citizen parent signs Form I-864W on the child's behalf. Children aged 16 or 17 may personally sign Form I-864W with parent assistance, or the parent signs as parent/guardian. Children age 18 and older do not qualify for INA Section 320 and must submit Form I-864."
+                      },
+                      {
+                        "title": "No Financial Threshold or Joint Sponsor",
+                        "body": "Form I-864W completely waives the 125% HHS Poverty Guidelines requirement. No IRS tax transcripts, pay stubs, employment letters, or joint sponsors are required."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "pet-citizenship-proof",
+                  "icon": "shield",
+                  "title": "Proof of Petitioner's U.S. Citizenship",
+                  "sub": "Evidence establishing that the petitioning parent is a U.S. citizen",
+                  "tags": [
+                    {
+                      "cls": "tag-pet",
+                      "label": "Petitioner"
+                    },
+                    {
+                      "cls": "tag-cur",
+                      "label": "Citizenship"
+                    }
+                  ],
+                  "guide": {
+                    "intro": "The child derives citizenship under INA Section 320 through the U.S. citizen parent. Proof of the parent's U.S. citizenship is mandatory.",
+                    "sections": [
+                      {
+                        "title": "Accepted Evidence",
+                        "body": "Provide a clear color copy of the petitioner's unexpired U.S. passport biographic page, U.S. birth certificate, Certificate of Naturalization, or Certificate of Citizenship."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "custody-physical-residence",
+                  "icon": "home",
+                  "title": "Proof of Legal & Physical Custody in the U.S.",
+                  "sub": "Evidence that the child will reside with the citizen parent in the United States",
+                  "tags": [
+                    {
+                      "cls": "tag-pet",
+                      "label": "Petitioner"
+                    },
+                    {
+                      "cls": "tag-cur",
+                      "label": "Custody & Domicile"
+                    }
+                  ],
+                  "guide": {
+                    "intro": "INA Section 320 requires that the child will reside in the United States in the legal and physical custody of the U.S. citizen parent.",
+                    "sections": [
+                      {
+                        "title": "Legal Custody",
+                        "body": "Legal custody is established by the child's birth certificate (for married biological parents), a final court custody decree awarding legal custody to the citizen parent, or a legal adoption decree."
+                      },
+                      {
+                        "title": "Physical Residence in the U.S.",
+                        "body": "Submit proof of the U.S. citizen parent's principal residence in the United States (lease, deed, utility bills) and a statement confirming that the child will reside with the parent upon arrival in the U.S."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "sponsor_required": [
+                {
+                  "id": "i864-${sp}",
+                  "icon": "file-text",
+                  "title": "Form I-864, ${sp}",
+                  "sub": "Completed Affidavit of Support for stepchild or adult child beneficiary",
+                  "tags": [
+                    {
+                      "cls": "${tagClass}",
+                      "label": "${sp}"
+                    },
+                    {
+                      "cls": "tag-tax",
+                      "label": "Required Form"
+                    }
+                  ],
+                  "guide": {
+                    "intro": "Each sponsor must submit a separate, properly completed Form I-864. The petitioner must submit Form I-864 even when a joint sponsor is used.",
+                    "sections": [
+                      {
+                        "title": "USCIS Form Integrity",
+                        "body": "Download the latest version of Form I-864 directly from the USCIS website. Fill out all pages, leave no blank fields (use 'N/A' or 'None' where appropriate), and ensure it is signed. NVC will reject the form if pages are missing, the signature is photocopied/digital instead of wet-ink/original (if required by current post rules), or if the form edition is outdated."
+                      },
+                      {
+                        "title": "Household size and Income",
+                        "body": "Ensure the household size on Part 5 matches the tax return information or is correctly adjusted. The sponsor's current individual annual income (Part 6) must align with the supporting employment letters, W-2s, and pay stubs. If the petitioner's income is $0, they must still file Form I-864 showing $0 income, and a joint sponsor will file a separate I-864."
+                      },
+                      {
+                        "title": "IR-2 Specific Rules (Stepchildren & Age 18+)",
+                        "body": "Form I-864 is required for stepchildren and adult children (ages 18-20) who do not qualify for INA Section 320 automatic citizenship upon admission. Form I-864EZ may be used only if the petitioner meets income requirements using salary alone with no joint sponsors."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "transcript-${sp}",
+                  "icon": "landmark",
+                  "title": "Most Recent IRS Tax Transcript, ${sp}",
+                  "sub": "Preferred official tax evidence for the most recent tax year",
+                  "tags": [
+                    {
+                      "cls": "${tagClass}",
+                      "label": "${sp}"
+                    },
+                    {
+                      "cls": "tag-tax",
+                      "label": "Most Recent Year"
+                    }
+                  ],
+                  "guide": {
+                    "intro": "An IRS tax transcript from the most recent tax year is the preferred tax evidence because it can be reviewed more efficiently than a copy of a tax return.",
+                    "sections": [
+                      {
+                        "title": "Why IRS Transcripts are Preferred",
+                        "body": "The NVC strongly prefers IRS Tax Transcripts over paper-filed Form 1040 returns because transcripts are verified directly by the IRS, reducing verification delays. It shows the Adjusted Gross Income (AGI), tax liability, and filing status clearly."
+                      },
+                      {
+                        "title": "How to Obtain",
+                        "body": "The sponsor can obtain the transcript instantly by logging into their online IRS account via the 'Get Transcript Online' tool. If they cannot access the online tool, they must request it by mail using IRS Form 4506-T. Ensure you download the 'Tax Return Transcript' (not the Account Transcript)."
+                      },
+                      {
+                        "title": "Alternative",
+                        "body": "If an IRS transcript is genuinely unavailable, you must submit a complete, signed copy of the federal income tax return (Form 1040) along with all W-2s, 1099s, and supporting schedules."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "status-${sp}",
+                  "icon": "shield",
+                  "title": "Proof of U.S. Status, ${sp}",
+                  "sub": "Evidence that the sponsor has qualifying U.S. immigration status",
+                  "tags": [
+                    {
+                      "cls": "${tagClass}",
+                      "label": "${sp}"
+                    },
+                    {
+                      "cls": "tag-cur",
+                      "label": "Sponsor Eligibility"
+                    }
+                  ],
+                  "guide": {
+                    "intro": "The IR-2 petitioner must be a U.S. citizen. A joint sponsor may be a U.S. citizen, U.S. national, or lawful permanent resident, as permitted by Form I-864 instructions.",
+                    "sections": [
+                      {
+                        "title": "Accepted Citizenship Evidence",
+                        "body": "Provide a clear color scan of one of the following: <ul><li>A current, unexpired U.S. passport biographic page.</li><li>U.S. birth certificate showing birth in the United States.</li><li>Certificate of Naturalization (Form N-550 or N-570).</li><li>Certificate of Citizenship (Form N-560 or N-561).</li></ul>"
+                      },
+                      {
+                        "title": "Joint Sponsor (LPR Status)",
+                        "body": "If the joint sponsor is a Lawful Permanent Resident (LPR), they must provide a clear color scan of both sides of their Permanent Resident Card (Green Card, Form I-551). The card must be unexpired."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "domicile-${sp}",
+                  "icon": "home",
+                  "title": "Proof of U.S. Domicile, ${sp}",
+                  "sub": "Evidence of domicile in the United States or qualifying steps to re-establish it",
+                  "tags": [
+                    {
+                      "cls": "${tagClass}",
+                      "label": "${sp}"
+                    },
+                    {
+                      "cls": "tag-cur",
+                      "label": "Domicile"
+                    }
+                  ],
+                  "guide": {
+                    "intro": "Every Form I-864 sponsor must be domiciled in the United States or demonstrate qualifying steps to re-establish U.S. domicile no later than the intending immigrant's admission.",
+                    "sections": [
+                      {
+                        "title": "What is Domicile?",
+                        "body": "Domicile is the place where a sponsor has their principal, permanent home and intends to maintain it. For petitioners living in the U.S., a driver's license, utility bills, tax history, and employment records are sufficient."
+                      },
+                      {
+                        "title": "Petitioners Residing in Pakistan",
+                        "body": "If the U.S. citizen petitioner is currently living in Pakistan, they must provide strong documentary evidence that they have taken concrete steps to re-establish U.S. domicile before or at the same time the child enters the U.S. Acceptable evidence includes: <ul><li>A U.S. residential lease agreement or proof of U.S. home ownership.</li><li>A signed employment contract or job offer in the U.S.</li><li>Documentation showing U.S. bank accounts, voter registration, and active driver's license.</li><li>Proof of enrolling children in U.S. schools.</li></ul>"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "sponsor_conditional": [
+                {
+                  "id": "tax-${sp}",
+                  "icon": "receipt",
+                  "title": "Complete Federal Tax Return, ${sp}",
+                  "sub": "Alternative when the most recent IRS tax transcript is unavailable or specifically requested",
+                  "tags": [
+                    {
+                      "cls": "${tagClass}",
+                      "label": "${sp}"
+                    },
+                    {
+                      "cls": "tag-tax",
+                      "label": "Alternative Tax Evidence"
+                    }
+                  ],
+                  "guide": {
+                    "intro": "A complete copy of the most recent filed federal income tax return may be used instead of an IRS transcript or when NVC specifically requests the complete return.",
+                    "sections": [
+                      {
+                        "title": "Complete Return Assembly",
+                        "body": "A complete return means you must include: <ul><li>Form 1040 (all pages, signed and dated by the sponsor).</li><li>All W-2 and 1099 statements showing wages and earnings.</li><li>All schedules filed with the IRS (Schedule A, B, C, D, E, etc.).</li></ul> If any schedule is missing, NVC will issue a rejection notice."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "w2-${sp}",
+                  "icon": "file-text",
+                  "title": "W-2, 1099, and Relevant Tax Schedules, ${sp}",
+                  "sub": "Supporting records when needed to establish the sponsor's individual income",
+                  "tags": [
+                    {
+                      "cls": "${tagClass}",
+                      "label": "${sp}"
+                    },
+                    {
+                      "cls": "tag-tax",
+                      "label": "If Applicable"
+                    }
+                  ],
+                  "guide": {
+                    "intro": "These records may be needed when a complete tax return is submitted, the sponsor filed jointly, or the transcript does not clearly establish the sponsor's individual qualifying income.",
+                    "sections": [
+                      {
+                        "title": "Isolating Joint Filing Income",
+                        "body": "If the sponsor filed a joint tax return with their spouse, their individual income must be verified separately. Uploading all individual W-2 and 1099 forms isolates the sponsor's own earnings from their spouse's earnings, ensuring they meet the 125% Federal Poverty Guidelines on their own."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "paystubs-${sp}",
+                  "icon": "banknote",
+                  "title": "Current Pay Records, ${sp}",
+                  "sub": "Current income evidence when ongoing earnings must be established",
+                  "tags": [
+                    {
+                      "cls": "${tagClass}",
+                      "label": "${sp}"
+                    },
+                    {
+                      "cls": "tag-cur",
+                      "label": "Current Income"
+                    }
+                  ],
+                  "guide": {
+                    "intro": "Recent pay records can establish that the sponsor's qualifying income is current and continuing, especially when income changed after the most recent tax filing.",
+                    "sections": [
+                      {
+                        "title": "Current Income Proof",
+                        "body": "Provide consecutive pay stubs covering the last 6 months. Pay stubs must show the employer's name, employee name, gross wages, pay period, and year-to-date earnings. This is crucial if the sponsor's income has increased since their last tax filing or if they recently started a new job."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "employment-${sp}",
+                  "icon": "building",
+                  "title": "Employment Verification Letter, ${sp}",
+                  "sub": "Supporting proof of current employment and compensation",
+                  "tags": [
+                    {
+                      "cls": "${tagClass}",
+                      "label": "${sp}"
+                    },
+                    {
+                      "cls": "tag-cur",
+                      "label": "Current Income"
+                    }
+                  ],
+                  "guide": {
+                    "intro": "An employment verification letter may support current qualifying income where employment evidence is needed.",
+                    "sections": [
+                      {
+                        "title": "Letter Specifications",
+                        "body": "The letter must be printed on official company letterhead, dated within the last 60 days, and signed by an authorized supervisor or HR manager. It must state: <ul><li>Dates of employment and job title.</li><li>Employment status (full-time, part-time, permanent).</li><li>Annual salary or hourly wage rate and average weekly hours.</li></ul>"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "assets-${sp}",
+                  "icon": "wallet",
+                  "title": "Asset Evidence, ${sp}",
+                  "sub": "Required only when qualifying assets are used to cover an income shortfall",
+                  "tags": [
+                    {
+                      "cls": "${tagClass}",
+                      "label": "${sp}"
+                    },
+                    {
+                      "cls": "tag-cur",
+                      "label": "Assets"
+                    }
+                  ],
+                  "guide": {
+                    "intro": "Qualifying assets may be used when income alone is insufficient. Under 8 CFR 213a.2(c)(2)(iii)(B), for the child of a U.S. citizen, the net value of qualifying assets must equal at least THREE times (3x) the income shortfall (unlike other categories which require 5x).",
+                    "sections": [
+                      {
+                        "title": "Three-Times (3x) Rule for Children",
+                        "body": "Because the beneficiary is the child of a U.S. citizen, the total net value of assets must equal at least 3 times the difference between the sponsor's household income and the 125% HHS Poverty Guidelines threshold."
+                      },
+                      {
+                        "title": "Asset Valuation Requirements",
+                        "body": "Provide proof of ownership, current valuation, and evidence that the asset can be converted to cash within 12 months without undue harm. For real estate, submit the deed, a professional appraisal, and a mortgage statement showing current equity. For bank accounts, submit 12 months of consecutive monthly statements."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "nonfiling-${sp}",
+                  "icon": "help",
+                  "title": "Tax Non-Filing Explanation, ${sp}",
+                  "sub": "Required if the sponsor was not legally required to file the most recent federal tax return",
+                  "tags": [
+                    {
+                      "cls": "${tagClass}",
+                      "label": "${sp}"
+                    },
+                    {
+                      "cls": "tag-tax",
+                      "label": "If No Return Filed"
+                    }
+                  ],
+                  "guide": {
+                    "intro": "A sponsor who did not file a federal tax return must explain why filing was not legally required.",
+                    "sections": [
+                      {
+                        "title": "Filing Thresholds and Exemptions",
+                        "body": "Sponsors who had no U.S. income or whose income fell below the IRS filing threshold must provide a written, signed statement citing the specific IRS code or threshold limits. If they were living abroad and did not file, they must explain this, keeping in mind that U.S. citizens are required to file taxes on worldwide income."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "sponsor_recommended": [
+                {
+                  "id": "packet-${sp}",
+                  "icon": "folder",
+                  "title": "Organized Sponsorship Packet, ${sp}",
+                  "sub": "Affidavit form and supporting evidence grouped clearly by sponsor",
+                  "tags": [
+                    {
+                      "cls": "${tagClass}",
+                      "label": "${sp}"
+                    }
+                  ],
+                  "guide": {
+                    "intro": "Each sponsor's records should be kept separate and clearly labeled so the correct form and evidence are uploaded under the correct sponsor in CEAC.",
+                    "sections": [
+                      {
+                        "title": "How to organize",
+                        "body": "Group Form I-864, tax evidence, status evidence, domicile evidence, current-income evidence, and asset evidence for ${sp} into one clearly labeled folder structure."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "household_conditional": [
+                {
+                  "id": "i864a-${i}",
+                  "icon": "file-text",
+                  "title": "Form I-864A, ${hm}",
+                  "sub": "Contract for a qualifying household member contributing income or assets",
+                  "tags": [
+                    {
+                      "cls": "tag-hm",
+                      "label": "${hm}"
+                    }
+                  ],
+                  "guide": {
+                    "intro": "A qualifying household member whose income or assets are used completes and signs Form I-864A with the petitioning sponsor.",
+                    "sections": [
+                      {
+                        "title": "Form I-864A Contract",
+                        "body": "Form I-864A is a legally binding contract between the sponsor and the household member. The household member agrees to be jointly and severally liable for the financial support of the child beneficiary. Ensure all pages are submitted and signed."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "hm-tax-${i}",
+                  "icon": "landmark",
+                  "title": "Most Recent Tax Evidence, ${hm}",
+                  "sub": "IRS transcript or applicable federal return evidence for the household member",
+                  "tags": [
+                    {
+                      "cls": "tag-hm",
+                      "label": "${hm}"
+                    },
+                    {
+                      "cls": "tag-tax",
+                      "label": "Most Recent Year"
+                    }
+                  ],
+                  "guide": {
+                    "intro": "The household member must document the income or assets contributed through Form I-864A.",
+                    "sections": [
+                      {
+                        "title": "Tax Records for Household Members",
+                        "body": "Provide the IRS Tax Transcript for the household member's most recent tax year. If transcripts are not available, submit Form 1040 accompanied by W-2s and schedules."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "hm-income-${i}",
+                  "icon": "user",
+                  "title": "Current Income Evidence, ${hm}",
+                  "sub": "Proof that the household member's contributed income is current and continuing",
+                  "tags": [
+                    {
+                      "cls": "tag-hm",
+                      "label": "${hm}"
+                    },
+                    {
+                      "cls": "tag-cur",
+                      "label": "Current Income"
+                    }
+                  ],
+                  "guide": {
+                    "intro": "Current income evidence should support the amount contributed by the household member on Form I-864A.",
+                    "sections": [
+                      {
+                        "title": "Verifying Continuing Income",
+                        "body": "Provide current pay stubs and employment letters for the household member. The income must be from a lawful source and expected to continue after the child immigrates."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "hm-relationship-${i}",
+                  "icon": "users",
+                  "title": "Proof of Household Relationship or Shared Residence, ${hm}",
+                  "sub": "Evidence establishing eligibility to contribute through Form I-864A",
+                  "tags": [
+                    {
+                      "cls": "tag-hm",
+                      "label": "${hm}"
+                    }
+                  ],
+                  "guide": {
+                    "intro": "Depending on the household member category, evidence of a qualifying family relationship, shared residence, or both may be required.",
+                    "sections": [
+                      {
+                        "title": "Establishing Household Linkage",
+                        "body": "If the household member is the sponsor's spouse, sibling, child, or parent, submit birth certificates, marriage certificates, or adoption decrees. Also submit lease agreements, tax filings, or utility bills showing they share the same physical residence."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "hm-assets-${i}",
+                  "icon": "wallet",
+                  "title": "Household Member Asset Evidence, ${hm}",
+                  "sub": "Required only when the household member's assets are included",
+                  "tags": [
+                    {
+                      "cls": "tag-hm",
+                      "label": "${hm}"
+                    },
+                    {
+                      "cls": "tag-cur",
+                      "label": "Assets"
+                    }
+                  ],
+                  "guide": {
+                    "intro": "Include asset evidence only when the household member's qualifying assets are being used in the sponsorship calculation.",
+                    "sections": [
+                      {
+                        "title": "What to establish",
+                        "body": "Show ownership, net value after liabilities, and convertibility to cash within one year without undue hardship (3x multiplier applies for child beneficiary)."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "general_recommended": [
+                {
+                  "id": "prior-year-backup",
+                  "icon": "clipboard",
+                  "title": "Prior-Year Tax Evidence Backup",
+                  "sub": "Additional prior-year records available if NVC requests them",
+                  "tags": [
+                    {
+                      "cls": "tag-tax",
+                      "label": "Backup Evidence"
+                    }
+                  ],
+                  "guide": {
+                    "intro": "The most recent tax year is the normal core evidence, but earlier records may be useful when income history is irregular or NVC requests additional documentation.",
+                    "sections": [
+                      {
+                        "title": "When it may help",
+                        "body": "Keep prior-year transcripts or returns available when recent income changed substantially, a filing extension or non-filing issue exists, or additional income history is requested."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "upload-packet",
+                  "icon": "hard-drive",
+                  "title": "Upload-Ready Financial Packet",
+                  "sub": "Clear, properly named files organized for CEAC upload",
+                  "tags": [
+                    {
+                      "cls": "tag-cur",
+                      "label": "Upload Ready"
+                    }
+                  ],
+                  "guide": {
+                    "intro": "Preparing an upload-ready packet reduces classification, readability, and submission errors.",
+                    "sections": [
+                      {
+                        "title": "File preparation",
+                        "body": "Keep each file within CEAC's current size limit (<2 MB), use an accepted file type (PDF/JPG), make every page legible, and organize files separately for the petitioner, each joint sponsor, and each household member."
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            "url": "/financial/checklist",
+            "relevantTools": [
+              {
+                "label": "Financial Checklist",
+                "href": "/financial-evidence-checklist",
+                "type": "tool"
+              },
+              {
+                "label": "Document Vault",
+                "href": "/documents/vault",
+                "type": "tool"
+              }
+            ]
+          },
+          "url": "/financial/checklist",
+          "relevantTools": [
+            {
+              "label": "Financial Checklist",
+              "href": "/financial-evidence-checklist",
+              "type": "tool"
+            },
+            {
+              "label": "Document Vault",
+              "href": "/documents/vault",
+              "type": "tool"
+            }
+          ]
         },
         {
           "step_key": "step_2_7",
