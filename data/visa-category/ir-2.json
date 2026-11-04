@@ -7123,21 +7123,101 @@
           "step_number": 12,
           "step_name": "Interview Appointment Received",
           "step_short_description": "Interview appointment received",
-          "step_description": "Your consular interview has been scheduled. Record your appointment details to update your dashboard and unlock interview preparation.",
-          "step_type": "informational",
-          "who": "Child beneficiary",
-          "where": "Registered email + CEAC",
+          "step_description": "Your consular interview appointment has been scheduled at U.S. Embassy Islamabad. Record your appointment details to pin the date to your dashboard and unlock Chapter 3 interview preparation.",
+          "step_type": "tool",
+          "who": "Child beneficiary & accompanying parent/guardian",
+          "where": "Registered email, CEAC & Rahvana Dashboard",
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 12,
           "actions": [
-            "Receive interview appointment",
-            "Note date and time",
-            "Schedule the medical examination promptly with an embassy-approved panel physician",
-            "Gather original documents",
-            "Make travel arrangements if needed"
+            "Receive official NVC Interview Appointment Letter (P4) with interview date and time",
+            "Record interview date, time, and appointment details in Rahvana",
+            "Immediately book the panel physician medical examination with an approved clinic in Pakistan",
+            "Obtain official WHO/Government of Pakistan Polio Vaccination Certificate (mandatory for all travelers from Pakistan)",
+            "Assemble original civil documents folder (NADRA birth cert, CRC/B-Form, custody/NOC consent) for Embassy Islamabad",
+            "Confirm who will accompany the child to the interview (parent or authorized adult guardian for minors under 18)"
           ],
-          "pending_step_type": "tool"
+          "tool_data": {
+            "id": "step_2_12",
+            "type": "appointment_received",
+            "title": "Interview Appointment Received",
+            "description": "Your consular interview appointment has been scheduled at U.S. Embassy Islamabad. Record your appointment details to pin the date to your dashboard and unlock Chapter 3 (Medical Examination & Consular Interview Preparation).",
+            "chips": [
+              {
+                "label": "Major Milestone",
+                "type": "gold"
+              },
+              {
+                "label": "Dashboard Updated",
+                "type": "green"
+              },
+              {
+                "label": "Chapter 3 Unlocked",
+                "type": "purple"
+              }
+            ],
+            "heroBanner": {
+              "eyebrow": "Consular Interview Scheduled",
+              "title": "Your child's interview appointment has arrived",
+              "sub": "This marks the successful completion of NVC processing. Record the appointment details below to unlock Chapter 3 and begin medical examination and interview preparation."
+            },
+            "form": {
+              "title": "Record child's interview appointment",
+              "sub": "Saves to your dashboard and unlocks Chapter 3 preparation",
+              "fields": {
+                "interviewDate": {
+                  "label": "Interview Date & Time",
+                  "placeholder": ""
+                },
+                "letterDate": {
+                  "label": "Date Appointment Letter Received",
+                  "placeholder": ""
+                },
+                "embassy": {
+                  "label": "Embassy / Consulate Location",
+                  "placeholder": "U.S. Embassy Islamabad, Pakistan"
+                }
+              },
+              "hint": "Print multiple copies of the official NVC Appointment Letter (P4). You must bring the printed letter to the panel physician medical examination and to the U.S. Embassy gate on interview day.",
+              "button": "Save Appointment & Unlock Chapter 3"
+            },
+            "savedView": {
+              "title": "✓ Interview Appointment Saved",
+              "button": "Edit"
+            },
+            "dashboardUpdate": {
+              "title": "Dashboard updated: Interview scheduled",
+              "sub": "Your child's interview date is now pinned to your Rahvana dashboard. The queue tracking card has been replaced with your active interview countdown and preparation timeline."
+            },
+            "nextChapter": {
+              "title": "Chapter 3: Medical Exam & Consular Interview Unlocked",
+              "sub": "Your next preparation phase is now active",
+              "phases": [
+                {
+                  "num": "1",
+                  "label": "Medical Examination & Polio Booster",
+                  "sub": "Book and complete the required panel physician medical examination in Islamabad, Lahore, or Karachi, and obtain the mandatory WHO/Govt of Pakistan polio vaccination card"
+                },
+                {
+                  "num": "2",
+                  "label": "Original Civil Documents & Consent",
+                  "sub": "Assemble physical original civil records (Union Council birth cert, NADRA Computerized Birth Certificate, CRC/B-Form), custody decree or non-accompanying parent notarized NOC consent letter (if minor under 18), and certified translations"
+                },
+                {
+                  "num": "3",
+                  "label": "Accompanying Parent / Guardian Readiness",
+                  "sub": "Confirm who will accompany the minor child into U.S. Embassy Islamabad and ensure adult government-issued photo ID is prepared"
+                },
+                {
+                  "num": "4",
+                  "label": "Consular Interview & Biometrics",
+                  "sub": "Review embassy gate logistics, security regulations, biometric intake, and consular interview questions for child and parent"
+                }
+              ]
+            },
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Consult a licensed immigration attorney for case-specific decisions."
+          }
         }
       ]
     },
