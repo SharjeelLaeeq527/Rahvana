@@ -7027,20 +7027,96 @@
           "step_number": 11,
           "step_name": "Waiting for Interview Scheduling",
           "step_short_description": "Interview scheduling queue",
-          "step_description": "Your case is documentarily qualified and in the queue for interview scheduling at your post. This step tracks your position and monitors scheduling progress.",
-          "step_type": "informational",
+          "step_description": "Your case is documentarily qualified and in the queue for interview scheduling at U.S. Embassy Islamabad. This step tracks your position, monitors Embassy Islamabad scheduling trends, and guides interview readiness.",
+          "step_type": "tool",
           "who": "NVC / U.S. Embassy Islamabad",
-          "where": "NVC scheduling queue",
+          "where": "NVC scheduling queue & U.S. Embassy Islamabad",
           "estimated_duration_days": null,
           "is_required": true,
           "display_order": 11,
           "actions": [
-            "Monitor email for interview letter",
-            "Ensure passport stays valid",
-            "Keep civil documents organized",
-            "Review interview preparation checklist"
+            "Monitor registered email addresses for the official NVC Interview Appointment Letter (P4)",
+            "Ensure child's Pakistani passport remains valid for at least 6 months beyond the anticipated interview date",
+            "Track interview scheduling trends for Immediate Relatives (IR-2) at U.S. Embassy Islamabad",
+            "Keep original civil documents (NADRA birth cert, CRC/B-Form, consent NOC/custody decree) in an interview-ready folder",
+            "Review Chapter 3 preparation requirements (medical exam, polio booster, and biometric readiness)"
           ],
-          "pending_step_type": "tool"
+          "tool_data": {
+            "id": "step_2_11",
+            "type": "interview_scheduling",
+            "title": "Waiting for Interview Scheduling",
+            "description": "Your IR-2 child case is documentarily qualified (DQ) and in the queue for interview appointment scheduling at U.S. Embassy Islamabad. This step tracks queue status, Embassy Islamabad scheduling trends, and interview readiness.",
+            "chips": [
+              {
+                "label": "DQ Received",
+                "type": "green"
+              },
+              {
+                "label": "Queue Tracking",
+                "type": "sky"
+              },
+              {
+                "label": "Awaiting Appointment",
+                "type": "gold"
+              }
+            ],
+            "queueStatus": {
+              "heading": "In queue, awaiting interview appointment letter (P4)"
+            },
+            "schedulingData": {
+              "Islamabad": {
+                "official": "Check the Department of State IV Scheduling Status Tool",
+                "trend": "Updated monthly",
+                "detail": "IR-2 is an Immediate Relative immigrant visa category. Select 'Immediate Relative' and 'Islamabad' in the official IV Scheduling Status Tool to view the current scheduling status. Because IR-2 has no annual visa quota, appointments are scheduled based on Documentary Qualification (DQ) order and interview capacity at U.S. Embassy Islamabad."
+              }
+            },
+            "whileYouWait": [
+              "Watch registered email addresses for both the petitioner and the child/parent for the NVC Interview Letter (P4)",
+              "Ensure the child's passport remains valid for at least six months beyond the expected interview window (renew early if expiring)",
+              "Assemble physical originals of all civil records: Union Council birth registration, NADRA Computerized Birth Certificate, CRC/B-Form, parents' marriage cert, and certified translations",
+              "For minors under 18: verify that the legal custody decree or non-accompanying parent's notarized NOC consent affidavit is ready",
+              "Review Chapter 3 steps (authorized panel physician medical exam, polio vaccination certificate, and interview attendance)"
+            ],
+            "milestones": [
+              {
+                "label": "CEAC access & fee payment",
+                "status": "done"
+              },
+              {
+                "label": "Form DS-260 completed & submitted",
+                "status": "done"
+              },
+              {
+                "label": "Affidavit of Support (I-864W / I-864) submitted",
+                "status": "done"
+              },
+              {
+                "label": "Civil documents uploaded & submitted to NVC",
+                "status": "done"
+              },
+              {
+                "label": "Documentary Qualification (DQ) notice received",
+                "status": "done"
+              },
+              {
+                "label": "Waiting for interview appointment scheduling",
+                "status": "active"
+              },
+              {
+                "label": "Interview Appointment Letter (P4) received",
+                "status": "pending"
+              }
+            ],
+            "howItWorks": [
+              "NVC places the IR-2 case in the interview scheduling queue immediately upon issuing the Documentary Qualification (DQ) notice.",
+              "U.S. Embassy Islamabad releases available immigrant visa interview appointment blocks to NVC on a monthly basis.",
+              "NVC assigns appointments to documentarily qualified cases strictly in first-in, first-out order based on the DQ date.",
+              "As an Immediate Relative (IR-2) category, there is no numerical quota or Visa Bulletin priority date wait.",
+              "When an interview date is assigned, NVC emails the official Interview Appointment Letter (P4) containing the date, time, and instructions.",
+              "Do NOT schedule the panel physician medical examination until you have received the official appointment letter."
+            ],
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Consult a licensed immigration attorney for case-specific decisions."
+          }
         },
         {
           "step_key": "step_2_12",
