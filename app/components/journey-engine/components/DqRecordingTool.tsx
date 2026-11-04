@@ -3,6 +3,7 @@
 import React from "react";
 import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 import { IR5_ENABLED } from "@/lib/feature-flags";
+import { useJourneyEnvironment } from "@/app/context/JourneyEnvironmentContext";
 
 interface DqRecordingToolProps {
   dqState: {
@@ -45,17 +46,18 @@ const DQ_CATEGORY_OPTIONS = [
 
 export const DqRecordingTool: React.FC<DqRecordingToolProps> = ({ dqState, actions, guard }) => {
   const { dqSaved, setDqSaved, dqDate, setDqDate, dqCategory, setDqCategory, dqCountry } = dqState;
+  const { journeyCategory } = useJourneyEnvironment();
 
   const [isSaving, setIsSaving] = React.useState(false);
 
-  // Select IR-1 by default when no category has been saved.
-  React.useEffect(() => {
-    if (!dqCategory) {
-      setDqCategory("IR-1");
-    }
-  }, [dqCategory, setDqCategory]);
+  // Automatically default to the current journey's visa category (e.g. "IR-2", "IR-5", "IR-1")
+  const effectiveCategory = dqCategory || journeyCategory || "IR-1";
 
-  const selectedCategory = dqCategory || "IR-1";
+  React.useEffect(() => {
+    if (!dqCategory && journeyCategory) {
+      setDqCategory(journeyCategory);
+    }
+  }, [dqCategory, journeyCategory, setDqCategory]);
 
   const handleSave = async () => {
     if (guard && !guard()) return;
@@ -66,7 +68,7 @@ export const DqRecordingTool: React.FC<DqRecordingToolProps> = ({ dqState, actio
       await actions.updateMetadata({
         dqSaved: true,
         dqDate,
-        dqCategory: selectedCategory,
+        dqCategory: effectiveCategory,
         dqCountry,
       });
 
@@ -121,14 +123,21 @@ export const DqRecordingTool: React.FC<DqRecordingToolProps> = ({ dqState, actio
               className="min-h-[42px] w-full rounded-lg border-[1.5px] border-[#4A7772] bg-white px-3 py-2 text-[13.5px] font-semibold text-[#2E5450] transition-colors outline-none hover:border-[#3C6561] focus:ring-2 focus:ring-[#4A7772]/20"
             />
 
-            <CustomDropdown
-              value={selectedCategory}
-              onChange={setDqCategory}
-              options={DQ_CATEGORY_OPTIONS}
-              placeholder="Select visa category"
-              className="w-full"
-              collapseWhenSingle
-            />
+            {journeyCategory ? (
+              <div className="flex min-h-[42px] items-center justify-start rounded-lg border-[1.5px] border-[#d0e4f7] bg-[#f8fbff] px-3.5 py-2">
+                <span className="text-[12px] font-medium text-slate-500">Category: </span>
+                <span className="text-[13.5px] font-bold text-[#2d4a6e]"> {effectiveCategory}</span>
+              </div>
+            ) : (
+              <CustomDropdown
+                value={effectiveCategory}
+                onChange={setDqCategory}
+                options={DQ_CATEGORY_OPTIONS}
+                placeholder="Select visa category"
+                className="w-full"
+                collapseWhenSingle
+              />
+            )}
           </div>
 
           <button
@@ -146,7 +155,7 @@ export const DqRecordingTool: React.FC<DqRecordingToolProps> = ({ dqState, actio
             <div className="text-xs font-bold text-emerald-800">✓ DQ Recorded ({dqDate})</div>
 
             <div className="mt-1 text-[11px] font-medium text-emerald-700">
-              Category: {selectedCategory}
+              Category: {effectiveCategory}
             </div>
           </div>
 
