@@ -78,6 +78,8 @@ export interface ScenarioFlags {
     | "adopted";
   child_prior_marriages?: boolean;
   child_custody_or_consent_required?: boolean;
+  /** The marriage that created a step-relationship has since ended, so continuing ties must be shown. */
+  step_relationship_ended?: boolean;
 
   // Financial
   joint_sponsor_used?: boolean;

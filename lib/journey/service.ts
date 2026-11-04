@@ -853,7 +853,7 @@ export class CaseDataValidationEngine {
     },
 
     visa_category: (value) => {
-      const valid = ["IR-1", "IR-5"];
+      const valid = ["IR-1", "IR-5", "IR-2", "CR-2"];
       return !valid.includes(value)
         ? [`Must be a valid visa category from: ${valid.join(", ")}`]
         : [];
@@ -868,6 +868,49 @@ export class CaseDataValidationEngine {
     beneficiary_country_of_residence: (value) => {
       if (typeof value !== "string" || value.length < 2) return ["Must be a valid country name"];
       return [];
+    },
+
+    // IR-2 / CR-2 child keys. Values come from data/visa-category/ir-2.json option ids.
+    child_relationship_type: (value) => {
+      const valid = [
+        "bio_mother",
+        "bio_father_married",
+        "bio_father_unmarried",
+        "stepchild",
+        "adopted",
+      ];
+      return !valid.includes(value) ? [`Must be one of: ${valid.join(", ")}`] : [];
+    },
+
+    childAgeBand: (value) => {
+      const valid = ["under_14", "14_15", "16_17", "18_20", "21_plus"];
+      return !valid.includes(value) ? [`Must be one of: ${valid.join(", ")}`] : [];
+    },
+
+    visaClass: (value) => {
+      const valid = ["IR2", "CR2"];
+      return !valid.includes(value) ? [`Must be one of: ${valid.join(", ")}`] : [];
+    },
+
+    // Conditions compare against real booleans, so the string form is rejected here
+    // rather than silently evaluating as false later.
+    child_prior_marriages: (value) =>
+      typeof value === "boolean" ? [] : ["Must be a JSON boolean (true / false)"],
+
+    child_custody_or_consent_required: (value) =>
+      typeof value === "boolean" ? [] : ["Must be a JSON boolean (true / false)"],
+
+    parent_prior_marriages: (value) =>
+      typeof value === "boolean" ? [] : ["Must be a JSON boolean (true / false)"],
+
+    step_relationship_ended: (value) =>
+      typeof value === "boolean" ? [] : ["Must be a JSON boolean (true / false)"],
+
+    child_date_of_birth: (value) => {
+      if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+        return ["Must be an ISO date (YYYY-MM-DD)"];
+      }
+      return Number.isNaN(new Date(value).getTime()) ? ["Must be a valid date"] : [];
     },
 
     employer_state: (value) => {
@@ -1013,7 +1056,10 @@ export class JourneyService {
       const journeyInput = ConfigLoader.transformJourneyInput(rawJSON);
       const chaptersInput = ConfigLoader.transformChaptersInput(rawJSON.chapters);
       const caseDataKeys = ConfigLoader.extractCaseDataKeys(rawJSON);
-      const caseDataInput = ConfigLoader.generateInitialCaseData(caseDataKeys);
+      const caseDataInput = ConfigLoader.generateInitialCaseData(
+        caseDataKeys,
+        ConfigLoader.extractCaseDataKeyTypes(rawJSON)
+      );
 
       // Apply overrides if provided
       if (overrides?.filing_method) {

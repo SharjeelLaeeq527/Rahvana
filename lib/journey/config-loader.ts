@@ -271,6 +271,8 @@ export class ConfigLoader {
     if (visaType === "IR2" || visaType === "IR-2" || visaType === "CR2" || visaType === "CR-2") {
       keys.add("child_relationship_type");
       keys.add("child_prior_marriages");
+      keys.add("parent_prior_marriages");
+      keys.add("step_relationship_ended");
       keys.add("child_custody_or_consent_required");
       keys.add("child_date_of_birth");
       keys.add("visaClass");
@@ -304,6 +306,8 @@ export class ConfigLoader {
   ): Record<string, NonNullable<CaseDataInput["data_type"]>> {
     const types: Record<string, NonNullable<CaseDataInput["data_type"]>> = {
       child_prior_marriages: "boolean",
+      parent_prior_marriages: "boolean",
+      step_relationship_ended: "boolean",
       child_custody_or_consent_required: "boolean",
       child_relationship_type: "string",
       visaClass: "string",
