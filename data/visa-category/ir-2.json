@@ -5092,10 +5092,7 @@
                       "icon": "passport",
                       "title": "Child Beneficiary Passport Biographic Page",
                       "sub": "Current passport page showing the child's photo, full name, date of birth, and nationality",
-                      "tags": [
-                        "bene",
-                        "govt"
-                      ],
+                      "tags": ["bene", "govt"],
                       "external_href": "/guides/passport-guide",
                       "status": "not-started",
                       "required": true,
@@ -5119,10 +5116,7 @@
                       "icon": "birth",
                       "title": "Child Beneficiary Birth Certificate",
                       "sub": "Official Union Council registration and NADRA Computerized Birth Certificate",
-                      "tags": [
-                        "bene",
-                        "govt"
-                      ],
+                      "tags": ["bene", "govt"],
                       "external_href": "/guides/birth-certificate-guide",
                       "status": "not-started",
                       "required": true,
@@ -5146,10 +5140,7 @@
                       "icon": "relationship",
                       "title": "NADRA Child Registration Certificate (CRC / B-Form) or FRC",
                       "sub": "Official NADRA family registry document showing parent-child relationship",
-                      "tags": [
-                        "bene",
-                        "govt"
-                      ],
+                      "tags": ["bene", "govt"],
                       "external_href": "/guides/birth-certificate-guide",
                       "status": "not-started",
                       "required": true,
@@ -5173,10 +5164,7 @@
                       "icon": "photo",
                       "title": "Passport-Style Photographs (2x2 Inches)",
                       "sub": "Two identical recent color photographs of the child meeting State Department standards",
-                      "tags": [
-                        "bene",
-                        "photo"
-                      ],
+                      "tags": ["bene", "photo"],
                       "external_href": "/guides/photo-guide",
                       "status": "not-started",
                       "required": true,
@@ -5200,10 +5188,7 @@
                       "icon": "police",
                       "title": "Police Certificate (Ages 16+ Only)",
                       "sub": "Pakistan Police Character Certificate from PKM; children under 16 are completely EXEMPT",
-                      "tags": [
-                        "bene",
-                        "govt"
-                      ],
+                      "tags": ["bene", "govt"],
                       "external_href": "/guides/police-verification-guide",
                       "status": "not-started",
                       "required": true,
@@ -5234,10 +5219,7 @@
                       "icon": "relationship",
                       "title": "Petitioner's Proof of U.S. Citizenship",
                       "sub": "U.S. passport, Certificate of Naturalization, Certificate of Citizenship, or U.S. birth certificate",
-                      "tags": [
-                        "pet",
-                        "govt"
-                      ],
+                      "tags": ["pet", "govt"],
                       "external_href": "/guides/citizenship-guide",
                       "status": "not-started",
                       "required": false,
@@ -5257,11 +5239,7 @@
                       "icon": "marriage",
                       "title": "Parents' Marriage Certificate (Nikah Nama & NADRA MRC)",
                       "sub": "Required if child was born to married parents or if father is petitioning",
-                      "tags": [
-                        "pet",
-                        "bene",
-                        "govt"
-                      ],
+                      "tags": ["pet", "bene", "govt"],
                       "external_href": "/guides/marriage-certificate-guide",
                       "status": "not-started",
                       "required": false,
@@ -5281,10 +5259,7 @@
                       "icon": "relationship",
                       "title": "Legitimation or Bona Fide Father-Child Relationship Evidence",
                       "sub": "Required if child was born out of wedlock and biological father is petitioning",
-                      "tags": [
-                        "pet",
-                        "bene"
-                      ],
+                      "tags": ["pet", "bene"],
                       "external_href": "/guides/relationship-evidence-guide",
                       "status": "not-started",
                       "required": false,
@@ -5304,10 +5279,7 @@
                       "icon": "marriage",
                       "title": "Stepparent Marriage and Relationship Records",
                       "sub": "Required if petition is filed by a stepparent; marriage must have occurred before child's 18th birthday",
-                      "tags": [
-                        "pet",
-                        "govt"
-                      ],
+                      "tags": ["pet", "govt"],
                       "external_href": "/guides/marriage-certificate-guide",
                       "status": "not-started",
                       "required": false,
@@ -5327,10 +5299,7 @@
                       "icon": "court",
                       "title": "Adoption Decree, Legal Custody, and 2-Year Joint Residence",
                       "sub": "Required if child is adopted; adoption must be finalized before age 16 with 2 years legal/physical custody",
-                      "tags": [
-                        "bene",
-                        "court"
-                      ],
+                      "tags": ["bene", "court"],
                       "external_href": "/guides/adoption-guide",
                       "status": "not-started",
                       "required": false,
@@ -5350,11 +5319,7 @@
                       "icon": "court",
                       "title": "Legal Custody Decree or Non-Accompanying Parent Consent Letter (NOC)",
                       "sub": "Required for minor children travelling without one biological parent",
-                      "tags": [
-                        "bene",
-                        "court",
-                        "govt"
-                      ],
+                      "tags": ["bene", "court", "govt"],
                       "external_href": "/guides/custody-consent-guide",
                       "status": "not-started",
                       "required": false,
@@ -5378,10 +5343,7 @@
                       "icon": "court",
                       "title": "Name Change or Identity Discrepancy Documents",
                       "sub": "Required if child's or parent's name differs across submitted records",
-                      "tags": [
-                        "bene",
-                        "court"
-                      ],
+                      "tags": ["bene", "court"],
                       "external_href": "/guides/civil-documents-guide",
                       "status": "not-started",
                       "required": false,
@@ -5401,10 +5363,7 @@
                       "icon": "court",
                       "title": "Court and Juvenile Records",
                       "sub": "Required if beneficiary has ever been arrested, charged, or convicted of an offense",
-                      "tags": [
-                        "bene",
-                        "court"
-                      ],
+                      "tags": ["bene", "court"],
                       "external_href": "/guides/court-records-guide",
                       "status": "not-started",
                       "required": false,
@@ -5424,10 +5383,7 @@
                       "icon": "court",
                       "title": "Military or Service Records",
                       "sub": "Required if the child beneficiary has served in any military or armed forces",
-                      "tags": [
-                        "bene",
-                        "govt"
-                      ],
+                      "tags": ["bene", "govt"],
                       "external_href": "/guides/military-records-guide",
                       "status": "not-started",
                       "required": false,
@@ -5443,10 +5399,7 @@
                       "icon": "warning",
                       "title": "Missing Document / Record Unavailability Evidence",
                       "sub": "Required if any primary civil record cannot be obtained",
-                      "tags": [
-                        "bene",
-                        "govt"
-                      ],
+                      "tags": ["bene", "govt"],
                       "external_href": "/guides/unavailability-guide",
                       "status": "not-started",
                       "required": false,
@@ -5473,9 +5426,7 @@
                       "icon": "document",
                       "title": "Organized Certified English Translations",
                       "sub": "Translations with certificate of accuracy for every Urdu civil document",
-                      "tags": [
-                        "process"
-                      ],
+                      "tags": ["process"],
                       "external_href": "/guides/translation-guide",
                       "status": "not-started",
                       "required": false,
@@ -5495,9 +5446,7 @@
                       "icon": "document",
                       "title": "Upload-Ready Digital Scans (<2 MB)",
                       "sub": "Clean, color PDF or JPEG scans formatted for CEAC upload",
-                      "tags": [
-                        "process"
-                      ],
+                      "tags": ["process"],
                       "external_href": "/guides/ceac-upload-guide",
                       "status": "not-started",
                       "required": false,
@@ -5513,9 +5462,7 @@
                       "icon": "document",
                       "title": "Interview Originals and Certified Copies Set",
                       "sub": "Physical folder of original documents ready for Embassy Islamabad interview",
-                      "tags": [
-                        "process"
-                      ],
+                      "tags": ["process"],
                       "external_href": "/guides/interview-prep-guide",
                       "status": "not-started",
                       "required": false,
@@ -6027,89 +5974,47 @@
             "scenarios": {
               "ina-320-exempt": {
                 "label": "Child Citizenship Act Exemption (Form I-864W — Under 18 Biological/Adopted Child)",
-                "sponsors": [
-                  "Child Beneficiary (Exemption)"
-                ],
+                "sponsors": ["Child Beneficiary (Exemption)"],
                 "householdMembers": [],
                 "jointSponsors": [],
-                "forms": [
-                  "Form I-864W"
-                ],
+                "forms": ["Form I-864W"],
                 "taxYears": [],
                 "taxEvidenceLabel": "Exempt from IRS tax filing evidence under INA Section 320"
               },
               "pet-only": {
                 "label": "Petitioner only (Form I-864 — Stepchild or Adult Child 18-20, qualifies alone)",
-                "sponsors": [
-                  "Petitioner"
-                ],
+                "sponsors": ["Petitioner"],
                 "householdMembers": [],
                 "jointSponsors": [],
-                "forms": [
-                  "Form I-864 (or I-864EZ)"
-                ],
-                "taxYears": [
-                  2025
-                ],
+                "forms": ["Form I-864 (or I-864EZ)"],
+                "taxYears": [2025],
                 "taxEvidenceLabel": "IRS Tax Transcript (most recent tax year)"
               },
               "pet-hm": {
                 "label": "Petitioner + Household Member (Form I-864 + Form I-864A)",
-                "sponsors": [
-                  "Petitioner"
-                ],
-                "householdMembers": [
-                  "Household Member 1"
-                ],
+                "sponsors": ["Petitioner"],
+                "householdMembers": ["Household Member 1"],
                 "jointSponsors": [],
-                "forms": [
-                  "Form I-864",
-                  "Form I-864A"
-                ],
-                "taxYears": [
-                  2025
-                ],
+                "forms": ["Form I-864", "Form I-864A"],
+                "taxYears": [2025],
                 "taxEvidenceLabel": "IRS Tax Transcript (most recent tax year)"
               },
               "pet-js1": {
                 "label": "Petitioner + 1 Joint Sponsor (Form I-864 + Joint Sponsor Form I-864)",
-                "sponsors": [
-                  "Petitioner",
-                  "Joint Sponsor 1"
-                ],
+                "sponsors": ["Petitioner", "Joint Sponsor 1"],
                 "householdMembers": [],
-                "jointSponsors": [
-                  "Joint Sponsor 1"
-                ],
-                "forms": [
-                  "Form I-864 (Petitioner)",
-                  "Form I-864 (Joint Sponsor)"
-                ],
-                "taxYears": [
-                  2025
-                ],
+                "jointSponsors": ["Joint Sponsor 1"],
+                "forms": ["Form I-864 (Petitioner)", "Form I-864 (Joint Sponsor)"],
+                "taxYears": [2025],
                 "taxEvidenceLabel": "IRS Tax Transcripts for each sponsor"
               },
               "pet-hm-js": {
                 "label": "Petitioner + Household Member + Joint Sponsor",
-                "sponsors": [
-                  "Petitioner",
-                  "Joint Sponsor 1"
-                ],
-                "householdMembers": [
-                  "Household Member 1"
-                ],
-                "jointSponsors": [
-                  "Joint Sponsor 1"
-                ],
-                "forms": [
-                  "Form I-864 (Petitioner)",
-                  "Form I-864A",
-                  "Form I-864 (Joint Sponsor)"
-                ],
-                "taxYears": [
-                  2025
-                ],
+                "sponsors": ["Petitioner", "Joint Sponsor 1"],
+                "householdMembers": ["Household Member 1"],
+                "jointSponsors": ["Joint Sponsor 1"],
+                "forms": ["Form I-864 (Petitioner)", "Form I-864A", "Form I-864 (Joint Sponsor)"],
+                "taxYears": [2025],
                 "taxEvidenceLabel": "IRS Tax Transcripts for petitioner, household member, and joint sponsor"
               }
             },
@@ -6920,7 +6825,7 @@
           "step_number": 8,
           "step_name": "Review & Submit to NVC",
           "step_short_description": "Final quality check & submission",
-          "step_description": "Your final quality check before sending documents to NVC. Verify every child civil file, sponsorship form (Form I-864W or Form I-864), and translation before submitting.",
+          "step_description": "Your final quality check before sending documents to NVC. Verify every file, every person assignment, and every document type before submitting.",
           "step_type": "tool",
           "who": "Petitioner and child beneficiary",
           "where": "CEAC Portal (ceac.state.gov) & Rahvana",
@@ -6978,19 +6883,120 @@
           "step_number": 9,
           "step_name": "Awaiting NVC Document Review",
           "step_short_description": "NVC processing & review",
-          "step_type": "informational",
+          "step_description": "The required documents have been submitted. NVC is reviewing the child's Form DS-260, Affidavit of Support or Form I-864W exemption package, Pakistan civil documents (Union Council, NADRA CRC/B-Form), custody evidence, and translations before determining whether the case is documentarily complete.",
+          "step_type": "tool",
           "who": "NVC",
           "where": "NVC Review",
           "estimated_duration_days": 60,
           "is_required": true,
           "display_order": 9,
           "actions": [
-            "Monitor CEAC status weekly",
-            "Check email for updates",
-            "Note DQ date when received",
-            "Begin interview preparation"
+            "Monitor CEAC status weekly for NVC document review updates",
+            "Check registered petitioner and applicant email addresses for NVC correspondence",
+            "Prepare for any Checklist / Financial Evidence (FE) letters without delay",
+            "Record the Documentary Qualification (DQ) notice date once all documents are accepted",
+            "Begin assembling original civil documents for the U.S. Embassy Islamabad interview"
           ],
-          "pending_step_type": "tool"
+          "tool_data": {
+            "id": "step_2_9",
+            "type": "awaiting_review",
+            "eyebrow": {
+              "chapter": "Chapter 2 · NVC / CEAC Processing",
+              "step": "Step 9, Awaiting NVC Document Review"
+            },
+            "title": "Awaiting NVC Document Review",
+            "description": "All documents have been submitted. NVC is now reviewing your package for completeness and consistency before issuing a documentary qualification decision.",
+            "chips": [
+              {
+                "label": "NVC Review",
+                "type": "nvc"
+              },
+              {
+                "label": "Status",
+                "type": "status"
+              },
+              {
+                "label": "Waiting Period",
+                "type": "wait"
+              }
+            ],
+            "statusCard": {
+              "label": "Current Case Status",
+              "heading": "Documents under NVC review",
+              "grid": [
+                {
+                  "label": "Documents submitted",
+                  "value": "✓ Confirmed"
+                },
+                {
+                  "label": "Current stage",
+                  "value": "NVC document review"
+                },
+                {
+                  "label": "Next event",
+                  "value": "Documentary Qualification or Checklist Notice"
+                }
+              ]
+            },
+            "reviewItems": {
+              "title": "What NVC is reviewing for the IR-2 child case",
+              "items": [
+                "Form DS-260, child's immigrant visa application accuracy and parental assistance disclosure",
+                "Civil documents: child's passport, Union Council birth registration, NADRA Computerized Birth Certificate, and NADRA CRC / B-Form or FRC",
+                "Police Character Certificate: verified present if child is 16+, or verified exempt if child is under 16",
+                "Custody and consent records: family court custody decree or non-accompanying biological parent notarized NOC consent letter (for minors under 18)",
+                "Sponsorship package: Form I-864W with U.S. citizen parent status and custody proof (INA § 320 exempt) OR Form I-864 with tax transcripts and joint sponsor records (if stepchild or age 18+)",
+                "Certified English translations paired with all Urdu originals (Nikah Nama, Union Council certificates, court orders)",
+                "Overall package consistency across DS-260, I-130 petition, and civil documents"
+              ]
+            },
+            "whileYouWait": {
+              "title": "While you wait",
+              "items": [
+                "Monitor the email addresses registered with CEAC for both petitioner and beneficiary",
+                "Check the official NVC Timeframes page to know which submission dates NVC is currently reviewing",
+                "Log in to CEAC periodically to check for any message or status updates",
+                "Keep organized digital and physical copies of every document submitted",
+                "Do not re-upload or modify any document in CEAC while under review unless NVC specifically issues a checklist notice"
+              ]
+            },
+            "timeline": {
+              "title": "Where you are in the process",
+              "steps": [
+                {
+                  "label": "Documents uploaded to CEAC",
+                  "status": "completed"
+                },
+                {
+                  "label": "Submitted to NVC",
+                  "status": "completed"
+                },
+                {
+                  "label": "NVC document review",
+                  "status": "current"
+                },
+                {
+                  "label": "Documentary Qualification (DQ)",
+                  "status": "future"
+                },
+                {
+                  "label": "Interview scheduling at U.S. Embassy Islamabad",
+                  "status": "future"
+                }
+              ]
+            },
+            "correctionsAlert": {
+              "title": "If NVC issues a checklist or requests corrections",
+              "items": [
+                "Read the CEAC Response Note carefully to understand the exact issue identified by the reviewer",
+                "Replace only the specific document flagged; do not re-upload or delete unrelated documents",
+                "Ensure new scans are clear, under 2 MB, and include complete certified English translations if in Urdu",
+                "Resubmit promptly so the case can be re-reviewed by NVC without extended delays"
+              ]
+            },
+            "correctionsNote": "Note: Even a single corrected or replaced document returns your case to NVC's full review queue — the clock effectively resets. Take the time to ensure the replacement is 100% complete and legible before resubmitting.",
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Consult a licensed immigration attorney for case-specific decisions."
+          }
         },
         {
           "step_key": "step_2_10",
