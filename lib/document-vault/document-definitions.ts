@@ -1062,8 +1062,9 @@ const MEDICAL_DOCS: DocumentDefinition[] = [
   {
     id: "medical-exam-ds2019",
     key: "MEDICAL_EXAM",
-    name: "Medical Examination (Form DS-2019)",
-    description: "Medical examination report from panel physician",
+    name: "Medical Examination Results (Panel Physician)",
+    description:
+      "Immigrant visa medical examination report from an embassy-approved panel physician, sealed or sent directly to the post",
     category: "MEDICAL",
     applicableVisas: FAMILY_VISAS,
 
@@ -3188,6 +3189,206 @@ const PARENT_DOCS: DocumentDefinition[] = [
 ];
 
 // ============================================================================
+// CHILD-SPECIFIC DOCUMENT DEFINITIONS (IR-2 / CR-2 - beneficiary is the child)
+// ============================================================================
+const CHILD_DOCS: DocumentDefinition[] = [
+  {
+    id: "nadra-crc",
+    key: "CHILD_NADRA_CRC",
+    name: "NADRA Children Registration Certificate (B-Form)",
+    description:
+      "NADRA registration of the child beneficiary, showing the child's name, date of birth and both parents' names.",
+    category: "CIVIL",
+    applicableVisas: ["IR-2", "CR-2"],
+    roles: ["BENEFICIARY"],
+    stages: ["USCIS", "NVC", "INTERVIEW"],
+    required: true,
+    multipleFilesAllowed: false,
+    validityType: "none",
+  },
+  {
+    id: "family-registration-cert",
+    key: "CHILD_FRC",
+    name: "Family Registration Certificate (FRC)",
+    description:
+      "NADRA-issued certificate listing the family members, used to corroborate the child's relationship to the petitioner.",
+    category: "CIVIL",
+    applicableVisas: ["IR-2", "CR-2"],
+    roles: ["BENEFICIARY", "PETITIONER"],
+    stages: ["USCIS", "NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: false,
+    validityType: "none",
+  },
+  {
+    id: "child-parents-marriage-cert",
+    key: "CHILD_PARENTS_MARRIAGE_CERT",
+    name: "Parents' Marriage Certificate",
+    description:
+      "Marriage certificate (Nikah Nama / NADRA MRC) of the child beneficiary's parents, establishing the legitimating marriage where the claim runs through the father.",
+    category: "CIVIL",
+    applicableVisas: ["IR-2", "CR-2"],
+    roles: ["BENEFICIARY", "PETITIONER"],
+    stages: ["USCIS", "NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: false,
+    validityType: "none",
+    requiredWhen: {
+      scenarioFlags: { child_relationship_type: "bio_father_married" },
+    },
+  },
+  {
+    id: "child-father-relationship-evidence",
+    key: "CHILD_FATHER_RELATIONSHIP_EVIDENCE",
+    name: "Evidence of a Bona Fide Father-Child Relationship",
+    description:
+      "Evidence of a genuine father-child relationship (financial support, shared residence, correspondence, photos) where the parents were not married.",
+    category: "RELATIONSHIP",
+    applicableVisas: ["IR-2", "CR-2"],
+    roles: ["BENEFICIARY", "PETITIONER"],
+    stages: ["USCIS", "NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: true,
+    validityType: "none",
+    requiredWhen: {
+      scenarioFlags: { child_relationship_type: "bio_father_unmarried" },
+    },
+  },
+  {
+    id: "child-stepparent-marriage-cert",
+    key: "CHILD_STEPPARENT_MARRIAGE_CERT",
+    name: "Marriage Certificate Creating the Step-Relationship",
+    description:
+      "Marriage certificate showing the petitioner married the child's natural or legal parent before the child turned 18.",
+    category: "CIVIL",
+    applicableVisas: ["IR-2", "CR-2"],
+    roles: ["BENEFICIARY", "PETITIONER"],
+    stages: ["USCIS", "NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: false,
+    validityType: "none",
+    requiredWhen: {
+      scenarioFlags: { child_relationship_type: "stepchild" },
+    },
+  },
+  {
+    id: "child-prior-marriage-terminations",
+    key: "CHILD_PRIOR_MARRIAGE_TERMINATIONS",
+    name: "Termination of the Child's Prior Marriages",
+    description:
+      "Death, divorce or annulment records for any marriage the child beneficiary had before filing, since an IR-2 or CR-2 child must be unmarried.",
+    category: "CIVIL",
+    applicableVisas: ["IR-2", "CR-2"],
+    roles: ["BENEFICIARY", "PETITIONER"],
+    stages: ["NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: true,
+    validityType: "none",
+    requiredWhen: {
+      scenarioFlags: { child_prior_marriages: true },
+    },
+  },
+  {
+    id: "child-adoption-decree",
+    key: "CHILD_ADOPTION_DECREE",
+    name: "Final Adoption Decree",
+    description: "Court decree showing the child beneficiary was legally adopted before turning 16.",
+    category: "CIVIL",
+    applicableVisas: ["IR-2", "CR-2"],
+    roles: ["BENEFICIARY", "PETITIONER"],
+    stages: ["USCIS", "NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: false,
+    validityType: "none",
+    requiredWhen: {
+      scenarioFlags: { child_relationship_type: "adopted" },
+    },
+  },
+  {
+    id: "child-custody-residence-evidence",
+    key: "CHILD_CUSTODY_RESIDENCE_EVIDENCE",
+    name: "Legal Custody and Joint Residence Evidence",
+    description:
+      "Evidence of two years of legal custody and two years of joint residence with the adoptive parent.",
+    category: "RELATIONSHIP",
+    applicableVisas: ["IR-2", "CR-2"],
+    roles: ["BENEFICIARY", "PETITIONER"],
+    stages: ["USCIS", "NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: true,
+    validityType: "none",
+    requiredWhen: {
+      scenarioFlags: { child_relationship_type: "adopted" },
+    },
+  },
+  {
+    id: "child-custody-order-consent",
+    key: "CHILD_CUSTODY_ORDER_CONSENT",
+    name: "Custody Order and Non-Accompanying Parent Consent",
+    description:
+      "Custody order and the other parent's written consent, or a legal basis for proceeding without it, when a child immigrates with one parent.",
+    category: "LEGAL",
+    applicableVisas: ["IR-2", "CR-2"],
+    roles: ["PETITIONER", "BENEFICIARY"],
+    stages: ["USCIS", "NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: true,
+    validityType: "none",
+    requiredWhen: {
+      scenarioFlags: { child_custody_or_consent_required: true },
+    },
+  },
+  {
+    id: "child-marital-status-attestation",
+    key: "CHILD_MARITAL_STATUS_ATTESTATION",
+    name: "Proof of the Child's Unmarried Status",
+    description:
+      "Unmarried status is declared on the DS-260 and must continue until the visa is issued. Some posts also ask for a local single-status or non-marriage record.",
+    category: "CIVIL",
+    applicableVisas: ["IR-2", "CR-2"],
+    roles: ["BENEFICIARY"],
+    stages: ["NVC", "INTERVIEW"],
+    required: true,
+    multipleFilesAllowed: true,
+    validityType: "none",
+  },
+  {
+    id: "parent-prior-marriage-terminations",
+    key: "PARENT_PRIOR_MARRIAGE_TERMINATIONS",
+    name: "Termination of the Parents' Prior Marriages",
+    description:
+      "Death, divorce or annulment records showing any earlier marriage of the petitioner or of the child's biological parent ended before the marriage relied on in the petition.",
+    category: "CIVIL",
+    applicableVisas: ["IR-2", "CR-2"],
+    roles: ["BENEFICIARY", "PETITIONER"],
+    stages: ["NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: true,
+    validityType: "none",
+    requiredWhen: {
+      scenarioFlags: { parent_prior_marriages: true },
+    },
+  },
+  {
+    id: "step-relationship-continuing-evidence",
+    key: "STEP_RELATIONSHIP_CONTINUING_EVIDENCE",
+    name: "Evidence of a Continuing Stepparent-Stepchild Relationship",
+    description:
+      "Where the marriage that created the step-relationship has since ended, letters, call and visit records and proof of support showing the relationship continued. Form I-864 alone does not establish it.",
+    category: "RELATIONSHIP",
+    applicableVisas: ["IR-2", "CR-2"],
+    roles: ["PETITIONER", "BENEFICIARY"],
+    stages: ["USCIS", "NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: true,
+    validityType: "none",
+    requiredWhen: {
+      scenarioFlags: { child_relationship_type: "stepchild", step_relationship_ended: true },
+    },
+  },
+];
+
+// ============================================================================
 // MASTER DOCUMENT DATABASE
 // ============================================================================
 
@@ -3216,6 +3417,7 @@ export const ALL_DOCUMENTS: DocumentDefinition[] = [
   ...ADDRESS_PROOF_DOCS,
   ...OTHER_DOCS,
   ...PARENT_DOCS,
+  ...CHILD_DOCS,
 ];
 
 // Index by key for quick lookup
