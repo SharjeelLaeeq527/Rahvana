@@ -21,7 +21,7 @@ import { loadJourneyProgress, JourneyProgressRecord } from "@/lib/journey/journe
 import { useRouter } from "next/navigation";
 import { roadmapData } from "@/data/roadmap";
 import { useLanguage } from "@/app/context/LanguageContext";
-import { IR5_ENABLED } from "@/lib/feature-flags";
+import { IR5_ENABLED, IR2_ENABLED } from "@/lib/feature-flags";
 
 // Mock Data
 type Journey = {
@@ -1164,8 +1164,10 @@ export default function ExploreJourneys({ origin, destination }: ExploreJourneys
 
   // Filter Logic
   // IR-5 is hidden on production (see lib/feature-flags) until it launches.
+  // IR-2 is gated the same way.
   const filteredJourneys = JOURNEYS.filter((j) => {
     if (!IR5_ENABLED && j.id === "ir5") return false;
+    if (!IR2_ENABLED && j.id === "ir2") return false;
     if (selectedCategory !== "all" && j.category !== selectedCategory) return false;
     if (j.process !== selectedProcess) return false;
     return true;
