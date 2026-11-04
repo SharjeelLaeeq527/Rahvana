@@ -6207,8 +6207,8 @@
                           "c": "<p>The marriage creating the stepparent-stepchild relationship must have taken place before the child turned 18 for the relationship to qualify under the applicable immigration definition of a child. Check that the marriage date and the child's date of birth support the relationship claimed in the approved I-130 petition.</p>"
                         },
                         {
-                          "t": "Previous marriages",
-                          "c": "<p>Bring divorce, annulment, or death records showing the legal termination of all previous marriages of either the petitioner or the child's biological parent, as applicable. Include English translations and photocopies.</p>"
+                          "t": "Previous marriages of the adults",
+                          "c": "<p>Bring divorce, annulment, or death records showing the legal termination of all previous marriages of either the petitioner or the child's biological parent, as applicable. Include English translations and photocopies. Records showing that the child's own earlier marriages ended, and evidence that a stepparent relationship continued after a marriage ended, are listed separately below.</p>"
                         }
                       ]
                     },
@@ -6241,6 +6241,10 @@
                         {
                           "t": "What to bring",
                           "c": "<p>If the approved immigration petition relies on an adoption or another qualifying legal relationship, bring the relevant original or certified adoption decree, custody records, and supporting evidence requested for the case. Include English translations and photocopies.</p>"
+                        },
+                        {
+                          "t": "Age and timing rules",
+                          "c": "<p>For an adopted child, the general rule is a full and final adoption before the child turned 16, together with two years of legal custody and two years of joint residence with the adoptive parent. A narrow exception may apply to siblings adopted before 18. Confirm which rule the approved petition relied on and bring the records that prove the relevant dates.</p>"
                         },
                         {
                           "t": "Pakistan-specific caution",
@@ -6337,6 +6341,82 @@
                         {
                           "t": "Where to register",
                           "c": "<p>Use the official U.S. visa scheduling and passport return registration portal linked from the U.S. Embassy Islamabad immigrant visa instructions.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "marital-status-attestation",
+                      "icon": "id",
+                      "title": "Proof That the Child Is Unmarried",
+                      "sub": "Declared on the DS-260, with a local single-status record if the post asks for one",
+                      "sections": [
+                        {
+                          "t": "Why it matters",
+                          "c": "<p>An IR-2 or CR-2 beneficiary must be unmarried when the petition is filed and must remain unmarried until the visa is issued. The child's marital status is declared on the DS-260.</p>"
+                        },
+                        {
+                          "t": "What to bring",
+                          "c": "<p>Bring the printed DS-260 confirmation page showing the unmarried status. Where the Embassy asks for civil proof as well, obtain the single-status or non-marriage record from the authority it names for the child's district, and bring the English translation and a photocopy.</p>"
+                        },
+                        {
+                          "t": "If the situation changes",
+                          "c": "<div class=\"note-box\"><p>If the child marries before the visa is issued, the IR-2 or CR-2 basis for the petition ends. Notify USCIS or the National Visa Center as soon as that happens instead of waiting for the interview.</p></div>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "child-prior-marriage-terminations",
+                      "icon": "prior-marriage",
+                      "title": "Termination of the Child's Own Prior Marriages, If Any",
+                      "sub": "Required only if the child beneficiary was previously married",
+                      "sections": [
+                        {
+                          "t": "What to bring",
+                          "c": "<p>If the child was married before, bring the original or certified divorce decree, annulment decree, or death certificate showing that the marriage ended legally, together with the English translation and a photocopy. These are the child's own records, not the parents'.</p>"
+                        },
+                        {
+                          "t": "Check the dates",
+                          "c": "<p>Confirm the termination date agrees with the DS-260 and with the statement that the child is unmarried now. Differences between the two are usually raised at the interview.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "custody-other-parent-consent",
+                      "icon": "court",
+                      "title": "Custody Order and Non-Accompanying Parent Consent",
+                      "sub": "Required when the child immigrates with only one parent or guardian",
+                      "sections": [
+                        {
+                          "t": "What to bring",
+                          "c": "<p>Bring the original legal custody documents and court orders, and the written consent of the child's other parent authorizing the immigration, with that parent's identity document. Include English translations and photocopies where required.</p>"
+                        },
+                        {
+                          "t": "When consent is not available",
+                          "c": "<p>Where the other parent has died, cannot be located, or has had custody terminated, bring the record that establishes that fact, such as a death certificate, court order, or other civil record. Do not leave the requirement unaddressed.</p>"
+                        },
+                        {
+                          "t": "Important",
+                          "c": "<div class=\"note-box\"><p>Consent formats, notarization, and accompanying-parent expectations vary by case. Check the Embassy's current checklist and obtain case-specific guidance from a qualified U.S. immigration attorney where the other parent's position is disputed.</p></div>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "continuing-step-relationship-evidence",
+                      "icon": "relationship",
+                      "title": "Evidence of a Continuing Stepparent-Stepchild Relationship",
+                      "sub": "Required where the marriage that created the step-relationship has since ended",
+                      "sections": [
+                        {
+                          "t": "When this applies",
+                          "c": "<p>A step-relationship can still qualify after the marriage ended through divorce or death, but only if a genuine stepparent-stepchild relationship continued afterwards. Check that the marriage took place before the child turned 18 and note the date the marriage ended, because the records you bring should cover the period after it.</p>"
+                        },
+                        {
+                          "t": "What to bring",
+                          "c": "<p>Bring records created during the period after the marriage ended that show an ongoing relationship, such as letters or messages, call or video-call records, visit and travel records, school or medical records showing the stepparent's involvement, and proof of financial support.</p>"
+                        },
+                        {
+                          "t": "Important",
+                          "c": "<div class=\"note-box\"><p>Form I-864 alone does not establish a continuing stepparent-stepchild relationship. Financial sponsorship and the existence of the family relationship are two separate questions.</p></div>"
                         }
                       ]
                     }
@@ -7170,6 +7250,10 @@
     "Child's Valid Passport",
     "Marriage Certificate (for stepchild cases)",
     "Divorce Decrees/ Death Certificates (if applicable)",
+    "Proof That the Child Is Unmarried (DS-260 Declaration; Local Single-Status Record if Requested)",
+    "Termination of the Child's Own Prior Marriages (if the child was previously married)",
+    "Custody Order and Non-Accompanying Parent Consent (if the child immigrates with one parent)",
+    "Evidence of a Continuing Stepparent-Stepchild Relationship (if the marriage creating the step-relationship has ended)",
     "Final Adoption Decree (for adopted child cases)",
     "Evidence of 2-Year Legal Custody and Joint Residence (for adopted child)",
     "Police Certificates, if required based on residence history (If the applicant is aged 16 or older, police certificate(s) may be required based on residence history: more than 6 months in the country of nationality at any time; more than 6 months in a different country of current residence while aged 16 or older; 12 months or more in a previous country while aged 16 or older; or any country where the applicant was arrested, regardless of age or length of residence. Follow the additional U.S. Embassy Islamabad requirements)",
@@ -7181,6 +7265,7 @@
     "Bank Statements (if showing assets)",
     "DS-260 Confirmation Page",
     "Medical Examination Results (Sealed Envelope)",
+    "Polio Vaccination Certificate",
     "Passport-Style Photographs",
     "NVC Fee Payment Receipts",
     "Interview Appointment Letter"
