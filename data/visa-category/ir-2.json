@@ -6920,20 +6920,58 @@
           "step_number": 8,
           "step_name": "Review & Submit to NVC",
           "step_short_description": "Final quality check & submission",
-          "step_description": "Your final quality check before sending documents to NVC. Verify every file, every person assignment, and every document type before submitting.",
-          "step_type": "informational",
+          "step_description": "Your final quality check before sending documents to NVC. Verify every child civil file, sponsorship form (Form I-864W or Form I-864), and translation before submitting.",
+          "step_type": "tool",
           "who": "Petitioner and child beneficiary",
-          "where": "CEAC Portal / Rahvana",
+          "where": "CEAC Portal (ceac.state.gov) & Rahvana",
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 8,
           "actions": [
-            "Verify file assignments",
-            "Confirm doc types",
-            "Check translation pairing",
-            "Submit via CEAC"
+            "Verify file assignments for the specific child beneficiary (especially in multi-sibling cases)",
+            "Confirm document types in CEAC (Birth Certificate, CRC/B-Form, Police Certificate if 16+, Custody/NOC)",
+            "Confirm sponsorship route: Form I-864W exemption vs Form I-864 with tax transcripts",
+            "Check translation pairing for all Urdu civil documents with signed translator certifications",
+            "Press 'Submit Documents' in both CEAC document tabs (AOS and Civil Documents)",
+            "Verify that all submitted items show status 'Submitted' and record the submission date"
           ],
-          "pending_step_type": "tool"
+          "tool_data": {
+            "id": "step_2_8",
+            "type": "submission_review",
+            "title": "Review & Submit to NVC",
+            "chips": [
+              {
+                "label": "CEAC Portal",
+                "type": "tool"
+              },
+              {
+                "label": "Final QA",
+                "type": "uscis"
+              },
+              {
+                "label": "Submission",
+                "type": "final"
+              }
+            ],
+            "launch_module": {
+              "eyebrow": "CEAC Submission Walkthrough",
+              "heading": "Review every child file before sending to NVC",
+              "icon": "check",
+              "features": [
+                "Verify every document is assigned to the correct child beneficiary (especially for siblings processed together)",
+                "Confirm the correct sponsorship package: Form I-864W (exemption) vs Form I-864 (with IRS transcripts)",
+                "Confirm child's NADRA Computerized Birth Certificate and CRC / B-Form are uploaded",
+                "Check police certificate inclusion for youths 16+ (or verified exemption for under 16)",
+                "Confirm custody decree or non-accompanying parent notarized NOC consent letter is uploaded (under 18)",
+                "Check readability, completeness, and certified English translation pairing for all Urdu records",
+                "Press 'Submit Documents' in both CEAC tabs (AOS and Civil Documents)",
+                "Verify that all submitted items change from 'Uploaded' to 'Submitted'"
+              ],
+              "button_label": "Start Submission Guide"
+            },
+            "correctionsNote": "Before you submit: any document rejected by NVC sends your case back to the end of the review queue, adding weeks to processing. Double-check that all scans are in color, right-side up, complete with certified English translations, and submitted in both CEAC tabs.",
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Consult a licensed immigration attorney for case-specific decisions."
+          }
         },
         {
           "step_key": "step_2_9",
@@ -8474,14 +8512,14 @@
       "instruction": "Open each person's section. Verify that every file belongs to the right person. A beneficiary document accidentally filed under the petitioner will need to be corrected.",
       "vlabel": "Person Assignment",
       "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Beneficiary, Uploaded Files</div><div class=\"mock-row flex justify-between items-center py-2 border-b border-[#d0e4f7] text-[13px] text-[#3a4f63]\">Passport Biographic Page <span class=\"mock-badge-green px-2.5 py-1 bg-[#e8f5ef] text-[#15744f] border border-[#a8d9be] rounded-full text-[11px] font-bold uppercase tracking-wider\">Correct</span></div><div class=\"mock-row flex justify-between items-center py-2 border-b border-[#d0e4f7] text-[13px] text-[#3a4f63]\">Birth Certificate <span class=\"mock-badge-green px-2.5 py-1 bg-[#e8f5ef] text-[#15744f] border border-[#a8d9be] rounded-full text-[11px] font-bold uppercase tracking-wider\">Correct</span></div><div class=\"mock-row flex justify-between items-center py-2 text-[13px] text-[#3a4f63]\">Police Certificate <span class=\"mock-badge-green px-2.5 py-1 bg-[#e8f5ef] text-[#15744f] border border-[#a8d9be] rounded-full text-[11px] font-bold uppercase tracking-wider\">Correct</span></div></div>",
-      "note": "If a file is under the wrong person, remove and re-upload under the correct assignment before continuing."
+      "note": "If multiple siblings are immigrating, ensure you are in the correct child's CEAC record before uploading. Do not mix files between siblings."
     },
     {
       "label": "Step 3 of 8",
       "heading": "Check each file against the correct document type",
-      "instruction": "Verify that each uploaded file is assigned to the matching document type/category. A Nikah Nama filed under \"Police Certificate\" will cause a checklist error at NVC.",
+      "instruction": "Verify that each uploaded file is assigned to the matching document type/category. For example, a Union Council Birth Certificate filed under 'Police Certificate' will cause a checklist error at NVC.",
       "vlabel": "Document Type Check",
-      "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Document Type Verification</div><div class=\"mock-row flex justify-between items-center py-2 border-b border-[#d0e4f7] text-[13px] text-[#3a4f63]\">Marriage Certificate -> Nikah Nama <span class=\"mock-badge-green px-2.5 py-1 bg-[#e8f5ef] text-[#15744f] border border-[#a8d9be] rounded-full text-[11px] font-bold uppercase tracking-wider\">Match</span></div><div class=\"mock-row flex justify-between items-center py-2 border-b border-[#d0e4f7] text-[13px] text-[#3a4f63]\">Police Certificate -> PCC <span class=\"mock-badge-green px-2.5 py-1 bg-[#e8f5ef] text-[#15744f] border border-[#a8d9be] rounded-full text-[11px] font-bold uppercase tracking-wider\">Match</span></div><div class=\"mt-2 text-[13px] font-semibold text-[#2f6fd4] p-3 bg-[#e8f1fb]/50 border border-[#d0e4f7] rounded-lg\">Each slot must match its content exactly</div></div>",
+      "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Document Type Verification</div><div class=\"mock-row flex justify-between items-center py-2 border-b border-[#d0e4f7] text-[13px] text-[#3a4f63]\">Birth Certificate -> NADRA / Union Council <span class=\"mock-badge-green px-2.5 py-1 bg-[#e8f5ef] text-[#15744f] border border-[#a8d9be] rounded-full text-[11px] font-bold uppercase tracking-wider\">Match</span></div><div class=\"mock-row flex justify-between items-center py-2 border-b border-[#d0e4f7] text-[13px] text-[#3a4f63]\">Police Certificate -> PCC (Ages 16+) <span class=\"mock-badge-green px-2.5 py-1 bg-[#e8f5ef] text-[#15744f] border border-[#a8d9be] rounded-full text-[11px] font-bold uppercase tracking-wider\">Match</span></div><div class=\"mt-2 text-[13px] font-semibold text-[#2f6fd4] p-3 bg-[#e8f1fb]/50 border border-[#d0e4f7] rounded-lg\">Each slot must match its content exactly</div></div>",
       "note": null
     },
     {
@@ -8489,7 +8527,7 @@
       "heading": "Verify readability and translation pairing",
       "instruction": "Open each file and visually confirm it is fully legible, no cropping, no rotation, no blur. For every non-English document, confirm the certified English translation is uploaded alongside it.",
       "vlabel": "Readability & Translations",
-      "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Translation Pairing Check</div><div class=\"mock-row flex justify-between items-center py-2 border-b border-[#d0e4f7] text-[13px] text-[#3a4f63]\">Nikah Nama (Urdu original) <span class=\"mock-badge-green px-2.5 py-1 bg-[#e8f5ef] text-[#15744f] border border-[#a8d9be] rounded-full text-[11px] font-bold uppercase tracking-wider\">Present</span></div><div class=\"mock-row flex justify-between items-center py-2 border-b border-[#d0e4f7] text-[13px] text-[#3a4f63]\">Nikah Nama (English translation) <span class=\"mock-badge-green px-2.5 py-1 bg-[#e8f5ef] text-[#15744f] border border-[#a8d9be] rounded-full text-[11px] font-bold uppercase tracking-wider\">Present</span></div><div class=\"mock-row flex justify-between items-center py-2 border-b border-[#d0e4f7] text-[13px] text-[#3a4f63]\">Birth Certificate (Urdu) <span class=\"mock-badge-green px-2.5 py-1 bg-[#e8f5ef] text-[#15744f] border border-[#a8d9be] rounded-full text-[11px] font-bold uppercase tracking-wider\">Present</span></div><div class=\"mock-row flex justify-between items-center py-2 text-[13px] text-[#3a4f63]\">Birth Certificate (English) <span class=\"mock-badge-green px-2.5 py-1 bg-[#e8f5ef] text-[#15744f] border border-[#a8d9be] rounded-full text-[11px] font-bold uppercase tracking-wider\">Present</span></div></div>",
+      "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Translation Pairing Check</div><div class=\"mock-row flex justify-between items-center py-2 border-b border-[#d0e4f7] text-[13px] text-[#3a4f63]\">Union Council Birth Cert (Urdu original) <span class=\"mock-badge-green px-2.5 py-1 bg-[#e8f5ef] text-[#15744f] border border-[#a8d9be] rounded-full text-[11px] font-bold uppercase tracking-wider\">Present</span></div><div class=\"mock-row flex justify-between items-center py-2 border-b border-[#d0e4f7] text-[13px] text-[#3a4f63]\">Certified English Translation <span class=\"mock-badge-green px-2.5 py-1 bg-[#e8f5ef] text-[#15744f] border border-[#a8d9be] rounded-full text-[11px] font-bold uppercase tracking-wider\">Present</span></div></div>",
       "note": null
     },
     {
@@ -8497,7 +8535,7 @@
       "heading": "Add comments only where genuinely needed",
       "instruction": "CEAC allows comments per document. Use them sparingly, only when a brief factual clarification helps NVC understand an unusual document. Avoid unnecessary commentary that adds noise without value.",
       "vlabel": "Comments Review",
-      "visual": "<div class=\"mock-card\"><div class=\"mock-title\">When to add a comment</div><div style=\"font-size:13px;color:#3a4f63;line-height:1.6;margin-top:6px\">✓ \"Original NADRA MRC, bilingual document, no separate translation required\"<br><br>✗ \"This is my marriage certificate which shows I am married to my wife\"</div></div>",
+      "visual": "<div class=\"mock-card\"><div class=\"mock-title\">When to add a comment</div><div style=\"font-size:13px;color:#3a4f63;line-height:1.6;margin-top:6px\">✓ \"Original NADRA CRC / B-Form, bilingual document, no separate translation required\"<br><br>✗ \"This is my child's birth certificate for their visa application\"</div></div>",
       "note": "Comments are not required in most cases. Only add them when they help clarify something non-obvious."
     },
     {
