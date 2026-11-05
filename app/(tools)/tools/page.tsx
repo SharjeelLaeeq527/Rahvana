@@ -746,10 +746,7 @@ function ToolCard({
                 </button>
               </div>
 
-              <div className="flex min-w-0 items-center gap-2">
-                <CreditTypeIcon kind="tools" size={22} />
-                <span>{catalogItem.credits}</span>
-              </div>
+              <CreditTypeIcon kind="tools" size={30} amount={catalogItem.credits} />
             </div>
             {isPhotoBoothItem(catalogItem) && (
               <p className="text-muted-foreground -mt-1 mb-1 text-xs font-medium">

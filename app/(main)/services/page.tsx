@@ -1087,10 +1087,7 @@ function ServiceCard({
               </button>
             </div>
 
-            <div className="flex min-w-0 items-center gap-2">
-              <CreditTypeIcon kind="services" size={22} />
-              <span>{catalogItem.credits}</span>
-            </div>
+            <CreditTypeIcon kind="services" size={30} amount={catalogItem.credits} />
           </div>
         ) : (
           <div className="flex items-center justify-between">

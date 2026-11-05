@@ -201,20 +201,23 @@ export default async function ResourceDetailPage({
             )}
 
             {/* Price — credits only, no $ price anywhere (per product decision) */}
-            <div className="mt-9 flex items-center gap-2.5">
+            <div className="mt-9 flex items-center gap-3.5">
               <span
-                className="text-[42px] leading-none"
+                className="text-[44px] font-bold leading-none tracking-tight"
                 style={{ fontFamily: SERIF, color: TEAL_DARK }}
               >
                 {credits}
               </span>
-              <span className="text-muted-foreground flex items-center gap-1.5 text-[14px]">
-                <CreditTypeIcon kind={addon.kind} size={18} />
-                {/* The Smart Form Filler is unlocked one form at a time. */}
-                {walletItem?.resourceId === SMART_FORM_TOOL_ID && <span>per form</span>}
-                {/* Photo Booth is sold in packs of 2 photos. */}
-                {walletItem?.resourceId === PHOTO_BOOTH_TOOL_ID && <span>for 2 photos</span>}
-              </span>
+              <div className="flex items-center gap-2">
+                <CreditTypeIcon kind={addon.kind} size={38} />
+                <span className="text-muted-foreground flex flex-col text-[13px] font-medium leading-tight">
+                  <span className="font-semibold text-foreground/85">credits</span>
+                  {/* The Smart Form Filler is unlocked one form at a time. */}
+                  {walletItem?.resourceId === SMART_FORM_TOOL_ID && <span>per form unlock</span>}
+                  {/* Photo Booth is sold in packs of 2 photos. */}
+                  {walletItem?.resourceId === PHOTO_BOOTH_TOOL_ID && <span>for 2 photos</span>}
+                </span>
+              </div>
             </div>
             {/* ORIGINAL $ price display (removed — page shows credits only):
                 <div className="mt-9 flex items-baseline gap-2.5">

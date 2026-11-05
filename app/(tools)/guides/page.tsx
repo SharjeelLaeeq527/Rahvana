@@ -923,10 +923,7 @@ function GuideCard({
                 </button>
               </div>
 
-              <div className="flex min-w-0 items-center gap-2">
-                <CreditTypeIcon kind="guides" size={22} />
-                <span>{catalogItem.credits}</span>
-              </div>
+              <CreditTypeIcon kind="guides" size={30} amount={catalogItem.credits} />
             </div>
           </>
         ) : (
