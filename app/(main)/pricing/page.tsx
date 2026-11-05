@@ -101,7 +101,7 @@ type TierKey = keyof typeof TIER;
    Only categories listed here are selectable in the UI, even though more
    exist in VISA_CATEGORIES (data/pricing.ts). Add an id here once that
    journey's content/roadmap is actually ready for users to pick. */
-const AVAILABLE_VISA_IDS: string[] = ["IR-1 / CR-1", "IR-5"];
+const AVAILABLE_VISA_IDS: string[] = ["IR-1 / CR-1", "IR-5", "IR-2 / CR-2"];
 
 /* ===========================================================================
    RESOURCE TABS
