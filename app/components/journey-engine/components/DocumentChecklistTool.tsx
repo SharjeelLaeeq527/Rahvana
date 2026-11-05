@@ -29,25 +29,44 @@ interface DocumentChecklistToolProps {
   journeyType: string;
 }
 
+/**
+ * Upload metadata per checklist row. Case labels must match the `document_key`
+ * values from DocumentChecklistEngine.getDocumentDefinitions, or the row falls
+ * through to the default tagging.
+ */
 const getDocumentRoles = (documentKey: string): DocumentRole[] => {
   switch (documentKey) {
     case "passport-beneficiary":
     case "birth-cert-beneficiary":
     case "police-certificate-pakistan":
     case "ds-260":
-    case "nvc-interview-letter":
+    case "interview-letter":
     case "passport-photos":
     case "polio-vaccine-cert":
+    case "medical-exam-ds2019":
+    case "child-marital-status-attestation":
+    case "nadra-crc":
       return ["BENEFICIARY"];
 
     case "birth-cert-petitioner":
-    case "i864-affidavit-support":
-    case "tax-transcripts-petitioner":
-    case "w2-forms-petitioner":
+    case "i-864-affidavit":
+    case "tax-returns-petitioner":
+    case "w2-forms":
     case "citizenship-proof-petitioner":
       return ["PETITIONER"];
 
     case "marriage-cert":
+    case "nikah-nama":
+    case "family-registration-cert":
+    case "child-parents-marriage-cert":
+    case "child-father-relationship-evidence":
+    case "child-stepparent-marriage-cert":
+    case "child-prior-marriage-terminations":
+    case "parent-prior-marriage-terminations":
+    case "step-relationship-continuing-evidence":
+    case "child-adoption-decree":
+    case "child-custody-residence-evidence":
+    case "child-custody-order-consent":
       return ["BENEFICIARY", "PETITIONER"];
 
     default:
@@ -61,19 +80,33 @@ const getDocumentStages = (documentKey: string): ProcessStage[] => {
     case "birth-cert-beneficiary":
     case "birth-cert-petitioner":
     case "police-certificate-pakistan":
-    case "i864-affidavit-support":
-    case "tax-transcripts-petitioner":
-    case "w2-forms-petitioner":
+    case "i-864-affidavit":
+    case "tax-returns-petitioner":
+    case "w2-forms":
     case "citizenship-proof-petitioner":
     case "marriage-cert":
+    case "nikah-nama":
+    case "nadra-crc":
+    case "family-registration-cert":
+    case "child-parents-marriage-cert":
+    case "child-father-relationship-evidence":
+    case "child-stepparent-marriage-cert":
+    case "child-prior-marriage-terminations":
+    case "parent-prior-marriage-terminations":
+    case "child-marital-status-attestation":
+    case "step-relationship-continuing-evidence":
+    case "child-adoption-decree":
+    case "child-custody-residence-evidence":
+    case "child-custody-order-consent":
       return ["NVC", "INTERVIEW"];
 
     case "ds-260":
       return ["DS260_SUBMISSION", "INTERVIEW"];
 
-    case "nvc-interview-letter":
+    case "interview-letter":
     case "passport-photos":
     case "polio-vaccine-cert":
+    case "medical-exam-ds2019":
       return ["INTERVIEW"];
 
     default:
@@ -580,6 +613,12 @@ export function DocumentChecklistTool({ journeyId, journeyType }: DocumentCheckl
               </span>
             )}
 
+            {item.visibility_note && (
+              <span className="rounded-full bg-[#FFF4E5] px-2 py-1 text-[8px] font-semibold text-[#B15A0F]">
+                Conditional
+              </span>
+            )}
+
             {renderExpirationBadge(item)}
           </div>
         </div>
@@ -596,6 +635,10 @@ export function DocumentChecklistTool({ journeyId, journeyType }: DocumentCheckl
           <p className="mt-1.5 line-clamp-3 text-[10px] leading-[1.45] text-[#536779]">
             {item.subtitle}
           </p>
+        )}
+
+        {item.visibility_note && (
+          <p className="mt-1.5 text-[10px] leading-[1.45] text-[#B15A0F]">{item.visibility_note}</p>
         )}
 
         <div className="mt-auto border-t border-[#EBF0F4] pt-2.5">
@@ -681,6 +724,12 @@ export function DocumentChecklistTool({ journeyId, journeyType }: DocumentCheckl
       iconClass = "bg-[#FDEBEC] text-[#BE3542]";
       statusClass = "text-[#B4232D]";
       statusLabel = "Required";
+    }
+
+    // A conditional row is not the same as "Optional".
+    if (!isUploaded && !isRequired && item.visibility_note) {
+      statusClass = "text-[#A15C00]";
+      statusLabel = "Confirm if required";
     }
 
     return (
