@@ -1,227 +1,297 @@
 {
   "categorySlug": "ir-2-child",
   "version": "1.0.0",
-  "lastUpdated": "2026-03-20",
+  "lastUpdated": "2026-11-06",
   "sections": [
     {
-      "id": "basic_profile",
-      "title": "Basic Profile",
-      "description": "General personal details about the beneficiary.",
+      "id": "applicant_information",
+      "title": "Applicant Information",
+      "description": "Basic details about the child applicant's current age and marital status.",
       "order": 1,
+      "ui": {
+        "icon": "User",
+        "theme": "teal"
+      },
       "questions": [
         {
-          "key": "full_name",
-          "label": "What is your full name?",
-          "type": "text",
-          "required": true,
-          "validation": { "minLength": 3, "maxLength": 200 },
-          "placeholder": "Enter your full legal name"
-        },
-        {
-          "key": "date_of_birth",
-          "label": "What is your date of birth?",
-          "type": "date",
-          "required": true
-        },
-        {
-          "key": "current_age",
-          "label": "What is your current age?",
-          "type": "number",
-          "required": true,
-          "validation": { "min": 0, "max": 21 }
-        },
-        {
-          "key": "current_country",
-          "label": "What country are you currently living in?",
-          "type": "text",
-          "required": true,
-          "validation": { "minLength": 2, "maxLength": 100 },
-          "placeholder": "e.g., Pakistan"
-        }
-      ]
-    },
-    {
-      "id": "relationship_details",
-      "title": "Relationship Details",
-      "description": "Details about your relationship with your sponsoring parent.",
-      "order": 2,
-      "questions": [
-        {
-          "key": "sponsor_relationship",
-          "label": "Who is sponsoring you?",
+          "key": "applicant_age_range",
+          "label": "What is the applicant's current age?",
           "type": "select",
           "required": true,
-          "options": ["Father", "Mother", "Step-parent", "Adoptive parent"]
+          "helpText": "Age determines IR-2 eligibility; the child must be under 21 and unmarried.",
+          "options": [
+            "Under 13",
+            "13–15",
+            "16–17",
+            "18–21"
+          ]
         },
         {
-          "key": "parent_full_name",
-          "label": "What is your parent's full name?",
-          "type": "text",
-          "required": true,
-          "validation": { "minLength": 3, "maxLength": 200 },
-          "placeholder": "Enter parent's full name"
-        },
-        {
-          "key": "parent_citizenship_status",
-          "label": "Is your parent a U.S. citizen?",
-          "type": "boolean",
-          "required": true
-        },
-        {
-          "key": "relationship_type",
-          "label": "What is your relationship type?",
+          "key": "applicant_marital_status",
+          "label": "What is the applicant's current marital status?",
           "type": "select",
           "required": true,
-          "options": ["Biological", "Stepchild", "Adopted"]
+          "helpText": "An IR-2 child must remain unmarried for the visa to remain valid.",
+          "options": [
+            "Unmarried",
+            "Married"
+          ]
         },
         {
-          "key": "lived_with_parent",
-          "label": "Have you lived with your parent before?",
-          "type": "boolean",
-          "required": true
-        },
-        {
-          "key": "last_meeting_with_parent",
-          "label": "When was the last time you met your parent?",
-          "type": "text",
+          "key": "currently_studying",
+          "label": "Is the applicant currently studying or attending school?",
+          "type": "select",
           "required": true,
-          "validation": { "minLength": 5, "maxLength": 200 },
-          "placeholder": "e.g., 6 months ago, January 2025"
-        }
-      ]
-    },
-    {
-      "id": "living_and_family_info",
-      "title": "Living & Family Information",
-      "description": "Details about your family and planned living arrangements.",
-      "order": 3,
-      "questions": [
+          "helpText": "Whether the applicant is currently enrolled in school or another study program.",
+          "options": [
+            "Yes",
+            "No"
+          ]
+        },
         {
           "key": "has_siblings",
-          "label": "Do you have siblings?",
-          "type": "boolean",
-          "required": true
-        },
-        {
-          "key": "siblings_location",
-          "label": "Where do your siblings live?",
-          "type": "text",
-          "required": true,
-          "validation": { "minLength": 2, "maxLength": 200 },
-          "placeholder": "e.g., Karachi, Pakistan"
-        },
-        {
-          "key": "us_living_location",
-          "label": "Where will you live in the USA?",
-          "type": "text",
-          "required": true,
-          "validation": { "minLength": 5, "maxLength": 200 },
-          "placeholder": "City and state"
-        },
-        {
-          "key": "living_with_in_us",
-          "label": "Who will you live with in the USA?",
-          "type": "text",
-          "required": true,
-          "validation": { "minLength": 3, "maxLength": 200 },
-          "placeholder": "e.g., Father, Mother"
-        },
-        {
-          "key": "household_size_us",
-          "label": "How many people live in that house?",
+          "label": "Does the applicant have any brothers or sisters?",
           "type": "select",
           "required": true,
-          "options": ["1-2", "3-4", "5-6", "7+"]
+          "helpText": "Includes full, half, step, and adopted siblings.",
+          "options": [
+            "Yes",
+            "No"
+          ]
         }
       ]
     },
     {
-      "id": "communication_and_relationship",
-      "title": "Communication & Relationship Strength",
-      "description": "How you communicate and maintain your relationship with your parent.",
-      "order": 4,
+      "id": "petitioner_information",
+      "title": "Petitioner Information",
+      "description": "Identifies who is filing, or has filed, the immigrant petition for the applicant.",
+      "order": 2,
+      "ui": {
+        "icon": "Users",
+        "theme": "amber"
+      },
       "questions": [
+        {
+          "key": "petitioner_relationship",
+          "label": "Who is filing or has filed the petition for the applicant?",
+          "type": "select",
+          "required": true,
+          "helpText": "This is the U.S. citizen or permanent resident sponsoring the child.",
+          "options": [
+            "Biological Mother",
+            "Biological Father",
+            "Stepparent",
+            "Adoptive Parent",
+            "Other / Not Sure"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "parent_child_relationship",
+      "title": "Parent-Child Relationship",
+      "description": "Establishes the qualifying parent-child relationship between the applicant and the petitioner.",
+      "order": 3,
+      "ui": {
+        "icon": "Heart",
+        "theme": "rose"
+      },
+      "questions": [
+        {
+          "key": "child_relationship_type",
+          "label": "What is the applicant's relationship with the petitioner?",
+          "type": "select",
+          "required": true,
+          "helpText": "Select the legal relationship that forms the basis of the petition.",
+          "options": [
+            "Biological Child",
+            "Stepchild",
+            "Adopted Child",
+            "Other / Not Sure"
+          ]
+        },
+        {
+          "key": "biological_parent_petitioner",
+          "label": "If the petitioner is the applicant's biological parent, who is the petitioner?",
+          "type": "select",
+          "required": true,
+          "helpText": "Only relevant when the relationship is biological.",
+          "options": [
+            "Biological Mother",
+            "Biological Father",
+            "Both Parents",
+            "Not Applicable / Not Sure"
+          ],
+          "dependsOn": {
+            "key": "child_relationship_type",
+            "value": "Biological Child"
+          }
+        },
+        {
+          "key": "biological_parents_married_at_birth",
+          "label": "If the petitioner is the applicant's biological father, were the applicant's biological parents married when the applicant was born?",
+          "type": "select",
+          "required": true,
+          "helpText": "Marriage at the time of birth can affect whether the child qualifies as a 'child' under immigration law.",
+          "options": [
+            "Yes",
+            "No",
+            "Not Sure"
+          ],
+          "dependsOn": {
+            "key": "biological_parent_petitioner",
+            "valueIn": [
+              "Biological Father"
+            ]
+          }
+        },
+        {
+          "key": "stepparent_marriage_before_18",
+          "label": "If the petitioner is the applicant's stepparent, did the marriage between the stepparent and the applicant's biological parent take place before the applicant turned 18?",
+          "type": "select",
+          "required": true,
+          "helpText": "The step-relationship must have been created before the applicant's 18th birthday.",
+          "options": [
+            "Yes",
+            "No",
+            "Not Sure"
+          ],
+          "dependsOn": {
+            "key": "child_relationship_type",
+            "value": "Stepchild"
+          }
+        },
+        {
+          "key": "adoption_case_type",
+          "label": "If the applicant is adopted, which statement best describes the adoption case?",
+          "type": "select",
+          "required": true,
+          "helpText": "Different adoption routes (general, sibling exception, Hague/orphan) have different eligibility rules.",
+          "options": [
+            "Adopted Before Age 16",
+            "Adopted Under the Sibling Exception Before Age 18",
+            "Hague / Orphan Adoption Process",
+            "Not Sure"
+          ],
+          "dependsOn": {
+            "key": "child_relationship_type",
+            "value": "Adopted Child"
+          }
+        }
+      ]
+    },
+    {
+      "id": "living_arrangements",
+      "title": "Living Arrangements & Relationship",
+      "description": "The applicant's current living situation and contact with the petitioner.",
+      "order": 4,
+      "ui": {
+        "icon": "Home",
+        "theme": "sage"
+      },
+      "questions": [
+        {
+          "key": "current_living_arrangement",
+          "label": "Who does the applicant currently live with?",
+          "type": "select",
+          "required": true,
+          "helpText": "Helps assess custody, consent, and the child's current care arrangement.",
+          "options": [
+            "Petitioner",
+            "Other Biological Parent",
+            "Other Relative / Guardian",
+            "Institution / Other"
+          ]
+        },
         {
           "key": "communication_frequency",
-          "label": "How often do you talk to your parent?",
+          "label": "How frequently does the applicant communicate with the petitioner?",
           "type": "select",
           "required": true,
-          "options": ["Daily", "Several times/week", "Occasionally", "Rarely"]
-        },
-        {
-          "key": "communication_method",
-          "label": "How do you communicate with them?",
-          "type": "select",
-          "required": true,
-          "options": ["Phone calls", "Video calls", "Text messages", "All of the above"]
-        },
-        {
-          "key": "has_photos_with_parent",
-          "label": "Do you have photos with your parent?",
-          "type": "boolean",
-          "required": true
-        },
-        {
-          "key": "financial_support_from_parent",
-          "label": "Has your parent supported you financially?",
-          "type": "boolean",
-          "required": true
+          "helpText": "Ongoing contact supports the genuineness of the parent-child relationship.",
+          "options": [
+            "Daily",
+            "Weekly",
+            "Monthly",
+            "Occasionally",
+            "Rarely",
+            "No Contact"
+          ]
         }
       ]
     },
     {
-      "id": "travel_and_intent",
-      "title": "Travel & Intent",
-      "description": "Your travel history and future plans in the United States.",
+      "id": "travel_immigration_background",
+      "title": "Travel & Immigration Background",
+      "description": "Prior U.S. travel, visa refusals, and immigration violations relevant to the interview.",
       "order": 5,
+      "ui": {
+        "icon": "Globe",
+        "theme": "purple"
+      },
       "questions": [
         {
-          "key": "previous_us_visits",
-          "label": "Have you ever visited the United States before?",
-          "type": "boolean",
-          "required": true
-        },
-        {
-          "key": "reason_for_travel",
-          "label": "Why do you want to go to the USA?",
-          "type": "textarea",
+          "key": "us_travel_history",
+          "label": "Has the applicant ever travelled to the United States?",
+          "type": "select",
           "required": true,
-          "validation": { "minLength": 20, "maxLength": 500 },
-          "placeholder": "Explain your reason for moving..."
+          "options": [
+            "Never",
+            "Yes, for a visit",
+            "Yes, previously lived in the U.S.",
+            "Currently in the U.S."
+          ]
         },
-        {
-          "key": "plans_after_arrival",
-          "label": "What will you do after going to the USA?",
-          "type": "textarea",
-          "required": true,
-          "validation": { "minLength": 20, "maxLength": 500 },
-          "placeholder": "Describe your plans..."
-        },
-        {
-          "key": "plans_to_study",
-          "label": "Do you plan to study in the USA?",
-          "type": "boolean",
-          "required": true
-        }
-      ]
-    },
-    {
-      "id": "background_check",
-      "title": "Background Check",
-      "description": "Answer honestly. This helps us prepare relevant interview scenarios.",
-      "order": 6,
-      "questions": [
         {
           "key": "previous_visa_refusal",
-          "label": "Have you ever been denied a U.S. visa?",
-          "type": "boolean",
-          "required": true
+          "label": "Has the applicant ever been refused a U.S. visa?",
+          "type": "select",
+          "required": true,
+          "options": [
+            "Yes",
+            "No",
+            "Not Sure"
+          ]
         },
         {
-          "key": "criminal_history",
-          "label": "Do you have any criminal history?",
-          "type": "boolean",
-          "required": true
+          "key": "refused_visa_type",
+          "label": "What type of U.S. visa was refused?",
+          "type": "select",
+          "required": true,
+          "helpText": "Only asked when a previous U.S. visa refusal is reported.",
+          "options": [
+            "Visitor / Tourist",
+            "Student",
+            "Immigrant",
+            "Work",
+            "Other / Not Sure"
+          ],
+          "dependsOn": {
+            "key": "previous_visa_refusal",
+            "value": "Yes"
+          }
+        },
+        {
+          "key": "immigration_violation",
+          "label": "Has the applicant ever overstayed a visa, violated immigration conditions, or been involved in a U.S. immigration violation?",
+          "type": "select",
+          "required": true,
+          "options": [
+            "Yes",
+            "No",
+            "Not Sure"
+          ]
+        },
+        {
+          "key": "deportation_removal_history",
+          "label": "Has the applicant ever been deported, removed, or formally ordered to leave the United States?",
+          "type": "select",
+          "required": true,
+          "options": [
+            "Yes",
+            "No",
+            "Not Sure"
+          ]
         }
       ]
     }
