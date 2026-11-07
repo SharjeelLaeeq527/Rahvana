@@ -69,6 +69,7 @@ const PRIVATE_PREFIXES = [
   "/guides/educational-certificates-us-visa",
   "/guides/step-parent-guide",
   "/guides/adoptive-parent-guide",
+  "/guides/child-citizenship-guide",
   // Result pages (paid output)
   "/visa-checker/result",
   "/interview-prep/result",
