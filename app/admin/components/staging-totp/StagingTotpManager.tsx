@@ -14,6 +14,7 @@ import {
   ShieldAlert,
   Users,
   RotateCw,
+  Send,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -41,6 +42,7 @@ export function StagingTotpManager() {
   // Copy states
   const [copiedSecret, setCopiedSecret] = useState(false);
   const [copiedEnv, setCopiedEnv] = useState(false);
+  const [copiedMemberEnv, setCopiedMemberEnv] = useState(false);
 
   // Live test verification
   const [testCode, setTestCode] = useState("");
@@ -67,7 +69,9 @@ export function StagingTotpManager() {
   }, []);
 
   const cleanUser = username.trim().toLowerCase();
-  const isAlreadyTaken = cleanUser.length > 0 && existingUsers.includes(cleanUser);
+  const isCurrentlyGenerated = generatedData?.username === cleanUser;
+  const isAlreadyTaken =
+    cleanUser.length > 0 && !isCurrentlyGenerated && existingUsers.includes(cleanUser);
 
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -109,8 +113,6 @@ export function StagingTotpManager() {
       }
 
       setGeneratedData(data);
-      // Update local existing users to reflect the new user
-      setExistingUsers((prev) => (prev.includes(cleanUser) ? prev : [...prev, cleanUser]));
     } catch (err) {
       console.error("Error generating TOTP key:", err);
       setError("Network error while generating key.");
@@ -119,14 +121,17 @@ export function StagingTotpManager() {
     }
   };
 
-  const copyToClipboard = (text: string, type: "secret" | "env") => {
+  const copyToClipboard = (text: string, type: "secret" | "env" | "memberEnv") => {
     navigator.clipboard.writeText(text);
     if (type === "secret") {
       setCopiedSecret(true);
       setTimeout(() => setCopiedSecret(false), 2000);
-    } else {
+    } else if (type === "env") {
       setCopiedEnv(true);
       setTimeout(() => setCopiedEnv(false), 2000);
+    } else if (type === "memberEnv") {
+      setCopiedMemberEnv(true);
+      setTimeout(() => setCopiedMemberEnv(false), 2000);
     }
   };
 
@@ -181,10 +186,9 @@ export function StagingTotpManager() {
             <QrCode className="h-5 w-5 text-teal-700" />
             Staging Authenticator (TOTP) Access Generator
           </h3>
-          <p className="mt-1 max-w-2xl text-sm leading-relaxed text-slate-600">
+          <p className="mt-1 text-sm leading-relaxed text-slate-600">
             Generate individual Google Authenticator / Microsoft Authenticator QR codes for team
-            members. Each team member receives their own unique secret. If a member leaves, simply
-            remove their key to revoke access immediately without affecting anyone else.
+            members. Each team member receives their own unique secret.
           </p>
         </div>
       </div>
@@ -216,8 +220,7 @@ export function StagingTotpManager() {
                   key={user}
                   className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 shadow-2xs"
                 >
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                  @{user}
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />@{user}
                 </span>
               ))}
             </div>
@@ -242,7 +245,7 @@ export function StagingTotpManager() {
                 disabled={loading}
                 className={`h-11 rounded-xl pl-10 ${
                   isAlreadyTaken
-                    ? "border-amber-400 focus-visible:ring-amber-400 bg-amber-50/30"
+                    ? "border-amber-400 bg-amber-50/30 focus-visible:ring-amber-400"
                     : "border-slate-200"
                 }`}
               />
@@ -253,7 +256,8 @@ export function StagingTotpManager() {
               <p className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-amber-700">
                 <AlertCircle className="h-3.5 w-3.5 shrink-0 text-amber-600" />
                 <span>
-                  Username <strong>&quot;{cleanUser}&quot;</strong> already exists in STAGING_TOTP_KEYS. Choose a unique name.
+                  Username <strong>&quot;{cleanUser}&quot;</strong> already exists in
+                  STAGING_TOTP_KEYS. Choose a unique name.
                 </span>
               </p>
             )}
@@ -368,6 +372,39 @@ export function StagingTotpManager() {
                   >
                     {copiedSecret ? (
                       <Check className="h-4 w-4 text-emerald-600" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <span className="text-xs font-semibold tracking-wider text-slate-500 uppercase">
+                  Send to New Team Member (Their .env.local Variable)
+                </span>
+                <p className="mt-0.5 mb-2 text-xs text-slate-600">
+                  Send this complete line to the new team member to add to their local{" "}
+                  <code className="text-slate-800">.env.local</code> file:
+                </p>
+
+                <div className="flex items-center gap-2 overflow-x-auto rounded-xl border border-slate-800 bg-slate-900 p-3 font-mono text-xs text-teal-300">
+                  <span className="flex-1 break-all select-all">
+                    STAGING_TOTP_KEYS={generatedData.envConfigString}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      copyToClipboard(
+                        `STAGING_TOTP_KEYS=${generatedData.envConfigString}`,
+                        "memberEnv"
+                      )
+                    }
+                    className="shrink-0 rounded-lg bg-slate-800 p-1.5 text-white transition-colors hover:bg-slate-700"
+                    title="Copy for Team Member"
+                  >
+                    {copiedMemberEnv ? (
+                      <Check className="h-4 w-4 text-emerald-400" />
                     ) : (
                       <Copy className="h-4 w-4" />
                     )}
