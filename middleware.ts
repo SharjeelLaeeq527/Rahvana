@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { updateSession } from "./lib/supabase/middleware";
 import { assertMiddlewareBodySize } from "@/lib/security/request-body";
 import { assertStagingBasicAuth } from "@/lib/security/staging-basic-auth";
+import { assertStagingTotpSession } from "@/lib/security/staging-totp-guard";
 
 /**
  * Paid/private route prefixes.
@@ -92,8 +93,13 @@ function isPrivatePath(pathname: string): boolean {
 }
 
 export async function middleware(request: NextRequest) {
+  // Staging Authenticator (TOTP) Gate (Google / Microsoft Authenticator)
+  const totpGateBlock = await assertStagingTotpSession(request);
+  if (totpGateBlock) return totpGateBlock;
   // Layer 2: HTTP Basic Authentication for Staging Environment
-  const basicAuthBlock = assertStagingBasicAuth(request);
+  // Fallback: Check HTTP Basic Auth only if TOTP is not configured
+  const hasTotp = !!(process.env.STAGING_TOTP_KEYS?.trim() || process.env.STAGING_TOTP_SECRET?.trim());
+  const basicAuthBlock = !hasTotp ? assertStagingBasicAuth(request) : null;
   if (basicAuthBlock) return basicAuthBlock;
   if (request.nextUrl.pathname.startsWith("/api/")) {
     const blocked = assertMiddlewareBodySize(request);
