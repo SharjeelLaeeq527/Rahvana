@@ -203,10 +203,13 @@ const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
 function getSigningSecret(): string {
-  return (
-    process.env.STAGING_AUTH_SECRET ||
-    "rahvana-staging-auth-session-secret-key-2026-production-salt"
-  );
+  const secret = process.env.STAGING_AUTH_SECRET?.trim();
+  if (!secret) {
+    throw new Error(
+      "Missing required environment variable: STAGING_AUTH_SECRET. Please define it in your environment variables."
+    );
+  }
+  return secret;
 }
 
 function toBase64Url(bytes: Uint8Array): string {
@@ -279,18 +282,18 @@ export async function verifyStagingSessionToken(
     return { valid: false, reason: "malformed" };
   }
 
-  const [payloadStr, sigStr] = parts;
-  const secret = getSigningSecret();
-  const key = await getHmacSignKey(secret);
-  const expectedSigBuffer = await crypto.subtle.sign("HMAC", key, encoder.encode(payloadStr));
-  const expectedSigStr = toBase64Url(new Uint8Array(expectedSigBuffer));
-
-  // Constant-time compare signature
-  if (sigStr !== expectedSigStr) {
-    return { valid: false, reason: "invalid_signature" };
-  }
-
   try {
+    const [payloadStr, sigStr] = parts;
+    const secret = getSigningSecret();
+    const key = await getHmacSignKey(secret);
+    const expectedSigBuffer = await crypto.subtle.sign("HMAC", key, encoder.encode(payloadStr));
+    const expectedSigStr = toBase64Url(new Uint8Array(expectedSigBuffer));
+
+    // Constant-time compare signature
+    if (sigStr !== expectedSigStr) {
+      return { valid: false, reason: "invalid_signature" };
+    }
+
     const payloadBytes = fromBase64Url(payloadStr);
     const payload = JSON.parse(decoder.decode(payloadBytes)) as { u: string; exp: number };
     const now = Math.floor(Date.now() / 1000);
@@ -301,6 +304,6 @@ export async function verifyStagingSessionToken(
 
     return { valid: true, username: payload.u };
   } catch {
-    return { valid: false, reason: "payload_decode_failed" };
+    return { valid: false, reason: "verification_failed" };
   }
 }
