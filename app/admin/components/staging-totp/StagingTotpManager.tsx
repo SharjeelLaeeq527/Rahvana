@@ -1,7 +1,7 @@
 // app/admin/components/staging-totp/StagingTotpManager.tsx
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import {
   QrCode,
@@ -12,6 +12,8 @@ import {
   AlertCircle,
   CheckCircle2,
   ShieldAlert,
+  Users,
+  RotateCw,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -32,6 +34,10 @@ export function StagingTotpManager() {
   const [error, setError] = useState<string | null>(null);
   const [generatedData, setGeneratedData] = useState<GeneratedKeyData | null>(null);
 
+  // Existing configured members list from .env.local
+  const [existingUsers, setExistingUsers] = useState<string[]>([]);
+  const [fetchingUsers, setFetchingUsers] = useState(false);
+
   // Copy states
   const [copiedSecret, setCopiedSecret] = useState(false);
   const [copiedEnv, setCopiedEnv] = useState(false);
@@ -41,15 +47,44 @@ export function StagingTotpManager() {
   const [verifying, setVerifying] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
 
+  const fetchExistingUsers = async () => {
+    try {
+      setFetchingUsers(true);
+      const res = await fetch("/api/admin/staging-totp");
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && Array.isArray(data.existingUsers)) {
+        setExistingUsers(data.existingUsers.map((u: string) => u.toLowerCase()));
+      }
+    } catch (err) {
+      console.error("Failed to fetch existing staging users:", err);
+    } finally {
+      setFetchingUsers(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchExistingUsers();
+  }, []);
+
+  const cleanUser = username.trim().toLowerCase();
+  const isAlreadyTaken = cleanUser.length > 0 && existingUsers.includes(cleanUser);
+
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setTestResult(null);
     setTestCode("");
 
-    const cleanUser = username.trim().toLowerCase();
     if (!cleanUser) {
       setError("Please enter a username for the team member (e.g. hammad, khashir).");
+      return;
+    }
+
+    // Client-side uniqueness check
+    if (isAlreadyTaken) {
+      setError(
+        `Username "${cleanUser}" already exists in STAGING_TOTP_KEYS. Please use a unique username or remove the existing key first to avoid conflicts.`
+      );
       return;
     }
 
@@ -65,12 +100,17 @@ export function StagingTotpManager() {
       const data = await res.json();
 
       if (!res.ok) {
+        if (data.alreadyExists && Array.isArray(data.existingUsers)) {
+          setExistingUsers(data.existingUsers.map((u: string) => u.toLowerCase()));
+        }
         setError(data.error || "Failed to generate authenticator key.");
         setLoading(false);
         return;
       }
 
       setGeneratedData(data);
+      // Update local existing users to reflect the new user
+      setExistingUsers((prev) => (prev.includes(cleanUser) ? prev : [...prev, cleanUser]));
     } catch (err) {
       console.error("Error generating TOTP key:", err);
       setError("Network error while generating key.");
@@ -151,6 +191,39 @@ export function StagingTotpManager() {
 
       {/* Generator Form */}
       <Card className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        {/* Active Configured Members Badges */}
+        {existingUsers.length > 0 && (
+          <div className="mb-5 rounded-xl border border-slate-100 bg-slate-50/80 p-3.5">
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-slate-600 uppercase">
+                <Users className="h-3.5 w-3.5 text-slate-500" />
+                Configured Members in Environment ({existingUsers.length})
+              </span>
+              <button
+                type="button"
+                onClick={fetchExistingUsers}
+                disabled={fetchingUsers}
+                className="flex items-center gap-1 text-[11px] font-medium text-teal-700 hover:text-teal-800"
+                title="Refresh configured users list"
+              >
+                <RotateCw className={`h-3 w-3 ${fetchingUsers ? "animate-spin" : ""}`} />
+                <span>{fetchingUsers ? "Refreshing..." : "Refresh"}</span>
+              </button>
+            </div>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {existingUsers.map((user) => (
+                <span
+                  key={user}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 shadow-2xs"
+                >
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  @{user}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
         <form onSubmit={handleGenerate} className="flex flex-col items-end gap-3 sm:flex-row">
           <div className="w-full flex-1">
             <label className="mb-1.5 block text-xs font-semibold tracking-wider text-slate-700 uppercase">
@@ -162,17 +235,34 @@ export function StagingTotpManager() {
                 type="text"
                 placeholder="e.g. hammad, khashir, dev2"
                 value={username}
-                onChange={(e) => setUsername(e.target.value.toLowerCase())}
+                onChange={(e) => {
+                  setUsername(e.target.value.toLowerCase());
+                  if (error) setError(null);
+                }}
                 disabled={loading}
-                className="h-11 rounded-xl border-slate-200 pl-10"
+                className={`h-11 rounded-xl pl-10 ${
+                  isAlreadyTaken
+                    ? "border-amber-400 focus-visible:ring-amber-400 bg-amber-50/30"
+                    : "border-slate-200"
+                }`}
               />
             </div>
+
+            {/* In-flight Uniqueness Warning */}
+            {isAlreadyTaken && (
+              <p className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-amber-700">
+                <AlertCircle className="h-3.5 w-3.5 shrink-0 text-amber-600" />
+                <span>
+                  Username <strong>&quot;{cleanUser}&quot;</strong> already exists in STAGING_TOTP_KEYS. Choose a unique name.
+                </span>
+              </p>
+            )}
           </div>
 
           <Button
             type="submit"
-            disabled={loading || !username.trim()}
-            className="flex h-11 shrink-0 items-center gap-2 rounded-xl bg-teal-700 px-6 font-semibold text-white shadow-sm hover:bg-teal-800"
+            disabled={loading || !username.trim() || isAlreadyTaken}
+            className="flex h-11 shrink-0 items-center gap-2 rounded-xl bg-teal-700 px-6 font-semibold text-white shadow-sm hover:bg-teal-800 disabled:opacity-50"
           >
             {loading ? (
               <>

@@ -187,12 +187,18 @@ export function getAllStagingTotpUsers(): string[] {
   for (const entry of entries) {
     const colonIdx = entry.indexOf(":");
     if (colonIdx === -1) continue;
-    const user = entry.substring(0, colonIdx).trim();
+    const user = entry.substring(0, colonIdx).trim().toLowerCase();
     if (user && !users.includes(user)) {
       users.push(user);
     }
   }
   return users;
+}
+
+export function isStagingTotpUserConfigured(username: string): boolean {
+  if (!username) return false;
+  const normalized = username.trim().toLowerCase();
+  return getAllStagingTotpUsers().includes(normalized);
 }
 
 // ==========================================

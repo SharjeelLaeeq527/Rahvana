@@ -1,13 +1,43 @@
 // app/api/admin/staging-totp/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import QRCode from "qrcode";
-import { generateBase32Secret, getOtpAuthUri, verifyTOTP } from "@/lib/security/totp";
+import {
+  generateBase32Secret,
+  getOtpAuthUri,
+  verifyTOTP,
+  isStagingTotpUserConfigured,
+  getAllStagingTotpUsers,
+} from "@/lib/security/totp";
 import { getAuthenticatedUser } from "@/lib/api/authGuards";
 
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || "")
   .split(",")
   .map((e) => e.trim().toLowerCase())
   .filter(Boolean);
+
+export async function GET(request: NextRequest) {
+  try {
+    const user = await getAuthenticatedUser();
+    if (!user || !user.email || !ADMIN_EMAILS.includes(user.email.toLowerCase())) {
+      return NextResponse.json(
+        { error: "Unauthorized: Admin privileges required." },
+        { status: 403 }
+      );
+    }
+
+    const existingUsers = getAllStagingTotpUsers();
+    return NextResponse.json({
+      success: true,
+      existingUsers,
+    });
+  } catch (err) {
+    console.error("[admin-staging-totp] Fetch error:", err);
+    return NextResponse.json(
+      { error: "Failed to fetch configured staging users." },
+      { status: 500 }
+    );
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -57,7 +87,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 2. Generate random 20-byte base32 secret
+    // 2. Prevent duplicate usernames from being generated
+    if (isStagingTotpUserConfigured(username)) {
+      return NextResponse.json(
+        {
+          error: `Username "${username}" already exists in STAGING_TOTP_KEYS. Please use a unique username or remove the existing key first to avoid duplicate keys.`,
+          alreadyExists: true,
+          existingUsers: getAllStagingTotpUsers(),
+        },
+        { status: 409 }
+      );
+    }
+
+    // 3. Generate random 20-byte base32 secret
     const secret = generateBase32Secret(20);
 
     // 3. Build standard otpauth URI
