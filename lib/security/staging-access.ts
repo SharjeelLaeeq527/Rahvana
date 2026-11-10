@@ -88,3 +88,28 @@ export function isStagingEmailAllowed(email?: string | null): boolean {
   });
 }
 
+/**
+ * Returns the list of emails authorized to manage staging TOTP access keys
+ * (Owner & Managers only).
+ *
+ * Configured strictly in STAGING_TOTP_MANAGER_EMAILS.
+ * If not configured, returns an empty array (fail-safe: no one gets access unless explicitly configured).
+ */
+export function getStagingTotpManagerEmails(): string[] {
+  return (
+    process.env.STAGING_TOTP_MANAGER_EMAILS ||
+    ""
+  )
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+export function isStagingTotpManager(email?: string | null): boolean {
+  if (!email || typeof email !== "string") {
+    return false;
+  }
+  const normalizedEmail = email.trim().toLowerCase();
+  const managers = getStagingTotpManagerEmails();
+  return managers.includes(normalizedEmail);
+}
