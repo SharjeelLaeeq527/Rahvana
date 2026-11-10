@@ -80,7 +80,14 @@ export class CaseStrengthEngine {
         const usesBackupSponsor =
           (Number(sponsorship.hmIncome) || 0) > 0 || (Number(sponsorship.jsIncome) || 0) > 0;
 
-        if (sponsorship.isSelfPetition || requiredIncome === 0) {
+        if (sponsorship.isChildCitizenshipActExempt) {
+          if (sponsorship.isEligible) {
+            baseScore += 5;
+            positive_signals.push(
+              "Affidavit of Support exemption applies under Child Citizenship Act (INA § 320)."
+            );
+          }
+        } else if (sponsorship.isSelfPetition || requiredIncome === 0) {
           // Self-petition / I-864W exemption: no income threshold applies.
           if (sponsorship.isEligible) {
             baseScore += 5;
