@@ -98,6 +98,7 @@ export function isStagingEmailAllowed(email?: string | null): boolean {
 export function getStagingTotpManagerEmails(): string[] {
   return (
     process.env.STAGING_TOTP_MANAGER_EMAILS ||
+    process.env.NEXT_PUBLIC_STAGING_TOTP_MANAGER_EMAILS ||
     ""
   )
     .split(",")
