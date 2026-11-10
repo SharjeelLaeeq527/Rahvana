@@ -973,8 +973,9 @@ export default function SponsorshipCalculatorTool({
                   <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-4 text-center">
                     Petitioner Status
                   </h2>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                     <button
+                      type="button"
                       onClick={() => setData({ ...data, sponsorStatus: "citizen" })}
                       className={`p-4 rounded-xl border-2 transition-all ${data.sponsorStatus === "citizen" ? "" : "border-slate-200 hover:bg-slate-50"}`}
                       style={{
@@ -987,18 +988,33 @@ export default function SponsorshipCalculatorTool({
                       <p className="font-semibold text-slate-900">US Citizen</p>
                     </button>
                     <button
+                      type="button"
                       onClick={() => setData({ ...data, sponsorStatus: "greenCard" })}
-                      className={`p-4 rounded-xl border-2 transition-all ${data.sponsorStatus === "greenCard" ? "" : "border-slate-200 hover:bg-slate-50"}`}
-                      style={{
-                        borderColor: data.sponsorStatus === "greenCard" ? "#0d7377" : undefined,
-                        backgroundColor:
-                          data.sponsorStatus === "greenCard" ? `${COLORS.joint}10` : undefined,
-                      }}
+                      className={`p-4 rounded-xl border-2 transition-all ${data.sponsorStatus === "greenCard" ? "border-amber-400 bg-amber-50/50" : "border-slate-200 hover:bg-slate-50"}`}
                     >
-                      <User className="w-8 h-8 mx-auto mb-2" style={{ color: COLORS.joint }} />
+                      <User className="w-8 h-8 mx-auto mb-2 text-slate-500" />
                       <p className="font-semibold text-slate-900">Green Card Holder</p>
                     </button>
                   </div>
+
+                  {data.sponsorStatus === "greenCard" && (
+                    <div className="mb-6 p-4 rounded-xl border border-amber-300 bg-amber-50 text-left animate-in fade-in duration-200">
+                      <div className="flex items-start gap-2.5">
+                        <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-xs font-bold text-amber-950">
+                            Immediate Relative Petitions Require U.S. Citizenship
+                          </p>
+                          <p className="text-[12px] text-amber-900 leading-relaxed mt-1">
+                            Only U.S. citizens can petition for Immediate Relative immigrant visas (IR-1 spouse, IR-2 child, or IR-5 parent). Lawful Permanent Residents (Green Card holders) cannot file an Immediate Relative petition.
+                          </p>
+                          <p className="text-[12px] text-amber-800 leading-relaxed mt-1.5">
+                            Green Card holders must file under Family Preference categories (such as <strong>F2A</strong> for spouse/minor child), which are subject to annual visa waiting lists and different processing rules. U.S. citizenship is required to proceed with this Immediate Relative sponsorship calculator.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   <div className="mb-6">
                     <p className="text-[14px] font-semibold text-[#0c1b33] mb-3">
                       Are you active-duty US Military?
@@ -1068,15 +1084,20 @@ export default function SponsorshipCalculatorTool({
                       <ArrowLeft size={14} /> Back
                     </button>
                     <button
-                      disabled={!data.sponsorStatus || data.isMilitary === null || !data.state}
+                      type="button"
+                      disabled={!data.sponsorStatus || data.sponsorStatus === "greenCard" || data.isMilitary === null || !data.state}
                       onClick={() => setStepIdx(2)}
                       style={{
                         backgroundColor:
-                          !data.sponsorStatus || data.isMilitary === null || !data.state
+                          !data.sponsorStatus || data.sponsorStatus === "greenCard" || data.isMilitary === null || !data.state
                             ? "#e2e8f0"
                             : "#0d7377",
                       }}
-                      className={`flex-1 p-[14px_22px] rounded-[10px] text-[15px] font-semibold transition-all flex items-center justify-center gap-2 ${!data.sponsorStatus || data.isMilitary === null || !data.state ? "text-slate-400 cursor-not-allowed" : "text-white hover:opacity-90"}`}
+                      className={`flex-1 p-[14px_22px] rounded-[10px] text-[15px] font-semibold transition-all flex items-center justify-center gap-2 ${
+                        !data.sponsorStatus || data.sponsorStatus === "greenCard" || data.isMilitary === null || !data.state
+                          ? "text-slate-400 cursor-not-allowed"
+                          : "text-white hover:opacity-90"
+                      }`}
                     >
                       Continue <ArrowRight size={14} />
                     </button>
