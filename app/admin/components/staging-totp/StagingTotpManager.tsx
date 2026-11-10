@@ -20,6 +20,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Loader } from "@/components/ui/spinner";
+import { useAuth } from "@/app/context/AuthContext";
+import { isStagingTotpManager } from "@/lib/security/staging-access";
 
 interface GeneratedKeyData {
   username: string;
@@ -38,6 +40,10 @@ export function StagingTotpManager() {
   // Existing configured members list from .env.local
   const [existingUsers, setExistingUsers] = useState<string[]>([]);
   const [fetchingUsers, setFetchingUsers] = useState(false);
+  const { user } = useAuth();
+  const [canManage, setCanManage] = useState<boolean | null>(() => {
+    return user?.email ? isStagingTotpManager(user.email) : null;
+  });
 
   // Copy states
   const [copiedSecret, setCopiedSecret] = useState(false);
@@ -176,6 +182,31 @@ export function StagingTotpManager() {
       setVerifying(false);
     }
   };
+
+  if (canManage === false) {
+    return (
+      <div className="rounded-2xl border border-amber-200 bg-amber-50/70 p-6 text-slate-800">
+        <div className="flex items-start gap-4">
+          <div className="rounded-xl bg-amber-100 p-2.5 text-amber-700">
+            <ShieldAlert className="h-6 w-6" />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-slate-900">
+              Manager &amp; Owner Access Only
+            </h3>
+            <p className="mt-1 text-sm leading-relaxed text-slate-600">
+              You do not have permission to generate QR codes or manage staging access keys.
+              This capability is restricted strictly to designated platform Owners and Managers
+              configured in the environment variable (<code className="rounded bg-amber-100 px-1 py-0.5 font-mono text-xs text-amber-900">STAGING_TOTP_MANAGER_EMAILS</code>).
+            </p>
+            <p className="mt-2 text-xs text-slate-500">
+              If a team member needs access to the staging platform, please reach out to an authorized Owner or Manager.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

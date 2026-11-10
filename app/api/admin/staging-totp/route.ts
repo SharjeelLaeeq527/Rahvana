@@ -9,6 +9,7 @@ import {
   getAllStagingTotpUsers,
 } from "@/lib/security/totp";
 import { getAuthenticatedUser } from "@/lib/api/authGuards";
+import { isStagingTotpManager } from "@/lib/security/staging-access";
 
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || "")
   .split(",")
@@ -25,9 +26,22 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const canManage = isStagingTotpManager(user.email);
+    if (!canManage) {
+      return NextResponse.json(
+        {
+          error: "Forbidden: Only authorized owners and managers can view or manage staging authenticator keys.",
+          canManage: false,
+          existingUsers: [],
+        },
+        { status: 403 }
+      );
+    }
+
     const existingUsers = getAllStagingTotpUsers();
     return NextResponse.json({
       success: true,
+      canManage: true,
       existingUsers,
     });
   } catch (err) {
@@ -46,6 +60,16 @@ export async function POST(request: NextRequest) {
     if (!user || !user.email || !ADMIN_EMAILS.includes(user.email.toLowerCase())) {
       return NextResponse.json(
         { error: "Unauthorized: Admin privileges required." },
+        { status: 403 }
+      );
+    }
+    // 2. Verify caller is authorized Owner or Manager
+    if (!isStagingTotpManager(user.email)) {
+      return NextResponse.json(
+        {
+          error: "Forbidden: Only authorized Owners and Managers have permission to generate QR codes or manage staging access keys.",
+          canManage: false,
+        },
         { status: 403 }
       );
     }
@@ -120,6 +144,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
+      canManage: true,
       username,
       secret,
       otpUri,

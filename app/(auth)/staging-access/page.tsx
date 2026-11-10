@@ -1,7 +1,7 @@
 // app/(auth)/staging-access/page.tsx
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Shield, KeyRound, Smartphone, AlertCircle, CheckCircle2, Lock, Clock } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Loader } from "@/components/ui/spinner";
 
-export default function StagingAccessGate() {
+function StagingAccessGateContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirectTo") || "/";
@@ -261,5 +261,19 @@ export default function StagingAccessGate() {
 
       </Card>
     </div>
+  );
+}
+
+export default function StagingAccessGate() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-slate-900">
+          <Loader size="md" text="Loading Staging Gate..." className="text-white" />
+        </div>
+      }
+    >
+      <StagingAccessGateContent />
+    </Suspense>
   );
 }

@@ -35,6 +35,7 @@ import { BlogAnnouncementModal } from "./components/blog-announcement/BlogAnnoun
 import AccountDeletionFeedbackTable from "./components/account-deletion-feedback/AccountDeletionFeedbackTable";
 import { AdminProfileTray } from "./components/AdminProfileTray";
 import { StagingTotpManager } from "./components/staging-totp/StagingTotpManager";
+import { isStagingTotpManager } from "@/lib/security/staging-access";
 
 export default function AdminPanel() {
   const { user, isAdmin, isLoading: authLoading, isAdminLoading, signOut } = useAuth();
@@ -236,16 +237,18 @@ export default function AdminPanel() {
             <AccountDeletionFeedbackTable />
           </CollapsibleSection>
 
-          {/* Section 9: Staging Authenticator (TOTP) Access */}
-          <CollapsibleSection
-            title="Staging Authenticator (TOTP) Access"
-            icon={<QrCode className="h-5 w-5" />}
-            description="Generate and manage individual Google / Microsoft Authenticator QR codes for staging platform access"
-            badge="SECURITY"
-            badgeColor="bg-emerald-100 text-emerald-800"
-          >
-            <StagingTotpManager />
-          </CollapsibleSection>
+          {/* Section 9: Staging Authenticator (TOTP) Access - Restricted to Owners & Managers */}
+          {isStagingTotpManager(user?.email) && (
+            <CollapsibleSection
+              title="Staging Authenticator (TOTP) Access"
+              icon={<QrCode className="h-5 w-5" />}
+              description="Generate and manage individual Google / Microsoft Authenticator QR codes for staging platform access"
+              badge="OWNER & MANAGER"
+              badgeColor="bg-emerald-100 text-emerald-800"
+            >
+              <StagingTotpManager />
+            </CollapsibleSection>
+          )}
 
           <FeatureAnnouncementModal open={openFeatureModal} onOpenChange={setOpenFeatureModal} />
           <BlogAnnouncementModal open={openBlogModal} onOpenChange={setOpenBlogModal} />
