@@ -156,6 +156,14 @@ export const JOURNEY_APP_GROUPS: AppGroup[] = [
         category: "guides",
         componentKey: "adoptive_parent_guide",
       },
+      {
+        id: "child-citizenship-guide",
+        label: "Child Citizenship Guide",
+        description: "U.S. citizenship through a U.S. citizen parent: at birth, INA § 320, or INA § 322.",
+        iconName: "BookOpen",
+        category: "guides",
+        componentKey: "child_citizenship_guide",
+      },
     ],
   },
   {
@@ -224,6 +232,7 @@ export const TOOL_FEATURE_MAP: Record<string, string | null> = {
   polio_vaccination_guide: "polio_certificate",
   step_parent_guide: null,
   adoptive_parent_guide: null,
+  child_citizenship_guide: null,
 
   // Services
   expert_consultation: "expert_consultation",
@@ -249,6 +258,7 @@ export const OVERLAY_PAGE_ROUTES: Record<string, string> = {
   polio_vaccination_guide: "/guides/polio-vaccination-guide",
   step_parent_guide: "/guides/step-parent-guide",
   adoptive_parent_guide: "/guides/adoptive-parent-guide",
+  child_citizenship_guide: "/guides/child-citizenship-guide",
 
   // Services that have their own tool page
   police_verification: "/police-verification",
@@ -267,6 +277,7 @@ export const COMPONENT_KEY_TO_GUIDE_ID: Record<string, string> = {
   polio_vaccination_guide: "vaccinations",
   step_parent_guide: "step-parent",
   adoptive_parent_guide: "adoptive-parent",
+  child_citizenship_guide: "child-citizenship",
 };
 
 /** Returns the in-place overlay route for a componentKey, or null if it has none. */
