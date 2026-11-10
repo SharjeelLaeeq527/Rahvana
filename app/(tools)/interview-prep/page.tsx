@@ -7,7 +7,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { useRouter } from "next/navigation";
 import { ResultPage } from "./result/ResultPage";
 import { Loader } from "@/components/ui/spinner";
-import { InterviewPrepOutput } from "../../../lib/interview-prep/types";
+import { InterviewPrepOutput, type InterviewSession } from "../../../lib/interview-prep/types";
 import { useAuth } from "@/app/context/AuthContext";
 import { useUserProfile } from "@/app/context/UserProfileContext";
 import { mapProfileToGenericForm, mapFormToProfile } from "@/lib/autoFill/mapper";
@@ -22,14 +22,17 @@ import type { InterviewFormData } from "@/app/components/interview-prep/types";
 import { ResultGate } from "@/app/components/entitlements/ResultGate";
 import { CreditLaunchModal } from "@/app/components/wallet/CreditLaunchModal";
 import { useStandaloneToolUnlock } from "@/lib/wallet/useStandaloneToolUnlock";
+import { useWallet } from "@/app/context/WalletContext";
 import { usePlan } from "@/app/context/PlanContext";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { useCandidate } from "@/app/context/CandidateContext";
 import { Users } from "lucide-react";
 import MyInterviewSessions from "./my-sessions/page";
-import { useJourneyEnvironment } from "@/lib/hooks/useJourneyEnvironment";
-import { resolveCategorySlug } from "@/lib/interview-prep/journey-category-map";
-
+import {
+  resolveCategorySlug,
+  isMultiCandidateCategorySlug,
+} from "@/lib/interview-prep/journey-category-map";
+import { useJourneyEnvironment } from "@/app/context/JourneyEnvironmentContext";
 import type { DynamicQuestionnaire } from "@/data/interview-categories/schema";
 import { E, msg } from "@/lib/errors";
 
@@ -84,7 +87,9 @@ export default function InterviewPreparation({
   // Standalone only: buying with credits replaces the per-category checkout.
   // Journey runs pass null so they never read wallet unlocks.
   const ipWallet = useStandaloneToolUnlock(isEmbedded ? null : "interview-prep");
+  const { refreshWallet } = useWallet();
   const [showCreditModal, setShowCreditModal] = useState(false);
+  const createdSessionRef = useRef<InterviewSession | null>(null);
   const plan = usePlan();
   // Journey runs ask the categories API without wallet data.
   const categoriesScopeQuery = isEmbedded ? "scope=journey" : "";
@@ -192,20 +197,43 @@ export default function InterviewPreparation({
     null
   );
   const [isRedirectingSession, setIsRedirectingSession] = useState(false);
+  const [existingSessions, setExistingSessions] = useState<any[]>([]);
+  const [hoveredProgressIndex, setHoveredProgressIndex] = useState<number | null>(null);
 
   const { user } = useAuth();
   const { profile, isProfileLoading, updateProfile } = useUserProfile();
   const { showToast } = useToast();
-  const { activeCandidate, activeCandidateId, isMultiCandidate } = useCandidate();
+
+  let candidateCtx;
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    candidateCtx = useCandidate();
+  } catch {
+    candidateCtx = undefined;
+  }
+  const activeCandidate = candidateCtx?.activeCandidate;
+  const activeCandidateId =
+    candidateCtx?.activeCandidateId ||
+    journeyEnv.candidateId ||
+    getEffectiveParam("candidate_id") ||
+    "candidate-1";
+  const isMultiCandidate = candidateCtx?.isMultiCandidate || false;
 
   const STANDALONE_SESSION_KEY = "standalone_interview_prep_session_id";
   const getSessionIdKey = (cId: string) => `interviewPrepSessionId_${cId}`;
   const getSessionSourceKey = (cId: string) => `interviewPrepSessionSource_${cId}`;
   const getSessionJourneyKey = (cId: string) => `interviewPrepJourneyId_${cId}`;
+  const getStandaloneSessionKey = (cId: string) => `standalone_interview_prep_session_id_${cId}`;
 
   const getStoredSessionId = (cId: string, isJourney: boolean = false) => {
     if (typeof window === "undefined") return null;
     if (!isJourney) {
+      if (cId && cId !== "candidate-1") {
+        return (
+          localStorage.getItem(getStandaloneSessionKey(cId)) ||
+          localStorage.getItem(STANDALONE_SESSION_KEY)
+        );
+      }
       return localStorage.getItem(STANDALONE_SESSION_KEY);
     }
     return (
@@ -234,6 +262,9 @@ export default function InterviewPreparation({
     if (typeof window === "undefined") return;
     if (source === "tool" && !jId) {
       localStorage.setItem(STANDALONE_SESSION_KEY, sid);
+      if (cId) {
+        localStorage.setItem(getStandaloneSessionKey(cId), sid);
+      }
       return;
     }
     localStorage.setItem(getSessionIdKey(cId), sid);
@@ -252,6 +283,9 @@ export default function InterviewPreparation({
     if (typeof window === "undefined") return;
     if (!isJourney) {
       localStorage.removeItem(STANDALONE_SESSION_KEY);
+      if (cId) {
+        localStorage.removeItem(getStandaloneSessionKey(cId));
+      }
       return;
     }
     localStorage.removeItem(getSessionIdKey(cId));
@@ -368,7 +402,7 @@ export default function InterviewPreparation({
             categoriesScopeQuery ? `&${categoriesScopeQuery}` : ""
           }`
         ),
-        shouldFilterExistingSessions ? fetch("/api/interview-prep/user-sessions") : null,
+        !isEmbedded ? fetch("/api/interview-prep/user-sessions") : null,
       ]);
 
       const data = await categoriesResponse.json();
@@ -386,19 +420,28 @@ export default function InterviewPreparation({
           filteredCategories = loadedCategories.filter(
             (category) => category.categorySlug === targetCategorySlug
           );
-        } else if (shouldFilterExistingSessions && sessionsResponse?.ok) {
+        } else if (!isEmbedded && sessionsResponse?.ok) {
           const sessionsData = await sessionsResponse.json();
-          const usedCategorySlugs = new Set<string>(
-            Array.isArray(sessionsData.sessions)
-              ? sessionsData.sessions
-                  .map((session: { category_slug?: string }) => session.category_slug)
-                  .filter((slug: string | undefined): slug is string => Boolean(slug))
-              : []
-          );
+          const rawSessions = Array.isArray(sessionsData.sessions) ? sessionsData.sessions : [];
+          setExistingSessions(rawSessions);
 
-          filteredCategories = loadedCategories.filter(
-            (category) => !usedCategorySlugs.has(category.categorySlug)
-          );
+          if (shouldFilterExistingSessions) {
+            // Single-candidate categories (IR-1) filter out if any session exists.
+            // Multi-candidate categories (IR-5, IR-2) are NEVER filtered out because
+            // users can sponsor multiple candidates (Mother, Father, Stepparent, Adoptive Parent, etc.)
+            const usedCategorySlugs = new Set<string>();
+            for (const s of rawSessions) {
+              if (!s.category_slug) continue;
+              const isMulti = isMultiCandidateCategorySlug(s.category_slug);
+              if (!isMulti) {
+                usedCategorySlugs.add(s.category_slug);
+              }
+            }
+
+            filteredCategories = loadedCategories.filter(
+              (category) => !usedCategorySlugs.has(category.categorySlug)
+            );
+          }
         }
 
         setAvailableCategories(filteredCategories);
@@ -455,7 +498,21 @@ export default function InterviewPreparation({
     try {
       setSessionId(session.id);
       const categorySlug = session.category_slug;
-      const category = getCategoryFn(categorySlug);
+      let category = getCategoryFn(categorySlug);
+
+      if (!category) {
+        try {
+          const catRes = await fetch(`/api/interview-prep/categories`);
+          const catResData = await catRes.json().catch(() => null);
+          if (catResData?.success && Array.isArray(catResData.categories)) {
+            category = catResData.categories.find(
+              (c: { categorySlug: string }) => c.categorySlug === categorySlug
+            );
+          }
+        } catch {
+          // ignore
+        }
+      }
 
       if (!category && availableCategories.length > 0) {
         clearStoredSession(activeCandidateId);
@@ -597,8 +654,11 @@ export default function InterviewPreparation({
         if (jId || isEmbedded) {
           let journeyData: any = null;
           if (jId) {
+            const candParam = journeyEnv.candidateId || activeCandidateId;
             const journeyResponse = await fetch(
-              `/api/interview-prep/active-journey-session?journey_id=${encodeURIComponent(jId)}`
+              `/api/interview-prep/active-journey-session?journey_id=${encodeURIComponent(jId)}${
+                candParam ? `&candidate_id=${encodeURIComponent(candParam)}` : ""
+              }`
             );
             journeyData = await journeyResponse.json();
           }
@@ -700,10 +760,10 @@ export default function InterviewPreparation({
           }
         }
 
-        // Check for sessionId parameter (completed session revisit)
+        // Check for sessionId parameter (session revisit or resume)
         if (sessionIdParam) {
           setLoading(true);
-          setLoadingMessage("Loading your completed interview...");
+          setLoadingMessage("Loading your interview session...");
           const userEmail =
             typeof window !== "undefined"
               ? localStorage.getItem("userEmail") || "test@example.com"
@@ -713,7 +773,7 @@ export default function InterviewPreparation({
           );
           const sessionData = await response.json();
 
-          if (response.ok && sessionData.session && sessionData.session.interview_prep_results) {
+          if (response.ok && sessionData.session) {
             const sess = sessionData.session;
             // Strict isolation: do not load journey sessions into standalone, or vice versa
             if ((isEmbedded && sess.source === "tool") || (!isEmbedded && sess.source === "journey")) {
@@ -724,17 +784,34 @@ export default function InterviewPreparation({
             }
 
             setSessionId(sessionIdParam);
-            setGeneratedResults(sessionData.session.interview_prep_results.generated_questions);
-            setStep(questionnaire ? questionnaire.sections.length + 2 : 4);
+            const source = sess.source || (isEmbedded ? "journey" : "tool");
+            setSessionSource(source);
+            if (source === "journey") {
+              setIsJourneySession(true);
+              setJourneyId(sess.journey_id);
+            }
+            if (sess.candidate_id) {
+              setStoredSession(sess.candidate_id, sessionIdParam, source, sess.journey_id);
+            }
+
+            // If session already has generated results, show results step
+            if (sess.interview_prep_results) {
+              setGeneratedResults(sess.interview_prep_results.generated_questions);
+              setStep(questionnaire ? questionnaire.sections.length + 2 : 4);
+              setLoading(false);
+              setLoadingMessage("");
+              setSessionRestorationAttempted(true);
+              return;
+            }
+
+            // Incomplete session without results: restore questionnaire and any saved answers
+            await restoreSessionData(sess, (categorySlug: string) => {
+              const category = availableCategories.find((c) => c.categorySlug === categorySlug);
+              return category;
+            });
             setLoading(false);
             setLoadingMessage("");
             setSessionRestorationAttempted(true);
-
-            if (sessionData.session.source === "journey") {
-              setSessionSource("journey");
-              setIsJourneySession(true);
-              setJourneyId(sessionData.session.journey_id);
-            }
             return;
           }
         }
@@ -775,7 +852,12 @@ export default function InterviewPreparation({
 
         // Check database for latest incomplete tool session
         if (!savedSessionId && step === 0 && !isEmbedded && typeof window !== "undefined") {
-          const latestResponse = await fetch(`/api/interview-prep/latest-incomplete-session`);
+          const candParam = activeCandidateId;
+          const latestResponse = await fetch(
+            `/api/interview-prep/latest-incomplete-session${
+              candParam ? `?candidate_id=${encodeURIComponent(candParam)}` : ""
+            }`
+          );
           const latestData = await latestResponse.json();
 
           if (
@@ -971,25 +1053,93 @@ export default function InterviewPreparation({
     redirectToInterviewPrepPurchase();
   };
 
+  const activateSession = async (session: InterviewSession, categorySlug: string) => {
+    setSessionId(session.id);
+    const src = isEmbedded ? "journey" : "tool";
+    setSessionSource(src);
+    setIsJourneySession(isEmbedded);
+    setStoredSession(activeCandidateId, session.id, src, effectiveJourneyId);
+
+    const catDataResponse = await fetch(`/api/interview-prep?category_slug=${categorySlug}`);
+    const catData = await catDataResponse.json();
+
+    if (!catData.success) {
+      setError("Failed to load questionnaire");
+      return;
+    }
+
+    setQuestionnaire({
+      categorySlug,
+      version: catData.questionnaire?.version || "1.0.0",
+      lastUpdated: new Date().toISOString(),
+      sections: catData.questionnaire?.sections || [],
+    });
+
+    setError(null);
+    setStep(1);
+  };
+
+  const resolveTargetCandidateId = (categorySlug: string) => {
+    const isMulti = isMultiCandidateCategorySlug(categorySlug);
+    if (!isMulti || isEmbedded) {
+      return journeyEnv.candidateId || activeCandidateId || "candidate-1";
+    }
+
+    const catSessions = existingSessions.filter((s) => s.category_slug === categorySlug);
+    const usedCandIds = new Set(catSessions.map((s) => s.candidate_id || "candidate-1"));
+
+    // If currently active candidate in context hasn't used this category yet, use it
+    if (activeCandidateId && !usedCandIds.has(activeCandidateId)) {
+      return activeCandidateId;
+    }
+
+    // Otherwise calculate next candidate-N
+    let maxNum = 0;
+    for (const s of catSessions) {
+      const cId = s.candidate_id || "candidate-1";
+      const match = cId.match(/candidate-?([0-9]+)/i);
+      const num = match ? parseInt(match[1], 10) : 1;
+      if (num > maxNum) maxNum = num;
+    }
+    for (const cId of usedCandIds) {
+      const match = cId.match(/candidate-?([0-9]+)/i);
+      const num = match ? parseInt(match[1], 10) : 1;
+      if (num > maxNum) maxNum = num;
+    }
+    return `candidate-${Math.max(maxNum + 1, 1)}`;
+  };
+
   const handleCategorySelectionNext = async () => {
     if (!selectedCategory) {
       setError(msg(E.TOOL_INTERVIEW_SELECT_CATEGORY));
       return;
     }
 
-    try {
-      if (!ipWallet.unlocked && selectedCategory.purchaseExhausted && selectedCategory.addonId) {
-        showToast(
-          "You have used the interview prep session your purchase included for this category.",
-          "info"
-        );
-        redirectToInterviewPrepPurchase();
-        return;
-      }
+    const isMulti = isMultiCandidateCategorySlug(selectedCategory.categorySlug);
+    const isNewSessionFlow =
+      !isEmbedded &&
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get("newSession") === "1";
 
+    // In standalone mode, if the user doesn't already have an active session for this
+    // category and it requires purchase (no legacy prepaid session), open the credit modal.
+    // For multi-candidate categories in "new session" flow, starting a new candidate session
+    // always costs 200 credits if there is no legacy prepaid remaining.
+    if (
+      !isEmbedded &&
+      (isMulti
+        ? (isNewSessionFlow || selectedCategory.requiresPurchase)
+        : (!selectedCategory.activeSessionCount && selectedCategory.requiresPurchase))
+    ) {
+      setShowCreditModal(true);
+      return;
+    }
+
+    try {
       setLoading(true);
 
       const categorySlug = selectedCategory.categorySlug;
+      const targetCandidateId = resolveTargetCandidateId(categorySlug);
 
       const sessionResponse = await fetch("/api/interview-prep", {
         method: "POST",
@@ -1005,26 +1155,15 @@ export default function InterviewPreparation({
           journey_category: isEmbedded
             ? propJourneyCategory || journeyEnv.journeyCategory || undefined
             : undefined,
-          candidate_id: isEmbedded ? journeyEnv.candidateId || activeCandidateId : undefined,
+          candidate_id: targetCandidateId,
+          forceNew: isNewSessionFlow,
         }),
       });
 
       const sessionResult = await sessionResponse.json();
 
       if (sessionResponse.status === 402) {
-        const purchaseError = sessionResult as PurchaseErrorResponse;
-
-        if (purchaseError.error === "PURCHASE_REQUIRED" && purchaseError.addon) {
-          handlePurchaseRequired();
-          return;
-        }
-
-        if (purchaseError.error === "PURCHASE_EXHAUSTED" && purchaseError.repurchase) {
-          handlePurchaseExhausted(purchaseError.repurchase);
-          return;
-        }
-
-        setError(purchaseError.message || msg(E.TOOL_INTERVIEW_SESSION_FAILED));
+        setShowCreditModal(true);
         return;
       }
 
@@ -1040,41 +1179,14 @@ export default function InterviewPreparation({
       }
 
       if (!sessionResponse.ok || !sessionResult.success) {
-        setError(msg(E.TOOL_INTERVIEW_SESSION_FAILED));
+        setError(sessionResult.message || msg(E.TOOL_INTERVIEW_SESSION_FAILED));
         return;
       }
 
       // Session already exists
       if (sessionResult.alreadyExists) {
         if (sessionResult.source === "journey") {
-          const existingSession = sessionResult.session;
-          setSessionId(existingSession.id);
-          setSessionSource("journey");
-          setIsJourneySession(true);
-          setJourneyId(existingSession.journey_id || null);
-
-          setStoredSession(
-            activeCandidateId,
-            existingSession.id,
-            "journey",
-            existingSession.journey_id
-          );
-
-          const existCatDataResponse = await fetch(
-            `/api/interview-prep?category_slug=${categorySlug}`
-          );
-          const existCatData = await existCatDataResponse.json();
-
-          if (existCatData.success) {
-            setQuestionnaire({
-              categorySlug: selectedCategory.categorySlug,
-              version: existCatData.questionnaire?.version || "1.0.0",
-              lastUpdated: new Date().toISOString(),
-              sections: existCatData.questionnaire?.sections || [],
-            });
-            setError(null);
-            setStep(1);
-          }
+          await activateSession(sessionResult.session, categorySlug);
           return;
         }
 
@@ -1095,32 +1207,7 @@ export default function InterviewPreparation({
       }
 
       // New session created
-      const newSessionId = sessionResult.session.id;
-      setSessionId(newSessionId);
-
-      const src = isEmbedded ? "journey" : "tool";
-      setSessionSource(src);
-      setIsJourneySession(isEmbedded);
-
-      setStoredSession(activeCandidateId, newSessionId, src, effectiveJourneyId);
-
-      const catDataResponse = await fetch(`/api/interview-prep?category_slug=${categorySlug}`);
-      const catData = await catDataResponse.json();
-
-      if (!catData.success) {
-        setError("Failed to load questionnaire");
-        return;
-      }
-
-      setQuestionnaire({
-        categorySlug: selectedCategory.categorySlug,
-        version: catData.questionnaire?.version || "1.0.0",
-        lastUpdated: new Date().toISOString(),
-        sections: catData.questionnaire?.sections || [],
-      });
-
-      setError(null);
-      setStep(1);
+      await activateSession(sessionResult.session, categorySlug);
     } catch (err) {
       console.error("Error in category selection next:", err);
       setError(err instanceof Error ? err.message : msg(E.TOOL_INTERVIEW_SESSION_FAILED));
@@ -1413,61 +1500,185 @@ export default function InterviewPreparation({
           ></div>
         </div>
 
-        {/* Desktop View */}
-        <div className="mt-4 hidden md:grid md:grid-cols-4 lg:grid-cols-5 gap-3">
+        {/* Desktop View: Single-Row Interactive Accordion Cards */}
+        <div
+          className="mt-4 hidden md:flex flex-row items-stretch gap-2 w-full py-1"
+          onMouseLeave={() => setHoveredProgressIndex(null)}
+        >
           {sections.map((section, index) => {
             const isActive = index === currentSectionIndex;
             const isCompleted = index < currentSectionIndex;
             const { color, lightColor } = getSectionColor(section.id);
+            const isHovered = hoveredProgressIndex === index;
+            const isOther = hoveredProgressIndex !== null && !isHovered;
+
+            // When hovered, expand the card smoothly; other cards shrink gracefully.
+            // Active (current) step gets slight natural weight if nothing is hovered.
+            let flexGrow = 1;
+            if (hoveredProgressIndex !== null) {
+              flexGrow = isHovered ? 2.4 : 0.65;
+            } else if (isActive) {
+              flexGrow = 1.35;
+            }
 
             return (
               <div
-                key={index}
-                className="p-3 rounded-lg text-center text-xs font-medium transition-all border-2"
-                style={
-                  isActive
-                    ? { backgroundColor: color, borderColor: color, color: "white" }
+                key={section.id || index}
+                onMouseEnter={() => setHoveredProgressIndex(index)}
+                className="group relative cursor-pointer overflow-hidden rounded-xl p-2.5 text-center transition-all border-2 flex flex-col justify-center select-none"
+                style={{
+                  flexGrow,
+                  flexShrink: 1,
+                  flexBasis: 0,
+                  minWidth: "60px",
+                  backgroundColor: isActive
+                    ? color
                     : isCompleted
-                      ? { backgroundColor: lightColor, borderColor: lightColor, color }
-                      : { backgroundColor: "#f1f5f9", borderColor: "#e2e8f0", color: "#64748b" }
-                }
+                      ? lightColor
+                      : "#f8fafc",
+                  borderColor: isActive
+                    ? color
+                    : isCompleted
+                      ? lightColor
+                      : "#e2e8f0",
+                  color: isActive ? "white" : isCompleted ? color : "#64748b",
+                  opacity: isOther ? 0.75 : 1,
+                  transform: isHovered ? "translateY(-2px)" : isOther ? "scale(0.98)" : "translateY(0)",
+                  boxShadow: isHovered
+                    ? `0 6px 18px -4px ${color}35`
+                    : isActive
+                      ? `0 4px 12px -2px ${color}30`
+                      : "none",
+                  transition:
+                    "flex-grow 400ms cubic-bezier(0.4, 0, 0.2, 1), transform 280ms ease, opacity 280ms ease, box-shadow 280ms ease",
+                }}
               >
-                <div className="font-semibold truncate">
-                  {section.title.substring(0, 20)}
-                  {section.title.length > 20 ? "..." : ""}
+                <div
+                  className={`text-xs font-semibold leading-snug transition-all duration-300 ${
+                    isHovered || isActive ? "whitespace-normal line-clamp-2" : "truncate"
+                  }`}
+                  title={section.title}
+                >
+                  {section.title}
                 </div>
-                <div className="text-[10px] mt-1 opacity-80">Step {index + 1}</div>
+                <div
+                  className="text-[10px] mt-1 font-medium tracking-wide uppercase transition-opacity duration-200"
+                  style={{ opacity: isActive || isHovered ? 0.95 : 0.7 }}
+                >
+                  Step {index + 1}
+                </div>
               </div>
             );
           })}
 
           {/* Review Step Indicator */}
-          <div
-            className="p-3 rounded-lg text-center text-xs font-medium transition-all border-2"
-            style={
-              step === sections.length + 1
-                ? { backgroundColor: "#0d7377", borderColor: "#0d7377", color: "white" }
-                : step > sections.length + 1
-                  ? { backgroundColor: "#e8f6f6", borderColor: "#e8f6f6", color: "#0d7377" }
-                  : { backgroundColor: "#f1f5f9", borderColor: "#e2e8f0", color: "#64748b" }
+          {(() => {
+            const reviewIndex = sections.length;
+            const isReviewActive = step === sections.length + 1;
+            const isReviewCompleted = step > sections.length + 1;
+            const isHovered = hoveredProgressIndex === reviewIndex;
+            const isOther = hoveredProgressIndex !== null && !isHovered;
+
+            let flexGrow = 1;
+            if (hoveredProgressIndex !== null) {
+              flexGrow = isHovered ? 2.2 : 0.65;
+            } else if (isReviewActive) {
+              flexGrow = 1.35;
             }
-          >
-            <div className="font-semibold">Review</div>
-            <div className="text-[10px] mt-1 opacity-80">Step {sections.length + 1}</div>
-          </div>
+
+            return (
+              <div
+                onMouseEnter={() => setHoveredProgressIndex(reviewIndex)}
+                className="group relative cursor-pointer overflow-hidden rounded-xl p-2.5 text-center transition-all border-2 flex flex-col justify-center select-none"
+                style={{
+                  flexGrow,
+                  flexShrink: 1,
+                  flexBasis: 0,
+                  minWidth: "60px",
+                  backgroundColor: isReviewActive
+                    ? "#0d7377"
+                    : isReviewCompleted
+                      ? "#e8f6f6"
+                      : "#f8fafc",
+                  borderColor: isReviewActive
+                    ? "#0d7377"
+                    : isReviewCompleted
+                      ? "#e8f6f6"
+                      : "#e2e8f0",
+                  color: isReviewActive ? "white" : isReviewCompleted ? "#0d7377" : "#64748b",
+                  opacity: isOther ? 0.75 : 1,
+                  transform: isHovered ? "translateY(-2px)" : isOther ? "scale(0.98)" : "translateY(0)",
+                  boxShadow: isHovered
+                    ? "0 6px 18px -4px rgba(13, 115, 119, 0.25)"
+                    : isReviewActive
+                      ? "0 4px 12px -2px rgba(13, 115, 119, 0.2)"
+                      : "none",
+                  transition:
+                    "flex-grow 400ms cubic-bezier(0.4, 0, 0.2, 1), transform 280ms ease, opacity 280ms ease, box-shadow 280ms ease",
+                }}
+              >
+                <div className="text-xs font-semibold truncate" title="Review">
+                  Review
+                </div>
+                <div
+                  className="text-[10px] mt-1 font-medium tracking-wide uppercase"
+                  style={{ opacity: isReviewActive || isHovered ? 0.95 : 0.7 }}
+                >
+                  Step {sections.length + 1}
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Results Step Indicator */}
-          <div
-            className="p-3 rounded-lg text-center text-xs font-medium transition-all border-2"
-            style={
-              step === sections.length + 2
-                ? { backgroundColor: "#0d7377", borderColor: "#0d7377", color: "white" }
-                : { backgroundColor: "#f1f5f9", borderColor: "#e2e8f0", color: "#64748b" }
+          {(() => {
+            const resultsIndex = sections.length + 1;
+            const isResultsActive = step === sections.length + 2;
+            const isHovered = hoveredProgressIndex === resultsIndex;
+            const isOther = hoveredProgressIndex !== null && !isHovered;
+
+            let flexGrow = 1;
+            if (hoveredProgressIndex !== null) {
+              flexGrow = isHovered ? 2.2 : 0.65;
+            } else if (isResultsActive) {
+              flexGrow = 1.35;
             }
-          >
-            <div className="font-semibold">Results</div>
-            <div className="text-[10px] mt-1 opacity-80">Step {sections.length + 2}</div>
-          </div>
+
+            return (
+              <div
+                onMouseEnter={() => setHoveredProgressIndex(resultsIndex)}
+                className="group relative cursor-pointer overflow-hidden rounded-xl p-2.5 text-center transition-all border-2 flex flex-col justify-center select-none"
+                style={{
+                  flexGrow,
+                  flexShrink: 1,
+                  flexBasis: 0,
+                  minWidth: "60px",
+                  backgroundColor: isResultsActive ? "#0d7377" : "#f8fafc",
+                  borderColor: isResultsActive ? "#0d7377" : "#e2e8f0",
+                  color: isResultsActive ? "white" : "#64748b",
+                  opacity: isOther ? 0.75 : 1,
+                  transform: isHovered ? "translateY(-2px)" : isOther ? "scale(0.98)" : "translateY(0)",
+                  boxShadow: isHovered
+                    ? "0 6px 18px -4px rgba(13, 115, 119, 0.25)"
+                    : isResultsActive
+                      ? "0 4px 12px -2px rgba(13, 115, 119, 0.2)"
+                      : "none",
+                  transition:
+                    "flex-grow 400ms cubic-bezier(0.4, 0, 0.2, 1), transform 280ms ease, opacity 280ms ease, box-shadow 280ms ease",
+                }}
+              >
+                <div className="text-xs font-semibold truncate" title="Results">
+                  Results
+                </div>
+                <div
+                  className="text-[10px] mt-1 font-medium tracking-wide uppercase"
+                  style={{ opacity: isResultsActive || isHovered ? 0.95 : 0.7 }}
+                >
+                  Step {sections.length + 2}
+                </div>
+              </div>
+            );
+          })()}
         </div>
 
         {/* Mobile View with Sheet */}
@@ -1589,19 +1800,113 @@ export default function InterviewPreparation({
 
   return (
     <>
-      {showCreditModal && ipWallet.item && (
+      {showCreditModal && (
         <CreditLaunchModal
-          item={ipWallet.item}
+          item={{
+            ...(ipWallet.item || {
+              resourceType: "tool" as const,
+              resourceId: "interview-prep",
+              name: "Interview Prep",
+              credits: 200,
+              legacyAddonId: "interview-prep",
+              legacyGrantsUnlock: false,
+              launchable: false,
+            }),
+            name: selectedCategory
+              ? `Interview Prep (${selectedCategory.displayName || selectedCategory.categoryName})`
+              : "Interview Prep Session",
+            credits: 200,
+          }}
           onClose={() => setShowCreditModal(false)}
+          onConfirm={async () => {
+            if (!selectedCategory) {
+              return { success: false, error: "Please select a category first." };
+            }
+            const targetCandidateId = resolveTargetCandidateId(selectedCategory.categorySlug);
+
+            const sessionResponse = await fetch("/api/interview-prep", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                category_slug: selectedCategory.categorySlug,
+                user_email: localStorage.getItem("userEmail") || "test@example.com",
+                user_name: localStorage.getItem("userName") || "User",
+                source: "tool",
+                candidate_id: targetCandidateId,
+                forceNew: true,
+              }),
+            });
+            const sessionResult = await sessionResponse.json();
+            if (sessionResponse.status === 402) {
+              return {
+                success: false,
+                error: "INSUFFICIENT_CREDITS",
+                required: sessionResult.required ?? 200,
+                available: sessionResult.available ?? 0,
+                deficit: sessionResult.deficit ?? 200,
+                topupAmount: sessionResult.topupAmount ?? 200,
+              };
+            }
+            if (!sessionResponse.ok || !sessionResult.success) {
+              return {
+                success: false,
+                error: sessionResult.message || msg(E.TOOL_INTERVIEW_SESSION_FAILED),
+              };
+            }
+
+            // Pre-load category questionnaire so Step 1 renders immediately upon modal close
+            const catDataResponse = await fetch(
+              `/api/interview-prep?category_slug=${selectedCategory.categorySlug}`
+            );
+            const catData = await catDataResponse.json();
+            if (catData.success && catData.questionnaire) {
+              setQuestionnaire({
+                categorySlug: selectedCategory.categorySlug,
+                version: catData.questionnaire?.version || "1.0.0",
+                lastUpdated: new Date().toISOString(),
+                sections: catData.questionnaire?.sections || [],
+              });
+            }
+
+            createdSessionRef.current = sessionResult.session;
+            return { success: true };
+          }}
           onLaunched={() => {
             setShowCreditModal(false);
-            // Refresh purchase status so the picked category shows as unlocked.
-            const pickedSlug = selectedCategory?.categorySlug;
-            void loadCategories(selectedCountry || "all").then((categories) => {
-              const refreshed = categories.find((c) => c.categorySlug === pickedSlug);
-              if (refreshed) setSelectedCategory(refreshed);
-            });
-            showToast("Interview Prep unlocked. Press Next to start your session.", "success");
+            void refreshWallet();
+            if (createdSessionRef.current && selectedCategory) {
+              const session = createdSessionRef.current;
+              createdSessionRef.current = null;
+              const sessionCandId = session.candidate_id || "candidate-1";
+
+              // Sync candidate to CandidateContext if not already present
+              if (
+                candidateCtx?.addCandidate &&
+                !candidateCtx.candidates.some((c) => c.id === sessionCandId)
+              ) {
+                try {
+                  candidateCtx.addCandidate({
+                    relation: "Other",
+                    fullName: `Candidate ${sessionCandId.replace(/[^0-9]/g, "")}`,
+                    visaCategory: selectedCategory.displayName || "IR-5",
+                  });
+                } catch (err) {
+                  console.warn("Could not sync candidate to context:", err);
+                }
+              }
+              if (candidateCtx?.setActiveCandidateId) {
+                candidateCtx.setActiveCandidateId(sessionCandId);
+              }
+
+              setSessionId(session.id);
+              setSessionSource("tool");
+              setIsJourneySession(false);
+              setStoredSession(sessionCandId, session.id, "tool", null);
+              setExistingSessions((prev) => [session, ...prev]);
+              setError(null);
+              setStep(1);
+              showToast("Interview Prep session started! 200 credits deducted.", "success");
+            }
           }}
         />
       )}

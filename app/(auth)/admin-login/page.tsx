@@ -65,8 +65,15 @@ function AdminLoginPageContent() {
       return;
     }
   
-    // Session cookie has already been set by Supabase
-    router.replace("/admin");
+    // Session cookie has already been set by Supabase.
+    // Use a HARD navigation (window.location.assign), NOT router.replace: a
+    // soft nav keeps AuthProvider (root layout) mounted, so initializeUser
+    // never runs for the fresh session and isAdmin stays stale -> the admin
+    // page shows an instant "Access Denied" flash that only clears on a manual
+    // refresh. A hard navigation remounts the app, lets AuthProvider read the
+    // cookie-backed session and resolve /check-admin, and the admin page then
+    // renders after a proper loading spinner with no refresh needed.
+    window.location.assign("/admin");
   };
 
   const handleMfaSubmit = async (e: FormEvent) => {
@@ -78,7 +85,8 @@ function AdminLoginPageContent() {
       const { success, error: mfaError } = await verifyMFALogin(factorId, challengeId, mfaCode);
 
       if (success) {
-        router.replace("/admin");
+        // Hard nav so auth state initializes fresh (see handleSubmit note).
+        window.location.assign("/admin");
       } else {
         setError(mfaError || `${msg(E.AUTH_MFA_CODE_INVALID)}`);
       }

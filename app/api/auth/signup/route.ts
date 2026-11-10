@@ -7,6 +7,7 @@ import { E, msg } from "@/lib/errors";
 import { checkRateLimit, rateLimitResponse } from "@/lib/security/rate-limit";
 import { auditLog, auditBlocked } from "@/lib/security/audit-log";
 import { validateStrongPassword } from "@/lib/security/password";
+import { isStagingEmailAllowed } from "@/lib/security/staging-access";
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -66,6 +67,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: msg(E.AUTH_SIGNUP_DISPOSABLE_EMAIL, { domain }) },
         { status: 400 }
+      );
+    }
+
+    // Staging access restriction
+    if (!isStagingEmailAllowed(email)) {
+      auditBlocked(request, "auth.signup", {
+        reason: "staging_email_not_whitelisted",
+        email,
+      });
+      return NextResponse.json(
+        {
+          error: "Account registration on this staging platform is restricted to authorized tester emails only.",
+          code: "STAGING_ACCESS_DENIED",
+        },
+        { status: 403 }
       );
     }
 

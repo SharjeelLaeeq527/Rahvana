@@ -1067,12 +1067,15 @@ export class JourneyService {
 
           const categorySlug = getCategoryForJourney(journey.journey_type);
 
-          await createJourneyInterviewSession(journey.id, categorySlug);
+          const candMatch = journey.journey_type?.match(/candidate-?([0-9]+)/i);
+          const candidateId = candMatch ? `candidate-${candMatch[1]}` : "candidate-1";
+
+          await createJourneyInterviewSession(journey.id, categorySlug, candidateId);
 
           interviewSessionCreated = true;
 
           console.log(
-            `[JourneyService] Auto-created interview session for ${journey.journey_type} journey ${journey.id}`
+            `[JourneyService] Auto-created interview session for ${journey.journey_type} (${candidateId}) journey ${journey.id}`
           );
         } catch (interviewError) {
           console.error(

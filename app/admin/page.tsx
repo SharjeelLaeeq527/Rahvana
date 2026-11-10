@@ -16,6 +16,7 @@ import {
   Clock,
   Star,
   Trash2,
+  QrCode,
 } from "lucide-react";
 import { Loader } from "@/components/ui/spinner";
 
@@ -33,15 +34,19 @@ import { FeatureAnnouncementModal } from "./components/feature-announcement/Feat
 import { BlogAnnouncementModal } from "./components/blog-announcement/BlogAnnouncementModal";
 import AccountDeletionFeedbackTable from "./components/account-deletion-feedback/AccountDeletionFeedbackTable";
 import { AdminProfileTray } from "./components/AdminProfileTray";
+import { StagingTotpManager } from "./components/staging-totp/StagingTotpManager";
+import { isStagingTotpManager } from "@/lib/security/staging-access";
 
 export default function AdminPanel() {
-  const { user, isAdmin, isLoading: authLoading, signOut } = useAuth();
+  const { user, isAdmin, isLoading: authLoading, isAdminLoading, signOut } = useAuth();
   const router = useRouter();
 
   const [openFeatureModal, setOpenFeatureModal] = useState(false);
   const [openBlogModal, setOpenBlogModal] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = async () => {
+    setIsLoggingOut(true);
     try {
       // Call the admin logout API
       const response = await fetch("/api/admin/logout", {
@@ -56,12 +61,12 @@ export default function AdminPanel() {
     } finally {
       // Sign out from the auth context
       await signOut();
-      // Redirect to admin login
-      router.push("/admin-login");
+      // Redirect to admin login (replace so "back" doesn't return to /admin)
+      router.replace("/admin-login");
     }
   };
 
-  if (authLoading) {
+  if (authLoading || isAdminLoading || isLoggingOut) {
     return (
       <div className="bg-background flex min-h-screen items-center justify-center p-6">
         <Loader size="md" text="Checking authorization..." />
@@ -231,6 +236,19 @@ export default function AdminPanel() {
           >
             <AccountDeletionFeedbackTable />
           </CollapsibleSection>
+
+          {/* Section 9: Staging Authenticator (TOTP) Access - Restricted to Owners & Managers */}
+          {isStagingTotpManager(user?.email) && (
+            <CollapsibleSection
+              title="Staging Authenticator (TOTP) Access"
+              icon={<QrCode className="h-5 w-5" />}
+              description="Generate and manage individual Google / Microsoft Authenticator QR codes for staging platform access"
+              badge="OWNER & MANAGER"
+              badgeColor="bg-emerald-100 text-emerald-800"
+            >
+              <StagingTotpManager />
+            </CollapsibleSection>
+          )}
 
           <FeatureAnnouncementModal open={openFeatureModal} onOpenChange={setOpenFeatureModal} />
           <BlogAnnouncementModal open={openBlogModal} onOpenChange={setOpenBlogModal} />
