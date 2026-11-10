@@ -120,7 +120,8 @@ export default function Home() {
         <div className="mb-8 flex flex-col items-start justify-between gap-6 md:flex-row">
           <div className="max-w-3xl">
             <h1 className="mb-2 text-3xl font-bold tracking-tight text-[#121a28] md:text-4xl">
-              IV Scheduling Status Tool
+              DQ Status Check
+              {/* IV Scheduling Status Tool */}
             </h1>
 
             <p className="max-w-2xl text-[15px] leading-relaxed text-[#4b5563]">
