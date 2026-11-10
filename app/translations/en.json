@@ -3002,6 +3002,10 @@
         "title": "DQ Status Check",
         "desc": "Track interview scheduling movement and trends by category."
       },
+      "cspa-age-checker": {
+        "title": "CSPA Age-Out Checker",
+        "desc": "Check if your child can still apply as a child after turning 21."
+      },
       "visa-bulletin-monitor": {
         "title": "Visa Bulletin Monitor",
         "desc": "Check your priority date progress against the Visa Bulletin."

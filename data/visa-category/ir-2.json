@@ -376,7 +376,18 @@
                     ]
                   }
                 ],
-                "result_logic": "(function() { if (answers['q2s1'] === 'guardian_other' || answers['q2s5'] === 'no') return { state: \"stop\", title: \"A qualifying parent-child relationship has not been established\", body: \"A guardian, foster parent, or relative who raises a child does not automatically qualify as a parent for IR-2. The relationship must meet the immigration-law definition of a child. Speak with a qualified U.S. immigration attorney about other options.\" }; if (answers['q2s3'] === 'married') return { state: \"stop\", title: \"A married child does not qualify for IR-2\", body: \"IR-2 is only for an unmarried child under 21. A married son or daughter of a U.S. citizen files in the F-3 preference category, which this journey does not cover.\" }; if (answers['q2s2'] === '21_plus') return { state: \"review\", title: \"The child's age needs review\", body: \"A son or daughter aged 21 or older does not qualify as IR-2 unless an I-130 was already filed before the 21st birthday. Check the filing date and confirm the age rule with a qualified U.S. immigration attorney.\" }; if (answers['q2s1'] === 'unsure' || answers['q2s2'] === 'unsure' || answers['q2s3'] === 'previously_married' || answers['q2s3'] === 'unsure' || answers['q2s4'] === 'no' || answers['q2s4'] === 'unavailable' || answers['q2s4'] === 'unsure' || answers['q2s5'] === 'conflict' || answers['q2s5'] === 'unsure') return { state: \"review\", title: \"The child's eligibility needs closer review\", body: \"The relationship type, the child's age or marital status, or the main birth record is unclear, missing, or inconsistent. Confirm these before filing.\" }; if (answers['q2s2'] === '18_20') return { state: \"caution\", title: \"The child qualifies, but timing matters\", body: \"The child is close to 21. File the I-130 as soon as possible, because the child's age is generally fixed on the filing date for immediate relatives.\" }; if (answers['q2s4'] === 'mismatch') return { state: \"caution\", title: \"The relationship appears plausible, record differences need documentation\", body: \"The birth record names the petitioner, but identity differences should be resolved with corrected civil records, NADRA records, or other credible evidence.\" }; return { state: \"pass\", title: \"The child appears to qualify\", body: \"The relationship type, age, and marital status appear to fit IR-2, and the main birth record is identifiable. Complete the relationship-specific section next.\" }; })()"
+                "result_logic": "(function() { if (answers['q2s1'] === 'guardian_other' || answers['q2s5'] === 'no') return { state: \"stop\", title: \"A qualifying parent-child relationship has not been established\", body: \"A guardian, foster parent, or relative who raises a child does not automatically qualify as a parent for IR-2. The relationship must meet the immigration-law definition of a child. Speak with a qualified U.S. immigration attorney about other options.\" }; if (answers['q2s3'] === 'married') return { state: \"stop\", title: \"A married child does not qualify for IR-2\", body: \"IR-2 is only for an unmarried child under 21. A married son or daughter of a U.S. citizen files in the F-3 preference category, which this journey does not cover.\" }; if (answers['q2s2'] === '21_plus') return { state: \"review\", title: \"The child's age needs review\", body: \"A son or daughter aged 21 or older does not qualify as IR-2 unless an I-130 was already filed before the 21st birthday. Check the filing date and confirm the age rule with a qualified U.S. immigration attorney.\" }; if (answers['q2s1'] === 'unsure' || answers['q2s2'] === 'unsure' || answers['q2s3'] === 'previously_married' || answers['q2s3'] === 'unsure' || answers['q2s4'] === 'no' || answers['q2s4'] === 'unavailable' || answers['q2s4'] === 'unsure' || answers['q2s5'] === 'conflict' || answers['q2s5'] === 'unsure') return { state: \"review\", title: \"The child's eligibility needs closer review\", body: \"The relationship type, the child's age or marital status, or the main birth record is unclear, missing, or inconsistent. Confirm these before filing.\" }; if (answers['q2s2'] === '18_20') return { state: \"caution\", title: \"The child qualifies, but timing matters\", body: \"The child is close to 21. File the I-130 as soon as possible, because the child's age is generally fixed on the filing date for immediate relatives.\" }; if (answers['q2s4'] === 'mismatch') return { state: \"caution\", title: \"The relationship appears plausible, record differences need documentation\", body: \"The birth record names the petitioner, but identity differences should be resolved with corrected civil records, NADRA records, or other credible evidence.\" }; return { state: \"pass\", title: \"The child appears to qualify\", body: \"The relationship type, age, and marital status appear to fit IR-2, and the main birth record is identifiable. Complete the relationship-specific section next.\" }; })()",
+                "companion_tool": {
+                  "component_key": "cspa_checker",
+                  "title": "Will your child turn 21 soon?",
+                  "body": "If the I-130 is filed before the child turns 21, the child's age is locked on that day. Check the last date to file.",
+                  "button_label": "Check the age",
+                  "show_when": [
+                    "pass",
+                    "caution",
+                    "review"
+                  ]
+                }
               },
               {
                 "id": "q3",
@@ -1647,7 +1658,13 @@
                 ]
               }
             ],
-            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Consult a licensed immigration attorney for case-specific decisions."
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Consult a licensed immigration attorney for case-specific decisions.",
+            "companion_tool": {
+              "component_key": "cspa_checker",
+              "title": "Filing the I-130 locks the child's age",
+              "body": "If your child is close to 21, check the last date to file before you submit.",
+              "button_label": "Check the age"
+            }
           }
         },
         {

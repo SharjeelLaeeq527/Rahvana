@@ -156,6 +156,7 @@ import { ApUpdateModal } from "./PortalWalletManager";
 import { HouseholdSponsorshipTool } from "./components/HouseholdSponsorshipTool";
 import { DocumentQuestionnaire } from "@/app/components/questionnaire/DocumentQuestionnaire";
 import { QuestRenderer } from "./QuestRenderer";
+import { CompanionToolCard } from "./components/CompanionToolCard";
 import { ActionStepRenderer } from "./ActionStepRenderer";
 import { DocumentChecklistTool } from "./components/DocumentChecklistTool";
 import { SafeHtml } from "../shared/SafeHTML";
@@ -2313,6 +2314,15 @@ export const StepView: React.FC<StepViewProps> = ({
               </div>
             )}
 
+          {/* COMPANION TOOL (e.g. CSPA checker on IR-2 step_1_4), opened via the toolbox */}
+          {tool.companion_tool && onLaunchTool && (
+            <CompanionToolCard
+              config={tool.companion_tool}
+              onLaunch={(key) => onLaunchTool(key)}
+              className="mt-[12px]"
+            />
+          )}
+
           {/* SUPPORT CARDS */}
           {tool.support_cards && tool.support_cards.length > 0 && sId !== "step_2_1" && (
             <div
@@ -3268,6 +3278,7 @@ export const StepView: React.FC<StepViewProps> = ({
                   isChapter1={isChapter1}
                   isChapter2={isChapter2}
                   isChapter3={isChapter3}
+                  onLaunchTool={onLaunchTool ? (key) => onLaunchTool(key) : undefined}
                 />
               </div>
             ) : currentStep.step_type === "tool" ? (
