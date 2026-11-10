@@ -72,7 +72,10 @@ export default function AffidavitSupportCalculatorPage() {
 
   const initialStep = useMemo(() => {
     if (typeof savedDraft?.stepIdx === "number") return savedDraft.stepIdx;
-    if (savedResult) return 10;
+    if (savedResult) {
+      const isExempt = savedResult.isChildCitizenshipActExempt || savedResult.isExempt;
+      return isExempt ? 3 : 10;
+    }
     return undefined;
   }, [savedDraft, savedResult]);
 
@@ -162,7 +165,20 @@ export default function AffidavitSupportCalculatorPage() {
                   In-Progress Draft Saved
                 </span>
                 <span className="text-[11px] font-semibold text-amber-700">
-                  Step {savedDraft.stepIdx + 1} of 11
+                  {(() => {
+                    const draftIsExempt =
+                      savedDraft.data?.isChildCitizenshipActExempt ||
+                      (savedDraft.data?.beneficiaryRelationship === "child" &&
+                        savedDraft.data?.sponsorStatus === "citizen" &&
+                        savedDraft.data?.childAgeBand === "under_18" &&
+                        savedDraft.data?.childRelationshipType !== "stepchild" &&
+                        savedDraft.data?.childLivesInUSCitizenCustody === true);
+                    const total = draftIsExempt ? 4 : 11;
+                    const stepNum = draftIsExempt
+                      ? Math.min(savedDraft.stepIdx + 1, 4)
+                      : savedDraft.stepIdx + 1;
+                    return `Step ${stepNum} of ${total}`;
+                  })()}
                 </span>
               </div>
               <p className="text-xs text-slate-600">

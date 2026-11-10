@@ -627,6 +627,18 @@ export default function SponsorshipCalculatorTool({
   };
   const stepColor = getStepColor(stepIdx);
 
+  // Check if current data qualifies for the INA Section 320 4-step exemption flow
+  const isExemptChild =
+    Boolean(data.isChildCitizenshipActExempt) ||
+    (data.beneficiaryRelationship === "child" &&
+      data.sponsorStatus === "citizen" &&
+      data.childAgeBand === "under_18" &&
+      data.childRelationshipType !== "stepchild" &&
+      data.childLivesInUSCitizenCustody === true);
+
+  const totalSteps = isExemptChild ? 4 : 11;
+  const currentDisplayStep = isExemptChild ? Math.min(stepIdx + 1, 4) : stepIdx + 1;
+
   // --- INTERNAL HELPERS ---
   const generateId = () => Math.random().toString(36).substr(2, 9);
   const toggleOption = (id: string) => setExpandedOptions((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -708,13 +720,13 @@ export default function SponsorshipCalculatorTool({
           <div
             className="h-full bg-linear-to-r transition-all duration-500"
             style={{
-              width: `${Math.round(((stepIdx + 1) / 11) * 100)}%`,
+              width: `${Math.round((currentDisplayStep / totalSteps) * 100)}%`,
               backgroundColor: COLORS.primary,
             }}
           />
         </div>
         <div className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap shrink-0">
-          {stepIdx + 1} / 11
+          {currentDisplayStep} / {totalSteps}
         </div>
         <button
           onClick={handleResetProgress}
@@ -741,6 +753,152 @@ export default function SponsorshipCalculatorTool({
           {(() => {
             const step = stepIdx;
 
+            const renderFinalPlan = (isExemptFlow: boolean) => (
+              <ResultGate
+                feature="sponsorship_calc"
+                planTier={effectiveTier}
+                standaloneToolId={isJourney ? undefined : "sponsorship-calculator"}
+              >
+                <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+                  <div
+                    className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center"
+                    style={{ color: COLORS.primary }}
+                  >
+                    Step {isExemptFlow ? 4 : 11} of {isExemptFlow ? 4 : 11}
+                  </div>
+                  <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6 text-center">
+                    {isExemptFlow ? "Final Exemption Plan" : "Final Sponsorship Plan"}
+                  </h2>
+
+                  <div className="space-y-4 mb-8">
+                    <div
+                      className="p-8 rounded-3xl border-2 text-center"
+                      style={{
+                        backgroundColor: result.isEligible ? `${COLORS.secondary}20` : `${COLORS.danger}20`,
+                        borderColor: result.isEligible ? COLORS.secondary : COLORS.danger,
+                      }}
+                    >
+                      {result.isChildCitizenshipActExempt ? (
+                        <>
+                          <div className="text-[10px] font-black uppercase text-teal-700 tracking-widest mb-2">
+                            Exemption Status
+                          </div>
+                          <div className="text-2xl sm:text-3xl font-black mb-3 text-teal-800">
+                            EXEMPT FROM I-864 &#x2713;
+                          </div>
+                          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-100 text-teal-800 text-xs font-bold mb-4">
+                            Child Citizenship Act of 2000 (INA Section 320)
+                          </div>
+                          <p className="text-[14px] text-slate-600 leading-relaxed font-medium">
+                            Your child automatically acquires U.S. citizenship upon admission to the United States as a permanent resident. No minimum income requirement or joint sponsor is required.
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <div className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-3">
+                            Final Conclusion
+                          </div>
+                          <div
+                            className="text-3xl font-black mb-3"
+                            style={{ color: result.isEligible ? COLORS.primary : COLORS.danger }}
+                          >
+                            {result.isEligible ? "ELIGIBLE \u2713" : "NOT ELIGIBLE \u2717"}
+                          </div>
+                          <p className="text-[14px] text-slate-600 leading-relaxed font-medium">
+                            Total Household Income: <strong className="text-[#0c1b33] text-lg">${(result.totalIncome ?? 0).toLocaleString()}</strong><br />
+                            Required (Household of {result.householdSize}): <strong className="text-[#0c1b33] text-lg">${(result.requiredIncome ?? 0).toLocaleString()}</strong>
+                            {result.jurisdiction && (
+                              <>
+                                <br />
+                                <span className="text-[12px] text-slate-500">Based on {getJurisdictionLabel(result.jurisdiction)} poverty guidelines</span>
+                              </>
+                            )}
+                          </p>
+                        </>
+                      )}
+                    </div>
+
+                    {result.feeExempt && (
+                      <div className="p-4 rounded-xl border border-amber-200 bg-amber-50/70 text-left">
+                        <div className="flex items-start gap-2.5">
+                          <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                          <div>
+                            <p className="text-xs font-bold text-amber-900">
+                              $120 CEAC Affidavit of Support Fee Waiver
+                            </p>
+                            <p className="text-[12px] text-amber-800 leading-relaxed mt-0.5">
+                              Intending immigrants filing Form I-864W are exempt from paying the $120 Affidavit of Support fee. If CEAC bills this fee, submit an inquiry to NVC via their Public Inquiry Form to request the fee be waived before paying.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {data.beneficiaryRelationship === "child" && !result.isChildCitizenshipActExempt && (
+                      <div className="p-4 rounded-xl border border-sky-200 bg-sky-50/70 text-left">
+                        <p className="text-xs font-bold text-sky-900">
+                          Child Sponsorship Note (Form I-864 Required)
+                        </p>
+                        <p className="text-[12px] text-sky-800 leading-relaxed mt-0.5">
+                          {data.childRelationshipType === "stepchild"
+                            ? "Stepchildren do not acquire automatic citizenship under INA Section 320. Form I-864 and 125% of HHS Poverty Guidelines apply."
+                            : data.childAgeBand === "18_20"
+                            ? "Children aged 18 to 20 at admission do not qualify under INA Section 320. Standard Form I-864 and 125% Poverty Guidelines apply."
+                            : "Standard Form I-864 is required. As the child of a U.S. citizen, the statutory 3x asset multiplier applies (8 CFR Section 213a.2(c)(2)(iii)(B))."}
+                        </p>
+                      </div>
+                    )}
+
+                    <div className="text-[12px] text-[#6b8097] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-slate-100 pb-4 px-1">
+                      <span>Poverty guidelines last updated: <strong>March 1, 2026</strong></span>
+                      <a
+                        href={I864P_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:underline font-semibold flex items-center gap-1 transition-all hover:opacity-85"
+                        style={{ color: COLORS.primary }}
+                      >
+                        Official USCIS I-864P Guidelines &rarr;
+                      </a>
+                    </div>
+
+                    <div className="p-6 rounded-2xl border-2 border-slate-100 bg-slate-50/50">
+                      <div className="text-[11px] font-bold uppercase text-slate-400 mb-4 tracking-wider">Required Forms</div>
+                      <div className="space-y-3">
+                        {result.forms.map((f: any, i: number) => (
+                          <div key={i} className="flex items-start gap-3 p-4 bg-white rounded-2xl border border-slate-200 shadow-sm">
+                            <FileText size={20} className="mt-1 shrink-0" style={{ color: COLORS.primary }} />
+                            <div>
+                              <div className="text-sm font-black text-slate-900 leading-tight">{f.name}</div>
+                              <div className="text-[11px] text-slate-500 font-medium">{f.sub}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-[10px]">
+                    <button
+                      type="button"
+                      onClick={() => setStepIdx(isExemptFlow ? 2 : (data.assetValue > 0 || data.sponsorDeceased ? 9 : 8))}
+                      className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63] flex items-center gap-2"
+                    >
+                      <ArrowLeft size={14} /> Edit Info
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCompleteSave}
+                      style={{ backgroundColor: COLORS.primary }}
+                      className="flex-1 p-[14px_22px] text-white rounded-[10px] text-[15px] font-semibold shadow-lg transition-all hover:opacity-90 hover:-translate-y-px flex items-center justify-center gap-2"
+                    >
+                      {isJourney ? "Complete & Save to Roadmap" : "Complete & Save Calculation"} <ArrowRight size={14} />
+                    </button>
+                  </div>
+                </div>
+              </ResultGate>
+            );
+
             if (step === 0) {
               return (
                 <div className="animate-in fade-in slide-in-from-right-4 duration-300">
@@ -749,7 +907,7 @@ export default function SponsorshipCalculatorTool({
                       className="text-[11px] font-semibold tracking-widest uppercase"
                       style={{ color: COLORS.primary }}
                     >
-                      Sponsorship Calculator · Step 1 of 11
+                      Sponsorship Calculator · Step 1 of {totalSteps}
                     </div>
                     {candidateInfo?.name && (
                       <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-teal-50 border border-teal-200 text-[10px] font-semibold text-teal-800">
@@ -810,7 +968,7 @@ export default function SponsorshipCalculatorTool({
                     className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center"
                     style={{ color: stepColor }}
                   >
-                    Step 2 of 11
+                    Step 2 of {totalSteps}
                   </div>
                   <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-4 text-center">
                     Petitioner Status
@@ -951,7 +1109,7 @@ export default function SponsorshipCalculatorTool({
                     className="text-[11px] font-semibold tracking-widest uppercase mb-4"
                     style={{ color: stepColor }}
                   >
-                    Step 3 of 11
+                    Step 3 of {totalSteps}
                   </div>
                   <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6">
                     Marital & Beneficiary Status
@@ -1146,22 +1304,14 @@ export default function SponsorshipCalculatorTool({
                                   Qualified for Form I-864W Exemption (INA Section 320)
                                 </span>
                               </div>
-                              <p className="text-xs text-slate-600 leading-relaxed mb-3">
-                                Your child qualifies for automatic U.S. citizenship upon entry and is completely exempt from Form I-864 financial sponsorship, joint sponsors, and the $120 CEAC AOS fee.
+                                                            <p className="text-xs text-slate-600 leading-relaxed mb-3">
+                                Your child qualifies for automatic U.S. citizenship upon entry and is completely exempt from Form I-864 financial sponsorship, joint sponsors, and the $120 CEAC AOS fee. Click Continue to view your finalized exemption plan.
                               </p>
-                              <div className="flex flex-wrap gap-2 text-[11px] font-semibold text-teal-900 mb-3">
+                              <div className="flex flex-wrap gap-2 text-[11px] font-semibold text-teal-900">
                                 <span className="px-2 py-0.5 rounded bg-teal-100/70">Form I-864W (Part 2, Item 2.a)</span>
                                 <span className="px-2 py-0.5 rounded bg-teal-100/70">Required Income: $0</span>
                                 <span className="px-2 py-0.5 rounded bg-teal-100/70">AOS Fee: Exempt</span>
                               </div>
-                              <button
-                                type="button"
-                                onClick={() => setStepIdx(10)}
-                                className="w-full py-2.5 px-4 rounded-lg bg-[#0d7377] text-white text-xs font-bold hover:opacity-90 flex items-center justify-center gap-1.5 shadow-sm transition-all"
-                              >
-                                <span>Fast-Track to Results & Save</span>
-                                <ArrowRight className="w-3.5 h-3.5" />
-                              </button>
                             </div>
                           ) : (
                             <div className="p-4 rounded-xl border border-amber-300 bg-white shadow-sm">
@@ -1216,6 +1366,10 @@ export default function SponsorshipCalculatorTool({
             }
 
             if (step === 3) {
+              if (isExemptChild) {
+                return renderFinalPlan(true);
+              }
+
               return (
                 <div className="animate-in fade-in slide-in-from-right-4 duration-300 text-center">
                   <div
@@ -1887,131 +2041,7 @@ export default function SponsorshipCalculatorTool({
             }
 
             if (step === 10) {
-              return (
-                <ResultGate
-                  feature="sponsorship_calc"
-                  planTier={effectiveTier}
-                  standaloneToolId={isJourney ? undefined : "sponsorship-calculator"}
-                >
-                  <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                    <div className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center" style={{ color: COLORS.primary }}>Step 11 of 11</div>
-                    <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6 text-center">Final Sponsorship Plan</h2>
-                    
-                    <div className="space-y-4 mb-8">
-                      <div className={`p-8 rounded-3xl border-2 text-center`}
-                        style={{ 
-                          backgroundColor: result.isEligible ? `${COLORS.secondary}20` : `${COLORS.danger}20`,
-                          borderColor: result.isEligible ? COLORS.secondary : COLORS.danger 
-                        }}>
-                        <div className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-3">Final Conclusion</div>
-                        {result.isChildCitizenshipActExempt ? (
-                          <>
-                            <div className="text-[10px] font-black uppercase text-teal-700 tracking-widest mb-2">Exemption Status</div>
-                            <div className="text-2xl sm:text-3xl font-black mb-3 text-teal-800">
-                              EXEMPT FROM I-864 &#x2713;
-                            </div>
-                            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-100 text-teal-800 text-xs font-bold mb-4">
-                              Child Citizenship Act of 2000 (INA Section 320)
-                            </div>
-                            <p className="text-[14px] text-slate-600 leading-relaxed font-medium">
-                              Your child automatically acquires U.S. citizenship upon admission to the United States as a permanent resident. No minimum income requirement or joint sponsor is required.
-                            </p>
-                          </>
-                        ) : (
-                          <>
-                            <div className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-3">Final Conclusion</div>
-                            <div className="text-3xl font-black mb-3" style={{ color: result.isEligible ? COLORS.primary : COLORS.danger }}>
-                              {result.isEligible ? "ELIGIBLE \u2713" : "NOT ELIGIBLE \u2717"}
-                            </div>
-                            <p className="text-[14px] text-slate-600 leading-relaxed font-medium">
-                              Total Household Income: <strong className="text-[#0c1b33] text-lg">${(result.totalIncome ?? 0).toLocaleString()}</strong><br/>
-                              Required (Household of {result.householdSize}): <strong className="text-[#0c1b33] text-lg">${(result.requiredIncome ?? 0).toLocaleString()}</strong>
-                              {result.jurisdiction && (
-                                <>
-                                  <br/>
-                                  <span className="text-[12px] text-slate-500">Based on {getJurisdictionLabel(result.jurisdiction)} poverty guidelines</span>
-                                </>
-                              )}
-                            </p>
-                          </>
-                        )}
-                      </div>
-
-                      {result.feeExempt && (
-                        <div className="p-4 rounded-xl border border-amber-200 bg-amber-50/70 text-left">
-                          <div className="flex items-start gap-2.5">
-                            <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-                            <div>
-                              <p className="text-xs font-bold text-amber-900">
-                                $120 CEAC Affidavit of Support Fee Waiver
-                              </p>
-                              <p className="text-[12px] text-amber-800 leading-relaxed mt-0.5">
-                                Intending immigrants filing Form I-864W are exempt from paying the $120 Affidavit of Support fee. If CEAC bills this fee, submit an inquiry to NVC via their Public Inquiry Form to request the fee be waived before paying.
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {data.beneficiaryRelationship === "child" && !result.isChildCitizenshipActExempt && (
-                        <div className="p-4 rounded-xl border border-sky-200 bg-sky-50/70 text-left">
-                          <p className="text-xs font-bold text-sky-900">
-                            Child Sponsorship Note (Form I-864 Required)
-                          </p>
-                          <p className="text-[12px] text-sky-800 leading-relaxed mt-0.5">
-                            {data.childRelationshipType === "stepchild"
-                              ? "Stepchildren do not acquire automatic citizenship under INA Section 320. Form I-864 and 125% of HHS Poverty Guidelines apply."
-                              : data.childAgeBand === "18_20"
-                              ? "Children aged 18 to 20 at admission do not qualify under INA Section 320. Standard Form I-864 and 125% Poverty Guidelines apply."
-                              : "Standard Form I-864 is required. As the child of a U.S. citizen, the statutory 3x asset multiplier applies (8 CFR Section 213a.2(c)(2)(iii)(B))."}
-                          </p>
-                        </div>
-                      )}
-
-                      <div className="text-[12px] text-[#6b8097] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-slate-100 pb-4 px-1">
-                        <span>Poverty guidelines last updated: <strong>March 1, 2026</strong></span>
-                        <a
-                          href={I864P_URL}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="hover:underline font-semibold flex items-center gap-1 transition-all hover:opacity-85"
-                          style={{ color: COLORS.primary }}
-                        >
-                          Official USCIS I-864P Guidelines &rarr;
-                        </a>
-                      </div>
-
-                      <div className="p-6 rounded-2xl border-2 border-slate-100 bg-slate-50/50">
-                        <div className="text-[11px] font-bold uppercase text-slate-400 mb-4 tracking-wider">Required Forms</div>
-                        <div className="space-y-3">
-                           {result.forms.map((f: any, i: number) => (
-                             <div key={i} className="flex items-start gap-3 p-4 bg-white rounded-2xl border border-slate-200 shadow-sm">
-                               <FileText size={20} className="mt-1 shrink-0" style={{ color: COLORS.primary }} />
-                               <div>
-                                 <div className="text-sm font-black text-slate-900 leading-tight">{f.name}</div>
-                                 <div className="text-[11px] text-slate-500 font-medium">{f.sub}</div>
-                               </div>
-                             </div>
-                           ))}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-[10px]">
-                      <button onClick={() => setStepIdx(data.assetValue > 0 || data.sponsorDeceased ? 9 : 8)} className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63] flex items-center gap-2">
-                        <ArrowLeft size={14} /> Edit Info
-                      </button>
-                      <button 
-                        onClick={handleCompleteSave} 
-                        style={{ backgroundColor: COLORS.primary }}
-                        className="flex-1 p-[14px_22px] text-white rounded-[10px] text-[15px] font-semibold shadow-lg transition-all hover:opacity-90 hover:-translate-y-px flex items-center justify-center gap-2"
-                      >
-                        {isJourney ? "Complete & Save to Roadmap" : "Complete & Save Calculation"} <ArrowRight size={14} />
-                      </button>
-                    </div>
-                  </div>
-                </ResultGate>
-              );
+              return renderFinalPlan(isExemptChild);
             }
           })()}
         </div>
