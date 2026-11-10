@@ -1,7 +1,8 @@
 # IR-2 (Child of U.S. Citizen) Journey - Implementation Plan
 
 **Status**: Phase 0a DONE (2026-10-30, commit bf849244). Phase 0b DONE (2026-10-31, commit
-3b3b96d8). Phase 1 IN PROGRESS: chapter 1 DONE (2026-11-02, uncommitted); chapters 2 and 3 next.
+3b3b96d8). Phase 1 IN PROGRESS: chapter 1 DONE (2026-11-02, commit e0647ea8); CSPA age-out
+checker added (2026-11-04, uncommitted); chapters 2 and 3 next.
 **Date**: 2026-10-28 (updated 2026-10-31)
 
 > **Phase 0a result.** Stripe mapping (`journeyTypeForVisaCategory` -> `IR1 | IR2 | IR5`),
@@ -47,6 +48,21 @@
 > `"parent beneficiary"` (rendered as a third-party chip), uses two groups StepView never renders
 > ("Prepare for Later, Do Not Obtain Too Early", "Gather Later"), and links
 > `/guides/parent-relationship-guide`, which does not exist.
+>
+> **CSPA age-out checker (added 2026-11-04, product request, outside the original phase list).**
+> Free tool, one UI (`components/tools/CspaAgeCheckerTool.tsx`) and one rule set
+> (`lib/tools/cspa/ageOut.ts`, every rule tied to a uscis.gov page in `CSPA_SOURCES`):
+> standalone `/cspa-age-checker` (public, no sign-in, saves nothing; listed on `/tools`, sitemap)
+> and journey `cspa_checker` (toolbox, IR-2 / CR-2 only via `visaCategories`; `TOOL_FEATURE_MAP`
+> null; saves to the journey's `metadata.cspaCheck`; pre-fills from the eligibility quest and the
+> Child candidate's DOB). Linked from the IR-2 child quest result (q2, `companion_tool`, not on
+> `stop`) and from `step_1_4` (Fill I-130). Out of scope by design: F2A (INA 203(h) formula) and
+> previously married children -> "needs legal review". Verified against: USCIS CSPA page, Policy
+> Manual 7.A.7 (C.1, C.2), USCIS children page, family-of-U.S.-citizens page, adoption
+> family-based page. Not verified verbatim (State Dept 9 FAM did not load): consular-stage detail,
+> and that "filed" = the I-797C Received Date (the tool says so as practical guidance; legal
+> review should confirm). Tests: `__tests__/tools/cspa-age-checker`, `cspa-journey-wiring`,
+> `cspa-tool-render`.
 **Branch**: `hashir`
 **Goal**: Ship IR-2 as a full live journey on the same architecture IR-5 uses (chapters-schema JSON
 -> `RoadmapLayoutEngine`, multi-candidate, per-journey tier, case strength, vault, reminders,

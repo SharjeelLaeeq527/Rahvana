@@ -228,9 +228,14 @@ the two slug maps must stay in sync.** Pages are wrapped by `[visa-journey]/layo
 
 **Journey toolbox (app groups).** `types/app-groups.ts` + `lib/constants/journey-app-groups.ts`
 define `JOURNEY_APP_GROUPS`: **Tools** (221g planner, interview prep, sponsorship calculator,
-DQ check, photo booth, PDF toolkit, snap & sign, smart form filler), **Guides** (7 guides),
-**Services** (consultation, PCC Sindh, medical booking, translation). Each item has a
-`componentKey`; `TOOL_FEATURE_MAP` maps it to an entitlement feature key. `AppGroupGrid`
+CSPA age-out checker, DQ check, photo booth, PDF toolkit, snap & sign, smart form filler),
+**Guides** (7 guides), **Services** (consultation, PCC Sindh, medical booking, translation). Each
+item has a `componentKey`; `TOOL_FEATURE_MAP` maps it to an entitlement feature key (`null` = free,
+never locked). An item with `visaCategories` (e.g. the CSPA checker: `["IR-2", "CR-2"]`) shows only
+on a journey of that base category; `getJourneyAppGroups(null)` still returns the full catalog.
+A step can point at a toolbox tool with a JSON `companion_tool` (`{component_key, title, body,
+button_label}`) on `tool_data` or on a quest (`show_when` = result states); StepView /
+QuestRenderer render `CompanionToolCard`, which launches it through the same `onLaunchTool` path. `AppGroupGrid`
 (in `journey-engine/`) is rendered by BOTH dashboards' `DashboardView`; clicking a group opens
 `AppGroupModal` (portal, search, lock state from `useJourneyPlan`; locked items open
 `UpgradeModal`). Launching an item renders it via
@@ -1137,6 +1142,17 @@ Components consume these via hooks/contexts; they should not re-implement domain
   `journey-spouse/components/`) import from here. Sponsor state comes from
   `profile.sponsor.address.state`: the journey `StepView`s pass it in (`lockState` = shown
   read-only), while the standalone `/affidavit-support-calculator` page requires a selector.
+- `lib/tools/cspa/ageOut.ts` - **CSPA age-out checker** rules for a child of a U.S. citizen
+  (IR-2 / CR-2): age frozen on the I-130 filing date (or on the parent's naturalization date when
+  the parent was a green card holder at filing), stepchild marriage before 18, adoption before 16
+  (16-18 = birth-sibling exception only), married = F3, filed at 21+ = F1. Every rule cites an
+  official uscis.gov page in `CSPA_SOURCES`; F2A (INA 203(h) formula) and previously married
+  children are deliberately "needs review". Legal content pending review (IR-2 plan D6). One UI,
+  `components/tools/CspaAgeCheckerTool.tsx`, FREE in both modes: standalone `/cspa-age-checker`
+  (public, no sign-in, indexable, reads and saves nothing) and journey `cspa_checker`
+  (EmbeddedToolContainer; pre-fill from `lib/tools/cspa/journeyPrefill.ts` reads only the active
+  journey's metadata + the active Child candidate's DOB, and saves to that journey's
+  `metadata.cspaCheck`). Tests: `__tests__/tools/cspa-*.test.ts`.
 - UI utils: `cn()` (clsx + tailwind-merge), shared modals/inputs in `app/components/shared/*`.
 
 ---

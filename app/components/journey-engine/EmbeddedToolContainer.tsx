@@ -36,6 +36,7 @@ const DocumentTranslationTool = React.lazy(
 const PdfToolkitTool = React.lazy(() => import("@/components/tools/PdfToolkitTool"));
 const SnapAndSignTool = React.lazy(() => import("@/components/tools/SnapAndSignTool"));
 const DqStatusCheckTool = React.lazy(() => import("@/components/tools/DqStatusCheckTool"));
+const CspaAgeCheckerTool = React.lazy(() => import("@/components/tools/CspaAgeCheckerTool"));
 const MedicalAppointmentTool = React.lazy(
   () => import("@/components/tools/MedicalAppointmentTool")
 );
@@ -77,6 +78,7 @@ const VisaFormSelector = React.lazy(() => import("@/app/(tools)/(visa)/visa-form
 import { GuidePageOverlay } from "@/app/components/shared/GuidePageOverlay";
 import { getOverlayPageRoute } from "@/lib/constants/journey-app-groups";
 import { resolveCategorySlug } from "@/lib/interview-prep/journey-category-map";
+import { CSPA_METADATA_KEY, cspaInputFromJourney } from "@/lib/tools/cspa/journeyPrefill";
 
 interface EmbeddedToolContainerProps {
   toolKey: string;
@@ -759,6 +761,29 @@ export function EmbeddedToolContainer({
             />
           </div>
         );
+
+      case "cspa_checker": {
+        // Free tool. Pre-fill reads only THIS journey (its saved check, the eligibility quest
+        // answers) and the active candidate's date of birth when that candidate is the child.
+        const childDob =
+          activeCandidate?.relation === "Child" ? activeCandidate.dateOfBirth : undefined;
+        return (
+          <div className="mx-auto w-full max-w-7xl px-4 pt-4 sm:px-6 sm:pt-6 lg:px-8">
+            <CspaAgeCheckerTool
+              showHeader={false}
+              mode="journey"
+              journeyContext={journeyContext}
+              journeyTier={effectiveJourneyTier}
+              initialInput={cspaInputFromJourney(resolvedState?.metadata, childDob)}
+              onSave={(record) => {
+                (
+                  actions as { updateMetadata?: (u: Record<string, unknown>) => void }
+                )?.updateMetadata?.({ [CSPA_METADATA_KEY]: record });
+              }}
+            />
+          </div>
+        );
+      }
 
       case "visa_forms":
         return (

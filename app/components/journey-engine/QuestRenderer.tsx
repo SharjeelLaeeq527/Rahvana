@@ -6,6 +6,7 @@ import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { QuestSuiteV3, QuestDataV3 } from "./types";
 import { EligibilityRiskBanner } from "./components/EligibilityRiskBanner";
 import { FloatingSidePanel } from "./components/FloatingSidePanel";
+import { CompanionToolCard } from "./components/CompanionToolCard";
 import { E, msg } from "@/lib/errors";
 
 interface QuestRendererProps {
@@ -23,6 +24,8 @@ interface QuestRendererProps {
   isChapter3?: boolean;
   /** Visa journey type (e.g. "IR5") — routes eligibility alerts to the right detector. */
   journeyType?: string;
+  /** Opens a toolbox tool; enables a quest's `companion_tool` card on its result screen. */
+  onLaunchTool?: (componentKey: string) => void;
 }
 
 export function QuestRenderer({
@@ -34,6 +37,7 @@ export function QuestRenderer({
   isChapter2 = false,
   isChapter3 = false,
   journeyType,
+  onLaunchTool,
 }: QuestRendererProps) {
   const [activeQuestId, setActiveQuestId] = useState<string | null>(null);
   const [currentScreenIdx, setCurrentScreenIdx] = useState(0);
@@ -509,6 +513,19 @@ export function QuestRenderer({
           >
             {result?.body || "Please wait while we calculate your status."}
           </p>
+          {activeQuest.companion_tool &&
+            onLaunchTool &&
+            result?.state &&
+            (!activeQuest.companion_tool.show_when ||
+              activeQuest.companion_tool.show_when.includes(
+                result.state as "pass" | "caution" | "review" | "stop"
+              )) && (
+              <CompanionToolCard
+                config={activeQuest.companion_tool}
+                onLaunch={onLaunchTool}
+                className="mb-5 sm:mb-8"
+              />
+            )}
           <div className="mx-auto flex w-full max-w-[280px] flex-col gap-2.5 sm:gap-3">
             <button
               onClick={() => setView("landing")}
