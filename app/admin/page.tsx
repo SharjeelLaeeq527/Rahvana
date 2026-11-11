@@ -243,7 +243,7 @@ export default function AdminPanel() {
               title="Staging Authenticator (TOTP) Access"
               icon={<QrCode className="h-5 w-5" />}
               description="Generate and manage individual Google / Microsoft Authenticator QR codes for staging platform access"
-              badge="OWNER & MANAGER"
+              // badge="OWNER & MANAGER"
               badgeColor="bg-emerald-100 text-emerald-800"
             >
               <StagingTotpManager />
