@@ -134,7 +134,7 @@ const WizardInfoPanel = ({
   );
 
   const feeStructure =
-    // data.fee_structure ||
+    data.fee_structure ||
     guideData?.fee_structure ||
     guideData?.feeStructure ||
     guideData?.wizard?.fee_structure ||
@@ -315,28 +315,30 @@ const WizardInfoPanel = ({
                     return (
                       <div
                         key={i}
-                        className="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 flex items-center justify-between shadow-sm gap-3"
+                        className="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-sm"
                       >
-                        <div className="flex-1 min-w-0">
-                          <div
-                            className={`inline-block px-2 py-0.5 rounded-full text-[0.6rem] sm:text-[0.65rem] font-bold uppercase tracking-wider mb-1 ${badgeClass}`}
-                          >
-                            {tier.type}
+                        <div className="flex items-start justify-between gap-3 mb-2">
+                          <div className="flex-1 min-w-0">
+                            <div
+                              className={`inline-block px-2 py-0.5 rounded-full text-[0.6rem] sm:text-[0.65rem] font-bold uppercase tracking-wider ${badgeClass} max-w-full`}
+                            >
+                              <span className="block truncate">{tier.type}</span>
+                            </div>
                           </div>
-                          <p className="text-[0.7rem] sm:text-[0.75rem] text-slate-500 flex items-center gap-1 truncate">
-                            <Clock className="w-3 h-3 shrink-0" />
-                            {tier.days}
-                          </p>
+                          <div
+                            className="text-base sm:text-lg font-black text-slate-900 flex items-baseline gap-1 whitespace-nowrap shrink-0"
+                            dir="ltr"
+                          >
+                            <span className="text-[0.65rem] sm:text-xs font-medium text-slate-400">
+                              {t("wizard.guide.fee.currency")}
+                            </span>
+                            {tier.price}
+                          </div>
                         </div>
-                        <div
-                          className="text-base sm:text-lg font-black text-slate-900 flex items-baseline gap-1 whitespace-nowrap"
-                          dir="ltr"
-                        >
-                          <span className="text-[0.65rem] sm:text-xs font-medium text-slate-400">
-                            {t("wizard.guide.fee.currency")}
-                          </span>
-                          {tier.price}
-                        </div>
+                        <p className="text-[0.7rem] sm:text-[0.75rem] text-slate-500 flex items-start gap-1.5 leading-relaxed">
+                          <Clock className="w-3 h-3 shrink-0 mt-0.5" />
+                          <span className="flex-1">{tier.days}</span>
+                        </p>
                       </div>
                     );
                   })}

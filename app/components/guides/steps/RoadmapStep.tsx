@@ -30,9 +30,11 @@ interface RoadmapStepProps {
   checkedDocuments: string[];
   onToggleDocument: (id: string) => void;
   data?: RoadmapData;
+  hideDocuments?: boolean;
+  onsiteTitle?: string;
 }
 
-const RoadmapStep = ({ checkedDocuments, onToggleDocument, data }: RoadmapStepProps) => {
+const RoadmapStep = ({ checkedDocuments, onToggleDocument, data, hideDocuments = false, onsiteTitle }: RoadmapStepProps) => {
   const { t, isUrdu } = useLanguage();
   const title = data?.title || t("wizard.common.personalizedRoadmap");
   // const estimatedTimeline = data?.estimated_timeline || "";
@@ -64,10 +66,20 @@ const RoadmapStep = ({ checkedDocuments, onToggleDocument, data }: RoadmapStepPr
   }, [activePhase]);
 
   const getBulletPoints = (text: string) => {
-    return text
-      .split(/\.\s+/)
-      .map((item) => item.replace(/\.$/, "").trim())
-      .filter((item) => item.length > 0);
+    // Check if text already has natural bullet separators (periods followed by capital letter or newlines)
+    // If description has sentences that should stay together, don't split aggressively
+    const naturalSplits = text.split(/\.(?=\s+[A-Z])/);
+    
+    // Only split if we have multiple natural sentences
+    if (naturalSplits.length > 1) {
+      return naturalSplits
+        .map((item) => item.trim())
+        .filter((item) => item.length > 0)
+        .map((item) => (item.endsWith('.') ? item : item + '.'));
+    }
+    
+    // Otherwise return the whole text as a single item
+    return [text];
   };
 
   const renderTextWithLinks = (text: string) => {
@@ -118,13 +130,14 @@ const RoadmapStep = ({ checkedDocuments, onToggleDocument, data }: RoadmapStepPr
           >
             <TimelinePhases
               phases={onsitePhases}
-              type={t("wizard.common.onsiteApplication")}
+              type={onsiteTitle || t("wizard.common.onsiteApplication")}
               onSelectPhase={(phase) => {
                 setActivePhase(phase);
                 setHasClickedAnyPhase(true);
               }}
               hasClickedAnyPhase={hasClickedAnyPhase}
               hasOnlinePhases={hasOnlinePhases}
+              isOnlineType={false}
             />
           </div>
 
@@ -143,104 +156,109 @@ const RoadmapStep = ({ checkedDocuments, onToggleDocument, data }: RoadmapStepPr
               }}
               hasClickedAnyPhase={hasClickedAnyPhase}
               hasOnlinePhases={hasOnlinePhases}
+              isOnlineType={true}
             />
           </div>
         </div>
       </div>
 
-      <div className="h-14 sm:h-10"></div>
-      {/* Checklist Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 mt-0 md:-mt-4 pt-4">
-        <div
-          className="cursor-pointer group flex-1"
-          onClick={() => setShowDocuments(!showDocuments)}
-        >
-          <h3 className="text-[1.15rem] font-bold text-slate-900 group-hover:text-primary transition-colors flex items-center gap-2">
-            {t("wizard.common.requiredDocs")} ({checkedDocuments.length}/{documentsChecklist.length}
-            )
-            <ChevronDown
-              className={`w-5 h-5 transition-transform duration-300 ${
-                showDocuments ? "rotate-180" : ""
-              }`}
-            />
-          </h3>
-          {!showDocuments && (
-            <p className="text-[0.85rem] text-slate-500 mt-0.5">
-              {t("wizard.common.clickToSeeDocs")}
-            </p>
-          )}
-        </div>
-      </div>
+      {/* Checklist Header - Only show if not hidden */}
+      {!hideDocuments && documentsChecklist.length > 0 && (
+        <>
+          <div className="h-14 sm:h-10"></div>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 mt-0 md:-mt-4 pt-4">
+            <div
+              className="cursor-pointer group flex-1"
+              onClick={() => setShowDocuments(!showDocuments)}
+            >
+              <h3 className="text-[1.15rem] font-bold text-slate-900 group-hover:text-primary transition-colors flex items-center gap-2">
+                {t("wizard.common.requiredDocs")} ({checkedDocuments.length}/{documentsChecklist.length}
+                )
+                <ChevronDown
+                  className={`w-5 h-5 transition-transform duration-300 ${
+                    showDocuments ? "rotate-180" : ""
+                  }`}
+                />
+              </h3>
+              {!showDocuments && (
+                <p className="text-[0.85rem] text-slate-500 mt-0.5">
+                  {t("wizard.common.clickToSeeDocs")}
+                </p>
+              )}
+            </div>
+          </div>
 
-      {/* Checklist Items */}
-      <AnimatePresence>
-        {showDocuments && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden"
-          >
-            <div className="flex flex-col gap-3 pb-4">
-              {documentsChecklist.map((doc, idx) => {
-                const isChecked = checkedDocuments.includes(doc.id);
+          {/* Checklist Items */}
+          <AnimatePresence>
+            {showDocuments && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="flex flex-col gap-3 pb-4">
+                  {documentsChecklist.map((doc, idx) => {
+                    const isChecked = checkedDocuments.includes(doc.id);
 
-                return (
-                  <motion.div
-                    key={idx}
-                    whileHover={{ y: -1 }}
-                    onClick={() => onToggleDocument(doc.id)}
-                    className={`p-4 rounded-xl flex items-center justify-between transition-all cursor-pointer ${
-                      isChecked
-                        ? "bg-primary/5 border border-primary/30"
-                        : "bg-white border border-slate-200 shadow-sm hover:shadow-md"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3 flex-1">
-                      {/* Checkbox */}
-                      <div
-                        className={`w-5.5 h-5.5 rounded-[6px] flex items-center justify-center shrink-0 transition-all ${
+                    return (
+                      <motion.div
+                        key={idx}
+                        whileHover={{ y: -1 }}
+                        onClick={() => onToggleDocument(doc.id)}
+                        className={`p-4 rounded-xl flex items-center justify-between transition-all cursor-pointer ${
                           isChecked
-                            ? "bg-primary border-2 border-primary"
-                            : "bg-white border-2 border-slate-300"
+                            ? "bg-primary/5 border border-primary/30"
+                            : "bg-white border border-slate-200 shadow-sm hover:shadow-md"
                         }`}
                       >
-                        {isChecked && <Check className="w-3.5 h-3.5 text-white" />}
-                      </div>
-
-                      <div className={isUrdu ? "font-urdu-body" : ""}>
-                        <div className="flex items-center gap-2">
-                          <span
-                            className={`text-[0.9rem] font-bold text-slate-800 ${
-                              isChecked ? "line-through opacity-70" : ""
+                        <div className="flex items-center gap-3 flex-1">
+                          {/* Checkbox */}
+                          <div
+                            className={`w-5.5 h-5.5 rounded-[6px] flex items-center justify-center shrink-0 transition-all ${
+                              isChecked
+                                ? "bg-primary border-2 border-primary"
+                                : "bg-white border-2 border-slate-300"
                             }`}
                           >
-                            {doc.label}
-                          </span>
+                            {isChecked && <Check className="w-3.5 h-3.5 text-white" />}
+                          </div>
 
-                          {doc.required && (
-                            <span className="px-2 py-px rounded-md bg-rose-50 text-rose-600 text-[0.7rem] font-bold uppercase tracking-wider">
-                              {t("wizard.common.required")}
-                            </span>
-                          )}
+                          <div className={isUrdu ? "font-urdu-body" : ""}>
+                            <div className="flex items-center gap-2">
+                              <span
+                                className={`text-[0.9rem] font-bold text-slate-800 ${
+                                  isChecked ? "line-through opacity-70" : ""
+                                }`}
+                              >
+                                {doc.label}
+                              </span>
+
+                              {doc.required && (
+                                <span className="px-2 py-px rounded-md bg-rose-50 text-rose-600 text-[0.7rem] font-bold uppercase tracking-wider">
+                                  {t("wizard.common.required")}
+                                </span>
+                              )}
+                            </div>
+
+                            <p
+                              className={`text-[0.8rem] text-slate-500 mt-0.5 ${
+                                isChecked ? "opacity-70" : ""
+                              }`}
+                            >
+                              {doc.description}
+                            </p>
+                          </div>
                         </div>
-
-                        <p
-                          className={`text-[0.8rem] text-slate-500 mt-0.5 ${
-                            isChecked ? "opacity-70" : ""
-                          }`}
-                        >
-                          {doc.description}
-                        </p>
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </>
+      )}
 
       {/* Phase Modal */}
       {mounted && typeof document !== "undefined"
@@ -319,6 +337,7 @@ interface TimelineProps {
   onSelectPhase: (phase: Phase) => void;
   hasClickedAnyPhase: boolean;
   hasOnlinePhases?: boolean;
+  isOnlineType?: boolean;
 }
 
 const TimelinePhases = ({
@@ -327,6 +346,7 @@ const TimelinePhases = ({
   onSelectPhase,
   hasClickedAnyPhase,
   hasOnlinePhases = true,
+  isOnlineType = false,
 }: TimelineProps) => {
   const { t, isUrdu } = useLanguage();
   const [activeId, setActiveId] = useState<number | null>(null);
@@ -334,15 +354,15 @@ const TimelinePhases = ({
   return (
     <div
       className={`p-6 rounded-2xl border shadow-lg ${
-        type === t("wizard.common.onsiteApplication")
-          ? "bg-linear-to-br from-[#e8f6f6] to-[#d1eeef] border-primary/20"
-          : "bg-linear-to-br from-[#e8f6f6] to-[#0d47a1]/20 border-[#0d47a1]/30"
+        isOnlineType
+          ? "bg-linear-to-br from-[#e8f6f6] to-[#0d47a1]/20 border-[#0d47a1]/30"
+          : "bg-linear-to-br from-[#e8f6f6] to-[#d1eeef] border-primary/20"
       }`}
       dir={isUrdu ? "rtl" : "ltr"}
     >
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-2">
         <h4
-          className={`text-lg font-bold ${type === t("wizard.common.onsiteApplication") ? "text-primary" : "text-[#0d47a1]"}`}
+          className={`text-lg font-bold ${isOnlineType ? "text-[#0d47a1]" : "text-primary"}`}
         >
           {type}
         </h4>
@@ -353,7 +373,7 @@ const TimelinePhases = ({
           >
             <span
               className={`px-3 py-1 text-[0.7rem] font-bold rounded-full transition-all duration-300 uppercase tracking-wider ${
-                type === t("wizard.common.onsiteApplication")
+                !isOnlineType
                   ? "bg-white text-primary shadow-sm ring-1 ring-slate-200/50"
                   : "text-slate-400 hover:text-slate-600"
               }`}
@@ -362,7 +382,7 @@ const TimelinePhases = ({
             </span>
             <span
               className={`px-3 py-1 text-[0.7rem] font-bold rounded-full transition-all duration-300 uppercase tracking-wider ${
-                type === t("wizard.common.onlineApplication")
+                isOnlineType
                   ? "bg-white text-[#0d47a1] shadow-sm ring-1 ring-slate-200/50"
                   : "text-slate-400 hover:text-slate-600"
               }`}
@@ -393,7 +413,7 @@ const TimelinePhases = ({
                   className={`absolute top-[28px] ${isUrdu ? "right-[50%]" : "left-[50%]"} w-full h-1 z-0`}
                 >
                   <div
-                    className={`w-full h-full ${type === t("wizard.common.onsiteApplication") ? "bg-primary/30" : "bg-[#0d47a1]/40"} rounded-full`}
+                    className={`w-full h-full ${isOnlineType ? "bg-[#0d47a1]/40" : "bg-primary/30"} rounded-full`}
                   ></div>
                 </div>
               )}
@@ -416,8 +436,7 @@ const TimelinePhases = ({
                     <div
                       className="absolute inset-0 rounded-full bg-current opacity-30 animate-ping z-0 pointer-events-none"
                       style={{
-                        color:
-                          type === t("wizard.common.onsiteApplication") ? "#0d7377" : "#0d47a1",
+                        color: isOnlineType ? "#0d47a1" : "#0d7377",
                       }}
                     />
                   )}
@@ -426,12 +445,12 @@ const TimelinePhases = ({
                   font-bold text-white text-lg shadow-lg group-hover:scale-110 transition-transform duration-200 border-2
                   ${
                     activeId === phase.id
-                      ? type === t("wizard.common.onsiteApplication")
-                        ? "bg-primary border-[#0a5a5d] ring-4 ring-primary/20"
-                        : "bg-[#0d47a1] border-[#063275] ring-4 ring-[#0d47a1]/20"
-                      : type === t("wizard.common.onsiteApplication")
-                        ? "bg-linear-to-br from-primary to-[#0a5a5d] border-[#0a5a5d] group-hover:ring-2 group-hover:ring-primary/30"
-                        : "bg-linear-to-br from-[#0d47a1] to-[#0d47a1] border-[#063275] group-hover:ring-2 group-hover:ring-[#0d47a1]/30"
+                      ? isOnlineType
+                        ? "bg-[#0d47a1] border-[#063275] ring-4 ring-[#0d47a1]/20"
+                        : "bg-primary border-[#0a5a5d] ring-4 ring-primary/20"
+                      : isOnlineType
+                        ? "bg-linear-to-br from-[#0d47a1] to-[#0d47a1] border-[#063275] group-hover:ring-2 group-hover:ring-[#0d47a1]/30"
+                        : "bg-linear-to-br from-primary to-[#0a5a5d] border-[#0a5a5d] group-hover:ring-2 group-hover:ring-primary/30"
                   }`}
                   >
                     {phase.id}

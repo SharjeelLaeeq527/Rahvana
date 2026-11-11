@@ -1,7 +1,7 @@
 // Category Selection Step - Displays available visa categories for user selection.
 "use client";
 import { Button } from "@/components/ui/button";
-import { Heart, UsersRound, UserRound, type LucideIcon, FileText } from "lucide-react";
+import { Heart, UsersRound, Baby, UserRound, type LucideIcon, FileText } from "lucide-react";
 import type { InterviewCategoryConfig } from "@/data/interview-categories/schema";
 
 export interface CategoryWithPurchaseStatus extends InterviewCategoryConfig {
@@ -102,6 +102,7 @@ const getThemeColor = (themeColor: string) => {
 const CATEGORY_ICON_MAP: Record<string, LucideIcon> = {
   heart: Heart,
   "users-round": UsersRound,
+  "baby": Baby,
 };
 
 const getCategoryIcon = (iconName: string): LucideIcon => {

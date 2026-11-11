@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
-import { IR5_ENABLED } from "@/lib/feature-flags";
+import { IR5_ENABLED, IR2_ENABLED } from "@/lib/feature-flags";
 import { JourneyLayoutClient } from "./JourneyLayoutClient";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://rahvana.com";
 
-/** IR-5 is hidden on production (see lib/feature-flags): true when this slug is IR-5 and gated off. */
-const isGatedIr5 = (slug: string) =>
-  !IR5_ENABLED && (slug === "ir-5" || slug === "ir5-journey");
+/** Unlaunched journeys stay hidden on production (see lib/feature-flags): true when this slug
+ * belongs to a gated category whose flag is off. Both slug forms are covered. */
+const isGatedJourneySlug = (slug: string) =>
+  (!IR5_ENABLED && (slug === "ir-5" || slug === "ir5-journey")) ||
+  (!IR2_ENABLED && (slug === "ir-2" || slug === "ir2-journey"));
 
 /**
  * Per-journey metadata for /visa-category/[visa-journey].
@@ -98,9 +100,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { "visa-journey": slug } = await params;
 
-  // IR-5 hidden on production: emit generic, non-indexed metadata so the title,
-  // keywords, and social preview never expose IR-5.
-  if (isGatedIr5(slug)) {
+  // Gated journeys on production: emit generic, non-indexed metadata so the title,
+  // keywords, and social preview never expose them.
+  if (isGatedJourneySlug(slug)) {
     return {
       title: DEFAULT_META.title,
       description: DEFAULT_META.description,
@@ -195,6 +197,35 @@ const JOURNEY_HOWTO_SCHEMAS: Record<string, Record<string, unknown>> = {
       },
     ],
   },
+
+  "ir-2": {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    name: "How to Apply for an IR-2 U.S. Child Immigrant Visa",
+    description:
+      "Step-by-step roadmap for U.S. citizens sponsoring their unmarried child under 21 for permanent residency in the United States through the IR-2 immediate relative visa process.",
+    totalTime: "P12M",
+    step: [
+      {
+        "@type": "HowToStep",
+        name: "Stage 1: USCIS Petition Filing (Form I-130)",
+        text: "File Form I-130 with USCIS and provide evidence of the parent-child relationship, the child's birth certificate, and proof of U.S. citizenship.",
+        url: `${SITE_URL}/visa-category/ir-2#stage-1`,
+      },
+      {
+        "@type": "HowToStep",
+        name: "Stage 2: National Visa Center (NVC) Processing",
+        text: "Pay the required NVC fees, complete Form DS-260, submit civil documents, and provide Form I-864 Affidavit of Support when required.",
+        url: `${SITE_URL}/visa-category/ir-2#stage-2`,
+      },
+      {
+        "@type": "HowToStep",
+        name: "Stage 3: Medical Examination, Biometrics & Consular Interview",
+        text: "Complete the required medical examination and biometrics, attend the U.S. Embassy or Consulate interview, and receive the IR-2 immigrant visa if approved.",
+        url: `${SITE_URL}/visa-category/ir-2#stage-3`,
+      },
+    ],
+  },
 };
 
 export default async function VisaJourneyLayout({
@@ -205,16 +236,13 @@ export default async function VisaJourneyLayout({
   params: Promise<{ "visa-journey": string }>;
 }) {
   const { "visa-journey": slug } = await params;
-  // IR-5 hidden on production: do not inject IR-5 HowTo structured data.
-  const howToSchema = isGatedIr5(slug) ? undefined : JOURNEY_HOWTO_SCHEMAS[slug];
+  // Gated journeys on production: do not inject their HowTo structured data.
+  const howToSchema = isGatedJourneySlug(slug) ? undefined : JOURNEY_HOWTO_SCHEMAS[slug];
 
   return (
     <>
       {howToSchema && <JsonLd schema={howToSchema} />}
-      <JourneyLayoutClient journeySlug={slug}>
-        {children}
-      </JourneyLayoutClient>
+      <JourneyLayoutClient journeySlug={slug}>{children}</JourneyLayoutClient>
     </>
   );
 }
-

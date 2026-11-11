@@ -2,7 +2,7 @@
 
 import React from "react";
 import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
-import { IR5_ENABLED } from "@/lib/feature-flags";
+import { IR5_ENABLED, IR2_ENABLED } from "@/lib/feature-flags";
 import { useJourneyEnvironment } from "@/app/context/JourneyEnvironmentContext";
 
 interface DqRecordingToolProps {
@@ -29,6 +29,15 @@ const DQ_CATEGORY_OPTIONS = [
     value: "IR-1",
     label: "IR-1",
   },
+  // IR-2 is hidden on production (see lib/feature-flags) until it launches.
+  ...(IR2_ENABLED
+    ? [
+        {
+          value: "IR-2",
+          label: "IR-2",
+        },
+      ]
+    : []),
   // IR-5 is hidden on production (see lib/feature-flags) until it launches.
   ...(IR5_ENABLED
     ? [

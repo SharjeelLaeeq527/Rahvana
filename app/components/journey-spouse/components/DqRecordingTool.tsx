@@ -1,6 +1,8 @@
 "use client";
 
 import React from "react";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
+import { IR5_ENABLED, IR2_ENABLED } from "@/lib/feature-flags";
 
 interface DqRecordingToolProps {
   dqState: {

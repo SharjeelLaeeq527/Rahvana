@@ -191,6 +191,21 @@ export const GUIDE_REGISTRY: GuideMetadata[] = [
     visaCategories: ["IR-5"],
     creditPayable: false,
   },
+  {
+    id: "child-citizenship",
+    resourceId: "guide-child-citizenship",
+    slug: "child-citizenship-guide",
+    title: "Child Citizenship",
+    subtitle: "U.S. Citizenship Eligibility & Documentation",
+    description:
+      "Screen for U.S. citizenship acquired through a U.S. citizen parent: at birth (CRBA), automatically under INA § 320, or by naturalization abroad under INA § 322.",
+    category: "Pakistan Document",
+    href: "/guides/child-citizenship-guide",
+    iconName: "BookOpen",
+    minJourneyTier: "free",
+    visaCategories: ["IR-2", "CR-2"],
+    creditPayable: false,
+  },
 ];
 
 /** Lookup map by id */

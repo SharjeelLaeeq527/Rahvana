@@ -243,7 +243,16 @@ export class ConfigLoader {
 
     // Add visa-type-specific keys
     const visaType = rawJSON.journey_type;
-    if (visaType === "IR1" || visaType === "IR-1" || visaType === "IR5" || visaType === "IR-5") {
+    if (
+      visaType === "IR1" ||
+      visaType === "IR-1" ||
+      visaType === "IR5" ||
+      visaType === "IR-5" ||
+      visaType === "IR2" ||
+      visaType === "IR-2" ||
+      visaType === "CR2" ||
+      visaType === "CR-2"
+    ) {
       keys.add("filing_method");
       keys.add("visa_category");
       keys.add("beneficiary_age");
@@ -255,6 +264,18 @@ export class ConfigLoader {
       keys.add("petitioner_age");
       keys.add("petitioner_citizenship_status");
       keys.add("parent_relationship_type");
+    }
+
+    // Consumed by the IR-2 document checklist and CR-2 branching, so they are not
+    // picked up by the visible_when scan below.
+    if (visaType === "IR2" || visaType === "IR-2" || visaType === "CR2" || visaType === "CR-2") {
+      keys.add("child_relationship_type");
+      keys.add("child_prior_marriages");
+      keys.add("parent_prior_marriages");
+      keys.add("step_relationship_ended");
+      keys.add("child_custody_or_consent_required");
+      keys.add("child_date_of_birth");
+      keys.add("visaClass");
     }
 
     // Extract from visible_when conditions
@@ -272,22 +293,59 @@ export class ConfigLoader {
   }
 
   /**
+   * Declared type per case data key. Conditions compare strictly, so a key gated on
+   * `true` needs a JSON boolean, and a key gated on a list needs an array.
+   * The journey JSON is the source of truth for step-gated keys; the map below covers
+   * keys no step references (IR-2 checklist conditions, CR-2 branching, child DOB).
+   *
+   * @param rawJSON - Raw journey JSON
+   * @returns Map of case data key to data_type
+   */
+  static extractCaseDataKeyTypes(
+    rawJSON: RawJourneyJSON
+  ): Record<string, NonNullable<CaseDataInput["data_type"]>> {
+    const types: Record<string, NonNullable<CaseDataInput["data_type"]>> = {
+      child_prior_marriages: "boolean",
+      parent_prior_marriages: "boolean",
+      step_relationship_ended: "boolean",
+      child_custody_or_consent_required: "boolean",
+      child_relationship_type: "string",
+      visaClass: "string",
+      child_date_of_birth: "date",
+    };
+
+    for (const chapter of rawJSON.chapters) {
+      for (const step of chapter.steps) {
+        if (step.visible_when && typeof step.visible_when === "object") {
+          for (const [key, value] of Object.entries(step.visible_when)) {
+            if (Array.isArray(value)) types[key] = "array";
+            else if (typeof value === "boolean") types[key] = "boolean";
+          }
+        }
+      }
+    }
+
+    return types;
+  }
+
+  /**
    * Generate initial case data for journey
    *
    * Creates empty case data records for all identified keys.
    * User fills in values over time.
    *
    * @param caseDataKeys - Keys extracted from journey
-   * @param journeyId - Parent journey ID (optional, set during insert)
+   * @param keyTypes - Declared types from extractCaseDataKeyTypes (default "string")
    * @returns Array of CaseDataInput ready for database insert
    */
-  static generateInitialCaseData(caseDataKeys: string[]): CaseDataInput[] {
-    const now = new Date().toISOString();
-
+  static generateInitialCaseData(
+    caseDataKeys: string[],
+    keyTypes: Record<string, NonNullable<CaseDataInput["data_type"]>> = {}
+  ): CaseDataInput[] {
     return caseDataKeys.map((key) => ({
       data_key: key,
       data_value: null,
-      data_type: "string",
+      data_type: keyTypes[key] || "string",
       source: "system_calculated", // Match valid source literally
       is_verified: false,
     }));
@@ -344,6 +402,10 @@ export class ConfigLoader {
       "IR-1": "IR-1",
       IR5: "IR-5",
       "IR-5": "IR-5",
+      IR2: "IR-2",
+      "IR-2": "IR-2",
+      CR2: "CR-2",
+      "CR-2": "CR-2",
     };
 
     return mapping[journeyType] || journeyType;
@@ -397,7 +459,10 @@ export async function seedJourneyFromJSON(filePath: string, userId: string): Pro
     const journeyInput: JourneyInput = ConfigLoader.transformJourneyInput(rawJSON);
     const chaptersInput: ChapterInput[] = ConfigLoader.transformChaptersInput(rawJSON.chapters);
     const caseDataKeys = ConfigLoader.extractCaseDataKeys(rawJSON);
-    const caseDataInput: CaseDataInput[] = ConfigLoader.generateInitialCaseData(caseDataKeys);
+    const caseDataInput: CaseDataInput[] = ConfigLoader.generateInitialCaseData(
+      caseDataKeys,
+      ConfigLoader.extractCaseDataKeyTypes(rawJSON)
+    );
 
     console.log(`Journey: ${journeyInput.journey_name}`);
     console.log(`Chapters: ${chaptersInput.length}`);
