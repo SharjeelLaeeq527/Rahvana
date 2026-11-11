@@ -597,11 +597,6 @@
             "field": "caseType",
             "operator": "equals",
             "value": "child"
-          },
-          {
-            "field": "applicant_marital_status",
-            "operator": "equals",
-            "value": "Married"
           }
         ]
       },
@@ -768,6 +763,6 @@
     }
   ],
   "migrationNotes": {
-    "v1_to_v1.0.0": "Fully rebuilt to match the current ir-2-child questionnaire keys (applicant_age_range, applicant_marital_status, currently_studying, has_siblings, petitioner_relationship, child_relationship_type, biological_parent_petitioner, biological_parents_married_at_birth, stepparent_marriage_before_18, adoption_case_type, current_living_arrangement, communication_frequency, us_travel_history, previous_visa_refusal, refused_visa_type, immigration_violation, deportation_removal_history) and the v2 question-bank categories. Removed obsolete fields such as current_country, current_age (numeric), lived_with_parent, relationship_type, sponsor_relationship, criminal_history, communication_method, has_photos_with_parent, financial_support_from_parent, plans_to_study, and the old category names (Basic Identity, Special Cases, Intent, Security, etc.)."
+    "v1_to_v1.0.0": "Fully rebuilt to match the current ir-2-child questionnaire keys (applicant_age_range, currently_studying, has_siblings, petitioner_relationship, child_relationship_type, biological_parent_petitioner, biological_parents_married_at_birth, stepparent_marriage_before_18, adoption_case_type, current_living_arrangement, communication_frequency, us_travel_history, previous_visa_refusal, refused_visa_type, immigration_violation, deportation_removal_history) and the v2 question-bank categories. Removed obsolete fields such as current_country, current_age (numeric), lived_with_parent, relationship_type, sponsor_relationship, criminal_history, communication_method, has_photos_with_parent, financial_support_from_parent, plans_to_study, and the old category names (Basic Identity, Special Cases, Intent, Security, etc.)."
   }
 }

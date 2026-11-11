@@ -419,7 +419,7 @@
       "sampleAnswer": "Yes, I have one younger brother named Bilal, who is eight years old.",
       "guidance": "Count full, half, step, and adopted siblings, and give names or ages if you know them.",
       "tooltip": "Siblings can be part of the same or related petitions and family records.",
-      "conditions": { "requireIntake": [], "requireCaseTypes": ["child"] },
+      "conditions": { "requireIntake": ["has_siblings"], "requireCaseTypes": ["child"], "requireIntakeValues": { "has_siblings": "Yes" } },
       "inputPlaceholder": "List your brothers and sisters, if any",
       "minLength": 5,
       "maxLength": 300,
