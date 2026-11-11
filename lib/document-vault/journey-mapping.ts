@@ -295,6 +295,92 @@ export function mapDocumentNameToId(name: string): string {
     "form i-864 affidavit of support - petitioner": "i-864-affidavit",
     "proof of u.s. domicile - petitioner": "domicile-proof-petitioner",
 
+    // Child / IR-2 Specific Mappings
+    "child's birth certificate": "birth-cert-beneficiary",
+    "child birth certificate": "birth-cert-beneficiary",
+    "child beneficiary birth certificate": "birth-cert-beneficiary",
+    "child's official civil birth record": "birth-cert-beneficiary",
+    "child-birth": "birth-cert-beneficiary",
+    "doc_child_birth_cert": "birth-cert-beneficiary",
+
+    "nadra children registration certificate (b-form)": "nadra-crc",
+    "nadra child registration certificate (crc / b-form) or frc": "nadra-crc",
+    "child registration certificate (crc / b-form)": "nadra-crc",
+    "child registration certificate": "nadra-crc",
+    "nadra child registration certificate": "nadra-crc",
+    "nadra crc": "nadra-crc",
+    "crc / b-form": "nadra-crc",
+    "b-form": "nadra-crc",
+    "doc_child_crc": "nadra-crc",
+    "nadra-crc": "nadra-crc",
+
+    "family registration certificate (frc)": "family-registration-cert",
+    "family registration certificate": "family-registration-cert",
+    "frc": "family-registration-cert",
+    "doc_frc": "family-registration-cert",
+
+    "parents' marriage certificate (nikah nama and nadra mrc)": "child-parents-marriage-cert",
+    "parents' marriage certificate (nikah nama & nadra mrc)": "child-parents-marriage-cert",
+    "parents' marriage certificate (nikah nama / nadra mrc)": "child-parents-marriage-cert",
+    "doc_parents_marriage": "child-parents-marriage-cert",
+    "parents-marriage": "child-parents-marriage-cert",
+    "child-parents-marriage-cert": "child-parents-marriage-cert",
+
+    "legitimation or father-child relationship evidence": "child-father-relationship-evidence",
+    "legitimation or bona fide father-child relationship evidence": "child-father-relationship-evidence",
+    "evidence of a bona fide father-child relationship (child)": "child-father-relationship-evidence",
+    "doc_legitimation": "child-father-relationship-evidence",
+    "father-relationship": "child-father-relationship-evidence",
+    "child-father-relationship-evidence": "child-father-relationship-evidence",
+
+    "stepparent marriage and relationship records": "child-stepparent-marriage-cert",
+    "doc_stepparent_marriage": "child-stepparent-marriage-cert",
+    "stepparent-records": "child-stepparent-marriage-cert",
+    "child-stepparent-marriage-cert": "child-stepparent-marriage-cert",
+
+    "adoption decree, legal custody, and 2-year joint residence": "child-adoption-decree",
+    "doc_adoption_decree": "child-adoption-decree",
+    "adoption-records": "child-adoption-decree",
+    "child-adoption-decree": "child-adoption-decree",
+
+    "doc_adoption_custody_residence": "child-custody-residence-evidence",
+    "child-custody-residence-evidence": "child-custody-residence-evidence",
+
+    "custody order or other parent's consent": "child-custody-order-consent",
+    "custody order and non-accompanying parent consent": "child-custody-order-consent",
+    "legal custody decree or non-accompanying parent consent letter (noc)": "child-custody-order-consent",
+    "custody order and the other parent's written consent": "child-custody-order-consent",
+    "doc_custody_consent": "child-custody-order-consent",
+    "custody-consent": "child-custody-order-consent",
+    "child-custody-order-consent": "child-custody-order-consent",
+
+    "proof of the child's unmarried status": "child-marital-status-attestation",
+    "child-marital-status-attestation": "child-marital-status-attestation",
+
+    "termination of the child's prior marriages": "child-prior-marriage-terminations",
+    "child-prior-marriage-terminations": "child-prior-marriage-terminations",
+
+    "termination of the parents' prior marriages": "parent-prior-marriage-terminations",
+    "doc_stepparent_prior_marriages": "parent-prior-marriage-terminations",
+    "parent-prior-marriage-terminations": "parent-prior-marriage-terminations",
+
+    "evidence of a continuing stepparent-stepchild relationship": "step-relationship-continuing-evidence",
+    "step-relationship-continuing-evidence": "step-relationship-continuing-evidence",
+
+    "child beneficiary passport biographic page": "passport-beneficiary",
+    "child's passport": "passport-beneficiary",
+    "doc_child_passport": "passport-beneficiary",
+
+    "police certificate (ages 16+ only)": "police-certificate-pakistan",
+    "doc_police_cert": "police-certificate-pakistan",
+
+    "passport-style photographs (2x2 inches)": "passport-photos",
+    "doc_passport_photos": "passport-photos",
+
+    "petitioner's proof of u.s. citizenship": "citizenship-proof-petitioner",
+    "doc_citizenship": "citizenship-proof-petitioner",
+    "petitioner-citizenship": "citizenship-proof-petitioner",
+
     // Exact matches from IR-1 journey JSON (lowercased for matching)
     "proof of u.s. citizenship": "citizenship-proof-petitioner",
     "beneficiary passport": "passport-beneficiary",
@@ -573,9 +659,12 @@ export function isDocumentApplicableToJourney(
       }
     }
 
-    // Spouse-relationship specific categories/documents should be hidden for parent (IR-5)
+    // Spouse-relationship specific categories/documents should be hidden for parent (IR-5) and child (IR-2)
+    // UNLESS the document explicitly defines this visa category in its applicableVisas.
     if (doc.category === "RELATIONSHIP" && !["IR-1", "CR-1"].includes(visaCategory)) {
-      return false;
+      if (!doc.applicableVisas || !doc.applicableVisas.includes(visaCategory)) {
+        return false;
+      }
     }
   }
 
@@ -708,6 +797,21 @@ export function syncQuestionnaireAnswersToFlags(
   }
   if (answers.parent_prior_marriages === "yes" || answers.parent_prior_marriages === true) {
     flags.parent_prior_marriages = true;
+  }
+  if (answers.child_relationship_type) {
+    flags.child_relationship_type = answers.child_relationship_type;
+  }
+  if (answers.child_custody_or_consent_required === "yes" || answers.child_custody_or_consent_required === true) {
+    flags.child_custody_or_consent_required = true;
+  }
+  if (answers.child_prior_marriages === "yes" || answers.child_prior_marriages === true) {
+    flags.child_prior_marriages = true;
+  }
+  if (answers.step_relationship_ended === "yes" || answers.step_relationship_ended === true) {
+    flags.step_relationship_ended = true;
+  }
+  if (answers.child_age_16_or_older === "yes" || answers.child_age_16_or_older === true) {
+    flags.child_age_16_or_older = true;
   }
 
   return flags;

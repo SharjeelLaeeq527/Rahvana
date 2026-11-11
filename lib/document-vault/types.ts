@@ -77,6 +77,7 @@ export interface ScenarioFlags {
     | "stepchild"
     | "adopted";
   child_prior_marriages?: boolean;
+  child_age_16_or_older?: boolean;
   child_custody_or_consent_required?: boolean;
   /** The marriage that created a step-relationship has since ended, so continuing ties must be shown. */
   step_relationship_ended?: boolean;
