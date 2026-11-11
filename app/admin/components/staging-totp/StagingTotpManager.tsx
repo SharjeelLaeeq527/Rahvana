@@ -191,16 +191,19 @@ export function StagingTotpManager() {
             <ShieldAlert className="h-6 w-6" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-slate-900">
-              Manager &amp; Owner Access Only
-            </h3>
+            <h3 className="text-base font-bold text-slate-900">Manager &amp; Owner Access Only</h3>
             <p className="mt-1 text-sm leading-relaxed text-slate-600">
-              You do not have permission to generate QR codes or manage staging access keys.
-              This capability is restricted strictly to designated platform Owners and Managers
-              configured in the environment variable (<code className="rounded bg-amber-100 px-1 py-0.5 font-mono text-xs text-amber-900">STAGING_TOTP_MANAGER_EMAILS</code>).
+              You do not have permission to generate QR codes or manage staging access keys. This
+              capability is restricted strictly to designated platform Owners and Managers
+              configured in the environment variable (
+              <code className="rounded bg-amber-100 px-1 py-0.5 font-mono text-xs text-amber-900">
+                STAGING_TOTP_MANAGER_EMAILS
+              </code>
+              ).
             </p>
             <p className="mt-2 text-xs text-slate-500">
-              If a team member needs access to the staging platform, please reach out to an authorized Owner or Manager.
+              If a team member needs access to the staging platform, please reach out to an
+              authorized Owner or Manager.
             </p>
           </div>
         </div>
@@ -210,22 +213,9 @@ export function StagingTotpManager() {
 
   return (
     <div className="space-y-6">
-      {/* Header Info */}
-      <div className="mt-3 flex flex-col justify-between gap-4 rounded-2xl border border-teal-200/60 bg-gradient-to-r from-teal-50 to-emerald-50/50 p-5 sm:flex-row sm:items-center">
-        <div>
-          <h3 className="flex items-center gap-2 text-lg font-bold text-slate-900">
-            <QrCode className="h-5 w-5 text-teal-700" />
-            Staging Authenticator (TOTP) Access Generator
-          </h3>
-          <p className="mt-1 text-sm leading-relaxed text-slate-600">
-            Generate individual Google Authenticator / Microsoft Authenticator QR codes for team
-            members. Each team member receives their own unique secret.
-          </p>
-        </div>
-      </div>
 
       {/* Generator Form */}
-      <Card className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <Card className="mt-3 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         {/* Active Configured Members Badges */}
         {existingUsers.length > 0 && (
           <div className="mb-5 rounded-xl border border-slate-100 bg-slate-50/80 p-3.5">
