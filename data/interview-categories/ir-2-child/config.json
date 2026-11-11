@@ -5,19 +5,19 @@
   "visaCountry": "United States",
   "metadata": {
     "version": "1.0.0",
-    "questionnaireVersion": "1.0.0",
+    "questionnaireVersion": "1.1.0",
     "questionBankVersion": "1.0.0",
     "estimatedDurationMinutes": 15,
     "totalQuestions": 47,
-    "totalIntakeQuestions": 17
+    "totalIntakeQuestions": 16
   },
   "features": {
     "hasRapidFire": true,
     "hasProfileAutoFill": true
   },
   "ui": {
-    "themeColor": "teal",
-    "icon": "Baby"
+    "themeColor": "blue",
+    "icon": "baby"
   },
   "isActive": true
 }
