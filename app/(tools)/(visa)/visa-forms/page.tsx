@@ -16,7 +16,7 @@ import {
   Lock,
 } from "lucide-react";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
-import { IR5_ENABLED } from "@/lib/feature-flags";
+import { IR5_ENABLED, IR2_ENABLED } from "@/lib/feature-flags";
 import { CfrExplanationModal } from "@/app/components/shared/CfrExplanationModal";
 import { ExpandableTooltip } from "@/app/components/shared/ExpandableTooltip";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
@@ -62,7 +62,7 @@ const VISA_FORMS: VisaForm[] = [
     code: "I-130",
     name: "Petition for Alien Relative",
     agency: "USCIS",
-    journeys: ["IR1-CR1", "IR5", "AOS"],
+    journeys: ["IR1-CR1", "IR5", "IR2", "AOS"],
     stage: "USCIS Filing",
     category: ["Family-based"],
     keywords: ["petition", "spouse", "parent", "child", "sibling", "family"],
@@ -158,7 +158,7 @@ const VISA_FORMS: VisaForm[] = [
     code: "I-864",
     name: "Affidavit of Support Under Section 213A of the INA",
     agency: "USCIS",
-    journeys: ["IR1-CR1", "IR5", "K1", "AOS"],
+    journeys: ["IR1-CR1", "IR5", "IR2", "K1", "AOS"],
     stage: "Interview Prep",
     category: ["Financial"],
     keywords: ["affidavit", "support", "sponsor", "income", "financial"],
@@ -173,7 +173,7 @@ const VISA_FORMS: VisaForm[] = [
     code: "I-864A",
     name: "Contract Between Sponsor and Household Member",
     agency: "USCIS",
-    journeys: ["IR1-CR1", "IR5", "K1", "AOS"],
+    journeys: ["IR1-CR1", "IR5", "IR2", "K1", "AOS"],
     stage: "Interview Prep",
     category: ["Financial"],
     keywords: ["joint sponsor", "household member", "income", "supplement"],
@@ -391,7 +391,7 @@ const VISA_FORMS: VisaForm[] = [
     code: "DS-260",
     name: "Immigrant Visa and Alien Registration Application",
     agency: "DOS",
-    journeys: ["IR1-CR1", "IR5"],
+    journeys: ["IR1-CR1", "IR5", "IR2"],
     stage: "NVC/CEAC",
     category: ["Consular"],
     keywords: ["immigrant visa", "application", "consular", "online"],
@@ -572,7 +572,7 @@ const VISA_FORMS: VisaForm[] = [
     code: "G-1450",
     name: "Authorization for Credit Card Transactions",
     agency: "USCIS",
-    journeys: ["IR1-CR1", "IR5", "K1", "AOS", "Naturalization"],
+    journeys: ["IR1-CR1", "IR5", "IR2", "K1", "AOS", "Naturalization"],
     stage: "USCIS Filing",
     category: ["Financial"],
     keywords: ["credit card", "payment", "fee", "filing fee", "authorization", "debit card", "pay"],
@@ -586,7 +586,7 @@ const VISA_FORMS: VisaForm[] = [
     code: "G-1650",
     name: "Authorization for ACH Transactions",
     agency: "USCIS",
-    journeys: ["IR1-CR1", "IR5", "K1", "AOS", "Naturalization"],
+    journeys: ["IR1-CR1", "IR5", "IR2", "K1", "AOS", "Naturalization"],
     stage: "USCIS Filing",
     category: ["Financial"],
     keywords: [
@@ -609,7 +609,7 @@ const VISA_FORMS: VisaForm[] = [
     code: "G-1651",
     name: "Exemption for Paper Fee Payment",
     agency: "USCIS",
-    journeys: ["IR1-CR1", "IR5", "K1", "AOS", "Naturalization"],
+    journeys: ["IR1-CR1", "IR5", "IR2", "K1", "AOS", "Naturalization"],
     stage: "USCIS Filing",
     category: ["Financial"],
     keywords: [
@@ -1043,6 +1043,8 @@ export default function VisaFormSelector({
                               { id: "IR1-CR1", label: "IR-1 / CR-1 (Spouse)" },
                               // IR-5 is hidden on production (see lib/feature-flags) until it launches.
                               ...(IR5_ENABLED ? [{ id: "IR5", label: "IR-5 (Parent)" }] : []),
+                              // IR-2 is hidden on production (see lib/feature-flags) until it launches.
+                              ...(IR2_ENABLED ? [{ id: "IR2", label: "IR-2 (Child)" }] : []),
                               // { id: "K1", label: "K-1 (Fiancé)" },
                               // { id: "AOS", label: "Adjustment of Status" },
                               // { id: "Naturalization", label: "Naturalization" },

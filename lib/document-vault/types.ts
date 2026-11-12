@@ -69,6 +69,19 @@ export interface ScenarioFlags {
   child_stepchild?: boolean;
   child_legitimation_or_custody_complexity?: boolean;
 
+  // Child beneficiary specific (IR-2 / CR-2, where the beneficiary is the child)
+  child_relationship_type?:
+    | "bio_mother"
+    | "bio_father_married"
+    | "bio_father_unmarried"
+    | "stepchild"
+    | "adopted";
+  child_prior_marriages?: boolean;
+  child_age_16_or_older?: boolean;
+  child_custody_or_consent_required?: boolean;
+  /** The marriage that created a step-relationship has since ended, so continuing ties must be shown. */
+  step_relationship_ended?: boolean;
+
   // Financial
   joint_sponsor_used?: boolean;
   household_member_used?: boolean;

@@ -8,7 +8,8 @@ export type WizardStepId =
   | "validation"
   | "province_selection"
   | "instructions"
-  | "translation_standards";
+  | "translation_standards"
+  | "application_process";
 
 export interface WizardState {
   documentNeed: string | Record<string, string> | null;

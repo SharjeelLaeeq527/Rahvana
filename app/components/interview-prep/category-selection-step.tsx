@@ -1,7 +1,7 @@
 // Category Selection Step - Displays available visa categories for user selection.
 "use client";
 import { Button } from "@/components/ui/button";
-import { Heart, UsersRound, UserRound, type LucideIcon, FileText } from "lucide-react";
+import { Heart, UsersRound, Baby, UserRound, type LucideIcon, FileText } from "lucide-react";
 import type { InterviewCategoryConfig } from "@/data/interview-categories/schema";
 
 export interface CategoryWithPurchaseStatus extends InterviewCategoryConfig {
@@ -53,11 +53,11 @@ const getThemeColor = (themeColor: string) => {
 
     blue: {
       gradient: "linear-gradient(145deg, #ffffff 0%, #f8fbff 40%, #eef5ff 70%, #e8f0ff 100%)",
-      iconBg: "#afdbdb",
-      iconColor: "#0d7377",
-      border: "rgba(13, 115, 119, 0.08)",
-      borderSelected: "rgba(13, 115, 119, 0.4)",
-      glowColor: "rgba(175, 219, 219, 0.2)",
+      iconBg: "#dbeafe",
+      iconColor: "#2563eb",
+      border: "rgba(37, 99, 235, 0.08)",
+      borderSelected: "rgba(37, 99, 235, 0.4)",
+      glowColor: "rgba(147, 197, 253, 0.2)",
     },
 
     purple: {
@@ -102,6 +102,7 @@ const getThemeColor = (themeColor: string) => {
 const CATEGORY_ICON_MAP: Record<string, LucideIcon> = {
   heart: Heart,
   "users-round": UsersRound,
+  "baby": Baby,
 };
 
 const getCategoryIcon = (iconName: string): LucideIcon => {
@@ -322,14 +323,14 @@ export function CategorySelectionStep({
       </div>
 
       {/* Navigation Buttons */}
-      <div className="flex flex-row justify-between gap-4 pt-6">
-        <Button
+      <div className="flex flex-row justify-end gap-4 pt-6">
+        {/* <Button
           onClick={onBack}
           variant="outline"
           className="border-slate-200 text-slate-700 hover:bg-slate-50 px-6 py-3 text-base"
         >
           ← Back
-        </Button>
+        </Button> */}
 
         <Button
           onClick={onNext}

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { createBrowserClient } from "@supabase/ssr";
-import { IR5_ENABLED } from "@/lib/feature-flags";
+import { IR5_ENABLED, IR2_ENABLED } from "@/lib/feature-flags";
 import { useRouter } from "next/navigation";
 import { E, msg } from "@/lib/errors";
 import { useAuth } from "@/app/context/AuthContext";
@@ -882,10 +882,10 @@ export default function CompleteProfileForm() {
                 { value: "K-1", label: "K-1 - Fiancé(e) Visa" },
                 // IR-5 is hidden on production (see lib/feature-flags) until it launches.
                 ...(IR5_ENABLED ? [{ value: "IR-5", label: "IR-5 - Parent of US Citizen" }] : []),
-                {
-                  value: "IR-2",
-                  label: "IR-2 - Unmarried Child of US Citizen",
-                },
+                // IR-2 is hidden on production (see lib/feature-flags) until it launches.
+                ...(IR2_ENABLED
+                  ? [{ value: "IR-2", label: "IR-2 - Unmarried Child of US Citizen" }]
+                  : []),
                 { value: "F-1", label: "F-1 - Student Visa" },
                 { value: "H-1B", label: "H-1B - Specialty Occupation" },
                 { value: "B1/B2", label: "B1/B2 - Visitor Visa" },

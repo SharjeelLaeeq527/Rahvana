@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
-import { IR5_ENABLED } from "@/lib/feature-flags";
+import { IR5_ENABLED, IR2_ENABLED } from "@/lib/feature-flags";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -325,7 +325,7 @@ const VISA_CATEGORIES = [
   { value: "IR-1", label: "IR-1 (Immediate Relative Spouse)" },
   // IR-5 is hidden on production (see lib/feature-flags) until it launches.
   ...(IR5_ENABLED ? [{ value: "IR-5", label: "IR-5 (Immediate Relative Parent)" }] : []),
-  // { value: "IR-2", label: "IR-2 (Immediate Relative - Child)" },
+  ...(IR2_ENABLED ? [{ value: "IR-2", label: "IR-2 (Immediate Relative - Child)" }] : []),
   // { value: "IR-5", label: "IR-5 (Immediate Relative - Parent)" },
   // { value: "CR-1", label: "CR-1 (Conditional Resident - Spouse)" },
   // { value: "F-1", label: "F-1 (Family 1st Preference)" },

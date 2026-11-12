@@ -1422,6 +1422,85 @@ const scenesAdoption: Scene[] = [
   },
 ];
 
+const scenesChildCitizenship: Scene[] = [
+  {
+    id: "welcome",
+    title: "Welcome to Child Citizenship Guide",
+    description:
+      "A child may be a U.S. citizen through a U.S. citizen parent by acquiring citizenship at birth, gaining it automatically after birth, or naturalizing while abroad.",
+    illustration: "welcome",
+  },
+  {
+    id: "what-is",
+    title: "Three Citizenship Pathways",
+    description:
+      "INA §§ 301 and 309 cover citizenship at birth (CRBA). INA § 320 grants citizenship automatically to a child under 18 who is a permanent resident in the citizen parent's custody. INA § 322 (Form N-600K) naturalizes a child living abroad.",
+    illustration: "document",
+  },
+  {
+    id: "pitfalls",
+    title: "Timing Changes Everything",
+    titleLines: ["Timing", "Changes", "Everything"],
+    description:
+      "The rules depend on the child's birth date, whether the parents were married, and the U.S. citizen parent's physical presence or residence in the United States. Old or complex cases may need a professional review.",
+    illustration: "warning",
+  },
+  {
+    id: "workflow",
+    title: "Guided Citizenship Workflow",
+    titleLines: ["Guided", "Citizenship", "Workflow"],
+    description:
+      "Answer the eligibility questions, review the required documents for your pathway, follow the application steps, and confirm translations and final details.",
+    illustration: "checklist",
+  },
+  {
+    id: "output",
+    title: "Checklist File Ready",
+    titleLines: ["Checklist", "File", "Ready"],
+    description:
+      "Get a practical list of required documents and next actions for the citizenship pathway that fits your answers.",
+    illustration: "output",
+  },
+  {
+    id: "wizard",
+    title: "How This Works",
+    extraContent: (
+      <div className="mt-6 mx-auto flex max-w-lg flex-col gap-4 text-left">
+        {[
+          "Screen eligibility to find the citizenship pathway.",
+          "Compile the civil and citizenship-proof documents.",
+          "Follow the CRBA, N-600, or N-600K application steps.",
+          "Verify certified translations and consistency before filing.",
+        ].map((text, i) => (
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 + i * 0.15, ease: [0.22, 1, 0.36, 1] }}
+            key={i}
+            className="flex items-start gap-4 rounded-2xl border border-[#afdbdb]/30 bg-white p-4 shadow-[0_10px_30px_-10px_rgba(13,115,119,0.08)]"
+          >
+            <div
+              className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full font-bold text-white shadow-md"
+              style={{
+                background: `linear-gradient(135deg, ${colors.deepTeal}, ${colors.softAqua})`,
+              }}
+            >
+              {i + 1}
+            </div>
+            <p
+              className="text-base font-semibold leading-snug md:text-[17px]"
+              style={{ color: colors.deepTeal }}
+            >
+              {text}
+            </p>
+          </motion.div>
+        ))}
+      </div>
+    ),
+    illustration: "wizard",
+  },
+];
+
 interface NarrativeModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -1439,7 +1518,8 @@ interface NarrativeModalProps {
     | "polio-vaccination"
     | "interview-prep"
     | "step-parent"
-    | "adoption";
+    | "adoption"
+    | "child-citizenship";
 }
 
 const SCENE_DURATION = 9000;
@@ -1464,6 +1544,7 @@ export function NarrativeModal({
     "interview-prep": scenesInterviewPrep,
     "step-parent": scenesStepParent,
     adoption: scenesAdoption,
+    "child-citizenship": scenesChildCitizenship,
   } as const;
 
   const scenes = scenesByVariant[variant];
@@ -1498,6 +1579,7 @@ export function NarrativeModal({
     "interview-prep": "Interview",
     "step-parent": "Step-Parent",
     adoption: "Adoption",
+    "child-citizenship": "Child Citizenship",
   };
   const docBadgeText = docBadgeTextByVariant[variant];
   const isGuideVariant = variant !== "221g";

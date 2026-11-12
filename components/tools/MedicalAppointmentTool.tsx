@@ -7,7 +7,7 @@ import { normalizePlanTier } from "@/app/context/PlanContext";
 import type { PlanTier } from "@/lib/entitlements/config";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { IR5_ENABLED } from "@/lib/feature-flags";
+import { IR5_ENABLED, IR2_ENABLED } from "@/lib/feature-flags";
 import { Input } from "@/components/ui/input";
 import { ResultGate } from "@/app/components/entitlements/ResultGate";
 import { Label } from "@/components/ui/label";
@@ -445,6 +445,8 @@ const BasicInfoStep = ({
                     { value: "IR-1", label: t("bookAppointment.basicInfoStep.visaTypes.ir1") },
                     // IR-5 is hidden on production (see lib/feature-flags) until it launches.
                     ...(IR5_ENABLED ? [{ value: "IR-5", label: "IR-5 Parent Visa" }] : []),
+                    // IR-2 is hidden on production (see lib/feature-flags) until it launches.
+                    ...(IR2_ENABLED ? [{ value: "IR-2", label: "IR-2 Child Visa" }] : []),
                   ]}
                   placeholder={t("bookAppointment.basicInfoStep.selectVisaType")}
                   className="w-full [&_button]:w-full [&_button]:min-w-0"
