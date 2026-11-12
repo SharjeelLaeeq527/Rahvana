@@ -12,6 +12,7 @@ import { resolveCategorySlug } from "@/lib/interview-prep/journey-category-map";
 import { DocumentChecklistEngine } from "@/lib/journey/document-checklist/engine";
 import { journeyTypeForVisaCategory } from "@/lib/stripe/subscriptionCleanup";
 import { journeyConfigKeyFor } from "@/lib/journey/journeyConfig";
+import { resolveCaseStrengthProfile, IR1_PROFILE } from "@/lib/case-strength/categories";
 
 const IR2_SPELLINGS = ["IR2", "ir2", "IR-2", "ir-2", "ir2_candidate-2", "IR-2 / CR-2", "CR-2"];
 
@@ -54,11 +55,19 @@ describe("closed: IR-2 never resolves to IR-1", () => {
     expect(keys).not.toContain("nikah-nama");
     expect(keys).not.toContain("marriage-cert");
   });
+
+  it("F4/F5 case strength never resolves IR-2 to the spouse profile (generic until Phase 5)", () => {
+    for (const s of IR2_SPELLINGS) {
+      const profile = resolveCaseStrengthProfile(s);
+      expect([s, profile === IR1_PROFILE]).toEqual([s, false]);
+      expect(profile.detectEligibilityRisks({ q5: { q5s1: "yes", q5s5: "yes" } })).toEqual([]);
+      expect(profile.baselineFields.map((f) => f.field)).not.toContain("marriageDate");
+    }
+  });
 });
 
 describe("open: closed by a later phase", () => {
-  it.todo("F4/F5 resolveCaseStrengthProfile('IR2') is an IR-2 profile, not IR1_PROFILE (Phase 5)");
-  it.todo("F5 IR-2 eligibility risks never raise a marriage / spouse flag (Phase 5)");
+  it.todo("F4/F5 resolveCaseStrengthProfile('IR2') is a dedicated IR-2 profile with child rules, not GENERIC_PROFILE (Phase 5)");
   it.todo("F6 StepView milestones use the IR-5 step layout for IR-2 (Phase 2)");
   it.todo("F7 interview prep for an IR-2 journey resolves ir-2-child (Phase 7)");
   it.todo("F12 vault Required tab lists IR-2 documents (Phase 4)");

@@ -24,6 +24,8 @@ import {
   IR5_PROFILE,
   IR5_STEP_CHECKERS,
   IR5_BASELINE_FIELDS,
+  GENERIC_PROFILE,
+  hasCaseStrengthProfile,
 } from "@/lib/case-strength/categories";
 import { EvidenceGapEngine } from "@/lib/journey/evidence-gap";
 import type { EvidenceGapInput } from "@/lib/journey/evidence-gap";
@@ -61,10 +63,34 @@ describe("resolveCaseStrengthProfile", () => {
     }
   });
 
-  it("defaults to IR-1 for unknown or missing journey types (no behavior change)", () => {
-    expect(resolveCaseStrengthProfile(undefined).id).toBe("ir-1");
-    expect(resolveCaseStrengthProfile("something-else").id).toBe("ir-1");
-    expect(resolveCaseStrengthProfile(null).id).toBe("ir-1");
+  it("maps candidate journey keys to their base category's profile", () => {
+    for (const t of ["ir5_candidate-2", "IR5_candidate-3", "ir-5_candidate-2"]) {
+      expect(resolveCaseStrengthProfile(t).id).toBe("ir-5");
+    }
+    expect(resolveCaseStrengthProfile("ir1_candidate-2").id).toBe("ir-1");
+  });
+
+  it("never falls back to the spouse profile: unknown, missing, or unregistered -> generic", () => {
+    for (const t of [undefined, null, "", "something-else", "IR2", "ir2_candidate-2", "F4"]) {
+      expect(resolveCaseStrengthProfile(t).id).toBe("generic");
+      expect(resolveCaseStrengthProfile(t)).not.toBe(IR1_PROFILE);
+    }
+    expect(hasCaseStrengthProfile("IR2")).toBe(false);
+    expect(hasCaseStrengthProfile("ir5_candidate-2")).toBe(true);
+  });
+
+  it("generic profile carries no spouse rules and no positional step checks", () => {
+    const g = resolveCaseStrengthProfile("unknown-category");
+    expect(g).toBe(GENERIC_PROFILE);
+    expect(Object.keys(g.stepCheckers)).toHaveLength(0);
+    expect(g.lookAhead).toEqual([]);
+    expect(g.baselineFields.map((f) => f.field)).not.toContain("marriageDate");
+    expect(g.consistency.phase2Questions.map((q) => q.group)).not.toContain("Marriage History");
+    expect(Object.keys(g.evidence.requirements)).toEqual(["IDENTITY"]);
+    // Every risk-producing answer we know of yields nothing on an unknown layout.
+    expect(g.detectEligibilityRisks({ q5: { q5s1: "yes", q5s2: "yes", q5s5: "yes" } })).toEqual([]);
+    expect(g.strengthSignals.relationship({ hasChildrenTogether: true, marriageYears: 0.1, ageGapYears: 40 }))
+      .toEqual({ scoreDelta: 0, positiveSignals: [], riskFlags: [] });
   });
 });
 
@@ -78,9 +104,36 @@ describe("IR-5 registry composition", () => {
   });
 
   it("overrides the 5 relationship/consistency steps with its own functions", () => {
-    for (const key of ["step_1_4", "step_1_9", "step_1_10", "step_2_3", "step_3_7"]) {
+    for (const key of ["step_1_4", "step_1_9", "step_1_10", "step_2_3", "step_3_8"]) {
       expect(IR5_STEP_CHECKERS[key]).not.toBe(IR1_PROFILE.stepCheckers[key]);
     }
+  });
+
+  // IR-5 has no I-130A step, so its chapter-1 keys sit one lower than IR-1's.
+  it("binds shared chapter-1 checkers by meaning, not by key", () => {
+    const ir1 = IR1_PROFILE.stepCheckers;
+    expect(IR5_STEP_CHECKERS.step_1_5).toBe(ir1.step_1_6); // Create USCIS Account
+    expect(IR5_STEP_CHECKERS.step_1_7).toBe(ir1.step_1_8); // Upload: file quality
+    expect(IR5_STEP_CHECKERS.step_1_11).toBe(ir1.step_1_12); // Prepare Filing Fee
+    expect(IR5_STEP_CHECKERS.step_1_13).toBe(ir1.step_1_14); // Mail Packet
+    // Steps with no matching IR-1 check carry none (never the wrong one).
+    for (const key of ["step_1_6", "step_1_8", "step_1_10", "step_1_14"]) {
+      expect([key, IR5_STEP_CHECKERS[key]]).toEqual([key, undefined]);
+    }
+  });
+
+  it("Review & Submit (step_1_9) is the final gate; Print Hard Copy (step_1_10) has no gate", () => {
+    const checks = runStepChecks("step_1_9", ctx(makeState()), IR5_PROFILE.stepCheckers);
+    expect(titles(checks)).toMatch(/Key dates not captured/);
+    expect(runStepChecks("step_1_10", ctx(makeState()), IR5_PROFILE.stepCheckers)).toEqual([]);
+  });
+
+  it("Prepare for Interview (step_3_8) carries the parent version, never spouse disclosures", () => {
+    const answers = { q5: { q5s1: "yes", q5s2: "yes", q5s3: "yes" } };
+    const checks = runStepChecks("step_3_8", ctx(makeState(), answers), IR5_PROFILE.stepCheckers);
+    expect(titles(checks)).toMatch(/must match your DS-260/);
+    expect(checks.map((c) => c.hint).join(" ")).toMatch(/your parent/);
+    expect(titles(checks) + checks.map((c) => c.hint).join(" ")).not.toMatch(/prior marriage/i);
   });
 });
 

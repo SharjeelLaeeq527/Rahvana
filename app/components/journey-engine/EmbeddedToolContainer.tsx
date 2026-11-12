@@ -775,6 +775,8 @@ export function EmbeddedToolContainer({
               journeyContext={journeyContext}
               journeyTier={effectiveJourneyTier}
               initialInput={cspaInputFromJourney(resolvedState?.metadata, childDob)}
+              // A journey that already saved a check opens on the checker, not the intro.
+              skipIntro={!!resolvedState?.metadata?.[CSPA_METADATA_KEY]}
               onSave={(record) => {
                 (
                   actions as { updateMetadata?: (u: Record<string, unknown>) => void }

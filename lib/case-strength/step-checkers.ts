@@ -726,7 +726,7 @@ export const CATEGORY_SPECIFIC_STEP_KEYS = [
   "step_1_9", // unresolved eligibility blockers
   "step_1_10", // final pre-submission consistency check
   "step_2_3", // DS-260 ↔ I-130 cross-form consistency + disclosures
-  "step_3_7", // interview-readiness disclosures
+  "step_3_8", // interview-readiness disclosures (Prepare for Interview)
 ] as const;
 
 /** The checkers shared by every visa category (IR-1's registry minus the 5 above). */
