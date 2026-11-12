@@ -4,9 +4,10 @@ import {
   getBaseVisaCategory,
   getCandidateJourneyKey,
   UNKNOWN_VISA_CATEGORY,
+  isMultiCandidateCategory,
 } from "@/lib/candidate/candidateSyncService";
 
-export { getBaseVisaCategory };
+export { getBaseVisaCategory, isMultiCandidateCategory };
 
 /**
  * Check whether any vault document matches a journey doc item,
@@ -495,12 +496,20 @@ export function getCandidateForJourneyType(
 ): CandidateLike | null {
   if (!journeyType || !candidates || candidates.length === 0) return null;
   const base = getBaseVisaCategory(journeyType);
-  return (
-    candidates.find((c) => {
-      const candBase = c.visaCategory || base;
-      return isSameJourneyType(getCandidateJourneyKey(candBase, c.id), journeyType);
-    }) || null
-  );
+  const byKey = candidates.find((c) => {
+    const candBase = c.visaCategory || base;
+    return isSameJourneyType(getCandidateJourneyKey(candBase, c.id), journeyType);
+  });
+  if (byKey) return byKey;
+
+  // Fallback by relation if present
+  if (base === "IR-1" || base === "CR-1") {
+    return candidates.find((c) => (c as any).relation === "Spouse") || null;
+  }
+  if (base === "IR-2" || base === "CR-2") {
+    return candidates.find((c) => (c as any).relation === "Child") || null;
+  }
+  return null;
 }
 
 /**
@@ -515,6 +524,7 @@ export function getCandidateJourneyTag(
   journeyType: string,
   candidates?: CandidateLike[] | null
 ): string | null {
+  if (!isMultiCandidateCategory(journeyType)) return null;
   const cand = getCandidateForJourneyType(journeyType, candidates);
   if (!cand) return null;
   const name = (cand.fullName || "").trim();
@@ -539,14 +549,62 @@ export function getCandidateDisplayNameForJourney(
     if (trimmedName && !DEFAULT_NAME_RE.test(trimmedName)) {
       return trimmedName;
     }
+    if (cand.label && !DEFAULT_NAME_RE.test(cand.label)) {
+      return cand.label;
+    }
+    const base = getBaseVisaCategory(journeyType);
+    if (base === "IR-1" || base === "CR-1") return "Spouse";
+    if (base === "IR-2" || base === "CR-2") return "Child";
+    if (base === "IR-5") {
+      const num = (cand.id || "").replace(/[^0-9]/g, "") || "1";
+      return `Parent ${num}`;
+    }
     const num = (cand.id || "").replace(/[^0-9]/g, "") || "1";
     return cand.label || `Candidate ${num}`;
   }
 
   // Fallback from journey_type string if candidate not in roster
+  const base = getBaseVisaCategory(journeyType);
+  if (base === "IR-1" || base === "CR-1") return "Spouse";
+  if (base === "IR-2" || base === "CR-2") return "Child";
+  if (base === "IR-5") {
+    const match = (journeyType || "").toLowerCase().match(/candidate[-_]?(\d+)/);
+    const num = match ? match[1] : "1";
+    return `Parent ${num}`;
+  }
+
   const match = (journeyType || "").toLowerCase().match(/candidate[-_]?(\d+)/);
   const num = match ? match[1] : "1";
   return `Candidate ${num}`;
+}
+
+/**
+ * Resolves the candidate identity tag to display in brackets on a Document Vault card.
+ * e.g., "Candidate 1", "Candidate 2 - Nadeem", "Candidate 1 - Fatima"
+ * Used to distinguish multiple same journeys with different candidates.
+ */
+export function resolveCandidateCardTag(
+  journeyType: string,
+  candidates?: CandidateLike[] | null
+): string | null {
+  if (!isMultiCandidateCategory(journeyType)) {
+    return null;
+  }
+
+  const candTag = getCandidateJourneyTag(journeyType, candidates);
+  if (candTag) return candTag;
+
+  const match = (journeyType || "").toLowerCase().match(/candidate[-_]?(\d+)/);
+  if (match) {
+    return `Candidate ${match[1]}`;
+  }
+
+  const base = getBaseVisaCategory(journeyType);
+  if (base === "IR-5" || base === "IR-2" || base === "CR-2") {
+    return "Candidate 1";
+  }
+
+  return null;
 }
 
 /**
