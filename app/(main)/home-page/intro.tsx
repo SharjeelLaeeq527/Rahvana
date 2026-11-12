@@ -602,7 +602,7 @@ export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
       await sleep(180);
 
       // const SB = "for spouses of US citizens";
-      const SB = "for spouses and parents of US citizens";
+      const SB = "for spouses, children, and parents of US citizens";
       setCur("sb");
       for (let i = 1; i <= SB.length; i++) {
         if (!alive || skipRef.current) return;
