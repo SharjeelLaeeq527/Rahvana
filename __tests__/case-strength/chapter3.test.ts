@@ -138,16 +138,16 @@ describe("step_3_6 — gather original documents", () => {
   });
 });
 
-// ── step_3_7 — interview prep (consistency + disclosures) ──────────────────────
+// ── step_3_8 — interview prep (consistency + disclosures) ──────────────────────
 
-describe("step_3_7 — prepare for interview", () => {
+describe("step_3_8 — prepare for interview", () => {
   it("always reminds that answers must match the DS-260", () => {
-    const checks = runStepChecks("step_3_7", { ...baseCtx, state: makeState() });
+    const checks = runStepChecks("step_3_8", { ...baseCtx, state: makeState() });
     expect(checks.some((c) => /must match your DS-260/i.test(c.title))).toBe(true);
   });
 
   it("adds interview-framed disclosure reminders from eligibility answers", () => {
-    const checks = runStepChecks("step_3_7", {
+    const checks = runStepChecks("step_3_8", {
       ...baseCtx,
       state: makeState(),
       eligibilityAnswers: {
@@ -167,18 +167,18 @@ describe("step_3_7 — prepare for interview", () => {
   });
 });
 
-// ── step_3_8 — final readiness gate ────────────────────────────────────────────
+// ── step_3_9 — final readiness gate ────────────────────────────────────────────
 
-describe("step_3_8 — attend visa interview", () => {
+describe("step_3_9 — attend visa interview", () => {
   it("warns when originals (step 3.6) were never gathered", () => {
-    const checks = runStepChecks("step_3_8", { ...baseCtx, state: makeState() });
+    const checks = runStepChecks("step_3_9", { ...baseCtx, state: makeState() });
     expect(checks.some((c) => c.level === "warning" && /not gathered/i.test(c.title))).toBe(true);
   });
 
   it("clears the gate warnings once 3.6 and 3.7 are complete, keeping the logistics note", () => {
-    const checks = runStepChecks("step_3_8", {
+    const checks = runStepChecks("step_3_9", {
       ...baseCtx,
-      state: makeState({}, ["step_3_6", "step_3_7"]),
+      state: makeState({}, ["step_3_6", "step_3_8"]),
     });
     expect(checks.some((c) => c.level === "warning")).toBe(false);
     expect(checks.some((c) => /No electronics/i.test(c.title))).toBe(true);
@@ -189,7 +189,7 @@ describe("step_3_8 — attend visa interview", () => {
 
 describe("no numeric score is ever produced (Chapter 3)", () => {
   it("step checks expose only level/title/hint — never a score field", () => {
-    for (const key of ["step_3_1", "step_3_3", "step_3_6", "step_3_7", "step_3_8", "step_3_10"]) {
+    for (const key of ["step_3_1", "step_3_3", "step_3_6", "step_3_8", "step_3_9", "step_3_11"]) {
       const checks = runStepChecks(key, {
         ...baseCtx,
         state: makeState({ interviewDate: "2026-08-01" }),
@@ -211,11 +211,11 @@ describe("aggregateChapter3Issues", () => {
     { steps: [] }, // chapter 2 placeholder
     {
       steps: [
-        { step_key: "step_3_9", step_name: "Confirm Interview Outcome", step_number: 9 },
+        { step_key: "step_3_10", step_name: "Confirm Interview Outcome", step_number: 10 },
         {
-          step_key: "step_3_10",
+          step_key: "step_3_11",
           step_name: "Track Visa Issuance",
-          step_number: 10,
+          step_number: 11,
           visible_when: { interviewOutcome: "approved" },
         },
       ],
@@ -225,11 +225,11 @@ describe("aggregateChapter3Issues", () => {
   it("hides outcome-gated steps until the matching outcome is recorded", () => {
     const issues = aggregateChapter3Issues({
       chapters,
-      state: makeState(), // no interviewOutcome → step_3_10 not visible
+      state: makeState(), // no interviewOutcome → step_3_11 not visible
       uploadedDocuments: [],
     });
-    expect(issues.some((i) => i.stepKey === "step_3_9")).toBe(true);
-    expect(issues.some((i) => i.stepKey === "step_3_10")).toBe(false);
+    expect(issues.some((i) => i.stepKey === "step_3_10")).toBe(true);
+    expect(issues.some((i) => i.stepKey === "step_3_11")).toBe(false);
   });
 
   it("surfaces the approved-path check once the interview outcome is approved", () => {
@@ -238,12 +238,12 @@ describe("aggregateChapter3Issues", () => {
       state: makeState({ interviewOutcome: "approved" }),
       uploadedDocuments: [],
     });
-    const visa = issues.find((i) => i.stepKey === "step_3_10");
+    const visa = issues.find((i) => i.stepKey === "step_3_11");
     expect(visa).toBeDefined();
     expect(visa!.chapterIdx).toBe(2);
     expect(visa!.stepIdx).toBe(1); // raw index into chapter.steps
-    // outcome recorded → step_3_9 nudge gone
-    expect(issues.some((i) => i.stepKey === "step_3_9")).toBe(false);
+    // outcome recorded → step_3_10 nudge gone
+    expect(issues.some((i) => i.stepKey === "step_3_10")).toBe(false);
   });
 
   it("returns an empty list when chapter 3 is absent", () => {

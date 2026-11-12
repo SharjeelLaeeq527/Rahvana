@@ -484,15 +484,25 @@ Scores case strength grounded in USCIS policy + practitioner patterns, now **sca
 across visa categories via a profile/Strategy pattern** (no longer IR-1-only).
 
 - **Category registry:** `categories/index.ts` — `CASE_STRENGTH_PROFILES = [IR1_PROFILE,
-  IR5_PROFILE]`; `resolveCaseStrengthProfile(journeyType)` normalizes the type and
-  **falls back to `IR1_PROFILE`** for unknown/missing. A `CaseStrengthProfile`
+  IR5_PROFILE]`; `resolveCaseStrengthProfile(journeyType)` matches by BASE category
+  (`getBaseVisaCategory`, so `ir5_candidate-2` -> IR-5) and returns **`GENERIC_PROFILE`**
+  (`categories/generic.ts`: no step checks, no risks, DOB-only consistency, passports-only
+  evidence) for unknown/missing/unregistered categories - **never `IR1_PROFILE`** (IR-2 gets
+  generic until its Phase 5 profile ships). `findCaseStrengthProfile` / `hasCaseStrengthProfile`
+  return null/false for unregistered. A `CaseStrengthProfile`
   (`categories/types.ts`) bundles `stepCheckers`, `stepRefs`, `baselineFields`,
   `detectEligibilityRisks`, `consistency`, `evidence` (EvidenceGapConfig),
   `strengthSignals.relationship`, and optional `caseScore`, `documentEscalation`,
-  `lookAhead`. Adding a category = one new `categories/<slug>.ts` + registry entry.
+  `lookAhead`. Adding a category = one new `categories/<slug>.ts` + registry entry; full
+  playbook in `docs/case_strength_analysis.md` section 3. `__tests__/case-strength/category-contract.test.ts`
+  runs on every chapters-schema JSON (profile registered or listed in `AWAITING_PROFILE`; every
+  checker / look-ahead key exists in that JSON).
 - **Shared core:** `COMMON_STEP_CHECKERS` (`step-checkers.ts`) = IR-1 checkers minus 5
-  category-specific keys (`step_1_4, step_1_9, step_1_10, step_2_3, step_3_7`). IR-5
-  (`categories/ir5.ts`) reuses COMMON and overrides only those 5.
+  category-specific keys (`step_1_4, step_1_9, step_1_10, step_2_3, step_3_8`). IR-5
+  (`categories/ir5.ts`) reuses COMMON, overrides those 5, and re-points shared checkers BY
+  MEANING: **step keys are positional** (IR-5 has no I-130A, so its chapter-1 keys from
+  `step_1_5` sit one lower than IR-1's). Inserting a step in a JSON shifts later keys; update
+  that category's checker keys + tests in the same change.
 - **Weighted Case Health score:** `CASE_SCORE_WEIGHTS` in `case-narrative.ts` =
   **Evidence 0.4 / Consistency 0.3 / Completeness 0.2 / Risk 0.1** (single tuning point).
   `computeWeightedCaseScore` applies risk as inverted "risk health"
@@ -1146,9 +1156,14 @@ Components consume these via hooks/contexts; they should not re-implement domain
   (IR-2 / CR-2): age frozen on the I-130 filing date (or on the parent's naturalization date when
   the parent was a green card holder at filing), stepchild marriage before 18, adoption before 16
   (16-18 = birth-sibling exception only), married = F3, filed at 21+ = F1. Every rule cites an
-  official uscis.gov page in `CSPA_SOURCES`; F2A (INA 203(h) formula) and previously married
-  children are deliberately "needs review". Legal content pending review (IR-2 plan D6). One UI,
-  `components/tools/CspaAgeCheckerTool.tsx`, FREE in both modes: standalone `/cspa-age-checker`
+  official uscis.gov page in `CSPA_SOURCES`; F2A (INA 203(h) formula), previously married
+  children, an adoption at 16-18, and a 29 Feb child filed (or still unfiled) on 28 Feb of the
+  21st year are deliberately "needs review" (the deadline itself uses 28 Feb, so it is never late).
+  Boundaries are pinned by the "edge cases" block in `__tests__/tools/cspa-age-checker.test.ts`. Legal content pending review (IR-2 plan D6). One UI,
+  `components/tools/CspaAgeCheckerTool.tsx`, FREE in both modes. It opens on an intro card
+  (what the tool is, why it is needed, how it helps; example and needed
+  documents are collapsible; Continue sticks to the bottom on phones) and shows the form after Continue; a journey that
+  already saved a check skips the intro (`skipIntro`). Modes: standalone `/cspa-age-checker`
   (public, no sign-in, indexable, reads and saves nothing) and journey `cspa_checker`
   (EmbeddedToolContainer; pre-fill from `lib/tools/cspa/journeyPrefill.ts` reads only the active
   journey's metadata + the active Child candidate's DOB, and saves to that journey's

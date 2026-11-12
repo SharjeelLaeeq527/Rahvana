@@ -350,6 +350,15 @@ export function checkCspa(input: CspaInput, todayIso?: string): CspaResult {
     errors: [] as string[],
   };
   const relationshipProblem = base.checks.some((c) => c.state === "problem");
+  // An adoption between 16 and 18 counts only under the birth-sibling exception, which this
+  // checker cannot confirm, so it must never read as "Good news".
+  const relationshipReview = base.checks.some((c) => c.id === "adoption_sibling_only");
+  // Born on 29 February and the 21st birthday falls in a year without one: the deadline uses
+  // 28 February (never late), but whether the child is still under 21 on that exact day is not
+  // settled, so that one day is a lawyer question, not a firm "aged out".
+  const leapDayGap =
+    dob.getUTCMonth() === 1 && dob.getUTCDate() === 29 && twentyFirst.getUTCDate() === 28;
+  const leapDayEdge = (d: Date) => leapDayGap && d.getTime() === twentyFirst.getTime();
 
   // Marriage ends "child" status; the age freeze does not change that.
   if (input.maritalStatus === "married") {
@@ -384,6 +393,22 @@ export function checkCspa(input: CspaInput, todayIso?: string): CspaResult {
 
   // ─ I-130 not filed yet ─
   if (!input.i130Filed) {
+    if (leapDayEdge(today)) {
+      return {
+        ...base,
+        status: "needs_review",
+        headline: "Today may be the last day to file",
+        body: `Your child was born on 29 February. This year has no 29 February, and the rules do not clearly say whether the 21st birthday is 28 February or 1 March. If USCIS receives the I-130 today, the child may still count as under 21.`,
+        freezeDate: null,
+        freezeBasis: null,
+        cspaAge: null,
+        nextSteps: [
+          "Talk to an immigration lawyer today, before the end of the day.",
+          "The filing date is the day USCIS receives the I-130. It is shown as the Received Date on the receipt notice (I-797C).",
+        ],
+        sources: ["cspa", "policyManual"],
+      };
+    }
     if (daysUntil21 <= 0) {
       return {
         ...base,
@@ -400,10 +425,12 @@ export function checkCspa(input: CspaInput, todayIso?: string): CspaResult {
     const urgent = daysUntil21 <= FILE_SOON_DAYS;
     return {
       ...base,
-      status: relationshipProblem ? "needs_review" : urgent ? "file_soon" : "not_filed",
+      status: relationshipProblem || relationshipReview ? "needs_review" : urgent ? "file_soon" : "not_filed",
       headline: relationshipProblem
         ? "There is a problem with the relationship, see below"
-        : urgent
+        : relationshipReview
+          ? "The adoption needs a lawyer's advice, see below"
+          : urgent
           ? `File the I-130 before ${formatDate(twentyFirstIso)}`
           : `File the I-130 any time before ${formatDate(twentyFirstIso)}`,
       body: `Your child turns 21 on ${formatDate(twentyFirstIso)}, in ${daysUntil21} day${daysUntil21 === 1 ? "" : "s"}. If the U.S. citizen parent files the I-130 before that date, and the child is not married, the child's age is locked on the filing date. The child can then turn 21 later and still apply as a child.`,
@@ -448,6 +475,23 @@ export function checkCspa(input: CspaInput, todayIso?: string): CspaResult {
   const freezeBasis = naturalized ? "naturalization" : "i130_filing";
   const freezeLabel = naturalized ? "the day the parent became a U.S. citizen" : "the day the I-130 was filed";
 
+  if (!under21 && !naturalized && leapDayEdge(freeze)) {
+    return {
+      ...base,
+      status: "needs_review",
+      headline: "Filed on 28 February: talk to a lawyer",
+      body: `Your child was born on 29 February, and the I-130 was filed on ${formatDate(freezeIso)}. That year has no 29 February, and the rules do not clearly say whether the 21st birthday is 28 February or 1 March. So it is not clear if the child was still under 21 on the filing date.`,
+      freezeDate: freezeIso,
+      freezeBasis,
+      cspaAge: null,
+      nextSteps: [
+        "Talk to an immigration lawyer about whether the age was locked.",
+        "Keep the I-130 receipt notice (I-797C) safe. Its Received Date proves the filing date.",
+      ],
+      sources: ["cspa", "policyManual"],
+    };
+  }
+
   if (!under21) {
     return {
       ...base,
@@ -468,10 +512,12 @@ export function checkCspa(input: CspaInput, todayIso?: string): CspaResult {
 
   return {
     ...base,
-    status: relationshipProblem ? "needs_review" : "protected",
+    status: relationshipProblem || relationshipReview ? "needs_review" : "protected",
     headline: relationshipProblem
       ? "The age is locked, but there is a problem with the relationship, see below"
-      : `Good news: your child's age is locked at ${cspaAge.years}`,
+      : relationshipReview
+        ? "The age is locked, but the adoption needs a lawyer's advice, see below"
+        : `Good news: your child's age is locked at ${cspaAge.years}`,
     body: `The age was locked on ${freezeLabel} (${formatDate(freezeIso)}), when your child was ${formatAge(cspaAge)} old. Your child can turn 21 after this date and still apply as a child.`,
     freezeDate: freezeIso,
     freezeBasis,

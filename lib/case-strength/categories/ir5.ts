@@ -61,7 +61,7 @@ export const IR5_BASELINE_FIELDS: CrossFormField[] = [
 export const IR5_STEP_REFS: StepRefs = {
   documents: "Chapter 1 Step 2, Gather Documents",
   mainForm: "Chapter 1 Step 4, Fill I-130",
-  reviewSubmit: "Chapter 1 Step 10, Review & Submit",
+  reviewSubmit: "Chapter 1 Step 9, Review & Submit",
 };
 
 /**
@@ -280,24 +280,10 @@ const step_1_4: StepChecker = ({ state }) => {
   return checks;
 };
 
-// Step 1.9 — unresolved eligibility blockers before online submission.
-const step_1_9: StepChecker = ({ eligibilityAnswers }) => {
-  const checks: StepCheck[] = [];
-  const critical = detectIr5EligibilityRisks(eligibilityAnswers).filter(
-    (f) => f.severity === "critical"
-  );
-  if (critical.length > 0) {
-    checks.push({
-      level: "critical",
-      title: `${critical.length} unresolved blocker${critical.length === 1 ? "" : "s"} from eligibility`,
-      hint: "Go back to Chapter 1 Step 2 and add the missing documents before submitting.",
-    });
-  }
-  return checks;
-};
-
-// Step 1.10 — final pre-submission consistency gate.
-const step_1_10: StepChecker = ({ state, eligibilityAnswers }) => {
+// Review & Submit (IR-5 step_1_9, online path): final pre-submission gate.
+// Also covers the "unresolved eligibility blockers" check IR-1 runs on its own
+// step_1_9, so IR-5 needs only this one.
+const reviewAndSubmit: StepChecker = ({ state, eligibilityAnswers }) => {
   const checks: StepCheck[] = [];
   const baseline = state.metadata?.consistencyBaseline as any;
 
@@ -369,8 +355,9 @@ const step_2_3: StepChecker = ({ state, eligibilityAnswers }) => {
   return checks;
 };
 
-// Step 3.7 — interview readiness: answers must match the filed DS-260.
-const step_3_7: StepChecker = ({ eligibilityAnswers }) => {
+// Step 3.8 (Prepare for Interview) — answers must match the filed DS-260.
+// Was keyed step_3_7 until "Review Document Readiness" was inserted as 3.7.
+const step_3_8: StepChecker = ({ eligibilityAnswers }) => {
   const checks: StepCheck[] = [
     {
       level: "info",
@@ -384,16 +371,36 @@ const step_3_7: StepChecker = ({ eligibilityAnswers }) => {
 
 // ─── Registry + profile ──────────────────────────────────────────────────────
 
+// Drop the shared checkers whose IR-1 key means a different step in IR-5 (see
+// the table below). step_1_14 does not exist in IR-5 at all (enforced by
+// __tests__/case-strength/category-contract.test.ts).
+const IR1_KEYS_WITH_OTHER_MEANING = new Set(["step_1_6", "step_1_8", "step_1_14"]);
+const COMMON_FOR_IR5: Record<string, StepChecker> = Object.fromEntries(
+  Object.entries(COMMON_STEP_CHECKERS).filter(([key]) => !IR1_KEYS_WITH_OTHER_MEANING.has(key))
+);
+
+// IR-5 has no I-130A step, so from step_1_5 on every chapter-1 step sits one key
+// LOWER than in IR-1. Shared checkers are therefore re-pointed by meaning, not
+// by key (ir-5.json step names in the comments):
+//   step_1_5  Create USCIS Account  <- IR-1 step_1_6 (USCIS account / address)
+//   step_1_6  Start Form I-130      <- none (IR-1's step_1_5 is the I-130A check)
+//   step_1_7  Upload Forms          <- IR-1 step_1_8 (12 MB / file-format check)
+//   step_1_8  Pay Filing Fee        <- none (IR-1's fee check keys on its own
+//                                      step_1_7, which in IR-5 is the upload)
+//   step_1_9  Review & Submit       <- IR-5 final gate (key dates + blockers)
+//   step_1_10 Print Hard Copy       <- none
+//   step_1_11..13 paper path        <- IR-1 step_1_12..14
 export const IR5_STEP_CHECKERS: Record<string, StepChecker> = {
-  ...COMMON_STEP_CHECKERS,
+  ...COMMON_FOR_IR5,
   step_1_4,
-  step_1_9,
-  step_1_10,
+  step_1_5: COMMON_STEP_CHECKERS.step_1_6, // Create USCIS Account
+  step_1_7: COMMON_STEP_CHECKERS.step_1_8, // Upload Forms & Evidence
+  step_1_9: reviewAndSubmit, // Review & Submit: final gate (covers the blockers too)
   step_1_11: COMMON_STEP_CHECKERS.step_1_12, // Prepare Filing Fee
   step_1_12: COMMON_STEP_CHECKERS.step_1_13, // Assemble Filing Packet
   step_1_13: COMMON_STEP_CHECKERS.step_1_14, // Mail Packet & Track Delivery
   step_2_3,
-  step_3_7,
+  step_3_8,
 };
 
 export const IR5_PROFILE: CaseStrengthProfile = {

@@ -2456,6 +2456,7 @@ export const StepView: React.FC<StepViewProps> = ({
           {/* PRE-SUBMISSION SNAPSHOT — step_1_10 (Review & Submit, online path) */}
           {sId === "step_1_10" && (
             <PreSubmissionSnapshot
+              journeyType={data.journey_type}
               consistencyBaseline={
                 state.metadata?.consistencyBaseline as ConsistencyBaseline | undefined
               }

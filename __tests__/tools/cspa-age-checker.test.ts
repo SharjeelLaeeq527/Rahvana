@@ -192,3 +192,165 @@ describe("input validation and sources", () => {
     }
   });
 });
+
+/**
+ * Boundary cases, one per date edge. Each pins the exact day a result flips, so an off-by-one
+ * in the rules (or a "Good news" on a case that needs a lawyer) fails here.
+ */
+describe("edge cases", () => {
+  const T = "2026-11-10";
+  const citizenFiled = (filingDate: string) => ({
+    i130Filed: true,
+    filingDate,
+    parentStatusAtFiling: "citizen" as const,
+  });
+  const run = (input: Partial<CspaInput>, today = T) => checkCspa({ ...base, ...input }, today);
+
+  it("1. date of birth in the future", () => {
+    const r = run({ dateOfBirth: "2027-01-01" });
+    expect(r.status).toBe("invalid");
+    expect(r.errors).toContain("The date of birth cannot be in the future.");
+  });
+
+  it("2. I-130 filed before the child was born", () => {
+    const r = run({ dateOfBirth: "2010-05-01", ...citizenFiled("2009-01-01") });
+    expect(r.status).toBe("invalid");
+    expect(r.errors).toContain("The I-130 filing date cannot be before the child's date of birth.");
+  });
+
+  it("3. I-130 filing date in the future", () => {
+    const r = run({ dateOfBirth: "2010-05-01", ...citizenFiled("2027-01-01") });
+    expect(r.status).toBe("invalid");
+    expect(r.errors).toContain("The I-130 filing date cannot be in the future.");
+  });
+
+  it("4. child turns 21 today: too late to file, and a filing today is not protected", () => {
+    expect(run({ dateOfBirth: "2005-11-10" }).status).toBe("aged_out");
+    expect(run({ dateOfBirth: "2005-11-10", ...citizenFiled(T) }).status).toBe("aged_out");
+  });
+
+  it("5. child turns 21 tomorrow: file soon, and a filing today is protected", () => {
+    const notFiled = run({ dateOfBirth: "2005-11-11" });
+    expect(notFiled.status).toBe("file_soon");
+    expect(notFiled.daysUntil21).toBe(1);
+    const filed = run({ dateOfBirth: "2005-11-11", ...citizenFiled(T) });
+    expect(filed.status).toBe("protected");
+    expect(filed.cspaAge).toEqual({ years: 20, months: 11, days: 30 });
+  });
+
+  it("6. child turned 21 yesterday: aged out either way", () => {
+    expect(run({ dateOfBirth: "2005-11-09" }).status).toBe("aged_out");
+    expect(run({ dateOfBirth: "2005-11-09", ...citizenFiled(T) }).status).toBe("aged_out");
+  });
+
+  describe("7. born on 29 February", () => {
+    const dob = "2008-02-29"; // 21st birthday in 2029, a non-leap year
+
+    it("shows 28 February as the deadline (never late)", () => {
+      const r = run({ dateOfBirth: dob });
+      expect(r.status).toBe("not_filed");
+      expect(r.twentyFirstBirthday).toBe("2029-02-28");
+    });
+
+    it("protects a filing on 27 February", () => {
+      expect(run({ dateOfBirth: dob, ...citizenFiled("2029-02-27") }, "2029-03-05").status).toBe("protected");
+    });
+
+    it("sends a filing on 28 February to a lawyer, not a firm aged out", () => {
+      const r = run({ dateOfBirth: dob, ...citizenFiled("2029-02-28") }, "2029-03-05");
+      expect(r.status).toBe("needs_review");
+      expect(r.cspaAge).toBeNull(); // no "locked age" next to an unsettled result
+    });
+
+    it("says today may be the last day when it is 28 February and nothing is filed", () => {
+      expect(run({ dateOfBirth: dob }, "2029-02-28").status).toBe("needs_review");
+    });
+
+    it("is aged out from 1 March", () => {
+      expect(run({ dateOfBirth: dob }, "2029-03-01").status).toBe("aged_out");
+      expect(run({ dateOfBirth: dob, ...citizenFiled("2029-03-01") }, "2029-03-05").status).toBe("aged_out");
+    });
+
+    it("applies to every leap-day birth (the 21st birthday is never in a leap year)", () => {
+      // A leap year + 21 is never a leap year, so a 29 Feb child always turns 21 on 28 Feb here.
+      expect(run({ dateOfBirth: "2004-02-29" }, "2024-01-01").twentyFirstBirthday).toBe("2025-02-28");
+    });
+  });
+
+  describe("8. parent was a green card holder at filing, then naturalized", () => {
+    const lpr = (naturalizationDate: string, dateOfBirth = "2008-01-01") => ({
+      dateOfBirth,
+      i130Filed: true,
+      filingDate: "2021-01-01",
+      parentStatusAtFiling: "lpr" as const,
+      parentNaturalized: true,
+      naturalizationDate,
+    });
+
+    it("rejects a naturalization date before the filing date", () => {
+      expect(run(lpr("2020-01-01")).status).toBe("invalid");
+    });
+
+    it("locks the age on the naturalization date when it is after the filing", () => {
+      const r = run(lpr("2025-06-01"));
+      expect(r.status).toBe("protected");
+      expect(r.freezeDate).toBe("2025-06-01");
+      expect(r.freezeBasis).toBe("naturalization");
+    });
+
+    it("accepts naturalization on the same day as the filing", () => {
+      expect(run(lpr("2021-01-01")).status).toBe("protected");
+    });
+
+    it("sends a child who was 21 at naturalization to a lawyer", () => {
+      expect(run(lpr("2025-06-01", "2003-01-01")).status).toBe("needs_review");
+    });
+  });
+
+  it("9. stepparent marriage exactly on the 18th birthday does not count", () => {
+    const step = (stepMarriageDate: string) =>
+      run({ dateOfBirth: "2007-05-01", relationship: "stepchild", stepMarriageDate, ...citizenFiled("2025-06-01") });
+    const onBirthday = step("2025-05-01");
+    expect(onBirthday.status).toBe("needs_review");
+    expect(onBirthday.checks.find((c) => c.id === "step_marriage_late")?.state).toBe("problem");
+    expect(step("2025-04-30").status).toBe("protected");
+  });
+
+  describe("10. adoption exactly on the 16th birthday", () => {
+    const adopted = (adoptionDate: string, filed = true) =>
+      run({
+        dateOfBirth: "2009-05-01",
+        relationship: "adopted",
+        adoptionDate,
+        ...(filed ? citizenFiled("2025-06-01") : {}),
+      });
+
+    it("is the birth-sibling exception only, so it needs a lawyer, never Good news", () => {
+      const r = adopted("2025-05-01");
+      expect(r.checks.find((c) => c.id === "adoption_sibling_only")?.state).toBe("review");
+      expect(r.status).toBe("needs_review");
+      expect(r.headline).not.toMatch(/Good news/);
+    });
+
+    it("also needs a lawyer when the I-130 is not filed yet", () => {
+      expect(adopted("2025-05-01", false).status).toBe("needs_review");
+    });
+
+    it("counts an adoption the day before the 16th birthday", () => {
+      expect(adopted("2025-04-30").status).toBe("protected");
+    });
+  });
+
+  it("uses plain ASCII in the new messages", () => {
+    const results = [
+      run({ dateOfBirth: "2008-02-29", ...citizenFiled("2029-02-28") }, "2029-03-05"),
+      run({ dateOfBirth: "2008-02-29" }, "2029-02-28"),
+      run({ dateOfBirth: "2009-05-01", relationship: "adopted", adoptionDate: "2025-05-01" }),
+      run({ dateOfBirth: "2009-05-01", relationship: "adopted", adoptionDate: "2025-05-01", ...citizenFiled("2025-06-01") }),
+    ];
+    for (const r of results) {
+      const text = [r.headline, r.body, ...r.nextSteps, ...r.checks.map((x) => x.text)].join(" ");
+      expect(text).toMatch(/^[\x20-\x7E]*$/);
+    }
+  });
+});

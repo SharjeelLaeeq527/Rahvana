@@ -17,7 +17,7 @@ const render = (props: Record<string, unknown>) =>
   renderToStaticMarkup(React.createElement(CspaAgeCheckerTool, props as never));
 
 const journey = (initialInput: Partial<CspaInput>) =>
-  render({ mode: "journey", showHeader: false, initialInput, onSave: () => {} });
+  render({ mode: "journey", showHeader: false, skipIntro: true, initialInput, onSave: () => {} });
 
 describe("CspaAgeCheckerTool render", () => {
   it("renders the empty standalone page with sources and no save button", () => {
@@ -27,8 +27,34 @@ describe("CspaAgeCheckerTool render", () => {
     expect(html).not.toContain("Save to this journey");
   });
 
+  it("opens on the intro card, not the form, in both modes", () => {
+    for (const mode of ["standalone", "journey"]) {
+      const html = render({ mode, initialInput: { dateOfBirth: "2006-03-10" } });
+      expect(html).toContain("What this tool is");
+      expect(html).toContain("Why you need it");
+      expect(html).toContain("How it helps");
+      expect(html).toContain("What you will need");
+      expect(html).toContain(">Continue<");
+      expect(html).not.toContain("Your result will show here");
+      expect(html).not.toContain("Common questions");
+      expect(/[–—‘’“”…]/.test(html)).toBe(false);
+    }
+  });
+
+  it("skipIntro opens straight on the checker with a way back to the intro", () => {
+    const html = render({ mode: "standalone", skipIntro: true });
+    expect(html).toContain("Your result will show here");
+    expect(html).toContain("What is CSPA?");
+    expect(html).not.toContain("What you will need");
+    expect(html).toContain("Find out if your child");
+  });
+
+  it("does not repeat the header lead line on the intro screen", () => {
+    expect(render({ mode: "standalone" })).not.toContain("Find out if your child");
+  });
+
   it("ignores journey input in standalone mode", () => {
-    const html = render({ mode: "standalone", initialInput: { dateOfBirth: "2006-03-10" } });
+    const html = render({ mode: "standalone", skipIntro: true, initialInput: { dateOfBirth: "2006-03-10" } });
     expect(html).not.toContain("2006-03-10");
     expect(html).toContain("Your result will show here");
   });
