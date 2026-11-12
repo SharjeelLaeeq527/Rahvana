@@ -497,6 +497,12 @@ export default function InterviewPreparation({
   ) => {
     try {
       setSessionId(session.id);
+      const source = session.source || (isEmbedded ? "journey" : "tool");
+      setSessionSource(source);
+      setIsJourneySession(source === "journey");
+      if (source === "journey") {
+        setJourneyId(session.journey_id || null);
+      }
       const categorySlug = session.category_slug;
       let category = getCategoryFn(categorySlug);
 
@@ -569,6 +575,12 @@ export default function InterviewPreparation({
 
       if (response.ok && sessionData.session) {
         setSessionId(targetSessionId);
+        const source = sessionData.session.source || (isEmbedded ? "journey" : "tool");
+        setSessionSource(source);
+        setIsJourneySession(source === "journey");
+        if (source === "journey") {
+          setJourneyId(sessionData.session.journey_id || null);
+        }
         const categorySlug =
           sessionData.session.category_slug || targetCategorySlug || "ir-1-spouse";
 
@@ -1314,13 +1326,23 @@ export default function InterviewPreparation({
   // Render the appropriate step
   // Legacy per-category purchase ("interview-prep:<slug>") or the bare
   // all-categories add-on: standalone access to THIS category only.
+  // Legacy per-category purchases and the catalog-wide credit unlock both grant
+  // standalone access before a session exists.
   const selectedSlug = selectedCategory?.categorySlug;
   const hasLegacyCategoryPurchase =
     !isEmbedded &&
     !!selectedSlug &&
-    plan.purchasedAddons.some(
+    (plan.purchasedAddons.some(
       (id) => id === "interview-prep" || id === `interview-prep:${selectedSlug}`
-    );
+    ) ||
+    ipWallet.unlocked);
+  // Every standalone session is paid before it is created: either by a legacy
+  // category purchase or by the session-specific credit deduction. Keep this
+  // session-scoped entitlement after refresh instead of relying on the
+  // catalog-wide wallet unlock, which does not represent session purchases.
+  const hasStandaloneSessionAccess =
+    !isEmbedded && sessionSource === "tool" && !!sessionId;
+  const standaloneGranted = hasLegacyCategoryPurchase || hasStandaloneSessionAccess;
 
   const renderStep = () => {
     if (isRedirectingSession) {
@@ -1430,7 +1452,7 @@ export default function InterviewPreparation({
         <ResultGate
           feature="basic_interview_prep"
           standaloneToolId={isEmbedded ? undefined : "interview-prep"}
-          standaloneGranted={hasLegacyCategoryPurchase}
+          standaloneGranted={standaloneGranted}
           title="Your Interview Prep Plan Is Ready"
           description="Upgrade to Basic or above to unlock your personalised interview questions and preparation guide."
           minHeight="400px"
@@ -1439,7 +1461,7 @@ export default function InterviewPreparation({
             sessionId={sessionId}
             results={generatedResults}
             isStandalone={!isEmbedded}
-            standaloneGranted={hasLegacyCategoryPurchase}
+            standaloneGranted={standaloneGranted}
             onRestart={() => {
               setStep(0);
               setSessionId(null);

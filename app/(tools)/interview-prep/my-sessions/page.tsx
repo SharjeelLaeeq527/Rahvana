@@ -12,6 +12,7 @@ import {
   Heart,
   FileText,
   ArrowLeft,
+  Baby,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Pagination from "@/components/ui/pagination";
@@ -372,8 +373,11 @@ export default function MyInterviewSessions({
   const getCategoryIcon = (categorySlug: string) => {
     if (categorySlug.includes("spouse") || categorySlug.includes("ir-1")) {
       return Heart;
+    } else if (categorySlug.includes("parent") || categorySlug.includes("ir-5")) {
+      return UsersRound;
+    } else if (categorySlug.includes("child") || categorySlug.includes("ir-2")) {
+      return Baby;
     }
-    return UsersRound;
   };
 
   const handleOpenSession = (session: SessionWithDetails) => {
