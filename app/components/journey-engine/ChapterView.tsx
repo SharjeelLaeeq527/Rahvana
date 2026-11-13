@@ -510,7 +510,11 @@ export function ChapterView({ data, chapterIdx, state, onBack, onSelectStep }: C
       </div>
 
       {upgradeModalFeature && (
-        <UpgradeModal feature={upgradeModalFeature} onClose={() => setUpgradeModalFeature(null)} />
+        <UpgradeModal
+          feature={upgradeModalFeature}
+          currentTier={effectiveTier}
+          onClose={() => setUpgradeModalFeature(null)}
+        />
       )}
     </div>
   );
