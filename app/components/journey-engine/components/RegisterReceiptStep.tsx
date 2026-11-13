@@ -1602,7 +1602,11 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
 
       {/* ── Upgrade modal ── */}
       {upgradeModalFeature && (
-        <UpgradeModal feature={upgradeModalFeature} onClose={() => setUpgradeModalFeature(null)} />
+        <UpgradeModal
+          feature={upgradeModalFeature}
+          currentTier={plan.tier}
+          onClose={() => setUpgradeModalFeature(null)}
+        />
       )}
     </div>
   );
