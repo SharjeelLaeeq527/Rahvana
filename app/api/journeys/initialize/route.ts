@@ -17,15 +17,29 @@ import * as db from "@/lib/journey/data-access";
 import { ConfigLoader } from "@/lib/journey/config-loader";
 import { decrypt } from "@/lib/encryption";
 import { E, msg } from "@/lib/errors";
-import { getCandidateJourneyKey, getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
+import {
+  canonicalJourneyKey,
+  resolveCandidateJourneyKey,
+} from "@/lib/candidate/candidateKeys";
 import { journeyConfigKeyFor } from "@/lib/journey/journeyConfig";
+import { supabaseAdmin } from "@/lib/supabase/admin";
+import { hasPaidTierHint, verifyJourneyTierWithStripe } from "@/lib/plan/journeyTierRepair";
+import type { CandidateProfile } from "@/types/candidate";
 
 // ── In-memory server cache (resets on cold start, fine for Vercel) ───────────
 const serverCache = new Map<string, { data: any; cachedAt: number }>();
 const CACHE_TTL_MS = 30_000; // 30 seconds
 
-function normType(t: string) {
-  return t.toLowerCase().replace(/[-:_]/g, "");
+// A paid-tier hint that Stripe did not confirm is not re-checked for a while, so a
+// forged hint cannot turn every page load into a Stripe API call.
+const unverifiedHints = new Map<string, number>();
+const UNVERIFIED_TTL_MS = 10 * 60_000;
+function recentlyUnverified(userId: string, key: string): boolean {
+  const at = unverifiedHints.get(`${userId}:${key}`);
+  return at !== undefined && Date.now() - at < UNVERIFIED_TTL_MS;
+}
+function markUnverified(userId: string, key: string): void {
+  unverifiedHints.set(`${userId}:${key}`, Date.now());
 }
 
 // Shared with post-payment provisioning so every seeding path loads the same config
@@ -99,11 +113,28 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Resolve effective journey type key (candidate-isolated)
-    const effectiveJourneyType = getCandidateJourneyKey(journey_type, candidate_id);
+    // ── Resolve the journey key from the roster (server backstop) ─────────────
+    // The URL category is authoritative. A candidate from the same pool selects its own
+    // slot key; a candidate from another pool (stale active candidate, forged id) is
+    // resolved to the category's slot-1 key, so no stray row such as `ir5_candidate3`
+    // is ever created for an IR-2 child.
+    const { data: profileRow } = await supabase
+      .from("user_profiles")
+      .select("profile_details")
+      .eq("id", user.id)
+      .maybeSingle();
+    const profileDetails = (profileRow?.profile_details || {}) as Record<string, unknown>;
+    const roster: CandidateProfile[] = Array.isArray(profileDetails.candidates)
+      ? (profileDetails.candidates as CandidateProfile[])
+      : [];
+
+    const effectiveJourneyType = resolveCandidateJourneyKey(roster, journey_type, candidate_id);
+    if (!effectiveJourneyType) {
+      return NextResponse.json({ error: "Unknown journey type." }, { status: 400 });
+    }
 
     const bustCache = req.headers.get("x-cache-bust") === "1";
-    const cacheKey = `${user.id}_${normType(effectiveJourneyType)}_${candidate_id || "candidate-1"}_${journey_db_id || ""}`;
+    const cacheKey = `${user.id}_${effectiveJourneyType}_${journey_db_id || ""}`;
 
     // ── Server cache hit — return immediately (repeat visits ~200ms) ──────────
     if (!bustCache) {
@@ -122,127 +153,87 @@ export async function POST(req: NextRequest) {
       serverCache.delete(cacheKey);
     }
 
-    // ── Find or create journey ────────────────────────────────────────────────
+    // ── Find the journey row: exact canonical key only ────────────────────────
+    // Variant rows of the same journey ("ir5", "ir5-journey", "IR5", "ir5_candidate-1")
+    // share one canonical key; other candidates' rows never match.
     const allJourneys = await db.getAllJourneysDB(undefined, dbClient);
-    const baseVisa = getBaseVisaCategory(journey_type);
-    const normBase = normType(baseVisa);
-    const normalizedQuery = normType(effectiveJourneyType);
+    const sameKey = (j: { journey_type: string }) =>
+      canonicalJourneyKey(j.journey_type) === effectiveJourneyType;
 
     let existing: (typeof allJourneys)[number] | undefined;
 
-    // 1. Direct DB ID lookup when provided
+    // 1. Direct DB id (My Journeys) - only when it is the resolved journey.
     if (journey_db_id) {
-      existing = allJourneys.find((j) => j.id === journey_db_id);
+      existing = allJourneys.find((j) => j.id === journey_db_id && sameKey(j));
     }
 
-    // 2. Candidate-isolated lookup
+    // 2. Canonical key lookup. Prefer a paid row, then one with progress.
     if (!existing) {
-      const isCandidate1 = !candidate_id || candidate_id === "candidate-1";
-
-      if (isCandidate1) {
-        // Candidate 1 matches:
-        // - journeys matching base category (e.g. "ir5", "ir-5")
-        // - journeys with candidate1 suffix ("ir5_candidate-1", "ir5_candidate1")
-        // - strictly EXCLUDES secondary candidate journeys (candidate 2, 3, etc.)
-        const candidate1Matches = allJourneys.filter((j) => {
-          const normJ = normType(j.journey_type);
-          const isCategoryMatch =
-            normJ === normBase ||
-            normJ === normalizedQuery ||
-            normJ.startsWith(normBase) ||
-            normJ.includes("candidate1");
-
-          if (!isCategoryMatch) return false;
-
-          // Exclude candidate 2, 3, etc.
-          const isSecondaryCand = /candidate[2-9]/i.test(normJ);
-          return !isSecondaryCand;
-        });
-
-        // Prefer paid journey if one exists
-        existing =
-          candidate1Matches.find(
-            (j) => j.subscription_tier && j.subscription_tier.toLowerCase() !== "free"
-          ) ||
-          candidate1Matches.find((j) => (j.completed_steps_count ?? 0) > 0) ||
-          candidate1Matches[0];
-      } else {
-        // Candidate 2, 3, etc.
-        const candNorm = normType(candidate_id);
-        const candMatches = allJourneys.filter((j) => {
-          const normJ = normType(j.journey_type);
-          return normJ === normalizedQuery || normJ.includes(candNorm);
-        });
-
-        existing =
-          candMatches.find(
-            (j) => j.subscription_tier && j.subscription_tier.toLowerCase() !== "free"
-          ) ||
-          candMatches.find((j) => (j.completed_steps_count ?? 0) > 0) ||
-          candMatches[0];
-      }
+      const matches = allJourneys.filter(sameKey);
+      existing =
+        matches.find(
+          (j) => j.subscription_tier && j.subscription_tier.toLowerCase() !== "free"
+        ) ||
+        matches.find((j) => (j.completed_steps_count ?? 0) > 0) ||
+        matches[0];
     }
 
-    // ── Check if user has other than free journey plan for this specific journey ──
+    // ── Plan tier: the journey row is the only source of access ───────────────
+    // The roster tier and the legacy stored journeyTiers map are client-writable
+    // history, so they are only a hint to ask Stripe. A tier is written only when a
+    // live Stripe plan confirms it, and only with the service-role client (S1).
+    let resolvedPaidTier: string | null = null;
     const existingTier = (existing?.subscription_tier || "").toLowerCase();
-    const isExistingPaid = Boolean(existing && existingTier && existingTier !== "free");
-
-    const { data: profileRow } = await supabase
-      .from("user_profiles")
-      .select("profile_details")
-      .eq("id", user.id)
-      .maybeSingle();
-
-    const candidates = (profileRow?.profile_details as any)?.candidates || [];
-    const matchedCand =
-      candidates.find((c: any) => c.id === candidate_id) ||
-      (!candidate_id || candidate_id === "candidate-1" ? candidates[0] : null);
-    const candTier = (matchedCand?.tier || "").toLowerCase();
-    const isCandPaid = Boolean(candTier && candTier !== "free");
-
-    const journeyTiers =
-      (profileRow?.profile_details as any)?.journeyTiers ||
-      (profileRow?.profile_details as any)?.journey_tiers ||
-      {};
-    const targetKey =
-      candidate_id && candidate_id !== "candidate-1"
-        ? getCandidateJourneyKey(journey_type, candidate_id)
-        : normBase;
-    const mappedTier = (
-      journeyTiers[targetKey] ||
-      journeyTiers[baseVisa] ||
-      journeyTiers[normBase] ||
-      ""
-    ).toLowerCase();
-    const isMappedPaid = Boolean(mappedTier && mappedTier !== "free");
-
-    const resolvedPaidTier =
-      (isExistingPaid ? existingTier : null) ||
-      (isCandPaid ? candTier : null) ||
-      (isMappedPaid ? mappedTier : null);
-
-    const isPaid = Boolean(resolvedPaidTier && resolvedPaidTier !== "free");
-
-    // If existing row was in DB with free/empty tier but candidate has paid tier, update it
-    if (
-      existing &&
-      isPaid &&
-      resolvedPaidTier &&
-      (!existing.subscription_tier || existing.subscription_tier.toLowerCase() === "free")
+    if (existing && existingTier && existingTier !== "free") {
+      resolvedPaidTier = existingTier;
+    } else if (
+      hasPaidTierHint(profileDetails, roster, effectiveJourneyType) &&
+      !recentlyUnverified(user.id, effectiveJourneyType)
     ) {
       try {
-        await supabase
-          .from("journeys")
-          .update({
-            subscription_tier: resolvedPaidTier,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", existing.id);
-        existing.subscription_tier = resolvedPaidTier;
-      } catch (tierUpdateErr) {
-        console.warn("[initialize] Failed to update journey subscription_tier:", tierUpdateErr);
+        const verified = await verifyJourneyTierWithStripe({
+          admin: supabaseAdmin,
+          userId: user.id,
+          journeyKey: effectiveJourneyType,
+          journeyRowId: existing?.id ?? null,
+          roster,
+        });
+        if (!verified) {
+          markUnverified(user.id, effectiveJourneyType);
+        } else {
+          let rowId = existing?.id ?? null;
+          if (!rowId) {
+            const created = await journeyService.createJourneyFromConfig(
+              `data/visa-category/${configTypeFromJourneyType(journey_type)}.json`,
+              { journey_type: effectiveJourneyType },
+              dbClient
+            );
+            rowId = created?.journey?.id ?? null;
+          }
+          if (rowId) {
+            const { error: repairError } = await supabaseAdmin
+              .from("journeys")
+              .update({
+                subscription_tier: verified.tier,
+                stripe_subscription_id: verified.subscriptionId,
+                updated_at: new Date().toISOString(),
+              })
+              .eq("id", rowId)
+              .eq("user_id", user.id);
+            if (!repairError) {
+              resolvedPaidTier = verified.tier;
+              const refreshed = await db.getAllJourneysDB(undefined, dbClient);
+              existing = refreshed.find((j) => j.id === rowId) ?? existing;
+              if (existing) existing.subscription_tier = verified.tier;
+            }
+          }
+        }
+      } catch (repairErr) {
+        console.warn("[initialize] Stripe tier repair skipped:", repairErr);
       }
     }
+
+    const isPaid = Boolean(resolvedPaidTier);
 
     // Free plan users can preview Step 1, but NO journey record should be added to the DB
     if (!isPaid) {
@@ -302,10 +293,7 @@ export async function POST(req: NextRequest) {
       try {
         const result = await journeyService.createJourneyFromConfig(
           configPath,
-          {
-            journey_type: effectiveJourneyType,
-            subscription_tier: resolvedPaidTier || "diy",
-          },
+          { journey_type: effectiveJourneyType },
           dbClient
         );
         journeyId = result.journey.id;
@@ -313,7 +301,7 @@ export async function POST(req: NextRequest) {
         // Race condition: another tab already created it
         if (createErr?.message?.includes("unique") || createErr?.message?.includes("duplicate")) {
           const retryJourneys = await db.getAllJourneysDB(undefined, dbClient);
-          const retried = retryJourneys.find((j) => normType(j.journey_type) === normalizedQuery);
+          const retried = retryJourneys.find(sameKey);
           if (!retried) throw createErr;
           journeyId = retried.id;
         } else {

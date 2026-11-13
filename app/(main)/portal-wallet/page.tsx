@@ -185,7 +185,8 @@ const PortalWallet: React.FC = () => {
         c.visaCategory?.toUpperCase().includes("IR-2") ||
         c.visaCategory?.toUpperCase().includes("CR-2");
 
-      let journey: Journey = "IR-5";
+      // The candidate's own category (an IR-2 / CR-2 child is not an IR-5 case).
+      const journey: Journey = isChild && !isParent ? "IR-2" : "IR-5";
       let journeyLabel = "Beneficiary";
       if (isParent) journeyLabel = "Parent";
       else if (isChild) journeyLabel = "Child";

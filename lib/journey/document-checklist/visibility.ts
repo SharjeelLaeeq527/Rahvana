@@ -12,6 +12,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import type { CandidateProfile } from "@/types/candidate";
+import { findCandidateForJourneyKey } from "@/lib/candidate/candidateKeys";
 
 export type VisibilityOutcome = "visible" | "hidden" | "unknown";
 
@@ -106,31 +107,19 @@ export function matchConditions(
   return sawUnknown ? "unknown" : "visible";
 }
 
-/** "ir2_candidate2" / "ir2_candidate-2" -> 2; base journeys have no suffix. */
-const CANDIDATE_SUFFIX = /candidate[-_]?(\d+)/i;
-
-function pickCandidateForJourney(
+/**
+ * The candidate whose journey this is: the one whose category slot maps to the journey
+ * key ("ir2" -> the IR-2 pool's slot-1 child, "ir2_candidate2" -> slot 2). Never the
+ * account's first candidate of ANOTHER category (that gave an IR-2 child the IR-5
+ * parent's DOB and the wrong age band). Null when no candidate owns the journey: the
+ * age band then stays unknown and nothing is hidden on a guess.
+ */
+export function pickCandidateForJourney(
   candidates: CandidateProfile[],
-  journeyType: string,
-  activeCandidateId?: string | null
+  journeyType: string
 ): CandidateProfile | null {
   if (!candidates.length) return null;
-
-  const journeyMatch = CANDIDATE_SUFFIX.exec(journeyType || "");
-  if (journeyMatch) {
-    const numbered = candidates.find((candidate) => {
-      const candidateMatch = CANDIDATE_SUFFIX.exec(candidate.id || "");
-      return candidateMatch ? candidateMatch[1] === journeyMatch[1] : false;
-    });
-    if (numbered) return numbered;
-  }
-
-  // No suffix means the base journey, which belongs to the primary candidate.
-  return (
-    candidates.find((candidate) => candidate.isPrimary) ||
-    candidates.find((candidate) => candidate.id === activeCandidateId) ||
-    candidates[0]
-  );
+  return findCandidateForJourneyKey(candidates, journeyType);
 }
 
 const DOB_CASE_DATA_KEYS = [
@@ -164,13 +153,7 @@ async function resolveChildAgeBand(
     ? (profileDetails.candidates as CandidateProfile[])
     : [];
 
-  const candidate = pickCandidateForJourney(
-    candidates,
-    journeyType,
-    typeof profileDetails.activeCandidateId === "string"
-      ? profileDetails.activeCandidateId
-      : null
-  );
+  const candidate = pickCandidateForJourney(candidates, journeyType);
 
   return computeChildAgeBand(candidate?.dateOfBirth);
 }

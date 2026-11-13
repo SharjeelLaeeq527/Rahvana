@@ -385,7 +385,7 @@ export function EmbeddedToolContainer({
   autoCompleteStepKey,
 }: EmbeddedToolContainerProps) {
   const { journeySlug, candidateId } = useJourneyEnvironment();
-  const { activeCandidate } = useCandidate();
+  const { activeCandidate, activeJourneyKey } = useCandidate();
   const { profile } = useUserProfile();
 
   const resolvedState = state as
@@ -401,10 +401,12 @@ export function EmbeddedToolContainer({
   const accountPlan = usePlan();
   const rawCandidateTier = activeCandidate?.tier;
   const rawStateTier = resolvedState?.subscriptionTier ?? resolvedState?.subscription_tier;
+  // plan.journeyTiers is keyed by journey_type: look it up by the active candidate's
+  // journey key (category slot), not by candidate id / row id (those never matched).
+  const tierKey = (activeJourneyKey || "").toLowerCase();
   const journeyTiersTier =
-    accountPlan?.journeyTiers?.[resolvedState?.backendId || ""] ||
-    accountPlan?.journeyTiers?.[activeCandidate?.id || ""] ||
-    accountPlan?.journeyTiers?.[(data as any)?.journey_id || ""];
+    accountPlan?.journeyTiers?.[tierKey] ||
+    accountPlan?.journeyTiers?.[tierKey.replace(/[^a-z0-9]/g, "")];
 
   const effectiveJourneyTier =
     (rawStateTier && rawStateTier !== "free")

@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { getCandidateJourneyKey } from "@/lib/candidate/candidateSyncService";
-import { isSameJourneyType } from "@/lib/document-vault/journey-mapping";
+import type { CandidateProfile } from "@/types/candidate";
+import { canonicalJourneyKey, resolveCandidateJourneyKey } from "@/lib/candidate/candidateKeys";
 
 export type OwnedJourney = {
   id: string;
@@ -24,7 +24,9 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
  * client can never borrow another user's journey (or its plan tier). Embedded
  * tools sometimes only know a slug ("ir1-journey") instead of the row id, so a
  * non-UUID id is treated as the category and matched with the candidate on the
- * canonical journey identity (same rule as the vault / switcher).
+ * canonical journey key resolved from the roster: a candidate of the same category pool
+ * selects its own slot journey; a candidate of another pool resolves to the category's
+ * slot-1 journey (never another category's row).
  * Returns null when nothing matches or the read fails (fail closed).
  */
 export async function resolveOwnedJourney(
@@ -48,10 +50,24 @@ export async function resolveOwnedJourney(
   const category = (ref.journeyCategory || journeyId || "").trim();
   if (!category) return null;
 
-  const { data, error } = await supabase.from("journeys").select(columns).eq("user_id", userId);
-  if (error || !Array.isArray(data)) return null;
+  const [{ data, error }, { data: profileRow, error: profileError }] = await Promise.all([
+    supabase.from("journeys").select(columns).eq("user_id", userId),
+    supabase.from("user_profiles").select("profile_details").eq("id", userId).maybeSingle(),
+  ]);
+  if (error || !Array.isArray(data) || profileError) return null;
 
-  const wanted = getCandidateJourneyKey(category, ref.candidateId);
-  return ((data as OwnedJourney[]).find((j) => isSameJourneyType(j.journey_type, wanted)) ??
-    null) as OwnedJourney | null;
+  const details = (profileRow?.profile_details || {}) as { candidates?: unknown };
+  const roster = Array.isArray(details.candidates) ? (details.candidates as CandidateProfile[]) : [];
+  const wanted = resolveCandidateJourneyKey(roster, category, ref.candidateId);
+  if (!wanted) return null;
+
+  const matches = (data as OwnedJourney[]).filter(
+    (j) => canonicalJourneyKey(j.journey_type) === wanted
+  );
+  // Variant rows of one journey: prefer the paid one (same rule as initialize).
+  return (
+    matches.find((j) => (j.subscription_tier || "free").toLowerCase() !== "free") ??
+    matches[0] ??
+    null
+  );
 }

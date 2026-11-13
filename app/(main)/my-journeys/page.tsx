@@ -23,10 +23,8 @@ import { PlanContext } from "@/app/context/PlanContext";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { JourneyProgressRecord, listUserJourneys } from "@/lib/journey/journeyProgressService";
 import { createClient } from "@/lib/supabase/client";
-import {
-  getCandidateJourneyKey,
-  getBaseVisaCategory,
-} from "@/lib/candidate/candidateSyncService";
+import { getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
+import { findCandidateForJourneyKey, isSamePool } from "@/lib/candidate/candidateKeys";
 import { getJourneyHrefByType, ir1journeyHref, ir5journeyHref } from "@/lib/constants/routes";
 import { IR5_ENABLED } from "@/lib/feature-flags";
 import { Loader } from "@/components/ui/spinner";
@@ -313,11 +311,6 @@ export default function MyJourneysPage() {
           name: newName,
           updatedAt: new Date().toISOString(),
         };
-        updated[`ir5_${candidateId}`] = {
-          ...existing[`ir5_${candidateId}`],
-          name: newName,
-          updatedAt: new Date().toISOString(),
-        };
       } else if (canonicalKey) {
         updated[canonicalKey] = {
           ...existing[canonicalKey],
@@ -355,11 +348,6 @@ export default function MyJourneysPage() {
           if (candidateId) {
             updated[candidateId] = {
               ...existing[candidateId],
-              image: url,
-              updatedAt: new Date().toISOString(),
-            };
-            updated[`ir5_${candidateId}`] = {
-              ...existing[`ir5_${candidateId}`],
               image: url,
               updatedAt: new Date().toISOString(),
             };
@@ -564,9 +552,15 @@ export default function MyJourneysPage() {
 
       if (isIr5) {
         // Multi-candidate (IR-5) candidate resolution:
-        // 1. Check if journey_id explicitly specifies candidate index (e.g. "ir5_candidate-2")
+        // 1. The roster candidate whose CATEGORY SLOT maps to this journey key ("ir5" ->
+        //    the IR-5 pool's slot 1, "ir5_candidate2" -> slot 2), whatever its account id.
+        const owner = findCandidateForJourneyKey(candidates, j.journey_id);
+        // Legacy rows without a roster owner: the id the key implied before slots existed,
+        // unless a roster candidate (of any category) already uses that id.
         const candIdMatch = (j.journey_id || "").match(/candidate[-_]?(\d+)/i);
-        const targetCandId = candIdMatch ? `candidate-${candIdMatch[1]}` : null;
+        const legacyId = candIdMatch ? `candidate-${candIdMatch[1]}` : null;
+        const targetCandId =
+          legacyId && !candidates.some((c) => c.id === legacyId) ? legacyId : null;
 
         // 2. Only consider candidates that are actually for IR-5 (or parents), NOT spouse/IR-1 candidates!
         const validIr5Candidates = candidates.filter((c) => {
@@ -582,12 +576,11 @@ export default function MyJourneysPage() {
         });
 
         // 3. Look up matching candidate profile
-        let cand = targetCandId
-          ? validIr5Candidates.find((c) => c.id.toLowerCase() === targetCandId.toLowerCase())
-          : null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let cand: any = owner && !assignedCandidateIds.has(owner.id) ? owner : null;
 
-        // 4. If no candidate suffix (e.g. legacy "IR-5"), pick the first candidate not yet assigned
-        if (!cand) {
+        // 4. Unowned base journey (legacy "IR-5"): the first IR-5 candidate not yet assigned
+        if (!cand && !candIdMatch) {
           cand = validIr5Candidates.find((c) => !assignedCandidateIds.has(c.id));
         }
 
@@ -647,8 +640,7 @@ export default function MyJourneysPage() {
           candRosterTier,
           journeyTiersTier:
             planCtx?.journeyTiers?.[j.journey_id] ||
-            planCtx?.journeyTiers?.[cand.id] ||
-            planCtx?.journeyTiers?.[`ir5_${cand.id}`],
+            planCtx?.journeyTiers?.[(j.journey_id || "").toLowerCase()],
         });
 
         const progress = getProgressPercent(j);
@@ -682,8 +674,10 @@ export default function MyJourneysPage() {
         // ONLY match a candidate if their category matches this journey's baseCategory
         // or if baseCategory is IR-1 and candidate relation is "Spouse".
         // NEVER match an IR-5 parent candidate!
+        // Matched on the category slot, so the second IR-2 child's card shows (and opens)
+        // the second child, not the first one of the category.
         const candForJourney =
-          candidates.find((c) => getBaseVisaCategory(c.visaCategory) === baseCategory) ||
+          findCandidateForJourneyKey(candidates, j.journey_id) ||
           (baseCategory === "IR-1" ? candidates.find((c) => c.relation === "Spouse") : null) ||
           null;
 
@@ -718,7 +712,7 @@ export default function MyJourneysPage() {
           candRosterTier,
           journeyTiersTier:
             planCtx?.journeyTiers?.[j.journey_id] ||
-            planCtx?.journeyTiers?.[baseCategory],
+            planCtx?.journeyTiers?.[(j.journey_id || "").toLowerCase()],
         });
 
         const progress = getProgressPercent(j);
@@ -877,14 +871,15 @@ export default function MyJourneysPage() {
 
     if (!targetCandidateId) {
       const baseCategory = getBaseVisaCategory(meta.code || meta.canonicalId);
+      // Only a candidate of this journey's category pool; the journey page aligns the
+      // rest (last used in the category, else its first candidate).
       const match =
-        (activeCandidate && getBaseVisaCategory(activeCandidate.visaCategory) === baseCategory
+        (activeCandidate && isSamePool(activeCandidate.visaCategory, baseCategory)
           ? activeCandidate
           : null) ||
-        candidates.find((c) => getBaseVisaCategory(c.visaCategory) === baseCategory) ||
+        candidates.find((c) => isSamePool(c.visaCategory, baseCategory)) ||
         (baseCategory === "IR-1" ? candidates.find((c) => c.relation === "Spouse") : null) ||
-        candidates.find((c) => c.isPrimary) ||
-        candidates[0];
+        null;
 
       if (match?.id) {
         targetCandidateId = match.id;
@@ -917,14 +912,15 @@ export default function MyJourneysPage() {
     // Safety fallback: if candidateId was not directly on meta, resolve the appropriate candidate
     if (!targetCandidateId) {
       const baseCategory = getBaseVisaCategory(meta.code || meta.canonicalId);
+      // Only a candidate of this journey's category pool; the journey page aligns the
+      // rest (last used in the category, else its first candidate).
       const match =
-        (activeCandidate && getBaseVisaCategory(activeCandidate.visaCategory) === baseCategory
+        (activeCandidate && isSamePool(activeCandidate.visaCategory, baseCategory)
           ? activeCandidate
           : null) ||
-        candidates.find((c) => getBaseVisaCategory(c.visaCategory) === baseCategory) ||
+        candidates.find((c) => isSamePool(c.visaCategory, baseCategory)) ||
         (baseCategory === "IR-1" ? candidates.find((c) => c.relation === "Spouse") : null) ||
-        candidates.find((c) => c.isPrimary) ||
-        candidates[0];
+        null;
 
       if (match?.id) {
         targetCandidateId = match.id;

@@ -1,10 +1,7 @@
 import { ALL_DOCUMENTS } from "./document-definitions";
 import { VisaCategory, ScenarioFlags } from "./types";
-import {
-  getBaseVisaCategory,
-  getCandidateJourneyKey,
-  UNKNOWN_VISA_CATEGORY,
-} from "@/lib/candidate/candidateSyncService";
+import { getBaseVisaCategory, UNKNOWN_VISA_CATEGORY } from "@/lib/candidate/candidateSyncService";
+import { getCandidateSlot, getJourneyKeyForCandidate } from "@/lib/candidate/candidateKeys";
 
 export { getBaseVisaCategory };
 
@@ -478,6 +475,7 @@ export function getFriendlyJourneyName(journeyType: string, defaultName?: string
 /** Minimal candidate shape needed to label a journey (subset of CandidateProfile). */
 export interface CandidateLike {
   id: string;
+  categorySlot?: number;
   label?: string;
   fullName?: string;
   visaCategory?: string;
@@ -495,10 +493,15 @@ export function getCandidateForJourneyType(
 ): CandidateLike | null {
   if (!journeyType || !candidates || candidates.length === 0) return null;
   const base = getBaseVisaCategory(journeyType);
+  // Matched on the candidate's category slot (lib/candidate/candidateKeys.ts), so the
+  // first IR-2 child owns "ir2" even when its account-wide id is candidate-3.
   return (
     candidates.find((c) => {
       const candBase = c.visaCategory || base;
-      return isSameJourneyType(getCandidateJourneyKey(candBase, c.id), journeyType);
+      return isSameJourneyType(
+        getJourneyKeyForCandidate({ ...c, visaCategory: candBase }),
+        journeyType
+      );
     }) || null
   );
 }
@@ -539,8 +542,7 @@ export function getCandidateDisplayNameForJourney(
     if (trimmedName && !DEFAULT_NAME_RE.test(trimmedName)) {
       return trimmedName;
     }
-    const num = (cand.id || "").replace(/[^0-9]/g, "") || "1";
-    return cand.label || `Candidate ${num}`;
+    return cand.label || `Candidate ${getCandidateSlot(cand)}`;
   }
 
   // Fallback from journey_type string if candidate not in roster

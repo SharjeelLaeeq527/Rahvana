@@ -8,6 +8,8 @@
 import { NextRequest } from 'next/server'
 
 // Mutable DB profile the supabase mock returns (read at call-time).
+// Candidate roster on the mocked profile (category slots decide journey keys).
+let mockRoster: any[] = []
 let mockTier = 'free'
 let mockStatus = 'inactive'
 const mockIlike = jest.fn()
@@ -50,7 +52,11 @@ jest.mock('@supabase/supabase-js', () => ({
           data: {
             subscription_tier: mockTier,
             subscription_status: mockStatus,
-            profile_details: { stripe_subscription_id: null, purchased_addons: [] },
+            profile_details: {
+              stripe_subscription_id: null,
+              purchased_addons: [],
+              candidates: mockRoster,
+            },
             stripe_customer_id: null,
           },
           error: null,
@@ -133,6 +139,7 @@ function makeRequest(body: object) {
 
 function resetAll() {
   mockIlike.mockClear()
+  mockRoster = []
   mockTier = 'free'
   mockStatus = 'inactive'
   mockCustomerId = null
@@ -393,8 +400,34 @@ describe('Checkout - IR-2 plans are scoped to the IR-2 journey', () => {
 
   it('reads the child candidate row when a candidate is targeted', async () => {
     mockCustomerId = 'cus_1'
+    mockRoster = [
+      { id: 'candidate-1', visaCategory: 'IR-2', relation: 'Child' },
+      { id: 'candidate-2', visaCategory: 'IR-2', relation: 'Child' },
+    ]
     await POST(makeRequest({ productTier: 'basic', visaCategory: 'IR-2 / CR-2', candidateId: 'candidate-2' }))
     expect(mockIlike).toHaveBeenCalledWith('journey_type', 'ir2_candidate2')
+  })
+
+  it("keys the child's row by its IR-2 slot, not its account-wide id", async () => {
+    mockCustomerId = 'cus_1'
+    mockRoster = [
+      { id: 'candidate-1', visaCategory: 'IR-5', relation: 'Mother' },
+      { id: 'candidate-2', visaCategory: 'IR-5', relation: 'Father' },
+      { id: 'candidate-3', visaCategory: 'IR-2', relation: 'Child', categorySlot: 1 },
+    ]
+    await POST(makeRequest({ productTier: 'basic', visaCategory: 'IR-2 / CR-2', candidateId: 'candidate-3' }))
+    expect(mockIlike).toHaveBeenCalledWith('journey_type', 'ir2')
+    expect(mockIlike).not.toHaveBeenCalledWith('journey_type', 'ir2_candidate3')
+  })
+
+  it('an IR-5 parent id sent with an IR-2 purchase reads the IR-2 base row', async () => {
+    mockCustomerId = 'cus_1'
+    mockRoster = [
+      { id: 'candidate-1', visaCategory: 'IR-5', relation: 'Mother' },
+      { id: 'candidate-2', visaCategory: 'IR-5', relation: 'Father' },
+    ]
+    await POST(makeRequest({ productTier: 'basic', visaCategory: 'IR-2 / CR-2', candidateId: 'candidate-2' }))
+    expect(mockIlike).toHaveBeenCalledWith('journey_type', 'ir2')
   })
 
   it('an IR-2 basic -> premium upgrade is not blocked by an IR-1 executive plan', async () => {

@@ -97,13 +97,14 @@ describe("Multi-Candidate Profile Management & Sync Engine", () => {
 
       const newCand = createNewCandidate(existing, {
         relation: "Father",
-        isPreview: true,
       });
 
       expect(newCand.id).toBe("candidate-2");
+      expect(newCand.categorySlot).toBe(2);
       expect(newCand.relation).toBe("Father");
       expect(newCand.visaCategory).toBe("IR-5");
-      expect(newCand.isPreview).toBe(true);
+      // Preview / tier / primary are server-owned: a new candidate is never a preview.
+      expect(newCand.isPreview).toBe(false);
       expect(newCand.tier).toBe("free");
       expect(newCand.isPrimary).toBe(false);
     });
@@ -166,13 +167,12 @@ describe("Multi-Candidate Profile Management & Sync Engine", () => {
       expect(motherCand.isPreview).toBe(false);
     });
 
-    it("creates sequential child candidates for IR-2 (Child 1, Child 2, Child 3) in free preview", () => {
+    it("creates sequential child candidates for IR-2 (Child 1, Child 2, Child 3)", () => {
       const initial = getDefaultCandidatesForVisa("IR-2", "premium", false);
       expect(initial).toHaveLength(1);
 
       const child2 = createNewCandidate(initial, {
         relation: "Child",
-        isPreview: true,
       });
       expect(child2.id).toBe("candidate-2");
       expect(child2.relation).toBe("Child");
@@ -180,17 +180,16 @@ describe("Multi-Candidate Profile Management & Sync Engine", () => {
       // Generic numbered label, no relation suffix baked in.
       expect(child2.label).toBe("Candidate 2");
       expect(child2.tier).toBe("free");
-      expect(child2.isPreview).toBe(true);
+      expect(child2.isPreview).toBe(false);
 
       const child3 = createNewCandidate([...initial, child2], {
         relation: "Child",
-        isPreview: true,
       });
       expect(child3.id).toBe("candidate-3");
       expect(child3.label).toBe("Candidate 3");
       expect(child3.visaCategory).toBe("IR-2");
       expect(child3.tier).toBe("free");
-      expect(child3.isPreview).toBe(true);
+      expect(child3.isPreview).toBe(false);
     });
   });
 

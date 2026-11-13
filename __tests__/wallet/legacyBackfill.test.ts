@@ -99,7 +99,8 @@ describe('legacy add-on backfill mapping', () => {
 
 describe('server-owned profile keys', () => {
   it('the DB guard protects the same keys as the app', () => {
-    const sql = migration('20261023_01_protect_server_owned_profile_keys.sql')
+    // The latest migration that (re)defines guard_user_profile_billing is the live one.
+    const sql = migration('20261113_01_guard_journey_billing_and_roster.sql')
     const block = sql.slice(sql.indexOf('c_server_keys CONSTANT TEXT[] := ARRAY['), sql.indexOf('];'))
     const keys = [...block.matchAll(/'([^']+)'/g)].map((m) => m[1]).sort()
     expect(keys).toEqual([...SERVER_OWNED_PROFILE_KEYS].sort())

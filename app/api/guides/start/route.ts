@@ -14,7 +14,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
-    const { slug, candidateId = "candidate-1" } = await request.json();
+    const body = await request.json();
+    const slug = body?.slug;
+    // Guide sessions are per candidate. Anything that is not a candidate id falls back to
+    // the account's first candidate (the owner of untagged rows), never to a free string.
+    const candidateId =
+      typeof body?.candidateId === "string" && /^candidate-\d+$/.test(body.candidateId)
+        ? body.candidateId
+        : "candidate-1";
 
     if (!slug) {
       return NextResponse.json({ error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: '[slug]' }) }, { status: 400 });
@@ -72,31 +79,31 @@ export async function POST(request: Request) {
         .single();
 
       if (insertAttempt.error) {
-        // Fallback insert without candidate_id if column missing or constraint error
-        const fallbackInsert = await supabase
+        // The insert can lose a race with another tab (unique (user_id, guide_id,
+        // candidate_id)). Retry as an upsert on that same key so the row ALWAYS keeps its
+        // candidate_id. (The old fallback wrote a row without candidate_id, which the DB
+        // default turned into candidate-1: another candidate's guide progress.)
+        const fallbackUpsert = await supabase
           .from("user_guides")
           .upsert(
             {
               user_id: user.id,
               guide_id: guide.id,
+              candidate_id: candidateId,
               status: "in_progress",
               saved: false,
               last_updated_at: new Date().toISOString(),
             },
-            { onConflict: "user_id,guide_id" }
+            { onConflict: "user_id,guide_id,candidate_id" }
           )
           .select()
           .single();
 
-        session = fallbackInsert.data || {
-          id: `${user.id}_${guide.id}_${candidateId}`,
-          user_id: user.id,
-          guide_id: guide.id,
-          candidate_id: candidateId,
-          status: "in_progress",
-          saved: false,
-          progress_percent: 0,
-        };
+        if (fallbackUpsert.error || !fallbackUpsert.data) {
+          console.error("[guides/start] Could not start guide session:", fallbackUpsert.error);
+          return NextResponse.json({ error: msg(E.AUTH_UNEXPECTED_ERROR) }, { status: 500 });
+        }
+        session = fallbackUpsert.data;
       } else {
         session = insertAttempt.data;
       }

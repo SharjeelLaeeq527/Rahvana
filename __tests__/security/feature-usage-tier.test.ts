@@ -31,14 +31,51 @@ describe('resolveOwnedJourney', () => {
     await expect(resolveOwnedJourney(client, 'user-1', { journeyId: J_OTHER })).resolves.toBeNull()
   })
 
+  // The candidate is resolved through the roster (its category slot).
+  const user_profiles: Row[] = [
+    {
+      id: 'user-1',
+      profile_details: {
+        candidates: [
+          { id: 'candidate-1', visaCategory: 'IR-5' },
+          { id: 'candidate-2', visaCategory: 'IR-5' },
+          { id: 'candidate-3', visaCategory: 'IR-2', categorySlot: 1 },
+        ],
+      },
+    },
+  ]
+
   it('resolves a slug + candidate to the right candidate journey', async () => {
-    const { client } = fakeSupabase({ journeys })
+    const { client } = fakeSupabase({ journeys, user_profiles })
     const j = await resolveOwnedJourney(client, 'user-1', {
       journeyId: 'ir5-journey',
       journeyCategory: 'IR-5',
       candidateId: 'candidate-2',
     })
     expect(j?.id).toBe('j-ir5-c2')
+  })
+
+  it('a candidate of another category resolves to that category base journey, never its own number', async () => {
+    const withIr5Base: Row[] = [
+      ...journeys,
+      { id: 'j-ir5', user_id: 'user-1', journey_type: 'ir5', subscription_tier: 'basic', status: 'in_progress' },
+    ]
+    const { client } = fakeSupabase({ journeys: withIr5Base, user_profiles })
+    // candidate-3 is an IR-2 child: on an IR-5 slug it must not select ir5_candidate3.
+    const j = await resolveOwnedJourney(client, 'user-1', {
+      journeyCategory: 'IR-5',
+      candidateId: 'candidate-3',
+    })
+    expect(j?.id).toBe('j-ir5')
+  })
+
+  it('a candidate id that is not on the roster never selects a candidate journey', async () => {
+    const { client } = fakeSupabase({ journeys, user_profiles })
+    const j = await resolveOwnedJourney(client, 'user-1', {
+      journeyCategory: 'IR-5',
+      candidateId: 'candidate-9',
+    })
+    expect(j).toBeNull()
   })
 })
 

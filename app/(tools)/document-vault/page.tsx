@@ -57,7 +57,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Plus, Info, LayoutTemplate } from "lucide-react";
 import { useWizard } from "@/app/(main)/dashboard/hooks/useWizard";
 import { useCandidate } from "@/app/context/CandidateContext";
-import { getJourneyKeyForCandidate, getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
+import { getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
+import { canonicalJourneyKey, getJourneyKeyForCandidate } from "@/lib/candidate/candidateKeys";
 import Link from "next/link";
 import Image from "next/image";
 import { PageGate } from "@/app/components/entitlements/PageGate";
@@ -184,7 +185,10 @@ export default function DocumentVaultPage() {
   // Derive active candidate journey key
   const activeCandidateJourneyKey = useMemo(() => {
     if (!activeCandidate) return undefined;
-    return getJourneyKeyForCandidate(activeCandidate.visaCategory || "IR-5", activeCandidate.id);
+    return getJourneyKeyForCandidate({
+      ...activeCandidate,
+      visaCategory: activeCandidate.visaCategory || "IR-5",
+    });
   }, [activeCandidate]);
 
   // Derive active journey for labelling and wizard loading
@@ -537,31 +541,14 @@ export default function DocumentVaultPage() {
     if (activeCandidateId === lastResolvedCandidateRef.current) return;
 
     const visaCategory = activeCandidate.visaCategory || "IR-5";
-    const candidateJourneyKey = getJourneyKeyForCandidate(visaCategory, activeCandidate.id);
-    const normCandidateKey = candidateJourneyKey.toLowerCase().replace(/[-:_]/g, "");
-    const normBaseKey = visaCategory.toLowerCase().replace(/[-:_]/g, "");
-
-    const matched = userJourneys.find((j) => {
-      // Never match a journey from a different visa category. Without this, the primary
-      // candidate's loose fallback below would wrongly grab an unrelated journey (e.g. an
-      // IR-1 journey), making Mother's IR-5 vault show "IR-1". Normalize both sides so
-      // "IR-5" / "IR5" / "ir-5" all compare equal.
-      if (getBaseVisaCategory(j.journey_type) !== getBaseVisaCategory(visaCategory)) return false;
-
-      const normJ = j.journey_type.toLowerCase().replace(/[-:_]/g, "");
-      if (activeCandidate.isPrimary) {
-        // The primary candidate owns the base journey (e.g. "ir5"), which is never
-        // candidate-scoped. Any journey_type containing "candidate" belongs to a sibling
-        // (candidate-2, candidate-3, ... candidate-N), so exclude all of them regardless of
-        // number - hardcoding candidate2/3/4 leaked a 5th+ candidate's journey to the primary.
-        return (
-          normJ === normBaseKey ||
-          normJ === normCandidateKey ||
-          !normJ.includes("candidate")
-        );
-      }
-      return normJ === normCandidateKey || (normJ.includes(normCandidateKey) && !normJ.includes("candidate1"));
-    });
+    // Exact journey key of the candidate's category slot ("ir2" for the first child,
+    // "ir2_candidate2" for the second). Variant rows of the same journey ("ir5" /
+    // "ir5-journey") share the canonical key; another candidate's or another
+    // category's journey never matches.
+    const candidateJourneyKey = getJourneyKeyForCandidate({ ...activeCandidate, visaCategory });
+    const matched = userJourneys.find(
+      (j) => canonicalJourneyKey(j.journey_type) === candidateJourneyKey
+    );
 
     // Only mark this candidate resolved once we actually found a journey for it, so a
     // late-arriving journey (e.g. a freshly created 2nd-parent journey) is still picked up.

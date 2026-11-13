@@ -779,6 +779,8 @@ interface ConsultationDbRecord {
   admin_notes?: string | null;
   reference_id?: string | null;
   visa_category?: string | null;
+  /** Candidate a journey-booked consultation belongs to (null = standalone / account). */
+  candidate_id?: string | null;
 }
 
 /**
@@ -839,6 +841,10 @@ async function createConsultationInAppNotification(
 
     const { error } = await supabaseAdmin.from("app_notifications").insert({
       user_id: userId,
+      // The booking's candidate (journey bookings). Null = account-wide (a standalone
+      // booking), which every candidate's feed shows. Omitting it let the column default
+      // tag every consultation notification as candidate-1's.
+      candidate_id: booking.candidate_id || null,
       type: "consultation_status",
       title: content.title,
       body: content.body,
