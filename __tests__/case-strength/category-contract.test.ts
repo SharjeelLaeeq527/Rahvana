@@ -28,9 +28,7 @@ const DIR = path.join(process.cwd(), "data", "visa-category");
  * Chapters-schema journeys that knowingly run on GENERIC_PROFILE for now.
  * Remove an entry when its `categories/<slug>.ts` is registered.
  */
-const AWAITING_PROFILE: Record<string, string> = {
-  "ir-2.json": "IR-2 profile is Phase 5 of docs/ir2-implementation-plan.md",
-};
+const AWAITING_PROFILE: Record<string, string> = {};
 
 interface JourneyJson {
   journey_type?: string;

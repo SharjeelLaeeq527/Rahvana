@@ -258,6 +258,60 @@ const IR5_FAMILY_INTEGRATION_REQUIREMENT: EvidenceRequirement = {
   ],
 };
 
+// IDENTITY (IR-2 child) - Core civil docs proving the parent-child relationship.
+const IR2_IDENTITY_REQUIREMENT: EvidenceRequirement = {
+  category: "IDENTITY",
+  label: "Identity & Civil Documents",
+  description: "Core identity and civil documents establishing the parent-child relationship",
+  items: [
+    {
+      id: "passport_beneficiary",
+      name: "Child's Passport",
+      evidenceType: "REQUIRED",
+      weight: 3,
+    },
+    {
+      id: "passport_petitioner",
+      name: "Petitioner Passport/US Citizenship",
+      evidenceType: "REQUIRED",
+      weight: 3,
+    },
+    {
+      id: "birth_certificate",
+      name: "Child's Birth Certificate (names petitioner)",
+      evidenceType: "REQUIRED",
+      weight: 3,
+    },
+    {
+      id: "child_crc",
+      name: "Child Registration Certificate (CRC / B-Form)",
+      evidenceType: "SUPPORTING",
+      weight: 2,
+    },
+  ],
+};
+
+// FAMILY INTEGRATION (IR-2 child) - Photos with child, secondary relationship / school records.
+const IR2_FAMILY_INTEGRATION_REQUIREMENT: EvidenceRequirement = {
+  category: "FAMILY_INTEGRATION",
+  label: "Family Integration",
+  description: "Evidence of the ongoing parent-child relationship and family ties",
+  items: [
+    {
+      id: "family_photos",
+      name: "Family Photos with Child",
+      evidenceType: "SUPPORTING",
+      weight: 2,
+    },
+    {
+      id: "secondary_relationship",
+      name: "Secondary Parent-Child Evidence / School Records",
+      evidenceType: "SUPPORTING",
+      weight: 2,
+    },
+  ],
+};
+
 // ── Assembled per-category configs ────────────────────────────────────────────
 
 // IR-1 / CR-1 (spouse): the full original set — unchanged behavior.
@@ -285,6 +339,14 @@ export const IR1_EVIDENCE_REQUIREMENTS: Record<EvidenceCategory, EvidenceRequire
 export const IR5_EVIDENCE_REQUIREMENTS: Partial<Record<EvidenceCategory, EvidenceRequirement>> = {
   IDENTITY: IR5_IDENTITY_REQUIREMENT,
   FAMILY_INTEGRATION: IR5_FAMILY_INTEGRATION_REQUIREMENT,
+};
+
+// IR-2 / CR-2 (child) — I-130 filing-stage evidence only.
+// Assesses IDENTITY and FAMILY_INTEGRATION. Financial and consular-stage records
+// are tracked in later stages.
+export const IR2_EVIDENCE_REQUIREMENTS: Partial<Record<EvidenceCategory, EvidenceRequirement>> = {
+  IDENTITY: IR2_IDENTITY_REQUIREMENT,
+  FAMILY_INTEGRATION: IR2_FAMILY_INTEGRATION_REQUIREMENT,
 };
 
 /** Requirements config the engine runs against. IR-1 is the safe default. */
@@ -435,6 +497,24 @@ const JOURNEY_DOC_ID_TO_EVIDENCE: Record<string, EvidenceCategory> = {
   "i864-petitioner": "FINANCIAL",
   "tax-docs-petitioner": "FINANCIAL",
   photos: "FAMILY_INTEGRATION",
+
+  // ── IR-2 (child) journey documents ──────────────────────────────────────
+  // Sourced from data/visa-category/ir-2.json (step_1_2 and related)
+  doc_child_birth_cert: "IDENTITY",
+  doc_child_crc: "IDENTITY",
+  doc_child_passport: "IDENTITY",
+  doc_legitimation: "IDENTITY",
+  doc_adoption_decree: "IDENTITY",
+  doc_adoption_custody_residence: "IDENTITY",
+  doc_custody_consent: "IDENTITY",
+  doc_name_change: "IDENTITY",
+  doc_secondary_relationship: "FAMILY_INTEGRATION",
+  doc_record_unavailability: "IDENTITY",
+  doc_frc: "IDENTITY",
+  "child-birth": "IDENTITY",
+  "child-birth-cert": "IDENTITY",
+  "child-passport": "IDENTITY",
+  "child-crc": "IDENTITY",
 };
 
 // Vault Category to Evidence Category Mapping

@@ -20,6 +20,7 @@ import { getBaseVisaCategory, UNKNOWN_VISA_CATEGORY } from "@/lib/candidate/cand
 import type { CaseStrengthProfile } from "./types";
 import { IR1_PROFILE } from "./ir1";
 import { IR5_PROFILE } from "./ir5";
+import { IR2_PROFILE } from "./ir2";
 import { GENERIC_PROFILE } from "./generic";
 
 export type { CaseStrengthProfile } from "./types";
@@ -31,10 +32,21 @@ export {
   IR5_BASELINE_FIELDS,
   detectIr5EligibilityRisks,
 } from "./ir5";
+export {
+  IR2_PROFILE,
+  IR2_STEP_CHECKERS,
+  IR2_STEP_REFS,
+  IR2_BASELINE_FIELDS,
+  detectIr2EligibilityRisks,
+} from "./ir2";
 export { GENERIC_PROFILE, GENERIC_BASELINE_FIELDS } from "./generic";
 
 /** All registered category profiles. Order matters only for iteration/dev UI. */
-export const CASE_STRENGTH_PROFILES: CaseStrengthProfile[] = [IR1_PROFILE, IR5_PROFILE];
+export const CASE_STRENGTH_PROFILES: CaseStrengthProfile[] = [
+  IR1_PROFILE,
+  IR5_PROFILE,
+  IR2_PROFILE,
+];
 
 /** The registered profile for a journey, or null when its category has none. */
 export function findCaseStrengthProfile(

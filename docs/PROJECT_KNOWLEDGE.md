@@ -484,11 +484,10 @@ Scores case strength grounded in USCIS policy + practitioner patterns, now **sca
 across visa categories via a profile/Strategy pattern** (no longer IR-1-only).
 
 - **Category registry:** `categories/index.ts` — `CASE_STRENGTH_PROFILES = [IR1_PROFILE,
-  IR5_PROFILE]`; `resolveCaseStrengthProfile(journeyType)` matches by BASE category
-  (`getBaseVisaCategory`, so `ir5_candidate-2` -> IR-5) and returns **`GENERIC_PROFILE`**
+  IR5_PROFILE, IR2_PROFILE]`; `resolveCaseStrengthProfile(journeyType)` matches by BASE category
+  (`getBaseVisaCategory`, so `ir5_candidate-2` -> IR-5, `ir2_candidate-1` -> IR-2) and returns **`GENERIC_PROFILE`**
   (`categories/generic.ts`: no step checks, no risks, DOB-only consistency, passports-only
-  evidence) for unknown/missing/unregistered categories - **never `IR1_PROFILE`** (IR-2 gets
-  generic until its Phase 5 profile ships). `findCaseStrengthProfile` / `hasCaseStrengthProfile`
+  evidence) for unknown/missing/unregistered categories - **never `IR1_PROFILE`**. `findCaseStrengthProfile` / `hasCaseStrengthProfile`
   return null/false for unregistered. A `CaseStrengthProfile`
   (`categories/types.ts`) bundles `stepCheckers`, `stepRefs`, `baselineFields`,
   `detectEligibilityRisks`, `consistency`, `evidence` (EvidenceGapConfig),
