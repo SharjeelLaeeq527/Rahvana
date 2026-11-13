@@ -227,7 +227,7 @@ export default function DocumentVaultPage() {
       if (isMulti) {
         // Multi-candidate (IR-5, IR-2, CR-2) resolution:
         // 1. Check if journey_type explicitly specifies candidate index (e.g. "ir5_candidate-2")
-        const candIdMatch = (journey.journey_type || "").match(/candidate[-_]?(d+)/i);
+        const candIdMatch = (journey.journey_type || "").match(/candidate[-_]?(\d+)/i);
         const targetCandId = candIdMatch ? `candidate-${candIdMatch[1]}` : null;
 
         // 2. Filter valid candidates for this category
@@ -1221,7 +1221,7 @@ export default function DocumentVaultPage() {
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       className="object-cover transition-transform duration-500 group-hover:scale-105"
                       priority
-                    />
+                    /> 
                     {/* Gradient Overlay */}
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-slate-900/20 to-transparent" />
 

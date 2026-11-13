@@ -34,6 +34,7 @@ const JOURNEY_CONFIG_BY_TYPE: Record<
 > = {
   ir1: { config: ir1Config, getActiveSteps: getAllActiveStepsSpouse as ActiveStepResolver },
   ir5: { config: ir5Config, getActiveSteps: getAllActiveStepsEngine as ActiveStepResolver },
+  ir2: { config: ir2Config, getActiveSteps: getAllActiveStepsEngine as ActiveStepResolver },
 };
 
 function normalizeJourneyType(journeyType?: string | null): string {

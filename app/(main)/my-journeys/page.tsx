@@ -43,6 +43,12 @@ const JOURNEY_ALIASES: Record<string, string> = {
   "ir-1-spouse": "ir1",
   "ir-1-spouse-visa": "ir1",
   "ir-5": "ir5",
+  "ir-2": "ir2",
+  "ir2": "ir2",
+  "ir2-child": "ir2",
+  "ir2-child-visa": "ir2",
+  "ir-2-child": "ir2",
+  "ir-2-child-visa": "ir2",
 };
 
 const normalizeJourneyId = (id: string): string => {
@@ -76,12 +82,19 @@ const JOURNEY_META: Record<string, JourneyMeta> = {
     image: "/assets/images/ir5-doc-vault-image.png",
     code: "IR-5",
   },
+  ir2: {
+    name: "IR-2 Child Visa",
+    description: "A guided immigration journey for unmarried children under 21 of U.S. citizens.",
+    route: "/visa-category/ir2-journey",
+    image: "/assets/images/ir2-doc-vault-image.jpg",
+    code: "IR-2",
+  },
 };
 
 const resolveJourneyMeta = (rawId: string): JourneyMeta & { canonicalId: string } => {
   const canonical = normalizeJourneyId(rawId);
   const baseVisa = getBaseVisaCategory(rawId);
-  const baseCanonical = baseVisa === "IR-5" ? "ir5" : baseVisa === "IR-1" ? "ir1" : canonical;
+  const baseCanonical = baseVisa === "IR-5" ? "ir5" : baseVisa === "IR-1" ? "ir1" : baseVisa === "IR-2" || baseVisa === "CR-2" ? "ir2" : canonical;
 
   const meta = JOURNEY_META[baseCanonical] || JOURNEY_META[canonical];
 
@@ -560,9 +573,9 @@ export default function MyJourneysPage() {
       const baseCategory = getBaseVisaCategory(j.journey_id);
       const canonical = normalizeJourneyId(j.journey_id);
       const meta = resolveJourneyMeta(j.journey_id);
-      const isIr5 = IR5_ENABLED && baseCategory === "IR-5";
+      const isMulti = (IR5_ENABLED && baseCategory === "IR-5") || baseCategory === "IR-2" || baseCategory === "CR-2";
 
-      if (isIr5) {
+      if (isMulti) {
         // Multi-candidate (IR-5) candidate resolution:
         // 1. Check if journey_id explicitly specifies candidate index (e.g. "ir5_candidate-2")
         const candIdMatch = (j.journey_id || "").match(/candidate[-_]?(\d+)/i);
@@ -571,14 +584,20 @@ export default function MyJourneysPage() {
         // 2. Only consider candidates that are actually for IR-5 (or parents), NOT spouse/IR-1 candidates!
         const validIr5Candidates = candidates.filter((c) => {
           const cat = getBaseVisaCategory(c.visaCategory);
-          return (
-            cat === "IR-5" ||
-            c.relation === "Mother" ||
-            c.relation === "Father" ||
-            c.relation === "Stepparent" ||
-            c.relation === "AdoptiveParent" ||
-            (!c.visaCategory && c.relation !== "Spouse")
-          );
+          if (baseCategory === "IR-5") {
+            return (
+              cat === "IR-5" ||
+              c.relation === "Mother" ||
+              c.relation === "Father" ||
+              c.relation === "Stepparent" ||
+              c.relation === "AdoptiveParent" ||
+              (!c.visaCategory && c.relation !== "Spouse")
+            );
+          }
+          if (baseCategory === "IR-2" || baseCategory === "CR-2") {
+            return cat === "IR-2" || cat === "CR-2" || c.relation === "Child";
+          }
+          return cat === baseCategory;
         });
 
         // 3. Look up matching candidate profile
@@ -597,7 +616,7 @@ export default function MyJourneysPage() {
           cand = {
             id: targetCandId || `candidate-${nextNum}`,
             label: `Candidate ${nextNum}`,
-            relation: "Other",
+            relation: baseCategory === "IR-2" || baseCategory === "CR-2" ? "Child" : "Other",
             fullName: "",
             isPrimary: assignedCandidateIds.size === 0,
             tier: (j.subscription_tier as any) || "free",
@@ -814,6 +833,10 @@ export default function MyJourneysPage() {
       "ir1": 1,
       "ir-5": 2,
       "ir5": 2,
+      "ir-2": 2.5,
+      "ir2": 2.5,
+      "cr-2": 2.6,
+      "cr2": 2.6,
       "cr-1": 3,
       "cr1": 3,
       "k-1": 4,
