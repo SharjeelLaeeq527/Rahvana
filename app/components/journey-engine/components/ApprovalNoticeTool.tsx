@@ -991,7 +991,11 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
 
       {/* Upgrade modal */}
       {upgradeModalFeature && (
-        <UpgradeModal feature={upgradeModalFeature!} onClose={() => setUpgradeModalFeature(null)} />
+        <UpgradeModal
+          feature={upgradeModalFeature!}
+          currentTier={plan.tier}
+          onClose={() => setUpgradeModalFeature(null)}
+        />
       )}
     </div>
   );
