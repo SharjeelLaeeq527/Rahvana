@@ -9,6 +9,7 @@ import { Loader } from "@/components/ui/spinner";
 import { useAuth } from "@/app/context/AuthContext";
 import { E, msg } from "@/lib/errors";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { UserJourneyDashboard } from "./components/UserJourneyDashboard";
 
 type Analytics = {
   journeys: { total: number };
@@ -208,7 +209,7 @@ const UserDashboard = () => {
     <div className="bg-[#f8fafa]">
       <div className="w-full site-main-px site-main-py mt-14">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-6">
           <div className="flex justify-start mb-2">
             <h2 className="text-[28px] font-bold text-[#0a1128] mb-2">Dashboard</h2>
           </div>
@@ -223,6 +224,9 @@ const UserDashboard = () => {
           </p>
         </div>
 
+        {/* ── Journey Dashboard Hero ── */}
+        <UserJourneyDashboard />
+
         <div className="flex flex-col lg:flex-row gap-8">
           {/* MAIN CONTENT */}
           <div className="flex-1">
@@ -236,15 +240,15 @@ const UserDashboard = () => {
                     title={service.title}
                     icon={service.icon}
                     status={service.status}
-                    type={service.journeyType}
+                    type={(service as any).journeyType}
                     count={service.count}
                     countLabel={service.countLabel}
                     description={service.description}
                     onClick={() => {
-                      if (service.onClick) {
-                        service.onClick();
-                      } else if (service.href) {
-                        router.push(service.href);
+                      if ((service as any).onClick) {
+                        (service as any).onClick();
+                      } else if ((service as any).href) {
+                        router.push((service as any).href);
                       }
                     }}
                   />

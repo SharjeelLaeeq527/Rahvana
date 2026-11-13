@@ -24,6 +24,7 @@ import { CaseStatusHero } from "./components/CaseStatusHero";
 import { CaseHealthOverview } from "./components/CaseHealthOverview";
 import { CSADrawer } from "./components/CSADrawer";
 import { AlertCenter } from "./components/AlertCenter";
+import RahvanaDashboard from "@/app/(main)/Jdashboard/RahvanaDashboard";
 import { EvidenceGapEngine, EVIDENCE_QUESTIONNAIRE } from "@/lib/journey/evidence-gap";
 import type { EvidenceGapAnalysis } from "@/lib/journey/evidence-gap";
 import { DOCUMENTS_BY_ID } from "@/lib/document-vault/document-definitions";
@@ -452,6 +453,12 @@ export function DashboardView({
   const [isCSADrawerOpen, setIsCSADrawerOpen] = useState(false);
   const [showPhase2Modal, setShowPhase2Modal] = useState(false);
   const [showEvidenceQuestionnaireModal, setShowEvidenceQuestionnaireModal] = useState(false);
+  const [skin, setSkin] = useState<"redesign" | "classic">(() => {
+    if (typeof window !== "undefined") {
+      return (localStorage.getItem("rahvana_dashboard_skin") as "redesign" | "classic") || "redesign";
+    }
+    return "redesign";
+  });
 
   // ── Alert Center Issues ─────────────────────────────────────────────────────
   // Compute issues for the AlertCenter (critical + warning only)
@@ -1141,17 +1148,95 @@ export function DashboardView({
         style={{ backgroundImage: `url(${dashboardBg})`, opacity: 0.35 }}
       />
       <div className="w-full max-w-[1200px] xl:max-w-[1500px] mx-auto animate-in fade-in duration-700 relative z-10">
-        <div className={`w-full mb-6`}>
-          <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400 mb-1 text-center lg:text-left">
-            {visaName} Visa · Pakistan
+        <div className="w-full mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400 text-center sm:text-left">
+            {visaName || "Family"} Visa · Pakistan
+          </div>
+          <div className="inline-flex items-center gap-1 bg-white/80 backdrop-blur-sm p-1 rounded-xl border border-slate-200/80 shadow-xs self-center sm:self-auto text-xs">
+            <button
+              onClick={() => {
+                setSkin("redesign");
+                try { localStorage.setItem("rahvana_dashboard_skin", "redesign"); } catch (e) {}
+              }}
+              className={`px-3 py-1 rounded-lg font-semibold transition-colors cursor-pointer ${
+                skin === "redesign"
+                  ? "bg-[#0d7377] text-white shadow-xs"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              ✨ Redesigned Skin
+            </button>
+            <button
+              onClick={() => {
+                setSkin("classic");
+                try { localStorage.setItem("rahvana_dashboard_skin", "classic"); } catch (e) {}
+              }}
+              className={`px-3 py-1 rounded-lg font-semibold transition-colors cursor-pointer ${
+                skin === "classic"
+                  ? "bg-[#0d7377] text-white shadow-xs"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              Classic Layout
+            </button>
           </div>
         </div>
+
         {upgradeModalFeature && (
           <UpgradeModal
             feature={upgradeModalFeature}
             onClose={() => setUpgradeModalFeature(null)}
           />
         )}
+
+        {skin === "redesign" ? (
+          <div className="w-full flex items-center justify-center py-2">
+            <RahvanaDashboard
+              data={data}
+              state={state}
+              actions={actions}
+              onSelectChapter={onSelectChapter}
+              onSelectStep={onSelectStep}
+              onLaunchTool={onLaunchTool}
+              options={{
+                tier: effectiveTier,
+                receiptRecord,
+                caseStrength: {
+                  score: overallCaseScore,
+                  band: caseHealthStatus?.label ?? "Good",
+                  subScores: {
+                    evidenceCoverage: {
+                      val: `${Math.round((evidenceSubScore / 100) * 15)}`,
+                      denom: ' of 15',
+                      pct: evidenceSubScore / 100,
+                    },
+                    consistency: {
+                      val: `${Math.round((consistencySubScore / 100) * 12)}`,
+                      denom: ' of 12',
+                      pct: consistencySubScore / 100,
+                    },
+                    completeness: {
+                      val: `${Math.round(((completenessSubScore ?? 68) / 100) * 25)}`,
+                      denom: ' of 25',
+                      pct: (completenessSubScore ?? 68) / 100,
+                    },
+                    riskDeductions: {
+                      val: riskPenaltySubScore ? `−${riskPenaltySubScore}` : '0',
+                      denom: ' pts',
+                      pct: Math.min(1, (riskPenaltySubScore ?? 0) / 25),
+                    },
+                  },
+                },
+                onUpgradeRequired: (featureKey) => setUpgradeModalFeature(featureKey as any),
+                onOpenCaseStrength: () => setIsCSADrawerOpen(true),
+                onOpenVault: () => {
+                  if (onLaunchTool) onLaunchTool("document_vault");
+                },
+              }}
+            />
+          </div>
+        ) : (
+          <>
         {/* Visa ticker — journey dashboard (placed above hero) */}
         {receiptRecord !== undefined && (
           <div className="mb-6">
@@ -1954,6 +2039,8 @@ export function DashboardView({
           </div>
         </div>
         {/* end 3-col grid */}
+          </>
+        )}
       </div>
 
       {/* ── CSA Drawer ── */}
