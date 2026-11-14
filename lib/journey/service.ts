@@ -1237,10 +1237,15 @@ export class JourneyService {
 
       const journeysWithProgress = await Promise.all(
         journeys.map(async (journey) => {
-          const progressSummary = await this.progressService.getJourneyProgressSummary(
-            journey.id,
-            client
-          );
+          let progressSummary = null;
+          try {
+            progressSummary = await this.progressService.getJourneyProgressSummary(
+              journey.id,
+              client
+            );
+          } catch (progressErr) {
+            console.warn(`[getAllJourneysWithProgress] progress summary failed for ${journey.id}:`, progressErr);
+          }
           return {
             journey,
             progress_summary: progressSummary,

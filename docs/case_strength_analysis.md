@@ -15,7 +15,7 @@
 
 | v1.1 said | The code does |
 | --- | --- |
-| IR-1/CR-1 only | Category-scalable: one `CaseStrengthProfile` per visa category, resolved from the journey's `journey_type` (section 2). Shipped: IR-1/CR-1, IR-5. IR-2 is pending (IR-2 plan Phase 5). |
+| IR-1/CR-1 only | Category-scalable: one `CaseStrengthProfile` per visa category, resolved from the journey's `journey_type` (section 2). Shipped: IR-1/CR-1, IR-5, IR-2/CR-2. |
 | "No numeric scoring anywhere" | A weighted **Case Health** score exists (Evidence 40 / Consistency 30 / Completeness 20 / Risk 10, section 5.6). Both IR-1 and IR-5 use it. Per-step checks are still advisory only (`critical` / `warning` / `info`, no numbers). |
 | Per-chapter completeness % tiers and progress rings (v1.1 sections 3.1, 7.1, 7.2) | Not built. Completeness only feeds the weighted score; the dashboard shows the score ring, the alert stream and the evidence card. |
 | Engine files `engine.ts`, `completeness.ts`, `evidence.ts`, `recommendations.ts`, `constants.ts` | Do not exist. Real layout in section 2.3. |
@@ -330,11 +330,20 @@ Same as IR-1 except:
 | 2.3 DS-260 | DOB cross-check (no marriage date); IR-5 disclosures |
 | 3.8 Prepare for Interview | Parent-relationship wording; IR-5 interview disclosures |
 
-### 7.3 IR-2 / CR-2
+### 7.3 IR-2 / CR-2 (`IR2_STEP_CHECKERS`)
 
-No profile yet: resolves to `GENERIC_PROFILE` (no step checks, no risks). The profile is Phase 5
-of `docs/ir2-implementation-plan.md` (age-out, child marital status, stepchild / adoption rules)
-and follows section 3. The IR-2 step layout matches IR-5 (no I-130A).
+Shipped: `lib/case-strength/categories/ir2.ts`. Step layout matches IR-5 (24 steps in Chapter 1, no I-130A).
+
+| IR-2 step | Check |
+| --- | --- |
+| 1.4 Fill I-130 | Both DOBs captured; prove qualifying child relationship (birth cert, out-of-wedlock legitimation, stepchild marriage < 18, adoption decree < 16 + 2 yrs custody/residence) |
+| 1.5 Create USCIS Account | IR-1's 1.6 check (shifted) |
+| 1.6 Start I-130, 1.8 Pay Filing Fee, 1.10 Print Hard Copy | none |
+| 1.7 Upload | IR-1's 1.8 file-quality check (shifted) |
+| 1.9 Review & Submit | Both DOBs captured; no unresolved critical issues (IR-2 risk detector: CSPA age-out, marital status, guardianship vs adoption) |
+| 1.11 / 1.12 / 1.13 (paper) | IR-1's 1.12 / 1.13 / 1.14 |
+| 2.3 DS-260 | DOB cross-check (no marriage date); IR-2 child disclosures (visa refusals, police records, prior marriage dissolution) |
+| 3.8 Prepare for Interview | Child interview wording; non-accompanying parent custody/consent disclosures |
 
 ---
 

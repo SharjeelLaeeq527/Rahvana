@@ -582,7 +582,11 @@ export function ChapterView({ data, chapterIdx, state, onBack, onSelectStep }: C
 
       {/* Upgrade Modal for free tier step limit */}
       {upgradeModalFeature && (
-        <UpgradeModal feature={upgradeModalFeature} onClose={() => setUpgradeModalFeature(null)} />
+        <UpgradeModal
+          feature={upgradeModalFeature}
+          currentTier={effectiveTier}
+          onClose={() => setUpgradeModalFeature(null)}
+        />
       )}
     </div>
   );

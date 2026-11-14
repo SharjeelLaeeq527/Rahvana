@@ -1,4 +1,4 @@
-export type ProfileCaseType = "IR1" | "IR5" | "IR6" | "K1" | "CR1" | "OTHER" | string;
+export type ProfileCaseType = "IR1" | "IR5" | "IR2" | "K1" | "CR1" | "OTHER" | string;
 export type ProfileCaseStatus = "current" | "previous" | "future" | "active" | "past" | "planned";
 export type ProfileCaseRole = "petitioner" | "beneficiary" | "sponsor" | "joint" | string;
 export type ProfileSectionRelevance = "universal" | ProfileCaseType[];
@@ -69,7 +69,7 @@ export const profileSectionDefinitions: ProfileSectionDefinition[] = [
     id: "sponsor",
     title: "Sponsor",
     description: "The petitioner filing on your behalf, their details, not yours.",
-    relevance: ["IR1", "CR1", "IR5", "K1"],
+    relevance: ["IR1", "CR1", "IR5", "IR2"],
     visibleWhen: (ctx) =>
       ctx.hasSponsorData || ctx.hasAnyCase || getActiveCaseTypes(ctx).length > 0,
   },
@@ -105,7 +105,7 @@ export const profileSectionDefinitions: ProfileSectionDefinition[] = [
     id: "relationship",
     title: "Relationship Evidence",
     description: "Your marriage and relationship with the sponsor.",
-    relevance: ["IR1", "CR1", "K1"],
+    relevance: ["IR1", "CR1", "IR2"],
     visibleWhen: (ctx) =>
       ctx.hasRelationshipData || ctx.hasAnyCase || getActiveCaseTypes(ctx).length > 0,
   },
@@ -120,7 +120,7 @@ export const profileSectionDefinitions: ProfileSectionDefinition[] = [
     id: "affidavit",
     title: "Affidavit Support",
     description: "The sponsor's financial details for the Affidavit of Support.",
-    relevance: ["IR1", "CR1", "IR5", "K1"],
+    relevance: ["IR1", "CR1", "IR5", "IR2"],
     visibleWhen: (ctx) =>
       ctx.hasAnyCase || getActiveCaseTypes(ctx).length > 0 || ctx.hasSponsorData,
   },
@@ -128,14 +128,14 @@ export const profileSectionDefinitions: ProfileSectionDefinition[] = [
     id: "visaContext",
     title: "Case Details",
     description: "Background details for your case.",
-    relevance: ["IR1", "CR1", "IR5", "K1"],
+    relevance: ["IR1", "CR1", "IR5", "IR2"],
     visibleWhen: (ctx) => ctx.hasAnyCase || getActiveCaseTypes(ctx).length > 0,
   },
   {
     id: "visaEligibility",
     title: "Eligibility Details",
     description: "The eligibility details behind your case.",
-    relevance: ["IR1", "CR1", "IR5", "K1"],
+    relevance: ["IR1", "CR1", "IR5", "IR2"],
     visibleWhen: (ctx) => ctx.hasAnyCase || getActiveCaseTypes(ctx).length > 0,
   },
 ];

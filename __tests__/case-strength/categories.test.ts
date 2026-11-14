@@ -24,6 +24,10 @@ import {
   IR5_PROFILE,
   IR5_STEP_CHECKERS,
   IR5_BASELINE_FIELDS,
+  IR2_PROFILE,
+  IR2_STEP_CHECKERS,
+  IR2_BASELINE_FIELDS,
+  detectIr2EligibilityRisks,
   GENERIC_PROFILE,
   hasCaseStrengthProfile,
 } from "@/lib/case-strength/categories";
@@ -57,6 +61,12 @@ describe("resolveCaseStrengthProfile", () => {
     }
   });
 
+  it("maps IR-2 / CR-2 journey types (any spelling) to the child profile", () => {
+    for (const t of ["ir-2", "IR2", "IR-2", "ir_2", "cr-2", "CR2", "CR-2", "cr_2"]) {
+      expect(resolveCaseStrengthProfile(t).id).toBe("ir-2");
+    }
+  });
+
   it("maps IR-1 / CR-1 journey types to the spouse profile", () => {
     for (const t of ["IR1", "IR-1", "CR1", "cr-1"]) {
       expect(resolveCaseStrengthProfile(t).id).toBe("ir-1");
@@ -67,15 +77,20 @@ describe("resolveCaseStrengthProfile", () => {
     for (const t of ["ir5_candidate-2", "IR5_candidate-3", "ir-5_candidate-2"]) {
       expect(resolveCaseStrengthProfile(t).id).toBe("ir-5");
     }
+    for (const t of ["ir2_candidate-2", "IR2_candidate-3", "ir-2_candidate-1"]) {
+      expect(resolveCaseStrengthProfile(t).id).toBe("ir-2");
+    }
     expect(resolveCaseStrengthProfile("ir1_candidate-2").id).toBe("ir-1");
   });
 
   it("never falls back to the spouse profile: unknown, missing, or unregistered -> generic", () => {
-    for (const t of [undefined, null, "", "something-else", "IR2", "ir2_candidate-2", "F4"]) {
+    for (const t of [undefined, null, "", "something-else", "F4", "eb-2"]) {
       expect(resolveCaseStrengthProfile(t).id).toBe("generic");
       expect(resolveCaseStrengthProfile(t)).not.toBe(IR1_PROFILE);
     }
-    expect(hasCaseStrengthProfile("IR2")).toBe(false);
+    expect(hasCaseStrengthProfile("F4")).toBe(false);
+    expect(hasCaseStrengthProfile("IR2")).toBe(true);
+    expect(hasCaseStrengthProfile("ir2_candidate-2")).toBe(true);
     expect(hasCaseStrengthProfile("ir5_candidate-2")).toBe(true);
   });
 
@@ -489,5 +504,197 @@ describe("IR-5 eligibility risk detector (q5 semantics)", () => {
 
   it("IR-1 keeps its original polarity: q5s5='yes' DOES flag income (no regression)", () => {
     expect(ids(ir1(q5({ q5s5: "yes" })))).toContain("financial_sponsorship_concern");
+  });
+});
+
+// ── IR-2 Tests ─────────────────────────────────────────────────────────────
+
+describe("IR-2 registry composition", () => {
+  it("reuses shared checkers from COMMON_STEP_CHECKERS", () => {
+    expect(IR2_STEP_CHECKERS.step_1_3).toBe(IR1_PROFILE.stepCheckers.step_1_3);
+  });
+
+  it("overrides the 4 relationship/consistency steps with IR-2 versions", () => {
+    for (const key of ["step_1_4", "step_1_9", "step_2_3", "step_3_8"]) {
+      expect(IR2_STEP_CHECKERS[key]).not.toBe(IR1_PROFILE.stepCheckers[key]);
+    }
+  });
+
+  it("binds shared chapter-1 checkers by meaning (no I-130A step)", () => {
+    const ir1 = IR1_PROFILE.stepCheckers;
+    expect(IR2_STEP_CHECKERS.step_1_5).toBe(ir1.step_1_6); // Create USCIS Account
+    expect(IR2_STEP_CHECKERS.step_1_7).toBe(ir1.step_1_8); // Upload: file quality
+    expect(IR2_STEP_CHECKERS.step_1_11).toBe(ir1.step_1_12); // Prepare Filing Fee
+    expect(IR2_STEP_CHECKERS.step_1_13).toBe(ir1.step_1_14); // Mail Packet
+  });
+
+  it("Review & Submit (step_1_9) gates submission; step_1_10 has no gate", () => {
+    const checks = runStepChecks("step_1_9", ctx(makeState()), IR2_PROFILE.stepCheckers);
+    expect(titles(checks)).toMatch(/Key dates not captured/);
+    expect(runStepChecks("step_1_10", ctx(makeState()), IR2_PROFILE.stepCheckers)).toEqual([]);
+  });
+
+  it("Prepare for Interview (step_3_8) carries child wording and disclosures", () => {
+    const answers = { q5: { q5s1: "yes", q5s2: "yes" }, q3: { q3s8: "no" } };
+    const checks = runStepChecks("step_3_8", ctx(makeState(), answers), IR2_PROFILE.stepCheckers);
+    expect(titles(checks)).toMatch(/must match your DS-260/);
+    expect(titles(checks)).toMatch(/custody decree or non-accompanying parent consent/);
+    expect(titles(checks) + checks.map((c) => c.hint).join(" ")).not.toMatch(/prior marriage/i);
+  });
+});
+
+describe("IR-2 step_1_4 (child relationship baseline)", () => {
+  it("asks for parent-child relationship documentation and never mentions spouse marriage", () => {
+    const checks = runStepChecks("step_1_4", ctx(makeState()), IR2_PROFILE.stepCheckers);
+    const text = titles(checks) + JSON.stringify(checks);
+    expect(text.toLowerCase()).toContain("parent-child");
+    expect(text.toLowerCase()).not.toContain("spouse");
+  });
+
+  it("flags missing DOBs", () => {
+    const checks = runStepChecks("step_1_4", ctx(makeState()), IR2_PROFILE.stepCheckers);
+    expect(checks.some((c) => c.title.toLowerCase().includes("date of birth"))).toBe(true);
+  });
+
+  it("clears DOB warning once both petitioner and child DOBs are saved", () => {
+    const state = makeState({
+      consistencyBaseline: {
+        petitionerDateOfBirth: "1980-05-15",
+        beneficiaryDateOfBirth: "2010-08-20",
+      },
+    });
+    const checks = runStepChecks("step_1_4", ctx(state), IR2_PROFILE.stepCheckers);
+    expect(checks.some((c) => c.title.toLowerCase().includes("date of birth"))).toBe(false);
+  });
+});
+
+describe("IR-2 step_2_3 (DS-260 vs I-130)", () => {
+  it("flags a DOB mismatch between I-130 and DS-260 as critical", () => {
+    const state = makeState({
+      consistencyBaseline: {
+        petitionerDateOfBirth: "1980-05-15",
+        beneficiaryDateOfBirth: "2010-08-20",
+      },
+      ds260Baseline: {
+        petitionerDateOfBirth: "1980-05-15",
+        beneficiaryDateOfBirth: "2010-08-21", // 1 day mismatch
+        capturedAt: "2026-11-13",
+      },
+    });
+    const checks = runStepChecks("step_2_3", ctx(state), IR2_PROFILE.stepCheckers);
+    expect(checks.some((c) => c.level === "critical" && c.title.includes("does not match I-130"))).toBe(true);
+  });
+});
+
+describe("compareFields with IR2_BASELINE_FIELDS", () => {
+  it("detects mismatch in child DOB", () => {
+    const a = { petitionerDateOfBirth: "1980-01-01", beneficiaryDateOfBirth: "2010-01-01" };
+    const b = { petitionerDateOfBirth: "1980-01-01", beneficiaryDateOfBirth: "2010-01-02" };
+    const mismatches = compareFields(a, b, IR2_BASELINE_FIELDS);
+    expect(mismatches.map((m) => m.field)).toEqual(["beneficiaryDateOfBirth"]);
+  });
+});
+
+describe("Evidence Gap — IR-2 category profile", () => {
+  it("assesses only filing-stage categories (IDENTITY + FAMILY_INTEGRATION)", () => {
+    const cats = Object.keys(IR2_PROFILE.evidence.requirements);
+    expect(cats).toEqual(["IDENTITY", "FAMILY_INTEGRATION"]);
+  });
+
+  it("never requires Nikah Nama or marriage certificate", () => {
+    const items = IR2_PROFILE.evidence.requirements.IDENTITY?.items ?? [];
+    const itemIds = items.map((i) => i.id);
+    expect(itemIds).toContain("passport_beneficiary");
+    expect(itemIds).toContain("passport_petitioner");
+    expect(itemIds).toContain("birth_certificate");
+    expect(itemIds).not.toContain("nikah_nama");
+    expect(itemIds).not.toContain("nadra_mrc");
+  });
+});
+
+describe("Numeric strength — IR-2 child relationship signal", () => {
+  it("never docks points or flags risk for parent-child age gap", () => {
+    const signal = IR2_PROFILE.strengthSignals.relationship({
+      hasChildrenTogether: false,
+      marriageYears: 0,
+      ageGapYears: 30, // 30 year gap is expected between parent and child
+    });
+    expect(signal).toEqual({ scoreDelta: 0, positiveSignals: [], riskFlags: [] });
+  });
+});
+
+describe("IR-2 eligibility risk detector", () => {
+  const ir2 = detectIr2EligibilityRisks;
+  const ids = (flags: Array<{ id: string }>) => flags.map((f) => f.id);
+
+  it("flags non-citizen petitioner as critical", () => {
+    expect(ids(ir2({ q1: { q1s1: "lpr" } }))).toContain("petitioner_not_us_citizen");
+  });
+
+  it("flags child married as critical", () => {
+    expect(ids(ir2({ q2: { q2s3: "married" } }))).toContain("child_married");
+  });
+
+  it("flags child 21+ as critical and 18-20 as warning", () => {
+    expect(ids(ir2({ q2: { q2s2: "21_plus" } }))).toContain("child_21_or_older");
+    expect(ids(ir2({ q2: { q2s2: "18_20" } }))).toContain("child_close_to_21");
+  });
+
+  it("flags Pakistani guardianship as critical (not legal adoption under INA 101(b)(1)(E))", () => {
+    expect(ids(ir2({ q3: { q3s7: "guardianship" } }))).toContain("guardianship_not_adoption");
+  });
+
+  it("flags adoption age > 16 / custody < 2 years as critical", () => {
+    expect(ids(ir2({ q3: { q3s5: "no" } }))).toContain("adoption_requirements_unclear");
+    expect(ids(ir2({ q3: { q3s6: "no" } }))).toContain("adoption_requirements_unclear");
+  });
+
+  it("flags late stepchild marriage (> 18th birthday) as critical", () => {
+    expect(ids(ir2({ q3: { q3s3: "no" } }))).toContain("late_step_relationship");
+  });
+
+  it("flags conditional CR-2 status note when parents married < 2 years", () => {
+    expect(ids(ir2({ q3: { q3s4: "no" } }))).toContain("stepchild_conditional_cr2");
+  });
+
+  it("flags father out of wedlock with legitimation warning", () => {
+    expect(ids(ir2({ q2: { q2s1: "bio_father_unmarried" } }))).toContain("father_born_out_of_wedlock");
+  });
+
+  it("flags guardian other as critical", () => {
+    expect(ids(ir2({ q2: { q2s1: "guardian_other" } }))).toContain("guardian_not_parent");
+  });
+
+  it("flags missing custody / consent as warning", () => {
+    expect(ids(ir2({ q3: { q3s8: "no" } }))).toContain("custody_consent_missing");
+  });
+
+  it("flags criminal, fraud, unlawful presence, domicile, and separate petition", () => {
+    const answers = {
+      q5: {
+        q5s1: "yes",
+        q5s2: "yes",
+        q5s3: "yes",
+        q5s5: "no",
+        q5s6: "no",
+        q5s7: "no",
+      },
+    };
+    const flags = ir2(answers);
+    expect(ids(flags)).toContain("child_immigration_or_fraud_history");
+    expect(ids(flags)).toContain("child_criminal_history");
+    expect(ids(flags)).toContain("unlawful_presence_history");
+    expect(ids(flags)).toContain("financial_sponsorship_concern");
+    expect(ids(flags)).toContain("domicile_concern");
+    expect(ids(flags)).toContain("separate_petition_required");
+  });
+
+  it("never produces spouse-only risk flags on IR-2", () => {
+    const flags = ir2({
+      q2: { q2s1: "bio_mother", q2s2: "under_14", q2s3: "never_married" },
+      q5: { q5s5: "yes" },
+    });
+    expect(ids(flags)).not.toContain("short_marriage");
+    expect(ids(flags)).not.toContain("missing_prior_marriage_termination");
   });
 });

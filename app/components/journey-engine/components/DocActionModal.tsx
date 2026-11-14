@@ -95,6 +95,7 @@ export const DocActionModal: React.FC<DocActionModalProps> = ({
       {docActionUpgradeFeature && (
         <UpgradeModal
           feature={docActionUpgradeFeature}
+          currentTier={plan.tier}
           onClose={() => setDocActionUpgradeFeature(null)}
         />
       )}

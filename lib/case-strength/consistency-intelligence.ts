@@ -161,6 +161,8 @@ function checkVisaCategoryConsistency(state: WizardState): ConsistencyFinding[] 
       return "IR-1";
     if (upper.includes("CR-1") || upper.includes("CR1")) return "CR-1";
     if (upper.includes("IR-5") || upper.includes("IR5")) return "IR-5";
+    if (upper.includes("IR-2") || upper.includes("IR2")) return "IR-2";
+    if (upper.includes("CR-2") || upper.includes("CR2")) return "CR-2";
     return upper;
   });
   const unique = [...new Set(normalized)];
