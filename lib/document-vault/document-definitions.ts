@@ -2949,6 +2949,35 @@ const OTHER_DOCS: DocumentDefinition[] = [
     multipleFilesAllowed: false,
     validityType: "none",
     hideUntilUploaded: true,
+    wizardSteps: [
+      {
+        stepNumber: 1,
+        title: "Download Form I-864EZ",
+        description: "Download the latest version of Form I-864EZ from the USCIS website.",
+        resources: [
+          {
+            name: "USCIS Form I-864EZ",
+            url: "https://www.uscis.gov/i-864ez",
+            type: "link",
+          },
+        ],
+        tips: [
+          "Confirm you qualify to use Form I-864EZ (qualifying alone using your own salary or pension on W-2s)",
+          "Always use the latest version of the form from USCIS",
+          "Fill out completely - do not leave blank fields (use N/A or None where appropriate)",
+        ],
+      },
+      {
+        stepNumber: 2,
+        title: "Complete and Sign",
+        description: "Fill out all sections accurately and sign the form.",
+        tips: [
+          "Ensure your name and SSN match your IRS tax returns",
+          "Enter your individual annual income exactly as documented on W-2s and current pay records",
+          "Sign and date the form before submitting or uploading to CEAC",
+        ],
+      },
+    ],
   },
   {
     id: "i-693-medical",

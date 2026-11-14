@@ -1386,7 +1386,7 @@ export const StepView: React.FC<StepViewProps> = ({
           )}
 
           {/* Companion Context Badge (Step 5 Specific) */}
-          {(sId === "step_1_5" || sId === "step_1_2_b") && (
+          {/* {(sId === "step_1_5" || sId === "step_1_2_b") && (
             <div className="mb-6 flex items-center gap-[9px]">
               <div className="h-px flex-1 bg-linear-to-r from-[#d0e4f7] to-transparent" />
               <div className="inline-flex items-center gap-[6px] rounded-full border border-[#9fd8d8] bg-[#e6f6f6] px-[13px] py-[5px]">
@@ -1397,7 +1397,7 @@ export const StepView: React.FC<StepViewProps> = ({
               </div>
               <div className="h-px flex-1 bg-linear-to-l from-[#d0e4f7] to-transparent" />
             </div>
-          )}
+          )} */}
 
           {/* Meta Chips */}
           {(tool.chips || currentStep.chips) && (

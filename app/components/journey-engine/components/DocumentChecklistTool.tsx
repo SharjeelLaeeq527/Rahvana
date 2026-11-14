@@ -50,6 +50,7 @@ const getDocumentRoles = (documentKey: string): DocumentRole[] => {
 
     case "birth-cert-petitioner":
     case "i-864-affidavit":
+    case "i-864ez-affidavit":
     case "tax-returns-petitioner":
     case "w2-forms":
     case "citizenship-proof-petitioner":
@@ -81,6 +82,7 @@ const getDocumentStages = (documentKey: string): ProcessStage[] => {
     case "birth-cert-petitioner":
     case "police-certificate-pakistan":
     case "i-864-affidavit":
+    case "i-864ez-affidavit":
     case "tax-returns-petitioner":
     case "w2-forms":
     case "citizenship-proof-petitioner":
