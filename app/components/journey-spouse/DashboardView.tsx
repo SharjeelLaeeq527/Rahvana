@@ -1044,6 +1044,7 @@ export function DashboardView({
         {upgradeModalFeature && (
           <UpgradeModal
             feature={upgradeModalFeature}
+            currentTier={effectiveTier}
             onClose={() => setUpgradeModalFeature(null)}
           />
         )}
