@@ -4916,7 +4916,8 @@
                 "Child-tailored questionnaire with plain-language explanations",
                 "Guided rules for parent/guardian signature on behalf of a minor",
                 "Consistency check against Form I-130 baseline facts",
-                "Generate a PDF answer key for CEAC entry"
+                "Generate a PDF answer key for CEAC entry",
+                "Save your DS-260 confirmation page for your medical exam and consular interview."
               ],
               "button_label": "Launch DS-260 Autoform Filler",
               "href": "/visa-forms/ds260/wizard",

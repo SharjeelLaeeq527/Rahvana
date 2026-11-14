@@ -320,13 +320,6 @@ export default function WalletTransactionsPage() {
             <div className="relative">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-[13px] font-semibold text-white/70">Available Credits</p>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-bold text-white ring-1 ring-white/15 ring-inset">
-                  <span
-                    className="bg-rahvana-secondary h-1.5 w-1.5 rounded-full"
-                    aria-hidden="true"
-                  />
-                  Active &amp; Unrestricted
-                </span>
               </div>
               <div className="mt-4 flex flex-wrap items-baseline gap-x-3 gap-y-1">
                 <span className="text-[42px] leading-none font-extrabold tracking-tight text-white tabular-nums">
