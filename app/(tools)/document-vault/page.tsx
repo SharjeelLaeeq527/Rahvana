@@ -296,8 +296,13 @@ export default function DocumentVaultPage() {
         candidateTag = cand.label || `Candidate ${candIndex}`;
       } else {
         // Single-candidate journey (IR-1, CR-1, etc.)
+        // A Spouse relation only stands in for an IR-1 / CR-1 journey; an F-1 or other
+        // card must not switch the active candidate to the spouse.
+        const isSpouseCategory = baseCategory === "IR-1" || baseCategory === "CR-1";
         const spouseCand = (candidates || []).find(
-          (c) => getBaseVisaCategory(c.visaCategory) === baseCategory || c.relation === "Spouse"
+          (c) =>
+            getBaseVisaCategory(c.visaCategory) === baseCategory ||
+            (isSpouseCategory && c.relation === "Spouse")
         );
         if (spouseCand) {
           candidateId = spouseCand.id;
@@ -367,10 +372,27 @@ export default function DocumentVaultPage() {
     return ir1journeyHref;
   }, [activeJourney]);
 
+  // The card for the open journey, and its owner when that owner is a real roster
+  // candidate. The wizard and the beneficiary name follow the JOURNEY that is open, not
+  // whichever candidate happened to be active before (that showed IR-1 data on an IR-2
+  // vault when the IR-2 journey had no roster owner).
+  const activeCard = useMemo(
+    () => vaultJourneyCards.find((c) => c.journeyId === activeJourneyId) ?? null,
+    [vaultJourneyCards, activeJourneyId]
+  );
+  const activeCardCandidate = useMemo(
+    () =>
+      activeCard?.candidateId
+        ? (candidates || []).find((c) => c.id === activeCard.candidateId) ?? null
+        : null,
+    [activeCard, candidates]
+  );
+
   const wizard = useWizard({
     userId: journeysLoading || !activeJourneyId ? null : user?.id,
     journeyId: activeJourney?.journey_type || undefined,
-    candidateId: activeCandidateId,
+    candidateId: activeCardCandidate?.id ?? undefined,
+    journeyDbId: activeJourneyId,
   });
 
   // Filter documents based on search query
@@ -681,9 +703,10 @@ export default function DocumentVaultPage() {
     mappedFlags.hhRelationships = metadata.hhRelationships || {};
 
     const beneficiaryDisplayName =
-      activeCandidate?.fullName ||
+      activeCardCandidate?.fullName ||
       (metadata.beneficiaryName as string) ||
-      activeCandidate?.label ||
+      activeCard?.candidateName ||
+      activeCardCandidate?.label ||
       "Beneficiary";
 
     if (!config) {
@@ -725,6 +748,8 @@ export default function DocumentVaultPage() {
     wizard.state?.metadata,
     wizard.state?.backendId,
     activeCandidate,
+    activeCard,
+    activeCardCandidate,
   ]);
 
   // ── Synchronize active journey with active candidate profile ─────────────
@@ -782,15 +807,25 @@ export default function DocumentVaultPage() {
   // ── Case 3 picker confirmation handler ────────────────────────────────────
   const handlePickJourney = useCallback((journeyId: string, candidateId?: string) => {
     setActiveJourneyId(journeyId);
-    if (candidateId) {
-      setActiveCandidateId(candidateId);
+    // The card the user clicked wins. Switch the active candidate only to a REAL roster
+    // candidate; a card whose journey has no roster owner carries a synthesized id that
+    // CandidateContext ignores. Either way, pin the ref to the candidate that will be
+    // active, so the candidate->journey sync effect does not "correct" this pick back to
+    // the previous candidate's journey (that bounced every card to the IR-1 vault).
+    const isRosterCandidate = Boolean(
+      candidateId && (candidates || []).some((c) => c.id === candidateId)
+    );
+    if (isRosterCandidate && candidateId) {
+      setActiveCandidateId(candidateId, { silent: true });
       lastResolvedCandidateRef.current = candidateId;
+    } else {
+      lastResolvedCandidateRef.current = activeCandidateId ?? null;
     }
     if (typeof window !== "undefined") {
       sessionStorage.setItem(SESSION_KEY, journeyId);
     }
     setJourneyGateReady(true);
-  }, [setActiveCandidateId]);
+  }, [setActiveCandidateId, candidates, activeCandidateId]);
 
   // Reset tab and search query when active journey changes
   useEffect(() => {

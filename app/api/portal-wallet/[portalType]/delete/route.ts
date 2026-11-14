@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { E, msg } from "@/lib/errors";
+import { resolveJourneyScope } from "@/lib/portal-wallet/resolve-journey-scope";
 
-export async function DELETE(req: NextRequest, context: { params: Promise<{ portalType: string }> }) {
+export async function DELETE(
+  req: NextRequest,
+  context: { params: Promise<{ portalType: string }> }
+) {
   try {
     const supabase = await createClient();
 
@@ -16,50 +19,69 @@ export async function DELETE(req: NextRequest, context: { params: Promise<{ port
     }
 
     const { portalType } = await context.params;
-    const candidateId = req.nextUrl.searchParams.get("candidateId") || null;
 
     if (!portalType) {
       return NextResponse.json({ error: "portalType is required" }, { status: 400 });
     }
 
-    // First fetch credential to get ID — scoped by candidate
-    let fetchQuery = supabase
+    // Resolve and validate the journey and candidate scope.
+    const { error: scopeError, scope } = await resolveJourneyScope(
+      supabase,
+      user.id,
+      req.nextUrl.searchParams.get("journeyId"),
+      req.nextUrl.searchParams.get("candidateId")
+    );
+
+    if (scopeError || !scope) {
+      return scopeError!;
+    }
+
+    // Find the credential within this specific journey and candidate.
+    const { data: credential, error: fetchError } = await supabase
       .from("portal_wallet_credentials")
       .select("id")
       .eq("user_id", user.id)
-      .eq("portal_type", portalType);
+      .eq("journey_id", scope.journeyId)
+      .eq("candidate_id", scope.candidateId)
+      .eq("portal_type", portalType)
+      .maybeSingle();
 
-    if (candidateId) {
-      if (candidateId === "ir1") {
-        fetchQuery = fetchQuery.or("candidate_id.eq.ir1,candidate_id.is.null");
-      } else {
-        fetchQuery = fetchQuery.eq("candidate_id", candidateId);
-      }
-    } else {
-      fetchQuery = fetchQuery.is("candidate_id", null);
+    if (fetchError) {
+      console.error("Error fetching credential for deletion:", fetchError);
+
+      return NextResponse.json({ error: "Failed to fetch credential" }, { status: 500 });
     }
 
-    const { data: credential, error: fetchError } = await fetchQuery.single();
+    if (!credential) {
+      return NextResponse.json({ error: "Credential not found" }, { status: 404 });
+    }
 
     if (fetchError || !credential) {
       return NextResponse.json({ error: "Credential not found" }, { status: 404 });
     }
 
-    // Delete security questions first
+    // Delete security questions first.
     const { error: questionDeleteError } = await supabase
       .from("portal_wallet_security_questions")
       .delete()
       .eq("credential_id", credential.id);
 
     if (questionDeleteError) {
-      console.error("Error deleting questions:", questionDeleteError);
+      console.error("Error deleting security questions:", questionDeleteError);
+
+      return NextResponse.json(
+        { error: "Failed to delete credential security questions" },
+        { status: 500 }
+      );
     }
 
-    // Delete credential
     const { error: deleteError } = await supabase
       .from("portal_wallet_credentials")
       .delete()
-      .eq("id", credential.id);
+      .eq("id", credential.id)
+      .eq("user_id", user.id)
+      .eq("journey_id", scope.journeyId)
+      .eq("candidate_id", scope.candidateId);
 
     if (deleteError) {
       console.error("Error deleting credential:", deleteError);
