@@ -29,17 +29,17 @@ export const IR2_QUESTIONS: QuestionnaireQuestion[] = [
       },
       {
         label:
-          "Biological father — parents were legally married to each other",
+          "Biological father, parents were legally married to each other",
         value: "bio_father_married",
         helper:
           "Parents were legally married when the child was born or legitimated before the child turned 18.",
       },
       {
         label:
-          "Biological father — parents were never legally married to each other",
+          "Biological father, parents were never legally married to each other",
         value: "bio_father_unmarried",
         helper:
-          "Evidence of legitimation or a bona fide father-child relationship prior to age 21 is required.",
+          "Evidence is required of legitimation before age 18 (while the child was in the father's legal custody), or of a genuine father-child relationship that existed before age 21 while the child was unmarried.",
       },
       {
         label: "Stepchild (petitioner married the child's biological parent)",
@@ -51,7 +51,7 @@ export const IR2_QUESTIONS: QuestionnaireQuestion[] = [
         label: "Adopted child (legally adopted by the petitioner)",
         value: "adopted",
         helper:
-          "The adoption must be completed before age 16 (or 18 for biological siblings) with 2 years of legal custody and joint residence.",
+          "The adoption must be completed before age 16 (or before 18 under the narrow natural-sibling exception), with 2 years of legal custody and 2 years of living together, before or after the adoption.",
       },
     ],
   },
@@ -272,12 +272,12 @@ export const IR2_BASE_DOCUMENTS: ConditionalDocument[] = [
     id: "doc_child_crc",
     name: "NADRA Children Registration Certificate (B-Form)",
     subtitle:
-      "Official NADRA registration of the child showing both parents' names",
+      "NADRA record showing both parents' names. It supports the birth certificate but does not replace it",
     tag: "beneficiary",
     guideUrl: "/guides/nadra-b-form-crc-guide",
     icon: "FileCheck",
-    group: "Required Now",
-    required: true,
+    group: "Gather Now for Later",
+    required: false,
   },
   {
     id: "doc_child_marital_status",
@@ -353,7 +353,7 @@ export const IR2_DECISION_RULES: DocumentDecisionRule[] = [
         id: "doc_parents_marriage",
         name: "Parents' Marriage Certificate",
         subtitle:
-          "Marriage certificate (Nikah Nama / NADRA MRC) showing legal marriage of the biological parents",
+          "Marriage certificate (Nikah Nama / MRC from the local Union Council or other local authority) showing legal marriage of the biological parents",
         tag: "both",
         guideUrl: "/guides/nikah-nama-guide",
         icon: "FileCheck",

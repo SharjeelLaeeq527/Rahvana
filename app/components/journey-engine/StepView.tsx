@@ -316,7 +316,10 @@ export const StepView: React.FC<StepViewProps> = ({
   const isChapter2 = sId.startsWith("step_2_");
   const isChapter3 = sId.startsWith("step_3_");
   const isIr5Journey = data.journey_type?.toUpperCase() === "IR5";
-  const isUscisAccountStep = sId === "step_1_6" || (isIr5Journey && sId === "step_1_5");
+  // IR-2 (and CR-2, same data file) has no I-130A step either, so its chapter-1 keys follow IR-5.
+  const isIr2Journey = ["IR2", "CR2"].includes((data.journey_type || "").toUpperCase());
+  const isUscisAccountStep =
+    sId === "step_1_6" || ((isIr5Journey || isIr2Journey) && sId === "step_1_5");
   const inlineGuideData = data.inline_guide_data || {};
   // ── Step-level entitlement gating ──────────────────────────────────────────
   const plan = useJourneyPlan(state);
@@ -535,7 +538,15 @@ export const StepView: React.FC<StepViewProps> = ({
     const isIr5 = isIr5Journey;
 
     const milestoneMetaMap: Record<string, { key: string; value?: () => string }> = {
-      ...(isIr5
+      ...(isIr2Journey
+        ? {
+            // IR2 Chapter 1 (no I-130A step). step_1_8 = Review & Sign, step_1_9 = Pay Fee & Submit,
+            // step_1_17 = Receive Approval Notice (step_1_15 is "Save Your USCIS Receipt Number").
+            step_1_5: { key: "uscisAccountCreated", value: () => "true" }, // Create USCIS Account
+            step_1_9: { key: "submissionDate", value: () => new Date().toISOString().slice(0, 10) }, // Pay Fee & Submit, triggers c1_receipt_missing reminder
+            step_1_17: { key: "approvalDate", value: () => new Date().toISOString().slice(0, 10) }, // Approval
+          }
+        : isIr5
         ? {
             // IR5 Chapter 1 (no I-130A form step, so numbers are shifted down by 1 vs IR1)
             step_1_5: { key: "uscisAccountCreated", value: () => "true" }, // Create USCIS Account — triggers c1_portal_not_saved reminder

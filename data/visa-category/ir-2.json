@@ -244,7 +244,7 @@
                     "id": "q2s2",
                     "label": "Child's Age",
                     "question": "How old is the child today?",
-                    "helper": "IR-2 is for a child under 21. For immediate relatives, the child's age is generally treated as fixed on the date the I-130 is filed, so filing before the 21st birthday matters. Confirm this rule on the official USCIS sources for your case.",
+                    "helper": "IR-2 is for an unmarried child under 21. For an immediate relative child like IR-2, the Child Status Protection Act locks the child's age on the date the I-130 is filed. So the child must be under 21 on the filing date, and must stay unmarried.",
                     "type": "single",
                     "options": [
                       {
@@ -425,23 +425,52 @@
                   },
                   {
                     "id": "q3s2",
-                    "label": "Legitimation or Father-Child Relationship",
-                    "question": "If the parents were not married, was the child legitimated, or does a genuine father-child relationship exist?",
-                    "helper": "Evidence may include legitimation under the law of the place of residence, financial support, living together, regular contact, school or medical involvement, and recognition of the child.",
+                    "label": "Legitimation",
+                    "question": "If the parents were not married, was the child legally legitimated before turning 18, while the child was in the legal custody of the legitimating parent?",
+                    "helper": "Legitimation is a legal act under the law of the child's or the father's place of residence or domicile, for example the parents marrying each other later. It is one of two routes for a father whose child was born to unmarried parents. If it does not apply, the next question covers the other route.",
                     "type": "single",
                     "options": [
                       {
-                        "label": "Yes, the child was legitimated or a genuine father-child relationship exists",
+                        "label": "Yes, the child was legitimated before 18 while in the father's legal custody",
                         "value": "yes",
                         "outcome": "next"
                       },
                       {
-                        "label": "No, neither applies",
+                        "label": "No, or the child was not legitimated in time",
+                        "value": "no",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "Not applicable, the parents were married or this is not a biological-father case",
+                        "value": "na",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "Not sure",
+                        "value": "unsure",
+                        "outcome": "next"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "q3s2b",
+                    "label": "Father-Child Relationship",
+                    "question": "If the child was not legitimated, did a genuine father-child relationship exist before the child's 21st birthday, while the child was unmarried?",
+                    "helper": "Evidence may include the father's financial support, his involvement in the child's welfare and upbringing, his recognition of the child as his own, living together or regular contact, and school, medical or family records that show his role.",
+                    "type": "single",
+                    "options": [
+                      {
+                        "label": "Yes, a genuine father-child relationship existed before 21",
+                        "value": "yes",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "No, it did not",
                         "value": "no",
                         "outcome": "review"
                       },
                       {
-                        "label": "Not applicable, the parents were married or this is not a biological-father case",
+                        "label": "Not applicable, the child was legitimated, the parents were married, or this is not a biological-father case",
                         "value": "na",
                         "outcome": "next"
                       },
@@ -514,18 +543,23 @@
                   {
                     "id": "q3s5",
                     "label": "Adoption Timing",
-                    "question": "If the petitioner adopted the child, was the adoption completed before the child turned 16?",
-                    "helper": "Family-based adoption rules are technical. A narrow exception may apply to siblings adopted before 18. An adoption completed after the age limit generally does not qualify.",
+                    "question": "If the petitioner adopted the child, how old was the child when the adoption was completed?",
+                    "helper": "An adopted child generally qualifies only if the adoption was completed before the child turned 16. A narrow exception allows an adoption before 18 for a natural sibling of another child the same parent or parents adopted under the qualifying rules. The next question checks that exception.",
                     "type": "single",
                     "options": [
                       {
-                        "label": "Yes, the adoption met the age rule",
+                        "label": "Before the child turned 16",
                         "value": "yes",
                         "outcome": "next"
                       },
                       {
-                        "label": "No, the adoption happened after the age limit",
+                        "label": "At 16 or 17",
                         "value": "no",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "At 18 or older",
+                        "value": "over_18",
                         "outcome": "stop"
                       },
                       {
@@ -541,10 +575,39 @@
                     ]
                   },
                   {
+                    "id": "q3s5b",
+                    "label": "Adopted Sibling Exception",
+                    "question": "If the adoption was completed at 16 or 17, is the child the natural sibling of another child adopted by the same parent or parents under the qualifying adoption rules?",
+                    "helper": "This exception is narrow and the custody and residence rules still apply. If it may apply, have a qualified U.S. immigration attorney review the case before filing.",
+                    "type": "single",
+                    "options": [
+                      {
+                        "label": "Yes, a natural sibling was adopted by the same parent or parents",
+                        "value": "yes",
+                        "outcome": "review"
+                      },
+                      {
+                        "label": "No",
+                        "value": "no",
+                        "outcome": "stop"
+                      },
+                      {
+                        "label": "Not applicable, the adoption was before 16 or this is not an adoption case",
+                        "value": "na",
+                        "outcome": "next"
+                      },
+                      {
+                        "label": "Not sure",
+                        "value": "unsure",
+                        "outcome": "review"
+                      }
+                    ]
+                  },
+                  {
                     "id": "q3s6",
                     "label": "Adoption Custody and Residence",
-                    "question": "If the petitioner adopted the child, has the petitioner had at least 2 years of legal custody of the child and lived with the child for at least 2 years?",
-                    "helper": "Both 2-year requirements must be met. The evidence and rules should be reviewed carefully.",
+                    "question": "If the petitioner adopted the child, has the child been in the petitioner's legal custody for at least 2 years, and lived with the petitioner for at least 2 years, before or after the adoption?",
+                    "helper": "Both 2-year requirements must be met, and the time can come before or after the adoption. Check the custody period and the time living together separately, because each needs its own evidence.",
                     "type": "single",
                     "options": [
                       {
@@ -629,7 +692,7 @@
                     ]
                   }
                 ],
-                "result_logic": "(function() { if (answers['q2s1'] === 'stepchild' && answers['q3s3'] === 'no') return { state: \"stop\", title: \"The step-relationship was created too late for IR-2\", body: \"For a stepchild to qualify, the petitioner must have married the child's parent before the child turned 18.\" }; if (answers['q2s1'] === 'adopted' && (answers['q3s5'] === 'no' || answers['q3s6'] === 'no')) return { state: \"stop\", title: \"The adoption requirements do not appear to be met\", body: \"An adoption-based IR-2 petition generally requires an adoption before the child turned 16, plus 2 years of legal custody and 2 years of living together. Do not file without review by a qualified U.S. immigration attorney.\" }; if (answers['q3s7'] === 'guardianship') return { state: \"review\", title: \"Guardianship is not automatically an adoption for IR-2\", body: \"A Pakistani guardianship order is not treated as an adoption by default. Do not file on this basis until a qualified U.S. immigration attorney has reviewed the case. You can book a consultation from the Services folder.\" }; if (answers['q2s1'] === 'bio_father_unmarried' && (answers['q3s2'] === 'no' || answers['q3s2'] === 'unsure')) return { state: \"review\", title: \"The father-child relationship needs legal and evidence review\", body: \"Where the parents were not married, eligibility depends on legitimation or proof of a genuine father-child relationship. Gather evidence and get legal review if the history is unclear.\" }; if (answers['q3s1'] === 'unsure' || answers['q3s3'] === 'unsure' || answers['q3s4'] === 'unsure' || answers['q3s5'] === 'unsure' || answers['q3s6'] === 'unsure' || answers['q3s7'] === 'unsure') return { state: \"review\", title: \"A relationship-specific rule needs clarification\", body: \"The selected relationship involves a marriage, adoption, custody, or timing question that should be resolved before filing.\" }; if (answers['q3s4'] === 'no') return { state: \"caution\", title: \"The child may receive a conditional (CR-2) visa\", body: \"Because the stepparent marriage will be less than 2 years old, the child may be issued a CR-2 visa. The petition steps are the same, and Rahvana will show the CR-2 differences separately.\" }; if (answers['q3s8'] === 'no' || answers['q3s8'] === 'unsure') return { state: \"caution\", title: \"Custody papers may be needed\", body: \"Prepare a custody order or the other parent's written consent if the embassy asks for it. Check the embassy's current requirements for a minor applicant.\" }; return { state: \"pass\", title: \"Relationship-specific requirements appear on track\", body: \"No disqualifying issue was identified under the relationship-specific rules in this assessment.\" }; })()"
+                "result_logic": "(function() { if (answers['q2s1'] === 'stepchild' && answers['q3s3'] === 'no') return { state: \"stop\", title: \"The step-relationship was created too late for IR-2\", body: \"For a stepchild to qualify, the petitioner must have married the child's parent before the child turned 18.\" }; if (answers['q2s1'] === 'adopted' && (answers['q3s5'] === 'over_18' || (answers['q3s5'] === 'no' && answers['q3s5b'] === 'no') || answers['q3s6'] === 'no')) return { state: \"stop\", title: \"The adoption requirements do not appear to be met\", body: \"An adoption-based IR-2 petition generally requires an adoption before the child turned 16 (or before 18 under the narrow sibling exception), plus 2 years of legal custody and 2 years of living together. Do not file without review by a qualified U.S. immigration attorney.\" }; if (answers['q2s1'] === 'adopted' && answers['q3s5'] === 'no') return { state: \"review\", title: \"The adopted sibling exception needs legal review\", body: \"An adoption at 16 or 17 can qualify only under a narrow exception for a natural sibling of another child the same parent or parents adopted under the qualifying rules. The 2-year custody and residence rules still apply. Have a qualified U.S. immigration attorney review the case before filing.\" }; if (answers['q3s7'] === 'guardianship') return { state: \"review\", title: \"Guardianship is not automatically an adoption for IR-2\", body: \"A Pakistani guardianship order is not treated as an adoption by default. Do not file on this basis until a qualified U.S. immigration attorney has reviewed the case. You can book a consultation from the Services folder.\" }; if (answers['q2s1'] === 'bio_father_unmarried' && answers['q3s2'] !== 'yes' && answers['q3s2b'] !== 'yes') return { state: \"review\", title: \"The father-child relationship needs legal and evidence review\", body: \"Where the parents were not married, eligibility depends on legitimation before 18 (while the child was in the father's legal custody) or a genuine father-child relationship that existed before the child turned 21 while unmarried. Gather evidence and get legal review if the history is unclear.\" }; if (answers['q3s1'] === 'unsure' || answers['q3s2b'] === 'unsure' || answers['q3s3'] === 'unsure' || answers['q3s4'] === 'unsure' || answers['q3s5'] === 'unsure' || answers['q3s6'] === 'unsure' || answers['q3s7'] === 'unsure') return { state: \"review\", title: \"A relationship-specific rule needs clarification\", body: \"The selected relationship involves a marriage, adoption, custody, or timing question that should be resolved before filing.\" }; if (answers['q3s4'] === 'no') return { state: \"caution\", title: \"The child may receive a conditional (CR-2) visa\", body: \"Because the stepparent marriage will be less than 2 years old, the child may be issued a CR-2 visa. The petition steps are the same, and Rahvana will show the CR-2 differences separately.\" }; if (answers['q3s8'] === 'no' || answers['q3s8'] === 'unsure') return { state: \"caution\", title: \"Custody papers may be needed\", body: \"Prepare a custody order or the other parent's written consent if the embassy asks for it. Check the embassy's current requirements for a minor applicant.\" }; return { state: \"pass\", title: \"Relationship-specific requirements appear on track\", body: \"No disqualifying issue was identified under the relationship-specific rules in this assessment.\" }; })()"
               },
               {
                 "id": "q4",
@@ -653,7 +716,7 @@
                         "value": "crc"
                       },
                       {
-                        "label": "Parents' marriage certificate (Nikah Nama / NADRA MRC)",
+                        "label": "Parents' marriage certificate (Nikah Nama / MRC)",
                         "value": "parents_marriage"
                       },
                       {
@@ -824,7 +887,7 @@
                     "id": "q5s4",
                     "label": "Health and Vaccination",
                     "question": "Is there a known medical, communicable-disease, or vaccination issue that may come up during the immigrant visa medical exam?",
-                    "helper": "The panel physician makes the medical decision and checks age-appropriate vaccinations. A health condition does not automatically mean the child is ineligible.",
+                    "helper": "The panel physician performs the required medical examination, checks the vaccinations that apply to the child, and sends the medical results to the consular officer. The consular officer decides visa eligibility after reviewing the medical report and other records. A health condition does not automatically mean the child is ineligible.",
                     "type": "single",
                     "options": [
                       {
@@ -848,7 +911,7 @@
                     "id": "q5s5",
                     "label": "Financial Sponsorship",
                     "question": "Can the petitioner likely submit Form I-864 and meet the financial sponsorship requirement through income, assets, household income, or a joint sponsor?",
-                    "helper": "The petitioner generally must submit Form I-864. Some children who will become U.S. citizens automatically on arrival may not need one; confirm the current rule on the official sources before relying on it. Financial sponsorship is handled mainly at the NVC stage, but planning should start now.",
+                    "helper": "The petitioner generally must submit Form I-864. Some children may be exempt if they will automatically become U.S. citizens upon admission under the Child Citizenship Act. This depends on the child's age, admission as a permanent resident, and the custody and citizenship requirements, so check the individual case before relying on it. Financial sponsorship is handled mainly at the NVC stage, but planning should start now.",
                     "type": "single",
                     "options": [
                       {
@@ -876,8 +939,8 @@
                   {
                     "id": "q5s6",
                     "label": "U.S. Domicile",
-                    "question": "Does the petitioner live in the U.S., or have a concrete plan to re-establish U.S. domicile no later than the child's arrival?",
-                    "helper": "A petitioner living abroad may still file Form I-130, but must meet the U.S. domicile requirement for Form I-864 before the visa is issued.",
+                    "question": "Does the petitioner live in the U.S., or have a concrete plan to establish or re-establish U.S. domicile no later than the date the child is admitted to the U.S. as a permanent resident?",
+                    "helper": "A petitioner living abroad may still file Form I-130. However, the petitioner must establish or re-establish U.S. domicile no later than the date the child is admitted to the United States as a lawful permanent resident.",
                     "type": "single",
                     "options": [
                       {
@@ -985,7 +1048,7 @@
                 "trigger_field": "eligibility_quest_q2s1",
                 "condition": "value == bio_father_unmarried",
                 "severity": "warning",
-                "advisory": "Gather legitimation evidence or proof of a genuine father-child relationship. These cases need relationship-specific evidence.",
+                "advisory": "Gather legitimation evidence (legitimated before 18 while in the father's legal custody) or proof of a genuine father-child relationship that existed before the child turned 21 while unmarried. These cases need relationship-specific evidence.",
                 "source_basis": "INA 101(b)(1)(C) and (D); Form I-130 Instructions"
               },
               {
@@ -1011,7 +1074,7 @@
                 "title": "Adoption age, custody, or residence requirements are not established",
                 "trigger_field": "eligibility_quest_q3s5_or_q3s6",
                 "severity": "critical",
-                "advisory": "An adoption-based IR-2 petition generally requires an adoption before age 16, plus 2 years of legal custody and 2 years of living together. Get specialist legal review before filing if any part is uncertain.",
+                "advisory": "An adoption-based IR-2 petition generally requires an adoption before age 16 (or before 18 under the narrow sibling exception), plus 2 years of legal custody and 2 years of living together. Get specialist legal review before filing if any part is uncertain.",
                 "source_basis": "INA 101(b)(1)(E); Form I-130 Instructions"
               },
               {
@@ -1103,8 +1166,8 @@
           "timeline": "4-8 weeks",
           "actions": [
             "Get the petitioner's proof of U.S. citizenship",
-            "Get the child's computerized birth certificate naming the petitioner",
-            "Get the child's NADRA CRC (B-Form)",
+            "Get the child's Birth Registration Certificate (Union Council or local authority) naming the petitioner",
+            "Get the child's NADRA CRC (B-Form) as supporting evidence",
             "Add the parents' Nikah Nama and MRC, legitimation evidence, stepparent marriage records, or adoption decree, as your case needs",
             "Prepare custody papers or the other parent's consent if the parents are divorced or separated",
             "Order certified English translations for non-English documents",
@@ -1131,7 +1194,7 @@
             {
               "id": "doc_child_birth_cert",
               "name": "Child's Birth Certificate",
-              "subtitle": "Computerized Union Council birth certificate naming the petitioner as the child's parent",
+              "subtitle": "Birth Registration Certificate from the Union Council, Municipal Corporation, CDA or Cantonment Board, naming the petitioner as the child's parent",
               "tag": "beneficiary",
               "guideUrl": "/guides/birth-certificate-guide",
               "icon": "ClipboardList",
@@ -1142,18 +1205,18 @@
             {
               "id": "doc_child_crc",
               "name": "Child Registration Certificate (CRC / B-Form)",
-              "subtitle": "NADRA record that links the child to both parents and supports the birth certificate",
+              "subtitle": "NADRA-issued record that links the child to both parents. It supports the birth certificate and can serve as alternate evidence if the birth record is late or missing; it does not replace it",
               "tag": "beneficiary",
               "guideUrl": "/guides",
               "icon": "FileText",
-              "group": "Required Now",
+              "group": "Gather Now for Later",
               "status": "not-started",
-              "required": true
+              "required": false
             },
             {
               "id": "doc_parents_marriage",
-              "name": "Parents' Marriage Certificate (Nikah Nama and NADRA MRC)",
-              "subtitle": "Needed when a father files and the child was born to married parents",
+              "name": "Parents' Marriage Certificate (Nikah Nama and MRC)",
+              "subtitle": "Needed when a father files and the parents were married. For a Muslim marriage, the MRC usually comes from the local Union Council, Municipal Corporation, CDA or Cantonment Board",
               "tag": "both",
               "guideUrl": "/guides/nikah-nama-guide",
               "icon": "FileCheck",
@@ -1296,7 +1359,7 @@
             {
               "id": "doc_police_cert",
               "name": "Police Character Certificate",
-              "subtitle": "Only if the child is 16 or older. Get it at the NVC stage, not now, so it is still valid at the interview.",
+              "subtitle": "Pakistan Character Certificate from a Police Facilitation Center or local police office. Only if the child is 16 or older. Get it at the NVC stage, not now, so it is still valid at the interview.",
               "tag": "beneficiary",
               "guideUrl": "/guides/police-verification-guide",
               "icon": "Lock",
@@ -1316,7 +1379,7 @@
               "required": false
             }
           ],
-          "pakistanSpecific": "For Pakistani records, use documents issued by the competent local civil authority, such as the relevant Union Council, municipal authority, cantonment board, or NADRA. The child's birth certificate is the central IR-2 relationship document. The NADRA CRC (B-Form) and FRC, plus school, medical, and vaccination records, can support a case where the birth certificate is late-registered or inconsistent. A Pakistani guardianship order is not automatically an adoption under U.S. immigration law; speak with a qualified U.S. immigration attorney before filing on that basis.",
+          "pakistanSpecific": "For Pakistani records, use documents from the competent issuing authority. The child's Birth Registration Certificate comes from the local Union Council, Municipal Corporation, CDA or Cantonment Board, and is the central IR-2 relationship document. The CRC (B-Form) and FRC are NADRA records: they support the birth certificate, and together with school, medical and vaccination records they can serve as alternate evidence where the birth record is late-registered, unavailable or inconsistent. For a Muslim marriage, the Marriage Registration Certificate (MRC) usually comes from the same local authority; for a non-Muslim marriage, the issuing authority depends on the religion and the local registration process. A Pakistani guardianship order is not automatically an adoption under U.S. immigration law; speak with a qualified U.S. immigration attorney before filing on that basis.",
           "relevantTools": [
             {
               "label": "Birth Certificate Guide",
@@ -1970,7 +2033,7 @@
           "step_key": "step_1_7",
           "step_number": 7,
           "step_name": "Upload Forms & Evidence",
-          "step_short_description": "PDF/JPG, 12 MB max",
+          "step_short_description": "PDF, JPG or TIF, 12 MB max",
           "step_type": "tool",
           "branch": "online",
           "step_description": "Attach your supporting documents inside the USCIS online portal. This is the evidence-upload phase, your documents become part of the official I-130 filing record.",
@@ -2014,7 +2077,7 @@
               ]
             },
             "upload_requirements": [
-              "Accepted formats: PDF, JPG, or JPEG only",
+              "Accepted formats: PDF, JPG, JPEG, TIF or TIFF",
               "Maximum file size: 12 MB per file",
               "Files must not be encrypted or password-protected",
               "Foreign-language documents require a certified English translation uploaded alongside the original"
@@ -2046,7 +2109,7 @@
               {
                 "label": "Step 2 of 4, Upload Documents",
                 "heading": "Attach your supporting evidence",
-                "instruction": "Upload each document individually using the upload interface. Select and attach all required documents: passport, marriage certificate, civil documents, photos, and any other evidence supporting your petition.",
+                "instruction": "Upload each document individually using the upload interface. Attach the proof of U.S. citizenship, the child's birth certificate, and any other relationship evidence your case needs (parents' marriage, legitimation, adoption or stepparent records), plus certified translations.",
                 "url": "my.uscis.gov",
                 "screenTitle": "Document Upload",
                 "screenDesc": "Attach all supporting files",
@@ -2064,7 +2127,7 @@
                     "label": "Upload"
                   }
                 ],
-                "note": "USCIS accepts PDF, JPG, and JPEG files up to 12 MB each. If a document is in a foreign language, upload the original AND the certified English translation as separate files."
+                "note": "USCIS accepts PDF, JPG, JPEG, TIF and TIFF files up to 12 MB each. If a document is in a foreign language, upload the original AND the certified English translation as separate files."
               },
               {
                 "label": "Step 3 of 4, Review Each File",
@@ -2122,26 +2185,26 @@
         {
           "step_key": "step_1_8",
           "step_number": 8,
-          "step_name": "Pay Filing Fee",
-          "step_short_description": "$625 online · non-refundable",
+          "step_name": "Review & Sign",
+          "step_short_description": "Check every answer and file, then sign",
           "step_type": "tool",
           "branch": "online",
           "visible_when": {
             "filingMethodConfirmed": true,
             "filingMethod": "online"
           },
-          "step_description": "After completing your form review and digital signature inside the USCIS portal, you will reach the payment step. Pay securely online to complete the I-130 submission.",
+          "step_description": "Before you pay, open the filing summary in the USCIS portal, correct any errors, check that every evidence file is attached, and sign electronically with your full legal name.",
           "who": "Petitioner",
-          "where": "my.uscis.gov / pay.gov",
-          "timeline": "Same session as submission",
+          "where": "my.uscis.gov",
+          "timeline": "Same session as payment",
           "dependencies": ["step_1_7"],
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 8,
           "tool_data": {
             "id": "step_1_8",
-            "title": "Pay Filing Fee",
-            "subtitle": "After completing your form review and digital signature inside the USCIS portal, you will reach the payment step. Pay securely online to complete the I-130 submission.",
+            "title": "Review & Sign",
+            "subtitle": "Before you pay, open the filing summary in the USCIS portal, correct any errors, check that every evidence file is attached, and sign electronically with your full legal name.",
             "chips": [
               {
                 "label": "Petitioner",
@@ -2152,166 +2215,7 @@
                 "type": "path"
               },
               {
-                "label": "USCIS Payment",
-                "type": "pay"
-              }
-            ],
-            "launch_module": {
-              "icon": "payment",
-              "stripe_variant": "gold",
-              "bg_color": "#121c2e",
-              "eyebrow": "USCIS Portal · Payment Phase",
-              "heading": "Complete the filing fee payment online",
-              "features": [
-                "Payment follows your review and digital signature",
-                "Use a valid U.S.-based payment method",
-                "No personal checks or money orders online",
-                "Receipt number issued immediately after payment"
-              ]
-            },
-            "fee_block": {
-              "label": "Current online fee",
-              "amount": "$625",
-              "note": "Form I-130 · online filing",
-              "details": [
-                "Confirm the exact amount shown in your portal",
-                "Fees are confirmed non-refundable once submitted",
-                "Credit, debit, or ACH bank transfer accepted"
-              ]
-            },
-            "guide_card": {
-              "title": "View Step-by-Step Payment Guide",
-              "subtitle": "Walk through the USCIS portal payment sequence, from the review step to completing payment and receiving your receipt."
-            },
-            "tutorial_steps": [
-              {
-                "label": "Step 1 of 5, Review your form",
-                "heading": "Review your form",
-                "instruction": "Before payment, USCIS requires you to review a summary of all the information you have entered. Confirm each entry is correct before signing or paying.",
-                "url": "my.uscis.gov",
-                "screenTitle": "Filing Review",
-                "media": {
-                  "type": "video",
-                  "src": "/assets/videos/ir1-journey/c1_step10/02-open-the-review-summary.mp4"
-                },
-                "videoMeta": {
-                  "poster": "/assets/images/ir1-journey/c1_step10/02-review-summary.png"
-                },
-                "caption": "Carefully review the summary to avoid errors before signing.",
-                "note": "Review every entry carefully. Changes after signing and payment require contacting USCIS."
-              },
-              {
-                "label": "Step 2 of 5, Digitally sign the form",
-                "heading": "Digitally sign your form",
-                "instruction": "After confirming the review, you will be prompted to digitally sign by entering your full legal name in the space provided. This acts as your electronic signature.",
-                "url": "my.uscis.gov",
-                "screenTitle": "Electronic Signature",
-                "screenDesc": "Sign with your full legal name",
-                "media": {
-                  "type": "img",
-                  "src": "/assets/images/ir1-journey/c1_step10/04-enter-full-legal-name.png"
-                },
-                "fields": [
-                  {
-                    "type": "field",
-                    "placeholder": "First Name"
-                  },
-                  {
-                    "type": "field",
-                    "placeholder": "Middle Name (optional)"
-                  },
-                  {
-                    "type": "field",
-                    "placeholder": "Last Name"
-                  },
-                  {
-                    "type": "btn",
-                    "label": "Sign"
-                  }
-                ],
-                "caption": "Digital signing records your name and the date as the official signature.",
-                "note": "Be certain before signing; once signed and payment is submitted, edits are difficult."
-              },
-              {
-                "label": "Step 3 of 5, Reach the payment step",
-                "heading": "Proceed to the USCIS payment step",
-                "instruction": "After signing, the portal will advance to the payment section. You will see the filing fee amount displayed. Confirm the amount matches the current USCIS fee schedule before proceeding.",
-                "url": "my.uscis.gov",
-                "screenTitle": "USCIS Payment",
-                "screenDesc": "Confirm Payment Amount",
-                "media": {
-                  "type": "img",
-                  "src": "/assets/images/ir1-journey/c1_step9(online)/step3of5.png"
-                },
-                "caption": "The online filing fee for I-130 is currently $625 (as of March 2026 per USCIS G-1055). Confirm the amount shown in your portal.",
-                "note": null
-              },
-              {
-                "label": "Step 4 of 5, Enter payment details",
-                "heading": "Enter your payment method",
-                "instruction": "USCIS accepts credit cards, debit cards, and ACH bank transfers for online filings. Personal checks and money orders are not accepted for online submissions. Enter your payment details in the USCIS payment interface.",
-                "url": "pay.gov",
-                "screenTitle": "USCIS Payment",
-                "screenDesc": "Choose Payment Method",
-                "media": {
-                  "type": "img",
-                  "src": "/assets/images/ir1-journey/c1_step9(online)/step4of5.png"
-                },
-                "caption": "USCIS uses Pay.gov for online fee collection. Your payment information is handled by that secure federal payment system.",
-                "note": "Do not close the browser tab during payment processing. Wait for the confirmation screen."
-              },
-              {
-                "label": "Step 5 of 5, Receive your receipt notice",
-                "heading": "Payment complete, receipt issued immediately",
-                "instruction": "After successful payment, USCIS immediately issues a receipt notice with your case number (typically beginning with \"IOE\"). Download or save this receipt, it is your proof of filing and your case tracking number.",
-                "url": "my.uscis.gov",
-                "screenTitle": "USCIS Payment",
-                "screenDesc": "Confirm Payment Amount",
-                "media": {
-                  "type": "img",
-                  "src": "/assets/images/ir1-journey/c1_step9(online)/step5of5.jpg"
-                },
-                "caption": "The receipt number lets you track your I-130 case status. It also begins the official USCIS processing clock.",
-                "note": null
-              }
-            ],
-            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice.\nAlways verify the current fee at uscis.gov/g-1055 before paying, fees are subject to change."
-          }
-        },
-        {
-          "step_key": "step_1_9",
-          "step_number": 9,
-          "step_name": "Review & Submit",
-          "step_short_description": "Final submission · receipt issued",
-          "step_type": "tool",
-          "branch": "online",
-          "visible_when": {
-            "filingMethodConfirmed": true,
-            "filingMethod": "online"
-          },
-          "step_description": "This is the final step before your I-130 petition is officially submitted to USCIS. Review everything carefully, sign electronically, pay the filing fee, and submit.",
-          "who": "Petitioner",
-          "where": "my.uscis.gov",
-          "timeline": "Same session as payment",
-          "dependencies": ["step_1_8"],
-          "estimated_duration_days": 1,
-          "is_required": true,
-          "display_order": 9,
-          "tool_data": {
-            "id": "step_1_9",
-            "title": "Review & Submit",
-            "subtitle": "This is the final step before your I-130 petition is officially submitted to USCIS. Review everything carefully, sign electronically, pay the filing fee, and submit.",
-            "chips": [
-              {
-                "label": "Petitioner",
-                "type": "role"
-              },
-              {
-                "label": "Online Filing",
-                "type": "path"
-              },
-              {
-                "label": "Final Submission",
+                "label": "Review & Sign",
                 "type": "final"
               }
             ],
@@ -2319,28 +2223,27 @@
               "icon": "submit",
               "stripe_variant": "green",
               "bg_color": "#101e35",
-              "eyebrow": "USCIS Portal · Final Submission Phase",
-              "heading": "Review, sign, pay, and submit the I-130",
+              "eyebrow": "USCIS Portal · Review Phase",
+              "heading": "Review your filing and sign it",
               "features": [
                 "Review the full filing summary in the portal",
-                "Sign digitally by entering your full legal name",
-                "Pay the $625 online filing fee",
-                "Receipt number issued immediately after submission"
+                "Correct any errors before you sign",
+                "Check that every evidence file is attached",
+                "Sign by entering your full legal name"
               ]
             },
             "review_checklist": [
               "All form fields completed and accurate",
               "All required evidence documents attached and verified",
-              "Payment method ready (credit/debit card or ACH bank transfer)",
               "USCIS account email is actively monitored, receipts and notices will arrive there"
             ],
             "guide_card": {
-              "title": "View Step-by-Step Review & Submit Guide",
-              "subtitle": "Walk through the final USCIS portal sequence, reviewing your filing, signing, paying, and receiving your receipt confirmation."
+              "title": "View Step-by-Step Review Guide",
+              "subtitle": "Walk through the USCIS portal review: open the summary, check your evidence, and sign."
             },
             "tutorial_steps": [
               {
-                "label": "Step 1 of 5, Review Your Petition",
+                "label": "Step 1 of 4, Review Your Petition",
                 "heading": "Open the filing review",
                 "instruction": "Sign in to your USCIS account, open your I-130 draft, and navigate to the <strong>review step</strong>. The portal will display a full summary of everything you have entered.",
                 "url": "myaccount.uscis.gov",
@@ -2362,7 +2265,7 @@
                 "note": "Read the review summary carefully, this is your last opportunity to spot errors before official submission."
               },
               {
-                "label": "Step 2 of 5, Open the Review Summary",
+                "label": "Step 2 of 4, Open the Review Summary",
                 "heading": "Examine the complete filing summary",
                 "instruction": "Watch as the portal displays your complete filing summary. Review each section carefully to ensure <strong>all information is accurate and complete</strong>.",
                 "url": "my.uscis.gov",
@@ -2384,7 +2287,7 @@
                 "note": null
               },
               {
-                "label": "Step 3 of 5, Confirm Your Attached Evidence",
+                "label": "Step 3 of 4, Confirm Your Attached Evidence",
                 "heading": "Verify all supporting documents",
                 "instruction": "Within the review, verify that each piece of supporting evidence is correctly attached. Check that file names match the documents they represent and that nothing is missing.",
                 "url": "my.uscis.gov",
@@ -2403,7 +2306,7 @@
                 "note": "A missing or incorrect attachment is harder to fix after submission, verify each file at this stage."
               },
               {
-                "label": "Step 4 of 5, Enter Your Full Legal Name",
+                "label": "Step 4 of 4, Enter Your Full Legal Name",
                 "heading": "Digitally sign your petition",
                 "instruction": "After completing the review, USCIS will prompt you to <strong>digitally sign</strong>. Enter your full legal name, first, middle (if applicable), and last, exactly as it appears in official documents.",
                 "url": "my.uscis.gov",
@@ -2432,36 +2335,120 @@
                   }
                 ],
                 "note": "Once you sign and proceed to payment, going back to edit requires contacting USCIS. Be certain before continuing."
-              },
-              {
-                "label": "Step 5 of 5, Pay the I-130 Fees",
-                "heading": "Complete the filing fee payment",
-                "instruction": "After signing, the portal advances to the payment step. Confirm the filing fee displayed ($625 for online I-130 filing). <strong>Enter your payment information</strong> to complete submission.",
-                "url": "pay.gov",
-                "screenTitle": "Filing Fee Payment",
-                "screenDesc": "Pay $625 filing fee",
-                "media": {
-                  "type": "img",
-                  "src": "/assets/images/ir1-journey/c1_step10/05-I-130-fees.png"
-                },
-                "fields": [
-                  {
-                    "type": "field",
-                    "placeholder": "Card Number"
-                  },
-                  {
-                    "type": "field",
-                    "placeholder": "Expiry Date"
-                  },
-                  {
-                    "type": "btn",
-                    "label": "Pay Now"
-                  }
-                ],
-                "note": "Do not close the browser tab during payment processing. Wait for the confirmation screen. USCIS fees are generally non-refundable once a case is accepted."
               }
             ],
-            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice.\nReview your filing carefully before submitting, USCIS fees are non-refundable once a case is accepted."
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice.\nReview your filing carefully before signing. Fixing an error after submission is much harder."
+          }
+        },
+        {
+          "step_key": "step_1_9",
+          "step_number": 9,
+          "step_name": "Pay Fee & Submit",
+          "step_short_description": "$625 online · non-refundable",
+          "step_type": "tool",
+          "branch": "online",
+          "visible_when": {
+            "filingMethodConfirmed": true,
+            "filingMethod": "online"
+          },
+          "step_description": "After you sign, the portal moves to payment. Pay the filing fee, submit the petition, and save the USCIS receipt notice when it is issued.",
+          "who": "Petitioner",
+          "where": "my.uscis.gov / pay.gov",
+          "timeline": "Same session as review",
+          "dependencies": ["step_1_8"],
+          "estimated_duration_days": 1,
+          "is_required": true,
+          "display_order": 9,
+          "tool_data": {
+            "id": "step_1_9",
+            "title": "Pay Fee & Submit",
+            "subtitle": "After you sign, the portal moves to payment. Pay the filing fee, submit the petition, and save the USCIS receipt notice when it is issued.",
+            "chips": [
+              {
+                "label": "Petitioner",
+                "type": "role"
+              },
+              {
+                "label": "Online Filing",
+                "type": "path"
+              },
+              {
+                "label": "USCIS Payment",
+                "type": "pay"
+              }
+            ],
+            "launch_module": {
+              "icon": "payment",
+              "stripe_variant": "gold",
+              "bg_color": "#121c2e",
+              "eyebrow": "USCIS Portal · Payment Phase",
+              "heading": "Pay the filing fee and submit the I-130",
+              "features": [
+                "Payment comes after your review and signature",
+                "Pay by credit card, debit card or U.S. bank account (ACH)",
+                "Submit the petition once payment goes through",
+                "Save the receipt notice when USCIS issues it"
+              ]
+            },
+            "fee_block": {
+              "label": "Current online fee",
+              "amount": "$625",
+              "note": "Form I-130 · online filing",
+              "details": [
+                "Confirm the exact amount shown in your portal",
+                "Fees are confirmed non-refundable once submitted",
+                "Credit, debit, or ACH bank transfer accepted"
+              ]
+            },
+            "guide_card": {
+              "title": "View Step-by-Step Payment Guide",
+              "subtitle": "Walk through the USCIS portal payment and submission, up to saving your receipt notice."
+            },
+            "tutorial_steps": [
+              {
+                "label": "Step 1 of 3, Reach the payment step",
+                "heading": "Proceed to the USCIS payment step",
+                "instruction": "After signing, the portal will advance to the payment section. You will see the filing fee amount displayed. Confirm the amount matches the current USCIS fee schedule before proceeding.",
+                "url": "my.uscis.gov",
+                "screenTitle": "USCIS Payment",
+                "screenDesc": "Confirm Payment Amount",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c1_step9(online)/step3of5.png"
+                },
+                "caption": "The online filing fee for I-130 is currently $625 (as of March 2026 per USCIS G-1055). Confirm the amount shown in your portal.",
+                "note": null
+              },
+              {
+                "label": "Step 2 of 3, Enter payment details",
+                "heading": "Enter your payment method",
+                "instruction": "USCIS accepts credit cards, debit cards, and ACH bank transfers for online filings. Personal checks and money orders are not accepted for online submissions. Enter your payment details in the USCIS payment interface.",
+                "url": "pay.gov",
+                "screenTitle": "USCIS Payment",
+                "screenDesc": "Choose Payment Method",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c1_step9(online)/step4of5.png"
+                },
+                "caption": "USCIS uses Pay.gov for online fee collection. Your payment information is handled by that secure federal payment system.",
+                "note": "Do not close the browser tab during payment processing. Wait for the confirmation screen."
+              },
+              {
+                "label": "Step 3 of 3, Receive your receipt notice",
+                "heading": "Submit the petition and save your receipt",
+                "instruction": "After the payment goes through, submit the petition. USCIS then issues a receipt notice (Form I-797C) with your receipt number, usually in your online account. Download and save it, it is your proof of filing and your case tracking number.",
+                "url": "my.uscis.gov",
+                "screenTitle": "USCIS Payment",
+                "screenDesc": "Confirm Payment Amount",
+                "media": {
+                  "type": "img",
+                  "src": "/assets/images/ir1-journey/c1_step9(online)/step5of5.jpg"
+                },
+                "caption": "The receipt number lets you track your I-130 case status. It also begins the official USCIS processing clock.",
+                "note": null
+              }
+            ],
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice.\nAlways verify the current fee at uscis.gov/g-1055 before paying, fees are subject to change."
           }
         },
         {
@@ -2681,7 +2668,7 @@
                 },
                 {
                   "value": "Fee Exemption with Form G-1651",
-                  "label": "Fee Exemption with Form G-1651"
+                  "label": "Paper payment with a Form G-1651 exemption"
                 },
                 {
                   "value": "Other verified method",
@@ -2709,7 +2696,7 @@
               {
                 "label": "Payment guide · Step 3",
                 "title": "Choose your paper-filing payment method",
-                "text": "USCIS no longer accepts personal/business checks, money orders, or cashier's checks. You must use one of the approved payment or fee exemption options:<ul style=\"margin-top: 8px; margin-bottom: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px;\"><li><strong>Option A:</strong> Pay by credit, debit, or prepaid card using <strong>Form G-1450</strong> (Authorization for Credit Card Transactions).</li><li><strong>Option B:</strong> Pay from a U.S. bank account (ACH) using <strong>Form G-1650</strong>.</li><li><strong>Option C:</strong> If eligible for an exemption from the higher paper filing fee, submit <strong>Form G-1651</strong> (Exemption for Paper Fee Payment).</li></ul><div style=\"margin-top: 14px; padding: 12px 14px; background: #f0f7ff; border: 1px solid #bfdbfe; border-left: 4px solid #2563eb; border-radius: 8px;\"><div style=\"font-weight: 700; font-size: 13px; color: #1e3a8a; margin-bottom: 4px;\">USCIS Form G-1651 Exemption Requirements</div><div style=\"font-size: 12.5px; line-height: 1.5; color: #1e293b; margin-bottom: 6px;\">To request an exemption, you must certify that electronic payment and collection methods are not possible and you meet 1 or more of the following requirements:</div><ul style=\"margin: 0; padding-left: 18px; font-size: 12px; line-height: 1.55; color: #334155; display: flex; flex-direction: column; gap: 4px;\"><li>You do not have access to banking services or electronic payment systems;</li><li>Electronic disbursement would cause you undue hardship (infrastructure barriers in remote/foreign areas or personal limitations), as discussed in <a href=\"https://www.govinfo.gov/content/pkg/CFR-2025-title31-vol2/pdf/CFR-2025-title31-vol2-sec208-1.pdf\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #2563eb; font-weight: 600; text-decoration: underline;\">31 C.F.R. Part 208 (GovInfo Official Citation ↗)</a>;</li><li>Non-electronic transactions are necessary or desirable for national security or law enforcement reasons; or</li><li>There are other circumstances as determined by the secretary of the treasury, as reflected in regulations or other guidance.</li></ul><div style=\"margin-top: 8px; padding: 6px 10px; background: #e0f2fe; border-radius: 6px; font-size: 11.5px; color: #0369a1;\"><strong>Hardship categories under 31 C.F.R. Sec. 208.4:</strong> Infrastructure barriers (foreign/remote regions lacking U.S. digital banking) and personal barriers (financial, physical, or technical inability to manage online banking).</div></div>",
+                "text": "USCIS no longer accepts personal/business checks, money orders, or cashier's checks. You must use one of the approved payment options:<ul style=\"margin-top: 8px; margin-bottom: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px;\"><li><strong>Option A:</strong> Pay by credit, debit, or prepaid card using <strong>Form G-1450</strong> (Authorization for Credit Card Transactions).</li><li><strong>Option B:</strong> Pay from a U.S. bank account (ACH) using <strong>Form G-1650</strong>.</li><li><strong>Option C:</strong> If you cannot pay electronically, request an exemption from the electronic payment requirement with <strong>Form G-1651</strong> (Exemption for Paper Fee Payment). This is not a fee waiver: the filing fee still has to be paid.</li></ul><div style=\"margin-top: 14px; padding: 12px 14px; background: #f0f7ff; border: 1px solid #bfdbfe; border-left: 4px solid #2563eb; border-radius: 8px;\"><div style=\"font-weight: 700; font-size: 13px; color: #1e3a8a; margin-bottom: 4px;\">USCIS Form G-1651 Exemption Requirements</div><div style=\"font-size: 12.5px; line-height: 1.5; color: #1e293b; margin-bottom: 6px;\">To request an exemption, you must certify that electronic payment and collection methods are not possible and you meet 1 or more of the following requirements:</div><ul style=\"margin: 0; padding-left: 18px; font-size: 12px; line-height: 1.55; color: #334155; display: flex; flex-direction: column; gap: 4px;\"><li>You do not have access to banking services or electronic payment systems;</li><li>Electronic disbursement would cause you undue hardship (infrastructure barriers in remote/foreign areas or personal limitations), as discussed in <a href=\"https://www.govinfo.gov/content/pkg/CFR-2025-title31-vol2/pdf/CFR-2025-title31-vol2-sec208-1.pdf\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #2563eb; font-weight: 600; text-decoration: underline;\">31 C.F.R. Part 208 (GovInfo Official Citation ↗)</a>;</li><li>Non-electronic transactions are necessary or desirable for national security or law enforcement reasons; or</li><li>There are other circumstances as determined by the secretary of the treasury, as reflected in regulations or other guidance.</li></ul><div style=\"margin-top: 8px; padding: 6px 10px; background: #e0f2fe; border-radius: 6px; font-size: 11.5px; color: #0369a1;\"><strong>Hardship categories under 31 C.F.R. Sec. 208.4:</strong> Infrastructure barriers (foreign/remote regions lacking U.S. digital banking) and personal barriers (financial, physical, or technical inability to manage online banking).</div></div>",
                 "url": "uscis.gov/forms/all-forms",
                 "visual": "<img src=\"/assets/images/ir1-journey/c1-step7(mailing)/peyment method.png\" alt=\"Payment Methods\" style=\"width:100%; border-radius: 8px; border: 1px solid #e2e8f0;\" />",
                 "note": "Download and print Form G-1450, Form G-1650, or Form G-1651 from uscis.gov and fill it out completely before placing it in the packet."
@@ -2717,9 +2704,9 @@
               {
                 "label": "Payment guide · Step 4",
                 "title": "Place payment at the front of the packet",
-                "text": "Once the payment item is ready, whether it is a completed Form G-1450 (card), Form G-1650 (ACH), or Form G-1651 (Fee Exemption), place it at the very front of the mailing packet. The payment or fee exemption form should be the first thing USCIS sees when they open the envelope.",
+                "text": "Once the payment item is ready, whether it is a completed Form G-1450 (card), Form G-1650 (ACH), or Form G-1651 (exemption from electronic payment), place it at the very front of the mailing packet. The payment form should be the first thing USCIS sees when they open the envelope.",
                 "url": "paper packet",
-                "visual": "<div style=\"padding:12px 0;\"><div style=\"font-weight:600;font-size:14px;margin-bottom:14px;\">Recommended Packet Order</div><div style=\"display:flex;flex-direction:column;gap:8px;\"><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#16a34a;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">1</div><div><div style=\"font-weight:600;font-size:13px;\">Payment / Fee Exemption</div><div style=\"font-size:12px;color:#64748b;\">Form G-1450 (card), Form G-1650 (ACH), or Form G-1651 (Exemption), placed first</div></div></div><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#3b82f6;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">2</div><div><div style=\"font-weight:600;font-size:13px;\">Form</div><div style=\"font-size:12px;color:#64748b;\">Completed I-130</div></div></div><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#8b5cf6;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">3</div><div><div style=\"font-weight:600;font-size:13px;\">Supporting Evidence</div><div style=\"font-size:12px;color:#64748b;\">Citizenship proof, marriage docs, translations, relationship evidence</div></div></div></div></div>",
+                "visual": "<div style=\"padding:12px 0;\"><div style=\"font-weight:600;font-size:14px;margin-bottom:14px;\">Recommended Packet Order</div><div style=\"display:flex;flex-direction:column;gap:8px;\"><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#16a34a;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">1</div><div><div style=\"font-weight:600;font-size:13px;\">Payment Form</div><div style=\"font-size:12px;color:#64748b;\">Form G-1450 (card), Form G-1650 (ACH), or Form G-1651 (Exemption), placed first</div></div></div><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#3b82f6;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">2</div><div><div style=\"font-weight:600;font-size:13px;\">Form</div><div style=\"font-size:12px;color:#64748b;\">Completed I-130</div></div></div><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#8b5cf6;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">3</div><div><div style=\"font-weight:600;font-size:13px;\">Supporting Evidence</div><div style=\"font-size:12px;color:#64748b;\">Citizenship proof, marriage docs, translations, relationship evidence</div></div></div></div></div>",
                 "note": "Keep the payment form separate and easy to reach so packet assembly in the next step stays quick and organized."
               },
               {
@@ -2742,7 +2729,7 @@
               "link": "https://www.uscis.gov/g-1055"
             },
             {
-              "text": "USCIS Form G-1651 Paper Fee Exemption",
+              "text": "USCIS Form G-1651, Exemption for Paper Fee Payment",
               "link": "https://www.uscis.gov/g-1651"
             }
           ]
@@ -2808,7 +2795,7 @@
               },
               {
                 "title": "Support section",
-                "description": "Add proof of U.S. citizenship, marriage documents, prior marriage termination evidence if needed, translations, and relationship evidence behind the forms."
+                "description": "Behind the forms, add proof of U.S. citizenship, the child's birth certificate, and the records your relationship needs (parents' marriage, legitimation, adoption or stepparent records), with translations."
               }
             ],
             "guide_steps": [
@@ -2854,7 +2841,7 @@
               "sections": [
                 {
                   "id": "payment",
-                  "label": "Payment form (G-1450 card, G-1650 ACH, or G-1651 fee exemption)",
+                  "label": "Payment form (G-1450 card, G-1650 U.S. bank ACH, or G-1651 request for exemption from the electronic payment requirement; G-1651 is not a fee waiver)",
                   "position": "front of packet",
                   "required": true
                 },
@@ -2871,34 +2858,46 @@
                   "required": true
                 },
                 {
+                  "id": "birth_certificate",
+                  "label": "Child's birth certificate naming the petitioner as a parent",
+                  "position": "supporting section",
+                  "required_when": "applicable to the claimed relationship"
+                },
+                {
                   "id": "marriage_certificate",
-                  "label": "Marriage certificate (original or certified copy as required)",
+                  "label": "Parents' marriage certificate",
                   "position": "supporting section",
-                  "required": true
+                  "required_when": "relevant to the claimed relationship (for example, a father whose child was born to married parents)"
                 },
                 {
-                  "id": "prior_termination",
-                  "label": "Prior marriage termination evidence (divorce decree / annulment / death certificate)",
+                  "id": "legitimation",
+                  "label": "Legitimation records",
                   "position": "supporting section",
-                  "required_when": "either party had a prior marriage"
+                  "required_when": "the child was legitimated"
                 },
                 {
-                  "id": "bona_fide_evidence",
-                  "label": "Evidence of a bona fide parent-child relationship (financial support, shared residence, correspondence, photos)",
+                  "id": "adoption",
+                  "label": "Adoption decree and 2-year custody and residence evidence",
                   "position": "supporting section",
-                  "required": true
+                  "required_when": "the child was adopted"
+                },
+                {
+                  "id": "stepparent_marriage",
+                  "label": "Stepparent's marriage certificate, and proof that any prior marriage of either spouse ended",
+                  "position": "supporting section",
+                  "required_when": "the petitioner is a stepparent"
+                },
+                {
+                  "id": "father_child_evidence",
+                  "label": "Evidence of a genuine father-child relationship (financial support, involvement in the child's upbringing, recognition, contact)",
+                  "position": "supporting section",
+                  "required_when": "a father petitions for a child born to unmarried parents, or USCIS requests it"
                 },
                 {
                   "id": "translations",
                   "label": "Certified English translations for any non-English document",
                   "position": "with the original document",
                   "required_when": "any supporting document is not in English"
-                },
-                {
-                  "id": "passport_photos",
-                  "label": "Passport-style photos",
-                  "position": "supporting section",
-                  "required_when": "instructions request photos"
                 }
               ],
               "source_basis": "USCIS I-130 paper filing instructions, uscis.gov/i-130"
@@ -2919,7 +2918,7 @@
           "display_number_override": 8,
           "step_description": "Send the completed paper packet to the correct USCIS mailing location, keep the shipment trackable, and save the delivery details in Rahvana so the path back into receipt notice tracking is clear.",
           "who": "Petitioner",
-          "where": "uscis.gov/mailing-addresses",
+          "where": "uscis.gov/i-130-addresses",
           "timeline": "1-2 hours",
           "dependencies": ["step_1_12"],
           "is_required": true,
@@ -2985,8 +2984,8 @@
               {
                 "label": "Mailing guide · Step 2",
                 "title": "Confirm the current USCIS filing address",
-                "text": "Before mailing, verify the current USCIS filing address for your paper submission so the packet goes to the correct location.",
-                "url": "uscis.gov/forms/filing-guidance",
+                "text": "Before mailing, open the official USCIS page Direct Filing Addresses for Form I-130 and pick the address that matches your situation: the petitioner lives inside the United States, the petitioner lives outside the United States, or the I-130 is filed together with Form I-485 (concurrent filing, where applicable).",
+                "url": "uscis.gov/i-130-addresses",
                 "visual": "<img src=\"/assets/images/ir1-journey/c1_step9(mailing)/step1.jpg\" alt=\"Confirm USCIS filing address\" style=\"width:100%;\" />",
                 "note": "Do not mail to an old address saved from a previous screenshot or conversation."
               },
@@ -3017,7 +3016,7 @@
           },
           "citations": [
             {
-              "text": "USCIS Direct Filing Addresses",
+              "text": "USCIS Direct Filing Addresses for Form I-130",
               "link": "https://www.uscis.gov/i-130-addresses"
             }
           ]
@@ -3025,20 +3024,20 @@
         {
           "step_key": "step_1_15",
           "step_number": 10,
-          "step_name": "Register Receipt in CEAC Portal",
-          "step_short_description": "Register your USCIS receipt in CEAC",
+          "step_name": "Save Your USCIS Receipt Number",
+          "step_short_description": "Save the receipt number from your I-797C",
           "step_type": "tool",
           "visible_when": {},
-          "step_description": "After receiving your USCIS receipt notice, register your case in the CEAC portal to begin NVC processing. This step ensures your case is trackable and ready for the next phase.",
+          "step_description": "After USCIS accepts your Form I-130 filing, save the receipt number from your Form I-797C notice. You can use this number to track your petition through USCIS Case Status Online or your USCIS online account.",
           "who": "Petitioner",
-          "where": "ceac.state.gov",
-          "timeline": "1-2 days after receipt",
+          "where": "egov.uscis.gov / my.uscis.gov",
+          "timeline": "When the receipt notice arrives",
           "dependencies": ["step_1_9", "step_1_13"],
           "is_required": true,
           "display_order": 14,
           "tool_data": {
             "id": "step_1_15",
-            "title": "Register Receipt Notice & Track Case",
+            "title": "Save Your USCIS Receipt Number",
             "subtitle": "Once USCIS accepts the filing, bring the receipt notice back into Rahvana so the case can be registered, tracked, and monitored for meaningful status changes.",
             "chips": [
               {
@@ -3209,9 +3208,10 @@
                 "WAC": "California Service Center",
                 "LIN": "Nebraska Service Center",
                 "SRC": "Texas Service Center",
+                "YSC": "Potomac Service Center",
                 "MSC": "National Benefits Center (Missouri)",
                 "NBC": "National Benefits Center",
-                "IOE": "USCIS ELIS / online filing system"
+                "IOE": "USCIS electronic processing (online filings, and paper filings processed electronically)"
               },
               "example": "MSC2390123456",
               "invalid_format_message": "This does not match the standard USCIS receipt number format. Double-check the number on your I-797C, it should be 3 letters followed by 10 digits.",
@@ -3222,14 +3222,14 @@
         {
           "step_key": "step_1_16",
           "step_number": 11,
-          "step_name": "Track Case Status in CEAC",
+          "step_name": "Monitor USCIS Case Status",
           "step_short_description": "Monitor your case status and updates",
           "step_type": "tool",
           "visible_when": {},
-          "step_description": "Monitor your case status in the CEAC portal after registration. Track updates, fee invoices, and document requests as your case progresses through NVC processing.",
+          "step_description": "Monitor your pending I-130 petition using the USCIS receipt number. Use USCIS Case Status Online or your USCIS online account to review the latest official case updates.",
           "who": "Petitioner",
-          "where": "ceac.state.gov",
-          "timeline": "Ongoing after registration",
+          "where": "egov.uscis.gov",
+          "timeline": "Ongoing while the I-130 is pending",
           "dependencies": ["step_1_15"],
           "is_required": true,
           "display_order": 15,
@@ -3298,8 +3298,8 @@
               },
               {
                 "id": "evidence",
-                "title": "Keep collecting relationship evidence",
-                "copy": "Add photos, travel records, call logs, chats, and other ongoing proof so later stages do not rely only on older material."
+                "title": "Organize the evidence for your relationship",
+                "copy": "Review and organize evidence relevant to your specific parent-child relationship. Depending on the case, this may include birth records, parents' marriage records, legitimation documents, adoption records, or evidence of a genuine father-child relationship. Photos and communication records can be optional support in a father-child case."
               },
               {
                 "id": "rfe",
@@ -3343,8 +3343,8 @@
               },
               {
                 "icon": "purple",
-                "title": "How to keep building relationship evidence",
-                "copy": "Practical guidance on what new proof is worth saving while the case is pending.",
+                "title": "Which evidence fits your relationship",
+                "copy": "Practical guidance on the records that support your specific parent-child relationship while the case is pending.",
                 "action": "View evidence guide"
               },
               {
@@ -3370,7 +3370,7 @@
               {
                 "icon": "green",
                 "title": "Add new evidence entries",
-                "copy": "Log visits, upload new photos, and keep a clean timeline of the relationship as it continues.",
+                "copy": "Note any new record that supports your relationship, for example a corrected civil document, or, in a father-child case, proof of support and contact.",
                 "buttons": ["Add note", "Mark planned"]
               },
               {
@@ -3564,7 +3564,7 @@
             },
             "deadline_warning": {
               "heading": "Check the deadline on your actual notice",
-              "body": "Do not assume you have a specific number of days. The deadline is printed on your RFE or NOID notice. USCIS states that the maximum response period is generally 12 weeks, but the notice controls the actual deadline for your case."
+              "body": "Do not assume you have a specific number of days. The deadline printed on your notice always controls. For an RFE, the maximum response period is up to 12 weeks; for a NOID, it is up to 30 days. These are maximums, not a guaranteed amount of time."
             },
             "citations": [
               {
@@ -3633,7 +3633,7 @@
                   "evidence_examples": [
                     "Child's official birth certificate naming the petitioner as a parent",
                     "Mother petitioning: child's birth certificate showing the mother's name",
-                    "Father petitioning (parents married): child's birth certificate + parents' marriage certificate (Nikah Nama & NADRA MRC)",
+                    "Father petitioning (parents married): child's birth certificate + parents' marriage certificate (Nikah Nama & MRC)",
                     "Father petitioning (parents not married): proof of legitimation, or evidence of a genuine father-child relationship",
                     "Stepparent petitioning: marriage certificate showing the marriage to the child's parent took place before the child turned 18",
                     "Adoptive parent petitioning: adoption decree from before the child turned 16 + proof of 2 years of legal custody and joint residence",
@@ -3647,14 +3647,13 @@
                   "label": "Missing, incomplete, or secondary civil documentation",
                   "description": "USCIS may determine that submitted birth or marriage documentation is insufficient, late-registered, or missing required civil registration details.",
                   "evidence_examples": [
-                    "NADRA-issued computerized birth certificate",
-                    "Union Council official birth certificate",
+                    "Union Council / relevant local government Birth Registration Certificate. A NADRA CRC (B-Form) or FRC may also be used as supporting or alternate civil documentation, as applicable.",
                     "Certified English translations with translator certification",
                     "Secondary evidence for a late-registered birth (school, vaccination, or hospital records)",
                     "Affidavits of birth from older relatives with personal knowledge of the birth",
                     "NADRA Family Registration Certificate (FRC)"
                   ],
-                  "important_note": "For Pakistani civil documents, USCIS frequently requests NADRA-issued certificates alongside certified English translations and secondary birth evidence if the primary birth was registered late."
+                  "important_note": "For Pakistani civil documents, USCIS may ask for the local-authority birth or marriage registration certificate, NADRA records such as the CRC or FRC, certified English translations, and secondary birth evidence if the birth was registered late."
                 },
                 {
                   "id": "petitioner_status",
@@ -3703,7 +3702,7 @@
               {
                 "label": "RFE Response · Step 4",
                 "title": "Organize your evidence by RFE request",
-                "text": "Structure your evidence to match each item USCIS requested. Group documents under the specific request they address. For example, USCIS Request: Proof of parent-child relationship: Exhibit A, child's NADRA birth certificate, Exhibit B, parents' Nikah Nama & MRC, Exhibit C, Child Registration Certificate (CRC), Exhibit D, Family Registration Certificate (FRC). This structure makes it easy for the USCIS officer to match your response to their request.",
+                "text": "Structure your evidence to match each item USCIS requested. Group documents under the specific request they address. For example, USCIS Request: Proof of parent-child relationship: Exhibit A, child's Birth Registration Certificate, Exhibit B, parents' Nikah Nama & MRC, Exhibit C, Child Registration Certificate (CRC), Exhibit D, Family Registration Certificate (FRC). This structure makes it easy for the USCIS officer to match your response to their request.",
                 "note": "Clear organization significantly helps the reviewing officer understand your response and reduces the chance of important evidence being overlooked."
               },
               {
@@ -3765,7 +3764,7 @@
           "visible_when": {
             "uscisNoticeType": "rfi"
           },
-          "step_description": "USCIS has issued a Request for Additional Information (RFI) on your I-130 petition. An RFI typically requests clarifying information and is generally narrower in scope than an RFE.",
+          "step_description": "USCIS has issued a Request for Additional Information (RFI) on your I-130 petition. An RFI requests additional or clarifying information. Read the actual notice to determine exactly what USCIS requires and the applicable deadline.",
           "who": "Petitioner",
           "where": "my.uscis.gov / mail",
           "timeline": "Before deadline on notice",
@@ -3800,7 +3799,7 @@
                 "label": "RFI Response · Step 1",
                 "title": "Obtain and read the RFI notice",
                 "text": "Check your USCIS online account at my.uscis.gov or your physical mail for the RFI notice. Read the notice carefully to understand exactly what information USCIS is requesting.",
-                "note": "An RFI is typically narrower in scope than an RFE. USCIS is asking for specific clarifying information, not a broad set of evidence."
+                "note": "Read the actual notice to see exactly what USCIS requires and the deadline. Do not assume an RFI is smaller or less serious than an RFE."
               },
               {
                 "label": "RFI Response · Step 2",
@@ -3861,7 +3860,7 @@
             "alert": {
               "type": "info",
               "heading": "USCIS is asking for an original, not a copy",
-              "body": "Carefully read your RFO notice to identify exactly which document is required in original form. Submitting another copy will not satisfy the request."
+              "body": "Carefully read your RFO notice to identify exactly which document is required in original form. Submitting another copy will not satisfy the request. Submit an original only when USCIS specifically requests it. Otherwise, follow the applicable photocopy requirements. Keep a copy of any original document you send."
             },
             "guide_steps": [
               {
@@ -3901,7 +3900,7 @@
           "visible_when": {
             "uscisNoticeType": "noid"
           },
-          "step_description": "USCIS has issued a Notice of Intent to Deny (NOID) on your I-130 petition. A NOID is more serious than an RFE, USCIS is indicating it is considering denying your petition based on the current record and is giving you one opportunity to respond.",
+          "step_description": "USCIS has issued a Notice of Intent to Deny (NOID) on your I-130 petition. A NOID is more serious than an RFE, USCIS is indicating it is considering denying your petition based on the current record and has provided an opportunity to respond before making a final decision.",
           "who": "Petitioner",
           "where": "my.uscis.gov / mail",
           "timeline": "Before deadline on notice",
@@ -3929,7 +3928,7 @@
             "alert": {
               "type": "serious",
               "heading": "A NOID is more serious than an RFE",
-              "body": "USCIS is not simply asking for more evidence. It is indicating that based on the current record, it intends to deny your petition, and is giving you one opportunity to respond. Carefully review the reasons USCIS has stated. Because the response may require legal analysis, strongly consider getting help from a qualified immigration attorney."
+              "body": "USCIS is not simply asking for more evidence. It is indicating that based on the current record, it intends to deny your petition, and has provided an opportunity to respond before making a final decision. Carefully review the reasons USCIS has stated. Because the response may require legal analysis, strongly consider getting help from a qualified immigration attorney."
             },
             "noid_vs_rfe": {
               "title": "NOID vs. RFE, the key difference",
@@ -3939,7 +3938,7 @@
               },
               "noid": {
                 "label": "NOID",
-                "description": "Based on what we currently have, we are considering denying your petition. Here is why. You have one opportunity to respond."
+                "description": "Based on what we currently have, we are considering denying your petition. Here is why. You have an opportunity to respond before we make a final decision."
               }
             },
             "guide_steps": [
@@ -3952,7 +3951,7 @@
               {
                 "label": "NOID Response · Step 2",
                 "title": "Check the response deadline immediately",
-                "text": "The response deadline is printed on your NOID notice. Note it immediately and treat it as your hard deadline. Extensions are generally not granted.",
+                "text": "The response deadline is printed on your NOID notice. Note it immediately and treat it as your hard deadline. For a NOID the maximum response period is up to 30 days, much shorter than an RFE, and the date on your notice controls. Extensions are generally not granted.",
                 "note": "Given the seriousness of a NOID, you should begin working on your response immediately, do not wait until close to the deadline."
               },
               {
@@ -4112,7 +4111,7 @@
                   "id": "appeal",
                   "label": "Appeal to the Board of Immigration Appeals (BIA)",
                   "description": "Certain I-130 decisions can be appealed to the Board of Immigration Appeals using Form EOIR-29 (Notice of Appeal to the Board of Immigration Appeals from a Decision of a DHS Officer). USCIS confirms that I-130 appeals are among the appeals filed using Form EOIR-29.",
-                  "important": "Appeals have strict deadlines. Check your denial notice for the deadline and the specific appeal procedure that applies to your case.",
+                  "important": "Appeals have strict deadlines. Form EOIR-29 is used for eligible appeals of DHS decisions, and it must be filed with the DHS/USCIS office named in the denial notice and the form instructions, not mailed directly to the BIA. Confirm the deadline and filing requirements in your denial notice and the current EOIR-29 instructions.",
                   "url": "https://www.uscis.gov/eoir-29"
                 },
                 {
@@ -4238,10 +4237,10 @@
                   "description": "While most consular I-130 petitions are decided without an in-person USCIS interview, USCIS occasionally requests a petitioner interview.",
                   "evidence_examples": [
                     "Original civil documents (child's birth certificate, parents' marriage certificate).",
-                    "Proof of ongoing parent-child relationship (photos over time, travel records, communication).",
+                    "Relationship evidence that fits your case and the items listed on the interview notice (for example, father-child relationship evidence when that is the basis of the petition).",
                     "Valid government-issued photo identification."
                   ],
-                  "important_note": "Carefully review the checklist of items to bring on the interview notice and arrive 15 minutes before the scheduled time."
+                  "important_note": "Carefully review the checklist of items to bring on the interview notice, and follow the arrival instructions on your appointment notice."
                 },
                 {
                   "id": "transfer",
@@ -4250,7 +4249,7 @@
                   "evidence_examples": [
                     "No action is required on your part.",
                     "Your receipt number remains unchanged.",
-                    "Future correspondence will come from the new service center."
+                    "Follow the transfer notice and continue monitoring your case through USCIS."
                   ],
                   "important_note": "A case transfer does not mean anything is wrong with your petition. It is routine workload management by USCIS."
                 },
@@ -4261,7 +4260,7 @@
                   "evidence_examples": [
                     "Check the specific rejection reason printed on the notice.",
                     "Submit corrected fee payment or missing signature promptly.",
-                    "Ensure payment instrument (check, credit card authorization Form G-1450) is valid and funded."
+                    "Pay with a valid electronic method: Form G-1450 (credit or debit card) or Form G-1650 (ACH from a U.S. bank account). If you cannot pay electronically, Form G-1651 requests an exemption from the electronic payment requirement; it is not a fee waiver."
                   ],
                   "important_note": "Pay close attention to any refiling instructions and deadline dates provided on the notice."
                 }
@@ -4374,7 +4373,7 @@
               {
                 "label": "Stage reached",
                 "value": "USCIS complete",
-                "sub": "NVC should be next"
+                "sub": "Next for consular cases: NVC"
               },
               {
                 "label": "What to save",
@@ -5036,7 +5035,7 @@
                 "ss_label": "Certification",
                 "ss_headline": "Sign and Submit",
                 "ss_desc": "Certify accuracy of your application before final submission.",
-                "note": "DS-260 submission is final. Ensure all dates, parent names, and passport details match your I-130 and NADRA birth records exactly. Any post-submission correction requires contacting NVC or the Embassy.",
+                "note": "DS-260 submission is final. Ensure all dates, parent names, and passport details match your I-130, the child's birth certificate and NADRA records exactly. Any post-submission correction requires contacting NVC or the Embassy.",
                 "media": {
                   "type": "img",
                   "src": "/assets/images/ir1-journey/c2_step3/06-sign-and-submit.png"
@@ -5084,7 +5083,7 @@
           "actions": [
             "Review the NVC required civil document checklist for the IR-2 child category",
             "Obtain child's valid passport biographic page and 2x2 visa photographs",
-            "Obtain child's Union Council birth registration and NADRA Computerized Birth Certificate",
+            "Obtain the child's computerized Birth Registration Certificate from the Union Council or local authority",
             "Obtain NADRA Child Registration Certificate (CRC / B-Form) or Family Registration Certificate (FRC)",
             "Obtain Police Character Certificate if child is age 16 or older (children under 16 are exempt)",
             "Gather parentage evidence (parents' Nikah Nama/MRC, legitimation, stepparent records, or adoption decree)",
@@ -5132,7 +5131,7 @@
                       "id": "child-birth",
                       "icon": "birth",
                       "title": "Child Beneficiary Birth Certificate",
-                      "sub": "Official Union Council registration and NADRA Computerized Birth Certificate",
+                      "sub": "Computerized Birth Registration Certificate from the Union Council, Municipal Corporation, CDA or Cantonment Board",
                       "tags": ["bene", "govt"],
                       "external_href": "/guides/birth-certificate-guide",
                       "status": "not-started",
@@ -5140,7 +5139,7 @@
                       "sections": [
                         {
                           "t": "What to provide",
-                          "c": "<p>Submit both the official local Union Council birth registration (in Urdu with certified English translation) and the NADRA Computerized Birth Certificate. The certificate must clearly list the child's full name, exact date and place of birth, and the full names of both biological parents.</p>"
+                          "c": "<p>Submit the child's computerized Birth Registration Certificate from the local Union Council, Municipal Corporation, CDA or Cantonment Board, with a certified English translation if it is not in English. A NADRA CRC (B-Form) or FRC supports it but does not replace it. The certificate must clearly list the child's full name, exact date and place of birth, and the full names of both biological parents.</p>"
                         },
                         {
                           "t": "Late registration",
@@ -5254,7 +5253,7 @@
                     {
                       "id": "parents-marriage",
                       "icon": "marriage",
-                      "title": "Parents' Marriage Certificate (Nikah Nama & NADRA MRC)",
+                      "title": "Parents' Marriage Certificate (Nikah Nama & MRC)",
                       "sub": "Required if child was born to married parents or if father is petitioning",
                       "tags": ["pet", "bene", "govt"],
                       "external_href": "/guides/marriage-certificate-guide",
@@ -5267,7 +5266,7 @@
                         },
                         {
                           "t": "Pakistan format",
-                          "c": "<p>Submit both the original Urdu Nikah Nama with certified English translation and the NADRA Computerized Marriage Registration Certificate (MRC).</p>"
+                          "c": "<p>Submit the Nikah Nama with a certified English translation and the computerized Marriage Registration Certificate (MRC). For a Muslim marriage, the MRC usually comes from the local Union Council, Municipal Corporation, CDA or Cantonment Board; for a non-Muslim marriage, the issuing authority depends on the religion and the local registration process.</p>"
                         }
                       ]
                     },
@@ -5588,7 +5587,7 @@
                 "label": "Step 6 of 13, Upload all required documents",
                 "heading": "Complete the full civil document set",
                 "screenTitle": "Complete the full civil document set",
-                "instruction": "Upload every document listed as required for the child beneficiary in CEAC. The core IR-2 set includes the child's passport biographic page, birth certificate (Union Council + NADRA Computerized), NADRA CRC / B-Form, 2x2 photos, and police certificate (if 16+; exempt if under 16). Add parents' marriage certificate, stepparent records, adoption decree, or custody/consent NOC where applicable.",
+                "instruction": "Upload every document listed as required for the child beneficiary in CEAC. The core IR-2 set includes the child's passport biographic page, computerized birth certificate (Union Council or local authority), NADRA CRC / B-Form, 2x2 photos, and police certificate (if 16+; exempt if under 16). Add parents' marriage certificate, stepparent records, adoption decree, or custody/consent NOC where applicable.",
                 "url": "ceac.state.gov",
                 "ss_label": "Complete Set",
                 "ss_headline": "All Documents Uploaded",
@@ -5639,7 +5638,7 @@
                 "label": "Step 9 of 13, Document rejected? Review and correct",
                 "heading": "Review rejection reasons and correct issues",
                 "screenTitle": "Review rejection reasons and correct issues",
-                "instruction": "If NVC marks a document as 'Rejected' or 'Invalid Doc', click the Response Note in CEAC. Common reasons include: missing NADRA computerized version, missing English translation, illegible or cut-off scans, wrong upload category, or missing custody/NOC consent from non-accompanying parent.",
+                "instruction": "If NVC marks a document as 'Rejected' or 'Invalid Doc', click the Response Note in CEAC. Common reasons include: a birth or marriage certificate that is not the computerized version, missing English translation, illegible or cut-off scans, wrong upload category, or missing custody/NOC consent from non-accompanying parent.",
                 "url": "ceac.state.gov",
                 "ss_label": "Rejection Notice",
                 "ss_headline": "Document Rejected",
@@ -5990,7 +5989,7 @@
             ],
             "scenarios": {
               "ina-320-exempt": {
-                "label": "Child Citizenship Act Exemption (Form I-864W — Under 18 Biological/Adopted Child)",
+                "label": "Child Citizenship Act Exemption (Form I-864W, Under 18 Biological/Adopted Child)",
                 "sponsors": ["Child Beneficiary (Exemption)"],
                 "householdMembers": [],
                 "jointSponsors": [],
@@ -5999,7 +5998,7 @@
                 "taxEvidenceLabel": "Exempt from IRS tax filing evidence under INA Section 320"
               },
               "pet-only": {
-                "label": "Petitioner only (Form I-864 — Stepchild or Adult Child 18-20, qualifies alone)",
+                "label": "Petitioner only (Form I-864, Stepchild or Adult Child 18-20, qualifies alone)",
                 "sponsors": ["Petitioner"],
                 "householdMembers": [],
                 "jointSponsors": [],
@@ -6882,7 +6881,7 @@
               "features": [
                 "Verify every document is assigned to the correct child beneficiary (especially for siblings processed together)",
                 "Confirm the correct sponsorship package: Form I-864W (exemption) vs Form I-864 (with IRS transcripts)",
-                "Confirm child's NADRA Computerized Birth Certificate and CRC / B-Form are uploaded",
+                "Confirm the child's computerized birth certificate and CRC / B-Form are uploaded",
                 "Check police certificate inclusion for youths 16+ (or verified exemption for under 16)",
                 "Confirm custody decree or non-accompanying parent notarized NOC consent letter is uploaded (under 18)",
                 "Check readability, completeness, and certified English translation pairing for all Urdu records",
@@ -6959,10 +6958,10 @@
               "title": "What NVC is reviewing for the IR-2 child case",
               "items": [
                 "Form DS-260, child's immigrant visa application accuracy and parental assistance disclosure",
-                "Civil documents: child's passport, Union Council birth registration, NADRA Computerized Birth Certificate, and NADRA CRC / B-Form or FRC",
+                "Civil documents: child's passport, computerized Birth Registration Certificate (Union Council or local authority), and NADRA CRC / B-Form or FRC",
                 "Police Character Certificate: verified present if child is 16+, or verified exempt if child is under 16",
                 "Custody and consent records: family court custody decree or non-accompanying biological parent notarized NOC consent letter (for minors under 18)",
-                "Sponsorship package: Form I-864W with U.S. citizen parent status and custody proof (INA § 320 exempt) OR Form I-864 with tax transcripts and joint sponsor records (if stepchild or age 18+)",
+                "Sponsorship package: Form I-864W with U.S. citizen parent status and custody proof (INA section 320 exempt) OR Form I-864 with tax transcripts and joint sponsor records (if stepchild or age 18+)",
                 "Certified English translations paired with all Urdu originals (Nikah Nama, Union Council certificates, court orders)",
                 "Overall package consistency across DS-260, I-130 petition, and civil documents"
               ]
@@ -7011,7 +7010,7 @@
                 "Resubmit promptly so the case can be re-reviewed by NVC without extended delays"
               ]
             },
-            "correctionsNote": "Note: Even a single corrected or replaced document returns your case to NVC's full review queue — the clock effectively resets. Take the time to ensure the replacement is 100% complete and legible before resubmitting.",
+            "correctionsNote": "Note: Even a single corrected or replaced document returns your case to NVC's full review queue, the clock effectively resets. Take the time to ensure the replacement is 100% complete and legible before resubmitting.",
             "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Consult a licensed immigration attorney for case-specific decisions."
           }
         },
@@ -7055,7 +7054,7 @@
             "Monitor registered email addresses for the official NVC Interview Appointment Letter (P4)",
             "Ensure child's Pakistani passport remains valid for at least 6 months beyond the anticipated interview date",
             "Track interview scheduling trends for Immediate Relatives (IR-2) at U.S. Embassy Islamabad",
-            "Keep original civil documents (NADRA birth cert, CRC/B-Form, consent NOC/custody decree) in an interview-ready folder",
+            "Keep original civil documents (birth certificate, CRC/B-Form, consent NOC/custody decree) in an interview-ready folder",
             "Review Chapter 3 preparation requirements (medical exam, polio booster, and biometric readiness)"
           ],
           "tool_data": {
@@ -7090,7 +7089,7 @@
             "whileYouWait": [
               "Watch registered email addresses for both the petitioner and the child/parent for the NVC Interview Letter (P4)",
               "Ensure the child's passport remains valid for at least six months beyond the expected interview window (renew early if expiring)",
-              "Assemble physical originals of all civil records: Union Council birth registration, NADRA Computerized Birth Certificate, CRC/B-Form, parents' marriage cert, and certified translations",
+              "Assemble physical originals of all civil records: computerized Birth Registration Certificate, CRC/B-Form, parents' marriage cert, and certified translations",
               "For minors under 18: verify that the legal custody decree or non-accompanying parent's notarized NOC consent affidavit is ready",
               "Review Chapter 3 steps (authorized panel physician medical exam, polio vaccination certificate, and interview attendance)"
             ],
@@ -7152,7 +7151,7 @@
             "Record interview date, time, and appointment details in Rahvana",
             "Immediately book the panel physician medical examination with an approved clinic in Pakistan",
             "Obtain official WHO/Government of Pakistan Polio Vaccination Certificate (mandatory for all travelers from Pakistan)",
-            "Assemble original civil documents folder (NADRA birth cert, CRC/B-Form, custody/NOC consent) for Embassy Islamabad",
+            "Assemble original civil documents folder (birth certificate, CRC/B-Form, custody/NOC consent) for Embassy Islamabad",
             "Confirm who will accompany the child to the interview (parent or authorized adult guardian for minors under 18)"
           ],
           "tool_data": {
@@ -7219,7 +7218,7 @@
                 {
                   "num": "2",
                   "label": "Original Civil Documents & Consent",
-                  "sub": "Assemble physical original civil records (Union Council birth cert, NADRA Computerized Birth Certificate, CRC/B-Form), custody decree or non-accompanying parent notarized NOC consent letter (if minor under 18), and certified translations"
+                  "sub": "Assemble physical original civil records (computerized Union Council birth certificate, CRC/B-Form), custody decree or non-accompanying parent notarized NOC consent letter (if minor under 18), and certified translations"
                 },
                 {
                   "num": "3",
@@ -8580,7 +8579,7 @@
           "where": "U.S. Embassy Islamabad",
           "timeline": "5-20 minutes interview",
           "actions": [
-            "Plan to arrive at the Embassy approximately 20–30 minutes before your scheduled appointment",
+            "Plan to arrive at the Embassy approximately 20-30 minutes before your scheduled appointment",
             "Pass security (NO electronics)",
             "Submit documents at window",
             "Fingerprints taken, if required for the applicant's age",
@@ -8628,7 +8627,7 @@
               {
                 "label": "Step 2 of 8",
                 "heading": "Arrive early, embassy entry is strict",
-                "instruction": "Arrive at the embassy at least 20–30 minutes before your scheduled appointment time. Embassy security queues can be slow. Latecomers may not be admitted for their scheduled slot.",
+                "instruction": "Arrive at the embassy at least 20-30 minutes before your scheduled appointment time. Embassy security queues can be slow. Latecomers may not be admitted for their scheduled slot.",
                 "vlabel": "Arrival Timing",
                 "note": "Do not carry electronics beyond what is permitted by the embassy. Check the specific embassy's guidelines on phones and devices before arrival.",
                 "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">Arrival guidance</div>\n      <div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">\n        Plan for 20-30 minutes of buffer time. Factor in travel to the Diplomatic Enclave, transport arrangements, and security screening at U.S. Embassy Islamabad.\n      </div>\n      <div class=\"hl-box\" style=\"margin-top:12px\">Earlier is always safer than exactly on time</div>\n    </div>"
@@ -8672,7 +8671,7 @@
               {
                 "label": "Step 8 of 8",
                 "heading": "Possible outcomes after the interview",
-                "instruction": "The officer will indicate the outcome at the window or shortly after. After the interview, your child's application may be approved, refused under applicable law (including 221(g) where applicable), or require further administrative processing before a final determination is completed. If you were given a 221(g) refusal letter, continue to Step 10 for Rahvana’s AP guidance.",
+                "instruction": "The officer will indicate the outcome at the window or shortly after. After the interview, your child's application may be approved, refused under applicable law (including 221(g) where applicable), or require further administrative processing before a final determination is completed. If you were given a 221(g) refusal letter, continue to Step 10 for Rahvana's AP guidance.",
                 "vlabel": "Interview Outcomes",
                 "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">Possible case outcomes</div>\n      <div class=\"mock-row\">Approved, visa issuance processing begins <span class=\"mock-badge-green\">Approved</span></div>\n      <div class=\"mock-row\">221(g) refusal, documents or administrative processing required <span class=\"mock-badge-amber\">Further action</span></div>\n      <div class=\"mock-row\">Refused under another legal ground, review the written notice <span class=\"mock-badge-blue\">Legal ground</span></div>\n    </div>"
               }
