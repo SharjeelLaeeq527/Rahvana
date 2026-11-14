@@ -110,9 +110,13 @@ export function ExplorerJourneyCard({
             {/* Start Journey — Explore page only */}
             {showStartJourney && (
               <Link
-                href={
-                  card.code === "IR-5" ? "/visa-category/ir5-journey" : "/visa-category/ir1-journey"
-                }
+              href={
+                card.code === "IR-5"
+                  ? "/visa-category/ir5-journey"
+                  : card.code === "IR-2"
+                    ? "/visa-category/ir2-journey"
+                    : "/visa-category/ir1-journey"
+              }
                 className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-[var(--rahvana-primary)] bg-white px-5 py-3 text-xs font-semibold text-[var(--rahvana-primary)] transition duration-200 hover:-translate-y-0.5 hover:bg-[var(--rahvana-primary-pale)]"
               >
                 Start Journey

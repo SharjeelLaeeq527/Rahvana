@@ -922,7 +922,7 @@ export function DocumentChecklistTool({ journeyId, journeyType }: DocumentCheckl
                       ) : (
                         <>
                           <Download size={13} />
-                          <span className="hidden md:block">Export</span>
+                          <span className="hidden md:block">Export Checklist</span>
                         </>
                       )}
                     </button>
