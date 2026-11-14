@@ -111,6 +111,7 @@ const dashboardBg = "/assets/images/dashboard.png";
 
 const visaCategoryNames: Record<string, string> = {
   "ir5-journey": "IR-5 Parent",
+  "ir2-journey": "IR-2 Child",
 };
 
 export function DashboardView({
@@ -1149,6 +1150,7 @@ export function DashboardView({
         {upgradeModalFeature && (
           <UpgradeModal
             feature={upgradeModalFeature}
+            currentTier={effectiveTier}
             onClose={() => setUpgradeModalFeature(null)}
           />
         )}

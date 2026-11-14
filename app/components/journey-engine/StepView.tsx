@@ -1374,6 +1374,7 @@ export const StepView: React.FC<StepViewProps> = ({
           {stepEntitlement.upgradeModalFeature && (
             <UpgradeModal
               feature={stepEntitlement.upgradeModalFeature}
+              currentTier={effectiveTier}
               onClose={stepEntitlement.closeUpgradeModal}
             />
           )}
@@ -4459,7 +4460,11 @@ export const StepView: React.FC<StepViewProps> = ({
       />
 
       {upgradeModalFeature && (
-        <UpgradeModal feature={upgradeModalFeature} onClose={() => setUpgradeModalFeature(null)} />
+        <UpgradeModal
+          feature={upgradeModalFeature}
+          currentTier={effectiveTier}
+          onClose={() => setUpgradeModalFeature(null)}
+        />
       )}
 
       {renderDocActionModal()}
