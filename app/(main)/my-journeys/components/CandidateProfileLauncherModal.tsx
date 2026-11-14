@@ -11,7 +11,7 @@ import { useToast } from "@/app/components/shared/ToastProvider";
 import type { CandidateProfile } from "@/types/candidate";
 import { JourneyPlanBadge } from "@/app/components/shared/JourneyPlanBadge";
 import { uploadJourneyImage } from "@/lib/journey/imageUploadHelper";
-import { getCandidateJourneyKey } from "@/lib/candidate/candidateSyncService";
+import { isSamePool, resolveCandidateJourneyKey } from "@/lib/candidate/candidateKeys";
 import type { JourneyProgressRecord } from "@/lib/journey/journeyProgressService";
 
 interface CandidateProfileLauncherModalProps {
@@ -102,12 +102,11 @@ export function CandidateProfileLauncherModal({
 
   // Filter or prioritize candidates for this specific category (e.g. IR-5)
   const allCandidates = propCandidates ?? candidateCtx.candidates ?? [];
+  // Candidates of this journey's category pool (IR-2 and CR-2 children together).
   const relevantCandidates = allCandidates.filter((c) => {
     if (!journeyCode) return true;
-    const cat = c.visaCategory?.toUpperCase() || "";
-    const target = journeyCode.toUpperCase().replace(/[^A-Z0-9]/g, "");
-    const cleanCat = cat.replace(/[^A-Z0-9]/g, "");
-    return cleanCat.includes(target) || target.includes(cleanCat) || cat === "";
+    if (!c.visaCategory) return true;
+    return isSamePool(c.visaCategory, journeyCode);
   });
 
   const displayCandidates = relevantCandidates.length > 0 ? relevantCandidates : allCandidates;
@@ -116,7 +115,7 @@ export function CandidateProfileLauncherModal({
     if (!journeys || journeys.length === 0) {
       return { percent: 0, completed: 0, total: 28 };
     }
-    const targetKey = getCandidateJourneyKey(journeyCode || "IR-5", candidateId)
+    const targetKey = resolveCandidateJourneyKey(allCandidates, journeyCode || "IR-5", candidateId)
       .toLowerCase()
       .replace(/[^a-z0-9]/g, "");
 

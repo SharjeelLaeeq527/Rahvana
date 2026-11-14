@@ -9,7 +9,7 @@
  * `<base>.json` naming so nothing outside IR-2 / CR-2 changes behavior.
  */
 
-import { getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
+import { getBaseVisaCategory } from "@/lib/candidate/visaCategory";
 import type { VisaCategory } from "@/lib/document-vault/types";
 
 const CONFIG_KEY_BY_CATEGORY: Record<string, string> = {

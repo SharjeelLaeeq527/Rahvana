@@ -72,7 +72,10 @@ export default function AffidavitSupportCalculatorPage() {
 
   const initialStep = useMemo(() => {
     if (typeof savedDraft?.stepIdx === "number") return savedDraft.stepIdx;
-    if (savedResult) return 10;
+    if (savedResult) {
+      const isExempt = savedResult.isChildCitizenshipActExempt || savedResult.isExempt;
+      return isExempt ? 3 : 10;
+    }
     return undefined;
   }, [savedDraft, savedResult]);
 
@@ -150,8 +153,7 @@ export default function AffidavitSupportCalculatorPage() {
 
           <h1 className="mb-2 text-3xl font-black text-[#0f1f38]">Affidavit of Support</h1>
           <p className="mb-6 text-sm leading-relaxed text-[#3a4f63]">
-            Determine your income sponsorship threshold and required USCIS forms (I-864, I-864A,
-            I-864EZ) under federal poverty guidelines.
+            Determine your income sponsorship threshold, Form I-864W Child Citizenship Act exemption, and required USCIS forms (I-864, I-864W, I-864A, I-864EZ) under federal poverty guidelines.
           </p>
 
           {/* Saved Draft Notification (Client-rendered after mount) */}
@@ -163,7 +165,20 @@ export default function AffidavitSupportCalculatorPage() {
                   In-Progress Draft Saved
                 </span>
                 <span className="text-[11px] font-semibold text-amber-700">
-                  Step {savedDraft.stepIdx + 1} of 11
+                  {(() => {
+                    const draftIsExempt =
+                      savedDraft.data?.isChildCitizenshipActExempt ||
+                      (savedDraft.data?.beneficiaryRelationship === "child" &&
+                        savedDraft.data?.sponsorStatus === "citizen" &&
+                        savedDraft.data?.childAgeBand === "under_18" &&
+                        savedDraft.data?.childRelationshipType !== "stepchild" &&
+                        savedDraft.data?.childLivesInUSCitizenCustody === true);
+                    const total = draftIsExempt ? 4 : 11;
+                    const stepNum = draftIsExempt
+                      ? Math.min(savedDraft.stepIdx + 1, 4)
+                      : savedDraft.stepIdx + 1;
+                    return `Step ${stepNum} of ${total}`;
+                  })()}
                 </span>
               </div>
               <p className="text-xs text-slate-600">
@@ -180,16 +195,35 @@ export default function AffidavitSupportCalculatorPage() {
                   Last Saved Calculation
                 </span>
                 <span
-                  className={`inline-flex items-center gap-1 text-xs font-bold ${savedResult.isEligible ? "text-teal-700" : "text-rose-600"}`}
+                  className={`inline-flex items-center gap-1 text-xs font-bold ${
+                    savedResult.isChildCitizenshipActExempt || savedResult.isExempt
+                      ? "text-teal-700"
+                      : savedResult.isEligible
+                      ? "text-teal-700"
+                      : "text-rose-600"
+                  }`}
                 >
                   <CheckCircle2 className="h-3.5 w-3.5" />
-                  {savedResult.isEligible ? "Eligible" : "Requires Joint Sponsor / Assets"}
+                  {savedResult.isChildCitizenshipActExempt || savedResult.isExempt
+                    ? "Exempt (Form I-864W)"
+                    : savedResult.isEligible
+                    ? "Eligible"
+                    : "Requires Joint Sponsor / Assets"}
                 </span>
               </div>
               <p className="text-xs text-slate-600">
-                Household Size: <strong>{savedResult.householdSize}</strong> · Required:{" "}
-                <strong>${(savedResult.requiredIncome ?? 0).toLocaleString()}</strong> · Total:{" "}
-                <strong>${(savedResult.totalIncome ?? 0).toLocaleString()}</strong>
+                {savedResult.isChildCitizenshipActExempt ? (
+                  <span>
+                    Exempt under <strong>INA § 320 (Child Citizenship Act)</strong> · Form:{" "}
+                    <strong>Form I-864W</strong>
+                  </span>
+                ) : (
+                  <span>
+                    Household Size: <strong>{savedResult.householdSize}</strong> · Required:{" "}
+                    <strong>${(savedResult.requiredIncome ?? 0).toLocaleString()}</strong> · Total:{" "}
+                    <strong>${(savedResult.totalIncome ?? 0).toLocaleString()}</strong>
+                  </span>
+                )}
               </p>
             </div>
           )}

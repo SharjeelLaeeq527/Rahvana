@@ -56,6 +56,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 0.9,
     },
+    {
+      url: `${SITE_URL}/cspa-age-checker`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
 
     // ── Per-visa journey pages ─────────────────────────────────────────────────
     // These are the most valuable long-tail SEO targets ("IR-1 visa steps", etc.)

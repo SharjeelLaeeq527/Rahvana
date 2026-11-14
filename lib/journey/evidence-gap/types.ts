@@ -416,3 +416,13 @@ const IR5_QUESTION_IDS = new Set<string>([
 export const IR5_EVIDENCE_QUESTIONNAIRE: EvidenceQuestion[] = EVIDENCE_QUESTIONNAIRE.filter((q) =>
   IR5_QUESTION_IDS.has(q.id)
 );
+
+// IR-2 (child) questionnaire: aligns with IR2_EVIDENCE_REQUIREMENTS (IDENTITY + FAMILY_INTEGRATION).
+// Filing-stage bond questions only; financial and consular documents are gathered at later stages.
+const IR2_QUESTION_IDS = new Set<string>([
+  "has_family_photos",
+]);
+
+export const IR2_EVIDENCE_QUESTIONNAIRE: EvidenceQuestion[] = EVIDENCE_QUESTIONNAIRE.filter((q) =>
+  IR2_QUESTION_IDS.has(q.id)
+);

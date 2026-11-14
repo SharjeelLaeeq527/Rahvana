@@ -55,6 +55,20 @@ interface RateLimitBucket {
   resetAt: number;
 }
 
+interface StagingTotpLockoutBucket {
+  failedAttempts: number;
+  lockedUntil: number | null;
+  lastAttemptAt: number;
+}
+
+export interface StagingTotpLockoutResult {
+  allowed: boolean;
+  failedAttempts: number;
+  remainingAttempts: number;
+  retryAfterSeconds: number;
+  locked: boolean;
+}
+
 interface AccountLockoutBucket {
   failedAttempts: number;
   lockedUntil: number | null;
@@ -98,6 +112,11 @@ const rateLimitStore = new Map<string, RateLimitBucket>();
 // `${action}:${normalizedEmail}`
 const accountLockoutStore = new Map<string, AccountLockoutBucket>();
 
+// Staging TOTP lockout store.
+// Tracks failed attempts for staging authenticator access.
+// Keys: `staging-ip:${ip}`, `staging-user:${user}`, `staging-pair:${ip}:${user}`
+const stagingTotpLockoutStore = new Map<string, StagingTotpLockoutBucket>();
+
 // Cleanup
 
 const CLEANUP_INTERVAL_MS = 5 * 60 * 1000;
@@ -134,6 +153,15 @@ function cleanupExpired() {
 
     if (lockExpired && inactive) {
       accountLockoutStore.delete(key);
+    }
+  }
+
+  // Clean staging TOTP lockout buckets
+  for (const [key, bucket] of stagingTotpLockoutStore.entries()) {
+    const lockExpired = bucket.lockedUntil === null || now > bucket.lockedUntil;
+    const inactive = now - bucket.lastAttemptAt > ACCOUNT_STATE_RETENTION_MS;
+    if (lockExpired && inactive) {
+      stagingTotpLockoutStore.delete(key);
     }
   }
 }
@@ -502,6 +530,155 @@ export function rateLimitResponse(result: RateLimitResult): NextResponse {
  *
  * Generic responses reduce the information available to attackers.
  */
+// ==========================================
+// Staging Authenticator (TOTP) Lockout
+// 8 failed attempts -> 15 minutes lockout
+// ==========================================
+
+export const STAGING_TOTP_MAX_ATTEMPTS = 8;
+export const STAGING_TOTP_LOCKOUT_MS = 15 * 60 * 1000; // 15 minutes
+
+function getStagingTotpKeys(request: NextRequest, username?: string): string[] {
+  const ip = getClientIp(request);
+  const keys = [`staging-ip:${ip}`];
+  if (username) {
+    const cleanUser = username.trim().toLowerCase();
+    if (cleanUser) {
+      keys.push(`staging-user:${cleanUser}`);
+      keys.push(`staging-pair:${ip}:${cleanUser}`);
+    }
+  }
+  return keys;
+}
+
+/**
+ * Check whether staging access is currently locked for this request/user.
+ * Does NOT increment any counters.
+ */
+export function checkStagingTotpLockout(
+  request: NextRequest,
+  username?: string
+): StagingTotpLockoutResult {
+  cleanupExpired();
+  const now = Date.now();
+  const keys = getStagingTotpKeys(request, username);
+
+  for (const key of keys) {
+    const bucket = stagingTotpLockoutStore.get(key);
+    if (!bucket) continue;
+
+    // Check if currently locked
+    if (bucket.lockedUntil !== null) {
+      if (now < bucket.lockedUntil) {
+        const retryAfterSeconds = Math.max(1, Math.ceil((bucket.lockedUntil - now) / 1000));
+        return {
+          allowed: false,
+          failedAttempts: bucket.failedAttempts,
+          remainingAttempts: 0,
+          retryAfterSeconds,
+          locked: true,
+        };
+      } else {
+        // Lock expired! Reset bucket
+        bucket.lockedUntil = null;
+        bucket.failedAttempts = 0;
+      }
+    }
+  }
+
+  // Find max failed attempts among keys
+  let maxFailures = 0;
+  for (const key of keys) {
+    const bucket = stagingTotpLockoutStore.get(key);
+    if (bucket && bucket.failedAttempts > maxFailures) {
+      maxFailures = bucket.failedAttempts;
+    }
+  }
+
+  return {
+    allowed: true,
+    failedAttempts: maxFailures,
+    remainingAttempts: Math.max(0, STAGING_TOTP_MAX_ATTEMPTS - maxFailures),
+    retryAfterSeconds: 0,
+    locked: false,
+  };
+}
+
+/**
+ * Record a failed staging TOTP attempt.
+ * Increments failed attempts counter. If count reaches STAGING_TOTP_MAX_ATTEMPTS (8),
+ * locks the client/user for STAGING_TOTP_LOCKOUT_MS (15 minutes).
+ */
+export function recordFailedStagingTotpAttempt(
+  request: NextRequest,
+  username?: string
+): StagingTotpLockoutResult {
+  cleanupExpired();
+  const now = Date.now();
+  const keys = getStagingTotpKeys(request, username);
+
+  let worstResult: StagingTotpLockoutResult = {
+    allowed: true,
+    failedAttempts: 1,
+    remainingAttempts: STAGING_TOTP_MAX_ATTEMPTS - 1,
+    retryAfterSeconds: 0,
+    locked: false,
+  };
+
+  for (const key of keys) {
+    let bucket = stagingTotpLockoutStore.get(key);
+    if (!bucket) {
+      bucket = {
+        failedAttempts: 0,
+        lockedUntil: null,
+        lastAttemptAt: now,
+      };
+      stagingTotpLockoutStore.set(key, bucket);
+    }
+
+    bucket.failedAttempts++;
+    bucket.lastAttemptAt = now;
+
+    if (bucket.failedAttempts >= STAGING_TOTP_MAX_ATTEMPTS) {
+      bucket.lockedUntil = now + STAGING_TOTP_LOCKOUT_MS;
+      const retryAfterSeconds = Math.ceil(STAGING_TOTP_LOCKOUT_MS / 1000);
+      worstResult = {
+        allowed: false,
+        failedAttempts: bucket.failedAttempts,
+        remainingAttempts: 0,
+        retryAfterSeconds,
+        locked: true,
+      };
+    } else {
+      const remaining = Math.max(0, STAGING_TOTP_MAX_ATTEMPTS - bucket.failedAttempts);
+      if (!worstResult.locked && remaining < worstResult.remainingAttempts) {
+        worstResult = {
+          allowed: true,
+          failedAttempts: bucket.failedAttempts,
+          remainingAttempts: remaining,
+          retryAfterSeconds: 0,
+          locked: false,
+        };
+      }
+    }
+  }
+
+  return worstResult;
+}
+
+/**
+ * Reset failed staging TOTP attempts after a successful verification.
+ */
+export function resetStagingTotpAttempts(
+  request: NextRequest,
+  username?: string
+): void {
+  const keys = getStagingTotpKeys(request, username);
+  for (const key of keys) {
+    stagingTotpLockoutStore.delete(key);
+  }
+}
+
 export function accountLockoutResponse(result: LoginAttemptResult): NextResponse {
   const minutes = Math.ceil(result.retryAfterSeconds / 60);
 

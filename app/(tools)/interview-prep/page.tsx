@@ -1901,23 +1901,14 @@ export default function InterviewPreparation({
               createdSessionRef.current = null;
               const sessionCandId = session.candidate_id || "candidate-1";
 
-              // Sync candidate to CandidateContext if not already present
+              // A standalone session never adds a beneficiary to the journey roster: roster
+              // ids and category slots are assigned by the server (/api/candidate/create).
+              // Switch only when the session's candidate already exists on the roster.
               if (
-                candidateCtx?.addCandidate &&
-                !candidateCtx.candidates.some((c) => c.id === sessionCandId)
+                candidateCtx?.setActiveCandidateId &&
+                candidateCtx.candidates.some((c) => c.id === sessionCandId)
               ) {
-                try {
-                  candidateCtx.addCandidate({
-                    relation: "Other",
-                    fullName: `Candidate ${sessionCandId.replace(/[^0-9]/g, "")}`,
-                    visaCategory: selectedCategory.displayName || "IR-5",
-                  });
-                } catch (err) {
-                  console.warn("Could not sync candidate to context:", err);
-                }
-              }
-              if (candidateCtx?.setActiveCandidateId) {
-                candidateCtx.setActiveCandidateId(sessionCandId);
+                candidateCtx.setActiveCandidateId(sessionCandId, { silent: true });
               }
 
               setSessionId(session.id);

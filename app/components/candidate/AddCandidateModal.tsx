@@ -56,6 +56,7 @@ export function AddCandidateModal({
   const [relation, setRelation] = useState<CandidateRelation>(defaultRelation);
   const [fullName, setFullName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const prevIsOpenRef = React.useRef(isOpen);
   useEffect(() => {
@@ -64,47 +65,54 @@ export function AddCandidateModal({
       setRelation(defaultRelation);
       setFullName("");
       setIsSubmitting(false);
+      setSubmitError(null);
     }
     prevIsOpenRef.current = isOpen;
   }, [isOpen, defaultRelation]);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // A second submit while the first is in flight would create two candidates.
+    if (isSubmitting) return;
     // Guard against a second spouse (belt-and-suspenders; Spouse is hidden when one exists,
-    // and CandidateContext.addCandidate throws too).
+    // and CandidateContext.addCandidate and the server refuse it too).
     if (relation === "Spouse" && hasSpouse) {
       return;
     }
     setIsSubmitting(true);
+    setSubmitError(null);
 
     try {
       const targetVisa = getVisaCategoryForRelation(relation, visaCategory);
-      addCandidate({
+      // The server assigns the id, category slot, label and tier. Nothing changes locally
+      // (no switch, no navigation) until it confirms.
+      const created = await addCandidate({
         relation,
         fullName: fullName.trim() || undefined,
         visaCategory: targetVisa,
-        // Every candidate/parent is a real beneficiary and is treated equally.
-        // We do NOT flag added parents as "preview" based on creation order.
-        isPreview: false,
-        tier: "free",
       });
       onClose();
 
-      // Navigate to the new candidate's journey when it belongs to a different category than
-      // the page we are on (e.g. adding a Spouse/IR-1 while viewing an IR-5 journey). The URL
-      // is authoritative for the category (PROJECT_KNOWLEDGE 4.7), so we move the URL here on
-      // an explicit add instead of letting the journey page auto-redirect off the candidate.
-      const targetRoute = getJourneyHrefByType(targetVisa);
-      if (targetRoute && typeof window !== "undefined" && !window.location.pathname.includes(targetRoute)) {
-        router.push(targetRoute);
+      // Open the new candidate's journey. The URL decides the category (PROJECT_KNOWLEDGE
+      // 4.7) and `candidateId` selects the new candidate inside it.
+      const targetRoute = getJourneyHrefByType(created.visaCategory || targetVisa);
+      if (targetRoute) {
+        router.push(`${targetRoute}?candidateId=${encodeURIComponent(created.id)}`);
       }
     } catch (err) {
       console.error("[AddCandidateModal] Error adding candidate:", err);
+      setSubmitError(
+        err instanceof Error && err.message ? err.message : "Could not add the candidate."
+      );
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleClose = () => {
+    if (!isSubmitting) onClose();
   };
 
   const allRelationOptions: {
@@ -138,7 +146,7 @@ export function AddCandidateModal({
           className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
           onClick={(e) => {
             e.stopPropagation();
-            onClose();
+            handleClose();
           }}
           aria-hidden="true"
         />
@@ -168,7 +176,8 @@ export function AddCandidateModal({
               </div>
             </div>
             <button
-              onClick={onClose}
+              onClick={handleClose}
+              disabled={isSubmitting}
               className="rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
               aria-label="Close modal"
             >
@@ -259,6 +268,15 @@ export function AddCandidateModal({
                 />
               </div>
 
+              {submitError && (
+                <p
+                  role="alert"
+                  className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[11px] text-rose-700 sm:text-xs"
+                >
+                  {submitError}
+                </p>
+              )}
+
               {/* Feature highlights */}
               <div className="space-y-1.5 pt-0.5">
                 <div className="flex items-center gap-2 text-[11px] text-slate-600 sm:text-xs">
@@ -276,7 +294,8 @@ export function AddCandidateModal({
             <div className="flex shrink-0 items-center justify-end gap-2.5 border-t border-slate-100 bg-slate-50/90 px-5 py-3 sm:gap-3 sm:px-6 sm:py-3.5">
               <button
                 type="button"
-                onClick={onClose}
+                onClick={handleClose}
+                disabled={isSubmitting}
                 className="rounded-lg px-3.5 py-2 text-xs font-semibold text-slate-600 transition-colors hover:bg-slate-200/70 hover:text-slate-800 sm:px-4"
               >
                 Cancel
@@ -284,9 +303,10 @@ export function AddCandidateModal({
               <button
                 type="submit"
                 disabled={isSubmitting}
+                aria-busy={isSubmitting}
                 className="rounded-lg bg-[#0d7377] px-4 py-2 text-xs font-bold text-white shadow-sm shadow-[#0d7377]/20 transition-all hover:bg-[#0a5c5f] disabled:opacity-50 sm:px-5 sm:py-2.5"
               >
-                {isSubmitting ? "Creating..." : "Create Candidate Profile"}
+                {isSubmitting ? "Adding..." : "Create Candidate Profile"}
               </button>
             </div>
           </form>

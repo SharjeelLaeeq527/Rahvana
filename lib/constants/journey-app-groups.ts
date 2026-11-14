@@ -1,5 +1,6 @@
 import { AppGroup } from "@/types/app-groups";
 import { getGuideById, isGuideRelevantToVisaCategory } from "@/lib/guides/guideRegistry";
+import { getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
 
 export const JOURNEY_APP_GROUPS: AppGroup[] = [
   {
@@ -33,6 +34,16 @@ export const JOURNEY_APP_GROUPS: AppGroup[] = [
         iconName: "Calculator",
         category: "tools",
         componentKey: "sponsorship_calculator",
+      },
+      {
+        // Free (TOOL_FEATURE_MAP null). Child categories only: CSPA age-out applies to a child.
+        id: "cspa-age-checker",
+        label: "CSPA Age-Out Checker",
+        description: "Check if your child can still apply as a child after turning 21.",
+        iconName: "CalendarCheck",
+        category: "tools",
+        componentKey: "cspa_checker",
+        visaCategories: ["IR-2", "CR-2"],
       },
       {
         id: "dq-status-check",
@@ -216,6 +227,7 @@ export const TOOL_FEATURE_MAP: Record<string, string | null> = {
   interview_prep: "basic_interview_prep",
   sponsorship_calculator: "sponsorship_calc",
   dq_status_check: "dq_status_check",
+  cspa_checker: null,
   passport_photo: "photo_booth",
   pdf_toolkit: "pdf_toolkit",
   snap_and_sign: "snap_sign",
@@ -305,10 +317,19 @@ export function getAppGroupItemLabel(componentKey: string): string {
  * @param visaCategory The active visa category (e.g. "IR-5", "IR-1", "CR-1")
  */
 export function getJourneyAppGroups(visaCategory?: string | null): AppGroup[] {
+  // No category = the full, unfiltered catalog (existing contract, tested in
+  // __tests__/guides/visa-category-mapping.test.ts). Inside a journey the category is known.
   if (!visaCategory) return JOURNEY_APP_GROUPS;
 
+  // Category-scoped items (visaCategories) show only on a matching journey.
+  const base = getBaseVisaCategory(visaCategory);
+  const scoped = (group: AppGroup): AppGroup => ({
+    ...group,
+    items: group.items.filter((item) => !item.visaCategories || item.visaCategories.includes(base)),
+  });
+
   return JOURNEY_APP_GROUPS.map((group) => {
-    if (group.id !== "guides") return group;
+    if (group.id !== "guides") return scoped(group);
 
     const filteredItems = group.items.filter((item) => {
       const guideId = COMPONENT_KEY_TO_GUIDE_ID[item.componentKey];
@@ -318,9 +339,9 @@ export function getJourneyAppGroups(visaCategory?: string | null): AppGroup[] {
       return isGuideRelevantToVisaCategory(guideMeta, visaCategory);
     });
 
-    return {
+    return scoped({
       ...group,
       items: filteredItems,
-    };
+    });
   });
 }

@@ -41,8 +41,17 @@ import { useWallet } from "@/app/context/WalletContext";
 import {
   isMultiCandidateCategory,
   getBaseVisaCategory,
-  getCandidateJourneyKey,
 } from "@/lib/candidate/candidateSyncService";
+import {
+  canonicalJourneyKey,
+  candidateIdNumber,
+  getCandidateSlot,
+  getJourneyKeyForCandidate,
+  isCategoryPrimary,
+  journeyKeyForSlot,
+  parseJourneyKey,
+  poolMembers,
+} from "@/lib/candidate/candidateKeys";
 import {
   calculateSubscriptionCycle,
   calculateUpgradeSchedule,
@@ -755,85 +764,71 @@ function PricingContent() {
     visa && (visa.toUpperCase().includes("IR-5") || visa.toUpperCase().includes("IR5"))
   );
   const canonicalVisa = useMemo(() => getBaseVisaCategory(visa), [visa]);
+  // Base journey key of the selected category ("ir5" / "ir2" / "ir1"); an unknown or
+  // empty category keeps the historical IR-1 default.
+  const selectedBaseKey = useMemo(() => {
+    const key = journeyKeyForSlot(isIr5 ? "IR-5" : canonicalVisa, 1);
+    return key && key !== "unknown" ? key : "ir1";
+  }, [isIr5, canonicalVisa]);
 
   const categoryCandidates = useMemo(() => {
     if (!isMultiCandidate && !isIr5) return [];
 
-    // 1. Base candidates from CandidateContext
-    const baseCandidates = (candidates || []).filter((c) => {
-      const cVisa = getBaseVisaCategory(c.visaCategory);
-      return (
-        cVisa === canonicalVisa ||
-        c.relation === "Mother" ||
-        c.relation === "Father" ||
-        c.relation === "Stepparent" ||
-        c.relation === "AdoptiveParent" ||
-        (!c.visaCategory && c.relation !== "Spouse")
-      );
+    // Candidates of THIS category's pool (IR-2 and CR-2 children together), each joined
+    // to its own journey row by its category slot. An IR-2 child is never mistaken for an
+    // IR-5 parent, whatever its account-wide id.
+    const roster = (candidates || []) as any[];
+    const members = poolMembers(roster, canonicalVisa);
+    const poolBase = parseJourneyKey(journeyKeyForSlot(canonicalVisa, 1)).base;
+    const poolRows = (userJourneys || []).filter(
+      (j) => parseJourneyKey(String(j.journey_type || "")).base === poolBase
+    );
+
+    const rowFor = (key: string) => {
+      const rows = poolRows.filter((j) => canonicalJourneyKey(String(j.journey_type || "")) === key);
+      return rows.find((j) => (j.subscription_tier || "free") !== "free") || rows[0];
+    };
+
+    const merged = members.map((c) => {
+      const row = rowFor(getJourneyKeyForCandidate(c));
+      const rowTier = row?.subscription_tier || "free";
+      return {
+        ...c,
+        tier: rowTier !== "free" ? rowTier : c.tier || "free",
+        createdAt: c.createdAt || row?.created_at,
+      };
     });
 
-    // 2. Discover IR-5 candidate journeys from DB journeys
-    const ir5DbJourneys = (userJourneys || []).filter((j) => {
-      const raw = String(j.journey_type || "").toLowerCase();
-      return (
-        raw.includes("ir5") || raw.includes("ir-5") || (raw.startsWith("ir") && raw.includes("5"))
-      );
-    });
-
-    if (ir5DbJourneys.length === 0) {
-      return baseCandidates;
+    // Legacy rosters may miss a candidate whose journey exists (bought before the roster
+    // was saved). Show it under the id its key implied before category slots existed,
+    // but only when no roster candidate already uses that id.
+    const ownedKeys = new Set(merged.map((c) => getJourneyKeyForCandidate(c)));
+    for (const j of poolRows) {
+      const key = canonicalJourneyKey(String(j.journey_type || ""));
+      if (!key || ownedKeys.has(key)) continue;
+      const slot = parseJourneyKey(key).slot;
+      const legacyId = `candidate-${slot}`;
+      if (roster.some((c) => c.id === legacyId)) continue;
+      ownedKeys.add(key);
+      merged.push({
+        id: legacyId,
+        label: `Candidate ${slot}`,
+        relation: canonicalVisa === "IR-2" ? "Child" : "Other",
+        fullName: "",
+        visaCategory: canonicalVisa,
+        tier: j.subscription_tier || "free",
+        isPrimary: slot === 1,
+        isPreview: false,
+        colorTag: slot === 1 ? "purple" : "teal",
+        createdAt: j.created_at,
+      });
     }
 
-    // Merge DB journeys into candidate roster
-    const mergedMap = new Map<string, any>();
-
-    // Seed with baseCandidates
-    baseCandidates.forEach((c) => {
-      mergedMap.set(c.id.toLowerCase(), {
-        ...c,
-        visaCategory: "IR-5",
-      });
-    });
-
-    // Map each DB journey to a candidate profile
-    ir5DbJourneys.forEach((j) => {
-      const raw = String(j.journey_type || "").toLowerCase();
-      const candMatch = raw.match(/candidate[-_]?(\d+)/i);
-      const candNum = candMatch ? parseInt(candMatch[1], 10) : 1;
-      const candId = `candidate-${candNum}`;
-      const isPrimary = candNum === 1;
-      const tier = j.subscription_tier || "free";
-
-      const existing = mergedMap.get(candId.toLowerCase());
-      if (existing) {
-        mergedMap.set(candId.toLowerCase(), {
-          ...existing,
-          visaCategory: "IR-5",
-          isPrimary,
-          tier: tier !== "free" ? tier : existing.tier || "free",
-          createdAt: existing.createdAt || j.created_at,
-        });
-      } else {
-        mergedMap.set(candId.toLowerCase(), {
-          id: candId,
-          label: candNum === 1 ? "Candidate 1" : `Candidate ${candNum}`,
-          relation: "Other",
-          fullName: "",
-          visaCategory: "IR-5",
-          tier,
-          isPrimary,
-          isPreview: false,
-          colorTag: isPrimary ? "purple" : "teal",
-          createdAt: j.created_at,
-        });
-      }
-    });
-
-    return Array.from(mergedMap.values()).sort((a, b) => {
-      const aNum = parseInt(a.id.replace(/\D/g, "") || "1", 10);
-      const bNum = parseInt(b.id.replace(/\D/g, "") || "1", 10);
-      return aNum - bNum;
-    });
+    return merged.sort(
+      (a, b) =>
+        getCandidateSlot(a) - getCandidateSlot(b) ||
+        (candidateIdNumber(a.id) ?? 0) - (candidateIdNumber(b.id) ?? 0)
+    );
   }, [candidates, userJourneys, isMultiCandidate, isIr5, canonicalVisa]);
 
   const getCandidateDisplayName = useCallback(
@@ -855,17 +850,27 @@ function PricingContent() {
   );
 
   const getCandidateEffectiveTier = useCallback(
-    (c: { id: string; tier?: string; isPrimary?: boolean }) => {
+    (c: {
+      id: string;
+      tier?: string;
+      isPrimary?: boolean;
+      visaCategory?: string;
+      categorySlot?: number;
+    }) => {
       if (c.tier && c.tier !== "free") return c.tier.toLowerCase();
-      const jKey = getCandidateJourneyKey(canonicalVisa, c.id).toLowerCase();
+      const jKey = getJourneyKeyForCandidate({
+        ...c,
+        visaCategory: c.visaCategory || canonicalVisa,
+      }).toLowerCase();
       const cleanKey = jKey.replace(/[-_]/g, "");
       const altKey = jKey.includes("-") ? jKey.replace(/-/g, "_") : jKey.replace(/_/g, "-");
 
       const foundTier = journeyTiers[jKey] || journeyTiers[cleanKey] || journeyTiers[altKey];
       if (foundTier && foundTier !== "free") return foundTier.toLowerCase();
 
-      if (c.isPrimary && journeyTiers.ir5 && journeyTiers.ir5 !== "free")
-        return journeyTiers.ir5.toLowerCase();
+      const baseKey = journeyKeyForSlot(canonicalVisa, 1);
+      if (isCategoryPrimary(c) && journeyTiers[baseKey] && journeyTiers[baseKey] !== "free")
+        return journeyTiers[baseKey].toLowerCase();
       return "free";
     },
     [canonicalVisa, journeyTiers]
@@ -1077,16 +1082,13 @@ function PricingContent() {
     if (isUpgradingIr5 && activeUpgradeCandidate) {
       return getCandidateEffectiveTier(activeUpgradeCandidate);
     }
-    if (visa.toLowerCase().includes("5") || isIr5) {
-      return journeyTiers.ir5 ?? "free";
-    }
-    return journeyTiers.ir1 ?? "free";
+    // The selected category's base journey (IR-2 no longer falls back to IR-1's tier).
+    return journeyTiers[selectedBaseKey] ?? "free";
   }, [
     isUpgradingIr5,
     activeUpgradeCandidate,
     getCandidateEffectiveTier,
-    visa,
-    isIr5,
+    selectedBaseKey,
     journeyTiers,
   ]);
 
@@ -1120,22 +1122,21 @@ function PricingContent() {
       if (activeUpgradeCandidate.createdAt) {
         return activeUpgradeCandidate.createdAt;
       }
-      const candKey = getCandidateJourneyKey(
-        canonicalVisa,
-        activeUpgradeCandidate.id
-      ).toLowerCase();
+      const candKey = getJourneyKeyForCandidate({
+        ...activeUpgradeCandidate,
+        visaCategory: activeUpgradeCandidate.visaCategory || canonicalVisa,
+      }).toLowerCase();
       const cleanKey = candKey.replace(/[-_]/g, "");
       if (journeyStartDates[candKey]) return journeyStartDates[candKey];
       if (journeyStartDates[cleanKey]) return journeyStartDates[cleanKey];
     }
-    const catKey = visa.toLowerCase().includes("5") || isIr5 ? "ir5" : "ir1";
+    const catKey = selectedBaseKey;
     return journeyStartDates[catKey] || accountPlanPurchaseDate || null;
   }, [
     isUpgradingIr5,
     activeUpgradeCandidate,
     canonicalVisa,
-    visa,
-    isIr5,
+    selectedBaseKey,
     journeyStartDates,
     accountPlanPurchaseDate,
   ]);
@@ -1413,34 +1414,35 @@ function PricingContent() {
             datesMap[raw.replace("_", "-")] = journey.created_at;
           }
 
-          const isCandidateSpecific = /candidate[-_]?\d+/i.test(raw);
-          if (raw.includes("5") && !isCandidateSpecific) {
-            tiersMap["ir5"] = tier;
-            if (journey.created_at) datesMap["ir5"] = journey.created_at;
-          }
-          if (raw.includes("1") && !isCandidateSpecific) {
-            tiersMap["ir1"] = tier;
-            if (journey.created_at) datesMap["ir1"] = journey.created_at;
+          // Base entries ("ir5", "ir1", "ir2") come from each category's slot-1 journey,
+          // parsed by category (no "contains 5 / contains 1" guessing, which filed IR-2
+          // and F-1 rows under the wrong category).
+          const parsed = parseJourneyKey(raw);
+          const baseKey = parsed.key ? journeyKeyForSlot(parsed.base, 1) : "";
+          if (baseKey && parsed.slot === 1) {
+            tiersMap[baseKey] = tier;
+            if (journey.created_at) datesMap[baseKey] = journey.created_at;
           }
         });
 
         // Fallback for base keys if only candidate journeys exist
-        if (!tiersMap["ir5"]) {
-          const firstIr5Key = Object.keys(tiersMap).find(
-            (k) => k.includes("5") && tiersMap[k] !== "free"
-          );
-          if (firstIr5Key) {
-            tiersMap["ir5"] = tiersMap[firstIr5Key];
-            if (datesMap[firstIr5Key]) datesMap["ir5"] = datesMap[firstIr5Key];
+        journeys.forEach((journey: { journey_type?: string; subscription_tier?: string; created_at?: string }) => {
+          const parsed = parseJourneyKey(String(journey.journey_type || ""));
+          if (!parsed.key) return;
+          const baseKey = journeyKeyForSlot(parsed.base, 1);
+          const tier = journey.subscription_tier || "free";
+          if (!tiersMap[baseKey] && tier !== "free") {
+            tiersMap[baseKey] = tier;
+            if (journey.created_at) datesMap[baseKey] = journey.created_at;
           }
-        }
+        });
 
         setJourneyTiers(tiersMap);
         setJourneyStartDates(datesMap);
 
         // Auto-select IR-5 if user has active IR-5 journey and no active IR-1 or explicit URL parameter
         const hasActiveIr5InJourneys = Object.keys(tiersMap).some(
-          (k) => k.includes("5") && tiersMap[k] !== "free"
+          (k) => parseJourneyKey(k).base === "IR-5" && tiersMap[k] !== "free"
         );
         const hasActiveIr1InJourneys = Boolean(tiersMap.ir1 && tiersMap.ir1 !== "free");
         if (hasActiveIr5InJourneys && !hasActiveIr1InJourneys && typeof window !== "undefined") {

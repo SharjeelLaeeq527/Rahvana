@@ -1481,7 +1481,7 @@ const MISC_DOCS: DocumentDefinition[] = [
   {
     id: "relationship-evidence-backup",
     key: "RELATIONSHIP_EVIDENCE_BACKUP",
-    name: "IR-5 Relationship Evidence Backup Set",
+    name: "Relationship Evidence Backup Set",
     description: "Originals and supporting evidence proving the qualifying parent-child relationship",
     category: "MISC",
     applicableVisas: UNIVERSAL_VISAS,

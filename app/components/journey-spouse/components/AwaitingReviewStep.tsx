@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Search, Clock, Scale, BellRing, Save, ExternalLink } from "lucide-react";
+import { Search, Clock, Scale, BellRing, Save, ExternalLink, ClipboardList, AlertTriangle } from "lucide-react";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 
 interface AwaitingReviewStepProps {
@@ -192,7 +192,7 @@ export const AwaitingReviewStep: React.FC<AwaitingReviewStepProps> = ({ data }) 
         {/* Alert Card: Corrections */}
         <div className="bg-[#fef8e8] border-[1.5px] border-[#f0d98a] rounded-[16px] p-[18px_20px] mb-[16px] animate-in fade-in slide-in-from-top-2 duration-300 delay-[280ms]">
           <div className="flex items-center gap-[9px] mb-[10px]">
-            <span className="text-[18px]">📋</span>
+            <ClipboardList className="w-[18px] h-[18px] text-[#8a6200] shrink-0" />
             <h3 className="text-[14px] font-semibold text-[#8a6200]">
               {data.correctionsAlert.title}
             </h3>
@@ -213,7 +213,7 @@ export const AwaitingReviewStep: React.FC<AwaitingReviewStepProps> = ({ data }) 
         {/* Corrections Note */}
         {data.correctionsNote && (
           <div className="flex items-start gap-[9px] bg-[#fff8ed] border border-[#f5d78e] rounded-[12px] p-[12px_14px] mb-[12px] animate-in fade-in slide-in-from-top-2 duration-300 delay-[300ms]">
-            <span className="text-[15px] shrink-0">⚠️</span>
+            <AlertTriangle className="w-4 h-4 text-[#b45309] shrink-0 mt-0.5" />
             <p className="text-[12px] text-[#7a5200] leading-[1.6]">{data.correctionsNote}</p>
           </div>
         )}

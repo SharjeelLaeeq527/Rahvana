@@ -21,6 +21,15 @@ const JOURNEY_DATA_MAP: Record<string, any> = {
   "germany-student-journey": germanyData,
 };
 
+/** Journey URL slug -> data key (and category). Keep in sync with JourneyEnvironmentContext. */
+const JOURNEY_SLUG_TO_DATA_KEY: Record<string, string> = {
+  "ir1-journey": "ir-1",
+  "ir5-journey": "ir-5",
+  "ir2-journey": "ir-2",
+  f1: "f-1",
+  "germany-student": "germany-student-journey",
+};
+
 function resolveJourneyData(visaJourney: string): any | null {
   if (!visaJourney) return null;
   const norm = String(visaJourney).toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -93,26 +102,51 @@ import ScenarioSelectionModal from "./components/ScenarioSelectionModal";
 import VisaCategoryTooltip from "./components/VisaCategoryToolTip";
 import RoadmapLayoutSpouse from "@/app/components/journey-spouse/RoadmapLayoutSpouse";
 import RoadmapLayoutEngine from "@/app/components/journey-engine/RoadmapLayoutEngine";
-import { useCandidate } from "@/app/context/CandidateContext";
+import { useCandidate, readLastUsedByPool } from "@/app/context/CandidateContext";
+import { resolveJourneyCandidate } from "@/lib/candidate/journeyCandidateResolution";
 
 export default function IR1JourneyPage() {
   const { user } = useAuth();
   const userId = user?.id ?? null;
-  const { activeCandidate, setActiveCandidateId } = useCandidate();
+  const { activeCandidate, activeCandidateId, candidates, setActiveCandidateId, isRosterReady } =
+    useCandidate();
   const searchParams = useSearchParams();
   const candidateIdFromUrl = searchParams?.get("candidateId");
   const journeyDbIdFromUrl = searchParams?.get("journeyId");
-  const effectiveCandidateId = candidateIdFromUrl || activeCandidate?.id;
-
-  useEffect(() => {
-    if (candidateIdFromUrl && activeCandidate?.id !== candidateIdFromUrl) {
-      setActiveCandidateId(candidateIdFromUrl);
-    }
-  }, [candidateIdFromUrl, activeCandidate?.id, setActiveCandidateId]);
 
   const { t, language } = useLanguage();
   const params = useParams();
   const visaJourneyParam = (params?.["visa-journey"] as string) || "ir-1";
+
+  // ── Category <-> active candidate alignment ────────────────────────────────
+  // The URL decides the category. The candidate is resolved DURING RENDER from the
+  // roster (URL candidateId in this category -> active candidate in this category ->
+  // last used in this category -> the category's first candidate), so the first
+  // /api/journeys/initialize request already carries it: no load of another
+  // category's candidate first. Runs again on every route / search-param change, which
+  // covers direct links, back/forward and My Journeys. An empty category resolves to
+  // null: the base journey loads without a candidate and nothing is created.
+  // The roster is authoritative only after the profile loaded and the saved active
+  // candidate was restored; until then the wizard waits instead of fetching with a
+  // placeholder candidate.
+  const rosterReady = !userId || isRosterReady;
+  const routeCategory = JOURNEY_SLUG_TO_DATA_KEY[visaJourneyParam] || visaJourneyParam;
+  const resolvedCandidate = rosterReady
+    ? resolveJourneyCandidate({
+        category: routeCategory,
+        roster: candidates,
+        urlCandidateId: candidateIdFromUrl,
+        activeCandidateId,
+        lastUsedByPool: typeof window !== "undefined" ? readLastUsedByPool() : {},
+      })
+    : null;
+  const effectiveCandidateId = resolvedCandidate?.id;
+
+  useEffect(() => {
+    if (resolvedCandidate && resolvedCandidate.id !== activeCandidateId) {
+      setActiveCandidateId(resolvedCandidate.id, { silent: true });
+    }
+  }, [resolvedCandidate, activeCandidateId, setActiveCandidateId]);
 
   // IR-5 is hidden on production (see lib/feature-flags). Block both the detail
   // slug (`ir-5`) and the roadmap slug (`ir5-journey`) so a leaked or bookmarked
@@ -159,15 +193,7 @@ export default function IR1JourneyPage() {
     return <JourneyDetailPage slug={visaJourneyParam} />;
   }
 
-  const journeyMapping: Record<string, string> = {
-    "ir1-journey": "ir-1",
-    "ir5-journey": "ir-5",
-    "ir2-journey": "ir-2",
-    f1: "f-1",
-    "germany-student": "germany-student-journey",
-  };
-
-  const visaJourney = journeyMapping[visaJourneyParam] || visaJourneyParam;
+  const visaJourney = JOURNEY_SLUG_TO_DATA_KEY[visaJourneyParam] || visaJourneyParam;
 
   const [showScenarioModal, setShowScenarioModal] = useState(false);
   const [relationshipNotesOpen, setRelationshipNotesOpen] = useState(false);
@@ -183,7 +209,8 @@ export default function IR1JourneyPage() {
   );
 
   const { state, actions, isLoaded, hasExistingProgress, isSyncing, error } = useWizard({
-    userId,
+    // Wait for the roster before the first initialize request (see alignment above).
+    userId: rosterReady ? userId : null,
     journeyId: visaJourney,
     candidateId: effectiveCandidateId,
     journeyDbId: journeyDbIdFromUrl,
@@ -221,7 +248,7 @@ export default function IR1JourneyPage() {
     }
   }, [isLoaded, isSignedIn, hasExistingProgress, journeyDecisionMade, actions]);
 
-  if (!isLoaded || !dataLoaded) {
+  if (!isLoaded || !dataLoaded || !rosterReady) {
     return (
       <div className="min-h-screen w-full bg-[#f4f7fb] animate-in fade-in duration-300 pt-[70px]">
         {/* Skeleton nav bar */}

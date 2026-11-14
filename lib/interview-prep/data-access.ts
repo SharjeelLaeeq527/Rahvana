@@ -1,5 +1,6 @@
 // lib/interview-prep/data-access.ts
 import { createClient } from "../supabase/server";
+import { candidateIdForJourneyKey, rosterFromProfileDetails } from "@/lib/candidate/candidateKeys";
 import {
   InterviewSession,
   InterviewAnswer,
@@ -138,14 +139,17 @@ export async function createJourneyInterviewSessionDB(
 
   let resolvedCandidateId = candidate_id;
   if (!resolvedCandidateId && journey_id) {
-    const { data: journeyData } = await supabase
-      .from("journeys")
-      .select("journey_type")
-      .eq("id", journey_id)
-      .maybeSingle();
+    const [{ data: journeyData }, { data: profileRow }] = await Promise.all([
+      supabase.from("journeys").select("journey_type").eq("id", journey_id).maybeSingle(),
+      supabase.from("user_profiles").select("profile_details").eq("id", user.id).maybeSingle(),
+    ]);
     if (journeyData?.journey_type) {
-      const match = journeyData.journey_type.match(/candidate-?([0-9]+)/i);
-      resolvedCandidateId = match ? `candidate-${match[1]}` : "candidate-1";
+      // The candidate that owns the journey by its category slot (an IR-2 child on "ir2"
+      // may be candidate-3), not the number in the key.
+      resolvedCandidateId = candidateIdForJourneyKey(
+        rosterFromProfileDetails(profileRow?.profile_details),
+        journeyData.journey_type
+      );
     }
   }
   if (!resolvedCandidateId) {

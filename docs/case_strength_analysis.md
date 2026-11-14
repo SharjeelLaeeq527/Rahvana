@@ -1,480 +1,387 @@
-# Case Strength Analysis — IR-1/CR-1 Spouse Visa Journey
+# Case Strength Analysis (CSA) - Multi-Category
 
-**Version:** 1.1 | **Status:** Strategy + Implementation Plan  
-**Sources:** USCIS.gov, travel.state.gov, NVC CEAC documentation, ir-1.json roadmap data
+**Version:** 2.0 | **Updated:** 2026-11-12 | **Status:** Describes the code as built
+**Code:** `lib/case-strength/*` (engine + `categories/*`), `lib/journey/evidence-gap/*`,
+`app/components/case-health/*`, CSA widgets in `app/components/journey-{engine,spouse}/components/*`
+**Sources for rules:** USCIS.gov, travel.state.gov, NVC/CEAC documentation, `data/visa-category/*.json`
 
----
-
-## 1. Executive Summary
-
-The Case Strength Analysis is a real-time advisory engine that evaluates a user's IR-1/CR-1 visa case across **three pillars**: completeness, consistency, and evidence quality. It surfaces actionable improvement recommendations and highlights risk factors — all derived from the user's progress through the roadmap.
-
-This is **not** legal advice. It is a structured self-assessment tool designed to help users identify gaps before they reach USCIS, NVC, or the consular officer.
-
-> **Important:** USCIS does not publish a case-strength formula or scoring rubric. There are no official percentages, weights, or point values assigned to individual factors. The assessment framework in this document is the **tool's own design** — structured around what practitioners and published RFE/denial patterns indicate matters most, not official USCIS metrics.
-
-> [!IMPORTANT]
-> **Implementation decision — NO NUMERIC SCORING (overrides parts of this doc).** As built, the engine produces **no scores, no percentages, and no progress rings** — anywhere. It emits only advisory checks at three levels (`critical` / `warning` / `info`), each with a title and hint. This supersedes the percentage tiers in §3.1, the `78%` dashboard mock in §7.1, and the per-chapter rings in §7.2: completeness is surfaced as *"these required items are still missing"*, never as a number. A single number would imply an official authority the tool does not have. The Chapter 2 smoke test explicitly asserts that no `score` field is ever produced.
+> Version 1.1 of this file was an IR-1-only strategy plan. Section 0 lists where that plan and
+> the shipped code differ. Sections 2-4 are the part to read before touching CSA for a new
+> visa category.
 
 ---
 
-## 2. The Three Pillars of Case Strength
+## 0. What changed since v1.1
 
-The three-pillar framework is how **this tool** organizes a case review. It is not an official USCIS standard. The pillars reflect the three most common failure categories seen in RFEs, NVC rejections, and visa denials:
-
-| Pillar               | What It Measures                                                                                                    |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| **Completeness**     | All required steps done, documents gathered, forms filled — for the user's specific filing path (online or mailing) |
-| **Consistency**      | Information matches across I-130, I-130A, DS-260, I-864, and supporting civil documents                             |
-| **Evidence Quality** | Bona fide marriage proof depth, financial adequacy, document freshness, translation compliance                      |
-
-These are weighted differently at each stage. At USCIS (Chapter 1), completeness and evidence quality are primary. At NVC (Chapter 2), consistency and document completeness are primary. At the interview (Chapter 3), evidence quality and interview readiness are primary.
-
----
-
-## 3. Assessment Methodology
-
-### 3.1 Completeness
-
-Completeness is the only pillar that is **objectively measurable** — a required step is either done or it is not. The tool tracks:
-
-- Required steps completed vs. total required steps, per chapter
-- Required documents gathered vs. total required, per document checklist
-- Branch-specific steps completed (online path steps vs. mailing path steps — not both)
-
-Each chapter's completeness is assessed independently. A case can be 100% complete at Chapter 1 and 30% complete at Chapter 2 — both numbers are shown separately, not averaged into one score.
-
-**Completeness tiers (per chapter):**
-
-| Range  | Label        | Meaning                   |
-| ------ | ------------ | ------------------------- |
-| 100%   | Complete     | All required items done   |
-| 75–99% | Nearly There | Minor gaps remain         |
-| 50–74% | In Progress  | Significant steps pending |
-| 0–49%  | Early Stage  | Most work still ahead     |
-
-### 3.2 Consistency
-
-Consistency is **not directly observable** until form data is captured. The tool can only flag consistency issues when it has stored values from at least two different forms or documents to compare.
-
-Key consistency checks (flagged as warnings, not scored numerically):
-
-| Check                                           | When It Can Be Run                   |
-| ----------------------------------------------- | ------------------------------------ |
-| Petitioner name across I-130 and I-864          | After both forms are filled          |
-| Beneficiary name across I-130, DS-260, passport | After DS-260 prep step               |
-| Marriage date across all forms and civil docs   | After I-130 and DS-260 data captured |
-| Prior marriage termination dates across forms   | After I-130 and civil doc checklist  |
-| Address consistency between I-130 and I-864     | After both forms are filled          |
-| Employment info across I-864 and tax documents  | After financial docs step            |
-
-Consistency issues are surfaced as **alerts**, not as a numerical score. A mismatch is flagged for user review — the user determines if it is a data entry error or a genuine discrepancy.
-
-### 3.3 Evidence Quality
-
-Evidence quality is **advisory** — there is no official USCIS rubric. The tool provides guidance on what practitioners and common RFE patterns indicate is stronger vs. weaker evidence. See §4 for the tiered evidence framework.
-
-Evidence quality assessment focuses on:
-
-- Bona fide marriage evidence — type and depth of documents provided
-- Financial sponsorship — whether income meets the poverty guideline threshold
-- Document freshness — whether time-sensitive documents are still valid
-- Translation compliance — all non-English documents have certified translations
+| v1.1 said | The code does |
+| --- | --- |
+| IR-1/CR-1 only | Category-scalable: one `CaseStrengthProfile` per visa category, resolved from the journey's `journey_type` (section 2). Shipped: IR-1/CR-1, IR-5, IR-2/CR-2. |
+| "No numeric scoring anywhere" | A weighted **Case Health** score exists (Evidence 40 / Consistency 30 / Completeness 20 / Risk 10, section 5.6). Both IR-1 and IR-5 use it. Per-step checks are still advisory only (`critical` / `warning` / `info`, no numbers). |
+| Per-chapter completeness % tiers and progress rings (v1.1 sections 3.1, 7.1, 7.2) | Not built. Completeness only feeds the weighted score; the dashboard shows the score ring, the alert stream and the evidence card. |
+| Engine files `engine.ts`, `completeness.ts`, `evidence.ts`, `recommendations.ts`, `constants.ts` | Do not exist. Real layout in section 2.3. |
+| Components in `components/case-strength/*` | Do not exist. Real components in section 2.4. |
+| Free tier sees completeness + top 2 recommendations | `case_strength` entitlement: Premium and Executive = full; Free and Basic = locked, buyable add-on (`lib/entitlements/config.ts`). |
+| Chapter 3: 3.7 = Prepare for Interview, 3.8 = Attend Interview, ... | A "Review Document Readiness" step was inserted as 3.7, so Prepare for Interview = 3.8, Attend = 3.9, Outcome = 3.10, Visa issuance = 3.11, 221(g) submit = 3.12 (section 7). |
+| Unknown journey type -> IR-1 rules | Unknown or unregistered category -> `GENERIC_PROFILE` (common checks only), never spouse rules (section 2.2). |
 
 ---
 
-## 4. Evidence Strength Assessment Details
+## 1. What CSA is
 
-### 4.1 Bona Fide Marriage Evidence Tiers
+A real-time **advisory** engine that reviews a user's case as they move through the roadmap,
+across three pillars:
 
-Financial interdependence evidence is consistently considered stronger by practitioners because it is harder to fabricate than photographs or affidavits. The tier structure below reflects common patterns in RFE responses — **not official USCIS point values** (USCIS does not publish a scoring rubric for bona fide evidence).
+| Pillar | Measures |
+| --- | --- |
+| **Completeness** | Required steps and documents for the user's filing path |
+| **Consistency** | The same facts (dates of birth, marriage date, history) match across I-130, DS-260, I-864 and civil documents |
+| **Evidence quality** | Strength of the relationship evidence, financial adequacy (I-864, 125% guideline), freshness, translations |
 
-| Tier                    | Evidence Type                                         | Why It Matters                                   |
-| ----------------------- | ----------------------------------------------------- | ------------------------------------------------ |
-| **Tier 1 — Strong**     | Joint tax returns (married filing jointly)            | Highest weight — financial interdependence       |
-|                         | Joint bank account statements with active usage       | Hard to fabricate, shows ongoing shared finances |
-|                         | Joint property deed or mortgage                       | Shared legal liability — very strong             |
-|                         | Joint lease agreement                                 | Shared legal liability                           |
-|                         | Life insurance with spouse as beneficiary             | Ongoing financial commitment                     |
-| **Tier 2 — Moderate**   | Photographs (10–30, varied settings, captioned)       | Contextual evidence — should support, not lead   |
-|                         | Sworn affidavits from family/friends (2+ recommended) | Third-party corroboration                        |
-|                         | Travel records (joint trips)                          | Shows relationship continuity                    |
-|                         | Communication logs (if long-distance relationship)    | Documents contact history                        |
-| **Tier 3 — Supporting** | Utility bills at shared address                       | Establishes cohabitation                         |
-|                         | Shared subscription or membership records             | Supporting cohabitation evidence                 |
-|                         | Social media evidence                                 | Supplementary only                               |
-|                         | Birth certificates of children (if any)               | Strong if applicable                             |
+Plus **risk detection** (red flags from the eligibility quest and form data).
 
-**Status tracked per item:** Uploaded / Not uploaded / Not applicable
-
-> [!IMPORTANT]
-> USCIS considers a marriage certificate alone as proof of _legality_, not _authenticity_. Cases with only a marriage certificate and photos are the most common target for I-130 RFEs.
-
-### 4.2 Financial Sponsorship Assessment
-
-Based on 2026 HHS federal poverty guidelines. The legal threshold for I-864 is **125% of the poverty guideline** for the household size. This is the only number set by regulation — there is no official USCIS scoring above or below this threshold.
-
-| Household Size  | 125% Threshold (2026) |
-| --------------- | --------------------- |
-| 2               | $27,050               |
-| 3               | $34,150               |
-| 4               | $41,250               |
-| 5               | $48,350               |
-| 6               | $55,450               |
-| Each additional | +$7,100               |
-
-**Assessment logic (tool framework, not official USCIS rubric):**
-
-- Income ≥ 125% of guideline → Meets minimum threshold
-- Income < 125% → Does not meet minimum; joint sponsor or asset qualification required
-- Joint sponsor added → Acceptable path if petitioner income is below threshold
-- Asset-based qualification → Acceptable alternative if assets are 5× the income shortfall
+USCIS publishes no case-strength formula. Every weight and tier here is the tool's own design,
+built on published RFE / 221(g) / denial patterns. It is not legal advice (section 10).
 
 ---
 
-## 5. Chapter-by-Chapter Step Analysis & Improvements
+## 2. Architecture: category profiles
 
-### 5.1 Chapter 1: USCIS Petition Filing
+### 2.1 The pattern
 
-Chapter 1 has two distinct paths after the filing method is selected. Both paths converge at the receipt notice step. The table below covers shared steps and then breaks into path-specific steps.
-
-#### Shared Steps (Both Paths)
-
-| Step                          | Current Roadmap Coverage                                                            | Gap / Risk Identified                                                                     | Improvement                                                                                                                                                                                                 |
-| ----------------------------- | ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **1.1 Determine Eligibility** | Quest flow checks citizenship, marriage validity, bona fide status, prior marriages | No proactive red flag screening for age gap, short marriage duration, never met in person | Add a **Risk Flag Detector** — if answers indicate potential red flags (married < 6 months, significant age gap, never met in person), surface advisory guidance on how to proactively address these        |
-| **1.2 Gather Documents**      | Checklist with categories and upload support                                        | No tiered evidence quality assessment; treats all documents equally                       | Implement **Evidence Strength Meter** — categorize uploaded evidence into Tier 1/2/3 and show which high-impact documents are missing                                                                       |
-| **1.3 Filing Method**         | Quiz-based selector with comparison cards (online $625 / paper $675)                | No average processing time comparison shown                                               | Add **processing time context** — online filing typically generates a receipt faster; paper adds mail transit time on both ends. Surface this in the comparison cards so the user makes an informed choice. |
-| **1.4 Fill I-130**            | AutoFormFiller integration                                                          | No pre-fill data capture for future consistency checking                                  | Add **key field capture** — store petitioner name, beneficiary name, marriage date, and address at form-fill time for consistency checking against DS-260 and I-864 later                                   |
-| **1.5 Fill I-130A**           | AutoFormFiller integration                                                          | Same as 1.4 — no field capture                                                            | Capture co-habitant address and employment data for consistency checking at I-864 stage                                                                                                                     |
-
-#### Online Path Steps
-
-| Step                                       | Current Roadmap Coverage                                   | Gap / Risk Identified              | Improvement                                                                                                                                                             |
-| ------------------------------------------ | ---------------------------------------------------------- | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **1.6 (Online) Create USCIS Account**      | Tutorial + Portal Wallet save                              | Adequate as-is                     | No change needed                                                                                                                                                        |
-| **1.7 (Online) Start Form I-130 on USCIS** | Step-by-step tutorial with screenshots                     | Adequate as-is                     | No change needed                                                                                                                                                        |
-| **1.8 (Online) Upload Forms & Evidence**   | USCIS portal upload tutorial with file format requirements | No file format/quality pre-check   | Add **document quality pre-check** — warn if files are blurry, wrong format, or exceed the 12 MB limit before the user attempts to upload to USCIS                      |
-| **1.9 (Online) Pay Filing Fee**            | Fee display ($625) + USCIS portal payment tutorial         | Adequate as-is                     | No change needed                                                                                                                                                        |
-| **1.10 (Online) Review & Submit**          | Tutorial walkthrough of the USCIS review screen            | No final data consistency snapshot | Add **pre-submission snapshot** — surface petitioner name, beneficiary name, marriage date, and address one final time so the user can catch any typo before submitting |
-
-#### Mailing / Paper Path Steps
-
-| Step                                     | Current Roadmap Coverage                                                          | Gap / Risk Identified                                                  | Improvement                                                                                                                                                                 |
-| ---------------------------------------- | --------------------------------------------------------------------------------- | ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **1.6 (Mailing) Print Hard Copies**      | Print and download guide with step-by-step screenshots                            | No print quality checklist before moving to assembly                   | Add **print quality reminder** — confirm full-page, unscaled, all pages complete before marking this step done                                                              |
-| **1.7 (Mailing) Prepare Filing Fee**     | G-1450 (card) and G-1650 (ACH) options explained; payment method saved in Rahvana | USCIS fee schedule changes over time — no live fee verification prompt | Add **USCIS fee confirmation reminder** — direct user to uscis.gov/g-1055 to confirm the current paper filing fee before preparing payment                                  |
-| **1.8 (Mailing) Assemble Filing Packet** | Packet order guide with recommended section structure                             | No per-section completeness check before marking done                  | Add **packet checklist** — require the user to confirm each packet section (payment, forms, evidence, translations) before marking the step complete                        |
-| **1.9 (Mailing) Mail Packet to USCIS**   | Address confirmation guide + carrier/tracking number save                         | USCIS filing address must always be verified before mailing            | Add **address verification reminder** — always prompt the user to confirm the current USCIS filing address from uscis.gov/forms/filing-guidance before sealing the envelope |
-
-#### Shared Convergence Steps (Both Paths)
-
-| Step                                | Current Roadmap Coverage                               | Gap / Risk Identified               | Improvement                                                                                                                                                                          |
-| ----------------------------------- | ------------------------------------------------------ | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Register Receipt in CEAC**        | CEAC portal registration guide + receipt number save   | No receipt number format validation | Add **receipt number format check** — I-797C receipt numbers follow a specific format (e.g., MSC2590123456). Warn the user if the entered number does not match the expected pattern |
-| **Track Case Status**               | CEAC case status tracking guide                        | Adequate as-is                      | No change needed                                                                                                                                                                     |
-| **Receive Approval Notice (I-797)** | Upload + approval date save + NVC preparation guidance | Adequate as-is                      | No change needed                                                                                                                                                                     |
-
-### 5.2 Chapter 2: NVC/CEAC Processing
-
-> **How to read this table:** the first three columns are the original strategy. The **fourth column describes the case-strength check the tool runs at that step.**
-
-| Step                         | Current Roadmap Coverage                                     | Gap / Risk Identified                                       | Case-Strength Check                                                                                                                                                                       |
-| ---------------------------- | ------------------------------------------------------------ | ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **2.3 DS-260**               | Preparation flow + answer key                                | **CRITICAL GAP:** No cross-validation against I-130 answers | Compares the 3 key dates (marriage date, both birth dates) against the I-130 and flags any mismatch as **critical**. Also reminds the user to declare anything already told to USCIS — prior marriage, past visa refusal, court/police record, or overstay — because leaving it off the DS-260 is misrepresentation. Names are not auto-compared, since spelling variants (e.g. Muhammad/Mohammad) would raise false alarms.                      |
-| **2.4 Civil Documents**      | Categorized checklist (required / conditional / recommended) | No country-specific document guidance                       | Flags any missing required or conditional civil document as **critical**, and reminds the user to get a certified English translation and check their country's exact requirements on the State Dept reciprocity schedule.    |
-| **2.5 Affidavit of Support** | Calculator + dynamic form generation                         | No income adequacy pre-check before filling                 | Reads the sponsorship result and **warns** — with the exact dollar shortfall — if income is below the requirement, then points to the joint-sponsor path. |
-| **2.6 Financial Documents**  | Dynamic checklist based on sponsor structure                 | No tax return year validation                               | Reminds each sponsor to gather their most-recent-year tax documents.                                                                          |
-| **2.7 Add Sponsor in CEAC**  | Tutorial + relationship checklist                            | Only appears when needed                                    | Prompts the user to add a joint sponsor when income is short and none has been added yet.                                                                                                                                                        |
-| **2.8 Upload to NVC**        | Upload placement guide + PDF processing                      | No upload completeness verification                         | Final check before upload — confirms the DS-260 is done, civil documents are complete, and any income shortfall is resolved.                                                            |
-
-Steps **2.2, 2.10, 2.12** also carry small `info` reminders (save the fee status / DQ date / interview date) that unlock the next step or dashboard tracking. Steps **2.1, 2.9, 2.11** have no check by design — they are sign-in or "waiting on NVC / the embassy" steps where the user has nothing to enter or fix.
-
-The DS-260 dates used in the 2.3 check are entered by the user when they reach that step and return advisory alerts.
-
-### 5.3 Chapter 3: Medical + Interview
-
-> **How to read this table:** the first three columns are the original strategy. The **fourth column describes the case-strength check the tool runs at that step.** No scores or percentages anywhere — only `critical` / `warning` / `info` alerts. At the interview stage, the primary pillars are evidence quality and interview readiness, so most checks focus on completeness and consistency with the forms already filed.
-
-| Step                            | Current Roadmap Coverage                              | Gap / Risk Identified                            | Case-Strength Check                                                                                                                                                                                                |
-| ------------------------------- | ----------------------------------------------------- | ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **3.1 Schedule Medical**        | Booking support + appointment date/time capture       | No timeline urgency tied to the interview        | Nudges the user to book the medical early. Once an interview date is recorded but no exam is scheduled, the nudge becomes a **warning** — the exam must be done before the interview and panel-physician slots fill up. |
-| **3.2 Polio Certificate**       | Polio guide + checklist                               | Easy to forget this Pakistan-specific requirement | Reminds the user to obtain the original polio vaccination certificate before the medical exam, since the physician reviews it and it must also be brought to the interview.                                          |
-| **3.3 Fresh Police Certificate**| Application tracker + pending/received status         | Risk of reusing the old NVC-stage PCC            | **Warns** to apply for a *fresh* PCC (not the one filed at NVC), as it takes weeks. Once applied, drops to an info reminder to keep tracking until the original is in hand and still valid for the interview date.   |
-| **3.4 Attend Medical Exam**     | Bring-checklist + tutorial                            | Applicants open the sealed envelope or assume results are sent | Once the exam is booked, reminds the user never to open the sealed medical envelope and to confirm the clinic sends results to the embassy before the interview.                                       |
-| **3.6 Gather Original Documents** | Categorized bring-checklist (civil / financial / day-of) | No completeness or consistency prompt           | Lists the **required** original-document groups (read from the step's own checklist) to bring, with the certified-translation reminder and the fresh-PCC note, plus a consistency reminder that originals must match the filed DS-260 and I-864. |
-| **3.7 Prepare for Interview**   | Interview prep tool + readiness grid                  | No tie-back to filed answers or disclosures      | Reminds the user that interview answers must match the DS-260, and surfaces tailored reminders to be ready to explain anything declared at eligibility (prior marriage, visa refusal, court/police record, overstay). |
-| **3.8 Attend Visa Interview**   | Interview-day walkthrough + checklists                | No final readiness gate                          | Final gate: **warns** if original documents (3.6) were never gathered, nudges to run interview prep (3.7) if skipped, and reminds the user — no electronics, arrive 20–30 minutes early with the printed appointment letter. |
-| **3.9 Confirm Interview Outcome** | Outcome recorder (approved / 221(g) / not sure)     | Next steps stay locked until recorded            | Reminds the user to record the outcome, which unlocks the correct next steps for their situation.                                                                                                                  |
-| **3.10 Track Visa Issuance**    | Courier tracking + congratulations (approved path)    | Visa-stamp errors go unnoticed                   | When the passport arrives, reminds the user to verify name, date of birth, visa category, and expiry are all correct and to report any error to the embassy immediately.                                            |
-| **3.11 Submit 221(g) Documents**| 221(g) submission tracker (docs-requested path)       | Over- or under-submitting in response            | **Warns** to submit exactly what the 221(g) requested — nothing more, nothing less — by the stated method and deadline, keep copies, and monitor CEAC weekly.                                                       |
-
-Steps **3.5 (Courier Registration)** and **3.10b (Review 221(g) Letter)** are guided how-to / selection steps with nothing to validate, and **3.12 / 3.13** are CEAC waiting-and-monitoring steps where the next move is outside the user's control — so they carry no case-strength check by design. The outcome-gated steps (3.10, 3.11, 3.12, 3.13) only ever surface their check when they are actually visible for the user's recorded interview outcome.
-
----
-
-## 6. Risk Detection Engine
-
-### 6.1 Red Flags That Trigger Additional Scrutiny
-
-Based on common USCIS RFE and 221(g) patterns:
-
-| Risk Factor                               | Detection Method                      | User Action Required                                                   |
-| ----------------------------------------- | ------------------------------------- | ---------------------------------------------------------------------- |
-| Marriage duration < 6 months at filing    | Calculate from marriage date in I-130 | Advise: strengthen bona fide evidence significantly                    |
-| Never met in person before marriage       | Eligibility quest answer              | Advise: provide detailed relationship timeline + communication records |
-| Significant age gap (>15 years)           | Derived from DOBs on forms            | Advise: address proactively with relationship context in cover letter  |
-| Prior petition filed for different spouse | Eligibility quest answer              | Advise: consult immigration attorney                                   |
-| Income below 125% poverty guideline       | Affidavit Support Calculator output   | Action: add joint sponsor or asset-based qualification                 |
-| Missing prior marriage termination proof  | Document checklist gap                | Action: obtain and upload divorce decree / death certificate           |
-| Police certificate older than 1 year      | Upload date vs. issuance date         | Action: obtain fresh certificate before interview                      |
-| Inconsistent information across forms     | Cross-form validation engine          | Action: review and correct before submission                           |
-| No Tier 1 (strong) bona fide evidence     | Evidence strength assessment          | Advise: add joint financial or property documents                      |
-
-### 6.2 Risk Severity Levels
-
-| Level        | Meaning                                                                                                  | UI Treatment                                         |
-| ------------ | -------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
-| **Critical** | Pattern commonly associated with RFE or denial based on published USCIS data and practitioner experience | Red banner, prominently surfaced in recommendations  |
-| **Warning**  | Pattern that may cause delays or trigger additional scrutiny                                             | Amber indicator, surfaced in recommendations list    |
-| **Advisory** | Best practice — not a known risk pattern, but strengthens the case                                       | Subtle suggestion, lower priority in recommendations |
-
----
-
-## 7. Progress Visualization Strategy
-
-### 7.1 Dashboard Integration
-
-The Case Strength card on the dashboard shows:
+Everything that differs between visa categories lives in **one object per category**, a
+`CaseStrengthProfile` (`lib/case-strength/categories/types.ts`). The engines are shared and
+read only from the profile; they never import a category's internals.
 
 ```
-┌─────────────────────────────────────┐
-│  Case Strength                      │
-│  ┌─────────────┐                    │
-│  │     78%     │  Good — On Track   │
-│  │   ███████   │                    │
-│  └─────────────┘                    │
-│                                     │
-│  Completeness    ████████░░  82%    │
-│  Consistency     ███████░░░  70%    │
-│  Evidence        ████████░░  80%    │
-│                                     │
-│  ⚠ 2 items need attention           │
-│  → View Recommendations             │
-└─────────────────────────────────────┘
+journey_type ("IR1", "ir5_candidate-2", "IR-2", ...)
+        |
+        v
+resolveCaseStrengthProfile()            lib/case-strength/categories/index.ts
+        |   base category via getBaseVisaCategory()
+        |   registered? -> that profile     not registered / unknown? -> GENERIC_PROFILE
+        v
+CaseStrengthProfile
+  stepCheckers, stepRefs, baselineFields, detectEligibilityRisks,
+  consistency, evidence, strengthSignals, caseScore, documentEscalation, lookAhead
+        |
+        v
+shared engines (step checks, alert gating, evidence gap, consistency, score, reminders)
+        |
+        v
+UI: DashboardView (both renderers), StepView inline checks, EligibilityRiskBanner,
+    PreSubmissionSnapshot, CaseHealthOverview, ReminderEngine, CaseStrengthEngine
 ```
 
-### 7.2 Per-Chapter Progress Rings
+### 2.2 Resolver rules
 
-Each chapter shows its own mini strength indicator:
+`resolveCaseStrengthProfile(journeyType)`:
 
-- **Ring 1 (outer):** Step completion percentage
-- **Ring 2 (inner):** Document upload completion
-- **Color:** Matches the tier color (green/teal/amber/red)
+- Matches by **base visa category** (`getBaseVisaCategory` in `lib/candidate/candidateSyncService.ts`).
+  `IR5`, `ir-5`, `IR-5`, `ir_5` and candidate keys like `ir5_candidate-2` all give the IR-5
+  profile; `CR1` / `CR-1` give the IR-1 profile. (Before v2.0 a candidate key such as
+  `ir5_candidate-2` fell through to IR-1, so candidate-2+ reminders and the server
+  `CaseStrengthEngine` ran spouse rules on a parent case.)
+- Unknown, missing, or a category with no registered profile -> **`GENERIC_PROFILE`**
+  (`categories/generic.ts`). It carries only what is true for every family category: no step
+  checkers, no eligibility risks, no look-ahead, date-of-birth consistency only, common
+  Phase 2 questions, passports-only evidence, neutral relationship signal, weighted score.
+- `findCaseStrengthProfile(journeyType)` returns the registered profile or `null`;
+  `hasCaseStrengthProfile(journeyType)` is the boolean form. Use them when a UI should hide a
+  CSA surface for an unregistered category instead of showing the generic view.
 
-### 7.3 Step-Level Indicators
+### 2.3 Files
 
-Each step in the roadmap shows a small strength chip:
+| File | Role |
+| --- | --- |
+| `categories/types.ts` | `CaseStrengthProfile` contract (every field documented) |
+| `categories/index.ts` | Registry `CASE_STRENGTH_PROFILES` + resolver. The only file that lists categories |
+| `categories/ir1.ts` | IR-1/CR-1 spouse profile |
+| `categories/ir5.ts` | IR-5 parent profile (template for new family categories) |
+| `categories/generic.ts` | Fallback for unregistered categories |
+| `step-checkers.ts` | `IR1_STEP_CHECKERS`, `COMMON_STEP_CHECKERS` (IR-1 minus the 5 category-specific keys), `COMMON_LOOK_AHEAD`, shared disclosure helpers, `runStepChecks` |
+| `eligibility-quest-detector.ts` | IR-1 eligibility risks, `StepRefs`, common risk patterns |
+| `risk-detector.ts` | Red flags from form data (marriage duration, age gap, ...) |
+| `consistency.ts` | Cross-form field diff (`compareFields`, `BASELINE_FIELDS`) |
+| `consistency-intelligence.ts` | Phase 1 (category-agnostic) + Phase 2 questionnaire checks |
+| `civil-docs.ts`, `evidence-classifier.ts`, `doc-scoring.ts` | Civil-document analysis, REQUIRED vs SUPPORTING evidence, per-document scoring |
+| `aggregate-issues.ts` | Per-chapter issue lists for the dashboard |
+| `alert-gating.ts` | `buildAlertGateContext`, frontier gating, 3-stage document escalation, fresh-journey gates |
+| `case-narrative.ts` | `CASE_SCORE_WEIGHTS`, weighted score, status copy |
+| `validators.ts` | Receipt-number format, USCIS upload limits |
+| `lib/journey/evidence-gap/*` | `EvidenceGapEngine` + per-category evidence requirements |
+| `lib/journey/CaseStrengthEngine.ts` | Legacy server-side numeric scorer (uses the profile's relationship signal) |
+| `lib/reminders/ReminderEngine.ts` | Document-driven reminders (uses the profile) |
 
-| State                    | Chip                      |
-| ------------------------ | ------------------------- |
-| Complete, no issues      | Green checkmark           |
-| Complete, minor advisory | Teal checkmark + info dot |
-| Incomplete, required     | Amber circle              |
-| Critical issue detected  | Red warning triangle      |
+### 2.4 UI
 
----
-
-## 8. Recommendation Engine
-
-### 8.1 Recommendation Types
-
-| Type                  | Example                                                                                       | When Shown                              |
-| --------------------- | --------------------------------------------------------------------------------------------- | --------------------------------------- |
-| **Missing Document**  | "Joint bank statements are a Tier 1 bona fide evidence item. Upload to strengthen your case." | Tier 1 evidence item not uploaded       |
-| **Consistency Alert** | "Marriage date on DS-260 doesn't match I-130. Review before submitting."                      | Cross-form mismatch detected            |
-| **Freshness Warning** | "Police certificate expires in 45 days. Schedule renewal if interview is not yet scheduled."  | Document approaching expiry             |
-| **Financial Gap**     | "Income is $2,400 below the required threshold. Consider adding a joint sponsor."             | I-864 income < 125% poverty guideline   |
-| **Strength Booster**  | "Adding 2 sworn affidavits from family members strengthens your bona fide evidence."          | Only Tier 3 bona fide evidence uploaded |
-| **Proactive Defense** | "Your marriage duration is under 1 year. Consider adding a relationship timeline document."   | Risk flag detected                      |
-
-### 8.2 Recommendation Priority
-
-1. Critical risk flags (patterns associated with RFE or denial)
-2. Consistency mismatches (cross-form data conflicts)
-3. Missing required documents
-4. Financial adequacy gaps (income below 125% threshold)
-5. Evidence quality improvements (missing Tier 1/2 bona fide evidence)
-6. Advisory best practices
-
----
-
-## 9. Data Requirements
-
-### 9.1 Data Points Consumed by the Engine
-
-| Data Point                       | Source Step             | Used For                          |
-| -------------------------------- | ----------------------- | --------------------------------- |
-| Petitioner citizenship status    | 1.1 Eligibility         | Eligibility validation            |
-| Marriage date                    | 1.1 Eligibility / I-130 | Duration calculation, consistency |
-| Prior marriage termination proof | 1.2 Documents           | Completeness, risk detection      |
-| Filing method                    | 1.3 Filing Method       | Branch-specific completeness      |
-| I-130 field values               | 1.4 Fill I-130          | Consistency baseline              |
-| Receipt number                   | 1.9 Receipt Notice      | Case tracking                     |
-| DS-260 field values              | 2.3 DS-260              | Consistency cross-check           |
-| Civil document statuses          | 2.4 Civil Docs          | Completeness scoring              |
-| Household size + income          | 2.5 Affidavit Support   | Financial adequacy                |
-| Sponsor structure                | 2.5 Affidavit Support   | Completeness branching            |
-| Financial doc statuses           | 2.6 Financial Docs      | Completeness scoring              |
-| CEAC upload statuses             | 2.8 Upload to NVC       | Upload completeness               |
-| Medical appointment date         | 3.1 Schedule Medical    | Completeness, timeline            |
-| Police cert issue date           | 3.2 Police Certificate  | Freshness calculation             |
-| Bona fide evidence uploads       | 1.2 + 2.4 Documents     | Evidence quality scoring          |
-
-### 9.2 New Data Points Required
-
-| New Field                    | Where to Capture               | Purpose                   |
-| ---------------------------- | ------------------------------ | ------------------------- |
-| `marriage_date` (normalized) | Eligibility quest or I-130     | Duration + consistency    |
-| `petitioner_dob`             | I-130 form data                | Age gap detection         |
-| `beneficiary_dob`            | I-130 form data                | Age gap detection         |
-| `annual_income`              | Affidavit Support Calculator   | Financial threshold check |
-| `household_size`             | Affidavit Support Calculator   | Poverty guideline lookup  |
-| `police_cert_issue_date`     | Police certificate upload step | Freshness calculation     |
-| `evidence_tier_tags`         | Document upload metadata       | Evidence quality scoring  |
-| `interview_date`             | Interview tracking step        | Timeline calculations     |
-| `post_interview_status`      | New: post-interview step       | Outcome tracking          |
+- `app/components/case-health/CaseHealthCalculation.tsx`: score explainer, shared by both
+  dashboards, reads `CASE_SCORE_WEIGHTS` so the shown math cannot drift.
+- `journey-engine/components/*` (IR-5 and every chapters-schema journey):
+  `CaseHealthOverview`, `Chapter1HealthPanel`, `StepHealthInline`, `EligibilityRiskBanner`,
+  `PreSubmissionSnapshot`, `ConsistencyBaselineCapture`, `EvidenceStrengthMeter`,
+  `EvidenceQuestionnaireModal`, `DocCaseStrengthMeter`, `FileQualityPreCheck`, `JourneyRiskCard`.
+- `journey-spouse/components/*`: parallel copies for the IR-1/CR-1 dashboard. The spouse copies
+  of `EligibilityRiskBanner` / `PreSubmissionSnapshot` are IR-1-only and do not call the resolver.
 
 ---
 
-## 10. Implementation Architecture
+## 3. Adding a visa category (playbook)
 
-### 10.1 Engine Location
+Example: a new family category `XX-9` with `data/visa-category/xx-9.json`.
+
+1. **Journey first.** The JSON (chapters schema) and the dashboard wiring
+   (`JOURNEY_DATA_MAP` + slug maps) exist. Until step 3 is done the journey already gets
+   `GENERIC_PROFILE`, so nothing spouse-specific can leak into it.
+2. **Map the step layout.** List the JSON's `step_key` -> step name and compare with
+   `ir-1.json` / `ir-5.json`. Checkers are keyed by `step_key`, and keys are **positional**
+   (section 6). Note every step whose key means something different from IR-1.
+3. **Create `lib/case-strength/categories/xx9.ts`** using `ir5.ts` as the template:
+   - `stepCheckers`: start from `COMMON_STEP_CHECKERS`, drop the keys whose meaning differs,
+     re-point shared checkers by meaning (`step_1_5: COMMON_STEP_CHECKERS.step_1_6`), and add
+     your own functions for the 5 category-specific steps (relationship baseline, blockers,
+     review & submit, DS-260 cross-check, interview prep). Write a comment table of
+     `step_key -> step name -> checker`, as in `ir5.ts`.
+   - `stepRefs`: chapter/step labels used inside advice text, matching your JSON numbering.
+   - `baselineFields`: the facts compared I-130 vs DS-260 (dates of birth always; marriage
+     date only for spouse categories; e.g. marital status for a child).
+   - `detectEligibilityRisks`: map YOUR eligibility quest screen ids and answer polarity. Do
+     not reuse another category's detector: screen ids and "yes" meaning differ (IR-1 `q5s5`
+     "yes" = income concern, IR-5 `q5s5` "yes" = sponsorship is fine).
+   - `consistency`: `COMMON_PHASE2_QUESTIONS` + `runCommonPhase2Checks` unless the category
+     has a marriage (then the spouse set).
+   - `evidence`: add `XX9_EVIDENCE_REQUIREMENTS` (+ questionnaire) in
+     `lib/journey/evidence-gap/{engine,types}.ts`; map any new document ids to a category.
+   - `strengthSignals.relationship`: spouse signal only for marriages; otherwise a no-op (a
+     big parent/child age gap is normal and must not be penalized).
+   - `caseScore: { model: "weighted" }`, `documentEscalation: DEFAULT_DOCUMENT_ESCALATION`,
+     `lookAhead: COMMON_LOOK_AHEAD` (only if your Affidavit of Support / joint sponsor / fresh
+     PCC steps use the same keys as IR-1, else your own list).
+   - `journeyTypes`: at least one spelling of the category (matching is by base category).
+4. **Register** it in `CASE_STRENGTH_PROFILES` (`categories/index.ts`). Nothing else in the
+   engine changes.
+5. **Check UI widgets placed by step key.** Some engine `StepView` widgets are still placed by
+   literal key (section 9). Confirm they land on the right step for your layout.
+6. **Tests.**
+   - `__tests__/case-strength/category-contract.test.ts` runs on every chapters-schema JSON
+     automatically. It fails if the journey has no profile and is not listed in
+     `AWAITING_PROFILE`, or if a profile has a checker / look-ahead key missing from the JSON.
+     Remove your category from `AWAITING_PROFILE` when you register it.
+   - Add a block to `__tests__/case-strength/categories.test.ts`: resolver spellings (incl. a
+     candidate key), each eligibility risk fires, no spouse risk ever fires (if not a spouse
+     category), the remapped steps point at the intended checkers.
+7. **Docs.** Add the category to section 7 here and to section 4.5 of `docs/PROJECT_KNOWLEDGE.md`.
+
+---
+
+## 4. Profile reference
+
+| Field | Purpose | IR-1 / CR-1 | IR-5 | Generic |
+| --- | --- | --- | --- | --- |
+| `stepCheckers` | Inline advisory checks per `step_key` | `IR1_STEP_CHECKERS` | COMMON + 5 overrides + chapter-1 remap | none |
+| `stepRefs` | Step labels in advice text | Step 4 I-130, Step 5 I-130A, Step 10 Review | Step 4 I-130, Step 9 Review (no I-130A) | neutral wording |
+| `baselineFields` | I-130 vs DS-260 diff | marriage date + both DOBs | both DOBs | both DOBs |
+| `detectEligibilityRisks` | Quest answers -> risk flags | spouse + common patterns | IR-5 q5 screens (own polarity) | none |
+| `consistency` | Phase 2 questions + runner | marriage history + common | common only | common only |
+| `evidence` | Evidence-gap categories | 7 categories (incl. bona fide marriage) | IDENTITY + FAMILY_INTEGRATION | IDENTITY (passports) |
+| `strengthSignals.relationship` | Legacy numeric scorer signal | marriage length, children, age-gap flag | no-op | no-op |
+| `caseScore` | Headline score model | weighted | weighted | weighted |
+| `documentEscalation` | Missing-doc 3-stage lifecycle | default | default | default |
+| `lookAhead` | Deadline items surfaced one chapter early | `COMMON_LOOK_AHEAD` | `COMMON_LOOK_AHEAD` | none |
+
+IR-5 evidence deliberately omits FINANCIAL and IMMIGRATION_HISTORY: those are NVC / consular
+documents, not filing-stage proof.
+
+---
+
+## 5. Shared engines (category-agnostic)
+
+### 5.1 Step checks
+`runStepChecks(stepKey, ctx, profile.stepCheckers)` returns `StepCheck[]`
+(`level: critical | warning | info`, `title`, `hint`, optional `resolved`). Inputs: wizard
+state (metadata, completed steps), uploaded documents, eligibility answers, the JSON step.
+Shown inline by `StepHealthInline` and aggregated per chapter by `aggregate-issues.ts`.
+Outcome-gated steps (3.11+) only surface checks when visible for the recorded outcome.
+
+### 5.2 Alert gating
+`buildAlertGateContext` (the one wrapper every dashboard uses) wires the profile's
+`lookAhead`, `documentEscalation` and the target filing date. `gateAlertIssues` filters by the
+journey **frontier** (first uncompleted step): issues ahead are suppressed, active steps get a
+grace window, steps behind escalate.
+
+### 5.3 Document escalation
+A missing required document moves to-gather -> due-soon -> critical, relative to the filing
+deadline when known (`DEFAULT_DOCUMENT_ESCALATION`: 7 / 21 days on the clock, 3 / 14 days when
+behind, filing 30 / 7 days).
+
+### 5.4 Evidence gap
+`EvidenceGapEngine(profile.evidence.requirements)` scores each category
+STRONG / MODERATE / WEAK / MISSING from vault uploads, autofill, case data and the evidence
+questionnaire. Its `userProvided` view counts only real uploads, so autofill cannot inflate
+the score.
+
+### 5.5 Consistency
+Phase 1 (timeline, medical, financial, ...) is shared. Phase 2 is the optional questionnaire;
+the profile decides which questions are shown and which runner executes, so a finding never
+appears for a question that was not asked. The cross-form diff compares
+`profile.baselineFields`. Names are not auto-compared (spelling variants like
+Muhammad/Mohammad would raise false alarms).
+
+### 5.6 Case Health score
+`computeWeightedCaseScore` (`case-narrative.ts`):
 
 ```
-lib/
-  case-strength/
-    engine.ts          — Main scoring orchestrator
-    completeness.ts    — Chapter/step completion calculator
-    consistency.ts     — Cross-form validation checker
-    evidence.ts        — Evidence quality assessor
-    risk-detector.ts   — Red flag screening
-    recommendations.ts — Recommendation generator
-    types.ts           — TypeScript interfaces
-    constants.ts       — Thresholds, weights, poverty guidelines
+score = 0.4 * evidence + 0.3 * consistency + 0.2 * completeness + 0.1 * (100 - riskPenalty)
+riskPenalty = sum of RISK_SEVERITY_PENALTY (critical 100, warning 40, advisory 15), capped at 100
 ```
 
-### 10.2 Component Integration
+Evidence and completeness use the user-provided evidence view. Weights live only in
+`CASE_SCORE_WEIGHTS`. Fresh-journey gates: `isMeaningfullyStarted` gates the alert stream;
+`isCaseHealthScorable` (a completed step + a real evidence signal, `hasUserEvidenceSignal`)
+gates the numeric ring, so a brand-new journey shows "Building Your Case", not a fake ~50%.
 
-```
-components/
-  case-strength/
-    CaseStrengthCard.tsx         — Dashboard summary card
-    CaseStrengthDetail.tsx       — Full analysis view
-    ChapterStrengthRing.tsx      — Per-chapter mini indicator
-    StepStrengthChip.tsx         — Per-step indicator
-    RecommendationList.tsx       — Prioritized recommendations
-    EvidenceStrengthMeter.tsx    — Bona fide evidence visualizer
-    FinancialAdequacyGauge.tsx   — I-864 income vs threshold
-    ConsistencyReport.tsx        — Cross-form mismatch display
-    RiskFlagBanner.tsx           — Critical risk alerts
-```
+### 5.7 Risk detection
 
-### 10.3 Data Flow
+| Risk | Source | Categories |
+| --- | --- | --- |
+| Past visa refusal / fraud, criminal history, unlawful presence | Eligibility quest | all family (per-category screen ids) |
+| Income below 125% of the poverty guideline | Affidavit of Support calculator | all family |
+| Marriage < 6 months, never met in person, age gap > 15 years, prior petition for another spouse | Quest + forms | spouse only |
+| Missing prior-marriage termination proof | Civil-doc checklist | spouse only |
+| Police certificate freshness | PCC step | all (Pakistan) |
 
-```mermaid
-graph TD
-    A[User completes roadmap steps] --> B[Journey State Store]
-    B --> C[Case Strength Engine]
-    C --> D[Completeness Calculator]
-    C --> E[Consistency Checker]
-    C --> F[Evidence Assessor]
-    C --> G[Risk Detector]
-    D --> H[Aggregate Score]
-    E --> H
-    F --> H
-    G --> I[Risk Flags]
-    H --> J[Dashboard Card]
-    I --> J
-    H --> K[Recommendation Generator]
-    K --> L[Recommendation List UI]
-```
-
-### 10.4 Computation Triggers
-
-The engine recalculates when:
-
-- A step is marked complete
-- A document is uploaded or removed
-- A form is filled or edited
-- The user returns to the dashboard
-- A date-sensitive threshold is crossed (police cert expiry)
+Poverty-guideline numbers are not copied here; the source of truth is
+`lib/tools/sponsorship/povertyGuidelines.ts`.
 
 ---
 
-## 11. Entitlements & Access
+## 6. The step-key rule
 
-| Tier        | Access Level                                                                                                                                    |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Free**    | Completeness percentage per chapter + top 2 recommendations visible                                                                             |
-| **Premium** | Full analysis: all 3 pillar assessments, all recommendations, risk flags, consistency alerts, evidence strength meter, financial adequacy gauge |
+Step checkers, look-ahead rules, a few `actionableStepKey`s and some UI widgets are keyed by
+`step_key`. Step keys are positional within each JSON, so the same key can mean different
+steps in different categories:
 
-This follows the existing `ENTITLEMENTS` pattern in `lib/entitlements/config.ts`.
+| key | IR-1 | IR-5 / IR-2 |
+| --- | --- | --- |
+| step_1_5 | Fill Form I-130A | Create USCIS Account |
+| step_1_6 | Create USCIS Account | Start Form I-130 on USCIS |
+| step_1_7 | Start Form I-130 on USCIS | Upload Forms & Evidence |
+| step_1_8 | Upload Forms & Evidence | Pay Filing Fee |
+| step_1_9 | Pay Filing Fee | Review & Submit |
+| step_1_10 | Review & Submit | Print Hard Copy |
+| step_1_11..14 | paper path (4 steps) | step_1_10..13 (one fewer) |
 
----
-
-## 12. Implementation Phases
-
-### Phase 1 — Completeness Engine (Ship first)
-
-- Step completion tracking per chapter, separated by filing path (online vs. mailing)
-- Required vs. optional item counting
-- Dashboard card with completeness % per chapter
-- Tier label per chapter: Complete / Nearly There / In Progress / Early Stage
-
-### Phase 2 — Evidence Quality
-
-- Bona fide evidence tier tagging on document uploads (Tier 1 / 2 / 3 classification)
-- Financial adequacy check: income vs. 125% poverty guideline for household size
-- Document freshness checks (police certificate validity, tax return year)
-- Evidence Strength Meter component
-
-### Phase 3 — Consistency Checker
-
-- Capture normalized form field values from I-130, DS-260, I-864 at form-fill time
-- Cross-form comparison logic (names, dates, addresses)
-- Mismatch alerts surfaced as warnings — not blocking, but prominently shown
-
-### Phase 4 — Risk Detection
-
-- Red flag screening rules (marriage duration, no in-person meeting, prior petitions)
-- Proactive defense recommendations
-- 221(g) risk factor assessment at interview prep stage
-
-### Phase 5 — Polish
-
-- Assessment history (show how completeness improved over time)
-- PDF export of case gap report
-- Integration with interview prep module
+Chapters 2 and 3 currently share keys across IR-1, IR-5 and IR-2. Inserting a step in one
+JSON shifts every later key, so the person adding the step must update that category's checker
+keys, `COMMON_LOOK_AHEAD` and tests in the same change. The contract test catches keys that
+disappear, not keys that silently change meaning, so always re-check the step names.
 
 ---
 
-## 13. Key Decisions Needed
+## 7. Check maps per category
 
-| Decision                        | Options                                                     | Recommendation                                                                                   |
-| ------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| Free tier visibility            | Completeness only vs. completeness + top recommendations    | Completeness + top 2 recommendations (shows value, creates upgrade motivation)                   |
-| Consistency checker data source | Parse form PDFs vs. use stored form field data              | Use stored form field data from AutoFormFiller + DS-260 prep — more reliable than PDF parsing    |
-| Risk flag display               | Inline in steps vs. dedicated section                       | Both — inline chip on step + aggregated in Case Strength detail view                             |
-| Assessment recalculation        | Recalculate on every view vs. cache + recalculate on change | Cache with invalidation on state change (better performance)                                     |
-| Legal disclaimer placement      | One-time modal vs. persistent footer                        | Persistent subtle footer on every Case Strength view: "Advisory tool only — not legal advice"    |
-| Scoring vs. no scoring          | Show a 0–100 number vs. show pillar assessments separately  | **DECIDED: no numbers at all** — not a 0–100 score and not completeness %. Surface advisory checks (critical/warning/info) only. See the implementation note under §1. |
+### 7.1 IR-1 / CR-1 (`IR1_STEP_CHECKERS`)
+
+| Step | Check |
+| --- | --- |
+| 1.3 Review Filing Methods | Filing method chosen |
+| 1.4 Fill I-130 | Marriage date + both DOBs captured (baseline); eligibility red flags |
+| 1.5 Fill I-130A | Beneficiary current country; multi-country history -> extra PCCs |
+| 1.6 Create USCIS Account | myUSCIS account confirmed (online) / mailing address (paper) |
+| 1.7 Start I-130 | Payment method ready |
+| 1.8 Upload | Files over 12 MB or wrong format (critical) |
+| 1.9 Pay Filing Fee | Unresolved eligibility blockers |
+| 1.10 Review & Submit | Key dates captured; no unresolved critical issues |
+| 1.12 / 1.13 / 1.14 (paper) | Payment method saved; packet checklist; mailing + tracking saved |
+| 1.15 / 1.16 / 1.17 | Receipt number format |
+| 2.2 Pay NVC Fees | Save fee status |
+| 2.3 DS-260 | 3 key dates vs I-130 (critical on mismatch); disclose everything told to USCIS |
+| 2.4 Civil Documents | Missing required / conditional civil docs (critical); translations; reciprocity schedule |
+| 2.5 Affidavit of Support | Income shortfall in dollars (warning) -> joint sponsor |
+| 2.6 Financial Documents | Each sponsor's most recent tax year |
+| 2.7 Joint Sponsor | Add one when income is short |
+| 2.8 Review & Submit to NVC | DS-260 done, civil docs complete, income gap resolved |
+| 2.10 / 2.12 | Record DQ date / interview date |
+| 3.1 Schedule Medical | Book early; warning once an interview date exists without an exam |
+| 3.2 Polio Certificate | Get it before the medical |
+| 3.3 Fresh PCC | Apply for a fresh one (warning), then track until held |
+| 3.4 Attend Medical | Never open the sealed envelope |
+| 3.6 Gather Originals | Required original groups (read from the step's checklist); originals match filed forms |
+| 3.8 Prepare for Interview | Answers must match DS-260; be ready to explain declared issues |
+| 3.9 Attend Interview | Originals gathered, prep done, no electronics, arrive early |
+| 3.10 Confirm Outcome | Record the outcome |
+| 3.11 Track Visa Issuance | Verify visa details on arrival (approved path) |
+| 3.12 Submit 221(g) Documents | Submit exactly what was requested |
+
+No check by design: 1.1, 1.2 (handled by risk banner / evidence engine), 1.11, 1.18-1.25 (USCIS
+notice branches), 2.1, 2.9, 2.11, 3.5, 3.7, 3.11b, 3.13 (sign-in, waiting, or how-to steps).
+
+### 7.2 IR-5 (`IR5_STEP_CHECKERS`)
+
+Same as IR-1 except:
+
+| IR-5 step | Check |
+| --- | --- |
+| 1.4 Fill I-130 | Both DOBs captured; prove the parent-child link (petitioner's birth certificate naming the parent) |
+| 1.5 Create USCIS Account | IR-1's 1.6 check |
+| 1.6 Start I-130, 1.8 Pay Filing Fee, 1.10 Print Hard Copy | none |
+| 1.7 Upload | IR-1's 1.8 file-quality check |
+| 1.9 Review & Submit | Both DOBs captured; no unresolved critical issues (IR-5 risk detector) |
+| 1.11 / 1.12 / 1.13 (paper) | IR-1's 1.12 / 1.13 / 1.14 |
+| 2.3 DS-260 | DOB cross-check (no marriage date); IR-5 disclosures |
+| 3.8 Prepare for Interview | Parent-relationship wording; IR-5 interview disclosures |
+
+### 7.3 IR-2 / CR-2 (`IR2_STEP_CHECKERS`)
+
+Shipped: `lib/case-strength/categories/ir2.ts`. Step layout matches IR-5 (24 steps in Chapter 1, no I-130A).
+
+| IR-2 step | Check |
+| --- | --- |
+| 1.4 Fill I-130 | Both DOBs captured; prove qualifying child relationship (birth cert, out-of-wedlock legitimation, stepchild marriage < 18, adoption decree < 16 + 2 yrs custody/residence) |
+| 1.5 Create USCIS Account | IR-1's 1.6 check (shifted) |
+| 1.6 Start I-130, 1.8 Pay Filing Fee, 1.10 Print Hard Copy | none |
+| 1.7 Upload | IR-1's 1.8 file-quality check (shifted) |
+| 1.9 Review & Submit | Both DOBs captured; no unresolved critical issues (IR-2 risk detector: CSPA age-out, marital status, guardianship vs adoption) |
+| 1.11 / 1.12 / 1.13 (paper) | IR-1's 1.12 / 1.13 / 1.14 |
+| 2.3 DS-260 | DOB cross-check (no marriage date); IR-2 child disclosures (visa refusals, police records, prior marriage dissolution) |
+| 3.8 Prepare for Interview | Child interview wording; non-accompanying parent custody/consent disclosures |
 
 ---
 
-## 14. Legal Disclaimer
+## 8. Entitlements
+
+`case_strength` in `lib/entitlements/config.ts`: Premium and Executive = full; Free and Basic =
+locked with a buyable add-on. Inside a journey, gate through `useJourneyPlan` (journey tier),
+not the account tier.
+
+---
+
+## 9. Known gaps and next steps
+
+1. **Engine `StepView` widgets placed by literal key.** `FileQualityPreCheck` renders on
+   `step_1_8` and `PreSubmissionSnapshot` on `step_1_10`. In the engine dashboard (IR-5, IR-2)
+   those keys are Pay Filing Fee and Print Hard Copy; the matching steps are `step_1_7` and
+   `step_1_9`. Only the USCIS-account widget is already layout-aware (`isUscisAccountStep`).
+2. **`PreSubmissionSnapshot` (engine copy) always shows a "Marriage date" row**, also on IR-5.
+   It should read the rows from `profile.baselineFields`.
+3. **Semantic check ids (recommended next refactor).** Binding by positional key is the main
+   scalability cost (section 6). Proposal: each JSON step declares `"csa_check": "<id>"`
+   (e.g. `uscis_account`, `file_upload_quality`, `review_submit_gate`); a shared library maps
+   ids to checkers; each profile's `stepCheckers` is built from its JSON at load time, and only
+   category-specific ids need new code. The same id would place UI widgets (gap 1). Checkers
+   that call `done("step_x_y")` internally would need the id-to-key lookup too.
+4. **IR-1 checker naming.** IR-1's 1.7 (Start I-130) carries the payment check and 1.9 (Pay
+   Filing Fee) the blockers check; the content still fits the position but the in-code comments
+   say otherwise.
+5. **IR-2 profile** (section 7.3).
+
+---
+
+## 10. Legal disclaimer
 
 > [!CAUTION]
-> The Case Strength Analysis is an **advisory self-assessment tool**. It does not constitute legal advice, does not guarantee any immigration outcome, and should not be relied upon as a substitute for consultation with a qualified immigration attorney. USCIS adjudication decisions are made on a case-by-case basis and may consider factors not captured by this tool.
+> The Case Strength Analysis is an **advisory self-assessment tool**. It does not constitute
+> legal advice, does not guarantee any immigration outcome, and should not be relied upon as a
+> substitute for consultation with a qualified immigration attorney. USCIS adjudication
+> decisions are made case by case and may consider factors this tool does not capture.
 
 This disclaimer must appear on every Case Strength view.

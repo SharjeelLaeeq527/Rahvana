@@ -527,6 +527,68 @@ describe('Webhook — customer.subscription.deleted (per-journey plans)', () => 
     expect((stripeConfig.stripe as any).subscriptions.cancel).not.toHaveBeenCalled()
   })
 
+  it('mixed roster: cancelling the IR-2 plan frees the IR-2 child (candidate-3, slot 1), not IR-5 candidate-2', async () => {
+    const journeys = [
+      journey('j5', 'ir5', 'premium', 'sub_ir5'),
+      journey('j5c2', 'ir5_candidate2', 'basic', 'sub_c2'),
+      journey('j2', 'ir2', 'executive', 'sub_ir2'),
+    ]
+    const roster = [
+      { id: 'candidate-1', visaCategory: 'IR-5', tier: 'premium' },
+      { id: 'candidate-2', visaCategory: 'IR-5', tier: 'basic' },
+      { id: 'candidate-3', visaCategory: 'IR-2', categorySlot: 1, tier: 'executive' },
+    ]
+    const { profileUpdates } = useFakeDb(
+      buildUserProfile({
+        subscription_tier: 'executive',
+        profile_details: { stripe_subscription_id: 'sub_ir5', purchased_addons: [], candidates: roster },
+      }),
+      journeys
+    )
+    cancelEvent('sub_ir2')
+
+    await POST(makeRequest({}))
+
+    expect(journeys.map((j) => j.subscription_tier)).toEqual(['premium', 'basic', 'free'])
+    const rosterUpdate = profileUpdates.find((u) => u.profile_details?.candidates)
+    expect(rosterUpdate.profile_details.candidates.map((c: any) => [c.id, c.tier])).toEqual([
+      ['candidate-1', 'premium'],
+      ['candidate-2', 'basic'],
+      ['candidate-3', 'free'],
+    ])
+  })
+
+  it('mixed roster: cancelling IR-5 candidate-2 leaves the IR-2 child paid', async () => {
+    const journeys = [
+      journey('j5', 'ir5', 'premium', 'sub_ir5'),
+      journey('j5c2', 'ir5_candidate2', 'basic', 'sub_c2'),
+      journey('j2', 'ir2', 'executive', 'sub_ir2'),
+    ]
+    const roster = [
+      { id: 'candidate-1', visaCategory: 'IR-5', tier: 'premium' },
+      { id: 'candidate-2', visaCategory: 'IR-5', tier: 'basic' },
+      { id: 'candidate-3', visaCategory: 'IR-2', categorySlot: 1, tier: 'executive' },
+    ]
+    const { profileUpdates } = useFakeDb(
+      buildUserProfile({
+        subscription_tier: 'executive',
+        profile_details: { stripe_subscription_id: 'sub_ir5', purchased_addons: [], candidates: roster },
+      }),
+      journeys
+    )
+    cancelEvent('sub_c2')
+
+    await POST(makeRequest({}))
+
+    expect(journeys.map((j) => j.subscription_tier)).toEqual(['premium', 'free', 'executive'])
+    const rosterUpdate = profileUpdates.find((u) => u.profile_details?.candidates)
+    expect(rosterUpdate.profile_details.candidates.map((c: any) => [c.id, c.tier])).toEqual([
+      ['candidate-1', 'premium'],
+      ['candidate-2', 'free'],
+      ['candidate-3', 'executive'],
+    ])
+  })
+
   it('cancelling the IR-1 plan leaves the IR-2 journey paid', async () => {
     const journeys = [
       journey('j1', 'IR1', 'premium', 'sub_ir1'),

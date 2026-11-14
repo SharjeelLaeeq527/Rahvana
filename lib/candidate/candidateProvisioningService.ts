@@ -2,13 +2,24 @@
 // ============================================================================
 // Multi-Candidate & Document Vault Auto-Provisioning Service
 //
-// Automatically provisions candidate profiles (Candidate 1, Candidate 2, etc.),
-// their dedicated candidate journeys in Supabase, and their isolated
-// Document Vault configurations upon successful journey checkout or plan activation.
+// Automatically provisions candidate profiles, their dedicated candidate journeys in
+// Supabase, and their isolated Document Vault configurations upon successful journey
+// checkout or plan activation.
 // ============================================================================
 
 import { SupabaseClient } from "@supabase/supabase-js";
-import { getCandidateJourneyKey, isMultiCandidateCategory } from "./candidateSyncService";
+import { createNewCandidate, isMultiCandidateCategory } from "./candidateSyncService";
+import {
+  canonicalJourneyKey,
+  candidateIdNumber,
+  categoryPrimaryOf,
+  getCandidateSlot,
+  getJourneyKeyForCandidate,
+  isSamePool,
+  journeyKeyForSlot,
+  poolMembers,
+} from "./candidateKeys";
+import { CANDIDATE_ID_HIGH_WATER_KEY, loadAllocationState } from "./candidateAllocation";
 import type { CandidateProfile, CandidateRelation, CandidateTier } from "@/types/candidate";
 import { DocumentDatabaseStorage } from "@/lib/document-vault/storage-database";
 import { journeyService } from "@/lib/journey/service";
@@ -28,7 +39,7 @@ function provisioningConfigPath(canonicalVisa: string): string {
     : "data/visa-category/ir-1.json";
 }
 
-/** Candidate-1 defaults when the roster is empty (IR-1 / IR-5 values are unchanged). */
+/** Defaults for a pool's first candidate (IR-1 / IR-5 values are unchanged). */
 function primaryCandidateDefaults(canonicalVisa: string): {
   relation: CandidateRelation;
   colorTag: CandidateProfile["colorTag"];
@@ -58,9 +69,22 @@ export interface ProvisionResult {
   error?: string;
 }
 
+type JourneyRow = { id: string; journey_type: string; subscription_tier: string | null };
+
 /**
- * Automatically provisions candidate profiles, journey roadmaps, and document vaults
- * according to the purchased candidateCount (e.g. 1 parent vs 2+ parents on IR-5, or multiple children on IR-2).
+ * Provisions candidates, journeys and vaults for a confirmed purchase. Runs with the
+ * service-role client (verify-session / webhook).
+ *
+ * Everything is scoped to the purchased category's POOL (IR-5 | IR-2 + CR-2 | ...):
+ *  - The plan is stamped on the target candidate's journey: `targetCandidateId` when it
+ *    belongs to the pool, otherwise the pool's slot-1 candidate (base journey). A
+ *    candidate of ANOTHER category is never touched, so buying IR-2 on an IR-5 account
+ *    no longer upgrades IR-5 candidate 1.
+ *  - A pool without candidates gets a new slot-1 candidate (new account-wide id), which
+ *    adopts the purchased base journey.
+ *  - Add-candidate purchases append new candidates with fresh ids and the lowest free
+ *    slots (never a slot whose journey still holds data).
+ *  - Every vault is created with the purchased category (CR-2 -> IR-2), never "IR-5".
  */
 export async function provisionCandidateJourneysAndVaults({
   supabase,
@@ -77,84 +101,72 @@ export async function provisionCandidateJourneysAndVaults({
     const isMultiCandidate = isMultiCandidateCategory(visaCategory);
     // CR-2 is provisioned as the IR-2 journey (same config, journey_type and candidate keys).
     const canonicalVisa = journeyBaseCategory(visaCategory);
-    const normVisaType = canonicalVisa.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+    const baseKey = journeyKeyForSlot(canonicalVisa, 1);
     const effectiveCount = isMultiCandidate ? Math.max(1, candidateCount) : 1;
+    const configPath = provisioningConfigPath(canonicalVisa);
+    const now = () => new Date().toISOString();
 
     const dbStorage = new DocumentDatabaseStorage(supabase);
 
-    // ── 1. Ensure Primary Journey Exists and Has Tier ────────────────────────
-    let primaryJourneyId: string | undefined;
-
-    const { data: existingPrimary } = await supabase
-      .from("journeys")
-      .select("id, subscription_tier")
-      .eq("user_id", userId)
-      .ilike("journey_type", normVisaType)
+    // ── 0. Roster + existing rows ─────────────────────────────────────────────
+    const { data: profileRow } = await supabase
+      .from("user_profiles")
+      .select("profile_details")
+      .eq("id", userId)
       .maybeSingle();
 
-    const isExistingPrimaryPaid =
-      existingPrimary?.subscription_tier &&
-      existingPrimary.subscription_tier.toLowerCase() !== "free";
+    const profileDetails = (profileRow?.profile_details || {}) as Record<string, unknown>;
+    let roster: CandidateProfile[] = Array.isArray(profileDetails.candidates)
+      ? [...(profileDetails.candidates as CandidateProfile[])]
+      : [];
 
-    // Adding an additional candidate to an existing IR-5 roster occurs only when specifically requested
-    // (isAddCandidate flag is true) AND an active paid primary journey already exists.
-    // If isAddCandidate is false (e.g. an upgrade or initial purchase), we upgrade the targeted candidate (or candidate-1).
-    const isAddingToExistingRoster = Boolean(
-      isMultiCandidate && isAddCandidate && isExistingPrimaryPaid
-    );
+    const allocation = await loadAllocationState(supabase, userId, profileDetails, roster);
+    let highWater = allocation.highWater;
+    const blockedKeys = new Set(allocation.blockedKeys);
+    const rows: JourneyRow[] = [...allocation.journeys];
 
-    const targetCandKey = targetCandidateId
-      ? getCandidateJourneyKey(canonicalVisa, targetCandidateId)
-      : normVisaType;
+    const rowForKey = (key: string): JourneyRow | undefined => {
+      const matches = rows.filter((j) => canonicalJourneyKey(j.journey_type) === key);
+      return (
+        matches.find((j) => (j.subscription_tier || "free").toLowerCase() !== "free") ?? matches[0]
+      );
+    };
 
-    if (existingPrimary) {
-      primaryJourneyId = existingPrimary.id;
-      if (!isAddingToExistingRoster) {
-        const journeyUpdatePayload: Record<string, unknown> = {
-          subscription_tier: tier,
-          stripe_subscription_id: stripeSubscriptionId || undefined,
-          updated_at: new Date().toISOString(),
-        };
-        // Reset 12-month subscription schedule from the upgrade date
-        if (isUpgrade) {
-          journeyUpdatePayload.created_at = new Date().toISOString();
-        }
+    /** Stamp the plan on the row for `key`, creating (and seeding) it when missing. */
+    const stampJourney = async (key: string, resetSchedule: boolean): Promise<string | undefined> => {
+      const payload: Record<string, unknown> = {
+        subscription_tier: tier,
+        stripe_subscription_id: stripeSubscriptionId || undefined,
+        updated_at: now(),
+      };
+      // Reset the 12-month subscription schedule from the upgrade date.
+      if (resetSchedule) payload.created_at = now();
 
-        if (!targetCandidateId || targetCandidateId === "candidate-1") {
-          await supabase
-            .from("journeys")
-            .update(journeyUpdatePayload)
-            .eq("id", existingPrimary.id);
-        } else {
-          // Updating a specific secondary candidate's journey row
-          await supabase
-            .from("journeys")
-            .update(journeyUpdatePayload)
-            .eq("user_id", userId)
-            .ilike("journey_type", targetCandKey);
-        }
+      const existing = rowForKey(key);
+      if (existing) {
+        await supabase.from("journeys").update(payload).eq("id", existing.id);
+        existing.subscription_tier = tier;
+        return existing.id;
       }
-    } else {
-      // Seed a full journey from the template config
-      const configPath = provisioningConfigPath(canonicalVisa);
 
+      let journeyId: string | undefined;
       try {
         const created = await journeyService.createJourneyFromConfig(
           configPath,
-          { journey_type: normVisaType },
+          { journey_type: key },
           { supabase, user: { id: userId } }
         );
-        primaryJourneyId = created?.journey?.id || created?.id;
+        journeyId = created?.journey?.id;
       } catch (err) {
-        console.warn("[provisioning] createJourneyFromConfig primary fallback:", err);
+        console.warn(`[provisioning] Error seeding journey config for ${key}:`, err);
       }
 
-      if (!primaryJourneyId) {
+      if (!journeyId) {
         const { data: inserted } = await supabase
           .from("journeys")
           .insert({
             user_id: userId,
-            journey_type: normVisaType,
+            journey_type: key,
             filing_method: "online",
             sponsor_structure: "individual",
             subscription_tier: tier,
@@ -163,319 +175,148 @@ export async function provisionCandidateJourneysAndVaults({
           })
           .select("id")
           .single();
-        primaryJourneyId = inserted?.id;
+        journeyId = inserted?.id;
       } else {
-        await supabase
-          .from("journeys")
-          .update({
-            subscription_tier: tier,
-            stripe_subscription_id: stripeSubscriptionId || undefined,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", primaryJourneyId);
+        await supabase.from("journeys").update(payload).eq("id", journeyId);
       }
-    }
+      if (journeyId) {
+        rows.push({ id: journeyId, journey_type: key, subscription_tier: tier });
+        blockedKeys.add(key);
+      }
+      return journeyId;
+    };
 
-    // ── 2. Initialize Candidate 1 Document Vault ─────────────────────────────
-    if (primaryJourneyId) {
+    const ensureVault = async (journeyId: string, beneficiaryName: string) => {
       try {
-        const existingVault = await dbStorage.getVaultConfig(userId, primaryJourneyId);
+        const existingVault = await dbStorage.getVaultConfig(userId, journeyId);
         if (!existingVault) {
           await dbStorage.saveVaultConfig({
             userId,
             visaCategory: canonicalVisa,
-            journeyId: primaryJourneyId,
+            journeyId,
             scenarioFlags: {},
             dynamicDocuments: {},
-            beneficiaryName: "Candidate 1",
+            beneficiaryName,
           });
         }
       } catch (err) {
-        console.warn("[provisioning] Primary vault init error (non-fatal):", err);
+        console.warn(`[provisioning] Vault init error for ${beneficiaryName} (non-fatal):`, err);
       }
-    }
+    };
 
-    // ── 3. Fetch and Update Candidate Roster in user_profiles ────────────────
-    const { data: profileRow } = await supabase
-      .from("user_profiles")
-      .select("profile_details")
-      .eq("id", userId)
-      .maybeSingle();
-
-    const profileDetails = (profileRow?.profile_details || {}) as Record<string, unknown>;
-    const existingCandidates: CandidateProfile[] = Array.isArray(profileDetails.candidates)
-      ? (profileDetails.candidates as CandidateProfile[])
-      : [];
-
-    let updatedCandidates: CandidateProfile[] = [...existingCandidates];
-
-    // Ensure targeted candidate (or Candidate 1) is in the roster with purchased tier
-    const targetCandidateToUpdate = targetCandidateId || "candidate-1";
-    const targetCandIndex = updatedCandidates.findIndex((c) => c.id === targetCandidateToUpdate);
-    if (targetCandIndex >= 0) {
-      if (!isAddingToExistingRoster) {
-        updatedCandidates[targetCandIndex] = {
-          ...updatedCandidates[targetCandIndex],
-          tier: tier as CandidateTier,
-          isPreview: false,
-          visaCategory: updatedCandidates[targetCandIndex].visaCategory || canonicalVisa,
-          createdAt: isUpgrade
-            ? new Date().toISOString()
-            : updatedCandidates[targetCandIndex].createdAt,
-        };
-      }
-    } else {
-      updatedCandidates.unshift({
-        id: "candidate-1",
-        label: "Candidate 1",
-        relation: primaryCandidateDefaults(canonicalVisa).relation,
-        fullName: "",
+    const addPoolCandidate = (forcedSlot?: number): CandidateProfile => {
+      const defaults = primaryCandidateDefaults(canonicalVisa);
+      const candidate = createNewCandidate(roster, {
+        relation: defaults.relation,
         visaCategory: canonicalVisa,
-        tier: tier as CandidateTier,
-        isPrimary: true,
-        isPreview: false,
-        createdAt: new Date().toISOString(),
-        colorTag: primaryCandidateDefaults(canonicalVisa).colorTag,
+        highWater,
+        blockedKeys,
+        categorySlot: forcedSlot,
       });
-    }
+      const added: CandidateProfile = {
+        ...candidate,
+        tier: tier as CandidateTier,
+        colorTag: roster.length === 0 ? defaults.colorTag : candidate.colorTag,
+      };
+      roster = [...roster, added];
+      highWater = Math.max(highWater, candidateIdNumber(added.id) ?? 0);
+      return added;
+    };
+
+    const setRosterTier = (candidateId: string, resetSchedule: boolean) => {
+      roster = roster.map((c) =>
+        c.id === candidateId
+          ? {
+              ...c,
+              tier: tier as CandidateTier,
+              isPreview: false,
+              createdAt: resetSchedule ? now() : c.createdAt,
+            }
+          : c
+      );
+    };
 
     const candidateJourneyIds: Record<string, string> = {};
-    if (primaryJourneyId) {
-      candidateJourneyIds["candidate-1"] = primaryJourneyId;
+
+    // ── 1. The pool's base journey / the targeted candidate ───────────────────
+    const baseRow = rowForKey(baseKey);
+    const isBasePaid = Boolean(
+      baseRow?.subscription_tier && baseRow.subscription_tier.toLowerCase() !== "free"
+    );
+    // Adding candidates to an existing roster happens only when requested AND the
+    // pool's base journey is already paid; otherwise the purchase is for the target.
+    const isAddingToExistingRoster = Boolean(isMultiCandidate && isAddCandidate && isBasePaid);
+
+    let primaryJourneyId: string | undefined = baseRow?.id;
+
+    if (!isAddingToExistingRoster) {
+      const explicitTarget = targetCandidateId
+        ? roster.find(
+            (c) => c.id === targetCandidateId && isSamePool(c.visaCategory, canonicalVisa)
+          )
+        : undefined;
+      let target: CandidateProfile | undefined =
+        explicitTarget ?? categoryPrimaryOf(roster, canonicalVisa) ?? undefined;
+      if (!target) {
+        // No candidate in this pool yet (e.g. IR-2 bought before the child was added):
+        // a new slot-1 candidate adopts the purchased base journey.
+        target = addPoolCandidate(1);
+      }
+      const targetKey = getJourneyKeyForCandidate(target);
+      const journeyId = await stampJourney(targetKey, isUpgrade);
+      setRosterTier(target.id, isUpgrade);
+      if (journeyId) {
+        candidateJourneyIds[target.id] = journeyId;
+        if (targetKey === baseKey) primaryJourneyId = journeyId;
+        await ensureVault(journeyId, target.customName || target.label || "Candidate 1");
+      }
+    } else if (primaryJourneyId) {
+      const owner = categoryPrimaryOf(roster, canonicalVisa);
+      if (owner) candidateJourneyIds[owner.id] = primaryJourneyId;
+      await ensureVault(primaryJourneyId, owner?.customName || owner?.label || "Candidate 1");
     }
 
-    // ── 4. Provision Additional Candidates & Vaults (Multi-candidate journeys) ──────
+    // ── 2. Additional candidates (multi-candidate categories) ─────────────────
     if (isMultiCandidate) {
-      const configPath = provisioningConfigPath(canonicalVisa);
-      const defaultRelation: CandidateRelation =
-        canonicalVisa === "IR-2" || canonicalVisa === "CR-2" ? "Child" : "Other";
-
       if (isAddingToExistingRoster) {
-        // Appending new candidate(s) to the existing roster
-        const currentCount = updatedCandidates.length;
-        const colorPalette: Array<CandidateProfile["colorTag"]> = [
-          "teal",
-          "blue",
-          "purple",
-          "amber",
-          "rose",
-          "emerald",
-        ];
-
-        for (let k = 1; k <= effectiveCount; k++) {
-          const nextNum = currentCount + k;
-          const candId = `candidate-${nextNum}`;
-          const colorTag = colorPalette[(nextNum - 1) % colorPalette.length];
-
-          const newCandidate: CandidateProfile = {
-            id: candId,
-            label: `Candidate ${nextNum}`,
-            relation: defaultRelation,
-            fullName: "",
-            visaCategory: canonicalVisa,
-            tier: tier as CandidateTier,
-            isPrimary: false,
-            isPreview: false,
-            createdAt: new Date().toISOString(),
-            colorTag,
-          };
-          updatedCandidates.push(newCandidate);
-
-          // Provision Candidate's Journey row in Supabase
-          const journeyKey = getCandidateJourneyKey(canonicalVisa, candId);
-          let candJourneyId: string | undefined;
-
-          const { data: existingCandJourney } = await supabase
-            .from("journeys")
-            .select("id")
-            .eq("user_id", userId)
-            .eq("journey_type", journeyKey)
-            .maybeSingle();
-
-          if (existingCandJourney) {
-            candJourneyId = existingCandJourney.id;
-            await supabase
-              .from("journeys")
-              .update({
-                subscription_tier: tier,
-                stripe_subscription_id: stripeSubscriptionId || undefined,
-                updated_at: new Date().toISOString(),
-              })
-              .eq("id", existingCandJourney.id);
-          } else {
-            try {
-              const created = await journeyService.createJourneyFromConfig(
-                configPath,
-                { journey_type: journeyKey },
-                { supabase, user: { id: userId } }
-              );
-              candJourneyId = created?.journey?.id || created?.id;
-            } catch (err) {
-              console.warn(`[provisioning] Error seeding journey config for ${journeyKey}:`, err);
-            }
-
-            if (!candJourneyId) {
-              const { data: inserted } = await supabase
-                .from("journeys")
-                .insert({
-                  user_id: userId,
-                  journey_type: journeyKey,
-                  filing_method: "online",
-                  sponsor_structure: "individual",
-                  subscription_tier: tier,
-                  stripe_subscription_id: stripeSubscriptionId || undefined,
-                  status: "not_started",
-                })
-                .select("id")
-                .single();
-              candJourneyId = inserted?.id;
-            } else {
-              await supabase
-                .from("journeys")
-                .update({
-                  subscription_tier: tier,
-                  stripe_subscription_id: stripeSubscriptionId || undefined,
-                  updated_at: new Date().toISOString(),
-                })
-                .eq("id", candJourneyId);
-            }
-          }
-
-          if (candJourneyId) {
-            candidateJourneyIds[candId] = candJourneyId;
-
-            // Provision isolated Document Vault for Candidate nextNum
-            try {
-              const existingCandVault = await dbStorage.getVaultConfig(userId, candJourneyId);
-              if (!existingCandVault) {
-                await dbStorage.saveVaultConfig({
-                  userId,
-                  visaCategory: "IR-5",
-                  journeyId: candJourneyId,
-                  scenarioFlags: {},
-                  dynamicDocuments: {},
-                  beneficiaryName: `Candidate ${nextNum}`,
-                });
-              }
-            } catch (err) {
-              console.warn(`[provisioning] Candidate ${nextNum} vault init error (non-fatal):`, err);
-            }
+        // Append `effectiveCount` new candidates with fresh ids and free slots.
+        for (let k = 0; k < effectiveCount; k++) {
+          const added = addPoolCandidate();
+          const journeyId = await stampJourney(getJourneyKeyForCandidate(added), false);
+          if (journeyId) {
+            candidateJourneyIds[added.id] = journeyId;
+            await ensureVault(journeyId, added.label);
           }
         }
       } else if (effectiveCount > 1) {
-        for (let i = 2; i <= effectiveCount; i++) {
-          const candId = `candidate-${i}`;
-          const cIndex = updatedCandidates.findIndex((c) => c.id === candId);
-
-          if (cIndex >= 0) {
-            updatedCandidates[cIndex] = {
-              ...updatedCandidates[cIndex],
-              tier: tier as CandidateTier,
-              isPreview: false,
-              visaCategory: canonicalVisa,
-            };
-          } else {
-            updatedCandidates.push({
-              id: candId,
-              label: `Candidate ${i}`,
-              relation: defaultRelation,
-              fullName: "",
-              visaCategory: canonicalVisa,
-              tier: tier as CandidateTier,
-              isPrimary: false,
-              isPreview: false,
-              createdAt: new Date().toISOString(),
-              colorTag: i === 2 ? "teal" : i === 3 ? "blue" : i === 4 ? "emerald" : "amber",
-            });
+        // A purchase covering N beneficiaries: the pool's slot-1 candidate was stamped
+        // above; stamp the next existing pool members, then add new ones up to N.
+        const others = poolMembers(roster, canonicalVisa)
+          .filter((c) => getCandidateSlot(c) !== 1)
+          .sort((a, b) => getCandidateSlot(a) - getCandidateSlot(b))
+          .slice(0, effectiveCount - 1);
+        for (const member of others) {
+          const journeyId = await stampJourney(getJourneyKeyForCandidate(member), false);
+          setRosterTier(member.id, false);
+          if (journeyId) {
+            candidateJourneyIds[member.id] = journeyId;
+            await ensureVault(journeyId, member.customName || member.label);
           }
-
-          // Provision Candidate's Journey row in Supabase
-          const journeyKey = getCandidateJourneyKey(canonicalVisa, candId);
-          let candJourneyId: string | undefined;
-
-          const { data: existingCandJourney } = await supabase
-            .from("journeys")
-            .select("id")
-            .eq("user_id", userId)
-            .eq("journey_type", journeyKey)
-            .maybeSingle();
-
-          if (existingCandJourney) {
-            candJourneyId = existingCandJourney.id;
-            await supabase
-              .from("journeys")
-              .update({
-                subscription_tier: tier,
-                stripe_subscription_id: stripeSubscriptionId || undefined,
-                updated_at: new Date().toISOString(),
-              })
-              .eq("id", existingCandJourney.id);
-          } else {
-            try {
-              const created = await journeyService.createJourneyFromConfig(
-                configPath,
-                { journey_type: journeyKey },
-                { supabase, user: { id: userId } }
-              );
-              candJourneyId = created?.journey?.id || created?.id;
-            } catch (err) {
-              console.warn(`[provisioning] Error seeding journey config for ${journeyKey}:`, err);
-            }
-
-            if (!candJourneyId) {
-              const { data: inserted } = await supabase
-                .from("journeys")
-                .insert({
-                  user_id: userId,
-                  journey_type: journeyKey,
-                  filing_method: "online",
-                  sponsor_structure: "individual",
-                  subscription_tier: tier,
-                  stripe_subscription_id: stripeSubscriptionId || undefined,
-                  status: "not_started",
-                })
-                .select("id")
-                .single();
-              candJourneyId = inserted?.id;
-            } else {
-              await supabase
-                .from("journeys")
-                .update({
-                  subscription_tier: tier,
-                  stripe_subscription_id: stripeSubscriptionId || undefined,
-                  updated_at: new Date().toISOString(),
-                })
-                .eq("id", candJourneyId);
-            }
-          }
-
-          if (candJourneyId) {
-            candidateJourneyIds[candId] = candJourneyId;
-
-            // Provision isolated Document Vault for Candidate i
-            try {
-              const existingCandVault = await dbStorage.getVaultConfig(userId, candJourneyId);
-              if (!existingCandVault) {
-                await dbStorage.saveVaultConfig({
-                  userId,
-                  visaCategory: "IR-5",
-                  journeyId: candJourneyId,
-                  scenarioFlags: {},
-                  dynamicDocuments: {},
-                  beneficiaryName: `Candidate ${i}`,
-                });
-              }
-            } catch (err) {
-              console.warn(`[provisioning] Candidate ${i} vault init error (non-fatal):`, err);
-            }
+        }
+        for (let k = others.length + 1; k < effectiveCount; k++) {
+          const added = addPoolCandidate();
+          const journeyId = await stampJourney(getJourneyKeyForCandidate(added), false);
+          if (journeyId) {
+            candidateJourneyIds[added.id] = journeyId;
+            await ensureVault(journeyId, added.label);
           }
         }
       }
     }
 
-    // ── 5. Save Updated Candidates to user_profiles ──────────────────────────
+    // ── 3. Save roster + account summary ──────────────────────────────────────
     const TIER_RANK: Record<string, number> = { free: 0, basic: 1, premium: 2, executive: 3 };
-    const highestRank = updatedCandidates.reduce((max, c) => {
+    const highestRank = roster.reduce((max, c) => {
       const rank = TIER_RANK[(c.tier || "free").toLowerCase()] || 0;
       return Math.max(max, rank);
     }, TIER_RANK[(tier || "free").toLowerCase()] || 0);
@@ -489,26 +330,27 @@ export async function provisionCandidateJourneysAndVaults({
         subscription_status: "active",
         profile_details: {
           ...profileDetails,
-          candidates: updatedCandidates,
-          activeCandidateId: profileDetails.activeCandidateId || "candidate-1",
+          candidates: roster,
+          activeCandidateId: profileDetails.activeCandidateId || roster[0]?.id || "candidate-1",
+          [CANDIDATE_ID_HIGH_WATER_KEY]: highWater,
         },
-        updated_at: new Date().toISOString(),
+        updated_at: now(),
       })
       .eq("id", userId);
 
     return {
       success: true,
-      provisionedCandidates: updatedCandidates,
+      provisionedCandidates: roster,
       primaryJourneyId,
       candidateJourneyIds,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[provisionCandidateJourneysAndVaults] Error:", error);
     return {
       success: false,
       provisionedCandidates: [],
       candidateJourneyIds: {},
-      error: error?.message || "Unknown provisioning error",
+      error: error instanceof Error ? error.message : "Unknown provisioning error",
     };
   }
 }

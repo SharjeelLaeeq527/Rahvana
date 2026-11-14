@@ -221,16 +221,21 @@ the two slug maps must stay in sync.** Pages are wrapped by `[visa-journey]/layo
 - `types/tool-mode.ts` + `lib/hooks/useResolveToolMode.ts` resolve a tool's mode:
   explicit `mode` prop > auto-detect from the journey environment > `standalone`.
 - **Smart form filler** (`MultiStepForm`) uses it. *Journey mode:* draft key =
-  `getCandidateJourneyKey(category, candidateId)`, candidate pre-fill + sibling-candidate draft
+  the candidate's category-slot journey key (`resolveCandidateJourneyKey`), candidate pre-fill + sibling-candidate draft
   inheritance, not tier-gated. *Standalone mode:* draft key `"standalone"`, no candidate data,
   gated by `plan.canUse("smart_form_filler")`; `api/visa-forms/[formCode]/progress` never falls
   back to the legacy `global` draft for standalone.
 
 **Journey toolbox (app groups).** `types/app-groups.ts` + `lib/constants/journey-app-groups.ts`
 define `JOURNEY_APP_GROUPS`: **Tools** (221g planner, interview prep, sponsorship calculator,
-DQ check, photo booth, PDF toolkit, snap & sign, smart form filler), **Guides** (7 guides),
-**Services** (consultation, PCC Sindh, medical booking, translation). Each item has a
-`componentKey`; `TOOL_FEATURE_MAP` maps it to an entitlement feature key. `AppGroupGrid`
+CSPA age-out checker, DQ check, photo booth, PDF toolkit, snap & sign, smart form filler),
+**Guides** (7 guides), **Services** (consultation, PCC Sindh, medical booking, translation). Each
+item has a `componentKey`; `TOOL_FEATURE_MAP` maps it to an entitlement feature key (`null` = free,
+never locked). An item with `visaCategories` (e.g. the CSPA checker: `["IR-2", "CR-2"]`) shows only
+on a journey of that base category; `getJourneyAppGroups(null)` still returns the full catalog.
+A step can point at a toolbox tool with a JSON `companion_tool` (`{component_key, title, body,
+button_label}`) on `tool_data` or on a quest (`show_when` = result states); StepView /
+QuestRenderer render `CompanionToolCard`, which launches it through the same `onLaunchTool` path. `AppGroupGrid`
 (in `journey-engine/`) is rendered by BOTH dashboards' `DashboardView`; clicking a group opens
 `AppGroupModal` (portal, search, lock state from `useJourneyPlan`; locked items open
 `UpgradeModal`). Launching an item renders it via
@@ -413,12 +418,12 @@ source). Add-ons come from
 **Per-journey (per-category) tier resolution.** Entitlements resolve against the **active
 journey's category**, not just the account. `PlanContext` reads BOTH
 `user_profiles.subscription_tier` (`accountTier`) AND every `journeys.subscription_tier` in
-parallel, building a `journeyTiers` map keyed by base category
-(`getBaseVisaCategory(journey_type)` -> tier), and exposes it. The effective `realTier` for the
-active journey is: for candidate 2+ (`activeJourneyKey` like `ir5_candidate2`) ONLY that
-candidate's own journey row, else `free` (it never borrows candidate-1's tier); otherwise the
-`journeyTiers[activeCategory]` entry, which is the best PRIMARY row of the category (candidate
-rows are excluded from it); else, if ANY journey has an
+parallel, building a `journeyTiers` map keyed by journey_type AND by journey base category
+(`parseJourneyKey(journey_type).base`, so CR-2 shares IR-2's entry) -> tier, and exposes it. The
+effective `realTier` for the active journey is: for a category slot 2+ (`activeJourneyKey` like
+`ir5_candidate2`) ONLY that candidate's own journey row, else `free` (it never borrows slot 1's
+tier); otherwise the `journeyTiers[activeCategory]` entry, which is the best slot-1 (base) row of
+the category; else, if ANY journey has an
 explicit tier, an **unpurchased category resolves to `free`** (so an IR-1 candidate added on an
 IR-5-purchased account stays free/preview until IR-1 is bought - the existing Stripe flow, no
 new billing); else the legacy `accountTier` (single-journey / pre-`subscription_tier`-column
@@ -431,7 +436,13 @@ payment architecture. **Inside the journey dashboards, gating goes through
 every entitlement against that journey's own `state.subscriptionTier` rather than the account
 tier; use it (not raw `usePlan()`) for anything rendered inside a journey. Verified by `__tests__/candidate/candidate-entitlements.test.ts` (IR-5
 premium + IR-1 unpurchased -> locked; buy IR-1 -> unlocks; no journey tiers -> account
-fallback). One caveat to watch: if a paying account's active candidate is a stale DEFAULTED
+fallback). **Only `journeys.subscription_tier` grants access.** The roster's `candidates[].tier`
+and the legacy stored `profile_details.journeyTiers` / `journey_tiers` map (no writer left) are
+server-owned mirrors / history; `journeys/initialize` treats them only as a hint to ask Stripe
+(`lib/plan/journeyTierRepair.ts`: a live, recognisable plan for the same journey, tagged for this
+candidate or untagged for a slot-1 journey, not already attached to another row) and writes a
+repaired tier with the service-role client. It never copies a client-writable tier onto a row (S1).
+One caveat to watch: if a paying account's active candidate is a stale DEFAULTED
 category (e.g. an IR-1 account whose `profile.visaType` is unset defaults the candidate to
 IR-5), the active category can be wrong; the defaulted-fallback neutralization in
 `CandidateContext` mitigates this but relies on the profile carrying the real category.
@@ -449,7 +460,12 @@ when `action === "upgrade"`; otherwise the purchase is an add-candidate purchase
 tagged `action` / `is_add_candidate` + `candidate_count` in session and subscription metadata.
 That tag is what keeps the post-payment cleanup from cancelling it (or being cancelled by a later
 primary upgrade), see 27 "One live plan per JOURNEY". On confirmation BOTH `verify-session` and the webhook call
-**`provisionCandidateJourneysAndVaults()`** (`lib/candidate/candidateProvisioningService.ts`), which
+**`provisionCandidateJourneysAndVaults()`** (`lib/candidate/candidateProvisioningService.ts`; it
+works inside the purchased category's POOL only: the plan goes on `targetCandidateId` when it is in
+the pool, else the pool's slot-1 candidate; an empty pool gets a new slot-1 candidate with a fresh
+id that adopts the purchased base journey; add-candidate purchases get fresh ids and the lowest
+free slots; every vault is created with the purchased category, CR-2 -> IR-2; a candidate of
+another category is never touched), which
 replaced the old inline "find-or-insert one IR1/IR5 journey row" code. It (1) ensures the primary
 journey exists (seeded from `data/visa-category/ir-1.json` / `ir-5.json` via
 `createJourneyFromConfig`, raw insert as fallback) and stamps its `subscription_tier` /
@@ -479,15 +495,24 @@ Scores case strength grounded in USCIS policy + practitioner patterns, now **sca
 across visa categories via a profile/Strategy pattern** (no longer IR-1-only).
 
 - **Category registry:** `categories/index.ts` — `CASE_STRENGTH_PROFILES = [IR1_PROFILE,
-  IR5_PROFILE]`; `resolveCaseStrengthProfile(journeyType)` normalizes the type and
-  **falls back to `IR1_PROFILE`** for unknown/missing. A `CaseStrengthProfile`
+  IR5_PROFILE, IR2_PROFILE]`; `resolveCaseStrengthProfile(journeyType)` matches by BASE category
+  (`getBaseVisaCategory`, so `ir5_candidate-2` -> IR-5, `ir2_candidate-1` -> IR-2) and returns **`GENERIC_PROFILE`**
+  (`categories/generic.ts`: no step checks, no risks, DOB-only consistency, passports-only
+  evidence) for unknown/missing/unregistered categories - **never `IR1_PROFILE`**. `findCaseStrengthProfile` / `hasCaseStrengthProfile`
+  return null/false for unregistered. A `CaseStrengthProfile`
   (`categories/types.ts`) bundles `stepCheckers`, `stepRefs`, `baselineFields`,
   `detectEligibilityRisks`, `consistency`, `evidence` (EvidenceGapConfig),
   `strengthSignals.relationship`, and optional `caseScore`, `documentEscalation`,
-  `lookAhead`. Adding a category = one new `categories/<slug>.ts` + registry entry.
+  `lookAhead`. Adding a category = one new `categories/<slug>.ts` + registry entry; full
+  playbook in `docs/case_strength_analysis.md` section 3. `__tests__/case-strength/category-contract.test.ts`
+  runs on every chapters-schema JSON (profile registered or listed in `AWAITING_PROFILE`; every
+  checker / look-ahead key exists in that JSON).
 - **Shared core:** `COMMON_STEP_CHECKERS` (`step-checkers.ts`) = IR-1 checkers minus 5
-  category-specific keys (`step_1_4, step_1_9, step_1_10, step_2_3, step_3_7`). IR-5
-  (`categories/ir5.ts`) reuses COMMON and overrides only those 5.
+  category-specific keys (`step_1_4, step_1_9, step_1_10, step_2_3, step_3_8`). IR-5
+  (`categories/ir5.ts`) reuses COMMON, overrides those 5, and re-points shared checkers BY
+  MEANING: **step keys are positional** (IR-5 has no I-130A, so its chapter-1 keys from
+  `step_1_5` sit one lower than IR-1's). Inserting a step in a JSON shifts later keys; update
+  that category's checker keys + tests in the same change.
 - **Weighted Case Health score:** `CASE_SCORE_WEIGHTS` in `case-narrative.ts` =
   **Evidence 0.4 / Consistency 0.3 / Completeness 0.2 / Risk 0.1** (single tuning point).
   `computeWeightedCaseScore` applies risk as inverted "risk health"
@@ -552,7 +577,20 @@ personalization by visa type / sponsor structure / country
 candidate**, coordinated by a central `CandidateContext` (`app/context/CandidateContext.tsx`,
 provided in `app/layout.tsx`). Candidates live on the `MasterProfile`
 (`profile.candidates: CandidateProfile[]` + `activeCandidateId`; see `types/candidate.ts`),
-and each candidate maps to a distinct `journey_type` via
+and each candidate maps to a distinct `journey_type`. **Ids vs category slots (Nov 2026):**
+`id` (`candidate-N`) is account-wide, assigned by the server as one above the highest id ever
+issued (`profile_details.candidateIdHighWater` + ids still found in candidate-tagged tables) and
+never reused; every `candidate_id` column keys on it. `categorySlot` numbers the candidate inside
+its POOL (IR-5 | IR-2 + CR-2 | IR-1 + CR-1 | each other category) and decides the journey key
+(`journeyBaseCategory(cat)` + (slot 1 ? "" : `_candidate{slot}`), so the first IR-2 child is `ir2`
+even when its id is candidate-3) and the default label "Candidate {slot}" (the UI prefixes the
+category, "IR-2 Candidate 1", only when the roster spans 2+ pools). A candidate saved before slots
+existed has no `categorySlot`: its slot is the number in its id, so every pre-slot key is unchanged.
+`isPrimary` still means "the account's first candidate" (owner of untagged legacy rows);
+`isCategoryPrimary()` = slot 1. All helpers live in `lib/candidate/candidateKeys.ts`
+(`getJourneyKeyForCandidate`, `resolveCandidateJourneyKey`, `findCandidateForJourneyKey`,
+`parseJourneyKey`, `formatCandidateLabel`, `nextCandidateId`, `nextCategorySlot`); the legacy
+id-based `getCandidateJourneyKey` is deprecated. Historically this was
 `getCandidateJourneyKey(baseType, candidateId)` in `lib/candidate/candidateSyncService.ts`
 (`ir5` for candidate-1, `ir5_candidate-2` for candidate-2, ...), so the existing
 `UNIQUE(user_id, journey_type)` constraint holds without a schema change. Sponsor/petitioner
@@ -565,7 +603,16 @@ see 10). **Tools are journey-aware:**
 case-status (`uscis_case_history` tags `_candidateId`/`_candidateName`), interview-prep, the
 221g planner and the Sponsorship (I-864) calculator all resolve the active journey/candidate
 from context so their state/results switch with the candidate (shared petitioner inputs stay
-shared). **Candidate persistence (this was a real bug - do not regress).** Candidate roster
+shared). **The roster is server-owned** (`lib/profile/serverOwnedKeys.ts` + the DB guard): ids,
+slots, labels, tiers and primary flags are assigned only by `POST /api/candidate/create` (create:
+`{ candidate: { relation, visaCategory, fullName } }`; update: `{ action: "update", candidateId,
+updates }` with an editable-field whitelist) and Stripe provisioning, both writing with the
+service-role client after auth. A new slot is the lowest one in the pool that no candidate uses AND
+whose key holds no leftover journey row, `visa_forms_draft` row, stored tier entry or
+`journeyCustomizations` entry (`lib/candidate/candidateAllocation.ts`), so a new candidate never
+inherits another person's progress. `addCandidate` is async: `AddCandidateModal` shows "Adding...",
+blocks double submits, and switches / navigates (`?candidateId=`) only after the server answers.
+**Candidate persistence (this was a real bug - do not regress).** Candidate roster
 writes do NOT ride the debounced full-profile save. That path could drop
 `profile_details.candidates` when a racing profile save serialized stale local state, so a
 newly added candidate vanished on refresh. Instead `CandidateContext.addCandidate` /
@@ -577,14 +624,21 @@ ONLY (no `/api/profile/complete` POST), and a **user-scoped** `localStorage` ros
 (`rahvana_candidates_roster_<userId>`) bridges the pre-profile-load window. The cache key is
 keyed by user id on purpose: a bare global key leaked one account's roster to another user on a
 shared browser. `POST /api/profile/complete` and `/api/profile/merge` now do an explicit
-update-if-exists / insert-if-missing (not a blind `upsert`, which was part of the drop). **Candidate deletion** is `POST /api/candidate/delete`: it removes the candidate from
+update-if-exists / insert-if-missing (not a blind `upsert`, which was part of the drop). **Candidate deletion** is `POST /api/candidate/delete` (logic in `lib/candidate/deleteCandidate.ts`).
+Rules: candidate-1 never; a candidate whose journey is paid (row or roster tier not free, or a
+`stripe_subscription_id` Stripe reports live; Stripe unreachable = refused) gets 409 "Cancel this
+candidate's plan before removing them."; a pool's slot-1 candidate only when it is the last of its
+pool. Cleanup is by the candidate's EXACT canonical journey key (never a suffix match): journey row
+(cascades), `visa_forms_draft`, stored tier entry, `journeyCustomizations` (id, `ir5_<id>`, row id,
+key), `user_guides` by candidate_id, then the roster entry; a failed step keeps that slot blocked.
+`CandidateContext.removeCandidate` waits for the server (no optimistic removal). It removes the candidate from
 `profile_details.candidates`, resets `activeCandidateId`, and cleans up that candidate's
 `user_guides` and **its suffixed `journeys` rows** (so a deleted candidate does not leave an
 orphaned journey that would keep the switcher's 2+ gate satisfied); candidate-1 (the base
 journey) can never be deleted. `CandidateContext` also
 exposes the canonical scope of the active journey: **`activeJourneyBase`** (e.g. "IR-1",
-"IR-5") and **`activeJourneyKey`** (the `journey_type` key, `getCandidateJourneyKey(active
-candidate.visaCategory, id)`), derived from the active candidate's own `visaCategory` (not an
+"IR-5") and **`activeJourneyKey`** (the `journey_type` key, `getJourneyKeyForCandidate(active
+candidate)`, from its category slot), derived from the active candidate's own `visaCategory` (not an
 ambient `journey_type`). UI: `CandidateSwitcherTray` (switch / add / rename) is a
 **whole-journey feature rendered in the global `SiteHeader` profile dropdown** (one account,
 multiple beneficiary journeys), NOT a vault-only widget. The switcher is **category-agnostic**
@@ -603,7 +657,15 @@ Father / Stepparent / Adoptive Parent (IR-5), Child (IR-2), and **Spouse (IR-1)*
 the visa category via `getVisaCategoryForRelation`. The only cardinality rule is USCIS's "one
 spouse at a time": a second Spouse is blocked (Spouse hidden once one exists, and
 `CandidateContext.addCandidate` throws) but this never blocks displaying/switching the one
-spouse. A cross-category candidate's journey row + config are created lazily by `initialize`
+spouse. **Category <-> candidate alignment:** the journey page resolves the candidate DURING RENDER
+(`lib/candidate/journeyCandidateResolution.ts`: `?candidateId=` in the URL's pool -> active
+candidate in the pool -> last used in the pool (sessionStorage map, `readLastUsedByPool`) -> the
+pool's slot 1; empty pool = no candidate, base journey, nothing created) and waits for
+`CandidateContext.isRosterReady` before `useWizard`'s first request, so the first `initialize` call
+already carries the right candidate (direct URLs, back/forward, My Journeys). On the server,
+`initialize` and `resolveOwnedJourney` resolve the key from the roster; a candidate of another pool
+resolves to the category's slot-1 key, so no stray row like `ir5_candidate3` is ever created.
+A cross-category candidate's journey row + config are created lazily by `initialize`
 on the URL that the switcher navigates to (URL base is authoritative for the category,
 `candidate_id` selects within it; deliberately NOT candidate-authoritative, because a defaulted
 candidate's `visaCategory` can be a stale IR-5 and would mislabel IR-1 accounts). **The journey
@@ -800,7 +862,8 @@ into `user_profiles.profile_details`** so tools share one profile.
   active journey.
 - **Form drafts:** localStorage + backend (`visa_forms_draft` table) for multi-step forms,
   **scoped by tool mode** (see 4.1 "Journey environment + tool mode"). In journey mode the
-  draft key is `getCandidateJourneyKey(category, candidateId)` (localStorage backup key,
+  draft key is the candidate's category-slot journey key,
+  `resolveCandidateJourneyKey(roster, category, candidateId)` (localStorage backup key,
   hydration key and `visa-forms/[formCode]/progress` reads/writes are all journey-keyed) and
   reads fall back to a legacy `"global"` draft when no journey-specific one exists. In
   standalone mode the key is `"standalone"` with no `global` fallback. The form's
@@ -856,6 +919,13 @@ migrations (`create_{journeys,chapters,steps,case_data}_table.sql`).
 | `steps` | Granular action items | `chapter_id`, `step_key`, `step_type`, `tool_integration`, `dependencies` (JSONB), `visible_when` (JSONB), `status`, `substatus`, `is_required`, `metadata` |
 | `case_data` | Flexible key-value case facts | `journey_id`, `data_key`, `data_value` (JSONB), `source`, `is_verified`, `version`, `previous_value` (audit) |
 
+> **Category slots + S1 guard (`20261113_01_guard_journey_billing_and_roster.sql`, apply by hand
+> after the app release).** `guard_journey_billing` pins `journeys.subscription_tier` /
+> `stripe_subscription_id` for `authenticated` / `anon` (insert = free / null, update keeps the
+> stored values); `guard_user_profile_billing` adds `candidates`, `candidateIdHighWater`,
+> `journeyTiers`, `journey_tiers` to the server-owned profile keys. Only service_role (Stripe
+> paths, candidate create/delete, the Stripe-verified repair) changes them.
+>
 > **Multi-candidate (IR-5/IR-2).** Each candidate is a separate `journeys` row with its own
 > `journey_type` (`ir5`, `ir5_candidate-2`, ...); documents stay scoped by the existing
 > `journey_id`. Candidate rosters live on `user_profiles.profile_details`
@@ -974,7 +1044,7 @@ Python backend. Highlights:
 | `plan/*` | `plan/reconcile` (never-downgrade tier self-heal) | Supabase |
 | `wallet/*` | `wallet` (GET balance + resources usable without paying), `wallet/launch-tool` (POST `{resourceType, resourceId, idempotencyKey?}`; unlocks a tool/guide at the `lib/wallet/catalog.ts` price, 402 + `deficit` / `topupAmount` when short; for Photo Booth one launch = one pack of 2 photos, see 15), `wallet/transactions` (paginated own ledger, max 50/page). All auth-required, service-role after auth, filtered by the session user | Supabase |
 | `journeys|chapters|steps|case_data` | journey CRUD, `journeys/initialize` (combined load + bg step-sync), `journeys/[id]/document-checklist` (`DocumentChecklistEngine`), `case_data/validate` | Supabase, journey engines |
-| `candidate/*` | `candidate/create` (server-side upsert candidate into `profile_details.candidates` + lazy-insert its suffixed `journeys` row; the authoritative save path so candidates survive refresh), `candidate/delete` (remove candidate from `profile_details.candidates` + cleanup its `user_guides` and suffixed `journeys` rows; candidate-1 protected) | Supabase |
+| `candidate/*` | `candidate/create` (server assigns id / category slot / label / tier, writes the roster with service role, seeds the slot-2+ journey; `action: "update"` edits whitelisted fields), `candidate/delete` (v3 rules: candidate-1, paid, category slot 1 with others left are refused; exact-key cleanup) - see 4.7 | Supabase, Stripe |
 | `journey/*` | `journey/marriage-check` (singular; distinct from `journeys`), `journey/upload-image` (journey cover / candidate avatar upload, auth + 5MB image cap), `journey/media` (owner-only: session required, path must be the caller's `journey-media/<userId>/`, see 4.1) | Supabase, Storage |
 | `documents/*` | upload (validate + encrypt + compress), download/preview/export, `config`, `mark-read`, `extract-{passport,cnic,birth,marriage,divorce}` | Supabase Storage, Python, Gemini |
 | `upload/*` | generic authenticated file upload tied to an appointment | Supabase Storage |
@@ -1137,6 +1207,22 @@ Components consume these via hooks/contexts; they should not re-implement domain
   `journey-spouse/components/`) import from here. Sponsor state comes from
   `profile.sponsor.address.state`: the journey `StepView`s pass it in (`lockState` = shown
   read-only), while the standalone `/affidavit-support-calculator` page requires a selector.
+- `lib/tools/cspa/ageOut.ts` - **CSPA age-out checker** rules for a child of a U.S. citizen
+  (IR-2 / CR-2): age frozen on the I-130 filing date (or on the parent's naturalization date when
+  the parent was a green card holder at filing), stepchild marriage before 18, adoption before 16
+  (16-18 = birth-sibling exception only), married = F3, filed at 21+ = F1. Every rule cites an
+  official uscis.gov page in `CSPA_SOURCES`; F2A (INA 203(h) formula), previously married
+  children, an adoption at 16-18, and a 29 Feb child filed (or still unfiled) on 28 Feb of the
+  21st year are deliberately "needs review" (the deadline itself uses 28 Feb, so it is never late).
+  Boundaries are pinned by the "edge cases" block in `__tests__/tools/cspa-age-checker.test.ts`. Legal content pending review (IR-2 plan D6). One UI,
+  `components/tools/CspaAgeCheckerTool.tsx`, FREE in both modes. It opens on an intro card
+  (what the tool is, why it is needed, how it helps; example and needed
+  documents are collapsible; Continue sticks to the bottom on phones) and shows the form after Continue; a journey that
+  already saved a check skips the intro (`skipIntro`). Modes: standalone `/cspa-age-checker`
+  (public, no sign-in, indexable, reads and saves nothing) and journey `cspa_checker`
+  (EmbeddedToolContainer; pre-fill from `lib/tools/cspa/journeyPrefill.ts` reads only the active
+  journey's metadata + the active Child candidate's DOB, and saves to that journey's
+  `metadata.cspaCheck`). Tests: `__tests__/tools/cspa-*.test.ts`.
 - UI utils: `cn()` (clsx + tailwind-merge), shared modals/inputs in `app/components/shared/*`.
 
 ---
@@ -1566,6 +1652,11 @@ External: Stripe . Resend . EasyPost . Gemini . USCIS . GA4 . Sheets . OCR.space
   (`lib/stripe/checkoutLock.ts`) uses a random ownership token + compare-and-delete release so it
   can't delete another request's lock; it stays fail-open on a Redis error (cleanup is the
   backstop).
+- **Never derive a journey key from a candidate id** (`candidate-3` is NOT `_candidate3` any more):
+  use `getJourneyKeyForCandidate(candidate)` or `resolveCandidateJourneyKey(roster, category, id)`,
+  and `findCandidateForJourneyKey` / `candidateIdForJourneyKey` for the reverse. Never match journeys
+  by suffix (`ilike %_candidate2%`); compare `canonicalJourneyKey`. Never write a candidate-tagged row
+  without `candidate_id` (the column defaults to `'candidate-1'`).
 - **`outputFileTracingIncludes`** bundles `data/**` into API routes (routes read
   `data/visa-category/*.json` at runtime).
 - Migrations are applied by hand in filename order (no CLI tracking); a removed file only

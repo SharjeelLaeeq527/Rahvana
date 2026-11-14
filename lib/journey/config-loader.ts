@@ -126,7 +126,7 @@ export class ConfigLoader {
       // Parse JSON string into JavaScript object (still in memory)
       const json = JSON.parse(fileContent);
 
-      console.log(`[ConfigLoader] Successfully loaded journey config: ${json.journey_name}`);
+      // console.log(`[ConfigLoader] Successfully loaded journey config: ${json.journey_name}`);
       return json;
     } catch (error) {
       console.error(`[ConfigLoader] Error loading journey JSON:`, error);

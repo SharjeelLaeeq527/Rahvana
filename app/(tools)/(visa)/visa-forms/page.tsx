@@ -681,15 +681,16 @@ export default function VisaFormSelector({
     journeyTier: propJourneyTier,
   });
 
-  const { activeCandidate } = useCandidate();
+  const { activeCandidate, activeJourneyKey } = useCandidate();
   const plan = usePlan();
   const formWallet = useStandaloneToolUnlock(isJourney ? null : "form-forge");
 
   const candidateTier = isJourney ? activeCandidate?.tier : null;
+  // plan.journeyTiers is keyed by journey_type: look it up by the active candidate's
+  // journey key (category slot), not by candidate id / row id (those never matched).
+  const tierKey = isJourney ? (activeJourneyKey || "").toLowerCase() : "";
   const journeyTiersTier = isJourney
-    ? (plan?.journeyTiers?.[(journeyContext as any)?.journeyId || journeyContext?.backendId || journeyContext?.journeySlug || ""] ||
-       plan?.journeyTiers?.[activeCandidate?.id || ""] ||
-       plan?.journeyTiers?.[journeyContext?.candidateId || ""])
+    ? (plan?.journeyTiers?.[tierKey] || plan?.journeyTiers?.[tierKey.replace(/[^a-z0-9]/g, "")])
     : null;
 
   const effectiveTier = normalizePlanTier(

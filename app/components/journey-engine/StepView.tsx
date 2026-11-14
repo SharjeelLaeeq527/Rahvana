@@ -156,6 +156,7 @@ import { ApUpdateModal } from "./PortalWalletManager";
 import { HouseholdSponsorshipTool } from "./components/HouseholdSponsorshipTool";
 import { DocumentQuestionnaire } from "@/app/components/questionnaire/DocumentQuestionnaire";
 import { QuestRenderer } from "./QuestRenderer";
+import { CompanionToolCard } from "./components/CompanionToolCard";
 import { ActionStepRenderer } from "./ActionStepRenderer";
 import { DocumentChecklistTool } from "./components/DocumentChecklistTool";
 import { SafeHtml } from "../shared/SafeHTML";
@@ -314,8 +315,12 @@ export const StepView: React.FC<StepViewProps> = ({
   const isChapter1 = sId.startsWith("step_1_");
   const isChapter2 = sId.startsWith("step_2_");
   const isChapter3 = sId.startsWith("step_3_");
-  const isIr5Journey = data.journey_type?.toUpperCase() === "IR5";
-  const isUscisAccountStep = sId === "step_1_6" || (isIr5Journey && sId === "step_1_5");
+  const normJourneyType = (data.journey_type || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  const isIr5Journey = normJourneyType === "IR5";
+  // IR-2 (and CR-2, same data file) has no I-130A step either, so its chapter-1 keys follow IR-5.
+  const isIr2Journey = normJourneyType === "IR2" || normJourneyType === "CR2";
+  const usesNoI130aLayout = isIr5Journey || isIr2Journey;
+  const isUscisAccountStep = sId === "step_1_6" || (usesNoI130aLayout && sId === "step_1_5");
   const inlineGuideData = data.inline_guide_data || {};
   // ── Step-level entitlement gating ──────────────────────────────────────────
   const plan = useJourneyPlan(state);
@@ -534,16 +539,25 @@ export const StepView: React.FC<StepViewProps> = ({
     const isIr5 = isIr5Journey;
 
     const milestoneMetaMap: Record<string, { key: string; value?: () => string }> = {
-      ...(isIr5
+      ...(isIr2Journey
         ? {
-            // IR5 Chapter 1 (no I-130A form step, so numbers are shifted down by 1 vs IR1)
+            // IR2 Chapter 1 (no I-130A step). step_1_8 = Review & Sign, step_1_9 = Pay Fee & Submit,
+            // step_1_17 = Receive Approval Notice (step_1_15 is "Save Your USCIS Receipt Number").
+            step_1_5: { key: "uscisAccountCreated", value: () => "true" }, // Create USCIS Account
+            step_1_9: { key: "submissionDate", value: () => new Date().toISOString().slice(0, 10) }, // Pay Fee & Submit, triggers c1_receipt_missing reminder
+            step_1_17: { key: "approvalDate", value: () => new Date().toISOString().slice(0, 10) }, // Approval
+          }
+        : isIr5
+        ? {
+            // IR-5 Chapter 1 (no I-130A step, so keys are shifted down by 1 vs IR-1).
+            // step_1_15 is "Register Receipt in CEAC Portal"; approval is step_1_17.
             step_1_5: { key: "uscisAccountCreated", value: () => "true" }, // Create USCIS Account — triggers c1_portal_not_saved reminder
             step_1_8: { key: "filingFeeDate", value: () => new Date().toISOString().slice(0, 10) }, // Pay Filing Fee
             step_1_9: { key: "submissionDate", value: () => new Date().toISOString().slice(0, 10) }, // Review & Submit — triggers c1_receipt_missing reminder
-            step_1_15: { key: "approvalDate", value: () => new Date().toISOString().slice(0, 10) }, // Approval
+            step_1_17: { key: "approvalDate", value: () => new Date().toISOString().slice(0, 10) }, // Receive Approval Notice
           }
         : {
-            // IR1 Chapter 1 (has I-130A form step, so numbers include it)
+            // IR-1 Chapter 1 (has I-130A form step, so numbers include it)
             step_1_6: { key: "uscisAccountCreated", value: () => "true" }, // Create USCIS Account — triggers c1_portal_not_saved reminder
             step_1_9: { key: "filingFeeDate", value: () => new Date().toISOString().slice(0, 10) }, // Pay Filing Fee
             step_1_10: {
@@ -2322,6 +2336,15 @@ export const StepView: React.FC<StepViewProps> = ({
               </div>
             )}
 
+          {/* COMPANION TOOL (e.g. CSPA checker on IR-2 step_1_4), opened via the toolbox */}
+          {tool.companion_tool && onLaunchTool && (
+            <CompanionToolCard
+              config={tool.companion_tool}
+              onLaunch={(key) => onLaunchTool(key)}
+              className="mt-[12px]"
+            />
+          )}
+
           {/* SUPPORT CARDS */}
           {tool.support_cards && tool.support_cards.length > 0 && sId !== "step_2_1" && (
             <div
@@ -2376,6 +2399,7 @@ export const StepView: React.FC<StepViewProps> = ({
               return (
                 <ConsistencyBaselineCapture
                   baseline={derivedBaseline}
+                  journeyType={data.journey_type}
                   onSave={(next) => actions.updateMetadata({ consistencyBaseline: next })}
                 />
               );
@@ -2417,6 +2441,7 @@ export const StepView: React.FC<StepViewProps> = ({
                 <Ds260BaselineCapture
                   i130Baseline={i130Derived}
                   baseline={ds260Derived}
+                  journeyType={data.journey_type}
                   onSave={(next) => actions.updateMetadata({ ds260Baseline: next })}
                 />
               );
@@ -2449,12 +2474,15 @@ export const StepView: React.FC<StepViewProps> = ({
               );
             })()}
 
-          {/* FILE QUALITY PRE-CHECK — step_1_8 (Upload, online path) */}
-          {sId === "step_1_8" && <FileQualityPreCheck uploadedDocuments={uploadedDocuments} />}
+          {/* FILE QUALITY PRE-CHECK — step_1_7 for no-I-130A layouts (IR-5, IR-2), step_1_8 for IR-1 */}
+          {((usesNoI130aLayout && sId === "step_1_7") || (!usesNoI130aLayout && sId === "step_1_8")) && (
+            <FileQualityPreCheck uploadedDocuments={uploadedDocuments} />
+          )}
 
-          {/* PRE-SUBMISSION SNAPSHOT — step_1_10 (Review & Submit, online path) */}
-          {sId === "step_1_10" && (
+          {/* PRE-SUBMISSION SNAPSHOT — step_1_9 for no-I-130A layouts (IR-5, IR-2), step_1_10 for IR-1 */}
+          {((usesNoI130aLayout && sId === "step_1_9") || (!usesNoI130aLayout && sId === "step_1_10")) && (
             <PreSubmissionSnapshot
+              journeyType={data.journey_type}
               consistencyBaseline={
                 state.metadata?.consistencyBaseline as ConsistencyBaseline | undefined
               }
@@ -3276,6 +3304,7 @@ export const StepView: React.FC<StepViewProps> = ({
                   isChapter1={isChapter1}
                   isChapter2={isChapter2}
                   isChapter3={isChapter3}
+                  onLaunchTool={onLaunchTool ? (key) => onLaunchTool(key) : undefined}
                 />
               </div>
             ) : currentStep.step_type === "tool" ? (

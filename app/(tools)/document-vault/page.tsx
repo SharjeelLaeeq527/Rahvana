@@ -57,7 +57,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Plus, Info, LayoutTemplate } from "lucide-react";
 import { useWizard } from "@/app/(main)/dashboard/hooks/useWizard";
 import { useCandidate } from "@/app/context/CandidateContext";
-import { getJourneyKeyForCandidate, getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
+import { getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
+import { canonicalJourneyKey, getJourneyKeyForCandidate, parseJourneyKey } from "@/lib/candidate/candidateKeys";
 import Link from "next/link";
 import Image from "next/image";
 import { PageGate } from "@/app/components/entitlements/PageGate";
@@ -72,7 +73,11 @@ import {
   dedupeJourneysByType,
   getCandidateDisplayNameForJourney,
   getCandidateForJourneyType,
+  resolveCandidateCardTag,
+  isMultiCandidateCategory,
 } from "@/lib/document-vault/journey-mapping";
+import { createClient } from "@/lib/supabase/client";
+import { listUserJourneys, type JourneyProgressRecord } from "@/lib/journey/journeyProgressService";
 
 // Session-storage key for persisted journey choice (Case 3)
 const SESSION_KEY = "doc_vault_active_journey";
@@ -113,19 +118,19 @@ export default function DocumentVaultPage() {
 
   const previewDocRelatedFiles = useMemo(() => {
     if (!previewDoc) return [];
-    
+
     const defId = previewDoc.documentDefId;
     const parentDef = ALL_DOCUMENTS.find(
       (d) =>
         d.isDynamicCategory &&
         (d.id === defId || d.suggestions?.some((opt) => mapDocumentNameToId(opt) === defId))
     );
-    
+
     let filtered: UploadedDocument[] = [];
     if (parentDef) {
       const parentCategory = (parentDef as any).category as string;
       const suggestionsIds = (parentDef.suggestions || []).map((opt) => mapDocumentNameToId(opt));
-      
+
       filtered = uploadedDocuments.filter((d) => {
         if (d.documentDefId === parentDef.id) return true;
         if (suggestionsIds.includes(d.documentDefId)) return true;
@@ -184,7 +189,10 @@ export default function DocumentVaultPage() {
   // Derive active candidate journey key
   const activeCandidateJourneyKey = useMemo(() => {
     if (!activeCandidate) return undefined;
-    return getJourneyKeyForCandidate(activeCandidate.visaCategory || "IR-5", activeCandidate.id);
+    return getJourneyKeyForCandidate({
+      ...activeCandidate,
+      visaCategory: activeCandidate.visaCategory || "IR-5",
+    });
   }, [activeCandidate]);
 
   // Derive active journey for labelling and wizard loading
@@ -192,35 +200,151 @@ export default function DocumentVaultPage() {
     return userJourneys.find((j) => j.id === activeJourneyId) ?? null;
   }, [userJourneys, activeJourneyId]);
 
-  // Deduplicates exact duplicate journey rows while preserving distinct candidate journeys
-  // (e.g. multiple beneficiaries under IR-5), then filters out orphaned journey rows that
-  // have no matching candidate in the roster. This ensures the vault card count always
-  // matches the actual number of candidate profiles (Issue 2 fix).
-  const dedupedUserJourneys = useMemo(() => {
-    const deduped = dedupeJourneysByType(userJourneys);
-
-    // When there are candidates, filter journeys to only those with a matching candidate
-    // profile. This prevents orphaned DB journey rows from showing extra vault cards.
-    if (candidates && candidates.length > 0) {
-      return deduped.filter((j) => {
-        // Always keep journeys that have a candidate match
-        const matchedCandidate = getCandidateForJourneyType(j.journey_type, candidates);
-        if (matchedCandidate) return true;
-
-        // For single-candidate accounts, keep the primary journey (it maps to candidate-1
-        // implicitly even if getCandidateForJourneyType can't resolve it via key matching)
-        if (candidates.length === 1) {
-          const journeyBase = getBaseVisaCategory(j.journey_type);
-          const candidateBase = getBaseVisaCategory(candidates[0].visaCategory);
-          return journeyBase === candidateBase;
-        }
-
-        return false;
-      });
+  // ── Resolves each DB-backed journey row to a distinct vault card with dedicated candidate identity ──
+  // Mirrored from app/(main)/my-journeys/page.tsx (lines 555-608):
+  // 1 card per DB record, with sequential candidate assignment for multi-candidate visas (IR-5, IR-2).
+  const vaultJourneyCards = useMemo(() => {
+    // 1. Exact-duplicate protection: ensure every journey in userJourneys has a unique ID
+    const uniqueJourneys: Journey[] = [];
+    const seenIds = new Set<string>();
+    for (const j of userJourneys) {
+      if (!j.id || seenIds.has(j.id)) continue;
+      seenIds.add(j.id);
+      uniqueJourneys.push(j);
     }
 
-    return deduped;
+    const assignedCandidateIds = new Set<string>();
+
+    return uniqueJourneys.map((journey) => {
+      const baseCategory = getBaseVisaCategory(journey.journey_type);
+      const visaCategory = journeyTypeToVisaCategory(journey.journey_type);
+      const isMulti = isMultiCandidateCategory(journey.journey_type);
+      const status = journey.status as string;
+      const isActive = status === "in_progress" || status === "active";
+
+      let candidateId: string | undefined;
+      let candidateName: string | undefined;
+      let candidateTag: string | null = null;
+
+      if (isMulti) {
+        // Multi-candidate (IR-5, IR-2, CR-2) resolution:
+        // 1. The journey key carries the candidate's CATEGORY SLOT ("ir2_candidate2" = the
+        //    second IR-2 child), not its account-wide id, so the owner is found by slot.
+        const journeySlot = parseJourneyKey(journey.journey_type).slot;
+
+        // 2. Filter valid candidates for this category
+        const validCandidates = (candidates || []).filter((c) => {
+          const cat = getBaseVisaCategory(c.visaCategory);
+          if (baseCategory === "IR-5") {
+            return (
+              cat === "IR-5" ||
+              c.relation === "Mother" ||
+              c.relation === "Father" ||
+              c.relation === "Stepparent" ||
+              c.relation === "AdoptiveParent" ||
+              (!c.visaCategory && c.relation !== "Spouse")
+            );
+          }
+          if (baseCategory === "IR-2" || baseCategory === "CR-2") {
+            return cat === "IR-2" || cat === "CR-2" || c.relation === "Child";
+          }
+          return cat === baseCategory;
+        });
+
+        // 3. Match candidate profile: the slot owner first, then first unassigned
+        type VaultCardCandidate = {
+          id: string;
+          label?: string;
+          relation?: string;
+          fullName?: string;
+        };
+        const owner = getCandidateForJourneyType(journey.journey_type, candidates || []);
+        let cand: VaultCardCandidate | undefined = owner
+          ? (candidates || []).find((c) => c.id === owner.id)
+          : undefined;
+
+        if (!cand) {
+          cand = validCandidates.find((c) => !assignedCandidateIds.has(c.id));
+        }
+
+        // 4. Fallback synthesis if more DB journeys than candidate profiles in roster
+        const candIndex = assignedCandidateIds.size + 1;
+        if (!cand) {
+          cand = {
+            id: `unassigned-${journey.id}`,
+            label: `Candidate ${journeySlot}`,
+            relation: baseCategory === "IR-5" ? (journeySlot === 1 ? "Mother" : journeySlot === 2 ? "Father" : "Other") : "Child",
+            fullName: "",
+          };
+        }
+
+        assignedCandidateIds.add(cand.id);
+        candidateId = cand.id;
+
+        // Candidate display name (e.g. "Mother", "Father", "Muhammad Nadeem", "Child", or "Candidate 1")
+        const formatRelation = (rel?: string) => {
+          if (!rel) return "";
+          if (rel === "AdoptiveParent") return "Adoptive Parent";
+          if (rel === "Stepparent") return "Stepparent";
+          if (rel === "Other") return "Parent";
+          return rel;
+        };
+        const rel = formatRelation(cand.relation);
+        candidateName = cand.fullName || (rel && rel !== "Other" ? rel : null) || cand.label || `Candidate ${candIndex}`;
+
+        // Candidate card tag (in brackets): e.g. "Candidate 1", "Candidate 2", "Candidate 3"
+        candidateTag = cand.label || `Candidate ${candIndex}`;
+      } else {
+        // Single-candidate journey (IR-1, CR-1, etc.)
+        const spouseCand = (candidates || []).find(
+          (c) => getBaseVisaCategory(c.visaCategory) === baseCategory || c.relation === "Spouse"
+        );
+        if (spouseCand) {
+          candidateId = spouseCand.id;
+          candidateName = spouseCand.fullName || spouseCand.customName || "Spouse";
+        }
+        candidateTag = null; // NEVER show candidate tag for single-candidate journeys!
+      }
+
+      // Card image & description
+      let cardImage = "";
+      let cardDesc = "Manage your visa application documents, checklist, and requirements.";
+      if (visaCategory) {
+        const cleanCategory = visaCategory.toUpperCase().replace(/[^A-Z0-9]/g, "");
+        if (cleanCategory === "IR1" || cleanCategory === "CR1") {
+          cardImage = "/assets/images/ir1-doc-vault-image.jpg";
+          cardDesc = "Spouse of a U.S. Citizen Visa Document Vault. Keep track of marriage certificates, petitioner details, and sponsorship documents.";
+        } else if (cleanCategory === "IR5") {
+          cardImage = "/assets/images/ir5-doc-vault-image.png";
+          cardDesc = "Parent of a U.S. Citizen Visa Document Vault. Keep track of birth certificates, proof of relationship, and financial sponsor files.";
+        } else if (cleanCategory === "IR2" || cleanCategory === "CR2") {
+          cardImage = "/assets/images/ir2-doc-vault-image.jpg";
+          cardDesc = "Child of a U.S. Citizen Visa Document Vault. Keep track of birth certificates, NADRA CRC, custody records, and relationship evidence.";
+        }
+      }
+      if (!cardImage) {
+        cardImage = "/assets/images/hero-journey.jpg";
+      }
+
+      return {
+        journey,
+        journeyId: journey.id,
+        visaCategory,
+        isMulti,
+        candidateId,
+        candidateName,
+        candidateTag,
+        cardImage,
+        cardDesc,
+        isActive,
+        friendlyName: getFriendlyJourneyName(journey.journey_type, journey.journey_name),
+      };
+    });
   }, [userJourneys, candidates]);
+
+  const dedupedUserJourneys = useMemo(() => {
+    return vaultJourneyCards.map((c) => c.journey);
+  }, [vaultJourneyCards]);
 
   // Candidate switching is category-AGNOSTIC now (decision 2): any account can have multiple
   // candidates/journeys, including IR-1. This flag just means "the active journey is a
@@ -234,8 +358,11 @@ export default function DocumentVaultPage() {
 
   const journeyRoadmapHref = useMemo(() => {
     const type = activeJourney?.journey_type?.toLowerCase().replace(/[^a-z0-9]/g, "");
-    if (type === "ir5") {
+    if (type?.startsWith("ir5")) {
       return ir5journeyHref;
+    }
+    if (type?.startsWith("ir2") || type?.startsWith("cr2")) {
+      return "/visa-category/ir2-journey";
     }
     return ir1journeyHref;
   }, [activeJourney]);
@@ -357,40 +484,112 @@ export default function DocumentVaultPage() {
   useEffect(() => {
     // Guard: only run once per mount. Prevents re-firing when useAuth() creates
     // a new `user` object reference, which would set journeysLoading=true again.
-    if (!user?.id || !initialized) return;
+    if (!user?.id) return;
     if (journeyGateEvaluated.current) return;
     journeyGateEvaluated.current = true;
+
+    const userId = user.id;
 
     async function evaluateJourneyGate() {
       setJourneysLoading(true);
       try {
-        const res = await fetch("/api/journeys");
-        if (!res.ok) throw new Error("Failed to fetch journeys");
-        const data = await res.json();
-        // data.data is an array of { journey, ... } objects from journeyService.getAllJourneysWithProgress()
-        const journeys: Journey[] = (data.data ?? []).map((item: any) => item.journey ?? item);
+        const supabase = createClient();
+
+        // 1. Primary: Direct Supabase query matching my-journeys/page.tsx exactly
+        // and in parallel listUserJourneys fallback
+        const [journeysQueryRes, progressData] = await Promise.all([
+          supabase
+            .from("journeys")
+            .select("id, journey_type, subscription_tier, completed_steps_count, total_steps_count, updated_at, filing_method, status")
+            .eq("user_id", userId)
+            .order("updated_at", { ascending: false }),
+          listUserJourneys(userId).catch((err) => {
+            console.warn("[DocumentVault] listUserJourneys fallback:", err);
+            return [] as JourneyProgressRecord[];
+          }),
+        ]);
+
+        const rawDbJourneys = journeysQueryRes.data || [];
+        const progressMap = new Map((progressData || []).map((p) => [p.id, p]));
+
+        // Merge DB journeys with progress calculations while preserving journeys table as primary source
+        let journeys: Journey[] = rawDbJourneys.map((raw: any) => {
+          const enriched = progressMap.get(raw.id);
+          return {
+            id: raw.id,
+            user_id: userId,
+            journey_type: raw.journey_type,
+            subscription_tier: raw.subscription_tier || enriched?.subscription_tier || "free",
+            status: raw.status || enriched?.status || "not_started",
+            filing_method: (raw.filing_method || enriched?.filing_type || "online") as any,
+            sponsor_structure: "individual",
+            total_steps_count: enriched?.total_steps_count || raw.total_steps_count || 0,
+            completed_steps_count: enriched?.completed_steps_count || raw.completed_steps_count || 0,
+            completion_percentage: 0,
+            created_at: enriched?.started_at || raw.updated_at || new Date().toISOString(),
+            updated_at: raw.updated_at || enriched?.last_updated_at || new Date().toISOString(),
+          } as Journey;
+        });
+
+        // If progressData contained journeys not returned by direct query (edge cases), include them
+        if (progressData && progressData.length > 0) {
+          const existingIds = new Set(journeys.map((j) => j.id));
+          for (const p of progressData) {
+            if (!existingIds.has(p.id)) {
+              journeys.push({
+                id: p.id,
+                user_id: userId,
+                journey_type: p.journey_id,
+                subscription_tier: p.subscription_tier || "free",
+                status: (p.status as any) || "not_started",
+                filing_method: (p.filing_type || "online") as any,
+                sponsor_structure: "individual",
+                total_steps_count: p.total_steps_count || 0,
+                completed_steps_count: p.completed_steps_count || 0,
+                completion_percentage: 0,
+                created_at: p.started_at || new Date().toISOString(),
+                updated_at: p.last_updated_at || new Date().toISOString(),
+              } as Journey);
+            }
+          }
+        }
+
+        // Supplementary: Also query /api/journeys if available to get any server-side computed journeys
+        try {
+          const res = await fetch("/api/journeys?limit=100");
+          if (res.ok) {
+            const data = await res.json();
+            const apiJourneys: any[] = (data.data ?? []).map((item: any) => item.journey ?? item);
+            const existingIds = new Set(journeys.map((j) => j.id));
+            for (const apiJ of apiJourneys) {
+              if (apiJ && apiJ.id && !existingIds.has(apiJ.id)) {
+                journeys.push(apiJ as Journey);
+              }
+            }
+          }
+        } catch (apiErr) {
+          console.warn("[DocumentVault] /api/journeys supplementary check:", apiErr);
+        }
+
         setUserJourneys(journeys);
         setCachedUserJourneys(journeys);
 
-        // Deduplicate exact duplicate journey rows while keeping distinct candidate journeys
-        // so multiple beneficiaries under the same category each get their own vault card.
-        const distinctJourneys = dedupeJourneysByType(journeys);
+        // 1 Card per DB Journey record: ensure unique IDs
+        const uniqueIds = new Set(journeys.map((j) => j.id));
 
         if (journeys.length === 0) {
           // ── Case 1: No journey at all ──────────────────────────────────
           setNoJourneyModalOpen(true);
           setActiveJourneyId(null);
           setJourneyGateReady(true);
-        } else if (distinctJourneys.length === 1) {
+        } else if (uniqueIds.size === 1) {
           // ── Case 2: Exactly one journey — auto-select it ───────────────
-          setActiveJourneyId(distinctJourneys[0].id);
+          setActiveJourneyId(journeys[0].id);
           setJourneyGateReady(true);
         } else {
           // ── Case 3: Multiple journeys (different categories or candidates) ──
-          const saved = typeof window !== "undefined" ? sessionStorage.getItem(SESSION_KEY) : null;
-          if (saved && journeys.some((j) => j.id === saved)) {
-            setActiveJourneyId(saved);
-          }
+          // Always present the card selection grid when multiple journeys exist!
+          setActiveJourneyId(null);
           setJourneyGateReady(true);
         }
       } catch (err) {
@@ -405,7 +604,7 @@ export default function DocumentVaultPage() {
     }
 
     evaluateJourneyGate();
-  }, [user?.id, initialized]); // use user?.id (primitive) not user object to avoid ref-instability re-runs
+  }, [user?.id]); // use user?.id (primitive) not user object to avoid ref-instability re-runs
 
   // ── Auto-configure vault based on active journey ──────────────────────────
   const { setConfig: setVaultConfig } = useDocumentVaultStore();
@@ -424,7 +623,8 @@ export default function DocumentVaultPage() {
       "IR-5";
 
     // Retrieve questionnaire answers from journey metadata if available
-    const metadata = (wizard.state?.backendId === activeJourneyId ? wizard.state?.metadata : {}) || {};
+    const metadata =
+      (wizard.state?.backendId === activeJourneyId ? wizard.state?.metadata : {}) || {};
     const hasQuestionnaire = metadata.docQuestionnaireCompleted === true;
     const questionnaireAnswers = (metadata.docQuestionnaireAnswers as Record<string, string>) || {};
 
@@ -531,37 +731,26 @@ export default function DocumentVaultPage() {
   useEffect(() => {
     if (!userJourneys || userJourneys.length === 0 || !activeCandidate) return;
 
+    // Do NOT auto-select a journey when the user is on the multiple-journeys card picker screen!
+    if (!activeJourneyId && vaultJourneyCards.length > 1) {
+      lastResolvedCandidateRef.current = activeCandidateId;
+      return;
+    }
+
     // Only react to an actual CANDIDATE change. Without this guard, clicking
     // "Back to Journeys" (which sets activeJourneyId to null) would be instantly
     // reverted here, and picking a different journey folder would bounce back.
     if (activeCandidateId === lastResolvedCandidateRef.current) return;
 
     const visaCategory = activeCandidate.visaCategory || "IR-5";
-    const candidateJourneyKey = getJourneyKeyForCandidate(visaCategory, activeCandidate.id);
-    const normCandidateKey = candidateJourneyKey.toLowerCase().replace(/[-:_]/g, "");
-    const normBaseKey = visaCategory.toLowerCase().replace(/[-:_]/g, "");
-
-    const matched = userJourneys.find((j) => {
-      // Never match a journey from a different visa category. Without this, the primary
-      // candidate's loose fallback below would wrongly grab an unrelated journey (e.g. an
-      // IR-1 journey), making Mother's IR-5 vault show "IR-1". Normalize both sides so
-      // "IR-5" / "IR5" / "ir-5" all compare equal.
-      if (getBaseVisaCategory(j.journey_type) !== getBaseVisaCategory(visaCategory)) return false;
-
-      const normJ = j.journey_type.toLowerCase().replace(/[-:_]/g, "");
-      if (activeCandidate.isPrimary) {
-        // The primary candidate owns the base journey (e.g. "ir5"), which is never
-        // candidate-scoped. Any journey_type containing "candidate" belongs to a sibling
-        // (candidate-2, candidate-3, ... candidate-N), so exclude all of them regardless of
-        // number - hardcoding candidate2/3/4 leaked a 5th+ candidate's journey to the primary.
-        return (
-          normJ === normBaseKey ||
-          normJ === normCandidateKey ||
-          !normJ.includes("candidate")
-        );
-      }
-      return normJ === normCandidateKey || (normJ.includes(normCandidateKey) && !normJ.includes("candidate1"));
-    });
+    // Exact journey key of the candidate's category slot ("ir2" for the first child,
+    // "ir2_candidate2" for the second). Variant rows of the same journey ("ir5" /
+    // "ir5-journey") share the canonical key; another candidate's or another
+    // category's journey never matches.
+    const candidateJourneyKey = getJourneyKeyForCandidate({ ...activeCandidate, visaCategory });
+    const matched = userJourneys.find(
+      (j) => canonicalJourneyKey(j.journey_type) === candidateJourneyKey
+    );
 
     // Only mark this candidate resolved once we actually found a journey for it, so a
     // late-arriving journey (e.g. a freshly created 2nd-parent journey) is still picked up.
@@ -591,13 +780,17 @@ export default function DocumentVaultPage() {
   }, [activeCandidateId, activeCandidate, userJourneys, activeJourneyId, wizard.state.backendId]);
 
   // ── Case 3 picker confirmation handler ────────────────────────────────────
-  const handlePickJourney = useCallback((journeyId: string) => {
+  const handlePickJourney = useCallback((journeyId: string, candidateId?: string) => {
     setActiveJourneyId(journeyId);
+    if (candidateId) {
+      setActiveCandidateId(candidateId);
+      lastResolvedCandidateRef.current = candidateId;
+    }
     if (typeof window !== "undefined") {
       sessionStorage.setItem(SESSION_KEY, journeyId);
     }
     setJourneyGateReady(true);
-  }, []);
+  }, [setActiveCandidateId]);
 
   // Reset tab and search query when active journey changes
   useEffect(() => {
@@ -674,7 +867,7 @@ export default function DocumentVaultPage() {
 
   if (authLoading || isInitializing || journeysLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex min-h-screen items-center justify-center">
         <Loader size="md" />
       </div>
     );
@@ -910,13 +1103,13 @@ export default function DocumentVaultPage() {
 
   if (journeysLoading || !journeyGateReady) {
     return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-55px)] bg-slate-50/50 dark:bg-slate-950/50 mt-[55px]">
-        <div className="flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-300">
+      <div className="mt-[55px] flex min-h-[calc(100vh-55px)] items-center justify-center bg-slate-50/50 dark:bg-slate-950/50">
+        <div className="animate-in fade-in flex flex-col items-center justify-center p-8 text-center duration-300">
           <Loader size="lg" className="text-primary mb-4" />
           <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">
             Loading Document Vault...
           </h3>
-          <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
+          <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
             Verifying your active immigration journey
           </p>
         </div>
@@ -927,7 +1120,7 @@ export default function DocumentVaultPage() {
   if (noJourneyModalOpen || (journeyGateReady && userJourneys.length === 0)) {
     return (
       <div
-        className="relative flex items-center justify-center min-h-[calc(100vh-55px)] mt-13.75 p-6 transition-all duration-500 selection:bg-amber-500/20 overflow-hidden"
+        className="relative mt-13.75 flex min-h-[calc(100vh-55px)] items-center justify-center overflow-hidden p-6 transition-all duration-500 selection:bg-amber-500/20"
         style={{
           backgroundImage: "url('/assets/images/vault-bg-v6.png')",
           backgroundSize: "100% 100%",
@@ -936,32 +1129,33 @@ export default function DocumentVaultPage() {
         }}
       >
         {/* Subtle dark/light overlay for optimal background contrast & readability */}
-        <div className="absolute inset-0 bg-slate-900/10 dark:bg-slate-950/40 backdrop-blur-[1px] pointer-events-none" />
+        <div className="pointer-events-none absolute inset-0 bg-slate-900/10 backdrop-blur-[1px] dark:bg-slate-950/40" />
 
         {/* Main Journey Required Card */}
-        <Card className="max-w-md w-[95%] bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200/50 dark:border-slate-800/50 shadow-2xl rounded-3xl p-0 overflow-hidden relative z-10">
-          <div className="relative p-8 flex flex-col items-center text-center">
+        <Card className="relative z-10 w-[95%] max-w-md overflow-hidden rounded-3xl border border-slate-200/50 bg-white/95 p-0 shadow-2xl backdrop-blur-md dark:border-slate-800/50 dark:bg-slate-900/95">
+          <div className="relative flex flex-col items-center p-8 text-center">
             {/* Decorative blobs */}
-            <div className="absolute inset-0 pointer-events-none overflow-hidden">
-              <div className="absolute -top-20 -right-20 w-56 h-56 rounded-full bg-amber-500/10 blur-3xl" />
-              <div className="absolute -bottom-20 -left-20 w-56 h-56 rounded-full bg-primary/10 blur-3xl" />
+            <div className="pointer-events-none absolute inset-0 overflow-hidden">
+              <div className="absolute -top-20 -right-20 h-56 w-56 rounded-full bg-amber-500/10 blur-3xl" />
+              <div className="bg-primary/10 absolute -bottom-20 -left-20 h-56 w-56 rounded-full blur-3xl" />
             </div>
 
             {/* Icon */}
-            <div className="relative z-10 w-20 h-20 rounded-3xl bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center mb-6 shadow-inner">
-              <Compass className="w-10 h-10 text-amber-600 dark:text-amber-400" />
+            <div className="relative z-10 mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-amber-100 shadow-inner dark:bg-amber-900/40">
+              <Compass className="h-10 w-10 text-amber-600 dark:text-amber-400" />
             </div>
 
             {/* Text */}
-            <h3 className="relative z-10 text-2xl font-black text-slate-900 dark:text-white mb-3 tracking-tight">
+            <h3 className="relative z-10 mb-3 text-2xl font-black tracking-tight text-slate-900 dark:text-white">
               Journey Required
             </h3>
-            <p className="relative z-10 text-slate-600 dark:text-slate-400 leading-relaxed text-[15px] mb-2">
+            <p className="relative z-10 mb-2 text-[15px] leading-relaxed text-slate-600 dark:text-slate-400">
               The{" "}
               <span className="font-bold text-slate-800 dark:text-slate-200">Document Vault</span>{" "}
-              is strictly associated with an active immigration journey. Users cannot purchase or access the Document Vault independently as a standalone feature.
+              is strictly associated with an active immigration journey. Users cannot purchase or
+              access the Document Vault independently as a standalone feature.
             </p>
-            <p className="relative z-10 text-slate-500 dark:text-slate-500 text-sm leading-relaxed mb-8">
+            <p className="relative z-10 mb-8 text-sm leading-relaxed text-slate-500 dark:text-slate-500">
               You don&apos;t have an active immigration journey yet. Please start a journey first,
               then your Document Vault will be automatically set up for you.
             </p>
@@ -969,12 +1163,13 @@ export default function DocumentVaultPage() {
             {/* Actions */}
             <div className="relative z-10 w-full space-y-3">
               <Link href="/visa-category/ir1-journey">
-                <Button className="w-full h-14 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold text-base shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95">
-                  <Route className="w-5 h-5 mr-2" />
+                {/* <Link href="/visa-category"> */}
+                <Button className="bg-primary hover:bg-primary/90 shadow-primary/20 h-14 w-full rounded-2xl text-base font-bold text-white shadow-lg transition-all hover:scale-[1.02] active:scale-95">
+                  <Route className="mr-2 h-5 w-5" />
                   Browse Visa Journey
                 </Button>
               </Link>
-              <p className="text-xs text-slate-400 dark:text-slate-500 pt-3">
+              <p className="pt-3 text-xs text-slate-400 dark:text-slate-500">
                 Once you start a journey, come back here to access your personalized Document Vault.
               </p>
             </div>
@@ -984,122 +1179,109 @@ export default function DocumentVaultPage() {
     );
   }
 
-  if (dedupedUserJourneys.length > 1 && !activeJourneyId) {
+  if (vaultJourneyCards.length > 1 && !activeJourneyId) {
     return (
-      <div className="bg-slate-50/50 dark:bg-slate-950/50 mt-[55px] min-h-[calc(100vh-55px)] py-12 px-6">
+      <div className="mt-[55px] min-h-[calc(100vh-55px)] bg-slate-50/50 px-6 py-12 dark:bg-slate-950/50">
         <div className="container mx-auto max-w-5xl">
           {/* Header */}
-          <div className="mb-10 text-center max-w-2xl mx-auto">
-            <h1 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white mb-3 tracking-tight">
+          <div className="mx-auto mb-10 max-w-2xl text-center">
+            <h1 className="mb-3 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl dark:text-white">
               Your Document Vaults
             </h1>
-            <p className="text-slate-600 dark:text-slate-400 text-base leading-relaxed">
+            <p className="text-base leading-relaxed text-slate-600 dark:text-slate-400">
               You have multiple immigration journeys. Select a journey below to open its
               personalized document vault and manage your checklist.
             </p>
           </div>
 
           {/* Grid of Folders / Journey Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {dedupedUserJourneys.map((journey) => {
-              const visaCategory = journeyTypeToVisaCategory(journey.journey_type);
-              const isActive = journey.status === "in_progress";
-              const candidateName = getCandidateDisplayNameForJourney(journey.journey_type, candidates);
-
-              // Determine card image and description for better visualization
-              let cardImage = "";
-              let cardDesc = "Manage your visa application documents, checklist, and requirements.";
-
-              if (visaCategory) {
-                const cleanCategory = visaCategory.toUpperCase().replace(/[^A-Z0-9]/g, "");
-                if (cleanCategory === "IR1") {
-                  cardImage = "/assets/images/ir1-doc-vault-image.jpg";
-                  cardDesc =
-                    "Spouse of a U.S. Citizen Visa Document Vault. Keep track of marriage certificates, petitioner details, and sponsorship documents.";
-                } else if (cleanCategory === "IR5") {
-                  cardImage = "/assets/images/ir5-doc-vault-image.png";
-                  cardDesc =
-                    "Parent of a U.S. Citizen Visa Document Vault. Keep track of birth certificates, proof of relationship, and financial sponsor files.";
-                }
-              }
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {vaultJourneyCards.map((card) => {
+              const { journey, journeyId, visaCategory, isMulti, candidateId, candidateName, candidateTag, cardImage, cardDesc, isActive, friendlyName } = card;
 
               return (
                 <button
-                  key={journey.id}
-                  onClick={() => {
-                    handlePickJourney(journey.id);
-                    const matchingCand = getCandidateForJourneyType(journey.journey_type, candidates);
-                    if (matchingCand) {
-                      setActiveCandidateId(matchingCand.id);
-                    }
-                  }}
-                  className="flex flex-col text-left bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 hover:border-primary/40 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden group focus:outline-none focus:ring-2 focus:ring-primary/20 w-full"
+                  key={journeyId}
+                  onClick={() => handlePickJourney(journeyId, candidateId)}
+                  className="hover:border-primary/40 group focus:ring-primary/20 flex w-full flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-xl focus:ring-2 focus:outline-none dark:border-slate-800 dark:bg-slate-900"
                 >
                   {/* Card Image Banner */}
-                  <div className="h-44 w-full relative overflow-hidden bg-slate-100 dark:bg-slate-950">
+                  <div className="relative h-44 w-full overflow-hidden bg-slate-100 dark:bg-slate-950">
                     <Image
                       src={cardImage}
-                      alt={journey.journey_name || journey.journey_type}
+                      alt={friendlyName}
                       fill
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       className="object-cover transition-transform duration-500 group-hover:scale-105"
                       priority
-                    />
+                    /> 
                     {/* Gradient Overlay */}
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-slate-900/20 to-transparent" />
 
                     {/* Floating Badges */}
-                    <div className="absolute top-4 left-4 right-4 flex items-center justify-between pointer-events-none">
-                      <div className="flex items-center gap-1.5 flex-wrap pointer-events-auto">
+                    {/* <div className="pointer-events-none absolute top-4 right-4 left-4 flex items-center justify-between">
+                      <div className="pointer-events-auto flex flex-wrap items-center gap-1.5">
                         {visaCategory ? (
                           <Badge
                             variant="secondary"
-                            className="text-xs bg-white/95 text-slate-900 border-white/10 font-bold px-2.5 py-1 shadow-sm backdrop-blur-sm"
+                            className="pointer-events-auto border-white/10 bg-white/95 px-2.5 py-1 text-xs font-bold text-slate-900 shadow-sm backdrop-blur-sm"
                           >
                             {visaCategory}
                           </Badge>
                         ) : (
                           <div />
                         )}
-                        <Badge
-                          variant="outline"
-                          className="text-xs bg-slate-900/80 text-white border-white/20 font-semibold px-2 py-0.5 backdrop-blur-sm"
-                        >
-                          {candidateName}
-                        </Badge>
+                        {candidateName && (
+                          <Badge
+                            variant="outline"
+                            className="border-white/20 bg-slate-900/80 px-2 py-0.5 text-xs font-semibold text-white backdrop-blur-sm"
+                          >
+                            {candidateName}
+                          </Badge>
+                        )}
                       </div>
                       {isActive && (
-                        <Badge className="text-xs bg-emerald-500 text-white border-none font-semibold px-2.5 py-1 shadow-sm pointer-events-auto">
+                        <Badge className="pointer-events-auto border-none bg-emerald-500 px-2.5 py-1 text-xs font-semibold text-white shadow-sm">
                           Active
                         </Badge>
                       )}
-                    </div>
+                    </div> */}
                   </div>
 
-                  <div className="p-6 flex-1 flex flex-col justify-between">
+                  <div className="flex flex-1 flex-col justify-between p-6">
                     <div>
                       {/* Journey Details */}
-                      <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1 group-hover:text-primary transition-colors line-clamp-1">
-                        {getFriendlyJourneyName(journey.journey_type, journey.journey_name)}
+                      <h3
+                        title={
+                          candidateTag
+                            ? `${friendlyName} (${candidateTag})`
+                            : friendlyName
+                        }
+                        className="group-hover:text-primary mb-2 line-clamp-1 text-[15px] font-bold text-slate-900 transition-colors dark:text-white"
+                      >
+                        {friendlyName}
+                        {isMulti && candidateTag && (
+                          <span className="ml-1.5 font-normal text-slate-500 dark:text-slate-400">
+                            ({candidateTag})
+                          </span>
+                        )}
                       </h3>
-                      <div className="flex items-center gap-1.5 mb-2">
-                        <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-primary/10 text-primary">
-                          Beneficiary: {candidateName}
-                        </span>
-                      </div>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mb-6 line-clamp-2 leading-relaxed">
+                      <p
+                        className="mb-6 line-clamp-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400"
+                        title={cardDesc}
+                      >
                         {cardDesc}
                       </p>
                     </div>
 
                     {/* Card Footer */}
-                    <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800/60 w-full">
-                      <span className="text-xs text-slate-400 dark:text-slate-500 capitalize font-medium">
+                    <div className="flex w-full items-center justify-between border-t border-slate-100 pt-4 dark:border-slate-800/60">
+                      <span className="text-xs font-medium text-slate-400 capitalize dark:text-slate-500">
                         Status: {journey.status.replace("_", " ")}
                       </span>
-                      <div className="inline-flex items-center text-xs font-bold text-primary group-hover:text-primary/80 transition-colors">
+                      <div className="text-primary group-hover:text-primary/80 inline-flex items-center text-xs font-bold transition-colors">
                         <span>Open Vault</span>
-                        <ChevronRight className="w-4 h-4 ml-1 transition-transform duration-300 group-hover:translate-x-1" />
+                        <ChevronRight className="ml-1 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
                       </div>
                     </div>
                   </div>
@@ -1114,15 +1296,15 @@ export default function DocumentVaultPage() {
 
   return (
     <TooltipProvider>
-      <div className="bg-slate-50/50 dark:bg-slate-950/50 mt-[55px] min-h-[calc(100vh-55px)] flex flex-col">
+      <div className="mt-[55px] flex min-h-[calc(100vh-55px)] flex-col bg-slate-50/50 dark:bg-slate-950/50">
         {isReloadingDocs ? (
-          <div className="flex-1 flex flex-col items-center justify-center py-20 px-4 min-h-[400px]">
-            <div className="flex flex-col items-center justify-center py-20 px-8 dark:bg-slate-900 animate-in fade-in duration-300">
+          <div className="flex min-h-[400px] flex-1 flex-col items-center justify-center px-4 py-20">
+            <div className="animate-in fade-in flex flex-col items-center justify-center px-8 py-20 duration-300 dark:bg-slate-900">
               <Loader size="md" className="text-primary mb-4" />
               <p className="text-sm font-bold text-slate-800 dark:text-slate-200">
                 Loading Documents...
               </p>
-              <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
+              <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
                 Securing database connection
               </p>
             </div>
@@ -1130,35 +1312,35 @@ export default function DocumentVaultPage() {
         ) : (
           <>
             {/* Top Professional Header */}
-            <div className="bg-white dark:bg-slate-900 border-b shadow-sm sticky top-0 z-30">
+            <div className="sticky top-0 z-30 border-b bg-white shadow-sm dark:bg-slate-900">
               <div className="site-main-px py-4">
                 <div className="flex flex-row items-start justify-between gap-4 md:items-center">
-                  <div className="flex items-center gap-4 min-w-0 flex-1">
-                    {dedupedUserJourneys.length > 1 && activeJourneyId ? (
+                  <div className="flex min-w-0 flex-1 items-center gap-4">
+                    {userJourneys.length > 1 && activeJourneyId ? (
                       <Button
                         variant="ghost"
                         onClick={() => {
                           setActiveJourneyId(null);
                           sessionStorage.removeItem(SESSION_KEY);
                         }}
-                        className="h-12 w-12 p-0 rounded-2xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 shrink-0 flex items-center justify-center animate-in fade-in slide-in-from-left-2 duration-300"
+                        className="animate-in fade-in slide-in-from-left-2 flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-slate-200 p-0 text-slate-600 transition-all duration-200 duration-300 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
                         title="Back to Journeys"
                       >
-                        <ArrowLeft className="w-5 h-5" />
+                        <ArrowLeft className="h-5 w-5" />
                       </Button>
                     ) : (
-                      <div className="hidden sm:flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-inner">
-                        <ShieldCheck className="w-7 h-7" />
+                      <div className="bg-primary/10 text-primary hidden h-12 w-12 items-center justify-center rounded-2xl shadow-inner sm:flex">
+                        <ShieldCheck className="h-7 w-7" />
                       </div>
                     )}
                     <div>
                       <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                         {t("documentVaultPage.page.title")}
                       </h1>
-                      <div className="flex items-center gap-2 mt-1 flex-wrap">
+                      <div className="mt-1 flex flex-wrap items-center gap-2">
                         <Badge
                           variant="secondary"
-                          className="bg-primary/5 hover:bg-primary/5 text-primary border-primary/20 font-bold px-2.5 py-0.5"
+                          className="bg-primary/5 hover:bg-primary/5 text-primary border-primary/20 px-2.5 py-0.5 font-bold"
                         >
                           {config?.visaCategory
                             ? `${config.visaCategory} Journey`
@@ -1169,55 +1351,40 @@ export default function DocumentVaultPage() {
                                 )
                               : `${activeCandidate?.visaCategory || "IR-5"} Journey`}
                         </Badge>
-                        {isCandidateJourney && isMultiCandidate && activeCandidate && (
-                          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                            {activeCandidate.relation && activeCandidate.relation !== "Other" && (
-                              <span>{activeCandidate.relation}:</span>
-                            )}
-                            <span className="font-bold text-slate-900 dark:text-white">
-                              {activeCandidate.fullName || activeCandidate.label}
-                            </span>
-                          </div>
-                        )}
-                        <span className="text-xs text-slate-500 font-medium">
+                        <span className="text-xs font-medium text-slate-500">
                           {t("documentVaultPage.page.subtitle")}
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex shrink-0 items-center gap-2">
                     <NotificationBell />
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="container mx-auto p-6 max-w-450">
+            <div className="container mx-auto max-w-450 p-6">
               {/* Main Grid Layout */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
                 {/* Left Side: Stats & Configuration */}
-                <div className="lg:col-span-3 space-y-6 lg:sticky lg:top-24">
-                  {/* Candidate switcher lives in the global SiteHeader (app-wide, IR-5/IR-2
-                      only) - it is intentionally NOT duplicated here. The header chip above
-                      still shows whose vault is active. */}
-
+                <div className="space-y-6 lg:sticky lg:top-24 lg:col-span-3">
                   {/* Professional Stats Card */}
-                  <Card className="overflow-hidden border-none shadow-xl bg-linear-to-br from-primary via-primary/95 to-primary/90 text-white p-0">
+                  <Card className="from-primary via-primary/95 to-primary/90 overflow-hidden border-none bg-linear-to-br p-0 text-white shadow-xl">
                     <div className="p-6">
-                      <div className="flex items-center justify-between mb-6">
+                      <div className="mb-6 flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <div className="h-8 w-8 rounded-lg bg-white/20 flex items-center justify-center">
-                            <Zap className="w-4 h-4" />
+                          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/20">
+                            <Zap className="h-4 w-4" />
                           </div>
-                          <span className="font-bold tracking-tight uppercase text-xs opacity-80">
+                          <span className="text-xs font-bold tracking-tight uppercase opacity-80">
                             {t("documentVaultPage.page.syncProgress")}
                           </span>
                         </div>
                         <Badge
                           variant="outline"
-                          className="text-white border-white/30 font-bold bg-white/10 backdrop-blur-sm"
+                          className="border-white/30 bg-white/10 font-bold text-white backdrop-blur-sm"
                         >
                           {stats.percentComplete}%
                         </Badge>
@@ -1225,11 +1392,11 @@ export default function DocumentVaultPage() {
 
                       <div className="space-y-4">
                         <div>
-                          <div className="flex justify-between text-2xl font-black mb-1">
+                          <div className="mb-1 flex justify-between text-2xl font-black">
                             <span>
                               {stats.uploaded} / {stats.total}
                             </span>
-                            <span className="text-white/60 text-sm font-medium self-end mb-1">
+                            <span className="mb-1 self-end text-sm font-medium text-white/60">
                               {t("documentVaultPage.page.itemsReady")}
                             </span>
                           </div>
@@ -1241,8 +1408,8 @@ export default function DocumentVaultPage() {
                         </div>
 
                         <div className="grid grid-cols-2 gap-3 pt-2">
-                          <div className="bg-white/10 rounded-xl p-3 backdrop-blur-sm">
-                            <p className="text-white/60 text-[10px] uppercase font-bold tracking-widest mb-1">
+                          <div className="rounded-xl bg-white/10 p-3 backdrop-blur-sm">
+                            <p className="mb-1 text-[10px] font-bold tracking-widest text-white/60 uppercase">
                               {t("documentVaultPage.page.criticalMissing")}
                             </p>
                             <p
@@ -1251,8 +1418,8 @@ export default function DocumentVaultPage() {
                               {stats.missing}
                             </p>
                           </div>
-                          <div className="bg-white/10 rounded-xl p-3 backdrop-blur-sm">
-                            <p className="text-white/60 text-[10px] uppercase font-bold tracking-widest mb-1">
+                          <div className="rounded-xl bg-white/10 p-3 backdrop-blur-sm">
+                            <p className="mb-1 text-[10px] font-bold tracking-widest text-white/60 uppercase">
                               {t("documentVaultPage.page.alertsExpiring")}
                             </p>
                             <p
@@ -1265,14 +1432,14 @@ export default function DocumentVaultPage() {
                       </div>
                     </div>
 
-                    <div className="bg-black/10 px-6 py-4 flex items-center justify-between">
+                    <div className="flex items-center justify-between bg-black/10 px-6 py-4">
                       <div className="flex items-center gap-2">
-                        <CheckCircle className="w-4 h-4 text-emerald-300" />
+                        <CheckCircle className="h-4 w-4 text-emerald-300" />
                         <span className="text-[11px] font-semibold opacity-90">
                           {t("documentVaultPage.page.bankGradeEncryption")}
                         </span>
                       </div>
-                      <div className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></div>
+                      <div className="h-2 w-2 animate-pulse rounded-full bg-emerald-400"></div>
                     </div>
                   </Card>
 
@@ -1282,14 +1449,14 @@ export default function DocumentVaultPage() {
             </div> */}
 
                   {/* Mini Tips Card */}
-                  <Card className="p-4 bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900 shadow-sm">
+                  <Card className="border-amber-200 bg-amber-50 p-4 shadow-sm dark:border-amber-900 dark:bg-amber-950/30">
                     <div className="flex gap-3">
-                      <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                      <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
                       <div>
-                        <h4 className="font-bold text-sm text-amber-900 dark:text-amber-100">
+                        <h4 className="text-sm font-bold text-amber-900 dark:text-amber-100">
                           {t("documentVaultPage.page.nvcTipTitle")}
                         </h4>
-                        <p className="text-xs text-amber-800 dark:text-amber-200 mt-1 leading-relaxed">
+                        <p className="mt-1 text-xs leading-relaxed text-amber-800 dark:text-amber-200">
                           {t("documentVaultPage.page.nvcTipDesc")}
                         </p>
                       </div>
@@ -1300,15 +1467,15 @@ export default function DocumentVaultPage() {
                 {/* Right Side: Document Management Tabs */}
                 <div className="lg:col-span-9">
                   <Tabs defaultValue="required" className="w-full" onValueChange={setActiveTab}>
-                    <div className="flex flex-col xl:flex-row xl:items-center justify-between mb-6 xl:mb-8 gap-4 xl:gap-6">
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-4 w-full xl:w-auto overflow-hidden">
-                        <div className="w-full sm:w-auto overflow-x-auto no-scrollbar pb-2 sm:pb-0 -mb-2 sm:mb-0">
-                          <TabsList className="bg-white dark:bg-slate-900 border shadow-sm h-11 p-1 rounded-xl shrink-0 inline-flex min-w-max">
+                    <div className="mb-6 flex flex-col justify-between gap-4 xl:mb-8 xl:flex-row xl:items-center xl:gap-6">
+                      <div className="flex w-full flex-col gap-4 overflow-hidden sm:flex-row sm:items-center xl:w-auto">
+                        <div className="no-scrollbar -mb-2 w-full overflow-x-auto pb-2 sm:mb-0 sm:w-auto sm:pb-0">
+                          <TabsList className="inline-flex h-11 min-w-max shrink-0 rounded-xl border bg-white p-1 shadow-sm dark:bg-slate-900">
                             {categories.slice(0, 5).map((cat) => (
                               <TabsTrigger
                                 key={cat}
                                 value={cat}
-                                className="px-4 sm:px-6 rounded-lg font-bold text-xs data-[state=active]:bg-primary data-[state=active]:text-white transition-all duration-300"
+                                className="data-[state=active]:bg-primary rounded-lg px-4 text-xs font-bold transition-all duration-300 data-[state=active]:text-white sm:px-6"
                               >
                                 {cat === "all"
                                   ? t("documentVaultPage.page.allMasterChecklist")
@@ -1325,10 +1492,10 @@ export default function DocumentVaultPage() {
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    className="h-9 px-3 rounded-lg font-bold text-xs gap-1"
+                                    className="h-9 gap-1 rounded-lg px-3 text-xs font-bold"
                                   >
                                     {t("documentVaultPage.page.more")}{" "}
-                                    <ChevronDown className="w-3 h-3" />
+                                    <ChevronDown className="h-3 w-3" />
                                   </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
@@ -1346,41 +1513,41 @@ export default function DocumentVaultPage() {
                         </div>
 
                         {/* Move View Switcher here next to tabs */}
-                        <div className="flex bg-white dark:bg-slate-900 border shadow-sm p-1 rounded-xl h-11 shrink-0 self-start sm:self-auto">
+                        <div className="flex h-11 shrink-0 self-start rounded-xl border bg-white p-1 shadow-sm sm:self-auto dark:bg-slate-900">
                           <Button
                             variant={viewMode === "table" ? "secondary" : "ghost"}
                             size="sm"
                             onClick={() => setViewMode("table")}
-                            className={`h-9 px-3 rounded-lg ${viewMode === "table" ? "bg-slate-100 dark:bg-slate-800 shadow-inner" : ""}`}
+                            className={`h-9 rounded-lg px-3 ${viewMode === "table" ? "bg-slate-100 shadow-inner dark:bg-slate-800" : ""}`}
                           >
-                            <List className="w-4 h-4" />
+                            <List className="h-4 w-4" />
                           </Button>
                           <Button
                             variant={viewMode === "grid" ? "secondary" : "ghost"}
                             size="sm"
                             onClick={() => setViewMode("grid")}
-                            className={`h-9 px-3 rounded-lg ${viewMode === "grid" ? "bg-slate-100 dark:bg-slate-800 shadow-inner" : ""}`}
+                            className={`h-9 rounded-lg px-3 ${viewMode === "grid" ? "bg-slate-100 shadow-inner dark:bg-slate-800" : ""}`}
                           >
-                            <LayoutGrid className="w-4 h-4" />
+                            <LayoutGrid className="h-4 w-4" />
                           </Button>
                         </div>
                       </div>
 
-                      <div className="flex w-full xl:max-w-md ml-0 xl:ml-auto">
+                      <div className="ml-0 flex w-full xl:ml-auto xl:max-w-md">
                         <div className="relative flex-1">
-                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                          <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
                           <Input
                             placeholder={t("documentVaultPage.page.searchPlaceholder")}
-                            className="pl-10 h-11 rounded-xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 focus:ring-primary/20 w-full"
+                            className="focus:ring-primary/20 h-11 w-full rounded-xl border-slate-200 bg-white pl-10 dark:border-slate-800 dark:bg-slate-900"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                           />
                           {searchQuery && (
                             <button
                               onClick={() => setSearchQuery("")}
-                              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
+                              className="absolute top-1/2 right-3 -translate-y-1/2 rounded-full p-1 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"
                             >
-                              <CloseIcon className="w-3 h-3 text-slate-400" />
+                              <CloseIcon className="h-3 w-3 text-slate-400" />
                             </button>
                           )}
                         </div>
@@ -1388,7 +1555,7 @@ export default function DocumentVaultPage() {
                     </div>
 
                     <div className="mb-6 xl:mb-8">
-                      <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight flex flex-wrap items-center gap-2 sm:gap-3">
+                      <h2 className="flex flex-wrap items-center gap-2 text-xl font-black tracking-tight text-slate-900 sm:gap-3 sm:text-2xl dark:text-white">
                         {activeTab === "all"
                           ? t("documentVaultPage.page.comprehensiveMasterChecklist")
                           : activeTab === "required"
@@ -1399,7 +1566,7 @@ export default function DocumentVaultPage() {
                         {searchQuery && (
                           <Badge
                             variant="outline"
-                            className="font-bold text-primary border-primary/20 bg-primary/5"
+                            className="text-primary border-primary/20 bg-primary/5 font-bold"
                           >
                             {t("documentVaultPage.page.foundPrefix")} {flatFilteredDocuments.length}{" "}
                             {t("documentVaultPage.page.matchingDocuments")}
@@ -1414,14 +1581,14 @@ export default function DocumentVaultPage() {
                                     <Button
                                       variant="ghost"
                                       size="sm"
-                                      className="h-8 w-8 p-0 text-slate-400 hover:text-primary"
+                                      className="hover:text-primary h-8 w-8 p-0 text-slate-400"
                                     >
-                                      <Info className="w-4 h-4" />
+                                      <Info className="h-4 w-4" />
                                     </Button>
                                   </TooltipTrigger>
                                   <TooltipContent side="right" className="max-w-xs p-3">
-                                    <p className="font-bold mb-2">Suggested Documents:</p>
-                                    <ul className="list-disc pl-4 space-y-1 text-xs">
+                                    <p className="mb-2 font-bold">Suggested Documents:</p>
+                                    <ul className="list-disc space-y-1 pl-4 text-xs">
                                       {CATEGORY_SUGGESTIONS[activeTab]?.map((suggestion, i) => (
                                         <li key={i}>{suggestion}</li>
                                       ))}
@@ -1433,9 +1600,9 @@ export default function DocumentVaultPage() {
                               size="sm"
                               variant="ghost"
                               onClick={() => addDynamicSlot(activeTab)}
-                              className="h-8 px-2 gap-1 text-primary hover:bg-primary/10 font-bold"
+                              className="text-primary hover:bg-primary/10 h-8 gap-1 px-2 font-bold"
                             >
-                              <Plus className="w-4 h-4" />
+                              <Plus className="h-4 w-4" />
                               Add New
                             </Button>
                           </div>
@@ -1449,6 +1616,7 @@ export default function DocumentVaultPage() {
                     >
                       <PageGate
                         feature="document_vault"
+                        planTier={activeJourney?.subscription_tier ?? null}
                         title="Document Vault Locked"
                         description="Upgrade your plan to organize, track, and securely store your required immigration documents."
                       >
@@ -1457,8 +1625,8 @@ export default function DocumentVaultPage() {
                             // Show flat list of search results when searching
                             <div className="space-y-6">
                               <div className="flex items-center gap-3">
-                                <div className="h-1 w-8 sm:w-12 bg-primary rounded-full shrink-0"></div>
-                                <h3 className="text-xs sm:text-sm font-black uppercase tracking-widest text-slate-400">
+                                <div className="bg-primary h-1 w-8 shrink-0 rounded-full sm:w-12"></div>
+                                <h3 className="text-xs font-black tracking-widest text-slate-400 uppercase sm:text-sm">
                                   {t("documentVaultPage.page.foundPrefix")}{" "}
                                   {flatFilteredDocuments.length}{" "}
                                   {t("documentVaultPage.page.matchingDocuments")}
@@ -1467,16 +1635,19 @@ export default function DocumentVaultPage() {
 
                               {flatFilteredDocuments.length > 0 ? (
                                 viewMode === "grid" ? (
-                                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
+                                  <div className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 xl:grid-cols-3">
                                     {flatFilteredDocuments.map((doc) => {
                                       const docUploads = uploadedDocuments.filter(
                                         (ud) => ud.documentDefId === doc.id
                                       );
-                                      const uploadedDoc = docUploads.length > 0
-                                        ? [...docUploads].sort(
-                                            (a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime()
-                                          )[0]
-                                        : undefined;
+                                      const uploadedDoc =
+                                        docUploads.length > 0
+                                          ? [...docUploads].sort(
+                                              (a, b) =>
+                                                new Date(b.uploadedAt).getTime() -
+                                                new Date(a.uploadedAt).getTime()
+                                            )[0]
+                                          : undefined;
                                       return (
                                         <DocumentCard
                                           key={doc.id}
@@ -1513,7 +1684,9 @@ export default function DocumentVaultPage() {
                                           onRename={(newName) =>
                                             renameDynamicSlot(doc.category, doc.id, newName)
                                           }
-                                          onDeleteSlot={() => handleDeleteSlot(doc.category, doc.id)}
+                                          onDeleteSlot={() =>
+                                            handleDeleteSlot(doc.category, doc.id)
+                                          }
                                         />
                                       );
                                     })}
@@ -1533,19 +1706,19 @@ export default function DocumentVaultPage() {
                                   />
                                 )
                               ) : (
-                                <div className="text-center py-12 sm:py-20 px-4 bg-white dark:bg-slate-900 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800">
-                                  <Search className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                                <div className="rounded-3xl border-2 border-dashed border-slate-200 bg-white px-4 py-12 text-center sm:py-20 dark:border-slate-800 dark:bg-slate-900">
+                                  <Search className="mx-auto mb-4 h-12 w-12 text-slate-300" />
                                   <h3 className="text-lg font-bold text-slate-900 dark:text-white">
                                     {t("documentVaultPage.page.noDocumentsFound")}
                                   </h3>
-                                  <p className="text-slate-500 max-w-xs mx-auto mt-2">
+                                  <p className="mx-auto mt-2 max-w-xs text-slate-500">
                                     {t("documentVaultPage.page.noDocumentsDescPrefix")}
                                     {searchQuery}
                                     {t("documentVaultPage.page.noDocumentsDescSuffix")}
                                   </p>
                                   <Button
                                     variant="link"
-                                    className="mt-4 text-primary font-bold"
+                                    className="text-primary mt-4 font-bold"
                                     onClick={() => setSearchQuery("")}
                                   >
                                     {t("documentVaultPage.page.clearSearch")}
@@ -1558,8 +1731,8 @@ export default function DocumentVaultPage() {
                             Object.entries(documentsByCategory).map(([category, docs]) => (
                               <div key={category} className="space-y-4">
                                 <div className="flex items-center gap-3">
-                                  <div className="h-1 w-8 sm:w-12 bg-primary rounded-full shrink-0"></div>
-                                  <h3 className="text-xs sm:text-sm font-black uppercase tracking-widest text-slate-400">
+                                  <div className="bg-primary h-1 w-8 shrink-0 rounded-full sm:w-12"></div>
+                                  <h3 className="text-xs font-black tracking-widest text-slate-400 uppercase sm:text-sm">
                                     {getCategoryDisplayName(category, t)}
                                   </h3>
                                   {DYNAMIC_CATEGORIES.includes(category) && (
@@ -1571,16 +1744,16 @@ export default function DocumentVaultPage() {
                                               <Button
                                                 variant="ghost"
                                                 size="sm"
-                                                className="h-6 w-6 p-0 text-slate-400 hover:text-primary"
+                                                className="hover:text-primary h-6 w-6 p-0 text-slate-400"
                                               >
-                                                <Info className="w-3.5 h-3.5" />
+                                                <Info className="h-3.5 w-3.5" />
                                               </Button>
                                             </TooltipTrigger>
                                             <TooltipContent side="right" className="max-w-xs p-3">
-                                              <p className="font-bold mb-2 text-[11px]">
+                                              <p className="mb-2 text-[11px] font-bold">
                                                 Suggested Documents:
                                               </p>
-                                              <ul className="list-disc pl-4 space-y-1 text-[10px]">
+                                              <ul className="list-disc space-y-1 pl-4 text-[10px]">
                                                 {CATEGORY_SUGGESTIONS[category]?.map(
                                                   (suggestion, i) => (
                                                     <li key={i}>{suggestion}</li>
@@ -1594,9 +1767,9 @@ export default function DocumentVaultPage() {
                                         size="sm"
                                         variant="ghost"
                                         onClick={() => addDynamicSlot(category)}
-                                        className="h-7 px-2 gap-1 text-primary hover:bg-primary/10 font-bold text-[10px]"
+                                        className="text-primary hover:bg-primary/10 h-7 gap-1 px-2 text-[10px] font-bold"
                                       >
-                                        <Plus className="w-3.5 h-3.5" />
+                                        <Plus className="h-3.5 w-3.5" />
                                         Add
                                       </Button>
                                     </div>
@@ -1604,16 +1777,19 @@ export default function DocumentVaultPage() {
                                 </div>
 
                                 {viewMode === "grid" ? (
-                                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
+                                  <div className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 xl:grid-cols-3">
                                     {docs.map((doc) => {
                                       const docUploads = uploadedDocuments.filter(
                                         (ud) => ud.documentDefId === doc.id
                                       );
-                                      const uploadedDoc = docUploads.length > 0
-                                        ? [...docUploads].sort(
-                                            (a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime()
-                                          )[0]
-                                        : undefined;
+                                      const uploadedDoc =
+                                        docUploads.length > 0
+                                          ? [...docUploads].sort(
+                                              (a, b) =>
+                                                new Date(b.uploadedAt).getTime() -
+                                                new Date(a.uploadedAt).getTime()
+                                            )[0]
+                                          : undefined;
                                       return (
                                         <DocumentCard
                                           key={doc.id}
@@ -1650,7 +1826,9 @@ export default function DocumentVaultPage() {
                                           onRename={(newName) =>
                                             renameDynamicSlot(doc.category, doc.id, newName)
                                           }
-                                          onDeleteSlot={() => handleDeleteSlot(doc.category, doc.id)}
+                                          onDeleteSlot={() =>
+                                            handleDeleteSlot(doc.category, doc.id)
+                                          }
                                         />
                                       );
                                     })}
@@ -1675,18 +1853,21 @@ export default function DocumentVaultPage() {
                             // Show required or optional documents when NOT searching
                             <div className="space-y-4">
                               {viewMode === "grid" ? (
-                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
+                                <div className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 xl:grid-cols-3">
                                   {getFilteredDocumentsForSpecialFilter[
                                     activeTab as "required" | "optional"
                                   ]?.map((doc) => {
                                     const docUploads = uploadedDocuments.filter(
                                       (ud) => ud.documentDefId === doc.id
                                     );
-                                    const uploadedDoc = docUploads.length > 0
-                                      ? [...docUploads].sort(
-                                          (a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime()
-                                        )[0]
-                                      : undefined;
+                                    const uploadedDoc =
+                                      docUploads.length > 0
+                                        ? [...docUploads].sort(
+                                            (a, b) =>
+                                              new Date(b.uploadedAt).getTime() -
+                                              new Date(a.uploadedAt).getTime()
+                                          )[0]
+                                        : undefined;
                                     return (
                                       <DocumentCard
                                         key={doc.id}
@@ -1747,16 +1928,19 @@ export default function DocumentVaultPage() {
                             // Show specific category when NOT searching
                             <div className="space-y-4">
                               {viewMode === "grid" ? (
-                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
+                                <div className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 xl:grid-cols-3">
                                   {documentsByCategory[activeTab]?.map((doc) => {
                                     const docUploads = uploadedDocuments.filter(
                                       (ud) => ud.documentDefId === doc.id
                                     );
-                                    const uploadedDoc = docUploads.length > 0
-                                      ? [...docUploads].sort(
-                                          (a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime()
-                                        )[0]
-                                      : undefined;
+                                    const uploadedDoc =
+                                      docUploads.length > 0
+                                        ? [...docUploads].sort(
+                                            (a, b) =>
+                                              new Date(b.uploadedAt).getTime() -
+                                              new Date(a.uploadedAt).getTime()
+                                          )[0]
+                                        : undefined;
                                     return (
                                       <DocumentCard
                                         key={doc.id}
@@ -1879,30 +2063,30 @@ export default function DocumentVaultPage() {
       )}
 
       <Dialog open={welcomeModalOpen} onOpenChange={setWelcomeModalOpen}>
-        <DialogContent className="max-w-md w-[95%] bg-white dark:bg-slate-900 border-none shadow-2xl rounded-3xl p-0 overflow-hidden">
-          <div className="relative p-8 flex flex-col items-center">
+        <DialogContent className="w-[95%] max-w-md overflow-hidden rounded-3xl border-none bg-white p-0 shadow-2xl dark:bg-slate-900">
+          <div className="relative flex flex-col items-center p-8">
             {/* Decorative Background */}
-            <div className="absolute inset-0 pointer-events-none overflow-hidden">
-              <div className="absolute -top-24 -right-24 w-64 h-64 rounded-full bg-primary/5 blur-3xl" />
-              <div className="absolute -bottom-24 -left-24 w-64 h-64 rounded-full bg-primary/5 blur-3xl" />
+            <div className="pointer-events-none absolute inset-0 overflow-hidden">
+              <div className="bg-primary/5 absolute -top-24 -right-24 h-64 w-64 rounded-full blur-3xl" />
+              <div className="bg-primary/5 absolute -bottom-24 -left-24 h-64 w-64 rounded-full blur-3xl" />
             </div>
 
             {/* Icon */}
-            <div className="relative z-10 w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mb-6 shadow-inner transform -rotate-3 hover:rotate-0 transition-transform duration-500">
-              <LayoutTemplate className="w-10 h-10 text-primary" />
+            <div className="bg-primary/10 relative z-10 mb-6 flex h-20 w-20 -rotate-3 transform items-center justify-center rounded-3xl shadow-inner transition-transform duration-500 hover:rotate-0">
+              <LayoutTemplate className="text-primary h-10 w-10" />
             </div>
 
             {/* Text */}
-            <h3 className="relative z-10 text-2xl text-center font-black text-slate-900 dark:text-white mb-3 tracking-tight">
+            <h3 className="relative z-10 mb-3 text-center text-2xl font-black tracking-tight text-slate-900 dark:text-white">
               Personalize Your Vault
             </h3>
-            <p className="relative z-10 text-left text-slate-600 dark:text-slate-400 leading-relaxed text-[15px]">
+            <p className="relative z-10 text-left text-[15px] leading-relaxed text-slate-600 dark:text-slate-400">
               Your document checklist is currently showing a standard list of documents. To view the
               exact documents required for your specific situation, please complete these steps in
               your Journey roadmap:{" "}
             </p>
 
-            <ul className="font-bold text-primary mb-8 text-left">
+            <ul className="text-primary mb-8 text-left font-bold">
               <li> Chapter 1: Step 1 (Eligibility Check)</li>
               <li> Chapter 1: Step 2 (Checklist Personalization)</li>
             </ul>
@@ -1912,14 +2096,14 @@ export default function DocumentVaultPage() {
                 {" "}
                 <Button
                   // onClick={() => router.push("/visa-category/ir-1")}
-                  className="w-full h-14 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold text-base shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95"
+                  className="bg-primary hover:bg-primary/90 shadow-primary/20 h-14 w-full rounded-2xl text-base font-bold text-white shadow-lg transition-all hover:scale-[1.02] active:scale-95"
                 >
                   Go to Journey Roadmap
                 </Button>
               </Link>
               <button
                 onClick={() => setWelcomeModalOpen(false)}
-                className="w-full h-12 rounded-2xl text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 font-bold text-sm transition-colors cursor-pointer"
+                className="h-12 w-full cursor-pointer rounded-2xl text-sm font-bold text-slate-500 transition-colors hover:text-slate-800 dark:hover:text-slate-200"
               >
                 Continue with Generic List
               </button>
