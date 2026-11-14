@@ -310,77 +310,51 @@ export default function MyJourneysPage() {
   const [loading, setLoading] = useState(true);
   const [hasFetched, setHasFetched] = useState(false);
 
+  // Journey card customizations (name / cover) are stored per journey ROW:
+  // profile.journeyCustomizations[<journeys.id>]. A row id belongs to exactly one card,
+  // so renaming one candidate's journey can never rename another card. Only cards with
+  // no DB row yet (profile fallback) use their canonical key. The candidate roster is
+  // NOT touched: the card name is not the beneficiary's legal name (fullName feeds the
+  // forms), and a parallel roster write rewrote profile_details and could undo this save.
+  const customizationKeyFor = (canonicalKey: string, journeyId?: string) =>
+    journeyId || canonicalKey || "";
+
   const handleUpdateJourneyName = useCallback(
-    async (canonicalKey: string, newName: string, candidateId?: string, journeyId?: string) => {
-      if (candidateId) {
-        updateCandidate(candidateId, { customName: newName, fullName: newName });
-      }
+    async (canonicalKey: string, newName: string, _candidateId?: string, journeyId?: string) => {
+      const key = customizationKeyFor(canonicalKey, journeyId);
+      if (!key) return;
       const existing = profile?.journeyCustomizations || {};
-      const updated = { ...existing };
-
-      if (candidateId) {
-        updated[candidateId] = {
-          ...existing[candidateId],
-          name: newName,
-          updatedAt: new Date().toISOString(),
-        };
-      } else if (canonicalKey) {
-        updated[canonicalKey] = {
-          ...existing[canonicalKey],
-          name: newName,
-          updatedAt: new Date().toISOString(),
-        };
-      }
-
-      if (journeyId) {
-        updated[journeyId] = {
-          ...existing[journeyId],
-          name: newName,
-          updatedAt: new Date().toISOString(),
-        };
-      }
-
-      updateProfile({ journeyCustomizations: updated }, { immediate: true });
+      updateProfile(
+        {
+          // Only this card's entry: the profile merge keeps every other card's entry.
+          journeyCustomizations: {
+            [key]: { ...existing[key], name: newName, updatedAt: new Date().toISOString() },
+          },
+        },
+        { immediate: true, silent: true }
+      );
       showToast("Journey name updated!", "success");
     },
-    [profile?.journeyCustomizations, updateProfile, updateCandidate, showToast]
+    [profile?.journeyCustomizations, updateProfile, showToast]
   );
 
   const handleUpdateJourneyImage = useCallback(
-    async (canonicalKey: string, file: File, candidateId?: string, journeyId?: string) => {
+    async (canonicalKey: string, file: File, _candidateId?: string, journeyId?: string) => {
+      const key = customizationKeyFor(canonicalKey, journeyId);
+      if (!key) return;
       try {
-        const uploadKey = candidateId || canonicalKey || journeyId || "journey";
-        const { url } = await uploadJourneyImage(file, "journey", uploadKey);
+        const { url } = await uploadJourneyImage(file, "journey", key);
         if (url) {
-          if (candidateId) {
-            updateCandidate(candidateId, { avatarUrl: url });
-          }
           const existing = profile?.journeyCustomizations || {};
-          const updated = { ...existing };
-
-          if (candidateId) {
-            updated[candidateId] = {
-              ...existing[candidateId],
-              image: url,
-              updatedAt: new Date().toISOString(),
-            };
-          } else if (canonicalKey) {
-            updated[canonicalKey] = {
-              ...existing[canonicalKey],
-              image: url,
-              updatedAt: new Date().toISOString(),
-            };
-          }
-
-          if (journeyId) {
-            updated[journeyId] = {
-              ...existing[journeyId],
-              image: url,
-              updatedAt: new Date().toISOString(),
-            };
-          }
-
-          updateProfile({ journeyCustomizations: updated }, { immediate: true });
+          updateProfile(
+            {
+              // Only this card's entry: the profile merge keeps every other card's entry.
+              journeyCustomizations: {
+                [key]: { ...existing[key], image: url, updatedAt: new Date().toISOString() },
+              },
+            },
+            { immediate: true, silent: true }
+          );
           showToast("Journey cover photo updated!", "success");
         }
       } catch (err) {
@@ -388,7 +362,7 @@ export default function MyJourneysPage() {
         showToast("Failed to upload image. Please try again.", "error");
       }
     },
-    [profile?.journeyCustomizations, updateProfile, updateCandidate, showToast]
+    [profile?.journeyCustomizations, updateProfile, showToast]
   );
 
   const [launcherModal, setLauncherModal] = useState<{
@@ -628,10 +602,17 @@ export default function MyJourneysPage() {
 
         // Strictly isolated lookup per candidate & per journey row
         // NEVER look up generic "IR-5" or "ir5" as that bleeds across candidate cards!
+        // The row id comes first (every save since Nov 2026 writes only that key). Older
+        // saves keyed on the candidate id are read only for a REAL roster candidate: a
+        // synthesized fallback id ("candidate-2") can equal another card's candidate and
+        // would show that card's name here.
+        const isRosterCandidate = candidates.some((c) => c.id === cand.id);
         const candCustom =
-          profile?.journeyCustomizations?.[cand.id] ||
-          profile?.journeyCustomizations?.[`ir5_${cand.id}`] ||
-          profile?.journeyCustomizations?.[j.id];
+          profile?.journeyCustomizations?.[j.id] ||
+          (isRosterCandidate
+            ? profile?.journeyCustomizations?.[cand.id] ||
+              profile?.journeyCustomizations?.[`ir5_${cand.id}`]
+            : undefined);
 
         const formattedRel = formatCandidateRelation(cand.relation);
         const defaultLabel = cand.label || `Candidate ${assignedCandidateIds.size}`;

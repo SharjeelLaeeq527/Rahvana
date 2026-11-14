@@ -239,6 +239,7 @@ const PortalWallet: React.FC = () => {
 
   const [walletSwitcherOpen, setWalletSwitcherOpen] = useState(true);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [credentials, setCredentials] = useState<Credential[]>([]);
   const [formModal, setFormModal] = useState<{
     open: boolean;
@@ -258,15 +259,31 @@ const PortalWallet: React.FC = () => {
 
   const fetchCredentials = useCallback(async () => {
     if (!activeId) return;
+    // A request that never answers used to leave the page on "Loading your vault..."
+    // forever. Give up after 20s and show an error with a retry instead.
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 20000);
     try {
       const qs = `?candidateId=${encodeURIComponent(activeId)}`;
-      const res = await fetch(`${API_BASE}${qs}`);
-      const data = await res.json();
-      if (data.credentials) setCredentials(data.credentials);
-      else setCredentials([]);
+      const res = await fetch(`${API_BASE}${qs}`, { signal: controller.signal });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        console.error("Failed to fetch credentials:", res.status, data);
+        setLoadError(
+          res.status === 401
+            ? "Your session has expired. Please sign in again."
+            : "We could not load your saved credentials. Please try again."
+        );
+        setCredentials([]);
+        return;
+      }
+      setLoadError(null);
+      setCredentials(Array.isArray(data.credentials) ? data.credentials : []);
     } catch (err) {
       console.error("Failed to fetch credentials:", err);
+      setLoadError("We could not load your saved credentials. Please try again.");
     } finally {
+      clearTimeout(timer);
       setLoading(false);
     }
   }, [activeId]);
@@ -511,6 +528,25 @@ const PortalWallet: React.FC = () => {
       <div className="flex h-screen flex-col items-center justify-center gap-4">
         <Loader size="lg" />
         <p className="mt-2 text-sm font-medium text-[#0d7377]">Loading your vault...</p>
+      </div>
+    );
+  }
+
+  if (loadError && credentials.length === 0) {
+    return (
+      <div className="flex h-screen flex-col items-center justify-center gap-4 px-4 text-center">
+        <p className="text-sm font-medium text-[#0c1b33]">{loadError}</p>
+        <button
+          type="button"
+          onClick={() => {
+            setLoading(true);
+            fetchCredentials();
+            fetchAllCredentials();
+          }}
+          className="rounded-lg bg-[#0d7377] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0a5c5f]"
+        >
+          Try again
+        </button>
       </div>
     );
   }
