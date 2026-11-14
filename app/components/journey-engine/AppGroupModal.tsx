@@ -144,7 +144,11 @@ export function AppGroupModal({ group, isOpen, onClose, onLaunchItem, state }: A
   const modalContent = (
     <>
       {upgradeFeature && (
-        <UpgradeModal feature={upgradeFeature} onClose={() => setUpgradeFeature(null)} />
+        <UpgradeModal
+          feature={upgradeFeature}
+          currentTier={plan.tier}
+          onClose={() => setUpgradeFeature(null)}
+        />
       )}
 
       {isServicesGroup && (
