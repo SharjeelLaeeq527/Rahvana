@@ -608,7 +608,13 @@ export const StepView: React.FC<StepViewProps> = ({
     isSubmittingCreds,
     showDeleteConfirmation,
     setShowDeleteConfirmation,
-  } = usePortalWallet({ sId, isCompleted, actions, candidateId: activeCandidateId });
+  } = usePortalWallet({
+    sId,
+    journeyId: state.backendId || (state as any).journeyId || "",
+    isCompleted,
+    actions,
+    candidateId: activeCandidateId,
+  });
 
   const {
     showQuiz,
@@ -1825,7 +1831,9 @@ export const StepView: React.FC<StepViewProps> = ({
               setIsPrepLaunched={setIsPrepLaunched}
               guard={stepEntitlement.guard}
               journeyId={journeyId}
-              journeyTier={state?.subscriptionTier ?? (state as any)?.subscription_tier ?? plan.tier}
+              journeyTier={
+                state?.subscriptionTier ?? (state as any)?.subscription_tier ?? plan.tier
+              }
               plan={plan}
             />
           )}
@@ -2979,7 +2987,6 @@ export const StepView: React.FC<StepViewProps> = ({
     );
   };
 
-
   if (!currentStep) return null;
 
   // (moved to top-level, see above)
@@ -3519,7 +3526,8 @@ export const StepView: React.FC<StepViewProps> = ({
                                                 isTranslationDoc ||
                                                 Boolean(
                                                   doc.guideUrl && doc.guideUrl !== "/guides"
-                                                ) || Boolean(doc.id && inlineGuideData[doc.id]);
+                                                ) ||
+                                                Boolean(doc.id && inlineGuideData[doc.id]);
 
                                               setDocActionModal({
                                                 isOpen: true,
@@ -4364,6 +4372,7 @@ export const StepView: React.FC<StepViewProps> = ({
       <CredentialFormModal
         isOpen={isWalletFormOpen}
         onClose={() => setIsWalletFormOpen(false)}
+        journeyId={state.backendId || (state as any).journeyId || ""}
         portalType={walletPortalType}
         mode={walletMode}
         icon={
@@ -5561,7 +5570,9 @@ export const StepView: React.FC<StepViewProps> = ({
           showRequirements: true,
           journeyTier: state?.subscriptionTier ?? (state as any)?.subscription_tier,
           journeyContext: {
-            journeySlug: data.journey_type ? `${data.journey_type.toLowerCase()}-journey` : "ir5-journey",
+            journeySlug: data.journey_type
+              ? `${data.journey_type.toLowerCase()}-journey`
+              : "ir5-journey",
             journeyCategory: data.journey_type || "IR-5",
             candidateId: (state as any)?.candidateId || activeCandidateId || "candidate-1",
             backendId: (state as any)?.backendId || null,

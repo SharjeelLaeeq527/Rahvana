@@ -673,7 +673,13 @@ export const StepView: React.FC<StepViewProps> = ({
     isSubmittingCreds,
     showDeleteConfirmation,
     setShowDeleteConfirmation,
-  } = usePortalWallet({ sId, isCompleted, actions, candidateId: "ir1" });
+  } = usePortalWallet({
+    sId,
+    journeyId: state.backendId || (state as any).journeyId || "",
+    isCompleted,
+    actions,
+    candidateId: "ir1",
+  });
 
   const {
     showQuiz,
@@ -1968,7 +1974,9 @@ export const StepView: React.FC<StepViewProps> = ({
               setIsPrepLaunched={setIsPrepLaunched}
               guard={stepEntitlement.guard}
               journeyId={journeyId}
-              journeyTier={state?.subscriptionTier ?? (state as any)?.subscription_tier ?? plan.tier}
+              journeyTier={
+                state?.subscriptionTier ?? (state as any)?.subscription_tier ?? plan.tier
+              }
               plan={plan}
             />
           )}
@@ -3056,7 +3064,6 @@ export const StepView: React.FC<StepViewProps> = ({
     );
   };
 
-
   if (!currentStep) return null;
 
   // (moved to top-level, see above)
@@ -3596,7 +3603,8 @@ export const StepView: React.FC<StepViewProps> = ({
                                                 isTranslationDoc ||
                                                 Boolean(
                                                   doc.guideUrl && doc.guideUrl !== "/guides"
-                                                ) || Boolean(doc.id && InlineGuideData[doc.id]);
+                                                ) ||
+                                                Boolean(doc.id && InlineGuideData[doc.id]);
 
                                               setDocActionModal({
                                                 isOpen: true,
@@ -4071,7 +4079,7 @@ export const StepView: React.FC<StepViewProps> = ({
                                 }
                                 if (item.guideUrl && item.guideUrl !== "/guides") {
                                   setGuideOverlayUrl(item.guideUrl);
-                                    actions.updateDocumentStatus(item.id, "reviewed");
+                                  actions.updateDocumentStatus(item.id, "reviewed");
                                 } else {
                                   setSelectedGuideId(item.id || null);
                                   if (actions.updateDocumentStatus && item.id)
@@ -4432,6 +4440,7 @@ export const StepView: React.FC<StepViewProps> = ({
       <CredentialFormModal
         isOpen={isWalletFormOpen}
         onClose={() => setIsWalletFormOpen(false)}
+        journeyId={state.backendId || (state as any).journeyId || ""}
         portalType={walletPortalType}
         mode={walletMode}
         icon={
@@ -5637,7 +5646,9 @@ export const StepView: React.FC<StepViewProps> = ({
           showRequirements: true,
           journeyTier: state?.subscriptionTier ?? (state as any)?.subscription_tier,
           journeyContext: {
-            journeySlug: data.journey_type ? `${data.journey_type.toLowerCase()}-journey` : "ir1-journey",
+            journeySlug: data.journey_type
+              ? `${data.journey_type.toLowerCase()}-journey`
+              : "ir1-journey",
             journeyCategory: data.journey_type || "IR-1",
             candidateId: (state as any)?.candidateId || activeCandidateId || "candidate-1",
             backendId: (state as any)?.backendId || null,

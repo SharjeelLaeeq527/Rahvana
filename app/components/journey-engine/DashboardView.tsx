@@ -391,8 +391,7 @@ export function DashboardView({
       const up = evidenceAnalysis.userProvided;
       const metadata = state.metadata as Record<string, unknown> | undefined;
       const questAnswers = metadata?.["questAnswers_eligibility-suite"] as
-        | Record<string, Record<string, string | string[]>>
-        | undefined;
+        Record<string, Record<string, string | string[]>> | undefined;
       const eligibilityRisks = p.detectEligibilityRisks(questAnswers, p.stepRefs);
       const weightedScore = computeWeightedCaseScore({
         evidenceStrength: up.score,
@@ -408,7 +407,15 @@ export function DashboardView({
     }
 
     return generateCaseNarrative({ evidenceAnalysis, consistencyFindings });
-  }, [evidenceAnalysis, weightedEvidenceView, state, phase2Responses, uploadedDocuments, phase2Runner, data]);
+  }, [
+    evidenceAnalysis,
+    weightedEvidenceView,
+    state,
+    phase2Responses,
+    uploadedDocuments,
+    phase2Runner,
+    data,
+  ]);
 
   // Health status badge for the CaseSummaryCard header.
   // Weighted model (IR-5): band-based — the red "Needs Immediate Attention"
@@ -434,8 +441,7 @@ export function DashboardView({
 
     const metadata = state.metadata as Record<string, unknown> | undefined;
     const questAnswers = metadata?.["questAnswers_eligibility-suite"] as
-      | Record<string, Record<string, string | string[]>>
-      | undefined;
+      Record<string, Record<string, string | string[]>> | undefined;
     const eligibilityRisks = profile.detectEligibilityRisks(questAnswers, profile.stepRefs);
     const score = computeWeightedCaseScore({
       evidenceStrength: evidenceAnalysis?.userProvided?.score ?? 0,
@@ -568,10 +574,7 @@ export function DashboardView({
   const notStarted = !isMeaningfullyStarted({ completedCount: state.completedSteps.size });
 
   // Category profile — decides which Case Health score model this journey uses.
-  const profile = useMemo(
-    () => resolveCaseStrengthProfile((data as any).journey_type),
-    [data]
-  );
+  const profile = useMemo(() => resolveCaseStrengthProfile((data as any).journey_type), [data]);
 
   // Risk flags for the weighted score's Risk ingredient. Uses the category-aware
   // eligibility detector from the profile (IR-5 has its own), plus date-based
@@ -580,8 +583,7 @@ export function DashboardView({
     const metadata = state.metadata as Record<string, unknown> | undefined;
     if (!metadata) return [];
     const questAnswers = metadata["questAnswers_eligibility-suite"] as
-      | Record<string, Record<string, string | string[]>>
-      | undefined;
+      Record<string, Record<string, string | string[]>> | undefined;
     const consistency = metadata.consistencyBaseline as
       | {
           marriageDate?: string;
@@ -633,8 +635,8 @@ export function DashboardView({
   // evidence & completeness ingredients come from the USER-PROVIDED view so
   // profile autofill can't inflate them (§6E); legacy mode keeps the old score.
   const evidenceSubScore = useWeightedScore
-    ? evidenceAnalysis?.userProvided?.score ?? 0
-    : evidenceAnalysis?.overallScore ?? 50;
+    ? (evidenceAnalysis?.userProvided?.score ?? 0)
+    : (evidenceAnalysis?.overallScore ?? 50);
   const completenessSubScore = evidenceAnalysis?.userProvided?.completionPercentage ?? 0;
   const riskPenaltySubScore = useMemo(() => computeRiskPenalty(riskFlags), [riskFlags]);
 
@@ -1055,7 +1057,12 @@ export function DashboardView({
         const res = await fetch("/api/portal-wallet/reveal", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ portalType, type: "all_details", candidateId: activeCandidateId }),
+          body: JSON.stringify({
+            portalType,
+            type: "all_details",
+            journeyId: state.backendId || (state as any).journeyId || "",
+            candidateId: activeCandidateId,
+          }),
         });
         const data = await res.json();
         if (!cancelled && data.details) {
@@ -1130,10 +1137,9 @@ export function DashboardView({
     { label: "Medical date", value: state.metadata.medicalDate },
   ];
 
-
   return (
     <div
-      className="flex-1 overflow-y-auto py-9 px-6 pb-20 scrollbar-hide relative"
+      className="scrollbar-hide relative flex-1 overflow-y-auto px-6 py-9 pb-20"
       style={{ minHeight: "100vh" }}
     >
       {/* Fullscreen background for Dashboard */}
@@ -1141,9 +1147,9 @@ export function DashboardView({
         className="pointer-events-none absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url(${dashboardBg})`, opacity: 0.35 }}
       />
-      <div className="w-full max-w-[1200px] xl:max-w-[1500px] mx-auto animate-in fade-in duration-700 relative z-10">
-        <div className={`w-full mb-6`}>
-          <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400 mb-1 text-center lg:text-left">
+      <div className="animate-in fade-in relative z-10 mx-auto w-full max-w-[1200px] duration-700 xl:max-w-[1500px]">
+        <div className={`mb-6 w-full`}>
+          <div className="mb-1 text-center text-[10px] font-bold tracking-[0.12em] text-slate-400 uppercase lg:text-left">
             {visaName} Visa · Pakistan
           </div>
         </div>
@@ -1170,7 +1176,7 @@ export function DashboardView({
           </div>
         )}
         {/* ── Section 1 + 2: Hero & Health Overview in column grid ──────── */}
-        <div className="grid grid-cols-1 xl:grid-cols-[3fr_2fr] gap-4 mb-6 items-stretch">
+        <div className="mb-6 grid grid-cols-1 items-stretch gap-4 xl:grid-cols-[3fr_2fr]">
           {/* Left: Case Status Hero */}
           <CaseStatusHero
             data={data}
@@ -1258,9 +1264,9 @@ export function DashboardView({
         )} */}
 
         {/* 3-column layout — LEFT: Alert Center | CENTER: chapters | RIGHT: Live tracking */}
-        <div className="grid grid-cols-1 xl:grid-cols-[280px_minmax(0,1fr)_280px] gap-5 items-start">
+        <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-[280px_minmax(0,1fr)_280px]">
           {/* ── LEFT COLUMN — Alert Center (critical + warnings only) ─── */}
-          <div className="hidden xl:flex flex-col gap-3">
+          <div className="hidden flex-col gap-3 xl:flex">
             <AlertCenter
               issues={displayedAlertIssues}
               notStarted={notStarted}
@@ -1276,13 +1282,13 @@ export function DashboardView({
           </div>
 
           {/* ── CENTER — Chapters + Accordions ─── */}
-          <div className="flex flex-col xl:flex-col lg:flex-row gap-8 xl:gap-6 items-start">
+          <div className="flex flex-col items-start gap-8 lg:flex-row xl:flex-col xl:gap-6">
             {/* Main Content Column */}
             <div
-              className={`flex flex-col gap-6 order-1 w-full xl:max-w-none ${showSidebar ? "flex-1" : "lg:max-w-4xl"}`}
+              className={`order-1 flex w-full flex-col gap-6 xl:max-w-none ${showSidebar ? "flex-1" : "lg:max-w-4xl"}`}
             >
               {/* Mobile/tablet only — Alert Center + analysis cards inline */}
-              <div className="xl:hidden flex flex-col gap-4">
+              <div className="flex flex-col gap-4 xl:hidden">
                 <AlertCenter
                   issues={displayedAlertIssues}
                   notStarted={notStarted}
@@ -1324,7 +1330,7 @@ export function DashboardView({
                 )}
               </div>
               <div
-                className={`grid grid-cols-1 md:grid-cols-2 gap-3 ${
+                className={`grid grid-cols-1 gap-3 md:grid-cols-2 ${
                   showSidebar ? "xl:grid-cols-3" : "lg:grid-cols-3"
                 }`}
               >
@@ -1357,14 +1363,14 @@ export function DashboardView({
                       <div
                         key={stage.chapter_key || stage.id}
                         onClick={() => !isLocked && onSelectChapter(originalIdx)}
-                        className={`relative rounded-2xl p-5 transition-all flex flex-col gap-3 min-h-[110px] shadow-[0_4px_16px_rgba(0,0,0,0.05),0_2px_6px_rgba(0,0,0,0.03)] ${
+                        className={`relative flex min-h-[110px] flex-col gap-3 rounded-2xl p-5 shadow-[0_4px_16px_rgba(0,0,0,0.05),0_2px_6px_rgba(0,0,0,0.03)] transition-all ${
                           isLocked
-                            ? "bg-white/60 opacity-50 cursor-default border border-slate-200"
+                            ? "cursor-default border border-slate-200 bg-white/60 opacity-50"
                             : isDone
-                              ? "cursor-pointer hover:brightness-110 hover:shadow-[0_8px_24px_rgba(0,0,0,0.10)] border"
+                              ? "cursor-pointer border hover:shadow-[0_8px_24px_rgba(0,0,0,0.10)] hover:brightness-110"
                               : isActive
-                                ? "cursor-pointer hover:-translate-y-[2px] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] border-2"
-                                : "bg-white cursor-pointer hover:-translate-y-[2px] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] border"
+                                ? "cursor-pointer border-2 hover:-translate-y-[2px] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]"
+                                : "cursor-pointer border bg-white hover:-translate-y-[2px] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]"
                         }`}
                         style={
                           isLocked
@@ -1379,7 +1385,7 @@ export function DashboardView({
                         {/* Header */}
                         <div>
                           <div
-                            className={`text-[9px] font-bold tracking-[0.1em] uppercase mb-1 ${
+                            className={`mb-1 text-[9px] font-bold tracking-[0.1em] uppercase ${
                               isDone ? "text-white/70" : "text-[#89a4a0]"
                             }`}
                           >
@@ -1387,7 +1393,7 @@ export function DashboardView({
                           </div>
 
                           <h3
-                            className={`text-[13px] font-bold leading-[1.3] ${
+                            className={`text-[13px] leading-[1.3] font-bold ${
                               isDone ? "text-white" : "text-[#0f172a]"
                             }`}
                           >
@@ -1408,10 +1414,10 @@ export function DashboardView({
 
                             return (
                               <div
-                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold w-fit ${
+                                className={`inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold ${
                                   isDone
-                                    ? "bg-white/15 text-white/80 border border-white/20"
-                                    : "bg-[#f5eef5] text-[#7a4577] border border-[#d5c0d3]"
+                                    ? "border border-white/20 bg-white/15 text-white/80"
+                                    : "border border-[#d5c0d3] bg-[#f5eef5] text-[#7a4577]"
                                 }`}
                               >
                                 Limited Access
@@ -1420,9 +1426,9 @@ export function DashboardView({
                           })()}
 
                         {/* Progress */}
-                        <div className="flex items-center gap-2 mt-auto">
+                        <div className="mt-auto flex items-center gap-2">
                           <div
-                            className={`flex-1 h-1.5 rounded-full overflow-hidden ${
+                            className={`h-1.5 flex-1 overflow-hidden rounded-full ${
                               isDone ? "bg-white/20" : "bg-slate-100"
                             }`}
                           >
@@ -1456,15 +1462,15 @@ export function DashboardView({
               )}
 
               {/* Accordions */}
-              <div className="bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-sm">
+              <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
                 {/* Case Details */}
-                <div className="border-t first:border-t-0 border-slate-100">
+                <div className="border-t border-slate-100 first:border-t-0">
                   <div
                     onClick={() => toggleAccordion("case-details")}
-                    className={`flex items-center p-[16px_20px] cursor-pointer hover:bg-slate-50/80 transition-colors ${openAccordions["case-details"] ? "bg-slate-50/50" : ""}`}
+                    className={`flex cursor-pointer items-center p-[16px_20px] transition-colors hover:bg-slate-50/80 ${openAccordions["case-details"] ? "bg-slate-50/50" : ""}`}
                   >
                     <span className="text-[13px] font-bold text-slate-900">Case details</span>
-                    <span className="text-[11px] text-[#89a4a0] ml-auto mr-2">
+                    <span className="mr-2 ml-auto text-[11px] text-[#89a4a0]">
                       {caseFields.some((f) => f.value) ? "Recorded" : "Not recorded"}
                     </span>
                     <div
@@ -1474,12 +1480,12 @@ export function DashboardView({
                     </div>
                   </div>
                   {openAccordions["case-details"] && (
-                    <div className="px-[20px] pb-5 pt-2 animate-in fade-in slide-in-from-top-1">
+                    <div className="animate-in fade-in slide-in-from-top-1 px-[20px] pt-2 pb-5">
                       <div className="flex flex-col">
                         {caseFields.map((item, i) => (
                           <div
                             key={i}
-                            className="flex justify-between items-center py-3 border-b border-slate-100 last:border-0"
+                            className="flex items-center justify-between border-b border-slate-100 py-3 last:border-0"
                           >
                             <span className="text-[12.5px] text-slate-500">{item.label}</span>
                             <span
@@ -1498,10 +1504,10 @@ export function DashboardView({
                 <div className="border-t border-slate-100">
                   <div
                     onClick={() => toggleAccordion("milestones")}
-                    className={`flex items-center p-[16px_20px] cursor-pointer hover:bg-slate-50/80 transition-colors ${openAccordions["milestones"] ? "bg-slate-50/50" : ""}`}
+                    className={`flex cursor-pointer items-center p-[16px_20px] transition-colors hover:bg-slate-50/80 ${openAccordions["milestones"] ? "bg-slate-50/50" : ""}`}
                   >
                     <span className="text-[13px] font-bold text-slate-900">Milestone history</span>
-                    <span className="text-[11px] text-[#89a4a0] ml-auto mr-2">
+                    <span className="mr-2 ml-auto text-[11px] text-[#89a4a0]">
                       {milestonesReached} of {milestones.length} reached
                     </span>
                     <div
@@ -1511,7 +1517,7 @@ export function DashboardView({
                     </div>
                   </div>
                   {openAccordions["milestones"] && (
-                    <div className="px-[20px] pb-5 pt-2 animate-in fade-in slide-in-from-top-1">
+                    <div className="animate-in fade-in slide-in-from-top-1 px-[20px] pt-2 pb-5">
                       <div className="flex flex-col gap-1 py-1">
                         {milestones.map((m, i) => {
                           const isDone =
@@ -1530,14 +1536,14 @@ export function DashboardView({
                           return (
                             <div
                               key={i}
-                              className={`flex items-center gap-3 py-2.5 px-3 rounded-xl ${isDone ? "bg-[#e6f5f5]/60" : ""}`}
+                              className={`flex items-center gap-3 rounded-xl px-3 py-2.5 ${isDone ? "bg-[#e6f5f5]/60" : ""}`}
                             >
                               <div
-                                className={`w-[20px] h-[20px] rounded-full flex items-center justify-center text-[10px] font-bold border-2 ${isDone ? "bg-[#0d7377] text-white border-[#0d7377]" : "bg-slate-50 text-[#89a4a0] border-slate-200"}`}
+                                className={`flex h-[20px] w-[20px] items-center justify-center rounded-full border-2 text-[10px] font-bold ${isDone ? "border-[#0d7377] bg-[#0d7377] text-white" : "border-slate-200 bg-slate-50 text-[#89a4a0]"}`}
                               >
                                 {isDone ? "✓" : "•"}
                               </div>
-                              <span className="text-[12.5px] text-slate-500 font-medium">
+                              <span className="text-[12.5px] font-medium text-slate-500">
                                 {m.label}
                               </span>
                             </div>
@@ -1552,13 +1558,13 @@ export function DashboardView({
 
             {/* Sidebar Column (Case Tracking) — hidden at xl (moves to right column) */}
             {showSidebar && (
-              <div className="w-full lg:w-[360px] xl:hidden shrink-0 order-2 flex flex-col gap-4">
+              <div className="order-2 flex w-full shrink-0 flex-col gap-4 lg:w-[360px] xl:hidden">
                 <div className="flex items-center justify-between px-1">
-                  <h2 className="text-[11px] font-bold uppercase tracking-[0.1em] text-slate-900">
+                  <h2 className="text-[11px] font-bold tracking-[0.1em] text-slate-900 uppercase">
                     Case Tracking Center
                   </h2>
                   <div className="flex items-center gap-1.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#0d7377] animate-pulse" />
+                    <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#0d7377]" />
                     <span className="text-[10px] font-bold text-[#89a4a0]">Linked to Embassy</span>
                   </div>
                 </div>
@@ -1617,16 +1623,16 @@ export function DashboardView({
 
                 {/* Unified Alerts */}
                 {alerts.length > 0 && (
-                  <div className="flex flex-col gap-2 animate-in fade-in slide-in-from-right-4 duration-500">
+                  <div className="animate-in fade-in slide-in-from-right-4 flex flex-col gap-2 duration-500">
                     {alerts.map((alert, i) => (
                       <div
                         key={i}
-                        className={`flex gap-2.5 items-start p-3 rounded-xl border ${alert.type === "gold" ? "bg-white border-[#cdadcc] text-slate-700" : alert.type === "sky" ? "bg-white border-[#a8d4d5] text-slate-700" : alert.type === "amber" ? "bg-white border-[#cdadcc] text-slate-700" : "bg-white border-[#afdbdb] text-slate-700"}`}
+                        className={`flex items-start gap-2.5 rounded-xl border p-3 ${alert.type === "gold" ? "border-[#cdadcc] bg-white text-slate-700" : alert.type === "sky" ? "border-[#a8d4d5] bg-white text-slate-700" : alert.type === "amber" ? "border-[#cdadcc] bg-white text-slate-700" : "border-[#afdbdb] bg-white text-slate-700"}`}
                       >
                         <div
-                          className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${alert.type === "gold" ? "bg-[#cdadcc]" : alert.type === "sky" ? "bg-[#0d7377]" : alert.type === "amber" ? "bg-[#cdadcc]" : "bg-[#afdbdb]"}`}
+                          className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${alert.type === "gold" ? "bg-[#cdadcc]" : alert.type === "sky" ? "bg-[#0d7377]" : alert.type === "amber" ? "bg-[#cdadcc]" : "bg-[#afdbdb]"}`}
                         />
-                        <div className="flex-1 flex flex-col gap-1.5">
+                        <div className="flex flex-1 flex-col gap-1.5">
                           <div className="text-[12px] leading-relaxed">
                             <span className="font-bold">{alert.title}: </span>
                             <span className="opacity-80">{alert.text}</span>
@@ -1638,14 +1644,14 @@ export function DashboardView({
                                   href={alert.action.url}
                                   target="_blank"
                                   rel="noreferrer"
-                                  className="text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-slate-700 underline"
+                                  className="text-[10px] font-bold tracking-wider text-slate-500 uppercase underline hover:text-slate-700"
                                 >
                                   {alert.action.label}
                                 </a>
                               ) : (
                                 <button
                                   onClick={alert.action.onAction}
-                                  className="text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-slate-700 underline text-left"
+                                  className="text-left text-[10px] font-bold tracking-wider text-slate-500 uppercase underline hover:text-slate-700"
                                 >
                                   {alert.action.label}
                                 </button>
@@ -1671,7 +1677,7 @@ export function DashboardView({
 
                     if (!dqDateStr) {
                       return (
-                        <div className="bg-gradient-to-br from-[#0d7377] to-[#063e40] rounded-2xl border border-white/10 p-6 text-white mb-4">
+                        <div className="mb-4 rounded-2xl border border-white/10 bg-gradient-to-br from-[#0d7377] to-[#063e40] p-6 text-white">
                           <div className="flex items-center gap-4 text-white/60">
                             <Clock size={20} />
                             <p className="text-[13px]">
@@ -1703,21 +1709,21 @@ export function DashboardView({
 
                     if (!currentSchedulingMonthYear) {
                       return (
-                        <div className="bg-gradient-to-br from-[#0d7377] to-[#063e40] rounded-2xl border border-white/15 p-6 text-white mb-4 relative overflow-hidden">
-                          <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/8 rounded-full blur-[80px] pointer-events-none" />
+                        <div className="relative mb-4 overflow-hidden rounded-2xl border border-white/15 bg-gradient-to-br from-[#0d7377] to-[#063e40] p-6 text-white">
+                          <div className="pointer-events-none absolute -top-10 -right-10 h-40 w-40 rounded-full bg-white/8 blur-[80px]" />
                           <div className="relative z-10">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white rounded-full border border-white/20 text-[10px] font-black uppercase tracking-[0.15em] text-[#0d7377] mb-4">
+                            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white px-3 py-1 text-[10px] font-black tracking-[0.15em] text-[#0d7377] uppercase">
                               Interview Queue ({postLabel})
                             </div>
-                            <h3 className="text-[18px] font-black mb-2">
+                            <h3 className="mb-2 text-[18px] font-black">
                               In Queue, Awaiting Estimate
                             </h3>
-                            <p className="text-[12.5px] text-white/60 leading-relaxed mb-4 max-w-md">
+                            <p className="mb-4 max-w-md text-[12.5px] leading-relaxed text-white/60">
                               Your DQ date is recorded. To see your estimated interview window, go
                               to <b>Chapter 2 → Step 11</b> and sync the official embassy scheduling
                               month.
                             </p>
-                            <div className="bg-white rounded-xl p-3 border border-white/20 flex items-center justify-between">
+                            <div className="flex items-center justify-between rounded-xl border border-white/20 bg-white p-3">
                               <span className="text-[12px] font-bold">
                                 DQ Date:{""}
                                 {dqDateObj.toLocaleDateString("en-US", {
@@ -1733,7 +1739,7 @@ export function DashboardView({
                               </span>
                             </div>
                             {isDqDateInvalid && (
-                              <p className="text-[11px] text-[#cdadcc] mt-2">
+                              <p className="mt-2 text-[11px] text-[#cdadcc]">
                                 DQ dates are in the past. Please go to <b>Chapter 2 → Step 10</b>{" "}
                                 and correct your DQ date.
                               </p>
@@ -1766,22 +1772,22 @@ export function DashboardView({
                     });
 
                     return (
-                      <div className="bg-gradient-to-br from-[#0d7377] to-[#063e40] rounded-2xl border border-white/15 shadow-xl p-6 text-white mb-6 relative overflow-hidden animate-in zoom-in-95 duration-500">
-                        <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/8 rounded-full blur-[80px] pointer-events-none" />
-                        <div className="flex flex-col gap-4 mb-6 border-b border-white/15 pb-4">
+                      <div className="animate-in zoom-in-95 relative mb-6 overflow-hidden rounded-2xl border border-white/15 bg-gradient-to-br from-[#0d7377] to-[#063e40] p-6 text-white shadow-xl duration-500">
+                        <div className="pointer-events-none absolute -top-10 -right-10 h-40 w-40 rounded-full bg-white/8 blur-[80px]" />
+                        <div className="mb-6 flex flex-col gap-4 border-b border-white/15 pb-4">
                           <div>
-                            <h3 className="text-[20px] font-black leading-tight">
+                            <h3 className="text-[20px] leading-tight font-black">
                               In Interview Queue ({postLabel})
                             </h3>
-                            <p className="text-white/60 text-[12px] mt-1">
+                            <p className="mt-1 text-[12px] text-white/60">
                               Estimated timeline based on your DQ date and the official IV Status
                               Tool.
                             </p>
                           </div>
                         </div>
-                        <div className="flex flex-col gap-4 mb-6">
-                          <div className="bg-white rounded-xl p-4 border border-white/20">
-                            <div className="text-[10px] uppercase tracking-widest text-[#89a4a0] mb-2 font-black">
+                        <div className="mb-6 flex flex-col gap-4">
+                          <div className="rounded-xl border border-white/20 bg-white p-4">
+                            <div className="mb-2 text-[10px] font-black tracking-widest text-[#89a4a0] uppercase">
                               Your DQ Date
                             </div>
                             <div className="text-[18px] font-bold">
@@ -1791,16 +1797,16 @@ export function DashboardView({
                                 year: "numeric",
                               })}
                             </div>
-                            <div className="text-[11px] text-[#0d7377] mt-1 font-bold uppercase">
+                            <div className="mt-1 text-[11px] font-bold text-[#0d7377] uppercase">
                               {dqLabel}
                             </div>
                           </div>
-                          <div className="bg-white rounded-xl p-4 border border-white/20 flex flex-col justify-between">
+                          <div className="flex flex-col justify-between rounded-xl border border-white/20 bg-white p-4">
                             <div>
-                              <div className="text-[10px] uppercase tracking-widest text-[#89a4a0] mb-1 font-black leading-tight">
+                              <div className="mb-1 text-[10px] leading-tight font-black tracking-widest text-[#89a4a0] uppercase">
                                 Embassy is currently scheduling cases DQ'd in
                               </div>
-                              <div className="text-[18px] font-bold text-[#0d7377] mt-1">
+                              <div className="mt-1 text-[18px] font-bold text-[#0d7377]">
                                 {embassyMonthStr}
                               </div>
                             </div>
@@ -1811,33 +1817,33 @@ export function DashboardView({
                                   "_blank"
                                 )
                               }
-                              className="mt-3 text-[10px] font-bold text-[#0d7377]/70 hover:text-[#0d7377] flex items-center gap-1 transition-colors group"
+                              className="group mt-3 flex items-center gap-1 text-[10px] font-bold text-[#0d7377]/70 transition-colors hover:text-[#0d7377]"
                             >
                               Check Latest Official Tool{""}
                               <ExternalLink
                                 size={10}
-                                className="group-hover:translate-x-0.5 transition-transform"
+                                className="transition-transform group-hover:translate-x-0.5"
                               />
                             </button>
                           </div>
-                          <div className="bg-[#cdadcc]/15 rounded-xl p-4 border border-[#cdadcc]/25">
-                            <div className="text-[10px] uppercase tracking-widest text-[#cdadcc] mb-2 font-black">
+                          <div className="rounded-xl border border-[#cdadcc]/25 bg-[#cdadcc]/15 p-4">
+                            <div className="mb-2 text-[10px] font-black tracking-widest text-[#cdadcc] uppercase">
                               Estimated Interview Window
                             </div>
                             <div className="text-[20px] font-black text-[#cdadcc]">{windowStr}</div>
-                            <div className="text-[10px] text-[#cdadcc]/70 mt-1 font-medium">
+                            <div className="mt-1 text-[10px] font-medium text-[#cdadcc]/70">
                               Subject to visa availability
                             </div>
                           </div>
                         </div>
-                        <div className="bg-white border border-white/20 rounded-xl p-4 relative">
+                        <div className="relative rounded-xl border border-white/20 bg-white p-4">
                           <div className="flex items-start gap-4">
-                            <div className="w-8 h-8 rounded-xl bg-[#0d7377]/15 flex items-center justify-center shrink-0 border border-[#0d7377]/20">
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-[#0d7377]/20 bg-[#0d7377]/15">
                               <Shield className="text-[#0d7377]" size={16} />
                             </div>
                             <div>
-                              <h4 className="text-[13px] font-black mb-1">Status Intelligence</h4>
-                              <p className="text-[12.5px] text-white/60 leading-relaxed">
+                              <h4 className="mb-1 text-[13px] font-black">Status Intelligence</h4>
+                              <p className="text-[12.5px] leading-relaxed text-white/60">
                                 The embassy is currently scheduling cases that became DQ'd in{""}
                                 <b>{embassyMonthStr}</b>. Your case became DQ'd in{""}
                                 <b>
@@ -1869,16 +1875,16 @@ export function DashboardView({
           {/* end center column */}
 
           {/* ── RIGHT COLUMN — Sidebar tracking only (case strength moved to left) ─── */}
-          <div className={`hidden xl:flex flex-col gap-3 ${!showSidebar ? "xl:hidden" : ""}`}>
+          <div className={`hidden flex-col gap-3 xl:flex ${!showSidebar ? "xl:hidden" : ""}`}>
             {/* Sidebar tracking cards */}
             {showSidebar && (
-              <div className="flex flex-col gap-3 mt-1">
+              <div className="mt-1 flex flex-col gap-3">
                 <div className="flex items-center justify-between px-1">
-                  <h2 className="text-[11px] font-bold uppercase tracking-[0.1em] text-slate-900">
+                  <h2 className="text-[11px] font-bold tracking-[0.1em] text-slate-900 uppercase">
                     Case Tracking Center
                   </h2>
                   <div className="flex items-center gap-1.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#0d7377] animate-pulse" />
+                    <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#0d7377]" />
                     <span className="text-[9px] font-bold text-[#89a4a0]">Live</span>
                   </div>
                 </div>
@@ -1935,12 +1941,12 @@ export function DashboardView({
                     {alerts.map((alert, i) => (
                       <div
                         key={i}
-                        className={`flex gap-2 items-start p-3 rounded-xl border ${alert.type === "gold" ? "bg-white border-[#cdadcc] text-slate-700" : alert.type === "sky" ? "bg-white border-[#a8d4d5] text-slate-700" : alert.type === "amber" ? "bg-white border-[#cdadcc] text-slate-700" : "bg-white border-[#afdbdb] text-slate-700"}`}
+                        className={`flex items-start gap-2 rounded-xl border p-3 ${alert.type === "gold" ? "border-[#cdadcc] bg-white text-slate-700" : alert.type === "sky" ? "border-[#a8d4d5] bg-white text-slate-700" : alert.type === "amber" ? "border-[#cdadcc] bg-white text-slate-700" : "border-[#afdbdb] bg-white text-slate-700"}`}
                       >
                         <div
-                          className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${alert.type === "gold" ? "bg-[#cdadcc]" : alert.type === "sky" ? "bg-[#0d7377]" : alert.type === "amber" ? "bg-[#cdadcc]" : "bg-[#afdbdb]"}`}
+                          className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${alert.type === "gold" ? "bg-[#cdadcc]" : alert.type === "sky" ? "bg-[#0d7377]" : alert.type === "amber" ? "bg-[#cdadcc]" : "bg-[#afdbdb]"}`}
                         />
-                        <div className="text-[11px] leading-relaxed flex-1">
+                        <div className="flex-1 text-[11px] leading-relaxed">
                           <span className="font-bold">{alert.title}: </span>
                           <span className="opacity-80">{alert.text}</span>
                         </div>
