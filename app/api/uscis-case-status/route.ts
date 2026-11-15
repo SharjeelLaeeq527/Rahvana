@@ -7,6 +7,7 @@ import {
   uscisPortalHeaders,
   invalidateUscisToken,
 } from "@/lib/uscis/portalClient";
+import { canCheckUscisForJourney } from "@/lib/uscis/journeyStatusAccess";
 
 // USCIS portal mechanics (OAuth2 client-credentials token, demo_id header,
 // sandbox/production base URL) live in lib/uscis/portalClient.ts and are
@@ -51,6 +52,21 @@ export async function POST(req: NextRequest) {
     // Make sure the cleaned-up receipt number is in the correct format before calling USCIS.
     if (!validateReceiptNumber(normalized)) {
       return NextResponse.json({ error: msg(E.USCIS_INVALID_RECEIPT) }, { status: 400 });
+    }
+
+    // A lookup made for a journey (the journey dashboard sends its journey id)
+    // follows that journey's plan. Lookups without one are the free standalone tool.
+    const journeyId = typeof body?.journeyId === "string" ? body.journeyId.trim() : "";
+    if (journeyId && !(await canCheckUscisForJourney(supabase, user.id, journeyId))) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "PLAN_REQUIRED",
+            message: "Live USCIS status is part of the Premium plan for this journey.",
+          },
+        },
+        { status: 403 }
+      );
     }
 
     // Get a valid USCIS access token (reused from cache or freshly fetched).

@@ -9,7 +9,6 @@ import { Loader } from "@/components/ui/spinner";
 import { useAuth } from "@/app/context/AuthContext";
 import { E, msg } from "@/lib/errors";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { UserJourneyDashboard } from "./components/UserJourneyDashboard";
 
 type Analytics = {
   journeys: { total: number };
@@ -209,7 +208,7 @@ const UserDashboard = () => {
     <div className="bg-[#f8fafa]">
       <div className="w-full site-main-px site-main-py mt-14">
         {/* Header */}
-        <div className="mb-6">
+        <div className="mb-8">
           <div className="flex justify-start mb-2">
             <h2 className="text-[28px] font-bold text-[#0a1128] mb-2">Dashboard</h2>
           </div>
@@ -223,9 +222,6 @@ const UserDashboard = () => {
             medical appointments to prepare for every step of your journey.
           </p>
         </div>
-
-        {/* ── Journey Dashboard Hero ── */}
-        <UserJourneyDashboard />
 
         <div className="flex flex-col lg:flex-row gap-8">
           {/* MAIN CONTENT */}

@@ -1,8 +1,6 @@
 "use client";
 
 import React, { useMemo, useState, useEffect, useRef } from "react";
-import { usePathname } from "next/navigation";
-import { ChevronDown, ExternalLink, Clock, Shield } from "lucide-react";
 import { RoadmapDataV3 } from "./types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { getJourneyLockStatus } from "@/lib/journey-lock";
@@ -12,19 +10,14 @@ import {
   isStageUnlocked,
   getActiveStepsForStage,
 } from "./journeyHelpers";
-import APTrackingTool from "./APTrackingTool";
 import { useCandidate } from "@/app/context/CandidateContext";
-import WaitingStateCard from "./WaitingStateCard";
 // import { JourneyRiskCard } from "./components/JourneyRiskCard";
-import { DocCaseStrengthMeter } from "./components/DocCaseStrengthMeter";
 import { JourneyGuidePage } from "@/app/components/shared/GuidePageOverlay";
 import { Phase2Modal } from "./components/Phase2Modal";
 import { EvidenceQuestionnaireModal } from "./components/EvidenceQuestionnaireModal";
-import { CaseStatusHero } from "./components/CaseStatusHero";
-import { CaseHealthOverview } from "./components/CaseHealthOverview";
 import { CSADrawer } from "./components/CSADrawer";
-import { AlertCenter } from "./components/AlertCenter";
-import RahvanaDashboard from "@/app/(main)/Jdashboard/RahvanaDashboard";
+import { JourneyDashboard } from "@/app/components/journey-dashboard/JourneyDashboard";
+import { useJourneyDashboardProps } from "@/app/components/journey-dashboard/useJourneyDashboardProps";
 import { EvidenceGapEngine, EVIDENCE_QUESTIONNAIRE } from "@/lib/journey/evidence-gap";
 import type { EvidenceGapAnalysis } from "@/lib/journey/evidence-gap";
 import { DOCUMENTS_BY_ID } from "@/lib/document-vault/document-definitions";
@@ -59,7 +52,6 @@ import {
 import {
   gateAlertIssues,
   buildAlertGateContext,
-  isMeaningfullyStarted,
   isCaseHealthScorable,
   hasUserEvidenceSignal,
 } from "@/lib/case-strength/alert-gating";
@@ -68,18 +60,16 @@ import type { ConsistencyFinding } from "@/lib/case-strength/consistency-intelli
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { useJourneyPlan } from "@/app/context/useJourneyPlan";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
+import APTrackingTool from "./APTrackingTool";
 // import { LockedFeature } from "@/app/components/entitlements/LockedFeature";
 import { STEP_PRIMARY_FEATURE } from "@/lib/entitlements/stepFeatureMap";
 // import { getActiveStepsForStage } from "./journeyHelpers";
 import { getStepLockStatus, getModalFeatureForTier } from "@/lib/entitlements/hardLockRules";
-import { E, msg } from "@/lib/errors";
-import VisaTicker from "@/app/components/home-page/VisaTicker";
-import { AppGroupGrid } from "./AppGroupGrid";
 import {
-  buildVisaTickerProps,
   fetchReceiptForJourney,
   ReceiptRecord,
 } from "@/app/components/home-page/Visatickerprops";
+import { RECEIPT_SAVED_EVENT } from "@/lib/journey/dashboard/caseFacts";
 
 interface DashboardViewProps {
   data: RoadmapDataV3;
@@ -107,12 +97,9 @@ interface DashboardViewProps {
   };
 }
 
-// Dashboard background image
-const dashboardBg = "/assets/images/dashboard.png";
-
-const visaCategoryNames: Record<string, string> = {
-  "ir5-journey": "IR-5 Parent",
-};
+// Stable helper set for the redesigned dashboard (step filtering always goes
+// through getActiveStepsForStage, never inline).
+const STEP_HELPERS = { getActiveStepsForStage, getStageProgress, isStageUnlocked };
 
 export function DashboardView({
   data,
@@ -127,10 +114,6 @@ export function DashboardView({
 }: DashboardViewProps) {
   const plan = useJourneyPlan(state);
   const effectiveTier = plan.tier;
-
-  const pathname = usePathname();
-  const slug = pathname.split("/").pop();
-  const visaName = visaCategoryNames[slug || ""];
 
   const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
   const [guideOverlayUrl, setGuideOverlayUrl] = useState<string | null>(null);
@@ -285,71 +268,6 @@ export function DashboardView({
     evidenceRequirements,
   ]);
 
-  // Refresh evidence analysis
-  const refreshEvidenceAnalysis = () => {
-    setEvidenceAnalysis(null);
-    // Re-trigger effect by forcing re-evaluation
-    const journeyId = state.backendId;
-    if (!journeyId) return;
-    setEvidenceLoading(true);
-    setTimeout(() => {
-      // Trigger re-run by updating a dependency
-      const engine = new EvidenceGapEngine(evidenceRequirements);
-      const chapters = (data as any).chapters || (data as any).stages || [];
-      const journeyDocs: Array<{
-        document_type: string;
-        document_label?: string;
-        status: string;
-        is_required: boolean;
-      }> = [];
-      chapters.forEach((chapter: any) => {
-        (chapter.steps || []).forEach((step: any) => {
-          (step.document_items || []).forEach((item: any) => {
-            journeyDocs.push({
-              document_type: item.key || item.id || step.step_key,
-              document_label: item.label || item.name,
-              status: item.status || (item.uploaded ? "uploaded" : "pending"),
-              is_required: item.required ?? false,
-            });
-          });
-        });
-      });
-      const vaultDocs = uploadedDocuments.map((doc) => {
-        const docDef = DOCUMENTS_BY_ID[doc.documentDefId];
-        return {
-          id: doc.id,
-          documentDefId: docDef?.key || doc.documentDefId, // Pass the key, not the id
-          category: docDef?.category,
-          uploadedAt: doc.uploadedAt,
-          status: doc.status,
-        };
-      });
-      const caseDataEntries = Object.entries(state.metadata || {}).reduce(
-        (acc, [key, value]) => {
-          if (value !== null && value !== undefined && key !== "tracking_status") {
-            acc[key] = { data_value: value, is_verified: false, source: "user_input" };
-          }
-          return acc;
-        },
-        {} as Record<string, { data_value: unknown; is_verified: boolean; source: string }>
-      );
-      try {
-        const result = engine.analyze({
-          journeyId,
-          journeyDocuments: journeyDocs,
-          vaultDocuments: vaultDocs,
-          caseData: caseDataEntries,
-          questionnaireResponses,
-        });
-        setEvidenceAnalysis(result);
-      } catch (err) {
-        console.error("[EvidenceGap] Analysis failed:", err);
-      } finally {
-        setEvidenceLoading(false);
-      }
-    }, 100);
-  };
-
   // ── Case Narrative Generation ─────────────────────────────────────────────
   // Consumes existing CSA outputs (Evidence Gap + Consistency Intelligence)
   // to generate a human-readable case summary. No new analysis performed.
@@ -453,12 +371,6 @@ export function DashboardView({
   const [isCSADrawerOpen, setIsCSADrawerOpen] = useState(false);
   const [showPhase2Modal, setShowPhase2Modal] = useState(false);
   const [showEvidenceQuestionnaireModal, setShowEvidenceQuestionnaireModal] = useState(false);
-  const [skin, setSkin] = useState<"redesign" | "classic">(() => {
-    if (typeof window !== "undefined") {
-      return (localStorage.getItem("rahvana_dashboard_skin") as "redesign" | "classic") || "redesign";
-    }
-    return "redesign";
-  });
 
   // ── Alert Center Issues ─────────────────────────────────────────────────────
   // Compute issues for the AlertCenter (critical + warning only)
@@ -559,20 +471,6 @@ export function DashboardView({
     });
   }, [data, state, uploadedDocuments, phase2Responses, registry, phase2Runner]);
 
-  // Counts for the CaseHealthOverview
-  const critIssueCount = alertCenterIssues.filter(
-    (i) => i.level === "critical" && !i.resolved
-  ).length;
-  const warnIssueCount = alertCenterIssues.filter(
-    (i) => i.level === "warning" && !i.resolved
-  ).length;
-
-  // Empty-state gate: case-health appears only once the user has actually
-  // progressed (completed ≥1 step). Before that we must not show a fabricated
-  // score — the wizard pre-fills metadata from profile autofill, so softer
-  // signals would false-trigger. (NN/g empty states — no false precision.)
-  const notStarted = !isMeaningfullyStarted({ completedCount: state.completedSteps.size });
-
   // Category profile — decides which Case Health score model this journey uses.
   const profile = useMemo(
     () => resolveCaseStrengthProfile((data as any).journey_type),
@@ -665,13 +563,6 @@ export function DashboardView({
     consistencyFindings,
   ]);
 
-  // Compact summary text for CaseHealthOverview (truncated executive summary)
-  const compactSummary = caseNarrative?.executiveSummary
-    ? caseNarrative.executiveSummary.length > 280
-      ? caseNarrative.executiveSummary.slice(0, 280).trim() + "\u2026"
-      : caseNarrative.executiveSummary
-    : undefined;
-
   // Phase 2 answered count
   const phase2AnsweredCount = Object.values(phase2Responses).filter(Boolean).length;
 
@@ -744,39 +635,10 @@ export function DashboardView({
     [scoreDropIssue, alertCenterIssues]
   );
 
-  // Extract step_1_2 document_items from roadmap data
-  const step1_2DocItems = useMemo(() => {
-    const chapters = (data as any).chapters || (data as any).stages || [];
-    const chapter1 = chapters[0];
-    if (!chapter1) return null;
-    const step = (chapter1.steps || []).find((s: any) => s.step_key === "step_1_2");
-    return step?.document_items ?? null;
-  }, [data]);
-
-  const hasPriorMarriage = useMemo(() => {
-    const q3s1 =
-      state.answers?.["eligibility-suite"]?.["q3"]?.["q3s1"] ??
-      (state.metadata?.["questAnswers_eligibility-suite"] as any)?.["q3"]?.["q3s1"];
-    return !!q3s1 && q3s1 !== "none";
-  }, [state.answers, state.metadata]);
-
   const trackingStatus = useMemo(
     () => (state.metadata?.tracking_status as any) || {},
     [state.metadata?.tracking_status]
   );
-  const hasTrackingData = useMemo(() => Object.keys(trackingStatus).length > 0, [trackingStatus]);
-  const isCaseRegistered = !!state.metadata?.nvcCaseNum;
-
-  // ── Phase helpers — drive which cards are visible ──────────
-  // Interview date: admin-set (tracking_status) OR user-set (Step 2.12 metadata)
-  const interviewDate =
-    trackingStatus.interview_date || (state.metadata?.interviewDate as string | undefined);
-
-  const interviewDateValid = useMemo(() => {
-    if (!interviewDate) return false;
-    const date = new Date(interviewDate);
-    return !Number.isNaN(date.getTime()) && date.getUTCFullYear() >= 2000;
-  }, [interviewDate]);
 
   // New outcome metadata
   const interviewOutcome = state.metadata?.interviewOutcome as string | undefined;
@@ -789,12 +651,6 @@ export function DashboardView({
     !!trackingStatus.ap_status ||
     !!interviewOutcome;
 
-  // DQ is active (case qualified, waiting for interview scheduling)
-  const isDqPhase =
-    (!!state.metadata?.dqDate ||
-      trackingStatus.dq_status === "qualified" ||
-      state.metadata?.dqStatus === "qualified") &&
-    !interviewDate;
   const isJourneyComplete = !!journeyCompletedAt;
 
   // AP phase: legacy (apSaved/admin) OR new 221g path
@@ -822,221 +678,6 @@ export function DashboardView({
 
   const lockStatus = useMemo(() => getJourneyLockStatus(state.metadata || {}), [state.metadata]);
 
-  const alerts = useMemo(() => {
-    const list: {
-      type: "gold" | "sky" | "amber" | "green";
-      iconColor: string;
-      title: string;
-      text: string;
-      action?: { label: string; url?: string; onAction?: () => void };
-    }[] = [];
-    const meta = state.metadata || {};
-    const done = state.answers || {};
-    const trackingStatus = (state.metadata?.tracking_status as any) || {};
-    const isCaseRegistered = !!state.metadata?.nvcCaseNum;
-    const hasTrackingData = Object.keys(trackingStatus).length > 0;
-
-    // Admin tracking-based alerts
-    // NOTE: AP alert removed here — APTrackingTool (sidebar) handles this
-    // when user has recorded AP details, WaitingStateCard handles it before that.
-
-    if (trackingStatus.interview_date) {
-      list.push({
-        type: "gold",
-        iconColor: "d-gold",
-        title: "Interview scheduled",
-        text: `${trackingStatus.interview_date} ${trackingStatus.interview_time ? `at ${trackingStatus.interview_time}` : ""} ${trackingStatus.interview_embassy ? `· ${trackingStatus.interview_embassy}` : ""}`,
-        action: {
-          label: "Interview Prep Guide",
-          onAction: () => {
-            if (onSelectStep) onSelectStep(2, 6);
-            else {
-              actions.setStage(2);
-              actions.setCurrentStep(6);
-            }
-          },
-        },
-      });
-    }
-
-    // "In scheduling queue" alert removed — the Dynamic Scheduling Tracker
-    // (sidebar dark card with DQ date + embassy month + estimate) shows
-    // this same info in full detail. No duplicate text alert needed.
-
-    if (trackingStatus.nvc_review_complete && trackingStatus.dq_status !== "qualified") {
-      list.push({
-        type: "green",
-        iconColor: "d-green",
-        title: "NVC Document Review Complete",
-        text: `NVC has reviewed your documents. Your case is being processed for Documentarily Qualified status. ${trackingStatus.nvc_review_date ? `(Date: ${trackingStatus.nvc_review_date})` : ""}`,
-      });
-    }
-
-    if (!hasTrackingData && isCaseRegistered && !interviewDateValid) {
-      list.push({
-        type: "sky",
-        iconColor: "d-sky",
-        title: "Case Registered & Under Review",
-        text: "Your NVC identifiers have been recorded. Our admin team will verify your case status at the embassy/NVC shortly.",
-      });
-    }
-
-    // Legacy metadata-based alerts
-    if (
-      meta.interviewDate &&
-      !trackingStatus.interview_date &&
-      interviewDateValid &&
-      !list.some((a) => a.title === "Interview scheduled")
-    ) {
-      list.push({
-        type: "gold",
-        iconColor: "d-gold",
-        title: "Interview scheduled (Manual)",
-        text: `${meta.interviewDate} ${meta.interviewEmbassy ? `· ${meta.interviewEmbassy}` : ""}`,
-      });
-    }
-
-    // "In scheduling queue (Manual)" removed — the Dynamic Scheduling Tracker
-    // card (sidebar) already shows DQ date + embassy month + estimated window
-    // in a much better UI. No need for this duplicate text alert.
-
-    if (done && done["c3s3"] && !done["c3s4"]) {
-      list.push({
-        type: "amber",
-        iconColor: "d-amber",
-        title: "PCC pending",
-        text: "Police Clearance Certificate must be received before interview day.",
-      });
-    }
-
-    if (meta.medicalDate && !done["c3s5"]) {
-      list.push({
-        type: "green",
-        iconColor: "d-green",
-        title: "Medical exam scheduled",
-        text: `${meta.medicalDate} ${meta.medClinic ? `· ${meta.medClinic}` : ""}`,
-      });
-    }
-
-    if (
-      isCaseRegistered &&
-      !trackingStatus.nvc_review_complete &&
-      trackingStatus.dq_status !== "qualified" &&
-      !state.metadata?.dqDate
-    ) {
-      list.push({
-        type: "sky",
-        iconColor: "d-sky",
-        title: "Check NVC Email & Portal",
-        text: "Your documents are in review. To avoid delays, please check your CEAC portal daily for any messages or status updates.",
-        action: {
-          label: "Open CEAC Portal",
-          url: "https://ceac.state.gov/IV/Login.aspx",
-        },
-      });
-    }
-
-    if (
-      !!state.metadata?.uscis_tracking_enabled &&
-      !trackingStatus.nvc_review_complete &&
-      trackingStatus.dq_status !== "qualified"
-    ) {
-      list.push({
-        type: "sky",
-        iconColor: "d-sky",
-        title: "USCIS Case Tracking Active",
-        text: trackingStatus.uscis_status
-          ? `Current Status: ${trackingStatus.uscis_status.replace(/_/g, " ")} ${trackingStatus.uscis_status_updated ? `(Updated: ${new Date(trackingStatus.uscis_status_updated).toLocaleDateString()})` : ""}`
-          : "Your Receipt Notice is registered. Rahvana is monitoring your case for updates.",
-        action: {
-          label: "View Receipt Details",
-          onAction: () => {
-            actions.setStage(0);
-            actions.setCurrentStep(14);
-          },
-        },
-      });
-    }
-
-    return list;
-  }, [state, actions]);
-
-  // Determine if sidebar should be visible
-  const showSidebar = useMemo(() => {
-    const hasWaitingStateCards =
-      (trackingStatus.interview_queue &&
-        !interviewDateValid &&
-        !state.metadata?.dqDate &&
-        trackingStatus.dq_status !== "qualified" &&
-        !state.metadata?.dqStatus) ||
-      (interviewDateValid && !interviewAttended) ||
-      (isApPhase && state.metadata?.apSaved !== "true");
-    return (
-      alerts.length > 0 ||
-      isDqPhase ||
-      (isApPhase && state.metadata?.apSaved === "true") ||
-      hasWaitingStateCards
-    );
-  }, [
-    alerts.length,
-    isDqPhase,
-    isApPhase,
-    state.metadata?.apSaved,
-    trackingStatus.interview_queue,
-    trackingStatus.dq_status,
-    interviewDate,
-    state.metadata?.dqDate,
-    state.metadata?.dqStatus,
-    interviewAttended,
-  ]);
-
-  const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>({
-    "case-details": true,
-    milestones: false,
-  });
-
-  const toggleAccordion = (id: string) => {
-    setOpenAccordions((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
-  };
-
-  const milestones = [
-    { label: "Eligibility confirmed", sid: "step_1_1" },
-    { label: "Documents gathered", sid: "step_1_2" },
-    { label: "Filing method selected", key: "filingMethod" },
-    { label: "I-130 submitted to USCIS", key: "receiptNum", sid: "step_1_3" },
-    { label: "NVC fees paid", sid: "step_2_2" },
-    { label: "DS-260 submitted", sid: "step_2_3" },
-    { label: "Documents submitted to NVC", sid: "step_2_5" },
-    { label: "Documentarily Qualified", key: "dqDate" },
-    { label: "Medical exam scheduled", key: "medicalDate", sid: "step_3_1" },
-    { label: "Interview scheduled", key: "interviewDate" },
-    { label: "Medical exam attended", sid: "step_3_5" },
-    { label: "Visa interview attended", sid: "step_3_8" },
-    { label: "Interview outcome confirmed", sid: "step_3_9" },
-    { label: "Visa issued", sid: "step_3_10" },
-  ];
-
-  const milestonesReached = milestones.filter((m) => {
-    if (m.key && m.sid) {
-      return (
-        (state.metadata && state.metadata[m.key]) ||
-        (state.completedSteps && state.completedSteps.has && state.completedSteps.has(m.sid))
-      );
-    }
-    if (m.key) return !!(state.metadata && state.metadata[m.key]);
-    if (m.sid) {
-      return (
-        (state.completedSteps && state.completedSteps.has && state.completedSteps.has(m.sid)) ||
-        (state.answers && state.answers[m.sid]) ||
-        (state.metadata && state.metadata[m.sid])
-      );
-    }
-    return false;
-  }).length;
-
   let candidateCtx;
   try {
     // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -1048,13 +689,9 @@ export function DashboardView({
 
   const [nvcCaseNum, setNvcCaseNum] = useState<string | undefined>(undefined);
   const [nvcInvoice, setNvcInvoice] = useState<string | undefined>(undefined);
-  const [nvcLoading, setNvcLoading] = useState(true);
-  const [nvcError, setNvcError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    setNvcLoading(true);
-    setNvcError(null);
     async function fetchNvcFields() {
       const portalType = state.metadata.portalType || "NVC";
       try {
@@ -1068,12 +705,15 @@ export function DashboardView({
           setNvcCaseNum(data.details.nvcCaseNum);
           setNvcInvoice(data.details.nvcInvoice);
         } else if (!cancelled) {
-          setNvcError(msg(E.DASH_NVC_DETAILS_MISSING));
+          // No NVC details saved for this candidate: show nothing rather than stale values.
+          setNvcCaseNum(undefined);
+          setNvcInvoice(undefined);
         }
       } catch {
-        if (!cancelled) setNvcError(msg(E.PORTAL_WALLET_FETCH_FAILED));
-      } finally {
-        if (!cancelled) setNvcLoading(false);
+        if (!cancelled) {
+          setNvcCaseNum(undefined);
+          setNvcInvoice(undefined);
+        }
       }
     }
     fetchNvcFields();
@@ -1083,6 +723,13 @@ export function DashboardView({
   }, [state.metadata.portalType, activeCandidateId]);
 
   const [receiptRecord, setReceiptRecord] = useState<ReceiptRecord | null | undefined>(undefined);
+  // Bumped when a receipt is registered, so the tracking ticket picks it up at once.
+  const [receiptVersion, setReceiptVersion] = useState(0);
+  useEffect(() => {
+    const bump = () => setReceiptVersion((n) => n + 1);
+    window.addEventListener(RECEIPT_SAVED_EVENT, bump);
+    return () => window.removeEventListener(RECEIPT_SAVED_EVENT, bump);
+  }, []);
   useEffect(() => {
     console.log("DEBUG [receipt effect] FIRED, state.backendId:", state.backendId);
     let cancelled = false;
@@ -1118,930 +765,95 @@ export function DashboardView({
       console.log("DEBUG [receipt effect] Cleanup, marking cancelled");
       cancelled = true;
     };
-  }, [state.backendId]);
-  const caseFields = [
-    { label: "Filing method", value: state.metadata.filingMethod },
-    { label: "Receipt number", value: state.metadata.receiptNum },
-    {
-      label: "NVC case number",
-      value: nvcLoading ? "Loading..." : nvcError ? "Unavailable" : nvcCaseNum,
-    },
-    {
-      label: "NVC invoice ID",
-      value: nvcLoading ? "Loading..." : nvcError ? "Unavailable" : nvcInvoice,
-    },
-    { label: "DQ date", value: state.metadata.dqDate },
-    { label: "Interview date", value: state.metadata.interviewDate },
-    { label: "Embassy", value: state.metadata.interviewEmbassy },
-    { label: "Medical date", value: state.metadata.medicalDate },
-  ];
+  }, [state.backendId, receiptVersion]);
 
+
+  // Hero "Continue": same lock / upgrade / navigate rules as CaseStatusHero.
+  const handleContinue = () => {
+    if (plan.isLocked("roadmap_access")) {
+      setUpgradeModalFeature("roadmap_access");
+      return;
+    }
+    if (!nextActionData) return;
+    if (nextStepLock.isLocked) {
+      setUpgradeModalFeature(getModalFeatureForTier(nextStepLock.requiredPlan!));
+      return;
+    }
+    if (onSelectStep) onSelectStep(nextActionData.chapterIdx, nextActionData.stepIdxInChapter);
+    else {
+      actions.setStage(nextActionData.chapterIdx);
+      actions.setCurrentStep(nextActionData.stepIdxInChapter);
+    }
+  };
+
+  // Redesigned dashboard: reuses the values computed above, nothing re-derived.
+  const journeyDashboardProps = useJourneyDashboardProps({
+    data,
+    state,
+    updateMetadata: actions.updateMetadata,
+    helpers: STEP_HELPERS,
+    nextAction: nextActionData,
+    upgradeRequired: plan.isLocked("roadmap_access") || nextStepLock.isLocked,
+    readOnly: lockStatus.isLocked,
+    locks: {
+      caseStrength: plan.isLocked("case_strength"),
+      uscisCheck: plan.isLocked("tracker_reminders"),
+      vault: plan.isLocked("document_vault"),
+      wallet: plan.isLocked("portal_wallet"),
+    },
+    onUpgrade: setUpgradeModalFeature,
+    renderApTracker: () => <APTrackingTool state={state} defaultExpanded />,
+    isStepLocked: (stepKey: string) => {
+      const feat = STEP_PRIMARY_FEATURE[stepKey];
+      return !!feat && plan.isLocked(feat);
+    },
+    caseHealth: {
+      notStarted: healthNotStarted,
+      loading: evidenceLoading,
+      score: overallCaseScore,
+      label: caseHealthStatus?.label ?? "Analyzing",
+      status: caseHealthStatus?.status ?? "needs-attention",
+      evidence: evidenceSubScore,
+      consistency: consistencySubScore,
+      completeness: useWeightedScore ? completenessSubScore : undefined,
+      riskPenalty: useWeightedScore ? riskPenaltySubScore : undefined,
+      evidenceAnswered: evidenceAnsweredCount,
+      evidenceTotal: evidenceQuestionnaire.length,
+      consistencyAnswered: phase2AnsweredCount,
+      consistencyTotal: phase2Questions.length,
+    },
+    issues: displayedAlertIssues,
+    receiptRecord,
+    nvcCaseNum,
+    nvcInvoice,
+    interviewAttended: !!interviewAttended,
+    isApPhase: !!isApPhase,
+    isApprovedPhase: !!isApprovedPhase,
+    isJourneyComplete,
+    actions: {
+      onContinue: handleContinue,
+      onOpenChapter: onSelectChapter,
+      onOpenStep: (c, st) => {
+        if (onSelectStep) onSelectStep(c, st);
+        else {
+          actions.setStage(c);
+          actions.setCurrentStep(st);
+        }
+      },
+      onOpenCaseAnalysis: () => setIsCSADrawerOpen(true),
+      onOpenEvidenceQuestions: () => setShowEvidenceQuestionnaireModal(true),
+      onOpenConsistencyQuestions: () => setShowPhase2Modal(true),
+    },
+    onLaunchTool,
+  });
 
   return (
-    <div
-      className="flex-1 overflow-y-auto py-9 px-6 pb-20 scrollbar-hide relative"
-      style={{ minHeight: "100vh" }}
-    >
-      {/* Fullscreen background for Dashboard */}
-      <div
-        className="pointer-events-none absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${dashboardBg})`, opacity: 0.35 }}
-      />
-      <div className="w-full max-w-[1200px] xl:max-w-[1500px] mx-auto animate-in fade-in duration-700 relative z-10">
-        <div className="w-full mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400 text-center sm:text-left">
-            {visaName || "Family"} Visa · Pakistan
-          </div>
-          <div className="inline-flex items-center gap-1 bg-white/80 backdrop-blur-sm p-1 rounded-xl border border-slate-200/80 shadow-xs self-center sm:self-auto text-xs">
-            <button
-              onClick={() => {
-                setSkin("redesign");
-                try { localStorage.setItem("rahvana_dashboard_skin", "redesign"); } catch (e) {}
-              }}
-              className={`px-3 py-1 rounded-lg font-semibold transition-colors cursor-pointer ${
-                skin === "redesign"
-                  ? "bg-[#0d7377] text-white shadow-xs"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              ✨ Redesigned Skin
-            </button>
-            <button
-              onClick={() => {
-                setSkin("classic");
-                try { localStorage.setItem("rahvana_dashboard_skin", "classic"); } catch (e) {}
-              }}
-              className={`px-3 py-1 rounded-lg font-semibold transition-colors cursor-pointer ${
-                skin === "classic"
-                  ? "bg-[#0d7377] text-white shadow-xs"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              Classic Layout
-            </button>
-          </div>
-        </div>
+    <div className="rv-dash-bg relative flex-1 px-2 py-3 sm:px-4">
+      {upgradeModalFeature && (
+        <UpgradeModal feature={upgradeModalFeature} onClose={() => setUpgradeModalFeature(null)} />
+      )}
 
-        {upgradeModalFeature && (
-          <UpgradeModal
-            feature={upgradeModalFeature}
-            onClose={() => setUpgradeModalFeature(null)}
-          />
-        )}
-
-        {skin === "redesign" ? (
-          <div className="w-full flex items-center justify-center py-2">
-            <RahvanaDashboard
-              data={data}
-              state={state}
-              actions={actions}
-              onSelectChapter={onSelectChapter}
-              onSelectStep={onSelectStep}
-              onLaunchTool={onLaunchTool}
-              options={{
-                tier: effectiveTier,
-                receiptRecord,
-                caseStrength: {
-                  score: overallCaseScore,
-                  band: caseHealthStatus?.label ?? "Good",
-                  subScores: {
-                    evidenceCoverage: {
-                      val: `${Math.round((evidenceSubScore / 100) * 15)}`,
-                      denom: ' of 15',
-                      pct: evidenceSubScore / 100,
-                    },
-                    consistency: {
-                      val: `${Math.round((consistencySubScore / 100) * 12)}`,
-                      denom: ' of 12',
-                      pct: consistencySubScore / 100,
-                    },
-                    completeness: {
-                      val: `${Math.round(((completenessSubScore ?? 68) / 100) * 25)}`,
-                      denom: ' of 25',
-                      pct: (completenessSubScore ?? 68) / 100,
-                    },
-                    riskDeductions: {
-                      val: riskPenaltySubScore ? `−${riskPenaltySubScore}` : '0',
-                      denom: ' pts',
-                      pct: Math.min(1, (riskPenaltySubScore ?? 0) / 25),
-                    },
-                  },
-                },
-                onUpgradeRequired: (featureKey) => setUpgradeModalFeature(featureKey as any),
-                onOpenCaseStrength: () => setIsCSADrawerOpen(true),
-                onOpenVault: () => {
-                  if (onLaunchTool) onLaunchTool("document_vault");
-                },
-              }}
-            />
-          </div>
-        ) : (
-          <>
-        {/* Visa ticker — journey dashboard (placed above hero) */}
-        {receiptRecord !== undefined && (
-          <div className="mb-6">
-            <VisaTicker
-              {...buildVisaTickerProps(
-                state,
-                trackingStatus,
-                nvcCaseNum,
-                nvcInvoice,
-                uploadedDocuments as any[],
-                receiptRecord
-              )}
-            />
-          </div>
-        )}
-        {/* ── Section 1 + 2: Hero & Health Overview in column grid ──────── */}
-        <div className="grid grid-cols-1 xl:grid-cols-[3fr_2fr] gap-4 mb-6 items-stretch">
-          {/* Left: Case Status Hero */}
-          <CaseStatusHero
-            data={data}
-            state={state}
-            nextActionData={nextActionData}
-            isLocked={lockStatus.isLocked}
-            onContinue={() => {
-              if (plan.isLocked("roadmap_access")) {
-                setUpgradeModalFeature("roadmap_access");
-                return;
-              }
-              if (nextActionData) {
-                if (nextStepLock.isLocked) {
-                  setUpgradeModalFeature(getModalFeatureForTier(nextStepLock.requiredPlan!));
-                  return;
-                }
-                if (onSelectStep) {
-                  onSelectStep(nextActionData.chapterIdx, nextActionData.stepIdxInChapter);
-                } else {
-                  actions.setStage(nextActionData.chapterIdx);
-                  actions.setCurrentStep(nextActionData.stepIdxInChapter);
-                }
-              }
-            }}
-          />
-
-          {/* Right: Case Health + Summary (combined) */}
-          <CaseHealthOverview
-            evidenceAnalysis={evidenceAnalysis}
-            criticalCount={critIssueCount}
-            warningCount={warnIssueCount}
-            overallScore={overallCaseScore}
-            evidenceScore={evidenceSubScore}
-            consistencyScore={consistencySubScore}
-            completenessScore={useWeightedScore ? completenessSubScore : undefined}
-            riskPenalty={useWeightedScore ? riskPenaltySubScore : undefined}
-            healthLabel={caseHealthStatus?.label ?? "Analyzing"}
-            healthStatus={caseHealthStatus?.status ?? "needs-attention"}
-            loading={evidenceLoading}
-            notStarted={healthNotStarted}
-            onViewFullAnalysis={() => setIsCSADrawerOpen(true)}
-            summaryText={compactSummary}
-          />
-        </div>
-
-        {/* ── Status cards (commented out — now handled by CaseStatusHero) ── */}
-        {/* {isJourneyComplete && (
-          <WaitingStateCard
-            icon="check"
-            title="IR-1 Journey Complete!"
-            description="Congratulations — you have completed every step of the roadmap."
-            status="complete"
-          />
-        )}
-        {lockStatus.isLocked && (
-          <div className="bg-[#1a1a2e] border border-[#3a3a5c] rounded-2xl p-4 flex items-start gap-3">
-            <div className="w-8 h-8 bg-white/5 rounded-full flex items-center justify-center shrink-0">
-              <Lock size={14} className="text-white/60" />
-            </div>
-            <div>
-              <div className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-0.5">Journey Locked</div>
-              <div className="text-[13px] font-bold text-white/90">This journey is in read-only mode</div>
-            </div>
-          </div>
-        )}
-        {isApprovedPhase && !isJourneyComplete && (
-          <WaitingStateCard
-            icon="check"
-            title="Visa Approved!"
-            description="Your visa was approved at interview."
-            status="complete"
-            actionLabel="Track Visa Issuance"
-            onAction={() => onSelectStep ? onSelectStep(2, 9) : (actions.setStage(2), actions.setCurrentStep(9))}
-          />
-        )}
-        {interviewOutcome === "221g" && state.metadata?.apSaved !== "true" && (
-          <WaitingStateCard
-            icon="alert"
-            title="221(g) Refusal — Action Required"
-            description="Complete the follow-up steps in Chapter 3 to respond."
-            status="action-needed"
-            actionLabel="Continue Chapter 3"
-            onAction={() => onSelectChapter ? onSelectChapter(2) : undefined}
-          />
-        )} */}
-
-        {/* 3-column layout — LEFT: Alert Center | CENTER: chapters | RIGHT: Live tracking */}
-        <div className="grid grid-cols-1 xl:grid-cols-[280px_minmax(0,1fr)_280px] gap-5 items-start">
-          {/* ── LEFT COLUMN — Alert Center (critical + warnings only) ─── */}
-          <div className="hidden xl:flex flex-col gap-3">
-            <AlertCenter
-              issues={displayedAlertIssues}
-              notStarted={notStarted}
-              onViewScore={() => setIsCSADrawerOpen(true)}
-              onOpenStep={(cIdx, sIdx) => {
-                if (onSelectStep) onSelectStep(cIdx, sIdx);
-                else {
-                  actions.setStage(cIdx);
-                  actions.setCurrentStep(sIdx);
-                }
-              }}
-            />
-          </div>
-
-          {/* ── CENTER — Chapters + Accordions ─── */}
-          <div className="flex flex-col xl:flex-col lg:flex-row gap-8 xl:gap-6 items-start">
-            {/* Main Content Column */}
-            <div
-              className={`flex flex-col gap-6 order-1 w-full xl:max-w-none ${showSidebar ? "flex-1" : "lg:max-w-4xl"}`}
-            >
-              {/* Mobile/tablet only — Alert Center + analysis cards inline */}
-              <div className="xl:hidden flex flex-col gap-4">
-                <AlertCenter
-                  issues={displayedAlertIssues}
-                  notStarted={notStarted}
-                  onViewScore={() => setIsCSADrawerOpen(true)}
-                  onOpenStep={(cIdx, sIdx) => {
-                    if (onSelectStep) onSelectStep(cIdx, sIdx);
-                    else {
-                      actions.setStage(cIdx);
-                      actions.setCurrentStep(sIdx);
-                    }
-                  }}
-                />
-                {/* <JourneyRiskCard
-                  metadata={state.metadata}
-                  onOpenEligibility={() => {
-                    actions.setStage(0);
-                    actions.setCurrentStep(0);
-                  }}
-                /> */}
-                {step1_2DocItems && (
-                  <DocCaseStrengthMeter
-                    documentItems={step1_2DocItems}
-                    uploadedDocuments={uploadedDocuments}
-                    documentChecklist={state.documentChecklist}
-                    docReviewStatus={
-                      state.metadata?.docReviewStatus as Record<string, string> | undefined
-                    }
-                    docUploads={state.docUploads}
-                    notes={state.notes}
-                    eligibilityAnswers={
-                      (state.answers?.["eligibility-suite"] as any) ??
-                      (state.metadata?.["questAnswers_eligibility-suite"] as any)
-                    }
-                    contextLabel="Chapter 1 · Step 2"
-                    stepName="Petition Readiness"
-                    defaultCollapsed={true}
-                    onOpenGuide={setGuideOverlayUrl}
-                  />
-                )}
-              </div>
-              <div
-                className={`grid grid-cols-1 md:grid-cols-2 gap-3 ${
-                  showSidebar ? "xl:grid-cols-3" : "lg:grid-cols-3"
-                }`}
-              >
-                {(data.chapters || (data as any).stages || [])
-                  .map((stage: any, originalIdx: number) => ({
-                    stage,
-                    originalIdx,
-                  }))
-                  .filter(
-                    ({ stage }) =>
-                      !state.scenarioType ||
-                      !stage.scenarioSpecific ||
-                      stage.scenarioSpecific === state.scenarioType
-                  )
-                  .map(({ stage, originalIdx }) => {
-                    const prog = getStageProgress(data, originalIdx, state);
-                    const isLocked = !isStageUnlocked(data, originalIdx, state);
-                    const isDone = prog.pct === 100;
-                    const isActive = !isLocked && prog.pct > 0 && !isDone;
-
-                    // Chapter color palette — reduced saturation, balanced weight
-                    const chColors = [
-                      { primary: "#8284bf", light: "#eeeff8", border: "#c6c8ea" },
-                      { primary: "#7a4577", light: "#f3e8f2", border: "#d5c0d3" },
-                      { primary: "#3a506b", light: "#e9edf2", border: "#b7c2d4" },
-                      { primary: "#0d7377", light: "#e6f5f5", border: "#a8d4d5" },
-                    ][originalIdx] ?? { primary: "#0d7377", light: "#e6f5f5", border: "#a8d4d5" };
-
-                    return (
-                      <div
-                        key={stage.chapter_key || stage.id}
-                        onClick={() => !isLocked && onSelectChapter(originalIdx)}
-                        className={`relative rounded-2xl p-5 transition-all flex flex-col gap-3 min-h-[110px] shadow-[0_4px_16px_rgba(0,0,0,0.05),0_2px_6px_rgba(0,0,0,0.03)] ${
-                          isLocked
-                            ? "bg-white/60 opacity-50 cursor-default border border-slate-200"
-                            : isDone
-                              ? "cursor-pointer hover:brightness-110 hover:shadow-[0_8px_24px_rgba(0,0,0,0.10)] border"
-                              : isActive
-                                ? "cursor-pointer hover:-translate-y-[2px] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] border-2"
-                                : "bg-white cursor-pointer hover:-translate-y-[2px] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] border"
-                        }`}
-                        style={
-                          isLocked
-                            ? { borderColor: chColors.border }
-                            : isDone
-                              ? { background: chColors.primary, borderColor: chColors.border }
-                              : isActive
-                                ? { background: chColors.light, borderColor: chColors.primary }
-                                : { borderColor: chColors.border }
-                        }
-                      >
-                        {/* Header */}
-                        <div>
-                          <div
-                            className={`text-[9px] font-bold tracking-[0.1em] uppercase mb-1 ${
-                              isDone ? "text-white/70" : "text-[#89a4a0]"
-                            }`}
-                          >
-                            Chapter {originalIdx + 1}
-                          </div>
-
-                          <h3
-                            className={`text-[13px] font-bold leading-[1.3] ${
-                              isDone ? "text-white" : "text-[#0f172a]"
-                            }`}
-                          >
-                            {(stage.chapter_name || stage.name).replace(/^Stage\s[IVX]+:\s/, "")}
-                          </h3>
-                        </div>
-
-                        {/* Lock indicator */}
-                        {!isLocked &&
-                          (() => {
-                            const steps = stage.steps || [];
-                            const lockedCount = steps.filter((s: any) => {
-                              const feat = STEP_PRIMARY_FEATURE[s.step_key || s.id];
-                              return feat && plan.isLocked(feat);
-                            }).length;
-
-                            if (lockedCount === 0) return null;
-
-                            return (
-                              <div
-                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold w-fit ${
-                                  isDone
-                                    ? "bg-white/15 text-white/80 border border-white/20"
-                                    : "bg-[#f5eef5] text-[#7a4577] border border-[#d5c0d3]"
-                                }`}
-                              >
-                                Limited Access
-                              </div>
-                            );
-                          })()}
-
-                        {/* Progress */}
-                        <div className="flex items-center gap-2 mt-auto">
-                          <div
-                            className={`flex-1 h-1.5 rounded-full overflow-hidden ${
-                              isDone ? "bg-white/20" : "bg-slate-100"
-                            }`}
-                          >
-                            <div
-                              className={`h-full rounded-full transition-all duration-500 ${
-                                isDone ? "bg-white/80" : ""
-                              }`}
-                              style={{
-                                width: `${prog.pct}%`,
-                                background: isDone ? undefined : chColors.primary,
-                              }}
-                            />
-                          </div>
-
-                          <div
-                            className={`text-[10px] font-bold ${
-                              isDone ? "text-white/70" : "text-[#89a4a0]"
-                            }`}
-                          >
-                            {prog.done}/{prog.total}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-              </div>
-
-              {/* Journey Toolbox & Services App Groups */}
-              {onLaunchTool && (
-                <AppGroupGrid onLaunchTool={onLaunchTool} state={state} className="my-1" />
-              )}
-
-              {/* Accordions */}
-              <div className="bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-sm">
-                {/* Case Details */}
-                <div className="border-t first:border-t-0 border-slate-100">
-                  <div
-                    onClick={() => toggleAccordion("case-details")}
-                    className={`flex items-center p-[16px_20px] cursor-pointer hover:bg-slate-50/80 transition-colors ${openAccordions["case-details"] ? "bg-slate-50/50" : ""}`}
-                  >
-                    <span className="text-[13px] font-bold text-slate-900">Case details</span>
-                    <span className="text-[11px] text-[#89a4a0] ml-auto mr-2">
-                      {caseFields.some((f) => f.value) ? "Recorded" : "Not recorded"}
-                    </span>
-                    <div
-                      className={`transition-transform duration-200 ${openAccordions["case-details"] ? "rotate-180" : ""}`}
-                    >
-                      <ChevronDown size={14} strokeWidth={2.5} className="text-[#89a4a0]" />
-                    </div>
-                  </div>
-                  {openAccordions["case-details"] && (
-                    <div className="px-[20px] pb-5 pt-2 animate-in fade-in slide-in-from-top-1">
-                      <div className="flex flex-col">
-                        {caseFields.map((item, i) => (
-                          <div
-                            key={i}
-                            className="flex justify-between items-center py-3 border-b border-slate-100 last:border-0"
-                          >
-                            <span className="text-[12.5px] text-slate-500">{item.label}</span>
-                            <span
-                              className={`text-[12.5px] font-medium ${!item.value ? "text-[#89a4a0] italic" : "text-slate-900"}`}
-                            >
-                              {item.value || "Not recorded"}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Milestones */}
-                <div className="border-t border-slate-100">
-                  <div
-                    onClick={() => toggleAccordion("milestones")}
-                    className={`flex items-center p-[16px_20px] cursor-pointer hover:bg-slate-50/80 transition-colors ${openAccordions["milestones"] ? "bg-slate-50/50" : ""}`}
-                  >
-                    <span className="text-[13px] font-bold text-slate-900">Milestone history</span>
-                    <span className="text-[11px] text-[#89a4a0] ml-auto mr-2">
-                      {milestonesReached} of {milestones.length} reached
-                    </span>
-                    <div
-                      className={`transition-transform duration-200 ${openAccordions["milestones"] ? "rotate-180" : ""}`}
-                    >
-                      <ChevronDown size={14} strokeWidth={2.5} className="text-[#89a4a0]" />
-                    </div>
-                  </div>
-                  {openAccordions["milestones"] && (
-                    <div className="px-[20px] pb-5 pt-2 animate-in fade-in slide-in-from-top-1">
-                      <div className="flex flex-col gap-1 py-1">
-                        {milestones.map((m, i) => {
-                          const isDone =
-                            m.key && m.sid
-                              ? (state.metadata && state.metadata[m.key]) ||
-                                (state.completedSteps &&
-                                  state.completedSteps.has &&
-                                  state.completedSteps.has(m.sid!))
-                              : m.key
-                                ? !!(state.metadata && state.metadata[m.key])
-                                : (state.completedSteps &&
-                                    state.completedSteps.has &&
-                                    state.completedSteps.has(m.sid!)) ||
-                                  (state.answers && state.answers[m.sid!]) ||
-                                  (state.metadata && state.metadata[m.sid!]);
-                          return (
-                            <div
-                              key={i}
-                              className={`flex items-center gap-3 py-2.5 px-3 rounded-xl ${isDone ? "bg-[#e6f5f5]/60" : ""}`}
-                            >
-                              <div
-                                className={`w-[20px] h-[20px] rounded-full flex items-center justify-center text-[10px] font-bold border-2 ${isDone ? "bg-[#0d7377] text-white border-[#0d7377]" : "bg-slate-50 text-[#89a4a0] border-slate-200"}`}
-                              >
-                                {isDone ? "✓" : "•"}
-                              </div>
-                              <span className="text-[12.5px] text-slate-500 font-medium">
-                                {m.label}
-                              </span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Sidebar Column (Case Tracking) — hidden at xl (moves to right column) */}
-            {showSidebar && (
-              <div className="w-full lg:w-[360px] xl:hidden shrink-0 order-2 flex flex-col gap-4">
-                <div className="flex items-center justify-between px-1">
-                  <h2 className="text-[11px] font-bold uppercase tracking-[0.1em] text-slate-900">
-                    Case Tracking Center
-                  </h2>
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#0d7377] animate-pulse" />
-                    <span className="text-[10px] font-bold text-[#89a4a0]">Linked to Embassy</span>
-                  </div>
-                </div>
-
-                {/* Status Tracking Cards — Moved from main column */}
-                {trackingStatus.interview_queue &&
-                  !interviewDate &&
-                  !state.metadata?.dqDate &&
-                  trackingStatus.dq_status !== "qualified" &&
-                  !state.metadata?.dqStatus && (
-                    <WaitingStateCard
-                      icon="clock"
-                      title="In Interview Queue"
-                      description="Your case is in the scheduling queue at the embassy. Interview dates will be assigned based on visa bulletin and wait times."
-                      status="waiting"
-                      showIVToolLink
-                      ivEmbassy={trackingStatus.interview_embassy}
-                    />
-                  )}
-
-                {interviewDate && !interviewAttended && (
-                  <WaitingStateCard
-                    icon="calendar"
-                    title="Interview Scheduled"
-                    description="Your visa interview is scheduled. Prepare all required documents and attend on time."
-                    date={`${trackingStatus.interview_date || state.metadata?.interviewDate}${trackingStatus.interview_time ? ` at ${trackingStatus.interview_time}` : ""}${trackingStatus.interview_embassy ? ` · ${trackingStatus.interview_embassy}` : ""}`}
-                    status="complete"
-                    actionLabel="Interview Prep Guide"
-                    onAction={() => {
-                      if (onSelectStep) onSelectStep(2, 6);
-                      else {
-                        actions.setStage(2);
-                        actions.setCurrentStep(6);
-                      }
-                    }}
-                  />
-                )}
-
-                {isApPhase && state.metadata?.apSaved !== "true" && (
-                  <WaitingStateCard
-                    icon="alert"
-                    title="Case in Administrative Processing"
-                    description="Your case is under review. Go to Chapter 3 → Step 9 to record your AP details and activate full tracking."
-                    date={trackingStatus.ap_date}
-                    status="waiting"
-                    actionLabel="Go to Step 9"
-                    onAction={() => {
-                      if (onSelectStep) onSelectStep(2, 8);
-                      else {
-                        actions.setStage(2);
-                        actions.setCurrentStep(8);
-                      }
-                    }}
-                  />
-                )}
-
-                {/* Unified Alerts */}
-                {alerts.length > 0 && (
-                  <div className="flex flex-col gap-2 animate-in fade-in slide-in-from-right-4 duration-500">
-                    {alerts.map((alert, i) => (
-                      <div
-                        key={i}
-                        className={`flex gap-2.5 items-start p-3 rounded-xl border ${alert.type === "gold" ? "bg-white border-[#cdadcc] text-slate-700" : alert.type === "sky" ? "bg-white border-[#a8d4d5] text-slate-700" : alert.type === "amber" ? "bg-white border-[#cdadcc] text-slate-700" : "bg-white border-[#afdbdb] text-slate-700"}`}
-                      >
-                        <div
-                          className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${alert.type === "gold" ? "bg-[#cdadcc]" : alert.type === "sky" ? "bg-[#0d7377]" : alert.type === "amber" ? "bg-[#cdadcc]" : "bg-[#afdbdb]"}`}
-                        />
-                        <div className="flex-1 flex flex-col gap-1.5">
-                          <div className="text-[12px] leading-relaxed">
-                            <span className="font-bold">{alert.title}: </span>
-                            <span className="opacity-80">{alert.text}</span>
-                          </div>
-                          {alert.action && (
-                            <div className="flex gap-2">
-                              {alert.action.url ? (
-                                <a
-                                  href={alert.action.url}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-slate-700 underline"
-                                >
-                                  {alert.action.label}
-                                </a>
-                              ) : (
-                                <button
-                                  onClick={alert.action.onAction}
-                                  className="text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-slate-700 underline text-left"
-                                >
-                                  {alert.action.label}
-                                </button>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Dynamic Scheduling Tracker — DQ phase only.
-                    Hides as soon as interview date is set (admin OR user). */}
-                {isDqPhase &&
-                  (() => {
-                    const dqDateStr = trackingStatus.dq_date || state.metadata?.dqDate;
-                    const currentSchedulingMonthYear = state.metadata
-                      ?.currentSchedulingMonthYear as string | undefined;
-                    const postLabel = (state.metadata?.post ||
-                      state.metadata?.dqPost ||
-                      "Embassy") as string;
-
-                    if (!dqDateStr) {
-                      return (
-                        <div className="bg-gradient-to-br from-[#0d7377] to-[#063e40] rounded-2xl border border-white/10 p-6 text-white mb-4">
-                          <div className="flex items-center gap-4 text-white/60">
-                            <Clock size={20} />
-                            <p className="text-[13px]">
-                              Please record your DQ date in <b>Chapter 2, Step 10</b> to see
-                              scheduling estimates.
-                            </p>
-                          </div>
-                        </div>
-                      );
-                    }
-
-                    const dqDateObj = new Date(dqDateStr + "T00:00:00");
-                    const diffTime = new Date().getTime() - dqDateObj.getTime();
-                    const rawDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-                    const daysSinceDq = Math.max(0, rawDays);
-                    // DQ dates must be in the past — if >60 days in future it's a data entry error
-                    const isDqDateInvalid = rawDays < -60;
-                    const dqLabel = isDqDateInvalid
-                      ? "Check date"
-                      : rawDays < -1
-                        ? `in ${Math.abs(rawDays)} days`
-                        : rawDays === -1
-                          ? "tomorrow"
-                          : rawDays === 0
-                            ? "today"
-                            : rawDays === 1
-                              ? "1 day ago"
-                              : `${rawDays} days ago`;
-
-                    if (!currentSchedulingMonthYear) {
-                      return (
-                        <div className="bg-gradient-to-br from-[#0d7377] to-[#063e40] rounded-2xl border border-white/15 p-6 text-white mb-4 relative overflow-hidden">
-                          <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/8 rounded-full blur-[80px] pointer-events-none" />
-                          <div className="relative z-10">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white rounded-full border border-white/20 text-[10px] font-black uppercase tracking-[0.15em] text-[#0d7377] mb-4">
-                              Interview Queue ({postLabel})
-                            </div>
-                            <h3 className="text-[18px] font-black mb-2">
-                              In Queue, Awaiting Estimate
-                            </h3>
-                            <p className="text-[12.5px] text-white/60 leading-relaxed mb-4 max-w-md">
-                              Your DQ date is recorded. To see your estimated interview window, go
-                              to <b>Chapter 2 → Step 11</b> and sync the official embassy scheduling
-                              month.
-                            </p>
-                            <div className="bg-white rounded-xl p-3 border border-white/20 flex items-center justify-between">
-                              <span className="text-[12px] font-bold">
-                                DQ Date:{""}
-                                {dqDateObj.toLocaleDateString("en-US", {
-                                  month: "short",
-                                  day: "numeric",
-                                  year: "numeric",
-                                })}
-                              </span>
-                              <span
-                                className={`text-[10px] font-black uppercase ${isDqDateInvalid ? "text-[#cdadcc]" : "text-[#afdbdb]"}`}
-                              >
-                                {isDqDateInvalid ? "⚠ Date seems incorrect" : dqLabel.toUpperCase()}
-                              </span>
-                            </div>
-                            {isDqDateInvalid && (
-                              <p className="text-[11px] text-[#cdadcc] mt-2">
-                                DQ dates are in the past. Please go to <b>Chapter 2 → Step 10</b>{" "}
-                                and correct your DQ date.
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    }
-
-                    // Estimation Logic
-                    const [ivY, ivM] = currentSchedulingMonthYear.split("-").map(Number);
-                    const ivDate = new Date(ivY, ivM - 1, 1);
-                    const waitMonths = Math.max(
-                      0,
-                      (dqDateObj.getFullYear() - ivDate.getFullYear()) * 12 +
-                        (dqDateObj.getMonth() - ivDate.getMonth())
-                    );
-                    const lowDate = new Date();
-                    lowDate.setMonth(lowDate.getMonth() + waitMonths);
-                    const highDate = new Date(lowDate);
-                    highDate.setMonth(highDate.getMonth() + 2);
-                    const fmt = { month: "short", year: "numeric" } as const;
-                    const windowStr =
-                      waitMonths === 0
-                        ? "Approaching Soon"
-                        : `${lowDate.toLocaleDateString("en-US", fmt)} ${highDate.toLocaleDateString("en-US", fmt)}`;
-                    const embassyMonthStr = ivDate.toLocaleDateString("en-US", {
-                      month: "long",
-                      year: "numeric",
-                    });
-
-                    return (
-                      <div className="bg-gradient-to-br from-[#0d7377] to-[#063e40] rounded-2xl border border-white/15 shadow-xl p-6 text-white mb-6 relative overflow-hidden animate-in zoom-in-95 duration-500">
-                        <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/8 rounded-full blur-[80px] pointer-events-none" />
-                        <div className="flex flex-col gap-4 mb-6 border-b border-white/15 pb-4">
-                          <div>
-                            <h3 className="text-[20px] font-black leading-tight">
-                              In Interview Queue ({postLabel})
-                            </h3>
-                            <p className="text-white/60 text-[12px] mt-1">
-                              Estimated timeline based on your DQ date and the official IV Status
-                              Tool.
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex flex-col gap-4 mb-6">
-                          <div className="bg-white rounded-xl p-4 border border-white/20">
-                            <div className="text-[10px] uppercase tracking-widest text-[#89a4a0] mb-2 font-black">
-                              Your DQ Date
-                            </div>
-                            <div className="text-[18px] font-bold">
-                              {dqDateObj.toLocaleDateString("en-US", {
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                              })}
-                            </div>
-                            <div className="text-[11px] text-[#0d7377] mt-1 font-bold uppercase">
-                              {dqLabel}
-                            </div>
-                          </div>
-                          <div className="bg-white rounded-xl p-4 border border-white/20 flex flex-col justify-between">
-                            <div>
-                              <div className="text-[10px] uppercase tracking-widest text-[#89a4a0] mb-1 font-black leading-tight">
-                                Embassy is currently scheduling cases DQ'd in
-                              </div>
-                              <div className="text-[18px] font-bold text-[#0d7377] mt-1">
-                                {embassyMonthStr}
-                              </div>
-                            </div>
-                            <button
-                              onClick={() =>
-                                window.open(
-                                  "https://travel.state.gov/content/travel/en/us-visas/visa-information-resources/iv-wait-times.html",
-                                  "_blank"
-                                )
-                              }
-                              className="mt-3 text-[10px] font-bold text-[#0d7377]/70 hover:text-[#0d7377] flex items-center gap-1 transition-colors group"
-                            >
-                              Check Latest Official Tool{""}
-                              <ExternalLink
-                                size={10}
-                                className="group-hover:translate-x-0.5 transition-transform"
-                              />
-                            </button>
-                          </div>
-                          <div className="bg-[#cdadcc]/15 rounded-xl p-4 border border-[#cdadcc]/25">
-                            <div className="text-[10px] uppercase tracking-widest text-[#cdadcc] mb-2 font-black">
-                              Estimated Interview Window
-                            </div>
-                            <div className="text-[20px] font-black text-[#cdadcc]">{windowStr}</div>
-                            <div className="text-[10px] text-[#cdadcc]/70 mt-1 font-medium">
-                              Subject to visa availability
-                            </div>
-                          </div>
-                        </div>
-                        <div className="bg-white border border-white/20 rounded-xl p-4 relative">
-                          <div className="flex items-start gap-4">
-                            <div className="w-8 h-8 rounded-xl bg-[#0d7377]/15 flex items-center justify-center shrink-0 border border-[#0d7377]/20">
-                              <Shield className="text-[#0d7377]" size={16} />
-                            </div>
-                            <div>
-                              <h4 className="text-[13px] font-black mb-1">Status Intelligence</h4>
-                              <p className="text-[12.5px] text-white/60 leading-relaxed">
-                                The embassy is currently scheduling cases that became DQ'd in{""}
-                                <b>{embassyMonthStr}</b>. Your case became DQ'd in{""}
-                                <b>
-                                  {dqDateObj.toLocaleDateString("en-US", {
-                                    month: "long",
-                                    year: "numeric",
-                                  })}
-                                </b>
-                                , which means you are <b>approximately {waitMonths} months</b>
-                                {""}
-                                behind the current processing group.
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })()}
-
-                {/* AP Tracking Tool — full detailed view.
-                    Shows ONLY after interview is attended AND user recorded
-                    AP details in Step 3.9. */}
-                {isApPhase && state.metadata?.apSaved === "true" && (
-                  <APTrackingTool state={state} />
-                )}
-              </div>
-            )}
-          </div>
-          {/* end center column */}
-
-          {/* ── RIGHT COLUMN — Sidebar tracking only (case strength moved to left) ─── */}
-          <div className={`hidden xl:flex flex-col gap-3 ${!showSidebar ? "xl:hidden" : ""}`}>
-            {/* Sidebar tracking cards */}
-            {showSidebar && (
-              <div className="flex flex-col gap-3 mt-1">
-                <div className="flex items-center justify-between px-1">
-                  <h2 className="text-[11px] font-bold uppercase tracking-[0.1em] text-slate-900">
-                    Case Tracking Center
-                  </h2>
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#0d7377] animate-pulse" />
-                    <span className="text-[9px] font-bold text-[#89a4a0]">Live</span>
-                  </div>
-                </div>
-                {trackingStatus.interview_queue &&
-                  !interviewDate &&
-                  !state.metadata?.dqDate &&
-                  trackingStatus.dq_status !== "qualified" &&
-                  !state.metadata?.dqStatus && (
-                    <WaitingStateCard
-                      icon="clock"
-                      title="In Interview Queue"
-                      description="Your case is in the scheduling queue at the embassy."
-                      status="waiting"
-                      showIVToolLink
-                      ivEmbassy={trackingStatus.interview_embassy}
-                    />
-                  )}
-                {interviewDate && !interviewAttended && (
-                  <WaitingStateCard
-                    icon="calendar"
-                    title="Interview Scheduled"
-                    description="Your visa interview is scheduled."
-                    date={`${trackingStatus.interview_date || state.metadata?.interviewDate}${trackingStatus.interview_time ? ` at ${trackingStatus.interview_time}` : ""}`}
-                    status="complete"
-                    actionLabel="Interview Prep"
-                    onAction={() => {
-                      if (onSelectStep) onSelectStep(2, 6);
-                      else {
-                        actions.setStage(2);
-                        actions.setCurrentStep(6);
-                      }
-                    }}
-                  />
-                )}
-                {isApPhase && state.metadata?.apSaved !== "true" && (
-                  <WaitingStateCard
-                    icon="alert"
-                    title="Administrative Processing"
-                    description="Go to Chapter 3 → Step 9 to record AP details."
-                    date={trackingStatus.ap_date}
-                    status="waiting"
-                    actionLabel="Go to Step 9"
-                    onAction={() => {
-                      if (onSelectStep) onSelectStep(2, 8);
-                      else {
-                        actions.setStage(2);
-                        actions.setCurrentStep(8);
-                      }
-                    }}
-                  />
-                )}
-                {alerts.length > 0 && (
-                  <div className="flex flex-col gap-2">
-                    {alerts.map((alert, i) => (
-                      <div
-                        key={i}
-                        className={`flex gap-2 items-start p-3 rounded-xl border ${alert.type === "gold" ? "bg-white border-[#cdadcc] text-slate-700" : alert.type === "sky" ? "bg-white border-[#a8d4d5] text-slate-700" : alert.type === "amber" ? "bg-white border-[#cdadcc] text-slate-700" : "bg-white border-[#afdbdb] text-slate-700"}`}
-                      >
-                        <div
-                          className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${alert.type === "gold" ? "bg-[#cdadcc]" : alert.type === "sky" ? "bg-[#0d7377]" : alert.type === "amber" ? "bg-[#cdadcc]" : "bg-[#afdbdb]"}`}
-                        />
-                        <div className="text-[11px] leading-relaxed flex-1">
-                          <span className="font-bold">{alert.title}: </span>
-                          <span className="opacity-80">{alert.text}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {isApPhase && state.metadata?.apSaved === "true" && (
-                  <APTrackingTool state={state} />
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-        {/* end 3-col grid */}
-          </>
-        )}
-      </div>
+      <JourneyDashboard {...journeyDashboardProps} />
 
       {/* ── CSA Drawer ── */}
       <CSADrawer

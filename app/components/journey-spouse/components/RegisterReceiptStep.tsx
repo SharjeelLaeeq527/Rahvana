@@ -1,6 +1,7 @@
 // components/RegisterReceiptStep.tsx
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { E, msg } from "@/lib/errors";
+import { RECEIPT_SAVED_EVENT } from "@/lib/journey/dashboard/caseFacts";
 import { Globe, Lock } from "lucide-react";
 import { useJourneyPlan } from "@/app/context/useJourneyPlan";
 import { GuideTutorialOverlay } from "../GuideTutorialOverlays";
@@ -1066,6 +1067,7 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
       setUiState("idle");
       setShowTrackingNudge(false);
       const { record: fresh } = await fetchReceipt(journeyId);
+      window.dispatchEvent(new Event(RECEIPT_SAVED_EVENT));
       setSavedRecord(fresh ?? record);
     },
     [journeyId]

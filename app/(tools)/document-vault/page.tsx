@@ -178,6 +178,15 @@ export default function DocumentVaultPage() {
    */
   const lastResolvedCandidateRef = useRef<string | null>(null);
 
+  /**
+   * Journey id passed by the journey dashboard (?journey=<journeys.id>). Opens that
+   * journey's vault directly instead of the journey picker, and stops the
+   * candidate sync below from swapping it for another journey on first load.
+   */
+  const urlJourneyRef = useRef<string | null>(
+    typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("journey") : null
+  );
+
   const { activeCandidate, activeCandidateId, isMultiCandidate, candidates, setActiveCandidateId } =
     useCandidate();
 
@@ -376,7 +385,16 @@ export default function DocumentVaultPage() {
         // so multiple beneficiaries under the same category each get their own vault card.
         const distinctJourneys = dedupeJourneysByType(journeys);
 
-        if (journeys.length === 0) {
+        const fromUrl = urlJourneyRef.current
+          ? journeys.find((j) => j.id === urlJourneyRef.current)
+          : undefined;
+
+        if (fromUrl) {
+          // ── Opened from a journey dashboard: go straight to that vault ──
+          setActiveJourneyId(fromUrl.id);
+          sessionStorage.setItem(SESSION_KEY, fromUrl.id);
+          setJourneyGateReady(true);
+        } else if (journeys.length === 0) {
           // ── Case 1: No journey at all ──────────────────────────────────
           setNoJourneyModalOpen(true);
           setActiveJourneyId(null);
@@ -535,6 +553,14 @@ export default function DocumentVaultPage() {
     // "Back to Journeys" (which sets activeJourneyId to null) would be instantly
     // reverted here, and picking a different journey folder would bounce back.
     if (activeCandidateId === lastResolvedCandidateRef.current) return;
+
+    // Opened for a specific journey: keep it for the current candidate. A later
+    // candidate switch still re-resolves as usual.
+    if (urlJourneyRef.current) {
+      lastResolvedCandidateRef.current = activeCandidateId;
+      urlJourneyRef.current = null;
+      return;
+    }
 
     const visaCategory = activeCandidate.visaCategory || "IR-5";
     const candidateJourneyKey = getJourneyKeyForCandidate(visaCategory, activeCandidate.id);

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useLayoutEffect, useRef } from "react";
 import Image from "next/image";
 import { Shield, Wallet } from "lucide-react";
 import { Loader } from "@/components/ui/spinner";
@@ -19,6 +19,7 @@ import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { useCandidate } from "@/app/context/CandidateContext";
 import { usePlan } from "@/app/context/PlanContext";
+import { PageGate } from "@/app/components/entitlements/PageGate";
 import { useUserProfile } from "@/app/context/UserProfileContext";
 
 
@@ -237,6 +238,23 @@ const PortalWallet: React.FC = () => {
   const activeId = selectedCandidateId || (walletCases[0]?.id ?? "ir1");
 
   const [walletSwitcherOpen, setWalletSwitcherOpen] = useState(true);
+
+  // Opened from a journey dashboard (?candidate=ir1 | <candidate id>): show that
+  // candidate's portals directly instead of the wallet switcher.
+  const urlCandidateRef = useRef<string | null>(null);
+  useLayoutEffect(() => {
+    const id = new URLSearchParams(window.location.search).get("candidate");
+    if (id) {
+      urlCandidateRef.current = id;
+      setWalletSwitcherOpen(false);
+    }
+  }, []);
+  useEffect(() => {
+    const id = urlCandidateRef.current;
+    if (!id || !walletCases.some((c) => c.id === id)) return;
+    urlCandidateRef.current = null;
+    setSelectedCandidateId(id);
+  }, [walletCases]);
   const [loading, setLoading] = useState(true);
   const [credentials, setCredentials] = useState<Credential[]>([]);
   const [formModal, setFormModal] = useState<{
@@ -719,4 +737,18 @@ const PortalWallet: React.FC = () => {
   );
 };
 
-export default PortalWallet;
+/**
+ * Portal wallet is part of the journey plans (Basic and up, `portal_wallet`).
+ * The gate wraps the whole page so nothing (credentials included) loads when locked.
+ */
+const PortalWalletPage: React.FC = () => (
+  <PageGate
+    feature="portal_wallet"
+    title="Portal Wallet Locked"
+    description="Upgrade your journey plan to keep your NVC, CEAC and courier logins safe in one place."
+  >
+    <PortalWallet />
+  </PageGate>
+);
+
+export default PortalWalletPage;
