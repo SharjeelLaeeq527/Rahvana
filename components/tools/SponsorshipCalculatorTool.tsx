@@ -16,6 +16,7 @@ import {
   Home,
   FileText,
   Check,
+  CheckCircle2,
   ArrowRight,
   ArrowLeft,
   Heart,
@@ -41,6 +42,7 @@ import {
 const I864_URL = "https://www.uscis.gov/sites/default/files/document/forms/i-864.pdf";
 const I864EZ_URL = "https://www.uscis.gov/sites/default/files/document/forms/i-864ez.pdf";
 const I864A_URL = "https://www.uscis.gov/sites/default/files/document/forms/i-864a.pdf";
+const I864W_URL = "https://www.uscis.gov/sites/default/files/document/forms/i-864w.pdf";
 const I864P_URL = "https://www.uscis.gov/i-864p";
 
 // --- COLOR PALETTE ---
@@ -73,6 +75,44 @@ export const calculateSponsorshipHouseholdSize = (d: any): number => {
 };
 
 export const getSponsorshipResult = (d: any) => {
+  // Child Citizenship Act of 2000 (INA Section 320) Exemption Check
+  const isChildIna320Exempt =
+    Boolean(d.isChildCitizenshipActExempt) ||
+    (d.beneficiaryRelationship === "child" &&
+      d.sponsorStatus === "citizen" &&
+      d.childAgeBand === "under_18" &&
+      d.childRelationshipType !== "stepchild" &&
+      d.childLivesInUSCitizenCustody === true);
+
+  if (isChildIna320Exempt) {
+    return {
+      isEligible: true,
+      isExempt: true,
+      isChildCitizenshipActExempt: true,
+      exemptionReason: "Child Citizenship Act of 2000 (INA Section 320)",
+      feeExempt: true,
+      householdSize: 1,
+      requiredIncome: 0,
+      totalIncome: d.currentAnnualIncome || 0,
+      primaryIncome: d.currentAnnualIncome || 0,
+      hmIncome: 0,
+      jsIncome: 0,
+      assetIncome: 0,
+      shortfall: 0,
+      state: d.state || "",
+      jurisdiction: resolveJurisdiction(d.state),
+      forms: [
+        {
+          id: "i864w",
+          name: "Form I-864W",
+          sub: "Request for Exemption for Intending Immigrant (Child Citizenship Act — INA Section 320)",
+          url: I864W_URL,
+        },
+      ],
+      raw: d,
+    };
+  }
+
   // Self-petition Check
   if (d.isVAWA || d.isWidow || d.isSpecialImmigrant) {
     return {
@@ -93,7 +133,7 @@ export const getSponsorshipResult = (d: any) => {
           id: "i864w",
           name: "Form I-864W",
           sub: "Request for Exemption for Intending Immigrant",
-          url: "#",
+          url: I864W_URL,
         },
       ],
       raw: d,
@@ -120,7 +160,9 @@ export const getSponsorshipResult = (d: any) => {
   // Assets Logic
   const assetMultiplier =
     d.relationshipToApplicant?.toLowerCase() === "spouse" ||
-    d.relationshipToApplicant?.toLowerCase() === "parent"
+    d.relationshipToApplicant?.toLowerCase() === "parent" ||
+    d.beneficiaryRelationship === "child" ||
+    d.relationshipToApplicant?.toLowerCase() === "child"
       ? 3
       : 5;
   const usableAssets = (d.assetValue || 0) / assetMultiplier;
@@ -228,6 +270,12 @@ export interface SponsorshipFormData {
   isVAWA: boolean;
   isWidow: boolean;
   isSpecialImmigrant: boolean;
+  // Child & INA 320 specific fields
+  beneficiaryRelationship?: "spouse" | "child" | "parent" | "other" | "";
+  childAgeBand?: "under_18" | "18_20" | "";
+  childRelationshipType?: "biological" | "adopted" | "stepchild" | "";
+  childLivesInUSCitizenCustody?: boolean | null;
+  isChildCitizenshipActExempt?: boolean;
 }
 
 export interface SponsorshipCalculatorDraft {
@@ -283,6 +331,12 @@ const getDefaultFormData = (initial?: any): SponsorshipFormData => ({
   isVAWA: initial?.isVAWA || false,
   isWidow: initial?.isWidow || false,
   isSpecialImmigrant: initial?.isSpecialImmigrant || false,
+  // Child & INA 320 specific fields
+  beneficiaryRelationship: initial?.beneficiaryRelationship || (initial?.relationshipToApplicant === "spouse" ? "spouse" : initial?.relationshipToApplicant === "child" ? "child" : initial?.relationshipToApplicant === "parent" ? "parent" : ""),
+  childAgeBand: initial?.childAgeBand || "",
+  childRelationshipType: initial?.childRelationshipType || "",
+  childLivesInUSCitizenCustody: initial?.childLivesInUSCitizenCustody ?? null,
+  isChildCitizenshipActExempt: initial?.isChildCitizenshipActExempt || false,
 });
 
 export default function SponsorshipCalculatorTool({
@@ -398,6 +452,45 @@ export default function SponsorshipCalculatorTool({
   const [stepIdx, setStepIdx] = useState<number>(() => getInitialState().step);
   const [data, setData] = useState<SponsorshipFormData>(() => getInitialState().formData);
   const [expandedOptions, setExpandedOptions] = useState<Record<string, boolean>>({});
+
+  // Auto-detect beneficiary relationship from journeyContext or candidateInfo
+  React.useEffect(() => {
+    const category = journeyContext?.journeyCategory || candidateInfo?.visaCategory;
+    if (category === "IR-2" || category === "CR-2") {
+      setData((prev) => {
+        if (!prev.beneficiaryRelationship) {
+          return {
+            ...prev,
+            beneficiaryRelationship: "child",
+            relationshipToApplicant: "child",
+          };
+        }
+        return prev;
+      });
+    } else if (category === "IR-1" || category === "CR-1") {
+      setData((prev) => {
+        if (!prev.beneficiaryRelationship) {
+          return {
+            ...prev,
+            beneficiaryRelationship: "spouse",
+            relationshipToApplicant: "spouse",
+          };
+        }
+        return prev;
+      });
+    } else if (category === "IR-5") {
+      setData((prev) => {
+        if (!prev.beneficiaryRelationship) {
+          return {
+            ...prev,
+            beneficiaryRelationship: "parent",
+            relationshipToApplicant: "parent",
+          };
+        }
+        return prev;
+      });
+    }
+  }, [journeyContext?.journeyCategory, candidateInfo?.visaCategory]);
 
   React.useEffect(() => {
     if (isOpen && !embedded) {
@@ -534,6 +627,18 @@ export default function SponsorshipCalculatorTool({
   };
   const stepColor = getStepColor(stepIdx);
 
+  // Check if current data qualifies for the INA Section 320 4-step exemption flow
+  const isExemptChild =
+    Boolean(data.isChildCitizenshipActExempt) ||
+    (data.beneficiaryRelationship === "child" &&
+      data.sponsorStatus === "citizen" &&
+      data.childAgeBand === "under_18" &&
+      data.childRelationshipType !== "stepchild" &&
+      data.childLivesInUSCitizenCustody === true);
+
+  const totalSteps = isExemptChild ? 4 : 11;
+  const currentDisplayStep = isExemptChild ? Math.min(stepIdx + 1, 4) : stepIdx + 1;
+
   // --- INTERNAL HELPERS ---
   const generateId = () => Math.random().toString(36).substr(2, 9);
   const toggleOption = (id: string) => setExpandedOptions((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -615,13 +720,13 @@ export default function SponsorshipCalculatorTool({
           <div
             className="h-full bg-linear-to-r transition-all duration-500"
             style={{
-              width: `${Math.round(((stepIdx + 1) / 11) * 100)}%`,
+              width: `${Math.round((currentDisplayStep / totalSteps) * 100)}%`,
               backgroundColor: COLORS.primary,
             }}
           />
         </div>
         <div className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap shrink-0">
-          {stepIdx + 1} / 11
+          {currentDisplayStep} / {totalSteps}
         </div>
         <button
           onClick={handleResetProgress}
@@ -648,6 +753,152 @@ export default function SponsorshipCalculatorTool({
           {(() => {
             const step = stepIdx;
 
+            const renderFinalPlan = (isExemptFlow: boolean) => (
+              <ResultGate
+                feature="sponsorship_calc"
+                planTier={effectiveTier}
+                standaloneToolId={isJourney ? undefined : "sponsorship-calculator"}
+              >
+                <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+                  <div
+                    className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center"
+                    style={{ color: COLORS.primary }}
+                  >
+                    Step {isExemptFlow ? 4 : 11} of {isExemptFlow ? 4 : 11}
+                  </div>
+                  <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6 text-center">
+                    {isExemptFlow ? "Final Exemption Plan" : "Final Sponsorship Plan"}
+                  </h2>
+
+                  <div className="space-y-4 mb-8">
+                    <div
+                      className="p-8 rounded-3xl border-2 text-center"
+                      style={{
+                        backgroundColor: result.isEligible ? `${COLORS.secondary}20` : `${COLORS.danger}20`,
+                        borderColor: result.isEligible ? COLORS.secondary : COLORS.danger,
+                      }}
+                    >
+                      {result.isChildCitizenshipActExempt ? (
+                        <>
+                          <div className="text-[10px] font-black uppercase text-teal-700 tracking-widest mb-2">
+                            Exemption Status
+                          </div>
+                          <div className="text-2xl sm:text-3xl font-black mb-3 text-teal-800">
+                            EXEMPT FROM I-864 &#x2713;
+                          </div>
+                          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-100 text-teal-800 text-xs font-bold mb-4">
+                            Child Citizenship Act of 2000 (INA Section 320)
+                          </div>
+                          <p className="text-[14px] text-slate-600 leading-relaxed font-medium">
+                            Your child automatically acquires U.S. citizenship upon admission to the United States as a permanent resident. No minimum income requirement or joint sponsor is required.
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <div className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-3">
+                            Final Conclusion
+                          </div>
+                          <div
+                            className="text-3xl font-black mb-3"
+                            style={{ color: result.isEligible ? COLORS.primary : COLORS.danger }}
+                          >
+                            {result.isEligible ? "ELIGIBLE \u2713" : "NOT ELIGIBLE \u2717"}
+                          </div>
+                          <p className="text-[14px] text-slate-600 leading-relaxed font-medium">
+                            Total Household Income: <strong className="text-[#0c1b33] text-lg">${(result.totalIncome ?? 0).toLocaleString()}</strong><br />
+                            Required (Household of {result.householdSize}): <strong className="text-[#0c1b33] text-lg">${(result.requiredIncome ?? 0).toLocaleString()}</strong>
+                            {result.jurisdiction && (
+                              <>
+                                <br />
+                                <span className="text-[12px] text-slate-500">Based on {getJurisdictionLabel(result.jurisdiction)} poverty guidelines</span>
+                              </>
+                            )}
+                          </p>
+                        </>
+                      )}
+                    </div>
+
+                    {result.feeExempt && (
+                      <div className="p-4 rounded-xl border border-amber-200 bg-amber-50/70 text-left">
+                        <div className="flex items-start gap-2.5">
+                          <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                          <div>
+                            <p className="text-xs font-bold text-amber-900">
+                              $120 CEAC Affidavit of Support Fee Waiver
+                            </p>
+                            <p className="text-[12px] text-amber-800 leading-relaxed mt-0.5">
+                              Intending immigrants filing Form I-864W are exempt from paying the $120 Affidavit of Support fee. If CEAC bills this fee, submit an inquiry to NVC via their Public Inquiry Form to request the fee be waived before paying.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {data.beneficiaryRelationship === "child" && !result.isChildCitizenshipActExempt && (
+                      <div className="p-4 rounded-xl border border-sky-200 bg-sky-50/70 text-left">
+                        <p className="text-xs font-bold text-sky-900">
+                          Child Sponsorship Note (Form I-864 Required)
+                        </p>
+                        <p className="text-[12px] text-sky-800 leading-relaxed mt-0.5">
+                          {data.childRelationshipType === "stepchild"
+                            ? "Stepchildren do not acquire automatic citizenship under INA Section 320. Form I-864 and 125% of HHS Poverty Guidelines apply."
+                            : data.childAgeBand === "18_20"
+                            ? "Children aged 18 to 20 at admission do not qualify under INA Section 320. Standard Form I-864 and 125% Poverty Guidelines apply."
+                            : "Standard Form I-864 is required. As the child of a U.S. citizen, the statutory 3x asset multiplier applies (8 CFR Section 213a.2(c)(2)(iii)(B))."}
+                        </p>
+                      </div>
+                    )}
+
+                    <div className="text-[12px] text-[#6b8097] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-slate-100 pb-4 px-1">
+                      <span>Poverty guidelines last updated: <strong>March 1, 2026</strong></span>
+                      <a
+                        href={I864P_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:underline font-semibold flex items-center gap-1 transition-all hover:opacity-85"
+                        style={{ color: COLORS.primary }}
+                      >
+                        Official USCIS I-864P Guidelines &rarr;
+                      </a>
+                    </div>
+
+                    <div className="p-6 rounded-2xl border-2 border-slate-100 bg-slate-50/50">
+                      <div className="text-[11px] font-bold uppercase text-slate-400 mb-4 tracking-wider">Required Forms</div>
+                      <div className="space-y-3">
+                        {result.forms.map((f: any, i: number) => (
+                          <div key={i} className="flex items-start gap-3 p-4 bg-white rounded-2xl border border-slate-200 shadow-sm">
+                            <FileText size={20} className="mt-1 shrink-0" style={{ color: COLORS.primary }} />
+                            <div>
+                              <div className="text-sm font-black text-slate-900 leading-tight">{f.name}</div>
+                              <div className="text-[11px] text-slate-500 font-medium">{f.sub}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-[10px]">
+                    <button
+                      type="button"
+                      onClick={() => setStepIdx(isExemptFlow ? 2 : (data.assetValue > 0 || data.sponsorDeceased ? 9 : 8))}
+                      className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63] flex items-center gap-2"
+                    >
+                      <ArrowLeft size={14} /> Edit Info
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCompleteSave}
+                      style={{ backgroundColor: COLORS.primary }}
+                      className="flex-1 p-[14px_22px] text-white rounded-[10px] text-[15px] font-semibold shadow-lg transition-all hover:opacity-90 hover:-translate-y-px flex items-center justify-center gap-2"
+                    >
+                      {isJourney ? "Complete & Save to Roadmap" : "Complete & Save Calculation"} <ArrowRight size={14} />
+                    </button>
+                  </div>
+                </div>
+              </ResultGate>
+            );
+
             if (step === 0) {
               return (
                 <div className="animate-in fade-in slide-in-from-right-4 duration-300">
@@ -656,7 +907,7 @@ export default function SponsorshipCalculatorTool({
                       className="text-[11px] font-semibold tracking-widest uppercase"
                       style={{ color: COLORS.primary }}
                     >
-                      Sponsorship Calculator · Step 1 of 11
+                      Sponsorship Calculator · Step 1 of {totalSteps}
                     </div>
                     {candidateInfo?.name && (
                       <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-teal-50 border border-teal-200 text-[10px] font-semibold text-teal-800">
@@ -717,13 +968,14 @@ export default function SponsorshipCalculatorTool({
                     className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center"
                     style={{ color: stepColor }}
                   >
-                    Step 2 of 11
+                    Step 2 of {totalSteps}
                   </div>
                   <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-4 text-center">
                     Petitioner Status
                   </h2>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                     <button
+                      type="button"
                       onClick={() => setData({ ...data, sponsorStatus: "citizen" })}
                       className={`p-4 rounded-xl border-2 transition-all ${data.sponsorStatus === "citizen" ? "" : "border-slate-200 hover:bg-slate-50"}`}
                       style={{
@@ -736,18 +988,33 @@ export default function SponsorshipCalculatorTool({
                       <p className="font-semibold text-slate-900">US Citizen</p>
                     </button>
                     <button
+                      type="button"
                       onClick={() => setData({ ...data, sponsorStatus: "greenCard" })}
-                      className={`p-4 rounded-xl border-2 transition-all ${data.sponsorStatus === "greenCard" ? "" : "border-slate-200 hover:bg-slate-50"}`}
-                      style={{
-                        borderColor: data.sponsorStatus === "greenCard" ? "#0d7377" : undefined,
-                        backgroundColor:
-                          data.sponsorStatus === "greenCard" ? `${COLORS.joint}10` : undefined,
-                      }}
+                      className={`p-4 rounded-xl border-2 transition-all ${data.sponsorStatus === "greenCard" ? "border-amber-400 bg-amber-50/50" : "border-slate-200 hover:bg-slate-50"}`}
                     >
-                      <User className="w-8 h-8 mx-auto mb-2" style={{ color: COLORS.joint }} />
+                      <User className="w-8 h-8 mx-auto mb-2 text-slate-500" />
                       <p className="font-semibold text-slate-900">Green Card Holder</p>
                     </button>
                   </div>
+
+                  {data.sponsorStatus === "greenCard" && (
+                    <div className="mb-6 p-4 rounded-xl border border-amber-300 bg-amber-50 text-left animate-in fade-in duration-200">
+                      <div className="flex items-start gap-2.5">
+                        <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-xs font-bold text-amber-950">
+                            Immediate Relative Petitions Require U.S. Citizenship
+                          </p>
+                          <p className="text-[12px] text-amber-900 leading-relaxed mt-1">
+                            Only U.S. citizens can petition for Immediate Relative immigrant visas (IR-1 spouse, IR-2 child, or IR-5 parent). Lawful Permanent Residents (Green Card holders) cannot file an Immediate Relative petition.
+                          </p>
+                          <p className="text-[12px] text-amber-800 leading-relaxed mt-1.5">
+                            Green Card holders must file under Family Preference categories (such as <strong>F2A</strong> for spouse/minor child), which are subject to annual visa waiting lists and different processing rules. U.S. citizenship is required to proceed with this Immediate Relative sponsorship calculator.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   <div className="mb-6">
                     <p className="text-[14px] font-semibold text-[#0c1b33] mb-3">
                       Are you active-duty US Military?
@@ -817,15 +1084,20 @@ export default function SponsorshipCalculatorTool({
                       <ArrowLeft size={14} /> Back
                     </button>
                     <button
-                      disabled={!data.sponsorStatus || data.isMilitary === null || !data.state}
+                      type="button"
+                      disabled={!data.sponsorStatus || data.sponsorStatus === "greenCard" || data.isMilitary === null || !data.state}
                       onClick={() => setStepIdx(2)}
                       style={{
                         backgroundColor:
-                          !data.sponsorStatus || data.isMilitary === null || !data.state
+                          !data.sponsorStatus || data.sponsorStatus === "greenCard" || data.isMilitary === null || !data.state
                             ? "#e2e8f0"
                             : "#0d7377",
                       }}
-                      className={`flex-1 p-[14px_22px] rounded-[10px] text-[15px] font-semibold transition-all flex items-center justify-center gap-2 ${!data.sponsorStatus || data.isMilitary === null || !data.state ? "text-slate-400 cursor-not-allowed" : "text-white hover:opacity-90"}`}
+                      className={`flex-1 p-[14px_22px] rounded-[10px] text-[15px] font-semibold transition-all flex items-center justify-center gap-2 ${
+                        !data.sponsorStatus || data.sponsorStatus === "greenCard" || data.isMilitary === null || !data.state
+                          ? "text-slate-400 cursor-not-allowed"
+                          : "text-white hover:opacity-90"
+                      }`}
                     >
                       Continue <ArrowRight size={14} />
                     </button>
@@ -835,104 +1107,277 @@ export default function SponsorshipCalculatorTool({
             }
 
             if (step === 2) {
+              const isChild = data.beneficiaryRelationship === "child";
+              const isChildExempt =
+                data.sponsorStatus === "citizen" &&
+                data.childAgeBand === "under_18" &&
+                data.childRelationshipType !== "stepchild" &&
+                data.childLivesInUSCitizenCustody === true;
+
+              const isChildScreenerAnswered =
+                Boolean(data.childAgeBand) &&
+                Boolean(data.childRelationshipType) &&
+                data.childLivesInUSCitizenCustody !== null;
+
+              const isStep2Complete =
+                data.isMarried !== null &&
+                Boolean(data.beneficiaryRelationship) &&
+                (!isChild || isChildScreenerAnswered);
+
               return (
                 <div className="animate-in fade-in slide-in-from-right-4 duration-300 text-center">
                   <div
                     className="text-[11px] font-semibold tracking-widest uppercase mb-4"
                     style={{ color: stepColor }}
                   >
-                    Step 3 of 11
+                    Step 3 of {totalSteps}
                   </div>
                   <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6">
-                    Marital Status
+                    Marital & Beneficiary Status
                   </h2>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                    <button
-                      onClick={() => setData({ ...data, isMarried: true })}
-                      className={`p-6 rounded-xl border-2 transition-all ${data.isMarried === true ? "" : "border-slate-200"}`}
-                      style={{
-                        borderColor: data.isMarried === true ? COLORS.primary : undefined,
-                        backgroundColor:
-                          data.isMarried === true ? `${COLORS.primary}10` : undefined,
-                      }}
-                    >
-                      <Users className="w-10 h-10 mx-auto mb-3" style={{ color: COLORS.primary }} />
-                      <p className="font-semibold text-slate-900">Married</p>
-                    </button>
-                    <button
-                      onClick={() =>
-                        setData({ ...data, isMarried: false, relationshipToApplicant: "" })
-                      }
-                      className={`p-6 rounded-xl border-2 transition-all ${data.isMarried === false ? "" : "border-slate-200"}`}
-                      style={{
-                        borderColor: data.isMarried === false ? COLORS.primary : undefined,
-                        backgroundColor:
-                          data.isMarried === false ? `${COLORS.primary}10` : undefined,
-                      }}
-                    >
-                      <User className="w-10 h-10 mx-auto mb-3" style={{ color: COLORS.primary }} />
-                      <p className="font-semibold text-slate-900">Single / Not Married</p>
-                    </button>
+
+                  {/* Section 1: Sponsor Marital Status */}
+                  <div className="mb-6">
+                    <p className="text-[13px] font-bold text-slate-700 uppercase tracking-wider mb-3 text-left">
+                      1. What is your marital status?
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setData({ ...data, isMarried: true })}
+                        className={`p-4 rounded-xl border-2 transition-all ${data.isMarried === true ? "" : "border-slate-200 hover:bg-slate-50"}`}
+                        style={{
+                          borderColor: data.isMarried === true ? COLORS.primary : undefined,
+                          backgroundColor:
+                            data.isMarried === true ? `${COLORS.primary}10` : undefined,
+                        }}
+                      >
+                        <Users className="w-8 h-8 mx-auto mb-2" style={{ color: COLORS.primary }} />
+                        <p className="font-semibold text-slate-900">Married</p>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setData({ ...data, isMarried: false })}
+                        className={`p-4 rounded-xl border-2 transition-all ${data.isMarried === false ? "" : "border-slate-200 hover:bg-slate-50"}`}
+                        style={{
+                          borderColor: data.isMarried === false ? COLORS.primary : undefined,
+                          backgroundColor:
+                            data.isMarried === false ? `${COLORS.primary}10` : undefined,
+                        }}
+                      >
+                        <User className="w-8 h-8 mx-auto mb-2" style={{ color: COLORS.primary }} />
+                        <p className="font-semibold text-slate-900">Single / Not Married</p>
+                      </button>
+                    </div>
                   </div>
-                  {data.isMarried && (
-                    <div className="mb-6 animate-in zoom-in-95 duration-200">
-                      <p className="text-[14px] font-semibold text-[#0c1b33] mb-3 text-left">
-                        Are you sponsoring your spouse?
+
+                  {/* Section 2: Beneficiary Relationship */}
+                  <div className="mb-6">
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-[13px] font-bold text-slate-700 uppercase tracking-wider text-left">
+                        2. Whom are you petitioning for / sponsoring?
                       </p>
-                      <div className="grid grid-cols-2 gap-3">
-                        <button
-                          onClick={() => setData({ ...data, relationshipToApplicant: "spouse" })}
-                          className={`p-3 rounded-xl border-2 transition-all ${data.relationshipToApplicant === "spouse" ? "" : "border-slate-200"}`}
-                          style={{
-                            borderColor:
-                              data.relationshipToApplicant === "spouse"
-                                ? COLORS.primary
-                                : undefined,
-                            backgroundColor:
-                              data.relationshipToApplicant === "spouse"
-                                ? `${COLORS.primary}10`
-                                : undefined,
-                          }}
-                        >
-                          Yes
-                        </button>
-                        <button
-                          onClick={() => setData({ ...data, relationshipToApplicant: "other" })}
-                          className={`p-3 rounded-xl border-2 transition-all ${data.relationshipToApplicant === "other" ? "" : "border-slate-200"}`}
-                          style={{
-                            borderColor:
-                              data.relationshipToApplicant === "other" ? COLORS.primary : undefined,
-                            backgroundColor:
-                              data.relationshipToApplicant === "other"
-                                ? `${COLORS.primary}10`
-                                : undefined,
-                          }}
-                        >
-                          No
-                        </button>
+                      {journeyContext?.journeyCategory && (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-50 border border-teal-200 text-teal-800">
+                          {journeyContext.journeyCategory} Journey
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                      {[
+                        { id: "spouse", label: "Spouse", sub: "IR-1 / CR-1" },
+                        { id: "child", label: "Child", sub: "IR-2 / CR-2" },
+                        { id: "parent", label: "Parent", sub: "IR-5" },
+                        { id: "other", label: "Other Relative", sub: "Family Preference" },
+                      ].map((item) => {
+                        const isSelected = data.beneficiaryRelationship === item.id;
+                        return (
+                          <button
+                            key={item.id}
+                            type="button"
+                            onClick={() => {
+                              setData({
+                                ...data,
+                                beneficiaryRelationship: item.id as any,
+                                relationshipToApplicant: item.id,
+                                ...(item.id !== "child"
+                                  ? {
+                                      childAgeBand: "",
+                                      childRelationshipType: "",
+                                      childLivesInUSCitizenCustody: null,
+                                      isChildCitizenshipActExempt: false,
+                                    }
+                                  : {}),
+                              });
+                            }}
+                            className={`p-3 rounded-xl border-2 text-left transition-all ${isSelected ? "" : "border-slate-200 hover:bg-slate-50"}`}
+                            style={{
+                              borderColor: isSelected ? COLORS.primary : undefined,
+                              backgroundColor: isSelected ? `${COLORS.primary}10` : undefined,
+                            }}
+                          >
+                            <p className="font-bold text-sm text-slate-900">{item.label}</p>
+                            <p className="text-[11px] text-slate-500">{item.sub}</p>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Section 3: Child Citizenship Act (INA § 320) Screener */}
+                  {isChild && (
+                    <div className="mb-6 rounded-2xl border-2 border-teal-200/80 bg-teal-50/40 p-5 text-left animate-in zoom-in-95 duration-200">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Shield className="w-5 h-5 text-teal-700 shrink-0" />
+                        <h3 className="text-sm font-bold text-teal-950">
+                          Child Citizenship Act of 2000 (INA Section 320) Screener
+                        </h3>
                       </div>
+                      <p className="text-xs text-slate-600 mb-4 leading-relaxed">
+                        Answer the following 3 questions to check if your child qualifies for automatic U.S. citizenship upon entry (Form I-864W exemption) or requires standard financial sponsorship (Form I-864):
+                      </p>
+
+                      {/* Question A: Child Age */}
+                      <div className="mb-4">
+                        <label className="block text-xs font-semibold text-slate-800 mb-2">
+                          A. Child's age at expected U.S. admission:
+                        </label>
+                        <div className="grid grid-cols-2 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setData({ ...data, childAgeBand: "under_18" })}
+                            className={`p-2.5 rounded-lg border text-xs font-semibold transition-all ${data.childAgeBand === "under_18" ? "border-teal-600 bg-white text-teal-900 shadow-sm" : "border-slate-200 bg-white/70 text-slate-700 hover:bg-white"}`}
+                          >
+                            Under 18 years old
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setData({ ...data, childAgeBand: "18_20" })}
+                            className={`p-2.5 rounded-lg border text-xs font-semibold transition-all ${data.childAgeBand === "18_20" ? "border-teal-600 bg-white text-teal-900 shadow-sm" : "border-slate-200 bg-white/70 text-slate-700 hover:bg-white"}`}
+                          >
+                            18 to 20 years old
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Question B: Relationship Type */}
+                      <div className="mb-4">
+                        <label className="block text-xs font-semibold text-slate-800 mb-2">
+                          B. Child's legal relationship to U.S. citizen parent:
+                        </label>
+                        <div className="grid grid-cols-3 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setData({ ...data, childRelationshipType: "biological" })}
+                            className={`p-2.5 rounded-lg border text-xs font-semibold transition-all ${data.childRelationshipType === "biological" ? "border-teal-600 bg-white text-teal-900 shadow-sm" : "border-slate-200 bg-white/70 text-slate-700 hover:bg-white"}`}
+                          >
+                            Biological
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setData({ ...data, childRelationshipType: "adopted" })}
+                            className={`p-2.5 rounded-lg border text-xs font-semibold transition-all ${data.childRelationshipType === "adopted" ? "border-teal-600 bg-white text-teal-900 shadow-sm" : "border-slate-200 bg-white/70 text-slate-700 hover:bg-white"}`}
+                          >
+                            Legally Adopted
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setData({ ...data, childRelationshipType: "stepchild" })}
+                            className={`p-2.5 rounded-lg border text-xs font-semibold transition-all ${data.childRelationshipType === "stepchild" ? "border-teal-600 bg-white text-teal-900 shadow-sm" : "border-slate-200 bg-white/70 text-slate-700 hover:bg-white"}`}
+                          >
+                            Stepchild
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Question C: Legal & Physical Custody */}
+                      <div className="mb-2">
+                        <label className="block text-xs font-semibold text-slate-800 mb-2">
+                          C. Will the child reside in the U.S. in the legal and physical custody of the U.S. citizen parent?
+                        </label>
+                        <div className="grid grid-cols-2 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setData({ ...data, childLivesInUSCitizenCustody: true })}
+                            className={`p-2.5 rounded-lg border text-xs font-semibold transition-all ${data.childLivesInUSCitizenCustody === true ? "border-teal-600 bg-white text-teal-900 shadow-sm" : "border-slate-200 bg-white/70 text-slate-700 hover:bg-white"}`}
+                          >
+                            Yes (Custody in U.S.)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setData({ ...data, childLivesInUSCitizenCustody: false })}
+                            className={`p-2.5 rounded-lg border text-xs font-semibold transition-all ${data.childLivesInUSCitizenCustody === false ? "border-teal-600 bg-white text-teal-900 shadow-sm" : "border-slate-200 bg-white/70 text-slate-700 hover:bg-white"}`}
+                          >
+                            No
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Real-time Screener Determination Result */}
+                      {isChildScreenerAnswered && (
+                        <div className="mt-4 pt-3 border-t border-teal-200/80 animate-in fade-in duration-200">
+                          {isChildExempt ? (
+                            <div className="p-4 rounded-xl border border-teal-300 bg-white shadow-sm">
+                              <div className="flex items-center gap-2 mb-1.5">
+                                <CheckCircle2 className="w-5 h-5 text-teal-700 shrink-0" />
+                                <span className="text-sm font-bold text-teal-950">
+                                  Qualified for Form I-864W Exemption (INA Section 320)
+                                </span>
+                              </div>
+                                                            <p className="text-xs text-slate-600 leading-relaxed mb-3">
+                                Your child qualifies for automatic U.S. citizenship upon entry and is completely exempt from Form I-864 financial sponsorship, joint sponsors, and the $120 CEAC AOS fee. Click Continue to view your finalized exemption plan.
+                              </p>
+                              <div className="flex flex-wrap gap-2 text-[11px] font-semibold text-teal-900">
+                                <span className="px-2 py-0.5 rounded bg-teal-100/70">Form I-864W (Part 2, Item 2.a)</span>
+                                <span className="px-2 py-0.5 rounded bg-teal-100/70">Required Income: $0</span>
+                                <span className="px-2 py-0.5 rounded bg-teal-100/70">AOS Fee: Exempt</span>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="p-4 rounded-xl border border-amber-300 bg-white shadow-sm">
+                              <div className="flex items-center gap-2 mb-1.5">
+                                <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />
+                                <span className="text-sm font-bold text-amber-950">
+                                  Standard Form I-864 Required
+                                </span>
+                              </div>
+                              <p className="text-xs text-slate-700 leading-relaxed mb-2">
+                                {data.sponsorStatus !== "citizen"
+                                  ? "The petitioning parent must be a U.S. citizen for INA Section 320 to apply. Green card holders sponsoring a child must file Form I-864."
+                                  : data.childRelationshipType === "stepchild"
+                                  ? "Under 8 CFR Section 320.1, stepchildren do not acquire automatic citizenship under INA Section 320. Standard Form I-864 and 125% Poverty Guidelines apply."
+                                  : data.childAgeBand === "18_20"
+                                  ? "Children aged 18 to 20 at admission do not qualify for automatic citizenship under INA Section 320. Standard Form I-864 applies."
+                                  : "INA Section 320 requires the child to reside in the legal and physical custody of the U.S. citizen parent. Standard Form I-864 applies."}
+                              </p>
+                              <p className="text-[11px] font-semibold text-teal-800">
+                                Note: As the child of a U.S. citizen, the statutory 3x asset multiplier applies (8 CFR Section 213a.2(c)(2)(iii)(B)).
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
+
+                  {/* Navigation */}
                   <div className="flex gap-[10px]">
                     <button
+                      type="button"
                       onClick={() => setStepIdx(1)}
                       className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63] flex items-center gap-2"
                     >
                       <ArrowLeft size={14} /> Back
                     </button>
                     <button
-                      disabled={
-                        data.isMarried === null || (data.isMarried && !data.relationshipToApplicant)
-                      }
+                      type="button"
+                      disabled={!isStep2Complete}
                       onClick={() => setStepIdx(3)}
                       style={{
-                        backgroundColor:
-                          data.isMarried === null ||
-                          (data.isMarried && !data.relationshipToApplicant)
-                            ? "#e2e8f0"
-                            : stepColor,
+                        backgroundColor: !isStep2Complete ? "#e2e8f0" : stepColor,
                       }}
-                      className={`flex-1 p-[14px_22px] rounded-[10px] text-[15px] font-semibold transition-all flex items-center justify-center gap-2 ${data.isMarried === null || (data.isMarried && !data.relationshipToApplicant) ? "text-slate-400 cursor-not-allowed" : "text-white hover:opacity-90"}`}
+                      className={`flex-1 p-[14px_22px] rounded-[10px] text-[15px] font-semibold transition-all flex items-center justify-center gap-2 ${!isStep2Complete ? "text-slate-400 cursor-not-allowed" : "text-white hover:opacity-90"}`}
                     >
                       Continue <ArrowRight size={14} />
                     </button>
@@ -942,6 +1387,10 @@ export default function SponsorshipCalculatorTool({
             }
 
             if (step === 3) {
+              if (isExemptChild) {
+                return renderFinalPlan(true);
+              }
+
               return (
                 <div className="animate-in fade-in slide-in-from-right-4 duration-300 text-center">
                   <div
@@ -1613,82 +2062,7 @@ export default function SponsorshipCalculatorTool({
             }
 
             if (step === 10) {
-              return (
-                <ResultGate
-                  feature="sponsorship_calc"
-                  planTier={effectiveTier}
-                  standaloneToolId={isJourney ? undefined : "sponsorship-calculator"}
-                >
-                  <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                    <div className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center" style={{ color: COLORS.primary }}>Step 11 of 11</div>
-                    <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6 text-center">Final Sponsorship Plan</h2>
-                    
-                    <div className="space-y-4 mb-8">
-                      <div className={`p-8 rounded-3xl border-2 text-center`}
-                        style={{ 
-                          backgroundColor: result.isEligible ? `${COLORS.secondary}20` : `${COLORS.danger}20`,
-                          borderColor: result.isEligible ? COLORS.secondary : COLORS.danger 
-                        }}>
-                        <div className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-3">Final Conclusion</div>
-                        <div className="text-3xl font-black mb-3" style={{ color: result.isEligible ? COLORS.primary : COLORS.danger }}>
-                          {result.isEligible ? "ELIGIBLE \u2713" : "NOT ELIGIBLE \u2717"}
-                        </div>
-                        <p className="text-[14px] text-slate-600 leading-relaxed font-medium">
-                          Total Household Income: <strong className="text-[#0c1b33] text-lg">${(result.totalIncome ?? 0).toLocaleString()}</strong><br/>
-                          Required (Household of {result.householdSize}): <strong className="text-[#0c1b33] text-lg">${(result.requiredIncome ?? 0).toLocaleString()}</strong>
-                          {result.jurisdiction && (
-                            <>
-                              <br/>
-                              <span className="text-[12px] text-slate-500">Based on {getJurisdictionLabel(result.jurisdiction)} poverty guidelines</span>
-                            </>
-                          )}
-                        </p>
-                      </div>
-
-                      <div className="text-[12px] text-[#6b8097] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-slate-100 pb-4 px-1">
-                        <span>Poverty guidelines last updated: <strong>March 1, 2026</strong></span>
-                        <a
-                          href={I864P_URL}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="hover:underline font-semibold flex items-center gap-1 transition-all hover:opacity-85"
-                          style={{ color: COLORS.primary }}
-                        >
-                          Official USCIS I-864P Guidelines &rarr;
-                        </a>
-                      </div>
-
-                      <div className="p-6 rounded-2xl border-2 border-slate-100 bg-slate-50/50">
-                        <div className="text-[11px] font-bold uppercase text-slate-400 mb-4 tracking-wider">Required Forms</div>
-                        <div className="space-y-3">
-                           {result.forms.map((f: any, i: number) => (
-                             <div key={i} className="flex items-start gap-3 p-4 bg-white rounded-2xl border border-slate-200 shadow-sm">
-                               <FileText size={20} className="mt-1 shrink-0" style={{ color: COLORS.primary }} />
-                               <div>
-                                 <div className="text-sm font-black text-slate-900 leading-tight">{f.name}</div>
-                                 <div className="text-[11px] text-slate-500 font-medium">{f.sub}</div>
-                               </div>
-                             </div>
-                           ))}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-[10px]">
-                      <button onClick={() => setStepIdx(data.assetValue > 0 || data.sponsorDeceased ? 9 : 8)} className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63] flex items-center gap-2">
-                        <ArrowLeft size={14} /> Edit Info
-                      </button>
-                      <button 
-                        onClick={handleCompleteSave} 
-                        style={{ backgroundColor: COLORS.primary }}
-                        className="flex-1 p-[14px_22px] text-white rounded-[10px] text-[15px] font-semibold shadow-lg transition-all hover:opacity-90 hover:-translate-y-px flex items-center justify-center gap-2"
-                      >
-                        {isJourney ? "Complete & Save to Roadmap" : "Complete & Save Calculation"} <ArrowRight size={14} />
-                      </button>
-                    </div>
-                  </div>
-                </ResultGate>
-              );
+              return renderFinalPlan(isExemptChild);
             }
           })()}
         </div>

@@ -1,521 +1,908 @@
 {
   "categorySlug": "ir-2-child",
   "version": "1.0.0",
-  "lastUpdated": "2026-03-27",
+  "lastUpdated": "2026-11-06",
+  "description": "IR-2/CR-2 child immigrant visa interview question bank - generic model answers only, relationship-conditional selection",
   "questions": [
     {
-      "id": "basic-full-name",
-      "category": "Basic Identity",
-      "question": "What is your full name?",
-      "suggestedAnswer": "My full name is {{full_name}}.",
-      "guidance": "State your full name exactly as it appears on your passport and official documents.",
-      "tooltip": "The officer verifies your identity against official records.",
+      "id": "applicant-name-dob",
+      "category": "Applicant & Petitioner Relationship",
       "priority": "high",
+      "mockInterviewOrder": 1,
+      "question": "What is your full name and date of birth?",
+      "sampleAnswer": "My name is Sara Ahmed, and I was born on March 12, 2014.",
+      "guidance": "State your name and date of birth exactly as they appear on your passport and birth certificate.",
+      "tooltip": "The officer confirms your identity and age against official records.",
+      "conditions": { "requireIntake": [], "requireCaseTypes": ["child"] },
+      "inputPlaceholder": "State your full name and date of birth",
+      "minLength": 15,
+      "maxLength": 300,
       "variations": [
-        "Could you please state your full legal name?",
-        "May I have your complete name?",
-        "What is the entirety of your name?",
-        "Please provide your full name."
+        "Could you tell me your complete name and when you were born?",
+        "What name and date of birth appear on your travel documents?",
+        "Please state your full legal name and your birth date."
       ]
     },
     {
-      "id": "basic-date-of-birth",
-      "category": "Basic Identity",
-      "question": "What is your date of birth?",
-      "suggestedAnswer": "My date of birth is {{date_of_birth}}.",
-      "guidance": "Ensure your answer matches your passport and application forms exactly.",
-      "tooltip": "Used to confirm identity and eligibility under IR-2 age requirements.",
+      "id": "who-petitioning",
+      "category": "Applicant & Petitioner Relationship",
+      "tier": "free",
       "priority": "high",
+      "mockInterviewOrder": 2,
+      "question": "Who is sponsoring or petitioning for you?",
+      "sampleAnswer": "My mother, Aisha Ahmed, is petitioning for me. She became a U.S. citizen three years ago.",
+      "guidance": "Identify the petitioner by their relationship to you and, if known, their name.",
+      "tooltip": "Confirms who the qualifying U.S. citizen petitioner is.",
+      "conditions": { "requireIntake": ["petitioner_relationship"], "requireCaseTypes": ["child"] },
+      "inputPlaceholder": "Name your petitioner and their relationship to you",
+      "minLength": 10,
+      "maxLength": 300,
       "variations": [
-        "Could you please tell me your birth date?",
-        "What is the specific date of your birth?",
-        "May I know your date of birth?",
-        "When were you born?"
+        "Who filed the immigrant petition on your behalf?",
+        "Can you tell me who is sponsoring your visa?",
+        "Which person is petitioning for you to come to the United States?"
       ]
     },
     {
-      "id": "basic-age",
-      "category": "Basic Identity",
-      "question": "How old are you?",
-      "suggestedAnswer": "I am {{current_age}} years old.",
-      "guidance": "Answer confidently and accurately.",
-      "tooltip": "Confirms eligibility as a qualifying child under immigration rules.",
+      "id": "relationship-with-petitioner",
+      "category": "Applicant & Petitioner Relationship",
+      "tier": "free",
       "priority": "high",
+      "mockInterviewOrder": 3,
+      "question": "What is your relationship with your petitioner?",
+      "sampleAnswer": "My petitioner is my mother, and I am her child.",
+      "guidance": "State the legal parent-child relationship that forms the basis of the petition.",
+      "tooltip": "Establishes the qualifying IR-2 parent-child relationship.",
+      "conditions": { "requireIntake": ["child_relationship_type"], "requireCaseTypes": ["child"] },
+      "inputPlaceholder": "Describe your relationship to the petitioner",
+      "minLength": 10,
+      "maxLength": 300,
       "variations": [
-        "What is your current age?",
-        "Could you state your age?",
-        "How many years old are you?",
-        "What is your age at present?"
+        "How are you related to the person petitioning for you?",
+        "What family relationship exists between you and your petitioner?",
+        "Please explain your relationship to your sponsoring parent."
       ]
     },
     {
-      "id": "basic-birth-place",
-      "category": "Basic Identity",
-      "question": "Where were you born?",
-      "suggestedAnswer": "I was born in {{current_country}}.",
-      "guidance": "Provide both city and country clearly.",
-      "tooltip": "Ensures consistency with official birth records.",
-      "priority": "high",
-      "variations": [
-        "What is your place of birth?",
-        "In which city and country were you born?",
-        "Could you tell me your birthplace?",
-        "Where did you come into the world?"
-      ]
-    },
-    {
-      "id": "petitioner-identity",
-      "category": "Petitioner",
-      "question": "Who is petitioning for you?",
-      "suggestedAnswer": "My {{sponsor_relationship}}, {{parent_full_name}}, is petitioning for me.",
-      "guidance": "Clearly mention both relationship and name.",
-      "tooltip": "Confirms the legal petitioner and relationship basis.",
-      "priority": "high",
-      "variations": [
-        "Who is the petitioner for your visa?",
-        "Who has filed the petition on your behalf?",
-        "Could you identify the person sponsoring your application?",
-        "Who is your sponsor in this petition?"
-      ]
-    },
-    {
-      "id": "petitioner-parent-name",
-      "category": "Petitioner",
-      "question": "What is your father's or mother's full name?",
-      "suggestedAnswer": "My {{sponsor_relationship}}'s full name is {{parent_full_name}}.",
-      "guidance": "State the full name exactly as it appears on official documents.",
-      "tooltip": "Used to verify the identity of the petitioner and match records.",
-      "priority": "high",
-      "variations": [
-        "Could you provide the full name of your petitioning parent?",
-        "Please state your father's or mother's complete name.",
-        "What is the full legal name of your parent who filed the petition?",
-        "May I have the full name of your parent, whether father or mother?"
-      ]
-    },
-    {
-      "id": "petitioner-status",
-      "category": "Petitioner",
-      "question": "Is your parent a U.S. citizen or permanent resident?",
-      "suggestedAnswer": "My parent is a {{parent_citizenship_status}}.",
-      "guidance": "Answer accurately and confidently.",
-      "tooltip": "Determines visa eligibility classification.",
-      "priority": "high",
-      "variations": [
-        "Does your parent hold U.S. citizenship or permanent residency?",
-        "What is the immigration status of your parent in the United States?",
-        "Is your parent a citizen of the U.S. or a lawful permanent resident?",
-        "Could you confirm if your parent is a U.S. citizen or a green card holder?"
-      ]
-    },
-    {
-      "id": "petitioner-location",
-      "category": "Petitioner",
-      "question": "Where does your parent live in the United States?",
-      "suggestedAnswer": "My parent lives in {{us_living_location}}.",
-      "guidance": "Mention city and state clearly.",
-      "tooltip": "Verifies petitioner's residence.",
-      "priority": "high",
-      "variations": [
-        "What is your parent's residential address in the U.S.?",
-        "In what part of the United States does your parent reside?",
-        "Could you specify your parent's living location within the U.S.?",
-        "Where exactly does your parent currently live in America?"
-      ]
-    },
-    {
-      "id": "petitioner-employment",
-      "category": "Petitioner",
-      "question": "What does your parent do for a living?",
-      "suggestedAnswer": "My parent has stable employment and is able to provide financial support.",
-      "guidance": "Keep your answer simple and factual.",
-      "tooltip": "Helps assess financial stability of the sponsor.",
-      "priority": "high",
-      "variations": [
-        "Could you please describe your parent's occupation?",
-        "What is your parent's profession?",
-        "Can you tell me about your parent's current employment?",
-        "What kind of work does your parent perform?"
-      ]
-    },
-    {
-      "id": "relationship-confirmation",
-      "category": "Relationship",
-      "question": "How are you related to the petitioner?",
-      "suggestedAnswer": "The petitioner is my {{sponsor_relationship}}, and we share a genuine parent-child relationship.",
-      "guidance": "Answer clearly and naturally.",
-      "tooltip": "Validates the legitimacy of the relationship.",
-      "priority": "high",
-      "variations": [
-        "What is your relationship to the individual who filed the petition on your behalf?",
-        "Please explain your connection to the petitioner.",
-        "Could you clarify your familial tie to the petitioner?",
-        "In what way are you connected to the person who submitted this petition?"
-      ]
-    },
-    {
-      "id": "relationship-last-meeting",
-      "category": "Relationship",
-      "question": "When was the last time you saw your parent?",
-      "suggestedAnswer": "I last saw my parent {{last_meeting_with_parent}}, and we have stayed in regular contact since then.",
-      "guidance": "Approximate timing is acceptable if exact date is unclear.",
-      "tooltip": "Evaluates ongoing relationship continuity.",
-      "priority": "high",
-      "variations": [
-        "Could you tell me the date of your most recent in-person meeting with your parent?",
-        "When did you last physically encounter your parent?",
-        "What was the last occasion you were together with your parent?",
-        "When did you last have a face-to-face interaction with your parent?"
-      ]
-    },
-    {
-      "id": "relationship-communication",
-      "category": "Relationship",
-      "question": "Do you talk to your parent regularly?",
-      "suggestedAnswer": "Yes, we communicate regularly through {{communication_method}}, which helps us stay close despite the distance.",
-      "guidance": "Mention frequency and communication methods.",
-      "tooltip": "Assesses emotional connection and relationship strength.",
-      "priority": "high",
-      "variations": [
-        "How frequently do you communicate with your parent?",
-        "Do you maintain consistent contact with your parent?",
-        "What is the typical frequency of your conversations with your parent?",
-        "Are you in regular communication with your parent?"
-      ]
-    },
-    {
-      "id": "relationship-upbringing",
-      "category": "Relationship",
-      "question": "Who raised you while growing up?",
-      "suggestedAnswer": "I was raised by my {{sponsor_relationship}} and other family members who have been responsible for my upbringing.",
-      "guidance": "Explain clearly, especially if different from petitioner.",
-      "tooltip": "Important for custody and parental responsibility verification.",
-      "priority": "high",
-      "variations": [
-        "Who was primarily responsible for raising you during your childhood?",
-        "Who were your primary caregivers as you grew up?",
-        "Could you identify the individuals who were responsible for your upbringing?",
-        "Who served as your primary guardian(s) during your formative years?"
-      ]
-    },
-    {
-      "id": "relationship-evidence",
-      "category": "Relationship",
-      "question": "Do you have pictures with your parent?",
-      "suggestedAnswer": "{{has_photos_with_parent ? 'Yes, we have photos together from different occasions that reflect our relationship.' : 'I have some photos with my parent that show our relationship.'}}",
-      "guidance": "Answer honestly.",
-      "tooltip": "Supporting evidence of genuine relationship.",
+      "id": "petitioner-us-residence",
+      "category": "Applicant & Petitioner Relationship",    
       "priority": "medium",
+      "mockInterviewOrder": 4,
+      "question": "Where does your petitioner currently live in the United States?",
+      "sampleAnswer": "My mother lives in Houston, Texas, in an apartment near the hospital where she works.",
+      "guidance": "Give the city and state if you know it; say so honestly if you are not certain of the exact address.",
+      "tooltip": "Checks your familiarity with the petitioner's U.S. residence.",
+      "conditions": { "requireIntake": [], "requireCaseTypes": ["child"] },
+      "inputPlaceholder": "State where your petitioner lives in the U.S.",
+      "minLength": 5,
+      "maxLength": 300,
       "variations": [
-        "Do you possess any photographs featuring you and your parent?",
-        "Are there any pictures of you and your parent together?",
-        "Could you provide any photographic evidence of your relationship with your parent?",
-        "Have you taken any photos alongside your parent?"
+        "In which part of the United States does your petitioner live?",
+        "Do you know where your petitioner's home is in the U.S.?",
+        "Where in the United States will your petitioner be living?"
       ]
     },
     {
-      "id": "us-living-location",
-      "category": "Living in USA",
-      "question": "Where will you live in the United States?",
-      "suggestedAnswer": "I will live with my parent in {{us_living_location}}, where they currently reside.",
-      "guidance": "Mention location clearly.",
-      "tooltip": "Confirms post-arrival residence plan.",
-      "priority": "high",
-      "variations": [
-        "What will be your intended address in the United States?",
-        "Where do you plan to reside once you arrive in the U.S.?",
-        "Can you specify your planned living location within the United States?",
-        "What is your anticipated residence in the United States?"
-      ]
-    },
-    {
-      "id": "us-living-with",
-      "category": "Living in USA",
-      "question": "Who will you live with in the United States?",
-      "suggestedAnswer": "I will live with my {{sponsor_relationship}} and my family members there.",
-      "guidance": "Answer clearly and confidently.",
-      "tooltip": "Ensures proper family support structure.",
-      "priority": "high",
-      "variations": [
-        "With whom do you intend to reside in the United States?",
-        "Who will be your housemates or roommates when you live in the U.S.?",
-        "Can you tell me the names of the individuals you will be living with in the United States?",
-        "Who will share your living accommodations in the United States?"
-      ]
-    },
-    {
-      "id": "us-household-size",
-      "category": "Living in USA",
-      "question": "How many people live in that household?",
-      "suggestedAnswer": "There are approximately {{household_size_us}} people living in the household.",
-      "guidance": "Approximate answer is acceptable.",
-      "tooltip": "Helps assess living arrangements and support.",
+      "id": "last-communication-petitioner",
+      "category": "Applicant & Petitioner Relationship",    
       "priority": "medium",
+      "mockInterviewOrder": 5,
+      "question": "When did you last communicate with your petitioner?",
+      "sampleAnswer": "I spoke with my mother last week — we have a video call every Sunday evening.",
+      "guidance": "Give an honest timeframe and the method you used to stay in touch.",
+      "tooltip": "Supports that the parent-child relationship is current and active.",
+      "conditions": { "requireIntake": ["communication_frequency"], "requireCaseTypes": ["child"] },
+      "inputPlaceholder": "Say when and how you last contacted your petitioner",
+      "minLength": 5,
+      "maxLength": 300,
       "variations": [
-        "What is the total number of individuals residing in that household?",
-        "Could you specify the size of that household in terms of its occupants?",
-        "How many people, including yourself, live in that particular household?",
-        "Please tell me the total count of residents in that household."
+        "How long ago did you last talk to your petitioner?",
+        "When was your most recent contact with your sponsoring parent?",
+        "How do you usually keep in touch with your petitioner, and when was the last time?"
       ]
     },
+
     {
-      "id": "us-address-knowledge",
-      "category": "Living in USA",
-      "question": "Do you know your home address in the United States?",
-      "suggestedAnswer": "Yes, I am aware of the address where I will be living with my parent in {{us_living_location}}.",
-      "guidance": "Knowing at least city and state is recommended. Exact address is a plus.",
-      "tooltip": "Shows preparedness and awareness of living arrangements.",
-      "priority": "medium",
-      "variations": [
-        "Can you recite your residential address in the United States?",
-        "Are you familiar with your specific home address within the U.S.?",
-        "Do you have your full American residence address memorized?",
-        "Please confirm if you know your United States address."
-      ]
-    },
-    {
-      "id": "family-siblings",
-      "category": "Family",
-      "question": "Do you have any siblings?",
-      "suggestedAnswer": "{{has_siblings ? 'Yes, I have siblings, and we share a close family bond.' : 'No, I am an only child.'}}",
-      "guidance": "Be accurate.",
-      "tooltip": "Verifies family structure.",
+      "id": "biological-parents-identity",
+      "category": "Biological Child Relationship",     
       "priority": "high",
+      "mockInterviewOrder": 6,
+      "question": "Who are your biological parents?",
+      "sampleAnswer": "My biological mother is Aisha Ahmed and my biological father is Imran Ahmed. Both of their names are on my birth certificate.",
+      "guidance": "Identify your biological parents by name and their relationship to the petitioner.",
+      "tooltip": "Confirms the biological parent-child link behind the petition.",
+      "conditions": { "requireIntake": ["child_relationship_type"], "requireCaseTypes": ["child"], "requireIntakeValues": { "child_relationship_type": "Biological Child" } },
+      "inputPlaceholder": "Identify your biological parents",
+      "minLength": 10,
+      "maxLength": 400,
       "variations": [
-        "Are there any brothers or sisters in your family?",
-        "Do you have any immediate siblings?",
-        "Could you tell me if you have any brothers or sisters?",
-        "Do you have any living siblings?"
+        "Can you tell me who your biological mother and father are?",
+        "Who are recorded as your parents on your birth record?",
+        "Please describe who your birth parents are."
       ]
     },
     {
-      "id": "family-siblings-location",
-      "category": "Family",
-      "question": "Where do your siblings live?",
-      "suggestedAnswer": "My siblings live in {{siblings_location}}.",
-      "guidance": "Mention the location clearly. City or country is sufficient.",
-      "tooltip": "Tests familiarity with immediate family members' whereabouts.",
-      "priority": "medium",
-      "variations": [
-        "What are the current residential locations of your siblings?",
-        "In which countries or cities do your brothers and sisters currently reside?",
-        "Could you inform me of your siblings' places of residence?",
-        "Where do your brothers and sisters currently live?"
-      ]
-    },
-    {
-      "id": "family-communication",
-      "category": "Family",
-      "question": "How often do you communicate with your siblings?",
-      "suggestedAnswer": "We maintain regular contact and stay connected as a family despite the distance.",
-      "guidance": "Describe your communication pattern naturally.",
-      "tooltip": "Verifies consistency and strength of family relationships.",
-      "priority": "medium",
-      "variations": [
-        "What is the frequency of your communication with your siblings?",
-        "How regularly do you interact or speak with your brothers and sisters?",
-        "Please describe how often you get in touch with your siblings.",
-        "On what schedule do you typically communicate with your brothers and sisters?"
-      ]
-    },
-    {
-      "id": "family-us-connection",
-      "category": "Family",
-      "question": "Do you have any family members in the United States?",
-      "suggestedAnswer": "{{living_with_in_us ? 'Yes, my family member is living in the United States.' : 'My primary family is outside the United States.'}}",
-      "guidance": "Answer accurately about family ties in the U.S.",
-      "tooltip": "Identifies existing family ties in the U.S.",
+      "id": "biological-parents-marital-status",
+      "category": "Biological Child Relationship",      
       "priority": "high",
+      "mockInterviewOrder": 7,
+      "question": "Are your biological parents currently married, separated, or divorced?",
+      "sampleAnswer": "My biological parents were married, but they divorced in 2020, and I live with my father now.",
+      "guidance": "State their current marital situation accurately; it can affect how the relationship is documented.",
+      "tooltip": "Marital history can affect proof of the parent-child relationship.",
+      "conditions": { "requireIntake": ["child_relationship_type"], "requireCaseTypes": ["child"], "requireIntakeValues": { "child_relationship_type": "Biological Child" } },
+      "inputPlaceholder": "Describe your biological parents' marital situation",
+      "minLength": 5,
+      "maxLength": 400,
       "variations": [
-        "Are any of your relatives currently residing in the United States?",
-        "Do you have any family members who live in America?",
-        "Can you confirm if you have any immediate or extended family living within the U.S.?",
-        "Are there any members of your family present in the United States?"
+        "What is the current marital status of your biological parents?",
+        "Are your birth parents still together, separated, or divorced?",
+        "Do your biological parents live as a married couple?"
       ]
     },
     {
-      "id": "intent-move",
-      "category": "Intent",
-      "question": "Why are you going to the United States?",
-      "suggestedAnswer": "I am going to the United States to live with my parent and be together as a family, which is very important to me.",
-      "guidance": "Focus on family reunification.",
-      "tooltip": "Core purpose of IR-2 visa category.",
-      "priority": "high",
-      "variations": [
-        "What is the primary purpose of your travel to the United States?",
-        "Could you state your reason for wishing to enter the United States?",
-        "What is your objective for visiting America?",
-        "Please explain the intent behind your trip to the United States."
-      ]
-    },
-    {
-      "id": "intent-plans",
-      "category": "Intent",
-      "question": "What will you do after arriving in the United States?",
-      "suggestedAnswer": "After arriving, I plan to {{plans_after_arrival}} and live with my family.",
-      "guidance": "Keep your answer realistic and natural.",
-      "tooltip": "Evaluates future plans and stability.",
-      "priority": "high",
-      "variations": [
-        "What are your initial plans upon your arrival in the United States?",
-        "Could you outline your activities immediately after entering the U.S.?",
-        "What do you intend to do once you have landed in the United States?",
-        "Please describe your first steps or actions upon reaching the United States."
-      ]
-    },
-    {
-      "id": "intent-study",
-      "category": "Intent",
-      "question": "Do you plan to study in the United States?",
-      "suggestedAnswer": "{{plans_to_study ? 'Yes, I plan to continue my education and focus on my studies after moving.' : 'I will focus on adjusting to my new environment and family life.'}}",
-      "guidance": "Simple and expected answer.",
-      "tooltip": "Education plans are expected for children.",
+      "id": "who-raised-you",
+      "category": "Biological Child Relationship",      
       "priority": "medium",
+      "mockInterviewOrder": 8,
+      "question": "Who has primarily raised you?",
+      "sampleAnswer": "My mother raised me until she moved to the United States. Since then, my father and my grandmother have been taking care of me.",
+      "guidance": "Explain who has been responsible for your day-to-day care and upbringing.",
+      "tooltip": "Shows the real caregiving history behind the relationship.",
+      "conditions": { "requireIntake": ["child_relationship_type"], "requireCaseTypes": ["child"], "requireIntakeValues": { "child_relationship_type": "Biological Child" } },
+      "inputPlaceholder": "Describe who raised you",
+      "minLength": 10,
+      "maxLength": 400,
       "variations": [
-        "Do you intend to pursue any academic programs in the United States?",
-        "What are your educational aspirations concerning the U.S.?",
-        "Is it your intention to enroll in any educational institution in America?",
-        "Do you have any plans to undertake a course of study in the U.S.?"
+        "Who took care of you while you were growing up?",
+        "Who has been the main person responsible for your upbringing?",
+        "Can you describe who raised you day to day?"
       ]
     },
     {
-      "id": "intent-emotional-response",
-      "category": "Intent",
-      "question": "Are you excited to move to the United States?",
-      "suggestedAnswer": "Yes, I am excited to move to the United States because I will be living with my parent and starting a new chapter of my life.",
-      "guidance": "Keep your answer natural and positive.",
-      "tooltip": "Assesses emotional readiness and genuine intent.",
+      "id": "lived-with-petitioning-parent",
+      "category": "Biological Child Relationship",      
+      "priority": "medium",
+      "mockInterviewOrder": 9,
+      "question": "Have you lived with your petitioning parent before?",
+      "sampleAnswer": "Yes, I lived with my mother in Lahore until she moved to the United States in 2022.",
+      "guidance": "Answer honestly about any periods you shared a residence with the petitioner.",
+      "tooltip": "Co-residence supports the genuine parent-child relationship.",
+      "conditions": { "requireIntake": ["child_relationship_type", "current_living_arrangement"], "requireCaseTypes": ["child"], "requireIntakeValues": { "child_relationship_type": "Biological Child" } },
+      "inputPlaceholder": "Say whether you have lived with your petitioning parent",
+      "minLength": 5,
+      "maxLength": 400,
+      "variations": [
+        "Have you ever lived in the same home as your petitioning parent?",
+        "Did you share a household with your sponsoring parent at any time?",
+        "How long have you lived with your petitioning parent?"
+      ]
+    },
+    {
+      "id": "contact-frequency-petitioning-parent",
+      "category": "Biological Child Relationship",    
+      "priority": "medium",
+      "mockInterviewOrder": 10,
+      "question": "How often do you meet or communicate with your petitioning parent?",
+      "sampleAnswer": "We have a video call every week, and my mother calls me almost every night before bed.",
+      "guidance": "Describe how often you are in contact and by what method.",
+      "tooltip": "Frequent contact shows an ongoing relationship.",
+      "conditions": { "requireIntake": ["child_relationship_type", "communication_frequency"], "requireCaseTypes": ["child"], "requireIntakeValues": { "child_relationship_type": "Biological Child" } },
+      "inputPlaceholder": "Describe how often you contact your petitioning parent",
+      "minLength": 5,
+      "maxLength": 300,
+      "variations": [
+        "How frequently do you speak with your sponsoring parent?",
+        "How often are you in contact with your petitioning parent?",
+        "Do you talk to your petitioning parent often, and how?"
+      ]
+    },
+
+    {
+      "id": "stepparent-name",
+      "category": "Stepchild Relationship",   
+      "priority": "high",
+      "mockInterviewOrder": 11,
+      "question": "What is your stepparent's name?",
+      "sampleAnswer": "My stepparent's name is David Miller.",
+      "guidance": "State your stepparent's full legal name as it appears on official records.",
+      "tooltip": "Identifies the stepparent who created the step-relationship.",
+      "conditions": { "requireIntake": ["child_relationship_type"], "requireCaseTypes": ["child"], "requireIntakeValues": { "child_relationship_type": "Stepchild" } },
+      "inputPlaceholder": "State your stepparent's full name",
+      "minLength": 5,
+      "maxLength": 200,
+      "variations": [
+        "What is the full name of your stepparent?",
+        "Can you tell me your petitioning stepparent's name?",
+        "Which name appears for your stepparent on your documents?"
+      ]
+    },
+    {
+      "id": "stepparent-marriage-date",
+      "category": "Stepchild Relationship",     
+      "priority": "high",
+      "mockInterviewOrder": 12,
+      "question": "When did your biological parent marry your stepparent?",
+      "sampleAnswer": "My mother married David in June 2021, before I turned 18.",
+      "guidance": "Give the date of the marriage; it must have created the step-relationship before you turned 18.",
+      "tooltip": "The marriage must predate your 18th birthday for stepchild eligibility.",
+      "conditions": { "requireIntake": ["child_relationship_type", "stepparent_marriage_before_18"], "requireCaseTypes": ["child"], "requireIntakeValues": { "child_relationship_type": "Stepchild" } },
+      "inputPlaceholder": "State when the marriage between your parent and stepparent took place",
+      "minLength": 5,
+      "maxLength": 300,
+      "variations": [
+        "On what date did your stepparent marry your biological parent?",
+        "How long ago was the marriage that made your stepparent your stepparent?",
+        "When did the marriage between your parent and stepparent happen?"
+      ]
+    },
+    {
+      "id": "how-parents-stepparent-met",
+      "category": "Stepchild Relationship",   
+      "priority": "medium",
+      "mockInterviewOrder": 13,
+      "question": "How did your biological parent and stepparent meet?",
+      "sampleAnswer": "My mother met David at her job at the hospital in Houston, and they got married in 2021.",
+      "guidance": "Briefly and truthfully explain how the marriage came about, if you know.",
+      "tooltip": "Adds context to the genuineness of the step-family.",
+      "conditions": { "requireIntake": ["child_relationship_type"], "requireCaseTypes": ["child"], "requireIntakeValues": { "child_relationship_type": "Stepchild" } },
+      "inputPlaceholder": "Describe how your parent and stepparent met",
+      "minLength": 10,
+      "maxLength": 400,
+      "variations": [
+        "How did your stepparent and your biological parent come to know each other?",
+        "Can you explain how your parent met their new spouse?",
+        "What is the story of how your biological parent and stepparent met?"
+      ]
+    },
+    {
+      "id": "known-stepparent-how-long",
+      "category": "Stepchild Relationship",     
+      "priority": "medium",
+      "mockInterviewOrder": 14,
+      "question": "How long have you known your stepparent?",
+      "sampleAnswer": "I have known David for about three years, since my mother married him.",
+      "guidance": "Give an honest sense of how long the relationship has existed.",
+      "tooltip": "Shows the length and stability of the step-relationship.",
+      "conditions": { "requireIntake": ["child_relationship_type"], "requireCaseTypes": ["child"], "requireIntakeValues": { "child_relationship_type": "Stepchild" } },
+      "inputPlaceholder": "Say how long you have known your stepparent",
+      "minLength": 5,
+      "maxLength": 300,
+      "variations": [
+        "For how long have you had a relationship with your stepparent?",
+        "Since when have you known your stepparent?",
+        "How much time has passed since you first knew your stepparent?"
+      ]
+    },
+    {
+      "id": "relationship-with-stepparent",
+      "category": "Stepchild Relationship",      
+      "priority": "medium",
+      "mockInterviewOrder": 15,
+      "question": "How would you describe your relationship with your stepparent?",
+      "sampleAnswer": "I am close with my stepparent — he helps me with my schoolwork and calls me every week with my mother.",
+      "guidance": "Describe the real day-to-day relationship and how your stepparent has been part of your life.",
+      "tooltip": "Demonstrates a genuine step-parent-child bond.",
+      "conditions": { "requireIntake": ["child_relationship_type"], "requireCaseTypes": ["child"], "requireIntakeValues": { "child_relationship_type": "Stepchild" } },
+      "inputPlaceholder": "Describe your relationship with your stepparent",
+      "minLength": 10,
+      "maxLength": 400,
+      "variations": [
+        "How would you characterize your bond with your stepparent?",
+        "What is your relationship like with your stepparent?",
+        "Can you describe how you and your stepparent get along?"
+      ]
+    },
+
+    {
+      "id": "who-adopted-you",
+      "category": "Adopted Child Relationship",     
+      "priority": "high",
+      "mockInterviewOrder": 16,
+      "question": "Who adopted you?",
+      "sampleAnswer": "I was adopted by my adoptive mother, Susan Lee, when I was two years old.",
+      "guidance": "Identify your adoptive parent(s) and confirm the legal adoption.",
+      "tooltip": "Identifies the adoptive parent behind the petition.",
+      "conditions": { "requireIntake": ["child_relationship_type"], "requireCaseTypes": ["child"], "requireIntakeValues": { "child_relationship_type": "Adopted Child" } },
+      "inputPlaceholder": "Say who adopted you",
+      "minLength": 5,
+      "maxLength": 300,
+      "variations": [
+        "Who are your adoptive parents?",
+        "Which person legally adopted you?",
+        "Can you tell me who adopted you?"
+      ]
+    },
+    {
+      "id": "age-at-adoption",
+      "category": "Adopted Child Relationship",      
+      "priority": "high",
+      "mockInterviewOrder": 17,
+      "question": "At what age were you adopted?",
+      "sampleAnswer": "I was two years old when the adoption was finalized in 2016.",
+      "guidance": "State your age when the adoption took place; the general rule is adoption before age 16.",
+      "tooltip": "Adoption timing affects whether you qualify as a 'child'.",
+      "conditions": { "requireIntake": ["child_relationship_type", "adoption_case_type"], "requireCaseTypes": ["child"], "requireIntakeValues": { "child_relationship_type": "Adopted Child" } },
+      "inputPlaceholder": "State your age at the time of adoption",
+      "minLength": 3,
+      "maxLength": 200,
+      "variations": [
+        "How old were you when you were adopted?",
+        "At what age did the adoption take place?",
+        "When you were adopted, how old were you?"
+      ]
+    },
+    {
+      "id": "when-living-with-adoptive-parent",
+      "category": "Adopted Child Relationship",     
+      "priority": "high",
+      "mockInterviewOrder": 18,
+      "question": "When did you start living with your adoptive parent?",
+      "sampleAnswer": "I have lived with my adoptive mother ever since she adopted me when I was two years old.",
+      "guidance": "Give the date or period when you started sharing a home with your adoptive parent.",
+      "tooltip": "Residence history is central to adoption-based eligibility.",
+      "conditions": { "requireIntake": ["child_relationship_type"], "requireCaseTypes": ["child"], "requireIntakeValues": { "child_relationship_type": "Adopted Child" } },
+      "inputPlaceholder": "Say when you started living with your adoptive parent",
+      "minLength": 5,
+      "maxLength": 300,
+      "variations": [
+        "From when have you lived with your adoptive parent?",
+        "When did you first move in with your adoptive family?",
+        "How long have you been living with your adoptive parent?"
+      ]
+    },
+    {
+      "id": "two-years-with-adoptive-parent",
+      "category": "Adopted Child Relationship",   
+      "priority": "high",
+      "mockInterviewOrder": 19,
+      "question": "Have you lived with your adoptive parent for at least two years?",
+      "sampleAnswer": "Yes, I have lived with my adoptive mother for ten years, which is much longer than two years.",
+      "guidance": "Answer accurately; some adoption routes require two years of joint residence or custody.",
+      "tooltip": "The two-year custody/residence requirement applies to many adoption cases.",
+      "conditions": { "requireIntake": ["child_relationship_type", "adoption_case_type"], "requireCaseTypes": ["child"], "requireIntakeValues": { "child_relationship_type": "Adopted Child" } },
+      "inputPlaceholder": "Say whether you have lived with your adoptive parent for two years",
+      "minLength": 3,
+      "maxLength": 300,
+      "variations": [
+        "Has your residence with your adoptive parent lasted two years or more?",
+        "Did you live with your adoptive parent for at least two years?",
+        "For how long have you lived with your adoptive parent?"
+      ]
+    },
+    {
+      "id": "adoptive-care-responsibility",
+      "category": "Adopted Child Relationship",    
+      "priority": "medium",
+      "mockInterviewOrder": 20,
+      "question": "Who has been responsible for your care and upbringing?",
+      "sampleAnswer": "My adoptive mother has always been responsible for my care — she handles my schooling, my doctor visits, and my daily needs.",
+      "guidance": "Identify who provided for you and raised you after the adoption.",
+      "tooltip": "Confirms the adoptive parent's real caregiving role.",
+      "conditions": { "requireIntake": ["child_relationship_type"], "requireCaseTypes": ["child"], "requireIntakeValues": { "child_relationship_type": "Adopted Child" } },
+      "inputPlaceholder": "Describe who has been responsible for your care",
+      "minLength": 10,
+      "maxLength": 400,
+      "variations": [
+        "Who has taken care of you and raised you?",
+        "Who has looked after you since the adoption?",
+        "Who has been in charge of your upbringing?"
+      ]
+    },
+    {
+      "id": "who-live-with-now",
+      "category": "Family & Household Background",
+      "tier": "free",
+      "priority": "high",
+      "mockInterviewOrder": 21,
+      "question": "Who do you currently live with?",
+      "sampleAnswer": "I live with my grandmother and my uncle's family in Lahore.",
+      "guidance": "Name the people in your household and your current living arrangement.",
+      "tooltip": "The officer checks your household facts against the petition and interview notes.",
+      "conditions": { "requireIntake": [], "requireCaseTypes": ["child"] },
+      "inputPlaceholder": "Tell us who you live with right now",
+      "minLength": 10,
+      "maxLength": 300,
+      "variations": [
+        "Who are the people living in your home?",
+        "Can you describe your current household?",
+        "Where do you stay now, and with whom?"
+      ]
+    },
+    {
+      "id": "have-siblings",
+      "category": "Family & Household Background",
+      "tier": "free",
+      "priority": "medium",
+      "mockInterviewOrder": 22,
+      "question": "Do you have any brothers or sisters?",
+      "sampleAnswer": "Yes, I have one younger brother named Bilal, who is eight years old.",
+      "guidance": "Count full, half, step, and adopted siblings, and give names or ages if you know them.",
+      "tooltip": "Siblings can be part of the same or related petitions and family records.",
+      "conditions": { "requireIntake": ["has_siblings"], "requireCaseTypes": ["child"], "requireIntakeValues": { "has_siblings": "Yes" } },
+      "inputPlaceholder": "List your brothers and sisters, if any",
+      "minLength": 5,
+      "maxLength": 300,
+      "variations": [
+        "How many brothers and sisters do you have?",
+        "Do you have any sisters or brothers?",
+        "Tell me about the children in your family."
+      ]
+    },
+    {
+      "id": "siblings-location",
+      "category": "Family & Household Background",    
+      "priority": "medium",
+      "mockInterviewOrder": 23,
+      "question": "Where do your siblings currently live?",
+      "sampleAnswer": "My brother lives here in Lahore with my grandmother.",
+      "guidance": "Say where each sibling lives, including any in the United States or abroad.",
+      "tooltip": "Shows your remaining family ties in your home country.",
+      "conditions": { "requireIntake": ["has_siblings"], "requireCaseTypes": ["child"], "requireIntakeValues": { "has_siblings": "Yes" } },
+      "inputPlaceholder": "Describe where your siblings live",
+      "minLength": 10,
+      "maxLength": 300,
+      "variations": [
+        "Do your brothers or sisters live with you now?",
+        "Where are your siblings living these days?",
+        "Are any of your siblings in another country?"
+      ]
+    },
+    {
+      "id": "who-cares-for-you",
+      "category": "Family & Household Background",     
+      "priority": "high",
+      "mockInterviewOrder": 24,
+      "question": "Who takes care of you in your current household?",
+      "sampleAnswer": "My grandmother takes care of me, and my uncle pays for my school and expenses.",
+      "guidance": "Identify who looks after your daily needs, schooling, and money.",
+      "tooltip": "Supports the caretaking facts behind who is responsible for you now.",
+      "conditions": { "requireIntake": [], "requireCaseTypes": ["child"] },
+      "inputPlaceholder": "Describe who looks after you day to day",
+      "minLength": 10,
+      "maxLength": 400,
+      "variations": [
+        "Who looks after you every day?",
+        "Who is responsible for you where you live now?",
+        "Who helps you with school and your daily needs?"
+      ]
+    },
+    {
+      "id": "relatives-in-us",
+      "category": "Family & Household Background",    
+      "priority": "medium",
+      "mockInterviewOrder": 25,
+      "question": "Do you have any relatives living in the United States?",
+      "sampleAnswer": "Besides my mother, I have an aunt and two cousins living in Houston.",
+      "guidance": "Mention relatives in the U.S. and how you are related to them.",
+      "tooltip": "Family ties in the U.S. show your settlement support network.",
+      "conditions": { "requireIntake": [], "requireCaseTypes": ["child"] },
+      "inputPlaceholder": "Tell us about any relatives in the United States",
+      "minLength": 5,
+      "maxLength": 300,
+      "variations": [
+        "Does any other part of your family live in America?",
+        "Are there family members of yours in the United States?",
+        "Which of your relatives reside in the U.S.?"
+      ]
+    },
+    {
+      "id": "live-with-after-arrival",
+      "category": "Family & Household Background",     
+      "priority": "high",
+      "mockInterviewOrder": 26,
+      "question": "Who will you live with after arriving in the United States?",
+      "sampleAnswer": "I will live with my mother in her apartment in Houston.",
+      "guidance": "Name the household you will join and where it is.",
+      "tooltip": "Confirms your living plan matches the petition and the petitioner's support.",
+      "conditions": { "requireIntake": [], "requireCaseTypes": ["child"] },
+      "inputPlaceholder": "Describe who you will live with in the U.S.",
+      "minLength": 10,
+      "maxLength": 300,
+      "variations": [
+        "Where will you stay once you reach the United States?",
+        "Which family member's home will you live in?",
+        "Who will you share a home with in America?"
+      ]
+    },
+    {
+      "id": "legal-custody",
+      "category": "Family & Household Background",     
+      "priority": "high",
+      "mockInterviewOrder": 27,
+      "question": "Who has legal custody of you?",
+      "sampleAnswer": "My mother has legal custody of me; a court granted it to her in 2021.",
+      "guidance": "Name the person holding legal custody and mention any court order if you know one.",
+      "tooltip": "Custody determines who may consent to your immigration and relocation.",
+      "conditions": { "allOf": [ { "field": "applicant_age_range", "operator": "in", "values": ["Under 13", "13–15", "16–17"] } ] },
+      "inputPlaceholder": "Tell us who has legal custody of you",
+      "minLength": 10,
+      "maxLength": 300,
+      "variations": [
+        "Who is legally responsible for you?",
+        "Does a court order say who you live with?",
+        "Who makes the important decisions for you?"
+      ]
+    },
+    {
+      "id": "currently-studying",
+      "category": "Education & Personal Background",     
+      "priority": "medium",
+      "mockInterviewOrder": 28,
+      "question": "Are you currently studying?",
+      "sampleAnswer": "Yes, I am in seventh grade at a school in Lahore.",
+      "guidance": "Answer the same way you did in the intake, and mention your grade if you study.",
+      "tooltip": "School status is a common consistency check against the intake answers.",
+      "conditions": { "requireIntake": [], "requireCaseTypes": ["child"] },
+      "inputPlaceholder": "Tell us whether you are in school",
+      "minLength": 5,
+      "maxLength": 200,
+      "variations": [
+        "Do you go to school right now?",
+        "Are you studying at the moment?",
+        "Are you enrolled in any school or college?"
+      ]
+    },
+    {
+      "id": "grade-level",
+      "category": "Education & Personal Background",      
+      "priority": "medium",
+      "mockInterviewOrder": 29,
+      "question": "What grade or level of education are you currently completing?",
+      "sampleAnswer": "I am completing seventh grade this year.",
+      "guidance": "State your current grade, term, or level of study.",
+      "tooltip": "Helps match your age to your education stage.",
+      "conditions": { "requireIntake": ["currently_studying"], "requireCaseTypes": ["child"], "requireIntakeValues": { "currently_studying": "Yes" } },
+      "inputPlaceholder": "Say which grade or level you are in",
+      "minLength": 5,
+      "maxLength": 200,
+      "variations": [
+        "Which class are you in at school?",
+        "What level of schooling have you reached?",
+        "What grade are you working on this year?"
+      ]
+    },
+    {
+      "id": "school-name",
+      "category": "Education & Personal Background",     
+      "priority": "medium",
+      "mockInterviewOrder": 30,
+      "question": "Which school or educational institution do you attend?",
+      "sampleAnswer": "I attend City Grammar School in Lahore.",
+      "guidance": "Give your school's name and city; say 'I'm homeschooled' if that applies.",
+      "tooltip": "School records can support your age and identity documents.",
+      "conditions": { "requireIntake": ["currently_studying"], "requireCaseTypes": ["child"], "requireIntakeValues": { "currently_studying": "Yes" } },
+      "inputPlaceholder": "Name your school and where it is",
+      "minLength": 5,
+      "maxLength": 200,
+      "variations": [
+        "What is the name of your school?",
+        "Where do you go to school?",
+        "Which school do you study at?"
+      ]
+    },
+    {
+      "id": "free-time-activities",
+      "category": "Education & Personal Background",     
       "priority": "low",
+      "mockInterviewOrder": 31,
+      "question": "What do you usually do during your free time?",
+      "sampleAnswer": "I play cricket with my friends and read storybooks.",
+      "guidance": "Speak naturally about your hobbies and daily routine.",
+      "tooltip": "Simple personal questions check that your answers sound relaxed and truthful.",
+      "conditions": { "requireIntake": [], "requireCaseTypes": ["child"] },
+      "inputPlaceholder": "Describe what you enjoy doing",
+      "minLength": 10,
+      "maxLength": 300,
       "variations": [
-        "How do you feel about the prospect of relocating to the United States?",
-        "What are your expectations regarding your upcoming move to the U.S.?",
-        "Do you anticipate your relocation to the United States with enthusiasm?",
-        "Could you share your feelings about the opportunity to reside in the U.S.?"
+        "What do you like to do after school?",
+        "How do you spend your holidays?",
+        "What are your hobbies?"
       ]
     },
     {
-      "id": "travel-history-us",
-      "category": "Travel",
-      "question": "Have you ever been to the United States before?",
-      "suggestedAnswer": "{{previous_us_visits ? 'Yes, I have visited before and followed all visa conditions.' : 'No, I have never been to the United States before.'}}",
-      "guidance": "Answer honestly.",
-      "tooltip": "Checks past immigration compliance.",
-      "priority": "high",
-      "variations": [
-        "Have you previously traveled to the U.S.?",
-        "Can you confirm if you have visited the United States on a prior occasion?",
-        "Is this your first time seeking entry to the United States?",
-        "Do you have any previous travel experience within the U.S.?"
-      ]
-    },
-    {
-      "id": "visa-refusal",
-      "category": "Security",
-      "question": "Have you ever been denied a visa?",
-      "suggestedAnswer": "{{previous_visa_refusal ? 'Yes, and the details have been disclosed honestly in my application.' : 'No, I have never been denied a visa.'}}",
-      "guidance": "Honesty is critical.",
-      "tooltip": "Past refusals are carefully reviewed.",
-      "priority": "high",
-      "variations": [
-        "Has your application for a visa ever been refused by any country?",
-        "Have you experienced any previous visa denials?",
-        "Could you disclose if you have ever been refused a travel document or entry permit?",
-        "Have you ever had a visa application rejected?"
-      ]
-    },
-    {
-      "id": "criminal-record",
-      "category": "Security",
-      "question": "Do you have any criminal record?",
-      "suggestedAnswer": "{{criminal_history ? 'Yes, and it has been disclosed truthfully.' : 'No, I do not have any criminal record.'}}",
-      "guidance": "Always answer truthfully.",
-      "tooltip": "Security clearance requirement.",
-      "priority": "high",
-      "variations": [
-        "Do you have a history of criminal convictions?",
-        "Have you ever been found guilty of a criminal offense?",
-        "Is there any existing criminal history associated with your name?",
-        "Can you confirm if you have any past legal offenses?"
-      ]
-    },
-    {
-      "id": "step-parent-marriage",
-      "category": "Special Cases",
-      "question": "When did your parent marry your step-parent?",
-      "suggestedAnswer": "My parent married my step-parent, and we have established a respectful family relationship.",
-      "guidance": "Only answer if applicable.",
-      "tooltip": "Important for stepchild eligibility verification.",
+      "id": "education-plans-us",
+      "category": "Education & Personal Background",     
       "priority": "medium",
-      "skipIf": [
-        {
-          "field": "relationship_type",
-          "equals": "Biological"
-        },
-        {
-          "field": "sponsor_relationship",
-          "notEquals": "Step-parent"
-        }
-      ],
+      "mockInterviewOrder": 32,
+      "question": "What are your plans for continuing your education in the United States?",
+      "sampleAnswer": "I will join eighth grade at the school near my mother's apartment in Houston.",
+      "guidance": "Mention the grade or level you plan to enter and where, if you know.",
+      "tooltip": "Shows your relocation plan includes continuing school.",
+      "conditions": { "requireIntake": [], "requireCaseTypes": ["child"] },
+      "inputPlaceholder": "Describe your school plans in the U.S.",
+      "minLength": 10,
+      "maxLength": 300,
       "variations": [
-        "Could you provide the date your biological parent and step-parent were married?",
-        "On what date did your parent enter into marriage with your step-parent?",
-        "When did the marriage between your biological parent and their spouse take place?",
-        "What is the wedding date of your parent and their current spouse?"
+        "Will you keep studying when you move to America?",
+        "What school do you hope to join in the United States?",
+        "How will you continue your education there?"
       ]
     },
     {
-      "id": "step-parent-relationship",
-      "category": "Special Cases",
-      "question": "Do you know your step-parent?",
-      "suggestedAnswer": "Yes, I know my step-parent and we have a respectful and positive relationship.",
-      "guidance": "Answer honestly. It's okay if the relationship is limited but be truthful.",
-      "tooltip": "Evaluates family integration in step-parent scenarios.",
+      "id": "travel-outside-home-country",
+      "category": "Travel & Immigration History",     
       "priority": "medium",
-      "skipIf": [
-        {
-          "field": "relationship_type",
-          "equals": "Biological"
-        },
-        {
-          "field": "sponsor_relationship",
-          "notEquals": "Step-parent"
-        }
-      ],
+      "mockInterviewOrder": 33,
+      "question": "Have you ever travelled outside your home country?",
+      "sampleAnswer": "Yes, I visited Saudi Arabia with my grandmother for Umrah in 2023.",
+      "guidance": "List any trips abroad, with the country and rough year.",
+      "tooltip": "Travel history appears in passports and must match your answers.",
+      "conditions": { "requireIntake": [], "requireCaseTypes": ["child"] },
+      "inputPlaceholder": "Tell us about any trips outside your country",
+      "minLength": 5,
+      "maxLength": 300,
       "variations": [
-        "Are you familiar with your step-parent?",
-        "What is your relationship like with your step-parent?",
-        "How well do you know your step-parent?",
-        "Have you spent time with your step-parent?"
+        "Have you visited any other countries before?",
+        "Do you have any travel history on your passport?",
+        "Have you ever been abroad with your family?"
       ]
     },
     {
-      "id": "living-with-parent",
-      "category": "Special Cases",
-      "question": "Do you currently live with your biological parent?",
-      "suggestedAnswer": "{{lived_with_parent ? 'Yes, I currently live with my parent.' : 'No, but I maintain a relationship with my parent and we stay in regular contact.'}}",
-      "guidance": "Explain clearly if not living together.",
-      "tooltip": "Evaluates custody and relationship consistency.",
-      "priority": "high",
+      "id": "visited-us-before",
+      "category": "Travel & Immigration History",  
+      "priority": "medium",
+      "mockInterviewOrder": 34,
+      "question": "Have you ever visited the United States?",
+      "sampleAnswer": "No, I have never been to the United States before.",
+      "guidance": "Say yes or no; if yes, give when and for how long.",
+      "tooltip": "Prior U.S. visits are visible to the officer in their records.",
+      "conditions": { "requireIntake": [], "requireCaseTypes": ["child"] },
+      "inputPlaceholder": "Tell us if you have ever been to the U.S.",
+      "minLength": 5,
+      "maxLength": 300,
       "variations": [
-        "Are you presently residing with your biological parent?",
-        "Is your current residence shared with your biological parent?",
-        "Do you currently cohabit with your biological parent?",
-        "Can you confirm if your biological parent is a member of your current household?"
+        "Have you been to America before?",
+        "Do you have any past trips to the United States?",
+        "Have you ever traveled to the U.S.?"
       ]
     },
     {
-      "id": "other-parent-awareness",
-      "category": "Special Cases",
-      "question": "Does your other parent know that you are moving to the United States?",
-      "suggestedAnswer": "Yes, my other parent is aware of my move and there are no objections.",
-      "guidance": "Ensure consistency with legal/custody documents.",
-      "tooltip": "Prevents potential custody or legal issues.",
-      "priority": "high",
+      "id": "applied-us-visa-before",
+      "category": "Travel & Immigration History",   
+      "priority": "medium",
+      "mockInterviewOrder": 35,
+      "question": "Have you ever applied for a U.S. visa before?",
+      "sampleAnswer": "Yes, my mother applied for a visitor visa for me two years ago.",
+      "guidance": "Mention any past U.S. visa application, even if you never travelled.",
+      "tooltip": "All prior applications exist in consular records.",
+      "conditions": { "requireIntake": [], "requireCaseTypes": ["child"] },
+      "inputPlaceholder": "Describe any earlier U.S. visa applications",
+      "minLength": 5,
+      "maxLength": 300,
       "variations": [
-        "Is the other parent aware of your plans to move to the United States?",
-        "Have you informed the other parent about your intention to immigrate to the U.S.?",
-        "Does the other parent have any objections to your relocation to the United States?",
-        "What is the other parent's stance on your move to the U.S.?"
+        "Is this your first U.S. visa application?",
+        "Have you applied for any American visa in the past?",
+        "Was there an earlier visa application for you?"
+      ]
+    },
+    {
+      "id": "visa-refusal-details",
+      "category": "Travel & Immigration History",    
+      "priority": "high",
+      "mockInterviewOrder": 36,
+      "question": "Have you ever been refused a U.S. visa?",
+      "sampleAnswer": "Yes, the visitor visa was refused because we were missing a school document.",
+      "guidance": "If a refusal happened, state the visa type, year, and the reason given.",
+      "tooltip": "Refusals must be explained consistently with the record.",
+      "conditions": { "anyOf": [ { "field": "previous_visa_refusal", "operator": "equals", "value": "Yes" }, { "field": "previous_visa_refusal", "operator": "equals", "value": "Not Sure" } ] },
+      "inputPlaceholder": "Explain any past visa refusal",
+      "minLength": 10,
+      "maxLength": 400,
+      "variations": [
+        "Was any U.S. visa application for you ever denied?",
+        "Has an officer ever refused your visa before?",
+        "Do you have any previous U.S. visa refusals?"
+      ]
+    },
+    {
+      "id": "immigration-violation-details",
+      "category": "Travel & Immigration History",     
+      "priority": "high",
+      "mockInterviewOrder": 37,
+      "question": "Have you ever overstayed a visa or violated any immigration conditions?",
+      "sampleAnswer": "No, I have never overstayed a visa or broken any immigration rules.",
+      "guidance": "Answer plainly and honestly; if something happened, say what and when.",
+      "tooltip": "Immigration violations affect admissibility and must be disclosed.",
+      "conditions": { "anyOf": [ { "field": "immigration_violation", "operator": "equals", "value": "Yes" }, { "field": "immigration_violation", "operator": "equals", "value": "Not Sure" } ] },
+      "inputPlaceholder": "Tell us about any immigration violations, if any",
+      "minLength": 10,
+      "maxLength": 400,
+      "variations": [
+        "Have you ever stayed somewhere past your visa's expiry?",
+        "Has anyone said you broke an immigration rule?",
+        "Did you ever go against the conditions of a visa?"
+      ]
+    },
+    {
+      "id": "why-moving-to-us",
+      "category": "Relocation & Future Plans",
+      "tier": "free",
+      "priority": "high",
+      "mockInterviewOrder": 38,
+      "question": "Why are you moving to the United States?",
+      "sampleAnswer": "I am moving to live with my mother in Houston; she is a U.S. citizen and petitioned for me.",
+      "guidance": "Give the core reason: reuniting and living with your petitioner.",
+      "tooltip": "The officer confirms your purpose matches the IR-2 petition.",
+      "conditions": { "requireIntake": [], "requireCaseTypes": ["child"] },
+      "inputPlaceholder": "Explain why you are moving to the U.S.",
+      "minLength": 10,
+      "maxLength": 400,
+      "variations": [
+        "What is the reason for your move to America?",
+        "Why do you want to live in the United States?",
+        "Can you tell me why you are emigrating?"
+      ]
+    },
+    {
+      "id": "where-will-live-us",
+      "category": "Relocation & Future Plans",    
+      "priority": "high",
+      "mockInterviewOrder": 39,
+      "question": "Where will you live after arriving in the United States?",
+      "sampleAnswer": "I will live at my mother's apartment in Houston, Texas.",
+      "guidance": "Give the city and the address if you know it.",
+      "tooltip": "The settlement address should match the petitioner's records.",
+      "conditions": { "requireIntake": [], "requireCaseTypes": ["child"] },
+      "inputPlaceholder": "Describe where you will live in the U.S.",
+      "minLength": 10,
+      "maxLength": 300,
+      "variations": [
+        "What city will you live in when you arrive?",
+        "Where is your home going to be in America?",
+        "Do you know the address where you will stay?"
+      ]
+    },
+    {
+      "id": "who-care-in-us",
+      "category": "Relocation & Future Plans",   
+      "priority": "high",
+      "mockInterviewOrder": 40,
+      "question": "Who will take care of you in the United States?",
+      "sampleAnswer": "My mother will take care of me, and my aunt nearby will help us too.",
+      "guidance": "Name who will support you daily, with school and money.",
+      "tooltip": "Confirms a realistic caretaking plan for your move.",
+      "conditions": { "requireIntake": [], "requireCaseTypes": ["child"] },
+      "inputPlaceholder": "Tell us who will look after you there",
+      "minLength": 10,
+      "maxLength": 300,
+      "variations": [
+        "Who will be responsible for you in America?",
+        "Who will help you settle and go to school?",
+        "Who will look after your daily needs there?"
+      ]
+    },
+    {
+      "id": "moving-alone-or-with",
+      "category": "Relocation & Future Plans",   
+      "priority": "medium",
+      "mockInterviewOrder": 41,
+      "question": "Will you be moving to the United States alone or with someone?",
+      "sampleAnswer": "My grandmother will travel with me, and my mother will meet us at the airport.",
+      "guidance": "Say who accompanies you, or that you will travel with an unaccompanied-minor service.",
+      "tooltip": "A child's travel arrangements should be clear and consistent.",
+      "conditions": { "requireIntake": [], "requireCaseTypes": ["child"] },
+      "inputPlaceholder": "Describe how you will travel to the U.S.",
+      "minLength": 5,
+      "maxLength": 300,
+      "variations": [
+        "Is anyone traveling with you to America?",
+        "Will you fly alone or with a family member?",
+        "Who will accompany you on your trip?"
+      ]
+    },
+    {
+      "id": "looking-forward-us",
+      "category": "Relocation & Future Plans",   
+      "priority": "low",
+      "mockInterviewOrder": 42,
+      "question": "What are you most looking forward to about living in the United States?",
+      "sampleAnswer": "I am most looking forward to going to school in America and living with my mother again.",
+      "guidance": "Answer honestly in your own words; keep it simple.",
+      "tooltip": "Shows your expectations match a real resettlement plan.",
+      "conditions": { "requireIntake": [], "requireCaseTypes": ["child"] },
+      "inputPlaceholder": "Share what excites you about the move",
+      "minLength": 10,
+      "maxLength": 300,
+      "variations": [
+        "What are you most excited about in America?",
+        "What do you hope for in your new life there?",
+        "What will you enjoy most about living in the U.S.?"
+      ]
+    },
+    {
+      "id": "understand-living-with-petitioner",
+      "category": "Relocation & Future Plans",   
+      "priority": "medium",
+      "mockInterviewOrder": 43,
+      "question": "Do you understand that you will be living with your petitioner in the United States?",
+      "sampleAnswer": "Yes, I understand that I will live with my mother in Houston.",
+      "guidance": "Confirm you know the arrangement and who you will live with.",
+      "tooltip": "The interview checks that you understand the petition's purpose.",
+      "conditions": { "requireIntake": [], "requireCaseTypes": ["child"] },
+      "inputPlaceholder": "Confirm you understand the living plan",
+      "minLength": 5,
+      "maxLength": 200,
+      "variations": [
+        "Do you know you will live with your petitioner there?",
+        "Are you aware you will be staying with your mother in America?",
+        "Is it clear to you how you will settle in the U.S.?"
+      ]
+    },
+    {
+      "id": "other-parent-knows-supports",
+      "category": "Applicant & Petitioner Relationship",    
+      "priority": "high",
+      "mockInterviewOrder": 44,
+      "question": "Does your other biological parent know about and support your move to the United States?",
+      "sampleAnswer": "Yes, my father knows about the move and he supports it; he signed the consent form.",
+      "guidance": "If applicable, mention written consent or a court order allowing the move.",
+      "tooltip": "The other parent's consent can be required for a minor's emigration.",
+      "conditions": { "anyOf": [ { "field": "child_relationship_type", "operator": "equals", "value": "Biological Child" }, { "field": "child_relationship_type", "operator": "equals", "value": "Stepchild" } ] },
+      "inputPlaceholder": "Tell us what your other biological parent thinks",
+      "minLength": 10,
+      "maxLength": 400,
+      "variations": [
+        "Is your other parent aware that you are moving to America?",
+        "Does your other parent agree with this move?",
+        "Has your other parent given permission for you to go?"
+      ]
+    },
+    {
+      "id": "who-filed-petition",
+      "category": "Applicant & Petitioner Relationship",     
+      "priority": "medium",
+      "mockInterviewOrder": 45,
+      "question": "Who filed the immigration petition on your behalf?",
+      "sampleAnswer": "My mother filed the petition, and her lawyer helped with the forms.",
+      "guidance": "Name the petitioner who filed, and anyone who helped.",
+      "tooltip": "Only the U.S. citizen parent can file the IR-2 petition.",
+      "conditions": { "requireIntake": [], "requireCaseTypes": ["child"] },
+      "inputPlaceholder": "Say who filed your petition",
+      "minLength": 5,
+      "maxLength": 300,
+      "variations": [
+        "Who submitted the case to USCIS for you?",
+        "Which person started the immigration process for you?",
+        "Do you know who sent in your petition?"
+      ]
+    },
+    {
+      "id": "why-petitioner-filed",
+      "category": "Applicant & Petitioner Relationship",     
+      "priority": "medium",
+      "mockInterviewOrder": 46,
+      "question": "Do you know why your petitioner filed an immigration petition for you?",
+      "sampleAnswer": "Yes, because I am her child and she wants our family to live together again.",
+      "guidance": "Explain the family-reunification reason in your own words.",
+      "tooltip": "Confirms you understand the purpose of the petition.",
+      "conditions": { "requireIntake": [], "requireCaseTypes": ["child"] },
+      "inputPlaceholder": "Explain why your petitioner filed for you",
+      "minLength": 10,
+      "maxLength": 300,
+      "variations": [
+        "Why did your mother or father petition for you?",
+        "Do you understand the reason behind your case?",
+        "For what purpose was the petition made for you?"
+      ]
+    },
+    {
+      "id": "siblings-same-adoptive-parent",
+      "category": "Adopted Child Relationship",    
+      "priority": "medium",
+      "mockInterviewOrder": 47,
+      "question": "Do you have any siblings who were adopted by the same adoptive parent?",
+      "sampleAnswer": "Yes, my sister was adopted by my mother in the same year as me.",
+      "guidance": "Relevant to the sibling exception route; name the sibling and the adoption if it applies.",
+      "tooltip": "Sibling adoptions can affect the age-18 sibling exception eligibility.",
+      "conditions": { "requireIntake": ["child_relationship_type"], "requireCaseTypes": ["child"], "requireIntakeValues": { "child_relationship_type": "Adopted Child" } },
+      "inputPlaceholder": "Tell us about any adopted siblings",
+      "minLength": 5,
+      "maxLength": 300,
+      "variations": [
+        "Were any of your brothers or sisters adopted too?",
+        "Do you have a sibling with the same adoptive parents?",
+        "Was your sister or brother adopted by your mother or father as well?"
       ]
     }
   ]

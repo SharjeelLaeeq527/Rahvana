@@ -6,7 +6,7 @@ import { ArrowRight, Clock3, FileCheck2, Search, ShieldCheck } from "lucide-reac
 import { ExplorerJourneyCard } from "./journey-explorer-card";
 import { ExplorerSupportSection } from "./journey-explorer-support";
 import { EXPLORER_CARDS } from "../data/journeys";
-import { IR5_ENABLED } from "@/lib/feature-flags";
+import { IR5_ENABLED, IR2_ENABLED } from "@/lib/feature-flags";
 
 const HERO_BADGES = [
   {
@@ -33,9 +33,13 @@ const HERO_BADGES = [
 export function JourneyExplorerPage() {
   const [query, setQuery] = useState("");
 
-  // IR-5 is hidden on production (see lib/feature-flags) until it launches.
+  // Unlaunched journeys are hidden on production (see lib/feature-flags) until they launch.
   const baseCards = useMemo(
-    () => EXPLORER_CARDS.filter((card) => IR5_ENABLED || card.slug !== "ir-5"),
+    () =>
+      EXPLORER_CARDS.filter(
+        (card) =>
+          (IR5_ENABLED || card.slug !== "ir-5") && (IR2_ENABLED || card.slug !== "ir-2")
+      ),
     []
   );
 

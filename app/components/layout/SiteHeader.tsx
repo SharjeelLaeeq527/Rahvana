@@ -371,6 +371,7 @@ export function SiteHeader({
   const [confirmSignOutOpen, setConfirmSignOutOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [quickAccessOpen, setQuickAccessOpen] = useState(false);
+  const [mobileUtilitiesOpen, setMobileUtilitiesOpen] = useState(false);
   const quickAccessRef = useRef<HTMLDivElement>(null);
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
 
@@ -500,6 +501,7 @@ export function SiteHeader({
     setIsMenuOpen(false);
     setNotificationsOpen(false);
     setQuickAccessOpen(false);
+    setMobileUtilitiesOpen(false);
   }, [pathname]);
   const { profile, isLoading, user: authUser } = useAuth();
   const resolvedUser = user ?? authUser;
@@ -836,7 +838,7 @@ export function SiteHeader({
   const isHomepageHeroState = pathname === "/" && !scrolled;
   return (
     <header
-      className={`fixed top-0 right-0 left-0 z-100 w-full transition-all duration-300 ${
+      className={`fixed top-0 right-0 left-0 z-100 w-full transition-all duration-300 max-[767px]:pb-14 ${
         isHomeHeroState || isHomeHeroP2State || isHomepageHeroState
           ? "border-none bg-transparent py-4 shadow-none"
           : "bg-background py-2 shadow-lg"
@@ -851,10 +853,10 @@ export function SiteHeader({
       {/* Desktop navigation */}
       {/* ------------------------------------------------------------------ */}
       <div
-        className={`flex w-full items-center justify-between px-8 ${isHomeHeroState ? "text-white" : ""}`}
+        className={`flex w-full items-center justify-between px-8 max-lg:px-4 ${isHomeHeroState ? "text-white" : ""}`}
       >
         {/* Left side */}
-        <div className="flex items-center gap-4">
+        <div className="flex min-w-0 items-center gap-4">
           {/* Mobile Menu Trigger */}
           <HydrationSafeButton
             className={`rounded-md p-1 transition-colors lg:hidden ${
@@ -1148,7 +1150,7 @@ export function SiteHeader({
 
         {/* Right side – Search + Login */}
 
-        <div className="flex items-center gap-3">
+        <div className="relative flex items-center gap-3 max-lg:static">
           {/* Language Toggle */}
           {/* <HydrationSafeButton
             onClick={() => setLanguage(language === "en" ? "ur" : "en")}
@@ -1161,13 +1163,35 @@ export function SiteHeader({
             </span>
           </HydrationSafeButton> */}
 
-          {isLoading && !resolvedUser
-            ? null
-            : isSignedIn && !isJourneyEnvironment && <WalletBalancePill tone={isHomeHeroState ? "hero" : "default"} />}
+          {isSignedIn && (
+            <HydrationSafeButton
+              aria-label="Open quick actions"
+              aria-expanded={mobileUtilitiesOpen}
+              onClick={() => {
+                setMobileUtilitiesOpen((prev) => !prev);
+                setNotificationsOpen(false);
+                setQuickAccessOpen(false);
+              }}
+              className="absolute top-3 right-16 flex h-10 w-10 items-center justify-center rounded-full border-0 bg-transparent text-[#0d7377] shadow-none max-[767px]:flex min-[768px]:hidden"
+            >
+              <LayoutGrid className="h-5 w-5" aria-hidden="true" />
+            </HydrationSafeButton>
+          )}
 
-          {isLoading && !resolvedUser
-            ? null
-            : isSignedIn && (
+          <div
+            className={`flex items-center gap-1.5 max-[767px]:absolute max-[767px]:top-[52px] max-[767px]:right-4 max-[767px]:left-4 max-[767px]:justify-between max-[767px]:rounded-2xl max-[767px]:border max-[767px]:border-white/60 max-[767px]:bg-white/80 max-[767px]:px-2 max-[767px]:py-1.5 max-[767px]:shadow-lg max-[767px]:backdrop-blur-md dark:max-[767px]:border-slate-700/70 dark:max-[767px]:bg-slate-950/75 ${
+              mobileUtilitiesOpen ? "max-[767px]:flex" : "max-[767px]:hidden"
+            }`}
+          >
+            {isLoading && !resolvedUser
+              ? null
+              : isSignedIn && !isJourneyEnvironment && (
+                  <WalletBalancePill tone={isHomeHeroState ? "hero" : "default"} />
+                )}
+
+            {isLoading && !resolvedUser
+              ? null
+              : isSignedIn && (
                 <div className="relative" ref={notifRef}>
                   <HydrationSafeButton
                     variant="ghost"
@@ -1218,7 +1242,7 @@ export function SiteHeader({
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 8 }}
                         transition={{ duration: 0.18, ease: "easeOut" }}
-                        className="fixed top-[76px] right-0 left-1/2 z-9999 mt-1 w-[calc(100vw-32px)] max-w-sm origin-top -translate-x-1/2 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl md:absolute md:top-full md:right-0 md:left-auto md:w-80 md:origin-top-right md:-translate-x-0"
+                        className="fixed top-[60px] right-0 left-1/2 z-9999 mt-1 w-[calc(100vw-32px)] max-w-sm origin-top -translate-x-1/2 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl md:absolute md:top-full md:right-0 md:left-auto md:w-80 md:origin-top-right md:-translate-x-0"
                       >
                         {/* Header */}
                         <div className="border-border bg-muted/30 flex items-center justify-between border-b px-4 py-3">
@@ -1378,8 +1402,8 @@ export function SiteHeader({
                 </div>
               )}
 
-          {/* ── Favorite Items Button (account-wide, hidden inside journeys) ── */}
-          {isSignedIn && !isJourneyEnvironment && (
+            {/* ── Favorite Items Button (account-wide, hidden inside journeys) ── */}
+            {isSignedIn && !isJourneyEnvironment && (
             <div className="relative" ref={quickAccessRef}>
               <HydrationSafeButton
                 aria-label="Quick Access List"
@@ -1432,7 +1456,7 @@ export function SiteHeader({
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 8 }}
                     transition={{ duration: 0.18, ease: "easeOut" }}
-                    className="fixed top-[76px] right-0 left-1/2 z-[9999] mt-1 w-[calc(100vw-32px)] max-w-sm origin-top -translate-x-1/2 overflow-visible rounded-xl border border-slate-200 bg-white shadow-xl md:absolute md:top-full md:right-0 md:left-auto md:w-72 md:origin-top-right md:-translate-x-0"
+                    className="fixed top-[60px] right-0 left-1/2 z-[9999] mt-1 w-[calc(100vw-32px)] max-w-sm origin-top -translate-x-1/2 overflow-visible rounded-xl border border-slate-200 bg-white shadow-xl md:absolute md:top-full md:right-0 md:left-auto md:w-72 md:origin-top-right md:-translate-x-0"
                   >
                     {/* Header */}
                     <div className="border-border bg-muted/30 flex items-center justify-between rounded-t-xl border-b px-4 py-2.5">
@@ -1605,6 +1629,7 @@ export function SiteHeader({
               </AnimatePresence>
             </div>
           )}
+          </div>
 
           {/* LOGIN / PROFILE toggle */}
           {isLoading && !resolvedUser ? (
@@ -1612,7 +1637,7 @@ export function SiteHeader({
           ) : user ? (
             <div className="flex items-center gap-2">
               <div
-                className="relative"
+                className="relative max-[767px]:absolute max-[767px]:top-3 max-[767px]:right-4"
                 ref={profileRef}
                 onPointerEnter={(e) => {
                   // Ignore touch pointer types to prevent double-triggering on mobile
@@ -1627,22 +1652,13 @@ export function SiteHeader({
                     if (menuTimeoutRef.current) clearTimeout(menuTimeoutRef.current);
                     setActiveMenu(activeMenu === "profile" ? null : "profile");
                   }}
-                  className={`mb-2 flex h-auto w-auto items-center justify-center rounded-none p-0 text-lg font-semibold shadow-none transition-all ${
+                  className={`mb-2 flex h-10 w-10 items-center justify-center rounded-full border-0 bg-transparent p-0 text-lg font-semibold shadow-none transition-all max-[767px]:mb-0 ${
                     isHomeHeroState
                       ? "text-white"
                       : isHomeHeroP2State
                         ? "text-[#0d7377]"
                         : "text-rahvana-primary"
                   }`}
-                  style={{
-                    background: "none",
-                    boxShadow: "none",
-                    border: "none",
-                    width: "auto",
-                    height: "auto",
-                    padding: 0,
-                    borderRadius: 0,
-                  }}
                 >
                   <span
                     style={
@@ -1652,11 +1668,7 @@ export function SiteHeader({
                           ? { color: "#0d7377" }
                           : { color: "var(--rahvana-primary, #0d7377)" }
                     }
-                    // className={`flex items-center justify-center w-[34px] h-[34px] rounded-full border-[1.5px] text-[15px] font-bold transition-colors ${
-                    //   isHomeHeroState || isHomeHeroP2State
-                    //     ? "bg-white/20 border-white/40 text-white"
-                    //     : "bg-[#0d7377]/10 border-[#0d7377]/30 text-[#0d7377]"
-                    // }`}
+                    className="flex h-full w-full items-center justify-center"
                   >
                     {(
                       profile?.full_name ||
@@ -1675,7 +1687,7 @@ export function SiteHeader({
                       initial={{ opacity: 0, scale: 0.95, y: 10 }}
                       animate={{ opacity: 1, scale: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                      className="absolute top-full right-0 z-9999 mt-1 max-h-[80vh] w-76 origin-top-right transform overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl"
+                      className="absolute top-full right-0 z-9999 mt-2 max-h-[80vh] w-76 origin-top-right transform overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl"
                     >
                       {/* Header */}
                       <div className="border-border bg-muted/30 border-b px-5 py-4">

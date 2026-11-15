@@ -82,6 +82,10 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
     [data.journey_type]
   );
 
+  // Legal-review state of the journey's content (`content_review` in its JSON, e.g. ir-2.json).
+  const reviewStatus = (data as { content_review?: { status?: string } }).content_review?.status;
+  const contentUnderReview = !!reviewStatus && reviewStatus !== "approved";
+
   const { showToast } = useToast();
   const { user } = useAuth();
 
@@ -199,7 +203,10 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
   return (
     <div className="animate-in fade-in flex min-h-screen w-full flex-col bg-[#f4f7fb] pt-16 font-sans text-[#1c2b3a] duration-500">
       {/* Top Navigation */}
-      <nav data-journey-header className="sticky top-16 z-40 flex h-[52px] shrink-0 items-center gap-3 border-b border-[#d0e4f7] bg-white px-5">
+      <nav
+        data-journey-header
+        className="sticky top-16 z-40 flex h-[52px] shrink-0 items-center gap-3 border-b border-[#d0e4f7] bg-white px-5"
+      >
         {/* Dynamic Back / Logo */}
         <div className="flex items-center gap-3">
           {(view !== "dashboard" || activeToolKey || journeyOverlayName) && (
@@ -236,7 +243,9 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
               disabled={view === "dashboard" && !activeToolKey && !journeyOverlayName}
             >
               <LayoutDashboard size={12} strokeWidth={3} aria-hidden="true" />
-              <span className={`bc-text${view !== "dashboard" || activeToolKey || journeyOverlayName ? " bc-text--dashboard" : ""}`}>
+              <span
+                className={`bc-text${view !== "dashboard" || activeToolKey || journeyOverlayName ? "bc-text--dashboard" : ""}`}
+              >
                 Dashboard
               </span>
             </button>
@@ -276,36 +285,42 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
             </li>
           )}
 
-          {!activeToolKey && view === "step" && currentStepDisplayNum !== null && journeyOverlayName && (
-            <li className="breadcrumb-sep-item">
-              <ChevronRight
-                size={10}
-                className="breadcrumb-sep"
-                strokeWidth={3}
-                aria-hidden="true"
-              />
-              <button
-                className="breadcrumb-item breadcrumb-link"
-                onClick={() => window.dispatchEvent(new Event("journey-overlay-close"))}
-              >
-                <span className="bc-text">Step {currentStepDisplayNum}</span>
-              </button>
-            </li>
-          )}
+          {!activeToolKey &&
+            view === "step" &&
+            currentStepDisplayNum !== null &&
+            journeyOverlayName && (
+              <li className="breadcrumb-sep-item">
+                <ChevronRight
+                  size={10}
+                  className="breadcrumb-sep"
+                  strokeWidth={3}
+                  aria-hidden="true"
+                />
+                <button
+                  className="breadcrumb-item breadcrumb-link"
+                  onClick={() => window.dispatchEvent(new Event("journey-overlay-close"))}
+                >
+                  <span className="bc-text">Step {currentStepDisplayNum}</span>
+                </button>
+              </li>
+            )}
 
-          {!activeToolKey && (journeyOverlayName || (view === "step" && currentStepDisplayNum !== null)) && (
-            <li className="breadcrumb-sep-item">
-              <ChevronRight
-                size={10}
-                className="breadcrumb-sep"
-                strokeWidth={3}
-                aria-hidden="true"
-              />
-              <span className="breadcrumb-item breadcrumb-current">
-                <span className="bc-text">{journeyOverlayName || `Step ${currentStepDisplayNum}`}</span>
-              </span>
-            </li>
-          )}
+          {!activeToolKey &&
+            (journeyOverlayName || (view === "step" && currentStepDisplayNum !== null)) && (
+              <li className="breadcrumb-sep-item">
+                <ChevronRight
+                  size={10}
+                  className="breadcrumb-sep"
+                  strokeWidth={3}
+                  aria-hidden="true"
+                />
+                <span className="breadcrumb-item breadcrumb-current">
+                  <span className="bc-text">
+                    {journeyOverlayName || `Step ${currentStepDisplayNum}`}
+                  </span>
+                </span>
+              </li>
+            )}
         </ol>
 
         <div className="ml-auto flex shrink-0 items-center gap-2">
@@ -358,6 +373,18 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
           )}
         </div>
       </nav>
+
+      {/* Journeys whose guidance is still in legal review (ir-2.json `content_review`) say so.
+          Journeys without the field (IR-5 today) render nothing here. */}
+      {/* {contentUnderReview && (
+        <div
+          role="note"
+          className="border-b border-amber-200 bg-amber-50 px-5 py-2 text-center text-[12px] font-medium text-amber-900"
+        >
+          This journey&apos;s guidance is being reviewed by a U.S. immigration attorney and may
+          change. Check the official USCIS and Department of State sources before you act on it.
+        </div>
+      )} */}
 
       {/* ── Main Content ── */}
       <main className="roadmap-main">

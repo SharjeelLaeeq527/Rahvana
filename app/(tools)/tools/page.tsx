@@ -10,6 +10,7 @@ import {
   MessageSquare,
   Calculator,
   Clock,
+  CalendarCheck,
   Camera,
   Files,
   PenTool,
@@ -111,6 +112,19 @@ const TOOLS: Tool[] = [
     iconSrc: "/icons/interview-prep.svg",
     badge: "Live",
     entitlementFeature: "basic_interview_prep",
+  },
+
+  {
+    // Free in every mode: no entitlementFeature and no wallet catalog entry, so the card is
+    // always owned and opens directly.
+    id: "cspa-age-checker",
+    title: "CSPA Age-Out Checker",
+    description: "Check if your child can still apply as a child after turning 21.",
+    category: "AI & Planning",
+    href: "/cspa-age-checker",
+    icon: CalendarCheck,
+    iconSrc: "/icons/dq-case-tracker.svg",
+    badge: "Live",
   },
 
   // Money & Sponsorship
@@ -692,6 +706,7 @@ function ToolCard({
                       "interview-prep": "MessageSquare",
                       "sponsorship-calculator": "Calculator",
                       "queue-watch": "Clock",
+                      "cspa-age-checker": "Clock",
                       "photo-booth": "Camera",
                       "pdf-toolkit": "Files",
                       "snap-sign": "PenTool",

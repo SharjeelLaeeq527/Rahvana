@@ -24,6 +24,22 @@ import { useCandidate } from "@/app/context/CandidateContext";
 import type { CandidateProfile, CandidateRelation } from "@/types/candidate";
 import { getJourneyHrefByType } from "@/lib/constants/routes";
 import { AddCandidateModal } from "./AddCandidateModal";
+import { isCategoryPrimary, poolMembers } from "@/lib/candidate/candidateKeys";
+
+/** Why this candidate cannot be removed (mirrors the server rules), or null. */
+function deleteBlockedReason(
+  candidate: CandidateProfile,
+  candidates: CandidateProfile[]
+): string | null {
+  if (candidate.id === "candidate-1") return "The first candidate on the account cannot be removed.";
+  if ((candidate.tier || "free").toLowerCase() !== "free") {
+    return "Cancel this candidate's plan before removing them.";
+  }
+  if (isCategoryPrimary(candidate) && poolMembers(candidates, candidate.visaCategory).length > 1) {
+    return "Remove the other candidates in this visa category first.";
+  }
+  return null;
+}
 
 const RELATION_ICONS: Record<CandidateRelation, React.ComponentType<{ className?: string }>> = {
   Mother: Heart,
@@ -172,6 +188,7 @@ export function CandidateSwitcherTray({
           const style = COLOR_STYLES[candidate.colorTag || "teal"] || COLOR_STYLES.teal;
 
           const isEditing = editingId === candidate.id;
+          const blockedReason = deleteBlockedReason(candidate, candidates);
 
           return (
             <div
@@ -263,9 +280,11 @@ export function CandidateSwitcherTray({
                     {candidate.id !== "candidate-1" && candidates.length > 1 && (
                       <button
                         type="button"
+                        disabled={Boolean(blockedReason)}
                         onClick={(e) => {
                           e.stopPropagation();
                           e.preventDefault();
+                          if (blockedReason) return;
                           if (
                             confirm(
                               `Are you sure you want to delete ${
@@ -273,12 +292,12 @@ export function CandidateSwitcherTray({
                               }?`
                             )
                           ) {
-                            removeCandidate(candidate.id);
+                            void removeCandidate(candidate.id);
                           }
                         }}
-                        title={`Delete ${candidate.label}`}
-                        aria-label={`Delete ${candidate.label}`}
-                        className="w-6 h-6 rounded-full text-muted-foreground hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40 flex items-center justify-center transition-colors cursor-pointer"
+                        title={blockedReason || `Delete ${candidate.label}`}
+                        aria-label={blockedReason || `Delete ${candidate.label}`}
+                        className="w-6 h-6 rounded-full text-muted-foreground hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40 flex items-center justify-center transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-muted-foreground"
                       >
                         <Trash2 className="w-3 h-3" />
                       </button>

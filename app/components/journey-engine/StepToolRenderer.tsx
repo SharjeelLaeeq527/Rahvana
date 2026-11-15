@@ -16,6 +16,7 @@ import { getStepIcon } from "./StepIcon";
 import { useToast } from "@/app/components/shared/ToastProvider";
 // import Link from "next/link";
 import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
+import { IR5_ENABLED, IR2_ENABLED } from "@/lib/feature-flags";
 import { DocumentChecklistTool } from "./components/DocumentChecklistTool";
 
 const renderPathIcon = (icon: any, pathId?: string, toolType?: string) => {
@@ -273,7 +274,13 @@ export const DqRecordingTool: React.FC<StepToolRendererProps> = ({ dqState, acti
   // -----------------------------
   // OPTIONS
   // -----------------------------
-  const categoryOptions = [{ value: "IR-1", label: "IR-1" }];
+  const categoryOptions = [
+    { value: "IR-1", label: "IR-1" },
+    // IR-2 is hidden on production (see lib/feature-flags) until it launches.
+    ...(IR2_ENABLED ? [{ value: "IR-2", label: "IR-2" }] : []),
+    // IR-5 is hidden on production (see lib/feature-flags) until it launches.
+    ...(IR5_ENABLED ? [{ value: "IR-5", label: "IR-5" }] : []),
+  ];
 
   const postOptions = [
     { value: "Islamabad", label: "Islamabad" },

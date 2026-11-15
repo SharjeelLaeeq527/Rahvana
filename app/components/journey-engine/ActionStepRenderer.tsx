@@ -3082,6 +3082,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
       {stepEntitlement.upgradeModalFeature && (
         <UpgradeModal
           feature={stepEntitlement.upgradeModalFeature}
+          currentTier={plan.tier}
           onClose={stepEntitlement.closeUpgradeModal}
         />
       )}

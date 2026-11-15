@@ -27,6 +27,7 @@ export default function InterviewPrepResultPage({
   const [results, setResults] = useState<InterviewPrepOutput | null>(null);
   const [sessionId, setSessionIdState] = useState<string | null>(propSessionId || null);
   const [sessionCategory, setSessionCategory] = useState<string | null>(null);
+  const [isStandaloneSession, setIsStandaloneSession] = useState(false);
   const plan = usePlan();
   const router = useRouter();
   const journeyEnv = useJourneyEnvironment();
@@ -67,6 +68,7 @@ export default function InterviewPrepResultPage({
         setSessionCategory(
           typeof data.session?.category_slug === "string" ? data.session.category_slug : null
         );
+        setIsStandaloneSession(!isEmbedded && data.session?.source === "tool");
 
         // Check if session has interview results
         if (data.session && data.session.interview_prep_results) {
@@ -119,6 +121,7 @@ export default function InterviewPrepResultPage({
     plan.purchasedAddons.some(
       (id) => id === "interview-prep" || id === `interview-prep:${sessionCategory}`
     );
+  const standaloneGranted = hasLegacyCategoryPurchase || isStandaloneSession;
 
   const handleRestart = () => {
     if (propOnRestart) {
@@ -262,7 +265,7 @@ export default function InterviewPrepResultPage({
           results={results}
           onRestart={handleRestart}
           isStandalone={!isEmbedded}
-          standaloneGranted={hasLegacyCategoryPurchase}
+          standaloneGranted={standaloneGranted}
         />
       </ToastProvider>
     </div>

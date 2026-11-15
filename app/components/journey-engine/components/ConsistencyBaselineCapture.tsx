@@ -19,6 +19,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { CalendarDays, ShieldAlert, AlertTriangle, Save, Check } from "lucide-react";
 import { detectRiskFlags } from "@/lib/case-strength";
 import type { RiskFlag } from "@/lib/case-strength";
+import { resolveCaseStrengthProfile } from "@/lib/case-strength/categories";
 
 export interface ConsistencyBaseline {
   marriageDate?: string;
@@ -30,6 +31,7 @@ export interface ConsistencyBaseline {
 interface ConsistencyBaselineCaptureProps {
   baseline: ConsistencyBaseline | undefined | null;
   onSave: (next: ConsistencyBaseline) => void;
+  journeyType?: string;
 }
 
 const TODAY = new Date().toISOString().slice(0, 10);
@@ -41,11 +43,21 @@ function ageGapYears(petitionerDob: string, beneficiaryDob: string): number | nu
   return Math.abs((p.getTime() - b.getTime()) / (1000 * 60 * 60 * 24 * 365.25));
 }
 
-export function ConsistencyBaselineCapture({ baseline, onSave }: ConsistencyBaselineCaptureProps) {
+export function ConsistencyBaselineCapture({
+  baseline,
+  onSave,
+  journeyType,
+}: ConsistencyBaselineCaptureProps) {
   const [marriageDate, setMarriageDate] = useState(baseline?.marriageDate ?? "");
   const [petitionerDob, setPetitionerDob] = useState(baseline?.petitionerDateOfBirth ?? "");
   const [beneficiaryDob, setBeneficiaryDob] = useState(baseline?.beneficiaryDateOfBirth ?? "");
   const [justSaved, setJustSaved] = useState(false);
+
+  const profile = useMemo(() => resolveCaseStrengthProfile(journeyType), [journeyType]);
+  const hasMarriageField = useMemo(
+    () => profile.baselineFields.some((f) => f.field === "marriageDate"),
+    [profile.baselineFields]
+  );
 
   // The parent feeds defaults derived from the user's profile (e.g. dates auto-filled
   // from passport OCR), which can arrive after first render (profile loads async).
@@ -79,18 +91,19 @@ export function ConsistencyBaselineCapture({ baseline, onSave }: ConsistencyBase
     setTimeout(() => setJustSaved(false), 2000);
   };
 
-  // Date-driven risk detection — uses the existing library
+  // Date-driven risk detection — uses the existing library for marriage
   const flags: RiskFlag[] = useMemo(() => {
-    if (!baseline?.marriageDate) return [];
+    if (!hasMarriageField || !baseline?.marriageDate) return [];
     return detectRiskFlags({
       marriage_date: baseline.marriageDate,
       petitioner_dob: baseline.petitionerDateOfBirth,
       beneficiary_dob: baseline.beneficiaryDateOfBirth,
     });
-  }, [baseline?.marriageDate, baseline?.petitionerDateOfBirth, baseline?.beneficiaryDateOfBirth]);
+  }, [hasMarriageField, baseline?.marriageDate, baseline?.petitionerDateOfBirth, baseline?.beneficiaryDateOfBirth]);
 
-  // Age gap advisory (separate from the library risk patterns)
+  // Age gap advisory (applies to spouses only, not parent-child)
   const gapAdvisory = useMemo(() => {
+    if (!hasMarriageField) return null;
     if (!baseline?.petitionerDateOfBirth || !baseline?.beneficiaryDateOfBirth) return null;
     const gap = ageGapYears(baseline.petitionerDateOfBirth, baseline.beneficiaryDateOfBirth);
     if (gap === null) return null;
@@ -106,7 +119,7 @@ export function ConsistencyBaselineCapture({ baseline, onSave }: ConsistencyBase
       };
     }
     return null;
-  }, [baseline?.petitionerDateOfBirth, baseline?.beneficiaryDateOfBirth]);
+  }, [hasMarriageField, baseline?.petitionerDateOfBirth, baseline?.beneficiaryDateOfBirth]);
 
   const allFlagsCount = flags.length + (gapAdvisory ? 1 : 0);
 
@@ -130,27 +143,29 @@ export function ConsistencyBaselineCapture({ baseline, onSave }: ConsistencyBase
             </h3>
           </div>
           <p className="text-[12px] leading-relaxed text-[#57534e]">
-            Saving these here lets Rahvana detect date-driven risk patterns (e.g., short marriage
-            duration) and cross-check the same values against DS-260 and I-864 later.
-            Independent of the I-130 form data.
+            {hasMarriageField
+              ? "Saving these here lets Rahvana detect date-driven risk patterns (e.g., short marriage duration) and cross-check the same values against DS-260 and I-864 later. Independent of the I-130 form data."
+              : "Saving these here lets Rahvana cross-check the dates of birth against civil documents and Form DS-260 later. Independent of the I-130 form data."}
           </p>
         </div>
 
         {/* Fields */}
-        <div className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <div className="flex flex-col gap-1">
-            <label className="text-[10.5px] font-semibold tracking-wider text-[#57534e] uppercase">
-              Marriage date
-            </label>
-            <input
-              type="date"
-              max={TODAY}
-              value={marriageDate}
-              onChange={(e) => setMarriageDate(e.target.value)}
-              className="w-full rounded-md border bg-white px-3 py-2 text-[13px] outline-none"
-              style={{ borderColor: "#d6d3d1" }}
-            />
-          </div>
+        <div className={`mb-3 grid grid-cols-1 gap-3 ${hasMarriageField ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
+          {hasMarriageField && (
+            <div className="flex flex-col gap-1">
+              <label className="text-[10.5px] font-semibold tracking-wider text-[#57534e] uppercase">
+                Marriage date
+              </label>
+              <input
+                type="date"
+                max={TODAY}
+                value={marriageDate}
+                onChange={(e) => setMarriageDate(e.target.value)}
+                className="w-full rounded-md border bg-white px-3 py-2 text-[13px] outline-none"
+                style={{ borderColor: "#d6d3d1" }}
+              />
+            </div>
+          )}
           <div className="flex flex-col gap-1">
             <label className="text-[10.5px] font-semibold tracking-wider text-[#57534e] uppercase">
               Petitioner DOB

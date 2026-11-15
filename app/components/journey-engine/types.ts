@@ -82,12 +82,27 @@ export interface QuestScreenV3 {
   multi_pass_logic?: string;
 }
 
+/**
+ * A toolbox tool a step (or a quest result) points to, launched through the shared roadmap
+ * toolbox (`onLaunchTool(component_key)`), e.g. the CSPA checker on IR-2 steps.
+ */
+export interface CompanionToolV3 {
+  /** A componentKey from JOURNEY_APP_GROUPS / EmbeddedToolContainer. */
+  component_key: string;
+  title: string;
+  body: string;
+  button_label: string;
+  /** Quest results only: the result states that show the card. Omitted = every state. */
+  show_when?: Array<"pass" | "caution" | "review" | "stop">;
+}
+
 export interface QuestDataV3 {
   id: string;
   title: string;
   subtitle: string;
   screens: QuestScreenV3[];
   result_logic: string;
+  companion_tool?: CompanionToolV3;
 }
 
 export interface QuestSuiteV3 {

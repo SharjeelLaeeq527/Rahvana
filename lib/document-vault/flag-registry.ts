@@ -93,44 +93,146 @@ export const VISA_FLAG_REGISTRY: Record<string, FlagGroup[]> = {
   //     ]
   //   }
   // ],
-  // "IR-2": [
-  //   {
-  //     groupName: "Child Information",
-  //     fields: [
-  //       {
-  //         key: "child_adopted",
-  //         type: "checkbox",
-  //         label: "Adopted Child",
-  //         description: "Child is adopted"
-  //       },
-  //       {
-  //         key: "child_stepchild",
-  //         type: "checkbox",
-  //         label: "Stepchild",
-  //         description: "Child is a stepchild"
-  //       }
-  //     ]
-  //   }
-  // ],
-  // "CR-2": [
-  //   {
-  //     groupName: "Child Information",
-  //     fields: [
-  //       {
-  //         key: "child_adopted",
-  //         type: "checkbox",
-  //         label: "Adopted Child",
-  //         description: "Child is adopted"
-  //       },
-  //       {
-  //         key: "child_stepchild",
-  //         type: "checkbox",
-  //         label: "Stepchild",
-  //         description: "Child is a stepchild"
-  //       }
-  //     ]
-  //   }
-  // ],
+  "IR-2": [
+    {
+      groupName: "Petitioner-Child Relationship Type",
+      fields: [
+        {
+          key: "child_relationship_type",
+          type: "radio",
+          label: "Qualifying Relationship to Child",
+          options: [
+            { label: "Biological Mother (Natural birth mother)", value: "bio_mother" },
+            { label: "Biological Father (Parents married to each other)", value: "bio_father_married" },
+            { label: "Biological Father (Parents unmarried / born out of wedlock)", value: "bio_father_unmarried" },
+            { label: "Stepparent (Married child's parent before child turned 18)", value: "stepchild" },
+            { label: "Adoptive Parent (Adoption completed before age 16)", value: "adopted" },
+          ],
+          defaultValue: "bio_mother",
+        },
+      ],
+    },
+    {
+      groupName: "Child Situation and Consular Details",
+      fields: [
+        {
+          key: "child_age_16_or_older",
+          type: "checkbox",
+          label: "Child is 16 Years of Age or Older",
+          description: "Police certificates are only required for applicants aged 16 and older.",
+        },
+        {
+          key: "child_custody_or_consent_required",
+          type: "checkbox",
+          label: "Other Biological Parent Not Immigrating / Custody Consent Required",
+          description: "Requires sole legal custody decree or notarized consent letter from the non-accompanying parent.",
+        },
+        {
+          key: "parent_prior_marriages",
+          type: "checkbox",
+          label: "Parents Had Prior Marriages",
+          description: "Proof that all earlier marriages of petitioner or child's parent ended legally.",
+          showIf: (flags) => flags.child_relationship_type === "stepchild" || flags.child_relationship_type === "bio_father_married",
+        },
+        {
+          key: "step_relationship_ended",
+          type: "checkbox",
+          label: "Stepparent Marriage Has Ended (Divorce/Death)",
+          description: "Requires evidence that a bona fide stepparent-stepchild relationship continued.",
+          showIf: (flags) => flags.child_relationship_type === "stepchild",
+        },
+        {
+          key: "child_prior_marriages",
+          type: "checkbox",
+          label: "Child Was Previously Married",
+          description: "Proof of legal termination of the child's prior marriage (child must be unmarried).",
+        },
+        {
+          key: "name_change_any_party",
+          type: "checkbox",
+          label: "Name Change or Identity Discrepancy",
+          description: "Different names or spellings across civil records and passport.",
+        },
+        {
+          key: "primary_record_available",
+          type: "checkbox",
+          label: "Primary Birth Certificate Unavailable / Late-Registered",
+          description: "Primary birth certificate cannot be obtained or was registered after age 1.",
+          defaultValue: true,
+        },
+      ],
+    },
+  ],
+  "CR-2": [
+    {
+      groupName: "Petitioner-Child Relationship Type",
+      fields: [
+        {
+          key: "child_relationship_type",
+          type: "radio",
+          label: "Qualifying Relationship to Child",
+          options: [
+            { label: "Biological Mother (Natural birth mother)", value: "bio_mother" },
+            { label: "Biological Father (Parents married to each other)", value: "bio_father_married" },
+            { label: "Biological Father (Parents unmarried / born out of wedlock)", value: "bio_father_unmarried" },
+            { label: "Stepparent (Married child's parent before child turned 18)", value: "stepchild" },
+            { label: "Adoptive Parent (Adoption completed before age 16)", value: "adopted" },
+          ],
+          defaultValue: "bio_mother",
+        },
+      ],
+    },
+    {
+      groupName: "Child Situation and Consular Details",
+      fields: [
+        {
+          key: "child_age_16_or_older",
+          type: "checkbox",
+          label: "Child is 16 Years of Age or Older",
+          description: "Police certificates are only required for applicants aged 16 and older.",
+        },
+        {
+          key: "child_custody_or_consent_required",
+          type: "checkbox",
+          label: "Other Biological Parent Not Immigrating / Custody Consent Required",
+          description: "Requires sole legal custody decree or notarized consent letter from the non-accompanying parent.",
+        },
+        {
+          key: "parent_prior_marriages",
+          type: "checkbox",
+          label: "Parents Had Prior Marriages",
+          description: "Proof that all earlier marriages of petitioner or child's parent ended legally.",
+          showIf: (flags) => flags.child_relationship_type === "stepchild" || flags.child_relationship_type === "bio_father_married",
+        },
+        {
+          key: "step_relationship_ended",
+          type: "checkbox",
+          label: "Stepparent Marriage Has Ended (Divorce/Death)",
+          description: "Requires evidence that a bona fide stepparent-stepchild relationship continued.",
+          showIf: (flags) => flags.child_relationship_type === "stepchild",
+        },
+        {
+          key: "child_prior_marriages",
+          type: "checkbox",
+          label: "Child Was Previously Married",
+          description: "Proof of legal termination of the child's prior marriage (child must be unmarried).",
+        },
+        {
+          key: "name_change_any_party",
+          type: "checkbox",
+          label: "Name Change or Identity Discrepancy",
+          description: "Different names or spellings across civil records and passport.",
+        },
+        {
+          key: "primary_record_available",
+          type: "checkbox",
+          label: "Primary Birth Certificate Unavailable / Late-Registered",
+          description: "Primary birth certificate cannot be obtained or was registered after age 1.",
+          defaultValue: true,
+        },
+      ],
+    },
+  ],
   "IR-5": [
     {
       groupName: "Petitioner-Parent Relationship Type",

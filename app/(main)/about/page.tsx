@@ -258,7 +258,7 @@ export default function AboutPage() {
                   Start your journey <ArrowRight size={16} />
                 </Link>
                 <span className="text-xs font-medium tracking-wide text-gray-400 uppercase 2xl:text-sm">
-                  IR-1 · IR-5 · Family Visas
+                  IR-1 · IR-2 · IR-5 · Family Visas
                   {/* IR-1 · Spouse Visa · Phase 1 */}
                 </span>
               </motion.div>
@@ -285,7 +285,7 @@ export default function AboutPage() {
                   </div>
                   <div>
                     <strong className="block text-sm font-bold text-[#121e2e] 2xl:text-base">
-                      IR-1 & IR-5
+                      IR-1, IR-2, & IR-5
                     </strong>
                     <span className="text-xs font-medium text-gray-500 2xl:text-sm">
                       Guiding families home
@@ -380,7 +380,7 @@ export default function AboutPage() {
             </p>
             <p>That&apos;s Rahvana: the space between people who belong together.</p>
             <p>
-              We're focused on a select set of visa journeys—starting with IR-1 and IR-5—so we can go deep before expanding further.
+              We&apos;re focused on a select set of family visa journeys — IR-1, IR-2 and IR-5—so we can go deep on each path and continue expanding further.
             </p>
           </div>
           <div className="mt-10 rounded-r-xl border-l-4 border-[#0d7a75] bg-white p-5 text-lg leading-relaxed text-[#121e2e] italic shadow-sm md:p-7">
@@ -868,7 +868,7 @@ export default function AboutPage() {
           your story too, <em className="font-normal text-[#a8e8e5] italic">we&apos;re here.</em>
         </h2>
         <p className="mx-auto mb-10 max-w-lg text-base leading-relaxed text-white/75 md:text-lg">
-          You don&apos;t have to figure it out alone. Rahvana walks with you through your visa journey — one step, one form, one checkpoint at a time.
+          You don&apos;t have to figure it out alone. Rahvana walks with you through your family visa journey — one step, one form, one checkpoint at a time.
         </p>
         <div className="flex flex-wrap justify-center gap-4">
           <Link
@@ -885,7 +885,7 @@ export default function AboutPage() {
           </Link>
         </div>
         <p className="mt-7 text-[14px] tracking-wider text-white/50">
-          Currently Supporting · IR-1 & IR-5 · U.S. Embassy Islamabad · Karachi · Lahore
+          Currently Supporting · IR-1, IR-2, & IR-5 · U.S. Embassy Islamabad · Karachi · Lahore
         </p>
       </section>
     </div>

@@ -8,7 +8,7 @@ import { consultationService } from "@/lib/services/consultationService";
 import { triggerTranslationNotification } from "@/lib/notifications";
 import { buildAddonPurchaseUpdate } from "@/lib/payments/addon-purchase-ledger";
 import { cancelSupersededSubscriptions } from "@/lib/stripe/subscriptionCleanup";
-import { getCandidateJourneyKey } from "@/lib/candidate/candidateSyncService";
+import { canonicalJourneyKey, getJourneyKeyForCandidate } from "@/lib/candidate/candidateKeys";
 import { provisionCandidateJourneysAndVaults } from "@/lib/candidate/candidateProvisioningService";
 import {
   WALLET_TOPUP_PRODUCT_TYPE,
@@ -723,14 +723,19 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   // whose tier is "free" to free, while journey tiers are keyed per CATEGORY), so the
   // candidates whose journeys were revoked drop to free too. Otherwise a cancelled
   // candidate-2 plan would keep inheriting candidate-1's IR-5 tier.
-  const normKey = (k: string) => k.toLowerCase().replace(/[^a-z0-9]/g, "");
-  const revokedKeys = new Set((revokedJourneys || []).map((j) => normKey(j.journey_type || "")));
+  // Matched on the candidate's own journey key (category slot), so a revoked
+  // `ir5_candidate2` never downgrades IR-2 candidate 2 or IR-5 candidate-2's namesake.
+  const revokedKeys = new Set(
+    (revokedJourneys || []).map((j) => canonicalJourneyKey(j.journey_type || "")).filter(Boolean)
+  );
   const details = { ...(profile.profile_details || {}) };
   if (revokedKeys.size > 0 && Array.isArray(details.candidates)) {
-    details.candidates = details.candidates.map((c: { id?: string; visaCategory?: string }) =>
-      c?.visaCategory && revokedKeys.has(normKey(getCandidateJourneyKey(c.visaCategory, c.id)))
-        ? { ...c, tier: "free" }
-        : c
+    details.candidates = details.candidates.map(
+      (c: { id: string; visaCategory?: string; categorySlot?: number }) =>
+        c?.visaCategory &&
+        revokedKeys.has(getJourneyKeyForCandidate({ ...c, visaCategory: c.visaCategory }))
+          ? { ...c, tier: "free" }
+          : c
     );
   }
 

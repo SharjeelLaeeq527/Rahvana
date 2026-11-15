@@ -7,7 +7,7 @@ import type {
   DynamicQuestionnaire,
   QuestionBank,
 } from "@/data/interview-categories/schema";
-import { IR5_ENABLED } from "@/lib/feature-flags";
+import { IR5_ENABLED, IR2_ENABLED } from "@/lib/feature-flags";
 
 interface CategoryData {
   config: InterviewCategoryConfig;
@@ -77,6 +77,8 @@ class CategoryLoaderService {
     const slugs = [
       "ir-1-spouse",
       ...(IR5_ENABLED ? ["ir-5-parent"] : []),
+      // IR-2 is hidden on production (see lib/feature-flags) until it launches.
+      ...(IR2_ENABLED ? ["ir-2-child"] : []),
     ];
 
     const results = await Promise.allSettled(slugs.map((slug) => this.loadCategory(slug)));

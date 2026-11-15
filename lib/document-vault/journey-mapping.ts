@@ -2,11 +2,12 @@ import { ALL_DOCUMENTS } from "./document-definitions";
 import { VisaCategory, ScenarioFlags } from "./types";
 import {
   getBaseVisaCategory,
-  getCandidateJourneyKey,
   UNKNOWN_VISA_CATEGORY,
+  isMultiCandidateCategory,
 } from "@/lib/candidate/candidateSyncService";
+import { getCandidateSlot, getJourneyKeyForCandidate, parseJourneyKey } from "@/lib/candidate/candidateKeys";
 
-export { getBaseVisaCategory };
+export { getBaseVisaCategory, isMultiCandidateCategory };
 
 /**
  * Check whether any vault document matches a journey doc item,
@@ -295,6 +296,92 @@ export function mapDocumentNameToId(name: string): string {
     "form i-864 affidavit of support - petitioner": "i-864-affidavit",
     "proof of u.s. domicile - petitioner": "domicile-proof-petitioner",
 
+    // Child / IR-2 Specific Mappings
+    "child's birth certificate": "birth-cert-beneficiary",
+    "child birth certificate": "birth-cert-beneficiary",
+    "child beneficiary birth certificate": "birth-cert-beneficiary",
+    "child's official civil birth record": "birth-cert-beneficiary",
+    "child-birth": "birth-cert-beneficiary",
+    "doc_child_birth_cert": "birth-cert-beneficiary",
+
+    "nadra children registration certificate (b-form)": "nadra-crc",
+    "nadra child registration certificate (crc / b-form) or frc": "nadra-crc",
+    "child registration certificate (crc / b-form)": "nadra-crc",
+    "child registration certificate": "nadra-crc",
+    "nadra child registration certificate": "nadra-crc",
+    "nadra crc": "nadra-crc",
+    "crc / b-form": "nadra-crc",
+    "b-form": "nadra-crc",
+    "doc_child_crc": "nadra-crc",
+    "nadra-crc": "nadra-crc",
+
+    "family registration certificate (frc)": "family-registration-cert",
+    "family registration certificate": "family-registration-cert",
+    "frc": "family-registration-cert",
+    "doc_frc": "family-registration-cert",
+
+    "parents' marriage certificate (nikah nama and nadra mrc)": "child-parents-marriage-cert",
+    "parents' marriage certificate (nikah nama & nadra mrc)": "child-parents-marriage-cert",
+    "parents' marriage certificate (nikah nama / nadra mrc)": "child-parents-marriage-cert",
+    "doc_parents_marriage": "child-parents-marriage-cert",
+    "parents-marriage": "child-parents-marriage-cert",
+    "child-parents-marriage-cert": "child-parents-marriage-cert",
+
+    "legitimation or father-child relationship evidence": "child-father-relationship-evidence",
+    "legitimation or bona fide father-child relationship evidence": "child-father-relationship-evidence",
+    "evidence of a bona fide father-child relationship (child)": "child-father-relationship-evidence",
+    "doc_legitimation": "child-father-relationship-evidence",
+    "father-relationship": "child-father-relationship-evidence",
+    "child-father-relationship-evidence": "child-father-relationship-evidence",
+
+    "stepparent marriage and relationship records": "child-stepparent-marriage-cert",
+    "doc_stepparent_marriage": "child-stepparent-marriage-cert",
+    "stepparent-records": "child-stepparent-marriage-cert",
+    "child-stepparent-marriage-cert": "child-stepparent-marriage-cert",
+
+    "adoption decree, legal custody, and 2-year joint residence": "child-adoption-decree",
+    "doc_adoption_decree": "child-adoption-decree",
+    "adoption-records": "child-adoption-decree",
+    "child-adoption-decree": "child-adoption-decree",
+
+    "doc_adoption_custody_residence": "child-custody-residence-evidence",
+    "child-custody-residence-evidence": "child-custody-residence-evidence",
+
+    "custody order or other parent's consent": "child-custody-order-consent",
+    "custody order and non-accompanying parent consent": "child-custody-order-consent",
+    "legal custody decree or non-accompanying parent consent letter (noc)": "child-custody-order-consent",
+    "custody order and the other parent's written consent": "child-custody-order-consent",
+    "doc_custody_consent": "child-custody-order-consent",
+    "custody-consent": "child-custody-order-consent",
+    "child-custody-order-consent": "child-custody-order-consent",
+
+    "proof of the child's unmarried status": "child-marital-status-attestation",
+    "child-marital-status-attestation": "child-marital-status-attestation",
+
+    "termination of the child's prior marriages": "child-prior-marriage-terminations",
+    "child-prior-marriage-terminations": "child-prior-marriage-terminations",
+
+    "termination of the parents' prior marriages": "parent-prior-marriage-terminations",
+    "doc_stepparent_prior_marriages": "parent-prior-marriage-terminations",
+    "parent-prior-marriage-terminations": "parent-prior-marriage-terminations",
+
+    "evidence of a continuing stepparent-stepchild relationship": "step-relationship-continuing-evidence",
+    "step-relationship-continuing-evidence": "step-relationship-continuing-evidence",
+
+    "child beneficiary passport biographic page": "passport-beneficiary",
+    "child's passport": "passport-beneficiary",
+    "doc_child_passport": "passport-beneficiary",
+
+    "police certificate (ages 16+ only)": "police-certificate-pakistan",
+    "doc_police_cert": "police-certificate-pakistan",
+
+    "passport-style photographs (2x2 inches)": "passport-photos",
+    "doc_passport_photos": "passport-photos",
+
+    "petitioner's proof of u.s. citizenship": "citizenship-proof-petitioner",
+    "doc_citizenship": "citizenship-proof-petitioner",
+    "petitioner-citizenship": "citizenship-proof-petitioner",
+
     // Exact matches from IR-1 journey JSON (lowercased for matching)
     "proof of u.s. citizenship": "citizenship-proof-petitioner",
     "beneficiary passport": "passport-beneficiary",
@@ -392,6 +479,7 @@ export function getFriendlyJourneyName(journeyType: string, defaultName?: string
 /** Minimal candidate shape needed to label a journey (subset of CandidateProfile). */
 export interface CandidateLike {
   id: string;
+  categorySlot?: number;
   label?: string;
   fullName?: string;
   visaCategory?: string;
@@ -409,12 +497,28 @@ export function getCandidateForJourneyType(
 ): CandidateLike | null {
   if (!journeyType || !candidates || candidates.length === 0) return null;
   const base = getBaseVisaCategory(journeyType);
-  return (
-    candidates.find((c) => {
-      const candBase = c.visaCategory || base;
-      return isSameJourneyType(getCandidateJourneyKey(candBase, c.id), journeyType);
-    }) || null
-  );
+  // Matched on the candidate's category slot (lib/candidate/candidateKeys.ts), so the
+  // first IR-2 child owns "ir2" even when its account-wide id is candidate-3.
+  const byKey = candidates.find((c) => {
+    const candBase = c.visaCategory || base;
+    return isSameJourneyType(
+      getJourneyKeyForCandidate({ ...c, visaCategory: candBase }),
+      journeyType
+    );
+  });
+  if (byKey) return byKey;
+
+  // Fallback by relation, only for a category's slot-1 (unsuffixed) journey, so a
+  // candidate whose stored visaCategory is stale still labels its own base journey.
+  // A suffixed key (ir2_candidate2) never falls back: that would name the wrong child.
+  if (parseJourneyKey(journeyType).slot !== 1) return null;
+  if (base === "IR-1" || base === "CR-1") {
+    return candidates.find((c) => (c as any).relation === "Spouse") || null;
+  }
+  if (base === "IR-2" || base === "CR-2") {
+    return candidates.find((c) => (c as any).relation === "Child") || null;
+  }
+  return null;
 }
 
 /**
@@ -429,6 +533,7 @@ export function getCandidateJourneyTag(
   journeyType: string,
   candidates?: CandidateLike[] | null
 ): string | null {
+  if (!isMultiCandidateCategory(journeyType)) return null;
   const cand = getCandidateForJourneyType(journeyType, candidates);
   if (!cand) return null;
   const name = (cand.fullName || "").trim();
@@ -453,14 +558,59 @@ export function getCandidateDisplayNameForJourney(
     if (trimmedName && !DEFAULT_NAME_RE.test(trimmedName)) {
       return trimmedName;
     }
-    const num = (cand.id || "").replace(/[^0-9]/g, "") || "1";
-    return cand.label || `Candidate ${num}`;
+    if (cand.label && !DEFAULT_NAME_RE.test(cand.label)) {
+      return cand.label;
+    }
+    const slot = getCandidateSlot(cand);
+    const base = getBaseVisaCategory(journeyType);
+    if (base === "IR-1" || base === "CR-1") return "Spouse";
+    if (base === "IR-2" || base === "CR-2") return slot > 1 ? `Child ${slot}` : "Child";
+    if (base === "IR-5") return `Parent ${slot}`;
+    return `Candidate ${slot}`;
   }
 
   // Fallback from journey_type string if candidate not in roster
+  const base = getBaseVisaCategory(journeyType);
+  if (base === "IR-1" || base === "CR-1") return "Spouse";
+  if (base === "IR-2" || base === "CR-2") return "Child";
+  if (base === "IR-5") {
+    const match = (journeyType || "").toLowerCase().match(/candidate[-_]?(\d+)/);
+    const num = match ? match[1] : "1";
+    return `Parent ${num}`;
+  }
+
   const match = (journeyType || "").toLowerCase().match(/candidate[-_]?(\d+)/);
   const num = match ? match[1] : "1";
   return `Candidate ${num}`;
+}
+
+/**
+ * Resolves the candidate identity tag to display in brackets on a Document Vault card.
+ * e.g., "Candidate 1", "Candidate 2 - Nadeem", "Candidate 1 - Fatima"
+ * Used to distinguish multiple same journeys with different candidates.
+ */
+export function resolveCandidateCardTag(
+  journeyType: string,
+  candidates?: CandidateLike[] | null
+): string | null {
+  if (!isMultiCandidateCategory(journeyType)) {
+    return null;
+  }
+
+  const candTag = getCandidateJourneyTag(journeyType, candidates);
+  if (candTag) return candTag;
+
+  const match = (journeyType || "").toLowerCase().match(/candidate[-_]?(\d+)/);
+  if (match) {
+    return `Candidate ${match[1]}`;
+  }
+
+  const base = getBaseVisaCategory(journeyType);
+  if (base === "IR-5" || base === "IR-2" || base === "CR-2") {
+    return "Candidate 1";
+  }
+
+  return null;
 }
 
 /**
@@ -573,9 +723,12 @@ export function isDocumentApplicableToJourney(
       }
     }
 
-    // Spouse-relationship specific categories/documents should be hidden for parent (IR-5)
+    // Spouse-relationship specific categories/documents should be hidden for parent (IR-5) and child (IR-2)
+    // UNLESS the document explicitly defines this visa category in its applicableVisas.
     if (doc.category === "RELATIONSHIP" && !["IR-1", "CR-1"].includes(visaCategory)) {
-      return false;
+      if (!doc.applicableVisas || !doc.applicableVisas.includes(visaCategory)) {
+        return false;
+      }
     }
   }
 
@@ -708,6 +861,21 @@ export function syncQuestionnaireAnswersToFlags(
   }
   if (answers.parent_prior_marriages === "yes" || answers.parent_prior_marriages === true) {
     flags.parent_prior_marriages = true;
+  }
+  if (answers.child_relationship_type) {
+    flags.child_relationship_type = answers.child_relationship_type;
+  }
+  if (answers.child_custody_or_consent_required === "yes" || answers.child_custody_or_consent_required === true) {
+    flags.child_custody_or_consent_required = true;
+  }
+  if (answers.child_prior_marriages === "yes" || answers.child_prior_marriages === true) {
+    flags.child_prior_marriages = true;
+  }
+  if (answers.step_relationship_ended === "yes" || answers.step_relationship_ended === true) {
+    flags.step_relationship_ended = true;
+  }
+  if (answers.child_age_16_or_older === "yes" || answers.child_age_16_or_older === true) {
+    flags.child_age_16_or_older = true;
   }
 
   return flags;

@@ -144,16 +144,21 @@ export function PreSubmissionSnapshot({
   eligibilityAnswers,
   journeyType,
 }: PreSubmissionSnapshotProps) {
+  const profile = useMemo(() => resolveCaseStrengthProfile(journeyType), [journeyType]);
+  const hasMarriageField = useMemo(
+    () => profile.baselineFields.some((f) => f.field === "marriageDate"),
+    [profile.baselineFields]
+  );
+
   const allFlags: RiskFlag[] = useMemo(() => {
-    const fromDates = consistencyBaseline?.marriageDate
+    const fromDates = hasMarriageField && consistencyBaseline?.marriageDate
       ? detectRiskFlags({
           marriage_date: consistencyBaseline.marriageDate,
           petitioner_dob: consistencyBaseline.petitionerDateOfBirth,
           beneficiary_dob: consistencyBaseline.beneficiaryDateOfBirth,
         })
       : [];
-    const fromQuest =
-      resolveCaseStrengthProfile(journeyType).detectEligibilityRisks(eligibilityAnswers);
+    const fromQuest = profile.detectEligibilityRisks(eligibilityAnswers);
     const seen = new Set<string>();
     const out: RiskFlag[] = [];
     for (const f of [...fromDates, ...fromQuest]) {
@@ -165,33 +170,29 @@ export function PreSubmissionSnapshot({
     const order: Record<RiskFlag["severity"], number> = { critical: 0, warning: 1, advisory: 2 };
     return out.sort((a, b) => order[a.severity] - order[b.severity]);
   }, [
+    hasMarriageField,
     consistencyBaseline?.marriageDate,
     consistencyBaseline?.petitionerDateOfBirth,
     consistencyBaseline?.beneficiaryDateOfBirth,
     eligibilityAnswers,
-    journeyType,
+    profile,
   ]);
 
   const criticalCount = allFlags.filter((f) => f.severity === "critical").length;
   const warningCount = allFlags.filter((f) => f.severity === "warning").length;
 
-  const dateRows: ChecklistRow[] = [
-    {
-      label: "Marriage date",
-      value: fmtDate(consistencyBaseline?.marriageDate),
-      captured: !!consistencyBaseline?.marriageDate,
-    },
-    {
-      label: "Petitioner date of birth",
-      value: fmtDate(consistencyBaseline?.petitionerDateOfBirth),
-      captured: !!consistencyBaseline?.petitionerDateOfBirth,
-    },
-    {
-      label: "Beneficiary date of birth",
-      value: fmtDate(consistencyBaseline?.beneficiaryDateOfBirth),
-      captured: !!consistencyBaseline?.beneficiaryDateOfBirth,
-    },
-  ];
+  const dateRows: ChecklistRow[] = useMemo(() => {
+    return profile.baselineFields.map((f) => {
+      const val = (consistencyBaseline as any)?.[f.field];
+      const isDate =
+        f.field.toLowerCase().includes("date") || f.field.toLowerCase().includes("dob");
+      return {
+        label: f.label,
+        value: isDate ? fmtDate(val) : (val ? String(val) : ""),
+        captured: !!val,
+      };
+    });
+  }, [profile.baselineFields, consistencyBaseline]);
 
   const residenceRows: ChecklistRow[] = [
     {

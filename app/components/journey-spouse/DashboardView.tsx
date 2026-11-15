@@ -50,10 +50,7 @@ import APTrackingTool from "./APTrackingTool";
 import { STEP_PRIMARY_FEATURE } from "@/lib/entitlements/stepFeatureMap";
 import { getActiveStepsForStage } from "./journeyHelpers";
 import { getStepLockStatus, getModalFeatureForTier } from "@/lib/entitlements/hardLockRules";
-import {
-  fetchReceiptForJourney,
-  ReceiptRecord,
-} from "@/app/components/home-page/Visatickerprops";
+import { fetchReceiptForJourney, ReceiptRecord } from "@/app/components/home-page/Visatickerprops";
 import { RECEIPT_SAVED_EVENT } from "@/lib/journey/dashboard/caseFacts";
 
 interface DashboardViewProps {
@@ -224,7 +221,9 @@ export function DashboardView({
 
   // Band-cross persistence for score-drop alerts (opt-in weighted model only)
   const prevBandRef = useRef<ScoreBand | null>(null);
-  const [scoreDropBand, setScoreDropBand] = useState<{ from: ScoreBand; to: ScoreBand } | null>(null);
+  const [scoreDropBand, setScoreDropBand] = useState<{ from: ScoreBand; to: ScoreBand } | null>(
+    null
+  );
 
   // Detect weighted score (IR-1 just got it via profile flag)
   const useWeightedScore = useMemo(() => {
@@ -271,8 +270,7 @@ export function DashboardView({
       const up = evidenceAnalysis.userProvided;
       const metadata = state.metadata as Record<string, unknown> | undefined;
       const questAnswers = metadata?.["questAnswers_eligibility-suite"] as
-        | Record<string, Record<string, string | string[]>>
-        | undefined;
+        Record<string, Record<string, string | string[]>> | undefined;
       const eligibilityRisks = p.detectEligibilityRisks(questAnswers, p.stepRefs);
       const weightedScore = computeWeightedCaseScore({
         evidenceStrength: up.score,
@@ -316,7 +314,6 @@ export function DashboardView({
       consistencyFindings,
     });
   }, [evidenceAnalysis, weightedEvidenceView, state, phase2Responses, uploadedDocuments, data]);
-
 
   // ── Alert Center Issues ─────────────────────────────────────────────────────
   // Compute issues for the AlertCenter (critical + warning only)
@@ -459,8 +456,7 @@ export function DashboardView({
     if (p.caseScore?.model === "weighted") {
       const metadata = state.metadata as Record<string, unknown> | undefined;
       const questAnswers = metadata?.["questAnswers_eligibility-suite"] as
-        | Record<string, Record<string, string | string[]>>
-        | undefined;
+        Record<string, Record<string, string | string[]>> | undefined;
       const eligibilityRisks = p.detectEligibilityRisks(questAnswers, p.stepRefs);
       return computeWeightedCaseScore({
         evidenceStrength: evidenceAnalysis?.userProvided?.score ?? 0,
@@ -602,7 +598,12 @@ export function DashboardView({
         const res = await fetch("/api/portal-wallet/reveal", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ portalType, type: "all_details", candidateId: activeCandidateId }),
+          body: JSON.stringify({
+            portalType,
+            type: "all_details",
+            journeyId: state.backendId || (state as any).journeyId || "",
+            candidateId: activeCandidateId,
+          }),
         });
         const data = await res.json();
         if (!cancelled && data.details) {
@@ -670,7 +671,6 @@ export function DashboardView({
       cancelled = true;
     };
   }, [state.backendId, receiptVersion]);
-
 
   // Hero "Continue": same lock / upgrade / navigate rules as CaseStatusHero.
   const handleContinue = () => {
@@ -800,7 +800,6 @@ export function DashboardView({
         onClose={() => setGuideOverlayUrl(null)}
         plan={plan}
       />
-
     </div>
   );
 }

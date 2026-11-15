@@ -5,8 +5,8 @@ import Link from "next/link";
 import { Instagram, Facebook, Linkedin, ArrowRight, Youtube } from "lucide-react";
 import { FaTiktok } from "react-icons/fa";
 import { useLanguage } from "../../context/LanguageContext";
-import { ir1journeyHref, ir5journeyHref } from "@/lib/constants/routes";
-import { IR5_ENABLED } from "@/lib/feature-flags";
+import { ir1journeyHref, ir2journeyHref, ir5journeyHref } from "@/lib/constants/routes";
+import { IR5_ENABLED, IR2_ENABLED } from "@/lib/feature-flags";
 
 export default function Footer() {
   const pathname = usePathname();
@@ -86,6 +86,15 @@ export default function Footer() {
                   className="hidden text-slate-400 transition-colors hover:text-white sm:block"
                 >
                   IR-5 Journey
+                </Link>
+              )}
+              {/* IR-2 is hidden on production (see lib/feature-flags) until it launches. */}
+              {IR2_ENABLED && (
+                <Link
+                  href={ir2journeyHref}
+                  className="hidden text-slate-400 transition-colors hover:text-white sm:block"
+                >
+                  IR-2 Journey
                 </Link>
               )}
               <Link

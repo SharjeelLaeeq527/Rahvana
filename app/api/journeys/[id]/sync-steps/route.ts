@@ -13,11 +13,12 @@ import { ConfigLoader } from "@/lib/journey/config-loader";
 import { E, msg } from "@/lib/errors";
 import * as db from "@/lib/journey/data-access";
 
-import { getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
+import { journeyConfigKeyFor } from "@/lib/journey/journeyConfig";
 
+// Shared with post-payment provisioning so every seeding path loads the same config
+// (CR-2 reuses ir-2.json instead of looking for a cr-2.json that does not exist).
 function configTypeFromJourneyType(journeyType: string) {
-  const base = getBaseVisaCategory(journeyType);
-  return base.toLowerCase();
+  return journeyConfigKeyFor(journeyType);
 }
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {

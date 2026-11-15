@@ -69,6 +69,7 @@ export default function robots(): MetadataRoute.Robots {
     "/guides/educational-certificates-us-visa",
     "/guides/step-parent-guide",
     "/guides/adoptive-parent-guide",
+    "/guides/child-citizenship-guide",
     // Dev / test
     "/progress-tree-demo",
     "/test-option-a",

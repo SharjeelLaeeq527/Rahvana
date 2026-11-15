@@ -7,7 +7,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import { useUserProfile } from "@/app/context/UserProfileContext";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { CustomDropdown, DropdownOption } from "@/app/components/shared/CustomDropdown";
-import { IR5_ENABLED } from "@/lib/feature-flags";
+import { IR5_ENABLED, IR2_ENABLED } from "@/lib/feature-flags";
 
 export default function Form() {
   const { t } = useLanguage();
@@ -28,6 +28,7 @@ export default function Form() {
   const visaCategoryOptions: DropdownOption[] = [
     { value: "IR-1", label: "IR-1 (Spouse)" },
     ...(IR5_ENABLED ? [{ value: "IR-5", label: "IR-5 (Parent)" }] : []),
+    ...(IR2_ENABLED ? [{ value: "IR-2", label: "IR-2 (Child)" }] : []),
   ];
 
   const countryOptions: DropdownOption[] = [

@@ -803,7 +803,7 @@ const NARR_BEATS = [
     eyebrow: "You just wanted a simple answer.",
     lines: [{ text: "WHERE TO START?" }],
     // sub: "Spouse Visa · IR-1 ",
-    sub: "Family Visas  ·  IR-1  . IR-5",
+    sub: "Family Visas  ·  IR-1 . IR-2 . IR-5",
   },
   {
     eyebrow: "But one thing leads to ten others.",

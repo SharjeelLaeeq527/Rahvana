@@ -4,6 +4,7 @@ import { getAllActiveSteps as getAllActiveStepsEngine } from "@/app/components/j
 import { getAllActiveSteps as getAllActiveStepsSpouse } from "@/app/components/journey-spouse/journeyHelpers";
 import ir1Config from "@/data/visa-category/ir-1.json";
 import ir5Config from "@/data/visa-category/ir-5.json";
+import ir2Config from "@/data/visa-category/ir-2.json";
 import { getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
 
 type ActiveStepResolver = (data: any, metadata: any, filingMethodFallback?: string | null) => any[];
@@ -33,6 +34,7 @@ const JOURNEY_CONFIG_BY_TYPE: Record<
 > = {
   ir1: { config: ir1Config, getActiveSteps: getAllActiveStepsSpouse as ActiveStepResolver },
   ir5: { config: ir5Config, getActiveSteps: getAllActiveStepsEngine as ActiveStepResolver },
+  ir2: { config: ir2Config, getActiveSteps: getAllActiveStepsEngine as ActiveStepResolver },
 };
 
 function normalizeJourneyType(journeyType?: string | null): string {

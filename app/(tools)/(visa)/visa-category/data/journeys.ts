@@ -1,6 +1,6 @@
-import { ir1journeyHref, ir5journeyHref } from "@/lib/constants/routes";
+import { ir1journeyHref, ir5journeyHref, ir2journeyHref } from "@/lib/constants/routes";
 
-export const JOURNEY_SLUGS = ["ir-1", "ir-5"] as const;
+export const JOURNEY_SLUGS = ["ir-1", "ir-5", "ir-2", "cr-2"] as const;
 
 export type JourneySlug = (typeof JOURNEY_SLUGS)[number];
 
@@ -113,6 +113,22 @@ export const EXPLORER_CARDS: ExplorerJourneyCard[] = [
     href: "/visa-category/ir-5",
     image: "/assets/images/ir5-doc-vault-image.png",
     highlights: ["Age 21+ petitioner", "No annual quota", "Permanent residency outcome"],
+  },
+  {
+    slug: "ir-2",
+    code: "IR-2 / CR-2",
+    title: "Child Visa",
+    audience: "Unmarried child under 21 of a U.S. citizen",
+    category: "Family",
+    summary:
+      "Immediate-relative pathway for a qualifying child of a U.S. citizen to immigrate to the United States.",
+    timeline: "Varies by case",
+    successRate: "--",
+    status: "Live",
+    featured: true,
+    href: "/visa-category/ir-2",
+    image: "/assets/images/ir2-doc-vault-image.jpg",
+    highlights: ["Unmarried child under 21", "Immediate relative", "Separate petition for each child"],
   },
   {
     code: "K-1",
@@ -424,6 +440,173 @@ export const JOURNEY_DETAILS: Record<JourneySlug, JourneyDetailContent> = {
     ctaPrimary: {
       label: "Start IR-5 assessment",
       href: ir5journeyHref,
+    },
+    ctaSecondary: {
+      label: "Talk to an expert",
+      href: "/book-consultation",
+    },
+  },
+  "ir-2": {
+    slug: "ir-2",
+    code: "IR-2 / CR-2",
+    title: "IR-2 Child Visa Journey",
+    subtitle: "Unmarried child under 21 of a U.S. citizen",
+    summary:
+      "An immediate-relative visa pathway for a qualifying unmarried child of a U.S. citizen, including biological children, stepchildren, and adopted children.",
+    heroEyebrow: "Immediate relative category",
+    heroImage: "/assets/images/ir2-doc-vault-image.jpg",
+    heroOverlay: "linear-gradient(180deg, rgba(4, 67, 73, 0.10) 0%, rgba(4, 67, 73, 0.74) 100%)",
+    quickFacts: [
+      { label: "Petitioner", value: "U.S. citizen parent" },
+      { label: "Child's eligibility", value: "Unmarried and under 21; CSPA may protect age in qualifying cases" },
+      { label: "Qualifying relationship", value: "Biological, stepchild, or adopted child" },
+      { label: "Visa availability", value: "Immediate relative; no annual numerical limit" },
+    ],
+    timeline: [
+      {
+        stage: "Stage 1",
+        title: "Confirm eligibility and file Form I-130",
+        summary:
+          "The U.S. citizen parent files a separate Form I-130 for each qualifying child, proving citizenship and the parent-child relationship.",
+        detail:
+          "Evidence depends on the relationship: birth records for biological children, marriage records for stepchildren, or adoption and custody records for adopted children. Additional requirements may apply to children born out of wedlock.",
+        metric: "Focus: qualifying parent-child relationship and I-130 petition",
+        duration: "12 - 18 months",
+        outcome:
+          "USCIS adjudicates the petition. Approved cases proceed to the National Visa Center for consular processing.",
+        rahvanaSupport:
+          "Rahvana helps identify the relationship type, organize supporting records, and prepare the I-130 document checklist.",
+      },
+      {
+        stage: "Stage 2",
+        title: "National Visa Center (NVC) processing",
+        summary:
+          "NVC provides instructions for fees, the child's DS-260 application, financial sponsorship, and civil documents.",
+        detail:
+          "The petitioner generally submits Form I-864 and financial evidence unless an exemption applies. The child's documents and translations are uploaded through CEAC for NVC review.",
+        metric: "Focus: DS-260, financial sponsorship, and civil documents",
+        duration: "2 - 3 months after USCIS approval",
+        outcome:
+          "NVC declares the case documentarily complete when the required submissions are accepted for interview scheduling.",
+        rahvanaSupport:
+          "Rahvana helps organize the child's records, prepare application information, track CEAC submissions, and address NVC feedback.",
+      },
+      {
+        stage: "Stage 3",
+        title: "Medical examination and consular interview",
+        summary:
+          "The child completes a medical examination with an authorized panel physician and attends the immigrant visa interview.",
+        detail:
+          "All immigrant visa applicants, regardless of age, need the required medical examination and vaccinations. Bring the passport, DS-260 confirmation, appointment letter, and required original civil documents. Follow the embassy's instructions for minors.",
+        metric: "Focus: medical examination, original documents, and interview",
+        duration: "8 - 10 months after DQ",
+        outcome:
+          "The consular officer may issue the visa, request additional evidence, or place the case in administrative processing.",
+        rahvanaSupport:
+          "Rahvana helps track medical preparation, interview requirements, original documents, and age-appropriate interview preparation.",
+      },
+      // {
+      //   stage: "Stage 4",
+      //   title: "Visa issuance, U.S. entry, and post-arrival status",
+      //   summary:
+      //     "After visa issuance, the child travels to the United States and is generally admitted as a lawful permanent resident.",
+      //   detail:
+      //     "Review visa validity, travel instructions, and any required USCIS immigrant fee. A child under 18 may automatically acquire U.S. citizenship after admission if all Child Citizenship Act requirements are met, including U.S. citizen parentage and residence in that parent's legal and physical custody. This does not apply automatically to every IR-2 child.",
+      //   metric: "Outcome depends on the child's age and citizenship eligibility",
+      //   duration: "After visa issuance; post-arrival timing varies",
+      //   outcome:
+      //     "The child becomes a lawful permanent resident or may automatically acquire U.S. citizenship if all legal requirements are met.",
+      //   rahvanaSupport:
+      //     "Rahvana helps organize travel reminders, immigrant-fee guidance, and post-entry tasks, including a review of possible automatic citizenship eligibility.",
+      // },
+    ],
+    preparationHeading: "What Families Need Along the IR-2 Child Visa Journey",
+    preparationDescription:
+      "IR-2 cases require proof of the petitioner's U.S. citizenship, a qualifying parent-child relationship, and the child's eligibility. Requirements vary for biological, stepchild, and adopted-child cases. Rahvana helps organize the required documents, applications, and interview preparation.",
+      preparationCategories: [
+        {
+          title: "Parent-Child Relationship Evidence",
+          description:
+            "Birth certificates and supporting records establishing the relationship, including additional evidence for biological, stepchild, or adopted-child cases.",
+          icon: "relationship",
+        },
+        {
+          title: "Adoption or Stepparent Records",
+          description:
+            "Marriage certificates or adoption decrees, along with required legal custody and joint-residence evidence where applicable.",
+          icon: "identity",
+        },
+        {
+          title: "Financial Sponsorship",
+          description:
+            "The petitioner's Form I-864, income details, and supporting financial documents, unless a specific exemption applies.",
+          icon: "financial",
+        },
+        {
+          title: "Civil & Identity Documents",
+          description:
+            "The child's valid passport, birth certificate, police certificates where required, and country-specific civil documents with translations.",
+          icon: "identity",
+        },
+        {
+          title: "Government Forms & NVC Submissions",
+          description:
+            "Accurate Form I-130 and DS-260 information, required financial forms, fee payments, and supporting documents submitted through CEAC.",
+          icon: "forms",
+        },
+        {
+          title: "Medical & Interview Preparation",
+          description:
+            "The authorized panel-physician medical examination, required vaccinations, embassy instructions, and original documents for the interview.",
+          icon: "interview",
+        },
+        {
+          title: "Age and Citizenship Review",
+          description:
+            "Review the child's age and marital status under applicable CSPA rules, and check possible automatic U.S. citizenship eligibility after entry.",
+          icon: "arrival",
+        },
+      ],
+    supportingResources: [
+      {
+        title: "Parent-Child Relationship Organizer",
+        description:
+          "Organize birth, marriage, or adoption records based on the child's qualifying relationship.",
+      },
+      {
+        title: "Child's NVC Document Checklist",
+        description:
+          "Track the child's application, civil documents, financial sponsorship, and interview requirements.",
+      },
+    ],
+    evidence: [
+      "Petitioner's proof of U.S. citizenship",
+      "Child's birth certificate and relationship evidence",
+      "Marriage or adoption records, where applicable",
+      "Required custody and joint-residence evidence for adopted-child cases",
+      "Form I-864 and financial evidence, unless exempt",
+      "Child's passport, civil documents, translations, and interview records",
+    ],
+    checklist: [
+      "Confirm the petitioner's U.S. citizenship and the child's qualifying relationship",
+      "Check the child's age and unmarried status, including CSPA where relevant",
+      "File a separate Form I-130 for each child",
+      "Collect relationship-specific and civil documents",
+      "Complete the child's DS-260 and required CEAC submissions",
+      "Prepare financial sponsorship documents or confirm an applicable exemption",
+      "Complete the medical examination and required vaccinations",
+      "Attend the consular interview with the required documents",
+      "Review visa validity, travel instructions, and possible citizenship eligibility",
+    ],
+    callout: {
+      eyebrow: "Important eligibility note",
+      title: "Not every parent-child relationship automatically qualifies for IR-2.",
+      body:
+        "Stepchild and adopted-child cases have additional requirements. The child must also remain unmarried, and applicable age-protection rules should be reviewed. Some children may automatically acquire U.S. citizenship after admission if they meet all Child Citizenship Act requirements.",
+    },
+    ctaPrimary: {
+      label: "Start IR-2 assessment",
+      href: ir2journeyHref,
     },
     ctaSecondary: {
       label: "Talk to an expert",

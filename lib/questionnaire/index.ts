@@ -12,6 +12,7 @@
 import type { QuestionnaireConfig } from "./types";
 import { IR1_QUESTIONNAIRE_CONFIG } from "./ir1-questionnaire";
 import { IR5_QUESTIONNAIRE_CONFIG } from "./ir5-questionnaire";
+import { IR2_QUESTIONNAIRE_CONFIG } from "./ir2-questionnaire";
 
 // ── Registry ────────────────────────────────────────────────────────────────
 // Keys are normalized `journey_type` values (e.g., "ir-1", "cr-1", "ir-5").
@@ -23,6 +24,10 @@ const QUESTIONNAIRE_REGISTRY: Record<string, QuestionnaireConfig> = {
 
   // ── Immediate Relative — Parent ──────────────────────────────────
   "ir-5": IR5_QUESTIONNAIRE_CONFIG,
+
+  // ── Immediate Relative — Child ───────────────────────────────────
+  "ir-2": IR2_QUESTIONNAIRE_CONFIG,
+  "cr-2": IR2_QUESTIONNAIRE_CONFIG, // CR-2 child shares IR-2 questionnaire
 
   // ── Future categories (uncomment + create the config file) ───────
   // "k-1":   K1_QUESTIONNAIRE_CONFIG,   // K-1: Fiancé(e) visa

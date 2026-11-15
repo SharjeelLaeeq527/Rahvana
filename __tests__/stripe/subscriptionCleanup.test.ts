@@ -255,3 +255,92 @@ describe("cancelSupersededSubscriptions", () => {
     ).resolves.toEqual([]);
   });
 });
+
+/**
+ * IR-2 regression (docs/ir2-implementation-plan.md, blocker B1).
+ * Risk: "IR-2 / CR-2" contains no "5", so the old `includes("5")` mapping filed an IR-2 plan
+ * under IR-1. An IR-2 purchase could then retire the user's IR-1 plan (and vice versa).
+ */
+describe("IR-2 is its own journey for plan ownership", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockCancel.mockResolvedValue({});
+    setPages([]);
+  });
+
+  const plan = (id: string, visa_category: string, tier = "basic", extra: any = {}) =>
+    sub({ id, metadata: { tier, visa_category, ...extra } });
+
+  it("maps every IR-2 / CR-2 spelling to IR2 and leaves IR-1 / IR-5 unchanged", () => {
+    expect(journeyTypeForVisaCategory("IR-2 / CR-2")).toBe("IR2");
+    expect(journeyTypeForVisaCategory("IR-2")).toBe("IR2");
+    expect(journeyTypeForVisaCategory("ir2")).toBe("IR2");
+    expect(journeyTypeForVisaCategory("CR-2")).toBe("IR2");
+    expect(journeyTypeForVisaCategory("ir2_candidate-2")).toBe("IR2");
+    expect(journeyTypeForVisaCategory("IR-1 / CR-1")).toBe("IR1");
+    expect(journeyTypeForVisaCategory("CR-1")).toBe("IR1");
+    expect(journeyTypeForVisaCategory("IR-5")).toBe("IR5");
+    expect(journeyTypeForVisaCategory("ir5_candidate-2")).toBe("IR5");
+  });
+
+  it("keeps the legacy IR1 default for categories that are not sold as journeys yet", () => {
+    expect(journeyTypeForVisaCategory("F-2A")).toBe("IR1");
+    expect(journeyTypeForVisaCategory("K-1 / K-2")).toBe("IR1");
+  });
+
+  it("an IR-2 upgrade retires only the old IR-2 plan, never IR-1 or IR-5", async () => {
+    setPages([
+      plan("sub_ir2_new", "IR-2 / CR-2", "premium"),
+      plan("sub_ir2_old", "IR-2 / CR-2", "basic"),
+      plan("sub_ir1", "IR-1 / CR-1", "premium"),
+      plan("sub_ir5", "IR-5", "executive"),
+    ]);
+    const cancelled = await cancelSupersededSubscriptions({
+      customerId: "cus_1",
+      keepSubId: "sub_ir2_new",
+      visaCategory: "IR-2 / CR-2",
+      oldSubscriptionId: "sub_ir2_old",
+    });
+    expect(cancelled).toEqual(["sub_ir2_old"]);
+  });
+
+  it("a first IR-2 purchase (no upgrade hint) does not touch the IR-1 plan", async () => {
+    setPages([plan("sub_ir2", "IR-2 / CR-2", "basic"), plan("sub_ir1", "IR-1 / CR-1", "premium")]);
+    const cancelled = await cancelSupersededSubscriptions({
+      customerId: "cus_1",
+      keepSubId: "sub_ir2",
+      visaCategory: "IR-2 / CR-2",
+    });
+    expect(cancelled).toEqual([]);
+  });
+
+  it("an IR-1 upgrade never cancels an IR-2 plan", async () => {
+    setPages([
+      plan("sub_ir1_new", "IR-1 / CR-1", "premium"),
+      plan("sub_ir1_old", "IR-1 / CR-1", "basic"),
+      plan("sub_ir2", "IR-2 / CR-2", "basic"),
+    ]);
+    const cancelled = await cancelSupersededSubscriptions({
+      customerId: "cus_1",
+      keepSubId: "sub_ir1_new",
+      visaCategory: "IR-1 / CR-1",
+      oldSubscriptionId: "sub_ir1_old",
+    });
+    expect(cancelled).toEqual(["sub_ir1_old"]);
+  });
+
+  it("an IR-2 primary upgrade keeps other children's add-candidate plans", async () => {
+    setPages([
+      plan("sub_new", "IR-2 / CR-2", "premium"),
+      plan("sub_old", "IR-2 / CR-2", "basic"),
+      plan("sub_child2", "IR-2 / CR-2", "basic", { is_add_candidate: "true" }),
+    ]);
+    const cancelled = await cancelSupersededSubscriptions({
+      customerId: "cus_1",
+      keepSubId: "sub_new",
+      visaCategory: "IR-2 / CR-2",
+      oldSubscriptionId: "sub_old",
+    });
+    expect(cancelled).toEqual(["sub_old"]);
+  });
+});

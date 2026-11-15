@@ -65,10 +65,7 @@ import APTrackingTool from "./APTrackingTool";
 import { STEP_PRIMARY_FEATURE } from "@/lib/entitlements/stepFeatureMap";
 // import { getActiveStepsForStage } from "./journeyHelpers";
 import { getStepLockStatus, getModalFeatureForTier } from "@/lib/entitlements/hardLockRules";
-import {
-  fetchReceiptForJourney,
-  ReceiptRecord,
-} from "@/app/components/home-page/Visatickerprops";
+import { fetchReceiptForJourney, ReceiptRecord } from "@/app/components/home-page/Visatickerprops";
 import { RECEIPT_SAVED_EVENT } from "@/lib/journey/dashboard/caseFacts";
 
 interface DashboardViewProps {
@@ -309,8 +306,7 @@ export function DashboardView({
       const up = evidenceAnalysis.userProvided;
       const metadata = state.metadata as Record<string, unknown> | undefined;
       const questAnswers = metadata?.["questAnswers_eligibility-suite"] as
-        | Record<string, Record<string, string | string[]>>
-        | undefined;
+        Record<string, Record<string, string | string[]>> | undefined;
       const eligibilityRisks = p.detectEligibilityRisks(questAnswers, p.stepRefs);
       const weightedScore = computeWeightedCaseScore({
         evidenceStrength: up.score,
@@ -326,7 +322,15 @@ export function DashboardView({
     }
 
     return generateCaseNarrative({ evidenceAnalysis, consistencyFindings });
-  }, [evidenceAnalysis, weightedEvidenceView, state, phase2Responses, uploadedDocuments, phase2Runner, data]);
+  }, [
+    evidenceAnalysis,
+    weightedEvidenceView,
+    state,
+    phase2Responses,
+    uploadedDocuments,
+    phase2Runner,
+    data,
+  ]);
 
   // Health status badge for the CaseSummaryCard header.
   // Weighted model (IR-5): band-based — the red "Needs Immediate Attention"
@@ -352,8 +356,7 @@ export function DashboardView({
 
     const metadata = state.metadata as Record<string, unknown> | undefined;
     const questAnswers = metadata?.["questAnswers_eligibility-suite"] as
-      | Record<string, Record<string, string | string[]>>
-      | undefined;
+      Record<string, Record<string, string | string[]>> | undefined;
     const eligibilityRisks = profile.detectEligibilityRisks(questAnswers, profile.stepRefs);
     const score = computeWeightedCaseScore({
       evidenceStrength: evidenceAnalysis?.userProvided?.score ?? 0,
@@ -472,10 +475,7 @@ export function DashboardView({
   }, [data, state, uploadedDocuments, phase2Responses, registry, phase2Runner]);
 
   // Category profile — decides which Case Health score model this journey uses.
-  const profile = useMemo(
-    () => resolveCaseStrengthProfile((data as any).journey_type),
-    [data]
-  );
+  const profile = useMemo(() => resolveCaseStrengthProfile((data as any).journey_type), [data]);
 
   // Risk flags for the weighted score's Risk ingredient. Uses the category-aware
   // eligibility detector from the profile (IR-5 has its own), plus date-based
@@ -484,8 +484,7 @@ export function DashboardView({
     const metadata = state.metadata as Record<string, unknown> | undefined;
     if (!metadata) return [];
     const questAnswers = metadata["questAnswers_eligibility-suite"] as
-      | Record<string, Record<string, string | string[]>>
-      | undefined;
+      Record<string, Record<string, string | string[]>> | undefined;
     const consistency = metadata.consistencyBaseline as
       | {
           marriageDate?: string;
@@ -537,8 +536,8 @@ export function DashboardView({
   // evidence & completeness ingredients come from the USER-PROVIDED view so
   // profile autofill can't inflate them (§6E); legacy mode keeps the old score.
   const evidenceSubScore = useWeightedScore
-    ? evidenceAnalysis?.userProvided?.score ?? 0
-    : evidenceAnalysis?.overallScore ?? 50;
+    ? (evidenceAnalysis?.userProvided?.score ?? 0)
+    : (evidenceAnalysis?.overallScore ?? 50);
   const completenessSubScore = evidenceAnalysis?.userProvided?.completionPercentage ?? 0;
   const riskPenaltySubScore = useMemo(() => computeRiskPenalty(riskFlags), [riskFlags]);
 
@@ -698,7 +697,12 @@ export function DashboardView({
         const res = await fetch("/api/portal-wallet/reveal", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ portalType, type: "all_details", candidateId: activeCandidateId }),
+          body: JSON.stringify({
+            portalType,
+            type: "all_details",
+            journeyId: state.backendId || (state as any).journeyId || "",
+            candidateId: activeCandidateId,
+          }),
         });
         const data = await res.json();
         if (!cancelled && data.details) {
@@ -766,7 +770,6 @@ export function DashboardView({
       cancelled = true;
     };
   }, [state.backendId, receiptVersion]);
-
 
   // Hero "Continue": same lock / upgrade / navigate rules as CaseStatusHero.
   const handleContinue = () => {

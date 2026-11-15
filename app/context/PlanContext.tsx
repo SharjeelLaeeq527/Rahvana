@@ -19,7 +19,9 @@ import {
   upgradeCTA,
   getEffectiveEntitlement,
 } from "@/lib/entitlements/helpers";
-import { getBaseVisaCategory, UNKNOWN_VISA_CATEGORY } from "@/lib/candidate/candidateSyncService";
+import { UNKNOWN_VISA_CATEGORY } from "@/lib/candidate/candidateSyncService";
+import { journeyBaseCategory } from "@/lib/journey/journeyConfig";
+import { parseJourneyKey } from "@/lib/candidate/candidateKeys";
 
 export interface PlanContextValue {
   /** The real tier from DB for the active journey/category (unaffected by dev override). */
@@ -97,8 +99,9 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
   // Active category determination
   const activeCategory =
     candidateCtx?.activeCandidate?.visaCategory || candidateCtx?.activeJourneyBase;
+  // Journey base (CR-2 -> IR-2): a CR-2 child's plan lives on the IR-2 journey rows.
   const normalizedCategory = activeCategory
-    ? getBaseVisaCategory(activeCategory)
+    ? journeyBaseCategory(activeCategory)
     : UNKNOWN_VISA_CATEGORY;
 
   // Derive the active journey's specific real tier from journeyTiers or fallback
@@ -213,10 +216,12 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
               tiersMap[rawKey] = tier;
               tiersMap[cleanKey] = tier;
 
-              // Category entry = best PRIMARY journey (variant rows such as "ir5" /
-              // "ir5-journey" collapse here). Candidate 2+ rows are looked up by key.
-              const baseCat = getBaseVisaCategory(j.journey_type);
-              if (baseCat !== UNKNOWN_VISA_CATEGORY && !rawKey.includes("candidate")) {
+              // Category entry = best slot-1 (base) journey of the category (variant rows
+              // such as "ir5" / "ir5-journey" collapse here). Slot 2+ rows are looked up
+              // by their own key. Keyed by journey base, so CR-2 shares IR-2's entry.
+              const parsed = parseJourneyKey(j.journey_type);
+              const baseCat = parsed.base;
+              if (baseCat !== UNKNOWN_VISA_CATEGORY && parsed.slot === 1) {
                 const currentRank = TIER_RANK[tiersMap[baseCat] || "free"] ?? 0;
                 const newRank = TIER_RANK[tier] ?? 0;
                 if (newRank >= currentRank) {

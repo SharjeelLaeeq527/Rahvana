@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { IR5_ENABLED } from "@/lib/feature-flags";
+import { IR5_ENABLED, IR2_ENABLED } from "@/lib/feature-flags";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/app/context/AuthContext";
 import { useRouter } from "next/navigation";
@@ -1856,6 +1856,10 @@ export default function ProfilePage() {
                     // IR-5 is hidden on production (see lib/feature-flags) until it launches.
                     ...(IR5_ENABLED
                       ? [{ value: "IR-5", label: t("profile.fields.visaType.options.ir5") }]
+                      : []),
+                    // IR-2 is hidden on production (see lib/feature-flags) until it launches.
+                    ...(IR2_ENABLED
+                      ? [{ value: "IR-2", label: t("profile.fields.visaType.options.ir2") }]
                       : []),
                     {
                       value: "F-1",
