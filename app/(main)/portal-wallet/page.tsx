@@ -20,7 +20,7 @@ import { useToast } from "@/app/components/shared/ToastProvider";
 import { useCandidate } from "@/app/context/CandidateContext";
 import { usePlan } from "@/app/context/PlanContext";
 import { useUserProfile } from "@/app/context/UserProfileContext";
-import { getCandidateJourneyKey } from "@/lib/candidate/candidateSyncService";
+import { canonicalJourneyKey, getJourneyKeyForCandidate } from "@/lib/candidate/candidateKeys";
 
 type PortalType = "USCIS" | "NVC" | "COURIER";
 
@@ -49,6 +49,7 @@ interface WalletCandidate {
   id: string;
   relation?: string;
   visaCategory?: string;
+  categorySlot?: number;
   label?: string;
   fullName?: string;
 }
@@ -130,16 +131,19 @@ const PortalWallet: React.FC = () => {
   } = candidateCtx || {};
 
   // Fetch journeys to detect active IR-1 / IR-5 journeys
+  // Flattened journey rows ({ id, journey_type, ... }); /api/journeys wraps each in { journey }.
   const [userJourneys, setUserJourneys] = useState<any[]>([]);
+  const [journeysLoaded, setJourneysLoaded] = useState(false);
   useEffect(() => {
-    fetch("/api/journeys")
+    fetch("/api/journeys?limit=100")
       .then((res) => res.json())
       .then((data) => {
         if (data?.data && Array.isArray(data.data)) {
           setUserJourneys(data.data.map((item: any) => item.journey || item));
         }
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setJourneysLoaded(true));
   }, []);
 
   const hasIr1Journey = useMemo(() => {
@@ -256,19 +260,24 @@ const PortalWallet: React.FC = () => {
   const activeJourneyKeyForWallet = useMemo(() => {
     if (activeId === "ir1") return "ir1";
     const candidate = candidates.find((c) => c.id === activeId);
+    // The candidate's category-slot key ("ir2" for the first IR-2 child, even when
+    // its id is candidate-3), never a key derived from the id.
     return candidate
-      ? getCandidateJourneyKey(candidate.visaCategory || "IR-5", candidate.id)
+      ? getJourneyKeyForCandidate({ ...candidate, visaCategory: candidate.visaCategory || "IR-5" })
       : activeJourneyKey;
   }, [activeId, activeJourneyKey, candidates]);
-  const activeJourneyId = useMemo(() => {
-    const normalizedKey = activeJourneyKeyForWallet?.toLowerCase().replace(/-/g, "");
-    return userJourneys.find(
-      (item) => item.journey?.journey_type?.toLowerCase().replace(/-/g, "") === normalizedKey
-    )?.journey?.id;
+  const activeJourneyId: string | undefined = useMemo(() => {
+    const wanted = canonicalJourneyKey(activeJourneyKeyForWallet);
+    if (!wanted) return undefined;
+    // userJourneys holds flattened rows, so match on journey_type / id directly
+    // ("item.journey" is always undefined here). Canonical keys make "IR1" /
+    // "ir1-journey" / "ir1" the same journey.
+    return userJourneys.find((j) => canonicalJourneyKey(j?.journey_type) === wanted)?.id;
   }, [activeJourneyKeyForWallet, userJourneys]);
 
   const [walletSwitcherOpen, setWalletSwitcherOpen] = useState(true);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [credentials, setCredentials] = useState<Credential[]>([]);
   const [formModal, setFormModal] = useState<{
     open: boolean;
@@ -287,19 +296,44 @@ const PortalWallet: React.FC = () => {
   const { showToast } = useToast();
 
   const fetchCredentials = useCallback(async () => {
-    if (!activeId || !activeJourneyId) return;
+    if (!activeId) return;
+    if (!activeJourneyId) {
+      // No journey row for this case: nothing to load. Stop the spinner once the
+      // journey list has arrived instead of waiting forever.
+      if (journeysLoaded) {
+        setCredentials([]);
+        setLoading(false);
+      }
+      return;
+    }
+    // A request that never answers would leave the page on "Loading your vault..."
+    // forever. Give up after 20s and show an error with a retry instead.
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 20000);
     try {
       const qs = `?journeyId=${encodeURIComponent(activeJourneyId)}&candidateId=${encodeURIComponent(activeId)}`;
-      const res = await fetch(`${API_BASE}${qs}`);
-      const data = await res.json();
-      if (data.credentials) setCredentials(data.credentials);
-      else setCredentials([]);
+      const res = await fetch(`${API_BASE}${qs}`, { signal: controller.signal });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        console.error("Failed to fetch credentials:", res.status, data);
+        setLoadError(
+          res.status === 401
+            ? "Your session has expired. Please sign in again."
+            : "We could not load your saved credentials. Please try again."
+        );
+        setCredentials([]);
+        return;
+      }
+      setLoadError(null);
+      setCredentials(Array.isArray(data.credentials) ? data.credentials : []);
     } catch (err) {
       console.error("Failed to fetch credentials:", err);
+      setLoadError("We could not load your saved credentials. Please try again.");
     } finally {
+      clearTimeout(timer);
       setLoading(false);
     }
-  }, [activeId, activeJourneyId]);
+  }, [activeId, activeJourneyId, journeysLoaded]);
 
   useEffect(() => {
     fetchCredentials();
@@ -318,7 +352,7 @@ const PortalWallet: React.FC = () => {
     } catch (err) {
       console.error("Failed to fetch all credentials:", err);
     }
-  }, [activeJourneyId]);
+  }, [activeJourneyId, activeId]);
 
   useEffect(() => {
     fetchAllCredentials();
@@ -401,7 +435,7 @@ const PortalWallet: React.FC = () => {
     setProcessingPortal(portalType);
 
     try {
-      const qs = `?journeyId=${encodeURIComponent(activeJourneyId)}&candidateId=${encodeURIComponent(activeId)}`;
+      const qs = `?journeyId=${encodeURIComponent(activeJourneyId ?? "")}&candidateId=${encodeURIComponent(activeId)}`;
       const res = await fetch(`${API_BASE}/${portalType}/delete${qs}`, {
         method: "DELETE",
       });
@@ -550,6 +584,25 @@ const PortalWallet: React.FC = () => {
     );
   }
 
+  if (loadError && credentials.length === 0) {
+    return (
+      <div className="flex h-screen flex-col items-center justify-center gap-4 px-4 text-center">
+        <p className="text-sm font-medium text-[#0c1b33]">{loadError}</p>
+        <button
+          type="button"
+          onClick={() => {
+            setLoading(true);
+            fetchCredentials();
+            fetchAllCredentials();
+          }}
+          className="rounded-lg bg-[#0d7377] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0a5c5f]"
+        >
+          Try again
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#f8fafa]">
       <div className="site-main-px site-main-py mt-14 w-full">
@@ -625,7 +678,18 @@ const PortalWallet: React.FC = () => {
           </div>
         </div>
 
-        {/* Portal Cards */}
+        {/* No journey row for this case yet: credentials are saved per journey, so
+            show a notice instead of cards whose save would fail. The switcher above
+            stays usable. */}
+        {!activeJourneyId ? (
+          <div className="mx-auto max-w-md rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm">
+            <p className="text-sm font-semibold text-[#0c1b33]">No journey started for this case yet</p>
+            <p className="mt-1 text-sm text-[#64748b]">
+              Portal credentials are saved per journey. Start this journey first, or switch to
+              another candidate above.
+            </p>
+          </div>
+        ) : (
         <div className="grid grid-cols-1 items-center justify-center gap-6 md:grid-cols-2 md:items-stretch lg:grid-cols-3">
           {portals.map((portal) => {
             const cred = getCredential(portal.type);
@@ -666,6 +730,7 @@ const PortalWallet: React.FC = () => {
             );
           })}
         </div>
+        )}
 
         {/* Security note */}
         <div className="mt-6 text-center md:mt-10">

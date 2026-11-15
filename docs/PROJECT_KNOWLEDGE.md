@@ -344,8 +344,13 @@ sets the active candidate and pushes the journey route; "Add" goes to
 `/pricing?visa=...&action=add_candidate`, unlike `AddCandidateModal`). Other categories navigate
 directly. Multi-candidate journey cards show a beneficiary-profile count.
 **Journey + candidate customization:** users can rename a journey card and set a cover image
-(stored in `MasterProfile.journeyCustomizations[<journey key>] = { name, image, updatedAt }`, saved
-via `updateProfile(..., { immediate: true })`), and rename / set an avatar for a candidate
+(stored in `MasterProfile.journeyCustomizations[<journeys.id>] = { name, image, updatedAt }`: keyed by
+the journey ROW id so each card is independent; only a card with no DB row uses its canonical key;
+older saves keyed by candidate id are read as a fallback for real roster candidates only. Saved via
+`updateProfile(..., { immediate: true })` with just that card's entry; the card rename does NOT write
+the candidate roster (a parallel `candidate/create` write rewrote `profile_details` and could undo
+it). `updateProfile` merges synchronously into `profileRef` before an immediate save, because a
+merge deferred inside a setState updater made the save send the old profile), and rename / set an avatar for a candidate
 (`CandidateProfile.customName` / `avatarUrl`, plus optional `journeyName` / `journeyImage`).
 `CandidateContext` treats a `customName` as authoritative: it is used as the label and is never
 overwritten by the generic "Candidate N" default-name normalization. Images go through
