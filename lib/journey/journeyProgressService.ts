@@ -144,7 +144,21 @@ function isStepActiveForJourney(
       continue;
     }
 
-    const actualValue = caseData[key];
+    let actualValue = caseData[key];
+    if (key === "childAgeBand" && !actualValue) {
+      actualValue =
+        (caseData["questAnswers_eligibility-suite"] as any)?.q2?.q2s2 ||
+        (caseData.questAnswers_eligibility_suite as any)?.q2?.q2s2 ||
+        (caseData.questAnswers_eligibilitySuite as any)?.q2?.q2s2;
+
+      if (
+        !actualValue &&
+        (caseData.child_age_16_or_older === "yes" ||
+          caseData.child_age_16_or_older === true)
+      ) {
+        actualValue = "16_17";
+      }
+    }
 
     if (Array.isArray(expectedValue)) {
       if (!expectedValue.includes(actualValue)) return false;
