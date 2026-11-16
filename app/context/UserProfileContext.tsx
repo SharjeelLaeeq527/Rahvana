@@ -204,13 +204,16 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
     ) => {
       if (!user?.id) return;
 
-      // Optimistic local merge
-      setProfile((prev) => {
-        const base = prev || ({} as MasterProfile);
-        const merged = deepMergeProfile(base, partial) as MasterProfile;
-        profileRef.current = merged;
-        return merged;
-      });
+      // Optimistic local merge, computed NOW (not inside a setState updater): React may
+      // defer an updater until the next render, and an immediate save below reads
+      // profileRef right away. A deferred merge made that save send the profile from
+      // before this change, so the change was lost on refresh.
+      const merged = deepMergeProfile(
+        profileRef.current || ({} as MasterProfile),
+        partial
+      ) as MasterProfile;
+      profileRef.current = merged;
+      setProfile(merged);
 
       // If localOnly is requested (e.g. candidate state mutations managed by dedicated APIs),
       // do not schedule a save back to /api/profile/complete.

@@ -45,6 +45,8 @@ interface AllServiceRequestsModalProps {
   onDone: () => void;
   /** Launch a toolbox service in the current journey. */
   onLaunchItem: (componentKey: string) => void;
+  /** Show only the requests of the journey (category + candidate) being viewed. */
+  currentJourneyOnly?: boolean;
 }
 
 const SERVICE_ICONS: Record<ServiceKind, LucideIcon> = {
@@ -93,6 +95,7 @@ export function AllServiceRequestsModal({
   onClose,
   onDone,
   onLaunchItem,
+  currentJourneyOnly = false,
 }: AllServiceRequestsModalProps) {
   const router = useRouter();
   const { candidates, activeCandidateId, setActiveCandidateId } = useCandidate();
@@ -139,9 +142,11 @@ export function AllServiceRequestsModal({
 
   const filtered = useMemo(() => {
     // When accessed for the journey, account-wide requests are excluded.
-    const nonAccount = items.filter((i) => i.context.kind !== "account");
+    const nonAccount = items.filter(
+      (i) => i.context.kind !== "account" && (!currentJourneyOnly || isRequestInCurrentJourney(i, current))
+    );
     return filter === "all" ? nonAccount : nonAccount.filter((i) => i.service === filter);
-  }, [items, filter]);
+  }, [items, filter, currentJourneyOnly, current]);
 
   // Group by where each request lives; the journey being viewed comes first.
   const groups = useMemo(() => {
@@ -188,7 +193,7 @@ export function AllServiceRequestsModal({
       return (
         <div className="flex flex-col items-center justify-center gap-3 py-16 text-sm text-slate-500">
           <Loader2 className="h-6 w-6 animate-spin text-[#0d7377]" />
-          Looking up your requests across all journeys
+          {currentJourneyOnly ? "Looking up this journey's requests" : "Looking up your requests across all journeys"}
         </div>
       );
     }
@@ -204,13 +209,18 @@ export function AllServiceRequestsModal({
         <div className="flex flex-col items-center justify-center gap-2 py-16 text-center">
           <Inbox className="h-8 w-8 text-slate-300" />
           <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-            {filter === "all"
-              ? "No service requests on your account yet"
-              : `No ${SERVICE_LABELS[filter]} requests on your account`}
+            {currentJourneyOnly
+              ? filter === "all"
+                ? "No service requests for this journey yet"
+                : `No ${SERVICE_LABELS[filter]} requests for this journey`
+              : filter === "all"
+                ? "No service requests on your account yet"
+                : `No ${SERVICE_LABELS[filter]} requests on your account`}
           </p>
           <p className="max-w-sm text-xs text-slate-500">
-            Requests you submit from any journey or from the standalone service pages will show
-            up here.
+            {currentJourneyOnly
+              ? "Consultations, medical bookings, police certificates and translations you request for this journey will show up here."
+              : "Requests you submit from any journey or from the standalone service pages will show up here."}
           </p>
         </div>
       );
@@ -410,7 +420,9 @@ export function AllServiceRequestsModal({
                 <p className="text-xs text-slate-500 dark:text-slate-400">
                   {selected
                     ? "See exactly where this request was filed."
-                    : "Every request on your account, across all journeys and candidates."}
+                    : currentJourneyOnly
+                      ? "Service requests for this journey."
+                      : "Every request on your account, across all journeys and candidates."}
                 </p>
               </div>
             </div>

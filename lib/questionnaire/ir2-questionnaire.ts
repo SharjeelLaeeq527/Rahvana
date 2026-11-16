@@ -668,12 +668,12 @@ export const IR2_ELIGIBILITY_DERIVATION_MAP: EligibilityDerivationMap = [
     eligibilityScreenId: "q2s2",
     derive: (val) => {
       if (["under_14", "14_15"].includes(val)) {
-        return { child_age_16_or_older: "no" };
+        return { child_age_16_or_older: "no", childAgeBand: val };
       }
       if (["16_17", "18_20"].includes(val)) {
-        return { child_age_16_or_older: "yes" };
+        return { child_age_16_or_older: "yes", childAgeBand: val };
       }
-      return {};
+      return { childAgeBand: val };
     },
   },
 

@@ -4389,7 +4389,8 @@ export const StepView: React.FC<StepViewProps> = ({
         <button
           onClick={() => {
             if (prevStepLock.isLocked) {
-              setUpgradeModalFeature(getModalFeatureForTier(prevStepLock.requiredPlan!));
+              const psId = prevStep ? ((prevStep as any).step_key || (prevStep as any).id) : undefined;
+              setUpgradeModalFeature(prevStepLock.feature || getModalFeatureForTier(prevStepLock.requiredPlan!, psId));
               return;
             }
             prevStep && handleNavigate((prevStep as any).step_key || (prevStep as any).id);
@@ -4402,7 +4403,7 @@ export const StepView: React.FC<StepViewProps> = ({
         </button>
 
         {/* Progress */}
-        <div className="flex flex-1 items-center gap-2">
+        <div className="flex flex-1 items-center gap-2 transition-all duration-300">
           <div className="h-1 flex-1 overflow-hidden rounded-full bg-[#d0e4f7]">
             <div
               className="from-primary to-primary/70 h-full rounded-full bg-gradient-to-r transition-all duration-500 ease-out"
@@ -4415,20 +4416,23 @@ export const StepView: React.FC<StepViewProps> = ({
         </div>
 
         {/* Next */}
-        <button
-          onClick={() => {
-            if (nextStepLock.isLocked) {
-              setUpgradeModalFeature(getModalFeatureForTier(nextStepLock.requiredPlan!));
-              return;
-            }
-            nextStep && handleNavigate((nextStep as any).step_key || (nextStep as any).id);
-          }}
-          className={`bg-primary shadow-primary/20 flex shrink-0 items-center gap-[5px] rounded-[10px] px-[18px] py-[9px] text-[13px] font-semibold text-white shadow-sm transition-all hover:brightness-110 active:scale-95 ${!nextStep || !isCompleted ? "pointer-events-none invisible" : ""} ${nextStepLock.isLocked ? "opacity-90 saturate-[0.8]" : ""}`}
-        >
-          {nextStepLock.isLocked && <Lock size={12} className="mr-1" />}
-          Next
-          <ArrowRight size={12} strokeWidth={2.5} />
-        </button>
+        {nextStep && isCompleted && (
+          <button
+            onClick={() => {
+              if (nextStepLock.isLocked) {
+                const nsId = (nextStep as any).step_key || (nextStep as any).id;
+                setUpgradeModalFeature(nextStepLock.feature || getModalFeatureForTier(nextStepLock.requiredPlan!, nsId));
+                return;
+              }
+              handleNavigate((nextStep as any).step_key || (nextStep as any).id);
+            }}
+            className={`bg-primary shadow-primary/20 flex shrink-0 items-center gap-[5px] rounded-[10px] px-[18px] py-[9px] text-[13px] font-semibold text-white shadow-sm transition-all hover:brightness-110 active:scale-95 ${nextStepLock.isLocked ? "opacity-90 saturate-[0.8]" : ""}`}
+          >
+            {nextStepLock.isLocked && <Lock size={12} className="mr-1" />}
+            Next
+            <ArrowRight size={12} strokeWidth={2.5} />
+          </button>
+        )}
       </footer>
 
       {/* Sponsorship Calculator, Medical, and PCC now launch through the shared roadmap

@@ -283,6 +283,35 @@ export const DEFAULT_TEMPLATES = {
 // Exporting SCENARIOS to preserve exports (in case of other files importing it)
 export const SCENARIOS = DEFAULT_SCENARIOS;
 
+export const I864EZ_TEMPLATE = {
+  id: "i864ez-${sp}",
+  icon: "file-text",
+  title: "Form I-864EZ, ${sp}",
+  sub: "Completed Affidavit of Support for petitioner qualifying alone",
+  tags: [
+    { cls: "${tagClass}", label: "${sp}" },
+    { cls: "tag-tax", label: "Required Form" },
+  ],
+  guide: {
+    intro:
+      "Form I-864EZ is a shorter, simplified version of Form I-864 Affidavit of Support. It is used when the petitioner sponsors only one immigrant using their own salary or pension documented on W-2 forms.",
+    sections: [
+      {
+        title: "Who Qualifies for Form I-864EZ",
+        body: "You can use Form I-864EZ if: 1) You are the petitioning sponsor who filed Form I-130; 2) The relative you are sponsoring is the only person listed on the petition; 3) Your qualifying income comes entirely from your own salary or pension documented on W-2 forms; 4) No joint sponsor or Form I-864A household member is used.",
+      },
+      {
+        title: "USCIS Form Integrity",
+        body: "Download the latest version of Form I-864EZ directly from the USCIS website. Complete all parts accurately, leave no blank fields (use 'N/A' or 'None' where appropriate), and sign it before submission.",
+      },
+      {
+        title: "Supporting Financial Evidence",
+        body: "Attach your IRS tax transcript (or complete Form 1040 copy with W-2s) for the most recent tax year, along with current pay stubs and employment verification letter.",
+      },
+    ],
+  },
+};
+
 export const getFinancialDocs = (scKey: string, toolData?: any) => {
   const scenarios = toolData?.scenarios || DEFAULT_SCENARIOS;
   const templates = toolData?.templates || DEFAULT_TEMPLATES;
@@ -323,27 +352,55 @@ export const getFinancialDocs = (scKey: string, toolData?: any) => {
     return clone;
   };
 
-  allSponsors.forEach((sp) => {
-    const isPet = sp === "Petitioner";
-    const tagClass = isPet ? "tag-pet" : "tag-js";
-    const vars = { sp, taxNote, tagClass };
+  if (scKey === "ina-320-exempt" && Array.isArray(templates.ina_320_required)) {
+    templates.ina_320_required.forEach((t: any) => {
+      docs.required.push(interpolateDoc(t, {}));
+    });
+  } else {
+    allSponsors.forEach((sp) => {
+      const isPet = sp === "Petitioner";
+      const tagClass = isPet ? "tag-pet" : "tag-js";
+      const vars = { sp, taxNote, tagClass };
 
-    if (Array.isArray(templates.sponsor_required)) {
-      templates.sponsor_required.forEach((t: any) => {
-        docs.required.push(interpolateDoc(t, vars));
-      });
+      if (Array.isArray(templates.sponsor_required)) {
+        templates.sponsor_required.forEach((t: any) => {
+          docs.required.push(interpolateDoc(t, vars));
+        });
+      }
+      if (Array.isArray(templates.sponsor_conditional)) {
+        templates.sponsor_conditional.forEach((t: any) => {
+          docs.conditional.push(interpolateDoc(t, vars));
+        });
+      }
+      if (Array.isArray(templates.sponsor_recommended)) {
+        templates.sponsor_recommended.forEach((t: any) => {
+          docs.recommended.push(interpolateDoc(t, vars));
+        });
+      }
+    });
+
+    const isEzScenario =
+      scKey === "pet-only" ||
+      (typeof sc.forms === "string" && sc.forms.includes("I-864EZ")) ||
+      (Array.isArray(sc.forms) && sc.forms.some((f: any) => String(f).includes("I-864EZ")));
+
+    if (isEzScenario) {
+      const isAlreadyPresent = docs.required.some(
+        (d: any) =>
+          d.id === "i864ez-Petitioner" ||
+          d.id === "i-864ez-affidavit" ||
+          d.title?.toLowerCase().includes("i-864ez")
+      );
+      if (!isAlreadyPresent) {
+        const vars = {
+          sp: "Petitioner",
+          taxNote,
+          tagClass: "tag-pet",
+        };
+        docs.required.unshift(interpolateDoc(I864EZ_TEMPLATE, vars));
+      }
     }
-    if (Array.isArray(templates.sponsor_conditional)) {
-      templates.sponsor_conditional.forEach((t: any) => {
-        docs.conditional.push(interpolateDoc(t, vars));
-      });
-    }
-    if (Array.isArray(templates.sponsor_recommended)) {
-      templates.sponsor_recommended.forEach((t: any) => {
-        docs.recommended.push(interpolateDoc(t, vars));
-      });
-    }
-  });
+  }
 
   if (Array.isArray(sc.householdMembers)) {
     sc.householdMembers.forEach((hm: string, i: number) => {

@@ -46,6 +46,47 @@ export function getActiveStepsForStage(
               }
             }
           }
+          if (key === "childAgeBand" && !stateValue) {
+            // 1. Check nested quest answers
+            stateValue =
+              metadata?.["questAnswers_eligibility-suite"]?.q2?.q2s2 ||
+              metadata?.questAnswers_eligibility_suite?.q2?.q2s2 ||
+              metadata?.questAnswers_eligibilitySuite?.q2?.q2s2;
+
+            // 2. Fallback if child_age_16_or_older is yes
+            if (
+              !stateValue &&
+              (metadata?.child_age_16_or_older === "yes" ||
+                metadata?.child_age_16_or_older === true)
+            ) {
+              stateValue = "16_17";
+            }
+
+            // 3. Fallback from candidate/beneficiary date of birth
+            if (!stateValue) {
+              const dob =
+                metadata?.child_date_of_birth ||
+                metadata?.beneficiary_date_of_birth ||
+                metadata?.dateOfBirth ||
+                metadata?.dob;
+              if (dob && typeof dob === "string") {
+                const birthDate = new Date(dob);
+                if (!isNaN(birthDate.getTime())) {
+                  const now = new Date();
+                  let age = now.getFullYear() - birthDate.getFullYear();
+                  const m = now.getMonth() - birthDate.getMonth();
+                  if (m < 0 || (m === 0 && now.getDate() < birthDate.getDate())) {
+                    age--;
+                  }
+                  if (age < 14) stateValue = "under_14";
+                  else if (age < 16) stateValue = "14_15";
+                  else if (age < 18) stateValue = "16_17";
+                  else if (age < 21) stateValue = "18_20";
+                  else stateValue = "21_plus";
+                }
+              }
+            }
+          }
           if (Array.isArray(value)) {
             if (!value.includes(stateValue)) isVisible = false;
           } else {

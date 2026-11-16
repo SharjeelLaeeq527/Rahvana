@@ -382,11 +382,7 @@
                   "title": "Will your child turn 21 soon?",
                   "body": "If the I-130 is filed before the child turns 21, the child's age is locked on that day. Check the last date to file.",
                   "button_label": "Check the age",
-                  "show_when": [
-                    "pass",
-                    "caution",
-                    "review"
-                  ]
+                  "show_when": ["pass", "caution", "review"]
                 }
               },
               {

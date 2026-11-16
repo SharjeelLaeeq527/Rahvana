@@ -294,6 +294,13 @@ export function mapDocumentNameToId(name: string): string {
     "current pay stubs and employment verification letter (if current income must be documented)": "pay-stubs",
     "most recent irs tax transcript or complete federal tax return - petitioner": "tax-returns-petitioner",
     "form i-864 affidavit of support - petitioner": "i-864-affidavit",
+    "form i-864ez affidavit of support - petitioner": "i-864ez-affidavit",
+    "form i-864ez: affidavit of support for certain sponsors": "i-864ez-affidavit",
+    "form i-864ez, petitioner": "i-864ez-affidavit",
+    "form i-864ez (affidavit of support)": "i-864ez-affidavit",
+    "form i-864ez": "i-864ez-affidavit",
+    "i-864ez form": "i-864ez-affidavit",
+    "i-864ez": "i-864ez-affidavit",
     "proof of u.s. domicile - petitioner": "domicile-proof-petitioner",
 
     // Child / IR-2 Specific Mappings

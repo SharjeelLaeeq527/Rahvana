@@ -332,7 +332,7 @@ export function ChapterView({ data, chapterIdx, state, onBack, onSelectStep }: C
                 key={`mobile-${sId}`}
                 onClick={() => {
                   if (isStepLocked) {
-                    const feat = getModalFeatureForTier(lockStatus.requiredPlan!);
+                    const feat = lockStatus.feature || getModalFeatureForTier(lockStatus.requiredPlan!, sId);
                     setUpgradeModalFeature(feat);
                     return;
                   }
@@ -523,7 +523,7 @@ export function ChapterView({ data, chapterIdx, state, onBack, onSelectStep }: C
                 onClick={() => {
                   if (isStepLocked) {
                     // Show upgrade modal with tier-appropriate feature
-                    const feat = getModalFeatureForTier(lockStatus.requiredPlan!);
+                    const feat = lockStatus.feature || getModalFeatureForTier(lockStatus.requiredPlan!, sId);
                     setUpgradeModalFeature(feat);
                     return;
                   }

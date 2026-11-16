@@ -152,7 +152,12 @@ export function QuestRenderer({
     setSuiteAnswers(finalAnswers);
     actions.updateAnswers({ [suite.id]: finalAnswers });
     // Persist answers to backend so risk flags survive page refresh
-    actions.updateMetadata({ [metaAnswersKey]: finalAnswers });
+    const updates: Record<string, unknown> = { [metaAnswersKey]: finalAnswers };
+    const ageBand = (finalAnswers as any)?.q2?.q2s2;
+    if (ageBand && typeof ageBand === "string") {
+      updates.childAgeBand = ageBand;
+    }
+    actions.updateMetadata(updates);
 
     const logic = (activeQuest as any).result_logic || (activeQuest as any).resultLogic;
     const allAnswers = {
