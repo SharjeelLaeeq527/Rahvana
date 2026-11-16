@@ -23,7 +23,7 @@ export const NOTE_CATEGORIES: { color: (typeof NOTE_COLORS)[number]; label: stri
   { color: "#3b62a0", label: "Documents" },
   { color: "#6b4f93", label: "Questions" },
   { color: "#b4405a", label: "Appointments" },
-  { color: "#d89a45", label: "Money" },
+  { color: "#d89a45", label: "Finances" },
 ];
 export const noteCategoryLabel = (color: string) =>
   NOTE_CATEGORIES.find((c) => c.color === color)?.label ?? "Follow-up";
@@ -110,7 +110,10 @@ export function parseEvents(raw: unknown): DashboardEvent[] {
 
 export function parseDismissed(raw: unknown): string[] {
   if (!Array.isArray(raw)) return [];
-  return raw.filter(isStr).map((s) => s.slice(0, 300)).slice(-DISMISSED_MAX);
+  return raw
+    .filter(isStr)
+    .map((s) => s.slice(0, 300))
+    .slice(-DISMISSED_MAX);
 }
 
 /** Notes ordered for display: pinned first, then newest first. */
