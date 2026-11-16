@@ -15,6 +15,11 @@ import type {
 
 const TABLE = "tool_reviews";
 
+// Public reads run while /resources/[slug] is rendered (at build time and on
+// ISR refresh). A slow or unhealthy database must not hang that render: past
+// this limit the query is aborted and the page renders without reviews.
+const PUBLIC_READ_TIMEOUT_MS = 5000;
+
 export function isValidReviewSlug(slug: string): boolean {
   return RESOURCE_SLUGS.includes(slug);
 }
@@ -57,7 +62,8 @@ export async function getApprovedReviews(slug: string): Promise<ToolReview[]> {
     .select("*")
     .eq("tool_slug", slug)
     .eq("status", "approved")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .abortSignal(AbortSignal.timeout(PUBLIC_READ_TIMEOUT_MS));
 
   if (error) {
     console.error("[reviews] getApprovedReviews error:", error.message);
@@ -72,7 +78,8 @@ export async function getReviewStats(slug: string): Promise<ToolReviewStats> {
     .from(TABLE)
     .select("rating")
     .eq("tool_slug", slug)
-    .eq("status", "approved");
+    .eq("status", "approved")
+    .abortSignal(AbortSignal.timeout(PUBLIC_READ_TIMEOUT_MS));
 
   const empty: ToolReviewStats = { average: 0, count: 0, distribution: [0, 0, 0, 0, 0] };
   if (error || !data || data.length === 0) {

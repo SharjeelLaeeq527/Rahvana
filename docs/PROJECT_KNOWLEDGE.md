@@ -1422,6 +1422,13 @@ inheritance, i18n via `useLanguage().t()`, gating via `usePlan()`.
 - calls `lib/supabase/middleware.updateSession(request)` — refreshes the Supabase session,
   redirects unauthenticated users from protected routes and authenticated users from auth
   pages, and enforces admin-only access (email whitelist **AND** DB role, audit-logged).
+- only calls Supabase Auth for protected / admin / auth routes (public routes skip it), and
+  **every Supabase call in it is capped at 5s** (`getUserWithTimeout`, `abortSignal` on the
+  admin `profiles` read). When Auth is down or slow, admin routes answer 503 (fail closed) and
+  every other route passes through untouched (never bounced to /login); API routes still check
+  the session themselves. Without the cap an unhealthy Supabase made Vercel return
+  `504 MIDDLEWARE_INVOCATION_TIMEOUT`. Static files (scripts, fonts, media) are kept out of the
+  matcher; `.txt` / `.xml` stay in so the staging gate covers robots/sitemap.
 - enforces **API body-size limits** (`assertMiddlewareBodySize`).
 - injects **`X-Robots-Tag: noindex, nofollow`** on a hardcoded `PRIVATE_PREFIXES` list
   (crawler guard).
