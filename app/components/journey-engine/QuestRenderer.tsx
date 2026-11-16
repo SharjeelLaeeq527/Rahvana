@@ -1,5 +1,6 @@
 "use client";
 
+import { JOURNEY_VIEW_TOP } from "@/app/components/journey-engine/viewSpacing";
 import React, { useState, useEffect } from "react";
 import { AlertTriangle, ChevronRight, CheckCircle2, XCircle, Info, Circle } from "lucide-react";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
@@ -250,7 +251,7 @@ export function QuestRenderer({
     const progressPct = (completedCount / suite.quests.length) * 100;
 
     return (
-      <div className="animate-in fade-in mx-auto flex w-full max-w-[680px] flex-col px-4 sm:px-6 md:px-8 pt-5 pb-10 duration-500 md:pt-8">
+      <div className={`animate-in fade-in mx-auto flex w-full max-w-[680px] flex-col px-4 pb-10 duration-500 sm:px-6 md:px-8 ${JOURNEY_VIEW_TOP}`}>
         {/* Header */}
         <div className="mb-6 sm:mb-8">
           <h1 className="mt-4 mb-2 text-[clamp(28px,4vw,36px)] leading-[1.15] font-bold tracking-tight break-words text-[#0c1b33]">
@@ -486,7 +487,7 @@ export function QuestRenderer({
     const meta = getStatusMeta(activeQuest.id, 36);
 
     return (
-      <div className="animate-in zoom-in-95 fade-in mx-auto flex min-h-0 w-full max-w-[600px] flex-col items-center justify-center px-4 pt-8 pb-4 duration-500 sm:px-6 sm:pt-10 sm:pb-6">
+      <div className={`animate-in zoom-in-95 fade-in mx-auto flex min-h-0 w-full max-w-[600px] flex-col items-center justify-center px-4 pb-4 duration-500 sm:px-6 sm:pb-6 ${JOURNEY_VIEW_TOP}`}>
         <div className="w-full text-center">
           <div
             className={`h-14 w-14 rounded-full sm:h-20 sm:w-20 ${meta.bg} ${meta.color} mx-auto mb-4 flex items-center justify-center border border-current/10 text-2xl sm:mb-6 sm:text-3xl`}
