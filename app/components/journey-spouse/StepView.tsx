@@ -2709,7 +2709,7 @@ export const StepView: React.FC<StepViewProps> = ({
                     rel="noopener noreferrer"
                     className="mt-[12px] inline-flex w-fit cursor-pointer items-center gap-[5px] text-[12px] font-semibold text-[#15744f] hover:underline"
                   >
-                    <span>Update in Portal Wallet</span>
+                    <span>Go to Portal Wallet</span>
                     <ExternalLink size={11} strokeWidth={2} />
                   </Link>
                 </div>
