@@ -18,6 +18,15 @@ export interface PortalCredential {
   security_questions: SecurityQuestion[];
 }
 
+export interface PreviousUscisInfo {
+  id: string;
+  username: string;
+  journey_id: string;
+  candidate_id: string;
+  journeyType?: string;
+  updated_at: string;
+}
+
 interface UsePortalWalletProps {
   sId: string;
   journeyId: string;
@@ -41,6 +50,7 @@ export const usePortalWallet = ({
   const [uscisCredentials, setUscisCredentials] = useState<PortalCredential | null>(null);
   const [ceacCredentials, setCeacCredentials] = useState<PortalCredential | null>(null);
   const [courierCredentials, setCourierCredentials] = useState<PortalCredential | null>(null);
+  const [previousUscis, setPreviousUscis] = useState<PreviousUscisInfo | null>(null);
 
   const [isWalletFormOpen, setIsWalletFormOpen] = useState(false);
   const [isWalletViewOpen, setIsWalletViewOpen] = useState(false);
@@ -71,6 +81,15 @@ export const usePortalWallet = ({
         setUscisCredentials(uscis || null);
         setCeacCredentials(ceac || null);
         setCourierCredentials(courier || null);
+      } else {
+        setUscisCredentials(null);
+        setCeacCredentials(null);
+        setCourierCredentials(null);
+      }
+      if (data.previousUscis) {
+        setPreviousUscis(data.previousUscis);
+      } else {
+        setPreviousUscis(null);
       }
     } catch (err) {
       console.error("Failed to fetch credentials:", err);
@@ -136,6 +155,31 @@ export const usePortalWallet = ({
     }
   };
 
+  const handleLoadPreviousUscis = async (sourceId?: string): Promise<boolean> => {
+    setIsSubmittingCreds(true);
+    try {
+      const res = await fetch("/api/portal-wallet/copy-uscis", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sourceCredentialId: sourceId || previousUscis?.id,
+          targetJourneyId: journeyId,
+          targetCandidateId: candidateId,
+        }),
+      });
+      if (!res.ok) throw new Error("Failed to copy USCIS credentials");
+      showToast("USCIS credentials loaded from previous journey", "success");
+      await fetchCredentials();
+      return true;
+    } catch (err) {
+      console.error("Failed to load previous USCIS credentials:", err);
+      showToast("Failed to load previous USCIS credentials", "error");
+      return false;
+    } finally {
+      setIsSubmittingCreds(false);
+    }
+  };
+
   const handleRevealPassword = async (credentialId: string): Promise<string> => {
     const res = await fetch("/api/portal-wallet/reveal", {
       method: "POST",
@@ -193,6 +237,7 @@ export const usePortalWallet = ({
     uscisCredentials,
     ceacCredentials,
     courierCredentials,
+    previousUscis,
     setUscisCredentials,
     setCeacCredentials,
     setCourierCredentials,
@@ -211,6 +256,7 @@ export const usePortalWallet = ({
     setIsCeacModalOpen,
     fetchCredentials,
     handleSaveCredentials,
+    handleLoadPreviousUscis,
     handleRevealPassword,
     handleRevealAnswer,
     handleDeleteCredentials,
