@@ -540,7 +540,7 @@ export function QuestRenderer({
     const accentColor = isChapter1
       ? {
           bar: "bg-[#8284bf]",
-          barBg: "bg-[#f3f0fb]",
+          barBg: "bg-[#e9e6f6]",
           border: "border-[#8284bf]/40",
           closeBg: "bg-[#f3f0fb] hover:bg-[#e6d6f5]",
           closeStroke: "stroke-[#8284bf]",
@@ -550,7 +550,7 @@ export function QuestRenderer({
       : isChapter2
         ? {
             bar: "bg-[#520a50]",
-            barBg: "bg-[#f4e6f3]",
+            barBg: "bg-[#efdcee]",
             border: "border-[#520a50]",
             closeBg: "bg-[#f4e6f3] hover:bg-[#520a50]/10",
             closeStroke: "stroke-[#520a50]",
@@ -559,7 +559,7 @@ export function QuestRenderer({
           }
         : {
             bar: "bg-[#051738]",
-            barBg: "bg-[#e8ecf3]",
+            barBg: "bg-[#dfe4ee]",
             border: "border-[#051738]",
             closeBg: "bg-[#e8ecf3] hover:bg-[#051738]/10",
             closeStroke: "stroke-[#051738]",
@@ -568,10 +568,10 @@ export function QuestRenderer({
           };
 
     return (
-      <div className="animate-in slide-in-from-right-4 fade-in flex w-full flex-col pt-6 duration-500">
+      <div className="animate-in slide-in-from-right-4 fade-in flex w-full flex-col duration-500">
         {/* Topbar */}
         <div
-          className={`flex h-10 shrink-0 items-center gap-2 border-b px-3 sm:gap-3 sm:px-4 ${accentColor.border}`}
+          className="sticky top-0 z-10 flex h-12 shrink-0 items-center gap-3 border-b border-[#e6ebf3] bg-white/95 px-3 backdrop-blur-sm sm:h-14 sm:gap-4 sm:px-6"
         >
           <button
             onClick={() => setView("landing")}
@@ -588,7 +588,7 @@ export function QuestRenderer({
             </svg>
           </button>
 
-          <div className={`h-[3px] flex-1 overflow-hidden rounded-full ${accentColor.barBg}`}>
+          <div className={`mx-auto h-1.5 w-full max-w-[560px] flex-1 overflow-hidden rounded-full ${accentColor.barBg}`}>
             <div
               className={`h-full rounded-full transition-all duration-300 ease-out ${accentColor.bar}`}
               style={{ width: `${progressPct}%` }}
@@ -596,14 +596,14 @@ export function QuestRenderer({
           </div>
 
           <span
-            className={`shrink-0 text-[11px] font-medium whitespace-nowrap ${accentColor.label}`}
+            className={`min-w-[36px] shrink-0 text-right text-[12px] font-semibold whitespace-nowrap tabular-nums ${accentColor.label}`}
           >
             {progressIdx} / {activeQuest.screens.length}
           </span>
         </div>
 
         {/* Quest body */}
-        <div className="flex flex-1 flex-col items-center overflow-y-auto px-4 pt-5 pb-8 sm:px-6 sm:pt-8 sm:pb-12">
+        <div className={`flex flex-1 flex-col items-center overflow-y-auto px-4 pb-8 sm:px-6 sm:pb-12 ${JOURNEY_VIEW_TOP}`}>
           <div className="flex w-full max-w-[560px] flex-col">
             {/* Quest label */}
             <div

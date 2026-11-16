@@ -1,5 +1,6 @@
 "use client";
 
+import { JOURNEY_STEP_SHELL } from "@/app/components/journey-engine/viewSpacing";
 import React, { useState } from "react";
 import { Search, Clock, Scale, BellRing, Save, ExternalLink, ClipboardList, AlertTriangle } from "lucide-react";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
@@ -37,7 +38,7 @@ export const AwaitingReviewStep: React.FC<AwaitingReviewStepProps> = ({ data }) 
       `}</style>
 
       {/* Page Shell */}
-      <div className="flex w-full max-w-[680px] flex-col mx-auto px-4 sm:px-6 md:px-8 pt-5 pb-10 md:pt-8">
+      <div className={`mx-auto ${JOURNEY_STEP_SHELL}`}>
         {/* Eyebrow */}
         {/* {data.eyebrow && (
           <div className="flex items-center gap-[8px] mb-[6px] animate-in fade-in slide-in-from-top-2 duration-300">

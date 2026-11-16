@@ -2,7 +2,7 @@
 // Dynamic refactoring in progress
 "use client";
 
-import { JOURNEY_VIEW_TOP } from "@/app/components/journey-engine/viewSpacing";
+import { JOURNEY_STEP_SHELL, JOURNEY_VIEW_TOP } from "@/app/components/journey-engine/viewSpacing";
 import React, { useEffect, useLayoutEffect, useMemo, useState, useCallback, useRef } from "react";
 import { JourneyGuidePage } from "@/app/components/shared/GuidePageOverlay";
 import { ToolPageOverlay } from "@/app/components/shared/ToolPageOverlay";
@@ -1405,7 +1405,7 @@ export const StepView: React.FC<StepViewProps> = ({
         />
 
         {/* Page Shell */}
-        <div className="flex w-full max-w-[680px] flex-col px-4 pt-5 pb-10 sm:px-6 md:px-8 md:pt-8">
+        <div className={JOURNEY_STEP_SHELL}>
           {/* Step Header */}
           <StepHeader
             stepNumber={localIdx + 1}
@@ -3451,7 +3451,7 @@ export const StepView: React.FC<StepViewProps> = ({
                     }}
                   />
                 )}
-                <div className="animate-in fade-in slide-in-from-bottom-6 flex w-full flex-col items-center px-3 pt-5 duration-1000 sm:px-4 md:px-0">
+                <div className="animate-in fade-in slide-in-from-bottom-6 flex w-full flex-col items-center px-3 duration-1000 sm:px-4 md:px-0">
                   {/* Questionnaire CTA - Commented out (dev option) */}
                   {/* {currentStep.step_key === "step_1_2" && !isDocQuestionnaireCompleted && (
                   <div className="max-w-3xl w-full mx-auto px-0 sm:px-2 md:px-4 pt-5 sm:pt-8 md:pt-14 pb-4 sm:pb-8 md:pb-12 flex flex-col gap-3">
@@ -4159,7 +4159,7 @@ export const StepView: React.FC<StepViewProps> = ({
               </>
             ) : currentStep.step_type === "filing" ? (
               <div className="animate-in fade-in slide-in-from-bottom-6 flex w-full flex-col items-center duration-1000">
-                <div className="flex w-full max-w-[680px] flex-col px-4 pt-5 pb-10 sm:px-6 md:px-8 md:pt-8">
+                <div className={JOURNEY_STEP_SHELL}>
                   <h1 className="mt-0 mb-1 text-[clamp(28px,4vw,36px)] leading-[1.15] font-bold tracking-tight text-[#0c1b33]">
                     {currentStep.step_name}
                   </h1>

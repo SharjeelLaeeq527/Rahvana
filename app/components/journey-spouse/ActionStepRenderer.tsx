@@ -1,5 +1,6 @@
 "use client";
 
+import { JOURNEY_STEP_SHELL } from "@/app/components/journey-engine/viewSpacing";
 import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { createPortal } from "react-dom";
 import {
@@ -1318,7 +1319,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
         .asr-spin { animation: spin 1s linear infinite; }
       `}</style>
       {/* Main Content */}
-      <div className="step mx-auto flex w-full max-w-[680px] flex-col px-4 sm:px-6 md:px-8 pt-5 pb-10 md:pt-8">
+      <div className={`step mx-auto ${JOURNEY_STEP_SHELL}`}>
         {/* Eyebrow for Paper Filing Path steps */}
         {/* {(step.step_key === "step_1_11" || 
           step.step_key === "step_1_12" || 
