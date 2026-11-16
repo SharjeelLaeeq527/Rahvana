@@ -4616,7 +4616,8 @@
                 "Easier question flow than the portal",
                 "Plain-language guidance for each section",
                 "Built-in review before finalizing",
-                "Generate a PDF answer key for CEAC entry"
+                "Generate a PDF answer key for CEAC entry",
+                "Save your DS-260 confirmation page for your medical exam and consular interview."
               ],
               "button_label": "Launch DS-260 Autoform Filler",
               "href": "/visa-forms/ds260/wizard",
