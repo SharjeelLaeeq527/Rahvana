@@ -838,7 +838,7 @@ export function SiteHeader({
   const isHomepageHeroState = pathname === "/" && !scrolled;
   return (
     <header
-      className={`fixed top-0 right-0 left-0 z-100 w-full transition-all duration-300 max-[767px]:pb-14 ${
+      className={`fixed top-0 right-0 left-0 z-100 w-full transition-all duration-300 max-767:pb-4 ${
         isHomeHeroState || isHomeHeroP2State || isHomepageHeroState
           ? "border-none bg-transparent py-4 shadow-none"
           : "bg-background py-2 shadow-lg"
@@ -1172,7 +1172,7 @@ export function SiteHeader({
                 setNotificationsOpen(false);
                 setQuickAccessOpen(false);
               }}
-              className="absolute top-3 right-16 flex h-10 w-10 items-center justify-center rounded-full border-0 bg-transparent text-[#0d7377] shadow-none max-[767px]:flex min-[768px]:hidden"
+              className="absolute top-2 right-16 flex h-10 w-10 items-center justify-center rounded-full border-0 bg-transparent text-[#0d7377] shadow-none max-[767px]:flex min-[768px]:hidden"
             >
               <LayoutGrid className="h-5 w-5" aria-hidden="true" />
             </HydrationSafeButton>
@@ -1637,7 +1637,7 @@ export function SiteHeader({
           ) : user ? (
             <div className="flex items-center gap-2">
               <div
-                className="relative max-[767px]:absolute max-[767px]:top-3 max-[767px]:right-4"
+                className="relative max-[767px]:absolute max-[767px]:top-2 max-[767px]:right-4"
                 ref={profileRef}
                 onPointerEnter={(e) => {
                   // Ignore touch pointer types to prevent double-triggering on mobile
