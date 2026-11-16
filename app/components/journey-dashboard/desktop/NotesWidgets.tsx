@@ -244,7 +244,7 @@ export function NotesModal({
 
   return createPortal(
     <div className="rvd-portal">
-      <div className="nm" role="dialog" aria-modal="true" aria-labelledby="nm-t" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="nm" data-scroll-lock role="dialog" aria-modal="true" aria-labelledby="nm-t" onClick={(e) => e.target === e.currentTarget && onClose()}>
         <div className="nm-c">
           <div className="nm-h">
             <div>

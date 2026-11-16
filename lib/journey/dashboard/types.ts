@@ -34,6 +34,11 @@ export interface DashboardPathStep {
   number: number;
   name: string;
   state: StepState;
+  /**
+   * The journey's plan does not include this step (same rule as the StepView
+   * Prev / Next footer: getStepLockStatus). Opening it shows the upgrade prompt.
+   */
+  lock: { requiredPlan: string } | null;
 }
 
 export interface DashboardHero {

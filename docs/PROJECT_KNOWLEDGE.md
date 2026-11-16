@@ -309,15 +309,28 @@ Mobile has no header row (the page name sits in the active nav bubble) and fits 
 (spacing tightens on short phones, then content scales to at most 82%); its calendar adds custom events too, and
 Nearby on the Help page lists only places recorded on the journey (interview location, medical clinic) with directions,
 else an explanatory empty state. Tablets (700-1023px) use the mobile skin with two-column pages (mobile.css). Desktop
-keeps the board at its 1340px design width, scaled to the screen but never below 82%; short screens switch to a compact
-board (`.frame.cmp`) instead. The toned-down /assets/images/dashboard.png backdrop is on the DashboardView wrapper
+designs the board at 1340px, scaled to the screen, normally never below 82%. Short screens step through layouts before
+scaling further: compact (`.frame.cmp`, board < 760: the calendar gets the wider share of the middle row (1.3fr vs tracking
+1fr), all five tracking stage boxes stay, calendar key dates in a side column) then tight (`.frame.tgt`, board < 650: every row and type size steps down again). Only a screen too short even
+for the tight board scales below 82% (down to 60%), so the board is always one view with no scrolling. A scaled-down
+board may grow wider than 1340px only in proportion to its height (width <= height x 2.2, max 1520px) so it keeps its
+shape. The tracking card never scrolls or crams: when a stage's facts do not fit, its front keeps a 2-fact preview
+and a "N more details" button flips it to a back face listing every fact (TrackingTicket `heavy` / `.tkc.b`). The toned-down /assets/images/dashboard.png backdrop is on the DashboardView wrapper
 (`.rv-dash-bg`), so it covers the whole dashboard area.
 A note's colour is its category (`NOTE_CATEGORIES`: Follow-up, Documents, Questions, Appointments, Money). Notes,
 custom calendar events and dismissed alerts are per JOURNEY ROW, saved as `case_data` keys
 `dashboard_notes` / `dashboard_events` / `dashboard_dismissed_alerts` (`lib/journey/dashboard/personal.ts`
 validates them on read; not mapped to the profile), so they never leak across categories or candidates.
-Widget layout + calendar face are per-browser localStorage keyed by journey id. Community links stay
-hidden until `NEXT_PUBLIC_COMMUNITY_URL` is set. (The older string-built `Jdashboard` engine and the
+Widget layout + calendar face are per-browser localStorage keyed by journey id. The Community shortcut
+(desktop quick links + mobile) opens a "Join the community" modal / sheet whose button opens the public WhatsApp
+group (`COMMUNITY_URL` in `JourneyDashboard.tsx`; `NEXT_PUBLIC_COMMUNITY_URL` can override it). **Journey line
+access:** a step opens only once reached (done, or at / before the current step); later steps show their name
+and a tooltip but do not open. Each path step carries its plan `lock` (`buildPath` + the DashboardView's
+`stepLockFor` = `getStepLockStatus` with the journey tier and the step's index among VISIBLE steps, the same rule
+as the StepView Prev / Next footer), and `useJourneyDashboardProps` wraps `actions.onOpenStep` so opening a locked
+step from anywhere shows `UpgradeModal` (`getModalFeatureForTier`) instead (free = only chapter 1 step 1;
+`HARD_LOCK_RULES`, e.g. the 221(g) step, for paid tiers). The desktop fit measures the bottom of the fixed site header and the sticky journey header
+(`[data-journey-header]`) and re-measures when they resize. (The older string-built `Jdashboard` engine and the
 `/user-dashboard` journey embed that used it were removed.)
 
 **Cross-journey service request directory.** The Services folder in `AppGroupModal` has a
@@ -1648,7 +1661,9 @@ External: Stripe . Resend . EasyPost . Gemini . USCIS . GA4 . Sheets . OCR.space
   `.fixed` element with z-index > 0 is on screen (detected via MutationObserver, so nested
   modals can't unlock early). New modals need no per-component `body.style.overflow` code;
   just keep the overlay `fixed inset-0` with a positive z-index, and make card max-height +
-  overlay padding fit within `100dvh` or the overlay itself will scroll slightly.
+  overlay padding fit within `100dvh` or the overlay itself will scroll slightly. It scans the Tailwind
+  `.fixed` class; an overlay positioned fixed in plain CSS (e.g. the journey dashboard's alerts drawer
+  scrim, notes modal, community modal) must add `data-scroll-lock` to be seen.
 - **Two encryption schemes** — global key for portal-wallet/profile fields
   (`lib/encryption.ts`), per-user key for vault files
   (`document-vault/file-encryption.ts`). Don't assume per-user everywhere.
