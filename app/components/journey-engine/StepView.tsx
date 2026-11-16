@@ -2,6 +2,7 @@
 // Dynamic refactoring in progress
 "use client";
 
+import { JOURNEY_VIEW_TOP } from "@/app/components/journey-engine/viewSpacing";
 import React, { useEffect, useLayoutEffect, useMemo, useState, useCallback, useRef } from "react";
 import { JourneyGuidePage } from "@/app/components/shared/GuidePageOverlay";
 import { ToolPageOverlay } from "@/app/components/shared/ToolPageOverlay";
@@ -3037,7 +3038,7 @@ export const StepView: React.FC<StepViewProps> = ({
           className={`scrollbar-hide relative flex flex-1 flex-col items-center overflow-y-auto pb-[72px] sm:pb-[100px] ${
             currentStep.step_type === "quest"
               ? ""
-              : "px-2 pt-6 pb-6 sm:px-4 sm:pt-10 md:px-8 md:pt-14 md:pb-10 lg:px-12 lg:pb-12"
+              : `px-2 pb-6 sm:px-4 md:px-8 md:pb-10 lg:px-12 lg:pb-12 ${JOURNEY_VIEW_TOP}`
           }`}
         >
           {/* Quiz Overlay Refinement - Now absolute below headers */}
@@ -4289,7 +4290,7 @@ export const StepView: React.FC<StepViewProps> = ({
               </div>
             ) : (
               <div
-                className={`animate-in fade-in zoom-in-95 mx-auto mt-4 w-full max-w-[680px] rounded-[20px] border border-[#d0e4f7] bg-white p-4 shadow-xl shadow-[#0f1f38]/5 duration-700 sm:mt-8 sm:rounded-[28px] sm:p-8 md:mt-12 md:rounded-[32px] md:p-12 lg:p-20 ${isChapter1 ? "step-modal-spacing" : ""}`}
+                className={`animate-in fade-in zoom-in-95 mx-auto w-full max-w-[680px] rounded-[20px] border border-[#d0e4f7] bg-white p-4 shadow-xl shadow-[#0f1f38]/5 duration-700 sm:rounded-[28px] sm:p-8 md:rounded-[32px] md:p-12 lg:p-20 ${isChapter1 ? "step-modal-spacing" : ""}`}
               >
                 <div
                   className={`mb-4 text-[11px] font-bold tracking-[0.2em] uppercase opacity-70 ${isChapter1 ? "accent-rose" : "text-primary"}`}
