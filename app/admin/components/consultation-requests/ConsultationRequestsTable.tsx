@@ -51,6 +51,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Loader } from "@/components/ui/spinner";
 import { useToast } from "@/app/components/shared/ToastProvider";
+import FieldLabel from "@/app/components/shared/FieldLabel";
 
 const CANCELLATION_TEMPLATES = [
   {
@@ -604,6 +605,7 @@ const ConsultationRequestsTable = () => {
                     </p>
                   </div>
                   <div className="space-y-1">
+                    <FieldLabel htmlFor="case-stage" title="Case Stage" /> 
                     <p className="text-xs text-muted-foreground">Case Stage</p>
                     <p className="text-sm font-medium">
                       {selectedRequest.case_stage.toUpperCase()}

@@ -28,6 +28,7 @@ import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 import { PhoneInput } from "@/components/ui/phone-input";
 import type { Value as E164Number } from "react-phone-number-input";
 import { validatePhoneNumber, formatPhoneNumber } from "@/lib/validation/phone";
+import FieldLabel from "@/app/components/shared/FieldLabel";
 
 type Location = "karachi" | "lahore" | "islamabad";
 type IslamabadProvider = "amc" | "iom";
@@ -299,9 +300,7 @@ const BasicInfoStep = ({
           {isAMC && (
             <>
               <div className="space-y-2">
-                <Label htmlFor="interviewDate">
-                  {t("bookAppointment.basicInfoStep.interviewDate")}
-                </Label>
+                <FieldLabel htmlFor="interviewDate" title={t("bookAppointment.basicInfoStep.interviewDate")} /> 
                 <Input
                   id="interviewDate"
                   name="interviewDate"
@@ -312,9 +311,7 @@ const BasicInfoStep = ({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="visaCategory">
-                  {t("bookAppointment.basicInfoStep.visaCategory")}
-                </Label>
+                <FieldLabel htmlFor="visaCategory" title={t("bookAppointment.basicInfoStep.visaCategory")} /> 
                 <CustomDropdown
                   value={formData.visaCategory}
                   onChange={onSelectChange("visaCategory")}
@@ -330,9 +327,7 @@ const BasicInfoStep = ({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="hadMedicalBefore">
-                  {t("bookAppointment.basicInfoStep.hadMedicalBefore")}
-                </Label>
+                <FieldLabel htmlFor="hadMedicalBefore" title={t("bookAppointment.basicInfoStep.hadMedicalBefore")} />
                 <CustomDropdown
                   value={formData.hadMedicalBefore}
                   onChange={onSelectChange("hadMedicalBefore")}
@@ -348,7 +343,7 @@ const BasicInfoStep = ({
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="primaryContact">{t("bookAppointment.basicInfoStep.mobileNo")}</Label>
+            <FieldLabel htmlFor="primaryContact" title={t("bookAppointment.basicInfoStep.mobileNo")} />
             <PhoneInput
               id="primaryContact"
               value={formData.primaryContact || ""}
@@ -359,7 +354,7 @@ const BasicInfoStep = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">{t("bookAppointment.basicInfoStep.email")}</Label>
+            <FieldLabel htmlFor="email" title={t("bookAppointment.basicInfoStep.email")} />
             <Input
               id="email"
               name="email"
@@ -373,6 +368,7 @@ const BasicInfoStep = ({
           {isAMC && (
             <>
               <div className="space-y-2">
+                <FieldLabel htmlFor="city" title={t("bookAppointment.basicInfoStep.city")} />
                 <Label htmlFor="city">{t("bookAppointment.basicInfoStep.city")}</Label>
                 <Input
                   id="city"
@@ -384,8 +380,8 @@ const BasicInfoStep = ({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="caseRef">{t("bookAppointment.basicInfoStep.caseRef")}</Label>
-                <Input
+                <FieldLabel htmlFor="caseRef" title={t("bookAppointment.basicInfoStep.caseRef")} />
+                  <Input
                   id="caseRef"
                   name="caseRef"
                   value={formData.caseRef}
@@ -395,9 +391,7 @@ const BasicInfoStep = ({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="numberOfApplicants">
-                  {t("bookAppointment.basicInfoStep.numberOfApplicants")}
-                </Label>
+                <FieldLabel htmlFor="numberOfApplicants" title={t("bookAppointment.basicInfoStep.numberOfApplicants")} />
                 <CustomDropdown
                   value={formData.numberOfApplicants}
                   onChange={onSelectChange("numberOfApplicants")}
@@ -541,9 +535,7 @@ const ApplicantInfo = ({ applicant, index, onChange }: ApplicantInfoProps) => {
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor={`applicant-${index}-surname`}>
-            {t("bookAppointment.personalInfoStep.surname")}
-          </Label>
+          <FieldLabel htmlFor={`applicant-${index}-surname`} title={t("bookAppointment.personalInfoStep.surname")} />
           <Input
             id={`applicant-${index}-surname`}
             value={applicant.surname}
@@ -553,9 +545,7 @@ const ApplicantInfo = ({ applicant, index, onChange }: ApplicantInfoProps) => {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor={`applicant-${index}-givenName`}>
-            {t("bookAppointment.personalInfoStep.givenName")}
-          </Label>
+          <FieldLabel htmlFor={`applicant-${index}-givenName`} title={t("bookAppointment.personalInfoStep.givenName")} />
           <Input
             id={`applicant-${index}-givenName`}
             value={applicant.givenName}
@@ -565,9 +555,7 @@ const ApplicantInfo = ({ applicant, index, onChange }: ApplicantInfoProps) => {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor={`applicant-${index}-gender`}>
-            {t("bookAppointment.personalInfoStep.gender")}
-          </Label>
+          <FieldLabel htmlFor={`applicant-${index}-gender`} title={t("bookAppointment.personalInfoStep.gender")} />
           <CustomDropdown
             value={applicant.gender}
             onChange={(value) => onChange(index, "gender", value)}
@@ -582,9 +570,7 @@ const ApplicantInfo = ({ applicant, index, onChange }: ApplicantInfoProps) => {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor={`applicant-${index}-dateOfBirth`}>
-            {t("bookAppointment.personalInfoStep.dateOfBirth")}
-          </Label>
+          <FieldLabel htmlFor={`applicant-${index}-dateOfBirth`} title={t("bookAppointment.personalInfoStep.dateOfBirth")} />
           <Input
             id={`applicant-${index}-dateOfBirth`}
             type="date"
@@ -654,7 +640,7 @@ const PersonalInfoStep = ({
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="surname">{t("bookAppointment.personalInfoStep.surname")}</Label>
+              <FieldLabel htmlFor="surname" title={t("bookAppointment.personalInfoStep.surname")} />  
               <Input
                 id="surname"
                 name="surname"
@@ -665,7 +651,7 @@ const PersonalInfoStep = ({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="givenName">{t("bookAppointment.personalInfoStep.givenName")}</Label>
+              <FieldLabel htmlFor="givenName" title={t("bookAppointment.personalInfoStep.givenName")} />
               <Input
                 id="givenName"
                 name="givenName"
@@ -676,7 +662,7 @@ const PersonalInfoStep = ({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="gender">{t("bookAppointment.personalInfoStep.gender")}</Label>
+              <FieldLabel htmlFor="gender" title={t("bookAppointment.personalInfoStep.gender")} />
               <CustomDropdown
                 value={formData.gender}
                 onChange={onSelectChange("gender")}
@@ -691,9 +677,7 @@ const PersonalInfoStep = ({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="dateOfBirth">
-                {t("bookAppointment.personalInfoStep.dateOfBirth")}
-              </Label>
+              <FieldLabel htmlFor="dateOfBirth" title={t("bookAppointment.personalInfoStep.dateOfBirth")} />
               <Input
                 id="dateOfBirth"
                 name="dateOfBirth"
@@ -778,9 +762,7 @@ const ApplicantPassportInfo = ({
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor={`applicant-${index}-passportNumber`}>
-            {t("bookAppointment.passportDetailsStep.passportNumber")}
-          </Label>
+          <FieldLabel htmlFor={`applicant-${index}-passportNumber`} title={t("bookAppointment.passportDetailsStep.passportNumber")} />
           <Input
             id={`applicant-${index}-passportNumber`}
             value={applicant.passportNumber}
@@ -885,9 +867,7 @@ const PassportDetailsStep = ({
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="passportNumber">
-                {t("bookAppointment.passportDetailsStep.passportNumber")}
-              </Label>
+              <FieldLabel htmlFor="passportNumber" title={t("bookAppointment.passportDetailsStep.passportNumber")} />
               <Input
                 id="passportNumber"
                 name="passportNumber"
@@ -1018,18 +998,18 @@ const DocumentsStep = ({ formData, error, onFileChange, onNext, onBack }: Docume
       <div className="space-y-6">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div className="space-y-2">
-            <Label>{t("bookAppointment.documentsStep.surname")}</Label>
+            <label htmlFor="surname">{t("bookAppointment.documentsStep.surname")}</label>
             <Input value={formData.surname} disabled className="bg-gray-50" />
           </div>
 
           <div className="space-y-2">
-            <Label>{t("bookAppointment.documentsStep.givenName")}</Label>
+            <label htmlFor="givenName">{t("bookAppointment.documentsStep.givenName")}</label>
             <Input value={formData.givenName} disabled className="bg-gray-50" />
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label>{t("bookAppointment.documentsStep.scannedPassport")}</Label>
+          <FieldLabel htmlFor="scannedPassport" title={t("bookAppointment.documentsStep.scannedPassport")} />
           <label
             htmlFor="scannedPassport"
             className="flex h-24 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 text-slate-500 transition-colors hover:border-teal-500 hover:bg-teal-50 hover:text-teal-600"
