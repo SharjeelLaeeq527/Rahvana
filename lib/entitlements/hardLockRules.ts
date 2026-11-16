@@ -1,4 +1,5 @@
 import { PlanTier } from "./config";
+import { STEP_PRIMARY_FEATURE } from "./stepFeatureMap";
 
 /**
  * Hard lock rules for specific steps based on plan tier.
@@ -38,6 +39,7 @@ export interface StepLockStatus {
   isLocked: boolean;
   requiredPlan: PlanTier | null;
   reason: "free" | "tier" | null;
+  feature?: string;
 }
 
 /**
@@ -59,6 +61,7 @@ export function getStepLockStatus(
           isLocked: true,
           requiredPlan: "basic",
           reason: "free",
+          feature: getModalFeatureForTier("basic", stepId),
         };
       }
     }
@@ -97,6 +100,7 @@ export function getStepLockStatus(
       isLocked: true,
       requiredPlan,
       reason: "tier",
+      feature: getModalFeatureForTier(requiredPlan, stepId),
     };
   }
 
@@ -108,9 +112,12 @@ export function getStepLockStatus(
 }
 
 /**
- * Helper function to determine which feature to use for the UpgradeModal based on the required tier.
+ * Helper function to determine which feature to use for the UpgradeModal based on the required tier and optional stepId.
  */
-export function getModalFeatureForTier(requiredPlan: PlanTier): string {
+export function getModalFeatureForTier(requiredPlan: PlanTier, stepId?: string): string {
+  if (stepId && STEP_PRIMARY_FEATURE[stepId]) {
+    return STEP_PRIMARY_FEATURE[stepId]!;
+  }
   if (requiredPlan === "basic") return "checklist_engine"; // Defaults to basic tier
   if (requiredPlan === "premium") return "document_vault"; // Defaults to premium tier
   if (requiredPlan === "executive") return "pcc_filing"; // Defaults to executive tier

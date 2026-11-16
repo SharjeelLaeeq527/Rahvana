@@ -4343,7 +4343,8 @@ export const StepView: React.FC<StepViewProps> = ({
         <button
           onClick={() => {
             if (prevStepLock.isLocked) {
-              setUpgradeModalFeature(getModalFeatureForTier(prevStepLock.requiredPlan!));
+              const psId = prevStep ? ((prevStep as any).step_key || (prevStep as any).id) : undefined;
+              setUpgradeModalFeature(prevStepLock.feature || getModalFeatureForTier(prevStepLock.requiredPlan!, psId));
               return;
             }
             prevStep && handleNavigate((prevStep as any).step_key || (prevStep as any).id);
@@ -4373,7 +4374,8 @@ export const StepView: React.FC<StepViewProps> = ({
           <button
             onClick={() => {
               if (nextStepLock.isLocked) {
-                setUpgradeModalFeature(getModalFeatureForTier(nextStepLock.requiredPlan!));
+                const nsId = (nextStep as any).step_key || (nextStep as any).id;
+                setUpgradeModalFeature(nextStepLock.feature || getModalFeatureForTier(nextStepLock.requiredPlan!, nsId));
                 return;
               }
               handleNavigate((nextStep as any).step_key || (nextStep as any).id);

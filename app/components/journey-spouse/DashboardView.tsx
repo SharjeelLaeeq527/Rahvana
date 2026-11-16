@@ -1081,7 +1081,15 @@ export function DashboardView({
               }
               if (nextActionData) {
                 if (nextStepLock.isLocked) {
-                  setUpgradeModalFeature(getModalFeatureForTier(nextStepLock.requiredPlan!));
+                  setUpgradeModalFeature(
+                    nextStepLock.feature ||
+                      getModalFeatureForTier(
+                        nextStepLock.requiredPlan!,
+                        nextActionData?.step
+                          ? (nextActionData.step as any).step_key || (nextActionData.step as any).id
+                          : undefined
+                      )
+                  );
                   return;
                 }
                 if (onSelectStep) {
