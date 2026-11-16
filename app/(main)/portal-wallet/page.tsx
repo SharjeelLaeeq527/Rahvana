@@ -22,6 +22,7 @@ import { usePlan } from "@/app/context/PlanContext";
 import { PageGate } from "@/app/components/entitlements/PageGate";
 import { useUserProfile } from "@/app/context/UserProfileContext";
 import { canonicalJourneyKey, getJourneyKeyForCandidate } from "@/lib/candidate/candidateKeys";
+import { getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
 
 type PortalType = "USCIS" | "NVC" | "COURIER";
 
@@ -53,6 +54,7 @@ interface WalletCandidate {
   categorySlot?: number;
   label?: string;
   fullName?: string;
+  customName?: string;
 }
 
 const API_BASE = "/api/portal-wallet";
@@ -171,33 +173,123 @@ const PortalWallet: React.FC = () => {
 
   const walletCases: WalletCase[] = useMemo(() => {
     const cases: WalletCase[] = [];
+    const seenCaseIds = new Set<string>();
 
-    // IR-1 has no candidate concept since there can only be one spouse.
-    // If the user has IR-1 activated, always provide the IR-1 Spouse card.
-    const hasSpouseInCandidates = candidates.some(
-      (c) =>
-        c.relation === "Spouse" ||
-        c.visaCategory?.toUpperCase().includes("IR-1") ||
-        c.visaCategory?.toUpperCase().includes("CR-1")
-    );
+    // 1. Process each journey from userJourneys (Database Journeys Table is primary)
+    userJourneys.forEach((j, index) => {
+      const jType = j.journey_type || "";
+      const baseCategory = getBaseVisaCategory(jType);
+      const isMulti = baseCategory === "IR-5" || baseCategory === "IR-2" || baseCategory === "CR-2";
 
-    if (hasIr1Journey || hasSpouseInCandidates) {
-      cases.push({
-        id: "ir1",
-        journey: "IR-1",
-        journeyLabel: "Spouse",
-        name: "Spouse",
-        role: "Spouse",
-      });
-    }
+      if (baseCategory === "IR-1" || baseCategory === "CR-1") {
+        const caseId = "ir1";
+        if (!seenCaseIds.has(caseId)) {
+          seenCaseIds.add(caseId);
+          const customName = profile?.journeyCustomizations?.[j.id]?.name;
+          cases.push({
+            id: caseId,
+            journey: "IR-1",
+            journeyLabel: "Spouse",
+            name: customName || "Spouse",
+            role: "Spouse",
+            candidateId: "ir1",
+            journeyDbId: j.id,
+            journeyType: jType,
+          });
+        }
+      } else if (isMulti) {
+        // Extract candidate number if present, e.g. "ir5_candidate3" -> "candidate-3"
+        const candIdMatch = jType.match(/candidate[-_]?(\d+)/i);
+        const candNum = candIdMatch ? parseInt(candIdMatch[1], 10) : index + 1;
+        const candidateId = candIdMatch ? `candidate-${candIdMatch[1]}` : `candidate-${candNum}`;
+        const caseId = j.id ? `case_${j.id}` : `case_${baseCategory.toLowerCase()}_${candidateId}`;
 
-    // Add candidate beneficiaries (e.g. IR-5 parents)
+        if (!seenCaseIds.has(caseId)) {
+          seenCaseIds.add(caseId);
+
+          // Look up matching candidate in profile/candidates
+          const cand = candidates.find(
+            (c) =>
+              c.id === candidateId ||
+              (c.visaCategory && getBaseVisaCategory(c.visaCategory) === baseCategory)
+          );
+
+          const isParent = baseCategory === "IR-5";
+          const journey: Journey = isParent ? "IR-5" : "IR-2";
+          let journeyLabel = isParent ? "Parent" : "Child";
+          if (cand?.relation && cand.relation !== "Other") {
+            journeyLabel = cand.relation === "AdoptiveParent" ? "Adoptive Parent" : cand.relation;
+          }
+
+          const customName = profile?.journeyCustomizations?.[j.id]?.name;
+          const name =
+            customName ||
+            cand?.customName ||
+            cand?.fullName ||
+            cand?.label ||
+            `Candidate ${candNum}`;
+
+          const role =
+            cand?.relation && cand.relation !== "Other"
+              ? cand.relation === "AdoptiveParent"
+                ? "Adoptive Parent"
+                : cand.relation
+              : isParent
+                ? "Parent"
+                : "Child";
+
+          cases.push({
+            id: caseId,
+            journey,
+            journeyLabel,
+            name,
+            role,
+            candidateId,
+            journeyDbId: j.id,
+            journeyType: jType,
+          });
+        }
+      } else {
+        // Any other category (e.g. F-1, B1/B2, etc.)
+        const caseId = j.id ? `case_${j.id}` : `case_${jType}`;
+        if (!seenCaseIds.has(caseId)) {
+          seenCaseIds.add(caseId);
+          const customName = profile?.journeyCustomizations?.[j.id]?.name;
+          cases.push({
+            id: caseId,
+            journey: baseCategory || jType.toUpperCase(),
+            journeyLabel: "Beneficiary",
+            name: customName || jType.toUpperCase(),
+            role: "Applicant",
+            candidateId: "candidate-1",
+            journeyDbId: j.id,
+            journeyType: jType,
+          });
+        }
+      }
+    });
+
+    // 2. Add any candidate profiles from candidates roster that don't have a DB journey row yet
     candidates.forEach((c, index) => {
       const isSpouse =
         c.relation === "Spouse" ||
         c.visaCategory?.toUpperCase().includes("IR-1") ||
         c.visaCategory?.toUpperCase().includes("CR-1");
-      if (isSpouse) return; // Handled by the IR-1 case above
+
+      if (isSpouse) {
+        if (!seenCaseIds.has("ir1")) {
+          seenCaseIds.add("ir1");
+          cases.push({
+            id: "ir1",
+            journey: "IR-1",
+            journeyLabel: "Spouse",
+            name: "Spouse",
+            role: "Spouse",
+            candidateId: "ir1",
+          });
+        }
+        return;
+      }
 
       const isParent =
         ["Mother", "Father", "Stepparent", "AdoptiveParent"].includes(c.relation) ||
@@ -207,30 +299,37 @@ const PortalWallet: React.FC = () => {
         c.visaCategory?.toUpperCase().includes("IR-2") ||
         c.visaCategory?.toUpperCase().includes("CR-2");
 
-      // The candidate's own category (an IR-2 / CR-2 child is not an IR-5 case).
       const journey: Journey = isChild && !isParent ? "IR-2" : "IR-5";
-      let journeyLabel = "Beneficiary";
-      if (isParent) journeyLabel = "Parent";
-      else if (isChild) journeyLabel = "Child";
-      else if (c.relation) journeyLabel = c.relation;
+      const caseId = `cand_${c.id}`;
 
-      const name = c.label || `Candidate ${index + 1}`;
-      const role =
-        c.fullName && c.fullName.trim() && c.fullName !== c.relation
-          ? c.fullName.trim()
-          : c.relation && c.relation !== "Other"
-            ? c.relation
-            : undefined;
+      // Check if already covered by a journey card with matching journey and candidateId
+      const alreadyCovered = cases.some(
+        (existing) => existing.journey === journey && existing.candidateId === c.id
+      );
 
-      cases.push({
-        id: c.id,
-        journey,
-        journeyLabel,
-        name,
-        role,
-      });
+      if (!alreadyCovered && !seenCaseIds.has(caseId)) {
+        seenCaseIds.add(caseId);
+        let journeyLabel = isParent ? "Parent" : isChild ? "Child" : c.relation || "Beneficiary";
+        const name = c.label || c.customName || c.fullName || `Candidate ${index + 1}`;
+        const role =
+          c.fullName && c.fullName.trim() && c.fullName !== c.relation
+            ? c.fullName.trim()
+            : c.relation && c.relation !== "Other"
+              ? c.relation
+              : undefined;
+
+        cases.push({
+          id: caseId,
+          journey,
+          journeyLabel,
+          name,
+          role,
+          candidateId: c.id,
+        });
+      }
     });
 
+    // 3. Fallback if no cases
     if (cases.length === 0) {
       cases.push({
         id: "ir1",
@@ -238,62 +337,94 @@ const PortalWallet: React.FC = () => {
         journeyLabel: "Spouse",
         name: "Spouse",
         role: "Spouse",
+        candidateId: "ir1",
       });
     }
 
+    // 4. Sort deterministically: IR-1 first, then IR-5, then IR-2
+    const ORDER: Record<string, number> = {
+      "IR-1": 1,
+      "CR-1": 1,
+      "IR-5": 2,
+      "IR-2": 3,
+      "CR-2": 3,
+    };
+    cases.sort((a, b) => {
+      const orderA = ORDER[a.journey] ?? 10;
+      const orderB = ORDER[b.journey] ?? 10;
+      if (orderA !== orderB) return orderA - orderB;
+      const numA = parseInt(a.candidateId?.replace(/\D/g, "") || "0", 10);
+      const numB = parseInt(b.candidateId?.replace(/\D/g, "") || "0", 10);
+      if (numA !== numB) return numA - numB;
+      return a.id.localeCompare(b.id);
+    });
+
     return cases;
-  }, [candidates, hasIr1Journey]);
+  }, [userJourneys, candidates, profile?.journeyCustomizations]);
 
   // Selected card in the wallet (defaults to IR-1 if active, or first case)
-  const [selectedCandidateId, setSelectedCandidateId] = useState<string>("ir1");
+  const [selectedCaseId, setSelectedCaseId] = useState<string>("ir1");
 
   useEffect(() => {
     if (walletCases.length > 0) {
-      const stillValid = walletCases.some((c) => c.id === selectedCandidateId);
+      const stillValid = walletCases.some(
+        (c) =>
+          c.id === selectedCaseId ||
+          c.candidateId === selectedCaseId ||
+          c.journeyDbId === selectedCaseId
+      );
       if (!stillValid) {
-        const defaultId = walletCases.find((c) => c.journey === "IR-1")?.id || walletCases[0].id;
-        setSelectedCandidateId(defaultId);
+        const defaultCase = walletCases.find((c) => c.journey === "IR-1") || walletCases[0];
+        setSelectedCaseId(defaultCase.id);
       }
     }
-  }, [walletCases, selectedCandidateId]);
+  }, [walletCases, selectedCaseId]);
 
-  const activeId = selectedCandidateId || (walletCases[0]?.id ?? "ir1");
-  const activeJourneyKeyForWallet = useMemo(() => {
-    if (activeId === "ir1") return "ir1";
-    const candidate = candidates.find((c) => c.id === activeId);
-    // The candidate's category-slot key ("ir2" for the first IR-2 child, even when
-    // its id is candidate-3), never a key derived from the id.
-    return candidate
-      ? getJourneyKeyForCandidate({ ...candidate, visaCategory: candidate.visaCategory || "IR-5" })
-      : activeJourneyKey;
-  }, [activeId, activeJourneyKey, candidates]);
-  const activeJourneyId: string | undefined = useMemo(() => {
-    const wanted = canonicalJourneyKey(activeJourneyKeyForWallet);
-    if (!wanted) return undefined;
-    // userJourneys holds flattened rows, so match on journey_type / id directly
-    // ("item.journey" is always undefined here). Canonical keys make "IR1" /
-    // "ir1-journey" / "ir1" the same journey.
-    return userJourneys.find((j) => canonicalJourneyKey(j?.journey_type) === wanted)?.id;
-  }, [activeJourneyKeyForWallet, userJourneys]);
+  const activeCase = useMemo(() => {
+    return (
+      walletCases.find(
+        (c) =>
+          c.id === selectedCaseId ||
+          c.candidateId === selectedCaseId ||
+          c.journeyDbId === selectedCaseId
+      ) || walletCases[0]
+    );
+  }, [walletCases, selectedCaseId]);
+
+  const activeId = activeCase?.candidateId || activeCase?.id || "candidate-1";
+  const activeJourneyId = activeCase?.journeyDbId;
 
   const [walletSwitcherOpen, setWalletSwitcherOpen] = useState(true);
 
-  // Opened from a journey dashboard (?candidate=ir1 | <candidate id>): show that
+  // Opened from a journey dashboard (?candidate=ir1 | <candidate id> | ?journeyId=<id>): show that
   // candidate's portals directly instead of the wallet switcher.
   const urlCandidateRef = useRef<string | null>(null);
   useLayoutEffect(() => {
-    const id = new URLSearchParams(window.location.search).get("candidate");
-    if (id) {
-      urlCandidateRef.current = id;
+    const params = new URLSearchParams(window.location.search);
+    const cand = params.get("candidate");
+    const jId = params.get("journeyId");
+    const target = cand || jId;
+    if (target) {
+      urlCandidateRef.current = target;
       setWalletSwitcherOpen(false);
     }
   }, []);
+
   useEffect(() => {
-    const id = urlCandidateRef.current;
-    if (!id || !walletCases.some((c) => c.id === id)) return;
+    const target = urlCandidateRef.current;
+    if (!target) return;
+    const match = walletCases.find(
+      (c) =>
+        c.id === target ||
+        c.candidateId === target ||
+        c.journeyDbId === target ||
+        (target === "ir1" && (c.journey === "IR-1" || c.candidateId === "ir1"))
+    );
+    if (!match) return;
     urlCandidateRef.current = null;
-    setSelectedCandidateId(id);
+    setSelectedCaseId(match.id);
   }, [walletCases]);
+
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [credentials, setCredentials] = useState<Credential[]>([]);
@@ -357,42 +488,44 @@ const PortalWallet: React.FC = () => {
     fetchCredentials();
   }, [fetchCredentials]);
 
-  const [allCredentials, setAllCredentials] = useState<any[]>([]);
+  const [credentialsSummary, setCredentialsSummary] = useState<
+    Array<{ journey_id: string; candidate_id: string; portal_type: string }>
+  >([]);
 
-  const fetchAllCredentials = useCallback(async () => {
-    if (!activeJourneyId) return;
+  const fetchSummary = useCallback(async () => {
     try {
-      const res = await fetch(
-        `${API_BASE}?journeyId=${encodeURIComponent(activeJourneyId)}&candidateId=${encodeURIComponent(activeId)}`
-      );
+      const res = await fetch(`${API_BASE}?summary=true`);
       const data = await res.json();
-      if (data?.credentials) setAllCredentials(data.credentials);
+      if (Array.isArray(data?.summary)) {
+        setCredentialsSummary(data.summary);
+      }
     } catch (err) {
-      console.error("Failed to fetch all credentials:", err);
+      console.error("Failed to fetch credentials summary:", err);
     }
-  }, [activeJourneyId, activeId]);
+  }, []);
 
   useEffect(() => {
-    fetchAllCredentials();
-  }, [fetchAllCredentials]);
+    fetchSummary();
+  }, [fetchSummary]);
 
   const statusByCase: Record<string, PortalStatus> = useMemo(() => {
     const map: Record<string, PortalStatus> = {};
     walletCases.forEach((c) => {
-      const creds = allCredentials.filter((cred) => {
+      const matches = credentialsSummary.filter((cred) => {
+        if (c.journeyDbId && cred.journey_id === c.journeyDbId) return true;
         if (c.id === "ir1") {
           return cred.candidate_id === "ir1" || !cred.candidate_id;
         }
-        return cred.candidate_id === c.id;
+        return c.candidateId && cred.candidate_id === c.candidateId;
       });
       map[c.id] = {
-        USCIS: creds.some((cr) => cr.portal_type?.toUpperCase() === "USCIS"),
-        NVC: creds.some((cr) => cr.portal_type?.toUpperCase() === "NVC"),
-        COURIER: creds.some((cr) => cr.portal_type?.toUpperCase() === "COURIER"),
+        USCIS: matches.some((cr) => cr.portal_type?.toUpperCase() === "USCIS"),
+        NVC: matches.some((cr) => cr.portal_type?.toUpperCase() === "NVC"),
+        COURIER: matches.some((cr) => cr.portal_type?.toUpperCase() === "COURIER"),
       };
     });
     return map;
-  }, [walletCases, allCredentials]);
+  }, [walletCases, credentialsSummary]);
 
   const portalStatus: PortalStatus = useMemo(
     () => ({
@@ -405,11 +538,11 @@ const PortalWallet: React.FC = () => {
 
   const toneMap = useMemo(() => buildToneMap(walletCases), [walletCases]);
   const activeTone = useMemo(() => {
-    if (activeId && toneMap[activeId]) {
-      return toneGradient(toneMap[activeId]);
+    if (activeCase?.id && toneMap[activeCase.id]) {
+      return toneGradient(toneMap[activeCase.id]);
     }
     return "linear-gradient(140deg, #0f5a60, #0a3a3f)";
-  }, [activeId, toneMap]);
+  }, [activeCase, toneMap]);
 
   const configuredCount = useMemo(() => {
     let count = 0;
@@ -418,10 +551,6 @@ const PortalWallet: React.FC = () => {
     if (portalStatus.COURIER) count++;
     return count;
   }, [portalStatus]);
-
-  const activeCase = useMemo(() => {
-    return walletCases.find((c) => c.id === activeId) || walletCases[0];
-  }, [walletCases, activeId]);
 
   const getCredential = (portalType: string) =>
     credentials.find((c) => c.portal_type.toUpperCase() === portalType.toUpperCase());
@@ -439,7 +568,7 @@ const PortalWallet: React.FC = () => {
       if (!res.ok) throw new Error("Failed to save");
       showToast("Credentials saved successfully!", "success");
       setFormModal((prev) => ({ ...prev, open: false }));
-      await Promise.all([fetchCredentials(), fetchAllCredentials()]);
+      await Promise.all([fetchCredentials(), fetchSummary()]);
     } catch {
       showToast(msg(E.VAULT_CREDENTIAL_SAVE_FAILED), "error");
     } finally {
@@ -466,7 +595,7 @@ const PortalWallet: React.FC = () => {
       setViewModal({ open: false, portalType: "USCIS" });
       setDeletePortal(null);
 
-      await Promise.all([fetchCredentials(), fetchAllCredentials()]);
+      await Promise.all([fetchCredentials(), fetchSummary()]);
     } catch {
       showToast(msg(E.VAULT_CREDENTIAL_DELETE_FAILED), "error");
     } finally {
@@ -611,7 +740,7 @@ const PortalWallet: React.FC = () => {
           onClick={() => {
             setLoading(true);
             fetchCredentials();
-            fetchAllCredentials();
+            fetchSummary();
           }}
           className="rounded-lg bg-[#0d7377] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0a5c5f]"
         >
@@ -835,11 +964,12 @@ const PortalWallet: React.FC = () => {
         open={walletSwitcherOpen}
         onClose={() => setWalletSwitcherOpen(false)}
         cases={walletCases}
-        activeId={activeId}
+        activeId={activeCase?.id || selectedCaseId}
         onSelect={(id) => {
-          setSelectedCandidateId(id);
-          if (setActiveCandidateId && id !== "ir1") {
-            setActiveCandidateId(id);
+          setSelectedCaseId(id);
+          const match = walletCases.find((c) => c.id === id);
+          if (setActiveCandidateId && match?.candidateId && match.candidateId !== "ir1") {
+            setActiveCandidateId(match.candidateId);
           }
         }}
         portalStatus={loading ? null : portalStatus}

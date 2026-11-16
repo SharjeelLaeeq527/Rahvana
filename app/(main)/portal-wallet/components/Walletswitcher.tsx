@@ -18,6 +18,9 @@ export interface WalletCase {
   name: string;
   /** "Mother", "Father", or the candidate's real name */
   role?: string;
+  candidateId?: string;
+  journeyDbId?: string;
+  journeyType?: string;
 }
 
 export type PortalStatus = Record<"USCIS" | "NVC" | "COURIER", boolean>;
@@ -34,20 +37,24 @@ const TONES: Record<string, Tone> = {
   wine: ["#722846", "#47172c"],
   pine: ["#27594a", "#153a2f"],
   ink: ["#47536a", "#262e3e"],
+  indigo: ["#312e81", "#1e1b4b"],
+  slate: ["#334155", "#0f172a"],
 };
 
-const IR5_ORDER = ["navy", "wine", "pine", "ink"];
+const PALETTE = ["navy", "wine", "pine", "ink", "indigo", "slate"];
 
-/** IR-1/CR-1 is always teal. Other candidates take the next colour in order. */
+/** IR-1/CR-1 is always teal. IR-2 is indigo. Other candidates take the next colour in order. */
 export function buildToneMap(cases: WalletCase[]): Record<string, Tone> {
   const map: Record<string, Tone> = {};
-  let ir5 = 0;
+  let colorIdx = 0;
   cases.forEach((c) => {
     if (c.journey === "IR-1" || c.journey === "CR-1") {
       map[c.id] = TONES.teal;
+    } else if (c.journey === "IR-2" || c.journey === "CR-2") {
+      map[c.id] = TONES.indigo;
     } else {
-      map[c.id] = TONES[IR5_ORDER[ir5 % IR5_ORDER.length]];
-      ir5 += 1;
+      map[c.id] = TONES[PALETTE[colorIdx % PALETTE.length]];
+      colorIdx += 1;
     }
   });
   return map;
@@ -157,7 +164,7 @@ const WalletSwitcher: React.FC<WalletSwitcherProps> = ({
   // Everyone else keeps their order; the front card goes last (bottom of the stack).
   const order = [...cases.filter((c) => c.id !== frontId), ...cases.filter((c) => c.id === frontId)];
 
-  const countByJourney = cases.reduce<Record<string, number>>((acc, c) => {
+  const countByJourney: Record<string, number> = cases.reduce((acc: Record<string, number>, c) => {
     acc[c.journey] = (acc[c.journey] || 0) + 1;
     return acc;
   }, {});

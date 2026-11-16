@@ -22,6 +22,20 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
+    if (request.nextUrl.searchParams.get("summary") === "true") {
+      const { data: summaryData, error: summaryError } = await supabase
+        .from("portal_wallet_credentials")
+        .select("journey_id, candidate_id, portal_type")
+        .eq("user_id", user.id);
+
+      if (summaryError) {
+        console.error("Error fetching credentials summary:", summaryError);
+        return NextResponse.json({ error: msg(E.PORTAL_WALLET_FETCH_FAILED) }, { status: 500 });
+      }
+
+      return NextResponse.json({ summary: summaryData || [] });
+    }
+
     const journeyId = request.nextUrl.searchParams.get("journeyId");
     const candidateId = request.nextUrl.searchParams.get("candidateId");
 
