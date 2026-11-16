@@ -2,6 +2,7 @@
 // Dynamic refactoring in progress
 "use client";
 
+import { JOURNEY_STEP_SHELL, JOURNEY_VIEW_TOP } from "@/app/components/journey-engine/viewSpacing";
 import React, { useEffect, useLayoutEffect, useMemo, useState, useCallback, useRef } from "react";
 import { JourneyGuidePage } from "@/app/components/shared/GuidePageOverlay";
 import { ToolPageOverlay } from "@/app/components/shared/ToolPageOverlay";
@@ -40,6 +41,7 @@ import {
   Truck,
   MoreVertical,
   ArrowUpRight,
+  Sparkles,
 } from "lucide-react";
 
 import {
@@ -61,6 +63,7 @@ import { getAllActiveSteps, getStageProgress } from "./journeyHelpers";
 import { getActiveStepsForStage } from "./journeyHelpers";
 import CredentialFormModal from "@/app/(main)/portal-wallet/components/CredentialFormModal";
 import ViewCredentialModal from "@/app/(main)/portal-wallet/components/ViewCredentialModal";
+import { ImportUscisModal } from "@/app/components/portal-wallet/ImportUscisModal";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { InlineGuideData } from "./InlineGuideData";
@@ -656,6 +659,7 @@ export const StepView: React.FC<StepViewProps> = ({
     uscisCredentials,
     ceacCredentials,
     courierCredentials,
+    previousUscis,
     isWalletFormOpen,
     setIsWalletFormOpen,
     isWalletViewOpen,
@@ -667,6 +671,7 @@ export const StepView: React.FC<StepViewProps> = ({
     isCeacModalOpen,
     setIsCeacModalOpen,
     handleSaveCredentials,
+    handleLoadPreviousUscis,
     handleDeleteCredentials,
     handleRevealPassword,
     handleRevealAnswer,
@@ -680,6 +685,44 @@ export const StepView: React.FC<StepViewProps> = ({
     actions,
     candidateId: "ir1",
   });
+
+  const [isImportUscisModalOpen, setIsImportUscisModalOpen] = useState(false);
+  const uscisPromptCheckedRef = useRef(false);
+
+  useEffect(() => {
+    const isUscisSetup =
+      sId === "step_1_6" || (currentStep as any)?.tool_data?.id === "uscis-account-setup";
+    if (!isUscisSetup) return;
+
+    if (
+      !uscisCredentials &&
+      previousUscis &&
+      !state.metadata?.uscisImportPromptDismissed &&
+      !uscisPromptCheckedRef.current
+    ) {
+      uscisPromptCheckedRef.current = true;
+      setIsImportUscisModalOpen(true);
+    }
+  }, [
+    sId,
+    currentStep,
+    uscisCredentials,
+    previousUscis,
+    state.metadata?.uscisImportPromptDismissed,
+  ]);
+
+  const handleConfirmImportUscis = async () => {
+    const success = await handleLoadPreviousUscis();
+    if (success) {
+      setIsImportUscisModalOpen(false);
+      actions.updateMetadata({ uscisPortalSaved: "true" });
+    }
+  };
+
+  const handleDeclineImportUscis = () => {
+    setIsImportUscisModalOpen(false);
+    actions.updateMetadata({ uscisImportPromptDismissed: true });
+  };
 
   const {
     showQuiz,
@@ -1413,7 +1456,7 @@ export const StepView: React.FC<StepViewProps> = ({
         />
 
         {/* Page Shell */}
-        <div className="flex w-full max-w-[680px] flex-col px-4 pt-5 pb-10 sm:px-6 md:px-8 md:pt-8">
+        <div className={JOURNEY_STEP_SHELL}>
           {/* Step Header */}
           <StepHeader
             stepNumber={localIdx + 1}
@@ -2646,6 +2689,25 @@ export const StepView: React.FC<StepViewProps> = ({
                       <span>Open credential vault</span>
                       <ArrowRight size={11} strokeWidth={2} />
                     </div>
+                    {sId === "step_1_6" && previousUscis && (
+                      <div
+                        role="button"
+                        tabIndex={0}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsImportUscisModalOpen(true);
+                        }}
+                        className="mt-3.5 pt-3 border-t border-[#d0e4f7]/80 flex items-center justify-between text-[11px] text-teal-700 font-semibold hover:text-teal-800"
+                      >
+                        <span className="flex items-center gap-1.5 truncate">
+                          <Sparkles size={12} className="text-teal-600 shrink-0" />
+                          <span className="truncate">
+                            Saved account: <strong>{previousUscis.username}</strong>
+                          </span>
+                        </span>
+                        <span className="shrink-0 underline ml-2">Load</span>
+                      </div>
+                    )}
                   </button>
                 )}
               </div>
@@ -2709,7 +2771,7 @@ export const StepView: React.FC<StepViewProps> = ({
                     rel="noopener noreferrer"
                     className="mt-[12px] inline-flex w-fit cursor-pointer items-center gap-[5px] text-[12px] font-semibold text-[#15744f] hover:underline"
                   >
-                    <span>Update in Portal Wallet</span>
+                    <span>Go to Portal Wallet</span>
                     <ExternalLink size={11} strokeWidth={2} />
                   </Link>
                 </div>
@@ -3086,7 +3148,7 @@ export const StepView: React.FC<StepViewProps> = ({
           className={`scrollbar-hide relative flex flex-1 flex-col items-center overflow-y-auto pb-[72px] sm:pb-[100px] ${
             currentStep.step_type === "quest"
               ? ""
-              : "px-2 pt-6 pb-6 sm:px-4 sm:pt-10 md:px-8 md:pt-14 md:pb-10 lg:px-12 lg:pb-12"
+              : `px-2 pb-6 sm:px-4 md:px-8 md:pb-10 lg:px-12 lg:pb-12 ${JOURNEY_VIEW_TOP}`
           }`}
         >
           {/* Quiz Overlay Refinement - Now absolute below headers */}
@@ -3437,7 +3499,7 @@ export const StepView: React.FC<StepViewProps> = ({
                     }}
                   />
                 )}
-                <div className="animate-in fade-in slide-in-from-bottom-6 flex w-full flex-col items-center px-3 pt-5 duration-1000 sm:px-4 md:px-0">
+                <div className="animate-in fade-in slide-in-from-bottom-6 flex w-full flex-col items-center px-3 duration-1000 sm:px-4 md:px-0">
                   {/* Questionnaire CTA - Commented out (dev option) */}
                   {/* {currentStep.step_key === "step_1_2" && !isDocQuestionnaireCompleted && (
                   <div className="max-w-3xl w-full mx-auto px-0 sm:px-2 md:px-4 pt-5 sm:pt-8 md:pt-14 pb-4 sm:pb-8 md:pb-12 flex flex-col gap-3">
@@ -4143,7 +4205,7 @@ export const StepView: React.FC<StepViewProps> = ({
               </>
             ) : currentStep.step_type === "filing" ? (
               <div className="animate-in fade-in slide-in-from-bottom-6 flex w-full flex-col items-center duration-1000">
-                <div className="flex w-full max-w-[680px] flex-col px-4 pt-5 pb-10 sm:px-6 md:px-8 md:pt-8">
+                <div className={JOURNEY_STEP_SHELL}>
                   <h1 className="mt-0 mb-1 text-[clamp(28px,4vw,36px)] leading-[1.15] font-bold tracking-tight text-[#0c1b33]">
                     {currentStep.step_name}
                   </h1>
@@ -4335,7 +4397,7 @@ export const StepView: React.FC<StepViewProps> = ({
               </div>
             ) : (
               <div
-                className={`animate-in fade-in zoom-in-95 mx-auto mt-4 w-full max-w-[680px] rounded-[20px] border border-[#d0e4f7] bg-white p-4 shadow-xl shadow-[#0f1f38]/5 duration-700 sm:mt-8 sm:rounded-[28px] sm:p-8 md:mt-12 md:rounded-[32px] md:p-12 lg:p-20 ${isChapter1 ? "step-modal-spacing" : ""}`}
+                className={`animate-in fade-in zoom-in-95 mx-auto w-full max-w-[680px] rounded-[20px] border border-[#d0e4f7] bg-white p-4 shadow-xl shadow-[#0f1f38]/5 duration-700 sm:rounded-[28px] sm:p-8 md:rounded-[32px] md:p-12 lg:p-20 ${isChapter1 ? "step-modal-spacing" : ""}`}
               >
                 <div
                   className={`mb-4 text-[11px] font-bold tracking-[0.2em] uppercase opacity-70 ${isChapter1 ? "accent-rose" : "text-primary"}`}
@@ -4389,7 +4451,8 @@ export const StepView: React.FC<StepViewProps> = ({
         <button
           onClick={() => {
             if (prevStepLock.isLocked) {
-              setUpgradeModalFeature(getModalFeatureForTier(prevStepLock.requiredPlan!));
+              const psId = prevStep ? ((prevStep as any).step_key || (prevStep as any).id) : undefined;
+              setUpgradeModalFeature(prevStepLock.feature || getModalFeatureForTier(prevStepLock.requiredPlan!, psId));
               return;
             }
             prevStep && handleNavigate((prevStep as any).step_key || (prevStep as any).id);
@@ -4402,7 +4465,7 @@ export const StepView: React.FC<StepViewProps> = ({
         </button>
 
         {/* Progress */}
-        <div className="flex flex-1 items-center gap-2">
+        <div className="flex flex-1 items-center gap-2 transition-all duration-300">
           <div className="h-1 flex-1 overflow-hidden rounded-full bg-[#d0e4f7]">
             <div
               className="from-primary to-primary/70 h-full rounded-full bg-gradient-to-r transition-all duration-500 ease-out"
@@ -4415,20 +4478,23 @@ export const StepView: React.FC<StepViewProps> = ({
         </div>
 
         {/* Next */}
-        <button
-          onClick={() => {
-            if (nextStepLock.isLocked) {
-              setUpgradeModalFeature(getModalFeatureForTier(nextStepLock.requiredPlan!));
-              return;
-            }
-            nextStep && handleNavigate((nextStep as any).step_key || (nextStep as any).id);
-          }}
-          className={`bg-primary shadow-primary/20 flex shrink-0 items-center gap-[5px] rounded-[10px] px-[18px] py-[9px] text-[13px] font-semibold text-white shadow-sm transition-all hover:brightness-110 active:scale-95 ${!nextStep || !isCompleted ? "pointer-events-none invisible" : ""} ${nextStepLock.isLocked ? "opacity-90 saturate-[0.8]" : ""}`}
-        >
-          {nextStepLock.isLocked && <Lock size={12} className="mr-1" />}
-          Next
-          <ArrowRight size={12} strokeWidth={2.5} />
-        </button>
+        {nextStep && isCompleted && (
+          <button
+            onClick={() => {
+              if (nextStepLock.isLocked) {
+                const nsId = (nextStep as any).step_key || (nextStep as any).id;
+                setUpgradeModalFeature(nextStepLock.feature || getModalFeatureForTier(nextStepLock.requiredPlan!, nsId));
+                return;
+              }
+              handleNavigate((nextStep as any).step_key || (nextStep as any).id);
+            }}
+            className={`bg-primary shadow-primary/20 flex shrink-0 items-center gap-[5px] rounded-[10px] px-[18px] py-[9px] text-[13px] font-semibold text-white shadow-sm transition-all hover:brightness-110 active:scale-95 ${nextStepLock.isLocked ? "opacity-90 saturate-[0.8]" : ""}`}
+          >
+            {nextStepLock.isLocked && <Lock size={12} className="mr-1" />}
+            Next
+            <ArrowRight size={12} strokeWidth={2.5} />
+          </button>
+        )}
       </footer>
 
       {/* Sponsorship Calculator, Medical, and PCC now launch through the shared roadmap
@@ -4506,6 +4572,18 @@ export const StepView: React.FC<StepViewProps> = ({
           setShowDeleteConfirmation(true);
         }}
       />
+
+      {previousUscis && (
+        <ImportUscisModal
+          open={isImportUscisModalOpen}
+          onOpenChange={setIsImportUscisModalOpen}
+          username={previousUscis.username}
+          sourceJourneyType={previousUscis.journeyType}
+          onConfirm={handleConfirmImportUscis}
+          onDecline={handleDeclineImportUscis}
+          loading={isSubmittingCreds}
+        />
+      )}
 
       {upgradeModalFeature && (
         <UpgradeModal

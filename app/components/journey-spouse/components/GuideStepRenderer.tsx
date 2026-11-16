@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
+import { JOURNEY_STEP_SHELL } from "@/app/components/journey-engine/viewSpacing";
 import React, { useState } from "react";
 import {
   AlertTriangle,
@@ -411,7 +412,7 @@ const AttorneyCard: React.FC<{ data: any }> = ({ data }) => (
 // ─── AwaitingDecisionTool (step_1_23, type: "awaiting_decision") ─────────────────
 export const AwaitingDecisionTool: React.FC<{ tool: any }> = ({ tool }) => (
   <div className="flex min-h-full w-full flex-col items-center">
-    <div className="flex w-full max-w-[680px] flex-col px-4 pt-5 pb-10 sm:px-6 md:px-8 md:pt-8">
+    <div className={JOURNEY_STEP_SHELL}>
       {tool.status_card && (
         <div
           className="mb-6 overflow-hidden rounded-2xl border-[1.5px]"
@@ -501,7 +502,7 @@ export const GuideStepRenderer: React.FC<GuideStepRendererProps> = ({
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 flex min-h-full w-full flex-col items-center duration-500">
-      <div className="flex w-full max-w-[680px] flex-col px-4 pt-5 pb-10 sm:px-6 md:px-8 md:pt-8">
+      <div className={JOURNEY_STEP_SHELL}>
         <h1 className="mb-1 text-[clamp(26px,4vw,34px)] font-bold leading-[1.15] tracking-tight text-[#0c1b33]">
           {guideData.title || stepName}
         </h1>

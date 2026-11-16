@@ -95,6 +95,50 @@ export async function GET(request: NextRequest) {
         updated_at: cred.updated_at,
       })) || [];
 
+    let previousUscis: {
+      id: string;
+      username: string;
+      journey_id: string;
+      candidate_id: string;
+      journeyType?: string;
+      updated_at: string;
+    } | null = null;
+
+    const hasUscis = data?.some((cred) => cred.portal_type?.toUpperCase() === "USCIS");
+    if (!hasUscis) {
+      const { data: prevRows } = await supabase
+        .from("portal_wallet_credentials")
+        .select("id, journey_id, candidate_id, username, updated_at")
+        .eq("user_id", user.id)
+        .eq("portal_type", "USCIS")
+        .order("updated_at", { ascending: false });
+
+      const otherRow = prevRows?.find(
+        (row) => row.journey_id !== scope.journeyId || row.candidate_id !== scope.candidateId
+      );
+
+      if (otherRow && otherRow.username) {
+        let journeyType = "";
+        if (otherRow.journey_id) {
+          const { data: jRow } = await supabase
+            .from("journeys")
+            .select("journey_type")
+            .eq("id", otherRow.journey_id)
+            .maybeSingle();
+          journeyType = jRow?.journey_type || "";
+        }
+
+        previousUscis = {
+          id: otherRow.id,
+          username: otherRow.username,
+          journey_id: otherRow.journey_id,
+          candidate_id: otherRow.candidate_id,
+          journeyType: journeyType ? journeyType.toUpperCase() : "Previous Journey",
+          updated_at: otherRow.updated_at,
+        };
+      }
+    }
+
     auditLog({
       userId: user.id,
       action: "portal_wallet.view",
@@ -104,7 +148,7 @@ export async function GET(request: NextRequest) {
       status: "success",
     });
 
-    return NextResponse.json({ credentials: response });
+    return NextResponse.json({ credentials: response, previousUscis });
   } catch (error) {
     console.error("Unexpected error in GET portal-wallet:", error);
     return NextResponse.json({ error: msg(E.PORTAL_WALLET_FETCH_FAILED) }, { status: 500 });
