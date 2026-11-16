@@ -2697,15 +2697,14 @@ export const StepView: React.FC<StepViewProps> = ({
                           e.stopPropagation();
                           setIsImportUscisModalOpen(true);
                         }}
-                        className="mt-3.5 pt-3 border-t border-[#d0e4f7]/80 flex items-center justify-between text-[11px] text-teal-700 font-semibold hover:text-teal-800"
+                        className="mt-3.5 flex items-center justify-between border-t border-[#d0e4f7]/80 pt-3 text-[11px] font-semibold text-teal-700 hover:text-teal-800"
                       >
                         <span className="flex items-center gap-1.5 truncate">
-                          <Sparkles size={12} className="text-teal-600 shrink-0" />
                           <span className="truncate">
                             Saved account: <strong>{previousUscis.username}</strong>
                           </span>
                         </span>
-                        <span className="shrink-0 underline ml-2">Load</span>
+                        <span className="ml-2 shrink-0 underline">Load</span>
                       </div>
                     )}
                   </button>
@@ -4451,8 +4450,12 @@ export const StepView: React.FC<StepViewProps> = ({
         <button
           onClick={() => {
             if (prevStepLock.isLocked) {
-              const psId = prevStep ? ((prevStep as any).step_key || (prevStep as any).id) : undefined;
-              setUpgradeModalFeature(prevStepLock.feature || getModalFeatureForTier(prevStepLock.requiredPlan!, psId));
+              const psId = prevStep
+                ? (prevStep as any).step_key || (prevStep as any).id
+                : undefined;
+              setUpgradeModalFeature(
+                prevStepLock.feature || getModalFeatureForTier(prevStepLock.requiredPlan!, psId)
+              );
               return;
             }
             prevStep && handleNavigate((prevStep as any).step_key || (prevStep as any).id);
@@ -4483,7 +4486,9 @@ export const StepView: React.FC<StepViewProps> = ({
             onClick={() => {
               if (nextStepLock.isLocked) {
                 const nsId = (nextStep as any).step_key || (nextStep as any).id;
-                setUpgradeModalFeature(nextStepLock.feature || getModalFeatureForTier(nextStepLock.requiredPlan!, nsId));
+                setUpgradeModalFeature(
+                  nextStepLock.feature || getModalFeatureForTier(nextStepLock.requiredPlan!, nsId)
+                );
                 return;
               }
               handleNavigate((nextStep as any).step_key || (nextStep as any).id);

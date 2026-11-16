@@ -2651,7 +2651,6 @@ export const StepView: React.FC<StepViewProps> = ({
                         className="mt-3.5 pt-3 border-t border-[#d0e4f7]/80 flex items-center justify-between text-[11px] text-teal-700 font-semibold hover:text-teal-800"
                       >
                         <span className="flex items-center gap-1.5 truncate">
-                          <Sparkles size={12} className="text-teal-600 shrink-0" />
                           <span className="truncate">
                             Saved account: <strong>{previousUscis.username}</strong>
                           </span>
