@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState, useEffect, useRef } from "react";
+import React, { useCallback, useMemo, useState, useEffect, useRef } from "react";
 import { RoadmapDataV3 } from "./types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { getJourneyLockStatus } from "@/lib/journey-lock";
@@ -675,6 +675,13 @@ export function DashboardView({
     );
   }, [nextActionData, effectiveTier]);
 
+  // Same per-step plan rule as the StepView Prev / Next footer, for the journey line.
+  const stepLockFor = useCallback(
+    (stepKey: string, chapterIdx: number, localIdx: number) =>
+      getStepLockStatus(stepKey, effectiveTier, chapterIdx, localIdx),
+    [effectiveTier]
+  );
+
   const lockStatus = useMemo(() => getJourneyLockStatus(state.metadata || {}), [state.metadata]);
 
   let candidateCtx;
@@ -806,6 +813,7 @@ export function DashboardView({
     },
     onUpgrade: setUpgradeModalFeature,
     renderApTracker: () => <APTrackingTool state={state} defaultExpanded />,
+    stepLock: stepLockFor,
     isStepLocked: (stepKey: string) => {
       const feat = STEP_PRIMARY_FEATURE[stepKey];
       return !!feat && plan.isLocked(feat);

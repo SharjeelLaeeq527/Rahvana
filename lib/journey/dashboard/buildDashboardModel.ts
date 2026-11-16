@@ -150,7 +150,9 @@ export function buildPath(
   data: JourneyDataLike,
   state: JourneyStateLike,
   helpers: StepHelpers,
-  next: NextActionLike | null
+  next: NextActionLike | null,
+  /** Plan lock for a step, by its index among the chapter's VISIBLE steps (getStepLockStatus). */
+  stepLock?: (stepKey: string, chapterIdx: number, localIdx: number) => { isLocked: boolean; requiredPlan: string | null }
 ): DashboardPathStep[] {
   const raw = chaptersOf(data);
   const nextKey = next ? stepId(next.step) : null;
@@ -167,6 +169,10 @@ export function buildPath(
         number: stepNumberOf(s, k + 1),
         name: String(s?.step_name || s?.name || `Step ${k + 1}`),
         state: state.completedSteps.has(id) ? "done" : id === nextKey ? "current" : "next",
+        lock: (() => {
+          const l = stepLock?.(id, ci, k);
+          return l?.isLocked ? { requiredPlan: l.requiredPlan || "basic" } : null;
+        })(),
       });
     });
   });
