@@ -21,6 +21,8 @@ import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 
 interface APTrackingToolProps {
   state: WizardState;
+  /** Start expanded (the dashboard AP panel); the roadmap keeps the collapsed default. */
+  defaultExpanded?: boolean;
 }
 
 /* ------------------------------------------------------------------ */
@@ -54,10 +56,10 @@ interface StatusUI {
 
 const CEAC_STATUS_UI: Record<StatusKey, StatusUI> = {
   "Administrative Processing": {
-    accent: "#B58AE0",
-    accentSoft: "rgba(181,138,224,0.14)",
-    chipBg: "rgba(181,138,224,0.18)",
-    chipColor: "#E5D2F5",
+    accent: "#FCD34D",
+    accentSoft: "rgba(252,211,77,0.14)",
+    chipBg: "rgba(252,211,77,0.18)",
+    chipColor: "#FEF3C7",
     heading: "Administrative Processing",
     trackerLabel: "AP Status Tracker",
     counterLabel: (d) => `${d} Day${d !== 1 ? "s" : ""} In AP`,
@@ -163,9 +165,9 @@ const GLASS_STYLE: React.CSSProperties = {
 /*  Component                                                         */
 /* ------------------------------------------------------------------ */
 
-export default function APTrackingTool({ state }: APTrackingToolProps) {
+export default function APTrackingTool({ state, defaultExpanded = false }: APTrackingToolProps) {
   // Collapsed by default per spec
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
   const apDetails = state.metadata?.apDetails || {};
   const apSaved = state.metadata?.apSaved === "true";

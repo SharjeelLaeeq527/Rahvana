@@ -269,6 +269,57 @@ surface, not a spinner. Adding a guide to the toolbox = an `AppGroup` item + a `
 `OVERLAY_PAGE_ROUTES` entry + a `GUIDE_PRELOADERS` entry (its feature key must match the guide
 page's own `PageGate`).
 
+**Redesigned journey dashboard.** Both `DashboardView`s (spouse + engine) render only
+`app/components/journey-dashboard/JourneyDashboard.tsx` (the classic layout and its toggle were removed;
+the DashboardViews now only compute data and host the CSA drawer / questionnaire / upgrade modals). It switches at 1024px between `desktop/DesktopDashboard` (Inter,
+zoom-to-fit 1340px board) and `mobile/MobileDashboard` (Plus Jakarta Sans, swipe pages). The skins are
+presentational: each DashboardView passes the values it already computes (case score + sub-scores,
+gated `displayedAlertIssues`, phase flags, receipt record, NVC fields, next action + lock) into
+`useJourneyDashboardProps`, which reshapes them through the pure builders in
+`lib/journey/dashboard/buildDashboardModel.ts` (tested in `__tests__/journey-dashboard-model.test.ts`).
+Rules: no mock data (a field without data renders nothing); step filtering only via the passed
+`getActiveStepsForStage`; Continue uses the same lock / upgrade logic as `CaseStatusHero`; folders and
+quick links open `AppGroupModal`, `AllServiceRequestsModal` with `currentJourneyOnly` (this journey + candidate only),
+and a radial favourites fan (desktop; `JourneyFavoritesTray` in the journey nav was removed). Doc Vault opens
+`/document-vault?journey=<journeys.id>` and Portal wallet `/portal-wallet?candidate=<ir1 | candidate id>`; both pages
+skip their journey / wallet picker for that link. Desktop fits the board to the viewport (no scrolling); alerts always
+show in the top banner. **Tracking ticket + calendar dates read case facts through `lib/journey/dashboard/caseFacts.ts`
+(`readCaseFacts`)**, which lists every key the step tools actually save (e.g. `med_date` / `med_clinic`,
+`consulateLocation`, `approvalDetails.*`, `dqSaved`, the `uscis_receipt_number` case_data row as an object (spouse UI)
+or a string + `uscis_notice_date` (engine UI)) plus the old VisaTicker aliases; when a tool changes its keys, update
+that list. Registering a receipt fires `RECEIPT_SAVED_EVENT` so the DashboardViews refetch it. The ticket's
+"Check USCIS" button (`useUscisLiveCheck`) calls the Torch API route `/api/uscis-case-status` and saves the result as
+case_data `uscis_live_status` (shown only while it matches the current receipt number); nothing checks USCIS
+automatically. **Administrative processing:** while the case is in AP / 221(g) the ticket's Result stage offers
+"Open AP tracker" (the DashboardView's own `APTrackingTool`, passed in as `renderApTracker`, shown in a panel) once
+`apSaved`, else "Record AP details", which opens the step found by `findStepByToolType(..., "adm_processing")` (no
+hardcoded step positions). Old-dashboard items not yet ported are drafted in `docs/journey-dashboard-drafts.md`.
+**Dashboard plan locks** come from each DashboardView's `useJourneyPlan` (this journey's tier), passed
+as `locks` + `onUpgrade` into `useJourneyDashboardProps`: `case_strength` locked -> the card shows
+`lockedCaseHealthPreview` (a fixed sample, blurred, never the real score; questionnaires stay usable; Analysis opens
+the upgrade prompt); `tracker_reminders` locked -> Check USCIS opens the upgrade prompt; `document_vault` /
+`portal_wallet` locked -> those quick links open the upgrade prompt instead of navigating. The `/portal-wallet` page
+itself is wrapped in `PageGate feature="portal_wallet"` (Basic+; nothing loads when locked). On the server,
+`/api/uscis-case-status` checks the plan only when the body carries a `journeyId` (the dashboard sends it):
+`lib/uscis/journeyStatusAccess.ts` `canCheckUscisForJourney` = owned journey + its tier + account add-ons, else 403
+`PLAN_REQUIRED`. Calls without a journey id are the standalone Case Status tool, which stays free (decided Nov 2026). The hero's second button is the current step's own
+guide / tool / portal (`lib/journey/dashboard/stepAction.ts` `resolveStepAction`, read from the step JSON:
+`tool_data.type`, `tool_data.launch_module`, `relevantTools`, `guide_card`; toolbox items open in-journey).
+Mobile has no header row (the page name sits in the active nav bubble) and fits every page to the screen
+(spacing tightens on short phones, then content scales to at most 82%); its calendar adds custom events too, and
+Nearby on the Help page lists only places recorded on the journey (interview location, medical clinic) with directions,
+else an explanatory empty state. Tablets (700-1023px) use the mobile skin with two-column pages (mobile.css). Desktop
+keeps the board at its 1340px design width, scaled to the screen but never below 82%; short screens switch to a compact
+board (`.frame.cmp`) instead. The toned-down /assets/images/dashboard.png backdrop is on the DashboardView wrapper
+(`.rv-dash-bg`), so it covers the whole dashboard area.
+A note's colour is its category (`NOTE_CATEGORIES`: Follow-up, Documents, Questions, Appointments, Money). Notes,
+custom calendar events and dismissed alerts are per JOURNEY ROW, saved as `case_data` keys
+`dashboard_notes` / `dashboard_events` / `dashboard_dismissed_alerts` (`lib/journey/dashboard/personal.ts`
+validates them on read; not mapped to the profile), so they never leak across categories or candidates.
+Widget layout + calendar face are per-browser localStorage keyed by journey id. Community links stay
+hidden until `NEXT_PUBLIC_COMMUNITY_URL` is set. (The older string-built `Jdashboard` engine and the
+`/user-dashboard` journey embed that used it were removed.)
+
 **Cross-journey service request directory.** The Services folder in `AppGroupModal` has a
 "My Requests (all journeys)" link that opens `journey-engine/AllServiceRequestsModal.tsx`: every
 Consultation / Medical / PCC / Translation request on the account (`services-status?scope=all`
