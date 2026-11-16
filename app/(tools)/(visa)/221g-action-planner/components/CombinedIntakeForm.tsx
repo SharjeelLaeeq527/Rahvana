@@ -41,6 +41,7 @@ import { escapeHtml } from "@/lib/security/sanitize";
 import type { ToolModeProps } from "@/types/tool-mode";
 import { useResolveToolMode } from "@/lib/hooks/useResolveToolMode";
 import { useUserProfile } from "@/app/context/UserProfileContext";
+import FieldLabel from "@/app/components/shared/FieldLabel";
 
 interface CombinedIntakeFormProps extends ToolModeProps {
   onSubmit?: (data: FormData, selectedItems: FormSelections) => void;
@@ -2686,7 +2687,7 @@ footer.querySelector(".footer-page").textContent = String(p);
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="visaType">Visa Type *</Label>
+                  <FieldLabel title="Visa Type" htmlFor="visaType"/>
                   <CustomDropdown
                     value={formData.visaType}
                     onChange={(v) => handleField("visaType", v)}
@@ -2697,7 +2698,7 @@ footer.querySelector(".footer-page").textContent = String(p);
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="visaCategory">Visa Category *</Label>
+                  <FieldLabel title="Visa Category" htmlFor="visaCategory"/>
                   <CustomDropdown
                     value={formData.visaCategory}
                     onChange={(v) => handleField("visaCategory", v)}
@@ -2722,7 +2723,7 @@ footer.querySelector(".footer-page").textContent = String(p);
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="interviewDate">Interview Date *</Label>
+                  <FieldLabel title="Interview Date" htmlFor="interviewDate"/>
                   <Input
                     id="interviewDate"
                     type="date"
@@ -2745,7 +2746,8 @@ footer.querySelector(".footer-page").textContent = String(p);
 
               {/* Embassy Combobox */}
               <div className="space-y-2">
-                <Label htmlFor="consularPost">Consular Post / Embassy Location *</Label>
+                <FieldLabel title="Consular Post / Embassy Location" htmlFor="consularPost"/>
+                
                 <div className="relative" ref={embassyRef}>
                   <div className="relative">
                     <MapPin className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
