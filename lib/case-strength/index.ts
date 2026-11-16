@@ -41,9 +41,12 @@ export {
 
 // ─── Per-visa-category profiles (Strategy pattern) ──────────────────────────
 // Resolve one of these from a journey's `journey_type` to make the whole engine
-// category-aware. Unknown types fall back to IR-1 (today's behavior).
+// category-aware. Unknown or unregistered types get GENERIC_PROFILE, never IR-1.
 export {
   resolveCaseStrengthProfile,
+  findCaseStrengthProfile,
+  hasCaseStrengthProfile,
+  GENERIC_PROFILE,
   CASE_STRENGTH_PROFILES,
   IR1_PROFILE,
   IR5_PROFILE,

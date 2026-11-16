@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
+import { isCategoryPrimary } from "@/lib/candidate/candidateKeys";
 import { ShieldCheck, X, User } from "lucide-react";
 import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 import { useCandidate } from "@/app/context/CandidateContext";
@@ -227,7 +228,8 @@ export const NvcFeeModal: React.FC<NvcFeeModalProps> = ({
         id: c.id,
         name: c.fullName || c.label,
         relationship: c.relation,
-        isPrincipal: c.isPrimary,
+        // Principal = first candidate of its own visa category (not the account's first).
+        isPrincipal: isCategoryPrimary(c),
       }));
     }
     return [];

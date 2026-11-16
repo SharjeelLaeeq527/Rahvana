@@ -34,6 +34,10 @@ const nextConfig = {
   // stack to attackers during reconnaissance.
   poweredByHeader: false,
 
+  // Disable browser source maps in staging/production builds so proprietary
+  // frontend code and internal comments cannot be downloaded via _next/static.
+  productionBrowserSourceMaps: false,
+
   images: {
     remotePatterns: [
       {
@@ -56,10 +60,10 @@ const nextConfig = {
         // Apply to ALL routes
         source: "/(.*)",
         headers: [
-          // Prevent your site from being embedded in iframes (clickjacking protection)
+          // Allow only Same origins
           {
             key: "X-Frame-Options",
-            value: "DENY",
+            value: "SAMEORIGIN",
           },
           // Prevent MIME-type sniffing attacks
           {
@@ -116,7 +120,7 @@ const nextConfig = {
               "object-src 'none'",
               "base-uri 'self'",
               "form-action 'self'",
-              "frame-ancestors 'none'",
+              "frame-ancestors 'self' http://localhost:3000 https://rahvana-test.vercel.app https://rahvana.com",
             ].join("; "),
           },
         ],
@@ -140,11 +144,11 @@ const nextConfig = {
               "font-src 'self' https://fonts.gstatic.com data:",
               "img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com https://www.googletagmanager.com https://*.google-analytics.com",
               "connect-src 'self' https://*.supabase.co https://*.stripe.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://rahvana-1.onrender.com wss://*.supabase.co https://api.geoapify.com",
-              "frame-src 'self' https://js.stripe.com",
+              "frame-src 'self' blob: https://js.stripe.com",
               "object-src 'none'",
               "base-uri 'self'",
               "form-action 'self'",
-              "frame-ancestors 'self'",
+              "frame-ancestors 'self' http://localhost:3000 https://rahvana-test.vercel.app https://rahvana.com",
             ].join("; "),
           },
         ],

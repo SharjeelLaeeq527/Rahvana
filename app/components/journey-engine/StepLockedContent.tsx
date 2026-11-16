@@ -136,7 +136,13 @@ export function StepLockedContent({
   if (mode === "replace") {
     return (
       <>
-        {showUpgrade && <UpgradeModal feature={featureKey} onClose={() => setShowUpgrade(false)} />}
+        {showUpgrade && (
+          <UpgradeModal
+            feature={featureKey}
+            currentTier={plan.tier}
+            onClose={() => setShowUpgrade(false)}
+          />
+        )}
         <div
           className={`
             rounded-2xl border-[1.5px] border-dashed
@@ -193,7 +199,13 @@ export function StepLockedContent({
   // ── Overlay mode (default) — blurred children with lock overlay ───────────
   return (
     <>
-      {showUpgrade && <UpgradeModal feature={featureKey} onClose={() => setShowUpgrade(false)} />}
+      {showUpgrade && (
+        <UpgradeModal
+          feature={featureKey}
+          currentTier={plan.tier}
+          onClose={() => setShowUpgrade(false)}
+        />
+      )}
       <div className={`relative ${className ?? ""}`}>
         {/* Blurred / dimmed children */}
         <div className="pointer-events-none select-none opacity-55">{children}</div>

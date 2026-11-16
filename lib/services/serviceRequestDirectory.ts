@@ -12,7 +12,8 @@
  *  - Medical / PCC: `source` + `journey_slug` (authoritative category), candidate from
  *    `candidate_id` / `metadata.candidate_id` / the `[Candidate: x]` admin_notes tag.
  *  - Translation: only `metadata.candidate_id`; category comes from that candidate.
- *  - Consultation: no candidate tag; account-wide, labeled with its own `visa_category`.
+ *  - Consultation: `source` + `journey_slug` when journey-scoped (candidate from `candidate_id` /
+ *    `admin_notes`); non-journey rows remain account-wide.
  *
  * Pure: no React, no fetch. Input is the `/api/user-dashboard/services-status?scope=all`
  * payload plus the candidate roster.
@@ -335,10 +336,14 @@ function buildPcc(row: RawRow, candidates: CandidateProfile[]): ServiceRequestIt
 function buildConsultation(row: RawRow, candidates: CandidateProfile[]): ServiceRequestItem {
   const status = String(row.status || "pending_approval");
   const isPast = !!row.selected_slot && new Date(row.selected_slot).getTime() < Date.now();
+  const isJourney = row.source === "journey";
+  const kind = isJourney ? "journey" : "account";
   const context = resolveContext({
     row,
-    kind: "account",
-    rowCategory: normalizeCategory(row.visa_category),
+    kind,
+    rowCategory: isJourney
+      ? normalizeCategory(row.journey_slug) || normalizeCategory(row.visa_category)
+      : normalizeCategory(row.visa_category),
     candidates,
   });
   return {
@@ -365,7 +370,7 @@ function buildConsultation(row: RawRow, candidates: CandidateProfile[]): Service
     ]),
     userNotes: row.case_summary || null,
     adminNotes: adminNotesFor(row, candidates),
-    manageHref: "/book-consultation?tab=requests",
+    manageHref: isJourney ? null : "/book-consultation?tab=requests",
   };
 }
 
@@ -396,10 +401,16 @@ function buildTranslation(row: RawRow, candidates: CandidateProfile[]): ServiceR
   };
 }
 
+export interface BuildServiceRequestDirectoryOptions {
+  /** When true (e.g. accessed for a journey), account-wide requests are omitted. */
+  excludeAccountWide?: boolean;
+}
+
 /** Every request on the account, newest first. */
 export function buildServiceRequestDirectory(
   payload: ServicesStatusPayload,
-  candidates: CandidateProfile[]
+  candidates: CandidateProfile[],
+  options?: BuildServiceRequestDirectoryOptions
 ): ServiceRequestItem[] {
   const items: ServiceRequestItem[] = [
     ...(payload.consultationBookings || []).map((r) => buildConsultation(r, candidates)),
@@ -407,11 +418,17 @@ export function buildServiceRequestDirectory(
     ...(payload.pccRequests || []).map((r) => buildPcc(r, candidates)),
     ...(payload.translationDocuments || []).map((r) => buildTranslation(r, candidates)),
   ];
-  return items.sort((a, b) => {
+  const sorted = items.sort((a, b) => {
     const ta = a.createdAt ? new Date(a.createdAt).getTime() : 0;
     const tb = b.createdAt ? new Date(b.createdAt).getTime() : 0;
     return tb - ta;
   });
+
+  if (options?.excludeAccountWide) {
+    return sorted.filter((item) => item.context.kind !== "account");
+  }
+
+  return sorted;
 }
 
 /** True when the request belongs to the journey the user is currently viewing. */

@@ -1,7 +1,7 @@
 // Category Selection Step - Displays available visa categories for user selection.
 "use client";
 import { Button } from "@/components/ui/button";
-import { Heart, UsersRound, UserRound, type LucideIcon, FileText } from "lucide-react";
+import { Heart, UsersRound, Baby, UserRound, type LucideIcon, FileText } from "lucide-react";
 import type { InterviewCategoryConfig } from "@/data/interview-categories/schema";
 
 export interface CategoryWithPurchaseStatus extends InterviewCategoryConfig {
@@ -53,11 +53,11 @@ const getThemeColor = (themeColor: string) => {
 
     blue: {
       gradient: "linear-gradient(145deg, #ffffff 0%, #f8fbff 40%, #eef5ff 70%, #e8f0ff 100%)",
-      iconBg: "#afdbdb",
-      iconColor: "#0d7377",
-      border: "rgba(13, 115, 119, 0.08)",
-      borderSelected: "rgba(13, 115, 119, 0.4)",
-      glowColor: "rgba(175, 219, 219, 0.2)",
+      iconBg: "#dbeafe",
+      iconColor: "#2563eb",
+      border: "rgba(37, 99, 235, 0.08)",
+      borderSelected: "rgba(37, 99, 235, 0.4)",
+      glowColor: "rgba(147, 197, 253, 0.2)",
     },
 
     purple: {
@@ -102,6 +102,7 @@ const getThemeColor = (themeColor: string) => {
 const CATEGORY_ICON_MAP: Record<string, LucideIcon> = {
   heart: Heart,
   "users-round": UsersRound,
+  "baby": Baby,
 };
 
 const getCategoryIcon = (iconName: string): LucideIcon => {
@@ -282,28 +283,6 @@ export function CategorySelectionStep({
                         Requires Basic Journey Plan
                       </span>
                     )
-                  ) : category.isPurchased ? (
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          fillRule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      Purchased
-                    </span>
-                  ) : category.purchaseExhausted ? (
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                      <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          fillRule="evenodd"
-                          d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      Buy again
-                    </span>
                   ) : (
                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
                       <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -313,7 +292,7 @@ export function CategorySelectionStep({
                           clipRule="evenodd"
                         />
                       </svg>
-                      Price locked: ${category.price ?? 200}
+                      200 Credits / Session
                     </span>
                   )}
 
@@ -344,14 +323,14 @@ export function CategorySelectionStep({
       </div>
 
       {/* Navigation Buttons */}
-      <div className="flex flex-row justify-between gap-4 pt-6">
-        <Button
+      <div className="flex flex-row justify-end gap-4 pt-6">
+        {/* <Button
           onClick={onBack}
           variant="outline"
           className="border-slate-200 text-slate-700 hover:bg-slate-50 px-6 py-3 text-base"
         >
           ← Back
-        </Button>
+        </Button> */}
 
         <Button
           onClick={onNext}

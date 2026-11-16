@@ -1,5 +1,6 @@
 "use client";
 
+import { JOURNEY_VIEW_TOP } from "@/app/components/journey-engine/viewSpacing";
 import React, { useMemo, useState } from "react";
 import { ChevronRight, AlertTriangle, Lock } from "lucide-react";
 import { RoadmapData } from "@/app/(tools)/(visa)/visa-category/[visa-journey]/components/types";
@@ -77,7 +78,7 @@ export function ChapterView({ data, chapterIdx, state, onBack, onSelectStep }: C
 
   return (
     <div
-      className={`scrollbar-hide relative flex-1 overflow-y-auto px-4 py-8 pb-20 sm:px-6`}
+      className={`scrollbar-hide relative flex-1 overflow-y-auto px-4 pb-20 sm:px-6 ${JOURNEY_VIEW_TOP}`}
       style={isChapter1 || isChapter2 || isChapter3 ? { minHeight: "100vh" } : undefined}
     >
       {/* Fullscreen background for Chapter 1, 2, 3 and their steps */}
@@ -112,7 +113,7 @@ export function ChapterView({ data, chapterIdx, state, onBack, onSelectStep }: C
         />
       )}
 
-      <div className="animate-in fade-in relative z-10 mx-auto mt-6 w-full max-w-[680px] duration-700 sm:mt-12">
+      <div className="animate-in fade-in relative z-10 mx-auto w-full max-w-[680px] duration-700">
         {/* Removed Unlock Chapter 2 TEMP button */}
         {/* <button
           onClick={onBack}
@@ -332,7 +333,7 @@ export function ChapterView({ data, chapterIdx, state, onBack, onSelectStep }: C
                 key={`mobile-${sId}`}
                 onClick={() => {
                   if (isStepLocked) {
-                    const feat = getModalFeatureForTier(lockStatus.requiredPlan!);
+                    const feat = lockStatus.feature || getModalFeatureForTier(lockStatus.requiredPlan!, sId);
                     setUpgradeModalFeature(feat);
                     return;
                   }
@@ -523,7 +524,7 @@ export function ChapterView({ data, chapterIdx, state, onBack, onSelectStep }: C
                 onClick={() => {
                   if (isStepLocked) {
                     // Show upgrade modal with tier-appropriate feature
-                    const feat = getModalFeatureForTier(lockStatus.requiredPlan!);
+                    const feat = lockStatus.feature || getModalFeatureForTier(lockStatus.requiredPlan!, sId);
                     setUpgradeModalFeature(feat);
                     return;
                   }
@@ -582,7 +583,11 @@ export function ChapterView({ data, chapterIdx, state, onBack, onSelectStep }: C
 
       {/* Upgrade Modal for free tier step limit */}
       {upgradeModalFeature && (
-        <UpgradeModal feature={upgradeModalFeature} onClose={() => setUpgradeModalFeature(null)} />
+        <UpgradeModal
+          feature={upgradeModalFeature}
+          currentTier={effectiveTier}
+          onClose={() => setUpgradeModalFeature(null)}
+        />
       )}
     </div>
   );

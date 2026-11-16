@@ -336,7 +336,7 @@ export default function VisaCasesTable() {
               options={[
                 { value: "IR1", label: "IR-1 Spouse Visa" },
                 { value: "IR5", label: "IR-5 Parent Visa" },
-                { value: "F1", label: "F-1 Student Visa" },
+                { value: "IR2", label: "IR-2 Child Visa" },
               ]}
               placeholder="Journey Type"
               className="w-[200px] [&_button]:w-full [&_button]:min-w-0"

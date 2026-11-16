@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Globe,
-  TrendingUp,
   FileText,
   Calendar,
   MessageSquare,
@@ -17,8 +16,8 @@ import {
   Clock,
   Star,
   Trash2,
+  QrCode,
 } from "lucide-react";
-import Link from "next/link";
 import { Loader } from "@/components/ui/spinner";
 
 import TranslationQueueTable from "./components/translation-queue/TranslationQueueTable";
@@ -34,15 +33,20 @@ import BlogCommentsTable from "./components/blog-comments/BlogCommentsTable";
 import { FeatureAnnouncementModal } from "./components/feature-announcement/FeatureAnnouncementModal";
 import { BlogAnnouncementModal } from "./components/blog-announcement/BlogAnnouncementModal";
 import AccountDeletionFeedbackTable from "./components/account-deletion-feedback/AccountDeletionFeedbackTable";
+import { AdminProfileTray } from "./components/AdminProfileTray";
+import { StagingTotpManager } from "./components/staging-totp/StagingTotpManager";
+import { isStagingTotpManager } from "@/lib/security/staging-access";
 
 export default function AdminPanel() {
-  const { user, isAdmin, isLoading: authLoading, signOut } = useAuth();
+  const { user, isAdmin, isLoading: authLoading, isAdminLoading, signOut } = useAuth();
   const router = useRouter();
 
   const [openFeatureModal, setOpenFeatureModal] = useState(false);
   const [openBlogModal, setOpenBlogModal] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = async () => {
+    setIsLoggingOut(true);
     try {
       // Call the admin logout API
       const response = await fetch("/api/admin/logout", {
@@ -57,12 +61,12 @@ export default function AdminPanel() {
     } finally {
       // Sign out from the auth context
       await signOut();
-      // Redirect to admin login
-      router.push("/admin-login");
+      // Redirect to admin login (replace so "back" doesn't return to /admin)
+      router.replace("/admin-login");
     }
   };
 
-  if (authLoading) {
+  if (authLoading || isAdminLoading || isLoggingOut) {
     return (
       <div className="bg-background flex min-h-screen items-center justify-center p-6">
         <Loader size="md" text="Checking authorization..." />
@@ -107,35 +111,13 @@ export default function AdminPanel() {
                   timeZoneName: "short",
                 })}
               </span>
-              <span className="text-muted-foreground text-sm">Admin: {user?.email}</span>
-              <Link
-                href="/admin/dashboard"
-                className="flex items-center gap-1.5 rounded-lg bg-teal-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-teal-700"
-              >
-                <TrendingUp className="h-4 w-4" />
-                View Analytics
-              </Link>
-              <button
-                onClick={() => setOpenFeatureModal(true)}
-                className="rounded-lg border-2 border-teal-600 p-1 text-teal-600 hover:bg-teal-100 hover:text-teal-700"
-              >
-                Feature Announcement
-              </button>
-              <button
-                onClick={() => setOpenBlogModal(true)}
-                className="rounded-lg bg-teal-600 px-2.5 py-1 text-sm font-medium text-white transition-colors hover:bg-teal-700"
-              >
-                Blog Announcement
-              </button>
-              <Button
-                onClick={handleLogout}
-                variant="outline"
-                size="sm"
-                className="border-red-600 text-red-600 hover:bg-red-50 hover:text-red-700"
-              >
-                Logout
-              </Button>
               <AdminNotificationBell adminUserId={user.id} />
+              <AdminProfileTray
+                userEmail={user?.email}
+                onOpenFeatureModal={() => setOpenFeatureModal(true)}
+                onOpenBlogModal={() => setOpenBlogModal(true)}
+                onLogout={handleLogout}
+              />
             </div>
           </div>
         </div>
@@ -254,6 +236,19 @@ export default function AdminPanel() {
           >
             <AccountDeletionFeedbackTable />
           </CollapsibleSection>
+
+          {/* Section 9: Staging Authenticator (TOTP) Access - Restricted to Owners & Managers */}
+          {isStagingTotpManager(user?.email) && (
+            <CollapsibleSection
+              title="Staging Authenticator (TOTP) Access"
+              icon={<QrCode className="h-5 w-5" />}
+              description="Generate and manage individual Google / Microsoft Authenticator QR codes for staging platform access"
+              // badge="OWNER & MANAGER"
+              badgeColor="bg-emerald-100 text-emerald-800"
+            >
+              <StagingTotpManager />
+            </CollapsibleSection>
+          )}
 
           <FeatureAnnouncementModal open={openFeatureModal} onOpenChange={setOpenFeatureModal} />
           <BlogAnnouncementModal open={openBlogModal} onOpenChange={setOpenBlogModal} />

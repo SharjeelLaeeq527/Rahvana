@@ -15,6 +15,7 @@ import { checkRateLimitRedis } from "@/lib/security/rate-limit-redis";
 import { auditAuthSuccess, auditAuthFailure, auditBlocked } from "@/lib/security/audit-log";
 
 import { maybeRunSecurityScan } from "@/lib/security/alerting";
+import { isStagingEmailAllowed } from "@/lib/security/staging-access";
 
 /**
  * POST /api/auth/login
@@ -89,6 +90,22 @@ export async function POST(request: NextRequest) {
         code: "AUTH_LOGIN_FAILED",
       },
       { status: 400 }
+    );
+  }
+
+  // 2.5 STAGING ACCESS RESTRICTION
+  if (!isStagingEmailAllowed(email)) {
+    auditBlocked(request, "auth.login", {
+      reason: "staging_email_not_whitelisted",
+      email,
+    });
+
+    return NextResponse.json(
+      {
+        error: "Access to this staging platform is restricted to authorized accounts only.",
+        code: "STAGING_ACCESS_DENIED",
+      },
+      { status: 403 }
     );
   }
 

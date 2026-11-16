@@ -1,672 +1,768 @@
 {
   "categorySlug": "ir-2-child",
   "version": "1.0.0",
-  "lastUpdated": "2026-03-20",
+  "lastUpdated": "2026-11-06",
+  "description": "IR-2/CR-2 child immigrant visa interview preparation rules using the current IR-2 questionnaire keys and question-bank categories.",
+  "designPrinciples": {
+    "philosophy": "Select child-visa questions by qualifying legal relationship (biological, step, adopted), age stage, household and caretaking reality, education status, travel/refusal risk, and relocation plan clarity.",
+    "baseQuestions": "Core applicant-petitioner relationship, family/household, education/personal background, travel/immigration history, and relocation/future-plans categories are eligible for every completed IR-2 profile.",
+    "selectiveAdditions": "Relationship-subtype categories (Biological Child, Stepchild, Adopted Child) are only added when the intake reports that relationship type; question-level conditions then narrow individual questions.",
+    "conditionalsWork": "Rules use only current questionnaire keys and values from ir-2-child/questionnaire.json, and includeCategories match ir-2-child/question-bank.json category names exactly."
+  },
+  "selectionStrategy": {
+    "approach": "Layered category filtering with risk-based priority boosts.",
+    "baselineQuestionCount": 31,
+    "maxQuestionsPerSession": 47,
+    "priorityHierarchy": [
+      "critical",
+      "high",
+      "medium",
+      "low"
+    ]
+  },
   "questionSelectionRules": [
     {
-      "id": "rule_core_basic_identity",
-      "name": "Core - Basic Identity",
-      "description": "Always include basic identity questions as foundation for any IR-2 interview",
+      "id": "rule-critical-ir2-foundation",
+      "name": "Critical IR-2 foundation - petitioner, relationship, household, education, travel, and relocation",
+      "description": "Every IR-2 interview needs the child to know who petitioned, the qualifying parent-child relationship, who they live with now, their schooling, any travel or immigration history, and the plan for living in the United States.",
+      "priority": "critical",
       "condition": {
         "type": "AND",
         "conditions": [
           {
-            "field": "current_country",
-            "operator": "notEquals",
-            "value": ""
+            "field": "caseType",
+            "operator": "equals",
+            "value": "child"
           }
         ]
       },
       "actions": {
-        "includeCategories": ["Basic Identity"],
-        "priorityBoost": ["high"],
-        "reason": "Basic identity verification forms the foundation for confirming beneficiary eligibility and age requirements under IR-2 category"
+        "includeCategories": [
+          "Applicant & Petitioner Relationship",
+          "Family & Household Background",
+          "Education & Personal Background",
+          "Travel & Immigration History",
+          "Relocation & Future Plans"
+        ],
+        "priorityBoost": [
+          "critical"
+        ],
+        "relevanceScore": 100,
+        "reason": "Core IR-2 readiness requires petitioner identity, qualifying relationship proof, current household facts, personal background, admissibility screening, and a coherent settlement plan."
       }
     },
     {
-      "id": "rule_core_petitioner_info",
-      "name": "Core - Petitioner Information",
-      "description": "Always include petitioner identification and status questions",
+      "id": "rule-biological-child-proof",
+      "name": "Biological child cases - establish legal parent-child relationship",
+      "description": "Biological child IR-2 cases require preparation around parents' identity and marital history, who raised the child, co-residence with the petitioning parent, and contact continuity.",
+      "priority": "critical",
       "condition": {
         "type": "AND",
         "conditions": [
           {
-            "field": "current_country",
-            "operator": "notEquals",
-            "value": ""
+            "field": "caseType",
+            "operator": "equals",
+            "value": "child"
+          },
+          {
+            "field": "child_relationship_type",
+            "operator": "equals",
+            "value": "Biological Child"
           }
         ]
       },
       "actions": {
-        "includeCategories": ["Petitioner"],
-        "priorityBoost": ["high"],
-        "reason": "Petitioner verification confirms legal sponsor status, citizenship, and parent identity for IR-2 filing"
+        "includeCategories": [
+          "Biological Child Relationship"
+        ],
+        "priorityBoost": [
+          "critical"
+        ],
+        "relevanceScore": 108,
+        "reason": "Biological eligibility turns on proof of the parent-child relationship, marriage/divorce history, and a real ongoing relationship with the petitioning parent."
       }
     },
     {
-      "id": "rule_core_relationship",
-      "name": "Core - Parent-Child Relationship",
-      "description": "Always include relationship strength and communication questions",
+      "id": "rule-stepchild-proof",
+      "name": "Stepchild cases - verify marriage before age 18 and step-relationship history",
+      "description": "Stepchild eligibility depends on the marriage creating the step-relationship before the child turned 18, plus the lived relationship with the stepparent.",
+      "priority": "critical",
       "condition": {
         "type": "AND",
         "conditions": [
           {
-            "field": "current_country",
-            "operator": "notEquals",
-            "value": ""
-          }
-        ]
-      },
-      "actions": {
-        "includeCategories": ["Relationship"],
-        "priorityBoost": ["high"],
-        "reason": "Relationship verification is critical for establishing genuine parent-child bond and family reunification intent under IR-2"
-      }
-    },
-    {
-      "id": "rule_core_living_usa",
-      "name": "Core - Living Arrangements in USA",
-      "description": "Always include US residence and household planning questions",
-      "condition": {
-        "type": "AND",
-        "conditions": [
+            "field": "caseType",
+            "operator": "equals",
+            "value": "child"
+          },
           {
-            "field": "current_country",
-            "operator": "notEquals",
-            "value": ""
-          }
-        ]
-      },
-      "actions": {
-        "includeCategories": ["Living in USA"],
-        "priorityBoost": ["high"],
-        "reason": "Post-arrival living arrangements confirm practical integration plan and parent-child household stability"
-      }
-    },
-    {
-      "id": "rule_core_intent",
-      "name": "Core - Immigration Intent",
-      "description": "Always include family reunification and future plans questions",
-      "condition": {
-        "type": "AND",
-        "conditions": [
-          {
-            "field": "current_country",
-            "operator": "notEquals",
-            "value": ""
-          }
-        ]
-      },
-      "actions": {
-        "includeCategories": ["Intent"],
-        "priorityBoost": ["high"],
-        "reason": "Immigration intent assessment ensures genuine desire for family reunification, core purpose of IR-2 visa category"
-      }
-    },
-    {
-      "id": "rule_stepchild_relationship",
-      "name": "Special Case - Stepchild",
-      "description": "Applied when beneficiary's relationship type is Stepchild",
-      "condition": {
-        "type": "AND",
-        "conditions": [
-          {
-            "field": "relationship_type",
+            "field": "child_relationship_type",
             "operator": "equals",
             "value": "Stepchild"
           }
         ]
       },
       "actions": {
-        "includeCategories": ["Special Cases", "Relationship"],
-        "priorityBoost": ["high"],
-        "reason": "Stepchild status requires detailed verification of step-parent marriage timing, legitimacy of relationship, and family bond strength before age 18"
+        "includeCategories": [
+          "Stepchild Relationship"
+        ],
+        "priorityBoost": [
+          "critical"
+        ],
+        "relevanceScore": 110,
+        "reason": "Stepchild eligibility is technical: marriage timing relative to the child's 18th birthday and the authenticity of the step-family relationship must be consistent and document-backed."
       }
     },
     {
-      "id": "rule_adopted_child",
-      "name": "Special Case - Adopted Child",
-      "description": "Applied when beneficiary's relationship type is Adopted",
+      "id": "rule-adopted-child-proof",
+      "name": "Adopted child cases - verify adoption timing, custody, and residence with the adoptive parent",
+      "description": "Adopted child IR-2 cases require careful preparation around adoption finalization age, two-year custody and residence, and the adoptive parent's caregiving role.",
+      "priority": "critical",
       "condition": {
         "type": "AND",
         "conditions": [
           {
-            "field": "relationship_type",
+            "field": "caseType",
             "operator": "equals",
-            "value": "Adopted"
-          }
-        ]
-      },
-      "actions": {
-        "includeCategories": ["Special Cases", "Petitioner"],
-        "priorityBoost": ["high"],
-        "reason": "Adoption requires verification of legal adoption documents, timing of adoption (before age 16), consent from biological parents, and legitimacy of parent-child relationship"
-      }
-    },
-    {
-      "id": "rule_not_living_with_parent",
-      "name": "Separated Living - Not Currently with Parent",
-      "description": "Applied when beneficiary does not currently live with petitioner",
-      "condition": {
-        "type": "AND",
-        "conditions": [
-          {
-            "field": "lived_with_parent",
-            "operator": "equals",
-            "value": false
-          }
-        ]
-      },
-      "actions": {
-        "includeCategories": ["Special Cases", "Relationship"],
-        "priorityBoost": ["high"],
-        "reason": "Separated living requires detailed explanation of guardian arrangements, relationship maintenance during separation, other parent consent, and reason for non-cohabitation"
-      }
-    },
-    {
-      "id": "rule_strong_communication",
-      "name": "Strong Parent-Child Communication",
-      "description": "Applied when parent and child communicate daily or several times per week",
-      "condition": {
-        "type": "OR",
-        "conditions": [
-          {
-            "field": "communication_frequency",
-            "operator": "equals",
-            "value": "Daily"
+            "value": "child"
           },
           {
-            "field": "communication_frequency",
+            "field": "child_relationship_type",
             "operator": "equals",
-            "value": "Several times/week"
+            "value": "Adopted Child"
           }
         ]
       },
       "actions": {
-        "includeCategories": ["Relationship"],
-        "priorityBoost": ["medium"],
-        "reason": "Frequent communication demonstrates active ongoing relationship engagement and emotional closeness despite physical separation if applicable"
+        "includeCategories": [
+          "Adopted Child Relationship"
+        ],
+        "priorityBoost": [
+          "critical"
+        ],
+        "relevanceScore": 110,
+        "reason": "Adoption-based eligibility needs proof of a valid adoption plus custody and joint-residence history; it should never be treated like a simple biological-child case."
       }
     },
     {
-      "id": "rule_weak_communication",
-      "name": "Weak Parent-Child Communication",
-      "description": "Applied when parent and child communicate occasionally or rarely",
+      "id": "rule-other-or-unsure-relationship-broader-prep",
+      "name": "Unclear relationship type - cover every qualifying-route question",
+      "description": "When the relationship type is 'Other / Not Sure', the case may still be a biological, step, or adoption route, so all subtype categories are made eligible; question-level conditions and the officer's record determine what is actually asked.",
+      "priority": "critical",
       "condition": {
-        "type": "OR",
+        "type": "AND",
         "conditions": [
           {
-            "field": "communication_frequency",
+            "field": "caseType",
             "operator": "equals",
-            "value": "Occasionally"
+            "value": "child"
           },
           {
-            "field": "communication_frequency",
+            "field": "child_relationship_type",
             "operator": "equals",
-            "value": "Rarely"
+            "value": "Other / Not Sure"
           }
         ]
       },
       "actions": {
-        "includeCategories": ["Special Cases", "Relationship", "Intent"],
-        "priorityBoost": ["high"],
-        "reason": "Infrequent communication raises concerns about relationship strength and requires detailed explanation of communication barriers and genuine commitment to family reunification"
+        "includeCategories": [
+          "Biological Child Relationship",
+          "Stepchild Relationship",
+          "Adopted Child Relationship"
+        ],
+        "priorityBoost": [
+          "high"
+        ],
+        "relevanceScore": 96,
+        "reason": "An unclear qualifying relationship is itself a preparation risk; the child should be ready for relationship-proof questions of every kind until the route is confirmed."
       }
     },
     {
-      "id": "rule_photos_evidence",
-      "name": "Relationship Evidence - Photos",
-      "description": "Applied when beneficiary has photos with parent",
+      "id": "rule-petitioning-parent-currently-living-alone",
+      "name": "Living with other parent or guardian - explain current caretaking arrangement",
+      "description": "If the child does not currently live with the petitioning parent, the interview will explore who provides daily care and why the separation exists.",
+      "priority": "high",
       "condition": {
         "type": "AND",
         "conditions": [
           {
-            "field": "has_photos_with_parent",
+            "field": "caseType",
             "operator": "equals",
+            "value": "child"
+          },
+          {
+            "anyOf": [
+              {
+                "field": "current_living_arrangement",
+                "operator": "equals",
+                "value": "Other Biological Parent"
+              },
+              {
+                "field": "current_living_arrangement",
+                "operator": "equals",
+                "value": "Other Relative / Guardian"
+              },
+              {
+                "field": "current_living_arrangement",
+                "operator": "equals",
+                "value": "Institution / Other"
+              }
+            ]
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": [
+          "Family & Household Background",
+          "Relocation & Future Plans"
+        ],
+        "priorityBoost": [
+          "high"
+        ],
+        "relevanceScore": 92,
+        "reason": "Living apart from the petitioner makes the current caretaking arrangement and the post-arrival support plan central interview topics."
+      }
+    },
+    {
+      "id": "rule-strong-contact-pattern",
+      "name": "Frequent contact - validate current parent-child bond",
+      "description": "Daily or weekly communication supports an active family relationship and helps the child answer recent-contact questions confidently.",
+      "priority": "medium",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "caseType",
+            "operator": "equals",
+            "value": "child"
+          },
+          {
+            "anyOf": [
+              {
+                "field": "communication_frequency",
+                "operator": "equals",
+                "value": "Daily"
+              },
+              {
+                "field": "communication_frequency",
+                "operator": "equals",
+                "value": "Weekly"
+              }
+            ]
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": [
+          "Applicant & Petitioner Relationship"
+        ],
+        "priorityBoost": [
+          "medium"
+        ],
+        "relevanceScore": 74,
+        "reason": "Frequent communication is positive evidence of an ongoing relationship and anchors the last-contact answer."
+      }
+    },
+    {
+      "id": "rule-limited-or-no-contact-heightened-relationship-proof",
+      "name": "Limited or no contact - relationship continuity needs closer explanation",
+      "description": "Occasional, rare, or no contact shifts interview focus onto who raised the child, how the relationship was maintained, and why reunification is happening now.",
+      "priority": "high",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "caseType",
+            "operator": "equals",
+            "value": "child"
+          },
+          {
+            "anyOf": [
+              {
+                "field": "communication_frequency",
+                "operator": "equals",
+                "value": "Occasionally"
+              },
+              {
+                "field": "communication_frequency",
+                "operator": "equals",
+                "value": "Rarely"
+              },
+              {
+                "field": "communication_frequency",
+                "operator": "equals",
+                "value": "No Contact"
+              }
+            ]
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": [
+          "Applicant & Petitioner Relationship",
+          "Family & Household Background"
+        ],
+        "priorityBoost": [
+          "high"
+        ],
+        "relevanceScore": 94,
+        "reason": "Weak contact can raise credibility questions about the relationship; the child should be prepared to explain the history truthfully and comfortably."
+      }
+    },
+    {
+      "id": "rule-no-us-history-basic-review",
+      "name": "No prior U.S. travel - basic admissibility and expectation review",
+      "description": "Children who never travelled to the U.S. still need preparation for standard travel, status, and future-plan questions.",
+      "priority": "medium",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "caseType",
+            "operator": "equals",
+            "value": "child"
+          },
+          {
+            "field": "us_travel_history",
+            "operator": "equals",
+            "value": "Never"
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": [
+          "Travel & Immigration History"
+        ],
+        "priorityBoost": [
+          "medium"
+        ],
+        "relevanceScore": 70,
+        "reason": "No U.S. history is favorable, but the child should still answer travel and intent questions clearly and consistently."
+      }
+    },
+    {
+      "id": "rule-prior-us-visit-or-residence",
+      "name": "Prior U.S. visit or residence - prepare dates, status, and consistency",
+      "description": "Any past visit, residence, or current presence in the U.S. creates records the officer can check; the child should recall trips, duration, and status accurately.",
+      "priority": "high",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "caseType",
+            "operator": "equals",
+            "value": "child"
+          },
+          {
+            "anyOf": [
+              {
+                "field": "us_travel_history",
+                "operator": "equals",
+                "value": "Yes, for a visit"
+              },
+              {
+                "field": "us_travel_history",
+                "operator": "equals",
+                "value": "Yes, previously lived in the U.S."
+              },
+              {
+                "field": "us_travel_history",
+                "operator": "equals",
+                "value": "Currently in the U.S."
+              }
+            ]
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": [
+          "Travel & Immigration History",
+          "Applicant & Petitioner Relationship"
+        ],
+        "priorityBoost": [
+          "high"
+        ],
+        "relevanceScore": 86,
+        "reason": "Prior U.S. records are visible to the officer; travel dates, purposes, and any status history must be described consistently."
+      }
+    },
+    {
+      "id": "rule-refusal-reported-explain-details",
+      "name": "Visa refusal reported - explain outcome, reason, and what changed",
+      "description": "A reported refusal (Yes or Not Sure) requires the child to be ready to describe which visa, when, and the reason given, without contradicting consular records.",
+      "priority": "critical",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "caseType",
+            "operator": "equals",
+            "value": "child"
+          },
+          {
+            "anyOf": [
+              {
+                "field": "previous_visa_refusal",
+                "operator": "equals",
+                "value": "Yes"
+              },
+              {
+                "field": "previous_visa_refusal",
+                "operator": "equals",
+                "value": "Not Sure"
+              }
+            ]
+          }
+        ]
+      },
+      "actions": {
+        "includeCategories": [
+          "Travel & Immigration History"
+        ],
+        "priorityBoost": [
+          "critical"
+        ],
+        "relevanceScore": 108,
+        "reason": "Refusals stay in the record; preparation must cover the refusal type, date, stated reason, and how the current case differs."
+      }
+    },
+    {
+      "id": "rule-refused-visa-type-followup",
+      "name": "Refusal type identified - drill the specific refusal scenario",
+      "description": "When the refused visa category is known, follow-up questioning about that refusal becomes more specific and should be rehearsed.",
+      "priority": "high",
+      "condition": {
+        "type": "AND",
+        "conditions": [
+          {
+            "field": "caseType",
+            "operator": "equals",
+            "value": "child"
+          },
+          {
+            "field": "refused_visa_type",
+            "operator": "exists",
             "value": true
           }
         ]
       },
       "actions": {
-        "includeCategories": ["Relationship"],
-        "priorityBoost": ["medium"],
-        "reason": "Physical evidence of shared moments supports relationship authenticity and demonstrates family bonding across visits or periods together"
+        "includeCategories": [
+          "Travel & Immigration History"
+        ],
+        "priorityBoost": [
+          "high"
+        ],
+        "relevanceScore": 90,
+        "reason": "Knowing the exact refused visa type lets the child prepare a precise, age-appropriate explanation of that decision."
       }
     },
     {
-      "id": "rule_no_photos_evidence",
-      "name": "Missing Relationship Evidence - No Photos",
-      "description": "Applied when beneficiary has no photos with parent",
+      "id": "rule-immigration-violation-scrutiny",
+      "name": "Possible immigration violation - maximum admissibility scrutiny",
+      "description": "A reported or uncertain overstay/status violation creates serious admissibility exposure; every answer about compliance history must be truthful and consistent.",
+      "priority": "critical",
       "condition": {
         "type": "AND",
         "conditions": [
           {
-            "field": "has_photos_with_parent",
+            "field": "caseType",
             "operator": "equals",
-            "value": false
+            "value": "child"
+          },
+          {
+            "anyOf": [
+              {
+                "field": "immigration_violation",
+                "operator": "equals",
+                "value": "Yes"
+              },
+              {
+                "field": "immigration_violation",
+                "operator": "equals",
+                "value": "Not Sure"
+              }
+            ]
           }
         ]
       },
       "actions": {
-        "includeCategories": ["Special Cases", "Relationship"],
-        "priorityBoost": ["high"],
-        "reason": "Absence of photographic evidence requires alternative proof of relationship such as travel records, communication logs, or detailed family history"
+        "includeCategories": [
+          "Travel & Immigration History",
+          "Relocation & Future Plans"
+        ],
+        "priorityBoost": [
+          "critical"
+        ],
+        "relevanceScore": 112,
+        "reason": "Violation history affects admissibility and may involve waivers; the child must disclose plainly and understand the family's explanation."
       }
     },
     {
-      "id": "rule_financial_support",
-      "name": "Financial Support from Petitioner",
-      "description": "Applied when parent has provided financial support",
+      "id": "rule-removal-deportation-history",
+      "name": "Removal or deportation history - prepare for detailed questioning",
+      "description": "Any prior removal, deportation, or entry denial is central to the case and will be explored in depth by the officer.",
+      "priority": "critical",
       "condition": {
         "type": "AND",
         "conditions": [
           {
-            "field": "financial_support_from_parent",
+            "field": "caseType",
             "operator": "equals",
-            "value": true
+            "value": "child"
+          },
+          {
+            "anyOf": [
+              {
+                "field": "deportation_removal_history",
+                "operator": "equals",
+                "value": "Yes"
+              },
+              {
+                "field": "deportation_removal_history",
+                "operator": "equals",
+                "value": "Not Sure"
+              }
+            ]
           }
         ]
       },
       "actions": {
-        "includeCategories": ["Petitioner", "Relationship"],
-        "priorityBoost": ["medium"],
-        "reason": "Financial support demonstrates parental responsibility, financial capacity, and commitment to child welfare during separation"
+        "includeCategories": [
+          "Travel & Immigration History",
+          "Applicant & Petitioner Relationship"
+        ],
+        "priorityBoost": [
+          "critical"
+        ],
+        "relevanceScore": 118,
+        "reason": "Removal history carries bars and waiver complexity; preparation should cover what happened, when, and the current legal status honestly."
       }
     },
     {
-      "id": "rule_no_financial_support",
-      "name": "No Financial Support from Petitioner",
-      "description": "Applied when parent has not provided financial support",
+      "id": "rule-minor-caregiver-focus",
+      "name": "Minor applicants - prioritize caregiver, custody, and household questions",
+      "description": "For applicants under 18, interviews lean heavily on who cares for them, custody arrangements, and the daily-life plan, with age-appropriate wording.",
+      "priority": "high",
       "condition": {
         "type": "AND",
         "conditions": [
           {
-            "field": "financial_support_from_parent",
+            "field": "caseType",
             "operator": "equals",
-            "value": false
+            "value": "child"
+          },
+          {
+            "anyOf": [
+              {
+                "field": "applicant_age_range",
+                "operator": "equals",
+                "value": "Under 13"
+              },
+              {
+                "field": "applicant_age_range",
+                "operator": "equals",
+                "value": "13–15"
+              },
+              {
+                "field": "applicant_age_range",
+                "operator": "equals",
+                "value": "16–17"
+              }
+            ]
           }
         ]
       },
       "actions": {
-        "includeCategories": ["Special Cases", "Petitioner", "Intent"],
-        "priorityBoost": ["high"],
-        "reason": "Lack of financial support requires explanation of financial arrangements, reason for absence of support, and petitioner's income for I-864 Affidavit capacity"
+        "includeCategories": [
+          "Family & Household Background",
+          "Relocation & Future Plans"
+        ],
+        "priorityBoost": [
+          "high"
+        ],
+        "relevanceScore": 90,
+        "reason": "Younger children face softer but more personal questioning about home life, caretakers, and school; rehearsing these answers reduces interview stress."
       }
     },
     {
-      "id": "rule_previous_us_visit",
-      "name": "Previous US Visit Experience",
-      "description": "Applied when beneficiary has visited United States before",
+      "id": "rule-married-applicant-eligibility-scrutiny",
+      "name": "Married applicant - immediate eligibility risk under IR-2",
+      "description": "IR-2 requires the child to be unmarried; a reported marriage is a critical inconsistency with the petition itself.",
+      "priority": "critical",
       "condition": {
         "type": "AND",
         "conditions": [
           {
-            "field": "previous_us_visits",
+            "field": "caseType",
             "operator": "equals",
-            "value": true
+            "value": "child"
           }
         ]
       },
       "actions": {
-        "includeCategories": ["Travel", "Intent"],
-        "priorityBoost": ["medium"],
-        "reason": "Previous US visits verify immigration compliance history, familiarity with US, and opportunity for parent-child bonding during visits"
+        "includeCategories": [
+          "Applicant & Petitioner Relationship",
+          "Relocation & Future Plans"
+        ],
+        "priorityBoost": [
+          "critical"
+        ],
+        "relevanceScore": 120,
+        "reason": "Marriage normally ends IR-2 eligibility; the interview will test this directly, so the applicant must be prepared for pointed questions and should discuss the situation with the petitioner's attorney."
       }
     },
     {
-      "id": "rule_visa_refusal",
-      "name": "Visa Refusal History",
-      "description": "Applied when beneficiary has been denied a US visa previously",
+      "id": "rule-stepparent-marriage-timing-risk",
+      "name": "Stepeship marriage timing unclear or late - verify the before-18 requirement",
+      "description": "If the marriage to the stepparent happened after the child turned 18 or the timing is unsure, stepchild eligibility is at risk and needs careful preparation.",
+      "priority": "critical",
       "condition": {
         "type": "AND",
         "conditions": [
           {
-            "field": "previous_visa_refusal",
+            "field": "caseType",
             "operator": "equals",
-            "value": true
+            "value": "child"
+          },
+          {
+            "anyOf": [
+              {
+                "field": "stepparent_marriage_before_18",
+                "operator": "equals",
+                "value": "No"
+              },
+              {
+                "field": "stepparent_marriage_before_18",
+                "operator": "equals",
+                "value": "Not Sure"
+              }
+            ]
           }
         ]
       },
       "actions": {
-        "includeCategories": ["Security", "Travel", "Intent", "Special Cases"],
-        "priorityBoost": ["high"],
-        "reason": "Visa refusal history requires detailed explanation of refusal grounds, what circumstances have changed, evidence supporting revised eligibility, and commitment to compliance"
+        "includeCategories": [
+          "Stepchild Relationship",
+          "Applicant & Petitioner Relationship"
+        ],
+        "priorityBoost": [
+          "critical"
+        ],
+        "relevanceScore": 116,
+        "reason": "The step-relationship must be created before the child's 18th birthday; timing doubts make marriage-date questions central and should prompt a legal review of the case."
       }
     },
     {
-      "id": "rule_criminal_history",
-      "name": "Criminal History",
-      "description": "Applied when beneficiary has criminal record",
+      "id": "rule-adoption-route-scrutiny",
+      "name": "Defined adoption route - verify the specific adoption requirements",
+      "description": "When a specific adoption route is reported, preparation should cover that route's technical requirements: age at adoption, two-year custody and residence, or Hague/orphan process steps.",
+      "priority": "critical",
       "condition": {
         "type": "AND",
         "conditions": [
           {
-            "field": "criminal_history",
+            "field": "caseType",
             "operator": "equals",
-            "value": true
+            "value": "child"
+          },
+          {
+            "anyOf": [
+              {
+                "field": "adoption_case_type",
+                "operator": "equals",
+                "value": "Adopted Before Age 16"
+              },
+              {
+                "field": "adoption_case_type",
+                "operator": "equals",
+                "value": "Adopted Under the Sibling Exception Before Age 18"
+              },
+              {
+                "field": "adoption_case_type",
+                "operator": "equals",
+                "value": "Hague / Orphan Adoption Process"
+              }
+            ]
           }
         ]
       },
       "actions": {
-        "includeCategories": ["Security", "Intent"],
-        "priorityBoost": ["high"],
-        "reason": "Criminal history requires full disclosure, detailed explanation of circumstances, evidence of rehabilitation, and assurance of future lawful conduct"
+        "includeCategories": [
+          "Adopted Child Relationship",
+          "Family & Household Background"
+        ],
+        "priorityBoost": [
+          "critical"
+        ],
+        "relevanceScore": 114,
+        "reason": "Each adoption route has distinct legal tests (full and final adoption, custody plus residence, or Convention process) that shape the officer's questions."
       }
     },
     {
-      "id": "rule_studying",
-      "name": "Education Plans - Child Will Study",
-      "description": "Applied when beneficiary plans to continue studies in USA",
+      "id": "rule-student-education-focus",
+      "name": "Currently studying - school continuity questions",
+      "description": "Children enrolled in school should be ready to discuss their grade, school, and plans to continue education in the United States.",
+      "priority": "medium",
       "condition": {
         "type": "AND",
         "conditions": [
           {
-            "field": "plans_to_study",
+            "field": "caseType",
             "operator": "equals",
-            "value": true
+            "value": "child"
+          },
+          {
+            "field": "currently_studying",
+            "operator": "equals",
+            "value": "Yes"
           }
         ]
       },
       "actions": {
-        "includeCategories": ["Intent", "Living in USA"],
-        "priorityBoost": ["medium"],
-        "reason": "Education plans demonstrate positive post-arrival engagement, integration pathway, and legitimate purpose for family reunification in United States"
+        "includeCategories": [
+          "Education & Personal Background"
+        ],
+        "priorityBoost": [
+          "medium"
+        ],
+        "relevanceScore": 76,
+        "reason": "School details are a natural line of questioning for student applicants and support the resettlement plan."
       }
     },
     {
-      "id": "rule_not_studying",
-      "name": "Education Plans - Child Will Not Study",
-      "description": "Applied when beneficiary does not plan to study in USA",
+      "id": "rule-sibling-family-composition",
+      "name": "Applicant has siblings - family composition questions",
+      "description": "Siblings may be part of related petitions or family records, so their names and locations should be ready to state.",
+      "priority": "medium",
       "condition": {
         "type": "AND",
         "conditions": [
           {
-            "field": "plans_to_study",
+            "field": "caseType",
             "operator": "equals",
-            "value": false
-          }
-        ]
-      },
-      "actions": {
-        "includeCategories": ["Intent", "Special Cases"],
-        "priorityBoost": ["medium"],
-        "reason": "Absence of education plans requires detailed explanation of alternative post-arrival activities, employment prospects, and long-term integration strategy"
-      }
-    },
-    {
-      "id": "rule_has_siblings",
-      "name": "Family Structure - Has Siblings",
-      "description": "Applied when beneficiary has siblings",
-      "condition": {
-        "type": "AND",
-        "conditions": [
+            "value": "child"
+          },
           {
             "field": "has_siblings",
             "operator": "equals",
-            "value": true
+            "value": "Yes"
           }
         ]
       },
       "actions": {
-        "includeCategories": ["Family"],
-        "priorityBoost": ["medium"],
-        "reason": "Sibling relationships clarify family structure, remaining ties in home country, and family separation implications of immigration"
-      }
-    },
-    {
-      "id": "rule_alone_no_siblings",
-      "name": "Family Structure - Only Child",
-      "description": "Applied when beneficiary has no siblings",
-      "condition": {
-        "type": "AND",
-        "conditions": [
-          {
-            "field": "has_siblings",
-            "operator": "equals",
-            "value": false
-          }
-        ]
-      },
-      "actions": {
-        "includeCategories": ["Relationship", "Intent"],
-        "priorityBoost": ["medium"],
-        "reason": "Only child status emphasizes importance of parent-child relationship and demonstrates limited family ties in home country"
-      }
-    },
-    {
-      "id": "rule_separated_family_weak_bond",
-      "name": "High-Risk: Separated + Weak Communication",
-      "description": "Applied when beneficiary is separated from parent AND communication is weak",
-      "condition": {
-        "type": "AND",
-        "conditions": [
-          {
-            "field": "lived_with_parent",
-            "operator": "equals",
-            "value": false
-          },
-          {
-            "field": "communication_frequency",
-            "operator": "equals",
-            "value": "Rarely"
-          }
-        ]
-      },
-      "actions": {
-        "includeCategories": ["Special Cases", "Relationship", "Intent", "Petitioner"],
-        "priorityBoost": ["high"],
-        "reason": "Combination of separated living and minimal communication raises significant concerns about relationship authenticity and requires comprehensive evidence of genuine parent-child connection"
-      }
-    },
-    {
-      "id": "rule_age_near_limit",
-      "name": "Age Eligibility - Near Maximum Age Requirement",
-      "description": "Applied when beneficiary is 19, 20, or 21 years old (near IR-2 age limit)",
-      "condition": {
-        "type": "AND",
-        "conditions": [
-          {
-            "field": "current_age",
-            "operator": "greaterThan",
-            "value": 18
-          }
-        ]
-      },
-      "actions": {
-        "includeCategories": ["Intent", "Petitioner", "Special Cases"],
-        "priorityBoost": ["high"],
-        "reason": "Age near eligibility limit requires careful verification that beneficiary meets all IR-2 requirements before aging out, plus documentation of relationship establishment before age 18"
-      }
-    },
-    {
-      "id": "rule_young_child",
-      "name": "Young Beneficiary Child",
-      "description": "Applied when beneficiary is young (under 14 years old)",
-      "condition": {
-        "type": "AND",
-        "conditions": [
-          {
-            "field": "current_age",
-            "operator": "lessThan",
-            "value": 14
-          }
-        ]
-      },
-      "actions": {
-        "includeCategories": ["Relationship", "Family", "Intent"],
-        "priorityBoost": ["medium"],
-        "reason": "Younger children typically have stronger family bonds and clearer family reunification intent; focus on parent-child relationship quality and household integration"
-      }
-    },
-    {
-      "id": "rule_other_parent_consent_check",
-      "name": "Custody Verification - Other Parent Consent",
-      "description": "Applied when beneficiary was not living with petitioner (requires verification of other parent consent)",
-      "condition": {
-        "type": "AND",
-        "conditions": [
-          {
-            "field": "lived_with_parent",
-            "operator": "equals",
-            "value": false
-          }
-        ]
-      },
-      "actions": {
-        "includeCategories": ["Special Cases"],
-        "priorityBoost": ["high"],
-        "reason": "If not living with petitioner, must verify that other custodial parent has consented to child's emigration and there are no custody/guardianship conflicts preventing IR-2 visa issuance"
-      }
-    },
-    {
-      "id": "rule_multiple_communication_methods",
-      "name": "Strong Relationship - Multiple Communication Channels",
-      "description": "Applied when parent and child use multiple communication methods",
-      "condition": {
-        "type": "AND",
-        "conditions": [
-          {
-            "field": "communication_method",
-            "operator": "equals",
-            "value": "All of the above"
-          }
-        ]
-      },
-      "actions": {
-        "includeCategories": ["Relationship"],
-        "priorityBoost": ["low"],
-        "reason": "Multiple communication methods demonstrate technological connectivity, accessibility, and diverse ways to maintain relationship quality"
-      }
-    },
-    {
-      "id": "rule_limited_communication_method",
-      "name": "Limited Communication Channel",
-      "description": "Applied when parent and child use only one communication method",
-      "condition": {
-        "type": "OR",
-        "conditions": [
-          {
-            "field": "communication_method",
-            "operator": "equals",
-            "value": "Phone calls"
-          },
-          {
-            "field": "communication_method",
-            "operator": "equals",
-            "value": "Text messages"
-          }
-        ]
-      },
-      "actions": {
-        "includeCategories": ["Relationship"],
-        "priorityBoost": ["medium"],
-        "reason": "Single communication method may indicate limited access to technology or connectivity; does not negate relationship but requires attention to relationship maintenance"
-      }
-    },
-    {
-      "id": "rule_clear_immigration_intent",
-      "name": "Clear Immigration Intent - Articulated Reasons",
-      "description": "Applied when beneficiary has provided thoughtful reasons for moving to USA",
-      "condition": {
-        "type": "AND",
-        "conditions": [
-          {
-            "field": "reason_for_travel",
-            "operator": "notEquals",
-            "value": ""
-          },
-          {
-            "field": "plans_after_arrival",
-            "operator": "notEquals",
-            "value": ""
-          }
-        ]
-      },
-      "actions": {
-        "includeCategories": ["Intent"],
-        "priorityBoost": ["low"],
-        "reason": "Clear articulation of reasons and plans demonstrates thoughtfulness and genuine intent for family reunification"
-      }
-    },
-    {
-      "id": "rule_father_petitioner",
-      "name": "Petitioner - Father",
-      "description": "Applied when father is the petitioner",
-      "condition": {
-        "type": "AND",
-        "conditions": [
-          {
-            "field": "sponsor_relationship",
-            "operator": "equals",
-            "value": "Father"
-          }
-        ]
-      },
-      "actions": {
-        "includeCategories": ["Petitioner", "Relationship"],
-        "priorityBoost": ["medium"],
-        "reason": "Father as petitioner may require additional household and living arrangement verification to confirm child will be properly cared for"
-      }
-    },
-    {
-      "id": "rule_mother_petitioner",
-      "name": "Petitioner - Mother",
-      "description": "Applied when mother is the petitioner",
-      "condition": {
-        "type": "AND",
-        "conditions": [
-          {
-            "field": "sponsor_relationship",
-            "operator": "equals",
-            "value": "Mother"
-          }
-        ]
-      },
-      "actions": {
-        "includeCategories": ["Petitioner", "Relationship"],
-        "priorityBoost": ["medium"],
-        "reason": "Mother as petitioner typically provides standard assessment of parent-child relationship and household arrangements"
-      }
-    },
-    {
-      "id": "rule_step_parent_petitioner",
-      "name": "Petitioner - Step-parent",
-      "description": "Applied when step-parent is the petitioner",
-      "condition": {
-        "type": "AND",
-        "conditions": [
-          {
-            "field": "sponsor_relationship",
-            "operator": "equals",
-            "value": "Step-parent"
-          }
-        ]
-      },
-      "actions": {
-        "includeCategories": ["Special Cases", "Petitioner"],
-        "priorityBoost": ["high"],
-        "reason": "Step-parent petition requires verification of step-parent marriage before beneficiary's 18th birthday and detailed assessment of step-parent-child relationship quality"
-      }
-    },
-    {
-      "id": "rule_adoptive_parent_petitioner",
-      "name": "Petitioner - Adoptive Parent",
-      "description": "Applied when adoptive parent is the petitioner",
-      "condition": {
-        "type": "AND",
-        "conditions": [
-          {
-            "field": "sponsor_relationship",
-            "operator": "equals",
-            "value": "Adoptive parent"
-          }
-        ]
-      },
-      "actions": {
-        "includeCategories": ["Special Cases", "Petitioner"],
-        "priorityBoost": ["high"],
-        "reason": "Adoptive petition requires legal adoption documents, verification that adoption occurred before beneficiary's 16th birthday, and detailed relationship history"
+        "includeCategories": [
+          "Family & Household Background"
+        ],
+        "priorityBoost": [
+          "medium"
+        ],
+        "relevanceScore": 74,
+        "reason": "Sibling details test family-composition consistency with the petition and civil records."
       }
     }
-  ]
+  ],
+  "migrationNotes": {
+    "v1_to_v1.0.0": "Fully rebuilt to match the current ir-2-child questionnaire keys (applicant_age_range, currently_studying, has_siblings, petitioner_relationship, child_relationship_type, biological_parent_petitioner, biological_parents_married_at_birth, stepparent_marriage_before_18, adoption_case_type, current_living_arrangement, communication_frequency, us_travel_history, previous_visa_refusal, refused_visa_type, immigration_violation, deportation_removal_history) and the v2 question-bank categories. Removed obsolete fields such as current_country, current_age (numeric), lived_with_parent, relationship_type, sponsor_relationship, criminal_history, communication_method, has_photos_with_parent, financial_support_from_parent, plans_to_study, and the old category names (Basic Identity, Special Cases, Intent, Security, etc.)."
+  }
 }

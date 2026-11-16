@@ -22,6 +22,11 @@ export interface DocumentChecklistItem {
   category: DocumentCategory;
   needs_attention?: boolean;
   attention_reason?: string;
+  /**
+   * Set when the requirement is conditional and the case data does not settle it.
+   * The row is still shown, but it is not marked as a hard requirement.
+   */
+  visibility_note?: string;
 }
 
 export interface GroupedDocuments {

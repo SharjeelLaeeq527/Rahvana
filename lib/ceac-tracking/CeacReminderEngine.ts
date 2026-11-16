@@ -12,6 +12,7 @@
 // ============================================================
 
 import { SupabaseClient } from "@supabase/supabase-js";
+import { candidateIdForJourneyKey, rosterFromProfileDetails } from "@/lib/candidate/candidateKeys";
 import { REMINDERS, getRemindersForStatus } from "./reminderConfig";
 import { getGroupsToCancel, isTrackingActive, isValidTransition } from "./stateMachine";
 import type {
@@ -330,6 +331,32 @@ export class CeacReminderEngine {
       .eq("status", "pending");
   }
 
+  /**
+   * The candidate that owns `journeyId` (by its category slot on the roster), or null when
+   * the journey or roster cannot be read (the row then keeps whatever tag it has).
+   */
+  private async _candidateIdForJourney(journeyId: string): Promise<string | null> {
+    try {
+      const { data: journey } = await this.supabase
+        .from("journeys")
+        .select("journey_type, user_id")
+        .eq("id", journeyId)
+        .maybeSingle();
+      if (!journey?.journey_type || !journey.user_id) return null;
+      const { data: profile } = await this.supabase
+        .from("user_profiles")
+        .select("profile_details")
+        .eq("id", journey.user_id)
+        .maybeSingle();
+      return candidateIdForJourneyKey(
+        rosterFromProfileDetails(profile?.profile_details),
+        journey.journey_type
+      );
+    } catch {
+      return null;
+    }
+  }
+
   /** Upsert the ceac_case_status row and append history entry */
   private async _upsertCaseStatus(input: ScheduleRemindersInput): Promise<void> {
     const { journeyId, userId, newStatus, refusedSubType } = input;
@@ -345,9 +372,15 @@ export class CeacReminderEngine {
     const history: any[] = existing?.status_history ?? [];
     history.push({ status: newStatus, entered_at: now, set_by_user_id: userId });
 
+    const candidateId = await this._candidateIdForJourney(journeyId);
+
     await this.supabase.from("ceac_case_status").upsert(
       {
         journey_id: journeyId,
+        // Tag the row with the candidate that owns this journey. Without it the column
+        // default ('candidate-1') attributed every CEAC status to the account's first
+        // candidate, e.g. an IR-2 child's status showed under the IR-5 parent.
+        ...(candidateId ? { candidate_id: candidateId } : {}),
         current_status: newStatus,
         refused_sub: newStatus === "refused" ? (refusedSubType ?? "pending_clarification") : null,
         status_entered_at: now,

@@ -4,17 +4,21 @@
  * Allows resuming from where they left off
  */
 
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import {
   getLatestIncompleteSessionDB,
   getSessionAnswersDB,
   getInterviewResultsDB,
 } from "@/lib/interview-prep/data-access";
 import { E, msg } from "@/lib/errors";
-export async function GET() {
+
+export async function GET(request: NextRequest) {
   try {
-    // Get the latest incomplete session for the current user
-    const session = await getLatestIncompleteSessionDB();
+    const searchParams = request.nextUrl.searchParams;
+    const candidateId = searchParams.get("candidate_id") || undefined;
+
+    // Get the latest incomplete session for the current user (with optional candidate scoping)
+    const session = await getLatestIncompleteSessionDB(candidateId);
 
     if (!session) {
       return NextResponse.json({

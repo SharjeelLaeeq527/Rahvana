@@ -5,7 +5,15 @@ import { MessageSquare, ExternalLink } from "lucide-react";
 import { ToolPageOverlay } from "@/app/components/shared/ToolPageOverlay";
 
 import { useJourneyEnvironment } from "@/lib/hooks/useJourneyEnvironment";
-import { resolveCategorySlug } from "@/lib/interview-prep/journey-category-map";
+import { useCandidate } from "@/app/context/CandidateContext";
+import {
+  getBaseVisaCategory,
+  UNKNOWN_VISA_CATEGORY,
+} from "@/lib/candidate/candidateSyncService";
+import {
+  resolveCategorySlug,
+  isMultiCandidateCategorySlug,
+} from "@/lib/interview-prep/journey-category-map";
 
 export const DEFAULT_PREP_TOOL_DATA = {
   type: "interview_prep",
@@ -52,6 +60,7 @@ interface InterviewPrepToolProps {
   journeyId?: string;
   journeyTier?: string;
   plan?: any;
+  candidateId?: string;
 }
 
 export const InterviewPrepTool: React.FC<InterviewPrepToolProps> = ({
@@ -62,6 +71,7 @@ export const InterviewPrepTool: React.FC<InterviewPrepToolProps> = ({
   journeyId,
   journeyTier,
   plan,
+  candidateId: propCandidateId,
 }) => {
   const [internalPrepLaunched, setInternalPrepLaunched] = useState(false);
   const isPrepLaunched = propIsPrepLaunched !== undefined ? propIsPrepLaunched : internalPrepLaunched;
@@ -69,11 +79,34 @@ export const InterviewPrepTool: React.FC<InterviewPrepToolProps> = ({
 
   const [toolHref, setToolHref] = useState<string | null>(null);
   const journeyEnv = useJourneyEnvironment();
-  const journeyCategory =
+
+  let candidateCtx;
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    candidateCtx = useCandidate();
+  } catch {
+    candidateCtx = undefined;
+  }
+
+  const activeCandidate = candidateCtx?.activeCandidate;
+  const activeCandidateId =
+    propCandidateId ||
+    candidateCtx?.activeCandidateId ||
+    journeyEnv.candidateId ||
+    "candidate-1";
+  const isMultiCandidate = candidateCtx?.isMultiCandidate || false;
+
+  const rawCategory =
+    activeCandidate?.visaCategory ||
     journeyEnv.journeyCategory ||
     journeyEnv.journeyDataKey ||
-    (journeyEnv.journeySlug?.includes("5") ? "IR-5" : "IR-1");
-  const categorySlug = resolveCategorySlug(journeyCategory);
+    journeyEnv.journeySlug;
+  const baseCategory = getBaseVisaCategory(rawCategory);
+  const journeyCategory =
+    baseCategory !== UNKNOWN_VISA_CATEGORY
+      ? baseCategory
+      : (journeyEnv.journeySlug?.includes("5") ? "IR-5" : journeyEnv.journeySlug?.includes("2") ? "IR-2" : "IR-1");
+  const categorySlug = resolveCategorySlug(journeyCategory) || "ir-1-spouse";
 
   const safeTool = tool || DEFAULT_PREP_TOOL_DATA;
   const launchModule = safeTool.launch_module || DEFAULT_PREP_TOOL_DATA.launch_module;
@@ -91,9 +124,18 @@ export const InterviewPrepTool: React.FC<InterviewPrepToolProps> = ({
             <div className="w-[44px] h-[44px] rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
               <MessageSquare className="text-white/75" size={21} strokeWidth={1.6} />
             </div>
-            <div>
-              <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/35 mb-1">
-                {launchModule.title}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-2 mb-1 flex-wrap">
+                <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/35">
+                  {launchModule.title}
+                </div>
+                {isMultiCandidate && activeCandidate && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#6aa8f0]/15 text-[#93c5fd] border border-[#6aa8f0]/30 shadow-xs">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#6aa8f0]" />
+                    Preparing for: {activeCandidate.fullName || activeCandidate.label}
+                    {activeCandidate.relation ? ` (${activeCandidate.relation})` : ""}
+                  </span>
+                )}
               </div>
               <h3 className=" text-[20px] sm:text-[22px] text-white/95 leading-tight">
                 {launchModule.heading}
@@ -123,6 +165,7 @@ export const InterviewPrepTool: React.FC<InterviewPrepToolProps> = ({
               const queryParams = new URLSearchParams();
               if (journeyId) queryParams.set("journey_id", journeyId);
               if (categorySlug) queryParams.set("category_slug", categorySlug);
+              if (activeCandidateId) queryParams.set("candidate_id", activeCandidateId);
               const qs = queryParams.toString();
               const url = qs ? `${baseUrl}?${qs}` : baseUrl;
               setToolHref(url);
@@ -175,7 +218,13 @@ export const InterviewPrepTool: React.FC<InterviewPrepToolProps> = ({
         showJourneyHeader
         tier={effectiveTier}
         plan={plan}
-        toolProps={{ journeyId, categorySlug, journeyCategory, journeyTier: effectiveTier }}
+        toolProps={{
+          journeyId,
+          categorySlug,
+          journeyCategory,
+          journeyTier: effectiveTier,
+          candidateId: activeCandidateId,
+        }}
       />
     </div>
   );

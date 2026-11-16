@@ -1,6 +1,8 @@
 // components/RegisterReceiptStep.tsx
+import { JOURNEY_STEP_SHELL, JOURNEY_VIEW_TOP } from "@/app/components/journey-engine/viewSpacing";
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { E, msg } from "@/lib/errors";
+import { RECEIPT_SAVED_EVENT } from "@/lib/journey/dashboard/caseFacts";
 import { Globe, Lock } from "lucide-react";
 import { useJourneyPlan } from "@/app/context/useJourneyPlan";
 import { GuideTutorialOverlay } from "../GuideTutorialOverlays";
@@ -1087,6 +1089,7 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
       setUiState("idle");
       setShowTrackingNudge(false);
       const { record: fresh } = await fetchReceipt(journeyId);
+      window.dispatchEvent(new Event(RECEIPT_SAVED_EVENT));
       const finalRecord = fresh ?? record;
       setSavedRecord(finalRecord);
       // Write receipt data into journey metadata so visible_when conditions
@@ -1140,7 +1143,7 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
     //<div className="min-h-screen w-full ch1step-bg">
     <div className="min-h-screen w-full">
       <div className="bg-cover bg-center w-full min-h-screen relative">
-        <div className="flex w-full max-w-[680px] flex-col mx-auto px-4 sm:px-6 md:px-8 pt-5 pb-10 md:pt-8">
+        <div className={`mx-auto ${JOURNEY_STEP_SHELL} ${JOURNEY_VIEW_TOP}`}>
           {/* Eyebrow */}
           {/* <div className="flex flex-wrap items-center gap-2 mb-1">
             <span className="text-[11px] font-semibold uppercase tracking-wider accent-brown">
@@ -1602,7 +1605,11 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
 
       {/* ── Upgrade modal ── */}
       {upgradeModalFeature && (
-        <UpgradeModal feature={upgradeModalFeature} onClose={() => setUpgradeModalFeature(null)} />
+        <UpgradeModal
+          feature={upgradeModalFeature}
+          currentTier={plan.tier}
+          onClose={() => setUpgradeModalFeature(null)}
+        />
       )}
     </div>
   );

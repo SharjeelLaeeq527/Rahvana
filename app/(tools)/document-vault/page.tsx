@@ -57,7 +57,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Plus, Info, LayoutTemplate } from "lucide-react";
 import { useWizard } from "@/app/(main)/dashboard/hooks/useWizard";
 import { useCandidate } from "@/app/context/CandidateContext";
-import { getJourneyKeyForCandidate, getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
+import { getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
+import { canonicalJourneyKey, getJourneyKeyForCandidate, parseJourneyKey } from "@/lib/candidate/candidateKeys";
 import Link from "next/link";
 import Image from "next/image";
 import { PageGate } from "@/app/components/entitlements/PageGate";
@@ -72,7 +73,11 @@ import {
   dedupeJourneysByType,
   getCandidateDisplayNameForJourney,
   getCandidateForJourneyType,
+  resolveCandidateCardTag,
+  isMultiCandidateCategory,
 } from "@/lib/document-vault/journey-mapping";
+import { createClient } from "@/lib/supabase/client";
+import { listUserJourneys, type JourneyProgressRecord } from "@/lib/journey/journeyProgressService";
 
 // Session-storage key for persisted journey choice (Case 3)
 const SESSION_KEY = "doc_vault_active_journey";
@@ -178,13 +183,25 @@ export default function DocumentVaultPage() {
    */
   const lastResolvedCandidateRef = useRef<string | null>(null);
 
+  /**
+   * Journey id passed by the journey dashboard (?journey=<journeys.id>). Opens that
+   * journey's vault directly instead of the journey picker, and stops the
+   * candidate sync below from swapping it for another journey on first load.
+   */
+  const urlJourneyRef = useRef<string | null>(
+    typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("journey") : null
+  );
+
   const { activeCandidate, activeCandidateId, isMultiCandidate, candidates, setActiveCandidateId } =
     useCandidate();
 
   // Derive active candidate journey key
   const activeCandidateJourneyKey = useMemo(() => {
     if (!activeCandidate) return undefined;
-    return getJourneyKeyForCandidate(activeCandidate.visaCategory || "IR-5", activeCandidate.id);
+    return getJourneyKeyForCandidate({
+      ...activeCandidate,
+      visaCategory: activeCandidate.visaCategory || "IR-5",
+    });
   }, [activeCandidate]);
 
   // Derive active journey for labelling and wizard loading
@@ -192,35 +209,156 @@ export default function DocumentVaultPage() {
     return userJourneys.find((j) => j.id === activeJourneyId) ?? null;
   }, [userJourneys, activeJourneyId]);
 
-  // Deduplicates exact duplicate journey rows while preserving distinct candidate journeys
-  // (e.g. multiple beneficiaries under IR-5), then filters out orphaned journey rows that
-  // have no matching candidate in the roster. This ensures the vault card count always
-  // matches the actual number of candidate profiles (Issue 2 fix).
-  const dedupedUserJourneys = useMemo(() => {
-    const deduped = dedupeJourneysByType(userJourneys);
-
-    // When there are candidates, filter journeys to only those with a matching candidate
-    // profile. This prevents orphaned DB journey rows from showing extra vault cards.
-    if (candidates && candidates.length > 0) {
-      return deduped.filter((j) => {
-        // Always keep journeys that have a candidate match
-        const matchedCandidate = getCandidateForJourneyType(j.journey_type, candidates);
-        if (matchedCandidate) return true;
-
-        // For single-candidate accounts, keep the primary journey (it maps to candidate-1
-        // implicitly even if getCandidateForJourneyType can't resolve it via key matching)
-        if (candidates.length === 1) {
-          const journeyBase = getBaseVisaCategory(j.journey_type);
-          const candidateBase = getBaseVisaCategory(candidates[0].visaCategory);
-          return journeyBase === candidateBase;
-        }
-
-        return false;
-      });
+  // ── Resolves each DB-backed journey row to a distinct vault card with dedicated candidate identity ──
+  // Mirrored from app/(main)/my-journeys/page.tsx (lines 555-608):
+  // 1 card per DB record, with sequential candidate assignment for multi-candidate visas (IR-5, IR-2).
+  const vaultJourneyCards = useMemo(() => {
+    // 1. Exact-duplicate protection: ensure every journey in userJourneys has a unique ID
+    const uniqueJourneys: Journey[] = [];
+    const seenIds = new Set<string>();
+    for (const j of userJourneys) {
+      if (!j.id || seenIds.has(j.id)) continue;
+      seenIds.add(j.id);
+      uniqueJourneys.push(j);
     }
 
-    return deduped;
+    const assignedCandidateIds = new Set<string>();
+
+    return uniqueJourneys.map((journey) => {
+      const baseCategory = getBaseVisaCategory(journey.journey_type);
+      const visaCategory = journeyTypeToVisaCategory(journey.journey_type);
+      const isMulti = isMultiCandidateCategory(journey.journey_type);
+      const status = journey.status as string;
+      const isActive = status === "in_progress" || status === "active";
+
+      let candidateId: string | undefined;
+      let candidateName: string | undefined;
+      let candidateTag: string | null = null;
+
+      if (isMulti) {
+        // Multi-candidate (IR-5, IR-2, CR-2) resolution:
+        // 1. The journey key carries the candidate's CATEGORY SLOT ("ir2_candidate2" = the
+        //    second IR-2 child), not its account-wide id, so the owner is found by slot.
+        const journeySlot = parseJourneyKey(journey.journey_type).slot;
+
+        // 2. Filter valid candidates for this category
+        const validCandidates = (candidates || []).filter((c) => {
+          const cat = getBaseVisaCategory(c.visaCategory);
+          if (baseCategory === "IR-5") {
+            return (
+              cat === "IR-5" ||
+              c.relation === "Mother" ||
+              c.relation === "Father" ||
+              c.relation === "Stepparent" ||
+              c.relation === "AdoptiveParent" ||
+              (!c.visaCategory && c.relation !== "Spouse")
+            );
+          }
+          if (baseCategory === "IR-2" || baseCategory === "CR-2") {
+            return cat === "IR-2" || cat === "CR-2" || c.relation === "Child";
+          }
+          return cat === baseCategory;
+        });
+
+        // 3. Match candidate profile: the slot owner first, then first unassigned
+        type VaultCardCandidate = {
+          id: string;
+          label?: string;
+          relation?: string;
+          fullName?: string;
+        };
+        const owner = getCandidateForJourneyType(journey.journey_type, candidates || []);
+        let cand: VaultCardCandidate | undefined = owner
+          ? (candidates || []).find((c) => c.id === owner.id)
+          : undefined;
+
+        if (!cand) {
+          cand = validCandidates.find((c) => !assignedCandidateIds.has(c.id));
+        }
+
+        // 4. Fallback synthesis if more DB journeys than candidate profiles in roster
+        const candIndex = assignedCandidateIds.size + 1;
+        if (!cand) {
+          cand = {
+            id: `unassigned-${journey.id}`,
+            label: `Candidate ${journeySlot}`,
+            relation: baseCategory === "IR-5" ? (journeySlot === 1 ? "Mother" : journeySlot === 2 ? "Father" : "Other") : "Child",
+            fullName: "",
+          };
+        }
+
+        assignedCandidateIds.add(cand.id);
+        candidateId = cand.id;
+
+        // Candidate display name (e.g. "Mother", "Father", "Muhammad Nadeem", "Child", or "Candidate 1")
+        const formatRelation = (rel?: string) => {
+          if (!rel) return "";
+          if (rel === "AdoptiveParent") return "Adoptive Parent";
+          if (rel === "Stepparent") return "Stepparent";
+          if (rel === "Other") return "Parent";
+          return rel;
+        };
+        const rel = formatRelation(cand.relation);
+        candidateName = cand.fullName || (rel && rel !== "Other" ? rel : null) || cand.label || `Candidate ${candIndex}`;
+
+        // Candidate card tag (in brackets): e.g. "Candidate 1", "Candidate 2", "Candidate 3"
+        candidateTag = cand.label || `Candidate ${candIndex}`;
+      } else {
+        // Single-candidate journey (IR-1, CR-1, etc.)
+        // A Spouse relation only stands in for an IR-1 / CR-1 journey; an F-1 or other
+        // card must not switch the active candidate to the spouse.
+        const isSpouseCategory = baseCategory === "IR-1" || baseCategory === "CR-1";
+        const spouseCand = (candidates || []).find(
+          (c) =>
+            getBaseVisaCategory(c.visaCategory) === baseCategory ||
+            (isSpouseCategory && c.relation === "Spouse")
+        );
+        if (spouseCand) {
+          candidateId = spouseCand.id;
+          candidateName = spouseCand.fullName || spouseCand.customName || "Spouse";
+        }
+        candidateTag = null; // NEVER show candidate tag for single-candidate journeys!
+      }
+
+      // Card image & description
+      let cardImage = "";
+      let cardDesc = "Manage your visa application documents, checklist, and requirements.";
+      if (visaCategory) {
+        const cleanCategory = visaCategory.toUpperCase().replace(/[^A-Z0-9]/g, "");
+        if (cleanCategory === "IR1" || cleanCategory === "CR1") {
+          cardImage = "/assets/images/ir1-doc-vault-image.jpg";
+          cardDesc = "Spouse of a U.S. Citizen Visa Document Vault. Keep track of marriage certificates, petitioner details, and sponsorship documents.";
+        } else if (cleanCategory === "IR5") {
+          cardImage = "/assets/images/ir5-doc-vault-image.png";
+          cardDesc = "Parent of a U.S. Citizen Visa Document Vault. Keep track of birth certificates, proof of relationship, and financial sponsor files.";
+        } else if (cleanCategory === "IR2" || cleanCategory === "CR2") {
+          cardImage = "/assets/images/ir2-doc-vault-image.jpg";
+          cardDesc = "Child of a U.S. Citizen Visa Document Vault. Keep track of birth certificates, NADRA CRC, custody records, and relationship evidence.";
+        }
+      }
+      if (!cardImage) {
+        cardImage = "/assets/images/hero-journey.jpg";
+      }
+
+      return {
+        journey,
+        journeyId: journey.id,
+        visaCategory,
+        isMulti,
+        candidateId,
+        candidateName,
+        candidateTag,
+        cardImage,
+        cardDesc,
+        isActive,
+        friendlyName: getFriendlyJourneyName(journey.journey_type, journey.journey_name),
+      };
+    });
   }, [userJourneys, candidates]);
+
+  const dedupedUserJourneys = useMemo(() => {
+    return vaultJourneyCards.map((c) => c.journey);
+  }, [vaultJourneyCards]);
 
   // Candidate switching is category-AGNOSTIC now (decision 2): any account can have multiple
   // candidates/journeys, including IR-1. This flag just means "the active journey is a
@@ -234,16 +372,36 @@ export default function DocumentVaultPage() {
 
   const journeyRoadmapHref = useMemo(() => {
     const type = activeJourney?.journey_type?.toLowerCase().replace(/[^a-z0-9]/g, "");
-    if (type === "ir5") {
+    if (type?.startsWith("ir5")) {
       return ir5journeyHref;
+    }
+    if (type?.startsWith("ir2") || type?.startsWith("cr2")) {
+      return "/visa-category/ir2-journey";
     }
     return ir1journeyHref;
   }, [activeJourney]);
 
+  // The card for the open journey, and its owner when that owner is a real roster
+  // candidate. The wizard and the beneficiary name follow the JOURNEY that is open, not
+  // whichever candidate happened to be active before (that showed IR-1 data on an IR-2
+  // vault when the IR-2 journey had no roster owner).
+  const activeCard = useMemo(
+    () => vaultJourneyCards.find((c) => c.journeyId === activeJourneyId) ?? null,
+    [vaultJourneyCards, activeJourneyId]
+  );
+  const activeCardCandidate = useMemo(
+    () =>
+      activeCard?.candidateId
+        ? (candidates || []).find((c) => c.id === activeCard.candidateId) ?? null
+        : null,
+    [activeCard, candidates]
+  );
+
   const wizard = useWizard({
     userId: journeysLoading || !activeJourneyId ? null : user?.id,
     journeyId: activeJourney?.journey_type || undefined,
-    candidateId: activeCandidateId,
+    candidateId: activeCardCandidate?.id ?? undefined,
+    journeyDbId: activeJourneyId,
   });
 
   // Filter documents based on search query
@@ -357,40 +515,121 @@ export default function DocumentVaultPage() {
   useEffect(() => {
     // Guard: only run once per mount. Prevents re-firing when useAuth() creates
     // a new `user` object reference, which would set journeysLoading=true again.
-    if (!user?.id || !initialized) return;
+    if (!user?.id) return;
     if (journeyGateEvaluated.current) return;
     journeyGateEvaluated.current = true;
+
+    const userId = user.id;
 
     async function evaluateJourneyGate() {
       setJourneysLoading(true);
       try {
-        const res = await fetch("/api/journeys");
-        if (!res.ok) throw new Error("Failed to fetch journeys");
-        const data = await res.json();
-        // data.data is an array of { journey, ... } objects from journeyService.getAllJourneysWithProgress()
-        const journeys: Journey[] = (data.data ?? []).map((item: any) => item.journey ?? item);
+        const supabase = createClient();
+
+        // 1. Primary: Direct Supabase query matching my-journeys/page.tsx exactly
+        // and in parallel listUserJourneys fallback
+        const [journeysQueryRes, progressData] = await Promise.all([
+          supabase
+            .from("journeys")
+            .select("id, journey_type, subscription_tier, completed_steps_count, total_steps_count, updated_at, filing_method, status")
+            .eq("user_id", userId)
+            .order("updated_at", { ascending: false }),
+          listUserJourneys(userId).catch((err) => {
+            console.warn("[DocumentVault] listUserJourneys fallback:", err);
+            return [] as JourneyProgressRecord[];
+          }),
+        ]);
+
+        const rawDbJourneys = journeysQueryRes.data || [];
+        const progressMap = new Map((progressData || []).map((p) => [p.id, p]));
+
+        // Merge DB journeys with progress calculations while preserving journeys table as primary source
+        let journeys: Journey[] = rawDbJourneys.map((raw: any) => {
+          const enriched = progressMap.get(raw.id);
+          return {
+            id: raw.id,
+            user_id: userId,
+            journey_type: raw.journey_type,
+            subscription_tier: raw.subscription_tier || enriched?.subscription_tier || "free",
+            status: raw.status || enriched?.status || "not_started",
+            filing_method: (raw.filing_method || enriched?.filing_type || "online") as any,
+            sponsor_structure: "individual",
+            total_steps_count: enriched?.total_steps_count || raw.total_steps_count || 0,
+            completed_steps_count: enriched?.completed_steps_count || raw.completed_steps_count || 0,
+            completion_percentage: 0,
+            created_at: enriched?.started_at || raw.updated_at || new Date().toISOString(),
+            updated_at: raw.updated_at || enriched?.last_updated_at || new Date().toISOString(),
+          } as Journey;
+        });
+
+        // If progressData contained journeys not returned by direct query (edge cases), include them
+        if (progressData && progressData.length > 0) {
+          const existingIds = new Set(journeys.map((j) => j.id));
+          for (const p of progressData) {
+            if (!existingIds.has(p.id)) {
+              journeys.push({
+                id: p.id,
+                user_id: userId,
+                journey_type: p.journey_id,
+                subscription_tier: p.subscription_tier || "free",
+                status: (p.status as any) || "not_started",
+                filing_method: (p.filing_type || "online") as any,
+                sponsor_structure: "individual",
+                total_steps_count: p.total_steps_count || 0,
+                completed_steps_count: p.completed_steps_count || 0,
+                completion_percentage: 0,
+                created_at: p.started_at || new Date().toISOString(),
+                updated_at: p.last_updated_at || new Date().toISOString(),
+              } as Journey);
+            }
+          }
+        }
+
+        // Supplementary: Also query /api/journeys if available to get any server-side computed journeys
+        try {
+          const res = await fetch("/api/journeys?limit=100");
+          if (res.ok) {
+            const data = await res.json();
+            const apiJourneys: any[] = (data.data ?? []).map((item: any) => item.journey ?? item);
+            const existingIds = new Set(journeys.map((j) => j.id));
+            for (const apiJ of apiJourneys) {
+              if (apiJ && apiJ.id && !existingIds.has(apiJ.id)) {
+                journeys.push(apiJ as Journey);
+              }
+            }
+          }
+        } catch (apiErr) {
+          console.warn("[DocumentVault] /api/journeys supplementary check:", apiErr);
+        }
+
         setUserJourneys(journeys);
         setCachedUserJourneys(journeys);
 
-        // Deduplicate exact duplicate journey rows while keeping distinct candidate journeys
-        // so multiple beneficiaries under the same category each get their own vault card.
-        const distinctJourneys = dedupeJourneysByType(journeys);
+        // 1 Card per DB Journey record: ensure unique IDs
+        const uniqueIds = new Set(journeys.map((j) => j.id));
 
-        if (journeys.length === 0) {
+        const fromUrl = urlJourneyRef.current
+          ? journeys.find((j) => j.id === urlJourneyRef.current)
+          : undefined;
+
+        if (fromUrl) {
+          // ── Opened from a journey dashboard: go straight to that vault ──
+          setActiveJourneyId(fromUrl.id);
+          sessionStorage.setItem(SESSION_KEY, fromUrl.id);
+          setJourneyGateReady(true);
+        } else if (journeys.length === 0) {
           // ── Case 1: No journey at all ──────────────────────────────────
           setNoJourneyModalOpen(true);
           setActiveJourneyId(null);
           setJourneyGateReady(true);
-        } else if (distinctJourneys.length === 1) {
+        } else if (uniqueIds.size === 1) {
           // ── Case 2: Exactly one journey — auto-select it ───────────────
-          setActiveJourneyId(distinctJourneys[0].id);
+          setActiveJourneyId(journeys[0].id);
           setJourneyGateReady(true);
         } else {
           // ── Case 3: Multiple journeys (different categories or candidates) ──
-          const saved = typeof window !== "undefined" ? sessionStorage.getItem(SESSION_KEY) : null;
-          if (saved && journeys.some((j) => j.id === saved)) {
-            setActiveJourneyId(saved);
-          }
+          // Always present the card selection grid when multiple journeys exist!
+          setActiveJourneyId(null);
           setJourneyGateReady(true);
         }
       } catch (err) {
@@ -405,7 +644,7 @@ export default function DocumentVaultPage() {
     }
 
     evaluateJourneyGate();
-  }, [user?.id, initialized]); // use user?.id (primitive) not user object to avoid ref-instability re-runs
+  }, [user?.id]); // use user?.id (primitive) not user object to avoid ref-instability re-runs
 
   // ── Auto-configure vault based on active journey ──────────────────────────
   const { setConfig: setVaultConfig } = useDocumentVaultStore();
@@ -424,7 +663,8 @@ export default function DocumentVaultPage() {
       "IR-5";
 
     // Retrieve questionnaire answers from journey metadata if available
-    const metadata = (wizard.state?.backendId === activeJourneyId ? wizard.state?.metadata : {}) || {};
+    const metadata =
+      (wizard.state?.backendId === activeJourneyId ? wizard.state?.metadata : {}) || {};
     const hasQuestionnaire = metadata.docQuestionnaireCompleted === true;
     const questionnaireAnswers = (metadata.docQuestionnaireAnswers as Record<string, string>) || {};
 
@@ -481,9 +721,10 @@ export default function DocumentVaultPage() {
     mappedFlags.hhRelationships = metadata.hhRelationships || {};
 
     const beneficiaryDisplayName =
-      activeCandidate?.fullName ||
+      activeCardCandidate?.fullName ||
       (metadata.beneficiaryName as string) ||
-      activeCandidate?.label ||
+      activeCard?.candidateName ||
+      activeCardCandidate?.label ||
       "Beneficiary";
 
     if (!config) {
@@ -525,43 +766,42 @@ export default function DocumentVaultPage() {
     wizard.state?.metadata,
     wizard.state?.backendId,
     activeCandidate,
+    activeCard,
+    activeCardCandidate,
   ]);
 
   // ── Synchronize active journey with active candidate profile ─────────────
   useEffect(() => {
     if (!userJourneys || userJourneys.length === 0 || !activeCandidate) return;
 
+    // Do NOT auto-select a journey when the user is on the multiple-journeys card picker screen!
+    if (!activeJourneyId && vaultJourneyCards.length > 1) {
+      lastResolvedCandidateRef.current = activeCandidateId;
+      return;
+    }
+
     // Only react to an actual CANDIDATE change. Without this guard, clicking
     // "Back to Journeys" (which sets activeJourneyId to null) would be instantly
     // reverted here, and picking a different journey folder would bounce back.
     if (activeCandidateId === lastResolvedCandidateRef.current) return;
 
+    // Opened for a specific journey: keep it for the current candidate. A later
+    // candidate switch still re-resolves as usual.
+    if (urlJourneyRef.current) {
+      lastResolvedCandidateRef.current = activeCandidateId;
+      urlJourneyRef.current = null;
+      return;
+    }
+
     const visaCategory = activeCandidate.visaCategory || "IR-5";
-    const candidateJourneyKey = getJourneyKeyForCandidate(visaCategory, activeCandidate.id);
-    const normCandidateKey = candidateJourneyKey.toLowerCase().replace(/[-:_]/g, "");
-    const normBaseKey = visaCategory.toLowerCase().replace(/[-:_]/g, "");
-
-    const matched = userJourneys.find((j) => {
-      // Never match a journey from a different visa category. Without this, the primary
-      // candidate's loose fallback below would wrongly grab an unrelated journey (e.g. an
-      // IR-1 journey), making Mother's IR-5 vault show "IR-1". Normalize both sides so
-      // "IR-5" / "IR5" / "ir-5" all compare equal.
-      if (getBaseVisaCategory(j.journey_type) !== getBaseVisaCategory(visaCategory)) return false;
-
-      const normJ = j.journey_type.toLowerCase().replace(/[-:_]/g, "");
-      if (activeCandidate.isPrimary) {
-        // The primary candidate owns the base journey (e.g. "ir5"), which is never
-        // candidate-scoped. Any journey_type containing "candidate" belongs to a sibling
-        // (candidate-2, candidate-3, ... candidate-N), so exclude all of them regardless of
-        // number - hardcoding candidate2/3/4 leaked a 5th+ candidate's journey to the primary.
-        return (
-          normJ === normBaseKey ||
-          normJ === normCandidateKey ||
-          !normJ.includes("candidate")
-        );
-      }
-      return normJ === normCandidateKey || (normJ.includes(normCandidateKey) && !normJ.includes("candidate1"));
-    });
+    // Exact journey key of the candidate's category slot ("ir2" for the first child,
+    // "ir2_candidate2" for the second). Variant rows of the same journey ("ir5" /
+    // "ir5-journey") share the canonical key; another candidate's or another
+    // category's journey never matches.
+    const candidateJourneyKey = getJourneyKeyForCandidate({ ...activeCandidate, visaCategory });
+    const matched = userJourneys.find(
+      (j) => canonicalJourneyKey(j.journey_type) === candidateJourneyKey
+    );
 
     // Only mark this candidate resolved once we actually found a journey for it, so a
     // late-arriving journey (e.g. a freshly created 2nd-parent journey) is still picked up.
@@ -591,13 +831,27 @@ export default function DocumentVaultPage() {
   }, [activeCandidateId, activeCandidate, userJourneys, activeJourneyId, wizard.state.backendId]);
 
   // ── Case 3 picker confirmation handler ────────────────────────────────────
-  const handlePickJourney = useCallback((journeyId: string) => {
+  const handlePickJourney = useCallback((journeyId: string, candidateId?: string) => {
     setActiveJourneyId(journeyId);
+    // The card the user clicked wins. Switch the active candidate only to a REAL roster
+    // candidate; a card whose journey has no roster owner carries a synthesized id that
+    // CandidateContext ignores. Either way, pin the ref to the candidate that will be
+    // active, so the candidate->journey sync effect does not "correct" this pick back to
+    // the previous candidate's journey (that bounced every card to the IR-1 vault).
+    const isRosterCandidate = Boolean(
+      candidateId && (candidates || []).some((c) => c.id === candidateId)
+    );
+    if (isRosterCandidate && candidateId) {
+      setActiveCandidateId(candidateId, { silent: true });
+      lastResolvedCandidateRef.current = candidateId;
+    } else {
+      lastResolvedCandidateRef.current = activeCandidateId ?? null;
+    }
     if (typeof window !== "undefined") {
       sessionStorage.setItem(SESSION_KEY, journeyId);
     }
     setJourneyGateReady(true);
-  }, []);
+  }, [setActiveCandidateId, candidates, activeCandidateId]);
 
   // Reset tab and search query when active journey changes
   useEffect(() => {
@@ -910,13 +1164,13 @@ export default function DocumentVaultPage() {
 
   if (journeysLoading || !journeyGateReady) {
     return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-55px)] bg-slate-50/50 dark:bg-slate-950/50 mt-[55px]">
-        <div className="flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-300">
+      <div className="mt-[55px] flex min-h-[calc(100vh-55px)] items-center justify-center bg-slate-50/50 dark:bg-slate-950/50">
+        <div className="animate-in fade-in flex flex-col items-center justify-center p-8 text-center duration-300">
           <Loader size="lg" className="text-primary mb-4" />
           <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">
             Loading Document Vault...
           </h3>
-          <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
+          <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
             Verifying your active immigration journey
           </p>
         </div>
@@ -959,7 +1213,8 @@ export default function DocumentVaultPage() {
             <p className="relative z-10 mb-2 text-[15px] leading-relaxed text-slate-600 dark:text-slate-400">
               The{" "}
               <span className="font-bold text-slate-800 dark:text-slate-200">Document Vault</span>{" "}
-              is strictly associated with an active immigration journey. Users cannot purchase or access the Document Vault independently as a standalone feature.
+              is strictly associated with an active immigration journey. Users cannot purchase or
+              access the Document Vault independently as a standalone feature.
             </p>
             <p className="relative z-10 mb-8 text-sm leading-relaxed text-slate-500 dark:text-slate-500">
               You don&apos;t have an active immigration journey yet. Please start a journey first,
@@ -985,7 +1240,7 @@ export default function DocumentVaultPage() {
     );
   }
 
-  if (dedupedUserJourneys.length > 1 && !activeJourneyId) {
+  if (vaultJourneyCards.length > 1 && !activeJourneyId) {
     return (
       <div className="mt-[55px] min-h-[calc(100vh-55px)] bg-slate-50/50 px-6 py-12 dark:bg-slate-950/50">
         <div className="container mx-auto max-w-5xl">
@@ -1002,74 +1257,80 @@ export default function DocumentVaultPage() {
 
           {/* Grid of Folders / Journey Cards */}
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {userJourneys.map((journey) => {
-              const visaCategory = journeyTypeToVisaCategory(journey.journey_type);
-              const isActive = journey.status === "in_progress";
-              const candidateName = getCandidateDisplayNameForJourney(journey.journey_type, candidates);
-
-              // Determine card image and description for better visualization
-              let cardImage = "";
-              let cardDesc = "Manage your visa application documents, checklist, and requirements.";
-
-              if (visaCategory) {
-                const cleanCategory = visaCategory.toUpperCase().replace(/[^A-Z0-9]/g, "");
-                if (cleanCategory === "IR1") {
-                  cardImage = "/assets/images/ir1-doc-vault-image.jpg";
-                  cardDesc =
-                    "Spouse of a U.S. Citizen Visa Document Vault. Keep track of marriage certificates, petitioner details, and sponsorship documents.";
-                } else if (cleanCategory === "IR5") {
-                  cardImage = "/assets/images/ir5-doc-vault-image.png";
-                  cardDesc =
-                    "Parent of a U.S. Citizen Visa Document Vault. Keep track of birth certificates, proof of relationship, and financial sponsor files.";
-                }
-              }
+            {vaultJourneyCards.map((card) => {
+              const { journey, journeyId, visaCategory, isMulti, candidateId, candidateName, candidateTag, cardImage, cardDesc, isActive, friendlyName } = card;
 
               return (
                 <button
-                  key={journey.id}
-                  onClick={() => handlePickJourney(journey.id)}
+                  key={journeyId}
+                  onClick={() => handlePickJourney(journeyId, candidateId)}
                   className="hover:border-primary/40 group focus:ring-primary/20 flex w-full flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-xl focus:ring-2 focus:outline-none dark:border-slate-800 dark:bg-slate-900"
                 >
                   {/* Card Image Banner */}
                   <div className="relative h-44 w-full overflow-hidden bg-slate-100 dark:bg-slate-950">
                     <Image
                       src={cardImage}
-                      alt={journey.journey_name || journey.journey_type}
+                      alt={friendlyName}
                       fill
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       className="object-cover transition-transform duration-500 group-hover:scale-105"
                       priority
-                    />
+                    /> 
                     {/* Gradient Overlay */}
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-slate-900/20 to-transparent" />
 
                     {/* Floating Badges */}
-                    <div className="pointer-events-none absolute top-4 right-4 left-4 flex items-center justify-between">
-                      {visaCategory ? (
-                        <Badge
-                          variant="secondary"
-                          className="pointer-events-auto border-white/10 bg-white/95 px-2.5 py-1 text-xs font-bold text-slate-900 shadow-sm backdrop-blur-sm"
-                        >
-                          {visaCategory}
-                        </Badge>
-                      ) : (
-                        <div />
-                      )}
+                    {/* <div className="pointer-events-none absolute top-4 right-4 left-4 flex items-center justify-between">
+                      <div className="pointer-events-auto flex flex-wrap items-center gap-1.5">
+                        {visaCategory ? (
+                          <Badge
+                            variant="secondary"
+                            className="pointer-events-auto border-white/10 bg-white/95 px-2.5 py-1 text-xs font-bold text-slate-900 shadow-sm backdrop-blur-sm"
+                          >
+                            {visaCategory}
+                          </Badge>
+                        ) : (
+                          <div />
+                        )}
+                        {candidateName && (
+                          <Badge
+                            variant="outline"
+                            className="border-white/20 bg-slate-900/80 px-2 py-0.5 text-xs font-semibold text-white backdrop-blur-sm"
+                          >
+                            {candidateName}
+                          </Badge>
+                        )}
+                      </div>
                       {isActive && (
                         <Badge className="pointer-events-auto border-none bg-emerald-500 px-2.5 py-1 text-xs font-semibold text-white shadow-sm">
                           Active
                         </Badge>
                       )}
-                    </div>
+                    </div> */}
                   </div>
 
                   <div className="flex flex-1 flex-col justify-between p-6">
                     <div>
                       {/* Journey Details */}
-                      <h3 className="group-hover:text-primary mb-2 line-clamp-1 text-lg font-bold text-slate-900 transition-colors dark:text-white">
-                        {getFriendlyJourneyName(journey.journey_type, journey.journey_name)}
+                      <h3
+                        title={
+                          candidateTag
+                            ? `${friendlyName} (${candidateTag})`
+                            : friendlyName
+                        }
+                        className="group-hover:text-primary mb-2 line-clamp-1 text-[15px] font-bold text-slate-900 transition-colors dark:text-white"
+                      >
+                        {friendlyName}
+                        {isMulti && candidateTag && (
+                          <span className="ml-1.5 font-normal text-slate-500 dark:text-slate-400">
+                            ({candidateTag})
+                          </span>
+                        )}
                       </h3>
-                      <p className="mb-6 line-clamp-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                      <p
+                        className="mb-6 line-clamp-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400"
+                        title={cardDesc}
+                      >
                         {cardDesc}
                       </p>
                     </div>

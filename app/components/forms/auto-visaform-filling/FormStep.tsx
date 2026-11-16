@@ -420,7 +420,7 @@ export function FormStep({
   };
 
   const renderInput = (field: FormField) => {
-    const inputTheme = isCandidateDistinct ? "dark" : "teal";
+    const inputTheme = "teal";
 
     if (field.type === "date") {
       return (
@@ -562,11 +562,7 @@ export function FormStep({
           }}
           options={options}
           placeholder={field.placeholder || `Select an option`}
-          className={`w-full ${
-            isCandidateDistinct
-              ? "[&_button]:border-2 [&_button]:border-sky-400 [&_button]:focus:border-[#0284c7] [&_button]:focus:ring-4 [&_button]:focus:ring-sky-100"
-              : "[&_button]:border-[#d0e8e9] [&_button]:focus:border-[#0d7377]"
-          }`}
+          className="w-full [&_button]:border-[#d0e8e9] [&_button]:focus:border-[#0d7377]"
         />
       );
     }
@@ -615,34 +611,30 @@ export function FormStep({
             y: navigationDirection === "next" ? -20 : 20,
           }}
           transition={{ duration: 0.3, ease: "easeOut" }}
-          className={
-            isCandidateDistinct
-              ? "rounded-2xl border-2 border-sky-300 bg-white p-5 sm:p-7 shadow-sm space-y-6"
-              : "space-y-5"
-          }
+          className="space-y-5"
         >
-          {/* Unified Beneficiary Identity & Guidance Header */}
+          {/* Subtle Beneficiary Indicator */}
           {isCandidateDistinct && (
-            <div className="flex items-start justify-between gap-3 px-4 py-3.5 rounded-xl bg-sky-50 border-2 border-sky-300 text-slate-900 shadow-xs">
-              <div className="flex items-start gap-3 min-w-0">
-                <div className="h-8 w-8 rounded-lg bg-[#0284c7] text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
-                  <User className="w-4 h-4 text-white" />
+            <div className="flex items-center justify-between gap-3 px-3.5 py-2 rounded-xl bg-[#e8f6f6]/60 border border-[#0d7377]/20 text-slate-800">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="h-6 w-6 rounded-md bg-[#0d7377] text-white flex items-center justify-center shrink-0">
+                  <User className="w-3.5 h-3.5 text-white" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xs font-bold text-sky-950 uppercase tracking-wider">
+                  <p className="text-xs font-semibold text-slate-800">
                     {fieldCriticalMeta.isCritical && fieldCriticalMeta.title
                       ? `${fieldCriticalMeta.title} · For ${candidateName}`
-                      : `Beneficiary Details · ${candidateName}`}
+                      : `For ${candidateName} (Beneficiary)`}
                   </p>
-                  <p className="text-[12px] text-sky-800 font-normal leading-relaxed mt-0.5">
-                    {fieldCriticalMeta.isCritical && fieldCriticalMeta.reason
-                      ? fieldCriticalMeta.reason
-                      : `Please provide ${candidateName}'s legal details below (do not enter petitioner info).`}
-                  </p>
+                  {fieldCriticalMeta.isCritical && fieldCriticalMeta.reason && (
+                    <p className="text-[11px] text-slate-500 font-normal leading-relaxed">
+                      {fieldCriticalMeta.reason}
+                    </p>
+                  )}
                 </div>
               </div>
               {candidateRelationLabel && (
-                <span className="shrink-0 text-xs font-bold px-3 py-1 rounded-full bg-white text-[#0369a1] border border-sky-300 shadow-2xs">
+                <span className="shrink-0 text-[11px] font-medium px-2 py-0.5 rounded-md bg-white text-[#0d7377] border border-[#0d7377]/20">
                   {candidateRelationLabel}
                 </span>
               )}
@@ -696,11 +688,7 @@ export function FormStep({
           {/* Input Fields */}
           {!isInfoField && (
             <div
-              className={`pt-1 ${
-                isCandidateDistinct
-                  ? "[&_input]:border-sky-300 [&_input]:focus:border-sky-500 [&_input]:focus:ring-sky-100/80 [&_textarea]:border-sky-300 [&_textarea]:focus:border-sky-500 [&_textarea]:focus:ring-sky-100/80"
-                  : ""
-              }`}
+              className="pt-1"
             >
               {renderSubQuestions(activeField)}
             </div>

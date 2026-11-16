@@ -15,13 +15,19 @@ interface PageGateProps {
   title?: string;
   /** Optional override for the description text on the lock screen */
   description?: string;
-  /** Force-unlock bypass — e.g. a standalone wallet unlock row grants access without a plan. */
+/** Force-unlock bypass — e.g. a standalone wallet unlock row grants access without a plan. */
   allow?: boolean;
   /** When set, the lock screen gains a primary "Unlock with N Credits" CTA and the upgrade CTA becomes secondary. */
   creditUnlock?: { credits: number; onUnlock: () => void };
+
+  /**
+   * When provided, entitlement is evaluated against the relevant journey tier instead of the
+   * account-wide plan. Omit to preserve the current account-plan behavior.
+   */
+  planTier?: string | null;
 }
 
-export function PageGate({ feature, children, title, description, allow, creditUnlock }: PageGateProps) {
+export function PageGate({ feature, children, title, description, planTier, allow, creditUnlock  }: PageGateProps) {
   const router = useRouter();
   const accountPlan = usePlan();
   // Reuse the journey plan API when a tier is supplied; otherwise fall back to account plan.

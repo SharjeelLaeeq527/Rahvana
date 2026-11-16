@@ -1,7 +1,7 @@
 "use client";
 
 import React, { Suspense } from "react";
-import { MessageSquare, Wrench } from "lucide-react";
+import { MessageSquare, Wrench, Wand2, ChevronLeft, FileText, ArrowRight } from "lucide-react";
 import { useJourneyEnvironment } from "@/app/context/JourneyEnvironmentContext";
 import { useCandidate } from "@/app/context/CandidateContext";
 import { usePlan, PlanContext } from "@/app/context/PlanContext";
@@ -36,6 +36,7 @@ const DocumentTranslationTool = React.lazy(
 const PdfToolkitTool = React.lazy(() => import("@/components/tools/PdfToolkitTool"));
 const SnapAndSignTool = React.lazy(() => import("@/components/tools/SnapAndSignTool"));
 const DqStatusCheckTool = React.lazy(() => import("@/components/tools/DqStatusCheckTool"));
+const CspaAgeCheckerTool = React.lazy(() => import("@/components/tools/CspaAgeCheckerTool"));
 const MedicalAppointmentTool = React.lazy(
   () => import("@/components/tools/MedicalAppointmentTool")
 );
@@ -54,6 +55,7 @@ const MultiStepForm = React.lazy(() =>
     default: m.MultiStepForm,
   }))
 );
+const VisaFormSelector = React.lazy(() => import("@/app/(tools)/(visa)/visa-forms/page"));
 // const MedicalExamTool = React.lazy(() =>
 //   import("./components/MedicalExamTool").then((m) => ({ default: m.MedicalExamTool }))
 // );
@@ -76,6 +78,7 @@ const MultiStepForm = React.lazy(() =>
 import { GuidePageOverlay } from "@/app/components/shared/GuidePageOverlay";
 import { getOverlayPageRoute } from "@/lib/constants/journey-app-groups";
 import { resolveCategorySlug } from "@/lib/interview-prep/journey-category-map";
+import { CSPA_METADATA_KEY, cspaInputFromJourney } from "@/lib/tools/cspa/journeyPrefill";
 
 interface EmbeddedToolContainerProps {
   toolKey: string;
@@ -270,87 +273,53 @@ function JourneyVisaFormsEmbeddedTool({
   initialFormCode?: string;
   onClose?: () => void;
 }) {
-  const category = (journeyContext?.journeyCategory || "").toUpperCase();
-  const availableForms = React.useMemo(() => {
-    if (category.includes("IR-1") || category.includes("CR-1")) {
-      return [
-        { code: "i130", label: "I-130", title: "Petition for Alien Relative" },
-        { code: "i130a", label: "I-130A", title: "Supplemental Info for Spouse Beneficiary" },
-        { code: "ds260", label: "DS-260", title: "Online Immigrant Visa Application" },
-        { code: "i864", label: "I-864", title: "Affidavit of Support" },
-        { code: "i864ez", label: "I-864EZ", title: "Affidavit of Support (Short Form)" },
-        { code: "i864a", label: "I-864A", title: "Contract Between Sponsor & Household Member" },
-        { code: "g1450", label: "G-1450", title: "Credit Card Payment Authorization" },
-      ];
-    }
-    if (category.includes("IR-5")) {
-      return [
-        { code: "i130", label: "I-130", title: "Petition for Alien Relative (Parent)" },
-        { code: "ds260", label: "DS-260", title: "Online Immigrant Visa Application" },
-        { code: "i864", label: "I-864", title: "Affidavit of Support" },
-        { code: "i864ez", label: "I-864EZ", title: "Affidavit of Support (Short Form)" },
-        { code: "i864a", label: "I-864A", title: "Contract Between Sponsor & Household Member" },
-        { code: "g1450", label: "G-1450", title: "Credit Card Payment Authorization" },
-      ];
-    }
-    return [
-      { code: "i130", label: "I-130", title: "Petition for Alien Relative" },
-      { code: "ds260", label: "DS-260", title: "Online Immigrant Visa Application" },
-      { code: "i864", label: "I-864", title: "Affidavit of Support" },
-      { code: "g1450", label: "G-1450", title: "Credit Card Payment Authorization" },
-    ];
-  }, [category]);
-
-  const [selectedForm, setSelectedForm] = React.useState<string>(
-    initialFormCode || availableForms[0]?.code || "i130"
+  const [activeFormCode, setActiveFormCode] = React.useState<string | null>(
+    initialFormCode || null
   );
 
-  return (
-    <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-2 sm:px-4">
-      {/* Form Picker Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1">
-        <span className="mr-1 shrink-0 text-xs font-bold tracking-wider text-slate-500 uppercase">
-          Visa Form:
-        </span>
-        {availableForms.map((form) => {
-          const isSelected = selectedForm === form.code;
-          return (
-            <button
-              key={form.code}
-              onClick={() => setSelectedForm(form.code)}
-              className={`shrink-0 cursor-pointer rounded-xl px-3 py-1.5 text-xs font-bold transition-all ${
-                isSelected
-                  ? "bg-[#0d7377] text-white shadow-xs"
-                  : "border border-slate-200 bg-white text-slate-700 hover:border-teal-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
-              }`}
-              title={form.title}
-            >
-              <span>{form.label}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
-        <MultiStepForm
-          key={`${selectedForm}_${journeyContext?.candidateId || "candidate-1"}`}
-          formCode={selectedForm}
+  // When no specific form is active, render the exact same form selector used in standalone!
+  if (!activeFormCode) {
+    return (
+      <div className="w-full">
+        <VisaFormSelector
           mode="journey"
           journeyContext={journeyContext}
           journeyTier={effectiveJourneyTier}
+          onSelectForm={(formCode) => setActiveFormCode(formCode)}
           isEmbedded={true}
-          onClose={onClose}
         />
       </div>
+    );
+  }
+
+  // ── Form editor: MultiStepForm ───────────────────────────────────────────────
+  return (
+    <div className="w-full">
+      <MultiStepForm
+          key={`${activeFormCode}_${journeyContext?.candidateId || "candidate-1"}`}
+          formCode={activeFormCode}
+          mode="journey"
+          journeyContext={{
+            ...journeyContext,
+            // Ensure subscriptionTier is always explicitly set so MultiStepForm
+            // never falls back to the account-level plan.tier.
+            subscriptionTier: effectiveJourneyTier,
+          }}
+          journeyTier={effectiveJourneyTier}
+          isEmbedded={true}
+          showHeader={false}
+          onClose={onClose}
+        />
     </div>
   );
 }
+
 
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { useJourneyPlan } from "@/app/context/useJourneyPlan";
 import { TOOL_FEATURE_MAP } from "@/lib/constants/journey-app-groups";
 import { useJourneyServiceStatus } from "@/lib/journey/useJourneyServiceStatus";
-import { Lock, ArrowRight } from "lucide-react";
+import { Lock } from "lucide-react";
 
 function LockedToolGate({
   featureKey,
@@ -416,7 +385,7 @@ export function EmbeddedToolContainer({
   autoCompleteStepKey,
 }: EmbeddedToolContainerProps) {
   const { journeySlug, candidateId } = useJourneyEnvironment();
-  const { activeCandidate } = useCandidate();
+  const { activeCandidate, activeJourneyKey } = useCandidate();
   const { profile } = useUserProfile();
 
   const resolvedState = state as
@@ -429,8 +398,26 @@ export function EmbeddedToolContainer({
       }
     | undefined;
 
+  const accountPlan = usePlan();
+  const rawCandidateTier = activeCandidate?.tier;
+  const rawStateTier = resolvedState?.subscriptionTier ?? resolvedState?.subscription_tier;
+  // plan.journeyTiers is keyed by journey_type: look it up by the active candidate's
+  // journey key (category slot), not by candidate id / row id (those never matched).
+  const tierKey = (activeJourneyKey || "").toLowerCase();
+  const journeyTiersTier =
+    accountPlan?.journeyTiers?.[tierKey] ||
+    accountPlan?.journeyTiers?.[tierKey.replace(/[^a-z0-9]/g, "")];
+
   const effectiveJourneyTier =
-    resolvedState?.subscriptionTier ?? resolvedState?.subscription_tier ?? journeyTier ?? "free";
+    (rawStateTier && rawStateTier !== "free")
+      ? rawStateTier
+      : (rawCandidateTier && rawCandidateTier !== "free")
+      ? rawCandidateTier
+      : (journeyTiersTier && journeyTiersTier !== "free")
+      ? journeyTiersTier
+      : (journeyTier && journeyTier !== "free")
+      ? journeyTier
+      : rawStateTier ?? rawCandidateTier ?? journeyTiersTier ?? journeyTier ?? "free";
 
   const plan = useJourneyPlan({
     ...resolvedState,
@@ -777,12 +764,37 @@ export function EmbeddedToolContainer({
           </div>
         );
 
+      case "cspa_checker": {
+        // Free tool. Pre-fill reads only THIS journey (its saved check, the eligibility quest
+        // answers) and the active candidate's date of birth when that candidate is the child.
+        const childDob =
+          activeCandidate?.relation === "Child" ? activeCandidate.dateOfBirth : undefined;
+        return (
+          <div className="mx-auto w-full max-w-7xl px-4 pt-4 sm:px-6 sm:pt-6 lg:px-8">
+            <CspaAgeCheckerTool
+              showHeader={false}
+              mode="journey"
+              journeyContext={journeyContext}
+              journeyTier={effectiveJourneyTier}
+              initialInput={cspaInputFromJourney(resolvedState?.metadata, childDob)}
+              // A journey that already saved a check opens on the checker, not the intro.
+              skipIntro={!!resolvedState?.metadata?.[CSPA_METADATA_KEY]}
+              onSave={(record) => {
+                (
+                  actions as { updateMetadata?: (u: Record<string, unknown>) => void }
+                )?.updateMetadata?.({ [CSPA_METADATA_KEY]: record });
+              }}
+            />
+          </div>
+        );
+      }
+
       case "visa_forms":
         return (
           <JourneyVisaFormsEmbeddedTool
             journeyContext={journeyContext}
             effectiveJourneyTier={effectiveJourneyTier}
-            initialFormCode={(data as any)?.formCode || (data as any)?.form_id || "i130"}
+            initialFormCode={(data as any)?.formCode || (data as any)?.form_id}
             onClose={onClose}
           />
         );
@@ -801,11 +813,16 @@ export function EmbeddedToolContainer({
   };
 
   const isDocTranslation = toolKey === "doc_translation" || toolKey === "document_translation";
+  const isFullBleedTool = toolKey === "visa_forms" || toolKey === "interview_prep";
 
   return (
     <div
-      className={`animate-in fade-in w-full pb-10 duration-200 ${
-        isDocTranslation ? "pt-10" : "pt-4 sm:pt-6"
+      className={`animate-in fade-in w-full duration-200 ${
+        isFullBleedTool
+          ? "pt-0 pb-0"
+          : isDocTranslation
+            ? "pt-10 pb-10"
+            : "pt-4 sm:pt-6 pb-10"
       }`}
     >
       <Suspense fallback={<ToolSkeleton />}>{renderToolComponent()}</Suspense>

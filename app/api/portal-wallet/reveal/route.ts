@@ -1,12 +1,18 @@
-
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { decrypt } from "@/lib/encryption";
 import { E, msg } from "@/lib/errors";
+import { resolveJourneyScope } from "@/lib/portal-wallet/resolve-journey-scope";
 
 const revealEncryptedValue = (value: string | null) => {
   if (!value) return "";
   return value.startsWith("gcm:") ? decrypt(value) : value;
+};
+
+type SecurityQuestion = {
+  id: string;
+  question: string;
+  encrypted_answer: string | null;
 };
 
 export async function POST(req: Request) {
@@ -22,41 +28,45 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { portalType, type, questionId, credentialId, candidateId } = body;
+    const { portalType, type, questionId, credentialId, candidateId, journeyId } = body;
 
     if (!portalType || !type) {
-      return NextResponse.json(
-        { error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: "[portalType, type]" }) },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "portalType and type are required" }, { status: 400 });
+    }
+
+    const { error: scopeError, scope } = await resolveJourneyScope(
+      supabase,
+      user.id,
+      journeyId,
+      candidateId
+    );
+
+    if (scopeError || !scope) {
+      return scopeError!;
     }
 
     let query = supabase
       .from("portal_wallet_credentials")
       .select(
         `
-        id,
-        encrypted_password,
-        nvc_case_number,
-        nvc_invoice_id,
-        portal_wallet_security_questions (
-          id,
-          question,
-          encrypted_answer
-        )
-      `
+    id,
+    encrypted_password,
+    nvc_case_number,
+    nvc_invoice_id,
+    portal_wallet_security_questions (
+      id,
+      question,
+      encrypted_answer
+    )
+  `
       )
       .eq("user_id", user.id)
+      .eq("journey_id", scope.journeyId)
+      .eq("candidate_id", scope.candidateId)
       .eq("portal_type", portalType);
 
     if (credentialId) {
       query = query.eq("id", credentialId);
-    } else if (candidateId) {
-      if (candidateId === "ir1") {
-        query = query.or("candidate_id.eq.ir1,candidate_id.is.null");
-      } else {
-        query = query.eq("candidate_id", candidateId);
-      }
     }
 
     const { data: credential, error } = await query.maybeSingle();
@@ -82,11 +92,9 @@ export async function POST(req: Request) {
 
     // FULL EDIT REVEAL (for editing credentials)
     if (type === "full_edit") {
-      const password = credential.encrypted_password
-        ? decrypt(credential.encrypted_password)
-        : "";
+      const password = credential.encrypted_password ? decrypt(credential.encrypted_password) : "";
       const securityQuestions =
-        credential.portal_wallet_security_questions?.map((q: any) => ({
+        credential.portal_wallet_security_questions?.map((q: SecurityQuestion) => ({
           id: q.id,
           question: q.question,
           answer: q.encrypted_answer ? decrypt(q.encrypted_answer) : "",
@@ -122,7 +130,7 @@ export async function POST(req: Request) {
     // ANSWER REVEAL
     if (type === "answer") {
       const question = credential.portal_wallet_security_questions?.find(
-        (q: any) => q.id === questionId
+        (q: SecurityQuestion) => q.id === questionId
       );
 
       if (!question) {

@@ -1,5 +1,6 @@
 "use client";
 
+import { JOURNEY_VIEW_TOP } from "@/app/components/journey-engine/viewSpacing";
 import React, { useMemo, useState } from "react";
 import { ChevronRight, AlertTriangle, Lock } from "lucide-react";
 import { RoadmapDataV3 } from "./types";
@@ -58,10 +59,10 @@ export function ChapterView({ data, chapterIdx, state, onBack, onSelectStep }: C
 
   return (
     <div
-      className={`scrollbar-hide relative flex-1 overflow-y-auto px-4 py-8 pb-20 sm:px-6`}
+      className={`scrollbar-hide relative flex-1 overflow-y-auto px-4 pb-20 sm:px-6 ${JOURNEY_VIEW_TOP}`}
       style={isChapter1 || isChapter2 || isChapter3 ? { minHeight: "100vh" } : undefined}
     >
-      <div className="animate-in fade-in relative z-10 mx-auto mt-6 w-full max-w-[680px] duration-700 sm:mt-12">
+      <div className="animate-in fade-in relative z-10 mx-auto w-full max-w-[680px] duration-700">
         <div
           className={`mb-7 rounded-3xl border-[1.5px] border-solid bg-gradient-to-br from-white via-white/95 to-neutral-50 p-6 shadow-[0_8px_40px_rgba(36,42,66,0.18),0_3px_16px_rgba(44,62,80,0.13)] transition-all duration-300 hover:scale-[1.018] hover:shadow-[0_16px_56px_rgba(36,42,66,0.22),0_6px_24px_rgba(44,62,80,0.18)] sm:p-8 ${isChapter3 ? "border-[#051738]" : isChapter2 ? "border-[#520a50]" : "border-[#8284bf]"} `}
         >
@@ -267,7 +268,7 @@ export function ChapterView({ data, chapterIdx, state, onBack, onSelectStep }: C
                 key={`mobile-${sId}`}
                 onClick={() => {
                   if (isStepLocked) {
-                    const feat = getModalFeatureForTier(lockStatus.requiredPlan!);
+                    const feat = lockStatus.feature || getModalFeatureForTier(lockStatus.requiredPlan!, sId);
                     setUpgradeModalFeature(feat);
                     return;
                   }
@@ -453,7 +454,7 @@ export function ChapterView({ data, chapterIdx, state, onBack, onSelectStep }: C
                 key={sId}
                 onClick={() => {
                   if (isStepLocked) {
-                    const feat = getModalFeatureForTier(lockStatus.requiredPlan!);
+                    const feat = lockStatus.feature || getModalFeatureForTier(lockStatus.requiredPlan!, sId);
                     setUpgradeModalFeature(feat);
                     return;
                   }
@@ -510,7 +511,11 @@ export function ChapterView({ data, chapterIdx, state, onBack, onSelectStep }: C
       </div>
 
       {upgradeModalFeature && (
-        <UpgradeModal feature={upgradeModalFeature} onClose={() => setUpgradeModalFeature(null)} />
+        <UpgradeModal
+          feature={upgradeModalFeature}
+          currentTier={effectiveTier}
+          onClose={() => setUpgradeModalFeature(null)}
+        />
       )}
     </div>
   );

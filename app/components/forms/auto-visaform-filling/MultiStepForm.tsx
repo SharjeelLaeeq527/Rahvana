@@ -4,7 +4,12 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getFormConfig, extractInheritableCandidateData } from "@/lib/formConfig";
-import { getCandidateJourneyKey, getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
+import { getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
+import {
+  getJourneyKeyForCandidate,
+  isCategoryPrimary,
+  resolveCandidateJourneyKey,
+} from "@/lib/candidate/candidateKeys";
 import { Header } from "./Header";
 import { ProgressFooter } from "./ProgressFooter";
 import { FormStep } from "./FormStep";
@@ -147,6 +152,7 @@ export interface MultiStepFormProps extends ToolModeProps {
   formCode: string;
   onClose?: () => void;
   isEmbedded?: boolean;
+  showHeader?: boolean;
 }
 
 const getLastAnsweredIndex = (fields: ConfigField[], data: Record<string, string>) => {
@@ -171,12 +177,15 @@ export function MultiStepForm({
   journeyTier: propJourneyTier,
   onClose,
   isEmbedded = false,
+  showHeader,
 }: MultiStepFormProps) {
   const { isJourney, journeyContext, journeyTier } = useResolveToolMode({
     mode: propMode,
     journeyContext: propJourneyContext,
     journeyTier: propJourneyTier,
   });
+
+  const shouldShowHeader = showHeader ?? !isJourney;
 
   const plan = usePlan();
   // Journey mode follows the journey's own plan. Standalone is paid with credits
@@ -185,8 +194,28 @@ export function MultiStepForm({
   // every form unlocked) gives the full filler. Journey passes null so it never
   // reads wallet unlocks. The PDF route re-checks all of this server-side.
   const formWallet = useStandaloneToolUnlock(isJourney ? null : smartFormResourceId(formCode));
+  const candidateCtx = useCandidate();
+  // Isolate candidate details strictly to Journey mode
+  const activeCandidate = isJourney ? candidateCtx.activeCandidate : null;
+  const candidates = isJourney ? candidateCtx.candidates : [];
+  const setActiveCandidateId = candidateCtx.setActiveCandidateId;
+  const isMultiCandidate = isJourney ? candidateCtx.isMultiCandidate : false;
+
+  const candidateTier = isJourney ? activeCandidate?.tier : null;
+  // plan.journeyTiers is keyed by journey_type (and by base category for slot-1 rows),
+  // so look it up by the active candidate's journey key, not by candidate id / row id.
+  const activeKeyForTier = isJourney ? candidateCtx.activeJourneyKey?.toLowerCase() || "" : "";
+  const journeyTiersTier = isJourney
+    ? (plan?.journeyTiers?.[activeKeyForTier] ||
+       plan?.journeyTiers?.[activeKeyForTier.replace(/[^a-z0-9]/g, "")])
+    : null;
+
+  // In journey mode: use the journey's own tier (journeyTier or journeyContext.subscriptionTier,
+  // falling back to activeCandidate.tier or plan.journeyTiers).
   const journeyPlanTier = normalizePlanTier(
-    journeyTier ?? journeyContext?.subscriptionTier ?? plan.tier
+    isJourney
+      ? (journeyTier ?? journeyContext?.subscriptionTier ?? candidateTier ?? journeyTiersTier ?? (plan?.tier !== "free" ? plan.tier : "free"))
+      : plan.tier
   );
   const canUseFullFiller = isJourney
     ? canUseForTier("smart_form_filler", journeyPlanTier, plan.purchasedAddons)
@@ -220,16 +249,22 @@ export function MultiStepForm({
   const [cameFromIntro, setCameFromIntro] = useState(false);
   const savedScrollPosition = useRef<number>(0);
   const hasShownInitialIntro = useRef(false);
-  const candidateCtx = useCandidate();
-  // Isolate candidate details strictly to Journey mode
-  const activeCandidate = isJourney ? candidateCtx.activeCandidate : null;
-  const candidates = isJourney ? candidateCtx.candidates : [];
-  const setActiveCandidateId = candidateCtx.setActiveCandidateId;
-  const isMultiCandidate = isJourney ? candidateCtx.isMultiCandidate : false;
 
+  const activeCandId = isJourney
+    ? (activeCandidate?.id || journeyContext?.candidateId || candidateCtx.activeCandidateId)
+    : null;
+  const activeCategory = isJourney
+    ? (activeCandidate?.visaCategory || journeyContext?.journeyCategory || "IR-5")
+    : "";
+  // Draft key = the journey key of the candidate in THIS journey's category (its slot),
+  // so an IR-2 child's drafts live on "ir2" / "ir2_candidate2" and never on an IR-5 key.
   const draftJourneyKey = isJourney
-    ? (journeyContext?.candidateId
-        ? getCandidateJourneyKey(journeyContext.journeyCategory, journeyContext.candidateId)
+    ? (activeCandId
+        ? resolveCandidateJourneyKey(
+            candidates,
+            journeyContext?.journeyCategory || activeCategory,
+            activeCandId
+          )
         : (candidateCtx.activeJourneyKey || "candidate-1"))
     : "standalone";
   const { user, isLoading: isAuthLoading } = useAuth();
@@ -359,7 +394,7 @@ export function MultiStepForm({
           if (siblingCandidates.length > 0) {
             siblingCandidates.forEach((s) => {
               const sBase = getBaseVisaCategory(s.visaCategory || activeBase);
-              const sKey = getCandidateJourneyKey(s.visaCategory || activeBase, s.id);
+              const sKey = getJourneyKeyForCandidate({ ...s, visaCategory: s.visaCategory || activeBase });
               if (!seenKeys.has(sKey)) {
                 seenKeys.add(sKey);
                 const sName = s.fullName || s.label || s.name?.first || "Another Candidate";
@@ -371,14 +406,15 @@ export function MultiStepForm({
 
           // 2. Add canonical fallback candidate keys (handles unfilled rosters & order-agnostic filling)
           const fallbackCandidates: { key: string; name: string; sameJourney: boolean }[] = [];
-          if (currentCandId !== "candidate-1") {
-            // Target is Candidate 2 / 3 -> check Candidate 1 first
+          const currentCand = (candidates || []).find((c) => c.id === currentCandId);
+          if (currentCand ? !isCategoryPrimary(currentCand) : currentCandId !== "candidate-1") {
+            // Target is this category's Candidate 2 / 3 -> check its Candidate 1 first
             fallbackCandidates.push({ key: normBase, name: "Candidate 1", sameJourney: true });
             fallbackCandidates.push({ key: `${normBase}-journey`, name: "Candidate 1", sameJourney: true });
             fallbackCandidates.push({ key: "candidate-1", name: "Candidate 1", sameJourney: true });
             fallbackCandidates.push({ key: "global", name: "Primary Candidate", sameJourney: true });
           } else {
-            // Target is Candidate 1 -> check Candidate 2 / 3
+            // Target is this category's Candidate 1 -> check Candidate 2 / 3
             fallbackCandidates.push({ key: `${normBase}_candidate2`, name: "Candidate 2", sameJourney: true });
             fallbackCandidates.push({ key: `${normBase}_candidate-2`, name: "Candidate 2", sameJourney: true });
             fallbackCandidates.push({ key: `${normBase}_candidate3`, name: "Candidate 3", sameJourney: true });
@@ -657,8 +693,26 @@ export function MultiStepForm({
   // the async initialization effect; if auto-fill ran before that, the later
   // setFormData(draft) would overwrite (wipe) the auto-filled values. Gating on
   // draftLoaded guarantees we merge INTO the loaded form data instead of racing it.
+  //
+  // STANDALONE mode: no profile pre-fill at all — the user starts with a blank form.
+  // JOURNEY mode: candidate-specific fields (beneficiary name, DOB, passport, CNIC)
+  //   are overridden from the active candidate; global autoFillForm also runs to
+  //   populate petitioner/sponsor fields from the user profile.
   useEffect(() => {
-    if (isContextProfileLoading || profileLoaded || !userProfile || !draftLoaded) return;
+    if (isContextProfileLoading || profileLoaded || !draftLoaded) return;
+
+    // Standalone: skip all profile pre-fill; just mark as loaded so the gate
+    // doesn't block further renders.
+    if (!isJourney) {
+      setProfileLoaded(true);
+      return;
+    }
+
+    // Journey: proceed with profile + candidate pre-fill.
+    if (!userProfile) {
+      setProfileLoaded(true);
+      return;
+    }
 
     setFormData((prev) => {
       // Use current form structure as template for auto-fill
@@ -686,6 +740,8 @@ export function MultiStepForm({
         ...(userProfile as unknown as Record<string, unknown>),
       };
 
+      // activeCandidate is already null in standalone (see line ~223), so this
+      // block only runs in journey mode — but guard it anyway for safety.
       if (activeCandidate) {
         const candBeneficiary: Record<string, unknown> = {
           ...((profileForOverride.beneficiary as Record<string, unknown>) || {}),
@@ -719,7 +775,7 @@ export function MultiStepForm({
       return merged;
     });
     setProfileLoaded(true);
-  }, [userProfile, isContextProfileLoading, profileLoaded, draftLoaded, activeCandidate, formCode]);
+  }, [isJourney, userProfile, isContextProfileLoading, profileLoaded, draftLoaded, activeCandidate, formCode]);
 
   const sections = useMemo(() => {
     if (!config) return [];
@@ -1973,9 +2029,10 @@ export function MultiStepForm({
   }
 
   return (
-    <div className="flex min-h-screen w-full flex-col" style={{ backgroundColor: "#f7fbfb" }}>
+    <div className={`flex w-full flex-col ${isEmbedded ? "min-h-[calc(100vh-160px)]" : "min-h-screen"}`} style={{ backgroundColor: "#f7fbfb" }}>
       {/* Sticky Header */}
-      <Header
+      {shouldShowHeader && (
+        <Header
         formTitle={config.formTitle}
         formSubtitle={config.formSubtitle}
         onOpenMenu={() => setIsDrawerOpen(true)}
@@ -1989,7 +2046,8 @@ export function MultiStepForm({
         isStandalone={!isJourney}
         isEmbedded={isEmbedded}
         onClose={onClose}
-      />
+        />
+      )}
 
       {/* Mobile Bottom Tray */}
       <MobileBottomSheet
@@ -2016,7 +2074,7 @@ export function MultiStepForm({
             className="-ml-4 hidden shrink-0 md:-ml-8 lg:block"
           >
             <aside
-              className="sticky top-16 mt-12 h-[calc(100vh-280px)] w-full overflow-hidden"
+              className={`sticky ${shouldShowHeader ? "top-16 mt-12" : "top-2 mt-2"} h-[calc(100vh-280px)] w-full overflow-hidden`}
               aria-hidden={false}
             >
               <div
@@ -2074,7 +2132,8 @@ export function MultiStepForm({
 
         {/* Right Content Area */}
         <div className="flex min-w-0 flex-1 flex-col">
-          <div className="flex w-full flex-1 items-start justify-center py-6">
+          <div className={`flex w-full flex-1 items-start justify-center ${shouldShowHeader ? "py-6" : "pt-2 pb-6"}`}>
+
             <div className="w-full max-w-2xl px-4 md:px-0">
               {view === "form" && currentSection && (
                 <>

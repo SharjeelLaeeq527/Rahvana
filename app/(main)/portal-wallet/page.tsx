@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useLayoutEffect, useRef } from "react";
 import Image from "next/image";
 import { Shield, Wallet } from "lucide-react";
 import { Loader } from "@/components/ui/spinner";
@@ -19,9 +19,9 @@ import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { useCandidate } from "@/app/context/CandidateContext";
 import { usePlan } from "@/app/context/PlanContext";
+import { PageGate } from "@/app/components/entitlements/PageGate";
 import { useUserProfile } from "@/app/context/UserProfileContext";
-
-
+import { canonicalJourneyKey, getJourneyKeyForCandidate } from "@/lib/candidate/candidateKeys";
 
 type PortalType = "USCIS" | "NVC" | "COURIER";
 
@@ -44,6 +44,15 @@ interface Credential {
   security_questions: SecurityQuestion[];
 
   updated_at: string | number | Date;
+}
+
+interface WalletCandidate {
+  id: string;
+  relation?: string;
+  visaCategory?: string;
+  categorySlot?: number;
+  label?: string;
+  fullName?: string;
 }
 
 const API_BASE = "/api/portal-wallet";
@@ -110,19 +119,32 @@ const PortalWallet: React.FC = () => {
   }
 
   const { profile } = profileCtx || {};
-  const { candidates = [], activeCandidate, setActiveCandidateId } = candidateCtx || {};
+  const {
+    candidates = [],
+    activeCandidate,
+    activeJourneyKey,
+    setActiveCandidateId,
+  }: {
+    candidates?: WalletCandidate[];
+    activeCandidate?: WalletCandidate;
+    activeJourneyKey?: string;
+    setActiveCandidateId?: (id: string) => void;
+  } = candidateCtx || {};
 
   // Fetch journeys to detect active IR-1 / IR-5 journeys
+  // Flattened journey rows ({ id, journey_type, ... }); /api/journeys wraps each in { journey }.
   const [userJourneys, setUserJourneys] = useState<any[]>([]);
+  const [journeysLoaded, setJourneysLoaded] = useState(false);
   useEffect(() => {
-    fetch("/api/journeys")
+    fetch("/api/journeys?limit=100")
       .then((res) => res.json())
       .then((data) => {
         if (data?.data && Array.isArray(data.data)) {
           setUserJourneys(data.data.map((item: any) => item.journey || item));
         }
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setJourneysLoaded(true));
   }, []);
 
   const hasIr1Journey = useMemo(() => {
@@ -185,7 +207,8 @@ const PortalWallet: React.FC = () => {
         c.visaCategory?.toUpperCase().includes("IR-2") ||
         c.visaCategory?.toUpperCase().includes("CR-2");
 
-      let journey: Journey = "IR-5";
+      // The candidate's own category (an IR-2 / CR-2 child is not an IR-5 case).
+      const journey: Journey = isChild && !isParent ? "IR-2" : "IR-5";
       let journeyLabel = "Beneficiary";
       if (isParent) journeyLabel = "Parent";
       else if (isChild) journeyLabel = "Child";
@@ -235,9 +258,44 @@ const PortalWallet: React.FC = () => {
   }, [walletCases, selectedCandidateId]);
 
   const activeId = selectedCandidateId || (walletCases[0]?.id ?? "ir1");
+  const activeJourneyKeyForWallet = useMemo(() => {
+    if (activeId === "ir1") return "ir1";
+    const candidate = candidates.find((c) => c.id === activeId);
+    // The candidate's category-slot key ("ir2" for the first IR-2 child, even when
+    // its id is candidate-3), never a key derived from the id.
+    return candidate
+      ? getJourneyKeyForCandidate({ ...candidate, visaCategory: candidate.visaCategory || "IR-5" })
+      : activeJourneyKey;
+  }, [activeId, activeJourneyKey, candidates]);
+  const activeJourneyId: string | undefined = useMemo(() => {
+    const wanted = canonicalJourneyKey(activeJourneyKeyForWallet);
+    if (!wanted) return undefined;
+    // userJourneys holds flattened rows, so match on journey_type / id directly
+    // ("item.journey" is always undefined here). Canonical keys make "IR1" /
+    // "ir1-journey" / "ir1" the same journey.
+    return userJourneys.find((j) => canonicalJourneyKey(j?.journey_type) === wanted)?.id;
+  }, [activeJourneyKeyForWallet, userJourneys]);
 
   const [walletSwitcherOpen, setWalletSwitcherOpen] = useState(true);
+
+  // Opened from a journey dashboard (?candidate=ir1 | <candidate id>): show that
+  // candidate's portals directly instead of the wallet switcher.
+  const urlCandidateRef = useRef<string | null>(null);
+  useLayoutEffect(() => {
+    const id = new URLSearchParams(window.location.search).get("candidate");
+    if (id) {
+      urlCandidateRef.current = id;
+      setWalletSwitcherOpen(false);
+    }
+  }, []);
+  useEffect(() => {
+    const id = urlCandidateRef.current;
+    if (!id || !walletCases.some((c) => c.id === id)) return;
+    urlCandidateRef.current = null;
+    setSelectedCandidateId(id);
+  }, [walletCases]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [credentials, setCredentials] = useState<Credential[]>([]);
   const [formModal, setFormModal] = useState<{
     open: boolean;
@@ -257,18 +315,43 @@ const PortalWallet: React.FC = () => {
 
   const fetchCredentials = useCallback(async () => {
     if (!activeId) return;
+    if (!activeJourneyId) {
+      // No journey row for this case: nothing to load. Stop the spinner once the
+      // journey list has arrived instead of waiting forever.
+      if (journeysLoaded) {
+        setCredentials([]);
+        setLoading(false);
+      }
+      return;
+    }
+    // A request that never answers would leave the page on "Loading your vault..."
+    // forever. Give up after 20s and show an error with a retry instead.
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 20000);
     try {
-      const qs = `?candidateId=${encodeURIComponent(activeId)}`;
-      const res = await fetch(`${API_BASE}${qs}`);
-      const data = await res.json();
-      if (data.credentials) setCredentials(data.credentials);
-      else setCredentials([]);
+      const qs = `?journeyId=${encodeURIComponent(activeJourneyId)}&candidateId=${encodeURIComponent(activeId)}`;
+      const res = await fetch(`${API_BASE}${qs}`, { signal: controller.signal });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        console.error("Failed to fetch credentials:", res.status, data);
+        setLoadError(
+          res.status === 401
+            ? "Your session has expired. Please sign in again."
+            : "We could not load your saved credentials. Please try again."
+        );
+        setCredentials([]);
+        return;
+      }
+      setLoadError(null);
+      setCredentials(Array.isArray(data.credentials) ? data.credentials : []);
     } catch (err) {
       console.error("Failed to fetch credentials:", err);
+      setLoadError("We could not load your saved credentials. Please try again.");
     } finally {
+      clearTimeout(timer);
       setLoading(false);
     }
-  }, [activeId]);
+  }, [activeId, activeJourneyId, journeysLoaded]);
 
   useEffect(() => {
     fetchCredentials();
@@ -277,14 +360,17 @@ const PortalWallet: React.FC = () => {
   const [allCredentials, setAllCredentials] = useState<any[]>([]);
 
   const fetchAllCredentials = useCallback(async () => {
+    if (!activeJourneyId) return;
     try {
-      const res = await fetch(API_BASE);
+      const res = await fetch(
+        `${API_BASE}?journeyId=${encodeURIComponent(activeJourneyId)}&candidateId=${encodeURIComponent(activeId)}`
+      );
       const data = await res.json();
       if (data?.credentials) setAllCredentials(data.credentials);
     } catch (err) {
       console.error("Failed to fetch all credentials:", err);
     }
-  }, []);
+  }, [activeJourneyId, activeId]);
 
   useEffect(() => {
     fetchAllCredentials();
@@ -348,7 +434,7 @@ const PortalWallet: React.FC = () => {
       const res = await fetch(API_BASE, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, candidateId: activeId }),
+        body: JSON.stringify({ ...data, journeyId: activeJourneyId, candidateId: activeId }),
       });
       if (!res.ok) throw new Error("Failed to save");
       showToast("Credentials saved successfully!", "success");
@@ -367,7 +453,7 @@ const PortalWallet: React.FC = () => {
     setProcessingPortal(portalType);
 
     try {
-      const qs = activeId ? `?candidateId=${encodeURIComponent(activeId)}` : "";
+      const qs = `?journeyId=${encodeURIComponent(activeJourneyId ?? "")}&candidateId=${encodeURIComponent(activeId)}`;
       const res = await fetch(`${API_BASE}/${portalType}/delete${qs}`, {
         method: "DELETE",
       });
@@ -397,6 +483,7 @@ const PortalWallet: React.FC = () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         credentialId,
+        journeyId: activeJourneyId,
         candidateId: activeId,
         portalType: cred?.portal_type,
         type: "password",
@@ -422,6 +509,7 @@ const PortalWallet: React.FC = () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         credentialId,
+        journeyId: activeJourneyId,
         candidateId: activeId,
         portalType: cred?.portal_type,
         type: "nvc_case_number",
@@ -447,6 +535,7 @@ const PortalWallet: React.FC = () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         credentialId,
+        journeyId: activeJourneyId,
         candidateId: activeId,
         portalType: cred?.portal_type,
         type: "nvc_invoice_id",
@@ -472,6 +561,7 @@ const PortalWallet: React.FC = () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         credentialId,
+        journeyId: activeJourneyId,
         candidateId: activeId,
         portalType: cred?.portal_type,
         type: "answer",
@@ -500,8 +590,6 @@ const PortalWallet: React.FC = () => {
     return data.value || "";
   };
 
-
-
   const activeCredential = getCredential(viewModal.portalType);
   const formCredential = getCredential(formModal.portalType);
 
@@ -510,6 +598,25 @@ const PortalWallet: React.FC = () => {
       <div className="flex h-screen flex-col items-center justify-center gap-4">
         <Loader size="lg" />
         <p className="mt-2 text-sm font-medium text-[#0d7377]">Loading your vault...</p>
+      </div>
+    );
+  }
+
+  if (loadError && credentials.length === 0) {
+    return (
+      <div className="flex h-screen flex-col items-center justify-center gap-4 px-4 text-center">
+        <p className="text-sm font-medium text-[#0c1b33]">{loadError}</p>
+        <button
+          type="button"
+          onClick={() => {
+            setLoading(true);
+            fetchCredentials();
+            fetchAllCredentials();
+          }}
+          className="rounded-lg bg-[#0d7377] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0a5c5f]"
+        >
+          Try again
+        </button>
       </div>
     );
   }
@@ -536,7 +643,7 @@ const PortalWallet: React.FC = () => {
             <button
               type="button"
               onClick={() => setWalletSwitcherOpen(true)}
-              className="group relative inline-flex items-center gap-3 rounded-2xl border border-[#0d7377]/20 bg-white pl-3 pr-4 py-2.5 shadow-sm transition-all duration-200 hover:border-[#0d7377]/50 hover:shadow-[0_4px_20px_rgba(13,115,119,0.1)] active:scale-[0.98]"
+              className="group relative inline-flex items-center gap-3 rounded-2xl border border-[#0d7377]/20 bg-white py-2.5 pr-4 pl-3 shadow-sm transition-all duration-200 hover:border-[#0d7377]/50 hover:shadow-[0_4px_20px_rgba(13,115,119,0.1)] active:scale-[0.98]"
             >
               {/* Teal avatar dot */}
               <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#e6f7f4] text-[#0d7377] transition-colors duration-200 group-hover:bg-[#0d7377] group-hover:text-white">
@@ -545,12 +652,14 @@ const PortalWallet: React.FC = () => {
 
               {/* Labels */}
               <div className="flex flex-col items-start leading-tight">
-                <span className="text-[10px] font-semibold uppercase tracking-widest text-[#94a3b8]">
+                <span className="text-[10px] font-semibold tracking-widest text-[#94a3b8] uppercase">
                   Viewing credentials for
                 </span>
                 <span className="text-[14px] font-bold text-[#0f172a]">
                   {activeCase?.name ?? "Spouse"}{" "}
-                  <span className="font-normal text-[#64748b]">({activeCase?.journey ?? "IR-1"})</span>
+                  <span className="font-normal text-[#64748b]">
+                    ({activeCase?.journey ?? "IR-1"})
+                  </span>
                 </span>
               </div>
 
@@ -563,8 +672,14 @@ const PortalWallet: React.FC = () => {
                 {/* Animated chevron right */}
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  width="13" height="13" viewBox="0 0 24 24"
-                  fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                  width="13"
+                  height="13"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                   className="transition-transform duration-200 group-hover:translate-x-0.5"
                 >
                   <path d="M9 18l6-6-6-6" />
@@ -574,12 +689,25 @@ const PortalWallet: React.FC = () => {
 
             {/* Subtle hint text below */}
             <p className="text-[11px] text-[#94a3b8]">
-              {walletCases.length > 1 ? `${walletCases.length} candidates · click to switch` : "click to manage your wallet"}
+              {walletCases.length > 1
+                ? `${walletCases.length} candidates · click to switch`
+                : "click to manage your wallet"}
             </p>
           </div>
         </div>
 
-        {/* Portal Cards */}
+        {/* No journey row for this case yet: credentials are saved per journey, so
+            show a notice instead of cards whose save would fail. The switcher above
+            stays usable. */}
+        {!activeJourneyId ? (
+          <div className="mx-auto max-w-md rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm">
+            <p className="text-sm font-semibold text-[#0c1b33]">No journey started for this case yet</p>
+            <p className="mt-1 text-sm text-[#64748b]">
+              Portal credentials are saved per journey. Start this journey first, or switch to
+              another candidate above.
+            </p>
+          </div>
+        ) : (
         <div className="grid grid-cols-1 items-center justify-center gap-6 md:grid-cols-2 md:items-stretch lg:grid-cols-3">
           {portals.map((portal) => {
             const cred = getCredential(portal.type);
@@ -620,6 +748,7 @@ const PortalWallet: React.FC = () => {
             );
           })}
         </div>
+        )}
 
         {/* Security note */}
         <div className="mt-6 text-center md:mt-10">
@@ -636,6 +765,7 @@ const PortalWallet: React.FC = () => {
       <CredentialFormModal
         isOpen={formModal.open}
         onClose={() => setFormModal((prev) => ({ ...prev, open: false }))}
+        journeyId={activeJourneyId || ""}
         portalType={formModal.portalType}
         mode={formModal.mode}
         icon={portals.find((p) => p.type === formModal.portalType)?.icon}
@@ -719,4 +849,18 @@ const PortalWallet: React.FC = () => {
   );
 };
 
-export default PortalWallet;
+/**
+ * Portal wallet is part of the journey plans (Basic and up, `portal_wallet`).
+ * The gate wraps the whole page so nothing (credentials included) loads when locked.
+ */
+const PortalWalletPage: React.FC = () => (
+  <PageGate
+    feature="portal_wallet"
+    title="Portal Wallet Locked"
+    description="Upgrade your journey plan to keep your NVC, CEAC and courier logins safe in one place."
+  >
+    <PortalWallet />
+  </PageGate>
+);
+
+export default PortalWalletPage;

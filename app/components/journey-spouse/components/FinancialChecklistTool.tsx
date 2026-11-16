@@ -57,6 +57,42 @@ export const getFinancialDocs = (scKey: string) => {
   const taxNote = "most recent tax year (3 recommended)";
   const allSponsors = [...sc.sponsors, ...sc.jointSponsors];
 
+  const isEzScenario =
+    scKey === "pet-only" ||
+    (typeof sc.forms === "string" && sc.forms.includes("I-864EZ")) ||
+    (Array.isArray(sc.forms) && sc.forms.some((f: any) => String(f).includes("I-864EZ")));
+
+  if (isEzScenario) {
+    docs.required.push({
+      id: "i864ez-Petitioner",
+      icon: "file-text",
+      title: "Form I-864EZ, Petitioner",
+      sub: "Completed Affidavit of Support for petitioner qualifying alone",
+      tags: [
+        { cls: "tag-pet", label: "Petitioner" },
+        { cls: "tag-tax", label: "Required Form" },
+      ],
+      guide: {
+        intro:
+          "Form I-864EZ is a shorter, simplified version of Form I-864 Affidavit of Support. It is used when the petitioner sponsors only one immigrant using their own salary or pension documented on W-2 forms.",
+        sections: [
+          {
+            title: "Who Qualifies for Form I-864EZ",
+            body: "You can use Form I-864EZ if: 1) You are the petitioning sponsor who filed Form I-130; 2) The relative you are sponsoring is the only person listed on the petition; 3) Your qualifying income comes entirely from your own salary or pension documented on W-2 forms; 4) No joint sponsor or Form I-864A household member is used.",
+          },
+          {
+            title: "USCIS Form Integrity",
+            body: "Download the latest version of Form I-864EZ directly from the USCIS website. Complete all parts accurately, leave no blank fields (use 'N/A' or 'None' where appropriate), and sign it before submission.",
+          },
+          {
+            title: "Supporting Financial Evidence",
+            body: "Attach your IRS tax transcript (or complete Form 1040 copy with W-2s) for the most recent tax year, along with current pay stubs and employment verification letter.",
+          },
+        ],
+      },
+    });
+  }
+
   allSponsors.forEach((sp) => {
     const isPet = sp === "Petitioner";
     const tagClass = isPet ? "tag-pet" : "tag-js";

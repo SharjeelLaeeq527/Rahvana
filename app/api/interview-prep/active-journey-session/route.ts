@@ -20,6 +20,7 @@ export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const journey_id = searchParams.get("journey_id");
+    const candidate_id = searchParams.get("candidate_id") || undefined;
 
     // Require journey_id parameter
     if (!journey_id) {
@@ -29,8 +30,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get session by specific journey ID (not journey type)
-    const result = await getInterviewSessionByJourney(journey_id);
+    // Get session by specific journey ID (and optional candidate ID)
+    const result = await getInterviewSessionByJourney(journey_id, candidate_id);
 
     if (!result) {
       return NextResponse.json({

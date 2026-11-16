@@ -44,6 +44,12 @@ interface AuthContextType {
   session: Session | null;
   profile: UserProfile | null;
   isAdmin: boolean;
+  // True while the async /check-admin lookup for the current user is still
+  // in flight. Admin-gated pages must wait for this to settle before
+  // rendering "Access Denied" — otherwise a real admin sees a flash of the
+  // denial screen during the brief window between isLoading=false and the
+  // admin role resolving.
+  isAdminLoading: boolean;
   isLoading: boolean;
   isAuthenticated: boolean;
   authLevel: string;
@@ -119,6 +125,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isAdminLoading, setIsAdminLoading] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -213,6 +220,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSession(s);
         setProfile(null);
         setIsAdmin(false);
+        setIsAdminLoading(false);
         setIsLoading(false);
         fetchingRef.current = null;
         return;
@@ -245,7 +253,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email: u.email,
       });
 
-      fetchUserProfile(u.id).then(setIsAdmin);
+      // Admin status is resolved asynchronously. Mark it as "loading" now so
+      // admin-gated pages render a spinner instead of prematurely showing
+      // "Access Denied" while the /check-admin round-trip is still pending.
+      setIsAdminLoading(true);
+      fetchUserProfile(u.id)
+        .then(setIsAdmin)
+        .finally(() => setIsAdminLoading(false));
     };
 
     const getInitialSession = async () => {
@@ -602,6 +616,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setSession(null);
     setProfile(null);
     setIsAdmin(false);
+    setIsAdminLoading(false);
   };
 
   const signInWithGoogle = async (redirectUrl?: string | null) => {
@@ -628,6 +643,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         session,
         profile,
         isAdmin,
+        isAdminLoading,
         isLoading,
         isAuthenticated,
         authLevel,

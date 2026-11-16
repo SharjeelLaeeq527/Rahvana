@@ -53,6 +53,7 @@ const DEFAULT_STATE: WizardState = {
   answers: {},
   metadata: {},
   unresolvedTasks: [],
+  subscriptionTier: "free",
   stepMap: {},
   stepTimestamps: {},
 };

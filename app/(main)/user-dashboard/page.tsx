@@ -236,15 +236,15 @@ const UserDashboard = () => {
                     title={service.title}
                     icon={service.icon}
                     status={service.status}
-                    type={service.journeyType}
+                    type={(service as any).journeyType}
                     count={service.count}
                     countLabel={service.countLabel}
                     description={service.description}
                     onClick={() => {
-                      if (service.onClick) {
-                        service.onClick();
-                      } else if (service.href) {
-                        router.push(service.href);
+                      if ((service as any).onClick) {
+                        (service as any).onClick();
+                      } else if ((service as any).href) {
+                        router.push((service as any).href);
                       }
                     }}
                   />

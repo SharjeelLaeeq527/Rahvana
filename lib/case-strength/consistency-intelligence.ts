@@ -161,6 +161,8 @@ function checkVisaCategoryConsistency(state: WizardState): ConsistencyFinding[] 
       return "IR-1";
     if (upper.includes("CR-1") || upper.includes("CR1")) return "CR-1";
     if (upper.includes("IR-5") || upper.includes("IR5")) return "IR-5";
+    if (upper.includes("IR-2") || upper.includes("IR2")) return "IR-2";
+    if (upper.includes("CR-2") || upper.includes("CR2")) return "CR-2";
     return upper;
   });
   const unique = [...new Set(normalized)];
@@ -760,7 +762,7 @@ export function runCommonPhase2Checks(
           "You indicated a prior U.S. visa refusal but haven't prepared an explanation. The consular officer will ask about it, an inconsistent or vague answer can hurt your case.",
         resolution:
           "Prepare a clear, factual explanation for the refusal. Bring any relevant documentation (refusal letter, subsequent approval). Ensure your DS-260 disclosure matches your explanation.",
-        actionableStepKey: "step_3_7",
+        actionableStepKey: "step_3_8", // Prepare for Interview
       });
     }
 

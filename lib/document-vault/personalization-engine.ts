@@ -529,6 +529,35 @@ export function generateRequiredDocuments(
       if (ir1Map[doc.id]) {
         customName = ir1Map[doc.id];
       }
+    } else if (visaCategory === "IR-2" || visaCategory === "CR-2") {
+      const ir2Map: Record<string, string> = {
+        "birth-cert-beneficiary": "Child's Birth Certificate",
+        "passport-beneficiary": "Child's Passport Biographic Page",
+        "nadra-crc": "NADRA Child Registration Certificate (CRC / B-Form)",
+        "family-registration-cert": "Family Registration Certificate (FRC)",
+        "child-parents-marriage-cert": "Parents' Marriage Certificate",
+        "child-father-relationship-evidence": "Evidence of a Bona Fide Father-Child Relationship",
+        "child-stepparent-marriage-cert": "Marriage Certificate Creating the Step-Relationship",
+        "child-prior-marriage-terminations": "Termination of the Child's Prior Marriages",
+        "child-adoption-decree": "Final Adoption Decree",
+        "child-custody-residence-evidence": "Legal Custody & Joint Residence Evidence",
+        "child-custody-order-consent": "Custody Order & Non-Accompanying Parent Consent",
+        "child-marital-status-attestation": "Proof of the Child's Unmarried Status",
+        "parent-prior-marriage-terminations": "Termination of the Parents' Prior Marriages",
+        "step-relationship-continuing-evidence": "Evidence of a Continuing Stepparent-Stepchild Relationship",
+        "citizenship-proof-petitioner": "Proof of U.S. Citizenship - Petitioner Parent",
+        "i-864-affidavit": "Form I-864 Affidavit of Support - Petitioner Parent",
+        "tax-returns-petitioner": "Most Recent IRS Tax Transcript or Return - Petitioner",
+        "w2-forms": "W-2 and 1099 Forms - Petitioner",
+        "pay-stubs": "Current Pay Stubs & Employment Verification - Petitioner",
+        "domicile-proof-petitioner": "Proof of U.S. Domicile - Petitioner",
+        "police-certificate-pakistan": "Police Character Certificate (Applicants 16+)",
+        "medical-exam-ds2019": "Child's Medical Examination Report",
+        "passport-photos": "Child's Passport-Style Photographs",
+      };
+      if (ir2Map[doc.id]) {
+        customName = ir2Map[doc.id];
+      }
     }
 
     if (customName === doc.name) {

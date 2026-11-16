@@ -20,6 +20,7 @@ export interface PortalCredential {
 
 interface UsePortalWalletProps {
   sId: string;
+  journeyId: string;
   isCompleted: boolean;
   candidateId?: string | null;
   actions: {
@@ -28,7 +29,13 @@ interface UsePortalWalletProps {
   };
 }
 
-export const usePortalWallet = ({ sId, isCompleted, actions, candidateId }: UsePortalWalletProps) => {
+export const usePortalWallet = ({
+  sId,
+  journeyId,
+  isCompleted,
+  actions,
+  candidateId,
+}: UsePortalWalletProps) => {
   const { showToast } = useToast();
   const [uscisCredentials, setUscisCredentials] = useState<PortalCredential | null>(null);
   const [ceacCredentials, setCeacCredentials] = useState<PortalCredential | null>(null);
@@ -44,7 +51,10 @@ export const usePortalWallet = ({ sId, isCompleted, actions, candidateId }: UseP
 
   const fetchCredentials = useCallback(async () => {
     try {
-      const qs = candidateId ? `?candidateId=${encodeURIComponent(candidateId)}` : "";
+      if (!journeyId) return;
+      const params = new URLSearchParams({ journeyId });
+      if (candidateId) params.set("candidateId", candidateId);
+      const qs = `?${params.toString()}`;
       const res = await fetch(`/api/portal-wallet${qs}`);
       const data = await res.json();
       if (data.credentials) {
@@ -68,7 +78,7 @@ export const usePortalWallet = ({ sId, isCompleted, actions, candidateId }: UseP
     } catch (err) {
       console.error("Failed to fetch credentials:", err);
     }
-  }, [candidateId]);
+  }, [candidateId, journeyId]);
 
   useEffect(() => {
     fetchCredentials();
@@ -87,7 +97,7 @@ export const usePortalWallet = ({ sId, isCompleted, actions, candidateId }: UseP
       const res = await fetch("/api/portal-wallet", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, candidateId }),
+        body: JSON.stringify({ ...data, journeyId, candidateId }),
       });
       if (!res.ok) throw new Error("Failed to save");
       showToast(msg(E.CREDENTIAL_SAVE_SUCCESS), "success");
@@ -96,11 +106,13 @@ export const usePortalWallet = ({ sId, isCompleted, actions, candidateId }: UseP
 
       if (data.portalType === "NVC") {
         try {
-          const qs = candidateId ? `?candidateId=${encodeURIComponent(candidateId)}` : "";
+          const params = new URLSearchParams({ journeyId });
+          if (candidateId) params.set("candidateId", candidateId);
+          const qs = `?${params.toString()}`;
           const res = await fetch(`/api/portal-wallet${qs}`);
           const wallet = await res.json();
           const nvcCreds = wallet.credentials?.find(
-            (c: any) => c.portal_type?.toUpperCase() === "NVC"
+            (c: PortalCredential) => c.portal_type?.toUpperCase() === "NVC"
           );
           if (nvcCreds) {
             if (nvcCreds.nvc_case_number) {
@@ -133,6 +145,7 @@ export const usePortalWallet = ({ sId, isCompleted, actions, candidateId }: UseP
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         credentialId,
+        journeyId,
         candidateId,
         portalType: walletPortalType,
         type: "password",
@@ -148,6 +161,7 @@ export const usePortalWallet = ({ sId, isCompleted, actions, candidateId }: UseP
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         credentialId,
+        journeyId,
         candidateId,
         portalType: walletPortalType,
         type: "answer",
@@ -161,7 +175,9 @@ export const usePortalWallet = ({ sId, isCompleted, actions, candidateId }: UseP
   const handleDeleteCredentials = async (portalType: string) => {
     setIsSubmittingCreds(true);
     try {
-      const qs = candidateId ? `?candidateId=${encodeURIComponent(candidateId)}` : "";
+      const params = new URLSearchParams({ journeyId });
+      if (candidateId) params.set("candidateId", candidateId);
+      const qs = `?${params.toString()}`;
       const res = await fetch(`/api/portal-wallet/${portalType}/delete${qs}`, {
         method: "DELETE",
       });

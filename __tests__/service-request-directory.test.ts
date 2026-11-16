@@ -77,4 +77,53 @@ describe("serviceRequestDirectory", () => {
     expect(item.context.candidateId).toBe("candidate-1");
     expect(item.context.label).toBe("IR-5 journey - Parent 1 (Mother): Amina");
   });
+
+  it("resolves a journey consultation booking to its journey_slug category + candidate", () => {
+    const [item] = buildServiceRequestDirectory(
+      {
+        consultationBookings: [
+          {
+            id: "c2",
+            status: "pending_approval",
+            source: "journey",
+            journey_slug: "ir1-journey",
+            candidate_id: "candidate-3",
+            created_at: "2026-10-01T00:00:00Z",
+          },
+        ],
+      },
+      candidates
+    );
+    expect(item.context.kind).toBe("journey");
+    expect(item.context.category).toBe("IR-1");
+    expect(item.context.candidateId).toBe("candidate-3");
+    expect(item.context.label).toBe("IR-1 journey - Spouse: Sara");
+    expect(item.context.journeyHref).toBe("/visa-category/ir1-journey");
+    expect(item.manageHref).toBeNull();
+    expect(isRequestInCurrentJourney(item, { category: "IR-1", candidateId: "candidate-3" })).toBe(true);
+  });
+
+  it("removes account-wide requests when excludeAccountWide is true (accessed for journey)", () => {
+    const items = buildServiceRequestDirectory(
+      {
+        pccRequests: [{ id: "p1", status: "pending", source: "standalone", created_at: "2026-09-01" }],
+        translationDocuments: [
+          { id: "t1", status: "PENDING", metadata: { candidate_id: "candidate-2" }, created_at: "2026-09-02" },
+        ],
+        consultationBookings: [
+          { id: "c1", status: "confirmed", visa_category: "IR-5", created_at: "2026-09-03" },
+          { id: "c2", status: "confirmed", source: "journey", journey_slug: "ir5-journey", candidate_id: "candidate-1", created_at: "2026-09-04" },
+        ],
+      },
+      candidates,
+      { excludeAccountWide: true }
+    );
+    // c1 is an account-wide consultation, so it must be removed. c2 is journey-scoped and must stay.
+    const ids = items.map((i) => i.id);
+    expect(ids).toContain("c2");
+    expect(ids).toContain("t1");
+    expect(ids).toContain("p1");
+    expect(ids).not.toContain("c1");
+    expect(items.every((i) => i.context.kind !== "account")).toBe(true);
+  });
 });
