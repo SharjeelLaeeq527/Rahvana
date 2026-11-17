@@ -16,7 +16,6 @@ import {
   Home,
   FileText,
   Check,
-  CheckCircle2,
   ArrowRight,
   ArrowLeft,
   Heart,
@@ -332,7 +331,15 @@ const getDefaultFormData = (initial?: any): SponsorshipFormData => ({
   isWidow: initial?.isWidow || false,
   isSpecialImmigrant: initial?.isSpecialImmigrant || false,
   // Child & INA 320 specific fields
-  beneficiaryRelationship: initial?.beneficiaryRelationship || (initial?.relationshipToApplicant === "spouse" ? "spouse" : initial?.relationshipToApplicant === "child" ? "child" : initial?.relationshipToApplicant === "parent" ? "parent" : ""),
+  beneficiaryRelationship:
+    initial?.beneficiaryRelationship ||
+    (initial?.relationshipToApplicant === "spouse"
+      ? "spouse"
+      : initial?.relationshipToApplicant === "child"
+        ? "child"
+        : initial?.relationshipToApplicant === "parent"
+          ? "parent"
+          : ""),
   childAgeBand: initial?.childAgeBand || "",
   childRelationshipType: initial?.childRelationshipType || "",
   childLivesInUSCitizenCustody: initial?.childLivesInUSCitizenCustody ?? null,
@@ -369,7 +376,10 @@ export default function SponsorshipCalculatorTool({
       if (rawJourneyTier) {
         return normalizePlanTier(rawJourneyTier);
       }
-      if (journeyContext?.journeyCategory && accountPlan.journeyTiers[journeyContext.journeyCategory]) {
+      if (
+        journeyContext?.journeyCategory &&
+        accountPlan.journeyTiers[journeyContext.journeyCategory]
+      ) {
         return accountPlan.journeyTiers[journeyContext.journeyCategory];
       }
     }
@@ -515,7 +525,10 @@ export default function SponsorshipCalculatorTool({
     if (!isOpen) return;
 
     const currentInitStr = JSON.stringify(initialData || {});
-    if (isOpening || (currentInitStr !== prevInitialDataRef.current && Object.keys(initialData || {}).length > 0)) {
+    if (
+      isOpening ||
+      (currentInitStr !== prevInitialDataRef.current && Object.keys(initialData || {}).length > 0)
+    ) {
       prevInitialDataRef.current = currentInitStr;
       if (initialData && Object.keys(initialData).length > 0) {
         setData((prev) => ({
@@ -561,9 +574,12 @@ export default function SponsorshipCalculatorTool({
     try {
       localStorage.removeItem(effectiveDraftKey);
       if (!isJourney && updateProfile) {
-        updateProfile({
-          standaloneSponsorshipDraft: undefined,
-        }, { silent: true });
+        updateProfile(
+          {
+            standaloneSponsorshipDraft: undefined,
+          },
+          { silent: true }
+        );
       }
     } catch {}
     const defaultData = getDefaultFormData(lockState ? { state: data.state } : undefined);
@@ -587,10 +603,13 @@ export default function SponsorshipCalculatorTool({
         localStorage.setItem(STANDALONE_SPONSORSHIP_STORAGE_KEY, JSON.stringify(finalResult));
         localStorage.removeItem(STANDALONE_SPONSORSHIP_DRAFT_KEY);
         if (updateProfile) {
-          updateProfile({
-            standaloneSponsorshipCalc: finalResult,
-            standaloneSponsorshipDraft: undefined,
-          }, { silent: true });
+          updateProfile(
+            {
+              standaloneSponsorshipCalc: finalResult,
+              standaloneSponsorshipDraft: undefined,
+            },
+            { silent: true }
+          );
         }
       }
     } catch (e) {
@@ -698,58 +717,67 @@ export default function SponsorshipCalculatorTool({
       className={
         embedded
           ? "flex w-full flex-col font-sans"
-          : "fixed inset-0 bg-white z-[150] flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans"
+          : "animate-in slide-in-from-bottom-[18px] fixed inset-0 z-[150] flex flex-col overflow-hidden bg-white font-sans duration-[0.28s] ease-in-out"
       }
     >
       {/* Topbar (overlay / standalone only — journey uses the roadmap breadcrumb) */}
       {!embedded && (
-      <div className="flex items-center h-[64px] border-b border-[#d0e4f7] px-6 gap-4 shrink-0 bg-white">
-        <button
-          onClick={onClose}
-          className="w-9 h-9 rounded-full bg-[#f4f7fb] border-none flex items-center justify-center text-[#3a4f63] hover:bg-primary/10 transition-all cursor-pointer outline-none focus:ring-2 focus:ring-primary"
-        >
-          <X size={16} strokeWidth={2} />
-        </button>
-        {candidateInfo?.name && (
-          <div className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-teal-50 border border-teal-200 text-[11px] font-semibold text-teal-800 shrink-0">
-            <Users className="w-3 h-3 text-teal-600" />
-            <span>Beneficiary: {candidateInfo.name} {candidateInfo.relation ? `(${candidateInfo.relation})` : ""}</span>
+        <div className="flex h-[64px] shrink-0 items-center gap-4 border-b border-[#d0e4f7] bg-white px-6">
+          <button
+            onClick={onClose}
+            className="hover:bg-primary/10 focus:ring-primary flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-none bg-[#f4f7fb] text-[#3a4f63] transition-all outline-none focus:ring-2"
+          >
+            <X size={16} strokeWidth={2} />
+          </button>
+          {candidateInfo?.name && (
+            <div className="hidden shrink-0 items-center gap-1.5 rounded-full border border-teal-200 bg-teal-50 px-2.5 py-1 text-[11px] font-semibold text-teal-800 sm:inline-flex">
+              <Users className="h-3 w-3 text-teal-600" />
+              <span>
+                Beneficiary: {candidateInfo.name}{" "}
+                {candidateInfo.relation ? `(${candidateInfo.relation})` : ""}
+              </span>
+            </div>
+          )}
+          <div className="h-[5px] flex-1 overflow-hidden rounded-[10px] bg-[#d0e4f7]">
+            <div
+              className="h-full bg-linear-to-r transition-all duration-500"
+              style={{
+                width: `${Math.round((currentDisplayStep / totalSteps) * 100)}%`,
+                backgroundColor: COLORS.primary,
+              }}
+            />
           </div>
-        )}
-        <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
-          <div
-            className="h-full bg-linear-to-r transition-all duration-500"
-            style={{
-              width: `${Math.round((currentDisplayStep / totalSteps) * 100)}%`,
-              backgroundColor: COLORS.primary,
+          <div className="shrink-0 text-[12px] font-medium whitespace-nowrap text-[#6b8097]">
+            {currentDisplayStep} / {totalSteps}
+          </div>
+          <button
+            onClick={handleResetProgress}
+            title="Reset progress and start over"
+            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-none bg-slate-100 text-xs text-slate-600 transition-colors hover:bg-slate-200"
+          >
+            <RotateCcw size={13} />
+          </button>
+          <QuickAccessButton
+            item={{
+              id: "sponsorship-calculator",
+              title: "Sponsorship Calculator",
+              href: "/affidavit-support-calculator",
+              icon_name: "Calculator",
             }}
+            mode="icon"
           />
         </div>
-        <div className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap shrink-0">
-          {currentDisplayStep} / {totalSteps}
-        </div>
-        <button
-          onClick={handleResetProgress}
-          title="Reset progress and start over"
-          className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors flex items-center justify-center cursor-pointer border-none text-xs"
-        >
-          <RotateCcw size={13} />
-        </button>
-        <QuickAccessButton
-          item={{
-            id: "sponsorship-calculator",
-            title: "Sponsorship Calculator",
-            href: "/affidavit-support-calculator",
-            icon_name: "Calculator",
-          }}
-          mode="icon"
-        />
-      </div>
       )}
 
       {/* Body */}
-      <div className={embedded ? "flex flex-col items-center p-[32px_24px_40px]" : "flex-1 overflow-y-auto bg-white p-[48px_24px_40px] flex flex-col items-center"}>
-        <div className="w-full max-w-[560px] flex flex-col">
+      <div
+        className={
+          embedded
+            ? "flex flex-col items-center p-[32px_24px_40px]"
+            : "flex flex-1 flex-col items-center overflow-y-auto bg-white p-[48px_24px_40px]"
+        }
+      >
+        <div className="flex w-full max-w-[560px] flex-col">
           {(() => {
             const step = stepIdx;
 
@@ -761,56 +789,70 @@ export default function SponsorshipCalculatorTool({
               >
                 <div className="animate-in fade-in slide-in-from-right-4 duration-300">
                   <div
-                    className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center"
+                    className="mb-4 text-center text-[11px] font-semibold tracking-widest uppercase"
                     style={{ color: COLORS.primary }}
                   >
                     Step {isExemptFlow ? 4 : 11} of {isExemptFlow ? 4 : 11}
                   </div>
-                  <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6 text-center">
+                  <h2 className="mb-6 text-center text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33]">
                     {isExemptFlow ? "Final Exemption Plan" : "Final Sponsorship Plan"}
                   </h2>
 
-                  <div className="space-y-4 mb-8">
+                  <div className="mb-8 space-y-4">
                     <div
-                      className="p-8 rounded-3xl border-2 text-center"
+                      className="rounded-3xl border-2 p-8 text-center"
                       style={{
-                        backgroundColor: result.isEligible ? `${COLORS.secondary}20` : `${COLORS.danger}20`,
+                        backgroundColor: result.isEligible
+                          ? `${COLORS.secondary}20`
+                          : `${COLORS.danger}20`,
                         borderColor: result.isEligible ? COLORS.secondary : COLORS.danger,
                       }}
                     >
                       {result.isChildCitizenshipActExempt ? (
                         <>
-                          <div className="text-[10px] font-black uppercase text-teal-700 tracking-widest mb-2">
+                          <div className="mb-2 text-[10px] font-black tracking-widest text-teal-700 uppercase">
                             Exemption Status
                           </div>
-                          <div className="text-2xl sm:text-3xl font-black mb-3 text-teal-800">
+                          <div className="mb-3 text-2xl font-black text-teal-800 sm:text-3xl">
                             EXEMPT FROM I-864 &#x2713;
                           </div>
-                          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-100 text-teal-800 text-xs font-bold mb-4">
+                          <div className="mb-4 inline-flex items-center gap-1.5 rounded-full bg-teal-100 px-3 py-1 text-xs font-bold text-teal-800">
                             Child Citizenship Act of 2000 (INA Section 320)
                           </div>
-                          <p className="text-[14px] text-slate-600 leading-relaxed font-medium">
-                            Your child automatically acquires U.S. citizenship upon admission to the United States as a permanent resident. No minimum income requirement or joint sponsor is required.
+                          <p className="text-[14px] leading-relaxed font-medium text-slate-600">
+                            Your child automatically acquires U.S. citizenship upon admission to the
+                            United States as a permanent resident. No minimum income requirement or
+                            joint sponsor is required.
                           </p>
                         </>
                       ) : (
                         <>
-                          <div className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-3">
+                          <div className="mb-3 text-[10px] font-black tracking-widest text-slate-500 uppercase">
                             Final Conclusion
                           </div>
                           <div
-                            className="text-3xl font-black mb-3"
+                            className="mb-3 text-3xl font-black"
                             style={{ color: result.isEligible ? COLORS.primary : COLORS.danger }}
                           >
                             {result.isEligible ? "ELIGIBLE \u2713" : "NOT ELIGIBLE \u2717"}
                           </div>
-                          <p className="text-[14px] text-slate-600 leading-relaxed font-medium">
-                            Total Household Income: <strong className="text-[#0c1b33] text-lg">${(result.totalIncome ?? 0).toLocaleString()}</strong><br />
-                            Required (Household of {result.householdSize}): <strong className="text-[#0c1b33] text-lg">${(result.requiredIncome ?? 0).toLocaleString()}</strong>
+                          <p className="text-[14px] leading-relaxed font-medium text-slate-600">
+                            Total Household Income:{" "}
+                            <strong className="text-lg text-[#0c1b33]">
+                              ${(result.totalIncome ?? 0).toLocaleString()}
+                            </strong>
+                            <br />
+                            Required (Household of {result.householdSize}):{" "}
+                            <strong className="text-lg text-[#0c1b33]">
+                              ${(result.requiredIncome ?? 0).toLocaleString()}
+                            </strong>
                             {result.jurisdiction && (
                               <>
                                 <br />
-                                <span className="text-[12px] text-slate-500">Based on {getJurisdictionLabel(result.jurisdiction)} poverty guidelines</span>
+                                <span className="text-[12px] text-slate-500">
+                                  Based on {getJurisdictionLabel(result.jurisdiction)} poverty
+                                  guidelines
+                                </span>
                               </>
                             )}
                           </p>
@@ -819,58 +861,75 @@ export default function SponsorshipCalculatorTool({
                     </div>
 
                     {result.feeExempt && (
-                      <div className="p-4 rounded-xl border border-amber-200 bg-amber-50/70 text-left">
+                      <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-4 text-left">
                         <div className="flex items-start gap-2.5">
-                          <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
                           <div>
                             <p className="text-xs font-bold text-amber-900">
                               $120 CEAC Affidavit of Support Fee Waiver
                             </p>
-                            <p className="text-[12px] text-amber-800 leading-relaxed mt-0.5">
-                              Intending immigrants filing Form I-864W are exempt from paying the $120 Affidavit of Support fee. If CEAC bills this fee, submit an inquiry to NVC via their Public Inquiry Form to request the fee be waived before paying.
+                            <p className="mt-0.5 text-[12px] leading-relaxed text-amber-800">
+                              Intending immigrants filing Form I-864W are exempt from paying the
+                              $120 Affidavit of Support fee. If CEAC bills this fee, submit an
+                              inquiry to NVC via their Public Inquiry Form to request the fee be
+                              waived before paying.
                             </p>
                           </div>
                         </div>
                       </div>
                     )}
 
-                    {data.beneficiaryRelationship === "child" && !result.isChildCitizenshipActExempt && (
-                      <div className="p-4 rounded-xl border border-sky-200 bg-sky-50/70 text-left">
-                        <p className="text-xs font-bold text-sky-900">
-                          Child Sponsorship Note (Form I-864 Required)
-                        </p>
-                        <p className="text-[12px] text-sky-800 leading-relaxed mt-0.5">
-                          {data.childRelationshipType === "stepchild"
-                            ? "Stepchildren do not acquire automatic citizenship under INA Section 320. Form I-864 and 125% of HHS Poverty Guidelines apply."
-                            : data.childAgeBand === "18_20"
-                            ? "Children aged 18 to 20 at admission do not qualify under INA Section 320. Standard Form I-864 and 125% Poverty Guidelines apply."
-                            : "Standard Form I-864 is required. As the child of a U.S. citizen, the statutory 3x asset multiplier applies (8 CFR Section 213a.2(c)(2)(iii)(B))."}
-                        </p>
-                      </div>
-                    )}
+                    {data.beneficiaryRelationship === "child" &&
+                      !result.isChildCitizenshipActExempt && (
+                        <div className="rounded-xl border border-sky-200 bg-sky-50/70 p-4 text-left">
+                          <p className="text-xs font-bold text-sky-900">
+                            Child Sponsorship Note (Form I-864 Required)
+                          </p>
+                          <p className="mt-0.5 text-[12px] leading-relaxed text-sky-800">
+                            {data.childRelationshipType === "stepchild"
+                              ? "Stepchildren do not acquire automatic citizenship under INA Section 320. Form I-864 and 125% of HHS Poverty Guidelines apply."
+                              : data.childAgeBand === "18_20"
+                                ? "Children aged 18 to 20 at admission do not qualify under INA Section 320. Standard Form I-864 and 125% Poverty Guidelines apply."
+                                : "Standard Form I-864 is required. As the child of a U.S. citizen, the statutory 3x asset multiplier applies (8 CFR Section 213a.2(c)(2)(iii)(B))."}
+                          </p>
+                        </div>
+                      )}
 
-                    <div className="text-[12px] text-[#6b8097] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-slate-100 pb-4 px-1">
-                      <span>Poverty guidelines last updated: <strong>March 1, 2026</strong></span>
+                    <div className="flex flex-col items-start justify-between gap-2 border-b border-slate-100 px-1 pb-4 text-[12px] text-[#6b8097] sm:flex-row sm:items-center">
+                      <span>
+                        Poverty guidelines last updated: <strong>March 1, 2026</strong>
+                      </span>
                       <a
                         href={I864P_URL}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="hover:underline font-semibold flex items-center gap-1 transition-all hover:opacity-85"
+                        className="flex items-center gap-1 font-semibold transition-all hover:underline hover:opacity-85"
                         style={{ color: COLORS.primary }}
                       >
                         Official USCIS I-864P Guidelines &rarr;
                       </a>
                     </div>
 
-                    <div className="p-6 rounded-2xl border-2 border-slate-100 bg-slate-50/50">
-                      <div className="text-[11px] font-bold uppercase text-slate-400 mb-4 tracking-wider">Required Forms</div>
+                    <div className="rounded-2xl border-2 border-slate-100 bg-slate-50/50 p-6">
+                      <div className="mb-4 text-[11px] font-bold tracking-wider text-slate-400 uppercase">
+                        Required Forms
+                      </div>
                       <div className="space-y-3">
                         {result.forms.map((f: any, i: number) => (
-                          <div key={i} className="flex items-start gap-3 p-4 bg-white rounded-2xl border border-slate-200 shadow-sm">
-                            <FileText size={20} className="mt-1 shrink-0" style={{ color: COLORS.primary }} />
+                          <div
+                            key={i}
+                            className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+                          >
+                            <FileText
+                              size={20}
+                              className="mt-1 shrink-0"
+                              style={{ color: COLORS.primary }}
+                            />
                             <div>
-                              <div className="text-sm font-black text-slate-900 leading-tight">{f.name}</div>
-                              <div className="text-[11px] text-slate-500 font-medium">{f.sub}</div>
+                              <div className="text-sm leading-tight font-black text-slate-900">
+                                {f.name}
+                              </div>
+                              <div className="text-[11px] font-medium text-slate-500">{f.sub}</div>
                             </div>
                           </div>
                         ))}
@@ -881,8 +940,12 @@ export default function SponsorshipCalculatorTool({
                   <div className="flex gap-[10px]">
                     <button
                       type="button"
-                      onClick={() => setStepIdx(isExemptFlow ? 2 : (data.assetValue > 0 || data.sponsorDeceased ? 9 : 8))}
-                      className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63] flex items-center gap-2"
+                      onClick={() =>
+                        setStepIdx(
+                          isExemptFlow ? 2 : data.assetValue > 0 || data.sponsorDeceased ? 9 : 8
+                        )
+                      }
+                      className="flex items-center gap-2 rounded-[10px] border-[1.5px] border-[#d0e4f7] bg-transparent p-[13px_22px] font-medium text-[#3a4f63] hover:border-[#3a4f63]"
                     >
                       <ArrowLeft size={14} /> Edit Info
                     </button>
@@ -890,9 +953,10 @@ export default function SponsorshipCalculatorTool({
                       type="button"
                       onClick={handleCompleteSave}
                       style={{ backgroundColor: COLORS.primary }}
-                      className="flex-1 p-[14px_22px] text-white rounded-[10px] text-[15px] font-semibold shadow-lg transition-all hover:opacity-90 hover:-translate-y-px flex items-center justify-center gap-2"
+                      className="flex flex-1 items-center justify-center gap-2 rounded-[10px] p-[14px_22px] text-[15px] font-semibold text-white shadow-lg transition-all hover:-translate-y-px hover:opacity-90"
                     >
-                      {isJourney ? "Complete & Save to Roadmap" : "Complete & Save Calculation"} <ArrowRight size={14} />
+                      {isJourney ? "Complete & Save to Roadmap" : "Complete & Save Calculation"}{" "}
+                      <ArrowRight size={14} />
                     </button>
                   </div>
                 </div>
@@ -902,7 +966,7 @@ export default function SponsorshipCalculatorTool({
             if (step === 0) {
               return (
                 <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                  <div className="flex items-center justify-between gap-2 mb-4">
+                  <div className="mb-4 flex items-center justify-between gap-2">
                     <div
                       className="text-[11px] font-semibold tracking-widest uppercase"
                       style={{ color: COLORS.primary }}
@@ -910,16 +974,16 @@ export default function SponsorshipCalculatorTool({
                       Sponsorship Calculator · Step 1 of {totalSteps}
                     </div>
                     {candidateInfo?.name && (
-                      <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-teal-50 border border-teal-200 text-[10px] font-semibold text-teal-800">
-                        <Users className="w-2.5 h-2.5 text-teal-600" />
+                      <div className="inline-flex items-center gap-1 rounded-full border border-teal-200 bg-teal-50 px-2 py-0.5 text-[10px] font-semibold text-teal-800">
+                        <Users className="h-2.5 w-2.5 text-teal-600" />
                         <span>{candidateInfo.name}</span>
                       </div>
                     )}
                   </div>
-                  <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-2 leading-[1.3]">
+                  <h2 className="mb-2 text-[clamp(22px,3.5vw,28px)] leading-[1.3] font-black text-[#0c1b33]">
                     Welcome to the Sponsorship Calculator
                   </h2>
-                  <p className="text-[14px] text-[#3a4f63] leading-[1.7] mb-6">
+                  <p className="mb-6 text-[14px] leading-[1.7] text-[#3a4f63]">
                     This tool determines your sponsorship strategy based on USCIS requirements. We
                     use your <strong className="text-[#0c1b33]">Current Annual Income</strong> for
                     eligibility, and your{" "}
@@ -927,24 +991,26 @@ export default function SponsorshipCalculatorTool({
                     evidence.
                   </p>
                   <div
-                    className="rounded-[10px] p-[14px_16px] mb-4"
+                    className="mb-4 rounded-[10px] p-[14px_16px]"
                     style={{
                       backgroundColor: `${COLORS.secondary}20`,
                       border: `1px solid ${COLORS.secondary}50`,
                     }}
                   >
-                    <p className="text-[13px] text-[#3a4f63] leading-[1.6]">
+                    <p className="text-[13px] leading-[1.6] text-[#3a4f63]">
                       Keep your most recent federal tax return (Form 1040) and current pay stubs
                       handy.
                     </p>
                   </div>
-                  <div className="text-[12px] text-[#6b8097] mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-t border-slate-100 pt-4">
-                    <span>Poverty guidelines last updated: <strong>March 1, 2026</strong></span>
+                  <div className="mb-6 flex flex-col items-start justify-between gap-2 border-t border-slate-100 pt-4 text-[12px] text-[#6b8097] sm:flex-row sm:items-center">
+                    <span>
+                      Poverty guidelines last updated: <strong>March 1, 2026</strong>
+                    </span>
                     <a
                       href={I864P_URL}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="hover:underline font-semibold flex items-center gap-1 transition-all hover:opacity-85"
+                      className="flex items-center gap-1 font-semibold transition-all hover:underline hover:opacity-85"
                       style={{ color: COLORS.primary }}
                     >
                       Official USCIS I-864P Guidelines &rarr;
@@ -953,7 +1019,7 @@ export default function SponsorshipCalculatorTool({
                   <button
                     onClick={() => setStepIdx(1)}
                     style={{ backgroundColor: COLORS.primary }}
-                    className="w-full p-[14px_22px] text-white rounded-[10px] text-[15px] font-semibold transition-all hover:opacity-90 hover:-translate-y-px"
+                    className="w-full rounded-[10px] p-[14px_22px] text-[15px] font-semibold text-white transition-all hover:-translate-y-px hover:opacity-90"
                   >
                     Get Started →
                   </button>
@@ -965,64 +1031,70 @@ export default function SponsorshipCalculatorTool({
               return (
                 <div className="animate-in fade-in slide-in-from-right-4 duration-300">
                   <div
-                    className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center"
+                    className="mb-4 text-center text-[11px] font-semibold tracking-widest uppercase"
                     style={{ color: stepColor }}
                   >
                     Step 2 of {totalSteps}
                   </div>
-                  <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-4 text-center">
+                  <h2 className="mb-4 text-center text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33]">
                     Petitioner Status
                   </h2>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                  <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <button
                       type="button"
                       onClick={() => setData({ ...data, sponsorStatus: "citizen" })}
-                      className={`p-4 rounded-xl border-2 transition-all ${data.sponsorStatus === "citizen" ? "" : "border-slate-200 hover:bg-slate-50"}`}
+                      className={`rounded-xl border-2 p-4 transition-all ${data.sponsorStatus === "citizen" ? "" : "border-slate-200 hover:bg-slate-50"}`}
                       style={{
                         borderColor: data.sponsorStatus === "citizen" ? "#0d7377" : undefined,
                         backgroundColor:
                           data.sponsorStatus === "citizen" ? `${COLORS.joint}10` : undefined,
                       }}
                     >
-                      <Shield className="w-8 h-8 mx-auto mb-2" style={{ color: COLORS.joint }} />
+                      <Shield className="mx-auto mb-2 h-8 w-8" style={{ color: COLORS.joint }} />
                       <p className="font-semibold text-slate-900">US Citizen</p>
                     </button>
                     <button
                       type="button"
                       onClick={() => setData({ ...data, sponsorStatus: "greenCard" })}
-                      className={`p-4 rounded-xl border-2 transition-all ${data.sponsorStatus === "greenCard" ? "border-amber-400 bg-amber-50/50" : "border-slate-200 hover:bg-slate-50"}`}
+                      className={`rounded-xl border-2 p-4 transition-all ${data.sponsorStatus === "greenCard" ? "border-amber-400 bg-amber-50/50" : "border-slate-200 hover:bg-slate-50"}`}
                     >
-                      <User className="w-8 h-8 mx-auto mb-2 text-slate-500" />
+                      <User className="mx-auto mb-2 h-8 w-8 text-slate-500" />
                       <p className="font-semibold text-slate-900">Green Card Holder</p>
                     </button>
                   </div>
 
                   {data.sponsorStatus === "greenCard" && (
-                    <div className="mb-6 p-4 rounded-xl border border-amber-300 bg-amber-50 text-left animate-in fade-in duration-200">
+                    <div className="animate-in fade-in mb-6 rounded-xl border border-amber-300 bg-amber-50 p-4 text-left duration-200">
                       <div className="flex items-start gap-2.5">
-                        <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                        <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
                         <div>
                           <p className="text-xs font-bold text-amber-950">
                             Immediate Relative Petitions Require U.S. Citizenship
                           </p>
-                          <p className="text-[12px] text-amber-900 leading-relaxed mt-1">
-                            Only U.S. citizens can petition for Immediate Relative immigrant visas (IR-1 spouse, IR-2 child, or IR-5 parent). Lawful Permanent Residents (Green Card holders) cannot file an Immediate Relative petition.
+                          <p className="mt-1 text-[12px] leading-relaxed text-amber-900">
+                            Only U.S. citizens can petition for Immediate Relative immigrant visas
+                            (IR-1 spouse, IR-2 child, or IR-5 parent). Lawful Permanent Residents
+                            (Green Card holders) cannot file an Immediate Relative petition.
                           </p>
-                          <p className="text-[12px] text-amber-800 leading-relaxed mt-1.5">
-                            Green Card holders must file under Family Preference categories (such as <strong>F2A</strong> for spouse/minor child), which are subject to annual visa waiting lists and different processing rules. U.S. citizenship is required to proceed with this Immediate Relative sponsorship calculator.
+                          <p className="mt-1.5 text-[12px] leading-relaxed text-amber-800">
+                            Green Card holders must file under Family Preference categories (such as{" "}
+                            <strong>F2A</strong> for spouse/minor child), which are subject to
+                            annual visa waiting lists and different processing rules. U.S.
+                            citizenship is required to proceed with this Immediate Relative
+                            sponsorship calculator.
                           </p>
                         </div>
                       </div>
                     </div>
                   )}
                   <div className="mb-6">
-                    <p className="text-[14px] font-semibold text-[#0c1b33] mb-3">
+                    <p className="mb-3 text-[14px] font-semibold text-[#0c1b33]">
                       Are you active-duty US Military?
                     </p>
                     <div className="grid grid-cols-2 gap-3">
                       <button
                         onClick={() => setData({ ...data, isMilitary: true })}
-                        className={`p-3 rounded-xl border-2 transition-all ${data.isMilitary === true ? "" : "border-slate-200"}`}
+                        className={`rounded-xl border-2 p-3 transition-all ${data.isMilitary === true ? "" : "border-slate-200"}`}
                         style={{
                           borderColor: data.isMilitary === true ? "#0d7377" : undefined,
                           backgroundColor:
@@ -1033,7 +1105,7 @@ export default function SponsorshipCalculatorTool({
                       </button>
                       <button
                         onClick={() => setData({ ...data, isMilitary: false })}
-                        className={`p-3 rounded-xl border-2 transition-all ${data.isMilitary === false ? "" : "border-slate-200"}`}
+                        className={`rounded-xl border-2 p-3 transition-all ${data.isMilitary === false ? "" : "border-slate-200"}`}
                         style={{
                           borderColor: data.isMilitary === false ? "#0d7377" : undefined,
                           backgroundColor:
@@ -1045,12 +1117,12 @@ export default function SponsorshipCalculatorTool({
                     </div>
                   </div>
                   <div className="mb-6">
-                    <p className="text-[14px] font-semibold text-[#0c1b33] mb-3">
+                    <p className="mb-3 text-[14px] font-semibold text-[#0c1b33]">
                       Sponsor's state of residence
                     </p>
                     {lockState && data.state ? (
                       <div
-                        className="rounded-[10px] p-[12px_16px] flex items-center justify-between"
+                        className="flex items-center justify-between rounded-[10px] p-[12px_16px]"
                         style={{
                           backgroundColor: `${COLORS.secondary}20`,
                           border: `1px solid ${COLORS.secondary}50`,
@@ -1069,9 +1141,9 @@ export default function SponsorshipCalculatorTool({
                           onChange={(value: string) => setData({ ...data, state: value })}
                           placeholder="Select your state"
                         />
-                        <p className="text-[12px] text-[#6b8097] mt-2">
-                          Poverty guidelines are higher for Alaska and Hawaii. All other states
-                          use the same federal thresholds.
+                        <p className="mt-2 text-[12px] text-[#6b8097]">
+                          Poverty guidelines are higher for Alaska and Hawaii. All other states use
+                          the same federal thresholds.
                         </p>
                       </>
                     )}
@@ -1079,23 +1151,34 @@ export default function SponsorshipCalculatorTool({
                   <div className="flex gap-[10px]">
                     <button
                       onClick={() => setStepIdx(0)}
-                      className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63] flex items-center gap-2"
+                      className="flex items-center gap-2 rounded-[10px] border-[1.5px] border-[#d0e4f7] bg-transparent p-[13px_22px] font-medium text-[#3a4f63] hover:border-[#3a4f63]"
                     >
                       <ArrowLeft size={14} /> Back
                     </button>
                     <button
                       type="button"
-                      disabled={!data.sponsorStatus || data.sponsorStatus === "greenCard" || data.isMilitary === null || !data.state}
+                      disabled={
+                        !data.sponsorStatus ||
+                        data.sponsorStatus === "greenCard" ||
+                        data.isMilitary === null ||
+                        !data.state
+                      }
                       onClick={() => setStepIdx(2)}
                       style={{
                         backgroundColor:
-                          !data.sponsorStatus || data.sponsorStatus === "greenCard" || data.isMilitary === null || !data.state
+                          !data.sponsorStatus ||
+                          data.sponsorStatus === "greenCard" ||
+                          data.isMilitary === null ||
+                          !data.state
                             ? "#e2e8f0"
                             : "#0d7377",
                       }}
-                      className={`flex-1 p-[14px_22px] rounded-[10px] text-[15px] font-semibold transition-all flex items-center justify-center gap-2 ${
-                        !data.sponsorStatus || data.sponsorStatus === "greenCard" || data.isMilitary === null || !data.state
-                          ? "text-slate-400 cursor-not-allowed"
+                      className={`flex flex-1 items-center justify-center gap-2 rounded-[10px] p-[14px_22px] text-[15px] font-semibold transition-all ${
+                        !data.sponsorStatus ||
+                        data.sponsorStatus === "greenCard" ||
+                        data.isMilitary === null ||
+                        !data.state
+                          ? "cursor-not-allowed text-slate-400"
                           : "text-white hover:opacity-90"
                       }`}
                     >
@@ -1125,47 +1208,47 @@ export default function SponsorshipCalculatorTool({
                 (!isChild || isChildScreenerAnswered);
 
               return (
-                <div className="animate-in fade-in slide-in-from-right-4 duration-300 text-center">
+                <div className="animate-in fade-in slide-in-from-right-4 text-center duration-300">
                   <div
-                    className="text-[11px] font-semibold tracking-widest uppercase mb-4"
+                    className="mb-4 text-[11px] font-semibold tracking-widest uppercase"
                     style={{ color: stepColor }}
                   >
                     Step 3 of {totalSteps}
                   </div>
-                  <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6">
+                  <h2 className="mb-6 text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33]">
                     Marital & Beneficiary Status
                   </h2>
 
                   {/* Section 1: Sponsor Marital Status */}
                   <div className="mb-6">
-                    <p className="text-[13px] font-bold text-slate-700 uppercase tracking-wider mb-3 text-left">
+                    <p className="mb-3 text-left text-[13px] font-bold tracking-wider text-slate-700 uppercase">
                       1. What is your marital status?
                     </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                       <button
                         type="button"
                         onClick={() => setData({ ...data, isMarried: true })}
-                        className={`p-4 rounded-xl border-2 transition-all ${data.isMarried === true ? "" : "border-slate-200 hover:bg-slate-50"}`}
+                        className={`rounded-xl border-2 p-4 transition-all ${data.isMarried === true ? "" : "border-slate-200 hover:bg-slate-50"}`}
                         style={{
                           borderColor: data.isMarried === true ? COLORS.primary : undefined,
                           backgroundColor:
                             data.isMarried === true ? `${COLORS.primary}10` : undefined,
                         }}
                       >
-                        <Users className="w-8 h-8 mx-auto mb-2" style={{ color: COLORS.primary }} />
+                        <Users className="mx-auto mb-2 h-8 w-8" style={{ color: COLORS.primary }} />
                         <p className="font-semibold text-slate-900">Married</p>
                       </button>
                       <button
                         type="button"
                         onClick={() => setData({ ...data, isMarried: false })}
-                        className={`p-4 rounded-xl border-2 transition-all ${data.isMarried === false ? "" : "border-slate-200 hover:bg-slate-50"}`}
+                        className={`rounded-xl border-2 p-4 transition-all ${data.isMarried === false ? "" : "border-slate-200 hover:bg-slate-50"}`}
                         style={{
                           borderColor: data.isMarried === false ? COLORS.primary : undefined,
                           backgroundColor:
                             data.isMarried === false ? `${COLORS.primary}10` : undefined,
                         }}
                       >
-                        <User className="w-8 h-8 mx-auto mb-2" style={{ color: COLORS.primary }} />
+                        <User className="mx-auto mb-2 h-8 w-8" style={{ color: COLORS.primary }} />
                         <p className="font-semibold text-slate-900">Single / Not Married</p>
                       </button>
                     </div>
@@ -1173,18 +1256,18 @@ export default function SponsorshipCalculatorTool({
 
                   {/* Section 2: Beneficiary Relationship */}
                   <div className="mb-6">
-                    <div className="flex items-center justify-between mb-3">
-                      <p className="text-[13px] font-bold text-slate-700 uppercase tracking-wider text-left">
+                    <div className="mb-3 flex items-center justify-between">
+                      <p className="text-left text-[13px] font-bold tracking-wider text-slate-700 uppercase">
                         2. Whom are you petitioning for / sponsoring?
                       </p>
                       {journeyContext?.journeyCategory && (
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-50 border border-teal-200 text-teal-800">
+                        <span className="rounded-full border border-teal-200 bg-teal-50 px-2 py-0.5 text-[10px] font-bold text-teal-800">
                           {journeyContext.journeyCategory} Journey
                         </span>
                       )}
                     </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                    <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
                       {[
                         { id: "spouse", label: "Spouse", sub: "IR-1 / CR-1" },
                         { id: "child", label: "Child", sub: "IR-2 / CR-2" },
@@ -1211,13 +1294,13 @@ export default function SponsorshipCalculatorTool({
                                   : {}),
                               });
                             }}
-                            className={`p-3 rounded-xl border-2 text-left transition-all ${isSelected ? "" : "border-slate-200 hover:bg-slate-50"}`}
+                            className={`rounded-xl border-2 p-3 text-left transition-all ${isSelected ? "" : "border-slate-200 hover:bg-slate-50"}`}
                             style={{
                               borderColor: isSelected ? COLORS.primary : undefined,
                               backgroundColor: isSelected ? `${COLORS.primary}10` : undefined,
                             }}
                           >
-                            <p className="font-bold text-sm text-slate-900">{item.label}</p>
+                            <p className="text-sm font-bold text-slate-900">{item.label}</p>
                             <p className="text-[11px] text-slate-500">{item.sub}</p>
                           </button>
                         );
@@ -1227,34 +1310,36 @@ export default function SponsorshipCalculatorTool({
 
                   {/* Section 3: Child Citizenship Act (INA § 320) Screener */}
                   {isChild && (
-                    <div className="mb-6 rounded-2xl border-2 border-teal-200/80 bg-teal-50/40 p-5 text-left animate-in zoom-in-95 duration-200">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Shield className="w-5 h-5 text-teal-700 shrink-0" />
+                    <div className="animate-in zoom-in-95 mb-6 rounded-2xl border-2 border-teal-200/80 bg-teal-50/40 p-5 text-left duration-200">
+                      <div className="mb-2 flex items-center gap-2">
+                        <Shield className="h-5 w-5 shrink-0 text-teal-700" />
                         <h3 className="text-sm font-bold text-teal-950">
                           Child Citizenship Act of 2000 (INA Section 320) Screener
                         </h3>
                       </div>
-                      <p className="text-xs text-slate-600 mb-4 leading-relaxed">
-                        Answer the following 3 questions to check if your child qualifies for automatic U.S. citizenship upon entry (Form I-864W exemption) or requires standard financial sponsorship (Form I-864):
+                      <p className="mb-4 text-xs leading-relaxed text-slate-600">
+                        Answer the following 3 questions to check if your child qualifies for
+                        automatic U.S. citizenship upon entry (Form I-864W exemption) or requires
+                        standard financial sponsorship (Form I-864):
                       </p>
 
                       {/* Question A: Child Age */}
                       <div className="mb-4">
-                        <label className="block text-xs font-semibold text-slate-800 mb-2">
+                        <label className="mb-2 block text-xs font-semibold text-slate-800">
                           A. Child's age at expected U.S. admission:
                         </label>
                         <div className="grid grid-cols-2 gap-2">
                           <button
                             type="button"
                             onClick={() => setData({ ...data, childAgeBand: "under_18" })}
-                            className={`p-2.5 rounded-lg border text-xs font-semibold transition-all ${data.childAgeBand === "under_18" ? "border-teal-600 bg-white text-teal-900 shadow-sm" : "border-slate-200 bg-white/70 text-slate-700 hover:bg-white"}`}
+                            className={`rounded-lg border p-2.5 text-xs font-semibold transition-all ${data.childAgeBand === "under_18" ? "border-teal-600 bg-white text-teal-900 shadow-sm" : "border-slate-200 bg-white/70 text-slate-700 hover:bg-white"}`}
                           >
                             Under 18 years old
                           </button>
                           <button
                             type="button"
                             onClick={() => setData({ ...data, childAgeBand: "18_20" })}
-                            className={`p-2.5 rounded-lg border text-xs font-semibold transition-all ${data.childAgeBand === "18_20" ? "border-teal-600 bg-white text-teal-900 shadow-sm" : "border-slate-200 bg-white/70 text-slate-700 hover:bg-white"}`}
+                            className={`rounded-lg border p-2.5 text-xs font-semibold transition-all ${data.childAgeBand === "18_20" ? "border-teal-600 bg-white text-teal-900 shadow-sm" : "border-slate-200 bg-white/70 text-slate-700 hover:bg-white"}`}
                           >
                             18 to 20 years old
                           </button>
@@ -1263,28 +1348,30 @@ export default function SponsorshipCalculatorTool({
 
                       {/* Question B: Relationship Type */}
                       <div className="mb-4">
-                        <label className="block text-xs font-semibold text-slate-800 mb-2">
+                        <label className="mb-2 block text-xs font-semibold text-slate-800">
                           B. Child's legal relationship to U.S. citizen parent:
                         </label>
                         <div className="grid grid-cols-3 gap-2">
                           <button
                             type="button"
-                            onClick={() => setData({ ...data, childRelationshipType: "biological" })}
-                            className={`p-2.5 rounded-lg border text-xs font-semibold transition-all ${data.childRelationshipType === "biological" ? "border-teal-600 bg-white text-teal-900 shadow-sm" : "border-slate-200 bg-white/70 text-slate-700 hover:bg-white"}`}
+                            onClick={() =>
+                              setData({ ...data, childRelationshipType: "biological" })
+                            }
+                            className={`rounded-lg border p-2.5 text-xs font-semibold transition-all ${data.childRelationshipType === "biological" ? "border-teal-600 bg-white text-teal-900 shadow-sm" : "border-slate-200 bg-white/70 text-slate-700 hover:bg-white"}`}
                           >
                             Biological
                           </button>
                           <button
                             type="button"
                             onClick={() => setData({ ...data, childRelationshipType: "adopted" })}
-                            className={`p-2.5 rounded-lg border text-xs font-semibold transition-all ${data.childRelationshipType === "adopted" ? "border-teal-600 bg-white text-teal-900 shadow-sm" : "border-slate-200 bg-white/70 text-slate-700 hover:bg-white"}`}
+                            className={`rounded-lg border p-2.5 text-xs font-semibold transition-all ${data.childRelationshipType === "adopted" ? "border-teal-600 bg-white text-teal-900 shadow-sm" : "border-slate-200 bg-white/70 text-slate-700 hover:bg-white"}`}
                           >
                             Legally Adopted
                           </button>
                           <button
                             type="button"
                             onClick={() => setData({ ...data, childRelationshipType: "stepchild" })}
-                            className={`p-2.5 rounded-lg border text-xs font-semibold transition-all ${data.childRelationshipType === "stepchild" ? "border-teal-600 bg-white text-teal-900 shadow-sm" : "border-slate-200 bg-white/70 text-slate-700 hover:bg-white"}`}
+                            className={`rounded-lg border p-2.5 text-xs font-semibold transition-all ${data.childRelationshipType === "stepchild" ? "border-teal-600 bg-white text-teal-900 shadow-sm" : "border-slate-200 bg-white/70 text-slate-700 hover:bg-white"}`}
                           >
                             Stepchild
                           </button>
@@ -1293,21 +1380,24 @@ export default function SponsorshipCalculatorTool({
 
                       {/* Question C: Legal & Physical Custody */}
                       <div className="mb-2">
-                        <label className="block text-xs font-semibold text-slate-800 mb-2">
-                          C. Will the child reside in the U.S. in the legal and physical custody of the U.S. citizen parent?
+                        <label className="mb-2 block text-xs font-semibold text-slate-800">
+                          C. Will the child reside in the U.S. in the legal and physical custody of
+                          the U.S. citizen parent?
                         </label>
                         <div className="grid grid-cols-2 gap-2">
                           <button
                             type="button"
                             onClick={() => setData({ ...data, childLivesInUSCitizenCustody: true })}
-                            className={`p-2.5 rounded-lg border text-xs font-semibold transition-all ${data.childLivesInUSCitizenCustody === true ? "border-teal-600 bg-white text-teal-900 shadow-sm" : "border-slate-200 bg-white/70 text-slate-700 hover:bg-white"}`}
+                            className={`rounded-lg border p-2.5 text-xs font-semibold transition-all ${data.childLivesInUSCitizenCustody === true ? "border-teal-600 bg-white text-teal-900 shadow-sm" : "border-slate-200 bg-white/70 text-slate-700 hover:bg-white"}`}
                           >
                             Yes (Custody in U.S.)
                           </button>
                           <button
                             type="button"
-                            onClick={() => setData({ ...data, childLivesInUSCitizenCustody: false })}
-                            className={`p-2.5 rounded-lg border text-xs font-semibold transition-all ${data.childLivesInUSCitizenCustody === false ? "border-teal-600 bg-white text-teal-900 shadow-sm" : "border-slate-200 bg-white/70 text-slate-700 hover:bg-white"}`}
+                            onClick={() =>
+                              setData({ ...data, childLivesInUSCitizenCustody: false })
+                            }
+                            className={`rounded-lg border p-2.5 text-xs font-semibold transition-all ${data.childLivesInUSCitizenCustody === false ? "border-teal-600 bg-white text-teal-900 shadow-sm" : "border-slate-200 bg-white/70 text-slate-700 hover:bg-white"}`}
                           >
                             No
                           </button>
@@ -1315,47 +1405,29 @@ export default function SponsorshipCalculatorTool({
                       </div>
 
                       {/* Real-time Screener Determination Result */}
-                      {isChildScreenerAnswered && (
-                        <div className="mt-4 pt-3 border-t border-teal-200/80 animate-in fade-in duration-200">
-                          {isChildExempt ? (
-                            <div className="p-4 rounded-xl border border-teal-300 bg-white shadow-sm">
-                              <div className="flex items-center gap-2 mb-1.5">
-                                <CheckCircle2 className="w-5 h-5 text-teal-700 shrink-0" />
-                                <span className="text-sm font-bold text-teal-950">
-                                  Qualified for Form I-864W Exemption (INA Section 320)
-                                </span>
-                              </div>
-                                                            <p className="text-xs text-slate-600 leading-relaxed mb-3">
-                                Your child qualifies for automatic U.S. citizenship upon entry and is completely exempt from Form I-864 financial sponsorship, joint sponsors, and the $120 CEAC AOS fee. Click Continue to view your finalized exemption plan.
-                              </p>
-                              <div className="flex flex-wrap gap-2 text-[11px] font-semibold text-teal-900">
-                                <span className="px-2 py-0.5 rounded bg-teal-100/70">Form I-864W (Part 2, Item 2.a)</span>
-                                <span className="px-2 py-0.5 rounded bg-teal-100/70">Required Income: $0</span>
-                                <span className="px-2 py-0.5 rounded bg-teal-100/70">AOS Fee: Exempt</span>
-                              </div>
+                      {isChildScreenerAnswered && !isChildExempt && (
+                        <div className="animate-in fade-in mt-4 border-t border-teal-200/80 pt-3 duration-200">
+                          <div className="rounded-xl border border-amber-300 bg-white p-4 shadow-sm">
+                            <div className="mb-1.5 flex items-center gap-2">
+                              <AlertTriangle className="h-5 w-5 shrink-0 text-amber-600" />
+                              <span className="text-sm font-bold text-amber-950">
+                                Standard Form I-864 Required
+                              </span>
                             </div>
-                          ) : (
-                            <div className="p-4 rounded-xl border border-amber-300 bg-white shadow-sm">
-                              <div className="flex items-center gap-2 mb-1.5">
-                                <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />
-                                <span className="text-sm font-bold text-amber-950">
-                                  Standard Form I-864 Required
-                                </span>
-                              </div>
-                              <p className="text-xs text-slate-700 leading-relaxed mb-2">
-                                {data.sponsorStatus !== "citizen"
-                                  ? "The petitioning parent must be a U.S. citizen for INA Section 320 to apply. Green card holders sponsoring a child must file Form I-864."
-                                  : data.childRelationshipType === "stepchild"
+                            <p className="mb-2 text-xs leading-relaxed text-slate-700">
+                              {data.sponsorStatus !== "citizen"
+                                ? "The petitioning parent must be a U.S. citizen for INA Section 320 to apply. Green card holders sponsoring a child must file Form I-864."
+                                : data.childRelationshipType === "stepchild"
                                   ? "Under 8 CFR Section 320.1, stepchildren do not acquire automatic citizenship under INA Section 320. Standard Form I-864 and 125% Poverty Guidelines apply."
                                   : data.childAgeBand === "18_20"
-                                  ? "Children aged 18 to 20 at admission do not qualify for automatic citizenship under INA Section 320. Standard Form I-864 applies."
-                                  : "INA Section 320 requires the child to reside in the legal and physical custody of the U.S. citizen parent. Standard Form I-864 applies."}
-                              </p>
-                              <p className="text-[11px] font-semibold text-teal-800">
-                                Note: As the child of a U.S. citizen, the statutory 3x asset multiplier applies (8 CFR Section 213a.2(c)(2)(iii)(B)).
-                              </p>
-                            </div>
-                          )}
+                                    ? "Children aged 18 to 20 at admission do not qualify for automatic citizenship under INA Section 320. Standard Form I-864 applies."
+                                    : "INA Section 320 requires the child to reside in the legal and physical custody of the U.S. citizen parent. Standard Form I-864 applies."}
+                            </p>
+                            <p className="text-[11px] font-semibold text-teal-800">
+                              Note: As the child of a U.S. citizen, the statutory 3x asset
+                              multiplier applies (8 CFR Section 213a.2(c)(2)(iii)(B)).
+                            </p>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -1366,7 +1438,7 @@ export default function SponsorshipCalculatorTool({
                     <button
                       type="button"
                       onClick={() => setStepIdx(1)}
-                      className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63] flex items-center gap-2"
+                      className="flex items-center gap-2 rounded-[10px] border-[1.5px] border-[#d0e4f7] bg-transparent p-[13px_22px] font-medium text-[#3a4f63] hover:border-[#3a4f63]"
                     >
                       <ArrowLeft size={14} /> Back
                     </button>
@@ -1377,7 +1449,7 @@ export default function SponsorshipCalculatorTool({
                       style={{
                         backgroundColor: !isStep2Complete ? "#e2e8f0" : stepColor,
                       }}
-                      className={`flex-1 p-[14px_22px] rounded-[10px] text-[15px] font-semibold transition-all flex items-center justify-center gap-2 ${!isStep2Complete ? "text-slate-400 cursor-not-allowed" : "text-white hover:opacity-90"}`}
+                      className={`flex flex-1 items-center justify-center gap-2 rounded-[10px] p-[14px_22px] text-[15px] font-semibold transition-all ${!isStep2Complete ? "cursor-not-allowed text-slate-400" : "text-white hover:opacity-90"}`}
                     >
                       Continue <ArrowRight size={14} />
                     </button>
@@ -1392,26 +1464,26 @@ export default function SponsorshipCalculatorTool({
               }
 
               return (
-                <div className="animate-in fade-in slide-in-from-right-4 duration-300 text-center">
+                <div className="animate-in fade-in slide-in-from-right-4 text-center duration-300">
                   <div
-                    className="text-[11px] font-semibold tracking-widest uppercase mb-4"
+                    className="mb-4 text-[11px] font-semibold tracking-widest uppercase"
                     style={{ color: stepColor }}
                   >
                     Step 4 of 11
                   </div>
-                  <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6 text-center">
+                  <h2 className="mb-6 text-center text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33]">
                     Dependents
                   </h2>
-                  <div className="space-y-6 mb-8 text-left">
+                  <div className="mb-8 space-y-6 text-left">
                     <div
-                      className="p-4 rounded-xl border"
+                      className="rounded-xl border p-4"
                       style={{
                         backgroundColor: `${COLORS.danger}05`,
                         borderColor: `${COLORS.danger}30`,
                       }}
                     >
                       <label
-                        className="text-[12px] font-bold uppercase tracking-wider mb-2 block"
+                        className="mb-2 block text-[12px] font-bold tracking-wider uppercase"
                         style={{ color: COLORS.danger }}
                       >
                         Your Children
@@ -1424,11 +1496,11 @@ export default function SponsorshipCalculatorTool({
                               numberOfChildren: Math.max(0, data.numberOfChildren - 1),
                             })
                           }
-                          className="w-10 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center"
+                          className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white"
                         >
                           -
                         </button>
-                        <span className="text-2xl font-bold w-12 text-center">
+                        <span className="w-12 text-center text-2xl font-bold">
                           {data.numberOfChildren}
                         </span>
                         <button
@@ -1436,21 +1508,21 @@ export default function SponsorshipCalculatorTool({
                             setData({ ...data, numberOfChildren: data.numberOfChildren + 1 })
                           }
                           style={{ backgroundColor: "#B85467" }}
-                          className="w-10 h-10 rounded-lg text-white flex items-center justify-center"
+                          className="flex h-10 w-10 items-center justify-center rounded-lg text-white"
                         >
                           +
                         </button>
                       </div>
                     </div>
                     <div
-                      className="p-4 rounded-xl border"
+                      className="rounded-xl border p-4"
                       style={{
                         backgroundColor: `${COLORS.danger}05`,
                         borderColor: `${COLORS.danger}30`,
                       }}
                     >
                       <label
-                        className="text-[12px] font-bold uppercase tracking-wider mb-2 block"
+                        className="mb-2 block text-[12px] font-bold tracking-wider uppercase"
                         style={{ color: COLORS.danger }}
                       >
                         Other Tax Dependents
@@ -1460,11 +1532,11 @@ export default function SponsorshipCalculatorTool({
                           onClick={() =>
                             setData({ ...data, taxDependents: Math.max(0, data.taxDependents - 1) })
                           }
-                          className="w-10 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center"
+                          className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white"
                         >
                           -
                         </button>
-                        <span className="text-2xl font-bold w-12 text-center">
+                        <span className="w-12 text-center text-2xl font-bold">
                           {data.taxDependents}
                         </span>
                         <button
@@ -1472,7 +1544,7 @@ export default function SponsorshipCalculatorTool({
                             setData({ ...data, taxDependents: data.taxDependents + 1 })
                           }
                           style={{ backgroundColor: "#B85467" }}
-                          className="w-10 h-10 rounded-lg text-white flex items-center justify-center"
+                          className="flex h-10 w-10 items-center justify-center rounded-lg text-white"
                         >
                           +
                         </button>
@@ -1482,14 +1554,14 @@ export default function SponsorshipCalculatorTool({
                   <div className="flex gap-[10px]">
                     <button
                       onClick={() => setStepIdx(2)}
-                      className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63] flex items-center gap-2"
+                      className="flex items-center gap-2 rounded-[10px] border-[1.5px] border-[#d0e4f7] bg-transparent p-[13px_22px] font-medium text-[#3a4f63] hover:border-[#3a4f63]"
                     >
                       <ArrowLeft size={14} /> Back
                     </button>
                     <button
                       onClick={() => setStepIdx(4)}
                       style={{ backgroundColor: "#B85467" }}
-                      className="flex-1 p-[14px_22px] text-white rounded-[10px] text-[15px] font-semibold transition-all hover:opacity-90 flex items-center justify-center gap-2"
+                      className="flex flex-1 items-center justify-center gap-2 rounded-[10px] p-[14px_22px] text-[15px] font-semibold text-white transition-all hover:opacity-90"
                     >
                       Continue <ArrowRight size={14} />
                     </button>
@@ -1502,21 +1574,21 @@ export default function SponsorshipCalculatorTool({
               return (
                 <div className="animate-in fade-in slide-in-from-right-4 duration-300">
                   <div
-                    className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center"
+                    className="mb-4 text-center text-[11px] font-semibold tracking-widest uppercase"
                     style={{ color: stepColor }}
                   >
                     Step 5 of 11
                   </div>
-                  <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6 text-center">
+                  <h2 className="mb-6 text-center text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33]">
                     Previous Sponsorships
                   </h2>
-                  <p className="text-[14px] text-[#3a4f63] leading-[1.6] mb-6 text-center">
+                  <p className="mb-6 text-center text-[14px] leading-[1.6] text-[#3a4f63]">
                     Have you filed an I-864 for anyone else who is now a Lawful Permanent Resident?
                   </p>
-                  <div className="grid grid-cols-2 gap-4 mb-6 text-center">
+                  <div className="mb-6 grid grid-cols-2 gap-4 text-center">
                     <button
                       onClick={() => setData({ ...data, hasPreviousSponsorship: true })}
-                      className={`p-4 rounded-xl border-2 transition-all ${data.hasPreviousSponsorship === true ? "" : "border-slate-200"}`}
+                      className={`rounded-xl border-2 p-4 transition-all ${data.hasPreviousSponsorship === true ? "" : "border-slate-200"}`}
                       style={{
                         borderColor: data.hasPreviousSponsorship === true ? "#0d7377" : undefined,
                         backgroundColor:
@@ -1533,7 +1605,7 @@ export default function SponsorshipCalculatorTool({
                           previousSponsoredCount: 0,
                         })
                       }
-                      className={`p-4 rounded-xl border-2 transition-all ${data.hasPreviousSponsorship === false ? "" : "border-slate-200"}`}
+                      className={`rounded-xl border-2 p-4 transition-all ${data.hasPreviousSponsorship === false ? "" : "border-slate-200"}`}
                       style={{
                         borderColor: data.hasPreviousSponsorship === false ? "#0d7377" : undefined,
                         backgroundColor:
@@ -1544,11 +1616,11 @@ export default function SponsorshipCalculatorTool({
                     </button>
                   </div>
                   {data.hasPreviousSponsorship && (
-                    <div className="mb-6 animate-in zoom-in-95 duration-200">
-                      <label className="text-[12px] font-bold text-[#6b8097] uppercase tracking-wider mb-2 block">
+                    <div className="animate-in zoom-in-95 mb-6 duration-200">
+                      <label className="mb-2 block text-[12px] font-bold tracking-wider text-[#6b8097] uppercase">
                         How many people?
                       </label>
-                      <div className="flex items-center gap-4 justify-center">
+                      <div className="flex items-center justify-center gap-4">
                         <button
                           onClick={() =>
                             setData({
@@ -1556,11 +1628,11 @@ export default function SponsorshipCalculatorTool({
                               previousSponsoredCount: Math.max(0, data.previousSponsoredCount - 1),
                             })
                           }
-                          className="w-10 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center"
+                          className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white"
                         >
                           -
                         </button>
-                        <span className="text-2xl font-bold w-12 text-center">
+                        <span className="w-12 text-center text-2xl font-bold">
                           {data.previousSponsoredCount}
                         </span>
                         <button
@@ -1571,7 +1643,7 @@ export default function SponsorshipCalculatorTool({
                             })
                           }
                           style={{ backgroundColor: "#0d7377" }}
-                          className="w-10 h-10 text-white rounded-lg flex items-center justify-center"
+                          className="flex h-10 w-10 items-center justify-center rounded-lg text-white"
                         >
                           +
                         </button>
@@ -1581,7 +1653,7 @@ export default function SponsorshipCalculatorTool({
                   <div className="flex gap-[10px]">
                     <button
                       onClick={() => setStepIdx(3)}
-                      className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63] flex items-center gap-2"
+                      className="flex items-center gap-2 rounded-[10px] border-[1.5px] border-[#d0e4f7] bg-transparent p-[13px_22px] font-medium text-[#3a4f63] hover:border-[#3a4f63]"
                     >
                       <ArrowLeft size={14} /> Back
                     </button>
@@ -1592,7 +1664,7 @@ export default function SponsorshipCalculatorTool({
                         backgroundColor:
                           data.hasPreviousSponsorship === null ? "#e2e8f0" : "#0d7377",
                       }}
-                      className={`flex-1 p-[14px_22px] rounded-[10px] text-[15px] font-semibold transition-all flex items-center justify-center gap-2 ${data.hasPreviousSponsorship === null ? "text-slate-400 cursor-not-allowed" : "text-white hover:opacity-90"}`}
+                      className={`flex flex-1 items-center justify-center gap-2 rounded-[10px] p-[14px_22px] text-[15px] font-semibold transition-all ${data.hasPreviousSponsorship === null ? "cursor-not-allowed text-slate-400" : "text-white hover:opacity-90"}`}
                     >
                       Continue <ArrowRight size={14} />
                     </button>
@@ -1605,26 +1677,26 @@ export default function SponsorshipCalculatorTool({
               return (
                 <div className="animate-in fade-in slide-in-from-right-4 duration-300">
                   <div
-                    className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center"
+                    className="mb-4 text-center text-[11px] font-semibold tracking-widest uppercase"
                     style={{ color: stepColor }}
                   >
                     Step 6 of 11
                   </div>
-                  <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-4 text-center">
+                  <h2 className="mb-4 text-center text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33]">
                     Who are you Sponsoring?
                   </h2>
-                  <p className="text-[14px] text-[#3a4f63] leading-[1.6] mb-6 text-center">
+                  <p className="mb-6 text-center text-[14px] leading-[1.6] text-[#3a4f63]">
                     Select all who are immigrating in this application.
                   </p>
-                  <div className="space-y-4 mb-8">
+                  <div className="mb-8 space-y-4">
                     <div
-                      className="p-4 rounded-xl border flex items-center gap-4 bg-opacity-10"
+                      className="bg-opacity-10 flex items-center gap-4 rounded-xl border p-4"
                       style={{
                         backgroundColor: `${COLORS.primary}10`,
                         borderColor: `${COLORS.primary}30`,
                       }}
                     >
-                      <Check className="w-6 h-6" style={{ color: COLORS.primary }} />
+                      <Check className="h-6 w-6" style={{ color: COLORS.primary }} />
                       <div className="text-left">
                         <p className="font-semibold" style={{ color: COLORS.primary }}>
                           Main Applicant
@@ -1635,8 +1707,8 @@ export default function SponsorshipCalculatorTool({
                       </div>
                     </div>
                     {/* Applicant's Spouse option removed for IR-1 category — the main applicant is the spouse. */}
-                    <div className="p-4 rounded-xl border-2 border-slate-200 bg-white">
-                      <p className="font-semibold text-slate-900 mb-2">Applicant's Children</p>
+                    <div className="rounded-xl border-2 border-slate-200 bg-white p-4">
+                      <p className="mb-2 font-semibold text-slate-900">Applicant's Children</p>
                       <div className="flex items-center gap-4">
                         <button
                           onClick={() =>
@@ -1648,11 +1720,11 @@ export default function SponsorshipCalculatorTool({
                               ),
                             })
                           }
-                          className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center"
+                          className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100"
                         >
                           -
                         </button>
-                        <span className="text-xl font-bold w-8 text-center">
+                        <span className="w-8 text-center text-xl font-bold">
                           {data.currentSponsoredChildren}
                         </span>
                         <button
@@ -1663,7 +1735,7 @@ export default function SponsorshipCalculatorTool({
                             })
                           }
                           style={{ backgroundColor: COLORS.primary }}
-                          className="w-8 h-8 text-white rounded-lg flex items-center justify-center"
+                          className="flex h-8 w-8 items-center justify-center rounded-lg text-white"
                         >
                           +
                         </button>
@@ -1673,14 +1745,14 @@ export default function SponsorshipCalculatorTool({
                   <div className="flex gap-[10px]">
                     <button
                       onClick={() => setStepIdx(4)}
-                      className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63] flex items-center gap-2"
+                      className="flex items-center gap-2 rounded-[10px] border-[1.5px] border-[#d0e4f7] bg-transparent p-[13px_22px] font-medium text-[#3a4f63] hover:border-[#3a4f63]"
                     >
                       <ArrowLeft size={14} /> Back
                     </button>
                     <button
                       onClick={() => setStepIdx(6)}
                       style={{ backgroundColor: stepColor }}
-                      className="flex-1 p-[14px_22px] text-white rounded-[10px] text-[15px] font-semibold transition-all hover:opacity-90 flex items-center justify-center gap-2"
+                      className="flex flex-1 items-center justify-center gap-2 rounded-[10px] p-[14px_22px] text-[15px] font-semibold text-white transition-all hover:opacity-90"
                     >
                       Continue <ArrowRight size={14} />
                     </button>
@@ -1693,34 +1765,34 @@ export default function SponsorshipCalculatorTool({
               return (
                 <div className="animate-in fade-in slide-in-from-right-4 duration-300">
                   <div
-                    className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center"
+                    className="mb-4 text-center text-[11px] font-semibold tracking-widest uppercase"
                     style={{ color: stepColor }}
                   >
                     Step 7 of 11
                   </div>
 
-                  <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6 text-center">
+                  <h2 className="mb-6 text-center text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33]">
                     Income Details
                   </h2>
 
-                  <div className="space-y-8 mb-8">
+                  <div className="mb-8 space-y-8">
                     {/* SINGLE INPUT ONLY */}
                     <div
-                      className="p-6 rounded-2xl border-2"
+                      className="rounded-2xl border-2 p-6"
                       style={{
                         backgroundColor: `${COLORS.secondary}05`,
                         borderColor: `${COLORS.secondary}30`,
                       }}
                     >
                       <label
-                        className="text-[12px] font-black uppercase tracking-wider mb-2 block"
+                        className="mb-2 block text-[12px] font-black tracking-wider uppercase"
                         style={{ color: COLORS.secondary }}
                       >
                         Current Annual Income (AGI)
                       </label>
 
                       <div className="relative">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-2xl">
+                        <span className="absolute top-1/2 left-4 -translate-y-1/2 text-2xl font-bold text-slate-400">
                           $
                         </span>
 
@@ -1734,13 +1806,13 @@ export default function SponsorshipCalculatorTool({
                               agi: parseInt(e.target.value) || 0, // sync AGI automatically
                             })
                           }
-                          className="w-full pl-8 pr-4 py-4 bg-white border-2 border-slate-200 rounded-xl text-2xl font-bold focus:border-primary outline-none transition-all"
+                          className="focus:border-primary w-full rounded-xl border-2 border-slate-200 bg-white py-4 pr-4 pl-8 text-2xl font-bold transition-all outline-none"
                           placeholder="0"
                         />
                       </div>
 
                       {/* UPDATED DESCRIPTION */}
-                      <p className="text-[11px] text-slate-500 mt-2">
+                      <p className="mt-2 text-[11px] text-slate-500">
                         Adjusted Gross Income (AGI), Line 11 of your most recent IRS Form 1040.
                       </p>
                     </div>
@@ -1749,7 +1821,7 @@ export default function SponsorshipCalculatorTool({
                   <div className="flex gap-[10px]">
                     <button
                       onClick={() => setStepIdx(5)}
-                      className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63] flex items-center gap-2"
+                      className="flex items-center gap-2 rounded-[10px] border-[1.5px] border-[#d0e4f7] bg-transparent p-[13px_22px] font-medium text-[#3a4f63] hover:border-[#3a4f63]"
                     >
                       <ArrowLeft size={14} /> Back
                     </button>
@@ -1757,7 +1829,7 @@ export default function SponsorshipCalculatorTool({
                     <button
                       onClick={() => setStepIdx(7)}
                       style={{ backgroundColor: COLORS.primary }}
-                      className="flex-1 p-[14px_22px] text-white rounded-[10px] text-[15px] font-semibold transition-all hover:opacity-90 flex items-center justify-center gap-2"
+                      className="flex flex-1 items-center justify-center gap-2 rounded-[10px] p-[14px_22px] text-[15px] font-semibold text-white transition-all hover:opacity-90"
                     >
                       Continue <ArrowRight size={14} />
                     </button>
@@ -1774,75 +1846,112 @@ export default function SponsorshipCalculatorTool({
                   standaloneToolId={isJourney ? undefined : "sponsorship-calculator"}
                 >
                   <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                    <div className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center" style={{ color: COLORS.primary }}>Step 8 of 11</div>
-                    <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6 text-center">Initial Status</h2>
-                    
-                    <div className={`p-6 rounded-2xl border-2 mb-6`} 
-                      style={{ 
-                        backgroundColor: result.isEligible ? `${COLORS.secondary}20` : `${COLORS.danger}20`,
-                        borderColor: result.isEligible ? COLORS.secondary : COLORS.danger 
-                      }}>
-                      <div className="flex items-center justify-between mb-4">
-                        <span className="text-[12px] font-bold uppercase tracking-wider text-slate-500">Current Standing</span>
-                        <span className="px-3 py-1 rounded-full text-[11px] font-bold uppercase" 
-                          style={{ backgroundColor: result.isEligible ? COLORS.secondary : COLORS.danger, color: 'white' }}>
+                    <div
+                      className="mb-4 text-center text-[11px] font-semibold tracking-widest uppercase"
+                      style={{ color: COLORS.primary }}
+                    >
+                      Step 8 of 11
+                    </div>
+                    <h2 className="mb-6 text-center text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33]">
+                      Initial Status
+                    </h2>
+
+                    <div
+                      className={`mb-6 rounded-2xl border-2 p-6`}
+                      style={{
+                        backgroundColor: result.isEligible
+                          ? `${COLORS.secondary}20`
+                          : `${COLORS.danger}20`,
+                        borderColor: result.isEligible ? COLORS.secondary : COLORS.danger,
+                      }}
+                    >
+                      <div className="mb-4 flex items-center justify-between">
+                        <span className="text-[12px] font-bold tracking-wider text-slate-500 uppercase">
+                          Current Standing
+                        </span>
+                        <span
+                          className="rounded-full px-3 py-1 text-[11px] font-bold uppercase"
+                          style={{
+                            backgroundColor: result.isEligible ? COLORS.secondary : COLORS.danger,
+                            color: "white",
+                          }}
+                        >
                           {result.isEligible ? "Qualified" : "Shortfall"}
                         </span>
                       </div>
-                      <div className="text-3xl font-black text-slate-900 mb-1">
-                        ${(result.primaryIncome ?? 0).toLocaleString()} / ${(result.requiredIncome ?? 0).toLocaleString()}
+                      <div className="mb-1 text-3xl font-black text-slate-900">
+                        ${(result.primaryIncome ?? 0).toLocaleString()} / $
+                        {(result.requiredIncome ?? 0).toLocaleString()}
                       </div>
-                      <p className="text-[13px] text-slate-600 font-medium">
+                      <p className="text-[13px] font-medium text-slate-600">
                         {result.isEligible
                           ? "Based on your income and household size, you qualify as the sole sponsor."
                           : `You are $${(result.shortfall ?? 0).toLocaleString()} below the threshold.`}
                       </p>
                     </div>
 
-                    <div className="text-[12px] text-[#6b8097] mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-slate-100 pb-4 px-1">
-                      <span>Poverty guidelines last updated: <strong>March 1, 2026</strong></span>
+                    <div className="mb-8 flex flex-col items-start justify-between gap-2 border-b border-slate-100 px-1 pb-4 text-[12px] text-[#6b8097] sm:flex-row sm:items-center">
+                      <span>
+                        Poverty guidelines last updated: <strong>March 1, 2026</strong>
+                      </span>
                       <a
                         href={I864P_URL}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="hover:underline font-semibold flex items-center gap-1 transition-all hover:opacity-85"
+                        className="flex items-center gap-1 font-semibold transition-all hover:underline hover:opacity-85"
                         style={{ color: COLORS.primary }}
                       >
                         Official USCIS I-864P Guidelines &rarr;
                       </a>
                     </div>
 
-                    <div className="space-y-4 mb-8">
-                      <p className="text-[14px] font-bold text-slate-900">Do you need to add support?</p>
-                      <button 
+                    <div className="mb-8 space-y-4">
+                      <p className="text-[14px] font-bold text-slate-900">
+                        Do you need to add support?
+                      </p>
+                      <button
                         onClick={() => setStepIdx(8)}
-                        className="w-full p-6 rounded-2xl border-2 border-dashed border-slate-300 hover:border-primary transition-all text-left flex items-center justify-between group bg-slate-50"
+                        className="hover:border-primary group flex w-full items-center justify-between rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 p-6 text-left transition-all"
                       >
                         <div>
                           <p className="font-bold text-slate-900">Add Support Income</p>
-                          <p className="text-xs text-slate-500">Household members or Joint sponsors.</p>
+                          <p className="text-xs text-slate-500">
+                            Household members or Joint sponsors.
+                          </p>
                         </div>
-                        <Plus size={24} className="text-slate-400 group-hover:text-primary" />
+                        <Plus size={24} className="group-hover:text-primary text-slate-400" />
                       </button>
                       {!result.isEligible && (
-                        <button 
+                        <button
                           onClick={() => setStepIdx(9)}
-                          className="w-full p-6 rounded-2xl border-2 border-dashed border-slate-300 hover:border-primary transition-all text-left flex items-center justify-between group bg-slate-50"
+                          className="hover:border-primary group flex w-full items-center justify-between rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 p-6 text-left transition-all"
                         >
                           <div>
                             <p className="font-bold text-slate-900">More Options / What-if</p>
-                            <p className="text-xs text-slate-500">Substitute sponsor, Assets, or Self-petition.</p>
+                            <p className="text-xs text-slate-500">
+                              Substitute sponsor, Assets, or Self-petition.
+                            </p>
                           </div>
-                          <AlertTriangle size={24} className="text-slate-400 group-hover:text-amber-500" />
+                          <AlertTriangle
+                            size={24}
+                            className="text-slate-400 group-hover:text-amber-500"
+                          />
                         </button>
                       )}
                     </div>
 
                     <div className="flex gap-[10px]">
-                      <button onClick={() => setStepIdx(6)} className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63] flex items-center gap-2">
+                      <button
+                        onClick={() => setStepIdx(6)}
+                        className="flex items-center gap-2 rounded-[10px] border-[1.5px] border-[#d0e4f7] bg-transparent p-[13px_22px] font-medium text-[#3a4f63] hover:border-[#3a4f63]"
+                      >
                         <ArrowLeft size={14} /> Back
                       </button>
-                      <button onClick={() => setStepIdx(10)} style={{ backgroundColor: COLORS.primary }} className="flex-1 p-[14px_22px] text-white rounded-[10px] text-[15px] font-semibold transition-all hover:opacity-90 flex items-center justify-center gap-2">
+                      <button
+                        onClick={() => setStepIdx(10)}
+                        style={{ backgroundColor: COLORS.primary }}
+                        className="flex flex-1 items-center justify-center gap-2 rounded-[10px] p-[14px_22px] text-[15px] font-semibold text-white transition-all hover:opacity-90"
+                      >
                         View Final Plan <ArrowRight size={14} />
                       </button>
                     </div>
@@ -1859,47 +1968,87 @@ export default function SponsorshipCalculatorTool({
                   standaloneToolId={isJourney ? undefined : "sponsorship-calculator"}
                 >
                   <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                    <div className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center" style={{ color: stepColor }}>Step 9 of 11</div>
-                    <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6 text-center">Support Resources</h2>
-                    
-                    <div className="space-y-6 mb-8 text-left">
-                      <div className="border-2 rounded-2xl overflow-hidden" 
-                        style={{ borderColor: `${COLORS.household}40`, backgroundColor: `${COLORS.household}05` }}>
-                        <div className="p-4 flex justify-between items-center" style={{ backgroundColor: `${COLORS.household}15` }}>
+                    <div
+                      className="mb-4 text-center text-[11px] font-semibold tracking-widest uppercase"
+                      style={{ color: stepColor }}
+                    >
+                      Step 9 of 11
+                    </div>
+                    <h2 className="mb-6 text-center text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33]">
+                      Support Resources
+                    </h2>
+
+                    <div className="mb-8 space-y-6 text-left">
+                      <div
+                        className="overflow-hidden rounded-2xl border-2"
+                        style={{
+                          borderColor: `${COLORS.household}40`,
+                          backgroundColor: `${COLORS.household}05`,
+                        }}
+                      >
+                        <div
+                          className="flex items-center justify-between p-4"
+                          style={{ backgroundColor: `${COLORS.household}15` }}
+                        >
                           <div className="flex items-center gap-2">
                             <Home size={18} style={{ color: COLORS.household }} />
                             <span className="font-bold text-slate-900">Household Members</span>
                           </div>
-                          <button onClick={addHouseholdMember} style={{ backgroundColor: COLORS.household }} className="p-1 px-4 text-white rounded-lg text-xs font-bold hover:opacity-80 transition-all">+ Add</button>
+                          <button
+                            onClick={addHouseholdMember}
+                            style={{ backgroundColor: COLORS.household }}
+                            className="rounded-lg p-1 px-4 text-xs font-bold text-white transition-all hover:opacity-80"
+                          >
+                            + Add
+                          </button>
                         </div>
-                        <div className="p-4 space-y-3">
+                        <div className="space-y-3 p-4">
                           {data.householdMembers.length === 0 ? (
-                            <p className="text-xs text-slate-400 text-center py-2 italic font-medium">No members added</p>
+                            <p className="py-2 text-center text-xs font-medium text-slate-400 italic">
+                              No members added
+                            </p>
                           ) : (
                             data.householdMembers.map((m: any) => (
-                              <div key={m.id} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                                <div className="flex gap-2 mb-3">
+                              <div
+                                key={m.id}
+                                className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+                              >
+                                <div className="mb-3 flex gap-2">
                                   <CustomDropdown
                                     value={m.relationship}
-                                    onChange={(value) => updateHouseholdMember(m.id, { relationship: value })}
+                                    onChange={(value) =>
+                                      updateHouseholdMember(m.id, { relationship: value })
+                                    }
                                     options={[
                                       { value: "", label: "Relationship..." },
                                       { value: "Spouse", label: "Spouse" },
                                       { value: "Child", label: "Child" },
                                       { value: "Parent", label: "Parent" },
                                       { value: "Sibling", label: "Sibling" },
-                                      { value: "Other Living in Household", label: "Other Relative" },
+                                      {
+                                        value: "Other Living in Household",
+                                        label: "Other Relative",
+                                      },
                                     ]}
                                     placeholder="Relationship..."
                                     className="flex-1 [&_button]:w-full [&_button]:min-w-0 [&_button]:bg-slate-50"
                                   />
-                                  <button onClick={() => removeHouseholdMember(m.id)} className="p-2 text-red-300 hover:bg-red-50 rounded-lg"><Trash2 size={16} /></button>
+                                  <button
+                                    onClick={() => removeHouseholdMember(m.id)}
+                                    className="rounded-lg p-2 text-red-300 hover:bg-red-50"
+                                  >
+                                    <Trash2 size={16} />
+                                  </button>
                                 </div>
-                                <input 
-                                  type="number" 
-                                  value={m.annualIncome || ""} 
-                                  onChange={(e) => updateHouseholdMember(m.id, {annualIncome: parseInt(e.target.value) || 0})}
-                                  className="w-full p-3 text-lg border-2 border-slate-100 rounded-lg font-black text-slate-900"
+                                <input
+                                  type="number"
+                                  value={m.annualIncome || ""}
+                                  onChange={(e) =>
+                                    updateHouseholdMember(m.id, {
+                                      annualIncome: parseInt(e.target.value) || 0,
+                                    })
+                                  }
+                                  className="w-full rounded-lg border-2 border-slate-100 p-3 text-lg font-black text-slate-900"
                                   placeholder="$ Income"
                                 />
                               </div>
@@ -1908,37 +2057,67 @@ export default function SponsorshipCalculatorTool({
                         </div>
                       </div>
 
-                      <div className="border-2 rounded-2xl overflow-hidden" 
-                        style={{ borderColor: `${COLORS.joint}40`, backgroundColor: `${COLORS.joint}05` }}>
-                        <div className="p-4 flex justify-between items-center" style={{ backgroundColor: `${COLORS.joint}15` }}>
+                      <div
+                        className="overflow-hidden rounded-2xl border-2"
+                        style={{
+                          borderColor: `${COLORS.joint}40`,
+                          backgroundColor: `${COLORS.joint}05`,
+                        }}
+                      >
+                        <div
+                          className="flex items-center justify-between p-4"
+                          style={{ backgroundColor: `${COLORS.joint}15` }}
+                        >
                           <div className="flex items-center gap-2">
                             <UserPlus size={18} style={{ color: COLORS.joint }} />
                             <span className="font-bold text-slate-900">Joint Sponsors</span>
                           </div>
-                          <button onClick={addJointSponsor} style={{ backgroundColor: COLORS.joint }} className="p-1 px-4 text-white rounded-lg text-xs font-bold hover:opacity-80 transition-all">+ Add</button>
+                          <button
+                            onClick={addJointSponsor}
+                            style={{ backgroundColor: COLORS.joint }}
+                            className="rounded-lg p-1 px-4 text-xs font-bold text-white transition-all hover:opacity-80"
+                          >
+                            + Add
+                          </button>
                         </div>
-                        <div className="p-4 space-y-3">
+                        <div className="space-y-3 p-4">
                           {data.jointSponsors.length === 0 ? (
-                            <p className="text-xs text-slate-400 text-center py-2 italic font-medium">No joint sponsors added</p>
+                            <p className="py-2 text-center text-xs font-medium text-slate-400 italic">
+                              No joint sponsors added
+                            </p>
                           ) : (
                             data.jointSponsors.map((s: any) => (
-                              <div key={s.id} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                                <input 
+                              <div
+                                key={s.id}
+                                className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+                              >
+                                <input
                                   type="text"
                                   value={s.name}
-                                  onChange={(e) => updateJointSponsor(s.id, {name: e.target.value})}
+                                  onChange={(e) =>
+                                    updateJointSponsor(s.id, { name: e.target.value })
+                                  }
                                   placeholder="Sponsor Name"
-                                  className="w-full p-2 mb-2 text-sm border-2 border-slate-100 rounded-lg bg-slate-50"
+                                  className="mb-2 w-full rounded-lg border-2 border-slate-100 bg-slate-50 p-2 text-sm"
                                 />
                                 <div className="flex gap-2">
-                                  <input 
-                                    type="number" 
-                                    value={s.annualIncome || ""} 
-                                    onChange={(e) => updateJointSponsor(s.id, {annualIncome: parseInt(e.target.value) || 0})}
-                                    className="flex-1 p-3 text-lg border-2 border-slate-100 rounded-lg font-black text-slate-900"
+                                  <input
+                                    type="number"
+                                    value={s.annualIncome || ""}
+                                    onChange={(e) =>
+                                      updateJointSponsor(s.id, {
+                                        annualIncome: parseInt(e.target.value) || 0,
+                                      })
+                                    }
+                                    className="flex-1 rounded-lg border-2 border-slate-100 p-3 text-lg font-black text-slate-900"
                                     placeholder="$ Income"
                                   />
-                                  <button onClick={() => removeJointSponsor(s.id)} className="p-3 text-red-300 hover:bg-red-50 rounded-lg"><Trash2 size={18} /></button>
+                                  <button
+                                    onClick={() => removeJointSponsor(s.id)}
+                                    className="rounded-lg p-3 text-red-300 hover:bg-red-50"
+                                  >
+                                    <Trash2 size={18} />
+                                  </button>
                                 </div>
                               </div>
                             ))
@@ -1948,10 +2127,17 @@ export default function SponsorshipCalculatorTool({
                     </div>
 
                     <div className="flex gap-[10px]">
-                      <button onClick={() => setStepIdx(7)} className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63] flex items-center gap-2">
+                      <button
+                        onClick={() => setStepIdx(7)}
+                        className="flex items-center gap-2 rounded-[10px] border-[1.5px] border-[#d0e4f7] bg-transparent p-[13px_22px] font-medium text-[#3a4f63] hover:border-[#3a4f63]"
+                      >
                         <ArrowLeft size={14} /> Back
                       </button>
-                      <button onClick={() => setStepIdx(9)} style={{ backgroundColor: stepColor }} className="flex-1 p-[14px_22px] text-white rounded-[10px] text-[15px] font-semibold transition-all hover:opacity-90 flex items-center justify-center gap-2">
+                      <button
+                        onClick={() => setStepIdx(9)}
+                        style={{ backgroundColor: stepColor }}
+                        className="flex flex-1 items-center justify-center gap-2 rounded-[10px] p-[14px_22px] text-[15px] font-semibold text-white transition-all hover:opacity-90"
+                      >
                         Continue <ArrowRight size={14} />
                       </button>
                     </div>
@@ -1968,29 +2154,52 @@ export default function SponsorshipCalculatorTool({
                   standaloneToolId={isJourney ? undefined : "sponsorship-calculator"}
                 >
                   <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                    <div className="text-[11px] font-semibold tracking-widest uppercase mb-4 text-center" style={{ color: COLORS.primary }}>Step 10 of 11</div>
-                    <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-6 text-center">Alternative Options</h2>
-                    
-                    <div className="space-y-4 mb-8">
+                    <div
+                      className="mb-4 text-center text-[11px] font-semibold tracking-widest uppercase"
+                      style={{ color: COLORS.primary }}
+                    >
+                      Step 10 of 11
+                    </div>
+                    <h2 className="mb-6 text-center text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33]">
+                      Alternative Options
+                    </h2>
+
+                    <div className="mb-8 space-y-4">
                       {/* Assets Option */}
-                      <div className="border-2 rounded-xl overflow-hidden border-slate-200">
-                        <div className="p-4 bg-slate-50 flex justify-between items-center cursor-pointer" onClick={() => toggleOption('assets')}>
+                      <div className="overflow-hidden rounded-xl border-2 border-slate-200">
+                        <div
+                          className="flex cursor-pointer items-center justify-between bg-slate-50 p-4"
+                          onClick={() => toggleOption("assets")}
+                        >
                           <div className="flex items-center gap-2">
                             <DollarSign size={18} style={{ color: COLORS.secondary }} />
-                            <span className="font-bold text-slate-800">Use Assets (Property/Savings)</span>
+                            <span className="font-bold text-slate-800">
+                              Use Assets (Property/Savings)
+                            </span>
                           </div>
-                          {expandedOptions.assets ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                          {expandedOptions.assets ? (
+                            <ChevronUp size={20} />
+                          ) : (
+                            <ChevronDown size={20} />
+                          )}
                         </div>
                         {expandedOptions.assets && (
-                          <div className="p-4 bg-white animate-in slide-in-from-top-2 duration-200">
-                            <p className="text-xs text-slate-500 mb-4">You can use 1/3 (spouse/child of USC) or 1/5 of asset value to meet the requirement.</p>
+                          <div className="animate-in slide-in-from-top-2 bg-white p-4 duration-200">
+                            <p className="mb-4 text-xs text-slate-500">
+                              You can use 1/3 (spouse/child of USC) or 1/5 of asset value to meet
+                              the requirement.
+                            </p>
                             <div className="relative">
-                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
-                              <input 
-                                type="number" 
-                                value={data.assetValue || ""} 
-                                onChange={(e) => setData({...data, assetValue: parseInt(e.target.value) || 0})}
-                                className="w-full pl-8 p-3 text-lg border-2 border-slate-100 rounded-lg"
+                              <span className="absolute top-1/2 left-3 -translate-y-1/2 font-bold text-slate-400">
+                                $
+                              </span>
+                              <input
+                                type="number"
+                                value={data.assetValue || ""}
+                                onChange={(e) =>
+                                  setData({ ...data, assetValue: parseInt(e.target.value) || 0 })
+                                }
+                                className="w-full rounded-lg border-2 border-slate-100 p-3 pl-8 text-lg"
                                 placeholder="Total Asset Value"
                               />
                             </div>
@@ -1999,23 +2208,34 @@ export default function SponsorshipCalculatorTool({
                       </div>
 
                       {/* Substitute Sponsor Option */}
-                      <div className="border-2 rounded-xl overflow-hidden border-slate-200">
-                        <div className="p-4 bg-slate-50 flex justify-between items-center cursor-pointer" onClick={() => toggleOption('substitute')}>
+                      <div className="overflow-hidden rounded-xl border-2 border-slate-200">
+                        <div
+                          className="flex cursor-pointer items-center justify-between bg-slate-50 p-4"
+                          onClick={() => toggleOption("substitute")}
+                        >
                           <div className="flex items-center gap-2">
                             <Heart size={18} style={{ color: COLORS.danger }} />
                             <span className="font-bold text-slate-800">Substitute Sponsor</span>
                           </div>
-                          {expandedOptions.substitute ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                          {expandedOptions.substitute ? (
+                            <ChevronUp size={20} />
+                          ) : (
+                            <ChevronDown size={20} />
+                          )}
                         </div>
                         {expandedOptions.substitute && (
-                          <div className="p-4 bg-white">
-                            <p className="text-xs text-slate-500 mb-3">If the original petitioner has passed away.</p>
-                            <label className="flex items-center gap-2 text-sm font-semibold cursor-pointer">
-                              <input 
-                                type="checkbox" 
-                                checked={data.sponsorDeceased} 
-                                onChange={() => setData({...data, sponsorDeceased: !data.sponsorDeceased})}
-                                className="w-4 h-4 rounded"
+                          <div className="bg-white p-4">
+                            <p className="mb-3 text-xs text-slate-500">
+                              If the original petitioner has passed away.
+                            </p>
+                            <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold">
+                              <input
+                                type="checkbox"
+                                checked={data.sponsorDeceased}
+                                onChange={() =>
+                                  setData({ ...data, sponsorDeceased: !data.sponsorDeceased })
+                                }
+                                className="h-4 w-4 rounded"
                               />
                               The Petitioner is Deceased
                             </label>
@@ -2024,24 +2244,50 @@ export default function SponsorshipCalculatorTool({
                       </div>
 
                       {/* Self-Petition Option */}
-                      <div className="border-2 rounded-xl overflow-hidden border-slate-200">
-                        <div className="p-4 bg-slate-50 flex justify-between items-center cursor-pointer" onClick={() => toggleOption('self')}>
+                      <div className="overflow-hidden rounded-xl border-2 border-slate-200">
+                        <div
+                          className="flex cursor-pointer items-center justify-between bg-slate-50 p-4"
+                          onClick={() => toggleOption("self")}
+                        >
                           <div className="flex items-center gap-2">
                             <Shield size={18} style={{ color: COLORS.primary }} />
-                            <span className="font-bold text-slate-800">Self-Petition Categories</span>
+                            <span className="font-bold text-slate-800">
+                              Self-Petition Categories
+                            </span>
                           </div>
-                          {expandedOptions.self ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                          {expandedOptions.self ? (
+                            <ChevronUp size={20} />
+                          ) : (
+                            <ChevronDown size={20} />
+                          )}
                         </div>
                         {expandedOptions.self && (
-                          <div className="p-4 bg-white space-y-3">
-                            <label className="flex items-center gap-2 text-sm cursor-pointer">
-                              <input type="checkbox" checked={data.isVAWA} onChange={() => setData({...data, isVAWA: !data.isVAWA})} /> VAWA Self-petitioner
+                          <div className="space-y-3 bg-white p-4">
+                            <label className="flex cursor-pointer items-center gap-2 text-sm">
+                              <input
+                                type="checkbox"
+                                checked={data.isVAWA}
+                                onChange={() => setData({ ...data, isVAWA: !data.isVAWA })}
+                              />{" "}
+                              VAWA Self-petitioner
                             </label>
-                            <label className="flex items-center gap-2 text-sm cursor-pointer">
-                              <input type="checkbox" checked={data.isWidow} onChange={() => setData({...data, isWidow: !data.isWidow})} /> Widow(er) of US Citizen
+                            <label className="flex cursor-pointer items-center gap-2 text-sm">
+                              <input
+                                type="checkbox"
+                                checked={data.isWidow}
+                                onChange={() => setData({ ...data, isWidow: !data.isWidow })}
+                              />{" "}
+                              Widow(er) of US Citizen
                             </label>
-                            <label className="flex items-center gap-2 text-sm cursor-pointer">
-                              <input type="checkbox" checked={data.isSpecialImmigrant} onChange={() => setData({...data, isSpecialImmigrant: !data.isSpecialImmigrant})} /> Special Immigrant
+                            <label className="flex cursor-pointer items-center gap-2 text-sm">
+                              <input
+                                type="checkbox"
+                                checked={data.isSpecialImmigrant}
+                                onChange={() =>
+                                  setData({ ...data, isSpecialImmigrant: !data.isSpecialImmigrant })
+                                }
+                              />{" "}
+                              Special Immigrant
                             </label>
                           </div>
                         )}
@@ -2049,10 +2295,17 @@ export default function SponsorshipCalculatorTool({
                     </div>
 
                     <div className="flex gap-[10px]">
-                      <button onClick={() => setStepIdx(7)} className="p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-medium hover:border-[#3a4f63] flex items-center gap-2">
+                      <button
+                        onClick={() => setStepIdx(7)}
+                        className="flex items-center gap-2 rounded-[10px] border-[1.5px] border-[#d0e4f7] bg-transparent p-[13px_22px] font-medium text-[#3a4f63] hover:border-[#3a4f63]"
+                      >
                         <ArrowLeft size={14} /> Back
                       </button>
-                      <button onClick={() => setStepIdx(10)} style={{ backgroundColor: COLORS.primary }} className="flex-1 p-[14px_22px] text-white rounded-[10px] text-[15px] font-semibold transition-all hover:opacity-90 flex items-center justify-center gap-2">
+                      <button
+                        onClick={() => setStepIdx(10)}
+                        style={{ backgroundColor: COLORS.primary }}
+                        className="flex flex-1 items-center justify-center gap-2 rounded-[10px] p-[14px_22px] text-[15px] font-semibold text-white transition-all hover:opacity-90"
+                      >
                         View Results <ArrowRight size={14} />
                       </button>
                     </div>
