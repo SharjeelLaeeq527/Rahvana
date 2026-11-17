@@ -26,10 +26,11 @@ import { Icon } from "./icons";
 import type { UscisLiveCheck } from "./useUscisLiveCheck";
 
 /**
- * Community group link. Leave empty to hide every Community entry point; the
- * designs used a placeholder, so nothing is shown until a real link is set.
+ * Community group link (the public WhatsApp group invite). The env variable
+ * can override it, e.g. to point a staging build at a test group.
  */
-export const COMMUNITY_URL = process.env.NEXT_PUBLIC_COMMUNITY_URL || "";
+export const COMMUNITY_URL =
+  process.env.NEXT_PUBLIC_COMMUNITY_URL || "https://chat.whatsapp.com/HdCCeGYSrNeKbyjYVolwS2";
 
 export interface DashboardActions {
   /** Hero button: same lock / upgrade / navigate logic as the classic CaseStatusHero. */

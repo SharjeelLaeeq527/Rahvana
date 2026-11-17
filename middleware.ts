@@ -132,5 +132,11 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
+  // Static files never need a session check, so keep them out of middleware
+  // (fewer invocations, and they keep loading even when Supabase is slow).
+  // .txt / .xml stay IN on purpose so the staging gate still covers
+  // robots.txt and sitemap.xml.
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico|mjs|js|css|map|woff|woff2|ttf|otf|mp4|webm|mp3|wav|lottie)$).*)",
+  ],
 };

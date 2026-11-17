@@ -27,7 +27,8 @@ export function ModalScrollLock() {
       frame = 0;
       const vw = html.clientWidth;
       const vh = window.innerHeight;
-      const shouldLock = Array.from(document.body.querySelectorAll<HTMLElement>(".fixed")).some(
+      // Overlays positioned fixed in plain CSS (no Tailwind `fixed` class) opt in with `data-scroll-lock`.
+      const shouldLock = Array.from(document.body.querySelectorAll<HTMLElement>(".fixed, [data-scroll-lock]")).some(
         (el) => isBlockingOverlay(el, vw, vh)
       );
       if (shouldLock === locked) return;

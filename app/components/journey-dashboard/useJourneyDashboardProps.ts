@@ -6,6 +6,7 @@ import { useCandidate } from "@/app/context/CandidateContext";
 import { useJourneyEnvironment } from "@/app/context/JourneyEnvironmentContext";
 import { getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
 import { getJourneyAppGroups } from "@/lib/constants/journey-app-groups";
+import { getModalFeatureForTier } from "@/lib/entitlements/hardLockRules";
 import type { AggregatedIssue } from "@/lib/case-strength/aggregate-issues";
 import type { ReceiptRecord } from "@/app/components/home-page/Visatickerprops";
 import {
@@ -44,6 +45,11 @@ export interface JourneyDashboardInputs {
   /** Journey lock (read-only after visa issuance). */
   readOnly: boolean;
   isStepLocked: (stepKey: string) => boolean;
+  /**
+   * Plan lock for one step: getStepLockStatus with this journey's tier and the
+   * step's index among its chapter's visible steps (as the StepView footer does).
+   */
+  stepLock: (stepKey: string, chapterIdx: number, localIdx: number) => { isLocked: boolean; requiredPlan: string | null };
   caseHealth: {
     notStarted: boolean;
     loading: boolean;
@@ -89,7 +95,11 @@ export function useJourneyDashboardProps(i: JourneyDashboardInputs): JourneyDash
   const groups = useMemo(() => getJourneyAppGroups(category), [category]);
 
   const { data, state, helpers, nextAction } = i;
-  const path = useMemo(() => buildPath(data, state, helpers, nextAction), [data, state, helpers, nextAction]);
+  const { stepLock } = i;
+  const path = useMemo(
+    () => buildPath(data, state, helpers, nextAction, stepLock),
+    [data, state, helpers, nextAction, stepLock]
+  );
   const chapters = useMemo(
     () => buildChapters(data, state, helpers, i.isStepLocked, nextAction?.chapterIdx ?? null),
     [data, state, helpers, nextAction, i.isStepLocked]
@@ -123,11 +133,20 @@ export function useJourneyDashboardProps(i: JourneyDashboardInputs): JourneyDash
     [i.locks.caseStrength, realCaseHealth]
   );
   const { onUpgrade } = i;
-  const actions = useMemo<DashboardActions>(
-    () =>
-      i.locks.caseStrength ? { ...i.actions, onOpenCaseAnalysis: () => onUpgrade("case_strength") } : i.actions,
-    [i.actions, i.locks.caseStrength, onUpgrade]
-  );
+  const actions = useMemo<DashboardActions>(() => {
+    // Opening a step the plan does not include shows the same upgrade prompt as
+    // the StepView Prev / Next footer, wherever it is opened from.
+    const onOpenStep = (c: number, st: number) => {
+      const lock = path.find((p) => p.chapterIndex === c && p.stepIndex === st)?.lock;
+      if (lock) onUpgrade(getModalFeatureForTier(lock.requiredPlan as Parameters<typeof getModalFeatureForTier>[0]));
+      else i.actions.onOpenStep(c, st);
+    };
+    return {
+      ...i.actions,
+      onOpenStep,
+      ...(i.locks.caseStrength ? { onOpenCaseAnalysis: () => onUpgrade("case_strength") } : {}),
+    };
+  }, [i.actions, i.locks.caseStrength, onUpgrade, path]);
   const alerts = useMemo(() => buildAlerts(i.issues, personal.dismissed), [i.issues, personal.dismissed]);
   const apStep = useMemo(
     () => findStepByToolType(data, state, helpers, AP_STEP_TOOL_TYPE),

@@ -1,5 +1,6 @@
 "use client";
 
+import { JOURNEY_STEP_SHELL } from "@/app/components/journey-engine/viewSpacing";
 import React from "react";
 import {
   Search,
@@ -73,7 +74,7 @@ export const AwaitingReviewStep: React.FC<{
       `}</style>
 
       {/* Page Shell */}
-      <div className="flex w-full max-w-[680px] flex-col mx-auto px-4 sm:px-6 md:px-8 pt-5 pb-10 md:pt-8">
+      <div className={`mx-auto ${JOURNEY_STEP_SHELL}`}>
         <h1 className="text-[clamp(28px,4vw,36px)] font-bold text-[#0c1b33] leading-[1.15] tracking-tight mb-[10px] animate-in fade-in slide-in-from-top-2 duration-300 delay-[40ms]">
           {data.title}
         </h1>

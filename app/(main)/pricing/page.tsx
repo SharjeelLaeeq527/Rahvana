@@ -1,4 +1,5 @@
 "use client";
+import Header from "../../components/headers/Header"
 
 import React, { useEffect, useRef, useState, useMemo, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
@@ -1768,7 +1769,14 @@ function PricingContent() {
               {/* Hero */}
               <div className={eyebrow}>Journey Plans</div>
 
-              <h1 className="page-heading m-0">Choose your immigration journey</h1>
+              <Header
+              title="Choose your immigration journey"
+              category="navSections"
+              fullWidth
+              noTopPadding>
+
+              </Header>
+            
 
               <p className="page-description text-muted-foreground mt-2">
                 Select the journey that matches your immigration case to see the plans, tools, and

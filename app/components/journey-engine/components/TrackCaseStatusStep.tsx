@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { JOURNEY_STEP_SHELL, JOURNEY_VIEW_TOP } from "@/app/components/journey-engine/viewSpacing";
 import { fmtDate, fmtDateTime } from "@/lib/register-receipt";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, CheckCircle, BookOpen, Scale, Info, Shield, Bell } from "lucide-react";
@@ -144,7 +145,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
     // <div className="min-h-screen w-full ch1step-bg">
     <div className="min-h-screen w-full">
       {/* CHANGE 1: px-4 py-8 on mobile, md:px-6 md:py-12 on desktop */}
-      <div className="step mx-auto flex w-full max-w-[680px] flex-col px-4 pt-5 pb-10 sm:px-6 md:px-8 md:pt-8">
+      <div className={`step mx-auto ${JOURNEY_STEP_SHELL} ${JOURNEY_VIEW_TOP}`}>
         <h1 className="page-title mb-1 text-[clamp(28px,4vw,36px)] leading-[1.15] font-bold tracking-tight text-[#0c1b33]">
           Monitor USCIS Case Status
         </h1>
