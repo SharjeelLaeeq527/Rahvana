@@ -432,40 +432,42 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: index * 0.1 }}
           key={session.id}
-          className="group relative mt-6 flex flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:border-teal-200 hover:shadow-xl"
+          className="group relative mt-6 flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:border-teal-200 hover:shadow-xl"
         >
-          <div className="mb-4 flex items-start justify-between">
-            <div className="rounded-2xl bg-teal-50 p-3 text-teal-600 transition-colors duration-300 group-hover:bg-teal-600 group-hover:text-white">
-              <BookOpen size={24} />
+          <div className="mb-2.5 flex items-center justify-between">
+            <div className="rounded-xl bg-teal-50 p-2 text-teal-600 transition-colors duration-300 group-hover:bg-teal-600 group-hover:text-white">
+              <BookOpen size={18} />
             </div>
-            <div className="flex flex-col items-end gap-2">
-              <div className="flex items-center gap-2">
-                <span
-                  className={`rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase ${session.status === "completed" ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-700"}`}
-                >
-                  {session.status.replace("_", " ")}
-                </span>
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setSelectedSessionId(session.id);
-                    setShowConfirmDelete(true);
-                  }}
-                  className="rounded-lg p-1.5 text-slate-400 transition-all hover:bg-red-50 hover:text-red-500"
-                  title="Delete this progress"
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
+            <div className="flex items-center gap-2">
               <span className="flex items-center gap-1 text-[10px] font-medium text-slate-400">
                 <Clock size={10} />
                 {new Date(session.last_updated_at).toLocaleDateString()}
               </span>
+              <span
+                className={`rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase ${
+                  session.status === "completed"
+                    ? "bg-green-100 text-green-700"
+                    : "bg-orange-100 text-orange-700"
+                }`}
+              >
+                {session.status.replace("_", " ")}
+              </span>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  setSelectedSessionId(session.id);
+                  setShowConfirmDelete(true);
+                }}
+                className="rounded-lg p-1 text-slate-400 transition-all hover:bg-red-50 hover:text-red-500"
+                title="Delete this progress"
+              >
+                <Trash2 size={14} />
+              </button>
             </div>
           </div>
 
-          <div className="mb-2 flex items-start justify-between gap-3">
-            <h3 className="text-xl font-bold text-slate-900 transition-colors group-hover:text-teal-700">
+          <div className="flex items-start justify-between gap-3">
+            <h3 className="text-lg leading-snug font-bold text-slate-900 transition-colors group-hover:text-teal-700 md:text-xl">
               {session.guides.title}
             </h3>
             <div className="relative z-50 shrink-0">
@@ -480,18 +482,15 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
               />
             </div>
           </div>
-          {/* <p className="mb-6 line-clamp-2 text-sm leading-relaxed text-slate-500">
-            {session.guides.description}
-          </p> */}
 
-          <div className="mt-auto">
-            <div className="mb-2 flex items-center justify-between">
-              <span className="text-xs font-bold tracking-tighter text-slate-400 uppercase">
+          <div className="mt-3">
+            <div className="mb-1.5 flex items-center justify-between">
+              <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">
                 Progress
               </span>
               <span className="text-xs font-black text-teal-600">{session.progress_percent}%</span>
             </div>
-            <div className="mb-6 h-1.5 overflow-hidden rounded-full bg-slate-100">
+            <div className="mb-2.5 h-1.5 overflow-hidden rounded-full bg-slate-100">
               <div
                 className="h-full rounded-full bg-teal-500 transition-all duration-1000"
                 style={{ width: `${session.progress_percent}%` }}
@@ -500,17 +499,17 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
 
             <Link
               href={`/guides/${session.guides.slug}`}
-              className="group/btn flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 py-3.5 text-sm font-bold text-white shadow-lg shadow-slate-200 transition-all hover:bg-teal-600 hover:shadow-teal-100"
+              className="group/btn flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 py-3.5 text-xs font-bold text-white shadow-md shadow-slate-200 transition-all hover:bg-teal-600 hover:shadow-teal-100"
             >
               {session.status === "completed" ? (
                 <>
-                  <CheckCircle2 size={18} />
+                  <CheckCircle2 size={14} />
                   View Results
                 </>
               ) : (
                 <>
                   <PlayCircle
-                    size={18}
+                    size={16}
                     className="transition-transform group-hover/btn:scale-110"
                   />
                   Resume Guide
@@ -518,7 +517,7 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
               )}
               <ChevronRight
                 size={16}
-                className="ml-1 -translate-x-2 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100"
+                className="ml-0.5 -translate-x-1 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100"
               />
             </Link>
           </div>
@@ -675,7 +674,7 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
                   }`}
                 >
                   All
-                  <span
+                  {/* <span
                     className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
                       accessFilter === "all"
                         ? "bg-white/20 text-white"
@@ -683,7 +682,7 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
                     }`}
                   >
                     {allGuidesCount}
-                  </span>
+                  </span> */}
                 </button>
 
                 <button
@@ -696,7 +695,7 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
                   }`}
                 >
                   Included with Plan
-                  <span
+                  {/* <span
                     className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
                       accessFilter === "plan"
                         ? "bg-white/20 text-white"
@@ -704,7 +703,7 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
                     }`}
                   >
                     {planGuidesCount}
-                  </span>
+                  </span> */}
                 </button>
 
                 <button
@@ -717,7 +716,7 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
                   }`}
                 >
                   Unlocked with Credits
-                  <span
+                  {/* <span
                     className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
                       accessFilter === "credits"
                         ? "bg-white/20 text-white"
@@ -725,7 +724,7 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
                     }`}
                   >
                     {creditsGuidesCount}
-                  </span>
+                  </span> */}
                 </button>
               </div>
             )}
