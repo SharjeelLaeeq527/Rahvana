@@ -882,13 +882,13 @@ export function SiteHeader({
   const isHomepageHeroState = pathname === "/" && !scrolled;
   const mobilePopoverPositionClass =
     mobileNavigationMode === "bottom"
-      ? "max-[767px]:top-auto max-[767px]:right-4 max-[767px]:bottom-[76px] max-[767px]:left-4 max-[767px]:origin-bottom"
+      ? "max-[640px]:top-auto max-[640px]:right-4 max-[640px]:bottom-[76px] max-[640px]:left-4 max-[640px]:origin-bottom"
       : mobileNavigationMode === "swipe"
         ? "max-[767px]:top-1/2 max-[767px]:right-[68px] max-[767px]:left-auto max-[767px]:w-[calc(100vw-84px)] max-[767px]:origin-right max-[767px]:-translate-y-1/2"
         : "max-[767px]:top-[60px] max-[767px]:right-0 max-[767px]:left-1/2 max-[767px]:origin-top max-[767px]:-translate-x-1/2";
   const mobileQuickAccessPopoverPositionClass =
     mobileNavigationMode === "bottom"
-      ? "max-[767px]:top-auto max-[767px]:right-4 max-[767px]:bottom-[68px] max-[767px]:left-auto max-[767px]:w-72 max-[767px]:origin-bottom"
+      ? "max-[640px]:top-auto max-[640px]:right-4 max-[640px]:bottom-[68px] max-[640px]:left-auto max-[640px]:w-72 max-[640px]:origin-bottom"
       : mobilePopoverPositionClass;
   return (
     <header
@@ -1238,7 +1238,7 @@ export function SiteHeader({
             ref={mobileUtilitiesRef}
             className={`flex items-center gap-1.5 ${
               mobileNavigationMode === "bottom"
-                ? "mobile-bottom-nav max-[767px]:fixed max-[767px]:right-0 max-[767px]:bottom-0 max-[767px]:left-0 max-[767px]:z-100 max-[767px]:justify-between max-[767px]:rounded-t-2xl max-[767px]:border-x-0 max-[767px]:border-b-0 max-[767px]:border-t max-[767px]:border-teal-700/20 max-[767px]:bg-[#e8f4f3]/95 max-[767px]:px-3 max-[767px]:pt-2 max-[767px]:pb-[calc(0.5rem+env(safe-area-inset-bottom))] max-[767px]:shadow-[0_-8px_24px_rgba(13,115,119,0.14)] max-[767px]:backdrop-blur-xl dark:max-[767px]:border-slate-700/70 dark:max-[767px]:bg-[#102f33]/90"
+                ? "mobile-bottom-nav max-[640px]:fixed max-[640px]:right-0 max-[640px]:bottom-0 max-[640px]:left-0 max-[640px]:z-100 max-[640px]:gap-0 max-[640px]:rounded-t-2xl max-[640px]:border-x-0 max-[640px]:border-b-0 max-[640px]:border-t max-[640px]:border-teal-700/20 max-[640px]:bg-[#e8f4f3]/95 max-[640px]:px-3 max-[640px]:pr-14 max-[640px]:pt-2 max-[640px]:pb-[calc(0.5rem+env(safe-area-inset-bottom))] max-[640px]:shadow-[0_-8px_24px_rgba(13,115,119,0.14)] max-[640px]:backdrop-blur-xl max-[640px]:[&>*]:flex max-[640px]:[&>*]:flex-1 max-[640px]:[&>*]:justify-center dark:max-[640px]:border-slate-700/70 dark:max-[640px]:bg-[#102f33]/90"
                 : mobileNavigationMode === "swipe"
                   ? `max-[767px]:fixed max-[767px]:top-1/2 max-[767px]:right-0 max-[767px]:left-auto max-[767px]:-translate-y-1/2 max-[767px]:flex max-[767px]:flex-col max-[767px]:rounded-l-2xl max-[767px]:border max-[767px]:border-r-0 max-[767px]:border-white/60 max-[767px]:bg-white/90 max-[767px]:px-2 max-[767px]:py-3 max-[767px]:shadow-lg max-[767px]:backdrop-blur-md dark:max-[767px]:border-slate-700/70 dark:max-[767px]:bg-slate-950/90 max-[767px]:transition-transform max-[767px]:duration-300 ${mobileUtilitiesOpen ? "max-[767px]:translate-x-0" : "max-[767px]:translate-x-full max-[767px]:pointer-events-none"}`
                   : `max-[767px]:absolute max-[767px]:top-[52px] max-[767px]:right-4 max-[767px]:left-4 max-[767px]:justify-between max-[767px]:rounded-2xl max-[767px]:border max-[767px]:border-white/60 max-[767px]:bg-white/80 max-[767px]:px-2 max-[767px]:py-1.5 max-[767px]:shadow-lg max-[767px]:backdrop-blur-md dark:max-[767px]:border-slate-700/70 dark:max-[767px]:bg-slate-950/75 ${mobileUtilitiesOpen ? "max-[767px]:flex" : "max-[767px]:hidden"}`
@@ -1711,7 +1711,7 @@ export function SiteHeader({
           ) : user ? (
             <div className="flex items-center gap-2">
               <div
-                className="relative max-[767px]:absolute max-[767px]:top-2 max-[767px]:right-4"
+                className="relative max-[640px]:fixed max-[640px]:right-3 max-[640px]:bottom-[calc(0.5rem+env(safe-area-inset-bottom))] max-[640px]:z-101 mb-1 md:mb-0"
                 ref={profileRef}
                 onPointerEnter={(e) => {
                   // Ignore touch pointer types to prevent double-triggering on mobile
@@ -1761,7 +1761,7 @@ export function SiteHeader({
                       initial={{ opacity: 0, scale: 0.95, y: 10 }}
                       animate={{ opacity: 1, scale: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                      className="absolute top-full right-0 z-9999 mt-2 max-h-[80vh] w-76 origin-top-right transform overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl"
+                      className="absolute top-full right-0 z-9999 mt-2 max-h-[80vh] w-76 origin-top-right transform overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl max-[640px]:fixed max-[640px]:top-auto max-[640px]:right-4 max-[640px]:bottom-[76px] max-[640px]:mt-0 max-[640px]:max-h-[70vh] max-[640px]:w-[calc(100vw-32px)] max-[640px]:origin-bottom-right"
                     >
                       {/* Header */}
                       <div className="border-border bg-muted/30 border-b px-5 py-4">
