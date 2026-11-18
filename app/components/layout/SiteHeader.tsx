@@ -71,6 +71,8 @@ interface HeaderProps {
   profile?: UserProfile | null;
 }
 
+type MobileNavigationMode = "grid" | "bottom" | "swipe";
+
 // --------------------------------------------------------------------------
 //  Hydration-safe button – suppresses warnings for extension-injected attrs
 // --------------------------------------------------------------------------
@@ -372,8 +374,19 @@ export function SiteHeader({
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [quickAccessOpen, setQuickAccessOpen] = useState(false);
   const [mobileUtilitiesOpen, setMobileUtilitiesOpen] = useState(false);
+  const [mobileNavigationMode, setMobileNavigationMode] =
+    useState<MobileNavigationMode>("bottom");
+  const mobileSwipeStartX = useRef<number | null>(null);
+  const mobileUtilitiesRef = useRef<HTMLDivElement>(null);
   const quickAccessRef = useRef<HTMLDivElement>(null);
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+
+  useEffect(() => {
+    const mode = new URLSearchParams(window.location.search).get("mobile-nav");
+    if (mode === "grid" || mode === "bottom" || mode === "swipe") {
+      setMobileNavigationMode(mode);
+    }
+  }, []);
 
   useEffect(() => {
     try {
@@ -467,6 +480,14 @@ export function SiteHeader({
       if (quickAccessRef.current && !quickAccessRef.current.contains(target)) {
         setQuickAccessOpen(false);
       }
+      if (
+        mobileNavigationMode === "swipe" &&
+        mobileUtilitiesOpen &&
+        mobileUtilitiesRef.current &&
+        !mobileUtilitiesRef.current.contains(target)
+      ) {
+        setMobileUtilitiesOpen(false);
+      }
       // Mega Menus or Profile Menu
       if (activeMenu) {
         if (activeMenu === "profile") {
@@ -484,7 +505,7 @@ export function SiteHeader({
     };
     document.addEventListener("mousedown", handleOutsideClick);
     return () => document.removeEventListener("mousedown", handleOutsideClick);
-  }, [activeMenu]);
+  }, [activeMenu, mobileNavigationMode, mobileUtilitiesOpen]);
 
   // Open profile menu on global event
   useEffect(() => {
@@ -654,6 +675,29 @@ export function SiteHeader({
 
   const handleBellClick = () => {
     setNotificationsOpen((prev) => !prev);
+  };
+
+  const handleMobileSwipeStart = (event: React.TouchEvent<HTMLElement>) => {
+    if (mobileNavigationMode !== "swipe") return;
+    const touch = event.touches[0];
+    if (touch && touch.clientX >= window.innerWidth - 48) {
+      mobileSwipeStartX.current = touch.clientX;
+    }
+  };
+
+  const handleMobileSwipeEnd = (event: React.TouchEvent<HTMLElement>) => {
+    if (mobileNavigationMode !== "swipe" || mobileSwipeStartX.current === null) return;
+    const touch = event.changedTouches[0];
+    const deltaX = touch ? touch.clientX - mobileSwipeStartX.current : 0;
+    mobileSwipeStartX.current = null;
+
+    if (deltaX < -40) {
+      setMobileUtilitiesOpen(true);
+      setNotificationsOpen(false);
+      setQuickAccessOpen(false);
+    } else if (deltaX > 40) {
+      setMobileUtilitiesOpen(false);
+    }
   };
 
   // Reset the paging whenever the dropdown closes, so it always reopens
@@ -836,8 +880,20 @@ export function SiteHeader({
   const isHomeHeroP2State = pathname === "/" && !scrolled && heroTransitioned;
   // /home-page has a light gradient hero — transparent header but teal text (not white)
   const isHomepageHeroState = pathname === "/" && !scrolled;
+  const mobilePopoverPositionClass =
+    mobileNavigationMode === "bottom"
+      ? "max-[640px]:top-auto max-[640px]:right-4 max-[640px]:bottom-[76px] max-[640px]:left-4 max-[640px]:origin-bottom"
+      : mobileNavigationMode === "swipe"
+        ? "max-[767px]:top-1/2 max-[767px]:right-[68px] max-[767px]:left-auto max-[767px]:w-[calc(100vw-84px)] max-[767px]:origin-right max-[767px]:-translate-y-1/2"
+        : "max-[767px]:top-[60px] max-[767px]:right-0 max-[767px]:left-1/2 max-[767px]:origin-top max-[767px]:-translate-x-1/2";
+  const mobileQuickAccessPopoverPositionClass =
+    mobileNavigationMode === "bottom"
+      ? "max-[640px]:top-auto max-[640px]:right-4 max-[640px]:bottom-[68px] max-[640px]:left-auto max-[640px]:w-72 max-[640px]:origin-bottom"
+      : mobilePopoverPositionClass;
   return (
     <header
+      onTouchStart={handleMobileSwipeStart}
+      onTouchEnd={handleMobileSwipeEnd}
       className={`fixed top-0 right-0 left-0 z-100 w-full transition-all duration-300 max-767:pb-4 ${
         isHomeHeroState || isHomeHeroP2State || isHomepageHeroState
           ? "border-none bg-transparent py-4 shadow-none"
@@ -1163,7 +1219,7 @@ export function SiteHeader({
             </span>
           </HydrationSafeButton> */}
 
-          {isSignedIn && (
+          {isSignedIn && mobileNavigationMode === "grid" && (
             <HydrationSafeButton
               aria-label="Open quick actions"
               aria-expanded={mobileUtilitiesOpen}
@@ -1179,14 +1235,22 @@ export function SiteHeader({
           )}
 
           <div
-            className={`flex items-center gap-1.5 max-[767px]:absolute max-[767px]:top-[52px] max-[767px]:right-4 max-[767px]:left-4 max-[767px]:justify-between max-[767px]:rounded-2xl max-[767px]:border max-[767px]:border-white/60 max-[767px]:bg-white/80 max-[767px]:px-2 max-[767px]:py-1.5 max-[767px]:shadow-lg max-[767px]:backdrop-blur-md dark:max-[767px]:border-slate-700/70 dark:max-[767px]:bg-slate-950/75 ${
-              mobileUtilitiesOpen ? "max-[767px]:flex" : "max-[767px]:hidden"
+            ref={mobileUtilitiesRef}
+            className={`flex items-center gap-1.5 ${
+              mobileNavigationMode === "bottom"
+                ? "mobile-bottom-nav max-[640px]:fixed max-[640px]:right-0 max-[640px]:bottom-0 max-[640px]:left-0 max-[640px]:z-100 max-[640px]:gap-0 max-[640px]:rounded-t-2xl max-[640px]:border-x-0 max-[640px]:border-b-0 max-[640px]:border-t max-[640px]:border-teal-700/20 max-[640px]:bg-[#e8f4f3]/95 max-[640px]:px-3 max-[640px]:pr-14 max-[640px]:pt-2 max-[640px]:pb-[calc(0.5rem+env(safe-area-inset-bottom))] max-[640px]:shadow-[0_-8px_24px_rgba(13,115,119,0.14)] max-[640px]:backdrop-blur-xl max-[640px]:[&>*]:flex max-[640px]:[&>*]:flex-1 max-[640px]:[&>*]:justify-center dark:max-[640px]:border-slate-700/70 dark:max-[640px]:bg-[#102f33]/90"
+                : mobileNavigationMode === "swipe"
+                  ? `max-[767px]:fixed max-[767px]:top-1/2 max-[767px]:right-0 max-[767px]:left-auto max-[767px]:-translate-y-1/2 max-[767px]:flex max-[767px]:flex-col max-[767px]:rounded-l-2xl max-[767px]:border max-[767px]:border-r-0 max-[767px]:border-white/60 max-[767px]:bg-white/90 max-[767px]:px-2 max-[767px]:py-3 max-[767px]:shadow-lg max-[767px]:backdrop-blur-md dark:max-[767px]:border-slate-700/70 dark:max-[767px]:bg-slate-950/90 max-[767px]:transition-transform max-[767px]:duration-300 ${mobileUtilitiesOpen ? "max-[767px]:translate-x-0" : "max-[767px]:translate-x-full max-[767px]:pointer-events-none"}`
+                  : `max-[767px]:absolute max-[767px]:top-[52px] max-[767px]:right-4 max-[767px]:left-4 max-[767px]:justify-between max-[767px]:rounded-2xl max-[767px]:border max-[767px]:border-white/60 max-[767px]:bg-white/80 max-[767px]:px-2 max-[767px]:py-1.5 max-[767px]:shadow-lg max-[767px]:backdrop-blur-md dark:max-[767px]:border-slate-700/70 dark:max-[767px]:bg-slate-950/75 ${mobileUtilitiesOpen ? "max-[767px]:flex" : "max-[767px]:hidden"}`
             }`}
           >
             {isLoading && !resolvedUser
               ? null
               : isSignedIn && !isJourneyEnvironment && (
-                  <WalletBalancePill tone={isHomeHeroState ? "hero" : "default"} />
+                  <WalletBalancePill
+                    tone={isHomeHeroState ? "hero" : "default"}
+                    compact={mobileNavigationMode === "swipe"}
+                  />
                 )}
 
             {isLoading && !resolvedUser
@@ -1242,7 +1306,7 @@ export function SiteHeader({
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 8 }}
                         transition={{ duration: 0.18, ease: "easeOut" }}
-                        className="fixed top-[60px] right-0 left-1/2 z-9999 mt-1 w-[calc(100vw-32px)] max-w-sm origin-top -translate-x-1/2 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl md:absolute md:top-full md:right-0 md:left-auto md:w-80 md:origin-top-right md:-translate-x-0"
+                        className={`fixed ${mobilePopoverPositionClass} z-9999 mt-1 w-[calc(100vw-32px)] max-w-sm overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl md:absolute md:top-full md:right-0 md:left-auto md:w-80 md:origin-top-right md:-translate-x-0`}
                       >
                         {/* Header */}
                         <div className="border-border bg-muted/30 flex items-center justify-between border-b px-4 py-3">
@@ -1456,7 +1520,7 @@ export function SiteHeader({
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 8 }}
                     transition={{ duration: 0.18, ease: "easeOut" }}
-                    className="fixed top-[60px] right-0 left-1/2 z-[9999] mt-1 w-[calc(100vw-32px)] max-w-sm origin-top -translate-x-1/2 overflow-visible rounded-xl border border-slate-200 bg-white shadow-xl md:absolute md:top-full md:right-0 md:left-auto md:w-72 md:origin-top-right md:-translate-x-0"
+                    className={`fixed ${mobileQuickAccessPopoverPositionClass} z-[9999] mt-1 w-[calc(100vw-32px)] max-w-sm overflow-visible rounded-xl border border-slate-200 bg-white shadow-xl md:absolute md:top-full md:right-0 md:left-auto md:w-72 md:origin-top-right md:-translate-x-0`}
                   >
                     {/* Header */}
                     <div className="border-border bg-muted/30 flex items-center justify-between rounded-t-xl border-b px-4 py-2.5">
@@ -1631,13 +1695,23 @@ export function SiteHeader({
           )}
           </div>
 
+          {isSignedIn && mobileNavigationMode === "swipe" && !mobileUtilitiesOpen && (
+            <HydrationSafeButton
+              aria-label="Open quick actions tray"
+              onClick={() => setMobileUtilitiesOpen(true)}
+              className="fixed top-1/2 right-0 z-9999 hidden h-12 w-6 -translate-y-1/2 items-center justify-center rounded-l-full border-0 bg-white/90 text-[#0d7377] shadow-lg backdrop-blur-md max-[767px]:flex dark:bg-slate-950/90"
+            >
+              <ChevronDown className="h-4 w-4 rotate-90" aria-hidden="true" />
+            </HydrationSafeButton>
+          )}
+
           {/* LOGIN / PROFILE toggle */}
           {isLoading && !resolvedUser ? (
             <div className="h-10 w-22 animate-pulse rounded-lg bg-[#0d7377]/10" />
           ) : user ? (
             <div className="flex items-center gap-2">
               <div
-                className="relative max-[767px]:absolute max-[767px]:top-2 max-[767px]:right-4"
+                className="relative max-[640px]:fixed max-[640px]:right-3 max-[640px]:bottom-[calc(0.5rem+env(safe-area-inset-bottom))] max-[640px]:z-101 mb-1 md:mb-0"
                 ref={profileRef}
                 onPointerEnter={(e) => {
                   // Ignore touch pointer types to prevent double-triggering on mobile
@@ -1687,7 +1761,7 @@ export function SiteHeader({
                       initial={{ opacity: 0, scale: 0.95, y: 10 }}
                       animate={{ opacity: 1, scale: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                      className="absolute top-full right-0 z-9999 mt-2 max-h-[80vh] w-76 origin-top-right transform overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl"
+                      className="absolute top-full right-0 z-9999 mt-2 max-h-[80vh] w-76 origin-top-right transform overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl max-[640px]:fixed max-[640px]:top-auto max-[640px]:right-4 max-[640px]:bottom-[76px] max-[640px]:mt-0 max-[640px]:max-h-[70vh] max-[640px]:w-[calc(100vw-32px)] max-[640px]:origin-bottom-right"
                     >
                       {/* Header */}
                       <div className="border-border bg-muted/30 border-b px-5 py-4">
