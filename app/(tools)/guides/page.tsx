@@ -193,7 +193,9 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
   const [deleting, setDeleting] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
-  const [accessFilter, setAccessFilter] = useState<"all" | "plan" | "credits">("all");
+  const [accessFilter, setAccessFilter] = useState<
+    "all" | "plan" | "credits" | "active" | "inactive"
+  >("all");
 
   useEffect(() => {
     if (!user) {
@@ -409,6 +411,8 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
   const filteredOwnedGuides = ownedGuides.filter((guide) => {
     if (accessFilter === "plan") return isIncludedWithPlan(guide);
     if (accessFilter === "credits") return isUnlockedWithCredits(guide);
+    if (accessFilter === "active") return hasSession(guide);
+    if (accessFilter === "inactive") return !hasSession(guide);
     return true;
   });
 
@@ -709,7 +713,7 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
                   </span> */}
                 </button>
 
-                <button
+                {/* <button
                   type="button"
                   onClick={() => setAccessFilter("credits")}
                   className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold tracking-wide transition-all ${
@@ -718,8 +722,8 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
                       : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-slate-600"
                   }`}
                 >
-                  Unlocked with Credits
-                  {/* <span
+                  Unlocked with Credits */}
+                {/* <span
                     className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
                       accessFilter === "credits"
                         ? "bg-white/20 text-white"
@@ -728,6 +732,30 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
                   >
                     {creditsGuidesCount}
                   </span> */}
+                {/* </button> */}
+
+                <button
+                  type="button"
+                  onClick={() => setAccessFilter("active")}
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold tracking-wide transition-all ${
+                    accessFilter === "active"
+                      ? "border-teal-600 bg-teal-600 text-white shadow-sm"
+                      : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-slate-600"
+                  }`}
+                >
+                  In Progress
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setAccessFilter("inactive")}
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold tracking-wide transition-all ${
+                    accessFilter === "inactive"
+                      ? "border-teal-600 bg-teal-600 text-white shadow-sm"
+                      : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-slate-600"
+                  }`}
+                >
+                  Not Started
                 </button>
               </div>
             )}
@@ -755,7 +783,11 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
                 ? "No guides found included with your plan."
                 : accessFilter === "credits"
                   ? "No guides found unlocked with credits."
-                  : "No guides in your collection yet."}
+                  : accessFilter === "active"
+                    ? "No guides currently in progress."
+                    : accessFilter === "inactive"
+                      ? "No unstarted guides found."
+                      : "No guides in your collection yet."}
             </div>
           )}
         </div>
