@@ -467,7 +467,10 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
           </div>
 
           <div className="flex items-start justify-between gap-3">
-            <h3 className="text-lg leading-snug font-bold text-slate-900 transition-colors group-hover:text-teal-700 md:text-xl">
+            <h3
+              className="text-lg leading-snug font-bold text-slate-900 transition-colors group-hover:text-teal-700 md:text-xl"
+              title={session.guides.description}
+            >
               {session.guides.title}
             </h3>
             <div className="relative z-50 shrink-0">
