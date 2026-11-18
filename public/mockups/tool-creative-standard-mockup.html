@@ -263,17 +263,34 @@
       
       <!-- Top Micro-bar: Pill + Scope + Live Status -->
       <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
-          
+        <div class="flex items-center gap-2.5">
+          <span id="hero-category-pill" class="font-serif italic text-white/90 text-sm font-medium tracking-wide">
+            Official Immigration Toolkit
+          </span>
+          <span class="text-white/30">•</span>
+          <span id="hero-badge" class="inline-flex items-center gap-1.5 bg-white/15 text-white text-[11px] font-bold px-3 py-1 rounded-full border border-white/20 tracking-wider uppercase">
+            <span class="relative flex h-2 w-2">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-300 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-teal-200"></span>
+            </span>
+            <span id="hero-badge-text">Live Status Radar</span>
+          </span>
 
           <!-- Journey Slot -->
           <div id="hero-journey-tag" class="hidden items-center gap-1.5 bg-amber-400/20 text-amber-200 border border-amber-300/30 px-3 py-0.5 rounded-full text-xs font-medium">
-            <i data-lucide="compass" class="w-3 h-3"></i>
+            <svg class="w-3 h-3 text-amber-200 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+            </svg>
             <span>Active Journey: IR-1 / Spouse (Consular Stage)</span>
           </div>
+        </div>
 
         <!-- Right quota / account status -->
         <div id="hero-quota-wrap" class="hidden items-center gap-2 bg-white/10 px-3 py-1 rounded-full text-xs font-medium border border-white/15">
-          <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-300"></i>
+          <svg class="w-3.5 h-3.5 text-amber-300 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
+          </svg>
           <span id="hero-quota-text">3 Photo Credits Available</span>
         </div>
       </div>
@@ -289,7 +306,11 @@
           </p>
           <div class="mt-3 flex items-center gap-4">
             <button onclick="openDrawer()" class="inline-flex items-center gap-1.5 text-xs text-white/85 hover:text-white font-medium underline underline-offset-4 decoration-white/40 hover:decoration-white transition-all cursor-pointer">
-              <i data-lucide="help-circle" class="w-3.5 h-3.5 text-teal-300"></i>
+              <svg class="w-3.5 h-3.5 text-teal-300 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                <path d="M12 17h.01"></path>
+              </svg>
               <span>Need help? Open Common Questions Guide</span>
             </button>
           </div>
@@ -298,24 +319,36 @@
         <!-- Hero Action Dock: Favorite, History, Reset, Common Questions -->
         <div class="flex items-center gap-2 self-start md:self-auto shrink-0 bg-white/10 p-1.5 rounded-2xl backdrop-blur-md border border-white/15 shadow-sm">
           <button id="btn-fresh" onclick="resetDemo()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-white/90 hover:text-white hover:bg-white/10 text-xs font-medium transition-all" title="Start from scratch">
-            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+            <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+              <path d="M3 3v5h5"></path>
+            </svg>
             <span>Start Fresh</span>
           </button>
           
           <button id="btn-album" onclick="alert('Viewing your saved history records.');" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-white/90 hover:text-white hover:bg-white/10 text-xs font-medium transition-all">
-            <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+            <svg class="w-3.5 h-3.5 shrink-0 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
             <span id="btn-album-text">History</span>
             <span class="bg-white text-[#0A4F49] text-[10px] font-black px-1.5 py-0.2 rounded-full">3</span>
           </button>
 
           <button onclick="openDrawer()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-white/90 hover:text-white hover:bg-white/10 text-xs font-medium transition-all cursor-pointer" title="View FAQs & guidelines">
-            <i data-lucide="help-circle" class="w-3.5 h-3.5 text-teal-300"></i>
+            <svg class="w-3.5 h-3.5 text-teal-300 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+              <path d="M12 17h.01"></path>
+            </svg>
             <span>Common Questions</span>
           </button>
 
           <!-- Favourite / QuickAccess Star Button -->
           <button onclick="toggleFavorite(this)" class="h-9 w-9 rounded-xl flex items-center justify-center bg-white text-[#0A4F49] hover:bg-white/90 shadow-sm transition-all group" title="Bookmark in Quick Access">
-            <i data-lucide="star" class="w-4 h-4 fill-amber-400 text-amber-500 group-hover:scale-110 transition-transform"></i>
+            <svg class="w-4 h-4 fill-amber-400 text-amber-500 group-hover:scale-110 transition-transform" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
           </button>
         </div>
       </div>
@@ -666,7 +699,7 @@
           </div>
 
           <!-- CARD B: Official Requirements & Best Practices -->
-          <div class="rounded-3xl border border-[#DDD9CE] bg-white p-6 shadow-sm">
+          <!-- <div class="rounded-3xl border border-[#DDD9CE] bg-white p-6 shadow-sm">
             <div class="flex items-center gap-2 mb-2">
               <i data-lucide="shield" class="w-4 h-4 text-[#0F8F80]"></i>
               <h3 id="rail-rules-title" class="font-serif font-bold text-sm text-[#16302C]">
@@ -679,7 +712,7 @@
             <div id="rail-rules-badge" class="font-mono text-xs font-bold text-center py-2.5 px-3 rounded-xl bg-[#F6F4EF] border border-[#DDD9CE] text-[#0A4F49]">
               IOE • EAC • WAC • LIN • SRC
             </div>
-          </div>
+          </div> -->
 
           <!-- CARD C: Official Verified Resources (USCIS & DOS) -->
           <div class="rounded-3xl border border-[#DDD9CE] bg-white p-6 shadow-sm">
@@ -707,46 +740,6 @@
                 </a>
               </li>
             </ul>
-          </div>
-
-          <!-- CARD D: Frequently Asked Questions (Sidebar Variant for Comparison) -->
-          <div id="rail-faq-card" class="rounded-3xl border border-[#DDD9CE] bg-white p-6 shadow-sm">
-            <div class="flex items-center justify-between gap-2 mb-3">
-              <div class="flex items-center gap-2">
-                <i data-lucide="help-circle" class="w-4 h-4 text-[#0F8F80]"></i>
-                <h3 class="font-serif font-bold text-sm text-[#16302C]">Common Questions</h3>
-              </div>
-              <span class="text-[10px] font-mono text-[#0F8F80] bg-[#E1F2EE] px-2 py-0.5 rounded-full font-bold">Sidebar</span>
-            </div>
-            <div id="rail-faq-content" class="space-y-3 text-xs">
-              <details class="group border-b border-[#DDD9CE] pb-2 cursor-pointer" open>
-                <summary class="font-serif font-bold text-xs text-[#16302C] list-none flex items-center justify-between gap-2">
-                  <span>How often does USCIS update cases?</span>
-                  <span class="text-[#0F8F80] font-mono text-xs group-open:rotate-45 transition-transform">+</span>
-                </summary>
-                <p class="mt-1.5 text-[11px] text-mutedGreen leading-relaxed">
-                  Statuses update nightly during scheduled batch processing (11 PM - 6 AM ET).
-                </p>
-              </details>
-              <details class="group border-b border-[#DDD9CE] pb-2 cursor-pointer">
-                <summary class="font-serif font-bold text-xs text-[#16302C] list-none flex items-center justify-between gap-2">
-                  <span>Does querying my status impact my case?</span>
-                  <span class="text-[#0F8F80] font-mono text-xs group-open:rotate-45 transition-transform">+</span>
-                </summary>
-                <p class="mt-1.5 text-[11px] text-mutedGreen leading-relaxed">
-                  No, this query is a read-only request to official public USCIS records.
-                </p>
-              </details>
-              <details class="group cursor-pointer">
-                <summary class="font-serif font-bold text-xs text-[#16302C] list-none flex items-center justify-between gap-2">
-                  <span>What does "Case Received" mean?</span>
-                  <span class="text-[#0F8F80] font-mono text-xs group-open:rotate-45 transition-transform">+</span>
-                </summary>
-                <p class="mt-1.5 text-[11px] text-mutedGreen leading-relaxed">
-                  USCIS accepted your filing fee and locked in your priority date.
-                </p>
-              </details>
-            </div>
           </div>
 
         </aside>
@@ -1065,21 +1058,28 @@
         activeNav.classList.remove('text-white/80');
       }
 
-      // Update Hero Content
-      document.getElementById('hero-category-pill').textContent = cfg.cat;
-      document.getElementById('hero-badge-text').textContent = cfg.badge;
-      document.getElementById('hero-title').textContent = cfg.title;
-      document.getElementById('hero-desc').textContent = cfg.desc;
+      // Update Hero Content safely
+      const catEl = document.getElementById('hero-category-pill');
+      if (catEl) catEl.textContent = cfg.cat;
+      const badgeEl = document.getElementById('hero-badge-text');
+      if (badgeEl) badgeEl.textContent = cfg.badge;
+      const titleEl = document.getElementById('hero-title');
+      if (titleEl) titleEl.textContent = cfg.title;
+      const descEl = document.getElementById('hero-desc');
+      if (descEl) descEl.textContent = cfg.desc;
 
       // Quota badge
       const quotaWrap = document.getElementById('hero-quota-wrap');
-      if (cfg.quota) {
-        quotaWrap.classList.remove('hidden');
-        quotaWrap.classList.add('flex');
-        document.getElementById('hero-quota-text').textContent = cfg.quota;
-      } else {
-        quotaWrap.classList.add('hidden');
-        quotaWrap.classList.remove('flex');
+      if (quotaWrap) {
+        if (cfg.quota) {
+          quotaWrap.classList.remove('hidden');
+          quotaWrap.classList.add('flex');
+          const quotaText = document.getElementById('hero-quota-text');
+          if (quotaText) quotaText.textContent = cfg.quota;
+        } else {
+          quotaWrap.classList.add('hidden');
+          quotaWrap.classList.remove('flex');
+        }
       }
 
       // Hide all canvas views & reveal target
@@ -1088,9 +1088,12 @@
       if (activeView) activeView.classList.remove('hidden');
 
       // Update Knowledge Rail
-      document.getElementById('rail-rules-title').textContent = cfg.rulesTitle;
-      document.getElementById('rail-rules-desc').textContent = cfg.rulesDesc;
-      document.getElementById('rail-rules-badge').textContent = cfg.rulesBadge;
+      const rulesTitleEl = document.getElementById('rail-rules-title');
+      if (rulesTitleEl) rulesTitleEl.textContent = cfg.rulesTitle;
+      const rulesDescEl = document.getElementById('rail-rules-desc');
+      if (rulesDescEl) rulesDescEl.textContent = cfg.rulesDesc;
+      const rulesBadgeEl = document.getElementById('rail-rules-badge');
+      if (rulesBadgeEl) rulesBadgeEl.textContent = cfg.rulesBadge;
 
       // Render Checklist
       const checklistContainer = document.getElementById('rail-checklist');
