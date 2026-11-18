@@ -709,6 +709,46 @@
             </ul>
           </div>
 
+          <!-- CARD D: Frequently Asked Questions (Sidebar Variant for Comparison) -->
+          <div id="rail-faq-card" class="rounded-3xl border border-[#DDD9CE] bg-white p-6 shadow-sm">
+            <div class="flex items-center justify-between gap-2 mb-3">
+              <div class="flex items-center gap-2">
+                <i data-lucide="help-circle" class="w-4 h-4 text-[#0F8F80]"></i>
+                <h3 class="font-serif font-bold text-sm text-[#16302C]">Common Questions</h3>
+              </div>
+              <span class="text-[10px] font-mono text-[#0F8F80] bg-[#E1F2EE] px-2 py-0.5 rounded-full font-bold">Sidebar</span>
+            </div>
+            <div id="rail-faq-content" class="space-y-3 text-xs">
+              <details class="group border-b border-[#DDD9CE] pb-2 cursor-pointer" open>
+                <summary class="font-serif font-bold text-xs text-[#16302C] list-none flex items-center justify-between gap-2">
+                  <span>How often does USCIS update cases?</span>
+                  <span class="text-[#0F8F80] font-mono text-xs group-open:rotate-45 transition-transform">+</span>
+                </summary>
+                <p class="mt-1.5 text-[11px] text-mutedGreen leading-relaxed">
+                  Statuses update nightly during scheduled batch processing (11 PM - 6 AM ET).
+                </p>
+              </details>
+              <details class="group border-b border-[#DDD9CE] pb-2 cursor-pointer">
+                <summary class="font-serif font-bold text-xs text-[#16302C] list-none flex items-center justify-between gap-2">
+                  <span>Does querying my status impact my case?</span>
+                  <span class="text-[#0F8F80] font-mono text-xs group-open:rotate-45 transition-transform">+</span>
+                </summary>
+                <p class="mt-1.5 text-[11px] text-mutedGreen leading-relaxed">
+                  No, this query is a read-only request to official public USCIS records.
+                </p>
+              </details>
+              <details class="group cursor-pointer">
+                <summary class="font-serif font-bold text-xs text-[#16302C] list-none flex items-center justify-between gap-2">
+                  <span>What does "Case Received" mean?</span>
+                  <span class="text-[#0F8F80] font-mono text-xs group-open:rotate-45 transition-transform">+</span>
+                </summary>
+                <p class="mt-1.5 text-[11px] text-mutedGreen leading-relaxed">
+                  USCIS accepted your filing fee and locked in your priority date.
+                </p>
+              </details>
+            </div>
+          </div>
+
         </aside>
 
       </div>
@@ -803,7 +843,45 @@
     </div>
 
     <div id="drawer-faq-content" class="space-y-4 text-xs">
-      <!-- FAQs injected via JS depending on current active tool -->
+      <details class="group border-b border-[#DDD9CE] pb-3 cursor-pointer" open>
+        <summary class="font-serif font-bold text-sm text-[#16302C] list-none flex items-center justify-between gap-2">
+          <span>How often does USCIS update case statuses?</span>
+          <span class="text-[#0F8F80] font-mono text-base group-open:rotate-45 transition-transform">+</span>
+        </summary>
+        <p class="mt-2 text-xs text-mutedGreen leading-relaxed">
+          Statuses update nightly during scheduled batch processing, typically between 11 PM and 6 AM Eastern Time.
+        </p>
+      </details>
+
+      <details class="group border-b border-[#DDD9CE] pb-3 cursor-pointer" open>
+        <summary class="font-serif font-bold text-sm text-[#16302C] list-none flex items-center justify-between gap-2">
+          <span>Does querying my status impact my case?</span>
+          <span class="text-[#0F8F80] font-mono text-base group-open:rotate-45 transition-transform">+</span>
+        </summary>
+        <p class="mt-2 text-xs text-mutedGreen leading-relaxed">
+          No, this query is a read-only request to official public USCIS records with zero impact on adjudication.
+        </p>
+      </details>
+
+      <details class="group border-b border-[#DDD9CE] pb-3 cursor-pointer">
+        <summary class="font-serif font-bold text-sm text-[#16302C] list-none flex items-center justify-between gap-2">
+          <span>What does "Case Was Received" mean?</span>
+          <span class="text-[#0F8F80] font-mono text-base group-open:rotate-45 transition-transform">+</span>
+        </summary>
+        <p class="mt-2 text-xs text-mutedGreen leading-relaxed">
+          It means USCIS accepted your filing fee and locked in your priority date. You will next receive biometric or approval notices.
+        </p>
+      </details>
+
+      <details class="group border-b border-[#DDD9CE] pb-3 cursor-pointer">
+        <summary class="font-serif font-bold text-sm text-[#16302C] list-none flex items-center justify-between gap-2">
+          <span>How do I expedite my case with USCIS?</span>
+          <span class="text-[#0F8F80] font-mono text-base group-open:rotate-45 transition-transform">+</span>
+        </summary>
+        <p class="mt-2 text-xs text-mutedGreen leading-relaxed">
+          You can request expedited processing via the USCIS Contact Center if you meet criteria such as severe financial loss or urgent humanitarian emergencies.
+        </p>
+      </details>
     </div>
   </div>
 
@@ -1075,6 +1153,25 @@
             <p class="mt-3 text-xs sm:text-sm text-mutedGreen leading-relaxed border-t border-[#EFECE6] pt-3">${f.a}</p>
           `;
           gridContainer.appendChild(d);
+        });
+      }
+
+      // 3. Right Rail Sidebar Variant (for side-by-side comparison)
+      const railFaqContainer = document.getElementById('rail-faq-content');
+      if (railFaqContainer) {
+        railFaqContainer.innerHTML = '';
+        faqs.slice(0, 3).forEach((f, idx) => {
+          const d = document.createElement('details');
+          d.className = 'group border-b border-[#DDD9CE] last:border-none pb-2 cursor-pointer';
+          if (idx === 0) d.open = true;
+          d.innerHTML = `
+            <summary class="font-serif font-bold text-xs text-[#16302C] list-none flex items-center justify-between gap-2">
+              <span>${f.q}</span>
+              <span class="text-[#0F8F80] font-mono text-xs group-open:rotate-45 transition-transform">+</span>
+            </summary>
+            <p class="mt-1.5 text-[11px] text-mutedGreen leading-relaxed">${f.a}</p>
+          `;
+          railFaqContainer.appendChild(d);
         });
       }
     }
