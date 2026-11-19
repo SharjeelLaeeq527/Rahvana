@@ -67,13 +67,13 @@ export function FormField({
   const hasError = Boolean(error);
   return (
     <div className={cn("flex flex-col gap-1.5", className)}>
-      <Label className="text-xs font-medium text-slate-600">
+      <Label className="text-xs font-semibold text-slate-700">
         {label}
-        {required && <span className="text-red-500 ml-0.5">*</span>}
+        {required && <span className="text-red-500 ml-1">*</span>}
       </Label>
       <div className="relative">
         {icon && (
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
             {iconMap[icon]}
           </div>
         )}
@@ -86,24 +86,25 @@ export function FormField({
           readOnly={readOnly}
           aria-invalid={hasError}
           className={cn(
-            "h-10 text-sm bg-white border rounded-md",
+            "h-12 text-sm bg-white border rounded-lg",
             "placeholder:text-slate-400",
             "disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed",
-            "read-only:bg-slate-50 read-only:text-slate-600",
+            "read-only:bg-slate-50 read-only:text-slate-700 read-only:border-slate-200",
+            "focus:outline-none focus:ring-1 transition-colors",
             hasError
-              ? "border-red-400 focus:border-red-500 focus:ring-1 focus:ring-red-200"
-              : "border-slate-200 hover:border-slate-300 focus:border-slate-400 focus:ring-1 focus:ring-slate-200",
+              ? "border-red-300 focus:border-red-400 focus:ring-red-100"
+              : "border-[#E2E5E8] hover:border-[#D0D5DA] focus:border-[#0F8F80] focus:ring-[#E1F2EE]",
             icon ? "pl-9" : "px-3"
           )}
         />
       </div>
       {hasError ? (
-        <p className="flex items-center gap-1 text-xs text-red-600">
+        <p className="flex items-center gap-1 text-xs text-red-600 font-medium">
           <AlertCircle className="h-3 w-3 shrink-0" />
           {error}
         </p>
       ) : (
-        helpText && <p className="text-xs text-slate-400">{helpText}</p>
+        helpText && <p className="text-xs text-slate-500">{helpText}</p>
       )}
     </div>
   );
@@ -136,9 +137,9 @@ export function FormSelect({
 }: FormSelectProps) {
   return (
     <div className={cn("flex flex-col gap-1.5", className)}>
-      <Label className="text-xs font-medium text-slate-600">
+      <Label className="text-xs font-semibold text-slate-700">
         {label}
-        {required && <span className="text-red-500 ml-0.5">*</span>}
+        {required && <span className="text-red-500 ml-1">*</span>}
       </Label>
       <CustomDropdown
         value={value ?? ""}
@@ -149,9 +150,9 @@ export function FormSelect({
         ]}
         placeholder={placeholder}
         disabled={disabled || readOnly}
-        className="w-full [&_button]:w-full [&_button]:min-w-0"
+        className="w-full [&_button]:w-full [&_button]:min-w-0 [&_button]:h-12 [&_button]:text-sm [&_button]:rounded-lg [&_button]:border-[#E2E5E8] [&_button]:hover:border-[#D0D5DA] [&_button]:focus:border-[#0F8F80]"
       />
-      {helpText && <p className="text-xs text-slate-400">{helpText}</p>}
+      {helpText && <p className="text-xs text-slate-500">{helpText}</p>}
     </div>
   );
 }
@@ -204,23 +205,23 @@ export function SectionHeader({
   badge,
 }: SectionHeaderProps) {
   return (
-    <div className="flex items-center justify-between gap-3">
-      <div className="flex items-center gap-3 min-w-0">
+    <div className="flex items-center justify-between gap-3 w-full">
+      <div className="flex items-center gap-3 min-w-0 flex-1">
         <div
           className={cn(
-            "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
+            "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg",
             accentStyles[accent]
           )}
         >
           {icon}
         </div>
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <h3 className="text-sm font-semibold text-slate-800 truncate">{title}</h3>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h3 className="text-sm font-semibold text-slate-900">{title}</h3>
             {badge && (
               <span
                 className={cn(
-                  "text-[10px] font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap",
+                  "text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap",
                   accentStyles[accent]
                 )}
               >
@@ -228,12 +229,12 @@ export function SectionHeader({
               </span>
             )}
           </div>
-          {description && <p className="text-xs text-slate-500 mt-0.5 truncate">{description}</p>}
+          {description && <p className="text-xs text-slate-500 mt-1">{description}</p>}
         </div>
       </div>
       <ChevronDown
         className={cn(
-          "h-4 w-4 shrink-0 text-slate-400 transition-transform",
+          "h-5 w-5 shrink-0 text-slate-400 transition-transform duration-200",
           isOpen && "rotate-180"
         )}
       />
@@ -251,9 +252,9 @@ interface FormSectionProps {
 export function FormSection({ title, description, children, className }: FormSectionProps) {
   return (
     <div className={cn("space-y-4", className)}>
-      <div className="pb-2">
-        <h3 className="text-sm font-semibold text-slate-800">{title}</h3>
-        {description && <p className="text-xs text-slate-500 mt-0.5">{description}</p>}
+      <div className="pb-1">
+        <h3 className="text-sm font-semibold text-slate-900">{title}</h3>
+        {description && <p className="text-xs text-slate-500 mt-1">{description}</p>}
       </div>
       <div className="space-y-4">{children}</div>
     </div>
@@ -294,13 +295,13 @@ export function FormCheckbox({
         checked={checked}
         onChange={(e) => onCheckedChange(e.target.checked)}
         disabled={disabled}
-        className="h-4 w-4 rounded border-slate-300 text-slate-700 focus:ring-slate-400 focus:ring-offset-0 disabled:cursor-not-allowed"
+        className="h-4 w-4 rounded border-slate-300 text-slate-700 focus:ring-slate-400 focus:ring-offset-0 disabled:cursor-not-allowed accent-[#0F8F80]"
       />
       <span
         className={cn(
-          "text-sm font-normal leading-tight",
-          variant === "warning" ? "text-amber-700" : "text-slate-600",
-          !disabled && "group-hover:text-slate-800"
+          "text-sm font-normal leading-snug",
+          variant === "warning" ? "text-amber-700" : "text-slate-700",
+          !disabled && "group-hover:text-slate-900"
         )}
       >
         {label}

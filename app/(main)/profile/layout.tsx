@@ -6,14 +6,18 @@ interface ProfileLayoutProps {
 
 export default function ProfileLayout({ children }: ProfileLayoutProps) {
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100">
-      {/* pt-24 clears the fixed SiteHeader (≈64px) so the page title isn't cropped. */}
-      <div className="w-full site-main-px pt-24 pb-16">
-        <div className="flex justify-center">
-          {/* Main Content */}
-          <div className="w-full max-w-5xl">{children}</div>
-        </div>
-      </div>
+    <div className="min-h-screen bg-[#F8F9FA] pt-12 sm:pt-16">
+      {/* Add Google Fonts for Figtree and Lora */}
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Lora:ital,wght@0,500;0,600;1,500&display=swap');
+        * {
+          font-family: 'Figtree', system-ui, -apple-system, sans-serif;
+        }
+        h1, h2, h3, h4, h5, h6 {
+          font-family: 'Lora', Georgia, serif;
+        }
+      `}</style>
+      {children}
     </div>
   );
 }
