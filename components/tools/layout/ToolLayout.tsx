@@ -28,6 +28,7 @@ export function ToolLayout({
   sources = [],
   disclaimer,
   hideBottomBar = false,
+  showHeader = true,
   ctaText,
   ctaButtonText,
   ctaHref,
@@ -72,21 +73,27 @@ export function ToolLayout({
       }
     >
       {/* ── 1. Hero Color Band (var(--ad) deep background + watermark) ────── */}
-      <ToolHeader
-        title={title}
-        tagline={tagline}
-        category={category}
-        priceOrDuration={priceOrDuration}
-        theme={palette}
-        quickAccessItem={quickAccessItem}
-        historyAction={historyAction}
-        hasDrawerContent={hasDrawerContent}
-        onOpenDrawer={handleOpenDrawerDefault}
-        headerActions={headerActions}
-      />
+      {showHeader && (
+        <ToolHeader
+          title={title}
+          tagline={tagline}
+          category={category}
+          priceOrDuration={priceOrDuration}
+          theme={palette}
+          quickAccessItem={quickAccessItem}
+          historyAction={historyAction}
+          hasDrawerContent={hasDrawerContent}
+          onOpenDrawer={handleOpenDrawerDefault}
+          headerActions={headerActions}
+        />
+      )}
 
       {/* ── 2. The Bench Workspace Card (Overlaps the hero band with -mt-12) ─ */}
-      <main className="relative z-10 -mt-12 sm:-mt-14 px-4 sm:px-6">
+      <main
+        className={`relative z-10 ${
+          showHeader ? "-mt-12 sm:-mt-14" : "pt-4 sm:pt-6"
+        } px-4 sm:px-6`}
+      >
         <div className="mx-auto max-w-6xl">
           <div
             className={`overflow-hidden rounded-[22px] border border-[#DDD9CE] bg-white shadow-[0_14px_40px_-16px_rgba(22,48,44,0.28)] transition-all duration-300 ${

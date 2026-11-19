@@ -65,6 +65,9 @@ export interface ToolLayoutProps {
   /** Optional price, credits, or duration indicator (e.g. "Included in Premium · about 1 min") */
   priceOrDuration?: React.ReactNode;
 
+  /** Whether to show the top hero band header. Defaults to true. */
+  showHeader?: boolean;
+
   /** Predefined theme key or custom { accent, accentDark, accentTint } palette */
   theme?: ToolThemeKey | ToolThemePalette;
 
