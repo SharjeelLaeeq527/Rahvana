@@ -1219,7 +1219,7 @@ export default function BookConsultationTool({
                 />
               </div>
               <div>
-                <FieldLabel htmlFor="urgency" title="Urgency" />
+                <FieldLabel title="Urgency" />
                 <CustomDropdown
                   value={formData.urgency}
                   onChange={(value) => {
