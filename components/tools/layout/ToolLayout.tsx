@@ -11,9 +11,10 @@ export function ToolLayout({
   title,
   tagline,
   category,
-  // priceOrDuration,
+  priceOrDuration,
   theme,
   quickAccessItem,
+  historyAction,
   headerActions,
   layout,
   children,
@@ -75,9 +76,10 @@ export function ToolLayout({
         title={title}
         tagline={tagline}
         category={category}
-        // priceOrDuration={priceOrDuration}
+        priceOrDuration={priceOrDuration}
         theme={palette}
         quickAccessItem={quickAccessItem}
+        historyAction={historyAction}
         hasDrawerContent={hasDrawerContent}
         onOpenDrawer={handleOpenDrawerDefault}
         headerActions={headerActions}

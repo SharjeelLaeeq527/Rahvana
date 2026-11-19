@@ -1,19 +1,20 @@
 "use client";
 
 import React, { useState } from "react";
-import { Heart, HelpCircle, Loader2 } from "lucide-react";
+import { Heart, HelpCircle, Loader2, Clock } from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
 import { useQuickAccess, type QuickAccessItem } from "@/app/context/QuickAccessContext";
 import { useToast } from "@/app/components/shared/ToastProvider";
-import type { ToolThemePalette } from "./types";
+import type { ToolThemePalette, ToolHistoryAction } from "./types";
 
 interface ToolHeaderProps {
   title: React.ReactNode;
   tagline?: React.ReactNode;
   category?: React.ReactNode;
-  // priceOrDuration?: React.ReactNode;
+  priceOrDuration?: React.ReactNode;
   theme: ToolThemePalette;
   quickAccessItem?: QuickAccessItem;
+  historyAction?: ToolHistoryAction;
   hasDrawerContent?: boolean;
   onOpenDrawer?: () => void;
   headerActions?: React.ReactNode;
@@ -27,9 +28,10 @@ export function ToolHeader({
   title,
   tagline,
   category,
-  // priceOrDuration,
+  priceOrDuration,
   theme,
   quickAccessItem,
+  historyAction,
   hasDrawerContent = false,
   onOpenDrawer,
   headerActions,
@@ -126,8 +128,39 @@ export function ToolHeader({
               </button>
             )}
 
-            {/* Rules and help button */}
-            {hasDrawerContent && onOpenDrawer && (
+            {/* History Action (Reserved slot in hero header next to Save button) */}
+            {historyAction && (
+              <button
+                type="button"
+                onClick={historyAction.onClick}
+                disabled={historyAction.disabled}
+                aria-expanded={historyAction.isOpen}
+                className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition-all duration-200 ${
+                  historyAction.isOpen
+                    ? "bg-white shadow-sm"
+                    : "border border-white/35 bg-transparent text-white hover:bg-white/10"
+                }`}
+                style={historyAction.isOpen ? { color: theme.accentDark } : undefined}
+                title={historyAction.isOpen ? "Hide search history" : "Show search history"}
+              >
+                <Clock className="h-4 w-4" />
+                <span>{historyAction.label || "History"}</span>
+                {typeof historyAction.count === "number" && (
+                  <span
+                    className={`ml-0.5 rounded-full px-1.5 py-0.5 text-[11px] font-bold ${
+                      historyAction.isOpen
+                        ? "bg-[#16302C]/10 text-[#16302C]"
+                        : "bg-white/20 text-white"
+                    }`}
+                  >
+                    {historyAction.count}
+                  </span>
+                )}
+              </button>
+            )}
+
+            {/* Rules and help button (Only shown if no historyAction is present) */}
+            {!historyAction && hasDrawerContent && onOpenDrawer && (
               <button
                 type="button"
                 onClick={onOpenDrawer}

@@ -8,6 +8,7 @@ export type {
   ToolRule,
   ToolFaq,
   ToolSource,
+  ToolHistoryAction,
   ToolThemeKey,
   ToolThemePalette,
   DrawerTabKey,

@@ -17,6 +17,19 @@ export interface ToolSource {
   url?: string;
 }
 
+export interface ToolHistoryAction {
+  /** Label to show on the button, default: "History" */
+  label?: string;
+  /** Number of history items shown in the badge */
+  count?: number;
+  /** Whether the history panel is currently open */
+  isOpen?: boolean;
+  /** Callback when the user clicks the history button */
+  onClick: () => void;
+  /** Disabled state */
+  disabled?: boolean;
+}
+
 export interface ToolThemePalette {
   /** Primary accent color used for buttons, badges, and focus rings (e.g., #7A5A3A) */
   accent: string;
@@ -50,13 +63,16 @@ export interface ToolLayoutProps {
   /** Optional category badge or eyebrow text in the hero header */
   category?: React.ReactNode;
   /** Optional price, credits, or duration indicator (e.g. "Included in Premium · about 1 min") */
-  // priceOrDuration?: React.ReactNode;
+  priceOrDuration?: React.ReactNode;
 
   /** Predefined theme key or custom { accent, accentDark, accentTint } palette */
   theme?: ToolThemeKey | ToolThemePalette;
 
   /** QuickAccess metadata enabling the hero bookmark button */
   quickAccessItem?: QuickAccessItem;
+
+  /** History action button displayed next to the Save button in the hero header */
+  historyAction?: ToolHistoryAction;
 
   /** Optional custom action elements in the hero header */
   headerActions?: React.ReactNode;
