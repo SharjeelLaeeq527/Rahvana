@@ -65,6 +65,10 @@ export function JourneyLine({
   }, [path, K, segOf]);
 
   const current = placed.find((p) => p.state === "current") || null;
+  // A step can be opened once the user has reached it (done, or at / before the
+  // current step). Later steps show their name but do not open.
+  const currentPos = current ? placed.indexOf(current) : -1;
+  const canOpen = (p: Placed) => p.state === "done" || currentPos < 0 || placed.indexOf(p) <= currentPos;
   const progress = useMemo(() => {
     if (current) return { seg: current.seg, x: current.x, y: current.y };
     const lastDone = [...placed].reverse().find((p) => p.state === "done");
@@ -209,7 +213,7 @@ export function JourneyLine({
         <div className="jh">
           <b style={{ color: CHAPTER_COLORS[focus % CHAPTER_COLORS.length].col }}>{chapters[focus].title}</b>
           <small>
-            {chapters[focus].done} of {chapters[focus].total} steps done, click a step to open it
+            {chapters[focus].done} of {chapters[focus].total} steps done, open any step you have reached
           </small>
         </div>
       )}
@@ -246,15 +250,15 @@ export function JourneyLine({
           return (
             <g
               key={`${p.chapterIndex}-${p.stepIndex}`}
-              className="st"
+              className={`st${focus === p.seg && !canOpen(p) ? " na" : ""}`}
               opacity={dim}
               transform={`translate(${p.x} ${p.y}) scale(${z})`}
               onPointerEnter={() => setHover(p)}
               onPointerLeave={() => setHover(null)}
               onClick={(e) => {
                 e.stopPropagation();
-                if (focus === p.seg) onOpenStep(p.chapterIndex, p.stepIndex);
-                else zoomTo(p.seg);
+                if (focus !== p.seg) zoomTo(p.seg);
+                else if (canOpen(p)) onOpenStep(p.chapterIndex, p.stepIndex);
               }}
             >
               <circle r={10} fill="transparent" />
@@ -343,18 +347,28 @@ export function JourneyLine({
         })}
 
       {/* Step names in the zoomed chapter: alternate rows, never overlapping */}
-      {labels.map(({ p, x, y, deg }) => (
-        <button
-          key={`n${p.chapterIndex}-${p.stepIndex}`}
-          type="button"
-          className={`sl2 ${p.state}`}
-          style={{ left: x, top: y, transform: `rotate(${deg}deg) translate(13px, -50%)` }}
-          onClick={() => onOpenStep(p.chapterIndex, p.stepIndex)}
-          title={p.name}
-        >
-          {p.name.length > LABEL_MAX_CHARS ? p.name.slice(0, LABEL_MAX_CHARS - 1).trimEnd() + "." : p.name}
-        </button>
-      ))}
+      {labels.map(({ p, x, y, deg }) => {
+        const text = p.name.length > LABEL_MAX_CHARS ? p.name.slice(0, LABEL_MAX_CHARS - 1).trimEnd() + "." : p.name;
+        const style = { left: x, top: y, transform: `rotate(${deg}deg) translate(13px, -50%)` };
+        const lock = p.lock ? " lk" : "";
+        // Not reached yet: readable, but not a link.
+        return canOpen(p) ? (
+          <button
+            key={`n${p.chapterIndex}-${p.stepIndex}`}
+            type="button"
+            className={`sl2 ${p.state}${lock}`}
+            style={style}
+            onClick={() => onOpenStep(p.chapterIndex, p.stepIndex)}
+            title={p.lock ? `${p.name} (needs ${planName(p.lock.requiredPlan)})` : p.name}
+          >
+            {text}
+          </button>
+        ) : (
+          <span key={`n${p.chapterIndex}-${p.stepIndex}`} className={`sl2 ${p.state} na${lock}`} style={style} title={p.name}>
+            {text}
+          </span>
+        );
+      })}
 
       {tip &&
         (() => {
@@ -375,6 +389,11 @@ export function JourneyLine({
                   <small>
                     Step {tip.number} of {tip.n}, {ch?.title}, {tip.state === "done" ? "done" : tip.state === "current" ? "you are here" : "upcoming"}
                   </small>
+                  {tip.lock ? (
+                    <small className="jt-l">Needs the {planName(tip.lock.requiredPlan)} plan</small>
+                  ) : !canOpen(tip) ? (
+                    <small className="jt-l">Opens when you reach it</small>
+                  ) : null}
                 </>
               )}
             </div>
@@ -390,4 +409,8 @@ export function JourneyLine({
       )}
     </div>
   );
+}
+
+function planName(plan: string) {
+  return plan.charAt(0).toUpperCase() + plan.slice(1);
 }

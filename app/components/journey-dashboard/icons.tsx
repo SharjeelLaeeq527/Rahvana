@@ -36,7 +36,7 @@ const PATHS = {
   search: "M11 17.5a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13zM16 16l4.5 4.5",
   trash: "M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12",
   pinTack: "M9 3h6l-1 6 3 3v2H7v-2l3-3zM12 14v7",
-  layout: "M3 3h6v6H3zM11 3h6v4h-6zM11 9h6v8h-6zM3 11h6v6H3z",
+  layout: "M5 5h6v6H5zM13 5h6v4h-6zM13 11h6v8h-6zM5 13h6v6H5z",
   ext: "M14 4h6v6M20 4l-9 9M18 14v6H4V6h6",
   question: "M9.6 9.5a2.5 2.5 0 1 1 3.6 2.2c-.8.4-1.2 1-1.2 1.8M12 17v.2",
 } as const;

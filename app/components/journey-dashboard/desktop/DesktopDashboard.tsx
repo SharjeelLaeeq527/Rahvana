@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Inter } from "next/font/google";
 import type { DashboardAlert } from "@/lib/journey/dashboard/types";
 import { formatDay } from "@/lib/journey/dashboard/buildDashboardModel";
@@ -18,15 +19,29 @@ import "./desktop.css";
 const inter = Inter({ subsets: ["latin"], weight: ["300", "400", "500", "600", "700"], display: "swap" });
 
 const FRAME_W = 1340;
+/** A narrow window lays the board out down to this width instead of shrinking the type. */
+const FRAME_MIN_W = 1180;
+/**
+ * A scaled-down board may also grow wider than FRAME_W to use spare screen
+ * width, but only in proportion to its height (frame width <= height x
+ * MAX_ASPECT, design is ~1.5) and never past FRAME_MAX_W, so it keeps its
+ * shape instead of turning into a long flat strip.
+ */
+const FRAME_MAX_W = 1520;
+const MAX_ASPECT = 2.4;
 const FRAME_CHROME = 42; // frame padding + border around the board
 const BOARD_MAX = 838;
 const BOARD_MIN = 780;
 /** Never scale the board below this (readability on small laptops). */
 const ZOOM_FLOOR = 0.82;
-/** Shortest board the compact layout is designed for. */
-const BOARD_MIN_COMPACT = 620;
+/** Last resort on very short screens: scale below ZOOM_FLOOR rather than make the page scroll. */
+const ZOOM_MIN_FIT = 0.6;
 /** Below this board height the compact layout switches on. */
 const COMPACT_BELOW = 760;
+/** Below this board height the tight layout (smaller rows and type again) switches on. */
+const TIGHT_BELOW = 650;
+/** Shortest board the tight layout is designed for. */
+const BOARD_MIN_TIGHT = 570;
 
 // ── Layout preferences (per journey, this browser only) ─────────────────────
 type RowId = "strength" | "mid" | "toolbox";
@@ -41,7 +56,8 @@ const DEFAULT_LAYOUT: Layout = { rows: ["strength", "mid", "toolbox"], cols: ["t
 /** Liquid colours for a locked chapter (grey, so it never reads as progress). */
 const LOCKED_FILL = { a: "#d5dade", m: "#c3c9ce", b: "#b0b7bd" };
 const ROW_HEIGHT: Record<RowId, string> = { strength: "208px", mid: "1fr", toolbox: "112px" };
-const ROW_HEIGHT_COMPACT: Record<RowId, string> = { strength: "178px", mid: "1fr", toolbox: "92px" };
+const ROW_HEIGHT_COMPACT: Record<RowId, string> = { strength: "168px", mid: "1fr", toolbox: "92px" };
+const ROW_HEIGHT_TIGHT: Record<RowId, string> = { strength: "150px", mid: "1fr", toolbox: "80px" };
 const WIDGETS: [WidgetId, string][] = [
   ["strength", "Case strength"],
   ["tracking", "Case tracking"],
@@ -70,31 +86,57 @@ function readLayout(key: string): Layout {
  */
 function useFitToScreen() {
   const ref = useRef<HTMLDivElement>(null);
-  const [fit, setFit] = useState({ zoom: 1, board: BOARD_MAX, width: FRAME_W, compact: false });
+  const [fit, setFit] = useState({ zoom: 1, board: BOARD_MAX, width: FRAME_W, compact: false, tight: false });
   useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
+    // The fixed site header and the sticky journey header both sit over the
+    // page, so the board starts below whichever reaches lower (plus a gap).
+    const headers = () =>
+      Array.from(document.querySelectorAll<HTMLElement>("header.fixed, [data-journey-header]"));
     const run = () => {
-      const top = el.getBoundingClientRect().top + window.scrollY;
-      const availH = Math.max(420, window.innerHeight - top - 16);
-      // 1. Fill the width (never wider than the design scale allows).
-      let zoom = Math.min(1.3, el.clientWidth / FRAME_W);
+      const flowTop = el.getBoundingClientRect().top + window.scrollY;
+      // Only headers pinned near the top of the viewport cover the board.
+      const coverBottom = headers().reduce((m, h) => {
+        const r = h.getBoundingClientRect();
+        return r.height > 0 && r.top < 200 ? Math.max(m, r.bottom) : m;
+      }, 0);
+      const top = Math.max(flowTop, coverBottom + 12);
+      const availH = Math.max(320, window.innerHeight - top - 16);
+      const cw = el.clientWidth;
+      // 1. Fill the width (never wider than the design scale allows). A narrow
+      //    window lays the board out narrower instead of shrinking the type.
+      let zoom = Math.min(1.3, cw / FRAME_W);
+      if (zoom < ZOOM_FLOOR) zoom = Math.min(ZOOM_FLOOR, cw / FRAME_MIN_W);
       let board = availH / zoom - FRAME_CHROME;
       // 2. Too short: scale down a little, but never below ZOOM_FLOOR.
       if (board < BOARD_MIN) {
-        zoom = Math.max(ZOOM_FLOOR, Math.min(zoom, availH / (BOARD_MIN + FRAME_CHROME)));
+        zoom = Math.max(Math.min(ZOOM_FLOOR, zoom), Math.min(zoom, availH / (BOARD_MIN + FRAME_CHROME)));
         board = availH / zoom - FRAME_CHROME;
       }
-      // 3. Still short: the compact layout absorbs it (smaller type and rows).
-      board = Math.max(BOARD_MIN_COMPACT, Math.min(BOARD_MAX, board));
-      setFit({ zoom, board, width: FRAME_W, compact: board < COMPACT_BELOW });
+      // 3. Still short: the compact, then tight, layout absorbs it (smaller
+      //    type and rows) before anything shrinks further.
+      board = Math.max(BOARD_MIN_TIGHT, Math.min(BOARD_MAX, board));
+      // 4. Even the tight board is taller than the screen: the board must stay
+      //    one view (no page scroll), so scale it below ZOOM_FLOOR to fit.
+      if ((board + FRAME_CHROME) * zoom > availH) zoom = Math.max(ZOOM_MIN_FIT, availH / (board + FRAME_CHROME));
+      // 5. Scaled down: use spare screen width, but only in proportion to the
+      //    board's height so it keeps its shape (see MAX_ASPECT).
+      const shapeCap = Math.max(FRAME_W, Math.min(FRAME_MAX_W, (board + FRAME_CHROME) * MAX_ASPECT));
+      const width = zoom < 1 ? Math.round(Math.max(FRAME_MIN_W, Math.min(cw / zoom, shapeCap))) : FRAME_W;
+      setFit({ zoom, board, width, compact: board < COMPACT_BELOW, tight: board < TIGHT_BELOW });
     };
     run();
     const ro = new ResizeObserver(run);
     ro.observe(el);
+    // Header height changes (fonts, banners, candidate badge) move the board.
+    headers().forEach((h) => ro.observe(h));
+    // The header can settle after the first paint (fade-in, late content).
+    const late = window.setTimeout(run, 400);
     window.addEventListener("resize", run);
     return () => {
       ro.disconnect();
+      window.clearTimeout(late);
       window.removeEventListener("resize", run);
     };
   }, []);
@@ -104,8 +146,10 @@ function useFitToScreen() {
 export function DesktopDashboard(props: DashboardSkinProps) {
   const { hero, chapters, path, caseHealth, alerts, tracking, keyDates, groups, personal, actions, nav, journeyId } = props;
   const today = useMemo(() => new Date(), []);
-  const { ref: fitRef, zoom, board, width: frameW, compact } = useFitToScreen();
+  const { ref: fitRef, zoom, board, width: frameW, compact, tight } = useFitToScreen();
   const [fanOpen, setFanOpen] = useState(false);
+  // Community popup: open while set, holding the bubble's position for the grow-in.
+  const [commFrom, setCommFrom] = useState<DOMRect | null | undefined>(undefined);
   // Banner pills stay on one line with their full text: show as many as fit.
   const bchRef = useRef<HTMLDivElement>(null);
   const [pillCount, setPillCount] = useState(2);
@@ -363,7 +407,16 @@ export function DesktopDashboard(props: DashboardSkinProps) {
       <div
         key="mid"
         className={`mid${hintClass("mid")}`}
-        style={{ gridTemplateColumns: visibleCols.length === 1 ? "1fr" : undefined }}
+        style={{
+          // Short boards: the calendar (month grid + key dates column) gets the wider share;
+          // tracking keeps its extra facts on its back face.
+          gridTemplateColumns:
+            visibleCols.length === 1
+              ? "1fr"
+              : compact
+                ? visibleCols.map((c) => (c === "calendar" ? "minmax(0, 1.3fr)" : "minmax(0, 1fr)")).join(" ")
+                : undefined,
+        }}
         {...dragProps("row", "mid")}
       >
         {visibleCols.map((c) =>
@@ -439,12 +492,17 @@ export function DesktopDashboard(props: DashboardSkinProps) {
             )
           )}
           {nav.communityUrl && (
-            <a className="qi cm" href={nav.communityUrl} target="_blank" rel="noopener noreferrer">
+            <button
+              type="button"
+              className="qi cm"
+              aria-haspopup="dialog"
+              onClick={(e) => setCommFrom(e.currentTarget.querySelector("i")?.getBoundingClientRect() ?? null)}
+            >
               <i>
-                <Icon n="users" size={22} />
+                <GroupIcon size={22} color="#fff" />
               </i>
               Community
-            </a>
+            </button>
           )}
         </nav>
       </section>
@@ -453,7 +511,7 @@ export function DesktopDashboard(props: DashboardSkinProps) {
 
   // Reset to two pills when the alerts change, then drop pills until the row fits.
   const alertKey = blocking.map((a) => a.id).join("|");
-  useLayoutEffect(() => setPillCount(2), [alertKey, compact]);
+  useLayoutEffect(() => setPillCount(2), [alertKey, compact, tight]);
   useLayoutEffect(() => {
     const el = bchRef.current;
     if (el && pillCount > 1 && el.scrollWidth > el.clientWidth + 1) setPillCount((c) => c - 1);
@@ -461,7 +519,7 @@ export function DesktopDashboard(props: DashboardSkinProps) {
 
   return (
     <div ref={fitRef} className={`rvd ${inter.className}`}>
-      <div className={`frame${arrange ? " arr" : ""}${compact ? " cmp" : ""}`} style={{ zoom, height: board + FRAME_CHROME, width: frameW }}>
+      <div className={`frame${arrange ? " arr" : ""}${compact ? " cmp" : ""}${tight ? " tgt" : ""}`} style={{ zoom, height: board + FRAME_CHROME, width: frameW }}>
         <div className="board" style={{ height: board, width: frameW - 40 }}>
           <section className="card banner">
             <button type="button" className="num" onClick={() => openAlerts()} aria-label="Open the list of things that need you">
@@ -582,7 +640,7 @@ export function DesktopDashboard(props: DashboardSkinProps) {
                       key={c.index}
                       type="button"
                       className={`lq${c.status === "current" ? " cur" : ""}${c.status === "locked" ? " lk" : ""}`}
-                      style={{ ["--p" as string]: `${full ? 100 : pct}%` }}
+                      style={{ ["--p" as string]: `${full ? 100 : pct}%`, ["--pf" as string]: full ? 1 : pct / 100 }}
                       disabled={c.status === "locked"}
                       onClick={() => actions.onOpenChapter(c.index)}
                     >
@@ -650,7 +708,7 @@ export function DesktopDashboard(props: DashboardSkinProps) {
               </div>
             </section>
 
-            <div className="rc" style={{ gridTemplateRows: visibleRows.map((r) => (compact ? ROW_HEIGHT_COMPACT : ROW_HEIGHT)[r]).join(" ") }}>
+            <div className="rc" style={{ gridTemplateRows: visibleRows.map((r) => (tight ? ROW_HEIGHT_TIGHT : compact ? ROW_HEIGHT_COMPACT : ROW_HEIGHT)[r]).join(" ") }}>
               {visibleRows.map((r) => rowEl[r])}
             </div>
           </div>
@@ -670,7 +728,87 @@ export function DesktopDashboard(props: DashboardSkinProps) {
         <NotesModal personal={personal} focusId={notesModal.id} onClose={() => setNotesModal({ open: false })} onRemove={undo.remove} />
       )}
       {undo.toast && <div className="rvd-portal">{undo.toast}</div>}
+      {commFrom !== undefined && nav.communityUrl && (
+        <CommunityModal url={nav.communityUrl} from={commFrom} onClose={() => setCommFrom(undefined)} />
+      )}
     </div>
+  );
+}
+
+/** The community group icon (three people), from the original dashboard design. */
+function GroupIcon({ size, color }: { size: number; color: string }) {
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke={color} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="8.5" r="3" />
+      <circle cx="5.5" cy="10" r="2.2" />
+      <circle cx="18.5" cy="10" r="2.2" />
+      <path d="M6.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5M1.5 18c0-2 1.5-3.5 4-3.5M22.5 18c0-2-1.5-3.5-4-3.5" />
+    </svg>
+  );
+}
+
+/**
+ * Community popup (the original dashboard design): grows out of the Community
+ * bubble, a wave header with the group icon, one line, and "Join the group",
+ * which opens the WhatsApp invite.
+ */
+function CommunityModal({ url, from, onClose }: { url: string; from: DOMRect | null; onClose: () => void }) {
+  const [out, setOut] = useState(false);
+  const joinRef = useRef<HTMLAnchorElement>(null);
+  const close = useCallback(() => {
+    setOut(true);
+    setTimeout(onClose, 220);
+  }, [onClose]);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && close();
+    window.addEventListener("keydown", onKey);
+    const t = setTimeout(() => joinRef.current?.focus({ preventScroll: true }), 620);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      clearTimeout(t);
+    };
+  }, [close]);
+  // The card starts at the bubble it was opened from.
+  const origin = from
+    ? {
+        ["--dx" as string]: `${from.left + from.width / 2 - window.innerWidth / 2}px`,
+        ["--dy" as string]: `${from.top + from.height / 2 - window.innerHeight / 2}px`,
+      }
+    : undefined;
+  return createPortal(
+    <div className={`rvd-portal ${inter.className}`}>
+      <div
+        className={`pop on${out ? " out" : ""}`}
+        data-scroll-lock
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="cm-t"
+        style={origin}
+        onClick={(e) => e.target === e.currentTarget && close()}
+      >
+        <div className="cpc">
+          <button type="button" className="px" onClick={close} aria-label="Close">
+            <Icon n="x" size={12} />
+          </button>
+          <div className="cph">
+            <div className="chb">
+              <GroupIcon size={30} color="#0d7377" />
+            </div>
+            <svg className="w" viewBox="0 0 330 40" preserveAspectRatio="none" aria-hidden="true">
+              <path d="M0 22c40-22 80 14 125 2s80-20 130-4c30 10 55 6 75-4v24H0z" fill="#fff" />
+            </svg>
+          </div>
+          <div className="cpb">
+            <h3 id="cm-t">Join the community</h3>
+            <p>Talk with others going through this too.</p>
+            <a ref={joinRef} className="pj" href={url} target="_blank" rel="noopener noreferrer" onClick={close}>
+              Join the group
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>,
+    document.body
   );
 }
 

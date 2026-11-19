@@ -41,6 +41,7 @@ import {
   Truck,
   MoreVertical,
   ArrowUpRight,
+  Sparkles,
 } from "lucide-react";
 
 import {
@@ -62,6 +63,7 @@ import { getAllActiveSteps, getStageProgress } from "./journeyHelpers";
 import { getActiveStepsForStage } from "./journeyHelpers";
 import CredentialFormModal from "@/app/(main)/portal-wallet/components/CredentialFormModal";
 import ViewCredentialModal from "@/app/(main)/portal-wallet/components/ViewCredentialModal";
+import { ImportUscisModal } from "@/app/components/portal-wallet/ImportUscisModal";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { InlineGuideData } from "./InlineGuideData";
@@ -657,6 +659,7 @@ export const StepView: React.FC<StepViewProps> = ({
     uscisCredentials,
     ceacCredentials,
     courierCredentials,
+    previousUscis,
     isWalletFormOpen,
     setIsWalletFormOpen,
     isWalletViewOpen,
@@ -668,6 +671,7 @@ export const StepView: React.FC<StepViewProps> = ({
     isCeacModalOpen,
     setIsCeacModalOpen,
     handleSaveCredentials,
+    handleLoadPreviousUscis,
     handleDeleteCredentials,
     handleRevealPassword,
     handleRevealAnswer,
@@ -681,6 +685,44 @@ export const StepView: React.FC<StepViewProps> = ({
     actions,
     candidateId: "ir1",
   });
+
+  const [isImportUscisModalOpen, setIsImportUscisModalOpen] = useState(false);
+  const uscisPromptCheckedRef = useRef(false);
+
+  useEffect(() => {
+    const isUscisSetup =
+      sId === "step_1_6" || (currentStep as any)?.tool_data?.id === "uscis-account-setup";
+    if (!isUscisSetup) return;
+
+    if (
+      !uscisCredentials &&
+      previousUscis &&
+      !state.metadata?.uscisImportPromptDismissed &&
+      !uscisPromptCheckedRef.current
+    ) {
+      uscisPromptCheckedRef.current = true;
+      setIsImportUscisModalOpen(true);
+    }
+  }, [
+    sId,
+    currentStep,
+    uscisCredentials,
+    previousUscis,
+    state.metadata?.uscisImportPromptDismissed,
+  ]);
+
+  const handleConfirmImportUscis = async () => {
+    const success = await handleLoadPreviousUscis();
+    if (success) {
+      setIsImportUscisModalOpen(false);
+      actions.updateMetadata({ uscisPortalSaved: "true" });
+    }
+  };
+
+  const handleDeclineImportUscis = () => {
+    setIsImportUscisModalOpen(false);
+    actions.updateMetadata({ uscisImportPromptDismissed: true });
+  };
 
   const {
     showQuiz,
@@ -2647,6 +2689,24 @@ export const StepView: React.FC<StepViewProps> = ({
                       <span>Open credential vault</span>
                       <ArrowRight size={11} strokeWidth={2} />
                     </div>
+                    {sId === "step_1_6" && previousUscis && (
+                      <div
+                        role="button"
+                        tabIndex={0}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsImportUscisModalOpen(true);
+                        }}
+                        className="mt-3.5 flex items-center justify-between border-t border-[#d0e4f7]/80 pt-3 text-[11px] font-semibold text-teal-700 hover:text-teal-800"
+                      >
+                        <span className="flex items-center gap-1.5 truncate">
+                          <span className="truncate">
+                            Saved account: <strong>{previousUscis.username}</strong>
+                          </span>
+                        </span>
+                        <span className="ml-2 shrink-0 underline">Load</span>
+                      </div>
+                    )}
                   </button>
                 )}
               </div>
@@ -4390,8 +4450,12 @@ export const StepView: React.FC<StepViewProps> = ({
         <button
           onClick={() => {
             if (prevStepLock.isLocked) {
-              const psId = prevStep ? ((prevStep as any).step_key || (prevStep as any).id) : undefined;
-              setUpgradeModalFeature(prevStepLock.feature || getModalFeatureForTier(prevStepLock.requiredPlan!, psId));
+              const psId = prevStep
+                ? (prevStep as any).step_key || (prevStep as any).id
+                : undefined;
+              setUpgradeModalFeature(
+                prevStepLock.feature || getModalFeatureForTier(prevStepLock.requiredPlan!, psId)
+              );
               return;
             }
             prevStep && handleNavigate((prevStep as any).step_key || (prevStep as any).id);
@@ -4422,7 +4486,9 @@ export const StepView: React.FC<StepViewProps> = ({
             onClick={() => {
               if (nextStepLock.isLocked) {
                 const nsId = (nextStep as any).step_key || (nextStep as any).id;
-                setUpgradeModalFeature(nextStepLock.feature || getModalFeatureForTier(nextStepLock.requiredPlan!, nsId));
+                setUpgradeModalFeature(
+                  nextStepLock.feature || getModalFeatureForTier(nextStepLock.requiredPlan!, nsId)
+                );
                 return;
               }
               handleNavigate((nextStep as any).step_key || (nextStep as any).id);
@@ -4511,6 +4577,18 @@ export const StepView: React.FC<StepViewProps> = ({
           setShowDeleteConfirmation(true);
         }}
       />
+
+      {previousUscis && (
+        <ImportUscisModal
+          open={isImportUscisModalOpen}
+          onOpenChange={setIsImportUscisModalOpen}
+          username={previousUscis.username}
+          sourceJourneyType={previousUscis.journeyType}
+          onConfirm={handleConfirmImportUscis}
+          onDecline={handleDeclineImportUscis}
+          loading={isSubmittingCreds}
+        />
+      )}
 
       {upgradeModalFeature && (
         <UpgradeModal

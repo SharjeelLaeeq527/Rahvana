@@ -5,6 +5,7 @@
 //   DELETE /api/admin/reviews?id=<id>         -> permanently remove a review
 
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { createServerClient } from "@supabase/ssr";
 import {
   deleteReview,
@@ -96,6 +97,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     await setReviewStatus(id, action === "approve" ? "approved" : "rejected");
+    revalidatePath("/resources/[slug]", "page");
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error("[api/admin/reviews] PATCH error:", err);
@@ -112,6 +114,7 @@ export async function DELETE(request: NextRequest) {
     if (!id) return NextResponse.json({ error: "Review id is required" }, { status: 400 });
 
     await deleteReview(id);
+    revalidatePath("/resources/[slug]", "page");
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error("[api/admin/reviews] DELETE error:", err);

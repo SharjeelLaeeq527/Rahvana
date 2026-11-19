@@ -77,7 +77,7 @@ export function AlertsDrawer({
 
   return createPortal(
     <div className="rvd-portal">
-      <div className="sc2 on" onClick={onClose} />
+      <div className="sc2 on" data-scroll-lock onClick={onClose} />
       <aside className="dr on" role="dialog" aria-modal="true" aria-label="Things that need you">
         <button type="button" className="x" onClick={onClose} aria-label="Close">
           <Icon n="x" size={14} />
