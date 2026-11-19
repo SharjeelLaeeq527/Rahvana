@@ -9,9 +9,12 @@ import { renderToStaticMarkup } from "react-dom/server";
 import CspaAgeCheckerTool from "@/components/tools/CspaAgeCheckerTool";
 import type { CspaInput } from "@/lib/tools/cspa/ageOut";
 
-jest.mock("@/app/components/shared/QuickAccessButton", () => ({
-  QuickAccessButton: () => null,
+// Standalone renders inside the shared ToolLayout, whose header (Save button) reads these contexts.
+jest.mock("@/app/context/AuthContext", () => ({ useAuth: () => ({ user: null }) }));
+jest.mock("@/app/context/QuickAccessContext", () => ({
+  useQuickAccess: () => ({ items: [], addItem: jest.fn(), removeItem: jest.fn(), isPending: false }),
 }));
+jest.mock("@/app/components/shared/ToastProvider", () => ({ useToast: () => ({ showToast: jest.fn() }) }));
 
 const render = (props: Record<string, unknown>) =>
   renderToStaticMarkup(React.createElement(CspaAgeCheckerTool, props as never));
@@ -29,14 +32,21 @@ describe("CspaAgeCheckerTool render", () => {
 
   it("opens on the intro card, not the form, in both modes", () => {
     for (const mode of ["standalone", "journey"]) {
-      const html = render({ mode, initialInput: { dateOfBirth: "2006-03-10" } });
+      // The journey host (EmbeddedToolContainer) always mounts it with showHeader={false}.
+      const html = render({
+        mode,
+        showHeader: mode === "standalone",
+        initialInput: { dateOfBirth: "2006-03-10" },
+      });
       expect(html).toContain("What this tool is");
       expect(html).toContain("Why you need it");
       expect(html).toContain("How it helps");
       expect(html).toContain("What you will need");
       expect(html).toContain(">Continue<");
       expect(html).not.toContain("Your result will show here");
-      expect(html).not.toContain("Common questions");
+      // Journey shows the questions inline after Continue; standalone keeps them in the drawer,
+      // reached from the "Common questions" link under the card.
+      if (mode === "journey") expect(html).not.toContain("Common questions");
       expect(/[–—‘’“”…]/.test(html)).toBe(false);
     }
   });

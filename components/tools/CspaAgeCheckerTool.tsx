@@ -1,11 +1,10 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import Link from "next/link";
 import { Check, ChevronDown, ChevronRight } from "lucide-react";
 import type { ToolModeProps } from "@/types/tool-mode";
 import { useResolveToolMode } from "@/lib/hooks/useResolveToolMode";
-import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
+import { ToolLayout, type ToolRule } from "./layout";
 import {
   checkCspa,
   CSPA_SOURCES,
@@ -60,7 +59,7 @@ const EMPTY: CspaInput = {
 /** One accent colour per result. Used for the top rule, the status dot and the timeline. */
 const STATUS_STYLE: Record<CspaStatus, { label: string; accent: string; text: string }> = {
   protected: { label: "Protected", accent: "bg-emerald-600", text: "text-emerald-700 dark:text-emerald-400" },
-  not_filed: { label: "Not filed yet", accent: "bg-[#0d7377]", text: "text-[#0d7377] dark:text-teal-300" },
+  not_filed: { label: "Not filed yet", accent: "bg-[var(--tool-accent,#0d7377)]", text: "text-[var(--tool-accent,#0d7377)] dark:text-teal-300" },
   file_soon: { label: "File soon", accent: "bg-amber-500", text: "text-amber-700 dark:text-amber-400" },
   aged_out: { label: "Over the age limit", accent: "bg-rose-600", text: "text-rose-700 dark:text-rose-400" },
   not_a_child: { label: "Does not qualify", accent: "bg-rose-600", text: "text-rose-700 dark:text-rose-400" },
@@ -145,19 +144,19 @@ function Choice<T extends string>({
             role="radio"
             aria-checked={active}
             onClick={() => onChange(o.value)}
-            className={`flex items-center gap-2.5 rounded-lg border px-3.5 py-2.5 text-left text-sm transition-colors focus-visible:ring-2 focus-visible:ring-[#0d7377]/30 focus-visible:outline-none ${
+            className={`flex items-center gap-2.5 rounded-lg border px-3.5 py-2.5 text-left text-sm transition-colors focus-visible:ring-2 focus-visible:ring-[var(--tool-accent,#0d7377)]/30 focus-visible:outline-none ${
               active
-                ? "border-[#0d7377] bg-[#0d7377]/[0.04] font-medium text-slate-900 dark:bg-teal-400/10 dark:text-slate-100"
+                ? "border-[var(--tool-accent,#0d7377)] bg-[var(--tool-accent,#0d7377)]/[0.04] font-medium text-slate-900 dark:bg-teal-400/10 dark:text-slate-100"
                 : "border-slate-200 text-slate-700 hover:border-slate-300 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-600"
             }`}
           >
             <span
               aria-hidden
               className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${
-                active ? "border-[#0d7377]" : "border-slate-300 dark:border-slate-600"
+                active ? "border-[var(--tool-accent,#0d7377)]" : "border-slate-300 dark:border-slate-600"
               }`}
             >
-              {active && <span className="h-2 w-2 rounded-full bg-[#0d7377]" />}
+              {active && <span className="h-2 w-2 rounded-full bg-[var(--tool-accent,#0d7377)]" />}
             </span>
             {o.label}
           </button>
@@ -185,7 +184,7 @@ function DateInput({
       max={max}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3.5 text-sm text-slate-900 transition-colors focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/15 focus:outline-none sm:max-w-[260px] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+      className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3.5 text-sm text-slate-900 transition-colors focus:border-[var(--tool-accent,#0d7377)] focus:ring-2 focus:ring-[var(--tool-accent,#0d7377)]/15 focus:outline-none sm:max-w-[260px] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
     />
   );
 }
@@ -336,9 +335,24 @@ function IntroBlock({ title, children }: { title: string; children: React.ReactN
   );
 }
 
-function IntroCard({ isJourney, onContinue }: { isJourney: boolean; onContinue: () => void }) {
+function IntroCard({
+  isJourney,
+  onContinue,
+  bare = false,
+}: {
+  isJourney: boolean;
+  onContinue: () => void;
+  /** Inside ToolLayout the bench is already the card, so drop the border and padding. */
+  bare?: boolean;
+}) {
   return (
-    <section className="max-w-4xl rounded-xl border border-slate-200 bg-white p-6 sm:p-8 dark:border-slate-800 dark:bg-slate-900">
+    <section
+      className={
+        bare
+          ? "max-w-4xl"
+          : "max-w-4xl rounded-xl border border-slate-200 bg-white p-6 sm:p-8 dark:border-slate-800 dark:bg-slate-900"
+      }
+    >
       <h2 className="text-xl leading-snug font-semibold tracking-tight text-slate-900 sm:text-2xl dark:text-slate-50">
         Will your child turn 21 before getting the visa?
       </h2>
@@ -368,7 +382,7 @@ function IntroCard({ isJourney, onContinue }: { isJourney: boolean; onContinue: 
         <button
           type="button"
           onClick={onContinue}
-          className="inline-flex h-11 items-center justify-center gap-1.5 rounded-lg bg-[#0d7377] px-6 text-sm font-semibold text-white transition-colors hover:bg-[#0a5f62] focus-visible:ring-2 focus-visible:ring-[#0d7377] focus-visible:ring-offset-2 focus-visible:outline-none"
+          className="inline-flex h-11 items-center justify-center gap-1.5 rounded-lg bg-[var(--tool-accent,#0d7377)] px-6 text-sm font-semibold text-white transition-colors hover:bg-[var(--tool-accent-dark,#0a5f62)] focus-visible:ring-2 focus-visible:ring-[var(--tool-accent,#0d7377)] focus-visible:ring-offset-2 focus-visible:outline-none"
         >
           Continue
           <ChevronRight className="h-4 w-4" />
@@ -411,6 +425,159 @@ function IntroCard({ isJourney, onContinue }: { isJourney: boolean; onContinue: 
   );
 }
 
+// ─── Result ───────────────────────────────────────────────────────────────────
+
+/**
+ * The live result. `card` is the bordered card used in a journey; `panel` sits directly on the
+ * tinted answer column of ToolLayout (standalone), so it drops its own border and padding.
+ */
+function ResultView({
+  result,
+  dob,
+  variant,
+  footer,
+}: {
+  result: CspaResult | null;
+  dob: string;
+  variant: "card" | "panel";
+  footer?: React.ReactNode;
+}) {
+  const card = variant === "card";
+  const style = result ? STATUS_STYLE[result.status] : null;
+  const showTimeline =
+    !!result && (result.status === "protected" || result.status === "not_filed" || result.status === "file_soon");
+  const section = card
+    ? "border-t border-slate-100 p-5 sm:p-6 dark:border-slate-800"
+    : "border-t border-[#16302C]/10 pt-5";
+
+  if (!result || !style) {
+    return (
+      <div
+        className={
+          card
+            ? "rounded-xl border border-dashed border-slate-300 bg-white/60 p-6 dark:border-slate-700 dark:bg-slate-900/60"
+            : ""
+        }
+      >
+        <h3 className="text-[15px] font-semibold text-slate-900 dark:text-slate-100">
+          Your result will show here
+        </h3>
+        <p className="mt-1.5 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+          Start with your child&apos;s date of birth. The result updates as you answer, and
+          shows the 21st birthday, whether the age is locked, and what to do next.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={
+        card
+          ? "overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900"
+          : "flex flex-col gap-5"
+      }
+    >
+      {card && <div className={`h-1 ${style.accent}`} />}
+
+      <div className={card ? "p-5 sm:p-6" : ""}>
+        <div className={`flex items-center gap-2 text-[13px] font-semibold ${style.text}`}>
+          <span className={`h-2 w-2 rounded-full ${style.accent}`} />
+          {style.label}
+        </div>
+        <h3
+          className={`mt-2 leading-snug font-semibold tracking-tight text-slate-900 dark:text-slate-50 ${
+            card ? "text-xl" : "font-serif text-2xl"
+          }`}
+        >
+          {result.headline}
+        </h3>
+        <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">{result.body}</p>
+        {result.errors.length > 1 && (
+          <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-slate-600 dark:text-slate-300">
+            {result.errors.slice(1).map((e) => (
+              <li key={e}>{e}</li>
+            ))}
+          </ul>
+        )}
+
+        {showTimeline && (
+          <div className="mt-6">
+            <AgeTimeline dob={dob} result={result} accent={style.accent} />
+          </div>
+        )}
+      </div>
+
+      {result.status !== "invalid" && (
+        <dl
+          className={
+            card
+              ? "divide-y divide-slate-100 border-t border-slate-100 px-5 py-1.5 sm:px-6 dark:divide-slate-800 dark:border-slate-800"
+              : "divide-y divide-[#16302C]/10 border-t border-[#16302C]/10"
+          }
+        >
+          {result.ageToday && <Row label="Age today" value={formatAge(result.ageToday)} />}
+          {result.twentyFirstBirthday && (
+            <Row label="21st birthday" value={formatDate(result.twentyFirstBirthday)} />
+          )}
+          {result.freezeDate && <Row label="Age locked on" value={formatDate(result.freezeDate)} />}
+          {result.cspaAge && <Row label="Locked age" value={formatAge(result.cspaAge)} />}
+        </dl>
+      )}
+
+      {result.checks.length > 0 && (
+        <div className={section}>
+          <SubHeading>Relationship check</SubHeading>
+          <ul className="space-y-3">
+            {result.checks.map((c) => (
+              <li key={c.id} className="flex gap-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                <span className={`mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full ${CHECK_MARK[c.state]}`} />
+                <span>{c.text}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {result.nextSteps.length > 0 && (
+        <div className={section}>
+          <SubHeading>What to do next</SubHeading>
+          <ol className="space-y-3">
+            {result.nextSteps.map((s, i) => (
+              <li key={s} className="flex gap-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                <span className="w-4 shrink-0 text-right font-medium text-slate-400 tabular-nums">{i + 1}.</span>
+                <span>{s}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
+
+      {footer}
+    </div>
+  );
+}
+
+// ─── Drawer content (standalone) ──────────────────────────────────────────────
+
+/** Short facts for the "Rules" tab. Every line restates a rule the checker already applies. */
+const RULES: ToolRule[] = [
+  { label: "Visa", value: "IR-2, child of a U.S. citizen" },
+  { label: "Child must be", value: "Unmarried and under 21" },
+  { label: "Age is locked on", value: "The day USCIS receives the I-130" },
+  { label: "Stepchild", value: "Parents married before the child turned 18" },
+  { label: "Adopted child", value: "Adopted before 16" },
+  { label: "Married child", value: "Moves to F3, a longer wait" },
+];
+
+const sourceDomain = (url: string) => {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return undefined;
+  }
+};
+
 // ─── Tool ─────────────────────────────────────────────────────────────────────
 
 export default function CspaAgeCheckerTool({
@@ -447,13 +614,10 @@ export default function CspaAgeCheckerTool({
   };
 
   const result = useMemo(() => (input.dateOfBirth ? checkCspa(input) : null), [input]);
-  const style = result ? STATUS_STYLE[result.status] : null;
   const today = new Date().toISOString().slice(0, 10);
   const sourceIds: CspaSourceId[] = result?.sources.length
     ? result.sources
     : ["cspa", "policyManual", "children"];
-  const showTimeline =
-    !!result && (result.status === "protected" || result.status === "not_filed" || result.status === "file_soon");
 
   const handleSave = () => {
     if (!isJourney || !onSave || !result || result.status === "invalid") return;
@@ -461,336 +625,285 @@ export default function CspaAgeCheckerTool({
     setSaved(true);
   };
 
+  const saveButton =
+    isJourney && onSave && result && result.status !== "invalid" ? (
+      <div className="border-t border-slate-100 bg-slate-50/70 p-5 sm:px-6 dark:border-slate-800 dark:bg-slate-800/40">
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={saved}
+          className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-[var(--tool-accent,#0d7377)] px-5 text-sm font-semibold text-white transition-colors hover:bg-[var(--tool-accent-dark,#0a5f62)] disabled:cursor-default disabled:bg-white disabled:text-emerald-700 disabled:ring-1 disabled:ring-emerald-200"
+        >
+          {saved && <Check className="h-4 w-4" />}
+          {saved ? "Saved to this journey" : "Save to this journey"}
+        </button>
+      </div>
+    ) : null;
+
+  const backToIntro = (
+    <button
+      type="button"
+      onClick={() => goTo(false)}
+      className="inline-flex items-center gap-1 text-[13px] font-medium text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
+    >
+      <ChevronRight className="h-3.5 w-3.5 rotate-180" />
+      What is CSPA?
+    </button>
+  );
+
+  const form = (
+    <>
+      <FormSection title="Your child">
+        <Field label="Date of birth">
+          <DateInput
+            label="Child's date of birth"
+            max={today}
+            value={input.dateOfBirth}
+            onChange={(v) => set("dateOfBirth", v)}
+          />
+        </Field>
+
+        <Field label="Is your child married?">
+          <Choice
+            name="Marital status"
+            value={input.maritalStatus}
+            onChange={(v) => set("maritalStatus", v)}
+            options={[
+              { value: "never_married", label: "Never married" },
+              { value: "previously_married", label: "Was married before" },
+              { value: "married", label: "Married now" },
+            ]}
+          />
+        </Field>
+
+        <Field label="How is the child related to the U.S. citizen parent?">
+          <Choice
+            name="Relationship"
+            value={input.relationship}
+            onChange={(v) => set("relationship", v)}
+            options={[
+              { value: "biological", label: "Own child" },
+              { value: "stepchild", label: "Stepchild" },
+              { value: "adopted", label: "Adopted" },
+            ]}
+          />
+        </Field>
+
+        {input.relationship === "stepchild" && (
+          <FollowUp>
+            <Field
+              label="When did the stepparent marry the child's parent?"
+              hint="This must be before the child's 18th birthday."
+            >
+              <DateInput
+                label="Stepparent marriage date"
+                max={today}
+                value={input.stepMarriageDate ?? ""}
+                onChange={(v) => set("stepMarriageDate", v || null)}
+              />
+            </Field>
+          </FollowUp>
+        )}
+
+        {input.relationship === "adopted" && (
+          <FollowUp>
+            <Field
+              label="When was the adoption finalized?"
+              hint="A guardianship order does not count as adoption."
+            >
+              <DateInput
+                label="Adoption date"
+                max={today}
+                value={input.adoptionDate ?? ""}
+                onChange={(v) => set("adoptionDate", v || null)}
+              />
+            </Field>
+          </FollowUp>
+        )}
+      </FormSection>
+
+      <FormSection title="The I-130 petition">
+        <Field label="Has the U.S. citizen parent filed the I-130 for this child?">
+          <Choice
+            name="I-130 filed"
+            value={input.i130Filed ? "yes" : "no"}
+            onChange={(v) => set("i130Filed", v === "yes")}
+            options={[
+              { value: "no", label: "Not yet" },
+              { value: "yes", label: "Yes, it is filed" },
+            ]}
+          />
+        </Field>
+
+        {input.i130Filed && (
+          <FollowUp>
+            <Field
+              label="Date it was filed"
+              hint="Shown as Received Date on the USCIS receipt notice (I-797C)."
+            >
+              <DateInput
+                label="I-130 filing date"
+                max={today}
+                value={input.filingDate ?? ""}
+                onChange={(v) => set("filingDate", v || null)}
+              />
+            </Field>
+
+            <Field label="On that day, the parent was">
+              <Choice
+                name="Parent status at filing"
+                value={input.parentStatusAtFiling ?? "citizen"}
+                onChange={(v) => set("parentStatusAtFiling", v)}
+                options={[
+                  { value: "citizen", label: "A U.S. citizen" },
+                  { value: "lpr", label: "A green card holder" },
+                ]}
+              />
+            </Field>
+
+            {input.parentStatusAtFiling === "lpr" && (
+              <Field label="Has the parent become a U.S. citizen since then?">
+                <Choice
+                  name="Parent naturalized"
+                  value={input.parentNaturalized ? "yes" : "no"}
+                  onChange={(v) => set("parentNaturalized", v === "yes")}
+                  options={[
+                    { value: "no", label: "No" },
+                    { value: "yes", label: "Yes" },
+                  ]}
+                />
+              </Field>
+            )}
+
+            {input.parentStatusAtFiling === "lpr" && input.parentNaturalized && (
+              <Field label="Date the parent became a citizen" hint="Shown on the naturalization certificate.">
+                <DateInput
+                  label="Date the parent became a citizen"
+                  max={today}
+                  value={input.naturalizationDate ?? ""}
+                  onChange={(v) => set("naturalizationDate", v || null)}
+                />
+              </Field>
+            )}
+          </FollowUp>
+        )}
+      </FormSection>
+    </>
+  );
+
+  // ── Standalone page: the shared tool layout (band, bench card, drawer) ──
+  if (showHeader) {
+    return (
+      <ToolLayout
+        theme="cspa"
+        title="CSPA Age-Out Checker"
+        // The intro already explains the tool, so the lead line shows only on the checker.
+        tagline={
+          started
+            ? "Find out if your child's age is protected, or the last day to file the I-130."
+            : undefined
+        }
+        quickAccessItem={
+          isJourney
+            ? undefined
+            : {
+                id: "cspa-age-checker",
+                title: "CSPA Age-Out Checker",
+                href: "/cspa-age-checker",
+                icon_name: "Clock",
+              }
+        }
+        layout={started ? "split" : "single"}
+        workClassName={started ? "p-0! sm:p-0! lg:p-0!" : ""}
+        answer={
+          started ? (
+            <ResultView result={result} dob={input.dateOfBirth} variant="panel" footer={saveButton} />
+          ) : undefined
+        }
+        rules={RULES}
+        faqs={QUESTIONS.map(({ q, a }) => ({ question: q, answer: a }))}
+        sources={sourceIds.map((id) => ({
+          title: CSPA_SOURCES[id].label,
+          domain: sourceDomain(CSPA_SOURCES[id].url),
+          url: CSPA_SOURCES[id].url,
+        }))}
+        disclaimer="General information based on USCIS guidance, not legal advice."
+        className={className}
+      >
+        {!started ? (
+          <IntroCard bare isJourney={isJourney} onContinue={() => goTo(true)} />
+        ) : (
+          <div className="divide-y divide-slate-100 dark:divide-slate-800">
+            <div className="px-5 pt-5 sm:px-8 sm:pt-6">{backToIntro}</div>
+            {form}
+          </div>
+        )}
+      </ToolLayout>
+    );
+  }
+
+  // ── Journey (embedded, no page chrome): same layout as before ──
   return (
     <div className={`mx-auto w-full max-w-6xl ${className}`}>
-      {showHeader && (
-        <header className="mb-10">
-          {!isJourney && (
-            <nav aria-label="Breadcrumb" className="mb-5 flex items-center gap-1.5 text-[13px] text-slate-500">
-              <Link href="/tools" className="hover:text-slate-900 dark:hover:text-slate-200">
-                Tools
-              </Link>
-              <ChevronRight className="h-3.5 w-3.5" />
-              <span className="text-slate-700 dark:text-slate-300">CSPA Age-Out Checker</span>
-            </nav>
-          )}
-          <div className="flex flex-col items-start justify-between gap-5 md:flex-row md:items-end">
-            <div className="max-w-2xl">
-              <h1 className="text-[28px] leading-tight font-semibold tracking-tight text-slate-900 md:text-[34px] dark:text-slate-50">
-                CSPA Age-Out Checker
-              </h1>
-              {started && (
-              <p className="mt-3 text-base leading-relaxed text-slate-600 dark:text-slate-300">
-                A child of a U.S. citizen can usually immigrate as a child only until age 21. Find
-                out if your child&apos;s age is protected, or the last day to file the I-130.
-              </p>
-              )}
-            </div>
-            {!isJourney && (
-              <QuickAccessButton
-                item={{
-                  id: "cspa-age-checker",
-                  title: "CSPA Age-Out Checker",
-                  href: "/cspa-age-checker",
-                  icon_name: "Clock",
-                }}
-              />
-            )}
-          </div>
-        </header>
-      )}
-
       {!started ? (
         <IntroCard isJourney={isJourney} onContinue={() => goTo(true)} />
       ) : (
         <>
-          <button
-            type="button"
-            onClick={() => goTo(false)}
-            className="mb-4 inline-flex items-center gap-1 text-[13px] font-medium text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
-          >
-            <ChevronRight className="h-3.5 w-3.5 rotate-180" />
-            What is CSPA?
-          </button>
-        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-8">
-          {/* ─ Inputs ─ */}
-          <section className="divide-y divide-slate-100 rounded-xl border border-slate-200 bg-white dark:divide-slate-800 dark:border-slate-800 dark:bg-slate-900">
-            <FormSection title="Your child">
-              <Field label="Date of birth">
-                <DateInput
-                  label="Child's date of birth"
-                  max={today}
-                  value={input.dateOfBirth}
-                  onChange={(v) => set("dateOfBirth", v)}
-                />
-              </Field>
+          <div className="mb-4">{backToIntro}</div>
+          <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-8">
+            {/* ─ Inputs ─ */}
+            <section className="divide-y divide-slate-100 rounded-xl border border-slate-200 bg-white dark:divide-slate-800 dark:border-slate-800 dark:bg-slate-900">
+              {form}
+            </section>
 
-              <Field label="Is your child married?">
-                <Choice
-                  name="Marital status"
-                  value={input.maritalStatus}
-                  onChange={(v) => set("maritalStatus", v)}
-                  options={[
-                    { value: "never_married", label: "Never married" },
-                    { value: "previously_married", label: "Was married before" },
-                    { value: "married", label: "Married now" },
-                  ]}
-                />
-              </Field>
+            {/* ─ Result ─ */}
+            <aside className="lg:sticky lg:top-24" aria-live="polite">
+              <ResultView result={result} dob={input.dateOfBirth} variant="card" footer={saveButton} />
+            </aside>
+          </div>
 
-              <Field label="How is the child related to the U.S. citizen parent?">
-                <Choice
-                  name="Relationship"
-                  value={input.relationship}
-                  onChange={(v) => set("relationship", v)}
-                  options={[
-                    { value: "biological", label: "Own child" },
-                    { value: "stepchild", label: "Stepchild" },
-                    { value: "adopted", label: "Adopted" },
-                  ]}
-                />
-              </Field>
-
-              {input.relationship === "stepchild" && (
-                <FollowUp>
-                  <Field
-                    label="When did the stepparent marry the child's parent?"
-                    hint="This must be before the child's 18th birthday."
-                  >
-                    <DateInput
-                      label="Stepparent marriage date"
-                      max={today}
-                      value={input.stepMarriageDate ?? ""}
-                      onChange={(v) => set("stepMarriageDate", v || null)}
-                    />
-                  </Field>
-                </FollowUp>
-              )}
-
-              {input.relationship === "adopted" && (
-                <FollowUp>
-                  <Field
-                    label="When was the adoption finalized?"
-                    hint="A guardianship order does not count as adoption."
-                  >
-                    <DateInput
-                      label="Adoption date"
-                      max={today}
-                      value={input.adoptionDate ?? ""}
-                      onChange={(v) => set("adoptionDate", v || null)}
-                    />
-                  </Field>
-                </FollowUp>
-              )}
-            </FormSection>
-
-            <FormSection title="The I-130 petition">
-              <Field label="Has the U.S. citizen parent filed the I-130 for this child?">
-                <Choice
-                  name="I-130 filed"
-                  value={input.i130Filed ? "yes" : "no"}
-                  onChange={(v) => set("i130Filed", v === "yes")}
-                  options={[
-                    { value: "no", label: "Not yet" },
-                    { value: "yes", label: "Yes, it is filed" },
-                  ]}
-                />
-              </Field>
-
-              {input.i130Filed && (
-                <FollowUp>
-                  <Field
-                    label="Date it was filed"
-                    hint="Shown as Received Date on the USCIS receipt notice (I-797C)."
-                  >
-                    <DateInput
-                      label="I-130 filing date"
-                      max={today}
-                      value={input.filingDate ?? ""}
-                      onChange={(v) => set("filingDate", v || null)}
-                    />
-                  </Field>
-
-                  <Field label="On that day, the parent was">
-                    <Choice
-                      name="Parent status at filing"
-                      value={input.parentStatusAtFiling ?? "citizen"}
-                      onChange={(v) => set("parentStatusAtFiling", v)}
-                      options={[
-                        { value: "citizen", label: "A U.S. citizen" },
-                        { value: "lpr", label: "A green card holder" },
-                      ]}
-                    />
-                  </Field>
-
-                  {input.parentStatusAtFiling === "lpr" && (
-                    <Field label="Has the parent become a U.S. citizen since then?">
-                      <Choice
-                        name="Parent naturalized"
-                        value={input.parentNaturalized ? "yes" : "no"}
-                        onChange={(v) => set("parentNaturalized", v === "yes")}
-                        options={[
-                          { value: "no", label: "No" },
-                          { value: "yes", label: "Yes" },
-                        ]}
-                      />
-                    </Field>
-                  )}
-
-                  {input.parentStatusAtFiling === "lpr" && input.parentNaturalized && (
-                    <Field label="Date the parent became a citizen" hint="Shown on the naturalization certificate.">
-                      <DateInput
-                        label="Date the parent became a citizen"
-                        max={today}
-                        value={input.naturalizationDate ?? ""}
-                        onChange={(v) => set("naturalizationDate", v || null)}
-                      />
-                    </Field>
-                  )}
-                </FollowUp>
-              )}
-            </FormSection>
-          </section>
-
-          {/* ─ Result ─ */}
-          <aside className="lg:sticky lg:top-24" aria-live="polite">
-            {!result || !style ? (
-              <div className="rounded-xl border border-dashed border-slate-300 bg-white/60 p-6 dark:border-slate-700 dark:bg-slate-900/60">
-                <h3 className="text-[15px] font-semibold text-slate-900 dark:text-slate-100">
-                  Your result will show here
-                </h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
-                  Start with your child&apos;s date of birth. The result updates as you answer, and
-                  shows the 21st birthday, whether the age is locked, and what to do next.
-                </p>
+          {/* ─ Common questions + sources ─ */}
+          <section className="mt-14 grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-8">
+            <div>
+              <h2 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+                Common questions
+              </h2>
+              <div className="mt-4 divide-y divide-slate-200 border-y border-slate-200 dark:divide-slate-800 dark:border-slate-800">
+                {QUESTIONS.map(({ q, a }) => (
+                  <details key={q} className="group">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-4 text-[15px] font-medium text-slate-900 [&::-webkit-details-marker]:hidden dark:text-slate-100">
+                      {q}
+                      <ChevronDown className="h-4 w-4 shrink-0 text-slate-400 transition-transform group-open:rotate-180" />
+                    </summary>
+                    <p className="-mt-1 pb-5 pr-8 text-sm leading-relaxed text-slate-600 dark:text-slate-400">{a}</p>
+                  </details>
+                ))}
               </div>
-            ) : (
-              <div className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-                <div className={`h-1 ${style.accent}`} />
-
-                <div className="p-5 sm:p-6">
-                  <div className={`flex items-center gap-2 text-[13px] font-semibold ${style.text}`}>
-                    <span className={`h-2 w-2 rounded-full ${style.accent}`} />
-                    {style.label}
-                  </div>
-                  <h3 className="mt-2 text-xl leading-snug font-semibold tracking-tight text-slate-900 dark:text-slate-50">
-                    {result.headline}
-                  </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">{result.body}</p>
-                  {result.errors.length > 1 && (
-                    <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-slate-600 dark:text-slate-300">
-                      {result.errors.slice(1).map((e) => (
-                        <li key={e}>{e}</li>
-                      ))}
-                    </ul>
-                  )}
-
-                  {showTimeline && (
-                    <div className="mt-6">
-                      <AgeTimeline dob={input.dateOfBirth} result={result} accent={style.accent} />
-                    </div>
-                  )}
-                </div>
-
-                {result.status !== "invalid" && (
-                  <dl className="divide-y divide-slate-100 border-t border-slate-100 px-5 py-1.5 sm:px-6 dark:divide-slate-800 dark:border-slate-800">
-                    {result.ageToday && <Row label="Age today" value={formatAge(result.ageToday)} />}
-                    {result.twentyFirstBirthday && (
-                      <Row label="21st birthday" value={formatDate(result.twentyFirstBirthday)} />
-                    )}
-                    {result.freezeDate && <Row label="Age locked on" value={formatDate(result.freezeDate)} />}
-                    {result.cspaAge && <Row label="Locked age" value={formatAge(result.cspaAge)} />}
-                  </dl>
-                )}
-
-                {result.checks.length > 0 && (
-                  <div className="border-t border-slate-100 p-5 sm:p-6 dark:border-slate-800">
-                    <SubHeading>Relationship check</SubHeading>
-                    <ul className="space-y-3">
-                      {result.checks.map((c) => (
-                        <li key={c.id} className="flex gap-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-                          <span className={`mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full ${CHECK_MARK[c.state]}`} />
-                          <span>{c.text}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {result.nextSteps.length > 0 && (
-                  <div className="border-t border-slate-100 p-5 sm:p-6 dark:border-slate-800">
-                    <SubHeading>What to do next</SubHeading>
-                    <ol className="space-y-3">
-                      {result.nextSteps.map((s, i) => (
-                        <li key={s} className="flex gap-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-                          <span className="w-4 shrink-0 text-right font-medium text-slate-400 tabular-nums">{i + 1}.</span>
-                          <span>{s}</span>
-                        </li>
-                      ))}
-                    </ol>
-                  </div>
-                )}
-
-                {isJourney && onSave && result.status !== "invalid" && (
-                  <div className="border-t border-slate-100 bg-slate-50/70 p-5 sm:px-6 dark:border-slate-800 dark:bg-slate-800/40">
-                    <button
-                      type="button"
-                      onClick={handleSave}
-                      disabled={saved}
-                      className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-[#0d7377] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#0a5f62] disabled:cursor-default disabled:bg-white disabled:text-emerald-700 disabled:ring-1 disabled:ring-emerald-200"
-                    >
-                      {saved && <Check className="h-4 w-4" />}
-                      {saved ? "Saved to this journey" : "Save to this journey"}
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-          </aside>
-        </div>
-
-        {/* ─ Common questions + sources ─ */}
-        <section className="mt-14 grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-8">
-          <div>
-            <h2 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-100">
-              Common questions
-            </h2>
-            <div className="mt-4 divide-y divide-slate-200 border-y border-slate-200 dark:divide-slate-800 dark:border-slate-800">
-              {QUESTIONS.map(({ q, a }) => (
-                <details key={q} className="group">
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-4 text-[15px] font-medium text-slate-900 [&::-webkit-details-marker]:hidden dark:text-slate-100">
-                    {q}
-                    <ChevronDown className="h-4 w-4 shrink-0 text-slate-400 transition-transform group-open:rotate-180" />
-                  </summary>
-                  <p className="-mt-1 pb-5 pr-8 text-sm leading-relaxed text-slate-600 dark:text-slate-400">{a}</p>
-                </details>
-              ))}
             </div>
-          </div>
 
-          <div className="text-sm">
-            <h2 className="text-[13px] font-semibold text-slate-900 dark:text-slate-100">Sources</h2>
-            <ul className="mt-3 space-y-2">
-              {sourceIds.map((id) => (
-                <li key={id}>
-                  <a
-                    href={CSPA_SOURCES[id].url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-slate-600 underline decoration-slate-300 underline-offset-4 hover:text-slate-900 hover:decoration-slate-500 dark:text-slate-400 dark:decoration-slate-600 dark:hover:text-slate-200"
-                  >
-                    {CSPA_SOURCES[id].label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-            <p className="mt-6 border-t border-slate-200 pt-4 text-[13px] leading-relaxed text-slate-500 dark:border-slate-800 dark:text-slate-400">
-              This checker gives general information based on USCIS guidance. It is not legal advice.
-              Rules can change, so check the sources above or speak to a licensed immigration
-              attorney before you file.
-            </p>
-          </div>
-        </section>
+            <div className="text-sm">
+              <h2 className="text-[13px] font-semibold text-slate-900 dark:text-slate-100">Sources</h2>
+              <ul className="mt-3 space-y-2">
+                {sourceIds.map((id) => (
+                  <li key={id}>
+                    <a
+                      href={CSPA_SOURCES[id].url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-slate-600 underline decoration-slate-300 underline-offset-4 hover:text-slate-900 hover:decoration-slate-500 dark:text-slate-400 dark:decoration-slate-600 dark:hover:text-slate-200"
+                    >
+                      {CSPA_SOURCES[id].label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-6 border-t border-slate-200 pt-4 text-[13px] leading-relaxed text-slate-500 dark:border-slate-800 dark:text-slate-400">
+                This checker gives general information based on USCIS guidance. It is not legal advice.
+                Rules can change, so check the sources above or speak to a licensed immigration
+                attorney before you file.
+              </p>
+            </div>
+          </section>
         </>
       )}
     </div>

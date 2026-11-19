@@ -10,9 +10,6 @@ import {
   X,
   Trash2,
   Clock,
-  RotateCcw,
-  Sparkles,
-  Camera,
   Lock,
 } from "lucide-react";
 import { useLanguage } from "@/app/context/LanguageContext";
@@ -25,13 +22,13 @@ import { CreditLaunchModal } from "@/app/components/wallet/CreditLaunchModal";
 import { useStandaloneToolUnlock } from "@/lib/wallet/useStandaloneToolUnlock";
 import { useWallet } from "@/app/context/WalletContext";
 import { PHOTO_BOOTH_PHOTOS_PER_PURCHASE, PHOTO_BOOTH_TOOL_ID } from "@/lib/wallet/catalog";
-import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { PassportPhotoHistoryModal } from "@/components/tools/PassportPhotoHistoryModal";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { useUserProfile } from "@/app/context/UserProfileContext";
 import FileUpload from "@/app/components/shared/FileUpload";
 import { Loader } from "../ui/spinner";
+import { ToolLayout } from "./layout";
 
 import type { ToolModeProps } from "@/types/tool-mode";
 import { useResolveToolMode } from "@/lib/hooks/useResolveToolMode";
@@ -534,372 +531,231 @@ export default function PassportPhotoTool({
     showToast("All photo history cleared.", "info");
   };
 
-  return (
-    <div className={`w-full ${className}`}>
-      {/* Page content */}
-      <div className="relative z-10 flex w-full flex-col items-center px-4 pt-1 pb-4 sm:py-6">
-        {/* Top Control Bar for when showHeader is false */}
-        {!showHeader && (
-          <div className="mb-4 flex w-full max-w-2xl items-center justify-end">
-            <button
-              type="button"
-              onClick={() => setShowHistoryModal(true)}
-              className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-slate-200/90 bg-white/95 px-3.5 py-1.5 text-xs font-semibold text-slate-700 shadow-sm backdrop-blur-sm transition-all hover:border-[#0d7377]/50 hover:bg-white hover:text-[#0d7377] active:scale-95"
-              title="View saved photo history"
-            >
-              <Clock className="h-3.5 w-3.5 text-[#0d7377]" />
-              <span>My Album</span>
-              {mounted && history.length > 0 && (
-                <span className="rounded-full bg-[#0d7377] px-1.5 py-0.5 text-[10px] leading-none font-bold text-white">
-                  {history.length}
-                </span>
-              )}
-            </button>
-          </div>
-        )}
+  // ── Pieces shared by the journey view and the standalone ToolLayout view ──
 
-        {/* Header */}
-        {showHeader && (
-          <header className="mb-4 w-full max-w-2xl text-center sm:mb-8 md:mb-10">
-            {/* Top Bar with Top-Right History Button */}
-            <div className="mb-3 flex w-full items-center justify-end">
-              <button
-                type="button"
-                onClick={() => setShowHistoryModal(true)}
-                className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-slate-200/90 bg-white/95 px-3.5 py-1.5 text-xs font-semibold text-slate-700 shadow-sm backdrop-blur-sm transition-all hover:border-[#0d7377]/50 hover:bg-white hover:text-[#0d7377] active:scale-95"
-                title="View saved photo history"
-              >
-                <Clock className="h-3.5 w-3.5 text-[#0d7377]" />
-                <span>My Album</span>
-                {mounted && history.length > 0 && (
-                  <span className="rounded-full bg-[#0d7377] px-1.5 py-0.5 text-[10px] leading-none font-bold text-white">
-                    {history.length}
-                  </span>
-                )}
-              </button>
-            </div>
+  const albumButton = (
+    <button
+      type="button"
+      onClick={() => setShowHistoryModal(true)}
+      className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-slate-200/90 bg-white/95 px-3.5 py-1.5 text-xs font-semibold text-slate-700 shadow-sm backdrop-blur-sm transition-all hover:border-[var(--tool-accent,#0d7377)]/50 hover:bg-white hover:text-[var(--tool-accent,#0d7377)] active:scale-95"
+      title="View saved photo history"
+    >
+      <Clock className="h-3.5 w-3.5 text-[var(--tool-accent,#0d7377)]" />
+      <span>My Album</span>
+      {mounted && history.length > 0 && (
+        <span className="rounded-full bg-[var(--tool-accent,#0d7377)] px-1.5 py-0.5 text-[10px] leading-none font-bold text-white">
+          {history.length}
+        </span>
+      )}
+    </button>
+  );
 
-            <h1
-              className="text-primary/90 text-3xl leading-tight font-bold md:text-5xl"
-              style={{
-                color: "#4a7c8e",
-                textShadow: "0 2px 8px rgba(74,124,142,0.3), 0 1px 4px rgba(0,0,0,0.1)",
-              }}
-            >
-              {t("passportPhoto.title")}
-            </h1>
-            <p
-              className="mt-3 px-2 text-base text-gray-600 md:mt-2 md:text-lg"
-              style={{ color: "#6b8fa0" }}
-            >
-              {t("passportPhoto.subtitle")}
-            </p>
-            {!isJourney && (
-              <div className="mt-4 flex justify-center">
-                <QuickAccessButton
-                  item={{
-                    id: "photo-booth",
-                    title: "Photo Booth",
-                    href: "/passport",
-                    icon_name: "Camera",
-                  }}
-                />
-              </div>
-            )}
-          </header>
-        )}
+  const requirementKeys = ["1", "2", "3", "4", "5", "6", "7"];
 
-        {/* Official Guidelines */}
-        {showRequirements && (
-          <section
-            className="mb-8 w-full max-w-3xl rounded-xl bg-white p-5 shadow-lg md:mb-12 md:p-8"
-            style={{
-              backgroundColor: "rgba(255,255,255,0.78)",
-              backdropFilter: "blur(10px)",
-              boxShadow:
-                "0 8px 32px rgba(74,124,142,0.18), 0 2px 8px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.9)",
-              border: "1px solid rgba(74,124,142,0.2)",
-            }}
-          >
-            <h2 className="text-primary/90 mb-4 flex items-center gap-2 text-xl font-semibold md:mb-6 md:text-2xl">
-              <AlertCircle className="hidden h-5 w-5 shrink-0 sm:block md:h-6 md:w-6" />
-              {t("passportPhoto.requirementsTitle")}
-            </h2>
-
-            <ul className="grid gap-4 text-sm text-gray-700 md:grid-cols-2 md:gap-6 md:text-base">
-              {["1", "2", "3", "4", "5", "6", "7"].map((key) => (
-                <li key={key} className="flex items-start gap-3 md:col-span-1">
-                  <CheckCircle
-                    className="mt-0.5 h-5 w-5 shrink-0 text-green-600"
-                    style={{ color: "#7fb3c8" }}
-                  />
-                  <span>
-                    <strong>{key}.</strong> {t(`passportPhoto.requirements.${key}`)}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-
-        {/* Credit Status */}
-        {!hasUnlimitedPhotos && !photoWallet.loading && (
-          <section className="mb-6 w-full max-w-2xl">
-            <div
-              onClick={openPhotoUnlock}
-              className="flex cursor-pointer flex-col items-start justify-between gap-4 rounded-xl border border-[#0d7377]/20 bg-white/90 px-4 py-3 shadow-sm backdrop-blur-sm transition-all hover:border-[#0d7377]/40 hover:bg-white hover:shadow-md active:scale-[0.99] md:flex-row md:items-center"
-              title={buysPhotoPacks ? "Buy photos" : "Click to view upgrade options"}
-            >
-              <div>
-                <p className="text-sm font-semibold text-[#0d7377]">Photos left</p>
-                <p className="text-xs text-gray-500">
-                  {creditStatusLoading
-                    ? "Checking how many photos you have left..."
-                    : buysPhotoPacks
-                      ? remainingCredits !== null && remainingCredits > 0
-                        ? `You can make ${remainingCredits} more photo${remainingCredits === 1 ? "" : "s"}. Each photo you make uses 1.`
-                        : `Buy Photo Booth for ${photoWallet.item?.credits} credits to make ${PHOTO_BOOTH_PHOTOS_PER_PURCHASE} photos. When both are used, buy again for ${PHOTO_BOOTH_PHOTOS_PER_PURCHASE} more.`
-                      : remainingCredits !== null
-                        ? remainingCredits > 0
-                          ? `You can make ${remainingCredits} more photo${remainingCredits === 1 ? "" : "s"}.`
-                          : effectiveTier === "premium"
-                            ? "No photos left. Upgrade to Executive for unlimited photos."
-                            : "No photos left. Upgrade to continue."
-                        : "Photo Booth is not included in your plan. Upgrade to continue."}
-                </p>
-              </div>
-              <div
-                className="rounded-full px-3 py-1.5 text-xs font-semibold"
-                style={{
-                  backgroundColor:
-                    remainingCredits !== null
-                      ? "rgba(13, 115, 119, 0.1)"
-                      : "rgba(217, 119, 6, 0.1)",
-                  color: remainingCredits !== null ? "#0d7377" : "#b45309",
-                }}
-              >
-                {creditStatusLoading
-                  ? "Loading"
-                  : remainingCredits !== null
-                    ? remainingCredits > 0
-                      ? `${remainingCredits} left`
-                      : "0 left"
-                    : "Locked"}
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* Upload Section */}
-        <section className="w-full max-w-2xl py-2 sm:py-4">
-          <div
-            className="rounded-xl bg-white p-4 shadow-md sm:p-6"
-            style={{
-              backgroundColor: "rgba(255,255,255,0.80)",
-              backdropFilter: "blur(10px)",
-              boxShadow:
-                "0 8px 32px rgba(74,124,142,0.18), 0 2px 8px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.9)",
-              border: "1px solid rgba(74,124,142,0.2)",
-            }}
-          >
-            {/* Front-Facing Reminder Callout */}
-            {/* <div className="mb-4 rounded-xl border border-[#0d7377]/25 bg-gradient-to-r from-[#f0f9f9] to-[#e6f4f4] p-3.5 sm:p-4 shadow-xs">
-              <div className="flex items-start gap-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#0d7377]/15 text-[#0d7377]">
-                  <Camera className="h-5 w-5" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="text-sm font-semibold text-[#0d7377]">
-                      {t("passportPhoto.frontFacingNotice.title") || "Front-Facing Photo Required"}
-                    </h3>
-                    <span className="inline-flex items-center rounded-full bg-[#0d7377]/10 px-2 py-0.5 text-[11px] font-medium text-[#0d7377]">
-                      Biometric Spec
-                    </span>
-                  </div>
-                  <p className="mt-1 text-xs sm:text-[13px] leading-relaxed text-[#3a5860]">
-                    {t("passportPhoto.frontFacingNotice.description") ||
-                      "Please upload a clear picture facing directly towards the camera at eye level. Angled selfies, tilted heads, or side profile shots will be rejected by consular review."}
-                  </p>
-
-                  <div className="mt-2.5 flex flex-wrap gap-2 text-[11px]">
-                    <span className="inline-flex items-center gap-1 rounded-md bg-white/85 px-2 py-1 font-medium text-[#2d5059] shadow-2xs border border-[#0d7377]/15">
-                      <CheckCircle className="h-3 w-3 text-[#0d7377]" />
-                      {t("passportPhoto.frontFacingNotice.tip1") || "Look straight at camera"}
-                    </span>
-                    <span className="inline-flex items-center gap-1 rounded-md bg-white/85 px-2 py-1 font-medium text-[#2d5059] shadow-2xs border border-[#0d7377]/15">
-                      <CheckCircle className="h-3 w-3 text-[#0d7377]" />
-                      {t("passportPhoto.frontFacingNotice.tip2") || "No head tilt or angle"}
-                    </span>
-                    <span className="inline-flex items-center gap-1 rounded-md bg-white/85 px-2 py-1 font-medium text-[#2d5059] shadow-2xs border border-[#0d7377]/15">
-                      <CheckCircle className="h-3 w-3 text-[#0d7377]" />
-                      {t("passportPhoto.frontFacingNotice.tip3") || "Full face centered"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div> */}
-
-            <FileUpload
-              label={t("passportPhoto.uploadLabel")}
-              fieldName="passportPhoto"
-              accept="image/*"
-              multiple={false}
-              file={file}
-              height="220px"
-              helperText={
-                t("passportPhoto.frontFacingHelper") ||
-                "Upload a clear, front-facing photo (JPG or PNG up to 10MB)"
-              }
-              onFileUpload={handleFileUpload}
-            />
-
-            {/* Preview */}
-            {preview && (
-              <div className="mt-5">
-                <div className="relative mx-auto aspect-square w-full max-w-[200px]">
-                  <NextImage
-                    src={preview}
-                    alt="Passport photo preview"
-                    fill
-                    className="rounded-lg object-cover"
-                    style={{
-                      boxShadow: "0 4px 16px rgba(0,0,0,0.15)",
-                    }}
-                    unoptimized
-                  />
-                </div>
-
-                <div className="mt-2.5 text-center">
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-[#0d7377]/20 bg-[#e6f4f4] px-3 py-1 text-xs font-medium text-[#0d7377]">
-                    <CheckCircle className="h-3.5 w-3.5" />
-                    Verify your head is upright and looking straight ahead
-                  </span>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={reset}
-                  className="mx-auto mt-3 flex cursor-pointer items-center gap-1 text-sm text-[#c0756a] transition-colors hover:text-[#a85e54]"
-                >
-                  <X className="h-4 w-4" />
-                  {t("passportPhoto.removePhoto")}
-                </button>
-              </div>
-            )}
-
-            {/* Process Button */}
-            {!hasUnlimitedPhotos &&
-            !photoWallet.loading &&
-            (remainingCredits === null || remainingCredits <= 0) ? (
-              <button
-                type="button"
-                onClick={openPhotoUnlock}
-                className="mt-6 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#0d7377] py-3.5 font-semibold text-white shadow-[0_4px_18px_rgba(217,119,6,0.3)] transition-all hover:bg-[#0a5f63] active:scale-[0.99]"
-                title={buysPhotoPacks ? "Buy photos to continue" : "Upgrade to generate a photo"}
-              >
-                <Lock className="h-5 w-5" />
-                <span>
-                  {buysPhotoPacks && photoWallet.item
-                    ? `Buy ${PHOTO_BOOTH_PHOTOS_PER_PURCHASE} photos for ${photoWallet.item.credits} credits`
+  const creditStatus =
+    !hasUnlimitedPhotos && !photoWallet.loading ? (
+      <div
+        onClick={openPhotoUnlock}
+        className="flex cursor-pointer flex-col items-start justify-between gap-4 rounded-xl border border-[var(--tool-accent,#0d7377)]/20 bg-white/90 px-4 py-3 shadow-sm backdrop-blur-sm transition-all hover:border-[var(--tool-accent,#0d7377)]/40 hover:bg-white hover:shadow-md active:scale-[0.99] md:flex-row md:items-center"
+        title={buysPhotoPacks ? "Buy photos" : "Click to view upgrade options"}
+      >
+        <div>
+          <p className="text-sm font-semibold text-[var(--tool-accent,#0d7377)]">Photos left</p>
+          <p className="text-xs text-gray-500">
+            {creditStatusLoading
+              ? "Checking how many photos you have left..."
+              : buysPhotoPacks
+                ? remainingCredits !== null && remainingCredits > 0
+                  ? `You can make ${remainingCredits} more photo${remainingCredits === 1 ? "" : "s"}. Each photo you make uses 1.`
+                  : `Buy Photo Booth for ${photoWallet.item?.credits} credits to make ${PHOTO_BOOTH_PHOTOS_PER_PURCHASE} photos. When both are used, buy again for ${PHOTO_BOOTH_PHOTOS_PER_PURCHASE} more.`
+                : remainingCredits !== null
+                  ? remainingCredits > 0
+                    ? `You can make ${remainingCredits} more photo${remainingCredits === 1 ? "" : "s"}.`
                     : effectiveTier === "premium"
-                      ? "Upgrade to Executive"
-                      : "Upgrade to continue"}
-                </span>
-              </button>
-            ) : (
+                      ? "No photos left. Upgrade to Executive for unlimited photos."
+                      : "No photos left. Upgrade to continue."
+                  : "Photo Booth is not included in your plan. Upgrade to continue."}
+          </p>
+        </div>
+        <div
+          className="rounded-full px-3 py-1.5 text-xs font-semibold"
+          style={{
+            backgroundColor:
+              remainingCredits !== null
+                ? "color-mix(in srgb, var(--tool-accent, #0d7377) 10%, transparent)"
+                : "rgba(217, 119, 6, 0.1)",
+            color: remainingCredits !== null ? "var(--tool-accent,#0d7377)" : "#b45309",
+          }}
+        >
+          {creditStatusLoading
+            ? "Loading"
+            : remainingCredits !== null
+              ? remainingCredits > 0
+                ? `${remainingCredits} left`
+                : "0 left"
+              : "Locked"}
+        </div>
+      </div>
+    ) : null;
+
+  const uploadControls = (
+    <>
+      <FileUpload
+        label={t("passportPhoto.uploadLabel")}
+        fieldName="passportPhoto"
+        accept="image/*"
+        multiple={false}
+        file={file}
+        height="220px"
+        helperText={
+          t("passportPhoto.frontFacingHelper") ||
+          "Upload a clear, front-facing photo (JPG or PNG up to 10MB)"
+        }
+        onFileUpload={handleFileUpload}
+      />
+
+      {/* Preview */}
+      {preview && (
+        <div className="mt-5">
+          <div className="relative mx-auto aspect-square w-full max-w-[200px]">
+            <NextImage
+              src={preview}
+              alt="Passport photo preview"
+              fill
+              className="rounded-lg object-cover"
+              style={{
+                boxShadow: "0 4px 16px rgba(0,0,0,0.15)",
+              }}
+              unoptimized
+            />
+          </div>
+
+          <div className="mt-2.5 text-center">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--tool-accent,#0d7377)]/20 bg-[var(--tool-accent-tint,#e6f4f4)] px-3 py-1 text-xs font-medium text-[var(--tool-accent,#0d7377)]">
+              <CheckCircle className="h-3.5 w-3.5" />
+              Verify your head is upright and looking straight ahead
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={reset}
+            className="mx-auto mt-3 flex cursor-pointer items-center gap-1 text-sm text-[#c0756a] transition-colors hover:text-[#a85e54]"
+          >
+            <X className="h-4 w-4" />
+            {t("passportPhoto.removePhoto")}
+          </button>
+        </div>
+      )}
+
+      {/* Process Button */}
+      {!hasUnlimitedPhotos &&
+      !photoWallet.loading &&
+      (remainingCredits === null || remainingCredits <= 0) ? (
+        <button
+          type="button"
+          onClick={openPhotoUnlock}
+          className="mt-6 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[var(--tool-accent,#0d7377)] py-3.5 font-semibold text-white shadow-[0_4px_18px_rgba(217,119,6,0.3)] transition-all hover:bg-[var(--tool-accent-dark,#0a5f63)] active:scale-[0.99]"
+          title={buysPhotoPacks ? "Buy photos to continue" : "Upgrade to generate a photo"}
+        >
+          <Lock className="h-5 w-5" />
+          <span>
+            {buysPhotoPacks && photoWallet.item
+              ? `Buy ${PHOTO_BOOTH_PHOTOS_PER_PURCHASE} photos for ${photoWallet.item.credits} credits`
+              : effectiveTier === "premium"
+                ? "Upgrade to Executive"
+                : "Upgrade to continue"}
+          </span>
+        </button>
+      ) : (
+        <button
+          onClick={handleProcess}
+          disabled={!file || loading}
+          className={`mt-6 flex w-full items-center justify-center gap-2 rounded-xl py-3.5 font-semibold transition-all ${
+            !file || loading
+              ? "cursor-not-allowed bg-[#d1dde3] text-[#8aafc0]"
+              : "cursor-pointer bg-[var(--tool-accent,#0d7377)] text-white shadow-[0_4px_18px_rgba(13,115,119,0.3)] hover:bg-[var(--tool-accent-dark,#0a5f63)]"
+          }`}
+        >
+          {loading ? (
+            <>
+              <Loader size="sm" />
+              <span>{t("passportPhoto.processing")}</span>
+            </>
+          ) : (
+            <>
+              <Upload className="h-5 w-5" />
+              <span>{t("passportPhoto.generate")}</span>
+            </>
+          )}
+        </button>
+      )}
+    </>
+  );
+
+  const resultCard =
+    mounted && result ? (
+      <ResultGate
+        feature="photo_booth"
+        isLocked={resultLocked}
+        planTier={effectiveTier}
+        standaloneToolId={isJourney ? undefined : PHOTO_BOOTH_TOOL_ID}
+        standaloneGranted={!resultLocked}
+      >
+        <div
+          className="rounded-2xl border border-[var(--tool-accent,#0d7377)]/30 bg-white/90 p-5 shadow-xl backdrop-blur-md sm:p-7"
+          style={{
+            boxShadow: "0 12px 40px rgba(13,115,119,0.15), 0 2px 8px rgba(0,0,0,0.06)",
+          }}
+        >
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+            <div className="flex items-center gap-2 text-base font-semibold text-emerald-700 sm:text-lg">
+              <CheckCircle className="h-5 w-5 text-emerald-600" />
+              <span>{t("passportPhoto.ready")}</span>
+            </div>
+            {activePhoto && (
+              <span className="rounded-full border border-teal-200 bg-teal-50 px-2.5 py-1 text-xs font-semibold text-teal-800">
+                {activePhoto.presetName} ({activePhoto.width}x{activePhoto.height} px)
+              </span>
+            )}
+          </div>
+
+          <div className="relative mx-auto flex aspect-square w-full max-w-[220px] justify-center">
+            <NextImage
+              src={result}
+              alt="Passport photo result"
+              fill
+              className="rounded-xl border-4 border-white object-cover shadow-2xl"
+              unoptimized
+            />
+          </div>
+
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+            <button
+              onClick={() => activePhoto && handleDownloadPhoto(activePhoto)}
+              className="flex cursor-pointer items-center gap-2 rounded-xl bg-[var(--tool-accent,#0d7377)] px-6 py-3 font-semibold text-white shadow-lg shadow-[var(--tool-accent,#0d7377)]/30 transition-all hover:bg-[var(--tool-accent-dark,#0a5f63)]"
+            >
+              <Download className="h-5 w-5" />
+              <span>{t("passportPhoto.download")}</span>
+            </button>
+
+            {activePhoto && (
               <button
-                onClick={handleProcess}
-                disabled={!file || loading}
-                className={`mt-6 flex w-full items-center justify-center gap-2 rounded-xl py-3.5 font-semibold transition-all ${
-                  !file || loading
-                    ? "cursor-not-allowed bg-[#d1dde3] text-[#8aafc0]"
-                    : "cursor-pointer bg-[#0d7377] text-white shadow-[0_4px_18px_rgba(13,115,119,0.3)] hover:bg-[#0a5f63]"
-                }`}
+                onClick={() => setPhotoToDelete(activePhoto)}
+                className="flex cursor-pointer items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50/80 px-4 py-3 text-sm font-semibold text-rose-700 transition-all hover:border-rose-300 hover:bg-rose-100"
+                title="Remove this photo from history"
               >
-                {loading ? (
-                  <>
-                    <Loader size="sm" />
-                    <span>{t("passportPhoto.processing")}</span>
-                  </>
-                ) : (
-                  <>
-                    <Upload className="h-5 w-5" />
-                    <span>{t("passportPhoto.generate")}</span>
-                  </>
-                )}
+                <Trash2 className="h-4 w-4" />
+                <span>Delete</span>
               </button>
             )}
           </div>
-        </section>
+        </div>
+      </ResultGate>
+    ) : null;
 
-        {/* Current Active Result */}
-        {mounted && result && (
-          <section
-            ref={resultRef}
-            className="animate-in fade-in mt-8 w-full max-w-2xl duration-500"
-          >
-            <ResultGate
-              feature="photo_booth"
-              isLocked={resultLocked}
-              planTier={effectiveTier}
-              standaloneToolId={isJourney ? undefined : PHOTO_BOOTH_TOOL_ID}
-              standaloneGranted={!resultLocked}
-            >
-              <div
-                className="rounded-2xl border border-[#0d7377]/30 bg-white/90 p-5 shadow-xl backdrop-blur-md sm:p-7"
-                style={{
-                  boxShadow: "0 12px 40px rgba(13,115,119,0.15), 0 2px 8px rgba(0,0,0,0.06)",
-                }}
-              >
-                <div className="mb-4 flex items-center justify-between gap-2 border-b border-slate-100 pb-3">
-                  <div className="flex items-center gap-2 text-base font-semibold text-emerald-700 sm:text-lg">
-                    <CheckCircle className="h-5 w-5 text-emerald-600" />
-                    <span>{t("passportPhoto.ready")}</span>
-                  </div>
-                  {activePhoto && (
-                    <span className="rounded-full border border-teal-200 bg-teal-50 px-2.5 py-1 text-xs font-semibold text-teal-800">
-                      {activePhoto.presetName} ({activePhoto.width}×{activePhoto.height} px)
-                    </span>
-                  )}
-                </div>
-
-                <div className="relative mx-auto flex aspect-square w-full max-w-[220px] justify-center">
-                  <NextImage
-                    src={result}
-                    alt="Passport photo result"
-                    fill
-                    className="rounded-xl border-4 border-white object-cover shadow-2xl"
-                    unoptimized
-                  />
-                </div>
-
-                <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-                  <button
-                    onClick={() => activePhoto && handleDownloadPhoto(activePhoto)}
-                    className="flex cursor-pointer items-center gap-2 rounded-xl bg-[#0d7377] px-6 py-3 font-semibold text-white shadow-lg shadow-[#0d7377]/30 transition-all hover:bg-[#0a5f63]"
-                  >
-                    <Download className="h-5 w-5" />
-                    <span>{t("passportPhoto.download")}</span>
-                  </button>
-
-                  {activePhoto && (
-                    <button
-                      onClick={() => setPhotoToDelete(activePhoto)}
-                      className="flex cursor-pointer items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50/80 px-4 py-3 text-sm font-semibold text-rose-700 transition-all hover:border-rose-300 hover:bg-rose-100"
-                      title="Remove this photo from history"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      <span>Delete</span>
-                    </button>
-                  )}
-                </div>
-              </div>
-            </ResultGate>
-          </section>
-        )}
-      </div>
-
+  const modals = (
+    <>
       {/* History Modal */}
       <PassportPhotoHistoryModal
         open={showHistoryModal}
@@ -950,7 +806,9 @@ export default function PassportPhotoTool({
         confirmText="Yes, Delete"
         cancelText="Cancel"
         confirmVariant="danger"
-        onConfirm={() => photoToDelete && handleDeletePhoto(photoToDelete.id)}
+        onConfirm={() => {
+          if (photoToDelete) handleDeletePhoto(photoToDelete.id);
+        }}
       />
 
       {/* Clear All History Modal */}
@@ -964,6 +822,182 @@ export default function PassportPhotoTool({
         confirmVariant="danger"
         onConfirm={handleClearAllHistory}
       />
+    </>
+  );
+
+  // ── Standalone page (and the journey tool overlay, which asks for the page chrome) ──
+  if (showHeader) {
+    return (
+      <>
+        <ToolLayout
+          theme="photo"
+          title={t("passportPhoto.title")}
+          tagline={t("passportPhoto.subtitle")}
+          quickAccessItem={
+            isJourney
+              ? undefined
+              : {
+                  id: "photo-booth",
+                  title: "Photo Booth",
+                  href: "/passport",
+                  icon_name: "Camera",
+                }
+          }
+          historyAction={{
+            label: "My Album",
+            count: mounted ? history.length : undefined,
+            isOpen: showHistoryModal,
+            onClick: () => setShowHistoryModal(true),
+          }}
+          layout="split"
+          answer={
+            resultCard ? (
+              <div ref={resultRef} className="animate-in fade-in duration-500">
+                {resultCard}
+              </div>
+            ) : showRequirements ? (
+              <div>
+                <h2 className="font-serif text-xl font-semibold tracking-tight text-[#16302C]">
+                  {t("passportPhoto.requirementsTitle")}
+                </h2>
+                <ul className="mt-4 divide-y divide-[#16302C]/10 border-y border-[#16302C]/10">
+                  {requirementKeys.map((key) => (
+                    <li key={key} className="flex items-start gap-3 py-2.5 text-sm text-[#16302C]/85">
+                      <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-[var(--tool-accent)]" />
+                      <span>{t(`passportPhoto.requirements.${key}`)}</span>
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-4 text-[13px] text-[#66787A]">
+                  Your finished photo will show here.
+                </p>
+              </div>
+            ) : (
+              <p className="text-sm text-[#66787A]">Your finished photo will show here.</p>
+            )
+          }
+          rules={requirementKeys.map((key) => ({
+            label: `${key}.`,
+            value: t(`passportPhoto.requirements.${key}`),
+          }))}
+          faqs={PHOTO_FAQS}
+          sources={PHOTO_SOURCES}
+          disclaimer="The embassy or consulate makes the final decision on your photo."
+          className={className}
+        >
+          <div className="mb-1 text-xs font-semibold tracking-wider text-[var(--tool-accent)] uppercase">
+            Your photo
+          </div>
+          <h2 className="mb-5 font-serif text-2xl font-semibold tracking-tight text-[#16302C]">
+            {t("passportPhoto.uploadLabel")}
+          </h2>
+          {creditStatus && <div className="mb-5">{creditStatus}</div>}
+          {uploadControls}
+        </ToolLayout>
+        {modals}
+      </>
+    );
+  }
+
+  // ── Journey (embedded, no page chrome): same layout as before ──
+  return (
+    <div className={`w-full ${className}`}>
+      <div className="relative z-10 flex w-full flex-col items-center px-4 pt-1 pb-4 sm:py-6">
+        <div className="mb-4 flex w-full max-w-2xl items-center justify-end">{albumButton}</div>
+
+        {/* Official Guidelines */}
+        {showRequirements && (
+          <section
+            className="mb-8 w-full max-w-3xl rounded-xl bg-white p-5 shadow-lg md:mb-12 md:p-8"
+            style={{
+              backgroundColor: "rgba(255,255,255,0.78)",
+              backdropFilter: "blur(10px)",
+              boxShadow:
+                "0 8px 32px rgba(74,124,142,0.18), 0 2px 8px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.9)",
+              border: "1px solid rgba(74,124,142,0.2)",
+            }}
+          >
+            <h2 className="text-primary/90 mb-4 flex items-center gap-2 text-xl font-semibold md:mb-6 md:text-2xl">
+              <AlertCircle className="hidden h-5 w-5 shrink-0 sm:block md:h-6 md:w-6" />
+              {t("passportPhoto.requirementsTitle")}
+            </h2>
+
+            <ul className="grid gap-4 text-sm text-gray-700 md:grid-cols-2 md:gap-6 md:text-base">
+              {requirementKeys.map((key) => (
+                <li key={key} className="flex items-start gap-3 md:col-span-1">
+                  <CheckCircle
+                    className="mt-0.5 h-5 w-5 shrink-0 text-green-600"
+                    style={{ color: "#7fb3c8" }}
+                  />
+                  <span>
+                    <strong>{key}.</strong> {t(`passportPhoto.requirements.${key}`)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {/* Credit Status */}
+        {creditStatus && <section className="mb-6 w-full max-w-2xl">{creditStatus}</section>}
+
+        {/* Upload Section */}
+        <section className="w-full max-w-2xl py-2 sm:py-4">
+          <div
+            className="rounded-xl bg-white p-4 shadow-md sm:p-6"
+            style={{
+              backgroundColor: "rgba(255,255,255,0.80)",
+              backdropFilter: "blur(10px)",
+              boxShadow:
+                "0 8px 32px rgba(74,124,142,0.18), 0 2px 8px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.9)",
+              border: "1px solid rgba(74,124,142,0.2)",
+            }}
+          >
+            {uploadControls}
+          </div>
+        </section>
+
+        {/* Current Active Result */}
+        {resultCard && (
+          <section ref={resultRef} className="animate-in fade-in mt-8 w-full max-w-2xl duration-500">
+            {resultCard}
+          </section>
+        )}
+      </div>
+
+      {modals}
     </div>
   );
 }
+
+// ── Drawer content for the standalone layout. Each answer restates how the tool already works. ──
+
+const PHOTO_FAQS = [
+  {
+    question: "How many photos do I get?",
+    answer: `Each Photo Booth purchase gives you ${PHOTO_BOOTH_PHOTOS_PER_PURCHASE} photos. When both are used, you can buy it again. Inside a journey, photos follow your journey plan.`,
+  },
+  {
+    question: "Does a failed photo use one of my photos?",
+    answer:
+      "No. A photo is counted only after it is ready. If the upload or processing fails, nothing is used.",
+  },
+  {
+    question: "Where are my photos saved?",
+    answer:
+      "Your last 10 photos are kept in My Album, where you can download or delete them at any time.",
+  },
+  {
+    question: "What kind of photo should I upload?",
+    answer:
+      "A clear, recent color photo facing the camera straight on, with no glasses, hat or filters. JPG or PNG up to 10 MB.",
+  },
+];
+
+const PHOTO_SOURCES = [
+  {
+    title: "Photo requirements for U.S. visas",
+    domain: "travel.state.gov",
+    url: "https://travel.state.gov/content/travel/en/us-visas/visa-information-resources/photos.html",
+  },
+];
