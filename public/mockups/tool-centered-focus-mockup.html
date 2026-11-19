@@ -194,10 +194,17 @@
         </button>
       </div>
 
-      <!-- Comparison Link: Switch to 2-Column Mockup -->
+      <!-- Dock Mode Comparison Switcher & Layout Link -->
       <div class="flex items-center gap-2">
+        <div class="hidden sm:flex items-center gap-1 bg-black/30 p-1 rounded-full text-[11px] border border-white/10">
+          <span class="text-white/60 px-2 font-mono">Dock Style:</span>
+          <button onclick="setDockMode('both')" id="btn-dock-both" class="px-2.5 py-1 rounded-full font-semibold bg-white text-[#16302C] transition-all cursor-pointer">Both (Compare)</button>
+          <button onclick="setDockMode('hero')" id="btn-dock-hero" class="px-2.5 py-1 rounded-full text-white/80 hover:text-white transition-all cursor-pointer">Hero Dock Only</button>
+          <button onclick="setDockMode('floating')" id="btn-dock-floating" class="px-2.5 py-1 rounded-full text-white/80 hover:text-white transition-all cursor-pointer">Draggable Only</button>
+        </div>
+
         <a href="tool-creative-standard-mockup.html" class="inline-flex items-center gap-1 text-xs text-teal-200 hover:text-white bg-white/10 hover:bg-white/15 px-3 py-1.5 rounded-full border border-white/15 transition-all">
-          <span>Compare: 2-Column Layout</span>
+          <span>2-Column Layout</span>
           <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M5 12h14"></path>
             <path d="m12 5 7 7-7 7"></path>
@@ -211,11 +218,11 @@
   <!-- ============================================================== -->
   <!-- CENTERED HERO SECTION: Authority, Clarity & Focus              -->
   <!-- ============================================================== -->
-  <section id="hero-banner" class="hero-watermark text-white pt-10 pb-20 px-4 sm:px-6 transition-colors duration-300">
+  <section id="hero-banner" class="hero-watermark text-white pt-10 pb-20 px-4 sm:px-6 transition-colors duration-300 relative">
     <div class="max-w-3xl mx-auto text-center flex flex-col items-center">
       
       <!-- Top Eyebrow Badges (Centered) -->
-      <!-- <div class="flex flex-wrap items-center justify-center gap-2.5 mb-4">
+      <div class="flex flex-wrap items-center justify-center gap-2.5 mb-4">
         <span id="hero-category-pill" class="font-serif italic text-xs tracking-wider text-teal-200/90 font-medium uppercase">
           Official Immigration Toolkit
         </span>
@@ -230,7 +237,7 @@
           </svg>
           <span id="hero-quota-text">3 Photo Credits Available</span>
         </div>
-      </div> -->
+      </div>
 
       <!-- Main Headline in Refined Lora Serif -->
       <h1 id="hero-title" class="font-serif text-3xl sm:text-4xl lg:text-[44px] font-semibold leading-[1.18] tracking-tight text-white max-w-2xl">
@@ -242,51 +249,61 @@
         Direct real-time status inquiry with official USCIS electronic records. Inspect receipt milestones, next steps, and historical decision notices.
       </p>
 
-      <!-- Centered Utility Micro-Dock: Clean, Focused Floating Actions -->
-      <div class="mt-6 inline-flex flex-wrap items-center justify-center gap-1.5 bg-black/20 backdrop-blur-md p-1.5 rounded-2xl border border-white/15 shadow-dock">
+      <!-- ============================================================ -->
+      <!-- OPTION 1: CENTERED UTILITY MICRO-DOCK IN HERO                -->
+      <!-- ============================================================ -->
+      <div id="hero-action-dock" class="mt-6 flex flex-col items-center transition-all">
+        <div class="flex items-center gap-2 mb-1.5">
+          <span class="text-[10px] font-mono tracking-wider uppercase text-teal-200/60 bg-white/10 px-2 py-0.5 rounded-full">
+            Option 1 · In-Hero Centered Dock
+          </span>
+        </div>
         
-        <!-- Start Fresh -->
-        <button onclick="resetCurrentTool()" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-white/90 hover:text-white hover:bg-white/10 text-xs font-medium transition-all" title="Clear inputs and start over">
-          <svg class="w-3.5 h-3.5 text-teal-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
-            <path d="M3 3v5h5"></path>
-          </svg>
-          <span>Start Fresh</span>
-        </button>
+        <div class="inline-flex flex-wrap items-center justify-center gap-1.5 bg-black/20 backdrop-blur-md p-1.5 rounded-2xl border border-white/15 shadow-dock">
+          
+          <!-- Start Fresh -->
+          <button onclick="resetCurrentTool()" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-white/90 hover:text-white hover:bg-white/10 text-xs font-medium transition-all cursor-pointer" title="Clear inputs and start over">
+            <svg class="w-3.5 h-3.5 text-teal-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+              <path d="M3 3v5h5"></path>
+            </svg>
+            <span>Start Fresh</span>
+          </button>
 
-        <span class="w-px h-4 bg-white/20"></span>
+          <span class="w-px h-4 bg-white/20"></span>
 
-        <!-- History -->
-        <button onclick="viewHistory()" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-white/90 hover:text-white hover:bg-white/10 text-xs font-medium transition-all" title="View past queries and files">
-          <svg class="w-3.5 h-3.5 text-teal-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polyline points="12 6 12 12 16 14"></polyline>
-          </svg>
-          <span>Recent History</span>
-          <span class="bg-white text-[#0A4F49] text-[10px] font-black px-1.5 py-0.2 rounded-full">3</span>
-        </button>
+          <!-- History -->
+          <button onclick="viewHistory()" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-white/90 hover:text-white hover:bg-white/10 text-xs font-medium transition-all cursor-pointer" title="View past queries and files">
+            <svg class="w-3.5 h-3.5 text-teal-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <span>Recent History</span>
+            <span class="bg-white text-[#0A4F49] text-[10px] font-black px-1.5 py-0.2 rounded-full">3</span>
+          </button>
 
-        <span class="w-px h-4 bg-white/20"></span>
+          <span class="w-px h-4 bg-white/20"></span>
 
-        <!-- Common Questions Drawer Trigger -->
-        <button onclick="openDrawer()" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-white/90 hover:text-white hover:bg-white/10 text-xs font-medium transition-all cursor-pointer" title="View guide and FAQs">
-          <svg class="w-3.5 h-3.5 text-teal-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-            <path d="M12 17h.01"></path>
-          </svg>
-          <span>Quick Help &amp; FAQs</span>
-        </button>
+          <!-- Common Questions Drawer Trigger -->
+          <button onclick="openDrawer()" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-white/90 hover:text-white hover:bg-white/10 text-xs font-medium transition-all cursor-pointer" title="View guide and FAQs">
+            <svg class="w-3.5 h-3.5 text-teal-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+              <path d="M12 17h.01"></path>
+            </svg>
+            <span>Quick Help &amp; FAQs</span>
+          </button>
 
-        <span class="w-px h-4 bg-white/20"></span>
+          <span class="w-px h-4 bg-white/20"></span>
 
-        <!-- Save / Bookmark Tool -->
-        <button onclick="toggleFavorite(this)" class="p-2 rounded-xl text-white/80 hover:text-amber-300 hover:bg-white/10 transition-all" title="Save to Favorites">
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-          </svg>
-        </button>
+          <!-- Save / Bookmark Tool -->
+          <button onclick="toggleFavorite(this)" class="p-2 rounded-xl text-white/80 hover:text-amber-300 hover:bg-white/10 transition-all cursor-pointer" title="Save to Favorites">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+          </button>
 
+        </div>
       </div>
 
     </div>
@@ -770,6 +787,122 @@
   </main>
 
   <!-- ============================================================== -->
+  <!-- OPTION 2: FLOATING DRAGGABLE TOOL ACTIONS WIDGET               -->
+  <!-- (Inspired by MobileDraggableShare - Right side header/hero)    -->
+  <!-- ============================================================== -->
+  <div id="draggable-tool-dock" class="fixed top-20 sm:top-24 right-4 sm:right-8 z-50 touch-none select-none transition-shadow" style="cursor: grab;">
+    
+    <!-- Outer Glassmorphic Container -->
+    <div class="flex flex-col items-center rounded-full p-1.5 transition-all duration-300 bg-[#0A4F49]/85 hover:bg-[#0A4F49]/95 text-white backdrop-blur-xl border border-white/25 shadow-2xl">
+      
+      <!-- Drag Grip Indicator & Top Anchor Button -->
+      <div id="draggable-handle" class="w-full flex flex-col items-center pt-1 pb-1 cursor-grab active:cursor-grabbing group">
+        <!-- Grip bar -->
+        <span class="w-5 h-1 rounded-full bg-white/40 group-hover:bg-white/80 transition-colors"></span>
+        <span class="text-[8px] font-mono uppercase tracking-widest text-teal-200/60 mt-0.5 group-hover:text-teal-200 transition-colors">DRAG</span>
+      </div>
+
+      <!-- Anchor Button: Toggle Open/Close -->
+      <button id="draggable-anchor-btn" type="button" class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/15 hover:bg-white/25 active:scale-95 transition-all focus:outline-none cursor-pointer relative" aria-label="Toggle tool actions tray" title="Click to expand/collapse options · Drag anywhere">
+        
+        <!-- Icon Closed: Tool Sliders/Options -->
+        <div id="drag-icon-closed" class="flex items-center justify-center transition-all duration-300">
+          <svg class="w-5 h-5 text-teal-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="4" y1="21" x2="4" y2="14"></line>
+            <line x1="4" y1="10" x2="4" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12" y2="3"></line>
+            <line x1="20" y1="21" x2="20" y2="16"></line>
+            <line x1="20" y1="12" x2="20" y2="3"></line>
+            <line x1="1" y1="14" x2="7" y2="14"></line>
+            <line x1="9" y1="8" x2="15" y2="8"></line>
+            <line x1="17" y1="16" x2="23" y2="16"></line>
+          </svg>
+        </div>
+
+        <!-- Icon Open: Close X -->
+        <div id="drag-icon-open" class="hidden items-center justify-center transition-all duration-300">
+          <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </div>
+
+        <!-- Activity Notification Dot -->
+        <span class="absolute top-0 right-0 w-3 h-3 rounded-full bg-emerald-400 border-2 border-[#0A4F49]"></span>
+      </button>
+
+      <!-- Expandable Actions Tray (Vertical Column) -->
+      <div id="draggable-tray" class="flex flex-col items-center gap-2 pt-2.5 pb-1 transition-all">
+        
+        <!-- Action 1: Start Fresh -->
+        <div class="relative group">
+          <button onclick="resetCurrentTool()" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center text-white/90 hover:text-white transition-all cursor-pointer" title="Start Fresh">
+            <svg class="w-4 h-4 text-teal-200 group-hover:rotate-180 transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+              <path d="M3 3v5h5"></path>
+            </svg>
+          </button>
+          <!-- Tooltip -->
+          <span class="absolute right-12 top-1/2 -translate-y-1/2 bg-[#16302C] text-white text-[11px] font-semibold px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap shadow-lg border border-white/10 z-50">
+            Start Fresh
+          </span>
+        </div>
+
+        <!-- Action 2: History -->
+        <div class="relative group">
+          <button onclick="viewHistory()" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center text-white/90 hover:text-white transition-all cursor-pointer" title="Recent History">
+            <svg class="w-4 h-4 text-teal-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <span class="absolute -top-1 -right-1 bg-white text-[#0A4F49] text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-xs">3</span>
+          </button>
+          <!-- Tooltip -->
+          <span class="absolute right-12 top-1/2 -translate-y-1/2 bg-[#16302C] text-white text-[11px] font-semibold px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap shadow-lg border border-white/10 z-50">
+            History (3)
+          </span>
+        </div>
+
+        <!-- Action 3: Quick Help & FAQs -->
+        <div class="relative group">
+          <button onclick="openDrawer()" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center text-white/90 hover:text-white transition-all cursor-pointer" title="Quick Help & FAQs">
+            <svg class="w-4 h-4 text-teal-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+              <path d="M12 17h.01"></path>
+            </svg>
+          </button>
+          <!-- Tooltip -->
+          <span class="absolute right-12 top-1/2 -translate-y-1/2 bg-[#16302C] text-white text-[11px] font-semibold px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap shadow-lg border border-white/10 z-50">
+            Quick Help &amp; FAQs
+          </span>
+        </div>
+
+        <!-- Action 4: Save / Bookmark (Star) -->
+        <div class="relative group">
+          <button id="draggable-fav-btn" onclick="toggleFavorite(this)" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center text-white/90 hover:text-amber-300 transition-all cursor-pointer" title="Save to Favorites">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+          </button>
+          <!-- Tooltip -->
+          <span class="absolute right-12 top-1/2 -translate-y-1/2 bg-[#16302C] text-white text-[11px] font-semibold px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap shadow-lg border border-white/10 z-50">
+            Bookmark Tool
+          </span>
+        </div>
+
+        <!-- Subtle Mode Badge at Bottom -->
+        <div class="pt-1 pb-1 text-center">
+          <span class="text-[8px] font-mono text-teal-200/50 uppercase tracking-widest block">OPT 2</span>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
   <!-- SLIDE-OUT QUICK HELP & COMMON QUESTIONS DRAWER                  -->
   <!-- ============================================================== -->
   <div id="drawer-overlay" class="drawer-overlay" onclick="closeDrawer()"></div>
@@ -971,6 +1104,12 @@
         heroBanner.style.backgroundColor = cfg.themeColor;
       }
 
+      // Coordinate Draggable Widget color with theme
+      const dragContainer = document.querySelector('#draggable-tool-dock > div');
+      if (dragContainer) {
+        dragContainer.style.backgroundColor = cfg.themeColor + 'd9';
+      }
+
       // Update Nav Pills
       document.querySelectorAll('.nav-pill').forEach(btn => {
         btn.classList.remove('active', 'bg-white', 'text-[#16302C]', 'shadow-xs');
@@ -1088,6 +1227,151 @@
       }
     }
 
+    // ==============================================================
+    // DOCK MODE COMPARISON CONTROLLER (Both, Hero Only, Draggable Only)
+    // ==============================================================
+    let currentDockMode = 'both';
+
+    function setDockMode(mode) {
+      currentDockMode = mode;
+      const heroDock = document.getElementById('hero-action-dock');
+      const dragDock = document.getElementById('draggable-tool-dock');
+
+      ['both', 'hero', 'floating'].forEach(m => {
+        const btn = document.getElementById('btn-dock-' + m);
+        if (!btn) return;
+        if (m === mode) {
+          btn.classList.add('bg-white', 'text-[#16302C]', 'font-semibold');
+          btn.classList.remove('text-white/80');
+        } else {
+          btn.classList.remove('bg-white', 'text-[#16302C]', 'font-semibold');
+          btn.classList.add('text-white/80');
+        }
+      });
+
+      if (mode === 'both') {
+        if (heroDock) heroDock.classList.remove('hidden');
+        if (dragDock) dragDock.classList.remove('hidden');
+      } else if (mode === 'hero') {
+        if (heroDock) heroDock.classList.remove('hidden');
+        if (dragDock) dragDock.classList.add('hidden');
+      } else if (mode === 'floating') {
+        if (heroDock) heroDock.classList.add('hidden');
+        if (dragDock) dragDock.classList.remove('hidden');
+      }
+    }
+
+    // ==============================================================
+    // DRAGGABLE WIDGET CONTROLLER (Inspired by MobileDraggableShare)
+    // ==============================================================
+    let isWidgetTrayOpen = true;
+
+    function initDraggableWidget() {
+      const widget = document.getElementById('draggable-tool-dock');
+      const handle = document.getElementById('draggable-handle');
+      const anchorBtn = document.getElementById('draggable-anchor-btn');
+      const tray = document.getElementById('draggable-tray');
+
+      if (!widget || !anchorBtn || !tray) return;
+
+      let isDragging = false;
+      let hasMoved = false;
+      let startX = 0, startY = 0;
+      let initialLeft = 0, initialTop = 0;
+
+      function onPointerStart(e) {
+        if (e.button && e.button !== 0) return; // left click only
+        isDragging = true;
+        hasMoved = false;
+
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        startX = clientX;
+        startY = clientY;
+
+        const rect = widget.getBoundingClientRect();
+        initialLeft = rect.left;
+        initialTop = rect.top;
+
+        widget.style.transition = 'none';
+
+        document.addEventListener('mousemove', onPointerMove, { passive: false });
+        document.addEventListener('mouseup', onPointerEnd);
+        document.addEventListener('touchmove', onPointerMove, { passive: false });
+        document.addEventListener('touchend', onPointerEnd);
+      }
+
+      function onPointerMove(e) {
+        if (!isDragging) return;
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const deltaX = clientX - startX;
+        const deltaY = clientY - startY;
+
+        if (Math.abs(deltaX) > 4 || Math.abs(deltaY) > 4) {
+          hasMoved = true;
+          if (e.cancelable) e.preventDefault();
+        }
+
+        let newLeft = initialLeft + deltaX;
+        let newTop = initialTop + deltaY;
+
+        const maxLeft = window.innerWidth - widget.offsetWidth - 12;
+        const maxTop = window.innerHeight - widget.offsetHeight - 12;
+        newLeft = Math.max(12, Math.min(newLeft, maxLeft));
+        newTop = Math.max(60, Math.min(newTop, maxTop));
+
+        widget.style.left = newLeft + 'px';
+        widget.style.top = newTop + 'px';
+        widget.style.right = 'auto';
+        widget.style.bottom = 'auto';
+      }
+
+      function onPointerEnd() {
+        if (!isDragging) return;
+        isDragging = false;
+        widget.style.transition = '';
+
+        document.removeEventListener('mousemove', onPointerMove);
+        document.removeEventListener('mouseup', onPointerEnd);
+        document.removeEventListener('touchmove', onPointerMove);
+        document.removeEventListener('touchend', onPointerEnd);
+      }
+
+      handle.addEventListener('mousedown', onPointerStart);
+      handle.addEventListener('touchstart', onPointerStart, { passive: false });
+      anchorBtn.addEventListener('mousedown', onPointerStart);
+      anchorBtn.addEventListener('touchstart', onPointerStart, { passive: false });
+
+      anchorBtn.addEventListener('click', (e) => {
+        if (hasMoved) return;
+        toggleDraggableTray();
+      });
+    }
+
+    function toggleDraggableTray() {
+      const tray = document.getElementById('draggable-tray');
+      const iconClosed = document.getElementById('drag-icon-closed');
+      const iconOpen = document.getElementById('drag-icon-open');
+      if (!tray) return;
+
+      isWidgetTrayOpen = !isWidgetTrayOpen;
+
+      if (isWidgetTrayOpen) {
+        tray.classList.remove('hidden');
+        tray.classList.add('flex');
+        iconClosed.classList.add('hidden');
+        iconOpen.classList.remove('hidden');
+        iconOpen.classList.add('flex');
+      } else {
+        tray.classList.add('hidden');
+        tray.classList.remove('flex');
+        iconOpen.classList.add('hidden');
+        iconClosed.classList.remove('hidden');
+        iconClosed.classList.add('flex');
+      }
+    }
+
     // Toggle Collapsible Inline Requirements Drawer
     function toggleRequirementsPanel() {
       const panel = document.getElementById('inline-requirements-panel');
@@ -1114,16 +1398,25 @@
 
     // Interactive Button Actions
     function toggleFavorite(btn) {
-      const svg = btn.querySelector('svg');
-      if (btn.classList.contains('text-amber-400')) {
-        btn.classList.remove('text-amber-400');
-        btn.classList.add('text-white/80');
-        svg.setAttribute('fill', 'none');
+      const isFav = btn.classList.contains('text-amber-400');
+      const allFavButtons = document.querySelectorAll('#hero-action-dock button:last-child, #draggable-fav-btn');
+
+      allFavButtons.forEach(b => {
+        const svg = b.querySelector('svg');
+        if (isFav) {
+          b.classList.remove('text-amber-400');
+          b.classList.add('text-white/80');
+          if (svg) svg.setAttribute('fill', 'none');
+        } else {
+          b.classList.add('text-amber-400');
+          b.classList.remove('text-white/80');
+          if (svg) svg.setAttribute('fill', 'currentColor');
+        }
+      });
+
+      if (isFav) {
         alert('Removed from Quick Access tools.');
       } else {
-        btn.classList.add('text-amber-400');
-        btn.classList.remove('text-white/80');
-        svg.setAttribute('fill', 'currentColor');
         alert('Pinned to Quick Access tools on your dashboard!');
       }
     }
@@ -1166,6 +1459,7 @@
     // Initialize Default View
     function init() {
       setTool('case-status');
+      initDraggableWidget();
     }
 
     if (document.readyState === 'loading') {
