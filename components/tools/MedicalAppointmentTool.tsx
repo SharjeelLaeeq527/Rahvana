@@ -369,7 +369,6 @@ const BasicInfoStep = ({
             <>
               <div className="space-y-2">
                 <FieldLabel htmlFor="city" title={t("bookAppointment.basicInfoStep.city")} />
-                <Label htmlFor="city">{t("bookAppointment.basicInfoStep.city")}</Label>
                 <Input
                   id="city"
                   name="city"
@@ -431,7 +430,7 @@ const BasicInfoStep = ({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="visaType">{t("bookAppointment.basicInfoStep.visaType")}</Label>
+                <FieldLabel htmlFor="visaType" title={t("bookAppointment.basicInfoStep.visaType")} />
                 <CustomDropdown
                   value={formData.visaType}
                   onChange={onSelectChange("visaType")}
