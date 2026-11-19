@@ -692,3 +692,4 @@ export function getArticleBySlug(slug: string): Article | undefined {
 export function getAllArticles(): Article[] {
   return ARTICLES;
 }
+
