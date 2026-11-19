@@ -18,20 +18,17 @@ import {
   RefreshCcw,
   Loader2,
   ChevronDown,
-  Landmark,
-  ShieldCheck,
   Trash2,
   AlertTriangle,
   X,
-  FileUp,
 } from "lucide-react";
 import { useLanguage } from "@/app/context/LanguageContext";
 // import { ResultGate } from "@/app/components/entitlements/ResultGate";
 import { E, msg } from "@/lib/errors";
 import { useToast } from "@/app/components/shared/ToastProvider";
-import FileUpload from "@/app/components/shared/FileUpload";
-import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
+// import FileUpload from "@/app/components/shared/FileUpload";
 import { SafeHtml } from "@/app/components/shared/SafeHTML";
+import { ToolLayout } from "@/components/tools/layout";
 
 /* ─── USCIS API Response Structure ──────────────────────────── */
 export interface USCISCaseStatus {
@@ -486,60 +483,93 @@ export default function CaseStatusPage() {
   const theme = result ? getStatusTheme(result.status) : null;
 
   return (
-    <div className="guide-grid-bg mt-10 min-h-screen px-4 py-12 sm:px-6 lg:px-10 lg:py-16">
-      <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
-        {/* ── Main column ─────────────────────────────────── */}
-        <div className="min-w-0">
-          {/* Header */}
-          <header className="mb-9">
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#0d7377]/15 bg-[#E0F8FE] px-3 py-1.5 text-[11px] font-semibold tracking-[0.18em] text-[#157674] uppercase">
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#0d7377]/60" />
-                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#0d7377]" />
-              </span>
-              Live Status Tracker
-            </div>
-
-            <div className="mt-5 flex items-center justify-between gap-4">
-              <h1 className="text-4xl font-bold tracking-tight text-[#00595C] md:text-5xl">
-                USCIS Case Status
-              </h1>
-
-              <QuickAccessButton
-                item={{
-                  id: "case-status",
-                  title: "USCIS Case Status",
-                  href: "/case-status",
-                  icon_name: "FileText",
-                }}
-                mode="icon"
-              />
-            </div>
-
-            <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-[#5f7777]">
-              Enter your 13-character receipt number for an instant case update. Track your
-              immigration progress with official data in real-time.
-            </p>
-          </header>
-
-          {/* Search Card */}
-          <section className="rounded-3xl bg-[#ffffff] p-6 md:p-8">
+    <div className="mt-[55px]">
+      <ToolLayout
+        theme="uscis"
+        title="USCIS Case Status"
+        tagline="Enter your 13-character receipt number for an instant case update with official data in real-time."
+        category="Live Status Tracker"
+        priceOrDuration="Free · under 1 min"
+        quickAccessItem={{
+          id: "case-status",
+          title: "USCIS Case Status",
+          href: "/case-status",
+          icon_name: "FileText",
+        }}
+        historyAction={{
+          count: history.length,
+          isOpen: showHistory,
+          onClick: () => setShowHistory((v) => !v),
+        }}
+        rules={[
+          { label: "Receipt number", value: "3 letters + 10 digits" },
+          { label: "Where to find it", value: "Top left of Form I-797 notice" },
+          { label: "Check frequency", value: "Once a week is recommended" },
+          { label: "Service Center prefix", value: "IOE, MSC, EAC, WAC, LIN, SRC, etc." },
+        ]}
+        faqs={[
+          {
+            question: "Why has my status not changed?",
+            answer:
+              "USCIS updates status only when action is taken on your case. Periods of several weeks or months without change are completely normal.",
+          },
+          {
+            question: "Is this official USCIS data?",
+            answer:
+              "Yes, status data is retrieved directly in real-time from official USCIS terminal records. Your search history is securely saved to your Rahvana account.",
+          },
+          {
+            question: "What does my receipt prefix mean?",
+            answer:
+              "The 3-letter prefix identifies the USCIS service center processing your petition (e.g. IOE for Electronic Processing, MSC for National Benefits Center, EAC for Vermont, WAC for California).",
+          },
+        ]}
+        sources={[
+          {
+            title: "USCIS Case Status Online",
+            domain: "egov.uscis.gov",
+            url: "https://egov.uscis.gov",
+          },
+          {
+            title: "USCIS Historical Processing Times",
+            domain: "egov.uscis.gov",
+            url: "https://egov.uscis.gov/processing-times/",
+          },
+          {
+            title: "Official USCIS Homepage",
+            domain: "uscis.gov",
+            url: "https://www.uscis.gov",
+          },
+        ]}
+        disclaimer="Status data is retrieved from official USCIS portals. Rahvana is not affiliated with USCIS or the U.S. government."
+        layout="single"
+      >
+        <div className="space-y-6">
+          {/* Search Section */}
+          <div>
             <div className="flex items-center justify-between gap-4">
-              <h2 className="text-lg font-semibold tracking-tight text-[#183b3b]">
-                Find My Status
-              </h2>
+              <div>
+                <div className="mb-1 text-xs font-semibold tracking-wider text-[#66787A] uppercase">
+                  Inquire Status
+                </div>
+                <h2 className="font-serif text-2xl font-semibold tracking-tight text-[#16302C]">
+                  Find My Status
+                </h2>
+              </div>
               {history.length > 0 && (
                 <button
                   type="button"
                   onClick={() => setShowHistory((v) => !v)}
                   aria-expanded={showHistory}
                   aria-controls="search-history"
-                  className="inline-flex items-center gap-1.5 rounded-full border border-[#0d7377]/15 bg-[#0d7377]/5 px-3 py-1.5 text-xs font-semibold text-[#087890] transition-colors hover:bg-[#0d7377]/10"
+                  className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-[#3D5A80]/20 bg-[#E5EBF3] px-3.5 py-1.5 text-xs font-semibold text-[#1B2B44] transition-colors hover:bg-[#d6e1ed]"
                 >
-                  <Clock className="h-3.5 w-3.5" />
-                  History ({history.length})
+                  <Clock className="h-3.5 w-3.5 text-[#3D5A80]" />
+                  <span>History ({history.length})</span>
                   <ChevronDown
-                    className={`h-3.5 w-3.5 transition-transform duration-200 ${showHistory ? "rotate-180" : ""}`}
+                    className={`h-3.5 w-3.5 transition-transform duration-200 ${
+                      showHistory ? "rotate-180" : ""
+                    }`}
                   />
                 </button>
               )}
@@ -686,7 +716,7 @@ export default function CaseStatusPage() {
                 )}
               </button>
             </div>
-          </section>
+          </div>
 
           {/* Loading Skeleton */}
           {loading && (
@@ -964,129 +994,9 @@ export default function CaseStatusPage() {
               </div>
             </section>
           )}
-          {/* Attach a Document — USCIS portal encoded file upload
-          <section className="mt-8 rounded-3xl bg-[#ffffff] p-6 md:p-8">
-            <h2 className="text-lg font-semibold tracking-tight text-[#183b3b]">
-              Attach a Document
-            </h2>
-            <p className="mt-1 max-w-2xl text-sm leading-relaxed text-[#5f7777]">
-              Submit a supporting document for your case. The file is Base64-encoded and sent as
-              JSON, per the official USCIS Developer Portal upload specification.
-            </p>
-
-            File picker — shared uploader (drag & drop / browse / remove)
-            <div className="mt-5">
-              <FileUpload
-                fieldName="uscis-doc"
-                accept=".pdf,.png,.jpg,.jpeg"
-                multiple={false}
-                height="170px"
-                variant="default"
-                title="Drag & drop your document here"
-                description="or choose a file from your device"
-                buttonText="Browse files"
-                helperText={`PDF, PNG or JPEG · Max ${DOC_MAX_MB} MB · No password-protected files`}
-                onFileUpload={handleDocFile}
-              />
-            </div>
-
-            <div className="mt-5 flex flex-wrap items-center gap-3">
-              <button
-                type="button"
-                onClick={handleDocSubmit}
-                disabled={!docFile || docBusy}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#0D7377] px-8 py-3.5 text-sm font-semibold tracking-wide text-white transition-all active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-45"
-              >
-                {docBusy ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" /> Submitting Document...
-                  </>
-                ) : (
-                  <>
-                    <FileUp className="h-4 w-4" /> Encode &amp; Submit Document
-                  </>
-                )}
-              </button>
-            </div>
-
-            Outcome banner — success/teal or failure/red, page card language
-            {docResult && (
-              <div
-                role="status"
-                className={`mt-5 flex items-start gap-3 rounded-2xl border p-4 ${
-                  docResult.ok
-                    ? "border-[#2f8f83]/20 bg-[#dff1ed]"
-                    : "border-[#BE211A]/15 bg-[#FBECEB]"
-                }`}
-              >
-                {docResult.ok ? (
-                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#2f8f83]" />
-                ) : (
-                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[#BE211A]" />
-                )}
-                <p
-                  className={`text-sm leading-relaxed font-medium ${
-                    docResult.ok ? "text-[#183b3b]" : "text-[#7a1712]"
-                  }`}
-                >
-                  {docResult.message}
-                </p>
-              </div>
-            )}
-          </section> */}
+          {/* Attach a Document — USCIS portal encoded file upload */}
         </div>
-
-        {/* ── Sidebar ─────────────────────────────────────── */}
-        <aside className="space-y-5 lg:pt-[8.5rem]">
-          <div className="rounded-3xl border border-[#0d7377]/10 bg-[#EFF4FF] p-6">
-            <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-[#0d7377]/15 bg-[#ffffff] text-[#0d7377]">
-              <FileText className="h-4 w-4" />
-            </span>
-            <h3 className="mt-4 text-sm font-semibold text-[#183b3b]">
-              Where to find your Receipt Number
-            </h3>
-            <p className="mt-2 text-sm leading-relaxed text-[#5f7777]">
-              Your 13-character receipt number can be found on notices of action USCIS has sent you.
-              It begins with three letters such as EAC, WAC, LIN, SRC, NBC, MSC or IOE.
-            </p>
-            <div className="mt-4 rounded-xl border border-[#0d7377]/10 bg-[#ffffff] px-4 py-3 text-center font-mono text-xs tracking-[0.2em] text-[#5f7777]">
-              XXX-00-000-00000
-            </div>
-          </div>
-
-          <div className="rounded-3xl border border-[#0d7377]/10 bg-[#EFF4FF] p-6">
-            <h3 className="flex items-center gap-2 text-sm font-semibold text-[#183b3b]">
-              <Landmark className="h-4 w-4 text-[#0d7377]" /> Official Resources
-            </h3>
-            <div className="mt-4 space-y-3">
-              <a
-                href="https://www.uscis.gov"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-sm font-medium text-[#0d7377] transition-opacity hover:opacity-75"
-              >
-                Visit uscis.gov <ExternalLink className="h-3.5 w-3.5" />
-              </a>
-              <a
-                href="https://egov.uscis.gov/processing-times/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-sm font-medium text-[#0d7377] transition-opacity hover:opacity-75"
-              >
-                Processing Times <ExternalLink className="h-3.5 w-3.5" />
-              </a>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-3 rounded-3xl border border-[#c9dddd] bg-[#ffffff]/60 p-5">
-            <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#89a4a0]" />
-            <p className="text-xs leading-relaxed text-[#5f7777]">
-              Your case history is securely saved to your Rahvana account so you can access your
-              recent searches across devices.
-            </p>
-          </div>
-        </aside>
-      </div>
+      </ToolLayout>
     </div>
   );
 }
