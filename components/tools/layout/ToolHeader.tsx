@@ -82,11 +82,11 @@ export function ToolHeader({
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           {/* Left: Titles & Taglines */}
           <div className="min-w-0 flex-1">
-            {category && (
+            {/* {category && (
               <span className="mb-1 block font-serif text-xs font-semibold tracking-wider text-white/75 uppercase italic">
                 {category}
               </span>
-            )}
+            )} */}
             <h1 className="font-serif text-2xl leading-tight font-semibold tracking-tight text-white sm:text-3xl md:text-4xl">
               {title}
             </h1>

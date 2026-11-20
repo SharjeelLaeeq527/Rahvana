@@ -187,7 +187,7 @@ export default function SnapAndSignTool({
 
       {/* State 1: Dropzone for image upload */}
       {!originalImage && !isProcessing && (
-        <div className="space-y-6">
+        <div className="py-2">
           <FileUpload
             fieldName="signature"
             accept="image/*"
@@ -208,26 +208,6 @@ export default function SnapAndSignTool({
               }
             }}
           />
-
-          <div className="rounded-xl border border-[#DDD9CE] bg-[#F6F4EF]/60 p-4">
-            <div className="mb-2 text-xs font-semibold tracking-wider text-slate-600 uppercase">
-              For best results
-            </div>
-            <div className="grid grid-cols-1 gap-3 text-xs text-slate-600 sm:grid-cols-3">
-              <div className="flex items-center gap-2">
-                <Check className="h-4 w-4 shrink-0 text-emerald-600" />
-                <span>Plain white paper without lines</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Check className="h-4 w-4 shrink-0 text-emerald-600" />
-                <span>Dark blue or black pen ink</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Check className="h-4 w-4 shrink-0 text-emerald-600" />
-                <span>Even lighting without shadows</span>
-              </div>
-            </div>
-          </div>
         </div>
       )}
 
@@ -338,43 +318,73 @@ export default function SnapAndSignTool({
         </p>
       </div>
 
-      {/* Specification Rows */}
-      <div className="divide-y divide-[#16302C]/10 border-t border-[#16302C]/10 text-sm">
-        <div className="flex items-baseline justify-between py-2.5">
-          <span className="text-slate-600">Background</span>
-          <b
-            className={
-              processedImage ? "font-semibold text-emerald-700" : "font-medium text-slate-400"
-            }
-          >
-            {processedImage ? "Removed" : "Pending upload"}
-          </b>
-        </div>
-        <div className="flex items-baseline justify-between py-2.5">
-          <span className="text-slate-600">Cropped and straightened</span>
-          <b
-            className={
-              processedImage ? "font-semibold text-emerald-700" : "font-medium text-slate-400"
-            }
-          >
-            {processedImage ? (editedImage ? "Custom adjusted" : "Yes") : "Pending"}
-          </b>
-        </div>
-        <div className="flex items-baseline justify-between py-2.5">
-          <span className="text-slate-600">Format</span>
-          <b className="font-semibold text-slate-800">
-            {processedImage && imageDimensions
-              ? `PNG, ${imageDimensions.width} × ${imageDimensions.height} px`
-              : "PNG, transparent"}
-          </b>
-        </div>
-      </div>
+      {/* Right Content: Tips prior to upload; Verified Specs & Compliance Note once processed */}
+      {!processedImage ? (
+        <div className="space-y-4">
+          <div className="rounded-xl border border-[#DDD9CE]/80 bg-white/75 p-4 shadow-2xs">
+            <div className="mb-2.5 text-xs font-bold uppercase tracking-wider text-slate-700">
+              For best results
+            </div>
+            <ul className="space-y-2.5 text-xs sm:text-sm text-slate-600">
+              <li className="flex items-start gap-2.5">
+                <Check className="h-4 w-4 shrink-0 text-emerald-600 mt-0.5" />
+                <span>
+                  <strong className="text-slate-800">White paper:</strong> Plain, unlined paper without grids
+                </span>
+              </li>
+              <li className="flex items-start gap-2.5">
+                <Check className="h-4 w-4 shrink-0 text-emerald-600 mt-0.5" />
+                <span>
+                  <strong className="text-slate-800">Dark ink:</strong> Blue or black pen for strong contrast
+                </span>
+              </li>
+              <li className="flex items-start gap-2.5">
+                <Check className="h-4 w-4 shrink-0 text-emerald-600 mt-0.5" />
+                <span>
+                  <strong className="text-slate-800">Even lighting:</strong> Flat lighting without shadows or glare
+                </span>
+              </li>
+            </ul>
+          </div>
 
-      {/* Note Card */}
-      {/* <div className="rounded-xl border border-[#DDD9CE]/80 bg-white/70 p-3.5 text-xs leading-relaxed text-slate-700 shadow-2xs sm:text-sm">
-        <strong className="font-bold text-amber-800">Check the form.</strong> Paper USCIS forms need
-        a signature in pen. Use this where a scanned or typed signature is accepted.
-      </div> */}
+          <div className="divide-y divide-[#16302C]/10 border-t border-[#16302C]/10 text-xs sm:text-sm">
+            <div className="flex items-baseline justify-between py-2">
+              <span className="text-slate-500">Output format</span>
+              <b className="font-semibold text-slate-700">PNG, transparent</b>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Specification Rows */}
+          <div className="divide-y divide-[#16302C]/10 border-t border-[#16302C]/10 text-sm">
+            <div className="flex items-baseline justify-between py-2.5">
+              <span className="text-slate-600">Background</span>
+              <b className="font-semibold text-emerald-700">Removed</b>
+            </div>
+            <div className="flex items-baseline justify-between py-2.5">
+              <span className="text-slate-600">Cropped and straightened</span>
+              <b className="font-semibold text-emerald-700">
+                {editedImage ? "Custom adjusted" : "Yes"}
+              </b>
+            </div>
+            <div className="flex items-baseline justify-between py-2.5">
+              <span className="text-slate-600">Format</span>
+              <b className="font-semibold text-slate-800">
+                {imageDimensions
+                  ? `PNG, ${imageDimensions.width} × ${imageDimensions.height} px`
+                  : "PNG, transparent"}
+              </b>
+            </div>
+          </div>
+
+          {/* Note Card */}
+          <div className="rounded-xl border border-[#DDD9CE]/80 bg-white/70 p-3.5 text-xs leading-relaxed text-slate-700 shadow-2xs sm:text-sm">
+            <strong className="font-bold text-amber-800">Check the form.</strong> Paper USCIS forms need
+            a signature in pen. Use this where a scanned or typed signature is accepted.
+          </div>
+        </>
+      )}
 
       {/* Action Buttons */}
       <div className="mt-auto flex flex-col gap-2.5 pt-2">
@@ -400,14 +410,6 @@ export default function SnapAndSignTool({
           </button>
         )}
 
-        {processedImage && (
-          <Link
-            href="/pdf-tool-kit"
-            className="flex w-full items-center justify-center gap-2 rounded-xl border border-[#DDD9CE] bg-white/85 px-5 py-2.5 text-xs font-semibold text-slate-700 shadow-2xs transition-colors hover:border-slate-400 hover:bg-white sm:text-sm"
-          >
-            Sign a PDF with it
-          </Link>
-        )}
       </div>
     </div>
   );
