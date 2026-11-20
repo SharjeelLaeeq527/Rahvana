@@ -27,8 +27,8 @@ const WATERMARK_SVG =
 export function ToolHeader({
   title,
   tagline,
-  category,
-  priceOrDuration,
+  // category,
+  // priceOrDuration,
   theme,
   quickAccessItem,
   historyAction,

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
+import NextImage from "next/image";
 import dynamic from "next/dynamic";
 import { Download, RotateCcw, Crop, Check } from "lucide-react";
 import { Loader } from "@/components/ui/spinner";
@@ -243,13 +243,15 @@ export default function SnapAndSignTool({
                 {/* Before: Original Photo */}
                 <figure className="m-0">
                   <div
-                    className="relative flex aspect-[8/3] w-full items-center justify-center overflow-hidden rounded-xl border border-[#DDD9CE] p-3 shadow-inner sm:aspect-[16/10]"
+                    className="relative aspect-[8/3] w-full overflow-hidden rounded-xl border border-[#DDD9CE] shadow-inner sm:aspect-[16/10]"
                     style={PHOTO_BEFORE_STYLE}
                   >
-                    <img
+                    <NextImage
                       src={originalImage}
                       alt="Your photo"
-                      className="max-h-full max-w-full object-contain"
+                      fill
+                      className="object-contain p-3"
+                      unoptimized
                     />
                   </div>
                   <figcaption className="mt-2 text-center text-xs font-semibold text-slate-600">
@@ -260,13 +262,16 @@ export default function SnapAndSignTool({
                 {/* After: Clean Transparent Signature */}
                 <figure className="m-0">
                   <div
-                    className="relative flex aspect-[8/3] w-full items-center justify-center overflow-hidden rounded-xl border border-[#DDD9CE] p-3 shadow-inner sm:aspect-[16/10]"
+                    className="relative aspect-[8/3] w-full overflow-hidden rounded-xl border border-[#DDD9CE] shadow-inner sm:aspect-[16/10]"
                     style={CHECKERBOARD_STYLE}
                   >
-                    <img
+                    <NextImage
+                      key={activeImage}
                       src={activeImage}
                       alt="Clean, no background"
-                      className="max-h-full max-w-full object-contain"
+                      fill
+                      className="object-contain p-3"
+                      unoptimized
                     />
                   </div>
                   <figcaption className="mt-2 text-center text-xs font-semibold text-[#7A5A3A]">
