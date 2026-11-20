@@ -5,7 +5,7 @@ import SnapAndSignTool from "@/components/tools/SnapAndSignTool";
 
 export default function SignatureRemoverPage() {
   return (
-    <div className="mt-[55px]">
+    <div className="">
       <SnapAndSignTool mode="standalone" showHeader={true} />
     </div>
   );

@@ -327,26 +327,29 @@ export default function SnapAndSignTool({
       {!processedImage ? (
         <div className="space-y-4">
           <div className="rounded-xl border border-[#DDD9CE]/80 bg-white/75 p-4 shadow-2xs">
-            <div className="mb-2.5 text-xs font-bold uppercase tracking-wider text-slate-700">
+            <div className="mb-2.5 text-xs font-bold tracking-wider text-slate-700 uppercase">
               For best results
             </div>
-            <ul className="space-y-2.5 text-xs sm:text-sm text-slate-600">
+            <ul className="space-y-2.5 text-xs text-slate-600 sm:text-sm">
               <li className="flex items-start gap-2.5">
-                <Check className="h-4 w-4 shrink-0 text-emerald-600 mt-0.5" />
+                <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
                 <span>
-                  <strong className="text-slate-800">White paper:</strong> Plain, unlined paper without grids
+                  <strong className="text-slate-800">White paper:</strong> Plain, unlined paper
+                  without grids
                 </span>
               </li>
               <li className="flex items-start gap-2.5">
-                <Check className="h-4 w-4 shrink-0 text-emerald-600 mt-0.5" />
+                <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
                 <span>
-                  <strong className="text-slate-800">Dark ink:</strong> Blue or black pen for strong contrast
+                  <strong className="text-slate-800">Dark ink:</strong> Blue or black pen for strong
+                  contrast
                 </span>
               </li>
               <li className="flex items-start gap-2.5">
-                <Check className="h-4 w-4 shrink-0 text-emerald-600 mt-0.5" />
+                <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
                 <span>
-                  <strong className="text-slate-800">Even lighting:</strong> Flat lighting without shadows or glare
+                  <strong className="text-slate-800">Even lighting:</strong> Flat lighting without
+                  shadows or glare
                 </span>
               </li>
             </ul>
@@ -384,10 +387,10 @@ export default function SnapAndSignTool({
           </div>
 
           {/* Note Card */}
-          <div className="rounded-xl border border-[#DDD9CE]/80 bg-white/70 p-3.5 text-xs leading-relaxed text-slate-700 shadow-2xs sm:text-sm">
+          {/* <div className="rounded-xl border border-[#DDD9CE]/80 bg-white/70 p-3.5 text-xs leading-relaxed text-slate-700 shadow-2xs sm:text-sm">
             <strong className="font-bold text-amber-800">Check the form.</strong> Paper USCIS forms need
             a signature in pen. Use this where a scanned or typed signature is accepted.
-          </div>
+          </div> */}
         </>
       )}
 
@@ -414,7 +417,6 @@ export default function SnapAndSignTool({
             Download PNG
           </button>
         )}
-
       </div>
     </div>
   );

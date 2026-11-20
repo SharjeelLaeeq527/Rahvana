@@ -69,7 +69,7 @@ export function ToolHeader({
 
   return (
     <section
-      className="relative px-4 pt-7 pb-20 text-white transition-colors duration-300 sm:px-6 sm:pb-22"
+      className="relative px-4 pt-20 pb-20 text-white transition-colors duration-300 sm:px-6 sm:pt-20 sm:pb-22"
       style={{
         backgroundColor: theme.accentDark,
         backgroundImage: `url("${WATERMARK_SVG}")`,
