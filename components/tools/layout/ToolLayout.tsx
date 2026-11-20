@@ -16,6 +16,7 @@ export function ToolLayout({
   quickAccessItem,
   historyAction,
   headerActions,
+  hideHelpButton = false,
   layout,
   children,
   answer,
@@ -82,7 +83,7 @@ export function ToolLayout({
           theme={palette}
           quickAccessItem={quickAccessItem}
           historyAction={historyAction}
-          hasDrawerContent={hasDrawerContent}
+          hasDrawerContent={hasDrawerContent && !hideHelpButton}
           onOpenDrawer={handleOpenDrawerDefault}
           headerActions={headerActions}
         />

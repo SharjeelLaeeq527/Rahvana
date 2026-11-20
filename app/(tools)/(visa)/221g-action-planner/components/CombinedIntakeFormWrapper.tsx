@@ -27,6 +27,8 @@ export interface CombinedIntakeFormWrapperProps extends ToolModeProps {
   smartModeEnabled?: boolean;
   onProgressChange?: (draft: TwentyTwoOneGDraft) => void;
   onReset?: () => void;
+  bare?: boolean;
+  welcomeRequest?: number;
 }
 
 export default function CombinedIntakeFormWrapper({
@@ -41,6 +43,8 @@ export default function CombinedIntakeFormWrapper({
   journeyContext,
   onProgressChange,
   onReset,
+  bare,
+  welcomeRequest,
 }: CombinedIntakeFormWrapperProps) {
   return (
     <DynamicCombinedIntakeForm
@@ -55,6 +59,8 @@ export default function CombinedIntakeFormWrapper({
       journeyContext={journeyContext}
       onProgressChange={onProgressChange}
       onReset={onReset}
+      bare={bare}
+      welcomeRequest={welcomeRequest}
     />
   );
 }
