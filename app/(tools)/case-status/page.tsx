@@ -26,6 +26,7 @@ import { E, msg } from "@/lib/errors";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { SafeHtml } from "@/app/components/shared/SafeHTML";
 import { ToolLayout } from "@/components/tools/layout";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 /* ─── USCIS API Response Structure ──────────────────────────── */
 export interface USCISCaseStatus {
@@ -205,7 +206,7 @@ export default function USCISCaseStatusPage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<CaseResult | null>(null);
   const [history, setHistory] = useState<CaseResult[]>([]);
-  const [showHistory, setShowHistory] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [error, setError] = useState<{ code?: string; message: string } | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -394,7 +395,7 @@ export default function USCISCaseStatusPage() {
     setReceipt(item.receiptNumber);
     setResult(item);
     setError(null);
-    setShowHistory(false);
+    setShowHistoryModal(false);
   };
 
   const handleClearHistory = async () => {
@@ -417,7 +418,7 @@ export default function USCISCaseStatusPage() {
     }
 
     setHistory([]);
-    setShowHistory(false);
+    setShowHistoryModal(false);
     showToast("Case search history cleared.", "info");
   };
 
@@ -606,19 +607,19 @@ export default function USCISCaseStatusPage() {
         </div>
       )}
 
-      {/* Earlier Checks Section (Option C mockup lines 417-421) */}
+      {/* Earlier Checks Section (Option C mockup lines 417-421: 2 items limit) */}
       <div id="earlier-checks" className="mt-8 border-t border-[#DDD9CE] pt-6">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="font-serif text-base font-semibold text-[#16302C] italic">
             Earlier checks
           </h3>
-          {history.length > 0 && (
+          {history.length > 2 && (
             <button
               type="button"
-              onClick={handleClearHistory}
-              className="flex items-center gap-1 text-xs font-medium text-[#BE211A] hover:underline"
+              onClick={() => setShowHistoryModal(true)}
+              className="text-xs font-semibold text-[#3D5A80] hover:underline"
             >
-              <Trash2 className="h-3 w-3" /> Clear All
+              View all ({history.length})
             </button>
           )}
         </div>
@@ -627,7 +628,7 @@ export default function USCISCaseStatusPage() {
           <p className="text-xs text-slate-400 italic">No previous searches yet.</p>
         ) : (
           <div className="divide-y divide-[#DDD9CE]/70 border-t border-b border-[#DDD9CE]/70">
-            {history.slice(0, 10).map((h, idx) => {
+            {history.slice(0, 2).map((h, idx) => {
               const ht = getStatusTheme(h.status);
               return (
                 <button
@@ -652,6 +653,17 @@ export default function USCISCaseStatusPage() {
               );
             })}
           </div>
+        )}
+
+        {history.length > 2 && (
+          <button
+            type="button"
+            onClick={() => setShowHistoryModal(true)}
+            className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-[#3D5A80] hover:text-[#1B2B44] hover:underline"
+          >
+            <Clock className="h-3.5 w-3.5" />
+            See all {history.length} searches in history &rarr;
+          </button>
         )}
       </div>
     </div>
@@ -813,74 +825,160 @@ export default function USCISCaseStatusPage() {
   );
 
   return (
-    <ToolLayout
-      theme="uscis"
-      title="USCIS Case Status"
-      tagline="Enter your 13-character receipt number for an instant case update with official data in real-time."
-      category="Live Status Tracker"
-      priceOrDuration="Free · under 1 min"
-      quickAccessItem={{
-        id: "case-status",
-        title: "USCIS Case Status",
-        href: "/case-status",
-        icon_name: "FileText",
-      }}
-      historyAction={{
-        count: history.length,
-        isOpen: showHistory,
-        onClick: () => {
-          setShowHistory((v) => !v);
-          const el = document.getElementById("earlier-checks");
-          if (el) {
-            el.scrollIntoView({ behavior: "smooth" });
-          }
-        },
-      }}
-      rules={[
-        { label: "Receipt number", value: "3 letters + 10 digits" },
-        { label: "Where to find it", value: "Top left of Form I-797 notice" },
-        { label: "Check frequency", value: "Once a week is recommended" },
-        { label: "Service Center prefix", value: "IOE, MSC, EAC, WAC, LIN, SRC, etc." },
-      ]}
-      faqs={[
-        {
-          question: "Why has my status not changed?",
-          answer:
-            "USCIS updates status only when action is taken on your case. Periods of several weeks or months without change are completely normal.",
-        },
-        {
-          question: "Is this official USCIS data?",
-          answer:
-            "Yes, status data is retrieved directly in real-time from official USCIS terminal records. Your search history is securely saved to your Rahvana account.",
-        },
-        {
-          question: "What does my receipt prefix mean?",
-          answer:
-            "The 3-letter prefix identifies the USCIS service center processing your petition (e.g. IOE for Electronic Processing, MSC for National Benefits Center, EAC for Vermont, WAC for California).",
-        },
-      ]}
-      sources={[
-        {
-          title: "USCIS Case Status Online",
-          domain: "egov.uscis.gov",
-          url: "https://egov.uscis.gov",
-        },
-        {
-          title: "USCIS Historical Processing Times",
-          domain: "egov.uscis.gov",
-          url: "https://egov.uscis.gov/processing-times/",
-        },
-        {
-          title: "Official USCIS Homepage",
-          domain: "uscis.gov",
-          url: "https://www.uscis.gov",
-        },
-      ]}
-      disclaimer="Status data is retrieved from official USCIS portals. Rahvana is not affiliated with USCIS or the U.S. government."
-      layout="split"
-      answer={answerContent}
-    >
-      {workContent}
-    </ToolLayout>
+    <>
+      <ToolLayout
+        theme="uscis"
+        title="USCIS Case Status"
+        tagline="Enter your 13-character receipt number for an instant case update with official data in real-time."
+        category="Live Status Tracker"
+        priceOrDuration="Free · under 1 min"
+        quickAccessItem={{
+          id: "case-status",
+          title: "USCIS Case Status",
+          href: "/case-status",
+          icon_name: "FileText",
+        }}
+        historyAction={{
+          count: history.length,
+          isOpen: showHistoryModal,
+          onClick: () => setShowHistoryModal(true),
+        }}
+        rules={[
+          { label: "Receipt number", value: "3 letters + 10 digits" },
+          { label: "Where to find it", value: "Top left of Form I-797 notice" },
+          { label: "Check frequency", value: "Once a week is recommended" },
+          { label: "Service Center prefix", value: "IOE, MSC, EAC, WAC, LIN, SRC, etc." },
+        ]}
+        faqs={[
+          {
+            question: "Why has my status not changed?",
+            answer:
+              "USCIS updates status only when action is taken on your case. Periods of several weeks or months without change are completely normal.",
+          },
+          {
+            question: "Is this official USCIS data?",
+            answer:
+              "Yes, status data is retrieved directly in real-time from official USCIS terminal records. Your search history is securely saved to your Rahvana account.",
+          },
+          {
+            question: "What does my receipt prefix mean?",
+            answer:
+              "The 3-letter prefix identifies the USCIS service center processing your petition (e.g. IOE for Electronic Processing, MSC for National Benefits Center, EAC for Vermont, WAC for California).",
+          },
+        ]}
+        sources={[
+          {
+            title: "USCIS Case Status Online",
+            domain: "egov.uscis.gov",
+            url: "https://egov.uscis.gov",
+          },
+          {
+            title: "USCIS Historical Processing Times",
+            domain: "egov.uscis.gov",
+            url: "https://egov.uscis.gov/processing-times/",
+          },
+          {
+            title: "Official USCIS Homepage",
+            domain: "uscis.gov",
+            url: "https://www.uscis.gov",
+          },
+        ]}
+        disclaimer="Status data is retrieved from official USCIS portals. Rahvana is not affiliated with USCIS or the U.S. government."
+        layout="split"
+        answer={answerContent}
+      >
+        {workContent}
+      </ToolLayout>
+
+      {/* Search History Modal */}
+      <Dialog open={showHistoryModal} onOpenChange={setShowHistoryModal}>
+        <DialogContent className="w-[95%] max-w-xl bg-white p-0 overflow-hidden rounded-2xl border border-[#DDD9CE] shadow-2xl">
+          {/* Modal Header */}
+          <div className="flex items-center justify-between border-b border-[#DDD9CE] px-6 py-4 bg-[#F6F4EF]/70">
+            <div>
+              <DialogTitle className="font-serif text-lg font-bold text-[#16302C]">
+                Search History
+              </DialogTitle>
+              <p className="text-xs text-slate-500 mt-0.5">
+                {history.length} {history.length === 1 ? "lookup" : "lookups"} saved across your sessions
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              {history.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleClearHistory}
+                  className="flex items-center gap-1 text-xs font-semibold text-[#BE211A] hover:underline px-2 py-1"
+                >
+                  <Trash2 className="h-3 w-3" /> Clear All
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setShowHistoryModal(false)}
+                className="p-1 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-200/50 transition-colors"
+                aria-label="Close history modal"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Modal List of all history items */}
+          <div className="max-h-[60vh] overflow-y-auto divide-y divide-[#DDD9CE]/60 p-2">
+            {history.length === 0 ? (
+              <div className="py-12 text-center text-xs text-slate-400 italic">
+                No search history found.
+              </div>
+            ) : (
+              history.map((h, idx) => {
+                const ht = getStatusTheme(h.status);
+                return (
+                  <button
+                    key={`${h.receiptNumber}-${h.checkedAt || idx}`}
+                    type="button"
+                    onClick={() => {
+                      loadHistory(h);
+                      setShowHistoryModal(false);
+                    }}
+                    className="group flex w-full items-center justify-between p-3.5 text-left rounded-xl transition-colors hover:bg-[#F6F4EF]"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className={`h-2.5 w-2.5 rounded-full shrink-0 ${ht.dot}`} />
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-sm font-bold tracking-wider text-[#1B2B44] group-hover:text-[#3D5A80]">
+                            {h.receiptNumber}
+                          </span>
+                          {h.formType && (
+                            <span className="text-[11px] font-medium text-slate-500">
+                              ({h.formType})
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          Checked {new Date(h.checkedAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="text-right max-w-[45%]">
+                      <span
+                        className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[10px] font-semibold tracking-wide uppercase ${ht.bg} ${ht.color} ${ht.border}`}
+                      >
+                        {ht.label}
+                      </span>
+                      <p className="text-xs font-semibold text-slate-700 truncate mt-1">
+                        {h.status || "Status Unavailable"}
+                      </p>
+                    </div>
+                  </button>
+                );
+              })
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
