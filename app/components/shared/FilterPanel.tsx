@@ -19,6 +19,8 @@ interface FilterPanelProps {
   onFilterChange: (filters: Record<string, string>) => void;
   itemCount: number;
   totalCount: number;
+  title?: string;
+  align?: "left" | "right";
 }
 
 export const FilterPanel = ({
@@ -26,6 +28,8 @@ export const FilterPanel = ({
   onFilterChange,
   itemCount,
   totalCount,
+  title = "Filter Sessions",
+  align = "left",
 }: FilterPanelProps) => {
   const [showPopover, setShowPopover] = useState(false);
   const [localFilters, setLocalFilters] = useState<Record<string, string>>(
@@ -109,10 +113,12 @@ export const FilterPanel = ({
       {showPopover && (
         <div
           ref={popoverRef}
-          className="absolute top-full left-0 z-50 mt-2 max-h-125 w-80 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl"
+          className={`absolute top-full z-50 mt-2 max-h-125 w-[min(20rem,calc(100vw-2rem))] overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl ${
+            align === "right" ? "right-0" : "left-0"
+          }`}
         >
           <div className="sticky top-0 flex items-center justify-between border-b border-slate-100 bg-white p-4">
-            <h3 className="font-semibold text-slate-900">Filter Sessions</h3>
+            <h3 className="font-semibold text-slate-900">{title}</h3>
             <button
               onClick={() => setShowPopover(false)}
               className="text-slate-600 transition-colors hover:text-slate-900"
