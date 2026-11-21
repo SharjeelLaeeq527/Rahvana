@@ -58,13 +58,41 @@ const EMPTY: CspaInput = {
 
 /** One accent colour per result. Used for the top rule, the status dot and the timeline. */
 const STATUS_STYLE: Record<CspaStatus, { label: string; accent: string; text: string }> = {
-  protected: { label: "Protected", accent: "bg-emerald-600", text: "text-emerald-700 dark:text-emerald-400" },
-  not_filed: { label: "Not filed yet", accent: "bg-[var(--tool-accent,#0d7377)]", text: "text-[var(--tool-accent,#0d7377)] dark:text-teal-300" },
-  file_soon: { label: "File soon", accent: "bg-amber-500", text: "text-amber-700 dark:text-amber-400" },
-  aged_out: { label: "Over the age limit", accent: "bg-rose-600", text: "text-rose-700 dark:text-rose-400" },
-  not_a_child: { label: "Does not qualify", accent: "bg-rose-600", text: "text-rose-700 dark:text-rose-400" },
-  needs_review: { label: "Talk to a lawyer", accent: "bg-amber-500", text: "text-amber-700 dark:text-amber-400" },
-  invalid: { label: "Check the dates", accent: "bg-slate-400", text: "text-slate-600 dark:text-slate-400" },
+  protected: {
+    label: "Protected",
+    accent: "bg-emerald-600",
+    text: "text-emerald-700 dark:text-emerald-400",
+  },
+  not_filed: {
+    label: "Not filed yet",
+    accent: "bg-[var(--tool-accent,#0d7377)]",
+    text: "text-[var(--tool-accent,#0d7377)] dark:text-teal-300",
+  },
+  file_soon: {
+    label: "File soon",
+    accent: "bg-amber-500",
+    text: "text-amber-700 dark:text-amber-400",
+  },
+  aged_out: {
+    label: "Over the age limit",
+    accent: "bg-rose-600",
+    text: "text-rose-700 dark:text-rose-400",
+  },
+  not_a_child: {
+    label: "Does not qualify",
+    accent: "bg-rose-600",
+    text: "text-rose-700 dark:text-rose-400",
+  },
+  needs_review: {
+    label: "Talk to a lawyer",
+    accent: "bg-amber-500",
+    text: "text-amber-700 dark:text-amber-400",
+  },
+  invalid: {
+    label: "Check the dates",
+    accent: "bg-slate-400",
+    text: "text-slate-600 dark:text-slate-400",
+  },
 };
 
 const CHECK_MARK: Record<CspaCheckState, string> = {
@@ -76,7 +104,7 @@ const CHECK_MARK: Record<CspaCheckState, string> = {
 
 const QUESTIONS: { q: string; a: string }[] = [
   {
-    q: "What does \"age locked\" mean?",
+    q: 'What does "age locked" mean?',
     a: "For a child of a U.S. citizen, the child's age stops counting on the day USCIS receives the I-130. If the child was under 21 that day, the child can still immigrate as a child after turning 21.",
   },
   {
@@ -153,7 +181,9 @@ function Choice<T extends string>({
             <span
               aria-hidden
               className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${
-                active ? "border-[var(--tool-accent,#0d7377)]" : "border-slate-300 dark:border-slate-600"
+                active
+                  ? "border-[var(--tool-accent,#0d7377)]"
+                  : "border-slate-300 dark:border-slate-600"
               }`}
             >
               {active && <span className="h-2 w-2 rounded-full bg-[var(--tool-accent,#0d7377)]" />}
@@ -192,7 +222,9 @@ function DateInput({
 /** A follow-up question that depends on the answer above it. */
 function FollowUp({ children }: { children: React.ReactNode }) {
   return (
-    <div className="space-y-6 rounded-lg bg-slate-50 p-4 sm:p-5 dark:bg-slate-800/50">{children}</div>
+    <div className="space-y-6 rounded-lg bg-slate-50 p-4 sm:p-5 dark:bg-slate-800/50">
+      {children}
+    </div>
   );
 }
 
@@ -200,7 +232,9 @@ function FormSection({ title, children }: { title: string; children: React.React
   return (
     <fieldset className="p-5 sm:p-8">
       <legend className="sr-only">{title}</legend>
-      <h2 className="mb-6 text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-100">{title}</h2>
+      <h2 className="mb-6 text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+        {title}
+      </h2>
       <div className="space-y-7">{children}</div>
     </fieldset>
   );
@@ -237,7 +271,10 @@ function AgeTimeline({ dob, result, accent }: { dob: string; result: CspaResult;
   return (
     <div>
       <div className="relative h-1.5 rounded-full bg-slate-100 dark:bg-slate-800">
-        <div className={`absolute inset-y-0 left-0 rounded-full ${accent}`} style={{ width: `${todayPct}%` }} />
+        <div
+          className={`absolute inset-y-0 left-0 rounded-full ${accent}`}
+          style={{ width: `${todayPct}%` }}
+        />
         <span
           className="absolute -top-1.5 h-[18px] w-px bg-slate-400 dark:bg-slate-500"
           style={{ left: `${twentyOnePct}%` }}
@@ -255,7 +292,10 @@ function AgeTimeline({ dob, result, accent }: { dob: string; result: CspaResult;
       </div>
       <div className="relative mt-2 h-4 text-xs text-slate-500 tabular-nums dark:text-slate-400">
         <span className="absolute left-0">Age {startAge}</span>
-        <span className="absolute -translate-x-1/2 font-medium text-slate-700 dark:text-slate-200" style={{ left: `${twentyOnePct}%` }}>
+        <span
+          className="absolute -translate-x-1/2 font-medium text-slate-700 dark:text-slate-200"
+          style={{ left: `${twentyOnePct}%` }}
+        >
           21
         </span>
         <span className="absolute right-0">22</span>
@@ -280,13 +320,19 @@ function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-baseline justify-between gap-4 py-2.5">
       <dt className="text-sm text-slate-500 dark:text-slate-400">{label}</dt>
-      <dd className="text-right text-sm font-medium text-slate-900 tabular-nums dark:text-slate-100">{value}</dd>
+      <dd className="text-right text-sm font-medium text-slate-900 tabular-nums dark:text-slate-100">
+        {value}
+      </dd>
     </div>
   );
 }
 
 function SubHeading({ children }: { children: React.ReactNode }) {
-  return <h4 className="mb-3 text-[13px] font-semibold text-slate-900 dark:text-slate-100">{children}</h4>;
+  return (
+    <h4 className="mb-3 text-[13px] font-semibold text-slate-900 dark:text-slate-100">
+      {children}
+    </h4>
+  );
 }
 
 // ─── Intro card ───────────────────────────────────────────────────────────────
@@ -330,7 +376,9 @@ function IntroBlock({ title, children }: { title: string; children: React.ReactN
   return (
     <div>
       <h3 className="text-[15px] font-semibold text-slate-900 dark:text-slate-100">{title}</h3>
-      <div className="mt-1.5 text-sm leading-relaxed text-slate-600 dark:text-slate-300">{children}</div>
+      <div className="mt-1.5 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+        {children}
+      </div>
     </div>
   );
 }
@@ -359,12 +407,12 @@ function IntroCard({
 
       <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-3 md:gap-8">
         <IntroBlock title="What this tool is">
-          A free checker for U.S. citizen parents bringing a child to the U.S. on an IR-2 visa.
-          You enter a few dates, and it works out your child&apos;s age the way USCIS does.
+          A free checker for U.S. citizen parents bringing a child to the U.S. on an IR-2 visa. You
+          enter a few dates, and it works out your child&apos;s age the way USCIS does.
         </IntroBlock>
         <IntroBlock title="Why you need it">
-          The IR-2 visa is only for an unmarried child under 21. Cases take months, and a child
-          who turns 21 without protection moves to a category with a much longer wait.
+          The IR-2 visa is only for an unmarried child under 21. Cases take months, and a child who
+          turns 21 without protection moves to a category with a much longer wait.
         </IntroBlock>
         <IntroBlock title="How it helps">
           A law called the Child Status Protection Act (CSPA) locks your child&apos;s age on the day
@@ -395,11 +443,13 @@ function IntroCard({
       <div className="mt-7 divide-y divide-slate-200 border-y border-slate-200 dark:divide-slate-800 dark:border-slate-800">
         {MORE.map(({ q, a }) => (
           <details key={q} className="group">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-3.5 text-sm font-medium text-slate-800 [&::-webkit-details-marker]:hidden dark:text-slate-200">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-3.5 text-sm font-medium text-slate-800 dark:text-slate-200 [&::-webkit-details-marker]:hidden">
               {q}
               <ChevronDown className="h-4 w-4 shrink-0 text-slate-400 transition-transform group-open:rotate-180" />
             </summary>
-            <div className="-mt-1 pb-4 pr-8 text-sm leading-relaxed text-slate-600 dark:text-slate-400">{a}</div>
+            <div className="-mt-1 pr-8 pb-4 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+              {a}
+            </div>
           </details>
         ))}
       </div>
@@ -445,7 +495,10 @@ function ResultView({
   const card = variant === "card";
   const style = result ? STATUS_STYLE[result.status] : null;
   const showTimeline =
-    !!result && (result.status === "protected" || result.status === "not_filed" || result.status === "file_soon");
+    !!result &&
+    (result.status === "protected" ||
+      result.status === "not_filed" ||
+      result.status === "file_soon");
   const section = card
     ? "border-t border-slate-100 p-5 sm:p-6 dark:border-slate-800"
     : "border-t border-[#16302C]/10 pt-5";
@@ -463,8 +516,8 @@ function ResultView({
           Your result will show here
         </h3>
         <p className="mt-1.5 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
-          Start with your child&apos;s date of birth. The result updates as you answer, and
-          shows the 21st birthday, whether the age is locked, and what to do next.
+          Start with your child&apos;s date of birth. The result updates as you answer, and shows
+          the 21st birthday, whether the age is locked, and what to do next.
         </p>
       </div>
     );
@@ -492,7 +545,9 @@ function ResultView({
         >
           {result.headline}
         </h3>
-        <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">{result.body}</p>
+        <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+          {result.body}
+        </p>
         {result.errors.length > 1 && (
           <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-slate-600 dark:text-slate-300">
             {result.errors.slice(1).map((e) => (
@@ -530,8 +585,13 @@ function ResultView({
           <SubHeading>Relationship check</SubHeading>
           <ul className="space-y-3">
             {result.checks.map((c) => (
-              <li key={c.id} className="flex gap-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-                <span className={`mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full ${CHECK_MARK[c.state]}`} />
+              <li
+                key={c.id}
+                className="flex gap-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300"
+              >
+                <span
+                  className={`mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full ${CHECK_MARK[c.state]}`}
+                />
                 <span>{c.text}</span>
               </li>
             ))}
@@ -544,8 +604,13 @@ function ResultView({
           <SubHeading>What to do next</SubHeading>
           <ol className="space-y-3">
             {result.nextSteps.map((s, i) => (
-              <li key={s} className="flex gap-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-                <span className="w-4 shrink-0 text-right font-medium text-slate-400 tabular-nums">{i + 1}.</span>
+              <li
+                key={s}
+                className="flex gap-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300"
+              >
+                <span className="w-4 shrink-0 text-right font-medium text-slate-400 tabular-nums">
+                  {i + 1}.
+                </span>
                 <span>{s}</span>
               </li>
             ))}
@@ -776,7 +841,10 @@ export default function CspaAgeCheckerTool({
             )}
 
             {input.parentStatusAtFiling === "lpr" && input.parentNaturalized && (
-              <Field label="Date the parent became a citizen" hint="Shown on the naturalization certificate.">
+              <Field
+                label="Date the parent became a citizen"
+                hint="Shown on the naturalization certificate."
+              >
                 <DateInput
                   label="Date the parent became a citizen"
                   max={today}
@@ -791,121 +859,54 @@ export default function CspaAgeCheckerTool({
     </>
   );
 
-  // ── Standalone page: the shared tool layout (band, bench card, drawer) ──
-  if (showHeader) {
-    return (
-      <ToolLayout
-        theme="cspa"
-        title="CSPA Age-Out Checker"
-        // The intro already explains the tool, so the lead line shows only on the checker.
-        tagline={
-          started
-            ? "Find out if your child's age is protected, or the last day to file the I-130."
-            : undefined
-        }
-        quickAccessItem={
-          isJourney
-            ? undefined
-            : {
-                id: "cspa-age-checker",
-                title: "CSPA Age-Out Checker",
-                href: "/cspa-age-checker",
-                icon_name: "Clock",
-              }
-        }
-        layout={started ? "split" : "single"}
-        workClassName={started ? "p-0! sm:p-0! lg:p-0!" : ""}
-        answer={
-          started ? (
-            <ResultView result={result} dob={input.dateOfBirth} variant="panel" footer={saveButton} />
-          ) : undefined
-        }
-        rules={RULES}
-        faqs={QUESTIONS.map(({ q, a }) => ({ question: q, answer: a }))}
-        sources={sourceIds.map((id) => ({
-          title: CSPA_SOURCES[id].label,
-          domain: sourceDomain(CSPA_SOURCES[id].url),
-          url: CSPA_SOURCES[id].url,
-        }))}
-        disclaimer="General information based on USCIS guidance, not legal advice."
-        className={className}
-      >
-        {!started ? (
-          <IntroCard bare isJourney={isJourney} onContinue={() => goTo(true)} />
-        ) : (
-          <div className="divide-y divide-slate-100 dark:divide-slate-800">
-            <div className="px-5 pt-5 sm:px-8 sm:pt-6">{backToIntro}</div>
-            {form}
-          </div>
-        )}
-      </ToolLayout>
-    );
-  }
-
-  // ── Journey (embedded, no page chrome): same layout as before ──
+  // One layout for every entry point (standalone page and journey); the launcher sets the
+  // placement (ToolSurfaceProvider) and the layout adapts its chrome.
   return (
-    <div className={`mx-auto w-full max-w-6xl ${className}`}>
+    <ToolLayout
+      theme="cspa"
+      showHeader={showHeader}
+      title="CSPA Age-Out Checker"
+      // The intro already explains the tool, so the lead line shows only on the checker.
+      tagline={
+        started
+          ? "Find out if your child's age is protected, or the last day to file the I-130."
+          : undefined
+      }
+      quickAccessItem={
+        isJourney
+          ? undefined
+          : {
+              id: "cspa-age-checker",
+              title: "CSPA Age-Out Checker",
+              href: "/cspa-age-checker",
+              icon_name: "Clock",
+            }
+      }
+      layout={started ? "split" : "single"}
+      workClassName={started ? "p-0! sm:p-0! lg:p-0!" : ""}
+      answer={
+        started ? (
+          <ResultView result={result} dob={input.dateOfBirth} variant="panel" footer={saveButton} />
+        ) : undefined
+      }
+      rules={RULES}
+      faqs={QUESTIONS.map(({ q, a }) => ({ question: q, answer: a }))}
+      sources={sourceIds.map((id) => ({
+        title: CSPA_SOURCES[id].label,
+        domain: sourceDomain(CSPA_SOURCES[id].url),
+        url: CSPA_SOURCES[id].url,
+      }))}
+      disclaimer="General information based on USCIS guidance, not legal advice."
+      className={className}
+    >
       {!started ? (
-        <IntroCard isJourney={isJourney} onContinue={() => goTo(true)} />
+        <IntroCard bare isJourney={isJourney} onContinue={() => goTo(true)} />
       ) : (
-        <>
-          <div className="mb-4">{backToIntro}</div>
-          <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-8">
-            {/* ─ Inputs ─ */}
-            <section className="divide-y divide-slate-100 rounded-xl border border-slate-200 bg-white dark:divide-slate-800 dark:border-slate-800 dark:bg-slate-900">
-              {form}
-            </section>
-
-            {/* ─ Result ─ */}
-            <aside className="lg:sticky lg:top-24" aria-live="polite">
-              <ResultView result={result} dob={input.dateOfBirth} variant="card" footer={saveButton} />
-            </aside>
-          </div>
-
-          {/* ─ Common questions + sources ─ */}
-          <section className="mt-14 grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-8">
-            <div>
-              <h2 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-100">
-                Common questions
-              </h2>
-              <div className="mt-4 divide-y divide-slate-200 border-y border-slate-200 dark:divide-slate-800 dark:border-slate-800">
-                {QUESTIONS.map(({ q, a }) => (
-                  <details key={q} className="group">
-                    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-4 text-[15px] font-medium text-slate-900 [&::-webkit-details-marker]:hidden dark:text-slate-100">
-                      {q}
-                      <ChevronDown className="h-4 w-4 shrink-0 text-slate-400 transition-transform group-open:rotate-180" />
-                    </summary>
-                    <p className="-mt-1 pb-5 pr-8 text-sm leading-relaxed text-slate-600 dark:text-slate-400">{a}</p>
-                  </details>
-                ))}
-              </div>
-            </div>
-
-            <div className="text-sm">
-              <h2 className="text-[13px] font-semibold text-slate-900 dark:text-slate-100">Sources</h2>
-              <ul className="mt-3 space-y-2">
-                {sourceIds.map((id) => (
-                  <li key={id}>
-                    <a
-                      href={CSPA_SOURCES[id].url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-slate-600 underline decoration-slate-300 underline-offset-4 hover:text-slate-900 hover:decoration-slate-500 dark:text-slate-400 dark:decoration-slate-600 dark:hover:text-slate-200"
-                    >
-                      {CSPA_SOURCES[id].label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-              <p className="mt-6 border-t border-slate-200 pt-4 text-[13px] leading-relaxed text-slate-500 dark:border-slate-800 dark:text-slate-400">
-                This checker gives general information based on USCIS guidance. It is not legal advice.
-                Rules can change, so check the sources above or speak to a licensed immigration
-                attorney before you file.
-              </p>
-            </div>
-          </section>
-        </>
+        <div className="divide-y divide-slate-100 dark:divide-slate-800">
+          <div className="px-5 pt-5 sm:px-8 sm:pt-6">{backToIntro}</div>
+          {form}
+        </div>
       )}
-    </div>
+    </ToolLayout>
   );
 }

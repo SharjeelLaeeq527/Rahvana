@@ -4,6 +4,7 @@ import React, { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { X } from "lucide-react";
 import { Loader } from "@/components/ui/spinner";
+import { ToolSurfaceProvider } from "@/components/tools/layout";
 
 import {
   usePlan,
@@ -398,7 +399,10 @@ export const ToolPageOverlay: React.FC<ToolPageOverlayProps> = ({
       <div className="min-h-full w-full">
         {ToolComponent ? (
           <PlanContext.Provider value={effectivePlan}>
-            <ToolComponent {...resolvedProps} />
+            {/* Same tool UI as its standalone page; the layout adapts to sitting in a journey. */}
+            <ToolSurfaceProvider placement="journey">
+              <ToolComponent {...resolvedProps} />
+            </ToolSurfaceProvider>
           </PlanContext.Provider>
         ) : (
           <div className="min-h-full flex flex-col items-center justify-center p-6 text-center">

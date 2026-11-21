@@ -269,6 +269,23 @@ surface, not a spinner. Adding a guide to the toolbox = an `AppGroup` item + a `
 `OVERLAY_PAGE_ROUTES` entry + a `GUIDE_PRELOADERS` entry (its feature key must match the guide
 page's own `PageGate`).
 
+**Shared tool layout (one UI per tool, every entry point).** Redesigned tools render
+`ToolLayout` (`components/tools/layout/`: hero band, bench card, rules / FAQ / sources drawer,
+per-tool theme in `toolThemes.ts`) no matter where they are launched. A tool must NOT keep a
+second "journey" UI behind `showHeader` / `isEmbedded`: `mode` / `journeyContext` decide data,
+saving and gating; the launcher decides chrome. `EmbeddedToolContainer` and `ToolPageOverlay`
+wrap the tool in `ToolSurfaceProvider placement="journey"`; `ToolLayout` then drops
+`min-h-screen` and the Quick Access bookmark and uses a shorter band (`ToolHeader compact`).
+Standalone routes wrap the tool in `ToolPageFrame` (the 55px site-header offset only on its own
+page). Tools whose shell lives outside the tool component share it as a component used by both
+the route and the journey: `SponsorshipCalculatorLayout` (`components/tools/`) and
+`Planner221gLayout` (`221g-action-planner/components/`; the journey still renders its worksheet
++ action-plan tools inside it, the drawer copy switches by placement). Toolbox keys on the
+shared layout are listed in `TOOL_LAYOUT_KEYS` (full-bleed, no container padding). On it today:
+Interview Prep (+ My Sessions), 221(g), Sponsorship, Photo Booth, PDF Toolkit, Snap & Sign, DQ
+status, CSPA, USCIS case status. Not yet: document translation, medical, PCC, consultation,
+Smart Form Filler. Test: `__tests__/tools/tool-layout-placement.test.ts`.
+
 **Redesigned journey dashboard.** Both `DashboardView`s (spouse + engine) render only
 `app/components/journey-dashboard/JourneyDashboard.tsx` (the classic layout and its toggle were removed;
 the DashboardViews now only compute data and host the CSA drawer / questionnaire / upgrade modals). It switches at 1024px between `desktop/DesktopDashboard` (Inter,

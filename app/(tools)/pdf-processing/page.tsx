@@ -2,11 +2,12 @@
 
 import React from "react";
 import PdfToolkitTool from "@/components/tools/PdfToolkitTool";
+import { ToolPageFrame } from "@/components/tools/layout";
 
 export default function PDFProcessingPage() {
   return (
-    <div className="mt-[55px]">
+    <ToolPageFrame>
       <PdfToolkitTool mode="standalone" showHeader={true} />
-    </div>
+    </ToolPageFrame>
   );
 }
