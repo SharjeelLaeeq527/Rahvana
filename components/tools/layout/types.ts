@@ -77,6 +77,9 @@ export interface ToolLayoutProps {
   /** History action button displayed next to the Save button in the hero header */
   historyAction?: ToolHistoryAction;
 
+  /** Hide the hero "Rules & help" button (the drawer stays reachable from the links under the card) */
+  hideHelpButton?: boolean;
+
   /** Optional custom action elements in the hero header */
   headerActions?: React.ReactNode;
 
