@@ -198,7 +198,7 @@ export function CategorySelectionStep({
                   <Button
                     type="button"
                     onClick={onPurchaseAgain}
-                    className="bg-[#0d7377] hover:bg-[#0a5a5d] text-white"
+                    className="bg-[var(--tool-accent,#0d7377)] text-white hover:brightness-95 hover:bg-[var(--tool-accent,#0d7377)]"
                   >
                     Purchase Another Session
                   </Button>
@@ -334,7 +334,7 @@ export function CategorySelectionStep({
 
         <Button
           onClick={onNext}
-          className="bg-[#0d7377] hover:bg-[#0a5a5d] text-white px-6 py-3 text-base shadow-lg shadow-[#0d7377]/20"
+          className="bg-[var(--tool-accent,#0d7377)] px-6 py-3 text-base text-white shadow-sm hover:brightness-95 hover:bg-[var(--tool-accent,#0d7377)]"
           disabled={!selectedCategory}
         >
           Next →

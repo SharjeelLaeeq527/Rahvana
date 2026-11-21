@@ -93,14 +93,16 @@ export const FilterPanel = ({
   onClick={() => setShowPopover(!showPopover)}
   variant="outline"
   className={`gap-3 !px-6 !py-5 ${
-    activeFiltersCount > 0 ? "bg-teal-50 border-teal-300" : ""
+    activeFiltersCount > 0
+      ? "border-[var(--tool-accent,#5eead4)] bg-[var(--tool-accent-tint,#f0fdfa)]"
+      : ""
   }`}
 >
   <Filter className="h-4 w-4" />
   Filters
 
   {activeFiltersCount > 0 && (
-    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-teal-600 px-1 text-xs font-semibold text-white">
+    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--tool-accent,#0d9488)] px-1 text-xs font-semibold text-white">
       {activeFiltersCount}
     </span>
   )}
@@ -147,7 +149,7 @@ export const FilterPanel = ({
                     e.stopPropagation();
                     handleReset();
                   }}
-                  className="flex-1 rounded-lg bg-teal-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-teal-700"
+                  className="flex-1 rounded-lg bg-[var(--tool-accent,#0d9488)] px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--tool-accent-dark,#0f766e)]"
                 >
                   Reset
                 </button>
