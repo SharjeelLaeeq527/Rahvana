@@ -9,19 +9,18 @@ import SponsorshipCalculatorTool, {
 import { useUserProfile } from "@/app/context/UserProfileContext";
 import type { MasterProfile } from "@/types/profile";
 import { useToast } from "@/app/components/shared/ToastProvider";
-import { CheckCircle2, Calculator, Info, RotateCcw, Clock, ArrowRight } from "lucide-react";
-import Link from "next/link";
+import { ToolLayout } from "@/components/tools/layout";
+import type { ToolFaq, ToolRule } from "@/components/tools/layout/types";
 
 export default function AffidavitSupportCalculatorPage() {
   const [mounted, setMounted] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
   const { showToast } = useToast();
   const { profile, updateProfile } = useUserProfile();
 
   const [savedResult, setSavedResult] = useState<any>(null);
   const [savedDraft, setSavedDraft] = useState<SponsorshipCalculatorDraft | null>(null);
   // Bumped on "Start Fresh" to force the still-mounted SponsorshipCalculatorTool to
-  // re-initialize from a clean slate (it keeps its form/step state alive while hidden).
+  // re-initialize from a clean slate.
   const [resetKey, setResetKey] = useState(0);
 
   // Load isolated standalone saved calculation and draft from localStorage or user profile
@@ -55,14 +54,7 @@ export default function AffidavitSupportCalculatorPage() {
   useEffect(() => {
     setMounted(true);
     loadStandaloneData();
-    setIsOpen(true);
   }, [loadStandaloneData]);
-
-  useEffect(() => {
-    if (!isOpen && mounted) {
-      loadStandaloneData();
-    }
-  }, [isOpen, mounted, loadStandaloneData]);
 
   const initialData = useMemo(() => {
     if (savedDraft?.data) return savedDraft.data;
@@ -78,11 +70,6 @@ export default function AffidavitSupportCalculatorPage() {
     }
     return undefined;
   }, [savedDraft, savedResult]);
-
-  const handleClose = () => {
-    setIsOpen(false);
-    loadStandaloneData();
-  };
 
   const handleSave = (result: any) => {
     try {
@@ -104,7 +91,6 @@ export default function AffidavitSupportCalculatorPage() {
       console.error("Error saving standalone sponsorship calculation:", e);
       showToast("Plan calculated successfully.", "info");
     }
-    setIsOpen(false);
   };
 
   const handleClearStandaloneProgress = () => {
@@ -112,10 +98,6 @@ export default function AffidavitSupportCalculatorPage() {
       localStorage.removeItem(STANDALONE_SPONSORSHIP_STORAGE_KEY);
       localStorage.removeItem(STANDALONE_SPONSORSHIP_DRAFT_KEY);
       if (updateProfile) {
-        // NOTE: `undefined` is ignored by deepMergeProfile (it `continue`s on
-        // undefined), so clearing with `: undefined` was a silent no-op — the
-        // profile/DB copy survived and loadStandaloneData restored it on the next
-        // load/refresh. Send `null` so the value is actually overwritten to empty.
         updateProfile(
           {
             standaloneSponsorshipCalc: null,
@@ -126,7 +108,6 @@ export default function AffidavitSupportCalculatorPage() {
       }
       setSavedResult(null);
       setSavedDraft(null);
-      // Remount the calculator so its internal (still-mounted) state resets too.
       setResetKey((k) => k + 1);
       showToast("Standalone calculator progress cleared.", "info");
     } catch (e) {
@@ -134,147 +115,129 @@ export default function AffidavitSupportCalculatorPage() {
     }
   };
 
-  return (
-    <div
-      className="flex min-h-screen items-center justify-center p-6"
-      style={{
-        backgroundImage: "url('/assets/images/affidavit-bg.png')",
-        backgroundSize: "100% 100%",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-      }}
-    >
-      {!isOpen && (
-        <div className="animate-in fade-in max-w-lg rounded-3xl border border-slate-200/80 bg-white/95 p-8 text-center shadow-2xl backdrop-blur-md duration-700">
-          <div className="mb-4 inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-            <Calculator className="h-3.5 w-3.5 text-slate-500" />
-            <span>Standalone Tool</span>
-          </div>
+  // Drawer Content
+  const rules: ToolRule[] = useMemo(
+    () => [
+      {
+        label: "125% HHS Poverty Guidelines Threshold",
+        value:
+          "For most Form I-864 filings, the petitioner's household income must equal or exceed 125% of the HHS Poverty Guidelines for their household size. Active-duty U.S. Armed Forces sponsors petitioning for their spouse or minor child must meet 100% of the poverty guidelines.",
+      },
+      {
+        label: "Child Citizenship Act of 2000 (INA § 320) Exemption",
+        value:
+          "Certain biological and adopted children of U.S. citizens automatically acquire U.S. citizenship upon entry to the U.S. as lawful permanent residents. These qualifying children file Form I-864W and are entirely exempt from financial sponsorship requirements and NVC Affidavit of Support fees.",
+      },
+      {
+        label: "Household Size Calculation Rules",
+        value:
+          "Your household size strictly includes: yourself (the sponsor), your spouse (even if separated, unless legally divorced), unmarried children under 21, dependents claimed on your latest federal tax return, any immigrants previously sponsored on an active I-864, and the principal immigrant plus any accompanying derivatives on this petition.",
+      },
+      {
+        label: "Overcoming Shortfalls with Assets or Joint Sponsors",
+        value:
+          "If your qualifying income is below the required 125% threshold, you may bridge the gap using significant liquid assets (valued at 5× the shortfall, or 3× if petitioning for a spouse or child of a U.S. citizen) or by securing an eligible Joint Sponsor who independently meets 125% for their own household size.",
+      },
+    ],
+    []
+  );
 
-          <h1 className="mb-2 text-3xl font-black text-[#0f1f38]">Affidavit of Support</h1>
-          <p className="mb-6 text-sm leading-relaxed text-[#3a4f63]">
-            Determine your income sponsorship threshold, Form I-864W Child Citizenship Act exemption, and required USCIS forms (I-864, I-864W, I-864A, I-864EZ) under federal poverty guidelines.
-          </p>
-
-          {/* Saved Draft Notification (Client-rendered after mount) */}
-          {mounted && savedDraft && !savedResult && (
-            <div className="mb-6 rounded-2xl border border-amber-200/80 bg-amber-50/80 p-4 text-left">
-              <div className="mb-1 flex items-center justify-between gap-2">
-                <span className="flex items-center gap-1.5 text-[11px] font-bold tracking-wider text-amber-900 uppercase">
-                  <Clock className="h-3.5 w-3.5 text-amber-600" />
-                  In-Progress Draft Saved
-                </span>
-                <span className="text-[11px] font-semibold text-amber-700">
-                  {(() => {
-                    const draftIsExempt =
-                      savedDraft.data?.isChildCitizenshipActExempt ||
-                      (savedDraft.data?.beneficiaryRelationship === "child" &&
-                        savedDraft.data?.sponsorStatus === "citizen" &&
-                        savedDraft.data?.childAgeBand === "under_18" &&
-                        savedDraft.data?.childRelationshipType !== "stepchild" &&
-                        savedDraft.data?.childLivesInUSCitizenCustody === true);
-                    const total = draftIsExempt ? 4 : 11;
-                    const stepNum = draftIsExempt
-                      ? Math.min(savedDraft.stepIdx + 1, 4)
-                      : savedDraft.stepIdx + 1;
-                    return `Step ${stepNum} of ${total}`;
-                  })()}
-                </span>
-              </div>
-              <p className="text-xs text-slate-600">
-                You have an uncompleted calculation saved from your last session.
-              </p>
-            </div>
-          )}
-
-          {/* Completed Calculation Card (Client-rendered after mount) */}
-          {mounted && savedResult && (
-            <div className="mb-6 rounded-2xl border border-teal-200/80 bg-teal-50/80 p-4 text-left">
-              <div className="mb-2 flex items-center justify-between gap-2">
-                <span className="text-[11px] font-bold tracking-wider text-teal-900 uppercase">
-                  Last Saved Calculation
-                </span>
-                <span
-                  className={`inline-flex items-center gap-1 text-xs font-bold ${
-                    savedResult.isChildCitizenshipActExempt || savedResult.isExempt
-                      ? "text-teal-700"
-                      : savedResult.isEligible
-                      ? "text-teal-700"
-                      : "text-rose-600"
-                  }`}
-                >
-                  <CheckCircle2 className="h-3.5 w-3.5" />
-                  {savedResult.isChildCitizenshipActExempt || savedResult.isExempt
-                    ? "Exempt (Form I-864W)"
-                    : savedResult.isEligible
-                    ? "Eligible"
-                    : "Requires Joint Sponsor / Assets"}
-                </span>
-              </div>
-              <p className="text-xs text-slate-600">
-                {savedResult.isChildCitizenshipActExempt ? (
-                  <span>
-                    Exempt under <strong>INA § 320 (Child Citizenship Act)</strong> · Form:{" "}
-                    <strong>Form I-864W</strong>
-                  </span>
-                ) : (
-                  <span>
-                    Household Size: <strong>{savedResult.householdSize}</strong> · Required:{" "}
-                    <strong>${(savedResult.requiredIncome ?? 0).toLocaleString()}</strong> · Total:{" "}
-                    <strong>${(savedResult.totalIncome ?? 0).toLocaleString()}</strong>
-                  </span>
-                )}
-              </p>
-            </div>
-          )}
-
-          <div className="mb-4 flex flex-col justify-center gap-3 sm:flex-row">
-            <button
-              onClick={() => setIsOpen(true)}
-              className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-[12px] bg-[#0d7377] p-[14px_32px] font-semibold text-white shadow-lg transition-all hover:opacity-90"
-            >
-              <Calculator className="h-4 w-4" />
-              {mounted && savedDraft
-                ? "Resume Draft"
-                : mounted && savedResult
-                  ? "Recalculate / View"
-                  : "Launch Calculator"}
-              <ArrowRight className="h-4 w-4" />
-            </button>
-
-            {mounted && (savedDraft || savedResult) && (
-              <button
-                onClick={handleClearStandaloneProgress}
-                className="inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-[12px] border border-slate-300 bg-slate-100 p-[14px_20px] text-sm font-semibold text-slate-700 transition-all hover:bg-slate-200"
-                title="Clear saved standalone draft and calculation"
-              >
-                <RotateCcw className="h-3.5 w-3.5" />
-                <span>Start Fresh</span>
-              </button>
-            )}
-          </div>
-
-          <div className="mt-4 flex items-start gap-2 rounded-xl border-t border-slate-200/60 bg-slate-50 p-3 pt-4 text-left">
-            <Info className="mt-0.5 h-4 w-4 shrink-0 text-slate-500" />
-            <p className="text-[11px] leading-relaxed text-slate-500">
-              Want this calculation automatically applied to your petition forms and tracked on your
-              roadmap?{" "}
-              <Link
-                href="/visa-exploration"
-                className="font-semibold text-[#0d7377] hover:underline"
-              >
-                Explore Visa Journeys &rarr;
-              </Link>
+  const faqs: ToolFaq[] = useMemo(
+    () => [
+      {
+        question: "Can I combine my income with other household members?",
+        answer:
+          "Yes. Relatives living in your principal residence for at least 6 months, or your spouse (regardless of residence), can combine their income by signing Form I-864A (Contract Between Sponsor and Household Member).",
+      },
+      {
+        question: "What if my current income is different from my last tax return?",
+        answer: (
+          <div className="space-y-2">
+            <p>
+              Your current income can be different from the income reported on your most recent tax
+              return. When assessing Form I-864, the government can consider your current annual
+              income, even if it has increased or decreased since your last tax filing.
+            </p>
+            <p>To support your current income, you can provide:</p>
+            <ul className="list-disc pl-5 space-y-1">
+              <li>Recent pay stubs (covering the previous six months).</li>
+              <li>
+                An employment verification letter stating your job title, employment start date, and
+                current salary.
+              </li>
+              <li>Your most recent federal income tax return or IRS tax transcript.</li>
+            </ul>
+            <p>
+              If you recently started a new job, your income may still qualify if the employment is
+              expected to continue and your earnings meet the required income threshold.
             </p>
           </div>
-        </div>
-      )}
+        ),
+      },
+      {
+        question: "Does a Joint Sponsor replace the petitioner?",
+        answer:
+          "No. The petitioner must always execute a Form I-864 even if unemployed or earning zero income. The Joint Sponsor submits an independent Form I-864 and must qualify on their own household income without combining with the petitioner.",
+      },
+      {
+        question: "When can Form I-864EZ be used instead of Form I-864?",
+        answer:
+          "Form I-864EZ is a shorter, simpler version permitted only if: (1) you are the sole petitioner, (2) you are sponsoring only one immigrant with no derivatives, and (3) your qualifying income comes entirely from your own salary or pension shown on Form W-2.",
+      },
+    ],
+    []
+  );
 
+  const sources = useMemo(
+    () => [
+      {
+        title: "USCIS Form I-864 Official Page",
+        url: "https://www.uscis.gov/i-864",
+        note: "Official forms, detailed instructions, and filing fee guidelines from USCIS.",
+      },
+      {
+        title: "USCIS Form I-864P Poverty Guidelines",
+        url: "https://www.uscis.gov/i-864p",
+        note: "Current annual HHS poverty guideline threshold tables for 48 contiguous states, Alaska, and Hawaii.",
+      },
+      {
+        title: "USCIS Form I-864W Exemption Instructions",
+        url: "https://www.uscis.gov/i-864w",
+        note: "Eligibility guidelines for Child Citizenship Act exemptions and Social Security 40-quarter credits.",
+      },
+      {
+        title: "USCIS Form I-864A Contract Page",
+        url: "https://www.uscis.gov/i-864a",
+        note: "Contract between sponsor and household member to include additional household income.",
+      },
+    ],
+    []
+  );
+
+  return (
+    <ToolLayout
+      title="Sponsorship Calculator"
+      tagline="Find out if the sponsor earns enough for the Affidavit of Support."
+      category="Affidavit of Support / Form I-864"
+      priceOrDuration="Multi-step calculation"
+      theme="sponsor"
+      layout="single"
+      quickAccessItem={{
+        id: "sponsorship-calculator",
+        title: "Sponsorship Calculator",
+        href: "/affidavit-support-calculator",
+        icon_name: "Calculator",
+      }}
+      rules={rules}
+      faqs={faqs}
+      sources={sources}
+      disclaimer="Poverty guidelines are updated annually by the Department of Health and Human Services (HHS). Calculations are based on USCIS Form I-864P tables."
+    >
       {mounted && (
         <SponsorshipCalculatorTool
           key={resetKey}
-          isOpen={isOpen}
-          onClose={handleClose}
+          isOpen={true}
+          standalonePage={true}
           onSave={handleSave}
           initialData={initialData}
           initialStep={initialStep}
@@ -282,6 +245,6 @@ export default function AffidavitSupportCalculatorPage() {
           mode="standalone"
         />
       )}
-    </div>
+    </ToolLayout>
   );
 }

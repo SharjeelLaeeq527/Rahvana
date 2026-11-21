@@ -47,9 +47,9 @@ const I864P_URL = "https://www.uscis.gov/i-864p";
 // --- COLOR PALETTE ---
 const COLORS = {
   primary: "#0d7377", // Dark Teal
-  secondary: "#afdbdb", // Light Aqua
-  household: "#cdadcc", // Soft Purple
-  joint: "#89a4a0", // Sage
+  secondary: "#0d7377", // Primary Teal (was #afdbdb which looked faded/disabled)
+  household: "#6b21a8", // Rich Purple (was #cdadcc which looked faded/disabled)
+  joint: "#047857", // Rich Emerald (was #89a4a0 which looked faded/disabled)
   danger: "#db8090", // Rose/Coral
 };
 
@@ -284,8 +284,8 @@ export interface SponsorshipCalculatorDraft {
 }
 
 export interface SponsorshipCalculatorToolProps extends ToolModeProps {
-  isOpen: boolean;
-  onClose: () => void;
+  isOpen?: boolean;
+  onClose?: () => void;
   initialData?: any;
   initialStep?: number;
   onSave?: (result: any) => void;
@@ -305,6 +305,9 @@ export interface SponsorshipCalculatorToolProps extends ToolModeProps {
    *  (no fixed overlay, no own topbar, no body scroll-lock) — the same pattern as
    *  Medical / PCC / Consultation. Passed by EmbeddedToolContainer for toolbox launches. */
   embedded?: boolean;
+  /** Standalone ToolLayout: renders inline inside the single-column bench container with
+   *  its own step progress bar and reset controls, without modal overlay or fixed backdrop. */
+  standalonePage?: boolean;
 }
 
 const getDefaultFormData = (initial?: any): SponsorshipFormData => ({
@@ -347,7 +350,7 @@ const getDefaultFormData = (initial?: any): SponsorshipFormData => ({
 });
 
 export default function SponsorshipCalculatorTool({
-  isOpen,
+  isOpen = true,
   onClose,
   initialData,
   initialStep,
@@ -356,6 +359,7 @@ export default function SponsorshipCalculatorTool({
   lockState = false,
   candidateInfo,
   embedded,
+  standalonePage = false,
   mode: propMode,
   journeyContext: propContext,
   journeyTier: propJourneyTier,
@@ -503,7 +507,7 @@ export default function SponsorshipCalculatorTool({
   }, [journeyContext?.journeyCategory, candidateInfo?.visaCategory]);
 
   React.useEffect(() => {
-    if (isOpen && !embedded) {
+    if (isOpen && !embedded && !standalonePage) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
@@ -511,7 +515,7 @@ export default function SponsorshipCalculatorTool({
     return () => {
       document.body.style.overflow = "";
     };
-  }, [isOpen, embedded]);
+  }, [isOpen, embedded, standalonePage]);
 
   const prevInitialDataRef = React.useRef<string>(JSON.stringify(initialData || {}));
   const prevIsOpenRef = React.useRef<boolean>(isOpen);
@@ -624,22 +628,8 @@ export default function SponsorshipCalculatorTool({
   const result = getSponsorshipResult(data);
   const getStepColor = (idx: number) => {
     switch (idx) {
-      case 1:
-        return COLORS.joint; // Petitioner
-      case 2:
-        return COLORS.primary; // Marital
-      case 3:
-        return COLORS.danger; // Dependents
-      case 4:
-        return COLORS.joint; // Previous
-      case 5:
-        return COLORS.primary; // Sponsoring
-      case 6:
-        return COLORS.secondary; // Income
-      case 8:
-        return COLORS.household; // Household
       case 9:
-        return "#f59e0b"; // Alternatives (Amber)
+        return "#d97706"; // Alternatives (Amber)
       default:
         return COLORS.primary;
     }
@@ -715,13 +705,13 @@ export default function SponsorshipCalculatorTool({
   return (
     <div
       className={
-        embedded
+        embedded || standalonePage
           ? "flex w-full flex-col font-sans"
           : "animate-in slide-in-from-bottom-[18px] fixed inset-0 z-[150] flex flex-col overflow-hidden bg-white font-sans duration-[0.28s] ease-in-out"
       }
     >
-      {/* Topbar (overlay / standalone only — journey uses the roadmap breadcrumb) */}
-      {!embedded && (
+      {/* Topbar (overlay / modal mode only) */}
+      {!embedded && !standalonePage && (
         <div className="flex h-[64px] shrink-0 items-center gap-4 border-b border-[#d0e4f7] bg-white px-6">
           <button
             onClick={onClose}
@@ -769,15 +759,48 @@ export default function SponsorshipCalculatorTool({
         </div>
       )}
 
+      {/* Standalone Page Step Header inside ToolLayout */}
+      {standalonePage && (
+        <div className="mb-8 flex flex-col gap-2.5 border-b border-[#DDD9CE]/70 pb-5">
+          <div className="flex items-center justify-between text-xs font-semibold text-[#16302C]">
+            <span className="inline-flex items-center gap-2">
+              <span className="inline-block h-2 w-2 rounded-full bg-[#3E7C4F]" />
+              <span className="font-bold text-[#16302C]">
+                Step {currentDisplayStep} of {totalSteps}
+              </span>
+            </span>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={handleResetProgress}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-[#DDD9CE] bg-white px-3 py-1.5 text-xs font-semibold text-[#6F7775] shadow-2xs transition hover:bg-[#F6F4EF] hover:text-[#16302C] active:scale-[0.98]"
+                title="Reset progress and start over"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                <span>Start Fresh</span>
+              </button>
+            </div>
+          </div>
+          <div className="h-2 w-full overflow-hidden rounded-full bg-[#E6F1E6]">
+            <div
+              className="h-full rounded-full bg-[#3E7C4F] transition-all duration-500"
+              style={{
+                width: `${Math.round((currentDisplayStep / totalSteps) * 100)}%`,
+              }}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Body */}
       <div
         className={
-          embedded
-            ? "flex flex-col items-center p-[32px_24px_40px]"
+          embedded || standalonePage
+            ? "flex w-full flex-col items-center py-2"
             : "flex flex-1 flex-col items-center overflow-y-auto bg-white p-[48px_24px_40px]"
         }
       >
-        <div className="flex w-full max-w-[560px] flex-col">
+        <div className="flex w-full max-w-[580px] flex-col">
           {(() => {
             const step = stepIdx;
 
@@ -1997,7 +2020,7 @@ export default function SponsorshipCalculatorTool({
                           <button
                             onClick={addHouseholdMember}
                             style={{ backgroundColor: COLORS.household }}
-                            className="rounded-lg p-1 px-4 text-xs font-bold text-white transition-all hover:opacity-80"
+                            className="rounded-lg p-1.5 px-4 text-xs font-bold text-white shadow-xs transition-all hover:opacity-90 active:scale-95"
                           >
                             + Add
                           </button>
@@ -2075,7 +2098,7 @@ export default function SponsorshipCalculatorTool({
                           <button
                             onClick={addJointSponsor}
                             style={{ backgroundColor: COLORS.joint }}
-                            className="rounded-lg p-1 px-4 text-xs font-bold text-white transition-all hover:opacity-80"
+                            className="rounded-lg p-1.5 px-4 text-xs font-bold text-white shadow-xs transition-all hover:opacity-90 active:scale-95"
                           >
                             + Add
                           </button>
@@ -2135,8 +2158,8 @@ export default function SponsorshipCalculatorTool({
                       </button>
                       <button
                         onClick={() => setStepIdx(9)}
-                        style={{ backgroundColor: stepColor }}
-                        className="flex flex-1 items-center justify-center gap-2 rounded-[10px] p-[14px_22px] text-[15px] font-semibold text-white transition-all hover:opacity-90"
+                        style={{ backgroundColor: COLORS.primary }}
+                        className="flex flex-1 items-center justify-center gap-2 rounded-[10px] p-[14px_22px] text-[15px] font-semibold text-white shadow-md transition-all hover:opacity-90 hover:shadow-lg active:scale-[0.99]"
                       >
                         Continue <ArrowRight size={14} />
                       </button>
