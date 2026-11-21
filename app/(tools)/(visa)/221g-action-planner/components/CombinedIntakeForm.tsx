@@ -5,7 +5,6 @@ import { IR5_ENABLED, IR2_ENABLED } from "@/lib/feature-flags";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   CircleHelp,
@@ -23,6 +22,7 @@ import {
 } from "lucide-react";
 // import { Checkbox } from "@/components/ui/checkbox";
 import Actual221GFormChecker from "./Actual221GFormChecker";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 import { NarrativeModal } from "./NarrativeModal";
 import {
   FormData,
@@ -2780,24 +2780,26 @@ footer.querySelector(".footer-page").textContent = String(p);
                   <div>
                     <FieldLabel title="Visa Type" htmlFor="visaType" />
                     <CustomDropdown
+                      triggerClassName={DROPDOWN_TRIGGER}
+                      maxLabelWidth="max-w-full"
+                      id="visaType"
                       value={formData.visaType}
                       onChange={(v) => handleField("visaType", v)}
                       options={VISA_TYPES}
                       placeholder="Select..."
-                      className="w-full [&_button]:w-full [&_button]:min-w-0"
-                      triggerClassName={DROPDOWN_TRIGGER}
                     />
                   </div>
 
                   <div>
                     <FieldLabel title="Visa Category" htmlFor="visaCategory" />
                     <CustomDropdown
+                      triggerClassName={DROPDOWN_TRIGGER}
+                      maxLabelWidth="max-w-full"
+                      id="visaCategory"
                       value={formData.visaCategory}
                       onChange={(v) => handleField("visaCategory", v)}
                       options={VISA_CATEGORIES}
                       placeholder="Select..."
-                      className="w-full [&_button]:w-full [&_button]:min-w-0"
-                      triggerClassName={DROPDOWN_TRIGGER}
                       collapseWhenSingle
                     />
                   </div>
@@ -2828,12 +2830,13 @@ footer.querySelector(".footer-page").textContent = String(p);
                   <div>
                     <FieldLabel title="Current CEAC Status" htmlFor="ceacStatus" required={false} />
                     <CustomDropdown
+                      triggerClassName={DROPDOWN_TRIGGER}
+                      maxLabelWidth="max-w-full"
+                      id="ceacStatus"
                       value={formData.ceacStatus}
                       onChange={(v) => handleField("ceacStatus", v)}
                       options={CEAC_STATUSES}
                       placeholder="Select..."
-                      className="w-full [&_button]:w-full [&_button]:min-w-0"
-                      triggerClassName={DROPDOWN_TRIGGER}
                     />
                   </div>
 

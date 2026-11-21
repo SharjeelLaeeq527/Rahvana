@@ -13,6 +13,7 @@ import {
   FileText,
   ArrowLeft,
   Baby,
+  CircleHelp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Pagination from "@/components/ui/pagination";
@@ -22,7 +23,7 @@ import { DataTable, Column } from "@/app/components/shared/table";
 import { FilterPanel } from "@/app/components/shared/FilterPanel";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { NarrativeModal } from "../../(visa)/221g-action-planner/components/NarrativeModal";
-import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
+import { ToolLayout } from "@/components/tools/layout";
 import { useJourneyEnvironment } from "@/lib/hooks/useJourneyEnvironment";
 import { resolveCategorySlug } from "@/lib/interview-prep/journey-category-map";
 import { useCandidate } from "@/app/context/CandidateContext";
@@ -104,7 +105,7 @@ const CompletionBadge = ({ status }: { status: SessionStatus }) => {
       label: "Completed",
     },
     IN_PROGRESS: {
-      color: "bg-blue-100 text-blue-800",
+      color: "bg-[var(--tool-accent-tint,#dbeafe)] text-[var(--tool-accent-dark,#1e40af)]",
       icon: BarChart3,
       label: "In Progress",
     },
@@ -418,15 +419,15 @@ export default function MyInterviewSessions({
 
         return (
           <div className="flex items-center">
-            <div className="mr-3 flex h-10 w-10 items-center justify-center rounded-full bg-transparent text-teal-800 sm:bg-teal-100">
-              <Icon className="h-5 w-5 text-teal-600" />
+            <div className="mr-3 flex h-10 w-10 items-center justify-center rounded-full bg-transparent sm:bg-[var(--tool-accent-tint,#ccfbf1)]">
+              {Icon && <Icon className="h-5 w-5 text-[var(--tool-accent,#0d9488)]" />}
             </div>
 
             <div className="flex flex-col">
               <div className="text-base font-semibold text-slate-900 flex items-center gap-2 flex-wrap">
                 <span>{getCategoryLabel(session.category_slug)}</span>
                 {candidateLabel && (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-teal-50 text-teal-700 border border-teal-200">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full border border-slate-200 bg-[var(--tool-accent-tint,#f0fdfa)] text-xs font-medium text-[var(--tool-accent-dark,#0f766e)]">
                     {candidateLabel}
                     {candidateProfile?.relation ? ` (${candidateProfile.relation})` : ""}
                   </span>
@@ -469,7 +470,7 @@ export default function MyInterviewSessions({
           <Button
             size="sm"
             onClick={() => handleOpenSession(session)}
-            className="bg-[#0d7377] text-white hover:bg-[#0a5a5d]"
+            className="bg-[var(--tool-accent,#0d7377)] text-white hover:bg-[var(--tool-accent-dark,#0a5a5d)]"
           >
             {isCompleted ? "View Results" : "Resume Session"}
           </Button>
@@ -479,9 +480,15 @@ export default function MyInterviewSessions({
   ];
 
   const emptyState = (
-    <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white text-center shadow-sm">
-      <div className="mx-auto flex max-w-2xl flex-col items-center px-6 py-16 sm:px-10">
-        <div className="bg-primary/10 text-primary mb-6 flex h-16 w-16 items-center justify-center rounded-2xl">
+    <div
+      className={
+        isEmbedded
+          ? "overflow-hidden rounded-3xl border border-slate-200 bg-white text-center shadow-sm"
+          : "rounded-2xl border border-dashed border-slate-200 text-center"
+      }
+    >
+      <div className="mx-auto flex max-w-2xl flex-col items-center px-6 py-14 sm:px-10">
+        <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--tool-accent-tint,#e6f4f4)] text-[var(--tool-accent,#0d7377)]">
           <FileText className="h-8 w-8" />
         </div>
         <h3 className="text-2xl font-semibold tracking-tight text-slate-950">No sessions found</h3>
@@ -492,7 +499,7 @@ export default function MyInterviewSessions({
         </p>
         <Button
           onClick={handleStartNewSession}
-          className="bg-primary shadow-primary/20 hover:bg-primary/90 mt-8 h-11 rounded-full px-5 text-white shadow-sm"
+          className="mt-8 h-11 rounded-full bg-[var(--tool-accent,#0d7377)] px-5 text-white shadow-sm hover:bg-[var(--tool-accent-dark,#0a5a5d)]"
         >
           <Plus className="mr-2 h-5 w-5" />
           Start Your First Session
@@ -503,73 +510,11 @@ export default function MyInterviewSessions({
 
   const showInitialLoader = loading && sessions.length === 0;
 
-  return (
-    <div
-      className={`site-main-px ${isEmbedded ? "py-4" : "site-main-py"} bg-linear-to-br from-slate-50 to-slate-100 text-gray-800`}
-    >
-      <div className={isEmbedded ? "mt-2" : "mt-12"}>
-        {!isEmbedded && (
-          <NarrativeModal
-            isOpen={showNarrative}
-            onClose={() => {
-              if (dontShowAgain) {
-                localStorage.setItem("dont_show_interview_narrative", "true");
-              }
-              setShowNarrative(false);
-            }}
-            onComplete={() => {
-              if (dontShowAgain) {
-                localStorage.setItem("dont_show_interview_narrative", "true");
-              }
-              setShowNarrative(false);
-            }}
-            dontShowAgain={dontShowAgain}
-            onDontShowAgainChange={setDontShowAgain}
-            variant="interview-prep"
-          />
-        )}
-
-        <header className="mb-8 text-center">
-          {isEmbedded && onBackToPrep && (
-            <div className="mb-4 flex items-center justify-start">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onBackToPrep}
-                className="gap-2 text-slate-600 hover:text-slate-900"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Back to Interview Prep
-              </Button>
-            </div>
-          )}
-
-          <h1 className="mb-2 text-3xl font-bold text-slate-900 md:text-4xl">
-            {isEmbedded && targetCategorySlug
-              ? `${getCategoryLabel(targetCategorySlug)} Sessions`
-              : "My Interview Sessions"}
-          </h1>
-          <p className="mx-auto max-w-2xl text-base text-gray-600">
-            {isEmbedded && targetCategorySlug
-              ? `Track your interview preparation sessions for this journey`
-              : "Track and manage all your interview preparation sessions"}
-          </p>
-
-          {!isEmbedded && (
-            <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
-              <QuickAccessButton
-                item={{
-                  id: "interview-prep",
-                  title: "Interview Prep",
-                  href: "/interview-prep",
-                  icon_name: "MessageSquare",
-                }}
-              />
-            </div>
-          )}
-        </header>
-
-        <div className="mb-8 flex flex-col items-center gap-4 sm:flex-row sm:items-center sm:justify-between">
+  const sessionsBody = (
+    <>
+        <div
+          className={`${isEmbedded ? "mb-8" : "mb-6"} flex flex-col items-center gap-4 sm:flex-row sm:items-center sm:justify-between`}
+        >
           <h2 className="text-xl font-bold text-slate-800">
             {isEmbedded ? "Session History" : "All Sessions"}
           </h2>
@@ -653,7 +598,7 @@ export default function MyInterviewSessions({
 
             <Button
               onClick={handleStartNewSession}
-              className="bg-primary shadow-primary/20 hover:bg-primary/90 h-9 rounded-full px-3.5 text-sm font-medium text-white shadow-sm transition-colors"
+              className="h-9 rounded-full bg-[var(--tool-accent,#0d7377)] px-3.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[var(--tool-accent-dark,#0a5a5d)]"
             >
               <Plus className="h-4 w-4" />
               New Session
@@ -672,7 +617,7 @@ export default function MyInterviewSessions({
             <p className="mb-6 text-lg text-gray-500">{error}</p>
             <Button
               onClick={() => fetchUserSessions(false)}
-              className="bg-[#0d7377] px-6 py-4 text-lg text-white hover:bg-[#0a5a5d]"
+              className="bg-[var(--tool-accent,#0d7377)] px-6 py-4 text-lg text-white hover:bg-[var(--tool-accent-dark,#0a5a5d)]"
             >
               Try Again
             </Button>
@@ -687,6 +632,7 @@ export default function MyInterviewSessions({
               rowKey={(session) => session.id}
               loading={false}
               refreshing={refreshing}
+              containerClassName={isEmbedded ? undefined : "shadow-none"}
             />
 
             {/* Pagination */}
@@ -702,6 +648,102 @@ export default function MyInterviewSessions({
             )}
           </>
         )}
+    </>
+  );
+
+  const closeNarrative = () => {
+    if (dontShowAgain) {
+      localStorage.setItem("dont_show_interview_narrative", "true");
+    }
+    setShowNarrative(false);
+  };
+
+  // Standalone page: the shared tool layout, same as the Interview Prep page.
+  if (!isEmbedded) {
+    const headerButton =
+      "inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-white/35 bg-transparent px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-white/10";
+    return (
+      <div className="mt-[55px]">
+        <NarrativeModal
+          isOpen={showNarrative}
+          onClose={closeNarrative}
+          onComplete={closeNarrative}
+          dontShowAgain={dontShowAgain}
+          onDontShowAgainChange={setDontShowAgain}
+          variant="interview-prep"
+        />
+        <ToolLayout
+          theme="interview"
+          title="My Interview Sessions"
+          tagline="Resume an unfinished session or review the results of a finished one."
+          category="Interview Prep"
+          quickAccessItem={{
+            id: "interview-prep",
+            title: "Interview Prep",
+            href: "/interview-prep",
+            icon_name: "MessageSquare",
+          }}
+          headerActions={
+            <>
+              <button
+                type="button"
+                onClick={() => router.push("/interview-prep")}
+                className={headerButton}
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span>Interview Prep</span>
+              </button>
+              <button type="button" onClick={() => setShowNarrative(true)} className={headerButton}>
+                <CircleHelp className="h-4 w-4" />
+                <span>What&apos;s this?</span>
+              </button>
+            </>
+          }
+          layout="single"
+          // The Filters popover opens below its button; let it spill out of the card.
+          benchClassName="overflow-visible!"
+          workClassName="rounded-[22px]"
+          hideBottomBar
+        >
+          {sessionsBody}
+        </ToolLayout>
+      </div>
+    );
+  }
+
+  // Journey (embedded): same layout as before.
+  return (
+    <div className="site-main-px bg-linear-to-br from-slate-50 to-slate-100 py-4 text-gray-800">
+      <div className="mt-2">
+        <header className="mb-8 text-center">
+          {isEmbedded && onBackToPrep && (
+            <div className="mb-4 flex items-center justify-start">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onBackToPrep}
+                className="gap-2 text-slate-600 hover:text-slate-900"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to Interview Prep
+              </Button>
+            </div>
+          )}
+
+          <h1 className="mb-2 text-3xl font-bold text-slate-900 md:text-4xl">
+            {isEmbedded && targetCategorySlug
+              ? `${getCategoryLabel(targetCategorySlug)} Sessions`
+              : "My Interview Sessions"}
+          </h1>
+          <p className="mx-auto max-w-2xl text-base text-gray-600">
+            {isEmbedded && targetCategorySlug
+              ? `Track your interview preparation sessions for this journey`
+              : "Track and manage all your interview preparation sessions"}
+          </p>
+
+        </header>
+
+        {sessionsBody}
       </div>
     </div>
   );

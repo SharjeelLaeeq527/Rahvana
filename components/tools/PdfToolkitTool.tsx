@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import { usePDFStore } from "@/lib/store";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { ResultGate } from "@/app/components/entitlements/ResultGate";
-import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
+import { ToolLayout, TOOL_THEMES, type ToolRule } from "@/components/tools/layout";
 import { PenLine, GitMerge, Shrink, RefreshCw } from "lucide-react";
 import type { ToolModeProps } from "@/types/tool-mode";
 import { useResolveToolMode } from "@/lib/hooks/useResolveToolMode";
@@ -75,6 +75,27 @@ const PDF_TOOLS: {
   },
 ];
 
+const RULES: ToolRule[] = [
+  { label: "Edit PDF", value: "Add text, shapes and signatures to a PDF" },
+  { label: "Merge PDFs", value: "Combine several files into one, in your order" },
+  { label: "Compress PDF", value: "Shrink a large file so a portal accepts it" },
+  { label: "Convert to PDF", value: "Turn Word files, JPGs and more into a PDF" },
+];
+
+// Inside the shared tool layout the four tools pick up the toolkit theme: their own banners and
+// buttons use the Rahvana brand variables, so point those at the tool accent for this subtree.
+const THEMED_BRAND_VARS = {
+  "--rahvana-primary": "var(--tool-accent)",
+  "--rahvana-primary-light": "var(--tool-accent)",
+  "--rahvana-primary-dark": "var(--tool-accent-dark)",
+  "--rahvana-primary-pale": "var(--tool-accent-tint)",
+} as React.CSSProperties;
+
+const EDITOR_THEME_VARS = {
+  "--tool-accent": TOOL_THEMES.pdf.accent,
+  "--tool-accent-dark": TOOL_THEMES.pdf.accentDark,
+} as React.CSSProperties;
+
 export interface PdfToolkitToolProps extends ToolModeProps {
   showHeader?: boolean;
   className?: string;
@@ -123,56 +144,123 @@ export default function PdfToolkitTool({
     }
   }, [isJourney]);
 
+  const editorOverlay = pdfFile && (
+    <div className="fixed inset-0 z-[100001] flex flex-col bg-white dark:bg-slate-900">
+      <div className="flex shrink-0 items-center justify-between border-b border-gray-200 p-4 dark:border-slate-800">
+        <button
+          onClick={handleCloseEditor}
+          className="rounded-lg bg-[var(--tool-accent,#0d7377)] px-4 py-2 font-semibold text-white transition hover:bg-[var(--tool-accent-dark,#095457)]"
+        >
+          ← {t("pdfProcessing.back")}
+        </button>
+      </div>
+      <div className="min-h-0 w-full flex-1">
+        <ResultGate
+          feature="pdf_toolkit"
+          planTier={effectiveTier}
+          standaloneToolId={isJourney ? undefined : "pdf-toolkit"}
+        >
+          <PDFEditor />
+        </ResultGate>
+      </div>
+    </div>
+  );
+
+  const activeTool = (
+    <ResultGate
+      feature="pdf_toolkit"
+      planTier={effectiveTier}
+      standaloneToolId={isJourney ? undefined : "pdf-toolkit"}
+    >
+      {activeTab === "upload" && <PDFUpload />}
+      {activeTab === "merge" && <PDFMergeAdvanced />}
+      {activeTab === "compress" && <CompressPDF />}
+      {activeTab === "convert" && <MultiFormatConverter />}
+    </ResultGate>
+  );
+
+  // ── Standalone page: the shared tool layout (band, bench card, help drawer) ──
+  if (showHeader) {
+    return (
+      <>
+        {/* The editor is a full-screen layer: keep it outside the layout's stacking context. */}
+        {pdfFile && <div style={EDITOR_THEME_VARS}>{editorOverlay}</div>}
+        <ToolLayout
+          theme="pdf"
+          title="PDF Toolkit"
+          tagline="Edit, merge, compress or convert your documents before you upload them."
+          priceOrDuration="4 tools in one"
+          quickAccessItem={
+            isJourney
+              ? undefined
+              : {
+                  id: "pdf-toolkit",
+                  title: "PDF Tool Kit",
+                  href: "/pdf-processing",
+                  icon_name: "Files",
+                }
+          }
+          layout="single"
+          rules={RULES}
+          className={className}
+        >
+          <div style={THEMED_BRAND_VARS}>
+            {/* Tool picker: one accent for all four, so the page reads as one tool */}
+            <div
+              role="tablist"
+              aria-label="PDF tools"
+              className="mb-8 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4"
+            >
+              {PDF_TOOLS.map(({ id, title, desc, Icon }) => {
+                const active = activeTab === id;
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    role="tab"
+                    aria-selected={active}
+                    onClick={() => setActiveTab(id)}
+                    className={`flex flex-col items-start gap-3 rounded-2xl border-2 p-4 text-left transition ${
+                      active
+                        ? "border-[var(--tool-accent)] bg-[var(--tool-accent-tint)]"
+                        : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
+                    }`}
+                  >
+                    <span
+                      className={`flex h-11 w-11 items-center justify-center rounded-xl ${
+                        active
+                          ? "bg-[var(--tool-accent)] text-white"
+                          : "bg-[var(--tool-accent-tint)] text-[var(--tool-accent-dark)]"
+                      }`}
+                    >
+                      <Icon className="h-5 w-5" />
+                    </span>
+                    <span className="w-full">
+                      <span className="block text-sm font-bold text-slate-900 sm:text-base">
+                        {title}
+                      </span>
+                      <span className="mt-1 block text-xs leading-snug text-slate-600">{desc}</span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {!pdfFile && <div className="md:min-h-[50vh]">{activeTool}</div>}
+          </div>
+        </ToolLayout>
+      </>
+    );
+  }
+
+  // ── Journey (embedded, no page chrome): same layout as before ──
   return (
     <div className={`w-full ${className}`}>
-      {/* Full Screen Editor (only for "Edit" flow) */}
-      {pdfFile && (
-        <div className="fixed inset-0 z-[100001] flex flex-col bg-white dark:bg-slate-900">
-          <div className="flex shrink-0 items-center justify-between border-b border-gray-200 p-4 dark:border-slate-800">
-            <button
-              onClick={handleCloseEditor}
-              className="rounded-lg bg-[#0d7377] px-4 py-2 font-semibold text-white transition hover:bg-[#095457]"
-            >
-              ← {t("pdfProcessing.back")}
-            </button>
-          </div>
-          <div className="min-h-0 w-full flex-1">
-            <ResultGate
-              feature="pdf_toolkit"
-              planTier={effectiveTier}
-              standaloneToolId={isJourney ? undefined : "pdf-toolkit"}
-            >
-              <PDFEditor />
-            </ResultGate>
-          </div>
-        </div>
-      )}
+      {editorOverlay}
 
       {/* Normal UI - Tabs + Content */}
       {!pdfFile && (
         <div className="flex flex-col items-center justify-center">
-          {/* Header */}
-          {showHeader && (
-            <div className="mb-6 text-center">
-              <h1 className="mb-2 text-3xl font-bold text-gray-900 dark:text-slate-100">
-                PDF Tool Kit
-              </h1>
-              <p className="mb-4 text-gray-600 dark:text-slate-400">
-                Pick a tool below, then load your file.
-              </p>
-              <div className="flex justify-center">
-                <QuickAccessButton
-                  item={{
-                    id: "pdf-toolkit",
-                    title: "PDF Tool Kit",
-                    href: "/pdf-processing",
-                    icon_name: "Files",
-                  }}
-                />
-              </div>
-            </div>
-          )}
-
           {/* Tool picker — accent-colored cards, 2x2 on mobile, 4-across on desktop */}
           <div className="mb-6 grid w-full max-w-md grid-cols-2 gap-3 sm:gap-4 lg:max-w-4xl lg:grid-cols-4">
             {PDF_TOOLS.map(({ id, title, desc, Icon, iconWrap, activeCard }) => {
@@ -208,16 +296,7 @@ export default function PdfToolkitTool({
 
           {/* Content based on active tab */}
           <div className="w-full rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm md:min-h-[50vh] md:p-8 dark:border-slate-800 dark:bg-slate-900">
-            <ResultGate
-              feature="pdf_toolkit"
-              planTier={effectiveTier}
-              standaloneToolId={isJourney ? undefined : "pdf-toolkit"}
-            >
-              {activeTab === "upload" && <PDFUpload />}
-              {activeTab === "merge" && <PDFMergeAdvanced />}
-              {activeTab === "compress" && <CompressPDF />}
-              {activeTab === "convert" && <MultiFormatConverter />}
-            </ResultGate>
+            {activeTool}
           </div>
         </div>
       )}
