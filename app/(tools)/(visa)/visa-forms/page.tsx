@@ -892,27 +892,27 @@ export default function VisaFormSelector({
   });
 
   // Drawer Content
-  const rules = useMemo(
-    () => [
-      {
-        title: "Handwritten Signatures (Snap & Sign)",
-        desc: "Certain forms (e.g. Form I-864 Affidavit of Support and certain paper petitions) require an original ink signature. Stamped or cropped digital signatures from our integrated Snap & Sign tool can be placed before submission.",
-      },
-      {
-        title: "Edition Date Strictness",
-        desc: "USCIS and DOS strictly reject petitions filed on expired or obsolete form editions. Always check the edition date printed on the lower left of each page and verify against current government releases.",
-      },
-      {
-        title: "Black Ink & Standard Format",
-        desc: "Paper filings must be printed single-sided in black ink on standard 8.5\" × 11\" white paper without staples. Typed answers from the Smart Form Filler prevent illegibility rejections.",
-      },
-      {
-        title: "Addendum & Overflow Sheets",
-        desc: "When answers exceed the allotted text boxes, use official Part 12 / Additional Information pages labeled with your full legal name, Alien Registration Number (A-Number), and part/item numbers.",
-      },
-    ],
-    []
-  );
+  // const rules = useMemo(
+  //   () => [
+  //     {
+  //       title: "Handwritten Signatures (Snap & Sign)",
+  //       desc: "Certain forms (e.g. Form I-864 Affidavit of Support and certain paper petitions) require an original ink signature. Stamped or cropped digital signatures from our integrated Snap & Sign tool can be placed before submission.",
+  //     },
+  //     {
+  //       title: "Edition Date Strictness",
+  //       desc: "USCIS and DOS strictly reject petitions filed on expired or obsolete form editions. Always check the edition date printed on the lower left of each page and verify against current government releases.",
+  //     },
+  //     {
+  //       title: "Black Ink & Standard Format",
+  //       desc: "Paper filings must be printed single-sided in black ink on standard 8.5\" × 11\" white paper without staples. Typed answers from the Smart Form Filler prevent illegibility rejections.",
+  //     },
+  //     {
+  //       title: "Addendum & Overflow Sheets",
+  //       desc: "When answers exceed the allotted text boxes, use official Part 12 / Additional Information pages labeled with your full legal name, Alien Registration Number (A-Number), and part/item numbers.",
+  //     },
+  //   ],
+  //   []
+  // );
 
   const faqs = useMemo(
     () => [
@@ -981,7 +981,7 @@ export default function VisaFormSelector({
         href: "/visa-forms",
         icon_name: "Wand2",
       }}
-      rules={rules}
+      // rules={rules}
       faqs={faqs}
       sources={sources}
       disclaimer="Form templates and guidelines are tracked directly from USCIS and Department of State publications. Always confirm current filing fees and edition dates prior to mailing."
