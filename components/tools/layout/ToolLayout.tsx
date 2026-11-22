@@ -5,6 +5,7 @@ import { resolveToolTheme } from "./toolThemes";
 import { ToolHeader } from "./ToolHeader";
 import { ToolDrawer } from "./ToolDrawer";
 import { ToolBottomBar } from "./ToolBottomBar";
+import { useToolPlacement } from "./ToolSurface";
 import type { ToolLayoutProps, DrawerTabKey } from "./types";
 
 export function ToolLayout({
@@ -35,6 +36,8 @@ export function ToolLayout({
   ctaHref,
 }: ToolLayoutProps) {
   const palette = resolveToolTheme(theme);
+  // Same layout everywhere; inside a journey it only trims the page-level chrome.
+  const inJourney = useToolPlacement() === "journey";
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<DrawerTabKey>("rules");
 
@@ -64,7 +67,7 @@ export function ToolLayout({
 
   return (
     <div
-      className={`min-h-screen bg-[#F6F4EF] text-[#16302C] antialiased ${className}`}
+      className={`${inJourney ? "" : "min-h-screen "}bg-[#F6F4EF] text-[#16302C] antialiased ${className}`}
       style={
         {
           "--tool-accent": palette.accent,
@@ -81,7 +84,8 @@ export function ToolLayout({
           category={category}
           priceOrDuration={priceOrDuration}
           theme={palette}
-          quickAccessItem={quickAccessItem}
+          quickAccessItem={inJourney ? undefined : quickAccessItem}
+          compact={inJourney}
           historyAction={historyAction}
           hasDrawerContent={hasDrawerContent && !hideHelpButton}
           onOpenDrawer={handleOpenDrawerDefault}

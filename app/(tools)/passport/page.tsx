@@ -1,11 +1,12 @@
 "use client";
 
 import PassportPhotoTool from "@/components/tools/PassportPhotoTool";
+import { ToolPageFrame } from "@/components/tools/layout";
 
 export default function PassportPhoto() {
   return (
-    <div className="mt-[55px]">
+    <ToolPageFrame>
       <PassportPhotoTool mode="standalone" />
-    </div>
+    </ToolPageFrame>
   );
 }

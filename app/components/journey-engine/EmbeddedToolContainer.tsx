@@ -18,6 +18,9 @@ import {
 import { getEffectiveDocDef } from "@/app/components/journey-engine/StepView";
 import { DocActionModal } from "./components/DocActionModal";
 import { DocumentUploadModal } from "@/app/components/document-vault/DocumentUploadModal";
+import { ToolSurfaceProvider } from "@/components/tools/layout";
+import { SponsorshipCalculatorLayout } from "@/components/tools/SponsorshipCalculatorLayout";
+import { Planner221gLayout } from "@/app/(tools)/(visa)/221g-action-planner/components/Planner221gLayout";
 // Consultation is opened directly from the journey Services toolbox and must appear
 // instantly as a full-screen overlay (no Suspense loading flash), so it is statically
 // imported here rather than React.lazy — mirroring how the step-based Medical/PCC
@@ -136,6 +139,18 @@ function InlineJourneyGuidePage({
   );
 }
 
+/** Toolbox keys whose tool renders the shared ToolLayout (components/tools/layout). */
+const TOOL_LAYOUT_KEYS = new Set([
+  "interview_prep",
+  "action_221g",
+  "sponsorship_calculator",
+  "passport_photo",
+  "pdf_toolkit",
+  "snap_and_sign",
+  "dq_status_check",
+  "cspa_checker",
+]);
+
 function Journey221gEmbeddedTool({
   state,
   actions,
@@ -176,9 +191,9 @@ function Journey221gEmbeddedTool({
   });
 
   return (
-    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 sm:px-6 lg:px-8">
+    <Planner221gLayout>
       {isEditing || !hasSavedSelections ? (
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+        <div>
           <div className="mb-4">
             <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
               221(g) Refusal Worksheet
@@ -201,21 +216,21 @@ function Journey221gEmbeddedTool({
           />
         </div>
       ) : (
-        <div className="flex flex-col gap-4 pt-3">
-          <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800">
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center justify-between rounded-xl border border-[var(--tool-accent)]/25 bg-[var(--tool-accent-tint)] p-4">
             <div>
-              <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
+              <span className="text-xs font-bold text-[var(--tool-accent-dark)]">
                 Action Plan generated for your logged 221(g) requirements
               </span>
             </div>
             <button
               onClick={() => setIsEditing(true)}
-              className="text-xs font-bold text-[#0d7377] hover:underline dark:text-teal-400"
+              className="text-xs font-bold text-[var(--tool-accent)] hover:underline"
             >
               Edit 221(g) Selections
             </button>
           </div>
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+          <div>
             <Respond221gTool
               tool={{ type: "respond_221g" }}
               state={state || {}}
@@ -258,7 +273,7 @@ function Journey221gEmbeddedTool({
           }}
         />
       )}
-    </div>
+    </Planner221gLayout>
   );
 }
 
@@ -296,24 +311,23 @@ function JourneyVisaFormsEmbeddedTool({
   return (
     <div className="w-full">
       <MultiStepForm
-          key={`${activeFormCode}_${journeyContext?.candidateId || "candidate-1"}`}
-          formCode={activeFormCode}
-          mode="journey"
-          journeyContext={{
-            ...journeyContext,
-            // Ensure subscriptionTier is always explicitly set so MultiStepForm
-            // never falls back to the account-level plan.tier.
-            subscriptionTier: effectiveJourneyTier,
-          }}
-          journeyTier={effectiveJourneyTier}
-          isEmbedded={true}
-          showHeader={false}
-          onClose={onClose}
-        />
+        key={`${activeFormCode}_${journeyContext?.candidateId || "candidate-1"}`}
+        formCode={activeFormCode}
+        mode="journey"
+        journeyContext={{
+          ...journeyContext,
+          // Ensure subscriptionTier is always explicitly set so MultiStepForm
+          // never falls back to the account-level plan.tier.
+          subscriptionTier: effectiveJourneyTier,
+        }}
+        journeyTier={effectiveJourneyTier}
+        isEmbedded={true}
+        showHeader={false}
+        onClose={onClose}
+      />
     </div>
   );
 }
-
 
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { useJourneyPlan } from "@/app/context/useJourneyPlan";
@@ -409,15 +423,15 @@ export function EmbeddedToolContainer({
     accountPlan?.journeyTiers?.[tierKey.replace(/[^a-z0-9]/g, "")];
 
   const effectiveJourneyTier =
-    (rawStateTier && rawStateTier !== "free")
+    rawStateTier && rawStateTier !== "free"
       ? rawStateTier
-      : (rawCandidateTier && rawCandidateTier !== "free")
-      ? rawCandidateTier
-      : (journeyTiersTier && journeyTiersTier !== "free")
-      ? journeyTiersTier
-      : (journeyTier && journeyTier !== "free")
-      ? journeyTier
-      : rawStateTier ?? rawCandidateTier ?? journeyTiersTier ?? journeyTier ?? "free";
+      : rawCandidateTier && rawCandidateTier !== "free"
+        ? rawCandidateTier
+        : journeyTiersTier && journeyTiersTier !== "free"
+          ? journeyTiersTier
+          : journeyTier && journeyTier !== "free"
+            ? journeyTier
+            : (rawStateTier ?? rawCandidateTier ?? journeyTiersTier ?? journeyTier ?? "free");
 
   const plan = useJourneyPlan({
     ...resolvedState,
@@ -557,49 +571,50 @@ export function EmbeddedToolContainer({
             ?.state ||
           "";
         return (
-          <SponsorshipCalculatorTool
-            isOpen={true}
-            onClose={onClose ?? (() => {})}
-            embedded
-            mode="journey"
-            journeyContext={journeyContext}
-            journeyTier={effectiveJourneyTier}
-            initialData={{
-              ...(draft?.data || savedResult?.raw || {}),
-              state: sponsorState,
-            }}
-            initialStep={draft?.stepIdx ?? (savedResult ? 10 : 0)}
-            lockState={Boolean(sponsorState)}
-            onProgressChange={(d) => {
-              (
-                actions as { updateMetadata?: (u: Record<string, unknown>) => void }
-              )?.updateMetadata?.({ sponsorshipDraft: d });
-            }}
-            onSave={(result) => {
-              (
-                actions as { updateMetadata?: (u: Record<string, unknown>) => void }
-              )?.updateMetadata?.({ sponsorshipResult: result, sponsorshipDraft: null });
-              // Auto-complete the originating step when launched from one.
-              if (autoCompleteStepKey) {
-                const alreadyComplete = (
-                  state as { completedSteps?: Set<string> } | undefined
-                )?.completedSteps?.has?.(autoCompleteStepKey);
-                if (!alreadyComplete) {
-                  (actions as { toggleComplete?: (id: string) => void })?.toggleComplete?.(
-                    autoCompleteStepKey
-                  );
+          <SponsorshipCalculatorLayout>
+            <SponsorshipCalculatorTool
+              isOpen={true}
+              onClose={onClose ?? (() => {})}
+              embedded
+              mode="journey"
+              journeyContext={journeyContext}
+              journeyTier={effectiveJourneyTier}
+              initialData={{
+                ...(draft?.data || savedResult?.raw || {}),
+                state: sponsorState,
+              }}
+              initialStep={draft?.stepIdx ?? (savedResult ? 10 : 0)}
+              lockState={Boolean(sponsorState)}
+              onProgressChange={(d) => {
+                (
+                  actions as { updateMetadata?: (u: Record<string, unknown>) => void }
+                )?.updateMetadata?.({ sponsorshipDraft: d });
+              }}
+              onSave={(result) => {
+                (
+                  actions as { updateMetadata?: (u: Record<string, unknown>) => void }
+                )?.updateMetadata?.({ sponsorshipResult: result, sponsorshipDraft: null });
+                // Auto-complete the originating step when launched from one.
+                if (autoCompleteStepKey) {
+                  const alreadyComplete = (
+                    state as { completedSteps?: Set<string> } | undefined
+                  )?.completedSteps?.has?.(autoCompleteStepKey);
+                  if (!alreadyComplete) {
+                    (actions as { toggleComplete?: (id: string) => void })?.toggleComplete?.(
+                      autoCompleteStepKey
+                    );
+                  }
                 }
-              }
-              onClose?.();
-            }}
-          />
+                onClose?.();
+              }}
+            />
+          </SponsorshipCalculatorLayout>
         );
       }
 
       case "passport_photo":
         return (
           <PassportPhotoTool
-            showHeader={false}
             showRequirements={true}
             mode="journey"
             journeyContext={journeyContext}
@@ -729,39 +744,30 @@ export function EmbeddedToolContainer({
 
       case "pdf_toolkit":
         return (
-          <div className="mx-auto w-full max-w-7xl px-4 pt-4 sm:px-6 sm:pt-6 lg:px-8">
-            <PdfToolkitTool
-              showHeader={false}
-              mode="journey"
-              journeyContext={journeyContext}
-              journeyTier={effectiveJourneyTier}
-            />
-          </div>
+          <PdfToolkitTool
+            mode="journey"
+            journeyContext={journeyContext}
+            journeyTier={effectiveJourneyTier}
+          />
         );
 
       case "snap_and_sign":
         return (
-          <div className="mx-auto w-full max-w-7xl px-4 pt-4 sm:px-6 sm:pt-6 lg:px-8">
-            <SnapAndSignTool
-              showHeader={false}
-              showTips={true}
-              mode="journey"
-              journeyContext={journeyContext}
-              journeyTier={effectiveJourneyTier}
-            />
-          </div>
+          <SnapAndSignTool
+            showTips={true}
+            mode="journey"
+            journeyContext={journeyContext}
+            journeyTier={effectiveJourneyTier}
+          />
         );
 
       case "dq_status_check":
         return (
-          <div className="mx-auto w-full max-w-7xl px-4 pt-4 sm:px-6 sm:pt-6 lg:px-8">
-            <DqStatusCheckTool
-              showHeader={false}
-              mode="journey"
-              journeyContext={journeyContext}
-              journeyTier={effectiveJourneyTier}
-            />
-          </div>
+          <DqStatusCheckTool
+            mode="journey"
+            journeyContext={journeyContext}
+            journeyTier={effectiveJourneyTier}
+          />
         );
 
       case "cspa_checker": {
@@ -770,22 +776,19 @@ export function EmbeddedToolContainer({
         const childDob =
           activeCandidate?.relation === "Child" ? activeCandidate.dateOfBirth : undefined;
         return (
-          <div className="mx-auto w-full max-w-7xl px-4 pt-4 sm:px-6 sm:pt-6 lg:px-8">
-            <CspaAgeCheckerTool
-              showHeader={false}
-              mode="journey"
-              journeyContext={journeyContext}
-              journeyTier={effectiveJourneyTier}
-              initialInput={cspaInputFromJourney(resolvedState?.metadata, childDob)}
-              // A journey that already saved a check opens on the checker, not the intro.
-              skipIntro={!!resolvedState?.metadata?.[CSPA_METADATA_KEY]}
-              onSave={(record) => {
-                (
-                  actions as { updateMetadata?: (u: Record<string, unknown>) => void }
-                )?.updateMetadata?.({ [CSPA_METADATA_KEY]: record });
-              }}
-            />
-          </div>
+          <CspaAgeCheckerTool
+            mode="journey"
+            journeyContext={journeyContext}
+            journeyTier={effectiveJourneyTier}
+            initialInput={cspaInputFromJourney(resolvedState?.metadata, childDob)}
+            // A journey that already saved a check opens on the checker, not the intro.
+            skipIntro={!!resolvedState?.metadata?.[CSPA_METADATA_KEY]}
+            onSave={(record) => {
+              (
+                actions as { updateMetadata?: (u: Record<string, unknown>) => void }
+              )?.updateMetadata?.({ [CSPA_METADATA_KEY]: record });
+            }}
+          />
         );
       }
 
@@ -813,19 +816,21 @@ export function EmbeddedToolContainer({
   };
 
   const isDocTranslation = toolKey === "doc_translation" || toolKey === "document_translation";
-  const isFullBleedTool = toolKey === "visa_forms" || toolKey === "interview_prep";
+  // Tools on the shared ToolLayout draw their own band and bench edge to edge, exactly as on
+  // their standalone page, so the container adds no padding around them.
+  const isFullBleedTool = toolKey === "visa_forms" || TOOL_LAYOUT_KEYS.has(toolKey);
 
   return (
     <div
       className={`animate-in fade-in w-full duration-200 ${
-        isFullBleedTool
-          ? "pt-0 pb-0"
-          : isDocTranslation
-            ? "pt-10 pb-10"
-            : "pt-4 sm:pt-6 pb-10"
+        isFullBleedTool ? "pt-0 pb-0" : isDocTranslation ? "pt-10 pb-10" : "pt-4 pb-10 sm:pt-6"
       }`}
     >
-      <Suspense fallback={<ToolSkeleton />}>{renderToolComponent()}</Suspense>
+      {/* Every tool renders the same UI as on its standalone page; this tells the shared
+          layout it sits inside a journey (no site-header offset, no Quick Access bookmark). */}
+      <ToolSurfaceProvider placement="journey">
+        <Suspense fallback={<ToolSkeleton />}>{renderToolComponent()}</Suspense>
+      </ToolSurfaceProvider>
     </div>
   );
 }

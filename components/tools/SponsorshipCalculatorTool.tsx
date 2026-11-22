@@ -759,8 +759,8 @@ export default function SponsorshipCalculatorTool({
         </div>
       )}
 
-      {/* Standalone Page Step Header inside ToolLayout */}
-      {standalonePage && (
+      {/* Step header inside the tool layout (standalone page and journey) */}
+      {(standalonePage || embedded) && (
         <div className="mb-8 flex flex-col gap-2.5 border-b border-[#DDD9CE]/70 pb-5">
           <div className="flex items-center justify-between text-xs font-semibold text-[#16302C]">
             <span className="inline-flex items-center gap-2">

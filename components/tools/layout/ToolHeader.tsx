@@ -18,6 +18,8 @@ interface ToolHeaderProps {
   hasDrawerContent?: boolean;
   onOpenDrawer?: () => void;
   headerActions?: React.ReactNode;
+  /** Shorter band, used inside a journey (it sits under the journey breadcrumb, not the site header). */
+  compact?: boolean;
 }
 
 // Rahvana Bird SVG Watermark from Option C
@@ -35,6 +37,7 @@ export function ToolHeader({
   hasDrawerContent = false,
   onOpenDrawer,
   headerActions,
+  compact = false,
 }: ToolHeaderProps) {
   const { user } = useAuth();
   const { items, addItem, removeItem, isPending } = useQuickAccess();
@@ -69,7 +72,9 @@ export function ToolHeader({
 
   return (
     <section
-      className="relative px-4 pt-20 pb-20 text-white transition-colors duration-300 sm:px-6 sm:pt-20 sm:pb-22"
+      className={`relative px-4 text-white transition-colors duration-300 sm:px-6 ${
+        compact ? "pt-8 pb-18 sm:pt-10 sm:pb-20" : "pt-20 pb-20 sm:pt-20 sm:pb-22"
+      }`}
       style={{
         backgroundColor: theme.accentDark,
         backgroundImage: `url("${WATERMARK_SVG}")`,
