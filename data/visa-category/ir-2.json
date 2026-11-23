@@ -4657,8 +4657,8 @@
           "step_key": "step_2_2",
           "step_number": 2,
           "step_name": "Pay NVC Fees",
-          "step_short_description": "AOS ($120) & IV ($325) fee payment",
-          "step_description": "Pay the required NVC fees through CEAC using a U.S. bank checking or savings account. The $120 Affidavit of Support fee and $325 Immigrant Visa fee must show as PAID (typically 2-3 business days) before your child's DS-260 unlocks.",
+          "step_short_description": "AOS & IV fee payment",
+          "step_description": "NVC fee payment must be completed in CEAC before document submission and later processing can continue.",
           "step_type": "tool",
           "who": "Petitioner",
           "where": "CEAC Portal",
@@ -4672,12 +4672,12 @@
             "Open fee payment area",
             "Pay the $120 Affidavit of Support (AOS) fee (one fee covers siblings billed together)",
             "Pay the $325 Immigrant Visa (IV) fee for the child beneficiary",
-            "Allow 2-3 business days for payment to clear and save status to Portal Wallet"
+            "Save payment status"
           ],
           "tool_data": {
             "id": "step_2_2",
             "title": "Pay Your NVC Fees",
-            "subtitle": "Pay the required NVC fees in CEAC. The $120 AOS fee and $325 IV fee must show as PAID (typically 2-3 business days) before your child's DS-260 unlocks.",
+            "subtitle": "NVC fee payment must be completed in CEAC before document submission and later processing can continue.",
             "chips": [
               {
                 "label": "Petitioner",
@@ -4698,11 +4698,10 @@
               "eyebrow": "Official NVC / CEAC Portal",
               "heading": "Open CEAC to pay your required fees",
               "features": [
-                "Pay using a U.S. bank account (routing and account number)",
-                "$120 Affidavit of Support fee (one fee covers siblings billed together)",
-                "$325 Immigrant Visa application fee per child beneficiary",
-                "Payments take 2-3 business days to change from 'In Process' to 'PAID'",
-                "Record payment status in your Portal Wallet to track clearance"
+                "Sign in with your CEAC case details",
+                "Open the fee payment area",
+                "Review the available fee invoices",
+                "Return here after payment is submitted"
               ],
               "button_label": "Open CEAC Portal",
               "href": "https://ceac.state.gov/IV/Login.aspx",
@@ -4765,12 +4764,12 @@
                 "label": "Step 4 of 6, Review fee invoices",
                 "heading": "Review the required fee invoices",
                 "screenTitle": "Review the required fee invoices",
-                "instruction": "CEAC displays the required fee invoices: the $120 Affidavit of Support (AOS) fee and the $325 Immigrant Visa (IV) application fee. If petitioning multiple children simultaneously, one AOS fee typically covers siblings billed under the same invoice group, but the $325 IV fee is required for each child.",
+                "instruction": "CEAC will display the required fee invoices for your case. Review both the Affidavit of Support fee and the Immigrant Visa fee before proceeding.",
                 "url": "ceac.state.gov",
                 "ss_label": "Fee Invoices",
                 "ss_headline": "Review Fees",
                 "ss_desc": "Affidavit of Support Fee / Immigrant Visa Fee",
-                "note": "Payment must be made from a U.S. bank checking or savings account using an ACH routing number and account number. Credit cards and international cards are not accepted.",
+                "note": "Confirm the exact amounts shown in your CEAC portal before paying. Do not rely on third-party estimates.",
                 "media": {
                   "type": "video",
                   "src": "/assets/videos/ir1-journey/c2_step2/04-payment-method.mp4"
@@ -4785,7 +4784,7 @@
                 "ss_label": "Payment",
                 "ss_headline": "Confirm and Pay",
                 "ss_desc": "Submit Payment",
-                "note": "Payments take 2 to 3 business days to clear. Do not attempt duplicate payments while the status shows 'In Process'. Once status turns 'PAID', Form DS-260 unlocks.",
+                "note": "Do not close the browser tab during payment processing. Wait for the confirmation screen.",
                 "media": {
                   "type": "img",
                   "src": "/assets/images/ir1-journey/c2_step2/05-payment-confirmation.png"
@@ -4794,7 +4793,7 @@
               {
                 "label": "Step 6 of 6, Return and save",
                 "heading": "Return here and save your payment record",
-                "instruction": "Once payment is submitted in CEAC, return to this Rahvana step and record your payment status in the Portal Wallet. When CEAC marks the fees as 'PAID' after 2-3 days, your next step (DS-260) will be ready.",
+                "instruction": "Once payment is submitted in CEAC, return to this Rahvana step and record your payment status in the Portal Wallet. When CEAC marks the fees as 'PAID', your next step (DS-260) will be ready.",
                 "url": "Save to Portal Wallet",
                 "ss_label": "Payment Submitted",
                 "ss_headline": "Return to Rahvana",
@@ -5001,7 +5000,7 @@
                 "label": "Step 4 of 7, Complete section by section",
                 "heading": "Complete section by section",
                 "screenTitle": "Complete section by section",
-                "instruction": "Move through each DS-260 section in sequence: Personal Information, Address & Phone, Family Information (parents' details), Previous U.S. Travel, and Work/Education. For school-age children, provide current or recent school information; for young children, mark employment as Not Applicable.",
+                "instruction": "Move through each DS-260 section in sequence. Enter your information carefully. Keep answers consistent with other immigration forms in your case.",
                 "ss_label": "Form Progress",
                 "ss_headline": "Section-by-Section",
                 "ss_desc": "Personal info -> Travel history -> Work/education -> Security questions -> Review",
