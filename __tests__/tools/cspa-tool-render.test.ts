@@ -7,17 +7,30 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import CspaAgeCheckerTool from "@/components/tools/CspaAgeCheckerTool";
+import { ToolSurfaceProvider } from "@/components/tools/layout";
 import type { CspaInput } from "@/lib/tools/cspa/ageOut";
 
-jest.mock("@/app/components/shared/QuickAccessButton", () => ({
-  QuickAccessButton: () => null,
+// Standalone renders inside the shared ToolLayout, whose header (Save button) reads these contexts.
+jest.mock("@/app/context/AuthContext", () => ({ useAuth: () => ({ user: null }) }));
+jest.mock("@/app/context/QuickAccessContext", () => ({
+  useQuickAccess: () => ({ items: [], addItem: jest.fn(), removeItem: jest.fn(), isPending: false }),
 }));
+jest.mock("@/app/components/shared/ToastProvider", () => ({ useToast: () => ({ showToast: jest.fn() }) }));
 
 const render = (props: Record<string, unknown>) =>
   renderToStaticMarkup(React.createElement(CspaAgeCheckerTool, props as never));
 
+const renderInJourney = (props: Record<string, unknown>) =>
+  renderToStaticMarkup(
+    React.createElement(
+      ToolSurfaceProvider,
+      { placement: "journey" },
+      React.createElement(CspaAgeCheckerTool, props as never)
+    )
+  );
+
 const journey = (initialInput: Partial<CspaInput>) =>
-  render({ mode: "journey", showHeader: false, skipIntro: true, initialInput, onSave: () => {} });
+  renderInJourney({ mode: "journey", skipIntro: true, initialInput, onSave: () => {} });
 
 describe("CspaAgeCheckerTool render", () => {
   it("renders the empty standalone page with sources and no save button", () => {
@@ -29,14 +42,25 @@ describe("CspaAgeCheckerTool render", () => {
 
   it("opens on the intro card, not the form, in both modes", () => {
     for (const mode of ["standalone", "journey"]) {
-      const html = render({ mode, initialInput: { dateOfBirth: "2006-03-10" } });
+      // Both entry points render the same shared ToolLayout; the journey host only sets the
+      // placement (ToolSurfaceProvider), as EmbeddedToolContainer does.
+      const html =
+        mode === "journey"
+          ? renderInJourney({ mode, initialInput: { dateOfBirth: "2006-03-10" } })
+          : render({ mode, showHeader: true, initialInput: { dateOfBirth: "2006-03-10" } });
       expect(html).toContain("What this tool is");
       expect(html).toContain("Why you need it");
       expect(html).toContain("How it helps");
       expect(html).toContain("What you will need");
       expect(html).toContain(">Continue<");
       expect(html).not.toContain("Your result will show here");
-      expect(html).not.toContain("Common questions");
+      // Same layout in both: themed bench, hero band, drawer links under the card.
+      expect(html).toContain("--tool-accent:#2F6E73");
+      expect(html).toContain("CSPA Age-Out Checker");
+      expect(html).toContain("Common questions");
+      // The Quick Access bookmark is for the standalone route only.
+      if (mode === "journey") expect(html).not.toContain("Add to favorite");
+      else expect(html).toContain("Add to favorite");
       expect(/[–—‘’“”…]/.test(html)).toBe(false);
     }
   });

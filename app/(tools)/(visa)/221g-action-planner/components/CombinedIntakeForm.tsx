@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback, useMemo } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo, type ReactNode } from "react";
 import { IR5_ENABLED, IR2_ENABLED } from "@/lib/feature-flags";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   CircleHelp,
@@ -18,9 +17,12 @@ import {
   Search,
   FileDown,
   RotateCcw,
+  ArrowRight,
+  Check,
 } from "lucide-react";
 // import { Checkbox } from "@/components/ui/checkbox";
 import Actual221GFormChecker from "./Actual221GFormChecker";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 import { NarrativeModal } from "./NarrativeModal";
 import {
   FormData,
@@ -56,6 +58,42 @@ interface CombinedIntakeFormProps extends ToolModeProps {
   smartModeEnabled?: boolean;
   onProgressChange?: (draft: TwentyTwoOneGDraft) => void;
   onReset?: () => void;
+  /**
+   * Inside the shared ToolLayout the bench is already the card: drop this form's own card chrome
+   * and its Start Over / What's this? buttons (the page header has Start Fresh and What's this?).
+   */
+  bare?: boolean;
+  /** Bump this number to open the "What's this?" welcome modal from outside the form. */
+  welcomeRequest?: number;
+}
+
+// ── Step 1 form styling: one height and border for every control ──
+// Input builds its classes with a template string (no class merging), so overrides use "!".
+const INPUT_BASE =
+  "h-11! rounded-lg! border-slate-200! bg-white! text-sm! shadow-none focus:ring-primary/20!";
+const INPUT_CLASS = `${INPUT_BASE} px-3!`;
+const DROPDOWN_TRIGGER =
+  "h-11 min-h-11 rounded-lg border-slate-200 bg-white text-sm font-normal text-slate-900 shadow-none hover:border-slate-300";
+
+/** One labelled group of fields: title and helper on the left, fields on the right (stacks on mobile). */
+function CaseSection({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className="grid gap-x-10 gap-y-4 py-6 md:grid-cols-[200px_minmax(0,1fr)]">
+      <div>
+        <h3 className="text-sm font-semibold text-slate-900">{title}</h3>
+        <p className="mt-1 text-[13px] leading-relaxed text-slate-500">{description}</p>
+      </div>
+      <div className="grid grid-cols-1 gap-x-4 gap-y-5 sm:grid-cols-2">{children}</div>
+    </section>
+  );
 }
 
 // Steps matching the reference HTML wizard
@@ -373,6 +411,8 @@ export default function CombinedIntakeForm({
   journeyContext: propContext,
   onProgressChange,
   onReset,
+  bare = false,
+  welcomeRequest = 0,
 }: CombinedIntakeFormProps) {
   const { isJourney, journeyContext, journeyTier } = useResolveToolMode({
     mode: propMode,
@@ -503,6 +543,11 @@ export default function CombinedIntakeForm({
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [showWelcome, setShowWelcome] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
+
+  // The page header's "What's this?" button opens the same welcome modal.
+  useEffect(() => {
+    if (welcomeRequest > 0) setShowWelcome(true);
+  }, [welcomeRequest]);
   const [dobError, setDobError] = useState<string | null>(null);
   const [caseNumberError, setCaseNumberError] = useState<string | null>(null);
   const [dontShowAgain, setDontShowAgain] = useState(false);
@@ -1433,6 +1478,44 @@ export default function CombinedIntakeForm({
   // ──────────────────────────────────────────────
   // Progress Indicator
   // ──────────────────────────────────────────────
+
+  // One-line stepper for the standalone ToolLayout card.
+  const CompactStepper = () => (
+    <div className="flex items-center justify-between gap-4">
+      <ol className="flex min-w-0 items-center gap-2 sm:gap-3">
+        {STEPS.map((step, idx) => {
+          const done = currentStep > step.id;
+          const active = currentStep === step.id;
+          return (
+            <li key={step.id} className="flex shrink-0 items-center gap-2 sm:gap-3">
+              <span className="flex items-center gap-2">
+                <span
+                  className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold ${
+                    active
+                      ? "bg-primary text-white"
+                      : done
+                        ? "bg-primary/15 text-primary"
+                        : "bg-slate-100 text-slate-500"
+                  }`}
+                >
+                  {done ? <Check className="h-3.5 w-3.5" /> : step.id}
+                </span>
+                <span
+                  className={`text-sm ${active ? "font-semibold text-slate-900" : "hidden text-slate-500 lg:inline"}`}
+                >
+                  {step.label}
+                </span>
+              </span>
+              {idx < STEPS.length - 1 && <span className="h-px w-5 bg-slate-200 sm:w-8" />}
+            </li>
+          );
+        })}
+      </ol>
+      <span className="shrink-0 text-xs text-slate-500">
+        Step {currentStep} of {STEPS.length}
+      </span>
+    </div>
+  );
 
   const ProgressIndicator = () => (
     <div className="mx-auto mb-8 flex max-w-2xl items-center justify-between px-1 sm:px-2">
@@ -2648,10 +2731,8 @@ footer.querySelector(".footer-page").textContent = String(p);
   return (
     <div className="w-full space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0 flex-1">
-          <ProgressIndicator />
-        </div>
-        <div className="flex items-center gap-2 self-start">
+        <div className="min-w-0 flex-1">{bare ? <CompactStepper /> : <ProgressIndicator />}</div>
+        <div className={bare ? "hidden" : "flex items-center gap-2 self-start"}>
           <Button
             type="button"
             variant="outline"
@@ -2673,251 +2754,262 @@ footer.querySelector(".footer-page").textContent = String(p);
           </Button>
         </div>
       </div>
-      <div className="bg-card border-border overflow-hidden rounded-2xl border shadow-2xl">
-        <div className="p-6 md:p-10">
+      <div
+        className={
+          bare
+            ? "border-t border-slate-100 pt-6"
+            : "bg-card border-border overflow-hidden rounded-2xl border shadow-2xl"
+        }
+      >
+        <div className={bare ? "" : "p-6 md:p-10"}>
           {/* ── Step 1: Case Basics (inlined to prevent re-mount focus loss) ── */}
           {currentStep === 1 && (
-            <div className="space-y-6">
-              <div className="border-b pb-4">
-                <h2 className="text-foreground text-2xl font-bold">Case Basics</h2>
+            <div>
+              <div>
+                <h2 className="text-foreground text-xl font-semibold tracking-tight">Case Basics</h2>
                 <p className="text-muted-foreground mt-1 text-sm">
                   Provide your basic case information to personalise your action plan.
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <FieldLabel title="Visa Type" htmlFor="visaType"/>
-                  <CustomDropdown
-                    value={formData.visaType}
-                    onChange={(v) => handleField("visaType", v)}
-                    options={VISA_TYPES}
-                    placeholder="Select..."
-                    className="w-full [&_button]:w-full [&_button]:min-w-0"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <FieldLabel title="Visa Category" htmlFor="visaCategory"/>
-                  <CustomDropdown
-                    value={formData.visaCategory}
-                    onChange={(v) => handleField("visaCategory", v)}
-                    options={VISA_CATEGORIES}
-                    placeholder="Select..."
-                    className="w-full [&_button]:w-full [&_button]:min-w-0"
-                    collapseWhenSingle
-                  />
-                </div>
-              </div>
-
-              {formData.visaCategory === "other" && (
-                <div className="space-y-2">
-                  <Label htmlFor="visaTypeOther">Specify Other Category</Label>
-                  <Input
-                    id="visaTypeOther"
-                    value={formData.visaTypeOther}
-                    onChange={(e) => handleField("visaTypeOther", e.target.value)}
-                  />
-                </div>
-              )}
-
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <FieldLabel title="Interview Date" htmlFor="interviewDate"/>
-                  <Input
-                    id="interviewDate"
-                    type="date"
-                    value={formData.interviewDate}
-                    onChange={(e) => handleField("interviewDate", e.target.value)}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="ceacStatus">Current CEAC Status</Label>
-                  <CustomDropdown
-                    value={formData.ceacStatus}
-                    onChange={(v) => handleField("ceacStatus", v)}
-                    options={CEAC_STATUSES}
-                    placeholder="Select..."
-                    className="w-full [&_button]:w-full [&_button]:min-w-0"
-                  />
-                </div>
-              </div>
-
-              {/* Embassy Combobox */}
-              <div className="space-y-2">
-                <FieldLabel title="Consular Post / Embassy Location" htmlFor="consularPost"/>
-                
-                <div className="relative" ref={embassyRef}>
-                  <div className="relative">
-                    <MapPin className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
-                    <Input
-                      id="consularPost"
-                      autoComplete="off"
-                      value={embassySearchText}
-                      onChange={(e) => handleEmbassyInputChange(e.target.value)}
-                      onFocus={() => setShowEmbassySuggestions(true)}
-                      placeholder="Search embassy or country"
-                      className="pr-9 pl-9"
-                    />
-                    <ChevronDown
-                      className={`text-muted-foreground absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 transition-transform ${showEmbassySuggestions ? "rotate-180" : ""}`}
+              <div className="mt-6 divide-y divide-slate-100 border-t border-slate-100">
+                <CaseSection
+                  title="Visa and interview"
+                  description="From your interview appointment and the 221(g) letter."
+                >
+                  <div>
+                    <FieldLabel title="Visa Type" htmlFor="visaType" />
+                    <CustomDropdown
+                      triggerClassName={DROPDOWN_TRIGGER}
+                      maxLabelWidth="max-w-full"
+                      id="visaType"
+                      value={formData.visaType}
+                      onChange={(v) => handleField("visaType", v)}
+                      options={VISA_TYPES}
+                      placeholder="Select..."
                     />
                   </div>
 
-                  {showEmbassySuggestions && (
-                    <div className="border-border bg-popover absolute z-50 mt-1 w-full overflow-hidden rounded-xl border shadow-xl">
-                      {/* Search hint */}
-                      {embassySearchText && (
-                        <div className="border-border bg-muted/40 flex items-center gap-2 border-b px-3 py-2">
-                          <Search className="text-muted-foreground h-3.5 w-3.5" />
-                          <span className="text-muted-foreground text-xs">
-                            Showing results for &ldquo;{embassySearchText}
-                            &rdquo;
-                          </span>
-                        </div>
-                      )}
-                      <div className="max-h-64 overflow-y-auto">
-                        {filteredEmbassies.length === 0 ? (
-                          <div className="text-muted-foreground px-4 py-6 text-center text-sm">
-                            <MapPin className="mx-auto mb-2 h-6 w-6 opacity-40" />
-                            No embassy found. You can type a custom location.
-                          </div>
-                        ) : (
-                          (() => {
-                            const grouped: Record<string, typeof filteredEmbassies> = {};
-                            filteredEmbassies.forEach((e) => {
-                              if (!grouped[e.country]) grouped[e.country] = [];
-                              grouped[e.country].push(e);
-                            });
-                            return Object.entries(grouped).map(([country, items]) => (
-                              <div key={country}>
-                                <div className="text-muted-foreground bg-muted/50 sticky top-0 px-3 py-1.5 text-[10px] font-bold tracking-widest uppercase">
-                                  {country}
-                                </div>
-                                {items.map((embassy) => (
-                                  <button
-                                    key={embassy.value}
-                                    type="button"
-                                    className={`hover:bg-primary/5 focus:bg-primary/5 flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors focus:outline-none ${
-                                      formData.consularPost === embassy.value
-                                        ? "bg-primary/10 text-primary font-semibold"
-                                        : "text-foreground"
-                                    }`}
-                                    onMouseDown={(e) => {
-                                      e.preventDefault(); // prevent input blur
-                                      handleEmbassySelect(embassy.value);
-                                    }}
-                                  >
-                                    <MapPin className="text-muted-foreground h-3.5 w-3.5 shrink-0" />
-                                    {embassy.label}
-                                    {formData.consularPost === embassy.value && (
-                                      <span className="text-primary ml-auto text-xs">✓</span>
-                                    )}
-                                  </button>
-                                ))}
-                              </div>
-                            ));
-                          })()
-                        )}
-                      </div>
-                      {/* Custom entry option */}
-                      {embassySearchText &&
-                        !EMBASSY_OPTIONS.find(
-                          (e) => e.value.toLowerCase() === embassySearchText.toLowerCase()
-                        ) && (
-                          <div className="border-border border-t">
-                            <button
-                              type="button"
-                              className="text-muted-foreground hover:bg-muted/50 flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors"
-                              onMouseDown={(e) => {
-                                e.preventDefault();
-                                handleEmbassySelect(embassySearchText);
-                              }}
-                            >
-                              <Search className="h-3.5 w-3.5 shrink-0" />
-                              Use &ldquo;{embassySearchText}&rdquo; as custom location
-                            </button>
-                          </div>
-                        )}
+                  <div>
+                    <FieldLabel title="Visa Category" htmlFor="visaCategory" />
+                    <CustomDropdown
+                      triggerClassName={DROPDOWN_TRIGGER}
+                      maxLabelWidth="max-w-full"
+                      id="visaCategory"
+                      value={formData.visaCategory}
+                      onChange={(v) => handleField("visaCategory", v)}
+                      options={VISA_CATEGORIES}
+                      placeholder="Select..."
+                      collapseWhenSingle
+                    />
+                  </div>
+
+                  {formData.visaCategory === "other" && (
+                    <div className="sm:col-span-2">
+                      <FieldLabel title="Specify Other Category" htmlFor="visaTypeOther" required={false} />
+                      <Input
+                        id="visaTypeOther"
+                        value={formData.visaTypeOther}
+                        onChange={(e) => handleField("visaTypeOther", e.target.value)}
+                        className={INPUT_CLASS}
+                      />
                     </div>
                   )}
-                </div>
+
+                  <div>
+                    <FieldLabel title="Interview Date" htmlFor="interviewDate" />
+                    <Input
+                      id="interviewDate"
+                      type="date"
+                      value={formData.interviewDate}
+                      onChange={(e) => handleField("interviewDate", e.target.value)}
+                      className={INPUT_CLASS}
+                    />
+                  </div>
+
+                  <div>
+                    <FieldLabel title="Current CEAC Status" htmlFor="ceacStatus" required={false} />
+                    <CustomDropdown
+                      triggerClassName={DROPDOWN_TRIGGER}
+                      maxLabelWidth="max-w-full"
+                      id="ceacStatus"
+                      value={formData.ceacStatus}
+                      onChange={(v) => handleField("ceacStatus", v)}
+                      options={CEAC_STATUSES}
+                      placeholder="Select..."
+                    />
+                  </div>
+
+                  {/* Embassy Combobox */}
+                  <div className="sm:col-span-2">
+                    <FieldLabel title="Consular Post / Embassy Location" htmlFor="consularPost" />
+
+                    <div className="relative" ref={embassyRef}>
+                      <div className="relative">
+                        <MapPin className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+                        <Input
+                          id="consularPost"
+                          autoComplete="off"
+                          value={embassySearchText}
+                          onChange={(e) => handleEmbassyInputChange(e.target.value)}
+                          onFocus={() => setShowEmbassySuggestions(true)}
+                          placeholder="Search embassy or country"
+                          className={`${INPUT_BASE} pr-9! pl-9!`}
+                        />
+                        <ChevronDown
+                          className={`text-muted-foreground absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 transition-transform ${showEmbassySuggestions ? "rotate-180" : ""}`}
+                        />
+                      </div>
+
+                      {showEmbassySuggestions && (
+                        <div className="border-border bg-popover absolute z-50 mt-1 w-full overflow-hidden rounded-xl border shadow-xl">
+                          {/* Search hint */}
+                          {embassySearchText && (
+                            <div className="border-border bg-muted/40 flex items-center gap-2 border-b px-3 py-2">
+                              <Search className="text-muted-foreground h-3.5 w-3.5" />
+                              <span className="text-muted-foreground text-xs">
+                                Showing results for &quot;{embassySearchText}&quot;
+                              </span>
+                            </div>
+                          )}
+                          <div className="max-h-64 overflow-y-auto">
+                            {filteredEmbassies.length === 0 ? (
+                              <div className="text-muted-foreground px-4 py-6 text-center text-sm">
+                                <MapPin className="mx-auto mb-2 h-6 w-6 opacity-40" />
+                                No embassy found. You can type a custom location.
+                              </div>
+                            ) : (
+                              (() => {
+                                const grouped: Record<string, typeof filteredEmbassies> = {};
+                                filteredEmbassies.forEach((e) => {
+                                  if (!grouped[e.country]) grouped[e.country] = [];
+                                  grouped[e.country].push(e);
+                                });
+                                return Object.entries(grouped).map(([country, items]) => (
+                                  <div key={country}>
+                                    <div className="text-muted-foreground bg-muted/50 sticky top-0 px-3 py-1.5 text-[10px] font-bold tracking-widest uppercase">
+                                      {country}
+                                    </div>
+                                    {items.map((embassy) => (
+                                      <button
+                                        key={embassy.value}
+                                        type="button"
+                                        className={`hover:bg-primary/5 focus:bg-primary/5 flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors focus:outline-none ${
+                                          formData.consularPost === embassy.value
+                                            ? "bg-primary/10 text-primary font-semibold"
+                                            : "text-foreground"
+                                        }`}
+                                        onMouseDown={(e) => {
+                                          e.preventDefault(); // prevent input blur
+                                          handleEmbassySelect(embassy.value);
+                                        }}
+                                      >
+                                        <MapPin className="text-muted-foreground h-3.5 w-3.5 shrink-0" />
+                                        {embassy.label}
+                                        {formData.consularPost === embassy.value && (
+                                          <Check className="text-primary ml-auto h-3.5 w-3.5" />
+                                        )}
+                                      </button>
+                                    ))}
+                                  </div>
+                                ));
+                              })()
+                            )}
+                          </div>
+                          {/* Custom entry option */}
+                          {embassySearchText &&
+                            !EMBASSY_OPTIONS.find(
+                              (e) => e.value.toLowerCase() === embassySearchText.toLowerCase()
+                            ) && (
+                              <div className="border-border border-t">
+                                <button
+                                  type="button"
+                                  className="text-muted-foreground hover:bg-muted/50 flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors"
+                                  onMouseDown={(e) => {
+                                    e.preventDefault();
+                                    handleEmbassySelect(embassySearchText);
+                                  }}
+                                >
+                                  <Search className="h-3.5 w-3.5 shrink-0" />
+                                  Use &quot;{embassySearchText}&quot; as custom location
+                                </button>
+                              </div>
+                            )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </CaseSection>
+
+                <CaseSection
+                  title="Applicant details"
+                  description="Optional. Used to label your packet so it matches the letter."
+                >
+                  <div>
+                    <FieldLabel title="Case Number" htmlFor="caseNumber" required={false} />
+                    <Input
+                      id="caseNumber"
+                      value={formData.caseNumber}
+                      onChange={(e) => handleField("caseNumber", e.target.value.toUpperCase())}
+                      className={`${INPUT_CLASS} ${caseNumberError ? "border-red-500! focus-visible:ring-red-400" : ""}`}
+                      placeholder="e.g. ISL2024123456"
+                    />
+                    {caseNumberError && (
+                      <p className="mt-1.5 text-xs text-red-600">{caseNumberError}</p>
+                    )}
+                  </div>
+                  <div>
+                    <FieldLabel title="Beneficiary Name" htmlFor="beneficiaryName" required={false} />
+                    <Input
+                      id="beneficiaryName"
+                      value={formData.beneficiaryName}
+                      onChange={(e) => handleField("beneficiaryName", e.target.value)}
+                      placeholder="e.g. Candidate 1 (Mother)"
+                      className={INPUT_CLASS}
+                    />
+                  </div>
+
+                  <div>
+                    <FieldLabel title="Passport Number" htmlFor="passportNumber" required={false} />
+                    <Input
+                      id="passportNumber"
+                      value={formData.passportNumber}
+                      onChange={(e) => handleField("passportNumber", e.target.value)}
+                      placeholder="AA1234567"
+                      className={INPUT_CLASS}
+                    />
+                  </div>
+                  <div>
+                    <FieldLabel title="Date of Birth" htmlFor="dateOfBirth" required={false} />
+                    <Input
+                      id="dateOfBirth"
+                      type="date"
+                      value={formData.dateOfBirth}
+                      max={
+                        new Date(new Date().setFullYear(new Date().getFullYear() - 1))
+                          .toISOString()
+                          .split("T")[0]
+                      }
+                      min={
+                        new Date(new Date().setFullYear(new Date().getFullYear() - 120))
+                          .toISOString()
+                          .split("T")[0]
+                      }
+                      onChange={(e) => handleDobChange(e.target.value)}
+                      className={`${INPUT_CLASS} ${dobError ? "border-red-500! focus-visible:ring-red-400" : ""}`}
+                    />
+                    {dobError && <p className="mt-1.5 text-xs text-red-600">{dobError}</p>}
+                  </div>
+                </CaseSection>
               </div>
 
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="caseNumber">Case Number (optional)</Label>
-                  <Input
-                    id="caseNumber"
-                    value={formData.caseNumber}
-                    onChange={(e) => handleField("caseNumber", e.target.value.toUpperCase())}
-                    className={caseNumberError ? "border-red-500 focus-visible:ring-red-400" : ""}
-                    placeholder="e.g. ISL2024123456"
-                  />
-                  {caseNumberError && (
-                    <p className="mt-1 flex items-center gap-1 text-xs text-red-600">
-                      <span className="inline-block h-3.5 w-3.5 rounded-full bg-red-100 text-center text-[10px] leading-[14px] font-bold text-red-600">
-                        !
-                      </span>
-                      {caseNumberError}
-                    </p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="beneficiaryName">Beneficiary Name (optional)</Label>
-                  <Input
-                    id="beneficiaryName"
-                    value={formData.beneficiaryName}
-                    onChange={(e) => handleField("beneficiaryName", e.target.value)}
-                    placeholder="e.g. Candidate 1 (Mother)"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="passportNumber">Passport Number (optional)</Label>
-                  <Input
-                    id="passportNumber"
-                    value={formData.passportNumber}
-                    onChange={(e) => handleField("passportNumber", e.target.value)}
-                    placeholder="AA1234567"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="dateOfBirth">Date of Birth (optional)</Label>
-                  <Input
-                    id="dateOfBirth"
-                    type="date"
-                    value={formData.dateOfBirth}
-                    max={
-                      new Date(new Date().setFullYear(new Date().getFullYear() - 1))
-                        .toISOString()
-                        .split("T")[0]
-                    }
-                    min={
-                      new Date(new Date().setFullYear(new Date().getFullYear() - 120))
-                        .toISOString()
-                        .split("T")[0]
-                    }
-                    onChange={(e) => handleDobChange(e.target.value)}
-                    className={dobError ? "border-red-500 focus-visible:ring-red-400" : ""}
-                  />
-                  {dobError && (
-                    <p className="mt-1 flex items-center gap-1 text-xs text-red-600">
-                      <span className="inline-block h-3.5 w-3.5 rounded-full bg-red-100 text-center text-[10px] leading-[14px] font-bold text-red-600">
-                        !
-                      </span>
-                      {dobError}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex justify-end border-t pt-4">
+              <div className="flex flex-col-reverse gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-muted-foreground text-xs">
+                  <span className="text-red-500">*</span> Required
+                </p>
                 <Button
                   onClick={goNext}
+                  className="h-11 px-6"
                   disabled={
                     !formData.visaType ||
                     !formData.visaCategory ||
@@ -2927,7 +3019,8 @@ footer.querySelector(".footer-page").textContent = String(p);
                     !!caseNumberError
                   }
                 >
-                  Continue to Checklist →
+                  Continue to Checklist
+                  <ArrowRight className="ml-1.5 h-4 w-4" />
                 </Button>
               </div>
             </div>
