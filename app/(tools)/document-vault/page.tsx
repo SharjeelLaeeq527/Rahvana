@@ -1372,135 +1372,161 @@ export default function DocumentVaultPage() {
           </div>
         ) : (
           <>
-            {/* Top Professional Header */}
-            <div className="sticky top-0 z-30 border-b bg-white shadow-sm dark:bg-slate-900">
-              <div className="site-main-px py-4">
-                <div className="flex flex-row items-start justify-between gap-4 md:items-center">
-                  <div className="flex min-w-0 flex-1 items-center gap-4">
-                    {userJourneys.length > 1 && activeJourneyId ? (
-                      <Button
-                        variant="ghost"
-                        onClick={() => {
-                          setActiveJourneyId(null);
-                          sessionStorage.removeItem(SESSION_KEY);
-                        }}
-                        className="animate-in fade-in slide-in-from-left-2 flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-slate-200 p-0 text-slate-600 transition-all duration-200 duration-300 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-                        title="Back to Journeys"
-                      >
-                        <ArrowLeft className="h-5 w-5" />
-                      </Button>
-                    ) : (
-                      <div className="bg-primary/10 text-primary hidden h-12 w-12 items-center justify-center rounded-2xl shadow-inner sm:flex">
-                        <ShieldCheck className="h-7 w-7" />
-                      </div>
-                    )}
-                    <div>
-                      <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-                        {t("documentVaultPage.page.title")}
-                      </h1>
-                      <div className="mt-1 flex flex-wrap items-center gap-2">
-                        <Badge
-                          variant="secondary"
-                          className="bg-primary/5 hover:bg-primary/5 text-primary border-primary/20 px-2.5 py-0.5 font-bold"
-                        >
-                          {config?.visaCategory
-                            ? `${config.visaCategory} Journey`
-                            : activeJourney
-                              ? getFriendlyJourneyName(
-                                  activeJourney.journey_type,
-                                  activeJourney.journey_name
-                                )
-                              : `${activeCandidate?.visaCategory || "IR-5"} Journey`}
-                        </Badge>
-                        <span className="text-xs font-medium text-slate-500">
-                          {t("documentVaultPage.page.subtitle")}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+            {/* Hero Header Deck */}
+            <header className="relative overflow-hidden bg-[#0A4F49] px-4 py-10 pb-20 text-white sm:px-6 lg:px-10">
+            <svg
+  className="pointer-events-none absolute right-48 bottom-[-40px] h-[300px] w-[320px] opacity-[.14]"
+  viewBox="160 70 840 850"
+  xmlns="http://www.w3.org/2000/svg"
+  aria-hidden="true"
+>
+  {/* Secure Vault Folder Perimeter */}
+  <path
+    d="M 225 220 H 435 L 495 275 H 920 C 942 275 960 293 960 315 V 835 C 960 857 942 875 920 875 H 225 C 203 875 185 857 185 835 V 260 C 185 238 203 220 225 220 Z"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="10"
+    strokeLinejoin="round"
+  />
+  <line x1="185" y1="335" x2="960" y2="335" stroke="currentColor" strokeWidth="5" opacity="0.65" />
 
-                  <div className="flex shrink-0 items-center gap-2">
-                    <NotificationBell />
+  {/* Stacked Document Sheets */}
+  <g transform="translate(655, 115)">
+    <rect x="28" y="0" width="190" height="245" rx="16" fill="none" stroke="currentColor" strokeWidth="7" opacity="0.65" />
+    <rect x="0" y="26" width="190" height="245" rx="16" fill="none" stroke="currentColor" strokeWidth="9" />
+    <line x1="30" y1="74" x2="115" y2="74" stroke="currentColor" strokeWidth="8" strokeLinecap="round" />
+    <line x1="30" y1="112" x2="155" y2="112" stroke="currentColor" strokeWidth="6" strokeLinecap="round" />
+    <line x1="30" y1="142" x2="155" y2="142" stroke="currentColor" strokeWidth="6" strokeLinecap="round" />
+    <line x1="30" y1="172" x2="120" y2="172" stroke="currentColor" strokeWidth="6" strokeLinecap="round" />
+  </g>
+
+  {/* Verified Checkmark Seal */}
+  <g transform="translate(755, 650)">
+    <circle cx="75" cy="75" r="68" fill="none" stroke="currentColor" strokeWidth="10" />
+    <circle cx="75" cy="75" r="50" fill="none" stroke="currentColor" strokeWidth="4" strokeDasharray="10 8" />
+    <path
+      d="M 48 76 L 67 95 L 105 55"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="12"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </g>
+
+  {/* Rahvana Bird */}
+  <path
+    fill="currentColor"
+    fillRule="evenodd"
+    d="M236,880C228,876 222,867 222,860C222,854 229,840 237,832C244,824 270,806 281,801C284,800 296,794 300,792C307,789 328,781 348,774C352,772 358,770 360,770C361,769 364,768 366,768C367,768 370,767 371,766C372,766 376,764 380,763C383,762 387,761 390,760C392,760 397,758 401,757C405,756 413,754 418,753C424,751 429,750 430,750C432,750 448,740 452,735C454,734 458,730 462,728C482,713 509,687 523,667C529,659 529,657 523,657C518,657 500,652 492,648C487,646 474,640 469,637C449,626 418,594 404,570C400,564 399,562 389,556C359,535 336,510 321,479C307,452 300,426 300,400C300,383 301,378 306,374C311,370 319,373 326,381C327,383 330,386 331,387C332,389 333,390 333,390C333,391 335,394 338,398C340,403 342,406 342,407C342,407 344,411 346,416C348,421 352,429 354,434C356,440 358,445 359,446C359,448 361,452 363,457C365,462 367,469 369,472C371,476 372,480 372,481C372,481 373,484 374,486C377,493 378,496 379,500C380,502 383,507 384,511C386,514 387,517 387,518C387,518 388,521 390,525C392,529 394,533 395,535C397,540 397,541 402,550C421,585 441,608 468,626C475,631 496,642 498,642C498,642 500,643 502,643C509,646 526,650 532,650C535,650 535,650 541,639C544,632 546,626 546,626C546,625 546,624 547,623C548,622 552,609 557,591C563,564 561,527 551,502C540,474 522,455 487,434C485,433 465,423 462,421C454,418 432,409 421,405C417,403 412,401 410,400C409,400 405,398 403,397C398,396 393,393 382,388C368,382 366,381 361,378C358,376 356,375 355,375C355,375 352,374 350,372C347,371 345,369 344,368C308,347 280,314 266,276C263,267 258,251 257,245C256,242 254,236 254,233C249,216 247,184 248,161C249,142 252,136 259,132C269,127 278,135 293,159C311,187 325,207 337,220C339,223 344,229 347,232C366,254 396,279 416,290C419,291 422,293 424,294C428,297 442,303 451,308C462,313 471,317 476,319C490,325 493,326 502,331C507,333 516,338 520,340C525,343 531,346 533,347C540,351 550,358 560,365C566,369 572,374 573,375C580,380 602,402 609,412C620,427 622,430 630,446C635,457 637,462 643,480C646,488 649,504 653,525C659,563 660,567 668,567C671,567 673,566 675,566C676,565 677,564 678,564C680,564 710,541 728,525C732,522 744,511 754,501C779,477 785,472 798,464C816,454 834,449 854,452C869,454 879,458 892,469C898,474 902,476 913,477C935,480 943,482 943,485C942,487 935,491 930,492C921,494 907,500 894,507C880,515 866,529 858,544C852,555 846,567 846,569C846,570 846,571 845,572C845,572 843,576 842,581C839,589 838,592 835,600C835,602 833,606 832,610C831,615 826,630 822,640C810,675 776,713 739,732C735,734 731,737 730,737C729,738 721,742 714,744C678,758 649,762 609,760C585,759 577,758 568,757C521,751 463,751 439,757C434,758 402,783 383,800C377,805 370,810 368,813C359,820 353,825 340,836C312,859 289,874 269,880C261,883 242,883 236,880Z"
+  />
+</svg>
+              <div className="mx-auto flex max-w-[1440px] flex-wrap items-center justify-between gap-7">
+                <div className="flex min-w-0 items-center gap-4">
+                  {userJourneys.length > 1 && activeJourneyId ? (
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        setActiveJourneyId(null);
+                        sessionStorage.removeItem(SESSION_KEY);
+                      }}
+                      className="flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-[14px] border border-white/20 bg-white/[0.12] p-0 text-white hover:bg-white/[0.22] hover:text-white"
+                      title="Back to Journeys"
+                    >
+                      <ArrowLeft className="h-5 w-5" />
+                    </Button>
+                  ) : (
+                    <div className="hidden h-[42px] w-[42px] shrink-0 items-center justify-center rounded-[14px] border border-white/20 bg-white/[0.12] sm:flex">
+                      <ShieldCheck className="h-5 w-5" />
+                    </div>
+                  )}
+                  <div>
+                    <h1 className="flex flex-wrap items-center gap-3 text-[30px] leading-tight font-bold tracking-tight sm:text-[38px] lg:text-[42px]">
+                      <span>{t("documentVaultPage.page.title")}</span>
+                      <span className="rounded-full border border-[#E1F2EE]/30 bg-[#E1F2EE]/20 px-3 py-1 text-[11.5px] font-bold tracking-[0.05em] text-[#E1F2EE] uppercase">
+                        {config?.visaCategory
+                          ? `${config.visaCategory} Journey`
+                          : activeJourney
+                            ? getFriendlyJourneyName(
+                                activeJourney.journey_type,
+                                activeJourney.journey_name
+                              )
+                            : `${activeCandidate?.visaCategory || "IR-5"} Journey`}
+                      </span>
+                    </h1>
+                    <p className="mt-1.5 text-[15px] leading-relaxed text-white/88">
+                      {t("documentVaultPage.page.subtitle")}
+                    </p>
                   </div>
                 </div>
+                <NotificationBell variant="header" />
               </div>
-            </div>
+            </header>
 
-            <div className="container mx-auto max-w-450 p-6">
+            <div className="relative z-10 mx-auto -mt-11 w-full max-w-[1440px] px-4 pb-16 sm:px-6 lg:px-8">
               {/* Main Grid Layout */}
-              <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
+              <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-12">
                 {/* Left Side: Stats & Configuration */}
                 <div className="space-y-6 lg:sticky lg:top-24 lg:col-span-3">
                   {/* Professional Stats Card */}
-                  <Card className="from-primary via-primary/95 to-primary/90 overflow-hidden border-none bg-linear-to-br p-0 text-white shadow-xl">
-                    <div className="p-6">
-                      <div className="mb-6 flex items-center justify-between">
+                  <Card className="overflow-hidden rounded-[24px] border border-[#0F8F80]/28 bg-gradient-to-br from-[#E8F6F3] to-[#D8EFEA] p-0 text-[#16302C] shadow-[0_10px_30px_-10px_rgba(10,79,73,0.1)] transition-all hover:-translate-y-0.5 hover:border-[#0F8F80]/45 hover:shadow-[0_14px_36px_-10px_rgba(10,79,73,0.16)]">
+                    <div className="flex flex-col gap-[18px] p-6">
+                      <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/20">
-                            <Zap className="h-4 w-4" />
-                          </div>
-                          <span className="text-xs font-bold tracking-tight uppercase opacity-80">
+                          <Zap className="h-[18px] w-[18px] text-[#0A4F49]" />
+                          <span className="text-[11.5px] font-bold tracking-[0.06em] text-[#0A4F49] uppercase">
                             {t("documentVaultPage.page.syncProgress")}
                           </span>
                         </div>
                         <Badge
                           variant="outline"
-                          className="border-white/30 bg-white/10 font-bold text-white backdrop-blur-sm"
+                          className="rounded-full border-0 bg-[#0A4F49]/12 px-2.5 py-1 text-[11.5px] font-extrabold text-[#0A4F49]"
                         >
                           {stats.percentComplete}%
                         </Badge>
                       </div>
 
-                      <div className="space-y-4">
-                        <div>
-                          <div className="mb-1 flex justify-between text-2xl font-black">
-                            <span>
-                              {stats.uploaded} / {stats.total}
-                            </span>
-                            <span className="mb-1 self-end text-sm font-medium text-white/60">
-                              {t("documentVaultPage.page.itemsReady")}
-                            </span>
-                          </div>
-                          <Progress
-                            value={stats.percentComplete}
-                            className="h-3 bg-white/20"
-                            indicatorClassName="bg-white"
-                          />
+                      <div className="flex items-baseline justify-between">
+                        <div className="font-serif text-[34px] leading-none font-bold text-[#0A4F49]">
+                          {stats.uploaded} <span className="text-[18px] font-medium text-[#526360]">/ {stats.total}</span>
                         </div>
+                        <span className="text-[12.5px] font-semibold text-[#0F8F80]">
+                          {t("documentVaultPage.page.itemsReady")}
+                        </span>
+                      </div>
 
-                        <div className="grid grid-cols-2 gap-3 pt-2">
-                          <div className="rounded-xl bg-white/10 p-3 backdrop-blur-sm">
-                            <p className="mb-1 text-[10px] font-bold tracking-widest text-white/60 uppercase">
-                              {t("documentVaultPage.page.criticalMissing")}
-                            </p>
-                            <p
-                              className={`text-xl font-black ${stats.missing > 0 ? "text-white" : "text-emerald-300"}`}
-                            >
-                              {stats.missing}
-                            </p>
-                          </div>
-                          <div className="rounded-xl bg-white/10 p-3 backdrop-blur-sm">
-                            <p className="mb-1 text-[10px] font-bold tracking-widest text-white/60 uppercase">
-                              {t("documentVaultPage.page.alertsExpiring")}
-                            </p>
-                            <p
-                              className={`text-xl font-black ${stats.expiring > 0 ? "text-amber-300" : "text-white"}`}
-                            >
-                              {stats.expiring + stats.expired}
-                            </p>
-                          </div>
+                      <Progress
+                        value={stats.percentComplete}
+                        className="h-2 bg-[#0A4F49]/12"
+                        indicatorClassName="bg-gradient-to-r from-[#0F8F80] to-[#0A4F49]"
+                      />
+
+                      <div className="grid grid-cols-2 gap-2.5">
+                        <div className="flex flex-col rounded-[14px] border border-[#0F8F80]/20 bg-white/70 p-3 backdrop-blur-sm">
+                          <p className="text-[10px] font-bold tracking-[0.05em] text-[#526360] uppercase">
+                            {t("documentVaultPage.page.criticalMissing")}
+                          </p>
+                          <p className={`mt-1 text-[20px] font-extrabold ${stats.missing > 0 ? "text-[#E11D48]" : "text-[#16302C]"}`}>
+                            {stats.missing}
+                          </p>
+                        </div>
+                        <div className="flex flex-col rounded-[14px] border border-[#0F8F80]/20 bg-white/70 p-3 backdrop-blur-sm">
+                          <p className="text-[10px] font-bold tracking-[0.05em] text-[#526360] uppercase">
+                            {t("documentVaultPage.page.alertsExpiring")}
+                          </p>
+                          <p className="mt-1 text-[20px] font-extrabold text-[#16302C]">
+                            {stats.expiring + stats.expired}
+                          </p>
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between bg-black/10 px-6 py-4">
+                    <div className="flex items-center justify-between border-t border-[#0A4F49]/14 px-6 py-4 text-[12px] font-semibold text-[#0A4F49]">
                       <div className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-emerald-300" />
-                        <span className="text-[11px] font-semibold opacity-90">
-                          {t("documentVaultPage.page.bankGradeEncryption")}
-                        </span>
+                        <ShieldCheck className="h-4 w-4" />
+                        <span>{t("documentVaultPage.page.bankGradeEncryption")}</span>
                       </div>
-                      <div className="h-2 w-2 animate-pulse rounded-full bg-emerald-400"></div>
+                      <div className="h-2 w-2 rounded-full bg-[#0F8F80] shadow-[0_0_0_3px_rgba(15,143,128,0.20)]" />
                     </div>
                   </Card>
 
@@ -1510,14 +1536,16 @@ export default function DocumentVaultPage() {
             </div> */}
 
                   {/* Mini Tips Card */}
-                  <Card className="border-amber-200 bg-amber-50 p-4 shadow-sm dark:border-amber-900 dark:bg-amber-950/30">
-                    <div className="flex gap-3">
-                      <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
+                  <Card className="rounded-[24px] border border-[#E2E5E8] bg-white p-5 shadow-[0_2px_6px_rgba(22,48,44,0.04)]">
+                    <div className="flex gap-3.5">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[14px] border border-[#F3DDB0] bg-[#FFF7E6] text-[#D97706]">
+                        <AlertCircle className="h-[18px] w-[18px]" />
+                      </div>
                       <div>
-                        <h4 className="text-sm font-bold text-amber-900 dark:text-amber-100">
+                        <h4 className="text-[14.5px] font-bold text-[#16302C]">
                           {t("documentVaultPage.page.nvcTipTitle")}
                         </h4>
-                        <p className="mt-1 text-xs leading-relaxed text-amber-800 dark:text-amber-200">
+                        <p className="mt-1 text-[13px] leading-[1.5] text-[#526360]">
                           {t("documentVaultPage.page.nvcTipDesc")}
                         </p>
                       </div>
@@ -1528,15 +1556,15 @@ export default function DocumentVaultPage() {
                 {/* Right Side: Document Management Tabs */}
                 <div className="lg:col-span-9">
                   <Tabs defaultValue="required" className="w-full" onValueChange={setActiveTab}>
-                    <div className="mb-6 flex flex-col justify-between gap-4 xl:mb-8 xl:flex-row xl:items-center xl:gap-6">
-                      <div className="flex w-full flex-col gap-4 overflow-hidden sm:flex-row sm:items-center xl:w-auto">
-                        <div className="no-scrollbar -mb-2 w-full overflow-x-auto pb-2 sm:mb-0 sm:w-auto sm:pb-0">
-                          <TabsList className="inline-flex h-11 min-w-max shrink-0 rounded-xl border bg-white p-1 shadow-sm dark:bg-slate-900">
+                    <div className="mb-6 flex flex-col justify-between gap-3 rounded-[24px] border border-[#E2E5E8] bg-white p-3 shadow-[0_2px_6px_rgba(22,48,44,0.04)] xl:mb-8 xl:flex-row xl:items-center">
+                      <div className="flex min-w-0 flex-1 items-center gap-3 overflow-hidden">
+                        <div className="no-scrollbar w-full overflow-x-auto">
+                          <TabsList className="inline-flex h-auto min-w-max shrink-0 bg-transparent p-0">
                             {categories.slice(0, 5).map((cat) => (
                               <TabsTrigger
                                 key={cat}
                                 value={cat}
-                                className="data-[state=active]:bg-primary rounded-lg px-4 text-xs font-bold transition-all duration-300 data-[state=active]:text-white sm:px-6"
+                                className="rounded-full border border-transparent px-4 py-2 text-[13px] font-semibold text-[#526360] whitespace-nowrap transition-all data-[state=active]:border-0 data-[state=active]:bg-[#0A4F49] data-[state=active]:font-bold data-[state=active]:text-white data-[state=active]:shadow-[0_2px_8px_rgba(10,79,73,0.20)]"
                               >
                                 {cat === "all"
                                   ? t("documentVaultPage.page.allMasterChecklist")
@@ -1574,12 +1602,12 @@ export default function DocumentVaultPage() {
                         </div>
 
                         {/* Move View Switcher here next to tabs */}
-                        <div className="flex h-11 shrink-0 self-start rounded-xl border bg-white p-1 shadow-sm sm:self-auto dark:bg-slate-900">
+                        <div className="flex shrink-0 self-start gap-0.5 rounded-[14px] border border-[#E2E5E8] bg-[#F8F9FA] p-[3px] sm:self-auto">
                           <Button
                             variant={viewMode === "table" ? "secondary" : "ghost"}
                             size="sm"
                             onClick={() => setViewMode("table")}
-                            className={`h-9 rounded-lg px-3 ${viewMode === "table" ? "bg-slate-100 shadow-inner dark:bg-slate-800" : ""}`}
+                            className={`h-8 w-8 rounded-[10px] p-0 text-[#8A9995] ${viewMode === "table" ? "bg-white text-[#0A4F49] shadow-[0_1px_4px_rgba(0,0,0,0.08)]" : ""}`}
                           >
                             <List className="h-4 w-4" />
                           </Button>
@@ -1587,19 +1615,19 @@ export default function DocumentVaultPage() {
                             variant={viewMode === "grid" ? "secondary" : "ghost"}
                             size="sm"
                             onClick={() => setViewMode("grid")}
-                            className={`h-9 rounded-lg px-3 ${viewMode === "grid" ? "bg-slate-100 shadow-inner dark:bg-slate-800" : ""}`}
+                            className={`h-8 w-8 rounded-[10px] p-0 text-[#8A9995] ${viewMode === "grid" ? "bg-white text-[#0A4F49] shadow-[0_1px_4px_rgba(0,0,0,0.08)]" : ""}`}
                           >
                             <LayoutGrid className="h-4 w-4" />
                           </Button>
                         </div>
                       </div>
 
-                      <div className="ml-0 flex w-full xl:ml-auto xl:max-w-md">
-                        <div className="relative flex-1">
-                          <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                      <div className="flex w-full shrink-0 xl:w-[220px]">
+                        <div className="relative w-full">
+                          <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#8A9995]" />
                           <Input
                             placeholder={t("documentVaultPage.page.searchPlaceholder")}
-                            className="focus:ring-primary/20 h-11 w-full rounded-xl border-slate-200 bg-white pl-10 dark:border-slate-800 dark:bg-slate-900"
+                            className="h-[38px] w-full rounded-[14px] border-[#E2E5E8] bg-[#F8F9FA] pl-9 text-[13px] text-[#16302C] outline-none focus:border-[#0F8F80] focus:bg-white focus:ring-[3px] focus:ring-[#0F8F80]/12"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                           />
@@ -1696,7 +1724,7 @@ export default function DocumentVaultPage() {
 
                               {flatFilteredDocuments.length > 0 ? (
                                 viewMode === "grid" ? (
-                                  <div className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 xl:grid-cols-3">
+                                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                     {flatFilteredDocuments.map((doc) => {
                                       const docUploads = uploadedDocuments.filter(
                                         (ud) => ud.documentDefId === doc.id
@@ -1838,7 +1866,7 @@ export default function DocumentVaultPage() {
                                 </div>
 
                                 {viewMode === "grid" ? (
-                                  <div className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 xl:grid-cols-3">
+                                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                     {docs.map((doc) => {
                                       const docUploads = uploadedDocuments.filter(
                                         (ud) => ud.documentDefId === doc.id
@@ -1914,7 +1942,7 @@ export default function DocumentVaultPage() {
                             // Show required or optional documents when NOT searching
                             <div className="space-y-4">
                               {viewMode === "grid" ? (
-                                <div className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 xl:grid-cols-3">
+                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                   {getFilteredDocumentsForSpecialFilter[
                                     activeTab as "required" | "optional"
                                   ]?.map((doc) => {
@@ -1989,7 +2017,7 @@ export default function DocumentVaultPage() {
                             // Show specific category when NOT searching
                             <div className="space-y-4">
                               {viewMode === "grid" ? (
-                                <div className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 xl:grid-cols-3">
+                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                   {documentsByCategory[activeTab]?.map((doc) => {
                                     const docUploads = uploadedDocuments.filter(
                                       (ud) => ud.documentDefId === doc.id
