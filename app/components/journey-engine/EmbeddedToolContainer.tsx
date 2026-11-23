@@ -149,6 +149,7 @@ const TOOL_LAYOUT_KEYS = new Set([
   "snap_and_sign",
   "dq_status_check",
   "cspa_checker",
+  "visa_forms",
 ]);
 
 function Journey221gEmbeddedTool({
@@ -301,7 +302,7 @@ function JourneyVisaFormsEmbeddedTool({
           journeyContext={journeyContext}
           journeyTier={effectiveJourneyTier}
           onSelectForm={(formCode) => setActiveFormCode(formCode)}
-          isEmbedded={true}
+          showHeader={true}
         />
       </div>
     );
