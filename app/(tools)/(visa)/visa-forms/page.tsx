@@ -1052,10 +1052,10 @@ export default function VisaFormSelector({
                     >
                       <div
                         ref={filterPopoverRef}
-                        className="flex max-h-full w-full max-w-sm flex-col overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-2xl sm:max-h-[500px] sm:w-80 sm:shadow-xl"
+                        className="flex max-h-full w-full max-w-sm flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-2xl sm:max-h-[500px] sm:w-80 sm:shadow-xl"
                       >
                         {/* Header */}
-                        <div className="sticky top-0 flex items-center justify-between border-b border-gray-100 bg-white p-4">
+                        <div className="flex shrink-0 items-center justify-between border-b border-gray-100 bg-white p-4">
                           <h3 className="font-semibold text-gray-900">Filter Forms</h3>
                           <button
                             onClick={() => setIsFilterPopoverOpen(false)}
@@ -1066,7 +1066,7 @@ export default function VisaFormSelector({
                         </div>
 
                         {/* Filter Content */}
-                        <div className="space-y-4 p-4">
+                        <div className="custom-scrollbar flex-1 space-y-4 overflow-y-auto p-4">
                           {/* Journey Filter */}
                           <div>
                             <label className="mb-2 block text-xs font-semibold tracking-wide text-gray-900 uppercase">
@@ -1151,7 +1151,7 @@ export default function VisaFormSelector({
                         </div>
 
                         {/* Footer */}
-                        <div className="sticky bottom-0 space-y-3 border-t border-gray-100 bg-gray-50 px-4 py-3">
+                        <div className="shrink-0 space-y-3 border-t border-gray-100 bg-gray-50 px-4 py-3">
                           <div className="flex gap-2">
                             {(activeFilters.agency.length > 0 ||
                               activeFilters.category.length > 0 ||
