@@ -24,3 +24,5 @@ export const IR5_ENABLED =
   process.env.NEXT_PUBLIC_ENABLE_IR5 === "true" ||
   (process.env.NEXT_PUBLIC_ENABLE_IR5 !== "false" &&
     process.env.NEXT_PUBLIC_ENVIRONMENT !== "production");
+
+export const IR2_ENABLED = true;

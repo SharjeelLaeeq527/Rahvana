@@ -1,4 +1,5 @@
 "use client";
+import Header from "../../components/headers/Header"
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -85,17 +86,19 @@ export default function ResourcesContent({ initialTab }: { initialTab: ResourceT
       </div>
 
       {/* Page heading */}
-      <div className="pt-24 pb-2 text-center">
-        <h1 className="from-foreground to-muted-foreground animate-fade-up -my-1 bg-linear-to-r bg-clip-text py-1 text-3xl leading-tight font-bold text-transparent md:text-5xl">
-          My Resources
-        </h1>
-        <p className="text-muted-foreground animate-fade-up mx-auto mt-4 hidden max-w-2xl text-base [animation-delay:100ms] md:block md:text-lg">
-          Everything you&apos;ve added, plus the full catalog to browse and try anytime.
+
+        <Header  
+          category="navSections"
+          title= "My Resources" 
+          centered>
+          <p className="mt-3 text-muted-foreground text-base md:text-lg max-w-2xl mx-auto animate-fade-up [animation-delay:100ms] hidden md:block">
+        Everything you've added, plus the full catalog to browse and try anytime.
         </p>
-        <p className="text-muted-foreground animate-fade-up mx-auto mt-3 block max-w-2xl text-base [animation-delay:100ms] md:hidden md:text-lg">
-          Your unlocked tools, guides & services.
+        </Header>
+        <p className="mt-3 text-muted-foreground text-base md:text-lg max-w-2xl mx-auto animate-fade-up [animation-delay:100ms] block md:hidden">
+        Your unlocked tools, guides & services.
         </p>
-      </div>
+      
 
       {/* Tab Selector Section */}
       <div className="flex justify-center pt-6 pb-8">

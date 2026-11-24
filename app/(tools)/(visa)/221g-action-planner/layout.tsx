@@ -12,5 +12,6 @@ export default function TwentyTwoOneGActionPlannerLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <div className="min-h-screen bg-linear-to-b from-primary/10 to-white">{children}</div>;
+  // ToolLayout (in page.tsx) draws the background; this only clears the fixed site header.
+  return <div className="mt-[55px]">{children}</div>;
 }

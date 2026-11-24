@@ -1,8 +1,14 @@
 // lib/supabase/middleware.ts
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import {
+  createClient,
+  isAuthRetryableFetchError,
+  type SupabaseClient,
+  type User,
+} from "@supabase/supabase-js";
 import { auditLog } from "@/lib/security/audit-log";
+import { isStagingEmailAllowed } from "@/lib/security/staging-access";
 
 // =============================
 // Admin Emails
@@ -24,6 +30,63 @@ const supabaseAdmin = createClient(
     },
   }
 );
+
+// =============================
+// Timeouts
+// =============================
+// Every Supabase call in this middleware is capped. Without a cap, an unhealthy
+// Supabase project makes the middleware hang until Vercel kills it with
+// 504 MIDDLEWARE_INVOCATION_TIMEOUT, which takes the whole page down with it.
+const MIDDLEWARE_SUPABASE_TIMEOUT_MS = 5000;
+
+type GetUserResult =
+  | { unavailable: false; user: User | null }
+  | { unavailable: true; reason: string };
+
+export async function getUserWithTimeout(supabase: Pick<SupabaseClient, "auth">): Promise<GetUserResult> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<GetUserResult>((resolve) => {
+    timer = setTimeout(
+      () => resolve({ unavailable: true, reason: `timeout after ${MIDDLEWARE_SUPABASE_TIMEOUT_MS}ms` }),
+      MIDDLEWARE_SUPABASE_TIMEOUT_MS
+    );
+  });
+
+  const lookup = supabase.auth
+    .getUser()
+    .then<GetUserResult>(({ data, error }) => {
+      // A network / 5xx failure means "Auth is down", not "signed out".
+      // Treating it as signed out would bounce signed-in users to /login.
+      if (error && (isAuthRetryableFetchError(error) || (error.status ?? 0) >= 500)) {
+        return { unavailable: true, reason: error.message };
+      }
+      return { unavailable: false, user: data.user ?? null };
+    })
+    .catch<GetUserResult>((err: unknown) => ({
+      unavailable: true,
+      reason: err instanceof Error ? err.message : "getUser threw",
+    }));
+
+  try {
+    return await Promise.race([lookup, timeout]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function serviceUnavailable(asJson: boolean) {
+  const headers = { "Retry-After": "30" };
+  if (asJson) {
+    return NextResponse.json(
+      { error: "Service temporarily unavailable. Please try again shortly." },
+      { status: 503, headers }
+    );
+  }
+  return new NextResponse("Service temporarily unavailable. Please try again in a moment.", {
+    status: 503,
+    headers: { ...headers, "Content-Type": "text/plain; charset=utf-8" },
+  });
+}
 
 export async function updateSession(request: NextRequest) {
   const response = NextResponse.next();
@@ -50,6 +113,7 @@ export async function updateSession(request: NextRequest) {
     "/visa-eligibility",
     "/visa-category/ir1-journey",
     "/visa-category/ir5-journey",
+    "/visa-category/ir2-journey",
     "/interview-prep",
     "/interview-prep/my-sessions",
     "/document-translation",
@@ -115,9 +179,41 @@ export async function updateSession(request: NextRequest) {
   );
 
   // ⚠️ DO NOT put logic between client creation & getUser
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const auth = await getUserWithTimeout(supabase);
+
+  // Supabase Auth did not answer in time (or is down). Do not wait for it:
+  // Vercel kills a slow middleware with 504 MIDDLEWARE_INVOCATION_TIMEOUT.
+  // - Admin routes fail CLOSED (503): never let anyone in without a check.
+  // - Every other route passes through unchanged. We cannot tell a signed-in
+  //   user from a signed-out one right now, and sending a signed-in user to
+  //   /login would be wrong. Protected data stays safe: every API route checks
+  //   the session itself and RLS still applies.
+  if (auth.unavailable) {
+    console.warn(`[middleware] Supabase Auth unavailable (${auth.reason}) on ${pathname}`);
+    if (isAdminRoute || isApiAdminRoute) {
+      return serviceUnavailable(isApiAdminRoute);
+    }
+    return response;
+  }
+  const user = auth.user;
+
+  // =============================
+  // Staging Access Session Check
+  // =============================
+  if (user && !isStagingEmailAllowed(user.email)) {
+    if (isProtectedRoute || isAdminRoute || isApiAdminRoute) {
+      if (isApiAdminRoute || pathname.startsWith("/api/")) {
+        return NextResponse.json(
+          { error: "Staging access denied: account not authorized on this environment." },
+          { status: 403 }
+        );
+      }
+      const url = request.nextUrl.clone();
+      url.pathname = "/login";
+      url.searchParams.set("error", "staging_access_denied");
+      return NextResponse.redirect(url);
+    }
+  }
 
   if (isAdminRoute || isApiAdminRoute) {
     if (!user) {
@@ -130,11 +226,19 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    const { data: profile } = await supabaseAdmin
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from("profiles")
       .select("email, role")
       .eq("id", user.id)
+      .abortSignal(AbortSignal.timeout(MIDDLEWARE_SUPABASE_TIMEOUT_MS))
       .single();
+
+    // Database slow / unreachable (anything but "no profile row"): fail closed
+    // with 503 instead of hanging, and do not log a false "access denied".
+    if (profileError && profileError.code !== "PGRST116") {
+      console.warn(`[middleware] admin profile lookup failed on ${pathname}: ${profileError.message}`);
+      return serviceUnavailable(isApiAdminRoute);
+    }
 
     const isAuthorizedAdmin =
       profile && ADMIN_EMAILS.includes(profile.email) && profile.role === "admin";
@@ -189,7 +293,7 @@ export async function updateSession(request: NextRequest) {
   // =============================
   // Logged-in user accessing login/signup
   // =============================
-  if (user && isAuthRoute) {
+  if (user && isAuthRoute && isStagingEmailAllowed(user.email)) {
     // Allow MFA flow - don't redirect if user has MFA credentials in session
     if (request.nextUrl.searchParams.get("mfa") === "true") {
       return response;
@@ -211,15 +315,25 @@ export async function updateSession(request: NextRequest) {
   // Logged-in user accessing admin login
   // =============================
   if (user && isAdminAuthRoute) {
-    const { data: profile } = await supabaseAdmin
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from("profiles")
-      .select("email")
+      .select("email, role")
       .eq("id", user.id)
+      .abortSignal(AbortSignal.timeout(MIDDLEWARE_SUPABASE_TIMEOUT_MS))
       .single();
+
+    // Database slow / unreachable: just show the admin login page.
+    if (profileError && profileError.code !== "PGRST116") {
+      return response;
+    }
 
     const url = request.nextUrl.clone();
 
-    if (profile && ADMIN_EMAILS.includes(profile.email)) {
+    // MUST match the /admin gate exactly (email whitelist AND role === "admin").
+    const isAuthorizedAdmin =
+      !!profile && ADMIN_EMAILS.includes(profile.email) && profile.role === "admin";
+
+    if (isAuthorizedAdmin) {
       url.pathname = "/admin";
     } else {
       url.pathname = "/user-dashboard";

@@ -97,13 +97,20 @@ export const ResultPage = ({
 
   const canSeePrepQuestion = useCallback(
     (question: GeneratedQuestion) => {
+      // CRITICAL: When standaloneGranted=true (legacy purchase or paid session),
+      // show ALL questions regardless of tier. This prevents only showing 5 free-tier
+      // questions after refresh when the session was purchased via credits.
+      if (isStandalone && standaloneGranted) {
+        return true;
+      }
+
       if (prepLockedForFreeUser) {
         return question.tier === "free";
       }
 
       return true;
     },
-    [prepLockedForFreeUser]
+    [prepLockedForFreeUser, isStandalone, standaloneGranted]
   );
 
   const canAccessRapidFire = (): boolean => {
@@ -342,10 +349,11 @@ export const ResultPage = ({
 
   const handleCardClick = (event?: MouseEvent<HTMLDivElement>) => {
     if (event) {
-      const target = event.target as HTMLElement | null;
+      const target = event.target;
 
       if (
-        target?.closest(
+        target instanceof Element &&
+        target.closest(
           "button, a, input, textarea, select, option, [role='button'], [data-no-card-flip='true']"
         )
       ) {
@@ -659,7 +667,6 @@ export const ResultPage = ({
                           transformStyle: "preserve-3d",
                           perspective: "1000px",
                         }}
-                        onClick={handleCardClick}
                       >
                         {/* Front of Card - Question */}
                         <div
@@ -668,6 +675,7 @@ export const ResultPage = ({
                             background:
                               "linear-gradient(145deg, #ffffff 0%, #fdfbf8 35%, #faf6f0 70%, #f7f1e8 100%)",
                           }}
+                          onClick={handleCardClick}
                         >
                           {/* Soft radial glow top-right */}
                           <div className="pointer-events-none absolute -top-16 -right-16 h-48 w-48 rounded-full bg-[#afdbdb]/15 blur-2xl" />
@@ -712,7 +720,10 @@ export const ResultPage = ({
                         </div>
 
                         {/* Back of Card - Answer & Guidance */}
-                        <div className="absolute inset-0 flex rotate-y-180 flex-col overflow-visible rounded-2xl border border-teal-500/40 bg-linear-to-br from-teal-600 to-teal-800 p-4 text-white shadow-2xl backface-hidden sm:p-5 lg:p-7">
+                        <div
+                          className="absolute inset-0 flex rotate-y-180 flex-col overflow-visible rounded-2xl border border-teal-500/40 bg-linear-to-br from-teal-600 to-teal-800 p-4 text-white shadow-2xl backface-hidden sm:p-5 lg:p-7"
+                          onClick={handleCardClick}
+                        >
                           <div className="mb-2 flex items-start justify-between border-b border-white/10 pb-2 sm:mb-3">
                             <span className="rounded-full bg-white/20 px-2 py-0.5 text-xs font-medium sm:px-3 sm:py-1">
                               {savedAnswers[selectedQuestion.id]
@@ -776,28 +787,33 @@ export const ResultPage = ({
                             </div>
                           </ScrollArea>
 
-                          {/* Toggle button if answer is saved */}
-                          {savedAnswers[selectedQuestion.id] && (
-                            <div className="mt-2 mb-1 sm:mt-3">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation(); // Prevent card flip when clicking toggle
-                                  setShowSampleAnswerInFlashcard((prev) => ({
-                                    ...prev,
-                                    [selectedQuestion.id]: !prev[selectedQuestion.id],
-                                  }));
-                                }}
-                                className="w-full text-xs font-medium text-teal-100 underline transition-colors hover:text-white sm:text-sm"
-                              >
-                                {showSampleAnswerInFlashcard[selectedQuestion.id]
-                                  ? "Hide Sample"
-                                  : "Compare"}
-                              </button>
-                            </div>
-                          )}
-
                           {/* Answer button on back of card */}
                           <div className="mt-3 flex gap-2 sm:mt-4">
+                            {savedAnswers[selectedQuestion.id] && (
+                              <div
+                                className="flex-1"
+                                data-no-card-flip="true"
+                                onClick={(e) => e.stopPropagation()}
+                                onPointerDown={(e) => e.stopPropagation()}
+                              >
+                                <Button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setShowSampleAnswerInFlashcard((prev) => ({
+                                      ...prev,
+                                      [selectedQuestion.id]: !prev[selectedQuestion.id],
+                                    }));
+                                  }}
+                                  className="w-full bg-white py-1 text-xs font-semibold text-teal-700 hover:bg-teal-50 sm:py-2 sm:text-sm"
+                                >
+                                  {showSampleAnswerInFlashcard[selectedQuestion.id]
+                                    ? "Hide Sample"
+                                    : "Compare"}
+                                </Button>
+                              </div>
+                            )}
                             <div
                               className="group relative flex-1 overflow-visible"
                               data-no-card-flip="true"

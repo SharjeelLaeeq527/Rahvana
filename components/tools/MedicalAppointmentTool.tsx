@@ -7,7 +7,10 @@ import ServiceSkinShell from "@/components/tools/service-skin/ServiceSkinShell";
 import ServiceSubjectPicker, {
   SOMEONE_ELSE_ID,
 } from "@/components/tools/service-skin/ServiceSubjectPicker";
-import { SERVICE_SKIN_FAQ, SERVICE_SKIN_TAGLINE } from "@/components/tools/service-skin/serviceSkinCopy";
+import {
+  SERVICE_SKIN_FAQ,
+  SERVICE_SKIN_TAGLINE,
+} from "@/components/tools/service-skin/serviceSkinCopy";
 import { normalizePlanTier } from "@/app/context/PlanContext";
 import type { PlanTier } from "@/lib/entitlements/config";
 import { Button } from "@/components/ui/button";
@@ -31,6 +34,7 @@ import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 import { PhoneInput } from "@/components/ui/phone-input";
 import type { Value as E164Number } from "react-phone-number-input";
 import { validatePhoneNumber, formatPhoneNumber } from "@/lib/validation/phone";
+import FieldLabel from "@/app/components/shared/FieldLabel";
 
 type Location = "karachi" | "lahore" | "islamabad";
 type IslamabadProvider = "amc" | "iom";
@@ -302,9 +306,10 @@ const BasicInfoStep = ({
           {isAMC && (
             <>
               <div className="space-y-2">
-                <Label htmlFor="interviewDate">
-                  {t("bookAppointment.basicInfoStep.interviewDate")}
-                </Label>
+                <FieldLabel
+                  htmlFor="interviewDate"
+                  title={t("bookAppointment.basicInfoStep.interviewDate")}
+                />
                 <Input
                   id="interviewDate"
                   name="interviewDate"
@@ -315,9 +320,10 @@ const BasicInfoStep = ({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="visaCategory">
-                  {t("bookAppointment.basicInfoStep.visaCategory")}
-                </Label>
+                <FieldLabel
+                  htmlFor="visaCategory"
+                  title={t("bookAppointment.basicInfoStep.visaCategory")}
+                />
                 <CustomDropdown
                   value={formData.visaCategory}
                   onChange={onSelectChange("visaCategory")}
@@ -333,9 +339,10 @@ const BasicInfoStep = ({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="hadMedicalBefore">
-                  {t("bookAppointment.basicInfoStep.hadMedicalBefore")}
-                </Label>
+                <FieldLabel
+                  htmlFor="hadMedicalBefore"
+                  title={t("bookAppointment.basicInfoStep.hadMedicalBefore")}
+                />
                 <CustomDropdown
                   value={formData.hadMedicalBefore}
                   onChange={onSelectChange("hadMedicalBefore")}
@@ -351,7 +358,10 @@ const BasicInfoStep = ({
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="primaryContact">{t("bookAppointment.basicInfoStep.mobileNo")}</Label>
+            <FieldLabel
+              htmlFor="primaryContact"
+              title={t("bookAppointment.basicInfoStep.mobileNo")}
+            />
             <PhoneInput
               id="primaryContact"
               value={formData.primaryContact || ""}
@@ -362,7 +372,7 @@ const BasicInfoStep = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">{t("bookAppointment.basicInfoStep.email")}</Label>
+            <FieldLabel htmlFor="email" title={t("bookAppointment.basicInfoStep.email")} />
             <Input
               id="email"
               name="email"
@@ -376,7 +386,7 @@ const BasicInfoStep = ({
           {isAMC && (
             <>
               <div className="space-y-2">
-                <Label htmlFor="city">{t("bookAppointment.basicInfoStep.city")}</Label>
+                <FieldLabel htmlFor="city" title={t("bookAppointment.basicInfoStep.city")} />
                 <Input
                   id="city"
                   name="city"
@@ -387,7 +397,7 @@ const BasicInfoStep = ({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="caseRef">{t("bookAppointment.basicInfoStep.caseRef")}</Label>
+                <FieldLabel htmlFor="caseRef" title={t("bookAppointment.basicInfoStep.caseRef")} />
                 <Input
                   id="caseRef"
                   name="caseRef"
@@ -398,9 +408,10 @@ const BasicInfoStep = ({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="numberOfApplicants">
-                  {t("bookAppointment.basicInfoStep.numberOfApplicants")}
-                </Label>
+                <FieldLabel
+                  htmlFor="numberOfApplicants"
+                  title={t("bookAppointment.basicInfoStep.numberOfApplicants")}
+                />
                 <CustomDropdown
                   value={formData.numberOfApplicants}
                   onChange={onSelectChange("numberOfApplicants")}
@@ -440,7 +451,10 @@ const BasicInfoStep = ({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="visaType">{t("bookAppointment.basicInfoStep.visaType")}</Label>
+                <FieldLabel
+                  htmlFor="visaType"
+                  title={t("bookAppointment.basicInfoStep.visaType")}
+                />
                 <CustomDropdown
                   value={formData.visaType}
                   onChange={onSelectChange("visaType")}
@@ -448,6 +462,8 @@ const BasicInfoStep = ({
                     { value: "IR-1", label: t("bookAppointment.basicInfoStep.visaTypes.ir1") },
                     // IR-5 is hidden on production (see lib/feature-flags) until it launches.
                     ...(IR5_ENABLED ? [{ value: "IR-5", label: "IR-5 Parent Visa" }] : []),
+                    // IR-2 is hidden on production (see lib/feature-flags) until it launches.
+                    ...(IR2_ENABLED ? [{ value: "IR-2", label: "IR-2 Child Visa" }] : []),
                   ]}
                   placeholder={t("bookAppointment.basicInfoStep.selectVisaType")}
                   className="w-full [&_button]:w-full [&_button]:min-w-0"
@@ -542,9 +558,10 @@ const ApplicantInfo = ({ applicant, index, onChange }: ApplicantInfoProps) => {
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor={`applicant-${index}-surname`}>
-            {t("bookAppointment.personalInfoStep.surname")}
-          </Label>
+          <FieldLabel
+            htmlFor={`applicant-${index}-surname`}
+            title={t("bookAppointment.personalInfoStep.surname")}
+          />
           <Input
             id={`applicant-${index}-surname`}
             value={applicant.surname}
@@ -554,9 +571,10 @@ const ApplicantInfo = ({ applicant, index, onChange }: ApplicantInfoProps) => {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor={`applicant-${index}-givenName`}>
-            {t("bookAppointment.personalInfoStep.givenName")}
-          </Label>
+          <FieldLabel
+            htmlFor={`applicant-${index}-givenName`}
+            title={t("bookAppointment.personalInfoStep.givenName")}
+          />
           <Input
             id={`applicant-${index}-givenName`}
             value={applicant.givenName}
@@ -566,9 +584,10 @@ const ApplicantInfo = ({ applicant, index, onChange }: ApplicantInfoProps) => {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor={`applicant-${index}-gender`}>
-            {t("bookAppointment.personalInfoStep.gender")}
-          </Label>
+          <FieldLabel
+            htmlFor={`applicant-${index}-gender`}
+            title={t("bookAppointment.personalInfoStep.gender")}
+          />
           <CustomDropdown
             value={applicant.gender}
             onChange={(value) => onChange(index, "gender", value)}
@@ -583,9 +602,10 @@ const ApplicantInfo = ({ applicant, index, onChange }: ApplicantInfoProps) => {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor={`applicant-${index}-dateOfBirth`}>
-            {t("bookAppointment.personalInfoStep.dateOfBirth")}
-          </Label>
+          <FieldLabel
+            htmlFor={`applicant-${index}-dateOfBirth`}
+            title={t("bookAppointment.personalInfoStep.dateOfBirth")}
+          />
           <Input
             id={`applicant-${index}-dateOfBirth`}
             type="date"
@@ -655,7 +675,7 @@ const PersonalInfoStep = ({
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="surname">{t("bookAppointment.personalInfoStep.surname")}</Label>
+              <FieldLabel htmlFor="surname" title={t("bookAppointment.personalInfoStep.surname")} />
               <Input
                 id="surname"
                 name="surname"
@@ -666,7 +686,10 @@ const PersonalInfoStep = ({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="givenName">{t("bookAppointment.personalInfoStep.givenName")}</Label>
+              <FieldLabel
+                htmlFor="givenName"
+                title={t("bookAppointment.personalInfoStep.givenName")}
+              />
               <Input
                 id="givenName"
                 name="givenName"
@@ -677,7 +700,7 @@ const PersonalInfoStep = ({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="gender">{t("bookAppointment.personalInfoStep.gender")}</Label>
+              <FieldLabel htmlFor="gender" title={t("bookAppointment.personalInfoStep.gender")} />
               <CustomDropdown
                 value={formData.gender}
                 onChange={onSelectChange("gender")}
@@ -692,9 +715,10 @@ const PersonalInfoStep = ({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="dateOfBirth">
-                {t("bookAppointment.personalInfoStep.dateOfBirth")}
-              </Label>
+              <FieldLabel
+                htmlFor="dateOfBirth"
+                title={t("bookAppointment.personalInfoStep.dateOfBirth")}
+              />
               <Input
                 id="dateOfBirth"
                 name="dateOfBirth"
@@ -706,7 +730,8 @@ const PersonalInfoStep = ({
               />
               {isPrimaryDobFuture && (
                 <p className="text-xs font-medium text-red-500">
-                  {t("bookAppointment.validation.dobFuture") !== "bookAppointment.validation.dobFuture"
+                  {t("bookAppointment.validation.dobFuture") !==
+                  "bookAppointment.validation.dobFuture"
                     ? t("bookAppointment.validation.dobFuture")
                     : "Date of birth cannot be in the future"}
                 </p>
@@ -779,9 +804,10 @@ const ApplicantPassportInfo = ({
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor={`applicant-${index}-passportNumber`}>
-            {t("bookAppointment.passportDetailsStep.passportNumber")}
-          </Label>
+          <FieldLabel
+            htmlFor={`applicant-${index}-passportNumber`}
+            title={t("bookAppointment.passportDetailsStep.passportNumber")}
+          />
           <Input
             id={`applicant-${index}-passportNumber`}
             value={applicant.passportNumber}
@@ -886,9 +912,10 @@ const PassportDetailsStep = ({
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="passportNumber">
-                {t("bookAppointment.passportDetailsStep.passportNumber")}
-              </Label>
+              <FieldLabel
+                htmlFor="passportNumber"
+                title={t("bookAppointment.passportDetailsStep.passportNumber")}
+              />
               <Input
                 id="passportNumber"
                 name="passportNumber"
@@ -1019,18 +1046,21 @@ const DocumentsStep = ({ formData, error, onFileChange, onNext, onBack }: Docume
       <div className="space-y-6">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div className="space-y-2">
-            <Label>{t("bookAppointment.documentsStep.surname")}</Label>
+            <label htmlFor="surname">{t("bookAppointment.documentsStep.surname")}</label>
             <Input value={formData.surname} disabled className="bg-gray-50" />
           </div>
 
           <div className="space-y-2">
-            <Label>{t("bookAppointment.documentsStep.givenName")}</Label>
+            <label htmlFor="givenName">{t("bookAppointment.documentsStep.givenName")}</label>
             <Input value={formData.givenName} disabled className="bg-gray-50" />
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label>{t("bookAppointment.documentsStep.scannedPassport")}</Label>
+          <FieldLabel
+            htmlFor="scannedPassport"
+            title={t("bookAppointment.documentsStep.scannedPassport")}
+          />
           <label
             htmlFor="scannedPassport"
             className="flex h-24 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 text-slate-500 transition-colors hover:border-teal-500 hover:bg-teal-50 hover:text-teal-600"
@@ -2054,7 +2084,8 @@ const CheckoutStep = ({
                 Secure Transaction
               </h5>
               <p className="mt-1 text-xs leading-relaxed text-slate-500">
-                Standalone bookings are paid with your Rahvana Wallet jarthings ($1 = 1 jarthing). If your balance is short, you can top up instantly via Stripe.
+                Standalone bookings are paid with your Rahvana Wallet jarthings ($1 = 1 jarthing).
+                If your balance is short, you can top up instantly via Stripe.
               </p>
             </div>
           </div>
@@ -2084,7 +2115,9 @@ const CheckoutStep = ({
                 {hasWalletCredits && (
                   <div className="flex items-center justify-between text-sm text-[#0d7377]">
                     <span className="font-medium">Balance After Booking</span>
-                    <span className="font-bold">{(walletBalance ?? 5) - costCredits} Jarthings</span>
+                    <span className="font-bold">
+                      {(walletBalance ?? 5) - costCredits} Jarthings
+                    </span>
                   </div>
                 )}
 
@@ -2093,8 +2126,6 @@ const CheckoutStep = ({
                   <span className="text-xl font-black text-slate-900">5 Jarthings ($5.00)</span>
                 </div>
               </div>
-
-              
             </div>
 
             {error && (
@@ -2189,7 +2220,8 @@ export default function MedicalAppointmentTool({
 
   // Effective tier — only evaluated for journey mode
   const rawJourneyTier = propJourneyTier ?? journeyTier ?? journeyContext?.subscriptionTier;
-  const journeyTierEffective: PlanTier | null = isJourney && rawJourneyTier ? normalizePlanTier(rawJourneyTier) : null;
+  const journeyTierEffective: PlanTier | null =
+    isJourney && rawJourneyTier ? normalizePlanTier(rawJourneyTier) : null;
   void journeyTierEffective;
   const [step, setStep] = useState(1);
   // Journey-only intro gate: the overlay first shows a "what is this service" screen
@@ -2319,9 +2351,7 @@ export default function MedicalAppointmentTool({
 
     const givenName =
       subject.name?.first ||
-      (subject.fullName
-        ? subject.fullName.split(" ")[0]
-        : mappedData.givenName || "");
+      (subject.fullName ? subject.fullName.split(" ")[0] : mappedData.givenName || "");
     const surname =
       subject.name?.last ||
       (subject.fullName
@@ -2644,12 +2674,12 @@ export default function MedicalAppointmentTool({
       // IOM Info step
       const today = new Date().toISOString().split("T")[0];
       const fullName =
-        formData.fullName?.trim() ||
-        `${formData.givenName || ""} ${formData.surname || ""}`.trim();
+        formData.fullName?.trim() || `${formData.givenName || ""} ${formData.surname || ""}`.trim();
       const destinationCountry = formData.destinationCountry?.trim() || "United States";
       const preferredLocation =
         formData.preferredLocation?.trim() || formData.location?.trim() || "islamabad";
-      const visaType = formData.visaType?.trim() || formData.visaCategory?.trim() || "Immigrant Visa";
+      const visaType =
+        formData.visaType?.trim() || formData.visaCategory?.trim() || "Immigrant Visa";
       const contactNumber = formData.contactNumber?.trim() || formData.primaryContact?.trim() || "";
 
       if (
@@ -2713,103 +2743,103 @@ export default function MedicalAppointmentTool({
 
       let appointmentId = pendingDraftRef.current;
       if (!appointmentId) {
-      // First, submit appointment data to API to get the appointment ID
-      const appointmentResponse = await fetch("/api/book-appointment", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...formData,
-          candidate_id: subjectId || "candidate-1",
-          candidate_name:
-            subject?.fullName ||
-            subject?.label ||
-            formData.fullName ||
-            `${formData.givenName} ${formData.surname}`.trim(),
-          // Origin tag: journey-embedded bookings are kept out of standalone My Resources.
-          ...(isJourney
-            ? {
-                source: "journey",
-                journey_slug: journeyContext?.journeySlug || null,
-                journey_id: journeyContext?.backendId || null,
-                journey_category: journeyContext?.journeyCategory || null,
-              }
-            : { source: "standalone" }),
-          // Exclude file objects from the initial request
-          scannedPassport: undefined,
-          kOneLetter: undefined,
-          appointmentConfirmationLetter: undefined,
-          // Send applicants data separately to prevent circular references
-          applicants: formData.applicants,
-        }),
-      });
+        // First, submit appointment data to API to get the appointment ID
+        const appointmentResponse = await fetch("/api/book-appointment", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ...formData,
+            candidate_id: subjectId || "candidate-1",
+            candidate_name:
+              subject?.fullName ||
+              subject?.label ||
+              formData.fullName ||
+              `${formData.givenName} ${formData.surname}`.trim(),
+            // Origin tag: journey-embedded bookings are kept out of standalone My Resources.
+            ...(isJourney
+              ? {
+                  source: "journey",
+                  journey_slug: journeyContext?.journeySlug || null,
+                  journey_id: journeyContext?.backendId || null,
+                  journey_category: journeyContext?.journeyCategory || null,
+                }
+              : { source: "standalone" }),
+            // Exclude file objects from the initial request
+            scannedPassport: undefined,
+            kOneLetter: undefined,
+            appointmentConfirmationLetter: undefined,
+            // Send applicants data separately to prevent circular references
+            applicants: formData.applicants,
+          }),
+        });
 
-      const appointmentResult = await appointmentResponse.json();
+        const appointmentResult = await appointmentResponse.json();
 
-      if (!appointmentResponse.ok) {
-        throw new Error(appointmentResult.error || t("bookAppointment.validation.submitError"));
-      }
-
-      appointmentId = appointmentResult.id as string;
-      console.log("Appointment created successfully:", appointmentResult);
-
-      // Then upload documents separately if they exist
-      const uploadPromises = [];
-
-      if (formData.scannedPassport) {
-        const formDataUpload = new FormData();
-        formDataUpload.append("appointmentId", appointmentId);
-        formDataUpload.append("fileType", "scannedPassport");
-        formDataUpload.append("file", formData.scannedPassport);
-
-        uploadPromises.push(
-          fetch("/api/upload", {
-            method: "POST",
-            body: formDataUpload,
-          })
-        );
-      }
-
-      if (formData.kOneLetter) {
-        const formDataUpload = new FormData();
-        formDataUpload.append("appointmentId", appointmentId);
-        formDataUpload.append("fileType", "kOneLetter");
-        formDataUpload.append("file", formData.kOneLetter);
-
-        uploadPromises.push(
-          fetch("/api/upload", {
-            method: "POST",
-            body: formDataUpload,
-          })
-        );
-      }
-
-      if (formData.appointmentConfirmationLetter) {
-        const formDataUpload = new FormData();
-        formDataUpload.append("appointmentId", appointmentId);
-        formDataUpload.append("fileType", "appointmentConfirmationLetter");
-        formDataUpload.append("file", formData.appointmentConfirmationLetter);
-
-        uploadPromises.push(
-          fetch("/api/upload", {
-            method: "POST",
-            body: formDataUpload,
-          })
-        );
-      }
-
-      // Wait for all document uploads to complete
-      if (uploadPromises.length > 0) {
-        const uploadResults = await Promise.all(uploadPromises);
-        const uploadErrors = uploadResults.filter((res) => !res.ok);
-
-        if (uploadErrors.length > 0) {
-          const errorText = await uploadErrors[0].text();
-          throw new Error(errorText || t("bookAppointment.validation.uploadError"));
+        if (!appointmentResponse.ok) {
+          throw new Error(appointmentResult.error || t("bookAppointment.validation.submitError"));
         }
-      }
-      if (!isJourney) pendingDraftRef.current = appointmentId;
+
+        appointmentId = appointmentResult.id as string;
+        console.log("Appointment created successfully:", appointmentResult);
+
+        // Then upload documents separately if they exist
+        const uploadPromises = [];
+
+        if (formData.scannedPassport) {
+          const formDataUpload = new FormData();
+          formDataUpload.append("appointmentId", appointmentId);
+          formDataUpload.append("fileType", "scannedPassport");
+          formDataUpload.append("file", formData.scannedPassport);
+
+          uploadPromises.push(
+            fetch("/api/upload", {
+              method: "POST",
+              body: formDataUpload,
+            })
+          );
+        }
+
+        if (formData.kOneLetter) {
+          const formDataUpload = new FormData();
+          formDataUpload.append("appointmentId", appointmentId);
+          formDataUpload.append("fileType", "kOneLetter");
+          formDataUpload.append("file", formData.kOneLetter);
+
+          uploadPromises.push(
+            fetch("/api/upload", {
+              method: "POST",
+              body: formDataUpload,
+            })
+          );
+        }
+
+        if (formData.appointmentConfirmationLetter) {
+          const formDataUpload = new FormData();
+          formDataUpload.append("appointmentId", appointmentId);
+          formDataUpload.append("fileType", "appointmentConfirmationLetter");
+          formDataUpload.append("file", formData.appointmentConfirmationLetter);
+
+          uploadPromises.push(
+            fetch("/api/upload", {
+              method: "POST",
+              body: formDataUpload,
+            })
+          );
+        }
+
+        // Wait for all document uploads to complete
+        if (uploadPromises.length > 0) {
+          const uploadResults = await Promise.all(uploadPromises);
+          const uploadErrors = uploadResults.filter((res) => !res.ok);
+
+          if (uploadErrors.length > 0) {
+            const errorText = await uploadErrors[0].text();
+            throw new Error(errorText || t("bookAppointment.validation.uploadError"));
+          }
+        }
+        if (!isJourney) pendingDraftRef.current = appointmentId;
       }
 
       // 3) MODE BRANCH at the credit gate.
@@ -3212,7 +3242,9 @@ export default function MedicalAppointmentTool({
                     d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"
                   />
                 </svg>
-                <span className="text-sm text-slate-600">Checking your existing appointments...</span>
+                <span className="text-sm text-slate-600">
+                  Checking your existing appointments...
+                </span>
               </div>
             ) : locked ? (
               <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3.5">

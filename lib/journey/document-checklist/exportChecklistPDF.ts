@@ -288,7 +288,10 @@ export const exportChecklistToPdf = async ({
 
   // Checklist
   documents.forEach((item, index) => {
-    const title = item.title || "Untitled document";
+    // Conditional rows are marked on the name line: it wraps, the status columns do not.
+    const title = `${item.title || "Untitled document"}${
+      item.visibility_note ? " (conditional)" : ""
+    }`;
     const status = formatStatus(item);
     const expiration = formatExpiration(item);
 

@@ -21,7 +21,16 @@ export interface CandidateProfile {
   /** Unique identifier for the candidate (e.g. "candidate-1", "candidate-2", or uuid) */
   id: string;
 
-  /** Display label (e.g. "Parent 1 (Mother)", "Parent 2 (Father)", "Child 1") */
+  /**
+   * Number of this candidate inside its category pool (IR-5 | IR-2+CR-2 | IR-1+CR-1 |
+   * other). Decides the journey key (slot 1 = base `ir2`, slot 2 = `ir2_candidate2`) and
+   * the default label. Assigned by the server, never by the client. Missing on rosters
+   * saved before it existed: the slot is then the number in `id`
+   * (lib/candidate/candidateKeys.ts getCandidateSlot).
+   */
+  categorySlot?: number;
+
+  /** Display label. Server-assigned default "Candidate {slot}"; customName wins in the UI. */
   label: string;
 
   /** Relationship to the petitioner */
@@ -53,13 +62,18 @@ export interface CandidateProfile {
   visaCategory: string;
 
   /**
+   * Server-owned mirror of this candidate's journey plan (written only by Stripe
+   * provisioning / revocation). Access is decided by journeys.subscription_tier.
    * Subscription tier for this specific candidate.
    * If added as a free preview (e.g. user bought 1 plan and added 2nd parent for testing),
    * tier is 'free'. If covered under the account purchase, tier matches user's active tier.
    */
   tier: CandidateTier;
 
-  /** Whether this is the primary candidate on the account */
+  /**
+   * The account's FIRST candidate: owns legacy rows that carry no candidate tag. Not the
+   * same as "slot 1 of its category" - use isCategoryPrimary() for that.
+   */
   isPrimary: boolean;
 
   /** Whether this candidate is in free preview mode */

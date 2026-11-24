@@ -9,6 +9,11 @@ export interface AppGroupItem {
   componentKey: string;
   badge?: string;
   minTier?: 'free' | 'basic' | 'premium' | 'executive';
+  /**
+   * Base visa categories (e.g. "IR-2", "CR-2") this item is shown for. Omitted = every
+   * category. Applied by getJourneyAppGroups().
+   */
+  visaCategories?: string[];
 }
 
 export interface AppGroup {

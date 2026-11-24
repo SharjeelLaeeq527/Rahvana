@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Rahvana Universal Tools — Creative Editorial Design Standard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Lora:ital,wght@0,500;0,600;0,700;1,400;1,500;1,600&family=JetBrains+Mono:wght@500;600&display=swap">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            serif: ['Lora', 'Georgia', 'serif'],
+            sans: ['Figtree', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            ink: '#16302C',
+            paper: '#F6F4EF',
+            borderWarm: '#DDD9CE',
+            creamCard: '#FFFFFF',
+            mutedGreen: '#66787A',
+            heritage: {
+              teal: '#0F8F80',
+              deepTeal: '#0A4F49',
+              lightTeal: '#E1F2EE',
+              navy: '#4A5BB5',
+              deepNavy: '#232E6B',
+              lightNavy: '#E6E9F7',
+              terracotta: '#C4534B',
+              deepTerracotta: '#6E2420',
+              lightTerracotta: '#FBE7E4',
+              amber: '#B47A12',
+              deepAmber: '#5E3F07',
+              lightAmber: '#F9EDD3',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --bg: #F6F4EF;
+      --ink: #16302C;
+      --mut: #66787A;
+      --line: #DDD9CE;
+      --fld: #FFFFFF;
+      --a: #0F8F80;
+      --ad: #0A4F49;
+      --at: #E1F2EE;
+      --glow: rgba(15, 143, 128, 0.15);
+    }
+
+    body[data-theme="medical"] {
+      --a: #C4534B;
+      --ad: #6E2420;
+      --at: #FBE7E4;
+      --glow: rgba(196, 83, 75, 0.15);
+    }
+    body[data-theme="police"] {
+      --a: #4A5BB5;
+      --ad: #232E6B;
+      --at: #E6E9F7;
+      --glow: rgba(74, 91, 181, 0.15);
+    }
+    body[data-theme="translate"] {
+      --a: #B47A12;
+      --ad: #5E3F07;
+      --at: #F9EDD3;
+      --glow: rgba(180, 122, 18, 0.15);
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--ink);
+      font-family: 'Figtree', sans-serif;
+    }
+
+    /* Subtle Guilloche Watermark Pattern reminiscent of passport & visa banknotes */
+    .passport-watermark-bg {
+      background-image: 
+        radial-gradient(circle at 100% 0%, rgba(10, 79, 73, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 0% 100%, rgba(15, 143, 128, 0.04) 0%, transparent 45%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cpath fill='%2316302C' fill-opacity='0.022' d='M40 0 C60 0 60 20 80 20 C60 20 60 40 40 40 C60 40 60 60 80 60 C60 60 60 80 40 80 C20 80 20 60 0 60 C20 60 20 40 40 40 C20 40 20 20 0 20 C20 20 20 0 40 0 Z'/%3E%3C/svg%3E");
+    }
+
+    /* Hero Watermark Crest */
+    .hero-crest {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='200 100 760 810'%3E%3Cpath fill='%23ffffff' fill-opacity='.12' fill-rule='evenodd' d='M236,880C228,876 222,867 222,860C222,854 229,840 237,832C244,824 270,806 281,801C284,800 296,794 300,792C307,789 328,781 348,774C352,772 358,770 360,770C361,769 364,768 366,768C367,768 370,767 371,766C372,766 376,764 380,763C383,762 387,761 390,760C392,760 397,758 401,757C405,756 413,754 418,753C424,751 429,750 430,750C432,750 448,740 452,735C454,734 458,730 462,728C482,713 509,687 523,667C529,659 529,657 523,657C518,657 500,652 492,648C487,646 474,640 469,637C449,626 418,594 404,570C400,564 399,562 389,556C359,535 336,510 321,479C307,452 300,426 300,400C300,383 301,378 306,374C311,370 319,373 326,381C327,383 330,386 331,387C332,389 333,390 333,390C333,391 335,394 338,398C340,403 342,406 342,407C342,407 344,411 346,416C348,421 352,429 354,434C356,440 358,445 359,446C359,448 361,452 363,457C365,462 367,469 369,472C371,476 372,480 372,481C372,481 373,484 374,486C377,493 378,496 379,500C380,502 383,507 384,511C386,514 387,517 387,518C387,518 388,521 390,525C392,529 394,533 395,535C397,540 397,541 402,550C421,585 441,608 468,626C475,631 496,642 498,642C498,642 500,643 502,643C509,646 526,650 532,650C535,650 535,650 541,639C544,632 546,626 546,626C546,625 546,624 547,623C548,622 552,609 557,591C563,564 561,527 551,502C540,474 522,455 487,434C485,433 465,423 462,421C454,418 432,409 421,405C417,403 412,401 410,400C409,400 405,398 403,397C398,396 393,393 382,388C368,382 366,381 361,378C358,376 356,375 355,375C355,375 352,374 350,372C347,371 345,369 344,368C308,347 280,314 266,276C263,267 258,251 257,245C256,242 254,236 254,233C249,216 247,184 248,161C249,142 252,136 259,132C269,127 278,135 293,159C311,187 325,207 337,220C339,223 344,229 347,232C366,254 396,279 416,290C419,291 422,293 424,294C428,297 442,303 451,308C462,313 471,317 476,319C490,325 493,326 502,331C507,333 516,338 520,340C525,343 531,346 533,347C540,351 550,358 560,365C566,369 572,374 573,375C580,380 602,402 609,412C620,427 622,430 630,446C635,457 637,462 643,480C646,488 649,504 653,525C659,563 660,567 668,567C671,567 673,566 675,566C676,565 677,564 678,564C680,564 710,541 728,525C732,522 744,511 754,501C779,477 785,472 798,464C816,454 834,449 854,452C869,454 879,458 892,469C898,474 902,476 913,477C935,480 943,482 943,485C942,487 935,491 930,492C921,494 907,500 894,507C880,515 866,529 858,544C852,555 846,567 846,569C846,570 846,571 845,572C845,572 843,576 842,581C839,589 838,592 835,600C835,602 833,606 832,610C831,615 826,630 822,640C810,675 776,713 739,732C735,734 731,737 730,737C729,738 721,742 714,744C678,758 649,762 609,760C585,759 577,758 568,757C521,751 463,751 439,757C434,758 402,783 383,800C377,805 370,810 368,813C359,820 353,825 340,836C312,859 289,874 269,880C261,883 242,883 236,880Z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 18px bottom 10px;
+      background-size: 260px auto;
+    }
+
+    /* Slide-out FAQ Drawer (Inspired by Rahvana Option B) */
+    .faq-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: min(440px, 100%);
+      background: #FFFFFF;
+      box-shadow: -20px 0 60px -20px rgba(22, 48, 44, 0.35);
+      z-index: 999;
+      padding: 32px 28px;
+      overflow-y: auto;
+      transform: translateX(105%);
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .faq-drawer.open {
+      transform: translateX(0);
+    }
+    .drawer-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 35, 32, 0.45);
+      backdrop-filter: blur(4px);
+      z-index: 998;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .drawer-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Tactile Radio Choice Buttons from Option B */
+    .pick-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      text-align: left;
+      border: 1.5px solid var(--line);
+      background: #FFFFFF;
+      border-radius: 14px;
+      padding: 14px 16px;
+      cursor: pointer;
+      min-height: 54px;
+      transition: all 0.2s ease;
+    }
+    .pick-card:hover {
+      border-color: var(--a);
+      background: rgba(255, 255, 255, 0.9);
+      transform: translateY(-1px);
+    }
+    .pick-card:before {
+      content: "";
+      flex: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid var(--line);
+      transition: all 0.2s ease;
+    }
+    .pick-card.active {
+      border-color: var(--a);
+      background: var(--at);
+      box-shadow: 0 4px 14px -3px var(--glow);
+    }
+    .pick-card.active:before {
+      border-color: var(--a);
+      background: radial-gradient(var(--a) 46%, transparent 50%);
+    }
+
+    /* Live "Taken care of" Checklist Item Animation */
+    .checklist-item {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      column-gap: 12px;
+      align-items: center;
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.7);
+      border: 1px solid var(--line);
+      transition: all 0.25s ease;
+    }
+    .checklist-item.done {
+      background: var(--at);
+      border-color: rgba(15, 143, 128, 0.3);
+    }
+    .checklist-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--line);
+      color: var(--mut);
+      display: grid;
+      place-items: center;
+      font-size: 13px;
+      font-weight: 700;
+      transition: all 0.25s ease;
+    }
+    .checklist-item.done .checklist-icon {
+      background: var(--a);
+      color: #FFFFFF;
+    }
+  </style>
+</head>
+<body class="passport-watermark-bg min-h-screen flex flex-col selection:bg-heritage-teal selection:text-white" data-theme="default">
+
+  <!-- ============================================================== -->
+  <!-- TOP CONTROL DOCK: Switch Tools & Palettes                       -->
+  <!-- ============================================================== -->
+  <header class="sticky top-0 z-50 bg-[#16302C] text-white px-4 py-2.5 shadow-md border-b border-[#234A45]">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      
+      <!-- Brand & Title -->
+      <div class="flex items-center gap-3">
+        <span class="font-serif italic font-bold text-xl tracking-tight text-white/95">Rahvana</span>
+        <span class="text-xs bg-white/10 text-white/90 font-mono font-medium px-2.5 py-0.5 rounded-full border border-white/15">
+          Design Concept · Option C
+        </span>
+      </div>
+
+      <!-- Tool Switcher Pills -->
+      <div class="flex items-center gap-1 bg-black/25 p-1 rounded-full border border-white/10 text-xs overflow-x-auto max-w-full">
+        <button onclick="setTool('case-status')" id="nav-case-status" class="nav-pill active px-3.5 py-1.5 font-semibold rounded-full bg-white text-[#16302C] transition-all shadow-xs">
+          USCIS Status
+        </button>
+        <button onclick="setTool('passport-photo')" id="nav-passport-photo" class="nav-pill px-3.5 py-1.5 font-semibold rounded-full text-white/80 hover:text-white transition-all">
+          Photo Booth
+        </button>
+        <button onclick="setTool('snap-sign')" id="nav-snap-sign" class="nav-pill px-3.5 py-1.5 font-semibold rounded-full text-white/80 hover:text-white transition-all">
+          Snap &amp; Sign
+        </button>
+        <button onclick="setTool('pdf-toolkit')" id="nav-pdf-toolkit" class="nav-pill px-3.5 py-1.5 font-semibold rounded-full text-white/80 hover:text-white transition-all">
+          PDF Toolkit
+        </button>
+        <button onclick="setTool('dq-tool')" id="nav-dq-tool" class="nav-pill px-3.5 py-1.5 font-semibold rounded-full text-white/80 hover:text-white transition-all">
+          DQ Radar
+        </button>
+        <button onclick="setTool('action-planner')" id="nav-action-planner" class="nav-pill px-3.5 py-1.5 font-semibold rounded-full text-white/80 hover:text-white transition-all">
+          221(g) Planner
+        </button>
+        <button onclick="setTool('affidavit-calc')" id="nav-affidavit-calc" class="nav-pill px-3.5 py-1.5 font-semibold rounded-full text-white/80 hover:text-white transition-all">
+          Affidavit Calc
+        </button>
+      </div>
+
+      <!-- Controls: Layout Switcher & Journey Mode -->
+      <div class="flex items-center gap-2.5">
+        <a href="tool-centered-focus-mockup.html" class="inline-flex items-center gap-1.5 text-xs text-teal-200 hover:text-white bg-white/10 hover:bg-white/15 px-3 py-1.5 rounded-full border border-white/15 transition-all">
+          <span>Compare: Centered Focus</span>
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14"></path>
+            <path d="m12 5 7 7-7 7"></path>
+          </svg>
+        </a>
+        <label class="flex items-center gap-1.5 text-xs text-white/80 font-medium cursor-pointer bg-white/10 px-3 py-1.5 rounded-full hover:bg-white/15 transition-all">
+          <input type="checkbox" id="chk-journey" onchange="toggleJourney(this.checked)" class="rounded text-teal-400 focus:ring-0">
+          <span>Journey Mode</span>
+        </label>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ============================================================== -->
+  <!-- HERO EMBASSY BANNER: Warm Heritage Texture & Editorial Lora     -->
+  <!-- ============================================================== -->
+  <section class="bg-[#0A4F49] text-white pt-8 pb-14 px-4 sm:px-6 lg:px-8 hero-crest shadow-inner transition-colors duration-300" id="hero-banner">
+    <div class="max-w-6xl mx-auto">
+      
+      <!-- Top Micro-bar: Pill + Scope + Live Status -->
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <div class="flex items-center gap-2.5">
+          
+
+          <!-- Journey Slot -->
+          <div id="hero-journey-tag" class="hidden items-center gap-1.5 bg-amber-400/20 text-amber-200 border border-amber-300/30 px-3 py-0.5 rounded-full text-xs font-medium">
+            <svg class="w-3 h-3 text-amber-200 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+            </svg>
+            <span>Active Journey: IR-1 / Spouse (Consular Stage)</span>
+          </div>
+        </div>
+
+        <!-- Right quota / account status -->
+        <div id="hero-quota-wrap" class="hidden items-center gap-2 bg-white/10 px-3 py-1 rounded-full text-xs font-medium border border-white/15">
+          <svg class="w-3.5 h-3.5 text-amber-300 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
+          </svg>
+          <span id="hero-quota-text">3 Photo Credits Available</span>
+        </div>
+      </div>
+
+      <!-- Main Title & Description in Editorial Lora -->
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div class="max-w-2xl">
+          <h1 id="hero-title" class="font-serif text-3xl sm:text-4xl lg:text-[42px] font-semibold leading-[1.15] tracking-tight text-white">
+            USCIS Case Status Tracker
+          </h1>
+          <p id="hero-desc" class="mt-3 text-white/80 text-sm sm:text-base leading-relaxed max-w-xl font-normal">
+            Direct real-time status inquiry with official USCIS electronic records. Inspect receipt milestones, next steps, and historical decision notices.
+          </p>
+          <div class="mt-3 flex items-center gap-4">
+            <button onclick="openDrawer()" class="inline-flex items-center gap-1.5 text-xs text-white/85 hover:text-white font-medium underline underline-offset-4 decoration-white/40 hover:decoration-white transition-all cursor-pointer">
+              <svg class="w-3.5 h-3.5 text-teal-300 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                <path d="M12 17h.01"></path>
+              </svg>
+              <span>Need help? Open Common Questions Guide</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Hero Action Dock: Favorite, History, Reset, Common Questions -->
+        <div class="flex items-center gap-2 self-start md:self-auto shrink-0 bg-white/10 p-1.5 rounded-2xl backdrop-blur-md border border-white/15 shadow-sm">
+          <button id="btn-fresh" onclick="resetDemo()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-white/90 hover:text-white hover:bg-white/10 text-xs font-medium transition-all" title="Start from scratch">
+            <svg class="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+              <path d="M3 3v5h5"></path>
+            </svg>
+            <span>Start Fresh</span>
+          </button>
+          
+          <button id="btn-album" onclick="alert('Viewing your saved history records.');" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-white/90 hover:text-white hover:bg-white/10 text-xs font-medium transition-all">
+            <svg class="w-3.5 h-3.5 shrink-0 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <span id="btn-album-text">History</span>
+            <span class="bg-white text-[#0A4F49] text-[10px] font-black px-1.5 py-0.2 rounded-full">3</span>
+          </button>
+
+          <button onclick="openDrawer()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-white/90 hover:text-white hover:bg-white/10 text-xs font-medium transition-all cursor-pointer" title="View FAQs & guidelines">
+            <svg class="w-3.5 h-3.5 text-teal-300 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+              <path d="M12 17h.01"></path>
+            </svg>
+            <span>Common Questions</span>
+          </button>
+
+          <!-- Favourite / QuickAccess Star Button -->
+          <button onclick="toggleFavorite(this)" class="h-9 w-9 rounded-xl flex items-center justify-center bg-white text-[#0A4F49] hover:bg-white/90 shadow-sm transition-all group" title="Bookmark in Quick Access">
+            <svg class="w-4 h-4 fill-amber-400 text-amber-500 group-hover:scale-110 transition-transform" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============================================================== -->
+  <!-- MAIN WORKSPACE: Floating Card Container (Rahvana Split/Card)   -->
+  <!-- ============================================================== -->
+  <main class="flex-1 -mt-8 pb-16 px-4 sm:px-6 lg:px-8 relative z-10">
+    <div class="max-w-6xl mx-auto">
+
+      <!-- ZONE 3: Persistent Draft / State Restoration Banner -->
+      <!-- <div id="state-banner" class="mb-6 rounded-2xl bg-[#FFFDF7] border border-[#E9DFCA] p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all">
+        <div class="flex items-start gap-3">
+          <div class="w-7 h-7 rounded-full bg-[#F3E5C8] text-[#8C6214] flex items-center justify-center shrink-0 mt-0.5 font-serif font-bold text-sm">
+            !
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-serif italic font-bold text-sm text-[#4E3914]">Active Session Saved</span>
+              <span class="text-[11px] font-mono text-[#8C6214] bg-[#F7EEDC] px-2 py-0.5 rounded-md">Auto-saved 12m ago</span>
+            </div>
+            <p id="state-banner-desc" class="text-xs text-[#705626] mt-0.5">
+              Your case receipt IOE9482910382 was automatically restored from your Rahvana profile.
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 self-end sm:self-center">
+          <button onclick="dismissStateBanner()" class="text-xs text-[#8C6214] hover:text-[#4E3914] font-medium">Dismiss</button>
+          <button class="text-xs font-bold text-[#8C6214] hover:underline flex items-center gap-1">
+            <span>Continue</span> &rarr;
+          </button>
+        </div>
+      </div> -->
+
+      <!-- ============================================================== -->
+      <!-- ZONE 4 & 5: 2-COLUMN RESPONSIVE LAYOUT (CANVAS + KNOWLEDGE)    -->
+      <!-- ============================================================== -->
+      <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_340px] gap-8 items-start">
+
+        <!-- ───────────────────────────────────────────────────────────── -->
+        <!-- ZONE 4: THE TOOL CANVAS (INTERACTIVE WORKSPACE)               -->
+        <!-- ───────────────────────────────────────────────────────────── -->
+        <div class="min-w-0 space-y-6">
+
+          <!-- TOOL 1: USCIS Case Status -->
+          <div id="view-case-status" class="tool-view bg-white rounded-3xl border border-[#DDD9CE] p-6 sm:p-8 shadow-sm">
+            <div class="flex items-center justify-between pb-4 mb-6 border-b border-[#EFECE6]">
+              <div>
+                <span class="font-serif italic text-xs text-mutedGreen">Step 1 of 2</span>
+                <h2 class="font-serif text-xl sm:text-2xl font-semibold text-[#16302C] mt-0.5">
+                  Enter Your USCIS Receipt Number
+                </h2>
+              </div>
+              <span class="text-xs text-mutedGreen font-mono">13 characters</span>
+            </div>
+
+            <div class="space-y-5">
+              <div>
+                <label class="block font-semibold text-xs text-[#16302C] uppercase tracking-wider mb-2">
+                  Receipt Number <span class="text-rose-600">*</span>
+                </label>
+                <div class="flex flex-col sm:flex-row gap-2">
+                  <div class="relative flex-1">
+                    <input type="text" id="case-input" value="IOE9482910382" class="w-full h-13 rounded-xl border-1.5 border-[#DDD9CE] bg-[#FAFAF8] px-4 font-mono text-base font-semibold tracking-wider text-[#16302C] uppercase focus:bg-white focus:border-heritage-teal focus:ring-3 focus:ring-teal-100 transition-all outline-none" placeholder="EAC, WAC, LIN, SRC, IOE...">
+                    <button onclick="document.getElementById('case-input').value=''" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-mono">CLEAR</button>
+                  </div>
+                  <button onclick="runCaseCheck()" class="h-13 px-6 rounded-xl bg-[#0F8F80] hover:bg-[#0A4F49] text-white font-semibold text-sm shadow-sm flex items-center justify-center gap-2 transition-all cursor-pointer">
+                    <i data-lucide="search" class="w-4 h-4"></i>
+                    <span>Check Status</span>
+                  </button>
+                </div>
+                <p class="text-xs text-mutedGreen mt-2 flex items-center gap-1.5">
+                  <i data-lucide="info" class="w-3.5 h-3.5 text-heritage-teal"></i>
+                  <span>Format: 3 letters followed by 10 digits (e.g. IOE-09-482-91038).</span>
+                </p>
+              </div>
+
+              <!-- Case Result Card (Warm Certificate-Style Container) -->
+              <div id="case-result-box" class="rounded-2xl border border-[#C5DDD7] bg-[#F4F9F8] p-5 sm:p-6 transition-all">
+                <div class="flex items-center justify-between gap-2 mb-3">
+                  <span class="inline-flex items-center gap-1.5 bg-[#E1F2EE] text-[#0A4F49] text-xs font-bold px-3 py-1 rounded-full border border-[#0F8F80]/20">
+                    <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-[#0F8F80]"></i>
+                    Case Approved
+                  </span>
+                  <span class="text-xs text-mutedGreen font-mono">Last Checked: Today 10:14 AM</span>
+                </div>
+                <h3 class="font-serif text-lg sm:text-xl font-bold text-[#16302C]">
+                  Form I-130: Petition for Alien Relative
+                </h3>
+                <p class="text-xs text-[#35534F] mt-2 leading-relaxed">
+                  On November 14, 2026, USCIS approved your petition. Your approval notice Form I-797 was mailed to your sponsor's residential address. Your case has been transferred to the Department of State National Visa Center (NVC) for immigrant visa processing.
+                </p>
+                <div class="mt-4 pt-4 border-t border-[#D5E8E4] flex flex-wrap items-center justify-between gap-3 text-xs">
+                  <span class="text-mutedGreen">Service Center: <b>USCIS Electronic System (IOE)</b></span>
+                  <a href="https://ceac.state.gov" target="_blank" class="font-semibold text-heritage-teal hover:underline flex items-center gap-1">
+                    <span>Next Step: Prepare NVC Documents</span> &rarr;
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TOOL 2: Passport Photo Booth -->
+          <div id="view-passport-photo" class="tool-view hidden bg-white rounded-3xl border border-[#DDD9CE] p-6 sm:p-8 shadow-sm">
+            <div class="flex items-center justify-between pb-4 mb-6 border-b border-[#EFECE6]">
+              <div>
+                <span class="font-serif italic text-xs text-mutedGreen">Step 1 of 2</span>
+                <h2 class="font-serif text-xl sm:text-2xl font-semibold text-[#16302C] mt-0.5">
+                  Upload Photo for Biometric Formatting
+                </h2>
+              </div>
+              <span class="text-xs text-mutedGreen font-mono">USCIS 2" x 2" (51x51mm)</span>
+            </div>
+
+            <!-- Drag & Drop Studio Dropzone -->
+            <div class="border-2 border-dashed border-[#0F8F80]/50 hover:border-[#0F8F80] bg-[#F7FAF9] rounded-2xl p-8 sm:p-12 text-center cursor-pointer transition-all hover:bg-[#EBF5F3]">
+              <div class="w-16 h-16 rounded-full bg-white text-[#0F8F80] border border-[#C5DDD7] shadow-sm flex items-center justify-center mx-auto mb-4">
+                <i data-lucide="camera" class="w-7 h-7"></i>
+              </div>
+              <h3 class="font-serif text-lg font-bold text-[#16302C]">Tap to upload or take a selfie</h3>
+              <p class="text-xs text-mutedGreen mt-1 max-w-sm mx-auto">
+                Automatic AI face alignment, shadow reduction, and guaranteed plain white background compliant with 22 CFR 41.105.
+              </p>
+              <button class="mt-5 px-5 py-2.5 rounded-xl bg-[#0F8F80] text-white font-semibold text-xs shadow-sm hover:bg-[#0A4F49] transition-all">
+                Select Photo from Device
+              </button>
+            </div>
+          </div>
+
+          <!-- TOOL 3: Snap & Sign Processor -->
+          <div id="view-snap-sign" class="tool-view hidden bg-white rounded-3xl border border-[#DDD9CE] p-6 sm:p-8 shadow-sm">
+            <div class="flex items-center justify-between pb-4 mb-6 border-b border-[#EFECE6]">
+              <div>
+                <span class="font-serif italic text-xs text-mutedGreen">Signature Isolator</span>
+                <h2 class="font-serif text-xl sm:text-2xl font-semibold text-[#16302C] mt-0.5">
+                  Paper to Transparent Digital Signature
+                </h2>
+              </div>
+              <span class="text-xs text-mutedGreen font-mono">PNG Export</span>
+            </div>
+
+            <div class="border-2 border-dashed border-[#DDD9CE] hover:border-[#0F8F80] bg-[#FAFAF8] rounded-2xl p-8 sm:p-12 text-center cursor-pointer transition-all">
+              <div class="w-14 h-14 rounded-full bg-white text-[#0F8F80] border border-[#DDD9CE] shadow-sm flex items-center justify-center mx-auto mb-3">
+                <i data-lucide="pen-tool" class="w-6 h-6"></i>
+              </div>
+              <h3 class="font-serif text-lg font-bold text-[#16302C]">Upload paper signature photo</h3>
+              <p class="text-xs text-mutedGreen mt-1 max-w-sm mx-auto">
+                Sign with a dark ink pen on a clean sheet of white paper, take a picture, and we will extract a lossless transparent signature.
+              </p>
+            </div>
+          </div>
+
+          <!-- TOOL 4: PDF Toolkit -->
+          <div id="view-pdf-toolkit" class="tool-view hidden bg-white rounded-3xl border border-[#DDD9CE] p-6 sm:p-8 shadow-sm">
+            <div class="flex items-center justify-between pb-4 mb-6 border-b border-[#EFECE6]">
+              <div>
+                <span class="font-serif italic text-xs text-mutedGreen">Document Optimization</span>
+                <h2 class="font-serif text-xl sm:text-2xl font-semibold text-[#16302C] mt-0.5">
+                  Immigration PDF Studio
+                </h2>
+              </div>
+              <span class="text-xs text-mutedGreen font-mono">CEAC &lt;2MB Ready</span>
+            </div>
+
+            <!-- Tactile 4-Pill Segment Switcher -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+              <button class="pick-card active text-left">
+                <div>
+                  <b class="block text-xs font-bold text-[#16302C]">Compress PDF</b>
+                  <small class="text-[11px] text-mutedGreen">Meet 2MB limits</small>
+                </div>
+              </button>
+              <button class="pick-card text-left">
+                <div>
+                  <b class="block text-xs font-bold text-[#16302C]">Merge Pages</b>
+                  <small class="text-[11px] text-mutedGreen">Combine packet</small>
+                </div>
+              </button>
+              <button class="pick-card text-left">
+                <div>
+                  <b class="block text-xs font-bold text-[#16302C]">Edit &amp; Sign</b>
+                  <small class="text-[11px] text-mutedGreen">Annotate PDF</small>
+                </div>
+              </button>
+              <button class="pick-card text-left">
+                <div>
+                  <b class="block text-xs font-bold text-[#16302C]">Convert to PDF</b>
+                  <small class="text-[11px] text-mutedGreen">Images to PDF</small>
+                </div>
+              </button>
+            </div>
+
+            <div class="border-2 border-dashed border-[#DDD9CE] bg-[#FAFAF8] rounded-2xl p-8 text-center">
+              <i data-lucide="file-up" class="w-8 h-8 text-mutedGreen mx-auto mb-2"></i>
+              <h4 class="font-serif text-base font-bold text-[#16302C]">Drop PDF to optimize for CEAC</h4>
+              <p class="text-xs text-mutedGreen mt-1">Processed locally on your device with Zero-Knowledge encryption</p>
+            </div>
+          </div>
+
+          <!-- TOOL 5: DQ Status Check -->
+          <div id="view-dq-tool" class="tool-view hidden bg-white rounded-3xl border border-[#DDD9CE] p-6 sm:p-8 shadow-sm">
+            <div class="flex items-center justify-between pb-4 mb-6 border-b border-[#EFECE6]">
+              <div>
+                <span class="font-serif italic text-xs text-mutedGreen">NVC Scheduling Radar</span>
+                <h2 class="font-serif text-xl sm:text-2xl font-semibold text-[#16302C] mt-0.5">
+                  Consular Interview Wait Times
+                </h2>
+              </div>
+              <span class="text-xs text-mutedGreen font-mono">Updated Weekly</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+              <div>
+                <label class="block font-semibold text-xs text-[#16302C] uppercase tracking-wider mb-1.5">Visa Category</label>
+                <select class="w-full h-12 rounded-xl border border-[#DDD9CE] bg-white px-3 text-xs font-semibold text-[#16302C]">
+                  <option>Immediate Relative (IR-1, CR-1, IR-2, IR-5)</option>
+                  <option>Family Preference (F1, F2A, F2B, F3, F4)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block font-semibold text-xs text-[#16302C] uppercase tracking-wider mb-1.5">U.S. Embassy / Consulate</label>
+                <input type="text" value="Islamabad, Pakistan" class="w-full h-12 rounded-xl border border-[#DDD9CE] bg-white px-3 text-xs font-semibold text-[#16302C]">
+              </div>
+            </div>
+
+            <div class="rounded-2xl border border-[#C5DDD7] bg-[#E1F2EE] p-6 text-center">
+              <span class="font-serif italic text-xs text-[#0A4F49] uppercase tracking-wider font-semibold">Currently Scheduling Applicants Documentarily Complete In:</span>
+              <div class="font-serif text-2xl sm:text-3xl font-bold text-[#0A4F49] mt-2">May 2024 (DQ Complete)</div>
+              <p class="text-xs text-[#35534F] mt-2">Estimated queue wait from DQ date to Interview Appointment: <b>18 to 22 months</b>.</p>
+            </div>
+          </div>
+
+          <!-- TOOL 6: 221(g) Action Planner -->
+          <div id="view-action-planner" class="tool-view hidden bg-white rounded-3xl border border-[#DDD9CE] p-6 sm:p-8 shadow-sm">
+            <div class="flex items-center justify-between pb-4 mb-6 border-b border-[#EFECE6]">
+              <div>
+                <span class="font-serif italic text-xs text-mutedGreen">Step 2 of 4: Evidence Compilation</span>
+                <h2 class="font-serif text-xl sm:text-2xl font-semibold text-[#16302C] mt-0.5">
+                  221(g) Administrative Response Packet
+                </h2>
+              </div>
+              <span class="text-xs bg-[#E1F2EE] text-[#0A4F49] px-2.5 py-1 rounded-md font-mono font-bold">INA 221(g)</span>
+            </div>
+
+            <!-- Live Interactive Checklist Items -->
+            <div class="space-y-3">
+              <div class="pick-card active" onclick="togglePick(this)">
+                <div>
+                  <b class="block text-sm font-bold text-[#16302C]">Form I-864 Affidavit of Support Update</b>
+                  <small class="text-xs text-mutedGreen">Consular officer requested updated joint sponsor IRS tax transcripts for tax year 2025.</small>
+                </div>
+              </div>
+              <div class="pick-card active" onclick="togglePick(this)">
+                <div>
+                  <b class="block text-sm font-bold text-[#16302C]">Police Character Certificate (Renewed)</b>
+                  <small class="text-xs text-mutedGreen">Previous Sindh Police clearance expired past the 24-month validity requirement.</small>
+                </div>
+              </div>
+              <div class="pick-card" onclick="togglePick(this)">
+                <div>
+                  <b class="block text-sm font-bold text-[#16302C]">DS-5535 Supplemental Travel History</b>
+                  <small class="text-xs text-mutedGreen">15-year detailed travel, employment, and social media handle disclosure questionnaire.</small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TOOL 7: Affidavit of Support Calculator -->
+          <div id="view-affidavit-calc" class="tool-view hidden bg-white rounded-3xl border border-[#DDD9CE] p-6 sm:p-8 shadow-sm">
+            <div class="flex items-center justify-between pb-4 mb-6 border-b border-[#EFECE6]">
+              <div>
+                <span class="font-serif italic text-xs text-mutedGreen">Financial Eligibility</span>
+                <h2 class="font-serif text-xl sm:text-2xl font-semibold text-[#16302C] mt-0.5">
+                  Federal Poverty Guidelines Calculator
+                </h2>
+              </div>
+              <span class="text-xs text-mutedGreen font-mono">2026 HHS Standards</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+              <div>
+                <label class="block font-semibold text-xs text-[#16302C] uppercase tracking-wider mb-1.5">Household Size</label>
+                <input type="number" id="calc-household" value="3" oninput="recalcAffidavit()" class="w-full h-12 rounded-xl border border-[#DDD9CE] bg-white px-3 text-sm font-bold text-[#16302C]">
+                <small class="text-[11px] text-mutedGreen">Sponsor + Immigrant Spouse + 1 Child</small>
+              </div>
+              <div>
+                <label class="block font-semibold text-xs text-[#16302C] uppercase tracking-wider mb-1.5">Current Annual Income ($)</label>
+                <input type="number" id="calc-income" value="44000" oninput="recalcAffidavit()" class="w-full h-12 rounded-xl border border-[#DDD9CE] bg-white px-3 text-sm font-bold text-[#16302C]">
+                <small class="text-[11px] text-mutedGreen">From Form 1040 Adjusted Gross Income</small>
+              </div>
+            </div>
+
+            <div class="rounded-2xl border border-[#C5DDD7] bg-[#E1F2EE] p-5">
+              <div class="flex items-center justify-between">
+                <div>
+                  <span class="font-serif italic text-xs text-[#0A4F49]">Required Minimum (125% Poverty)</span>
+                  <div id="calc-threshold" class="font-serif text-2xl font-bold text-[#0A4F49]">$32,275 / yr</div>
+                </div>
+                <div class="text-right">
+                  <span class="font-serif italic text-xs text-[#0F8F80]">Sponsorship Margin</span>
+                  <div id="calc-margin" class="font-serif text-2xl font-bold text-[#0F8F80]">+$11,725 (Eligible)</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ───────────────────────────────────────────────────────────── -->
+        <!-- ZONE 5: KNOWLEDGE RAIL (TAKEN CARE OF, GUIDELINES, RESOURCES) -->
+        <!-- ───────────────────────────────────────────────────────────── -->
+        <aside class="space-y-5">
+          
+          <!-- CARD A: Live Audit / "Taken Care Of" Checklist (Inspired by Option B) -->
+          <div class="rounded-3xl border border-[#DDD9CE] bg-white p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-3 pb-2 border-b border-[#EFECE6]">
+              <h3 class="font-serif italic font-bold text-base text-[#16302C]">
+                Verification Audit
+              </h3>
+              <span class="text-[11px] font-mono text-mutedGreen uppercase tracking-wider">Live</span>
+            </div>
+            <div class="space-y-2.5" id="rail-checklist">
+              <div class="checklist-item done">
+                <div class="checklist-icon">&#10003;</div>
+                <div>
+                  <b class="block text-xs font-semibold text-[#16302C]">Case Number Verified</b>
+                  <small class="text-[11px] text-mutedGreen">Valid 13-digit format</small>
+                </div>
+              </div>
+              <div class="checklist-item done">
+                <div class="checklist-icon">&#10003;</div>
+                <div>
+                  <b class="block text-xs font-semibold text-[#16302C]">Service Center Located</b>
+                  <small class="text-[11px] text-mutedGreen">Electronic Filings (IOE)</small>
+                </div>
+              </div>
+              <div class="checklist-item">
+                <div class="checklist-icon">3</div>
+                <div>
+                  <b class="block text-xs font-semibold text-[#16302C]">Next Step Advisory</b>
+                  <small class="text-[11px] text-mutedGreen">NVC Welcome Packet</small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CARD B: Official Requirements & Best Practices -->
+          <!-- <div class="rounded-3xl border border-[#DDD9CE] bg-white p-6 shadow-sm">
+            <div class="flex items-center gap-2 mb-2">
+              <i data-lucide="shield" class="w-4 h-4 text-[#0F8F80]"></i>
+              <h3 id="rail-rules-title" class="font-serif font-bold text-sm text-[#16302C]">
+                Receipt Number Guide
+              </h3>
+            </div>
+            <p id="rail-rules-desc" class="text-xs text-mutedGreen leading-relaxed mb-3">
+              The receipt number is located at the top-left of Form I-797C Notice of Action. Three letters denote the processing center:
+            </p>
+            <div id="rail-rules-badge" class="font-mono text-xs font-bold text-center py-2.5 px-3 rounded-xl bg-[#F6F4EF] border border-[#DDD9CE] text-[#0A4F49]">
+              IOE • EAC • WAC • LIN • SRC
+            </div>
+          </div> -->
+
+          <!-- CARD C: Official Verified Resources (USCIS & DOS) -->
+          <div class="rounded-3xl border border-[#DDD9CE] bg-white p-6 shadow-sm">
+            <div class="flex items-center gap-2 mb-3">
+              <i data-lucide="landmark" class="w-4 h-4 text-[#0F8F80]"></i>
+              <h3 class="font-serif font-bold text-sm text-[#16302C]">Official Resources</h3>
+            </div>
+            <ul id="rail-resources" class="space-y-2.5 text-xs">
+              <li>
+                <a href="https://www.uscis.gov" target="_blank" class="flex items-center justify-between text-[#0A4F49] hover:text-[#0F8F80] font-semibold group">
+                  <span>Visit uscis.gov</span>
+                  <i data-lucide="external-link" class="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform"></i>
+                </a>
+              </li>
+              <li>
+                <a href="https://egov.uscis.gov/processing-times/" target="_blank" class="flex items-center justify-between text-[#0A4F49] hover:text-[#0F8F80] font-semibold group">
+                  <span>Historical Processing Times</span>
+                  <i data-lucide="external-link" class="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform"></i>
+                </a>
+              </li>
+              <li>
+                <a href="https://ceac.state.gov" target="_blank" class="flex items-center justify-between text-[#0A4F49] hover:text-[#0F8F80] font-semibold group">
+                  <span>Department of State CEAC</span>
+                  <i data-lucide="external-link" class="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform"></i>
+                </a>
+              </li>
+            </ul>
+          </div>
+
+        </aside>
+
+      </div>
+
+      <!-- ============================================================== -->
+      <!-- FULL-WIDTH SECTION 1: FREQUENTLY ASKED QUESTIONS               -->
+      <!-- ============================================================== -->
+      <section class="mt-14 pt-10 border-t border-[#DDD9CE]">
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+          <div>
+            <span class="font-serif italic text-xs font-semibold text-[#0F8F80] uppercase tracking-wider">Help &amp; Guidance</span>
+            <h2 class="font-serif text-2xl sm:text-3xl font-semibold text-[#16302C] mt-1">Frequently Asked Questions</h2>
+            <p class="text-xs sm:text-sm text-mutedGreen mt-1.5 max-w-xl">
+              Clear answers on official guidelines, legal requirements, and common issues for this tool.
+            </p>
+          </div>
+          <button onclick="openDrawer()" class="inline-flex items-center gap-1.5 text-xs font-bold text-[#0F8F80] hover:text-[#0A4F49] hover:underline self-start sm:self-auto cursor-pointer">
+            <span>Slide-Out Drawer View</span>
+            <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+
+        <!-- 2-Column Responsive Full-Width Grid for FAQs -->
+        <div id="fullwidth-faq-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+          <details class="group bg-white rounded-2xl border border-[#DDD9CE] p-5 sm:p-6 shadow-xs cursor-pointer hover:border-[#0F8F80] hover:shadow-sm transition-all" open>
+            <summary class="font-serif font-bold text-sm sm:text-base text-[#16302C] list-none flex items-start justify-between gap-3">
+              <span class="leading-snug">How often does USCIS update case statuses?</span>
+              <span class="w-6 h-6 rounded-full bg-[#E1F2EE] text-[#0A4F49] flex items-center justify-center text-xs font-mono group-open:rotate-45 transition-transform shrink-0 font-bold mt-0.5">+</span>
+            </summary>
+            <p class="mt-3 text-xs sm:text-sm text-mutedGreen leading-relaxed border-t border-[#EFECE6] pt-3">
+              Statuses update nightly during scheduled batch processing, typically between 11 PM and 6 AM Eastern Time.
+            </p>
+          </details>
+
+          <details class="group bg-white rounded-2xl border border-[#DDD9CE] p-5 sm:p-6 shadow-xs cursor-pointer hover:border-[#0F8F80] hover:shadow-sm transition-all" open>
+            <summary class="font-serif font-bold text-sm sm:text-base text-[#16302C] list-none flex items-start justify-between gap-3">
+              <span class="leading-snug">Does querying my status impact my case?</span>
+              <span class="w-6 h-6 rounded-full bg-[#E1F2EE] text-[#0A4F49] flex items-center justify-center text-xs font-mono group-open:rotate-45 transition-transform shrink-0 font-bold mt-0.5">+</span>
+            </summary>
+            <p class="mt-3 text-xs sm:text-sm text-mutedGreen leading-relaxed border-t border-[#EFECE6] pt-3">
+              No, this query is a read-only request to official public USCIS records with zero impact on adjudication.
+            </p>
+          </details>
+
+          <details class="group bg-white rounded-2xl border border-[#DDD9CE] p-5 sm:p-6 shadow-xs cursor-pointer hover:border-[#0F8F80] hover:shadow-sm transition-all">
+            <summary class="font-serif font-bold text-sm sm:text-base text-[#16302C] list-none flex items-start justify-between gap-3">
+              <span class="leading-snug">What does "Case Was Received" mean?</span>
+              <span class="w-6 h-6 rounded-full bg-[#E1F2EE] text-[#0A4F49] flex items-center justify-center text-xs font-mono group-open:rotate-45 transition-transform shrink-0 font-bold mt-0.5">+</span>
+            </summary>
+            <p class="mt-3 text-xs sm:text-sm text-mutedGreen leading-relaxed border-t border-[#EFECE6] pt-3">
+              It means USCIS accepted your filing fee and locked in your priority date. You will next receive biometric or approval notices.
+            </p>
+          </details>
+
+          <details class="group bg-white rounded-2xl border border-[#DDD9CE] p-5 sm:p-6 shadow-xs cursor-pointer hover:border-[#0F8F80] hover:shadow-sm transition-all">
+            <summary class="font-serif font-bold text-sm sm:text-base text-[#16302C] list-none flex items-start justify-between gap-3">
+              <span class="leading-snug">How do I expedite my case with USCIS?</span>
+              <span class="w-6 h-6 rounded-full bg-[#E1F2EE] text-[#0A4F49] flex items-center justify-center text-xs font-mono group-open:rotate-45 transition-transform shrink-0 font-bold mt-0.5">+</span>
+            </summary>
+            <p class="mt-3 text-xs sm:text-sm text-mutedGreen leading-relaxed border-t border-[#EFECE6] pt-3">
+              You can request expedited processing via the USCIS Contact Center if you meet criteria such as severe financial loss or urgent humanitarian emergencies.
+            </p>
+          </details>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- FULL-WIDTH SECTION 2: PRIVACY NOTE (CLEAN ONE-LINER)           -->
+      <!-- ============================================================== -->
+      <div class="mt-8 rounded-2xl border border-[#DDD9CE] bg-[#F6F4EF]/80 px-5 py-3.5 shadow-xs flex items-center gap-3">
+        <div class="w-6 h-6 rounded-full bg-white border border-[#DDD9CE] text-[#0F8F80] flex items-center justify-center shrink-0 font-bold text-xs">
+          &#10003;
+        </div>
+        <p class="text-xs text-mutedGreen leading-relaxed">
+          <b class="text-[#16302C]">Rahvana Privacy Guarantee:</b> All inputs and document renderings remain strictly in your private browser sandbox and encrypted under AES-256 in accordance with federal privacy standards.
+        </p>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ============================================================== -->
+  <!-- SLIDE-OUT FAQ DRAWER (Inspired by Rahvana Option B)             -->
+  <!-- ============================================================== -->
+  <div id="drawer-overlay" class="drawer-overlay" onclick="closeDrawer()"></div>
+  <div id="faq-drawer" class="faq-drawer">
+    <div class="flex items-center justify-between pb-4 mb-6 border-b border-[#DDD9CE]">
+      <span class="font-serif italic font-bold text-xl text-[#16302C]">Common Questions</span>
+      <button onclick="closeDrawer()" class="text-xs font-semibold text-mutedGreen hover:text-[#16302C] px-3 py-1.5 rounded-lg border border-[#DDD9CE] hover:bg-slate-50 transition-all">
+        ✕ Close
+      </button>
+    </div>
+
+    <div id="drawer-faq-content" class="space-y-4 text-xs">
+      <details class="group border-b border-[#DDD9CE] pb-3 cursor-pointer" open>
+        <summary class="font-serif font-bold text-sm text-[#16302C] list-none flex items-center justify-between gap-2">
+          <span>How often does USCIS update case statuses?</span>
+          <span class="text-[#0F8F80] font-mono text-base group-open:rotate-45 transition-transform">+</span>
+        </summary>
+        <p class="mt-2 text-xs text-mutedGreen leading-relaxed">
+          Statuses update nightly during scheduled batch processing, typically between 11 PM and 6 AM Eastern Time.
+        </p>
+      </details>
+
+      <details class="group border-b border-[#DDD9CE] pb-3 cursor-pointer" open>
+        <summary class="font-serif font-bold text-sm text-[#16302C] list-none flex items-center justify-between gap-2">
+          <span>Does querying my status impact my case?</span>
+          <span class="text-[#0F8F80] font-mono text-base group-open:rotate-45 transition-transform">+</span>
+        </summary>
+        <p class="mt-2 text-xs text-mutedGreen leading-relaxed">
+          No, this query is a read-only request to official public USCIS records with zero impact on adjudication.
+        </p>
+      </details>
+
+      <details class="group border-b border-[#DDD9CE] pb-3 cursor-pointer">
+        <summary class="font-serif font-bold text-sm text-[#16302C] list-none flex items-center justify-between gap-2">
+          <span>What does "Case Was Received" mean?</span>
+          <span class="text-[#0F8F80] font-mono text-base group-open:rotate-45 transition-transform">+</span>
+        </summary>
+        <p class="mt-2 text-xs text-mutedGreen leading-relaxed">
+          It means USCIS accepted your filing fee and locked in your priority date. You will next receive biometric or approval notices.
+        </p>
+      </details>
+
+      <details class="group border-b border-[#DDD9CE] pb-3 cursor-pointer">
+        <summary class="font-serif font-bold text-sm text-[#16302C] list-none flex items-center justify-between gap-2">
+          <span>How do I expedite my case with USCIS?</span>
+          <span class="text-[#0F8F80] font-mono text-base group-open:rotate-45 transition-transform">+</span>
+        </summary>
+        <p class="mt-2 text-xs text-mutedGreen leading-relaxed">
+          You can request expedited processing via the USCIS Contact Center if you meet criteria such as severe financial loss or urgent humanitarian emergencies.
+        </p>
+      </details>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT: Dynamic Tool Data, Animations & Interactions -->
+  <script>
+    const TOOLS_CONFIG = {
+      'case-status': {
+        theme: 'default',
+        badge: 'Live Status Radar',
+        cat: 'Official Immigration Toolkit',
+        title: 'USCIS Case Status Tracker',
+        desc: 'Direct real-time status inquiry with official USCIS electronic records. Inspect receipt milestones, next steps, and historical decision notices.',
+        rulesTitle: 'Receipt Number Guide',
+        rulesDesc: 'The receipt number is located at the top-left of Form I-797C Notice of Action. Three letters denote the processing center:',
+        rulesBadge: 'IOE • EAC • WAC • LIN • SRC',
+        quota: null,
+        faqs: [
+          { q: 'How often does USCIS update case statuses?', a: 'Statuses update nightly during scheduled batch processing, typically between 11 PM and 6 AM Eastern Time.' },
+          { q: 'Does querying my status impact my case?', a: 'No, this query is a read-only request to official public USCIS records with zero impact on adjudication.' },
+          { q: 'What does "Case Was Received" mean?', a: 'It means USCIS accepted your filing fee and locked in your priority date. You will next receive biometric or approval notices.' }
+        ],
+        checklist: [
+          { t: 'Case Number Verified', s: 'Valid 13-digit format', done: true },
+          { t: 'Service Center Located', s: 'Electronic Filings (IOE)', done: true },
+          { t: 'Next Step Advisory', s: 'NVC Welcome Packet', done: false }
+        ]
+      },
+      'passport-photo': {
+        theme: 'default',
+        badge: 'Biometric AI Studio',
+        cat: 'Visa & Passport Utilities',
+        title: 'Passport & Visa Photo Booth',
+        desc: 'Produce 100% USCIS & Department of State compliant 2" x 2" visa photos with biometric cropping and pure white background.',
+        rulesTitle: '22 CFR 41.105 Composition Rules',
+        rulesDesc: 'Ensure neutral expression, eyes open and looking at camera, no eyeglasses, no headwear (unless documented religious/medical), and zero shadows.',
+        rulesBadge: '2" x 2" (51x51mm) • 600 DPI',
+        quota: '3 Photo Credits Available',
+        faqs: [
+          { q: 'Can I wear prescription glasses in the photo?', a: 'Since 2016, eyeglasses are strictly prohibited in U.S. visa and passport photos under Department of State regulations.' },
+          { q: 'How recent must the photo be?', a: 'Your photo must be taken within the last 6 months to reflect your current physical appearance.' },
+          { q: 'What paper should I print on?', a: 'Print on high-quality matte or glossy photo-grade paper with no borders.' }
+        ],
+        checklist: [
+          { t: 'Face Centered & Visible', s: 'Head height 1 - 1 3/8"', done: true },
+          { t: 'Pure White Background', s: 'No shadows or tints', done: true },
+          { t: 'No Eyeglasses Worn', s: '22 CFR 41.105 rule', done: false }
+        ]
+      },
+      'snap-sign': {
+        theme: 'default',
+        badge: 'Signature Studio',
+        cat: 'Form Preparation Utilities',
+        title: 'Snap & Sign Signature Processor',
+        desc: 'Transform paper pen signatures into pristine, transparent high-resolution PNG signatures for official immigration petitions.',
+        rulesTitle: 'Signature Best Practices',
+        rulesDesc: 'Sign with a black or dark navy ink ballpoint pen on unlined paper. Ensure even ambient light with zero camera shadows over the paper.',
+        rulesBadge: 'Lossless PNG • Transparent',
+        quota: null,
+        faqs: [
+          { q: 'Does USCIS accept digital copies of signatures?', a: 'Yes, under USCIS Policy Manual Vol 1 Part B, copies, faxes, or scanned reproductions of handwritten signatures are accepted.' },
+          { q: 'Is my signature stored on external servers?', a: 'No, all image isolation and background stripping algorithms execute directly in your browser.' }
+        ],
+        checklist: [
+          { t: 'Clean White Paper', s: 'No lined notebooks', done: true },
+          { t: 'Dark Ink Pen', s: 'Black or deep navy', done: true },
+          { t: 'Background Extracted', s: 'Transparent canvas', done: false }
+        ]
+      },
+      'pdf-toolkit': {
+        theme: 'police',
+        badge: 'Document Optimizer',
+        cat: 'Filing & Consular Tools',
+        title: 'PDF Toolkit for Immigration',
+        desc: 'Compress, merge, annotate, and format documents specifically engineered to satisfy USCIS and CEAC 2MB file limits.',
+        rulesTitle: 'CEAC & USCIS File Limits',
+        rulesDesc: 'CEAC strictly blocks any document over 2.0 MB. Use the compression utility to shrink multi-page tax transcripts while keeping 300 DPI text legible.',
+        rulesBadge: 'CEAC: Max 2.0 MB • USCIS: 12 MB',
+        quota: null,
+        faqs: [
+          { q: 'Can I upload JPEG documents to CEAC?', a: 'Single page certificates can be JPG, but all multi-page documents (tax returns, bank records) must be PDF under 2MB.' },
+          { q: 'Will compression blur my documents?', a: 'Our compression maintains OCR text clarity while stripping unneeded color profiles and thumbnail metadata.' }
+        ],
+        checklist: [
+          { t: 'File Size Inspection', s: 'Within 2.0 MB CEAC rule', done: true },
+          { t: 'Resolution Audit', s: '300 DPI text sharpness', done: true },
+          { t: 'Page Orientation', s: 'Upright orientation', done: false }
+        ]
+      },
+      'dq-tool': {
+        theme: 'default',
+        badge: 'Scheduling Radar',
+        cat: 'Consular Stage Tracking',
+        title: 'DQ Interview Scheduling Radar',
+        desc: 'Monitor Documentarily Complete (DQ) appointment scheduling velocity across U.S. Embassies and Consulates worldwide.',
+        rulesTitle: 'What is Documentarily Complete?',
+        rulesDesc: 'A case is Documentarily Complete when NVC reviews and approves all civil forms (DS-260), tax returns, and affidavits of support.',
+        rulesBadge: 'NVC Approval &rarr; Embassy Queue',
+        quota: null,
+        faqs: [
+          { q: 'Why is there a wait after DQ is approved?', a: 'Each embassy has a finite number of interview appointments per month, prioritized by visa category and consular staffing.' },
+          { q: 'Can I expedite my embassy interview?', a: 'Yes, if you have severe humanitarian, financial, or medical emergency grounds, you can request an expedite directly via NVC.' }
+        ],
+        checklist: [
+          { t: 'DS-260 Completed', s: 'Online application filed', done: true },
+          { t: 'Financial Docs Approved', s: 'Form I-864 reviewed', done: true },
+          { t: 'Interview Letter Sent', s: 'Awaiting embassy date', done: false }
+        ]
+      },
+      'action-planner': {
+        theme: 'medical',
+        badge: 'Visa Response Toolkit',
+        cat: 'Administrative Processing',
+        title: '221(g) Action Plan & Packet Builder',
+        desc: 'Build, organize, and export a structured consular 221(g) response packet conforming to embassy refusal instructions.',
+        rulesTitle: '221(g) Refusal Notice Rules',
+        rulesDesc: 'Under INA 203(g), you have exactly one year from the refusal date to submit requested items before your immigrant petition is terminated.',
+        rulesBadge: 'INA 203(g) 1-Year Expiry Window',
+        quota: null,
+        faqs: [
+          { q: 'Does 221(g) mean my visa is permanently denied?', a: 'No. 221(g) is a temporary administrative refusal pending missing evidence or background review. Most cases are approved once fulfilled.' },
+          { q: 'Where do I send the requested documents?', a: 'Follow the specific instructions on your refusal sheet: typically via the embassy courier service (221g drop-off).' }
+        ],
+        checklist: [
+          { t: 'Refusal Letter Attached', s: 'Top cover page', done: true },
+          { t: 'Requested Evidence Ready', s: 'All checked items', done: true },
+          { t: 'Courier Drop-off Slip', s: 'Tracking generated', done: false }
+        ]
+      },
+      'affidavit-calc': {
+        theme: 'translate',
+        badge: 'Financial Sponsorship',
+        cat: 'Form I-864 Verification',
+        title: 'Affidavit of Support Income Calculator',
+        desc: 'Determine your federal poverty threshold, joint sponsor requirement, and Form I-864 vs I-864EZ eligibility under 2026 guidelines.',
+        rulesTitle: '125% Poverty Level Requirement',
+        rulesDesc: 'Sponsors must demonstrate income at or above 125% of HHS Federal Poverty Guidelines for their household size (100% for active-duty military).',
+        rulesBadge: 'HHS Poverty Guidelines 2026',
+        quota: null,
+        faqs: [
+          { q: 'Can assets count toward income?', a: 'Yes, significant liquid assets (savings, stocks, real estate equity) can be used at 3x or 5x the shortfall depending on the relationship.' },
+          { q: 'When is a Joint Sponsor permitted?', a: 'If your personal income falls below the 125% line, any qualified U.S. citizen or LPR household may serve as joint sponsor.' }
+        ],
+        checklist: [
+          { t: 'Household Size Counted', s: 'Sponsor + Dependents + Immigrant', done: true },
+          { t: 'Income Evaluated', s: '125% threshold met', done: true },
+          { t: 'Joint Sponsor Status', s: 'Not required (Income sufficient)', done: true }
+        ]
+      }
+    };
+
+    let activeTool = 'case-status';
+
+    function setTool(toolId) {
+      activeTool = toolId;
+      const cfg = TOOLS_CONFIG[toolId];
+      if (!cfg) return;
+
+      // Update Theme attribute
+      document.body.dataset.theme = cfg.theme;
+
+      // Update Hero banner color depending on theme
+      const heroBanner = document.getElementById('hero-banner');
+      if (cfg.theme === 'medical') {
+        heroBanner.style.backgroundColor = '#6E2420';
+      } else if (cfg.theme === 'police') {
+        heroBanner.style.backgroundColor = '#232E6B';
+      } else if (cfg.theme === 'translate') {
+        heroBanner.style.backgroundColor = '#5E3F07';
+      } else {
+        heroBanner.style.backgroundColor = '#0A4F49';
+      }
+
+      // Update Nav Pills
+      document.querySelectorAll('.nav-pill').forEach(btn => {
+        btn.classList.remove('active', 'bg-white', 'text-[#16302C]', 'shadow-xs');
+        btn.classList.add('text-white/80');
+      });
+      const activeNav = document.getElementById('nav-' + toolId);
+      if (activeNav) {
+        activeNav.classList.add('active', 'bg-white', 'text-[#16302C]', 'shadow-xs');
+        activeNav.classList.remove('text-white/80');
+      }
+
+      // Update Hero Content safely
+      const catEl = document.getElementById('hero-category-pill');
+      if (catEl) catEl.textContent = cfg.cat;
+      const badgeEl = document.getElementById('hero-badge-text');
+      if (badgeEl) badgeEl.textContent = cfg.badge;
+      const titleEl = document.getElementById('hero-title');
+      if (titleEl) titleEl.textContent = cfg.title;
+      const descEl = document.getElementById('hero-desc');
+      if (descEl) descEl.textContent = cfg.desc;
+
+      // Quota badge
+      const quotaWrap = document.getElementById('hero-quota-wrap');
+      if (quotaWrap) {
+        if (cfg.quota) {
+          quotaWrap.classList.remove('hidden');
+          quotaWrap.classList.add('flex');
+          const quotaText = document.getElementById('hero-quota-text');
+          if (quotaText) quotaText.textContent = cfg.quota;
+        } else {
+          quotaWrap.classList.add('hidden');
+          quotaWrap.classList.remove('flex');
+        }
+      }
+
+      // Hide all canvas views & reveal target
+      document.querySelectorAll('.tool-view').forEach(v => v.classList.add('hidden'));
+      const activeView = document.getElementById('view-' + toolId);
+      if (activeView) activeView.classList.remove('hidden');
+
+      // Update Knowledge Rail
+      const rulesTitleEl = document.getElementById('rail-rules-title');
+      if (rulesTitleEl) rulesTitleEl.textContent = cfg.rulesTitle;
+      const rulesDescEl = document.getElementById('rail-rules-desc');
+      if (rulesDescEl) rulesDescEl.textContent = cfg.rulesDesc;
+      const rulesBadgeEl = document.getElementById('rail-rules-badge');
+      if (rulesBadgeEl) rulesBadgeEl.textContent = cfg.rulesBadge;
+
+      // Render Checklist
+      const checklistContainer = document.getElementById('rail-checklist');
+      checklistContainer.innerHTML = '';
+      cfg.checklist.forEach((item, index) => {
+        const div = document.createElement('div');
+        div.className = `checklist-item ${item.done ? 'done' : ''}`;
+        div.innerHTML = `
+          <div class="checklist-icon">${item.done ? '&#10003;' : index + 1}</div>
+          <div>
+            <b class="block text-xs font-semibold text-[#16302C]">${item.t}</b>
+            <small class="text-[11px] text-mutedGreen">${item.s}</small>
+          </div>
+        `;
+        checklistContainer.appendChild(div);
+      });
+
+      // Populate FAQ drawer & page grid
+      renderFaqs(cfg.faqs);
+
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        try { lucide.createIcons(); } catch (e) {}
+      }
+    }
+
+    function renderFaqs(faqs) {
+      if (!faqs || !faqs.length) return;
+
+      // 1. Slide-out drawer
+      const container = document.getElementById('drawer-faq-content');
+      if (container) {
+        container.innerHTML = '';
+        faqs.forEach(f => {
+          const d = document.createElement('details');
+          d.className = 'group border-b border-[#DDD9CE] pb-3 cursor-pointer';
+          d.innerHTML = `
+            <summary class="font-serif font-bold text-sm text-[#16302C] list-none flex items-center justify-between gap-2">
+              <span>${f.q}</span>
+              <span class="text-[#0F8F80] font-mono text-base group-open:rotate-45 transition-transform">+</span>
+            </summary>
+            <p class="mt-2 text-xs text-mutedGreen leading-relaxed">${f.a}</p>
+          `;
+          container.appendChild(d);
+        });
+      }
+
+      // 2. Full-Width 2-Column Responsive Grid on Page
+      const gridContainer = document.getElementById('fullwidth-faq-grid');
+      if (gridContainer) {
+        gridContainer.innerHTML = '';
+        faqs.forEach((f, idx) => {
+          const d = document.createElement('details');
+          d.className = 'group bg-white rounded-2xl border border-[#DDD9CE] p-5 sm:p-6 shadow-xs cursor-pointer hover:border-[#0F8F80] hover:shadow-sm transition-all';
+          if (idx < 2) d.open = true; // Open first two for instant visibility
+          d.innerHTML = `
+            <summary class="font-serif font-bold text-sm sm:text-base text-[#16302C] list-none flex items-start justify-between gap-3">
+              <span class="leading-snug">${f.q}</span>
+              <span class="w-6 h-6 rounded-full bg-[#E1F2EE] text-[#0A4F49] flex items-center justify-center text-xs font-mono group-open:rotate-45 transition-transform shrink-0 font-bold mt-0.5">+</span>
+            </summary>
+            <p class="mt-3 text-xs sm:text-sm text-mutedGreen leading-relaxed border-t border-[#EFECE6] pt-3">${f.a}</p>
+          `;
+          gridContainer.appendChild(d);
+        });
+      }
+
+      // 3. Right Rail Sidebar Variant (for side-by-side comparison)
+      const railFaqContainer = document.getElementById('rail-faq-content');
+      if (railFaqContainer) {
+        railFaqContainer.innerHTML = '';
+        faqs.slice(0, 3).forEach((f, idx) => {
+          const d = document.createElement('details');
+          d.className = 'group border-b border-[#DDD9CE] last:border-none pb-2 cursor-pointer';
+          if (idx === 0) d.open = true;
+          d.innerHTML = `
+            <summary class="font-serif font-bold text-xs text-[#16302C] list-none flex items-center justify-between gap-2">
+              <span>${f.q}</span>
+              <span class="text-[#0F8F80] font-mono text-xs group-open:rotate-45 transition-transform">+</span>
+            </summary>
+            <p class="mt-1.5 text-[11px] text-mutedGreen leading-relaxed">${f.a}</p>
+          `;
+          railFaqContainer.appendChild(d);
+        });
+      }
+    }
+
+    function toggleJourney(isJourney) {
+      const tag = document.getElementById('hero-journey-tag');
+      if (isJourney) {
+        tag.classList.remove('hidden');
+        tag.classList.add('flex');
+      } else {
+        tag.classList.add('hidden');
+        tag.classList.remove('flex');
+      }
+    }
+
+    function toggleFavorite(btn) {
+      btn.classList.toggle('ring-2');
+      btn.classList.toggle('ring-amber-400');
+      alert('Pinned to Quick Access tools!');
+    }
+
+    function openDrawer() {
+      document.getElementById('faq-drawer').classList.add('open');
+      document.getElementById('drawer-overlay').classList.add('open');
+    }
+
+    function closeDrawer() {
+      document.getElementById('faq-drawer').classList.remove('open');
+      document.getElementById('drawer-overlay').classList.remove('open');
+    }
+
+    function dismissStateBanner() {
+      document.getElementById('state-banner').style.display = 'none';
+    }
+
+    function togglePick(el) {
+      el.classList.toggle('active');
+    }
+
+    function runCaseCheck() {
+      const box = document.getElementById('case-result-box');
+      box.style.opacity = '0.5';
+      setTimeout(() => {
+        box.style.opacity = '1';
+        alert('Case status refreshed with live USCIS server.');
+      }, 400);
+    }
+
+    function recalcAffidavit() {
+      const h = parseInt(document.getElementById('calc-household').value) || 2;
+      const inc = parseInt(document.getElementById('calc-income').value) || 0;
+      // 2026 HHS: Base $20,440 for 2 + $5,380 each extra
+      const required = Math.round((20440 + (h - 2) * 5380) * 1.25);
+      const margin = inc - required;
+      document.getElementById('calc-threshold').textContent = '$' + required.toLocaleString() + ' / yr';
+      document.getElementById('calc-margin').textContent = (margin >= 0 ? '+$' : '-$') + Math.abs(margin).toLocaleString() + (margin >= 0 ? ' (Eligible)' : ' (Shortfall)');
+      document.getElementById('calc-margin').style.color = margin >= 0 ? '#0F8F80' : '#B3261E';
+    }
+
+    function resetDemo() {
+      if (confirm('Start fresh with clean inputs?')) {
+        document.getElementById('case-input').value = '';
+      }
+    }
+
+    function init() {
+      setTool('case-status');
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        try { lucide.createIcons(); } catch (e) {}
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  </script>
+</body>
+</html>

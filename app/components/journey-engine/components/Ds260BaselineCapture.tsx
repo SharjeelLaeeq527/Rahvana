@@ -26,6 +26,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { CalendarDays, ShieldAlert, CheckCircle2, Save, Check } from "lucide-react";
 import { compareBaselines } from "@/lib/case-strength";
 import type { BaselineDates } from "@/lib/case-strength";
+import { resolveCaseStrengthProfile } from "@/lib/case-strength/categories";
 
 export interface Ds260Baseline {
   marriageDate?: string;
@@ -40,6 +41,7 @@ interface Ds260BaselineCaptureProps {
   /** The DS-260 baseline being captured at this step. */
   baseline: Ds260Baseline | undefined | null;
   onSave: (next: Ds260Baseline) => void;
+  journeyType?: string;
 }
 
 const TODAY = new Date().toISOString().slice(0, 10);
@@ -48,11 +50,18 @@ export function Ds260BaselineCapture({
   i130Baseline,
   baseline,
   onSave,
+  journeyType,
 }: Ds260BaselineCaptureProps) {
   const [marriageDate, setMarriageDate] = useState(baseline?.marriageDate ?? "");
   const [petitionerDob, setPetitionerDob] = useState(baseline?.petitionerDateOfBirth ?? "");
   const [beneficiaryDob, setBeneficiaryDob] = useState(baseline?.beneficiaryDateOfBirth ?? "");
   const [justSaved, setJustSaved] = useState(false);
+
+  const profile = useMemo(() => resolveCaseStrengthProfile(journeyType), [journeyType]);
+  const hasMarriageField = useMemo(
+    () => profile.baselineFields.some((f) => f.field === "marriageDate"),
+    [profile.baselineFields]
+  );
 
   // The parent feeds defaults derived from the user's profile (e.g. dates
   // auto-filled from passport OCR), which can arrive after first render
@@ -154,25 +163,27 @@ export function Ds260BaselineCapture({
         )}
 
         {/* Fields */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
-          <div className="flex flex-col gap-1">
-            <label className="text-[10.5px] font-semibold uppercase tracking-wider text-[#57534e]">
-              Marriage date
-            </label>
-            <input
-              type="date"
-              max={TODAY}
-              value={marriageDate}
-              onChange={(e) => setMarriageDate(e.target.value)}
-              className="w-full rounded-md px-3 py-2 text-[13px] outline-none border bg-white"
-              style={{ borderColor: "#d6d3d1" }}
-            />
-            {i130Baseline?.marriageDate && (
-              <span className="text-[10px] text-[#78716c]">
-                I-130: {i130Baseline.marriageDate}
-              </span>
-            )}
-          </div>
+        <div className={`grid grid-cols-1 ${hasMarriageField ? "sm:grid-cols-3" : "sm:grid-cols-2"} gap-3 mb-3`}>
+          {hasMarriageField && (
+            <div className="flex flex-col gap-1">
+              <label className="text-[10.5px] font-semibold uppercase tracking-wider text-[#57534e]">
+                Marriage date
+              </label>
+              <input
+                type="date"
+                max={TODAY}
+                value={marriageDate}
+                onChange={(e) => setMarriageDate(e.target.value)}
+                className="w-full rounded-md px-3 py-2 text-[13px] outline-none border bg-white"
+                style={{ borderColor: "#d6d3d1" }}
+              />
+              {i130Baseline?.marriageDate && (
+                <span className="text-[10px] text-[#78716c]">
+                  I-130: {i130Baseline.marriageDate}
+                </span>
+              )}
+            </div>
+          )}
           <div className="flex flex-col gap-1">
             <label className="text-[10.5px] font-semibold uppercase tracking-wider text-[#57534e]">
               Petitioner DOB

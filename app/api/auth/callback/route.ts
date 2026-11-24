@@ -4,6 +4,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { safeRedirectPath } from "@/lib/security/safeRedirect";
+import { isStagingEmailAllowed } from "@/lib/security/staging-access";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
@@ -28,6 +29,14 @@ export async function GET(request: Request) {
       } = await supabase.auth.getUser();
 
       if (user) {
+        // Enforce staging access restriction for OAuth sign-ins
+        if (!isStagingEmailAllowed(user.email)) {
+          await supabase.auth.signOut();
+          const response = NextResponse.redirect(`${origin}/login?error=staging_access_denied`);
+          response.cookies.delete("oauth_redirect");
+          return response;
+        }
+
         // Create or update user profile
         const { error: profileError } = await supabase.from("profiles").upsert({
           id: user.id,

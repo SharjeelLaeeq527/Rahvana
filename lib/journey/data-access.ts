@@ -21,7 +21,7 @@ import {
 } from "./types";
 
 // Helper: Get authenticated Supabase client - Throws "Unauthorized" if no user session
-async function getSupabaseWithUser(injectedClient?: { supabase: any; user: any }) {
+export async function getSupabaseWithUser(injectedClient?: { supabase: any; user: any }) {
   if (injectedClient) return injectedClient;
 
   const supabase = await createClient();

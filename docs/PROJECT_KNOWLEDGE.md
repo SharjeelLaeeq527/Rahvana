@@ -73,30 +73,30 @@ read/write the same central profile + case data.
 
 ## 2. Tech Stack
 
-| Layer | Technology | Why |
-|---|---|---|
-| **Frontend framework** | Next.js 15.5 (App Router) + React 19.1 | File-based routing, server + client components, route handlers act as a BFF |
-| **Language** | TypeScript (strict) | Type safety across a large domain model |
-| **Styling** | TailwindCSS 4.1, shadcn-ui (Radix primitives), tailwind-merge, CVA | Utility-first + accessible component primitives |
-| **Animation** | Framer Motion / `motion`, GSAP, AOS, canvas-confetti | Marketing polish + journey celebration UX |
-| **Client state** | Zustand 5 (stores), React Context (global), SWR (server cache) | Lightweight stores for PDF/vault/progress-tree; Context for profile/plan/auth |
-| **Forms** | React Hook Form + Zod 4 | Validation for forms + questionnaires |
-| **Auth + DB + Storage** | Supabase (Postgres, Auth w/ MFA + Google OAuth, Storage, Realtime, RLS) | Single managed backend for data, identity, files |
-| **Payments** | Stripe (`stripe` v20; subscriptions, one-time add-ons, webhooks, billing portal) | Tiered monetization |
-| **Email** | Resend | Transactional email (confirmations, notifications, security alerts) |
-| **AI** | Google Gemini (`@google/generative-ai` on the frontend; the Python backend reaches Gemini via the OpenAI-compatible endpoint) | OCR/vision extraction, AI coaching, chat |
-| **Python backend** | FastAPI + Uvicorn | CPU/AI-heavy work: PDF fill/generate/compress, rembg, vision OCR |
-| **PDF (frontend)** | pdf-lib, pdfjs-dist (6.x, worker copied by `postinstall` -> `scripts/copy-pdf-worker.mjs`), pdfmake, jspdf, pdfkit | In-browser PDF view/edit/generate |
-| **PDF/image (backend)** | PyMuPDF (fitz), reportlab, pikepdf, Pillow, OpenCV, rembg, MODNet | Form fill, generation, compression, background removal |
-| **OCR** | OCR.space (fast first pass, small images), Gemini Vision (always-run, authoritative) | Document data extraction |
-| **Courier tracking** | EasyPost | Track document shipments to USCIS/NVC |
-| **Live case status** | USCIS Torch API (OAuth) | Real-time USCIS receipt-status lookup |
-| **Rate limiting / locks** | Upstash Redis via its REST API (no `@upstash/*` package; optional, fails open to in-memory) | Distributed auth/endpoint throttling + the Stripe per-user checkout lock |
-| **Analytics** | Google Analytics 4 Data API (`@google-analytics/data`), gtag, `@vercel/analytics` | Admin analytics dashboard + page analytics |
-| **Icons** | lucide-react (primary), react-icons (e.g. TikTok) | `react-icons` is in `package.json`; a missing local install breaks the build (`npm install`) |
-| **Feedback sink** | Google Sheets API | Appends user feedback to a sheet |
-| **Deployment** | Vercel (Next.js), Render (FastAPI backend) | `vercel.json`, `runtime.txt` (python-3.10.14) |
-| **Testing** | Jest 30 (`__tests__/`) | `npm test`, plus `test:security`, `security:deps`, `security:audit` scripts |
+| Layer                     | Technology                                                                                                                    | Why                                                                                          |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| **Frontend framework**    | Next.js 15.5 (App Router) + React 19.1                                                                                        | File-based routing, server + client components, route handlers act as a BFF                  |
+| **Language**              | TypeScript (strict)                                                                                                           | Type safety across a large domain model                                                      |
+| **Styling**               | TailwindCSS 4.1, shadcn-ui (Radix primitives), tailwind-merge, CVA                                                            | Utility-first + accessible component primitives                                              |
+| **Animation**             | Framer Motion / `motion`, GSAP, AOS, canvas-confetti                                                                          | Marketing polish + journey celebration UX                                                    |
+| **Client state**          | Zustand 5 (stores), React Context (global), SWR (server cache)                                                                | Lightweight stores for PDF/vault/progress-tree; Context for profile/plan/auth                |
+| **Forms**                 | React Hook Form + Zod 4                                                                                                       | Validation for forms + questionnaires                                                        |
+| **Auth + DB + Storage**   | Supabase (Postgres, Auth w/ MFA + Google OAuth, Storage, Realtime, RLS)                                                       | Single managed backend for data, identity, files                                             |
+| **Payments**              | Stripe (`stripe` v20; subscriptions, one-time add-ons, webhooks, billing portal)                                              | Tiered monetization                                                                          |
+| **Email**                 | Resend                                                                                                                        | Transactional email (confirmations, notifications, security alerts)                          |
+| **AI**                    | Google Gemini (`@google/generative-ai` on the frontend; the Python backend reaches Gemini via the OpenAI-compatible endpoint) | OCR/vision extraction, AI coaching, chat                                                     |
+| **Python backend**        | FastAPI + Uvicorn                                                                                                             | CPU/AI-heavy work: PDF fill/generate/compress, rembg, vision OCR                             |
+| **PDF (frontend)**        | pdf-lib, pdfjs-dist (6.x, worker copied by `postinstall` -> `scripts/copy-pdf-worker.mjs`), pdfmake, jspdf, pdfkit            | In-browser PDF view/edit/generate                                                            |
+| **PDF/image (backend)**   | PyMuPDF (fitz), reportlab, pikepdf, Pillow, OpenCV, rembg, MODNet                                                             | Form fill, generation, compression, background removal                                       |
+| **OCR**                   | OCR.space (fast first pass, small images), Gemini Vision (always-run, authoritative)                                          | Document data extraction                                                                     |
+| **Courier tracking**      | EasyPost                                                                                                                      | Track document shipments to USCIS/NVC                                                        |
+| **Live case status**      | USCIS Torch API (OAuth)                                                                                                       | Real-time USCIS receipt-status lookup                                                        |
+| **Rate limiting / locks** | Upstash Redis via its REST API (no `@upstash/*` package; optional, fails open to in-memory)                                   | Distributed auth/endpoint throttling + the Stripe per-user checkout lock                     |
+| **Analytics**             | Google Analytics 4 Data API (`@google-analytics/data`), gtag, `@vercel/analytics`                                             | Admin analytics dashboard + page analytics                                                   |
+| **Icons**                 | lucide-react (primary), react-icons (e.g. TikTok)                                                                             | `react-icons` is in `package.json`; a missing local install breaks the build (`npm install`) |
+| **Feedback sink**         | Google Sheets API                                                                                                             | Appends user feedback to a sheet                                                             |
+| **Deployment**            | Vercel (Next.js), Render (FastAPI backend)                                                                                    | `vercel.json`, `runtime.txt` (python-3.10.14)                                                |
+| **Testing**               | Jest 30 (`__tests__/`)                                                                                                        | `npm test`, plus `test:security`, `security:deps`, `security:audit` scripts                  |
 
 Build uses **Turbopack** (`next build --turbopack`). Note: `next.config.mjs` sets
 `eslint.ignoreDuringBuilds` and `typescript.ignoreBuildErrors` to **true** — type/lint
@@ -106,20 +106,20 @@ errors do **not** fail the build (run `npx tsc --noEmit` manually to check types
 
 ## 3. Folder Structure
 
-| Folder | Purpose |
-|---|---|
-| `app/` | Next.js App Router. Route groups `(auth)`, `(main)`, `(tools)` (with nested `(tools)/(visa)` and `(tools)/(courier-registration)`), plus `admin/` and `book-consultation/`; `app/api/*` route handlers (~165 `route.ts` across ~45 groups); `app/components/*` (feature components, incl. `journey-engine/`, `journey-spouse/`, `case-health/`, `candidate/`, `payment/`, `followup/`, `visa-checker/`, `chat/`, `seo/`, `Contact/`; `journey-v3/` is a leftover holding only `RegisterReceiptStep.tsx`); `app/context/*` (global providers); `app/constants/`, `app/routes/ProtectedRoute.tsx`; `app/translations/*` (i18n JSON). |
-| `components/` | Shared/reusable UI: `ui/` (shadcn primitives), `magicui/`, `pricing/`, `resources/`, `tools/`, `chat/`, `blog/`, `policy/`, `seo/`. |
-| `lib/` | **The business-logic core.** Engines and services: journey, entitlements, autoFill, case-strength, ir1-engine, document-vault, document-ocr, notifications/reminders, ceac-tracking, security, guides, plan, usage, supabase clients, stripe, payments, email, interview-prep, questionnaire, visa-checker, profile, api (route guards), easypost, blog, policies, etc. (see 14). |
-| `data/` | Static domain config. **`visa-category/*.json`** = the live journey source of truth (`ir-1`, `ir-2`, `ir-5`, `f-1`, and student journeys for australia, canada, china, germany, italy, uk). `roadmap.ts` = **legacy** old-schema data used only by home/marketing pages. Also `interview-categories/*`, `visa-checker/*`, and many guide/data JSON files. |
-| `types/` | Shared TypeScript types (`profile.ts` = MasterProfile, `journey-support.ts`, `roadmap.ts`, `notifications.ts`, etc.). |
-| `backend/` | Python FastAPI service: `app/api/v1/*` endpoints, `app/services/*`, `app/core/form_configs/*` (USCIS form field maps), `data/` (visa bulletin + `iv_data.json`), `modnet/` (git submodule, background-removal model). |
-| `supabase/` | `migrations/*` SQL (~97 files) — the database schema, RLS policies, triggers. |
-| `actions/` | Next.js server actions (currently only `chat-actions.ts`). |
-| `scripts/` | Maintenance/dev scripts (incl. `copy-pdf-worker.mjs`, run on `postinstall`). `scratch/` holds one-off guide-registration `.mjs` scripts. |
-| `__tests__/` | Jest tests: `case-strength/`, `consultation/`, `stripe/`, `candidate/`, `interview-prep/`, `questionnaire/`, `security/`, plus root tests (`candidate-sharing`, `journeyHelpers`, `profile-section-registry`, `resources-entitlement`, `sponsorship-poverty-guidelines`) and `setup.ts`. |
-| `public/` | Static assets, videos, sample docs. |
-| `middleware.ts` | Root middleware -> auth/session, admin gate, crawler + body-size guards. |
+| Folder          | Purpose                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `app/`          | Next.js App Router. Route groups `(auth)`, `(main)`, `(tools)` (with nested `(tools)/(visa)` and `(tools)/(courier-registration)`), plus `admin/` and `book-consultation/`; `app/api/*` route handlers (~165 `route.ts` across ~45 groups); `app/components/*` (feature components, incl. `journey-engine/`, `journey-spouse/`, `case-health/`, `candidate/`, `payment/`, `followup/`, `visa-checker/`, `chat/`, `seo/`, `Contact/`; `journey-v3/` is a leftover holding only `RegisterReceiptStep.tsx`); `app/context/*` (global providers); `app/constants/`, `app/routes/ProtectedRoute.tsx`; `app/translations/*` (i18n JSON). |
+| `components/`   | Shared/reusable UI: `ui/` (shadcn primitives), `magicui/`, `pricing/`, `resources/`, `tools/`, `chat/`, `blog/`, `policy/`, `seo/`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| `lib/`          | **The business-logic core.** Engines and services: journey, entitlements, autoFill, case-strength, ir1-engine, document-vault, document-ocr, notifications/reminders, ceac-tracking, security, guides, plan, usage, supabase clients, stripe, payments, email, interview-prep, questionnaire, visa-checker, profile, api (route guards), easypost, blog, policies, etc. (see 14).                                                                                                                                                                                                                                                  |
+| `data/`         | Static domain config. **`visa-category/*.json`** = the live journey source of truth (`ir-1`, `ir-2`, `ir-5`, `f-1`, and student journeys for australia, canada, china, germany, italy, uk). `roadmap.ts` = **legacy** old-schema data used only by home/marketing pages. Also `interview-categories/*`, `visa-checker/*`, and many guide/data JSON files.                                                                                                                                                                                                                                                                          |
+| `types/`        | Shared TypeScript types (`profile.ts` = MasterProfile, `journey-support.ts`, `roadmap.ts`, `notifications.ts`, etc.).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `backend/`      | Python FastAPI service: `app/api/v1/*` endpoints, `app/services/*`, `app/core/form_configs/*` (USCIS form field maps), `data/` (visa bulletin + `iv_data.json`), `modnet/` (git submodule, background-removal model).                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `supabase/`     | `migrations/*` SQL (~97 files) — the database schema, RLS policies, triggers.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `actions/`      | Next.js server actions (currently only `chat-actions.ts`).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `scripts/`      | Maintenance/dev scripts (incl. `copy-pdf-worker.mjs`, run on `postinstall`). `scratch/` holds one-off guide-registration `.mjs` scripts.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `__tests__/`    | Jest tests: `case-strength/`, `consultation/`, `stripe/`, `candidate/`, `interview-prep/`, `questionnaire/`, `security/`, plus root tests (`candidate-sharing`, `journeyHelpers`, `profile-section-registry`, `resources-entitlement`, `sponsorship-poverty-guidelines`) and `setup.ts`.                                                                                                                                                                                                                                                                                                                                           |
+| `public/`       | Static assets, videos, sample docs.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| `middleware.ts` | Root middleware -> auth/session, admin gate, crawler + body-size guards.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 
 **Two component locations** (important): top-level `components/` (mostly shadcn
 primitives + a few shared tool widgets) **and** `app/components/` (feature-specific
@@ -159,7 +159,7 @@ Filing-method branching is expressed via `visible_when.filingMethod` (plus a leg
     `extractCaseDataKeys()`. Comment in-file: "JSON file is the source of truth, database
     is the storage layer."
   - `lib/journey/service.ts` — composes the engines/services:
-    - **ProgressCalculationService** — cascades completion *up*: step -> chapter -> journey.
+    - **ProgressCalculationService** — cascades completion _up_: step -> chapter -> journey.
     - **ConditionalLogicEngine** — evaluates `visible_when` JSONB against `case_data`.
       **Never short-circuit this** (see CLAUDE.md).
     - **StepCompletionEngine** — marks steps complete, unlocks dependents, handles
@@ -214,23 +214,29 @@ the two slug maps must stay in sync.** Pages are wrapped by `[visa-journey]/layo
   columns, see 10).
 
 **Journey environment + tool mode (journey vs standalone).**
+
 - `app/context/JourneyEnvironmentContext.tsx` (+ `lib/hooks/useJourneyEnvironment.ts`) exposes
   `isInsideJourney`, `journeySlug`, `journeyDataKey`, `journeyCategory`, `candidateId` so any
   component (incl. `SiteHeader`, `EmbeddedToolContainer`) knows whether it runs inside a
   journey. Its `SLUG_TO_DATA_KEY` duplicates the slug map in `page.tsx`.
 - `types/tool-mode.ts` + `lib/hooks/useResolveToolMode.ts` resolve a tool's mode:
   explicit `mode` prop > auto-detect from the journey environment > `standalone`.
-- **Smart form filler** (`MultiStepForm`) uses it. *Journey mode:* draft key =
-  `getCandidateJourneyKey(category, candidateId)`, candidate pre-fill + sibling-candidate draft
-  inheritance, not tier-gated. *Standalone mode:* draft key `"standalone"`, no candidate data,
+- **Smart form filler** (`MultiStepForm`) uses it. _Journey mode:_ draft key =
+  the candidate's category-slot journey key (`resolveCandidateJourneyKey`), candidate pre-fill + sibling-candidate draft
+  inheritance, not tier-gated. _Standalone mode:_ draft key `"standalone"`, no candidate data,
   gated by `plan.canUse("smart_form_filler")`; `api/visa-forms/[formCode]/progress` never falls
   back to the legacy `global` draft for standalone.
 
 **Journey toolbox (app groups).** `types/app-groups.ts` + `lib/constants/journey-app-groups.ts`
 define `JOURNEY_APP_GROUPS`: **Tools** (221g planner, interview prep, sponsorship calculator,
-DQ check, photo booth, PDF toolkit, snap & sign, smart form filler), **Guides** (7 guides),
-**Services** (consultation, PCC Sindh, medical booking, translation). Each item has a
-`componentKey`; `TOOL_FEATURE_MAP` maps it to an entitlement feature key. `AppGroupGrid`
+CSPA age-out checker, DQ check, photo booth, PDF toolkit, snap & sign, smart form filler),
+**Guides** (7 guides), **Services** (consultation, PCC Sindh, medical booking, translation). Each
+item has a `componentKey`; `TOOL_FEATURE_MAP` maps it to an entitlement feature key (`null` = free,
+never locked). An item with `visaCategories` (e.g. the CSPA checker: `["IR-2", "CR-2"]`) shows only
+on a journey of that base category; `getJourneyAppGroups(null)` still returns the full catalog.
+A step can point at a toolbox tool with a JSON `companion_tool` (`{component_key, title, body,
+button_label}`) on `tool_data` or on a quest (`show_when` = result states); StepView /
+QuestRenderer render `CompanionToolCard`, which launches it through the same `onLaunchTool` path. `AppGroupGrid`
 (in `journey-engine/`) is rendered by BOTH dashboards' `DashboardView`; clicking a group opens
 `AppGroupModal` (portal, search, lock state from `useJourneyPlan`; locked items open
 `UpgradeModal`). Launching an item renders it via
@@ -264,6 +270,88 @@ surface, not a spinner. Adding a guide to the toolbox = an `AppGroup` item + a `
 `OVERLAY_PAGE_ROUTES` entry + a `GUIDE_PRELOADERS` entry (its feature key must match the guide
 page's own `PageGate`).
 
+**Shared tool layout (one UI per tool, every entry point).** Redesigned tools render
+`ToolLayout` (`components/tools/layout/`: hero band, bench card, rules / FAQ / sources drawer,
+per-tool theme in `toolThemes.ts`) no matter where they are launched. A tool must NOT keep a
+second "journey" UI behind `showHeader` / `isEmbedded`: `mode` / `journeyContext` decide data,
+saving and gating; the launcher decides chrome. `EmbeddedToolContainer` and `ToolPageOverlay`
+wrap the tool in `ToolSurfaceProvider placement="journey"`; `ToolLayout` then drops
+`min-h-screen` and the Quick Access bookmark and uses a shorter band (`ToolHeader compact`).
+Standalone routes wrap the tool in `ToolPageFrame` (the 55px site-header offset only on its own
+page). Tools whose shell lives outside the tool component share it as a component used by both
+the route and the journey: `SponsorshipCalculatorLayout` (`components/tools/`) and
+`Planner221gLayout` (`221g-action-planner/components/`; the journey still renders its worksheet
+
+- action-plan tools inside it, the drawer copy switches by placement). Toolbox keys on the
+  shared layout are listed in `TOOL_LAYOUT_KEYS` (full-bleed, no container padding). On it today:
+  Interview Prep (+ My Sessions), 221(g), Sponsorship, Photo Booth, PDF Toolkit, Snap & Sign, DQ
+  status, CSPA, USCIS case status. Not yet: document translation, medical, PCC, consultation,
+  Smart Form Filler. Test: `__tests__/tools/tool-layout-placement.test.ts`.
+
+**Redesigned journey dashboard.** Both `DashboardView`s (spouse + engine) render only
+`app/components/journey-dashboard/JourneyDashboard.tsx` (the classic layout and its toggle were removed;
+the DashboardViews now only compute data and host the CSA drawer / questionnaire / upgrade modals). It switches at 1024px between `desktop/DesktopDashboard` (Inter,
+zoom-to-fit 1340px board) and `mobile/MobileDashboard` (Plus Jakarta Sans, swipe pages). The skins are
+presentational: each DashboardView passes the values it already computes (case score + sub-scores,
+gated `displayedAlertIssues`, phase flags, receipt record, NVC fields, next action + lock) into
+`useJourneyDashboardProps`, which reshapes them through the pure builders in
+`lib/journey/dashboard/buildDashboardModel.ts` (tested in `__tests__/journey-dashboard-model.test.ts`).
+Rules: no mock data (a field without data renders nothing); step filtering only via the passed
+`getActiveStepsForStage`; Continue uses the same lock / upgrade logic as `CaseStatusHero`; folders and
+quick links open `AppGroupModal`, `AllServiceRequestsModal` with `currentJourneyOnly` (this journey + candidate only),
+and a radial favourites fan (desktop; `JourneyFavoritesTray` in the journey nav was removed). Doc Vault opens
+`/document-vault?journey=<journeys.id>` and Portal wallet `/portal-wallet?candidate=<ir1 | candidate id>`; both pages
+skip their journey / wallet picker for that link. Desktop fits the board to the viewport (no scrolling); alerts always
+show in the top banner. **Tracking ticket + calendar dates read case facts through `lib/journey/dashboard/caseFacts.ts`
+(`readCaseFacts`)**, which lists every key the step tools actually save (e.g. `med_date` / `med_clinic`,
+`consulateLocation`, `approvalDetails.*`, `dqSaved`, the `uscis_receipt_number` case_data row as an object (spouse UI)
+or a string + `uscis_notice_date` (engine UI)) plus the old VisaTicker aliases; when a tool changes its keys, update
+that list. Registering a receipt fires `RECEIPT_SAVED_EVENT` so the DashboardViews refetch it. The ticket's
+"Check USCIS" button (`useUscisLiveCheck`) calls the Torch API route `/api/uscis-case-status` and saves the result as
+case_data `uscis_live_status` (shown only while it matches the current receipt number); nothing checks USCIS
+automatically. **Administrative processing:** while the case is in AP / 221(g) the ticket's Result stage offers
+"Open AP tracker" (the DashboardView's own `APTrackingTool`, passed in as `renderApTracker`, shown in a panel) once
+`apSaved`, else "Record AP details", which opens the step found by `findStepByToolType(..., "adm_processing")` (no
+hardcoded step positions). Old-dashboard items not yet ported are drafted in `docs/journey-dashboard-drafts.md`.
+**Dashboard plan locks** come from each DashboardView's `useJourneyPlan` (this journey's tier), passed
+as `locks` + `onUpgrade` into `useJourneyDashboardProps`: `case_strength` locked -> the card shows
+`lockedCaseHealthPreview` (a fixed sample, blurred, never the real score; questionnaires stay usable; Analysis opens
+the upgrade prompt); `tracker_reminders` locked -> Check USCIS opens the upgrade prompt; `document_vault` /
+`portal_wallet` locked -> those quick links open the upgrade prompt instead of navigating. The `/portal-wallet` page
+itself is wrapped in `PageGate feature="portal_wallet"` (Basic+; nothing loads when locked). On the server,
+`/api/uscis-case-status` checks the plan only when the body carries a `journeyId` (the dashboard sends it):
+`lib/uscis/journeyStatusAccess.ts` `canCheckUscisForJourney` = owned journey + its tier + account add-ons, else 403
+`PLAN_REQUIRED`. Calls without a journey id are the standalone Case Status tool, which stays free (decided Nov 2026). The hero's second button is the current step's own
+guide / tool / portal (`lib/journey/dashboard/stepAction.ts` `resolveStepAction`, read from the step JSON:
+`tool_data.type`, `tool_data.launch_module`, `relevantTools`, `guide_card`; toolbox items open in-journey).
+Mobile has no header row (the page name sits in the active nav bubble) and fits every page to the screen
+(spacing tightens on short phones, then content scales to at most 82%); its calendar adds custom events too, and
+Nearby on the Help page lists only places recorded on the journey (interview location, medical clinic) with directions,
+else an explanatory empty state. Tablets (700-1023px) use the mobile skin with two-column pages (mobile.css). Desktop
+designs the board at 1340px, scaled to the screen, normally never below 82%. Short screens step through layouts before
+scaling further: compact (`.frame.cmp`, board < 760: the calendar gets the wider share of the middle row (1.3fr vs tracking
+1fr), all five tracking stage boxes stay, calendar key dates in a side column) then tight (`.frame.tgt`, board < 650: every row and type size steps down again). Only a screen too short even
+for the tight board scales below 82% (down to 60%), so the board is always one view with no scrolling. A scaled-down
+board may grow wider than 1340px only in proportion to its height (width <= height x 2.2, max 1520px) so it keeps its
+shape. The tracking card never scrolls or crams: when a stage's facts do not fit, its front keeps a 2-fact preview
+and a "N more details" button flips it to a back face listing every fact (TrackingTicket `heavy` / `.tkc.b`). The toned-down /assets/images/dashboard.png backdrop is on the DashboardView wrapper
+(`.rv-dash-bg`), so it covers the whole dashboard area.
+A note's colour is its category (`NOTE_CATEGORIES`: Follow-up, Documents, Questions, Appointments, Money). Notes,
+custom calendar events and dismissed alerts are per JOURNEY ROW, saved as `case_data` keys
+`dashboard_notes` / `dashboard_events` / `dashboard_dismissed_alerts` (`lib/journey/dashboard/personal.ts`
+validates them on read; not mapped to the profile), so they never leak across categories or candidates.
+Widget layout + calendar face are per-browser localStorage keyed by journey id. The Community shortcut
+(desktop quick links + mobile) opens a "Join the community" modal / sheet whose button opens the public WhatsApp
+group (`COMMUNITY_URL` in `JourneyDashboard.tsx`; `NEXT_PUBLIC_COMMUNITY_URL` can override it). **Journey line
+access:** a step opens only once reached (done, or at / before the current step); later steps show their name
+and a tooltip but do not open. Each path step carries its plan `lock` (`buildPath` + the DashboardView's
+`stepLockFor` = `getStepLockStatus` with the journey tier and the step's index among VISIBLE steps, the same rule
+as the StepView Prev / Next footer), and `useJourneyDashboardProps` wraps `actions.onOpenStep` so opening a locked
+step from anywhere shows `UpgradeModal` (`getModalFeatureForTier`) instead (free = only chapter 1 step 1;
+`HARD_LOCK_RULES`, e.g. the 221(g) step, for paid tiers). The desktop fit measures the bottom of the fixed site header and the sticky journey header
+(`[data-journey-header]`) and re-measures when they resize. (The older string-built `Jdashboard` engine and the
+`/user-dashboard` journey embed that used it were removed.)
+
 **Cross-journey service request directory.** The Services folder in `AppGroupModal` has a
 "My Requests (all journeys)" link that opens `journey-engine/AllServiceRequestsModal.tsx`: every
 Consultation / Medical / PCC / Translation request on the account (`services-status?scope=all`
@@ -280,6 +368,7 @@ Untagged legacy rows resolve to `candidate-1`, matching `services-status`.
 
 **Journey-embedded services (Medical / PCC / Consultation).** All three are tier-gated services
 launched from the Services folder or from their roadmap step card, and they share one pattern:
+
 - **UI shell:** `components/tools/JourneyServiceModule.tsx` (service tiles, lock banner, summary
   card shown only once a request exists). Tools: `MedicalAppointmentTool`, `PccFilingTool` /
   `PccFilingModule`, and **`components/tools/BookConsultationTool.tsx`** (the whole booking UI now
@@ -317,7 +406,7 @@ launched from the Services folder or from their roadmap step card, and they shar
   engine's `roadmap-main` region using the `RoadmapLayoutEngine` breadcrumb for back/close
   (passed by `EmbeddedToolContainer`).
 - **Step auto-complete:** when a step card launches a tool, `RoadmapLayoutEngine.launchTool(key,
-  autoCompleteStepKey)` passes `autoCompleteStepKey` to `EmbeddedToolContainer`, so finishing the
+autoCompleteStepKey)` passes `autoCompleteStepKey` to `EmbeddedToolContainer`, so finishing the
   service also ticks off that roadmap step.
 - **Status sync:** `lib/journey/useJourneyServiceStatus.ts` reads `services-status?scope=journey`
   and reconciles server rows into journey metadata (medical, PCC, consultation records; the active
@@ -365,8 +454,13 @@ sets the active candidate and pushes the journey route; "Add" goes to
 `/pricing?visa=...&action=add_candidate`, unlike `AddCandidateModal`). Other categories navigate
 directly. Multi-candidate journey cards show a beneficiary-profile count.
 **Journey + candidate customization:** users can rename a journey card and set a cover image
-(stored in `MasterProfile.journeyCustomizations[<journey key>] = { name, image, updatedAt }`, saved
-via `updateProfile(..., { immediate: true })`), and rename / set an avatar for a candidate
+(stored in `MasterProfile.journeyCustomizations[<journeys.id>] = { name, image, updatedAt }`: keyed by
+the journey ROW id so each card is independent; only a card with no DB row uses its canonical key;
+older saves keyed by candidate id are read as a fallback for real roster candidates only. Saved via
+`updateProfile(..., { immediate: true })` with just that card's entry; the card rename does NOT write
+the candidate roster (a parallel `candidate/create` write rewrote `profile_details` and could undo
+it). `updateProfile` merges synchronously into `profileRef` before an immediate save, because a
+merge deferred inside a setState updater made the save send the old profile), and rename / set an avatar for a candidate
 (`CandidateProfile.customName` / `avatarUrl`, plus optional `journeyName` / `journeyImage`).
 `CandidateContext` treats a `customName` as authoritative: it is used as the label and is never
 overwritten by the generic "Candidate N" default-name normalization. Images go through
@@ -411,10 +505,10 @@ only seeds initial stage/step position. It also **bidirectionally syncs with the
     expert support, services.
 - `config.ts` — master `ENTITLEMENTS` table (~31 active feature keys) mapping features ->
   per-tier `FeatureState` (**8 states**: `full | list_only | save_only | locked_upgrade |
-  locked_buy | limited | executive_only | preview`) + add-on catalog + `TIER_PRICES`.
+locked_buy | limited | executive_only | preview`) + add-on catalog + `TIER_PRICES`.
 - `hardLockRules.ts` — **critical.** `getStepLockStatus(stepId, tier, chapterIdx, localIdx)`
   returns `{isLocked, requiredPlan, reason}`: free tier is locked past ch1/step1, then
-  `HARD_LOCK_RULES` (a per-step map of *denied* tiers) applies. `step_3_12` is
+  `HARD_LOCK_RULES` (a per-step map of _denied_ tiers) applies. `step_3_12` is
   executive-only (denies free/basic/premium); `step_3_11` denies only free.
 - `helpers.ts` — `getEffectiveEntitlement`, `canUse`, `isLocked`, `lockHint`, `upgradeCTA`,
   `tierPrice`.
@@ -439,12 +533,12 @@ source). Add-ons come from
 **Per-journey (per-category) tier resolution.** Entitlements resolve against the **active
 journey's category**, not just the account. `PlanContext` reads BOTH
 `user_profiles.subscription_tier` (`accountTier`) AND every `journeys.subscription_tier` in
-parallel, building a `journeyTiers` map keyed by base category
-(`getBaseVisaCategory(journey_type)` -> tier), and exposes it. The effective `realTier` for the
-active journey is: for candidate 2+ (`activeJourneyKey` like `ir5_candidate2`) ONLY that
-candidate's own journey row, else `free` (it never borrows candidate-1's tier); otherwise the
-`journeyTiers[activeCategory]` entry, which is the best PRIMARY row of the category (candidate
-rows are excluded from it); else, if ANY journey has an
+parallel, building a `journeyTiers` map keyed by journey_type AND by journey base category
+(`parseJourneyKey(journey_type).base`, so CR-2 shares IR-2's entry) -> tier, and exposes it. The
+effective `realTier` for the active journey is: for a category slot 2+ (`activeJourneyKey` like
+`ir5_candidate2`) ONLY that candidate's own journey row, else `free` (it never borrows slot 1's
+tier); otherwise the `journeyTiers[activeCategory]` entry, which is the best slot-1 (base) row of
+the category; else, if ANY journey has an
 explicit tier, an **unpurchased category resolves to `free`** (so an IR-1 candidate added on an
 IR-5-purchased account stays free/preview until IR-1 is bought - the existing Stripe flow, no
 new billing); else the legacy `accountTier` (single-journey / pre-`subscription_tier`-column
@@ -457,7 +551,13 @@ payment architecture. **Inside the journey dashboards, gating goes through
 every entitlement against that journey's own `state.subscriptionTier` rather than the account
 tier; use it (not raw `usePlan()`) for anything rendered inside a journey. Verified by `__tests__/candidate/candidate-entitlements.test.ts` (IR-5
 premium + IR-1 unpurchased -> locked; buy IR-1 -> unlocks; no journey tiers -> account
-fallback). One caveat to watch: if a paying account's active candidate is a stale DEFAULTED
+fallback). **Only `journeys.subscription_tier` grants access.** The roster's `candidates[].tier`
+and the legacy stored `profile_details.journeyTiers` / `journey_tiers` map (no writer left) are
+server-owned mirrors / history; `journeys/initialize` treats them only as a hint to ask Stripe
+(`lib/plan/journeyTierRepair.ts`: a live, recognisable plan for the same journey, tagged for this
+candidate or untagged for a slot-1 journey, not already attached to another row) and writes a
+repaired tier with the service-role client. It never copies a client-writable tier onto a row (S1).
+One caveat to watch: if a paying account's active candidate is a stale DEFAULTED
 category (e.g. an IR-1 account whose `profile.visaType` is unset defaults the candidate to
 IR-5), the active category can be wrong; the defaulted-fallback neutralization in
 `CandidateContext` mitigates this but relies on the profile carrying the real category.
@@ -475,7 +575,12 @@ when `action === "upgrade"`; otherwise the purchase is an add-candidate purchase
 tagged `action` / `is_add_candidate` + `candidate_count` in session and subscription metadata.
 That tag is what keeps the post-payment cleanup from cancelling it (or being cancelled by a later
 primary upgrade), see 27 "One live plan per JOURNEY". On confirmation BOTH `verify-session` and the webhook call
-**`provisionCandidateJourneysAndVaults()`** (`lib/candidate/candidateProvisioningService.ts`), which
+**`provisionCandidateJourneysAndVaults()`** (`lib/candidate/candidateProvisioningService.ts`; it
+works inside the purchased category's POOL only: the plan goes on `targetCandidateId` when it is in
+the pool, else the pool's slot-1 candidate; an empty pool gets a new slot-1 candidate with a fresh
+id that adopts the purchased base journey; add-candidate purchases get fresh ids and the lowest
+free slots; every vault is created with the purchased category, CR-2 -> IR-2; a candidate of
+another category is never touched), which
 replaced the old inline "find-or-insert one IR1/IR5 journey row" code. It (1) ensures the primary
 journey exists (seeded from `data/visa-category/ir-1.json` / `ir-5.json` via
 `createJourneyFromConfig`, raw insert as fallback) and stamps its `subscription_tier` /
@@ -505,23 +610,32 @@ Scores case strength grounded in USCIS policy + practitioner patterns, now **sca
 across visa categories via a profile/Strategy pattern** (no longer IR-1-only).
 
 - **Category registry:** `categories/index.ts` — `CASE_STRENGTH_PROFILES = [IR1_PROFILE,
-  IR5_PROFILE]`; `resolveCaseStrengthProfile(journeyType)` normalizes the type and
-  **falls back to `IR1_PROFILE`** for unknown/missing. A `CaseStrengthProfile`
+IR5_PROFILE, IR2_PROFILE]`; `resolveCaseStrengthProfile(journeyType)` matches by BASE category
+  (`getBaseVisaCategory`, so `ir5_candidate-2` -> IR-5, `ir2_candidate-1` -> IR-2) and returns **`GENERIC_PROFILE`**
+  (`categories/generic.ts`: no step checks, no risks, DOB-only consistency, passports-only
+  evidence) for unknown/missing/unregistered categories - **never `IR1_PROFILE`**. `findCaseStrengthProfile` / `hasCaseStrengthProfile`
+  return null/false for unregistered. A `CaseStrengthProfile`
   (`categories/types.ts`) bundles `stepCheckers`, `stepRefs`, `baselineFields`,
   `detectEligibilityRisks`, `consistency`, `evidence` (EvidenceGapConfig),
   `strengthSignals.relationship`, and optional `caseScore`, `documentEscalation`,
-  `lookAhead`. Adding a category = one new `categories/<slug>.ts` + registry entry.
+  `lookAhead`. Adding a category = one new `categories/<slug>.ts` + registry entry; full
+  playbook in `docs/case_strength_analysis.md` section 3. `__tests__/case-strength/category-contract.test.ts`
+  runs on every chapters-schema JSON (profile registered or listed in `AWAITING_PROFILE`; every
+  checker / look-ahead key exists in that JSON).
 - **Shared core:** `COMMON_STEP_CHECKERS` (`step-checkers.ts`) = IR-1 checkers minus 5
-  category-specific keys (`step_1_4, step_1_9, step_1_10, step_2_3, step_3_7`). IR-5
-  (`categories/ir5.ts`) reuses COMMON and overrides only those 5.
+  category-specific keys (`step_1_4, step_1_9, step_1_10, step_2_3, step_3_8`). IR-5
+  (`categories/ir5.ts`) reuses COMMON, overrides those 5, and re-points shared checkers BY
+  MEANING: **step keys are positional** (IR-5 has no I-130A, so its chapter-1 keys from
+  `step_1_5` sit one lower than IR-1's). Inserting a step in a JSON shifts later keys; update
+  that category's checker keys + tests in the same change.
 - **Weighted Case Health score:** `CASE_SCORE_WEIGHTS` in `case-narrative.ts` =
   **Evidence 0.4 / Consistency 0.3 / Completeness 0.2 / Risk 0.1** (single tuning point).
   `computeWeightedCaseScore` applies risk as inverted "risk health"
   (`100 - riskPenalty`), so a clean case can reach 100. `RISK_SEVERITY_PENALTY`: critical
   100 / warning 40 / advisory 15 (capped). **Both IR-1 and IR-5 profiles opt in**
   (`caseScore: { model: "weighted" }`); the legacy 50/50 `computeOverallCaseScore` runs
-  only when a profile omits `caseScore` (neither shipped profile does). *In-code comments
-  saying "IR-5 only" are stale.*
+  only when a profile omits `caseScore` (neither shipped profile does). _In-code comments
+  saying "IR-5 only" are stale._
 - **Shared explainer component:** `app/components/case-health/CaseHealthCalculation.tsx`
   is rendered by **both** dashboards (spouse V2 + engine V3) and imports
   `CASE_SCORE_WEIGHTS`, so the displayed math cannot drift from the model.
@@ -578,7 +692,20 @@ personalization by visa type / sponsor structure / country
 candidate**, coordinated by a central `CandidateContext` (`app/context/CandidateContext.tsx`,
 provided in `app/layout.tsx`). Candidates live on the `MasterProfile`
 (`profile.candidates: CandidateProfile[]` + `activeCandidateId`; see `types/candidate.ts`),
-and each candidate maps to a distinct `journey_type` via
+and each candidate maps to a distinct `journey_type`. **Ids vs category slots (Nov 2026):**
+`id` (`candidate-N`) is account-wide, assigned by the server as one above the highest id ever
+issued (`profile_details.candidateIdHighWater` + ids still found in candidate-tagged tables) and
+never reused; every `candidate_id` column keys on it. `categorySlot` numbers the candidate inside
+its POOL (IR-5 | IR-2 + CR-2 | IR-1 + CR-1 | each other category) and decides the journey key
+(`journeyBaseCategory(cat)` + (slot 1 ? "" : `_candidate{slot}`), so the first IR-2 child is `ir2`
+even when its id is candidate-3) and the default label "Candidate {slot}" (the UI prefixes the
+category, "IR-2 Candidate 1", only when the roster spans 2+ pools). A candidate saved before slots
+existed has no `categorySlot`: its slot is the number in its id, so every pre-slot key is unchanged.
+`isPrimary` still means "the account's first candidate" (owner of untagged legacy rows);
+`isCategoryPrimary()` = slot 1. All helpers live in `lib/candidate/candidateKeys.ts`
+(`getJourneyKeyForCandidate`, `resolveCandidateJourneyKey`, `findCandidateForJourneyKey`,
+`parseJourneyKey`, `formatCandidateLabel`, `nextCandidateId`, `nextCategorySlot`); the legacy
+id-based `getCandidateJourneyKey` is deprecated. Historically this was
 `getCandidateJourneyKey(baseType, candidateId)` in `lib/candidate/candidateSyncService.ts`
 (`ir5` for candidate-1, `ir5_candidate-2` for candidate-2, ...), so the existing
 `UNIQUE(user_id, journey_type)` constraint holds without a schema change. Sponsor/petitioner
@@ -591,7 +718,16 @@ see 10). **Tools are journey-aware:**
 case-status (`uscis_case_history` tags `_candidateId`/`_candidateName`), interview-prep, the
 221g planner and the Sponsorship (I-864) calculator all resolve the active journey/candidate
 from context so their state/results switch with the candidate (shared petitioner inputs stay
-shared). **Candidate persistence (this was a real bug - do not regress).** Candidate roster
+shared). **The roster is server-owned** (`lib/profile/serverOwnedKeys.ts` + the DB guard): ids,
+slots, labels, tiers and primary flags are assigned only by `POST /api/candidate/create` (create:
+`{ candidate: { relation, visaCategory, fullName } }`; update: `{ action: "update", candidateId,
+updates }` with an editable-field whitelist) and Stripe provisioning, both writing with the
+service-role client after auth. A new slot is the lowest one in the pool that no candidate uses AND
+whose key holds no leftover journey row, `visa_forms_draft` row, stored tier entry or
+`journeyCustomizations` entry (`lib/candidate/candidateAllocation.ts`), so a new candidate never
+inherits another person's progress. `addCandidate` is async: `AddCandidateModal` shows "Adding...",
+blocks double submits, and switches / navigates (`?candidateId=`) only after the server answers.
+**Candidate persistence (this was a real bug - do not regress).** Candidate roster
 writes do NOT ride the debounced full-profile save. That path could drop
 `profile_details.candidates` when a racing profile save serialized stale local state, so a
 newly added candidate vanished on refresh. Instead `CandidateContext.addCandidate` /
@@ -603,18 +739,23 @@ ONLY (no `/api/profile/complete` POST), and a **user-scoped** `localStorage` ros
 (`rahvana_candidates_roster_<userId>`) bridges the pre-profile-load window. The cache key is
 keyed by user id on purpose: a bare global key leaked one account's roster to another user on a
 shared browser. `POST /api/profile/complete` and `/api/profile/merge` now do an explicit
-update-if-exists / insert-if-missing (not a blind `upsert`, which was part of the drop). **Candidate deletion** is `POST /api/candidate/delete`: it removes the candidate from
+update-if-exists / insert-if-missing (not a blind `upsert`, which was part of the drop). **Candidate deletion** is `POST /api/candidate/delete` (logic in `lib/candidate/deleteCandidate.ts`).
+Rules: candidate-1 never; a candidate whose journey is paid (row or roster tier not free, or a
+`stripe_subscription_id` Stripe reports live; Stripe unreachable = refused) gets 409 "Cancel this
+candidate's plan before removing them."; a pool's slot-1 candidate only when it is the last of its
+pool. Cleanup is by the candidate's EXACT canonical journey key (never a suffix match): journey row
+(cascades), `visa_forms_draft`, stored tier entry, `journeyCustomizations` (id, `ir5_<id>`, row id,
+key), `user_guides` by candidate_id, then the roster entry; a failed step keeps that slot blocked.
+`CandidateContext.removeCandidate` waits for the server (no optimistic removal). It removes the candidate from
 `profile_details.candidates`, resets `activeCandidateId`, and cleans up that candidate's
 `user_guides` and **its suffixed `journeys` rows** (so a deleted candidate does not leave an
 orphaned journey that would keep the switcher's 2+ gate satisfied); candidate-1 (the base
 journey) can never be deleted. `CandidateContext` also
 exposes the canonical scope of the active journey: **`activeJourneyBase`** (e.g. "IR-1",
-"IR-5") and **`activeJourneyKey`** (the `journey_type` key, `getCandidateJourneyKey(active
-candidate.visaCategory, id)`), derived from the active candidate's own `visaCategory` (not an
-ambient `journey_type`). UI: `CandidateSwitcherTray` (switch / add / rename) was a
-**whole-journey feature in the global `SiteHeader` profile dropdown; it is currently NOT rendered
-anywhere** (the component file still exists). Today the active candidate is picked from My Journeys
-(`CandidateProfileLauncherModal`), the vault, Portal Wallet or the Smart Form Filler (one account,
+"IR-5") and **`activeJourneyKey`** (the `journey_type` key, `getJourneyKeyForCandidate(active
+candidate)`, from its category slot), derived from the active candidate's own `visaCategory` (not an
+ambient `journey_type`). UI: `CandidateSwitcherTray` (switch / add / rename) is a
+**whole-journey feature rendered in the global `SiteHeader` profile dropdown** (one account,
 multiple beneficiary journeys), NOT a vault-only widget. The switcher is **category-agnostic**
 (decision 2): it shows only when the account genuinely has **2+ candidates/journeys** -
 `isMultiCandidate` (candidate roster length > 1) OR `dedupeJourneysByType(fetchUserJourneysCached()).length >= 2`.
@@ -631,7 +772,15 @@ Father / Stepparent / Adoptive Parent (IR-5), Child (IR-2), and **Spouse (IR-1)*
 the visa category via `getVisaCategoryForRelation`. The only cardinality rule is USCIS's "one
 spouse at a time": a second Spouse is blocked (Spouse hidden once one exists, and
 `CandidateContext.addCandidate` throws) but this never blocks displaying/switching the one
-spouse. A cross-category candidate's journey row + config are created lazily by `initialize`
+spouse. **Category <-> candidate alignment:** the journey page resolves the candidate DURING RENDER
+(`lib/candidate/journeyCandidateResolution.ts`: `?candidateId=` in the URL's pool -> active
+candidate in the pool -> last used in the pool (sessionStorage map, `readLastUsedByPool`) -> the
+pool's slot 1; empty pool = no candidate, base journey, nothing created) and waits for
+`CandidateContext.isRosterReady` before `useWizard`'s first request, so the first `initialize` call
+already carries the right candidate (direct URLs, back/forward, My Journeys). On the server,
+`initialize` and `resolveOwnedJourney` resolve the key from the roster; a candidate of another pool
+resolves to the category's slot-1 key, so no stray row like `ir5_candidate3` is ever created.
+A cross-category candidate's journey row + config are created lazily by `initialize`
 on the URL that the switcher navigates to (URL base is authoritative for the category,
 `candidate_id` selects within it; deliberately NOT candidate-authoritative, because a defaulted
 candidate's `visaCategory` can be a stale IR-5 and would mislabel IR-1 accounts). **The journey
@@ -731,26 +880,26 @@ registered in `main.py`.
 
 ## 5. Important Files
 
-| File | Why it matters |
-|---|---|
-| `data/visa-category/*.json` | **Source of truth** for live journeys (ir-1/ir-5/f-1/...), keyed `chapter_key`/`step_key` with `who`/`visible_when`/`dependencies`. Never hardcode stage/step IDs. |
-| `data/roadmap.ts` | **Legacy** old-schema data; home/marketing pages only. Not the live journey. |
-| `app/components/journey-{engine,spouse}/journeyHelpers.ts` | `getActiveStepsForStage(...)` — **always** use to filter steps; never inline. (No `lib/journeyHelpers.ts` exists.) |
-| `lib/journey/config-loader.ts` + `service.ts` | JSON -> DB seeding + journey engines. |
-| `app/(tools)/(visa)/visa-category/[visa-journey]/page.tsx` | Dashboard router: `JOURNEY_DATA_MAP` + slug map; IR-1/CR-1 -> `RoadmapLayoutSpouse`, chapters-schema -> `RoadmapLayoutEngine`, stages-schema -> legacy `Wizard`. |
-| `app/context/JourneyEnvironmentContext.tsx` + `lib/hooks/useResolveToolMode.ts` | Inside-journey detection + journey/standalone tool mode (drafts, gating). |
-| `app/context/CandidateContext.tsx` + `app/context/useJourneyPlan.ts` | Active candidate/journey scope + per-journey entitlements. |
-| `lib/constants/journey-app-groups.ts` | Journey toolbox (Tools/Guides/Services) + `TOOL_FEATURE_MAP`. |
-| `lib/entitlements/config.ts` + `hardLockRules.ts` | All feature/step gating. |
-| `lib/case-strength/categories/*` + `case-narrative.ts` + `alert-gating.ts` | Category profiles, weighted score, alert gating. |
-| `lib/autoFill/mapper.ts` | Profile <-> form field registry. |
-| `app/(main)/dashboard/hooks/useWizard.ts` | Client journey state + Supabase sync. |
-| `app/context/*` | Global providers: Auth, Plan, UserProfile, Language. |
-| `lib/supabase/{client,server,middleware,admin}.ts` | Supabase clients. |
-| `middleware.ts` + `lib/supabase/middleware.ts` | Route protection, admin gate, crawler/body-size guards. |
-| `lib/security/*` | Rate limiting, audit log, alerting, upload validation. |
-| `types/profile.ts` | `MasterProfile` — top level IS the beneficiary; nested sponsor/relationship/etc. |
-| `backend/main.py`, `backend/app/services/*`, `backend/app/core/form_configs/*` | FastAPI routers, generators/fillers, 13 form field maps (incl. I-485, G-1450, G-1650, G-1651). |
+| File                                                                            | Why it matters                                                                                                                                                     |
+| ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `data/visa-category/*.json`                                                     | **Source of truth** for live journeys (ir-1/ir-5/f-1/...), keyed `chapter_key`/`step_key` with `who`/`visible_when`/`dependencies`. Never hardcode stage/step IDs. |
+| `data/roadmap.ts`                                                               | **Legacy** old-schema data; home/marketing pages only. Not the live journey.                                                                                       |
+| `app/components/journey-{engine,spouse}/journeyHelpers.ts`                      | `getActiveStepsForStage(...)` — **always** use to filter steps; never inline. (No `lib/journeyHelpers.ts` exists.)                                                 |
+| `lib/journey/config-loader.ts` + `service.ts`                                   | JSON -> DB seeding + journey engines.                                                                                                                              |
+| `app/(tools)/(visa)/visa-category/[visa-journey]/page.tsx`                      | Dashboard router: `JOURNEY_DATA_MAP` + slug map; IR-1/CR-1 -> `RoadmapLayoutSpouse`, chapters-schema -> `RoadmapLayoutEngine`, stages-schema -> legacy `Wizard`.   |
+| `app/context/JourneyEnvironmentContext.tsx` + `lib/hooks/useResolveToolMode.ts` | Inside-journey detection + journey/standalone tool mode (drafts, gating).                                                                                          |
+| `app/context/CandidateContext.tsx` + `app/context/useJourneyPlan.ts`            | Active candidate/journey scope + per-journey entitlements.                                                                                                         |
+| `lib/constants/journey-app-groups.ts`                                           | Journey toolbox (Tools/Guides/Services) + `TOOL_FEATURE_MAP`.                                                                                                      |
+| `lib/entitlements/config.ts` + `hardLockRules.ts`                               | All feature/step gating.                                                                                                                                           |
+| `lib/case-strength/categories/*` + `case-narrative.ts` + `alert-gating.ts`      | Category profiles, weighted score, alert gating.                                                                                                                   |
+| `lib/autoFill/mapper.ts`                                                        | Profile <-> form field registry.                                                                                                                                   |
+| `app/(main)/dashboard/hooks/useWizard.ts`                                       | Client journey state + Supabase sync.                                                                                                                              |
+| `app/context/*`                                                                 | Global providers: Auth, Plan, UserProfile, Language.                                                                                                               |
+| `lib/supabase/{client,server,middleware,admin}.ts`                              | Supabase clients.                                                                                                                                                  |
+| `middleware.ts` + `lib/supabase/middleware.ts`                                  | Route protection, admin gate, crawler/body-size guards.                                                                                                            |
+| `lib/security/*`                                                                | Rate limiting, audit log, alerting, upload validation.                                                                                                             |
+| `types/profile.ts`                                                              | `MasterProfile` — top level IS the beneficiary; nested sponsor/relationship/etc.                                                                                   |
+| `backend/main.py`, `backend/app/services/*`, `backend/app/core/form_configs/*`  | FastAPI routers, generators/fillers, 13 form field maps (incl. I-485, G-1450, G-1650, G-1651).                                                                     |
 
 ---
 
@@ -828,7 +977,8 @@ into `user_profiles.profile_details`** so tools share one profile.
   active journey.
 - **Form drafts:** localStorage + backend (`visa_forms_draft` table) for multi-step forms,
   **scoped by tool mode** (see 4.1 "Journey environment + tool mode"). In journey mode the
-  draft key is `getCandidateJourneyKey(category, candidateId)` (localStorage backup key,
+  draft key is the candidate's category-slot journey key,
+  `resolveCandidateJourneyKey(roster, category, candidateId)` (localStorage backup key,
   hydration key and `visa-forms/[formCode]/progress` reads/writes are all journey-keyed) and
   reads fall back to a legacy `"global"` draft when no journey-specific one exists. In
   standalone mode the key is `"standalone"` with no `global` fallback. The form's
@@ -877,13 +1027,20 @@ migrations (`create_{journeys,chapters,steps,case_data}_table.sql`).
 
 **Core journey tables**
 
-| Table | Purpose | Key columns |
-|---|---|---|
-| `journeys` | One per user immigration case (one per candidate) | `user_id`, `journey_type` (IR1/IR5/`ir5_candidate-2`...), `filing_method`, `sponsor_structure`, `current_chapter_id`, `current_step_id`, `status`, `completion_percentage`, `subscription_tier` (default `free`), `stripe_subscription_id` |
-| `chapters` | Stage subdivisions of a journey | `journey_id`, `chapter_key`, `chapter_number`, `status`, `display_order`, `is_visible`, `visible_when` (JSONB) |
-| `steps` | Granular action items | `chapter_id`, `step_key`, `step_type`, `tool_integration`, `dependencies` (JSONB), `visible_when` (JSONB), `status`, `substatus`, `is_required`, `metadata` |
-| `case_data` | Flexible key-value case facts | `journey_id`, `data_key`, `data_value` (JSONB), `source`, `is_verified`, `version`, `previous_value` (audit) |
+| Table       | Purpose                                           | Key columns                                                                                                                                                                                                                                |
+| ----------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `journeys`  | One per user immigration case (one per candidate) | `user_id`, `journey_type` (IR1/IR5/`ir5_candidate-2`...), `filing_method`, `sponsor_structure`, `current_chapter_id`, `current_step_id`, `status`, `completion_percentage`, `subscription_tier` (default `free`), `stripe_subscription_id` |
+| `chapters`  | Stage subdivisions of a journey                   | `journey_id`, `chapter_key`, `chapter_number`, `status`, `display_order`, `is_visible`, `visible_when` (JSONB)                                                                                                                             |
+| `steps`     | Granular action items                             | `chapter_id`, `step_key`, `step_type`, `tool_integration`, `dependencies` (JSONB), `visible_when` (JSONB), `status`, `substatus`, `is_required`, `metadata`                                                                                |
+| `case_data` | Flexible key-value case facts                     | `journey_id`, `data_key`, `data_value` (JSONB), `source`, `is_verified`, `version`, `previous_value` (audit)                                                                                                                               |
 
+> **Category slots + S1 guard (`20261113_01_guard_journey_billing_and_roster.sql`, apply by hand
+> after the app release).** `guard_journey_billing` pins `journeys.subscription_tier` /
+> `stripe_subscription_id` for `authenticated` / `anon` (insert = free / null, update keeps the
+> stored values); `guard_user_profile_billing` adds `candidates`, `candidateIdHighWater`,
+> `journeyTiers`, `journey_tiers` to the server-owned profile keys. Only service_role (Stripe
+> paths, candidate create/delete, the Stripe-verified repair) changes them.
+>
 > **Multi-candidate (IR-5/IR-2).** Each candidate is a separate `journeys` row with its own
 > `journey_type` (`ir5`, `ir5_candidate-2`, ...); documents stay scoped by the existing
 > `journey_id`. Candidate rosters live on `user_profiles.profile_details`
@@ -915,6 +1072,7 @@ translation documents, profiles/roles, `visa_security` questions, interview-prep
 `payments.stripe_subscription_id` was added in `20260910`.
 
 **Recent additions.**
+
 - `20261006_add_consultation_source` - `consultation_bookings` gains `source` (default
   `'standalone'`), `journey_slug`, `candidate_id` (+ partial index on `source`), matching the
   origin tags Medical/PCC already had (see 4.1 "Journey-embedded services").
@@ -995,39 +1153,39 @@ authenticates, enforces entitlements, encrypts sensitive data, talks to
 Supabase/Stripe/Gemini/EasyPost/Resend/USCIS/Sheets, and proxies CPU/AI work to the
 Python backend. Highlights:
 
-| Group | Notable endpoints | Talks to |
-|---|---|---|
-| `auth/*` | login (rate-limited + lockout), signup, callback, confirm-email, forgot/reset/change-password, signout, delete-account, `mfa/*`, check-admin | Supabase Auth, Resend, Redis |
-| `stripe/*` | `checkout` (takes `visaCategory` / `candidateCount` / `action`, or `productType: "wallet_topup"` + whole-dollar `amount` + `returnUrl`), `verify-session` (idempotent self-heal & source of truth), `webhook`, `portal`; both confirm paths call `provisionCandidateJourneysAndVaults` (see 4.3) and, for top-ups, `applyWalletTopup` (`lib/wallet/topup.ts`) | Stripe |
-| `plan/*` | `plan/reconcile` (never-downgrade tier self-heal) | Supabase |
-| `wallet/*` | `wallet` (GET balance + resources usable without paying), `wallet/launch-tool` (POST `{resourceType, resourceId, idempotencyKey?}`; unlocks a tool/guide at the `lib/wallet/catalog.ts` price, 402 + `deficit` / `topupAmount` when short), `wallet/transactions` (paginated own ledger, max 50/page). All auth-required, service-role after auth, filtered by the session user | Supabase |
-| `journeys|chapters|steps|case_data` | journey CRUD, `journeys/initialize` (combined load + bg step-sync), `journeys/[id]/document-checklist` (`DocumentChecklistEngine`), `case_data/validate` | Supabase, journey engines |
-| `candidate/*` | `candidate/create` (server-side upsert candidate into `profile_details.candidates` + lazy-insert its suffixed `journeys` row; the authoritative save path so candidates survive refresh), `candidate/delete` (remove candidate from `profile_details.candidates` + cleanup its `user_guides` and suffixed `journeys` rows; candidate-1 protected) | Supabase |
-| `journey/*` | `journey/marriage-check` (singular; distinct from `journeys`), `journey/upload-image` (journey cover / candidate avatar upload, auth + 5MB image cap), `journey/media` (owner-only: session required, path must be the caller's `journey-media/<userId>/`, see 4.1) | Supabase, Storage |
-| `documents/*` | upload (validate + encrypt + compress), download/preview/export, `config`, `mark-read`, `extract-{passport,cnic,birth,marriage,divorce}` | Supabase Storage, Python, Gemini |
-| `upload/*` | generic authenticated file upload tied to an appointment | Supabase Storage |
-| `profile/*` | get/save with field encryption, `complete`, `merge` | Supabase |
-| `portal-wallet/*` | encrypted NVC/USCIS/courier credentials, one-time `reveal` | Supabase (AES-256-GCM) |
-| `visa-security/*` | user CEAC/portal security-question CRUD | Supabase |
-| `receipt/*` | I-797 register/ocr/journey/lookup (stores into `case_data`) | Supabase, `lib/register-receipt` |
-| `uscis-case-status/*` | live USCIS **Torch API** OAuth case-status lookup | USCIS Torch API |
-| `uscis-case-history` | GET/DELETE the user's saved lookups (`uscis_case_history`, candidate-tagged) | Supabase |
-| `blog/*` | `comments`, `comments/[id]`, `subscribe`, `unsubscribe` | Supabase, Resend |
-| `account-deletion-feedback` | POST exit survey | Supabase |
-| `iv-status/*` | "documentarily complete" lookup from `backend/data/iv_data.json` | static data |
-| `guides/*` | guides wizard (start/save/progress/upload/my-guides) + admin feedback triage | Supabase |
-| `quick-access/*` | dashboard "quick access" tile CRUD (`user_quick_access`) | Supabase |
-| `user-dashboard/*` | `services-status` (PCC/medical/consult/translation, all four now filtered by origin + candidate; `scope=journey` = journey-tagged rows, default = standalone/My Resources, `scope=all` = every row unfiltered for the cross-journey request directory), `analytics` aggregation | Supabase |
-| `visa-forms/[formCode]/*` | save/resume multi-step form drafts (`visa_forms_draft`) | Supabase |
-| `consultation`, `book-appointment`, `document-translation/*`, `police-verification/*` | service bookings + admin workflows + payments | Supabase, Resend, Stripe |
-| `interview-prep/*`, `visa-checker/*` | sessions, answers, AI coaching (`ai-improve`) | Supabase, Gemini |
-| `ceac/status`, `easypost/*`, `cron/*` | case-status state machine, courier tracking + webhooks, scheduled jobs (`ceac-reminders`, `update-tracking`, `security-scan`) | Supabase, EasyPost |
-| `chat` | proxies to Python `ask-whatsapp` | Python backend |
-| `create-pdf`, `convert-pdf` | PDF generation/conversion | Python backend |
-| `admin/*` | `appointments`, `police-verifications`, `reviews`, `visa-cases`, guide feedback, `announce-feature`, `announce-blog`, `blog-comments`, `audit-logs`, `account-deletion-feedback`, `logout` (translation admin lives under `document-translation/*`) | Supabase, Resend |
-| `dev/*` | dev-only debug (`debug-reminders`, `seed-notifications`); hard-404 in production | Supabase |
-| `analytics`, `notifications`, `feature-usage`, `feedback`, `reviews` | GA4 + app telemetry/feedback (feedback also -> Google Sheets). `feature-usage` resolves the tier server-side from `scope` (`lib/usage/resolveUsageTier.ts`: `journey` = owned journey's tier, `standalone` = no plan + legacy add-on pools, Photo Booth credit packs of 2 photos, default = account tier); a client `tier` is ignored | GA4, Supabase, Sheets |
-| `v1/journeys/[id]/*`, `v2/ir1-estimate` | RESTful journey-scoped resources; IR-1 estimate | Supabase, ir1-engine |
+| Group                                                                                 | Notable endpoints                                                                                                                                                                                                                                                                                                                                                                                                                          | Talks to                         |
+| ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------- |
+| `auth/*`                                                                              | login (rate-limited + lockout), signup, callback, confirm-email, forgot/reset/change-password, signout, delete-account, `mfa/*`, check-admin                                                                                                                                                                                                                                                                                               | Supabase Auth, Resend, Redis     |
+| `stripe/*`                                                                            | `checkout` (takes `visaCategory` / `candidateCount` / `action`, or `productType: "wallet_topup"` + whole-dollar `amount` + `returnUrl`), `verify-session` (idempotent self-heal & source of truth), `webhook`, `portal`; both confirm paths call `provisionCandidateJourneysAndVaults` (see 4.3) and, for top-ups, `applyWalletTopup` (`lib/wallet/topup.ts`)                                                                              | Stripe                           |
+| `plan/*`                                                                              | `plan/reconcile` (never-downgrade tier self-heal)                                                                                                                                                                                                                                                                                                                                                                                          | Supabase                         |
+| `wallet/*`                                                                            | `wallet` (GET balance + resources usable without paying), `wallet/launch-tool` (POST `{resourceType, resourceId, idempotencyKey?}`; unlocks a tool/guide at the `lib/wallet/catalog.ts` price, 402 + `deficit` / `topupAmount` when short; for Photo Booth one launch = one pack of 2 photos, see 15), `wallet/transactions` (paginated own ledger, max 50/page). All auth-required, service-role after auth, filtered by the session user | Supabase                         |
+| `journeys                                                                             | chapters                                                                                                                                                                                                                                                                                                                                                                                                                                   | steps                            | case_data` | journey CRUD, `journeys/initialize` (combined load + bg step-sync), `journeys/[id]/document-checklist` (`DocumentChecklistEngine`), `case_data/validate` | Supabase, journey engines |
+| `candidate/*`                                                                         | `candidate/create` (server assigns id / category slot / label / tier, writes the roster with service role, seeds the slot-2+ journey; `action: "update"` edits whitelisted fields), `candidate/delete` (v3 rules: candidate-1, paid, category slot 1 with others left are refused; exact-key cleanup) - see 4.7                                                                                                                            | Supabase, Stripe                 |
+| `journey/*`                                                                           | `journey/marriage-check` (singular; distinct from `journeys`), `journey/upload-image` (journey cover / candidate avatar upload, auth + 5MB image cap), `journey/media` (owner-only: session required, path must be the caller's `journey-media/<userId>/`, see 4.1)                                                                                                                                                                        | Supabase, Storage                |
+| `documents/*`                                                                         | upload (validate + encrypt + compress), download/preview/export, `config`, `mark-read`, `extract-{passport,cnic,birth,marriage,divorce}`                                                                                                                                                                                                                                                                                                   | Supabase Storage, Python, Gemini |
+| `upload/*`                                                                            | generic authenticated file upload tied to an appointment                                                                                                                                                                                                                                                                                                                                                                                   | Supabase Storage                 |
+| `profile/*`                                                                           | get/save with field encryption, `complete`, `merge`                                                                                                                                                                                                                                                                                                                                                                                        | Supabase                         |
+| `portal-wallet/*`                                                                     | encrypted NVC/USCIS/courier credentials, one-time `reveal`                                                                                                                                                                                                                                                                                                                                                                                 | Supabase (AES-256-GCM)           |
+| `visa-security/*`                                                                     | user CEAC/portal security-question CRUD                                                                                                                                                                                                                                                                                                                                                                                                    | Supabase                         |
+| `receipt/*`                                                                           | I-797 register/ocr/journey/lookup (stores into `case_data`)                                                                                                                                                                                                                                                                                                                                                                                | Supabase, `lib/register-receipt` |
+| `uscis-case-status/*`                                                                 | live USCIS **Torch API** OAuth case-status lookup                                                                                                                                                                                                                                                                                                                                                                                          | USCIS Torch API                  |
+| `uscis-case-history`                                                                  | GET/DELETE the user's saved lookups (`uscis_case_history`, candidate-tagged)                                                                                                                                                                                                                                                                                                                                                               | Supabase                         |
+| `blog/*`                                                                              | `comments`, `comments/[id]`, `subscribe`, `unsubscribe`                                                                                                                                                                                                                                                                                                                                                                                    | Supabase, Resend                 |
+| `account-deletion-feedback`                                                           | POST exit survey                                                                                                                                                                                                                                                                                                                                                                                                                           | Supabase                         |
+| `iv-status/*`                                                                         | "documentarily complete" lookup from `backend/data/iv_data.json`                                                                                                                                                                                                                                                                                                                                                                           | static data                      |
+| `guides/*`                                                                            | guides wizard (start/save/progress/upload/my-guides) + admin feedback triage                                                                                                                                                                                                                                                                                                                                                               | Supabase                         |
+| `quick-access/*`                                                                      | dashboard "quick access" tile CRUD (`user_quick_access`)                                                                                                                                                                                                                                                                                                                                                                                   | Supabase                         |
+| `user-dashboard/*`                                                                    | `services-status` (PCC/medical/consult/translation, all four now filtered by origin + candidate; `scope=journey` = journey-tagged rows, default = standalone/My Resources, `scope=all` = every row unfiltered for the cross-journey request directory), `analytics` aggregation                                                                                                                                                            | Supabase                         |
+| `visa-forms/[formCode]/*`                                                             | save/resume multi-step form drafts (`visa_forms_draft`)                                                                                                                                                                                                                                                                                                                                                                                    | Supabase                         |
+| `consultation`, `book-appointment`, `document-translation/*`, `police-verification/*` | service bookings + admin workflows + payments                                                                                                                                                                                                                                                                                                                                                                                              | Supabase, Resend, Stripe         |
+| `interview-prep/*`, `visa-checker/*`                                                  | sessions, answers, AI coaching (`ai-improve`)                                                                                                                                                                                                                                                                                                                                                                                              | Supabase, Gemini                 |
+| `ceac/status`, `easypost/*`, `cron/*`                                                 | case-status state machine, courier tracking + webhooks, scheduled jobs (`ceac-reminders`, `update-tracking`, `security-scan`)                                                                                                                                                                                                                                                                                                              | Supabase, EasyPost               |
+| `chat`                                                                                | proxies to Python `ask-whatsapp`                                                                                                                                                                                                                                                                                                                                                                                                           | Python backend                   |
+| `create-pdf`, `convert-pdf`                                                           | PDF generation/conversion                                                                                                                                                                                                                                                                                                                                                                                                                  | Python backend                   |
+| `admin/*`                                                                             | `appointments`, `police-verifications`, `reviews`, `visa-cases`, guide feedback, `announce-feature`, `announce-blog`, `blog-comments`, `audit-logs`, `account-deletion-feedback`, `logout` (translation admin lives under `document-translation/*`)                                                                                                                                                                                        | Supabase, Resend                 |
+| `dev/*`                                                                               | dev-only debug (`debug-reminders`, `seed-notifications`); hard-404 in production                                                                                                                                                                                                                                                                                                                                                           | Supabase                         |
+| `analytics`, `notifications`, `feature-usage`, `feedback`, `reviews`                  | GA4 + app telemetry/feedback (feedback also -> Google Sheets). `feature-usage` resolves the tier server-side from `scope` (`lib/usage/resolveUsageTier.ts`: `journey` = owned journey's tier, `standalone` = no plan + legacy add-on pools, Photo Booth credit packs of 2 photos, default = account tier); a client `tier` is ignored                                                                                                      | GA4, Supabase, Sheets            |
+| `v1/journeys/[id]/*`, `v2/ir1-estimate`                                               | RESTful journey-scoped resources; IR-1 estimate                                                                                                                                                                                                                                                                                                                                                                                            | Supabase, ir1-engine             |
 
 **Conventions:** auth via Supabase session; shared guards in `lib/api/authGuards.ts` (required
 before any service-role call that bypasses RLS) + `lib/api/journey-auth.ts`; errors sanitized
@@ -1095,7 +1253,7 @@ Components consume these via hooks/contexts; they should not re-implement domain
   landed, then reverses). verify-session credits for anyone holding the session id but returns
   the amount / balance / tier only to the signed-in buyer. The
   `payments` row is stored as `product_type = "consultation"` (`original_product_type:
-  wallet_topup`), never `journey_plan`, which `reconcileUserPlan` reads for tier self-heal.
+wallet_topup`), never `journey_plan`, which `reconcileUserPlan` reads for tier self-heal.
   `lib/wallet/catalog.ts` is the server-authoritative price list (`WALLET_CATALOG`, mirrors the
   pricing-page `ADDONS`; `__tests__/wallet/catalog.test.ts` fails on drift). `resolveUnlockedItems`
   decides free standalone access: an active `standalone_unlocked_resources` row OR a legacy
@@ -1117,7 +1275,8 @@ Components consume these via hooks/contexts; they should not re-implement domain
   **Webhook retries:** `applyWalletTopup` / `applyWalletRefund` return `rpc_failed` (webhook 500,
   Stripe retries) only for transient errors (`isTransientRpcError`: no SQLSTATE, or class 08 / 40 /
   53 / 57); data errors are `rpc_rejected` (logged, 200).
-  `lib/wallet/launch.ts` (`launchResource`) skips the charge for owned items, namespaces the
+  `lib/wallet/launch.ts` (`launchResource`) skips the charge for owned items (for Photo Booth it
+  first closes a used-up pack via `getPhotoBoothPack`, so "owned" means photos are still left), namespaces the
   client idempotency key as `launch:<user>:<type>:<id>:<key>` (the ledger index is global), and
   maps `INSUFFICIENT_CREDITS` to 402 with `topupAmountForDeficit`. `lib/wallet/state.ts`
   (`loadWalletState`) reads balance + unlocks + add-ons for one user.
@@ -1168,6 +1327,22 @@ Components consume these via hooks/contexts; they should not re-implement domain
   `journey-spouse/components/`) import from here. Sponsor state comes from
   `profile.sponsor.address.state`: the journey `StepView`s pass it in (`lockState` = shown
   read-only), while the standalone `/affidavit-support-calculator` page requires a selector.
+- `lib/tools/cspa/ageOut.ts` - **CSPA age-out checker** rules for a child of a U.S. citizen
+  (IR-2 / CR-2): age frozen on the I-130 filing date (or on the parent's naturalization date when
+  the parent was a green card holder at filing), stepchild marriage before 18, adoption before 16
+  (16-18 = birth-sibling exception only), married = F3, filed at 21+ = F1. Every rule cites an
+  official uscis.gov page in `CSPA_SOURCES`; F2A (INA 203(h) formula), previously married
+  children, an adoption at 16-18, and a 29 Feb child filed (or still unfiled) on 28 Feb of the
+  21st year are deliberately "needs review" (the deadline itself uses 28 Feb, so it is never late).
+  Boundaries are pinned by the "edge cases" block in `__tests__/tools/cspa-age-checker.test.ts`. Legal content pending review (IR-2 plan D6). One UI,
+  `components/tools/CspaAgeCheckerTool.tsx`, FREE in both modes. It opens on an intro card
+  (what the tool is, why it is needed, how it helps; example and needed
+  documents are collapsible; Continue sticks to the bottom on phones) and shows the form after Continue; a journey that
+  already saved a check skips the intro (`skipIntro`). Modes: standalone `/cspa-age-checker`
+  (public, no sign-in, indexable, reads and saves nothing) and journey `cspa_checker`
+  (EmbeddedToolContainer; pre-fill from `lib/tools/cspa/journeyPrefill.ts` reads only the active
+  journey's metadata + the active Child candidate's DOB, and saves to that journey's
+  `metadata.cspaCheck`). Tests: `__tests__/tools/cspa-*.test.ts`.
 - UI utils: `cn()` (clsx + tailwind-merge), shared modals/inputs in `app/components/shared/*`.
 
 ---
@@ -1226,6 +1401,12 @@ lens, compare, confetti).
     `photo_booth:wallet` (spent via `increment_feature_usage_atomic`). When the last photo is used
     the server sets the unlock row to `revoked` (only if it still points at the purchase it
     counted), so the deduct RPC charges and re-activates it on the next purchase; no migration.
+    `getPhotoBoothPack` (GET `/api/feature-usage`, and `launchResource` before its owned check)
+    also closes a used-up pack it finds, so a failed close never blocks buying again. While photos
+    are left, a new purchase is refused as already owned (no charge). The ledger line reads
+    "Photo Booth - 2 photos". Buyers from before this change (when an unlock meant unlimited)
+    now get 2 photos per purchase, counted from this change on. Tests:
+    `__tests__/wallet/photoBoothPack.test.ts`.
     Legacy purchased photo add-on pools are spent after the packs. Usage goes through
     `/api/feature-usage` with a `scope` (below). UI copy says "photos", never "credits", for uses.
   - **Smart Form Filler:** every PDF (preview, download, vault save) goes through
@@ -1237,7 +1418,7 @@ lens, compare, confetti).
     police/authority letters stay open). **The gate is only active once `PDF_FILL_INTERNAL_TOKEN`
     is set on BOTH the Next.js server and the backend**; until then the backend logs a warning
     and allows full fills. `MultiStepForm` journey access = `canUse("smart_form_filler",
-    journeyTier, addons)` (Basic journeys get the page-1 demo), standalone = wallet unlock.
+journeyTier, addons)` (Basic journeys get the page-1 demo), standalone = wallet unlock.
     **Standalone credits unlock ONE form at a time** (`form-forge:<code>`, 39 credits each;
     `SMART_FORM_CODES` / `smartFormResourceId` in `lib/wallet/catalog.ts`, kept equal to
     `lib/formConfig` by `__tests__/wallet/smartFormUnlock.test.ts`). The whole-tool item
@@ -1252,11 +1433,11 @@ lens, compare, confetti).
   - **Interview Prep:** `POST /api/interview-prep` with `source: "journey"` calls
     `validateJourneySessionCreation` (owned journey via `resolveOwnedJourney`, journey still
     active, `basic_interview_prep` on the journey tier + add-ons) and creates a `source =
-    journey` session (`createJourneyInterviewSession`); it used to create a paid tool session.
+journey` session (`createJourneyInterviewSession`); it used to create a paid tool session.
     Standalone sessions (`validateToolSessionCreation`) ignore the plan: a credit unlock or the
     bare `interview-prep` add-on = unlimited, every category; a per-category purchase
     (`interview-prep:<slug>`) keeps its per-category session count. `/api/interview-prep/categories
-    ?scope=journey` skips wallet data. Client: `ResultPage isStandalone` + `standaloneGranted`
+?scope=journey` skips wallet data. Client: `ResultPage isStandalone` + `standaloneGranted`
     (category purchase) -> free demo without access, full with it; Rapid Fire / Mock take
     `isStandalone` / `standaloneFull`.
   - `lib/journey/resolveOwnedJourney.ts` is the shared ownership check: journey row id, or a
@@ -1289,9 +1470,17 @@ inheritance, i18n via `useLanguage().t()`, gating via `usePlan()`.
 ## 17. Middleware
 
 `middleware.ts` (root) matches all non-static routes and:
+
 - calls `lib/supabase/middleware.updateSession(request)` — refreshes the Supabase session,
   redirects unauthenticated users from protected routes and authenticated users from auth
   pages, and enforces admin-only access (email whitelist **AND** DB role, audit-logged).
+- only calls Supabase Auth for protected / admin / auth routes (public routes skip it), and
+  **every Supabase call in it is capped at 5s** (`getUserWithTimeout`, `abortSignal` on the
+  admin `profiles` read). When Auth is down or slow, admin routes answer 503 (fail closed) and
+  every other route passes through untouched (never bounced to /login); API routes still check
+  the session themselves. Without the cap an unhealthy Supabase made Vercel return
+  `504 MIDDLEWARE_INVOCATION_TIMEOUT`. Static files (scripts, fonts, media) are kept out of the
+  matcher; `.txt` / `.xml` stay in so the staging gate covers robots/sitemap.
 - enforces **API body-size limits** (`assertMiddlewareBodySize`).
 - injects **`X-Robots-Tag: noindex, nofollow`** on a hardcoded `PRIVATE_PREFIXES` list
   (crawler guard).
@@ -1327,20 +1516,20 @@ Permissions-Policy, XSS) are applied globally via `next.config.mjs` `headers()`.
 
 ## 19. External Integrations
 
-| Service | Use | Auth/Config |
-|---|---|---|
-| **Supabase** | DB, Auth (+MFA, OAuth), Storage, Realtime, RLS | URL + anon/service-role keys |
-| **Stripe** | Subscriptions, add-ons, billing portal, webhooks | secret key + webhook signing secret; `verify-session` is the source of truth |
-| **Google Gemini** | Vision OCR (always-run), AI coaching, chat | API key; backend uses OpenAI-compatible endpoint w/ `gemini-2.5-flash` |
-| **OCR.space** | Fast OCR first pass for small (<1MB) images | API key |
-| **USCIS Torch API** | Live receipt case-status lookup | OAuth (sandbox/prod), in-memory token cache |
-| **EasyPost** | Courier shipment tracking + webhooks | API key; HMAC-verified webhooks |
-| **Resend** | Transactional email + security alerts | API key |
-| **Upstash Redis** | Distributed rate limiting (optional) | REST URL + token; fails open to in-memory |
-| **Google Analytics 4** | Admin analytics | service-account credentials |
-| **Google Sheets** | Feedback append | `GOOGLE_SERVICE_ACCOUNT_JSON` |
-| **remove.bg / rembg / MODNet** | Passport-photo background removal | remove.bg key optional; rembg local fallback |
-| **Geoapify** | Country/address autocomplete | client key |
+| Service                        | Use                                              | Auth/Config                                                                  |
+| ------------------------------ | ------------------------------------------------ | ---------------------------------------------------------------------------- |
+| **Supabase**                   | DB, Auth (+MFA, OAuth), Storage, Realtime, RLS   | URL + anon/service-role keys                                                 |
+| **Stripe**                     | Subscriptions, add-ons, billing portal, webhooks | secret key + webhook signing secret; `verify-session` is the source of truth |
+| **Google Gemini**              | Vision OCR (always-run), AI coaching, chat       | API key; backend uses OpenAI-compatible endpoint w/ `gemini-2.5-flash`       |
+| **OCR.space**                  | Fast OCR first pass for small (<1MB) images      | API key                                                                      |
+| **USCIS Torch API**            | Live receipt case-status lookup                  | OAuth (sandbox/prod), in-memory token cache                                  |
+| **EasyPost**                   | Courier shipment tracking + webhooks             | API key; HMAC-verified webhooks                                              |
+| **Resend**                     | Transactional email + security alerts            | API key                                                                      |
+| **Upstash Redis**              | Distributed rate limiting (optional)             | REST URL + token; fails open to in-memory                                    |
+| **Google Analytics 4**         | Admin analytics                                  | service-account credentials                                                  |
+| **Google Sheets**              | Feedback append                                  | `GOOGLE_SERVICE_ACCOUNT_JSON`                                                |
+| **remove.bg / rembg / MODNet** | Passport-photo background removal                | remove.bg key optional; rembg local fallback                                 |
+| **Geoapify**                   | Country/address autocomplete                     | client key                                                                   |
 
 ---
 
@@ -1531,7 +1720,9 @@ External: Stripe . Resend . EasyPost . Gemini . USCIS . GA4 . Sheets . OCR.space
   `.fixed` element with z-index > 0 is on screen (detected via MutationObserver, so nested
   modals can't unlock early). New modals need no per-component `body.style.overflow` code;
   just keep the overlay `fixed inset-0` with a positive z-index, and make card max-height +
-  overlay padding fit within `100dvh` or the overlay itself will scroll slightly.
+  overlay padding fit within `100dvh` or the overlay itself will scroll slightly. It scans the Tailwind
+  `.fixed` class; an overlay positioned fixed in plain CSS (e.g. the journey dashboard's alerts drawer
+  scrim, notes modal, community modal) must add `data-scroll-lock` to be seen.
 - **Two encryption schemes** — global key for portal-wallet/profile fields
   (`lib/encryption.ts`), per-user key for vault files
   (`document-vault/file-encryption.ts`). Don't assume per-user everywhere.
@@ -1562,7 +1753,7 @@ External: Stripe . Resend . EasyPost . Gemini . USCIS . GA4 . Sheets . OCR.space
   and a candidate-2 Executive plan never makes a candidate-1 Basic -> Premium upgrade look like a
   downgrade. **Upgrade cleanup:** after payment is confirmed, BOTH `verify-session` and the webhook
   call `cancelSupersededSubscriptions({ customerId, keepSubId, visaCategory, isAddCandidate,
-  oldSubscriptionId })` (idempotent; whichever runs first wins). It cancels only the upgrade's
+oldSubscriptionId })` (idempotent; whichever runs first wins). It cancels only the upgrade's
   `old_subscription_id` plus any other live plan tagged with the SAME journey that is not an
   add-candidate plan (desync duplicates); an add-candidate purchase cancels nothing, plans for
   other journeys and untagged legacy subs (unless they are the upgrade hint) are never touched.
@@ -1591,6 +1782,11 @@ External: Stripe . Resend . EasyPost . Gemini . USCIS . GA4 . Sheets . OCR.space
   (`lib/stripe/checkoutLock.ts`) uses a random ownership token + compare-and-delete release so it
   can't delete another request's lock; it stays fail-open on a Redis error (cleanup is the
   backstop).
+- **Never derive a journey key from a candidate id** (`candidate-3` is NOT `_candidate3` any more):
+  use `getJourneyKeyForCandidate(candidate)` or `resolveCandidateJourneyKey(roster, category, id)`,
+  and `findCandidateForJourneyKey` / `candidateIdForJourneyKey` for the reverse. Never match journeys
+  by suffix (`ilike %_candidate2%`); compare `canonicalJourneyKey`. Never write a candidate-tagged row
+  without `candidate_id` (the column defaults to `'candidate-1'`).
 - **`outputFileTracingIncludes`** bundles `data/**` into API routes (routes read
   `data/visa-category/*.json` at runtime).
 - Migrations are applied by hand in filename order (no CLI tracking); a removed file only
@@ -1623,6 +1819,7 @@ encrypted; a `lib/security/*` suite adds rate limiting, audit logging, and alert
 ## 29. File Importance Ranking
 
 **Critical (must understand the system)**
+
 - `data/visa-category/*.json`, `app/components/journey-{engine,spouse}/journeyHelpers.ts`,
   `lib/journey/config-loader.ts`, `lib/journey/service.ts`
 - `app/(tools)/(visa)/visa-category/[visa-journey]/page.tsx` (dashboard router)
@@ -1636,6 +1833,7 @@ encrypted; a `lib/security/*` suite adds rate limiting, audit logging, and alert
 - `backend/main.py`, `backend/app/services/pdf_filler.py`, `backend/app/core/form_configs/*`
 
 **Important (feature development)**
+
 - `lib/journey/evidence-gap/engine.ts`, `app/components/case-health/*`, `lib/ir1-engine/*`,
   `lib/ir1-engine/milestones.config.ts`, `lib/narrative/*`
 - `lib/notifications/*`, `lib/reminders/*`, `lib/ceac-tracking/*`
@@ -1649,11 +1847,13 @@ encrypted; a `lib/security/*` suite adds rate limiting, audit logging, and alert
   `lib/interview-prep/*`, `lib/questionnaire/*`, `lib/stripe/{checkoutLock,subscriptionCleanup}.ts`
 
 **Secondary (helpful)**
+
 - `components/ui/*` (shadcn), `app/components/shared/*`, `app/components/layout/*`
 - `lib/constants/*`, `lib/errors/*`, `lib/policy-data.ts`, `app/translations/*`
 - Marketing/legacy (`data/roadmap.ts`, `lib/steps.ts`), `backend/scripts/*`, `__tests__/*`
 
 **Ignore**
+
 - `node_modules/`, `.next/`, `.swc/`, `backend/.venv/`, `backend/__pycache__/`,
   `backend/modnet/` internals, `*.log`, `tsconfig.tsbuildinfo`, `package-lock.json`,
   `uploads/`, generated PDFs/artifacts.
@@ -1721,7 +1921,8 @@ Completeness 20 / Risk 10, both IR-1 + IR-5), a shared `CaseHealthCalculation` e
 autofill-free `userProvided` view). `ir1-engine/*` (incl. `milestones.config.ts`) + `narrative/*`
 handle stage/timeline. **Two reminder engines**: `notifications/UnifiedReminderEngine`
 (registry) and `reminders/ReminderEngine` (document-driven); `ceac-tracking` state machine
-+ `cron/*`.
+
+- `cron/*`.
 
 **Security.** RLS (own-row) on every user table; admin = `ADMIN_EMAILS` whitelist **AND**
 DB role (audit-logged). `lib/security/*` adds **rate limiting** (Upstash Redis fail-open +

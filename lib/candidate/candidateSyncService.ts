@@ -13,7 +13,11 @@ import type {
   CandidateRelation,
   CandidateTier,
 } from "@/types/candidate";
-import type { VisaCategory } from "@/lib/document-vault/types";
+import {
+  candidateIdNumber,
+  nextCandidateId,
+  nextCategorySlot,
+} from "./candidateKeys";
 
 /**
  * Fields that belong to the Petitioner / U.S. Sponsor.
@@ -186,8 +190,20 @@ export function getVisaCategoryForRelation(
   }
 }
 
+const COLOR_TAGS: Array<NonNullable<CandidateProfile["colorTag"]>> = [
+  "teal",
+  "purple",
+  "blue",
+  "amber",
+  "rose",
+  "emerald",
+];
+
 /**
- * Creates a new candidate profile (e.g. adding 2nd parent for free preview or multi-petition).
+ * Builds a new candidate. Server-side only (candidate/create, provisioning): the id is
+ * one above the highest id ever issued (`highWater`), never `length + 1`, and the slot
+ * is the lowest free slot in the category pool that no leftover data still occupies
+ * (`blockedKeys`). Tier is always "free" here; only Stripe provisioning raises it.
  */
 export function createNewCandidate(
   existingCandidates: CandidateProfile[],
@@ -195,77 +211,53 @@ export function createNewCandidate(
     relation: CandidateRelation;
     fullName?: string;
     visaCategory?: string;
-    tier?: CandidateTier;
-    isPreview?: boolean;
+    /** Highest candidate id number ever issued on this account. */
+    highWater?: number;
+    /** Canonical journey keys whose slot may not be reused yet. */
+    blockedKeys?: ReadonlySet<string>;
+    /** Force a slot (provisioning adopting a purchased base journey). */
+    categorySlot?: number;
   }
 ): CandidateProfile {
-  const nextNum = existingCandidates.length + 1;
+  // The account's first candidate is always candidate-1: it owns legacy rows that carry
+  // no candidate tag (and DB defaults of 'candidate-1').
+  const id =
+    existingCandidates.length === 0
+      ? "candidate-1"
+      : nextCandidateId(existingCandidates, params.highWater ?? 0);
+  const idNum = candidateIdNumber(id) ?? 1;
   const relation = params.relation;
-
-  const colorTags: Array<CandidateProfile["colorTag"]> = [
-    "teal",
-    "purple",
-    "blue",
-    "amber",
-    "rose",
-    "emerald",
-  ];
-  const colorTag = colorTags[(nextNum - 1) % colorTags.length] || "teal";
 
   // Automatically determine the exact Visa Category from relation unless explicitly specified
   const visaCategory =
     params.visaCategory ||
     getVisaCategoryForRelation(relation, existingCandidates[0]?.visaCategory || "IR-5");
 
+  const categorySlot =
+    params.categorySlot ??
+    nextCategorySlot(existingCandidates, visaCategory, params.blockedKeys ?? new Set());
+
   return {
-    id: `candidate-${nextNum}`,
-    // Generic, numbered label. The user-chosen relation is stored on `relation` and shown
-    // separately; the actual name (if any) goes in `fullName` when the user enters it.
-    label: `Candidate ${nextNum}`,
+    id,
+    categorySlot,
+    // Generic label numbered inside the category. The relation is stored on `relation`
+    // and the name (if any) in `fullName`.
+    label: `Candidate ${categorySlot}`,
     relation,
     fullName: params.fullName || "",
     visaCategory,
-    tier: params.tier || "free",
+    tier: "free",
     isPrimary: existingCandidates.length === 0,
-    // No per-candidate preview: added candidates are full, equal beneficiaries.
-    isPreview: params.isPreview ?? false,
+    isPreview: false,
     createdAt: new Date().toISOString(),
-    colorTag,
+    colorTag: COLOR_TAGS[(idNum - 1) % COLOR_TAGS.length] || "teal",
   };
 }
 
-/**
- * Explicit "could not resolve a visa category" sentinel (decision 5). `getBaseVisaCategory`
- * returns this for empty/null/unresolvable input instead of silently defaulting to IR-5, so a
- * mis-mapped or missing `journey_type` surfaces as UNKNOWN rather than masquerading as a real
- * parent journey. Callers that need a concrete category must guard against it explicitly.
- * (Cast once here, matching the existing `as VisaCategory` style in this file.)
- */
-export const UNKNOWN_VISA_CATEGORY = "UNKNOWN" as VisaCategory;
-
-/**
- * Extracts base visa category ("IR-5", "IR-1", "IR-2", "CR-1", etc.)
- * from any raw journey type, candidate key, or compound string.
- * Returns UNKNOWN_VISA_CATEGORY when the input is empty/null or cleans to nothing - it does
- * NOT default to IR-5 (decision 5, explicit unknown).
- */
-export function getBaseVisaCategory(journeyTypeOrVisa?: string | null): VisaCategory {
-  if (!journeyTypeOrVisa) return UNKNOWN_VISA_CATEGORY;
-  const cleaned = journeyTypeOrVisa.split("_")[0].split(":")[0].trim();
-  const normalized = cleaned.toLowerCase().replace(/[^a-z0-9]/g, "");
-  if (normalized.startsWith("ir5")) return "IR-5";
-  if (normalized.startsWith("ir1")) return "IR-1";
-  if (normalized.startsWith("ir2")) return "IR-2";
-  if (normalized.startsWith("cr1")) return "CR-1";
-  if (normalized.startsWith("cr2")) return "CR-2";
-  if (normalized === "f1") return "F-1 Student Visa";
-
-  if (/^[a-zA-Z]+[0-9]+$/.test(cleaned)) {
-    const formatted = cleaned.replace(/^([a-zA-Z]+)([0-9]+)$/, "$1-$2").toUpperCase();
-    return formatted as VisaCategory;
-  }
-  return (cleaned.toUpperCase() as VisaCategory) || UNKNOWN_VISA_CATEGORY;
-}
+// Base-category parsing lives in ./visaCategory so pure key helpers (./candidateKeys) and
+// journeyConfig can use it without an import cycle. Re-exported here for existing importers.
+export { UNKNOWN_VISA_CATEGORY, getBaseVisaCategory } from "./visaCategory";
+import { getBaseVisaCategory } from "./visaCategory";
 
 /**
  * Set of visa categories that support multiple beneficiaries/candidates.
@@ -297,10 +289,11 @@ export function isMultiCandidateCategory(journeyTypeOrVisa?: string | null): boo
 }
 
 /**
- * Derives the database journey type key for a candidate.
- * Candidate 1 maps to the base root (e.g. "ir5", "ir1"),
- * while subsequent candidates map to "ir5_candidate2", "ir5_candidate3", etc.
- * Fully idempotent even if passed an already candidate-scoped key.
+ * LEGACY id-based journey key: "candidate-N" -> `<base>_candidateN`. Correct only for
+ * candidates without a `categorySlot` (pre-slot rosters). Anything holding the candidate
+ * object must use getJourneyKeyForCandidate (./candidateKeys); anything holding only an id
+ * plus the roster must use resolveCandidateJourneyKey.
+ * @deprecated use getJourneyKeyForCandidate / resolveCandidateJourneyKey
  */
 export function getCandidateJourneyKey(baseJourneyType: string, candidateId?: string | null): string {
   const baseVisa = getBaseVisaCategory(baseJourneyType);
@@ -311,9 +304,6 @@ export function getCandidateJourneyKey(baseJourneyType: string, candidateId?: st
   const cleanCandId = candidateId.toLowerCase().replace(/[^a-z0-9]/g, "");
   return `${normalizedBase}_${cleanCandId}`;
 }
-
-/** Alias for getCandidateJourneyKey */
-export const getJourneyKeyForCandidate = getCandidateJourneyKey;
 
 /**
  * Synchronizes shared petitioner / sponsor fields across the profile.

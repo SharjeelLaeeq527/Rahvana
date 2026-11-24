@@ -15,6 +15,7 @@ import {
   X,
   Loader2,
   MoreVertical,
+  Search,
 } from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
 import { useCandidate } from "@/app/context/CandidateContext";
@@ -23,10 +24,8 @@ import { PlanContext } from "@/app/context/PlanContext";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { JourneyProgressRecord, listUserJourneys } from "@/lib/journey/journeyProgressService";
 import { createClient } from "@/lib/supabase/client";
-import {
-  getCandidateJourneyKey,
-  getBaseVisaCategory,
-} from "@/lib/candidate/candidateSyncService";
+import { getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
+import { findCandidateForJourneyKey, isSamePool } from "@/lib/candidate/candidateKeys";
 import { getJourneyHrefByType, ir1journeyHref, ir5journeyHref } from "@/lib/constants/routes";
 import { IR5_ENABLED } from "@/lib/feature-flags";
 import { Loader } from "@/components/ui/spinner";
@@ -35,6 +34,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { JourneyPlanBadge } from "@/app/components/shared/JourneyPlanBadge";
 import { uploadJourneyImage } from "@/lib/journey/imageUploadHelper";
+import { FilterPanel, FilterField } from "@/app/components/shared/FilterPanel";
 
 const JOURNEY_ALIASES: Record<string, string> = {
   "ir-1": "ir1",
@@ -43,6 +43,12 @@ const JOURNEY_ALIASES: Record<string, string> = {
   "ir-1-spouse": "ir1",
   "ir-1-spouse-visa": "ir1",
   "ir-5": "ir5",
+  "ir-2": "ir2",
+  ir2: "ir2",
+  "ir2-child": "ir2",
+  "ir2-child-visa": "ir2",
+  "ir-2-child": "ir2",
+  "ir-2-child-visa": "ir2",
 };
 
 const normalizeJourneyId = (id: string): string => {
@@ -76,12 +82,26 @@ const JOURNEY_META: Record<string, JourneyMeta> = {
     image: "/assets/images/ir5-doc-vault-image.png",
     code: "IR-5",
   },
+  ir2: {
+    name: "IR-2 Child Visa",
+    description: "A guided immigration journey for unmarried children under 21 of U.S. citizens.",
+    route: "/visa-category/ir2-journey",
+    image: "/assets/images/ir2-doc-vault-image.jpg",
+    code: "IR-2",
+  },
 };
 
 const resolveJourneyMeta = (rawId: string): JourneyMeta & { canonicalId: string } => {
   const canonical = normalizeJourneyId(rawId);
   const baseVisa = getBaseVisaCategory(rawId);
-  const baseCanonical = baseVisa === "IR-5" ? "ir5" : baseVisa === "IR-1" ? "ir1" : canonical;
+  const baseCanonical =
+    baseVisa === "IR-5"
+      ? "ir5"
+      : baseVisa === "IR-1"
+        ? "ir1"
+        : baseVisa === "IR-2" || baseVisa === "CR-2"
+          ? "ir2"
+          : canonical;
 
   const meta = JOURNEY_META[baseCanonical] || JOURNEY_META[canonical];
 
@@ -298,88 +318,58 @@ export default function MyJourneysPage() {
   const [dbCandidates, setDbCandidates] = useState<any[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [hasFetched, setHasFetched] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [journeyFilters, setJourneyFilters] = useState<Record<string, string>>({
+    category: "all",
+    status: "all",
+    plan: "all",
+  });
+
+  // Journey card customizations (name / cover) are stored per journey ROW:
+  // profile.journeyCustomizations[<journeys.id>]. A row id belongs to exactly one card,
+  // so renaming one candidate's journey can never rename another card. Only cards with
+  // no DB row yet (profile fallback) use their canonical key. The candidate roster is
+  // NOT touched: the card name is not the beneficiary's legal name (fullName feeds the
+  // forms), and a parallel roster write rewrote profile_details and could undo this save.
+  const customizationKeyFor = (canonicalKey: string, journeyId?: string) =>
+    journeyId || canonicalKey || "";
 
   const handleUpdateJourneyName = useCallback(
-    async (canonicalKey: string, newName: string, candidateId?: string, journeyId?: string) => {
-      if (candidateId) {
-        updateCandidate(candidateId, { customName: newName, fullName: newName });
-      }
+    async (canonicalKey: string, newName: string, _candidateId?: string, journeyId?: string) => {
+      const key = customizationKeyFor(canonicalKey, journeyId);
+      if (!key) return;
       const existing = profile?.journeyCustomizations || {};
-      const updated = { ...existing };
-
-      if (candidateId) {
-        updated[candidateId] = {
-          ...existing[candidateId],
-          name: newName,
-          updatedAt: new Date().toISOString(),
-        };
-        updated[`ir5_${candidateId}`] = {
-          ...existing[`ir5_${candidateId}`],
-          name: newName,
-          updatedAt: new Date().toISOString(),
-        };
-      } else if (canonicalKey) {
-        updated[canonicalKey] = {
-          ...existing[canonicalKey],
-          name: newName,
-          updatedAt: new Date().toISOString(),
-        };
-      }
-
-      if (journeyId) {
-        updated[journeyId] = {
-          ...existing[journeyId],
-          name: newName,
-          updatedAt: new Date().toISOString(),
-        };
-      }
-
-      updateProfile({ journeyCustomizations: updated }, { immediate: true });
+      updateProfile(
+        {
+          // Only this card's entry: the profile merge keeps every other card's entry.
+          journeyCustomizations: {
+            [key]: { ...existing[key], name: newName, updatedAt: new Date().toISOString() },
+          },
+        },
+        { immediate: true, silent: true }
+      );
       showToast("Journey name updated!", "success");
     },
-    [profile?.journeyCustomizations, updateProfile, updateCandidate, showToast]
+    [profile?.journeyCustomizations, updateProfile, showToast]
   );
 
   const handleUpdateJourneyImage = useCallback(
-    async (canonicalKey: string, file: File, candidateId?: string, journeyId?: string) => {
+    async (canonicalKey: string, file: File, _candidateId?: string, journeyId?: string) => {
+      const key = customizationKeyFor(canonicalKey, journeyId);
+      if (!key) return;
       try {
-        const uploadKey = candidateId || canonicalKey || journeyId || "journey";
-        const { url } = await uploadJourneyImage(file, "journey", uploadKey);
+        const { url } = await uploadJourneyImage(file, "journey", key);
         if (url) {
-          if (candidateId) {
-            updateCandidate(candidateId, { avatarUrl: url });
-          }
           const existing = profile?.journeyCustomizations || {};
-          const updated = { ...existing };
-
-          if (candidateId) {
-            updated[candidateId] = {
-              ...existing[candidateId],
-              image: url,
-              updatedAt: new Date().toISOString(),
-            };
-            updated[`ir5_${candidateId}`] = {
-              ...existing[`ir5_${candidateId}`],
-              image: url,
-              updatedAt: new Date().toISOString(),
-            };
-          } else if (canonicalKey) {
-            updated[canonicalKey] = {
-              ...existing[canonicalKey],
-              image: url,
-              updatedAt: new Date().toISOString(),
-            };
-          }
-
-          if (journeyId) {
-            updated[journeyId] = {
-              ...existing[journeyId],
-              image: url,
-              updatedAt: new Date().toISOString(),
-            };
-          }
-
-          updateProfile({ journeyCustomizations: updated }, { immediate: true });
+          updateProfile(
+            {
+              // Only this card's entry: the profile merge keeps every other card's entry.
+              journeyCustomizations: {
+                [key]: { ...existing[key], image: url, updatedAt: new Date().toISOString() },
+              },
+            },
+            { immediate: true, silent: true }
+          );
           showToast("Journey cover photo updated!", "success");
         }
       } catch (err) {
@@ -387,7 +377,7 @@ export default function MyJourneysPage() {
         showToast("Failed to upload image. Please try again.", "error");
       }
     },
-    [profile?.journeyCustomizations, updateProfile, updateCandidate, showToast]
+    [profile?.journeyCustomizations, updateProfile, showToast]
   );
 
   const [launcherModal, setLauncherModal] = useState<{
@@ -426,7 +416,9 @@ export default function MyJourneysPage() {
       const [journeysQueryRes, progressData, profileRes] = await Promise.all([
         supabase
           .from("journeys")
-          .select("id, journey_type, subscription_tier, completed_steps_count, total_steps_count, updated_at, filing_method, status")
+          .select(
+            "id, journey_type, subscription_tier, completed_steps_count, total_steps_count, updated_at, filing_method, status"
+          )
           .eq("user_id", user.id)
           .order("updated_at", { ascending: false }),
         listUserJourneys(user.id).catch((err) => {
@@ -560,34 +552,48 @@ export default function MyJourneysPage() {
       const baseCategory = getBaseVisaCategory(j.journey_id);
       const canonical = normalizeJourneyId(j.journey_id);
       const meta = resolveJourneyMeta(j.journey_id);
-      const isIr5 = IR5_ENABLED && baseCategory === "IR-5";
+      const isMulti =
+        (IR5_ENABLED && baseCategory === "IR-5") ||
+        baseCategory === "IR-2" ||
+        baseCategory === "CR-2";
 
-      if (isIr5) {
+      if (isMulti) {
         // Multi-candidate (IR-5) candidate resolution:
-        // 1. Check if journey_id explicitly specifies candidate index (e.g. "ir5_candidate-2")
+        // 1. The roster candidate whose CATEGORY SLOT maps to this journey key ("ir5" ->
+        //    the IR-5 pool's slot 1, "ir5_candidate2" -> slot 2), whatever its account id.
+        const owner = findCandidateForJourneyKey(candidates, j.journey_id);
+        // Legacy rows without a roster owner: the id the key implied before slots existed,
+        // unless a roster candidate (of any category) already uses that id.
         const candIdMatch = (j.journey_id || "").match(/candidate[-_]?(\d+)/i);
-        const targetCandId = candIdMatch ? `candidate-${candIdMatch[1]}` : null;
+        const legacyId = candIdMatch ? `candidate-${candIdMatch[1]}` : null;
+        const targetCandId =
+          legacyId && !candidates.some((c) => c.id === legacyId) ? legacyId : null;
 
         // 2. Only consider candidates that are actually for IR-5 (or parents), NOT spouse/IR-1 candidates!
         const validIr5Candidates = candidates.filter((c) => {
           const cat = getBaseVisaCategory(c.visaCategory);
-          return (
-            cat === "IR-5" ||
-            c.relation === "Mother" ||
-            c.relation === "Father" ||
-            c.relation === "Stepparent" ||
-            c.relation === "AdoptiveParent" ||
-            (!c.visaCategory && c.relation !== "Spouse")
-          );
+          if (baseCategory === "IR-5") {
+            return (
+              cat === "IR-5" ||
+              c.relation === "Mother" ||
+              c.relation === "Father" ||
+              c.relation === "Stepparent" ||
+              c.relation === "AdoptiveParent" ||
+              (!c.visaCategory && c.relation !== "Spouse")
+            );
+          }
+          if (baseCategory === "IR-2" || baseCategory === "CR-2") {
+            return cat === "IR-2" || cat === "CR-2" || c.relation === "Child";
+          }
+          return cat === baseCategory;
         });
 
         // 3. Look up matching candidate profile
-        let cand = targetCandId
-          ? validIr5Candidates.find((c) => c.id.toLowerCase() === targetCandId.toLowerCase())
-          : null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let cand: any = owner && !assignedCandidateIds.has(owner.id) ? owner : null;
 
-        // 4. If no candidate suffix (e.g. legacy "IR-5"), pick the first candidate not yet assigned
-        if (!cand) {
+        // 4. Unowned base journey (legacy "IR-5"): the first IR-5 candidate not yet assigned
+        if (!cand && !candIdMatch) {
           cand = validIr5Candidates.find((c) => !assignedCandidateIds.has(c.id));
         }
 
@@ -597,7 +603,7 @@ export default function MyJourneysPage() {
           cand = {
             id: targetCandId || `candidate-${nextNum}`,
             label: `Candidate ${nextNum}`,
-            relation: "Other",
+            relation: baseCategory === "IR-2" || baseCategory === "CR-2" ? "Child" : "Other",
             fullName: "",
             isPrimary: assignedCandidateIds.size === 0,
             tier: (j.subscription_tier as any) || "free",
@@ -616,10 +622,17 @@ export default function MyJourneysPage() {
 
         // Strictly isolated lookup per candidate & per journey row
         // NEVER look up generic "IR-5" or "ir5" as that bleeds across candidate cards!
+        // The row id comes first (every save since Nov 2026 writes only that key). Older
+        // saves keyed on the candidate id are read only for a REAL roster candidate: a
+        // synthesized fallback id ("candidate-2") can equal another card's candidate and
+        // would show that card's name here.
+        const isRosterCandidate = candidates.some((c) => c.id === cand.id);
         const candCustom =
-          profile?.journeyCustomizations?.[cand.id] ||
-          profile?.journeyCustomizations?.[`ir5_${cand.id}`] ||
-          profile?.journeyCustomizations?.[j.id];
+          profile?.journeyCustomizations?.[j.id] ||
+          (isRosterCandidate
+            ? profile?.journeyCustomizations?.[cand.id] ||
+              profile?.journeyCustomizations?.[`ir5_${cand.id}`]
+            : undefined);
 
         const formattedRel = formatCandidateRelation(cand.relation);
         const defaultLabel = cand.label || `Candidate ${assignedCandidateIds.size}`;
@@ -629,11 +642,7 @@ export default function MyJourneysPage() {
             : null;
 
         const candName =
-          candCustom?.name ||
-          cand.customName ||
-          cand.fullName ||
-          specificRel ||
-          defaultLabel;
+          candCustom?.name || cand.customName || cand.fullName || specificRel || defaultLabel;
 
         const cardImage = candCustom?.image || cand.avatarUrl || meta.image;
 
@@ -647,8 +656,7 @@ export default function MyJourneysPage() {
           candRosterTier,
           journeyTiersTier:
             planCtx?.journeyTiers?.[j.journey_id] ||
-            planCtx?.journeyTiers?.[cand.id] ||
-            planCtx?.journeyTiers?.[`ir5_${cand.id}`],
+            planCtx?.journeyTiers?.[(j.journey_id || "").toLowerCase()],
         });
 
         const progress = getProgressPercent(j);
@@ -682,8 +690,10 @@ export default function MyJourneysPage() {
         // ONLY match a candidate if their category matches this journey's baseCategory
         // or if baseCategory is IR-1 and candidate relation is "Spouse".
         // NEVER match an IR-5 parent candidate!
+        // Matched on the category slot, so the second IR-2 child's card shows (and opens)
+        // the second child, not the first one of the category.
         const candForJourney =
-          candidates.find((c) => getBaseVisaCategory(c.visaCategory) === baseCategory) ||
+          findCandidateForJourneyKey(candidates, j.journey_id) ||
           (baseCategory === "IR-1" ? candidates.find((c) => c.relation === "Spouse") : null) ||
           null;
 
@@ -701,10 +711,8 @@ export default function MyJourneysPage() {
 
         // If no candidate matched, card name defaults to meta.name ("IR-1 Spouse Visa"),
         // NEVER to an IR-5 parent candidate!
-        const customName =
-          jCustom?.name || (candForJourney ? defaultCandName : meta.name);
-        const customImage =
-          jCustom?.image || candForJourney?.avatarUrl || meta.image;
+        const customName = jCustom?.name || (candForJourney ? defaultCandName : meta.name);
+        const customImage = jCustom?.image || candForJourney?.avatarUrl || meta.image;
 
         const candRosterTier =
           candForJourney?.tier ||
@@ -718,7 +726,7 @@ export default function MyJourneysPage() {
           candRosterTier,
           journeyTiersTier:
             planCtx?.journeyTiers?.[j.journey_id] ||
-            planCtx?.journeyTiers?.[baseCategory],
+            planCtx?.journeyTiers?.[(j.journey_id || "").toLowerCase()],
         });
 
         const progress = getProgressPercent(j);
@@ -756,7 +764,11 @@ export default function MyJourneysPage() {
     if (profileVisa && result.length === 0) {
       const baseCategory = getBaseVisaCategory(profileVisa);
       const isIr5 = IR5_ENABLED && baseCategory === "IR-5";
-      const canonicalKey = isIr5 ? "ir5" : baseCategory === "IR-1" ? "ir1" : profileVisa.toLowerCase();
+      const canonicalKey = isIr5
+        ? "ir5"
+        : baseCategory === "IR-1"
+          ? "ir1"
+          : profileVisa.toLowerCase();
       const meta = resolveJourneyMeta(profileVisa);
       const fbCustom =
         profile?.journeyCustomizations?.[canonicalKey] ||
@@ -785,8 +797,7 @@ export default function MyJourneysPage() {
         dbJourneyTier: null,
         candRosterTier,
         journeyTiersTier:
-          planCtx?.journeyTiers?.[baseCategory] ||
-          planCtx?.journeyTiers?.[canonicalKey],
+          planCtx?.journeyTiers?.[baseCategory] || planCtx?.journeyTiers?.[canonicalKey],
       });
 
       result.push({
@@ -811,17 +822,21 @@ export default function MyJourneysPage() {
     // ── 3. Deterministic Sort: Never allow cards to jump positions ─────────────
     const VISA_ORDER: Record<string, number> = {
       "ir-1": 1,
-      "ir1": 1,
+      ir1: 1,
       "ir-5": 2,
-      "ir5": 2,
+      ir5: 2,
+      "ir-2": 2.5,
+      ir2: 2.5,
+      "cr-2": 2.6,
+      cr2: 2.6,
       "cr-1": 3,
-      "cr1": 3,
+      cr1: 3,
       "k-1": 4,
-      "k1": 4,
+      k1: 4,
       "b1/b2": 5,
-      "b1b2": 5,
+      b1b2: 5,
       "f-1": 6,
-      "f1": 6,
+      f1: 6,
     };
 
     const getCandidateSortIndex = (candId?: string): number => {
@@ -862,6 +877,100 @@ export default function MyJourneysPage() {
     planCtx?.journeyTiers,
   ]);
 
+  const categoryOptions = useMemo(() => {
+    const categories = Array.from(
+      new Set(visibleJourneys.map((journey) => journey.meta.code || journey.meta.canonicalId))
+    ).filter(Boolean);
+
+    return [
+      { value: "all", label: "All Categories" },
+      ...categories.map((category) => ({
+        value: category,
+        label: category.replace(/^([a-z])/, (letter) => letter.toUpper()),
+      })),
+    ];
+  }, [visibleJourneys]);
+
+  const statusOptions = useMemo(() => {
+    return [
+      { value: "all", label: "All Statuses" },
+      { value: "not_started", label: "Not Started" },
+      { value: "in_progress", label: "In Progress" },
+      { value: "completed", label: "Completed" },
+    ];
+  }, []);
+
+  const planOptions = useMemo(() => {
+    return [
+      { value: "all", label: "All Plans" },
+      { value: "basic", label: "Basic" },
+      { value: "premium", label: "Premium" },
+      { value: "executive", label: "Executive" },
+    ];
+  }, []);
+
+  const journeyFilterFields = useMemo<FilterField[]>(
+    () => [
+      {
+        key: "category",
+        label: "Visa Category",
+        options: categoryOptions,
+        value: journeyFilters.category,
+      },
+      {
+        key: "status",
+        label: "Status",
+        options: statusOptions,
+        value: journeyFilters.status,
+      },
+      {
+        key: "plan",
+        label: "Plan",
+        options: planOptions,
+        value: journeyFilters.plan,
+      },
+    ],
+    [categoryOptions, statusOptions, planOptions, journeyFilters]
+  );
+
+  const filteredJourneys = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+
+    return visibleJourneys.filter((journey) => {
+      const category = journey.meta.code || journey.meta.canonicalId;
+      const matchesCategory =
+        journeyFilters.category === "all" ||
+        category.toLowerCase() === journeyFilters.category.toLowerCase();
+      const rawStatus = journey.journey?.status?.toLowerCase();
+      const normalizedStatus =
+        journey.progress >= 100
+          ? "completed"
+          : rawStatus === "in_progress" || rawStatus === "active"
+            ? "in_progress"
+            : rawStatus === "completed"
+              ? "completed"
+              : "not_started";
+      const matchesStatus =
+        journeyFilters.status === "all" ||
+        normalizedStatus === journeyFilters.status;
+      const matchesPlan =
+        journeyFilters.plan === "all" ||
+        journey.subscriptionTier.toLowerCase() === journeyFilters.plan;
+      const matchesSearch =
+        !query ||
+        [
+          journey.meta.name,
+          journey.meta.code,
+          journey.meta.canonicalId,
+          journey.journey?.journey_id,
+        ]
+          .filter(Boolean)
+          .some((value) => String(value).toLowerCase().includes(query));
+
+      return matchesCategory && matchesStatus && matchesPlan && matchesSearch;
+    });
+  }, [visibleJourneys, searchQuery, journeyFilters]);
+
   const startNewJourney = () => {
     router.push("/visa-category");
   };
@@ -877,14 +986,15 @@ export default function MyJourneysPage() {
 
     if (!targetCandidateId) {
       const baseCategory = getBaseVisaCategory(meta.code || meta.canonicalId);
+      // Only a candidate of this journey's category pool; the journey page aligns the
+      // rest (last used in the category, else its first candidate).
       const match =
-        (activeCandidate && getBaseVisaCategory(activeCandidate.visaCategory) === baseCategory
+        (activeCandidate && isSamePool(activeCandidate.visaCategory, baseCategory)
           ? activeCandidate
           : null) ||
-        candidates.find((c) => getBaseVisaCategory(c.visaCategory) === baseCategory) ||
+        candidates.find((c) => isSamePool(c.visaCategory, baseCategory)) ||
         (baseCategory === "IR-1" ? candidates.find((c) => c.relation === "Spouse") : null) ||
-        candidates.find((c) => c.isPrimary) ||
-        candidates[0];
+        null;
 
       if (match?.id) {
         targetCandidateId = match.id;
@@ -917,14 +1027,15 @@ export default function MyJourneysPage() {
     // Safety fallback: if candidateId was not directly on meta, resolve the appropriate candidate
     if (!targetCandidateId) {
       const baseCategory = getBaseVisaCategory(meta.code || meta.canonicalId);
+      // Only a candidate of this journey's category pool; the journey page aligns the
+      // rest (last used in the category, else its first candidate).
       const match =
-        (activeCandidate && getBaseVisaCategory(activeCandidate.visaCategory) === baseCategory
+        (activeCandidate && isSamePool(activeCandidate.visaCategory, baseCategory)
           ? activeCandidate
           : null) ||
-        candidates.find((c) => getBaseVisaCategory(c.visaCategory) === baseCategory) ||
+        candidates.find((c) => isSamePool(c.visaCategory, baseCategory)) ||
         (baseCategory === "IR-1" ? candidates.find((c) => c.relation === "Spouse") : null) ||
-        candidates.find((c) => c.isPrimary) ||
-        candidates[0];
+        null;
 
       if (match?.id) {
         targetCandidateId = match.id;
@@ -970,54 +1081,127 @@ export default function MyJourneysPage() {
       </div>
 
       <div className="relative z-10">
-        {/* Page header */}
-        <section className="site-main-px pt-16 md:pt-16 lg:pt-20">
-          <div className="mx-auto max-w-7xl">
-            <div className="flex flex-col justify-between gap-8 lg:flex-row lg:items-end">
-              <div className="max-w-6xl">
-                {/* <div className="mt-6 mb-4 flex items-center gap-2 text-sm font-semibold text-[#0d7377] md:mt-3 lg:mt-0">
-                  <span className="h-2 w-2 rounded-full bg-[#32e0c4] shadow-[0_0_0_5px_rgba(50,224,196,0.14)]" />
-                  Your immigration dashboard
-                </div> */}
+        {/* HERO SECTION */}
+        <section className="site-main-px relative mt-12 overflow-hidden bg-[#0A4F49] pt-8 pb-10 text-white sm:pt-10 sm:pb-20">
+          {/* Decorative SVG */}
+          <svg
+  className="pointer-events-none absolute right-0 bottom-[-40px] h-[360px] w-[380px] opacity-[.14]"
+  viewBox="160 70 840 850"
+  xmlns="http://www.w3.org/2000/svg"
+  aria-hidden="true"
+>
+  {/* Compass Rings & Cardinal Ticks */}
+  <circle cx="580" cy="520" r="370" fill="none" stroke="currentColor" strokeWidth="6" strokeDasharray="18 14" />
+  <circle cx="580" cy="520" r="295" fill="none" stroke="currentColor" strokeWidth="3" opacity="0.7" />
+  <line x1="580" y1="125" x2="580" y2="165" stroke="currentColor" strokeWidth="8" strokeLinecap="round" />
+  <line x1="975" y1="520" x2="935" y2="520" stroke="currentColor" strokeWidth="8" strokeLinecap="round" />
+  <line x1="185" y1="520" x2="225" y2="520" stroke="currentColor" strokeWidth="8" strokeLinecap="round" />
 
-                <h1 className="text-4xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-5xl lg:text-[3.6rem] lg:leading-[1.05]">
-                  My Immigration{" "}
-                  <span className="bg-linear-to-r from-[#0a5a5d] via-[#0d7377] to-[#14a0a6] bg-clip-text text-transparent">
-                    Journeys
-                  </span>
-                </h1>
+  {/* Sweeping Flight Trajectory */}
+  <path
+    d="M 210 730 C 310 380, 620 210, 910 250"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="10"
+    strokeLinecap="round"
+    strokeDasharray="24 18"
+  />
 
-                <p className="mt-5 max-w-5xl text-base leading-7 text-slate-600 md:text-lg md:leading-8">
-                  Continue your active journeys, review your progress and manage every immigration
-                  journey from one secure workspace.
-                </p>
-              </div>
+  {/* Journey Waypoint Nodes */}
+  <circle cx="245" cy="640" r="18" fill="currentColor" />
+  <circle cx="245" cy="640" r="32" fill="none" stroke="currentColor" strokeWidth="5" />
+  <circle cx="520" cy="295" r="16" fill="currentColor" />
+  <circle cx="520" cy="295" r="28" fill="none" stroke="currentColor" strokeWidth="4" />
 
+  {/* Destination Pin */}
+  <g transform="translate(865, 165)">
+    <path
+      d="M45 0C20.1 0 0 20.1 0 45C0 78.8 45 120 45 120C45 120 90 78.8 90 45C90 20.1 69.9 0 45 0ZM45 62C35.6 62 28 54.4 28 45C28 35.6 35.6 28 45 28C54.4 28 62 35.6 62 45C62 54.4 54.4 62 45 62Z"
+      fill="currentColor"
+    />
+  </g>
+
+  {/* Rahvana Bird */}
+  <path
+    fill="currentColor"
+    fillRule="evenodd"
+    d="M236,880C228,876 222,867 222,860C222,854 229,840 237,832C244,824 270,806 281,801C284,800 296,794 300,792C307,789 328,781 348,774C352,772 358,770 360,770C361,769 364,768 366,768C367,768 370,767 371,766C372,766 376,764 380,763C383,762 387,761 390,760C392,760 397,758 401,757C405,756 413,754 418,753C424,751 429,750 430,750C432,750 448,740 452,735C454,734 458,730 462,728C482,713 509,687 523,667C529,659 529,657 523,657C518,657 500,652 492,648C487,646 474,640 469,637C449,626 418,594 404,570C400,564 399,562 389,556C359,535 336,510 321,479C307,452 300,426 300,400C300,383 301,378 306,374C311,370 319,373 326,381C327,383 330,386 331,387C332,389 333,390 333,390C333,391 335,394 338,398C340,403 342,406 342,407C342,407 344,411 346,416C348,421 352,429 354,434C356,440 358,445 359,446C359,448 361,452 363,457C365,462 367,469 369,472C371,476 372,480 372,481C372,481 373,484 374,486C377,493 378,496 379,500C380,502 383,507 384,511C386,514 387,517 387,518C387,518 388,521 390,525C392,529 394,533 395,535C397,540 397,541 402,550C421,585 441,608 468,626C475,631 496,642 498,642C498,642 500,643 502,643C509,646 526,650 532,650C535,650 535,650 541,639C544,632 546,626 546,626C546,625 546,624 547,623C548,622 552,609 557,591C563,564 561,527 551,502C540,474 522,455 487,434C485,433 465,423 462,421C454,418 432,409 421,405C417,403 412,401 410,400C409,400 405,398 403,397C398,396 393,393 382,388C368,382 366,381 361,378C358,376 356,375 355,375C355,375 352,374 350,372C347,371 345,369 344,368C308,347 280,314 266,276C263,267 258,251 257,245C256,242 254,236 254,233C249,216 247,184 248,161C249,142 252,136 259,132C269,127 278,135 293,159C311,187 325,207 337,220C339,223 344,229 347,232C366,254 396,279 416,290C419,291 422,293 424,294C428,297 442,303 451,308C462,313 471,317 476,319C490,325 493,326 502,331C507,333 516,338 520,340C525,343 531,346 533,347C540,351 550,358 560,365C566,369 572,374 573,375C580,380 602,402 609,412C620,427 622,430 630,446C635,457 637,462 643,480C646,488 649,504 653,525C659,563 660,567 668,567C671,567 673,566 675,566C676,565 677,564 678,564C680,564 710,541 728,525C732,522 744,511 754,501C779,477 785,472 798,464C816,454 834,449 854,452C869,454 879,458 892,469C898,474 902,476 913,477C935,480 943,482 943,485C942,487 935,491 930,492C921,494 907,500 894,507C880,515 866,529 858,544C852,555 846,567 846,569C846,570 846,571 845,572C845,572 843,576 842,581C839,589 838,592 835,600C835,602 833,606 832,610C831,615 826,630 822,640C810,675 776,713 739,732C735,734 731,737 730,737C729,738 721,742 714,744C678,758 649,762 609,760C585,759 577,758 568,757C521,751 463,751 439,757C434,758 402,783 383,800C377,805 370,810 368,813C359,820 353,825 340,836C312,859 289,874 269,880C261,883 242,883 236,880Z"
+  />
+</svg>
+
+          <div className="relative z-10 mx-auto flex max-w-7xl flex-col justify-between gap-6 sm:flex-row sm:items-end sm:gap-8">
+            {/* Header Content */}
+            <div className="min-w-0 flex-1">
+              <h1 className="text-[clamp(2rem,7vw,2.75rem)] leading-tight font-semibold tracking-[-0.04em] text-white sm:text-5xl lg:text-[3.6rem] lg:leading-[1.05]">
+                My Journeys
+              </h1>
+
+              <p className="mt-5 max-w-5xl text-sm leading-6 text-white/90 sm:text-[15.5px] sm:leading-7 md:text-base">
+                Continue your active journeys, review your progress and manage every immigration
+                journey from one secure workspace.
+              </p>
+            </div>
+
+            {/* CTA */}
+            <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:flex-none sm:gap-3">
               <Button
                 onClick={startNewJourney}
-                className="group h-12 w-fit rounded-full border border-[#0d7377]/10 bg-[#0d7377] px-6 font-semibold text-white shadow-[0_12px_30px_rgba(13,115,119,0.22)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#0a5a5d] hover:shadow-[0_16px_38px_rgba(13,115,119,0.3)]"
+                className="group h-10 w-full bg-white px-4 text-sm font-semibold text-[#0A4F49] shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/90 hover:shadow-lg sm:h-11 sm:w-auto sm:px-5"
               >
                 <Plus className="mr-2 h-4 w-4 transition-transform duration-300 group-hover:rotate-90" />
                 Start New Journey
               </Button>
             </div>
-
-            <div className="mt-10 h-px bg-linear-to-r from-transparent via-slate-200 to-transparent" />
           </div>
         </section>
 
         {/* Journey content */}
-        <section className="site-main-px pt-4 pb-24">
+        <section className="site-main-px relative z-20 -mt-8 pb-24 sm:-mt-10">
           <div className="mx-auto max-w-7xl">
+            <div className="mb-8 flex flex-row gap-4 sm:items-center">
+              <div className="relative flex-1">
+                <div className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-slate-400">
+                  <Search className="h-4 w-4" />
+                </div>
+                <input
+                  type="text"
+                  suppressHydrationWarning
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  className="w-full rounded-xl border border-slate-200 bg-white py-3 pr-4 pl-10 text-sm shadow-[0_10px_30px_-12px_rgba(22,48,44,0.12)] transition-all outline-none focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 sm:py-4"
+                  placeholder="Search by journey name, type, or candidate name..."
+                />
+              </div>
+
+              <FilterPanel
+                fields={journeyFilterFields}
+                onFilterChange={(filters) => setJourneyFilters(filters)}
+                itemCount={filteredJourneys.length}
+                totalCount={visibleJourneys.length}
+                title="Filter Journeys"
+                align="right"
+              />
+            </div>
+
             {loading && journeys.length === 0 ? (
               <JourneyCardsSkeleton />
             ) : (
               <AnimatePresence mode="popLayout">
-                {visibleJourneys.length === 0 ? (
-                  <EmptyJourneyState onStartJourney={startNewJourney} />
+                {filteredJourneys.length === 0 ? (
+                  <EmptyJourneyState
+                    onStartJourney={startNewJourney}
+                    isFiltered={
+                      Boolean(searchQuery.trim()) ||
+                      Object.values(journeyFilters).some((value) => value !== "all")
+                    }
+                    onClearFilters={() => {
+                      setSearchQuery("");
+                      setJourneyFilters({ category: "all", status: "all", plan: "all" });
+                    }}
+                  />
                 ) : (
                   <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                    {visibleJourneys.map(
+                    {filteredJourneys.map(
                       (
                         {
                           id,
@@ -1066,7 +1250,12 @@ export default function MyJourneysPage() {
                             href={getJourneyUrl(meta)}
                             onOpen={(e) => handleOpenJourney(meta, e)}
                             onUpdateJourneyName={(newName) =>
-                              handleUpdateJourneyName(meta.canonicalId, newName, meta.candidateId, id)
+                              handleUpdateJourneyName(
+                                meta.canonicalId,
+                                newName,
+                                meta.candidateId,
+                                id
+                              )
                             }
                             onUpdateJourneyImage={(file) =>
                               handleUpdateJourneyImage(meta.canonicalId, file, meta.candidateId, id)
@@ -1170,10 +1359,10 @@ function JourneyCard({
 
   const isUnoptimized = Boolean(
     imgSrc &&
-      (imgSrc.startsWith("data:") ||
-        imgSrc.startsWith("blob:") ||
-        imgSrc.startsWith("/api/") ||
-        imgSrc.includes("/api/journey/media"))
+    (imgSrc.startsWith("data:") ||
+      imgSrc.startsWith("blob:") ||
+      imgSrc.startsWith("/api/") ||
+      imgSrc.includes("/api/journey/media"))
   );
 
   useEffect(() => {
@@ -1622,9 +1811,15 @@ function JourneyCard({
 
 interface EmptyJourneyStateProps {
   onStartJourney: () => void;
+  isFiltered?: boolean;
+  onClearFilters?: () => void;
 }
 
-function EmptyJourneyState({ onStartJourney }: EmptyJourneyStateProps) {
+function EmptyJourneyState({
+  onStartJourney,
+  isFiltered = false,
+  onClearFilters,
+}: EmptyJourneyStateProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 14 }}
@@ -1649,25 +1844,26 @@ function EmptyJourneyState({ onStartJourney }: EmptyJourneyStateProps) {
         {/* Content */}
         <div className="mt-6 max-w-xl">
           <p className="text-xs font-semibold tracking-[0.2em] text-[#0d7377] uppercase">
-            No journeys yet
+            {isFiltered ? "No matching journeys" : "No journeys yet"}
           </p>
 
           <h2 className="mt-3 text-2xl font-semibold tracking-[-0.035em] text-slate-950 sm:text-3xl">
-            Start your first immigration journey
+            {isFiltered ? "Try a different search or filter" : "Start your first immigration journey"}
           </h2>
 
           <p className="mx-auto mt-4 max-w-lg text-sm leading-7 text-slate-600 sm:text-base">
-            Select your visa category and receive a clear, step-by-step roadmap for your immigration
-            process.
+            {isFiltered
+              ? "No journeys match the current criteria. Clear them to see all of your saved journeys."
+              : "Select your visa category and receive a clear, step-by-step roadmap for your immigration process."}
           </p>
         </div>
 
         {/* Action */}
         <Button
-          onClick={onStartJourney}
+          onClick={isFiltered ? onClearFilters : onStartJourney}
           className="group mt-8 h-12 rounded-full bg-[#0d7377] px-6 font-semibold text-white shadow-[0_12px_28px_rgba(13,115,119,0.22)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#0a5a5d] hover:shadow-[0_16px_34px_rgba(13,115,119,0.28)]"
         >
-          Start Your First Journey
+          {isFiltered ? "Clear Search & Filters" : "Start Your First Journey"}
           <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
         </Button>
 

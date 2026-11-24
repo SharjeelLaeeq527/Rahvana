@@ -23,6 +23,7 @@ export interface InterviewSession {
   // New fields for journey integration
   source: InterviewSessionSource;
   journey_id: string | null;
+  candidate_id?: string | null;
   status: InterviewSessionStatus;
   answers?: unknown[];
   output?: unknown[];
@@ -36,6 +37,7 @@ export interface InterviewSessionInput {
   // New fields for journey integration
   source?: InterviewSessionSource;
   journey_id?: string | null;
+  candidate_id?: string | null;
   status?: InterviewSessionStatus;
 }
 

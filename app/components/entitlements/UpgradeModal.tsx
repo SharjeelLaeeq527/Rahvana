@@ -23,6 +23,8 @@ interface UpgradeModalProps {
   feature: string;
   onClose: () => void;
   onConfirm?: (action: "upgrade", target?: PlanTier | string) => void;
+  /** Tier used by the gated journey, when it differs from the account context. */
+  currentTier?: PlanTier;
   /** When set, shows interview-prep-specific feature breakdown before the general tier list */
   interviewMode?: "prep" | "rapid" | "mock";
 }
@@ -277,9 +279,16 @@ function getStandaloneOption(
   };
 }
 
-export function UpgradeModal({ feature, onClose, onConfirm, interviewMode }: UpgradeModalProps) {
+export function UpgradeModal({
+  feature,
+  onClose,
+  onConfirm,
+  currentTier: currentTierOverride,
+  interviewMode,
+}: UpgradeModalProps) {
   const { showToast } = useToast();
-  const { tier: currentTier } = usePlan();
+  const { tier: accountTier } = usePlan();
+  const currentTier = currentTierOverride ?? accountTier;
   const e = getEntitlement(feature, currentTier);
   const detailsHref = getDetailsHref(feature);
   const standalone = getStandaloneOption(feature);

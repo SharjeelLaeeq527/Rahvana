@@ -1,0 +1,1466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Rahvana Tools · Centered Focus Canvas (Option C)</title>
+  
+  <!-- Google Fonts: Editorial Lora Serif + Crisp Figtree Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            serif: ['Lora', 'Georgia', 'serif'],
+            sans: ['Figtree', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            paper: '#F6F4EF',
+            ink: '#16302C',
+            inkMuted: '#66787A',
+            borderPaper: '#DDD9CE',
+            heritage: {
+              teal: '#0A4F49',
+              tealLight: '#0F8F80',
+              tealSoft: '#E1F2EE',
+              ink: '#16302C'
+            }
+          },
+          boxShadow: {
+            'card': '0 20px 40px -15px rgba(22, 48, 44, 0.08)',
+            'card-hover': '0 25px 50px -18px rgba(22, 48, 44, 0.12)',
+            'dock': '0 10px 25px -5px rgba(0, 0, 0, 0.15)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    :root {
+      --bg: #F6F4EF;
+      --ink: #16302C;
+      --mut: #66787A;
+      --line: #DDD9CE;
+      --a: #0F8F80;
+      --ad: #0A4F49;
+      --at: #E1F2EE;
+    }
+    
+    body {
+      background-color: var(--bg);
+      color: var(--ink);
+      font-family: 'Figtree', sans-serif;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Subtle Guilloche Wave Watermark in Hero */
+    .hero-watermark {
+      background-color: var(--ad);
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(15, 143, 128, 0.22) 0%, transparent 70%),
+        radial-gradient(circle at 100% 100%, rgba(225, 242, 238, 0.08) 0%, transparent 50%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120' opacity='0.035'%3E%3Cpath d='M60 0 C70 30 90 50 120 60 C90 70 70 90 60 120 C50 90 30 70 0 60 C30 50 50 30 60 0 Z' fill='%23ffffff'/%3E%3C/svg%3E");
+    }
+
+    /* Subtle Paper Texture on Body */
+    .paper-texture {
+      background-image: radial-gradient(rgba(22, 48, 44, 0.04) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+
+    /* Pick Card Interactive Pill */
+    .pick-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-align: left;
+      border: 1.5px solid var(--line);
+      background: #FFFFFF;
+      border-radius: 14px;
+      padding: 14px 16px;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .pick-card:hover {
+      border-color: var(--a);
+      background: #FAFDFC;
+      transform: translateY(-1px);
+    }
+    .pick-card:before {
+      content: "";
+      flex: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid var(--line);
+      transition: all 0.2s ease;
+    }
+    .pick-card.active {
+      border-color: var(--a);
+      background: var(--at);
+      box-shadow: 0 4px 14px -3px rgba(15, 143, 128, 0.2);
+    }
+    .pick-card.active:before {
+      border-color: var(--a);
+      background: radial-gradient(var(--a) 48%, transparent 52%);
+    }
+
+    /* Slide-out FAQ Drawer */
+    .faq-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: min(440px, 100vw);
+      background: #FFFFFF;
+      box-shadow: -20px 0 60px -20px rgba(22, 48, 44, 0.25);
+      z-index: 90;
+      padding: 32px 28px;
+      overflow-y: auto;
+      transform: translateX(105%);
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .faq-drawer.open {
+      transform: translateX(0);
+    }
+    .drawer-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(22, 48, 44, 0.45);
+      backdrop-filter: blur(4px);
+      z-index: 80;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .drawer-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Accordion transitions */
+    details summary::-webkit-details-marker {
+      display: none;
+    }
+  </style>
+</head>
+<body class="paper-texture min-h-screen flex flex-col selection:bg-[#0A4F49] selection:text-white">
+
+  <!-- ============================================================== -->
+  <!-- TOP PROTOTYPE NAVIGATION BAR                                   -->
+  <!-- ============================================================== -->
+  <header class="sticky top-0 z-50 bg-[#16302C] text-white px-4 py-2.5 shadow-md border-b border-[#234A45]">
+    <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      
+      <!-- Brand & Version Tag -->
+      <div class="flex items-center gap-3">
+        <span class="font-serif italic font-bold text-xl tracking-tight text-white/95">Rahvana</span>
+        <span class="text-[11px] bg-white/10 text-teal-200 font-mono font-medium px-2.5 py-0.5 rounded-full border border-white/15">
+          Option C · Centered Focus
+        </span>
+      </div>
+
+      <!-- Tool Switcher Pills -->
+      <div class="flex items-center gap-1 bg-black/25 p-1 rounded-full border border-white/10 text-xs overflow-x-auto max-w-full">
+        <button onclick="setTool('case-status')" id="nav-case-status" class="nav-pill active px-3.5 py-1.5 font-semibold rounded-full bg-white text-[#16302C] transition-all shadow-xs">
+          USCIS Status
+        </button>
+        <button onclick="setTool('passport-photo')" id="nav-passport-photo" class="nav-pill px-3.5 py-1.5 font-semibold rounded-full text-white/80 hover:text-white transition-all">
+          Photo Booth
+        </button>
+        <button onclick="setTool('snap-sign')" id="nav-snap-sign" class="nav-pill px-3.5 py-1.5 font-semibold rounded-full text-white/80 hover:text-white transition-all">
+          Snap &amp; Sign
+        </button>
+        <button onclick="setTool('pdf-toolkit')" id="nav-pdf-toolkit" class="nav-pill px-3.5 py-1.5 font-semibold rounded-full text-white/80 hover:text-white transition-all">
+          PDF Toolkit
+        </button>
+        <button onclick="setTool('dq-tool')" id="nav-dq-tool" class="nav-pill px-3.5 py-1.5 font-semibold rounded-full text-white/80 hover:text-white transition-all">
+          DQ Radar
+        </button>
+        <button onclick="setTool('action-planner')" id="nav-action-planner" class="nav-pill px-3.5 py-1.5 font-semibold rounded-full text-white/80 hover:text-white transition-all">
+          221(g) Planner
+        </button>
+        <button onclick="setTool('affidavit-calc')" id="nav-affidavit-calc" class="nav-pill px-3.5 py-1.5 font-semibold rounded-full text-white/80 hover:text-white transition-all">
+          Affidavit Calc
+        </button>
+      </div>
+
+      <!-- Dock Mode Comparison Switcher & Layout Link -->
+      <div class="flex items-center gap-2">
+        <div class="hidden sm:flex items-center gap-1 bg-black/30 p-1 rounded-full text-[11px] border border-white/10">
+          <span class="text-white/60 px-2 font-mono">Dock Style:</span>
+          <button onclick="setDockMode('both')" id="btn-dock-both" class="px-2.5 py-1 rounded-full font-semibold bg-white text-[#16302C] transition-all cursor-pointer">Both (Compare)</button>
+          <button onclick="setDockMode('hero')" id="btn-dock-hero" class="px-2.5 py-1 rounded-full text-white/80 hover:text-white transition-all cursor-pointer">Hero Dock Only</button>
+          <button onclick="setDockMode('floating')" id="btn-dock-floating" class="px-2.5 py-1 rounded-full text-white/80 hover:text-white transition-all cursor-pointer">Draggable Only</button>
+        </div>
+
+        <a href="tool-creative-standard-mockup.html" class="inline-flex items-center gap-1 text-xs text-teal-200 hover:text-white bg-white/10 hover:bg-white/15 px-3 py-1.5 rounded-full border border-white/15 transition-all">
+          <span>2-Column Layout</span>
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14"></path>
+            <path d="m12 5 7 7-7 7"></path>
+          </svg>
+        </a>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ============================================================== -->
+  <!-- CENTERED HERO SECTION: Authority, Clarity & Focus              -->
+  <!-- ============================================================== -->
+  <section id="hero-banner" class="hero-watermark text-white pt-10 pb-20 px-4 sm:px-6 transition-colors duration-300 relative z-0">
+    <div class="max-w-3xl mx-auto text-center flex flex-col items-center">
+      
+      <!-- Top Eyebrow Badges (Centered) -->
+      <div class="flex flex-wrap items-center justify-center gap-2.5 mb-4">
+        <span id="hero-category-pill" class="font-serif italic text-xs tracking-wider text-teal-200/90 font-medium uppercase">
+          Official Immigration Toolkit
+        </span>
+        <span class="text-white/30 text-xs">•</span>
+        <span class="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-sm text-white text-[11px] font-semibold px-2.5 py-0.5 rounded-full border border-white/20">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span id="hero-badge-text">Live Status Radar</span>
+        </span>
+        <div id="hero-quota-wrap" class="hidden items-center gap-1.5 bg-amber-400/20 text-amber-200 text-[11px] font-medium px-2.5 py-0.5 rounded-full border border-amber-300/30">
+          <svg class="w-3 h-3 text-amber-300 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+            <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
+          </svg>
+          <span id="hero-quota-text">3 Photo Credits Available</span>
+        </div>
+      </div>
+
+      <!-- Main Headline in Refined Lora Serif -->
+      <h1 id="hero-title" class="font-serif text-3xl sm:text-4xl lg:text-[44px] font-semibold leading-[1.18] tracking-tight text-white max-w-2xl">
+        USCIS Case Status Tracker
+      </h1>
+
+      <!-- Subtitle Description (Centered & Readable) -->
+      <p id="hero-desc" class="mt-3.5 text-white/80 text-sm sm:text-base leading-relaxed max-w-xl font-normal">
+        Direct real-time status inquiry with official USCIS electronic records. Inspect receipt milestones, next steps, and historical decision notices.
+      </p>
+
+      <!-- ============================================================ -->
+      <!-- OPTION 1: CENTERED UTILITY MICRO-DOCK IN HERO                -->
+      <!-- ============================================================ -->
+      <div id="hero-action-dock" class="mt-6 flex flex-col items-center transition-all">
+        <div class="inline-flex flex-wrap items-center justify-center gap-1.5 bg-black/20 backdrop-blur-md p-1.5 rounded-2xl border border-white/15 shadow-dock">
+          
+          <!-- Start Fresh -->
+          <button onclick="resetCurrentTool()" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-white/90 hover:text-white hover:bg-white/10 text-xs font-medium transition-all cursor-pointer" title="Clear inputs and start over">
+            <svg class="w-3.5 h-3.5 text-teal-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+              <path d="M3 3v5h5"></path>
+            </svg>
+            <span>Start Fresh</span>
+          </button>
+
+          <span class="w-px h-4 bg-white/20"></span>
+
+          <!-- History -->
+          <button onclick="viewHistory()" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-white/90 hover:text-white hover:bg-white/10 text-xs font-medium transition-all cursor-pointer" title="View past queries and files">
+            <svg class="w-3.5 h-3.5 text-teal-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <span>Recent History</span>
+            <span class="bg-white text-[#0A4F49] text-[10px] font-black px-1.5 py-0.2 rounded-full">3</span>
+          </button>
+
+          <span class="w-px h-4 bg-white/20"></span>
+
+          <!-- Common Questions Drawer Trigger -->
+          <button onclick="openDrawer()" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-white/90 hover:text-white hover:bg-white/10 text-xs font-medium transition-all cursor-pointer" title="View guide and FAQs">
+            <svg class="w-3.5 h-3.5 text-teal-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+              <path d="M12 17h.01"></path>
+            </svg>
+            <span>Quick Help &amp; FAQs</span>
+          </button>
+
+          <span class="w-px h-4 bg-white/20"></span>
+
+          <!-- Save / Bookmark Tool -->
+          <button onclick="toggleFavorite(this)" class="p-2 rounded-xl text-white/80 hover:text-amber-300 hover:bg-white/10 transition-all cursor-pointer" title="Save to Favorites">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+          </button>
+
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============================================================== -->
+  <!-- MAIN WORKSPACE: Centered Master Tool Card                      -->
+  <!-- ============================================================== -->
+  <main class="flex-1 -mt-10 pb-20 px-4 sm:px-6 relative z-10">
+    <div class="max-w-[880px] mx-auto space-y-8">
+
+      <!-- ============================================================ -->
+      <!-- THE CENTERED MASTER CARD (FOCUSED & CLEAN)                   -->
+      <!-- ============================================================ -->
+      <div class="bg-white rounded-[28px] border border-[#DDD9CE] shadow-card hover:shadow-card-hover transition-all duration-300 overflow-hidden relative z-10">
+        
+        <!-- CARD HEADER MICRO-BAR: Step/Mode & Live Verification Toggle -->
+        <div class="bg-[#FAFAF8] px-6 sm:px-8 py-4 border-b border-[#EFECE6] flex items-center justify-between gap-4">
+          <div class="flex items-center gap-2.5">
+            <span class="w-2 h-2 rounded-full bg-[#0F8F80]"></span>
+            <span id="card-mode-text" class="font-serif italic font-semibold text-xs text-[#16302C]">
+              Step 1 of 2: Real-Time USCIS Terminal Inquiry
+            </span>
+          </div>
+
+          <!-- Interactive Live Standards Pill (Expands/Collapses Inline Checklist) -->
+          <button onclick="toggleRequirementsPanel()" class="inline-flex items-center gap-2 bg-[#E1F2EE] hover:bg-[#d2ebe5] text-[#0A4F49] text-xs font-bold px-3 py-1.5 rounded-full border border-[#0F8F80]/20 transition-all cursor-pointer">
+            <span class="w-4 h-4 rounded-full bg-[#0F8F80] text-white flex items-center justify-center text-[10px]">&#10003;</span>
+            <span id="card-requirements-pill-text">3 of 3 Standards Met</span>
+            <svg id="req-chevron" class="w-3.5 h-3.5 text-[#0A4F49] transition-transform duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+        </div>
+
+        <!-- INLINE REQUIREMENTS DRAWER (Collapsible, inside card) -->
+        <div id="inline-requirements-panel" class="hidden bg-[#F4F9F8] border-b border-[#D8ECE7] px-6 sm:px-8 py-4 transition-all">
+          <div class="flex items-center justify-between mb-3">
+            <span class="font-serif italic font-semibold text-xs text-[#0A4F49]">
+              Live Admissibility &amp; Verification Checks
+            </span>
+            <span class="text-[11px] font-mono text-[#0F8F80] bg-white px-2 py-0.5 rounded border border-[#C5DDD7]">
+              Continuous Validation
+            </span>
+          </div>
+          <div id="inline-checklist-items" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <!-- Dynamically injected checklist items -->
+          </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- TOOL CANVASES (100% CENTERED & DISTRACTION-FREE)             -->
+        <!-- ============================================================ -->
+        <div class="p-6 sm:p-10">
+
+          <!-- TOOL 1: USCIS Case Status -->
+          <div id="view-case-status" class="tool-view space-y-6">
+            <div class="text-center max-w-lg mx-auto">
+              <h2 class="font-serif text-2xl sm:text-[28px] font-semibold text-[#16302C] leading-snug">
+                Enter Your Receipt Number
+              </h2>
+              <p class="text-xs sm:text-sm text-inkMuted mt-1.5">
+                Located on your Form I-797C Notice of Action letter (e.g., IOE, EAC, WAC, LIN, SRC).
+              </p>
+            </div>
+
+            <div class="max-w-xl mx-auto space-y-4">
+              <div class="flex flex-col sm:flex-row gap-2.5">
+                <div class="relative flex-1">
+                  <input type="text" id="case-input" value="IOE9482910382" class="w-full h-14 rounded-2xl border-2 border-[#DDD9CE] bg-[#FAFAF8] px-5 font-mono text-lg font-bold tracking-wider text-[#16302C] uppercase focus:bg-white focus:border-[#0F8F80] focus:ring-4 focus:ring-teal-100 transition-all outline-none" placeholder="IOE0948291038">
+                  <button onclick="document.getElementById('case-input').value=''" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-mono font-semibold" title="Clear">
+                    CLEAR
+                  </button>
+                </div>
+                <button onclick="runCaseCheck()" class="h-14 px-8 rounded-2xl bg-[#0F8F80] hover:bg-[#0A4F49] text-white font-bold text-sm shadow-md hover:shadow-lg flex items-center justify-center gap-2.5 transition-all cursor-pointer shrink-0">
+                  <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.3-4.3"></path>
+                  </svg>
+                  <span>Check Status</span>
+                </button>
+              </div>
+
+              <!-- Case Result Certificate Card (Clean & Focused) -->
+              <div id="case-result-box" class="rounded-2xl border border-[#C5DDD7] bg-[#F4F9F8] p-6 sm:p-7 transition-all shadow-xs">
+                <div class="flex flex-wrap items-center justify-between gap-3 mb-3.5">
+                  <span class="inline-flex items-center gap-1.5 bg-[#E1F2EE] text-[#0A4F49] text-xs font-bold px-3 py-1 rounded-full border border-[#0F8F80]/20">
+                    <span class="w-2 h-2 rounded-full bg-[#0F8F80]"></span>
+                    Case Approved
+                  </span>
+                  <span class="text-xs text-inkMuted font-mono">Verified USCIS Electronic Record</span>
+                </div>
+                <h3 class="font-serif text-xl font-bold text-[#16302C]">
+                  Form I-130: Petition for Alien Relative
+                </h3>
+                <p class="text-xs sm:text-sm text-[#35534F] mt-2.5 leading-relaxed">
+                  On November 14, 2026, USCIS approved your petition. Your approval notice Form I-797 was mailed to your sponsor's residential address. Your case has been transferred to the Department of State National Visa Center (NVC) for immigrant visa processing.
+                </p>
+                <div class="mt-5 pt-4 border-t border-[#D5E8E4] flex flex-wrap items-center justify-between gap-3 text-xs">
+                  <span class="text-inkMuted">Service Center: <b class="text-[#16302C]">USCIS Electronic System (IOE)</b></span>
+                  <a href="https://ceac.state.gov" target="_blank" class="font-bold text-[#0F8F80] hover:text-[#0A4F49] flex items-center gap-1.5 hover:underline">
+                    <span>Next Step: Prepare NVC Documents</span>
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M5 12h14"></path>
+                      <path d="m12 5 7 7-7 7"></path>
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TOOL 2: Passport Photo Booth -->
+          <div id="view-passport-photo" class="tool-view hidden space-y-6">
+            <div class="text-center max-w-lg mx-auto">
+              <h2 class="font-serif text-2xl sm:text-[28px] font-semibold text-[#16302C] leading-snug">
+                Biometric Photo Studio
+              </h2>
+              <p class="text-xs sm:text-sm text-inkMuted mt-1.5">
+                Generate 100% compliant 2" x 2" (51x51mm) Department of State &amp; USCIS visa photos.
+              </p>
+            </div>
+
+            <!-- Drag & Drop Studio Dropzone -->
+            <div class="max-w-xl mx-auto border-2 border-dashed border-[#0F8F80]/40 hover:border-[#0F8F80] bg-[#FAFDFC] rounded-3xl p-10 sm:p-14 text-center cursor-pointer transition-all hover:bg-[#EBF5F3] group">
+              <div class="w-16 h-16 rounded-full bg-white text-[#0F8F80] border border-[#C5DDD7] shadow-sm flex items-center justify-center mx-auto mb-4 group-hover:scale-105 transition-transform">
+                <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path>
+                  <circle cx="12" cy="13" r="3"></circle>
+                </svg>
+              </div>
+              <h3 class="font-serif text-lg font-bold text-[#16302C]">Drag &amp; drop your portrait or take a photo</h3>
+              <p class="text-xs text-inkMuted mt-1.5 max-w-sm mx-auto leading-relaxed">
+                Automatic AI face alignment, shadow elimination, and pure white background per 22 CFR 41.105.
+              </p>
+              <button class="mt-6 px-6 py-3 rounded-2xl bg-[#0F8F80] text-white font-bold text-xs shadow-md hover:bg-[#0A4F49] transition-all">
+                Select Photo from Device
+              </button>
+            </div>
+          </div>
+
+          <!-- TOOL 3: Snap & Sign Processor -->
+          <div id="view-snap-sign" class="tool-view hidden space-y-6">
+            <div class="text-center max-w-lg mx-auto">
+              <h2 class="font-serif text-2xl sm:text-[28px] font-semibold text-[#16302C] leading-snug">
+                Transparent Signature Extractor
+              </h2>
+              <p class="text-xs sm:text-sm text-inkMuted mt-1.5">
+                Convert a phone photo of your paper signature into a crisp, transparent PNG for official forms.
+              </p>
+            </div>
+
+            <div class="max-w-xl mx-auto border-2 border-dashed border-[#DDD9CE] hover:border-[#0F8F80] bg-[#FAFAF8] rounded-3xl p-10 sm:p-14 text-center cursor-pointer transition-all">
+              <div class="w-16 h-16 rounded-full bg-white text-[#0F8F80] border border-[#DDD9CE] shadow-sm flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m12 19 7-7 3 3-7 7-3-3z"></path>
+                  <path d="m18 13-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path>
+                  <path d="m2 2 7.586 7.586"></path>
+                  <circle cx="11" cy="11" r="2"></circle>
+                </svg>
+              </div>
+              <h3 class="font-serif text-lg font-bold text-[#16302C]">Upload photo of your pen signature</h3>
+              <p class="text-xs text-inkMuted mt-1.5 max-w-sm mx-auto leading-relaxed">
+                Sign with a dark pen on blank white paper. We isolate the ink, clean camera shadows, and export lossless PNG.
+              </p>
+              <button class="mt-6 px-6 py-3 rounded-2xl bg-[#0F8F80] text-white font-bold text-xs shadow-md hover:bg-[#0A4F49] transition-all">
+                Upload Signature Image
+              </button>
+            </div>
+          </div>
+
+          <!-- TOOL 4: PDF Toolkit -->
+          <div id="view-pdf-toolkit" class="tool-view hidden space-y-6">
+            <div class="text-center max-w-lg mx-auto">
+              <h2 class="font-serif text-2xl sm:text-[28px] font-semibold text-[#16302C] leading-snug">
+                Immigration Document PDF Studio
+              </h2>
+              <p class="text-xs sm:text-sm text-inkMuted mt-1.5">
+                Compress, merge, and optimize files specifically to satisfy CEAC &lt;2.0 MB strict upload thresholds.
+              </p>
+            </div>
+
+            <div class="max-w-2xl mx-auto">
+              <!-- Tactile 4-Pill Segment Switcher -->
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+                <button class="pick-card active text-left">
+                  <div>
+                    <b class="block text-xs font-bold text-[#16302C]">Compress PDF</b>
+                    <small class="text-[11px] text-inkMuted">CEAC 2MB limit</small>
+                  </div>
+                </button>
+                <button class="pick-card text-left">
+                  <div>
+                    <b class="block text-xs font-bold text-[#16302C]">Merge Pages</b>
+                    <small class="text-[11px] text-inkMuted">Combine packets</small>
+                  </div>
+                </button>
+                <button class="pick-card text-left">
+                  <div>
+                    <b class="block text-xs font-bold text-[#16302C]">Annotate</b>
+                    <small class="text-[11px] text-inkMuted">Redact &amp; sign</small>
+                  </div>
+                </button>
+                <button class="pick-card text-left">
+                  <div>
+                    <b class="block text-xs font-bold text-[#16302C]">Images &rarr; PDF</b>
+                    <small class="text-[11px] text-inkMuted">Scans to PDF</small>
+                  </div>
+                </button>
+              </div>
+
+              <!-- Dropzone -->
+              <div class="border-2 border-dashed border-[#DDD9CE] hover:border-[#0F8F80] bg-[#FAFAF8] rounded-3xl p-10 text-center cursor-pointer transition-all">
+                <svg class="w-10 h-10 text-inkMuted mx-auto mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="12" y1="18" x2="12" y2="12"></line>
+                  <line x1="9" y1="15" x2="15" y2="15"></line>
+                </svg>
+                <h4 class="font-serif text-base font-bold text-[#16302C]">Drop PDF document here to compress</h4>
+                <p class="text-xs text-inkMuted mt-1">Processed locally on your device with Zero-Knowledge encryption</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- TOOL 5: DQ Status Check -->
+          <div id="view-dq-tool" class="tool-view hidden space-y-6">
+            <div class="text-center max-w-lg mx-auto">
+              <h2 class="font-serif text-2xl sm:text-[28px] font-semibold text-[#16302C] leading-snug">
+                Consular Interview Velocity Radar
+              </h2>
+              <p class="text-xs sm:text-sm text-inkMuted mt-1.5">
+                Check which Documentarily Complete (DQ) dates U.S. Embassies are currently scheduling.
+              </p>
+            </div>
+
+            <div class="max-w-xl mx-auto space-y-4">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block font-semibold text-xs text-[#16302C] uppercase tracking-wider mb-1.5">Visa Category</label>
+                  <select class="w-full h-12 rounded-xl border border-[#DDD9CE] bg-white px-3 text-xs font-semibold text-[#16302C] outline-none">
+                    <option>Immediate Relative (IR-1, CR-1, IR-2, IR-5)</option>
+                    <option>Family Preference (F1, F2A, F2B, F3, F4)</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block font-semibold text-xs text-[#16302C] uppercase tracking-wider mb-1.5">U.S. Embassy / Consulate</label>
+                  <input type="text" value="Islamabad, Pakistan" class="w-full h-12 rounded-xl border border-[#DDD9CE] bg-white px-3 text-xs font-semibold text-[#16302C] outline-none">
+                </div>
+              </div>
+
+              <div class="rounded-2xl border border-[#C5DDD7] bg-[#E1F2EE] p-6 text-center">
+                <span class="font-serif italic text-xs text-[#0A4F49] uppercase tracking-wider font-semibold">Currently Scheduling Applicants Documentarily Complete In:</span>
+                <div class="font-serif text-2xl sm:text-3xl font-bold text-[#0A4F49] mt-2">May 2024 (DQ Complete)</div>
+                <p class="text-xs text-[#35534F] mt-2">Estimated queue wait from DQ date to Interview Appointment: <b>18 to 22 months</b>.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- TOOL 6: 221(g) Action Planner -->
+          <div id="view-action-planner" class="tool-view hidden space-y-6">
+            <div class="text-center max-w-lg mx-auto">
+              <h2 class="font-serif text-2xl sm:text-[28px] font-semibold text-[#16302C] leading-snug">
+                221(g) Administrative Response Packet
+              </h2>
+              <p class="text-xs sm:text-sm text-inkMuted mt-1.5">
+                Organize, track, and assemble all missing evidence requested on your embassy refusal slip.
+              </p>
+            </div>
+
+            <div class="max-w-xl mx-auto space-y-3">
+              <div class="pick-card active" onclick="togglePick(this)">
+                <div>
+                  <b class="block text-sm font-bold text-[#16302C]">Form I-864 Affidavit of Support Update</b>
+                  <small class="text-xs text-inkMuted">Consular officer requested updated joint sponsor IRS tax transcripts for tax year 2025.</small>
+                </div>
+              </div>
+              <div class="pick-card active" onclick="togglePick(this)">
+                <div>
+                  <b class="block text-sm font-bold text-[#16302C]">Police Character Certificate (Renewed)</b>
+                  <small class="text-xs text-inkMuted">Previous Sindh Police clearance expired past the 24-month validity requirement.</small>
+                </div>
+              </div>
+              <div class="pick-card" onclick="togglePick(this)">
+                <div>
+                  <b class="block text-sm font-bold text-[#16302C]">DS-5535 Supplemental Travel History</b>
+                  <small class="text-xs text-inkMuted">15-year detailed travel, employment, and social media handle disclosure questionnaire.</small>
+                </div>
+              </div>
+
+              <div class="pt-4 text-center">
+                <button class="px-6 py-3 rounded-2xl bg-[#0F8F80] hover:bg-[#0A4F49] text-white font-bold text-xs shadow-md transition-all">
+                  Generate PDF Submission Packet
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- TOOL 7: Affidavit of Support Calculator -->
+          <div id="view-affidavit-calc" class="tool-view hidden space-y-6">
+            <div class="text-center max-w-lg mx-auto">
+              <h2 class="font-serif text-2xl sm:text-[28px] font-semibold text-[#16302C] leading-snug">
+                Affidavit of Support Income Calculator
+              </h2>
+              <p class="text-xs sm:text-sm text-inkMuted mt-1.5">
+                Determine your 125% HHS poverty line threshold and joint sponsor requirement under 2026 guidelines.
+              </p>
+            </div>
+
+            <div class="max-w-xl mx-auto space-y-5">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block font-semibold text-xs text-[#16302C] uppercase tracking-wider mb-1.5">Household Size</label>
+                  <input type="number" id="calc-household" value="3" oninput="recalcAffidavit()" class="w-full h-12 rounded-xl border border-[#DDD9CE] bg-white px-3 text-sm font-bold text-[#16302C] outline-none">
+                  <small class="text-[11px] text-inkMuted">Sponsor + Immigrant Spouse + 1 Child</small>
+                </div>
+                <div>
+                  <label class="block font-semibold text-xs text-[#16302C] uppercase tracking-wider mb-1.5">Current Annual Income ($)</label>
+                  <input type="number" id="calc-income" value="44000" oninput="recalcAffidavit()" class="w-full h-12 rounded-xl border border-[#DDD9CE] bg-white px-3 text-sm font-bold text-[#16302C] outline-none">
+                  <small class="text-[11px] text-inkMuted">From Form 1040 Adjusted Gross Income</small>
+                </div>
+              </div>
+
+              <div class="rounded-2xl border border-[#C5DDD7] bg-[#E1F2EE] p-5">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <span class="font-serif italic text-xs text-[#0A4F49]">Required Minimum (125% Poverty)</span>
+                    <div id="calc-threshold" class="font-serif text-2xl font-bold text-[#0A4F49]">$32,275 / yr</div>
+                  </div>
+                  <div class="text-right">
+                    <span class="font-serif italic text-xs text-[#0F8F80]">Sponsorship Margin</span>
+                    <div id="calc-margin" class="font-serif text-2xl font-bold text-[#0F8F80]">+$11,725 (Eligible)</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- CARD FOOTER: Status Banner -->
+        <div class="bg-[#FAFAF8] px-6 sm:px-8 py-3.5 border-t border-[#EFECE6] flex flex-wrap items-center justify-between gap-3 text-xs text-inkMuted">
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-[#0F8F80]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+            <span>End-to-End Client Encryption Active</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <button onclick="openDrawer()" class="text-[#0F8F80] hover:text-[#0A4F49] font-bold hover:underline cursor-pointer">
+              View Official Guidance &rarr;
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ============================================================== -->
+      <!-- CLEAN CONTEXTUAL DISCOVERY STRIP (3 HORIZONTAL CARDS)          -->
+      <!-- ============================================================== -->
+      <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        
+        <!-- CARD 1: Official Federal Rules -->
+        <div class="bg-white rounded-2xl border border-[#DDD9CE] p-5 shadow-xs">
+          <div class="flex items-center gap-2 mb-2">
+            <svg class="w-4 h-4 text-[#0F8F80]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+            <h3 id="card-rules-title" class="font-serif font-bold text-sm text-[#16302C]">
+              Receipt Number Guide
+            </h3>
+          </div>
+          <p id="card-rules-desc" class="text-xs text-inkMuted leading-relaxed mb-3">
+            The receipt number is located at the top-left of Form I-797C Notice of Action. Three letters denote the processing center:
+          </p>
+          <div id="card-rules-badge" class="font-mono text-[11px] font-bold text-center py-2 px-2.5 rounded-xl bg-[#F6F4EF] border border-[#DDD9CE] text-[#0A4F49]">
+            IOE • EAC • WAC • LIN • SRC
+          </div>
+        </div>
+
+        <!-- CARD 2: Processing Expectations -->
+        <div class="bg-white rounded-2xl border border-[#DDD9CE] p-5 shadow-xs">
+          <div class="flex items-center gap-2 mb-2">
+            <svg class="w-4 h-4 text-[#0F8F80]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <h3 class="font-serif font-bold text-sm text-[#16302C]">
+              Adjudication Timelines
+            </h3>
+          </div>
+          <p class="text-xs text-inkMuted leading-relaxed mb-3">
+            USCIS electronic records refresh nightly. Expedited processing requires severe financial hardship or urgent humanitarian causes.
+          </p>
+          <div class="font-mono text-[11px] font-bold text-center py-2 px-2.5 rounded-xl bg-[#F6F4EF] border border-[#DDD9CE] text-[#0A4F49]">
+            Batch Sync: 11 PM – 6 AM ET
+          </div>
+        </div>
+
+        <!-- CARD 3: Official Federal Portals -->
+        <div class="bg-white rounded-2xl border border-[#DDD9CE] p-5 shadow-xs flex flex-col justify-between">
+          <div>
+            <div class="flex items-center gap-2 mb-2">
+              <svg class="w-4 h-4 text-[#0F8F80]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="3" y1="21" x2="21" y2="21"></line>
+                <line x1="4" y1="10" x2="20" y2="10"></line>
+                <line x1="12" y1="2" x2="20" y2="10"></line>
+                <line x1="4" y1="10" x2="12" y2="2"></line>
+              </svg>
+              <h3 class="font-serif font-bold text-sm text-[#16302C]">
+                Official Resources
+              </h3>
+            </div>
+            <p class="text-xs text-inkMuted leading-relaxed mb-3">
+              Direct links to official U.S. government immigration portals:
+            </p>
+          </div>
+          <ul class="space-y-1.5 text-xs font-semibold">
+            <li>
+              <a href="https://www.uscis.gov" target="_blank" class="flex items-center justify-between text-[#0A4F49] hover:text-[#0F8F80] group">
+                <span>USCIS Official Portal</span>
+                <span class="text-xs text-inkMuted group-hover:translate-x-0.5 transition-transform">&rarr;</span>
+              </a>
+            </li>
+            <li>
+              <a href="https://ceac.state.gov" target="_blank" class="flex items-center justify-between text-[#0A4F49] hover:text-[#0F8F80] group">
+                <span>CEAC Consular Portal</span>
+                <span class="text-xs text-inkMuted group-hover:translate-x-0.5 transition-transform">&rarr;</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- FREQUENTLY ASKED QUESTIONS (CENTERED ACCORDION)                -->
+      <!-- ============================================================== -->
+      <section class="mt-12 pt-8 border-t border-[#DDD9CE]">
+        <div class="text-center max-w-xl mx-auto mb-8">
+          <span class="font-serif italic text-xs font-semibold text-[#0F8F80] uppercase tracking-wider">
+            Clear Answers
+          </span>
+          <h2 class="font-serif text-2xl sm:text-3xl font-semibold text-[#16302C] mt-1">
+            Frequently Asked Questions
+          </h2>
+          <p class="text-xs sm:text-sm text-inkMuted mt-1.5">
+            Key guidelines, official instructions, and answers for this specific tool.
+          </p>
+        </div>
+
+        <!-- Centered Single-Column Accordion List -->
+        <div id="centered-faq-list" class="space-y-3.5">
+          <!-- Dynamically populated FAQ accordions -->
+        </div>
+
+        <div class="mt-6 text-center">
+          <button onclick="openDrawer()" class="inline-flex items-center gap-1.5 text-xs font-bold text-[#0F8F80] hover:text-[#0A4F49] hover:underline cursor-pointer">
+            <span>Can't find your answer? Open Extended Documentation Guide</span>
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14"></path>
+              <path d="m12 5 7 7-7 7"></path>
+            </svg>
+          </button>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- CLEAN CENTERED PRIVACY BANNER                                  -->
+      <!-- ============================================================== -->
+      <div class="rounded-2xl border border-[#DDD9CE] bg-white/70 px-6 py-4 shadow-xs flex items-center justify-center gap-3 text-center">
+        <div class="w-6 h-6 rounded-full bg-[#E1F2EE] text-[#0A4F49] flex items-center justify-center shrink-0 font-bold text-xs">
+          &#10003;
+        </div>
+        <p class="text-xs text-inkMuted leading-relaxed max-w-2xl">
+          <b class="text-[#16302C]">Rahvana Privacy Commitment:</b> All calculations, photo processing, and receipt requests occur strictly in your private browser sandbox with AES-256 local encryption.
+        </p>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ============================================================== -->
+  <!-- OPTION 2: FLOATING DRAGGABLE TOOL ACTIONS WIDGET               -->
+  <!-- (Inspired by MobileDraggableShare - Right side header/hero)    -->
+  <!-- ============================================================== -->
+  <div id="draggable-tool-dock" class="fixed top-20 sm:top-24 right-4 sm:right-8 z-50 touch-none select-none transition-shadow" style="cursor: grab;">
+    
+    <!-- Outer Glassmorphic Container -->
+    <div class="flex flex-col items-center rounded-full p-1.5 transition-all duration-300 bg-[#0A4F49]/85 hover:bg-[#0A4F49]/95 text-white backdrop-blur-xl border border-white/25 shadow-2xl">
+      
+      <!-- Drag Grip Indicator & Top Anchor Button -->
+      <div id="draggable-handle" class="w-full flex flex-col items-center pt-1 pb-1 cursor-grab active:cursor-grabbing group">
+        <!-- Grip bar -->
+        <span class="w-5 h-1 rounded-full bg-white/40 group-hover:bg-white/80 transition-colors"></span>
+        <span class="text-[8px] font-mono uppercase tracking-widest text-teal-200/60 mt-0.5 group-hover:text-teal-200 transition-colors">DRAG</span>
+      </div>
+
+      <!-- Anchor Button: Toggle Open/Close -->
+      <button id="draggable-anchor-btn" type="button" class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/15 hover:bg-white/25 active:scale-95 transition-all focus:outline-none cursor-pointer relative" aria-label="Toggle tool actions tray" title="Click to expand/collapse options · Drag anywhere">
+        
+        <!-- Icon Closed: Tool Sliders/Options -->
+        <div id="drag-icon-closed" class="flex items-center justify-center transition-all duration-300">
+          <svg class="w-5 h-5 text-teal-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="4" y1="21" x2="4" y2="14"></line>
+            <line x1="4" y1="10" x2="4" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12" y2="3"></line>
+            <line x1="20" y1="21" x2="20" y2="16"></line>
+            <line x1="20" y1="12" x2="20" y2="3"></line>
+            <line x1="1" y1="14" x2="7" y2="14"></line>
+            <line x1="9" y1="8" x2="15" y2="8"></line>
+            <line x1="17" y1="16" x2="23" y2="16"></line>
+          </svg>
+        </div>
+
+        <!-- Icon Open: Close X -->
+        <div id="drag-icon-open" class="hidden items-center justify-center transition-all duration-300">
+          <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </div>
+
+        <!-- Activity Notification Dot -->
+        <span class="absolute top-0 right-0 w-3 h-3 rounded-full bg-emerald-400 border-2 border-[#0A4F49]"></span>
+      </button>
+
+      <!-- Expandable Actions Tray (Vertical Column) -->
+      <div id="draggable-tray" class="flex flex-col items-center gap-2 pt-2.5 pb-1 transition-all">
+        
+        <!-- Action 1: Start Fresh -->
+        <div class="relative group">
+          <button onclick="resetCurrentTool()" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center text-white/90 hover:text-white transition-all cursor-pointer" title="Start Fresh">
+            <svg class="w-4 h-4 text-teal-200 group-hover:rotate-180 transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+              <path d="M3 3v5h5"></path>
+            </svg>
+          </button>
+          <!-- Tooltip -->
+          <span class="absolute right-12 top-1/2 -translate-y-1/2 bg-[#16302C] text-white text-[11px] font-semibold px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap shadow-lg border border-white/10 z-50">
+            Start Fresh
+          </span>
+        </div>
+
+        <!-- Action 2: History -->
+        <div class="relative group">
+          <button onclick="viewHistory()" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center text-white/90 hover:text-white transition-all cursor-pointer" title="Recent History">
+            <svg class="w-4 h-4 text-teal-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <span class="absolute -top-1 -right-1 bg-white text-[#0A4F49] text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-xs">3</span>
+          </button>
+          <!-- Tooltip -->
+          <span class="absolute right-12 top-1/2 -translate-y-1/2 bg-[#16302C] text-white text-[11px] font-semibold px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap shadow-lg border border-white/10 z-50">
+            History (3)
+          </span>
+        </div>
+
+        <!-- Action 3: Quick Help & FAQs -->
+        <div class="relative group">
+          <button onclick="openDrawer()" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center text-white/90 hover:text-white transition-all cursor-pointer" title="Quick Help & FAQs">
+            <svg class="w-4 h-4 text-teal-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+              <path d="M12 17h.01"></path>
+            </svg>
+          </button>
+          <!-- Tooltip -->
+          <span class="absolute right-12 top-1/2 -translate-y-1/2 bg-[#16302C] text-white text-[11px] font-semibold px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap shadow-lg border border-white/10 z-50">
+            Quick Help &amp; FAQs
+          </span>
+        </div>
+
+        <!-- Action 4: Save / Bookmark (Star) -->
+        <div class="relative group">
+          <button id="draggable-fav-btn" onclick="toggleFavorite(this)" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center text-white/90 hover:text-amber-300 transition-all cursor-pointer" title="Save to Favorites">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+          </button>
+          <!-- Tooltip -->
+          <span class="absolute right-12 top-1/2 -translate-y-1/2 bg-[#16302C] text-white text-[11px] font-semibold px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap shadow-lg border border-white/10 z-50">
+            Bookmark Tool
+          </span>
+        </div>
+
+        <!-- Subtle Mode Badge at Bottom -->
+        <!-- <div class="pt-1 pb-1 text-center">
+          <span class="text-[8px] font-mono text-teal-200/50 uppercase tracking-widest block">OPT 2</span>
+        </div> -->
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- SLIDE-OUT QUICK HELP & COMMON QUESTIONS DRAWER                  -->
+  <!-- ============================================================== -->
+  <div id="drawer-overlay" class="drawer-overlay" onclick="closeDrawer()"></div>
+  <div id="faq-drawer" class="faq-drawer">
+    <div class="flex items-center justify-between pb-4 mb-6 border-b border-[#DDD9CE]">
+      <div class="flex items-center gap-2">
+        <span class="font-serif italic font-bold text-xl text-[#16302C]">Common Questions</span>
+      </div>
+      <button onclick="closeDrawer()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 transition-colors cursor-pointer text-sm font-bold" title="Close">
+        &#10005;
+      </button>
+    </div>
+
+    <p class="text-xs text-inkMuted leading-relaxed mb-6">
+      Comprehensive rules, USCIS/CEAC document limits, and troubleshooting for this tool.
+    </p>
+
+    <!-- Drawer FAQ Items -->
+    <div id="drawer-faq-content" class="space-y-4">
+      <!-- Injected by JavaScript -->
+    </div>
+
+    <!-- Need More Assistance -->
+    <div class="mt-8 pt-6 border-t border-[#DDD9CE] text-xs text-center space-y-3">
+      <p class="text-inkMuted">Need legal representation or expert case review?</p>
+      <button onclick="alert('Connecting to Rahvana immigration attorney network.');" class="w-full py-2.5 rounded-xl bg-[#0A4F49] hover:bg-[#0F8F80] text-white font-bold transition-all">
+        Book Expert Consultation
+      </button>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- JAVASCRIPT: Tool Switching, Reactive Data & Interactivity       -->
+  <!-- ============================================================== -->
+  <script>
+    const TOOLS_CONFIG = {
+      'case-status': {
+        themeColor: '#0A4F49',
+        badge: 'Live Status Radar',
+        cat: 'Official Immigration Toolkit',
+        title: 'USCIS Case Status Tracker',
+        desc: 'Direct real-time status inquiry with official USCIS electronic records. Inspect receipt milestones, next steps, and historical decision notices.',
+        cardMode: 'Step 1 of 2: Real-Time USCIS Terminal Inquiry',
+        rulesTitle: 'Receipt Number Guide',
+        rulesDesc: 'The receipt number is located at the top-left of Form I-797C Notice of Action. Three letters denote the processing center:',
+        rulesBadge: 'IOE • EAC • WAC • LIN • SRC',
+        quota: null,
+        faqs: [
+          { q: 'How often does USCIS update case statuses?', a: 'Statuses update nightly during scheduled batch processing, typically between 11 PM and 6 AM Eastern Time.' },
+          { q: 'Does querying my status impact my case?', a: 'No, this query is a read-only request to official public USCIS records with zero impact on adjudication.' },
+          { q: 'What does "Case Was Received" mean?', a: 'It means USCIS accepted your filing fee and locked in your priority date. You will next receive biometric or approval notices.' },
+          { q: 'How do I expedite my case with USCIS?', a: 'You can request expedited processing via the USCIS Contact Center if you meet criteria such as severe financial loss or urgent humanitarian emergencies.' }
+        ],
+        checklist: [
+          { t: 'Receipt Format Valid', s: '13-digit alphanumeric format', done: true },
+          { t: 'Service Center Located', s: 'Electronic Filings (IOE)', done: true },
+          { t: 'Decision Verified', s: 'Approved & forwarded to NVC', done: true }
+        ]
+      },
+      'passport-photo': {
+        themeColor: '#0A4F49',
+        badge: 'Biometric AI Studio',
+        cat: 'Visa & Passport Utilities',
+        title: 'Passport & Visa Photo Booth',
+        desc: 'Produce 100% USCIS & Department of State compliant 2" x 2" visa photos with biometric cropping and pure white background.',
+        cardMode: 'Biometric Cropping & Standards Validation',
+        rulesTitle: '22 CFR 41.105 Composition Rules',
+        rulesDesc: 'Ensure neutral expression, eyes open and looking at camera, no eyeglasses, no headwear (unless documented religious/medical), and zero shadows.',
+        rulesBadge: '2" x 2" (51x51mm) • 600 DPI',
+        quota: '3 Photo Credits Available',
+        faqs: [
+          { q: 'Can I wear prescription glasses in the photo?', a: 'Since 2016, eyeglasses are strictly prohibited in U.S. visa and passport photos under Department of State regulations.' },
+          { q: 'How recent must the photo be?', a: 'Your photo must be taken within the last 6 months to reflect your current physical appearance.' },
+          { q: 'What paper should I print on?', a: 'Print on high-quality matte or glossy photo-grade paper with no borders.' }
+        ],
+        checklist: [
+          { t: 'Face Centered & Visible', s: 'Head height 1 - 1 3/8"', done: true },
+          { t: 'Pure White Background', s: 'No shadows or tints', done: true },
+          { t: 'No Eyeglasses Worn', s: '22 CFR 41.105 rule', done: true }
+        ]
+      },
+      'snap-sign': {
+        themeColor: '#0A4F49',
+        badge: 'Signature Studio',
+        cat: 'Form Preparation Utilities',
+        title: 'Snap & Sign Signature Processor',
+        desc: 'Transform paper pen signatures into pristine, transparent high-resolution PNG signatures for official immigration petitions.',
+        cardMode: 'High-Resolution Ink Isolation & Vector Clean',
+        rulesTitle: 'Signature Best Practices',
+        rulesDesc: 'Sign with a black or dark navy ink ballpoint pen on unlined paper. Ensure even ambient light with zero camera shadows over the paper.',
+        rulesBadge: 'Lossless PNG • Transparent',
+        quota: null,
+        faqs: [
+          { q: 'Does USCIS accept digital copies of signatures?', a: 'Yes, under USCIS Policy Manual Vol 1 Part B, copies, faxes, or scanned reproductions of handwritten signatures are accepted.' },
+          { q: 'Is my signature stored on external servers?', a: 'No, all image isolation and background stripping algorithms execute directly in your browser.' }
+        ],
+        checklist: [
+          { t: 'Clean White Paper', s: 'No lined notebooks', done: true },
+          { t: 'Dark Ink Pen', s: 'Black or deep navy', done: true },
+          { t: 'Alpha Transparency', s: 'Pure transparent canvas', done: true }
+        ]
+      },
+      'pdf-toolkit': {
+        themeColor: '#232E6B', // Navy
+        badge: 'Document Optimizer',
+        cat: 'Filing & Consular Tools',
+        title: 'PDF Toolkit for Immigration',
+        desc: 'Compress, merge, annotate, and format documents specifically engineered to satisfy USCIS and CEAC 2MB file limits.',
+        cardMode: 'CEAC Compliant Compression & Formatting Engine',
+        rulesTitle: 'CEAC & USCIS File Limits',
+        rulesDesc: 'CEAC strictly blocks any document over 2.0 MB. Use the compression utility to shrink multi-page tax transcripts while keeping 300 DPI text legible.',
+        rulesBadge: 'CEAC: Max 2.0 MB • USCIS: 12 MB',
+        quota: null,
+        faqs: [
+          { q: 'Can I upload JPEG documents to CEAC?', a: 'Single page certificates can be JPG, but all multi-page documents (tax returns, bank records) must be PDF under 2MB.' },
+          { q: 'Will compression blur my documents?', a: 'Our compression maintains OCR text clarity while stripping unneeded color profiles and thumbnail metadata.' }
+        ],
+        checklist: [
+          { t: 'File Size Limit', s: 'Under 2.0 MB CEAC threshold', done: true },
+          { t: 'Resolution Audit', s: '300 DPI text sharpness', done: true },
+          { t: 'Page Orientation', s: 'Upright portrait orientation', done: true }
+        ]
+      },
+      'dq-tool': {
+        themeColor: '#0A4F49',
+        badge: 'Scheduling Radar',
+        cat: 'Consular Stage Tracking',
+        title: 'DQ Interview Scheduling Radar',
+        desc: 'Monitor Documentarily Complete (DQ) appointment scheduling velocity across U.S. Embassies and Consulates worldwide.',
+        cardMode: 'NVC Priority Scheduling Velocity Benchmark',
+        rulesTitle: 'What is Documentarily Complete?',
+        rulesDesc: 'A case is Documentarily Complete when NVC reviews and approves all civil forms (DS-260), tax returns, and affidavits of support.',
+        rulesBadge: 'NVC Approval &rarr; Embassy Queue',
+        quota: null,
+        faqs: [
+          { q: 'Why is there a wait after DQ is approved?', a: 'Each embassy has a finite number of interview appointments per month, prioritized by visa category and consular staffing.' },
+          { q: 'Can I expedite my embassy interview?', a: 'Yes, if you have severe humanitarian, financial, or medical emergency grounds, you can request an expedite directly via NVC.' }
+        ],
+        checklist: [
+          { t: 'DS-260 Completed', s: 'Online application filed', done: true },
+          { t: 'Financial Docs Approved', s: 'Form I-864 reviewed', done: true },
+          { t: 'Embassy Queue Position', s: 'Indexed with consular backlog', done: true }
+        ]
+      },
+      'action-planner': {
+        themeColor: '#6E2420', // Burgundy
+        badge: 'Visa Response Toolkit',
+        cat: 'Administrative Processing',
+        title: '221(g) Action Plan & Packet Builder',
+        desc: 'Build, organize, and export a structured consular 221(g) response packet conforming to embassy refusal instructions.',
+        cardMode: 'Consular Evidence Compilation & INA 221(g) Packet',
+        rulesTitle: '221(g) Refusal Notice Rules',
+        rulesDesc: 'Under INA 203(g), you have exactly one year from the refusal date to submit requested items before your immigrant petition is terminated.',
+        rulesBadge: 'INA 203(g) 1-Year Expiry Window',
+        quota: null,
+        faqs: [
+          { q: 'Does 221(g) mean my visa is permanently denied?', a: 'No. 221(g) is a temporary administrative refusal pending missing evidence or background review. Most cases are approved once fulfilled.' },
+          { q: 'Where do I send the requested documents?', a: 'Follow the specific instructions on your refusal sheet: typically via the embassy courier service (221g drop-off).' }
+        ],
+        checklist: [
+          { t: 'Refusal Letter Attached', s: 'Top cover page', done: true },
+          { t: 'Requested Evidence Ready', s: 'All checked items', done: true },
+          { t: 'Courier Drop-off Slip', s: 'Tracking generated', done: true }
+        ]
+      },
+      'affidavit-calc': {
+        themeColor: '#5E3F07', // Warm Ochre
+        badge: 'Financial Sponsorship',
+        cat: 'Form I-864 Verification',
+        title: 'Affidavit of Support Income Calculator',
+        desc: 'Determine your federal poverty threshold, joint sponsor requirement, and Form I-864 vs I-864EZ eligibility under 2026 guidelines.',
+        cardMode: 'HHS Federal Poverty Guidelines & Income Evaluation',
+        rulesTitle: '125% Poverty Level Requirement',
+        rulesDesc: 'Sponsors must demonstrate income at or above 125% of HHS Federal Poverty Guidelines for their household size (100% for active-duty military).',
+        rulesBadge: 'HHS Poverty Guidelines 2026',
+        quota: null,
+        faqs: [
+          { q: 'Can assets count toward income?', a: 'Yes, significant liquid assets (savings, stocks, real estate equity) can be used at 3x or 5x the shortfall depending on the relationship.' },
+          { q: 'When is a Joint Sponsor permitted?', a: 'If your personal income falls below the 125% line, any qualified U.S. citizen or LPR household may serve as joint sponsor.' }
+        ],
+        checklist: [
+          { t: 'Household Size Counted', s: 'Sponsor + Dependents + Immigrant', done: true },
+          { t: 'Income Evaluated', s: '125% threshold met', done: true },
+          { t: 'Joint Sponsor Status', s: 'Not required (Income sufficient)', done: true }
+        ]
+      }
+    };
+
+    let activeTool = 'case-status';
+
+    function setTool(toolId) {
+      activeTool = toolId;
+      const cfg = TOOLS_CONFIG[toolId];
+      if (!cfg) return;
+
+      // Update Hero banner background color
+      const heroBanner = document.getElementById('hero-banner');
+      if (heroBanner) {
+        heroBanner.style.backgroundColor = cfg.themeColor;
+      }
+
+      // Coordinate Draggable Widget color with theme
+      const dragContainer = document.querySelector('#draggable-tool-dock > div');
+      if (dragContainer) {
+        dragContainer.style.backgroundColor = cfg.themeColor + 'd9';
+      }
+
+      // Update Nav Pills
+      document.querySelectorAll('.nav-pill').forEach(btn => {
+        btn.classList.remove('active', 'bg-white', 'text-[#16302C]', 'shadow-xs');
+        btn.classList.add('text-white/80');
+      });
+      const activeNav = document.getElementById('nav-' + toolId);
+      if (activeNav) {
+        activeNav.classList.add('active', 'bg-white', 'text-[#16302C]', 'shadow-xs');
+        activeNav.classList.remove('text-white/80');
+      }
+
+      // Update Hero Text Content
+      const catEl = document.getElementById('hero-category-pill');
+      if (catEl) catEl.textContent = cfg.cat;
+      const badgeEl = document.getElementById('hero-badge-text');
+      if (badgeEl) badgeEl.textContent = cfg.badge;
+      const titleEl = document.getElementById('hero-title');
+      if (titleEl) titleEl.textContent = cfg.title;
+      const descEl = document.getElementById('hero-desc');
+      if (descEl) descEl.textContent = cfg.desc;
+
+      // Quota Badge
+      const quotaWrap = document.getElementById('hero-quota-wrap');
+      if (quotaWrap) {
+        if (cfg.quota) {
+          quotaWrap.classList.remove('hidden');
+          quotaWrap.classList.add('inline-flex');
+          const quotaText = document.getElementById('hero-quota-text');
+          if (quotaText) quotaText.textContent = cfg.quota;
+        } else {
+          quotaWrap.classList.add('hidden');
+          quotaWrap.classList.remove('inline-flex');
+        }
+      }
+
+      // Card Header Mode Text
+      const cardModeEl = document.getElementById('card-mode-text');
+      if (cardModeEl) cardModeEl.textContent = cfg.cardMode;
+
+      // Switch Tool Canvases
+      document.querySelectorAll('.tool-view').forEach(v => v.classList.add('hidden'));
+      const activeView = document.getElementById('view-' + toolId);
+      if (activeView) activeView.classList.remove('hidden');
+
+      // Update Inline Checklist
+      const checklistContainer = document.getElementById('inline-checklist-items');
+      if (checklistContainer) {
+        checklistContainer.innerHTML = '';
+        cfg.checklist.forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'flex items-center gap-2.5 bg-white p-3 rounded-xl border border-[#D8ECE7]';
+          div.innerHTML = `
+            <span class="w-5 h-5 rounded-full bg-[#E1F2EE] text-[#0A4F49] flex items-center justify-center text-xs font-bold shrink-0">
+              &#10003;
+            </span>
+            <div class="min-w-0">
+              <b class="block text-xs font-semibold text-[#16302C] truncate">${item.t}</b>
+              <small class="text-[11px] text-inkMuted truncate block">${item.s}</small>
+            </div>
+          `;
+          checklistContainer.appendChild(div);
+        });
+      }
+
+      // Update Contextual Strip Cards
+      const rulesTitleEl = document.getElementById('card-rules-title');
+      if (rulesTitleEl) rulesTitleEl.textContent = cfg.rulesTitle;
+      const rulesDescEl = document.getElementById('card-rules-desc');
+      if (rulesDescEl) rulesDescEl.textContent = cfg.rulesDesc;
+      const rulesBadgeEl = document.getElementById('card-rules-badge');
+      if (rulesBadgeEl) rulesBadgeEl.textContent = cfg.rulesBadge;
+
+      // Update FAQs (both in-page centered list & slide-out drawer)
+      renderFaqs(cfg.faqs);
+    }
+
+    function renderFaqs(faqs) {
+      if (!faqs || !faqs.length) return;
+
+      // 1. Centered In-Page Accordion List
+      const faqList = document.getElementById('centered-faq-list');
+      if (faqList) {
+        faqList.innerHTML = '';
+        faqs.forEach((f, idx) => {
+          const d = document.createElement('details');
+          d.className = 'group bg-white rounded-2xl border border-[#DDD9CE] p-5 sm:p-6 shadow-xs cursor-pointer hover:border-[#0F8F80] hover:shadow-sm transition-all';
+          if (idx === 0) d.open = true; // Open first for clean default focus
+          d.innerHTML = `
+            <summary class="font-serif font-bold text-sm sm:text-base text-[#16302C] list-none flex items-start justify-between gap-3">
+              <span class="leading-snug">${f.q}</span>
+              <span class="w-6 h-6 rounded-full bg-[#E1F2EE] text-[#0A4F49] flex items-center justify-center text-xs font-mono group-open:rotate-45 transition-transform shrink-0 font-bold mt-0.5">+</span>
+            </summary>
+            <p class="mt-3 text-xs sm:text-sm text-inkMuted leading-relaxed border-t border-[#EFECE6] pt-3">${f.a}</p>
+          `;
+          faqList.appendChild(d);
+        });
+      }
+
+      // 2. Slide-out Drawer List
+      const drawerList = document.getElementById('drawer-faq-content');
+      if (drawerList) {
+        drawerList.innerHTML = '';
+        faqs.forEach(f => {
+          const d = document.createElement('details');
+          d.className = 'group border-b border-[#DDD9CE] pb-3.5 cursor-pointer';
+          d.innerHTML = `
+            <summary class="font-serif font-bold text-sm text-[#16302C] list-none flex items-center justify-between gap-2">
+              <span>${f.q}</span>
+              <span class="text-[#0F8F80] font-mono text-base group-open:rotate-45 transition-transform font-bold">+</span>
+            </summary>
+            <p class="mt-2 text-xs text-inkMuted leading-relaxed">${f.a}</p>
+          `;
+          drawerList.appendChild(d);
+        });
+      }
+    }
+
+    // ==============================================================
+    // DOCK MODE COMPARISON CONTROLLER (Both, Hero Only, Draggable Only)
+    // ==============================================================
+    let currentDockMode = 'both';
+
+    function setDockMode(mode) {
+      currentDockMode = mode;
+      const heroDock = document.getElementById('hero-action-dock');
+      const dragDock = document.getElementById('draggable-tool-dock');
+
+      ['both', 'hero', 'floating'].forEach(m => {
+        const btn = document.getElementById('btn-dock-' + m);
+        if (!btn) return;
+        if (m === mode) {
+          btn.classList.add('bg-white', 'text-[#16302C]', 'font-semibold');
+          btn.classList.remove('text-white/80');
+        } else {
+          btn.classList.remove('bg-white', 'text-[#16302C]', 'font-semibold');
+          btn.classList.add('text-white/80');
+        }
+      });
+
+      if (mode === 'both') {
+        if (heroDock) heroDock.classList.remove('hidden');
+        if (dragDock) dragDock.classList.remove('hidden');
+      } else if (mode === 'hero') {
+        if (heroDock) heroDock.classList.remove('hidden');
+        if (dragDock) dragDock.classList.add('hidden');
+      } else if (mode === 'floating') {
+        if (heroDock) heroDock.classList.add('hidden');
+        if (dragDock) dragDock.classList.remove('hidden');
+      }
+    }
+
+    // ==============================================================
+    // DRAGGABLE WIDGET CONTROLLER (Inspired by MobileDraggableShare)
+    // ==============================================================
+    let isWidgetTrayOpen = true;
+
+    function initDraggableWidget() {
+      const widget = document.getElementById('draggable-tool-dock');
+      const handle = document.getElementById('draggable-handle');
+      const anchorBtn = document.getElementById('draggable-anchor-btn');
+      const tray = document.getElementById('draggable-tray');
+
+      if (!widget || !anchorBtn || !tray) return;
+
+      let isDragging = false;
+      let hasMoved = false;
+      let startX = 0, startY = 0;
+      let initialLeft = 0, initialTop = 0;
+
+      function onPointerStart(e) {
+        if (e.button && e.button !== 0) return; // left click only
+        isDragging = true;
+        hasMoved = false;
+
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        startX = clientX;
+        startY = clientY;
+
+        const rect = widget.getBoundingClientRect();
+        initialLeft = rect.left;
+        initialTop = rect.top;
+
+        widget.style.transition = 'none';
+
+        document.addEventListener('mousemove', onPointerMove, { passive: false });
+        document.addEventListener('mouseup', onPointerEnd);
+        document.addEventListener('touchmove', onPointerMove, { passive: false });
+        document.addEventListener('touchend', onPointerEnd);
+      }
+
+      function onPointerMove(e) {
+        if (!isDragging) return;
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const deltaX = clientX - startX;
+        const deltaY = clientY - startY;
+
+        if (Math.abs(deltaX) > 4 || Math.abs(deltaY) > 4) {
+          hasMoved = true;
+          if (e.cancelable) e.preventDefault();
+        }
+
+        let newLeft = initialLeft + deltaX;
+        let newTop = initialTop + deltaY;
+
+        const maxLeft = window.innerWidth - widget.offsetWidth - 12;
+        const maxTop = window.innerHeight - widget.offsetHeight - 12;
+        newLeft = Math.max(12, Math.min(newLeft, maxLeft));
+        newTop = Math.max(60, Math.min(newTop, maxTop));
+
+        widget.style.left = newLeft + 'px';
+        widget.style.top = newTop + 'px';
+        widget.style.right = 'auto';
+        widget.style.bottom = 'auto';
+      }
+
+      function onPointerEnd() {
+        if (!isDragging) return;
+        isDragging = false;
+        widget.style.transition = '';
+
+        document.removeEventListener('mousemove', onPointerMove);
+        document.removeEventListener('mouseup', onPointerEnd);
+        document.removeEventListener('touchmove', onPointerMove);
+        document.removeEventListener('touchend', onPointerEnd);
+      }
+
+      handle.addEventListener('mousedown', onPointerStart);
+      handle.addEventListener('touchstart', onPointerStart, { passive: false });
+      anchorBtn.addEventListener('mousedown', onPointerStart);
+      anchorBtn.addEventListener('touchstart', onPointerStart, { passive: false });
+
+      anchorBtn.addEventListener('click', (e) => {
+        if (hasMoved) return;
+        toggleDraggableTray();
+      });
+    }
+
+    function toggleDraggableTray() {
+      const tray = document.getElementById('draggable-tray');
+      const iconClosed = document.getElementById('drag-icon-closed');
+      const iconOpen = document.getElementById('drag-icon-open');
+      if (!tray) return;
+
+      isWidgetTrayOpen = !isWidgetTrayOpen;
+
+      if (isWidgetTrayOpen) {
+        tray.classList.remove('hidden');
+        tray.classList.add('flex');
+        iconClosed.classList.add('hidden');
+        iconOpen.classList.remove('hidden');
+        iconOpen.classList.add('flex');
+      } else {
+        tray.classList.add('hidden');
+        tray.classList.remove('flex');
+        iconOpen.classList.add('hidden');
+        iconClosed.classList.remove('hidden');
+        iconClosed.classList.add('flex');
+      }
+    }
+
+    // Toggle Collapsible Inline Requirements Drawer
+    function toggleRequirementsPanel() {
+      const panel = document.getElementById('inline-requirements-panel');
+      const chevron = document.getElementById('req-chevron');
+      if (panel.classList.contains('hidden')) {
+        panel.classList.remove('hidden');
+        chevron.style.transform = 'rotate(180deg)';
+      } else {
+        panel.classList.add('hidden');
+        chevron.style.transform = 'rotate(0deg)';
+      }
+    }
+
+    // Drawer Controls
+    function openDrawer() {
+      document.getElementById('faq-drawer').classList.add('open');
+      document.getElementById('drawer-overlay').classList.add('open');
+    }
+
+    function closeDrawer() {
+      document.getElementById('faq-drawer').classList.remove('open');
+      document.getElementById('drawer-overlay').classList.remove('open');
+    }
+
+    // Interactive Button Actions
+    function toggleFavorite(btn) {
+      const isFav = btn.classList.contains('text-amber-400');
+      const allFavButtons = document.querySelectorAll('#hero-action-dock button:last-child, #draggable-fav-btn');
+
+      allFavButtons.forEach(b => {
+        const svg = b.querySelector('svg');
+        if (isFav) {
+          b.classList.remove('text-amber-400');
+          b.classList.add('text-white/80');
+          if (svg) svg.setAttribute('fill', 'none');
+        } else {
+          b.classList.add('text-amber-400');
+          b.classList.remove('text-white/80');
+          if (svg) svg.setAttribute('fill', 'currentColor');
+        }
+      });
+
+      if (isFav) {
+        alert('Removed from Quick Access tools.');
+      } else {
+        alert('Pinned to Quick Access tools on your dashboard!');
+      }
+    }
+
+    function resetCurrentTool() {
+      if (confirm('Start fresh with clean inputs for this tool?')) {
+        const input = document.getElementById('case-input');
+        if (input) input.value = '';
+      }
+    }
+
+    function viewHistory() {
+      alert('Recent activity for this tool:\n1. Receipt IOE9482910382 (Approved) - Today\n2. Receipt LIN2490182312 (In Review) - Nov 12\n3. Receipt EAC2390019283 (Biometrics) - Nov 04');
+    }
+
+    function runCaseCheck() {
+      const box = document.getElementById('case-result-box');
+      box.style.opacity = '0.5';
+      setTimeout(() => {
+        box.style.opacity = '1';
+        alert('Status inquiry successfully refreshed with official USCIS servers.');
+      }, 350);
+    }
+
+    function togglePick(el) {
+      el.classList.toggle('active');
+    }
+
+    function recalcAffidavit() {
+      const h = parseInt(document.getElementById('calc-household').value) || 2;
+      const inc = parseInt(document.getElementById('calc-income').value) || 0;
+      // 2026 HHS Poverty: Base $20,440 for 2 + $5,380 per extra person
+      const required = Math.round((20440 + (h - 2) * 5380) * 1.25);
+      const margin = inc - required;
+      document.getElementById('calc-threshold').textContent = '$' + required.toLocaleString() + ' / yr';
+      document.getElementById('calc-margin').textContent = (margin >= 0 ? '+$' : '-$') + Math.abs(margin).toLocaleString() + (margin >= 0 ? ' (Eligible)' : ' (Shortfall)');
+      document.getElementById('calc-margin').style.color = margin >= 0 ? '#0F8F80' : '#B3261E';
+    }
+
+    // Initialize Default View
+    function init() {
+      setTool('case-status');
+      initDraggableWidget();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  </script>
+</body>
+</html>

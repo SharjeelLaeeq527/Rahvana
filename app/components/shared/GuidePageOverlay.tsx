@@ -123,6 +123,7 @@ const GUIDE_IMPORTERS: Record<string, () => Promise<any>> = {
   "step-parent-guide": () => import("@/app/(tools)/guides/step-parent-guide/page"),
   "adoptive-parent-guide": () => import("@/app/(tools)/guides/adoptive-parent-guide/page"),
   "adoption-guide": () => import("@/app/(tools)/guides/adoptive-parent-guide/page"),
+  "child-citizenship-guide": () => import("@/app/(tools)/guides/child-citizenship-guide/page"),
   "asset-document-guide": () => import("@/app/(tools)/guides/asset-document-guide/page"),
   "bona-marriage-guide": () => import("@/app/(tools)/guides/bona-marriage-guide/page"),
   "educational-certificates-us-visa": () => import("@/app/(tools)/guides/educational-certificates-us-visa/page"),

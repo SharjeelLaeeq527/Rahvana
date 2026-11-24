@@ -51,6 +51,7 @@ import {
 import { normalizePlanTier } from "@/app/context/PlanContext";
 import type { PlanTier } from "@/lib/entitlements/config";
 import PccRequestCard, { type PccRequestRow } from "@/components/services/PccRequestCard";
+import FieldLabel from "@/app/components/shared/FieldLabel";
 
 export interface PccFilingToolProps extends ToolModeProps {
   /** Journey overlay control. Standalone page omits these → renders inline full-page. */
@@ -971,7 +972,7 @@ function PoliceApplyContent({
               <motion.div key="step1" {...fadeIn} className="space-y-6 md:space-y-8">
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   <div className="space-y-2">
-                    <label className="ml-1 text-sm font-bold text-gray-700">Purpose</label>
+                    <FieldLabel title="Purpose" />
                     <CustomDropdown
                       value={formData.purpose}
                       onChange={(value) =>
@@ -988,9 +989,7 @@ function PoliceApplyContent({
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="ml-1 text-sm font-bold text-gray-700">
-                      Certificate Delivery Type
-                    </label>
+                    <FieldLabel title="Certificate Delivery Type" />
                     <CustomDropdown
                       value={formData.deliveryType}
                       onChange={(value) =>
@@ -1007,7 +1006,7 @@ function PoliceApplyContent({
                 </div>
 
                 <div className="space-y-2">
-                  <label className="ml-1 text-sm font-bold text-gray-700">Email Address</label>
+                  <FieldLabel title="Email Address" />
                   <div className="relative">
                     <Mail
                       className={`absolute top-1/2 left-4 -translate-y-1/2 ${
@@ -1037,7 +1036,7 @@ function PoliceApplyContent({
 
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   <div className="space-y-2">
-                    <label className="ml-1 text-sm font-bold text-gray-700">Full Name</label>
+                    <FieldLabel title="Full Name" />
                     <div className="relative">
                       <User
                         className="absolute top-1/2 left-4 -translate-y-1/2 text-gray-400"
@@ -1054,9 +1053,7 @@ function PoliceApplyContent({
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="ml-1 text-sm font-bold text-gray-700">
-                      Father Name / WO / DO
-                    </label>
+                    <FieldLabel title="Father Name / WO / DO" />
                     <div className="relative">
                       <Users
                         className="absolute top-1/2 left-4 -translate-y-1/2 text-gray-400"
@@ -1075,7 +1072,7 @@ function PoliceApplyContent({
                 </div>
 
                 <div className="space-y-2">
-                  <label className="ml-1 text-sm font-bold text-gray-700">Date Of Birth</label>
+                  <FieldLabel title="Date Of Birth" />
                   <div className="relative">
                     <Calendar
                       className="absolute top-1/2 left-4 -translate-y-1/2 text-gray-400"
@@ -1097,9 +1094,7 @@ function PoliceApplyContent({
                   </h3>
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                     <div className="space-y-2">
-                      <label className="ml-1 text-xs font-bold text-gray-500 uppercase">
-                        CNIC Number
-                      </label>
+                      <FieldLabel title="CNIC Number" />
                       <input
                         type="text"
                         name="cnic"
@@ -1117,9 +1112,7 @@ function PoliceApplyContent({
                       )}
                     </div>
                     <div className="space-y-2">
-                      <label className="ml-1 text-xs font-bold text-gray-500 uppercase">
-                        Issue Date
-                      </label>
+                      <FieldLabel title="Issue Date" />
                       <input
                         type="date"
                         name="cnicIssue"
@@ -1129,9 +1122,7 @@ function PoliceApplyContent({
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="ml-1 text-xs font-bold text-gray-500 uppercase">
-                        Expiry Date
-                      </label>
+                      <FieldLabel title="Expiry Date" />
                       <input
                         type="date"
                         name="cnicExpiry"
@@ -1149,9 +1140,7 @@ function PoliceApplyContent({
                   </h3>
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                     <div className="space-y-2">
-                      <label className="ml-1 text-xs font-bold text-gray-500 uppercase">
-                        Passport No
-                      </label>
+                      <FieldLabel title="Passport No." />
                       <input
                         type="text"
                         name="passport"
@@ -1162,9 +1151,7 @@ function PoliceApplyContent({
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="ml-1 text-xs font-bold text-gray-500 uppercase">
-                        Issue Date
-                      </label>
+                      <FieldLabel title="Issue Date" />
                       <input
                         type="date"
                         name="passportIssue"
@@ -1174,9 +1161,7 @@ function PoliceApplyContent({
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="ml-1 text-xs font-bold text-gray-500 uppercase">
-                        Expiry Date
-                      </label>
+                      <FieldLabel title="Expiry Date" />
                       <input
                         type="date"
                         name="passportExpiry"
@@ -1189,9 +1174,7 @@ function PoliceApplyContent({
                 </div>
 
                 <div className="space-y-2">
-                  <label className="ml-1 text-sm font-bold text-gray-700">
-                    Mobile (Pakistan cell number)
-                  </label>
+                  <FieldLabel title="Mobile (Pakistan cell number)" />
                   <div className="relative">
                     <Phone
                       className={`absolute top-1/2 left-4 -translate-y-1/2 ${
@@ -1220,9 +1203,7 @@ function PoliceApplyContent({
                 </div>
 
                 <div className="space-y-2">
-                  <label className="ml-1 text-sm font-bold text-gray-700">
-                    Current Address (Verification for Pakistan)
-                  </label>
+                  <FieldLabel title="Current Address (Verification for Pakistan)" />
                   <div className="relative">
                     <Home className="absolute top-6 left-4 text-gray-400" size={20} />
                     <textarea
@@ -1238,9 +1219,7 @@ function PoliceApplyContent({
 
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   <div className="space-y-2">
-                    <label className="ml-1 text-sm font-bold text-gray-700">
-                      Stay From (as given address)
-                    </label>
+                    <FieldLabel title="Stay From (as given address)" />
                     <input
                       type="date"
                       name="stayFrom"
@@ -1250,9 +1229,7 @@ function PoliceApplyContent({
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="ml-1 text-sm font-bold text-gray-700">
-                      Stay To (as given address)
-                    </label>
+                    <FieldLabel title="Stay To (as given address)" />
                     <input
                       type="date"
                       name="stayTo"
@@ -1264,9 +1241,7 @@ function PoliceApplyContent({
                 </div>
 
                 <div className="space-y-2">
-                  <label className="ml-1 text-sm font-bold text-gray-700">
-                    Select Your Current District
-                  </label>
+                  <FieldLabel title="Select Your Current District" />
                   <select
                     name="district"
                     value={formData.district}
@@ -1286,7 +1261,7 @@ function PoliceApplyContent({
                 </div>
 
                 <div className="space-y-6 rounded-3xl border border-gray-100 bg-gray-50 p-6 md:rounded-[2.5rem] md:p-8">
-                  <label className="ml-1 text-sm font-bold text-gray-700">Presently Residing</label>
+                  <FieldLabel title="Presently Residing" />
                   <div className="flex flex-col gap-4 sm:flex-row sm:gap-8">
                     <button
                       type="button"
@@ -1332,7 +1307,7 @@ function PoliceApplyContent({
                       animate={{ opacity: 1, y: 0 }}
                       className="space-y-2"
                     >
-                      <label className="ml-1 text-sm font-bold text-gray-700">Select Country</label>
+                      <FieldLabel title="Select Country" />
                       <CustomDropdown
                         value={formData.residingCountry}
                         onChange={(value) =>
@@ -1357,9 +1332,7 @@ function PoliceApplyContent({
                 </div>
 
                 <div className="space-y-2">
-                  <label className="ml-1 text-sm font-bold text-gray-700">
-                    Name of Country for which Certificate is required
-                  </label>
+                  <FieldLabel title="Name of Country for which Certificate is required" />
                   <Input
                     id="targetCountry"
                     name="targetCountry"
@@ -1432,9 +1405,7 @@ function PoliceApplyContent({
                     >
                       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                         <div className="space-y-2">
-                          <label className="ml-1 text-xs font-bold text-gray-500 uppercase">
-                            FIR No
-                          </label>
+                          <FieldLabel title="FIR No" />
                           <input
                             type="text"
                             name="firNo"
@@ -1445,9 +1416,7 @@ function PoliceApplyContent({
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="ml-1 text-xs font-bold text-gray-500 uppercase">
-                            FIR Year
-                          </label>
+                          <FieldLabel title="FIR Year" />
                           <input
                             type="text"
                             name="firYear"
@@ -1458,9 +1427,7 @@ function PoliceApplyContent({
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="ml-1 text-xs font-bold text-gray-500 uppercase">
-                            Police Station
-                          </label>
+                          <FieldLabel title="Police Station" />
                           <select
                             name="policeStation"
                             value={formData.policeStation}
@@ -1476,9 +1443,7 @@ function PoliceApplyContent({
                       </div>
 
                       <div className="space-y-2">
-                        <label className="ml-1 text-xs font-bold text-gray-500 uppercase">
-                          Judgment Copy (Attachment)
-                        </label>
+                        <FieldLabel title="Judgment Copy (Attachment)" />
                         <div className="group relative">
                           <input
                             type="file"
@@ -1524,9 +1489,7 @@ function PoliceApplyContent({
                       </div>
 
                       <div className="space-y-2">
-                        <label className="ml-1 text-xs font-bold text-gray-500 uppercase">
-                          Status
-                        </label>
+                        <FieldLabel title="Status" />
                         <select
                           name="status"
                           value={formData.status}
@@ -1565,7 +1528,7 @@ function PoliceApplyContent({
 
                   <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <div className="space-y-2">
-                      <label className="ml-1 text-sm font-bold text-gray-700">Name</label>
+                      <FieldLabel title="Name" />
                       <input
                         type="text"
                         name="witness1Name"
@@ -1576,9 +1539,7 @@ function PoliceApplyContent({
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="ml-1 text-sm font-bold text-gray-700">
-                        Father Name / WO / DO
-                      </label>
+                      <FieldLabel title="Father Name / WO / DO" />
                       <input
                         type="text"
                         name="witness1Father"
@@ -1592,7 +1553,7 @@ function PoliceApplyContent({
 
                   <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <div className="space-y-2">
-                      <label className="ml-1 text-sm font-bold text-gray-700">CNIC</label>
+                      <FieldLabel title="CNIC" />
                       <input
                         type="text"
                         name="witness1Cnic"
@@ -1612,7 +1573,7 @@ function PoliceApplyContent({
                       )}
                     </div>
                     <div className="space-y-2">
-                      <label className="ml-1 text-sm font-bold text-gray-700">Contact No</label>
+                      <FieldLabel title="Contact No." />
                       <input
                         type="text"
                         name="witness1Contact"
@@ -1634,7 +1595,7 @@ function PoliceApplyContent({
                   </div>
 
                   <div className="space-y-2">
-                    <label className="ml-1 text-sm font-bold text-gray-700">Address</label>
+                    <FieldLabel title="Address" />
                     <textarea
                       name="witness1Address"
                       value={formData.witness1Address}
@@ -1664,7 +1625,7 @@ function PoliceApplyContent({
 
                   <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <div className="space-y-2">
-                      <label className="ml-1 text-sm font-bold text-gray-700">Name</label>
+                      <FieldLabel title="Name" />
                       <input
                         type="text"
                         name="witness2Name"
@@ -1675,9 +1636,7 @@ function PoliceApplyContent({
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="ml-1 text-sm font-bold text-gray-700">
-                        Father Name / WO / DO
-                      </label>
+                      <FieldLabel title="Father Name / WO / DO" />
                       <input
                         type="text"
                         name="witness2Father"
@@ -1691,7 +1650,7 @@ function PoliceApplyContent({
 
                   <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <div className="space-y-2">
-                      <label className="ml-1 text-sm font-bold text-gray-700">CNIC</label>
+                      <FieldLabel title="CNIC" />
                       <input
                         type="text"
                         name="witness2Cnic"
@@ -1711,7 +1670,7 @@ function PoliceApplyContent({
                       )}
                     </div>
                     <div className="space-y-2">
-                      <label className="ml-1 text-sm font-bold text-gray-700">Contact No</label>
+                      <FieldLabel title="Contact No." />
                       <input
                         type="text"
                         name="witness2Contact"
@@ -1733,7 +1692,7 @@ function PoliceApplyContent({
                   </div>
 
                   <div className="space-y-2">
-                    <label className="ml-1 text-sm font-bold text-gray-700">Address</label>
+                    <FieldLabel title="Address" />
                     <textarea
                       name="witness2Address"
                       value={formData.witness2Address}
@@ -1767,9 +1726,7 @@ function PoliceApplyContent({
                   <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
                     {/* Photograph */}
                     <div className="space-y-2">
-                      <label className="ml-1 text-sm font-bold text-gray-700">
-                        Passport Size Photograph (.JPG, .PNG)
-                      </label>
+                      <FieldLabel title="Passport Size Photograph (.JPG, .PNG)" />
                       <div className="group relative">
                         <input
                           type="file"
@@ -1817,9 +1774,7 @@ function PoliceApplyContent({
 
                     {/* Passport Copy */}
                     <div className="space-y-2">
-                      <label className="ml-1 text-sm font-bold text-gray-700">
-                        Attach copy of Passport (.JPG, .PNG)
-                      </label>
+                      <FieldLabel title="Attach copy of Passport (.JPG, .PNG)" />
                       <div className="group relative">
                         <input
                           type="file"
@@ -1867,9 +1822,7 @@ function PoliceApplyContent({
 
                     {/* Utility Bill */}
                     <div className="space-y-2">
-                      <label className="ml-1 text-sm font-bold text-gray-700">
-                        Copy of Utility Bill (.PDF)
-                      </label>
+                      <FieldLabel title="Copy of Utility Bill (.PDF)" />
                       <div className="group relative">
                         <input
                           type="file"
@@ -1917,9 +1870,7 @@ function PoliceApplyContent({
 
                     {/* Police Letter */}
                     <div className="space-y-2">
-                      <label className="ml-1 text-sm font-bold text-gray-700">
-                        Letter regarding Police Verification (.PDF)
-                      </label>
+                      <FieldLabel title="Letter regarding Police Verification (.PDF)" />
                       <div className="group relative">
                         <input
                           type="file"

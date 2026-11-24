@@ -1,11 +1,13 @@
 "use client";
 
+import { JOURNEY_VIEW_TOP } from "@/app/components/journey-engine/viewSpacing";
 import React, { useState, useEffect } from "react";
 import { AlertTriangle, ChevronRight, CheckCircle2, XCircle, Info, Circle } from "lucide-react";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { QuestSuiteV3, QuestDataV3 } from "./types";
 import { EligibilityRiskBanner } from "./components/EligibilityRiskBanner";
 import { FloatingSidePanel } from "./components/FloatingSidePanel";
+import { CompanionToolCard } from "./components/CompanionToolCard";
 import { E, msg } from "@/lib/errors";
 
 interface QuestRendererProps {
@@ -23,6 +25,8 @@ interface QuestRendererProps {
   isChapter3?: boolean;
   /** Visa journey type (e.g. "IR5") — routes eligibility alerts to the right detector. */
   journeyType?: string;
+  /** Opens a toolbox tool; enables a quest's `companion_tool` card on its result screen. */
+  onLaunchTool?: (componentKey: string) => void;
 }
 
 export function QuestRenderer({
@@ -34,6 +38,7 @@ export function QuestRenderer({
   isChapter2 = false,
   isChapter3 = false,
   journeyType,
+  onLaunchTool,
 }: QuestRendererProps) {
   const [activeQuestId, setActiveQuestId] = useState<string | null>(null);
   const [currentScreenIdx, setCurrentScreenIdx] = useState(0);
@@ -148,7 +153,12 @@ export function QuestRenderer({
     setSuiteAnswers(finalAnswers);
     actions.updateAnswers({ [suite.id]: finalAnswers });
     // Persist answers to backend so risk flags survive page refresh
-    actions.updateMetadata({ [metaAnswersKey]: finalAnswers });
+    const updates: Record<string, unknown> = { [metaAnswersKey]: finalAnswers };
+    const ageBand = (finalAnswers as any)?.q2?.q2s2;
+    if (ageBand && typeof ageBand === "string") {
+      updates.childAgeBand = ageBand;
+    }
+    actions.updateMetadata(updates);
 
     const logic = (activeQuest as any).result_logic || (activeQuest as any).resultLogic;
     const allAnswers = {
@@ -241,7 +251,7 @@ export function QuestRenderer({
     const progressPct = (completedCount / suite.quests.length) * 100;
 
     return (
-      <div className="animate-in fade-in mx-auto flex w-full max-w-[680px] flex-col px-4 sm:px-6 md:px-8 pt-5 pb-10 duration-500 md:pt-8">
+      <div className={`animate-in fade-in mx-auto flex w-full max-w-[680px] flex-col px-4 pb-10 duration-500 sm:px-6 md:px-8 ${JOURNEY_VIEW_TOP}`}>
         {/* Header */}
         <div className="mb-6 sm:mb-8">
           <h1 className="mt-4 mb-2 text-[clamp(28px,4vw,36px)] leading-[1.15] font-bold tracking-tight break-words text-[#0c1b33]">
@@ -477,7 +487,7 @@ export function QuestRenderer({
     const meta = getStatusMeta(activeQuest.id, 36);
 
     return (
-      <div className="animate-in zoom-in-95 fade-in mx-auto flex min-h-0 w-full max-w-[600px] flex-col items-center justify-center px-4 pt-8 pb-4 duration-500 sm:px-6 sm:pt-10 sm:pb-6">
+      <div className={`animate-in zoom-in-95 fade-in mx-auto flex min-h-0 w-full max-w-[600px] flex-col items-center justify-center px-4 pb-4 duration-500 sm:px-6 sm:pb-6 ${JOURNEY_VIEW_TOP}`}>
         <div className="w-full text-center">
           <div
             className={`h-14 w-14 rounded-full sm:h-20 sm:w-20 ${meta.bg} ${meta.color} mx-auto mb-4 flex items-center justify-center border border-current/10 text-2xl sm:mb-6 sm:text-3xl`}
@@ -509,6 +519,19 @@ export function QuestRenderer({
           >
             {result?.body || "Please wait while we calculate your status."}
           </p>
+          {activeQuest.companion_tool &&
+            onLaunchTool &&
+            result?.state &&
+            (!activeQuest.companion_tool.show_when ||
+              activeQuest.companion_tool.show_when.includes(
+                result.state as "pass" | "caution" | "review" | "stop"
+              )) && (
+              <CompanionToolCard
+                config={activeQuest.companion_tool}
+                onLaunch={onLaunchTool}
+                className="mb-5 sm:mb-8"
+              />
+            )}
           <div className="mx-auto flex w-full max-w-[280px] flex-col gap-2.5 sm:gap-3">
             <button
               onClick={() => setView("landing")}
@@ -542,7 +565,7 @@ export function QuestRenderer({
     const accentColor = isChapter1
       ? {
           bar: "bg-[#8284bf]",
-          barBg: "bg-[#f3f0fb]",
+          barBg: "bg-[#e9e6f6]",
           border: "border-[#8284bf]/40",
           closeBg: "bg-[#f3f0fb] hover:bg-[#e6d6f5]",
           closeStroke: "stroke-[#8284bf]",
@@ -552,7 +575,7 @@ export function QuestRenderer({
       : isChapter2
         ? {
             bar: "bg-[#520a50]",
-            barBg: "bg-[#f4e6f3]",
+            barBg: "bg-[#efdcee]",
             border: "border-[#520a50]",
             closeBg: "bg-[#f4e6f3] hover:bg-[#520a50]/10",
             closeStroke: "stroke-[#520a50]",
@@ -561,7 +584,7 @@ export function QuestRenderer({
           }
         : {
             bar: "bg-[#051738]",
-            barBg: "bg-[#e8ecf3]",
+            barBg: "bg-[#dfe4ee]",
             border: "border-[#051738]",
             closeBg: "bg-[#e8ecf3] hover:bg-[#051738]/10",
             closeStroke: "stroke-[#051738]",
@@ -570,10 +593,10 @@ export function QuestRenderer({
           };
 
     return (
-      <div className="animate-in slide-in-from-right-4 fade-in flex w-full flex-col pt-6 duration-500">
+      <div className="animate-in slide-in-from-right-4 fade-in flex w-full flex-col duration-500">
         {/* Topbar */}
         <div
-          className={`flex h-10 shrink-0 items-center gap-2 border-b px-3 sm:gap-3 sm:px-4 ${accentColor.border}`}
+          className="sticky top-0 z-10 flex h-12 shrink-0 items-center gap-3 border-b border-[#e6ebf3] bg-white/95 px-3 backdrop-blur-sm sm:h-14 sm:gap-4 sm:px-6"
         >
           <button
             onClick={() => setView("landing")}
@@ -590,7 +613,7 @@ export function QuestRenderer({
             </svg>
           </button>
 
-          <div className={`h-[3px] flex-1 overflow-hidden rounded-full ${accentColor.barBg}`}>
+          <div className={`mx-auto h-1.5 w-full max-w-[560px] flex-1 overflow-hidden rounded-full ${accentColor.barBg}`}>
             <div
               className={`h-full rounded-full transition-all duration-300 ease-out ${accentColor.bar}`}
               style={{ width: `${progressPct}%` }}
@@ -598,14 +621,14 @@ export function QuestRenderer({
           </div>
 
           <span
-            className={`shrink-0 text-[11px] font-medium whitespace-nowrap ${accentColor.label}`}
+            className={`min-w-[36px] shrink-0 text-right text-[12px] font-semibold whitespace-nowrap tabular-nums ${accentColor.label}`}
           >
             {progressIdx} / {activeQuest.screens.length}
           </span>
         </div>
 
         {/* Quest body */}
-        <div className="flex flex-1 flex-col items-center overflow-y-auto px-4 pt-5 pb-8 sm:px-6 sm:pt-8 sm:pb-12">
+        <div className={`flex flex-1 flex-col items-center overflow-y-auto px-4 pb-8 sm:px-6 sm:pb-12 ${JOURNEY_VIEW_TOP}`}>
           <div className="flex w-full max-w-[560px] flex-col">
             {/* Quest label */}
             <div

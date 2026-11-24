@@ -50,7 +50,7 @@ import { PhoneInput } from "@/components/ui/phone-input";
 import type { Value as E164Number } from "react-phone-number-input";
 import { validatePhoneNumber, formatPhoneNumber } from "@/lib/validation/phone";
 import Input from "../ui/input";
-
+import FieldLabel from "@/app/components/shared/FieldLabel";
 export interface BookConsultationToolProps extends ToolModeProps {
   isOpen?: boolean; // journey overlay control; standalone renders inline (default true)
   onClose?: () => void;
@@ -1160,9 +1160,7 @@ export default function BookConsultationTool({
           <div className="space-y-6">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700">
-                  Issue Category *
-                </label>
+                <FieldLabel title="Issue Category"/> 
                 <CustomDropdown
                   value={formData.issue_category}
                   onChange={(value) => {
@@ -1186,7 +1184,7 @@ export default function BookConsultationTool({
             </div>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
               <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700">Case Stage *</label>
+                <FieldLabel title="Case Stage" />
                 <CustomDropdown
                   value={formData.case_stage}
                   onChange={(value) => {
@@ -1222,7 +1220,7 @@ export default function BookConsultationTool({
                 />
               </div>
               <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700">Urgency *</label>
+                <FieldLabel title="Urgency" />
                 <CustomDropdown
                   value={formData.urgency}
                   onChange={(value) => {
@@ -1249,7 +1247,7 @@ export default function BookConsultationTool({
           <div className="space-y-6">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700">Full Name *</label>
+                <FieldLabel title="Full Name"/>
                 <div className="relative">
                   <User className="absolute top-3.5 left-3 h-5 w-5 text-gray-400" />
                   <input
@@ -1284,9 +1282,7 @@ export default function BookConsultationTool({
                 )}
               </div>
               <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700">
-                  Email Address *
-                </label>
+                <FieldLabel title="Email Address" />
                 <div className="relative">
                   <Mail className="absolute top-3.5 left-3 h-5 w-5 text-gray-400" />
                   <input
@@ -1321,9 +1317,7 @@ export default function BookConsultationTool({
             </div>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700">
-                  WhatsApp Phone *
-                </label>
+                <FieldLabel title="WhatsApp Phone" />
                 <PhoneInput
                   value={formData.whatsapp_phone || ""}
                   onChange={(value) => {
@@ -1346,7 +1340,7 @@ export default function BookConsultationTool({
                 )}
               </div>
               <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700">Language *</label>
+                <FieldLabel title="Preferred Language" />
                 <CustomDropdown
                   value={formData.preferred_language}
                   onChange={(value) => {
@@ -1420,9 +1414,7 @@ export default function BookConsultationTool({
               )}
             </div>
             <div>
-              <label className="mb-2 block text-sm font-medium text-gray-700">
-                Detailed Case Summary *
-              </label>
+              <FieldLabel title="Detailed Case Summary" />
               <textarea
                 value={formData.case_summary}
                 onChange={(e) => {

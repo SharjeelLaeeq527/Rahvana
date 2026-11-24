@@ -110,7 +110,9 @@ function LoginContent() {
     const errorParam = searchParams.get("error");
     const confirmedParam = searchParams.get("confirmed");
 
-    if (errorParam === "auth_callback_error") {
+    if (errorParam === "staging_access_denied") {
+      setError("Access to this staging platform is restricted to authorized tester accounts only.");
+    } else if (errorParam === "auth_callback_error") {
       setError(msg(E.AUTH_LOGIN_FAILED));
     } else if (errorParam === "invalid_link") {
       setError(msg(E.AUTH_RESET_LINK_INVALID));

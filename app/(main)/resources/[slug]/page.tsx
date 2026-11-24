@@ -72,6 +72,11 @@ function getAddon(slug: string): AddonMeta | undefined {
   };
 }
 
+// Reviews are read from the database. Refresh the static page every 10 minutes
+// (and right away when an admin approves / rejects / deletes a review) instead
+// of baking them in only at build time.
+export const revalidate = 600;
+
 export function generateStaticParams() {
   return RESOURCE_SLUGS.map((slug) => ({ slug }));
 }

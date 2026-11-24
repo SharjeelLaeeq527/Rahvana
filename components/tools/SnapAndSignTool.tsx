@@ -1,34 +1,29 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import { ChevronLeft, ChevronRight, Contrast, Sun, Scan } from "lucide-react";
-import { Loader } from "@/components/ui/spinner";
+import React, { useState } from "react";
+import NextImage from "next/image";
 import dynamic from "next/dynamic";
+import { Download, RotateCcw, Crop, Check } from "lucide-react";
+import { Loader } from "@/components/ui/spinner";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { usePlan, normalizePlanTier } from "@/app/context/PlanContext";
 import type { PlanTier } from "@/lib/entitlements/config";
 import { ResultGate } from "@/app/components/entitlements/ResultGate";
-import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 import FileUpload from "@/app/components/shared/FileUpload";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import type { ToolModeProps } from "@/types/tool-mode";
 import { useResolveToolMode } from "@/lib/hooks/useResolveToolMode";
+import { ToolLayout } from "./layout";
+import * as imageProcessor from "@/lib/imageProcessor";
 
-const SignaturePreview = dynamic(
-  () => import("@/app/components/pdf-editor/signature/SignaturePreview"),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="flex justify-center p-8">
-        <Loader size="md" />
-      </div>
-    ),
-  }
-);
-
-// Dynamic import to avoid SSR issues with browser-only APIs
-type ImageProcessorModule = typeof import("@/lib/imageProcessor");
-let imageProcessorModule: ImageProcessorModule | null = null;
+const CropTool = dynamic(() => import("@/app/components/pdf-editor/signature/CropTool"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex justify-center p-8">
+      <Loader size="md" />
+    </div>
+  ),
+});
 
 export interface SnapAndSignToolProps extends ToolModeProps {
   showHeader?: boolean;
@@ -36,9 +31,20 @@ export interface SnapAndSignToolProps extends ToolModeProps {
   className?: string;
 }
 
+const CHECKERBOARD_STYLE: React.CSSProperties = {
+  backgroundColor: "#ffffff",
+  backgroundImage:
+    "linear-gradient(45deg, #f0eee8 25%, transparent 25%, transparent 75%, #f0eee8 75%), linear-gradient(45deg, #f0eee8 25%, transparent 25%, transparent 75%, #f0eee8 75%)",
+  backgroundSize: "16px 16px",
+  backgroundPosition: "0 0, 8px 8px",
+};
+
+const PHOTO_BEFORE_STYLE: React.CSSProperties = {
+  background: "linear-gradient(160deg, #f2efe7, #ddd6c6 70%, #cfc6b3)",
+};
+
 export default function SnapAndSignTool({
   showHeader = true,
-  showTips = true,
   className = "",
   mode: propMode,
   journeyContext: propContext,
@@ -56,10 +62,18 @@ export default function SnapAndSignTool({
 
   const [originalImage, setOriginalImage] = useState<string | null>(null);
   const [processedImage, setProcessedImage] = useState<string | null>(null);
+  const [editedImage, setEditedImage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [, setIsModuleLoaded] = useState(false);
+  const [showCropMode, setShowCropMode] = useState(false);
+  const [imageDimensions, setImageDimensions] = useState<{
+    width: number;
+    height: number;
+  } | null>(null);
 
-  // Determine effective plan tier: in journey mode, evaluate against the specific journey's tier, otherwise account tier
+  // Active signature is either the user-cropped version or the auto-processed version
+  const activeImage = editedImage || processedImage;
+
+  // Determine effective plan tier: in journey mode, evaluate against journey's tier, otherwise account tier
   const rawJourneyTier = propJourneyTier ?? journeyTier ?? journeyContext?.subscriptionTier;
   const effectiveTier: PlanTier = React.useMemo(() => {
     if (isJourney) {
@@ -76,46 +90,29 @@ export default function SnapAndSignTool({
     return accountPlan.tier;
   }, [isJourney, rawJourneyTier, journeyContext, accountPlan.journeyTiers, accountPlan.tier]);
 
-  // Pro tips carousel
-  const tipsTrackRef = useRef<HTMLDivElement>(null);
-
-  // Load the image processor module on client-side only
-  useEffect(() => {
-    import("@/lib/imageProcessor").then((mod) => {
-      imageProcessorModule = mod;
-      setIsModuleLoaded(true);
-    });
-  }, []);
-
-  const scrollTips = (direction: "prev" | "next") => {
-    const track = tipsTrackRef.current;
-    if (!track) return;
-    const amount = track.clientWidth * 0.8;
-    track.scrollBy({ left: direction === "next" ? amount : -amount, behavior: "smooth" });
-  };
-
   const handleFileSelect = async (file: File) => {
-    if (!imageProcessorModule) {
-      showToast(t("signatureProcessing.errors.loading"), "error");
-      return;
-    }
-
     setOriginalImage(null);
     setProcessedImage(null);
+    setEditedImage(null);
+    setImageDimensions(null);
+    setShowCropMode(false);
 
-    const validation = imageProcessorModule.validateImageFile(file);
+    const validation = imageProcessor.validateImageFile(file);
     if (!validation.valid) {
-      showToast(validation.error || t("pdfProcessing.errors.invalidFile"), "error");
+      showToast(
+        validation.error || t("pdfProcessing.errors.invalidFile") || "Invalid image file",
+        "error"
+      );
       return;
     }
 
     try {
       setIsProcessing(true);
 
-      const imageData = await imageProcessorModule.readFileAsDataURL(file);
+      const imageData = await imageProcessor.readFileAsDataURL(file);
       setOriginalImage(imageData);
 
-      const processor = new imageProcessorModule.SignatureImageProcessor();
+      const processor = new imageProcessor.SignatureImageProcessor();
 
       const processed = await processor.processImage(imageData, {
         threshold: 140,
@@ -129,163 +126,353 @@ export default function SnapAndSignTool({
       setProcessedImage(processed);
       processor.destroy();
 
+      if (typeof window !== "undefined") {
+        const img = new Image();
+        img.onload = () => {
+          setImageDimensions({ width: img.naturalWidth, height: img.naturalHeight });
+        };
+        img.src = processed;
+      }
+
       setTimeout(() => {
         setIsProcessing(false);
-      }, 500);
+      }, 350);
     } catch (err) {
       console.error("Processing error:", err);
-      showToast(t("signatureProcessing.errors.failed"), "error");
+      showToast(t("signatureProcessing.errors.failed") || "Failed to process image.", "error");
       setIsProcessing(false);
     }
   };
 
+  const handleApplyCrop = (croppedDataUrl: string) => {
+    setEditedImage(croppedDataUrl);
+    setShowCropMode(false);
+
+    if (typeof window !== "undefined") {
+      const img = new Image();
+      img.onload = () => {
+        setImageDimensions({ width: img.naturalWidth, height: img.naturalHeight });
+      };
+      img.src = croppedDataUrl;
+    }
+  };
+
   const handleDownload = () => {
-    if (processedImage && imageProcessorModule) {
+    if (activeImage) {
       const timestamp = new Date().getTime();
-      imageProcessorModule.downloadImage(processedImage, `signature-transparent-${timestamp}.png`);
+      imageProcessor.downloadImage(activeImage, `signature-transparent-${timestamp}.png`);
     }
   };
 
   const handleReset = () => {
     setOriginalImage(null);
     setProcessedImage(null);
+    setEditedImage(null);
+    setImageDimensions(null);
+    setShowCropMode(false);
   };
 
-  const proTips = [
-    {
-      icon: Contrast,
-      title: t("signatureProcessing.whitePaper.title"),
-      description: t("signatureProcessing.whitePaper.description"),
-    },
-    {
-      icon: Sun,
-      title: t("signatureProcessing.goodLighting.title"),
-      description: t("signatureProcessing.goodLighting.description"),
-    },
-    {
-      icon: Scan,
-      title: t("signatureProcessing.darkInk.title"),
-      description: t("signatureProcessing.darkInk.description"),
-    },
-  ];
+  // ── Work Section (Left Column) ─────────────────────────────────────────
+  const workContent = (
+    <div className="flex h-full flex-col">
+      {/* Section Kicker & Title */}
+      <div className="mb-6">
+        <div className="text-xs font-bold tracking-wider text-slate-500 uppercase">
+          Your signature
+        </div>
+        <h2 className="mt-1 text-xl font-bold tracking-tight text-[#16302C] sm:text-2xl lg:text-[26px]">
+          From a photo of paper to a clean signature
+        </h2>
+      </div>
 
-  return (
-    <div className={`w-full ${className}`}>
-      {/* Hero Header */}
-      {showHeader && (
-        <header className="mb-10 text-center sm:mb-14">
-          <h1 className="mb-4 text-3xl leading-[1.1] font-extrabold tracking-tight text-[#00595C] sm:text-5xl md:text-6xl dark:text-teal-400">
-            {t("signatureProcessing.title")}
-          </h1>
-          <p className="mx-auto max-w-2xl text-sm leading-relaxed text-[#4a6b70] sm:text-base md:text-lg dark:text-slate-300">
-            {t("signatureProcessing.subtitle")}
-          </p>
-          <div className="mt-6 flex justify-center">
-            <QuickAccessButton
-              item={{
-                id: "snap-sign",
-                title: "Snap & Sign",
-                href: "/signature-image-processing",
-                icon_name: "PenTool",
-              }}
-            />
-          </div>
-        </header>
-      )}
-
-      {/* Main Content */}
-      <div className="mx-auto max-w-3xl">
-        {!originalImage && !isProcessing && (
+      {/* State 1: Dropzone for image upload */}
+      {!originalImage && !isProcessing && (
+        <div className="py-2">
           <FileUpload
             fieldName="signature"
             accept="image/*"
             variant="premium"
             showPreview
-            title={t("signatureProcessing.uploader.uploadTitle")}
-            description={t("signatureProcessing.uploader.browse")}
-            buttonText={t("signatureProcessing.uploader.chooseFile")}
-            helperText={t("signatureProcessing.uploader.supported")}
+            title={t("signatureProcessing.uploader.uploadTitle") || "Upload Signature Photo"}
+            description={
+              t("signatureProcessing.uploader.browse") ||
+              "Drag and drop or click to browse your files"
+            }
+            buttonText={t("signatureProcessing.uploader.chooseFile") || "Choose File"}
+            helperText={
+              t("signatureProcessing.uploader.supported") || "Supported: JPG, PNG, HEIC • Max 10MB"
+            }
             onFileUpload={(_, file) => {
               if (file instanceof File) {
                 handleFileSelect(file);
               }
             }}
           />
-        )}
+        </div>
+      )}
 
-        {isProcessing && (
-          <div className="flex flex-col items-center justify-center rounded-2xl border border-slate-200/80 bg-white p-12 text-center shadow-xs dark:border-slate-800 dark:bg-slate-900">
-            <Loader size="lg" />
-            <p className="mt-4 text-sm font-semibold text-slate-700 dark:text-slate-200">
-              Isolating signature and removing background...
-            </p>
-          </div>
-        )}
+      {/* State 2: Processing in progress */}
+      {isProcessing && (
+        <div className="flex min-h-[320px] flex-col items-center justify-center rounded-2xl border border-dashed border-[#DDD9CE] bg-[#F6F4EF]/40 p-12 text-center">
+          <Loader size="lg" />
+          <h3 className="mt-5 text-base font-semibold text-[#16302C]">
+            Isolating signature and removing background...
+          </h3>
+          <p className="mt-1.5 max-w-sm text-xs text-slate-500">
+            Detecting ink strokes, removing background paper textures, and creating a transparent
+            PNG.
+          </p>
+        </div>
+      )}
 
-        {processedImage && originalImage && !isProcessing && (
-          <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <ResultGate feature="snap_sign" planTier={effectiveTier}>
-              <SignaturePreview
-                originalImage={originalImage}
-                processedImage={processedImage}
-                onDownload={handleDownload}
-                onReset={handleReset}
+      {/* State 3: Signature Ready (Side-by-side or Crop Tool) */}
+      {activeImage && originalImage && !isProcessing && (
+        <>
+          {showCropMode ? (
+            <div className="rounded-2xl border border-[#DDD9CE] bg-white p-4">
+              <CropTool
+                currentImage={activeImage}
+                onApplyCrop={handleApplyCrop}
+                onExit={() => setShowCropMode(false)}
               />
-            </ResultGate>
-          </div>
-        )}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {/* Option C sig-pair preview */}
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {/* Before: Original Photo */}
+                <figure className="m-0">
+                  <div
+                    className="relative aspect-[8/3] w-full overflow-hidden rounded-xl border border-[#DDD9CE] shadow-inner sm:aspect-[16/10]"
+                    style={PHOTO_BEFORE_STYLE}
+                  >
+                    <NextImage
+                      src={originalImage}
+                      alt="Your photo"
+                      fill
+                      className="object-contain p-3"
+                      unoptimized
+                    />
+                  </div>
+                  <figcaption className="mt-2 text-center text-xs font-semibold text-slate-600">
+                    Your photo
+                  </figcaption>
+                </figure>
+
+                {/* After: Clean Transparent Signature */}
+                <figure className="m-0">
+                  <div
+                    className="relative aspect-[8/3] w-full overflow-hidden rounded-xl border border-[#DDD9CE] shadow-inner sm:aspect-[16/10]"
+                    style={CHECKERBOARD_STYLE}
+                  >
+                    <NextImage
+                      key={activeImage}
+                      src={activeImage}
+                      alt="Clean, no background"
+                      fill
+                      className="object-contain p-3"
+                      unoptimized
+                    />
+                  </div>
+                  <figcaption className="mt-2 text-center text-xs font-semibold text-[#7A5A3A]">
+                    Clean, no background
+                  </figcaption>
+                </figure>
+              </div>
+
+              {/* Adjustments toolbar */}
+              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#DDD9CE]/60 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowCropMode(true)}
+                  className="inline-flex items-center gap-2 rounded-lg border border-[#DDD9CE] bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-[#F6F4EF]"
+                >
+                  <Crop className="h-3.5 w-3.5 text-[#7A5A3A]" />
+                  Adjust crop & tilt
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleReset}
+                  className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 transition-colors hover:text-slate-800"
+                >
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  Upload different photo
+                </button>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+
+  // ── Answer / Verdict Aside (Right Column) ──────────────────────────────
+  const answerContent = (
+    <div className="flex h-full flex-col justify-between gap-6">
+      {/* Verdict Header */}
+      <div>
+        <div className="text-xs font-bold tracking-wider text-slate-500 uppercase">The result</div>
+        <h3 className="mt-1 text-2xl font-extrabold tracking-tight text-[#16302C] sm:text-3xl">
+          {processedImage ? "Ready to use" : "Awaiting signature"}
+        </h3>
+        <p className="mt-1 text-sm text-slate-600">
+          {processedImage
+            ? "A transparent image you can place on any PDF."
+            : "Upload a photo of your signature to isolate it and remove paper background."}
+        </p>
       </div>
 
-      {/* Pro Tips carousel */}
-      {showTips && !originalImage && !isProcessing && (
-        <section className="mx-auto mt-14 max-w-6xl sm:mt-20">
-          <div className="mb-5 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4">
-            <h2 className="min-w-0 truncate text-base font-semibold text-[#123f42] sm:text-lg dark:text-slate-200">
-              {t("signatureProcessing.bestPractices")}
-            </h2>
-            <div className="flex shrink-0 items-center gap-2 lg:hidden">
-              <button
-                type="button"
-                onClick={() => scrollTips("prev")}
-                aria-label="Previous tip"
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-[#d9e9ee] bg-white text-[#0d7377] shadow-xs transition-colors hover:bg-[#f0f9fa] dark:border-slate-700 dark:bg-slate-800 dark:text-teal-400"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => scrollTips("next")}
-                aria-label="Next tip"
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-[#d9e9ee] bg-white text-[#0d7377] shadow-xs transition-colors hover:bg-[#f0f9fa] dark:border-slate-700 dark:bg-slate-800 dark:text-teal-400"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </button>
+      {/* Right Content: Tips prior to upload; Verified Specs & Compliance Note once processed */}
+      {!processedImage ? (
+        <div className="space-y-4">
+          <div className="rounded-xl border border-[#DDD9CE]/80 bg-white/75 p-4 shadow-2xs">
+            <div className="mb-2.5 text-xs font-bold tracking-wider text-slate-700 uppercase">
+              For best results
+            </div>
+            <ul className="space-y-2.5 text-xs text-slate-600 sm:text-sm">
+              <li className="flex items-start gap-2.5">
+                <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                <span>
+                  <strong className="text-slate-800">White paper:</strong> Plain, unlined paper
+                  without grids
+                </span>
+              </li>
+              <li className="flex items-start gap-2.5">
+                <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                <span>
+                  <strong className="text-slate-800">Dark ink:</strong> Blue or black pen for strong
+                  contrast
+                </span>
+              </li>
+              <li className="flex items-start gap-2.5">
+                <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                <span>
+                  <strong className="text-slate-800">Even lighting:</strong> Flat lighting without
+                  shadows or glare
+                </span>
+              </li>
+            </ul>
+          </div>
+
+          <div className="divide-y divide-[#16302C]/10 border-t border-[#16302C]/10 text-xs sm:text-sm">
+            <div className="flex items-baseline justify-between py-2">
+              <span className="text-slate-500">Output format</span>
+              <b className="font-semibold text-slate-700">PNG, transparent</b>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Specification Rows */}
+          <div className="divide-y divide-[#16302C]/10 border-t border-[#16302C]/10 text-sm">
+            <div className="flex items-baseline justify-between py-2.5">
+              <span className="text-slate-600">Background</span>
+              <b className="font-semibold text-emerald-700">Removed</b>
+            </div>
+            <div className="flex items-baseline justify-between py-2.5">
+              <span className="text-slate-600">Cropped and straightened</span>
+              <b className="font-semibold text-emerald-700">
+                {editedImage ? "Custom adjusted" : "Yes"}
+              </b>
+            </div>
+            <div className="flex items-baseline justify-between py-2.5">
+              <span className="text-slate-600">Format</span>
+              <b className="font-semibold text-slate-800">
+                {imageDimensions
+                  ? `PNG, ${imageDimensions.width} × ${imageDimensions.height} px`
+                  : "PNG, transparent"}
+              </b>
             </div>
           </div>
 
-          <div
-            ref={tipsTrackRef}
-            className="-mx-1 flex snap-x snap-mandatory gap-4 overflow-x-auto px-1 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-          >
-            {proTips.map((item, idx) => (
-              <div
-                key={idx}
-                className="w-[80%] shrink-0 snap-start rounded-2xl border border-[#e4eff2] bg-white p-5 shadow-[0_2px_14px_rgba(13,115,119,0.06)] transition-shadow hover:shadow-[0_8px_24px_rgba(13,115,119,0.10)] sm:w-[45%] sm:p-6 lg:w-[32%] dark:border-slate-800 dark:bg-slate-900"
-              >
-                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-[#eaf4f9] dark:bg-teal-950/40">
-                  <item.icon className="h-5 w-5 text-[#0d7377] dark:text-teal-400" />
-                </div>
-                <h3 className="mb-1.5 text-sm font-semibold text-[#123f42] sm:text-base dark:text-slate-100">
-                  {item.title}
-                </h3>
-                <p className="text-xs leading-relaxed text-[#5c7b80] sm:text-sm dark:text-slate-400">
-                  {item.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
+          {/* Note Card */}
+          {/* <div className="rounded-xl border border-[#DDD9CE]/80 bg-white/70 p-3.5 text-xs leading-relaxed text-slate-700 shadow-2xs sm:text-sm">
+            <strong className="font-bold text-amber-800">Check the form.</strong> Paper USCIS forms need
+            a signature in pen. Use this where a scanned or typed signature is accepted.
+          </div> */}
+        </>
       )}
+
+      {/* Action Buttons */}
+      <div className="mt-auto flex flex-col gap-2.5 pt-2">
+        {processedImage ? (
+          <ResultGate feature="snap_sign" planTier={effectiveTier}>
+            <button
+              type="button"
+              onClick={handleDownload}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#16302C] px-5 py-3.5 text-sm font-bold text-white shadow transition-all hover:bg-[#0e1d1b] sm:text-base"
+            >
+              <Download className="h-4 w-4" />
+              Download PNG
+            </button>
+          </ResultGate>
+        ) : (
+          <button
+            type="button"
+            disabled
+            className="flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-xl bg-slate-200 px-5 py-3.5 text-sm font-bold text-slate-400 sm:text-base"
+          >
+            <Download className="h-4 w-4" />
+            Download PNG
+          </button>
+        )}
+      </div>
     </div>
+  );
+
+  return (
+    <ToolLayout
+      theme="sign"
+      title={t("signatureProcessing.title") || "Snap & Sign"}
+      tagline={
+        t("signatureProcessing.subtitle") ||
+        "Turn a photo of your signature into a clean image for your documents."
+      }
+      priceOrDuration="Included in Premium · about 1 min"
+      quickAccessItem={{
+        id: "snap-sign",
+        title: "Snap & Sign",
+        href: "/signature-image-processing",
+        icon_name: "PenTool",
+      }}
+      rules={[
+        { label: "Paper", value: "Plain white, no lines or grids" },
+        { label: "Pen", value: "Dark blue or black ink" },
+        { label: "Lighting", value: "Even, without harsh shadows" },
+        { label: "Orientation", value: "Straight and centered" },
+      ]}
+      faqs={[
+        {
+          question: "Can I use it on USCIS forms?",
+          answer:
+            "Paper USCIS forms need an original signature in pen. Use this digital signature where a scanned or typed signature is accepted.",
+        },
+        {
+          question: "Is my signature stored?",
+          answer:
+            "No. Signature processing is performed locally in your browser and is not stored unless you save it to your Document Vault.",
+        },
+        {
+          question: "What output format will I receive?",
+          answer:
+            "A high-resolution transparent PNG image that can be placed directly on any PDF or document.",
+        },
+      ]}
+      sources={[
+        {
+          title: "Signatures on USCIS Forms",
+          domain: "uscis.gov",
+          url: "https://www.uscis.gov/policy-manual/volume-1-part-b-chapter-2",
+        },
+      ]}
+      disclaimer="Some paper USCIS forms require a handwritten signature in pen."
+      layout="split"
+      answer={answerContent}
+      showHeader={showHeader}
+      className={className}
+    >
+      {workContent}
+    </ToolLayout>
   );
 }

@@ -35,6 +35,18 @@ type Props = {
    */
   onLaunched?: () => void;
   onClose: () => void;
+  /**
+   * Optional custom confirm callback for consumable actions (e.g. per-session credit deduction).
+   * When provided, CreditLaunchModal delegates charging to this function instead of launchResource.
+   */
+  onConfirm?: () => Promise<{
+    success: boolean;
+    error?: string;
+    required?: number;
+    available?: number;
+    deficit?: number;
+    topupAmount?: number;
+  }>;
 };
 
 type Insufficient = {
@@ -44,7 +56,7 @@ type Insufficient = {
   topupAmount: number;
 };
 
-export function CreditLaunchModal({ item, href, onLaunched, onClose }: Props) {
+export function CreditLaunchModal({ item, href, onLaunched, onClose, onConfirm }: Props) {
   const router = useRouter();
   const { balance, isLoading, launchResource } = useWallet();
   const { isAuthenticated } = useAuth();
@@ -58,11 +70,7 @@ export function CreditLaunchModal({ item, href, onLaunched, onClose }: Props) {
   const [pickedTopup, setPickedTopup] = useState<number | null>(null);
 
   const kind =
-    item.resourceType === "guide"
-      ? "Guide"
-      : item.resourceType === "service"
-        ? "Service"
-        : "Tool";
+    item.resourceType === "guide" ? "Guide" : item.resourceType === "service" ? "Service" : "Tool";
   const balanceAfter = balance !== null ? balance - item.credits : null;
 
   // Decide the state from the balance up front instead of round-tripping the
@@ -93,6 +101,38 @@ export function CreditLaunchModal({ item, href, onLaunched, onClose }: Props) {
 
   const handleConfirm = async () => {
     if (charging) return;
+    if (onConfirm) {
+      setCharging(true);
+      setError(null);
+      try {
+        const result = await onConfirm();
+        if (result.success) {
+          if (onLaunched) {
+            onLaunched();
+            return;
+          }
+          onClose();
+          if (href) router.push(href);
+          return;
+        }
+        if (result.error === "INSUFFICIENT_CREDITS") {
+          setServerShortfall({
+            required: Number(result.required ?? item.credits),
+            available: Number(result.available ?? 0),
+            deficit: Number(result.deficit ?? item.credits),
+            topupAmount: Number(result.topupAmount ?? item.credits),
+          });
+          setCharging(false);
+          return;
+        }
+        setError(result.error || "Something went wrong. Please try again.");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      } finally {
+        setCharging(false);
+      }
+      return;
+    }
     // Services are charged per booking, by the booking form itself (with the
     // booking id). Charging here would take credits for no booking, then again.
     if (item.resourceType === "service") {
@@ -243,7 +283,9 @@ export function CreditLaunchModal({ item, href, onLaunched, onClose }: Props) {
                 <div className="rounded-2xl border border-slate-200 bg-slate-50/60 px-4 py-3">
                   <div className="flex items-center justify-between py-1.5 text-[13px]">
                     <span className="font-medium text-slate-500">Your Wallet Balance</span>
-                    <span className="font-bold text-slate-900 tabular-nums">{balance} Jarthings</span>
+                    <span className="font-bold text-slate-900 tabular-nums">
+                      {balance} Jarthings
+                    </span>
                   </div>
                   <div className="flex items-center justify-between border-t border-slate-200 py-1.5 text-[13px]">
                     <span className="font-medium text-slate-500">{kind} Cost</span>
@@ -270,7 +312,10 @@ export function CreditLaunchModal({ item, href, onLaunched, onClose }: Props) {
             )}
 
             <p className="text-[11.5px] leading-relaxed text-slate-500">
-              $1 = 1 jarthing. {item.resourceType === "service" ? "Services inside your journey never use jarthings." : "Tools inside your journey never use jarthings."}
+              $1 = 1 jarthing.{" "}
+              {item.resourceType === "service"
+                ? "Services inside your journey never use jarthings."
+                : "Tools inside your journey never use jarthings."}
             </p>
           </div>
         ) : (

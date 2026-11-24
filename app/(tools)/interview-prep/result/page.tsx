@@ -27,6 +27,7 @@ export default function InterviewPrepResultPage({
   const [results, setResults] = useState<InterviewPrepOutput | null>(null);
   const [sessionId, setSessionIdState] = useState<string | null>(propSessionId || null);
   const [sessionCategory, setSessionCategory] = useState<string | null>(null);
+  const [isStandaloneSession, setIsStandaloneSession] = useState(false);
   const plan = usePlan();
   const router = useRouter();
   const journeyEnv = useJourneyEnvironment();
@@ -67,6 +68,7 @@ export default function InterviewPrepResultPage({
         setSessionCategory(
           typeof data.session?.category_slug === "string" ? data.session.category_slug : null
         );
+        setIsStandaloneSession(!isEmbedded && data.session?.source === "tool");
 
         // Check if session has interview results
         if (data.session && data.session.interview_prep_results) {
@@ -87,6 +89,14 @@ export default function InterviewPrepResultPage({
             },
           };
           setResults(prepOutput);
+        } else if (data.session && !data.session.completed) {
+          // Session is incomplete / in-progress (questions not finished yet):
+          // Immediately redirect to the questionnaire so user continues where they left off!
+          const targetUrl = isEmbedded
+            ? `/interview-prep?sessionId=${sId}&source=journey`
+            : `/interview-prep?sessionId=${sId}`;
+          router.replace(targetUrl);
+          return;
         } else {
           setError(
             "No interview results found for this session. Please complete the interview preparation first."
@@ -111,10 +121,13 @@ export default function InterviewPrepResultPage({
     plan.purchasedAddons.some(
       (id) => id === "interview-prep" || id === `interview-prep:${sessionCategory}`
     );
+  const standaloneGranted = hasLegacyCategoryPurchase || isStandaloneSession;
 
   const handleRestart = () => {
     if (propOnRestart) {
       propOnRestart();
+    } else if (sessionId) {
+      router.push(`/interview-prep?sessionId=${sessionId}`);
     } else if (!isEmbedded) {
       router.push("/interview-prep");
     }
@@ -171,7 +184,7 @@ export default function InterviewPrepResultPage({
                     onClick={handleRestart}
                     className="inline-flex h-11 items-center justify-center rounded-full bg-[#0d7377] px-6 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-[#0a5a5d] hover:shadow-md focus:ring-2 focus:ring-[#0d7377]/30 focus:ring-offset-2 focus:outline-none"
                   >
-                    Start New Interview Prep
+                    Resume Interview Prep
                   </button>
                 </div>
 
@@ -252,7 +265,7 @@ export default function InterviewPrepResultPage({
           results={results}
           onRestart={handleRestart}
           isStandalone={!isEmbedded}
-          standaloneGranted={hasLegacyCategoryPurchase}
+          standaloneGranted={standaloneGranted}
         />
       </ToastProvider>
     </div>

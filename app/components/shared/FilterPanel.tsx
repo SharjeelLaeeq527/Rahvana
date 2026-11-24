@@ -19,6 +19,8 @@ interface FilterPanelProps {
   onFilterChange: (filters: Record<string, string>) => void;
   itemCount: number;
   totalCount: number;
+  title?: string;
+  align?: "left" | "right";
 }
 
 export const FilterPanel = ({
@@ -26,6 +28,8 @@ export const FilterPanel = ({
   onFilterChange,
   itemCount,
   totalCount,
+  title = "Filter Sessions",
+  align = "left",
 }: FilterPanelProps) => {
   const [showPopover, setShowPopover] = useState(false);
   const [localFilters, setLocalFilters] = useState<Record<string, string>>(
@@ -93,14 +97,16 @@ export const FilterPanel = ({
   onClick={() => setShowPopover(!showPopover)}
   variant="outline"
   className={`gap-3 !px-6 !py-5 ${
-    activeFiltersCount > 0 ? "bg-teal-50 border-teal-300" : ""
+    activeFiltersCount > 0
+      ? "border-[var(--tool-accent,#5eead4)] bg-[var(--tool-accent-tint,#f0fdfa)]"
+      : ""
   }`}
 >
   <Filter className="h-4 w-4" />
   Filters
 
   {activeFiltersCount > 0 && (
-    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-teal-600 px-1 text-xs font-semibold text-white">
+    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--tool-accent,#0d9488)] px-1 text-xs font-semibold text-white">
       {activeFiltersCount}
     </span>
   )}
@@ -109,10 +115,12 @@ export const FilterPanel = ({
       {showPopover && (
         <div
           ref={popoverRef}
-          className="absolute top-full left-0 z-50 mt-2 max-h-125 w-80 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl"
+          className={`absolute top-full z-50 mt-2 max-h-125 w-[min(20rem,calc(100vw-2rem))] overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl ${
+            align === "right" ? "right-0" : "left-0"
+          }`}
         >
           <div className="sticky top-0 flex items-center justify-between border-b border-slate-100 bg-white p-4">
-            <h3 className="font-semibold text-slate-900">Filter Sessions</h3>
+            <h3 className="font-semibold text-slate-900">{title}</h3>
             <button
               onClick={() => setShowPopover(false)}
               className="text-slate-600 transition-colors hover:text-slate-900"
@@ -147,7 +155,7 @@ export const FilterPanel = ({
                     e.stopPropagation();
                     handleReset();
                   }}
-                  className="flex-1 rounded-lg bg-teal-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-teal-700"
+                  className="flex-1 rounded-lg bg-[var(--tool-accent,#0d9488)] px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--tool-accent-dark,#0f766e)]"
                 >
                   Reset
                 </button>

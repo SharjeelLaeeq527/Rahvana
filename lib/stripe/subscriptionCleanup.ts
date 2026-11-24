@@ -17,6 +17,7 @@
  */
 
 import { stripe, STRIPE_PRICES } from "@/lib/stripe/config";
+import { getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
 import type Stripe from "stripe";
 
 // Statuses that mean a subscription still occupies a live/billable slot.
@@ -88,13 +89,23 @@ export function isRahvanaJourneySubscription(sub: Stripe.Subscription): boolean 
   return false;
 }
 
+export type PlanJourneyType = "IR1" | "IR2" | "IR5";
+
 /**
  * Journey a plan belongs to, derived from its `visa_category`. A customer can hold one live
- * plan PER journey (IR-1 and IR-5 are bought separately), so ownership checks and upgrade
+ * plan PER journey (IR-1, IR-2 and IR-5 are bought separately), so ownership checks and upgrade
  * cleanup must compare within the same journey only. Shared with checkout.
+ *
+ * Resolved from the base category, not a substring: "IR-2 / CR-2" has no "5", so the old
+ * `includes("5")` check filed IR-2 plans under IR-1 and let one journey retire the other's plan.
+ * CR-2 shares the IR-2 journey. IR-2 is checked first; after it the legacy `includes("5")`
+ * rule still applies, so every value that mapped to IR5 or IR1 before keeps that mapping.
  */
-export function journeyTypeForVisaCategory(visaCategory: string): "IR1" | "IR5" {
-  return visaCategory.toLowerCase().includes("5") ? "IR5" : "IR1";
+export function journeyTypeForVisaCategory(visaCategory: string): PlanJourneyType {
+  const base = getBaseVisaCategory(visaCategory);
+  if (base === "IR-2" || base === "CR-2") return "IR2";
+  if (base === "IR-5" || visaCategory.toLowerCase().includes("5")) return "IR5";
+  return "IR1";
 }
 
 /**

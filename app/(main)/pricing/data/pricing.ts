@@ -138,8 +138,8 @@ export const CR2Plans: PlanData[] = [
   makePlan(
     "basic",
     "Basic",
-    200,
-    17,
+    349,
+    29,
     "Choose Basic",
     false,
     "The full self-guided roadmap. Every step visible with checklists and core tools.",
@@ -155,8 +155,8 @@ export const CR2Plans: PlanData[] = [
   makePlan(
     "premium",
     "Premium",
-    500,
-    42,
+    699,
+    58,
     "Choose Premium",
     true,
     "Guided confidence. Step-by-step instructions, document vault, tracking, and most productivity tools.",
@@ -175,8 +175,8 @@ export const CR2Plans: PlanData[] = [
   makePlan(
     "executive",
     "Executive",
-    900,
-    75,
+    1099,
+    92,
     "Choose Executive",
     false,
     "Full-suite support for when things get complicated. 221(g) planning, and more.",

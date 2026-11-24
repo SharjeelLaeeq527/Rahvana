@@ -130,8 +130,11 @@ export async function createInterviewSession(
   alreadyExists: boolean;
   source?: "journey" | "tool";
 }> {
-  // Check for existing tool-based session for this category
-  const existingSession = await getInterviewSessionByCategory(sessionData.category_slug);
+  // Check for existing tool-based session for this category and candidate
+  const existingSession = await getInterviewSessionByCategory(
+    sessionData.category_slug,
+    sessionData.candidate_id || undefined
+  );
 
   if (existingSession) {
     return {
@@ -160,7 +163,8 @@ export async function createInterviewSession(
 // Called automatically when a journey is initialized
 export async function createJourneyInterviewSession(
   journey_id: string,
-  category_slug: string
+  category_slug: string,
+  candidate_id?: string | null
 ): Promise<{
   session: InterviewSession;
   alreadyExists: boolean;
@@ -176,7 +180,7 @@ export async function createJourneyInterviewSession(
   }
 
   // Create new journey-based session
-  const session = await createJourneyInterviewSessionDB(journey_id, category_slug);
+  const session = await createJourneyInterviewSessionDB(journey_id, category_slug, candidate_id);
 
   return {
     session,
@@ -186,9 +190,10 @@ export async function createJourneyInterviewSession(
 
 // Get interview session by journey ID (for journey-based access)
 export async function getInterviewSessionByJourney(
-  journey_id: string
+  journey_id: string,
+  candidate_id?: string | null
 ): Promise<InterviewSession | null> {
-  const session = await getInterviewSessionByJourneyId(journey_id);
+  const session = await getInterviewSessionByJourneyId(journey_id, candidate_id);
   if (!session) return null;
 
   // Check if journey is still active
@@ -209,11 +214,12 @@ export async function getInterviewSessionByJourney(
 }
 
 // Get active journey session for interview prep tool
-// Returns session if user has an active IR-1 journey with an interview session
+// Returns session if user has an active journey with an interview session
 export async function getActiveJourneyInterviewSession(
-  journey_type: string = "IR1"
+  journey_type: string = "IR1",
+  candidate_id?: string | null
 ): Promise<{ session: InterviewSession; journey_status: string } | null> {
-  const result = await getActiveJourneySession(journey_type);
+  const result = await getActiveJourneySession(journey_type, candidate_id);
   if (!result) return null;
 
   // Enrich with answers and results

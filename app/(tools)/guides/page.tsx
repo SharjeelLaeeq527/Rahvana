@@ -92,7 +92,6 @@ const GUIDES: Guide[] = GUIDE_REGISTRY.map((meta) => ({
 
 const CATEGORIES: ("All" | GuideCategory)[] = ["All", "Pakistan Document", "Medical & Exam"];
 
-
 // --- Tier-aware card styles ------------------------------------------------
 // Card border, shadow, and gradient border all follow the tier
 const TIER_CARD_STYLE: Record<
@@ -194,6 +193,9 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
   const [deleting, setDeleting] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
+  const [accessFilter, setAccessFilter] = useState<
+    "all" | "plan" | "credits" | "active" | "inactive"
+  >("all");
 
   useEffect(() => {
     if (!user) {
@@ -387,9 +389,40 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
   const isMine = (guide: Guide) => isOwned(guide) || hasSession(guide);
   const ownedGuides = filteredGuides.filter(isMine);
   const browseGuides = filteredGuides.filter((guide) => !isMine(guide));
+
+  const isIncludedWithPlan = (guide: Guide) => {
+    const journeyAccess = hasJourneyEntitlementForGuide(guide, plan.journeyTiers);
+    return (
+      journeyAccess.hasAccess &&
+      !isInsideJourney &&
+      guide.creditPayable !== false &&
+      !!guide.entitlementFeature
+    );
+  };
+
+  const isUnlockedWithCredits = (guide: Guide) => {
+    const journeyAccess = hasJourneyEntitlementForGuide(guide, plan.journeyTiers);
+    const catalogItem = getGuideCatalogItem(guide.id);
+    const walletUnlocked =
+      !!catalogItem && wallet.isUnlocked(catalogItem.resourceId, catalogItem.resourceType);
+    return walletUnlocked && !journeyAccess.hasAccess && !isInsideJourney;
+  };
+
+  const filteredOwnedGuides = ownedGuides.filter((guide) => {
+    if (accessFilter === "plan") return isIncludedWithPlan(guide);
+    if (accessFilter === "credits") return isUnlockedWithCredits(guide);
+    if (accessFilter === "active") return hasSession(guide);
+    if (accessFilter === "inactive") return !hasSession(guide);
+    return true;
+  });
+
+  const allGuidesCount = ownedGuides.length;
+  const planGuidesCount = ownedGuides.filter(isIncludedWithPlan).length;
+  const creditsGuidesCount = ownedGuides.filter(isUnlockedWithCredits).length;
+
   // Embedded "My Resources" shows owned/started in the first grid; the standalone
   // page shows the full filtered list.
-  const displayGuides = isEmbedded ? ownedGuides : filteredGuides;
+  const displayGuides = isEmbedded ? filteredOwnedGuides : filteredGuides;
 
   // Renders a started-guide progress card when a session exists, otherwise a GuideCard.
   const renderGuideCard = (guide: Guide, index: number) => {
@@ -403,40 +436,45 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: index * 0.1 }}
           key={session.id}
-          className="group relative mt-6 flex flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:border-teal-200 hover:shadow-xl"
+          className="group relative mt-6 flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:border-teal-200 hover:shadow-xl"
         >
-          <div className="mb-4 flex items-start justify-between">
-            <div className="rounded-2xl bg-teal-50 p-3 text-teal-600 transition-colors duration-300 group-hover:bg-teal-600 group-hover:text-white">
-              <BookOpen size={24} />
+          <div className="mb-2.5 flex items-center justify-between">
+            <div className="rounded-xl bg-teal-50 p-2 text-teal-600 transition-colors duration-300 group-hover:bg-teal-600 group-hover:text-white">
+              <BookOpen size={18} />
             </div>
-            <div className="flex flex-col items-end gap-2">
-              <div className="flex items-center gap-2">
-                <span
-                  className={`rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase ${session.status === "completed" ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-700"}`}
-                >
-                  {session.status.replace("_", " ")}
-                </span>
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setSelectedSessionId(session.id);
-                    setShowConfirmDelete(true);
-                  }}
-                  className="rounded-lg p-1.5 text-slate-400 transition-all hover:bg-red-50 hover:text-red-500"
-                  title="Delete this progress"
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
+            <div className="flex items-center gap-2">
               <span className="flex items-center gap-1 text-[10px] font-medium text-slate-400">
                 <Clock size={10} />
                 {new Date(session.last_updated_at).toLocaleDateString()}
               </span>
+              <span
+                className={`rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase ${
+                  session.status === "completed"
+                    ? "bg-green-100 text-green-700"
+                    : "bg-orange-100 text-orange-700"
+                }`}
+              >
+                {session.status.replace("_", " ")}
+              </span>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  setSelectedSessionId(session.id);
+                  setShowConfirmDelete(true);
+                }}
+                className="rounded-lg p-1 text-slate-400 transition-all hover:bg-red-50 hover:text-red-500"
+                title="Delete this progress"
+              >
+                <Trash2 size={14} />
+              </button>
             </div>
           </div>
 
-          <div className="mb-2 flex items-start justify-between gap-3">
-            <h3 className="text-xl font-bold text-slate-900 transition-colors group-hover:text-teal-700">
+          <div className="flex items-start justify-between gap-3">
+            <h3
+              className="text-lg leading-snug font-bold text-slate-900 transition-colors group-hover:text-teal-700 md:text-xl"
+              title={session.guides.description}
+            >
               {session.guides.title}
             </h3>
             <div className="relative z-50 shrink-0">
@@ -451,18 +489,15 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
               />
             </div>
           </div>
-          <p className="mb-6 line-clamp-2 text-sm leading-relaxed text-slate-500">
-            {session.guides.description}
-          </p>
 
-          <div className="mt-auto">
-            <div className="mb-2 flex items-center justify-between">
-              <span className="text-xs font-bold tracking-tighter text-slate-400 uppercase">
+          <div className="mt-3">
+            <div className="mb-1.5 flex items-center justify-between">
+              <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">
                 Progress
               </span>
               <span className="text-xs font-black text-teal-600">{session.progress_percent}%</span>
             </div>
-            <div className="mb-6 h-1.5 overflow-hidden rounded-full bg-slate-100">
+            <div className="mb-2.5 h-1.5 overflow-hidden rounded-full bg-slate-100">
               <div
                 className="h-full rounded-full bg-teal-500 transition-all duration-1000"
                 style={{ width: `${session.progress_percent}%` }}
@@ -471,17 +506,17 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
 
             <Link
               href={`/guides/${session.guides.slug}`}
-              className="group/btn flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 py-3.5 text-sm font-bold text-white shadow-lg shadow-slate-200 transition-all hover:bg-teal-600 hover:shadow-teal-100"
+              className="group/btn flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 py-3.5 text-xs font-bold text-white shadow-md shadow-slate-200 transition-all hover:bg-teal-600 hover:shadow-teal-100"
             >
               {session.status === "completed" ? (
                 <>
-                  <CheckCircle2 size={18} />
+                  <CheckCircle2 size={14} />
                   View Results
                 </>
               ) : (
                 <>
                   <PlayCircle
-                    size={18}
+                    size={16}
                     className="transition-transform group-hover/btn:scale-110"
                   />
                   Resume Guide
@@ -489,7 +524,7 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
               )}
               <ChevronRight
                 size={16}
-                className="ml-1 -translate-x-2 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100"
+                className="ml-0.5 -translate-x-1 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100"
               />
             </Link>
           </div>
@@ -504,6 +539,7 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
         index={index}
         onLockedClick={(feature) => setUpgradeModalFeature(feature)}
         onLaunch={(item) => setLaunchTarget({ item, href: guide.href })}
+        isEmbedded={isEmbedded}
       />
     );
   };
@@ -627,11 +663,103 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
 
         {/* My Guides — owned or already started (embedded view only) */}
         {isEmbedded && (
-          <ResourceSectionHeader
-            title="My Guides"
-            subtitle="Guides you've unlocked or already started."
-            className="-mt-16"
-          />
+          <div className="-mt-16 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <ResourceSectionHeader
+              title="My Guides"
+              subtitle="Guides you've unlocked or already started."
+              className="pt-0"
+            />
+            {allGuidesCount > 0 && (
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setAccessFilter("all")}
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold tracking-wide transition-all ${
+                    accessFilter === "all"
+                      ? "border-teal-600 bg-teal-600 text-white shadow-sm"
+                      : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-slate-600"
+                  }`}
+                >
+                  All
+                  {/* <span
+                    className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
+                      accessFilter === "all"
+                        ? "bg-white/20 text-white"
+                        : "bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300"
+                    }`}
+                  >
+                    {allGuidesCount}
+                  </span> */}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setAccessFilter("plan")}
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold tracking-wide transition-all ${
+                    accessFilter === "plan"
+                      ? "border-teal-600 bg-teal-600 text-white shadow-sm"
+                      : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-slate-600"
+                  }`}
+                >
+                  Included with Plan
+                  {/* <span
+                    className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
+                      accessFilter === "plan"
+                        ? "bg-white/20 text-white"
+                        : "bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300"
+                    }`}
+                  >
+                    {planGuidesCount}
+                  </span> */}
+                </button>
+
+                {/* <button
+                  type="button"
+                  onClick={() => setAccessFilter("credits")}
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold tracking-wide transition-all ${
+                    accessFilter === "credits"
+                      ? "border-teal-600 bg-teal-600 text-white shadow-sm"
+                      : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-slate-600"
+                  }`}
+                >
+                  Unlocked with Credits */}
+                {/* <span
+                    className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
+                      accessFilter === "credits"
+                        ? "bg-white/20 text-white"
+                        : "bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300"
+                    }`}
+                  >
+                    {creditsGuidesCount}
+                  </span> */}
+                {/* </button> */}
+
+                <button
+                  type="button"
+                  onClick={() => setAccessFilter("active")}
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold tracking-wide transition-all ${
+                    accessFilter === "active"
+                      ? "border-teal-600 bg-teal-600 text-white shadow-sm"
+                      : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-slate-600"
+                  }`}
+                >
+                  In Progress
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setAccessFilter("inactive")}
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold tracking-wide transition-all ${
+                    accessFilter === "inactive"
+                      ? "border-teal-600 bg-teal-600 text-white shadow-sm"
+                      : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-slate-600"
+                  }`}
+                >
+                  Not Started
+                </button>
+              </div>
+            )}
+          </div>
         )}
 
         {/* Guides Grid */}
@@ -647,6 +775,19 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
           {!isEmbedded && displayGuides.length === 0 && (
             <div className="text-muted-foreground col-span-full py-12 text-center">
               No guides found matching your search.
+            </div>
+          )}
+          {isEmbedded && displayGuides.length === 0 && (
+            <div className="text-muted-foreground col-span-full py-12 text-center text-sm">
+              {accessFilter === "plan"
+                ? "No guides found included with your plan."
+                : accessFilter === "credits"
+                  ? "No guides found unlocked with credits."
+                  : accessFilter === "active"
+                    ? "No guides currently in progress."
+                    : accessFilter === "inactive"
+                      ? "No unstarted guides found."
+                      : "No guides in your collection yet."}
             </div>
           )}
         </div>
@@ -714,11 +855,13 @@ function GuideCard({
   index,
   onLockedClick,
   onLaunch,
+  isEmbedded,
 }: {
   guide: Guide;
   index: number;
   onLockedClick: (feature: string) => void;
   onLaunch: (item: WalletCatalogItem) => void;
+  isEmbedded?: boolean;
 }) {
   const plan = usePlan();
   const wallet = useWallet();
@@ -864,28 +1007,28 @@ function GuideCard({
         </p>
 
         {/* Category & Unlock Badges */}
-        <div className="mb-2 flex flex-wrap items-center gap-2">
-          <span className="text-primary/85 bg-primary/10 border-primary/20 rounded border px-2 py-1 text-[10px] font-semibold tracking-[0.08em] uppercase">
-            {guide.category}
-          </span>
-          {hasJourneyPlanAccess &&
-            !isInsideJourney &&
-            guide.creditPayable !== false &&
-            !!guide.entitlementFeature && (
-              <span className="inline-flex items-center gap-1 rounded-full border border-teal-200 bg-teal-50 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-teal-800 uppercase dark:border-teal-800/40 dark:bg-teal-950/40 dark:text-teal-300">
-                <CheckCircle2 size={11} className="text-teal-600 dark:text-teal-400" />
-                Included with {journeyAccess.unlockedViaCategory || "Plan"}
+        {!isEmbedded && (
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            {/* <span className="text-primary/85 bg-primary/10 border-primary/20 rounded border px-2 py-1 text-[10px] font-semibold tracking-[0.08em] uppercase">
+              {guide.category}
+            </span> */}
+            {hasJourneyPlanAccess &&
+              !isInsideJourney &&
+              guide.creditPayable !== false &&
+              !!guide.entitlementFeature && (
+                <span className="inline-flex items-center gap-1 rounded-full border border-teal-200 bg-teal-50 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-teal-800 uppercase dark:border-teal-800/40 dark:bg-teal-950/40 dark:text-teal-300">
+                  <CheckCircle2 size={11} className="text-teal-600 dark:text-teal-400" />
+                  Included with {journeyAccess.unlockedViaCategory || "Plan"}
+                </span>
+              )}
+            {walletUnlocked && !hasJourneyPlanAccess && !isInsideJourney && (
+              <span className="inline-flex items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-blue-800 uppercase dark:border-blue-800/40 dark:bg-blue-950/40 dark:text-blue-300">
+                <CheckCircle2 size={11} className="text-blue-600 dark:text-blue-400" />
+                Unlocked with Credits
               </span>
             )}
-          {walletUnlocked && !hasJourneyPlanAccess && !isInsideJourney && (
-            <span className="inline-flex items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-blue-800 uppercase dark:border-blue-800/40 dark:bg-blue-950/40 dark:text-blue-300">
-              <CheckCircle2 size={11} className="text-blue-600 dark:text-blue-400" />
-              Unlocked with Jarthings
-            </span>
-          )}
-        </div>
-
-
+          </div>
+        )}
 
         {/* Description */}
         <p

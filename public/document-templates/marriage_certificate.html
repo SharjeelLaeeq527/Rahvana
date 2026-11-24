@@ -1,0 +1,1069 @@
+﻿<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marriage Certificate - True Translation | Rahvana</title>
+<!-- html2pdf bundle for direct client-side PDF generation -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+  
+  body {
+    font-family: 'Times New Roman', Times, serif;
+    color: #111;
+    line-height: 1.22;
+    background-color: #f7f7f7;
+    margin: 0;
+    padding: 15px;
+  }
+
+  .page-container {
+    background: #fff;
+    width: 210mm;
+    height: 297mm;
+    max-height: 297mm;
+    margin: 0 auto 25px auto;
+    padding: 8mm 12mm 9mm 12mm;
+    box-sizing: border-box;
+    box-shadow: 0 0 10px rgba(0,0,0,0.15);
+    position: relative;
+    page-break-after: always;
+    page-break-inside: avoid;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+  }
+
+  .page-container:last-child {
+    page-break-after: avoid;
+  }
+
+  .footer-icon-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #006363;
+    text-decoration: none;
+  }
+
+  .footer-icon-link svg {
+    width: 11px !important;
+    height: 11px !important;
+    max-width: 11px;
+    max-height: 11px;
+    vertical-align: middle;
+    flex-shrink: 0;
+  }
+
+  /* Formal Decorative Outer Border */
+  .ornamental-border {
+    border: 2px solid #006363;
+    padding: 10px 14px;
+    box-sizing: border-box;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  /* Consistent Corporate Header with Rahvana Logo */
+  .corporate-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #006363;
+    padding-bottom: 6px;
+    margin-bottom: 6px;
+  }
+  .brand-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .brand-logo-svg {
+    height: 32px;
+    width: auto;
+  }
+  .brand-subtext {
+    font-size: 8.5px;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #006363;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    line-height: 1.2;
+  }
+  .brand-subtext .urdu-title {
+    font-size: 10.5px;
+    color: #222;
+    font-weight: bold;
+    display: block;
+    margin-top: 1px;
+  }
+  .header-right {
+    text-align: right;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 8px;
+    color: #444;
+    line-height: 1.35;
+  }
+  .header-right .certified-tag {
+    font-weight: 800;
+    color: #006363;
+    font-size: 9.5px;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+  }
+
+  /* Top "TRUE TRANSLATION" Gold Badge */
+  .badge-container {
+    text-align: center;
+    margin: 4px 0 5px 0;
+  }
+  .true-translation-badge {
+    display: inline-block;
+    border: 2px solid #b8860b;
+    color: #996515;
+    background-color: #fffdf5;
+    font-weight: 900;
+    font-size: 16px;
+    letter-spacing: 2px;
+    padding: 3px 24px;
+    border-radius: 4px;
+    text-transform: uppercase;
+  }
+
+  /* Header Rules and Deed Titles */
+  .header-section {
+    text-align: center;
+    margin-bottom: 5px;
+  }
+  .lang-title {
+    font-size: 11.5px;
+    font-weight: bold;
+    text-decoration: underline;
+    letter-spacing: 0.8px;
+    margin-bottom: 2px;
+  }
+  .sub-title {
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin: 1px 0;
+  }
+  .law-rule {
+    font-size: 8.5px;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin: 1px 0 4px 0;
+    line-height: 1.15;
+  }
+  .main-heading {
+    font-size: 16px;
+    font-weight: bold;
+    letter-spacing: 1.2px;
+    text-decoration: underline;
+    margin: 3px 0 2px 0;
+  }
+
+  .meta-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: bold;
+    margin: 3px 2px 5px 2px;
+  }
+
+  /* Main Table Structure */
+  table.deed-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10.2px;
+    margin-bottom: 3px;
+    flex-grow: 1;
+  }
+  table.deed-table th, 
+  table.deed-table td {
+    border: 1px solid #222;
+    padding: 3.8px 5px;
+    vertical-align: middle;
+  }
+  
+  .col-no {
+    width: 5%;
+    text-align: center;
+    font-weight: bold;
+  }
+  .col-q {
+    width: 48%;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+  .col-ans {
+    width: 47%;
+    font-weight: normal;
+    background-color: #ffffff;
+    line-height: 1.2;
+  }
+
+  /* Formal Underlined Signatures Grid */
+  .sign-grid-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9.8px;
+    margin-top: 5px;
+  }
+  .sign-grid-table td {
+    border: 1px solid #222;
+    padding: 6px 8px;
+    vertical-align: top;
+    height: 44px;
+  }
+  .sign-grid-table .sign-label {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 5px;
+    line-height: 1.15;
+  }
+  .sign-line {
+    display: inline-block;
+    border-bottom: 1px solid #222;
+    min-width: 130px;
+    padding: 0 4px;
+    font-style: italic;
+    color: #111;
+  }
+
+  /* Certificate of Translation & Affidavit Sections */
+  .cert-box {
+    border: 1.5px solid #006363;
+    padding: 6px 10px;
+    margin-top: 6px;
+    background: #fafcfc;
+  }
+  .cert-box-title {
+    font-size: 11px;
+    font-weight: bold;
+    text-align: center;
+    letter-spacing: 1px;
+    color: #006363;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    text-decoration: underline;
+  }
+  .cert-box p {
+    font-size: 9px;
+    line-height: 1.25;
+    margin: 2px 0 4px 0;
+    text-align: justify;
+  }
+  .cert-sign-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+    font-size: 9px;
+    font-weight: 600;
+  }
+
+  /* Affidavit Page Specifics */
+  .affidavit-title {
+    font-size: 14.5px;
+    font-weight: bold;
+    letter-spacing: 1.2px;
+    text-align: center;
+    text-decoration: underline;
+    margin: 8px 0;
+    color: #111;
+  }
+  .affidavit-content {
+    font-size: 10.5px;
+    line-height: 1.42;
+    text-align: justify;
+    flex-grow: 1;
+    padding: 0 4px;
+  }
+  .affidavit-content ol {
+    margin: 6px 0;
+    padding-left: 20px;
+  }
+  .affidavit-content li {
+    margin-bottom: 8px;
+  }
+  .affidavit-meta {
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    padding: 8px 12px;
+    margin: 10px 0;
+    font-size: 10.5px;
+  }
+  .affidavit-signatures {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+    padding-top: 8px;
+    font-size: 10px;
+  }
+
+  /* Clean Uniform Footer (No office address, only links) */
+  .corporate-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1.5px solid #006363;
+    padding-top: 4px;
+    margin-top: 6px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 8.5px;
+    font-weight: bold;
+    color: #333;
+  }
+  .corporate-footer a {
+    color: #006363;
+    text-decoration: none;
+  }
+  .corporate-footer .links-group {
+    display: flex;
+    gap: 16px;
+  }
+
+  /* Toolbar */
+  .export-bar {
+    max-width: 210mm;
+    margin: 0 auto 16px auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #0f172a;
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  .export-bar .btn-group {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .export-btn {
+    background-color: #2563eb;
+    color: #fff;
+    border: none;
+    padding: 8px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .export-btn:hover {
+    background-color: #1d4ed8;
+  }
+  .export-btn.pdf-btn {
+    background-color: #006363;
+  }
+  .export-btn.pdf-btn:hover {
+    background-color: #004d4d;
+  }
+  .export-btn.secondary {
+    background-color: #475569;
+  }
+  .export-btn.secondary:hover {
+    background-color: #334155;
+  }
+  .status-badge {
+    color: #4ade80;
+    font-size: 12px;
+    font-weight: 600;
+    display: none;
+    margin-right: 8px;
+  }
+
+  /* Editable cues */
+  [contenteditable="true"] {
+    outline: none;
+    transition: background-color 0.15s ease;
+  }
+  [contenteditable="true"]:hover {
+    background-color: #fff9e6;
+  }
+  [contenteditable="true"]:focus {
+    background-color: #fff3cd;
+    box-shadow: 0 0 2px #ffc107;
+  }
+
+  @media print {
+    body {
+      background-color: #fff !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+    .export-bar {
+      display: none !important;
+    }
+    .page-container {
+      width: 210mm !important;
+      height: 297mm !important;
+      max-height: 297mm !important;
+      box-shadow: none !important;
+      margin: 0 !important;
+      padding: 8mm 12mm 9mm 12mm !important;
+      page-break-after: always !important;
+      break-after: page !important;
+    }
+    .page-container:last-child {
+      page-break-after: avoid !important;
+      break-after: avoid !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- Streamlined Action Toolbar with 2 buttons -->
+<div class="export-bar">
+  <div class="btn-group">
+    <span id="statusMsg" class="status-badge"></span>
+    <button class="export-btn secondary" onclick="printDocumentWindow()"><svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Browser Print Dialog</button>
+  </div>
+</div>
+
+<div id="translationDocumentArea">
+
+<!-- ================= PAGE 1 ================= -->
+<div class="page-container">
+  <div class="ornamental-border">
+    
+    <!-- Top Corporate Header with Rahvana Logo -->
+    <div class="corporate-header">
+      <div class="brand-left">
+        <img src="/assets/images/RahvanaLogo.png" alt="Rahvana Logo" width="100" height="40">
+      </div>
+      <div class="header-right">
+        <div class="certified-tag">Certified English Translation</div>
+        <div>Reference: <strong>[RAHVANA-ORDER-REF-NO]</strong></div>
+        <div>Support: <strong>support@rahvana.com</strong></div>
+      </div>
+    </div>
+    
+    <div class="badge-container">
+      <div class="true-translation-badge" contenteditable="true">TRUE TRANSLATION</div>
+    </div>
+
+    <div class="header-section">
+      <div class="lang-title" contenteditable="true">CERTIFIED TRANSLATION OF MARRIAGE CERTIFICATE (NIKAH NAMA) FROM URDU TO ENGLISH</div>
+      <div class="sub-title" contenteditable="true">FORM NO: II (See Rules 8 &amp; 10)</div>
+      <div class="law-rule" contenteditable="true">
+        UNDER RULES 8 AND 10 OF THE MUSLIM FAMILY LAWS ORDINANCE, 1961 (VIII OF 1961)
+      </div>
+      <div class="main-heading" contenteditable="true">MARRIAGE CERTIFICATE (NIKAH NAMA)</div>
+    </div>
+
+    <div class="meta-row">
+        <div>Serial No: <span contenteditable="true"><strong>[DEED-SR-NO-FROM-NIKAHNAMA]</strong></span></div>
+        <div>Register No: <span contenteditable="true"><strong>[UNION-COUNCIL-REG-NO]</strong></span></div>
+      </div>
+
+    <!-- Questions 1 - 17 -->
+    <table class="deed-table">
+      <thead>
+        <tr style="background-color: #f2f2f2;">
+          <th class="col-no">Sr.</th>
+          <th class="col-q">Particulars / Statutory Clauses</th>
+          <th class="col-ans">Details / Entries</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="col-no">1.</td>
+          <td class="col-q">Name of the Ward, Town/Union, Tehsil/Police Station, and District where the Marriage was held:</td>
+          <td class="col-ans" contenteditable="true">
+            Ward / Union: <strong>UC No. 8, Marrar Chak 42</strong><br>
+            Tehsil / Police Station: <strong>Sangla Hill</strong><br>
+            District: <strong>Nankana Sahib</strong>
+          </td>
+        </tr>
+        <tr>
+          <td class="col-no">2.</td>
+          <td class="col-q">
+            Name of the bridegroom &amp; his father, with their respective residence:<br>
+            <strong>National Identity Card Number:</strong>
+          </td>
+          <td class="col-ans" contenteditable="true">
+            <strong>GOHAR SROCHE ANWAR</strong><br>
+            Son of: <strong>ANWAR MUHAMMAD</strong><br>
+            Residence: 269-Zenat Block, Iqbal Town, Lahore.<br>
+            CNIC: <strong>35202-XXXXXXXX-X</strong>
+          </td>
+        </tr>
+        <tr>
+          <td class="col-no">3.</td>
+          <td class="col-q">Age of the Bridegroom or date of birth:</td>
+          <td class="col-ans" contenteditable="true">18-08-1983</td>
+        </tr>
+        <tr>
+          <td class="col-no">4.</td>
+          <td class="col-q">
+            Name of the Bride &amp; her father, with their respective residence:<br>
+            <strong>National Identity Card Number:</strong>
+          </td>
+          <td class="col-ans" contenteditable="true">
+            <strong>CHAUDHARY NADIA</strong><br>
+            Daughter of: <strong>AHMAD BASHIR</strong><br>
+            Residence: Apartment D-63, 9th Floor, Empire Centre, Block 20, Gulistan-e-Johar, Karachi.<br>
+            CNIC: <strong>42101-XXXXXXXX-X</strong>
+          </td>
+        </tr>
+        <tr>
+          <td class="col-no">5.</td>
+          <td class="col-q">
+            Whether the Bride is a Maiden, a Widow, or a Divorced Wife:<br>
+            <em>(a) If widow or divorced, children count &amp; names:</em>
+          </td>
+          <td class="col-ans" contenteditable="true">
+            <strong>Unmarried (Maiden)</strong><br>
+            (a) None.
+          </td>
+        </tr>
+        <tr>
+          <td class="col-no">6.</td>
+          <td class="col-q">Age of the Bride or date of birth:</td>
+          <td class="col-ans" contenteditable="true">21-07-1983</td>
+        </tr>
+        <tr>
+          <td class="col-no">7.</td>
+          <td class="col-q">Name of the Attorney / Vakil (representative), if any, appointed by the bride, his father’s name and his residence:</td>
+          <td class="col-ans" contenteditable="true">NIL (Bride present in person)</td>
+        </tr>
+        <tr>
+          <td class="col-no">8.</td>
+          <td class="col-q">Names of Witnesses to appointment of Bride's Vakil (representative), with fathers' names, residence and relationship:</td>
+          <td class="col-ans" contenteditable="true">
+            1. NIL<br>
+            2. NIL
+          </td>
+        </tr>
+        <tr>
+          <td class="col-no">9.</td>
+          <td class="col-q">Name of the Vakil (representative), if any, appointed by the bridegroom, his father's name and residence:</td>
+          <td class="col-ans" contenteditable="true">The bridegroom is present in person.</td>
+        </tr>
+        <tr>
+          <td class="col-no">10.</td>
+          <td class="col-q">Names of Witnesses to appointment of Bridegroom's Vakil (representative) with fathers' names and residence:</td>
+          <td class="col-ans" contenteditable="true">NIL</td>
+        </tr>
+        <tr>
+          <td class="col-no">11.</td>
+          <td class="col-q">Names of Witnesses to the Marriage, their fathers' names and their residence:</td>
+          <td class="col-ans" contenteditable="true">
+            1) <strong>M. Ayoub</strong> S/o M. Afzal, H # 287/4, Nawab Colony, FAS.<br>
+            2) <strong>Amir Shahzad</strong> S/o M. Arshid, Chak # 225/9R, FAS.
+          </td>
+        </tr>
+        <tr>
+          <td class="col-no">12.</td>
+          <td class="col-q">The date on which the Marriage was solemnized:</td>
+          <td class="col-ans" contenteditable="true">11-01-2012</td>
+        </tr>
+        <tr>
+          <td class="col-no">13.</td>
+          <td class="col-q">Amount of Dower (Mahr):</td>
+          <td class="col-ans" contenteditable="true">Rupees Five Thousand Only (Rs. 5,000/-)</td>
+        </tr>
+        <tr>
+          <td class="col-no">14.</td>
+          <td class="col-q">How much of Dower is Mu'ajjal (Prompt) and how much Mu'wajjal (Deferred):</td>
+          <td class="col-ans" contenteditable="true">Rupees Five Thousand (5,000/-) Prompt (Mu'ajjal).</td>
+        </tr>
+        <tr>
+          <td class="col-no">15.</td>
+          <td class="col-q">Whether any portion of Dower was paid at time of Marriage, if so, how much:</td>
+          <td class="col-ans" contenteditable="true">Rupees Five Thousand (5,000/-) paid in cash.</td>
+        </tr>
+        <tr>
+          <td class="col-no">16.</td>
+          <td class="col-q">If property given in lieu of dower, specification and agreed valuation between parties:</td>
+          <td class="col-ans" contenteditable="true">None.</td>
+        </tr>
+        <tr>
+          <td class="col-no">17.</td>
+          <td class="col-q">Special conditions, if any:</td>
+          <td class="col-ans" contenteditable="true">None.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Clean Uniform Page 1 Footer -->
+    <div class="corporate-footer">
+      <div>Certified Document • Page 1 of 3</div>
+      <div class="links-group">
+        <a class="footer-icon-link" href="mailto:support@rahvana.com">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#006363" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+            <polyline points="22,6 12,13 2,6"></polyline>
+          </svg>
+          <span>support@rahvana.com</span>
+        </a>
+        <a class="footer-icon-link" href="https://www.rahvana.com" target="_blank">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#006363" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+          <span>www.rahvana.com</span>
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ================= PAGE 2 ================= -->
+<div class="page-container">
+  <div class="ornamental-border">
+    
+    <!-- Top Corporate Header with Rahvana Logo -->
+    <div class="corporate-header">
+      <div class="brand-left">
+        <img src="/assets/images/RahvanaLogo.png" alt="Rahvana Logo" width="100" height="40">
+      </div>
+      <div class="header-right">
+        <div class="certified-tag">Certified English Translation</div>
+        <div>Reference: <strong>[RAHVANA-ORDER-REF-NO]</strong></div>
+        <div>Support: <strong>support@rahvana.com</strong></div>
+      </div>
+    </div>
+
+    <!-- Questions 18 - 25 -->
+    <table class="deed-table">
+      <thead>
+        <tr style="background-color: #f2f2f2;">
+          <th class="col-no">Sr.</th>
+          <th class="col-q">Particulars / Statutory Clauses</th>
+          <th class="col-ans">Details / Entries</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="col-no">18.</td>
+          <td class="col-q">Whether the husband has delegated power of Divorce (Talaq-e-Tafweez) to wife, if so under what conditions:</td>
+          <td class="col-ans" contenteditable="true">None.</td>
+        </tr>
+        <tr>
+          <td class="col-no">19.</td>
+          <td class="col-q">Whether the husband's right to divorce is in any way curtailed:</td>
+          <td class="col-ans" contenteditable="true">None.</td>
+        </tr>
+        <tr>
+          <td class="col-no">20.</td>
+          <td class="col-q">Whether any documents were drawn up at time of marriage relating to dower and maintenance, etc., if so, contents thereof:</td>
+          <td class="col-ans" contenteditable="true">None.</td>
+        </tr>
+        <tr>
+          <td class="col-no">21.</td>
+          <td class="col-q">
+            Whether bridegroom has existing wife, and if secured permission of Arbitration Council under Muslim Family Laws Ordinance, 1961:<br>
+            <em>(a) Whether Groom is widower or divorced:</em><br>
+            <em>(b) Existing wife/wives or children count and names:</em>
+          </td>
+          <td class="col-ans" contenteditable="true">
+            No.<br>
+            (a) Unmarried.<br>
+            (b) None.
+          </td>
+        </tr>
+        <tr>
+          <td class="col-no">22.</td>
+          <td class="col-q">Number and date of communications conveying to bridegroom permission of Arbitration Council to contract another marriage:</td>
+          <td class="col-ans" contenteditable="true">None.</td>
+        </tr>
+        <tr>
+          <td class="col-no">23.</td>
+          <td class="col-q">Name, father's name, and address of the person by whom the marriage was solemnized (Nikah Khawan):</td>
+          <td class="col-ans" contenteditable="true">
+            <strong>M. Farhat Abbas</strong> S/o Abdul Wahid<br>
+            Tehsil Sangla Hill, District <strong>Nankana Sahib</strong>.
+          </td>
+        </tr>
+        <tr>
+          <td class="col-no">24.</td>
+          <td class="col-q">Date of Registration of Marriage:</td>
+          <td class="col-ans" contenteditable="true">11-01-2012</td>
+        </tr>
+        <tr>
+          <td class="col-no">25.</td>
+          <td class="col-q">Registration Fee Paid:</td>
+          <td class="col-ans" contenteditable="true">PAID (Rs. Nil / Exemption recorded)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Reverted: Clean Underlined Signatures Grid -->
+    <table class="sign-grid-table">
+      <tbody>
+        <tr>
+          <td style="width: 50%;">
+            <span class="sign-label">Signature of the Bridegroom or his Attorney:</span>
+            <span class="sign-line" contenteditable="true">Signed</span>
+          </td>
+          <td style="width: 50%;">
+            <span class="sign-label">Signature of the Bride:</span>
+            <span class="sign-line" contenteditable="true">Signed</span>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <span class="sign-label">Signature of the Bride's Attorney / Vakil:</span>
+            <span class="sign-line" contenteditable="true">NIL</span>
+          </td>
+          <td>
+            <span class="sign-label">Signature of Marriage Solemnizer (Nikah Khawan):</span>
+            <span class="sign-line" contenteditable="true">Signed</span>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <span class="sign-label">Signatures of witnesses to appointment of bridegroom's attorney:</span>
+            1) <span class="sign-line" style="min-width: 90px;" contenteditable="true">NIL</span> &nbsp;
+            2) <span class="sign-line" style="min-width: 90px;" contenteditable="true">NIL</span>
+          </td>
+          <td>
+            <span class="sign-label">Signatures of witnesses to appointment of bride's attorney:</span>
+            1) <span class="sign-line" style="min-width: 90px;" contenteditable="true">NIL</span> &nbsp;
+            2) <span class="sign-line" style="min-width: 90px;" contenteditable="true">NIL</span>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <span class="sign-label">Signatures of Marriage Witnesses:</span>
+            1) <span class="sign-line" style="min-width: 90px;" contenteditable="true">Signed</span> &nbsp;
+            2) <span class="sign-line" style="min-width: 90px;" contenteditable="true">Signed</span>
+          </td>
+          <td>
+            <span class="sign-label">Signature &amp; Seal of the Registrar of Marriage:</span>
+            <span class="sign-line" contenteditable="true">Signed &amp; Stamped</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Official Certificate of Translation (Page 2 bottom) -->
+    <div class="cert-box">
+      <div class="cert-box-title" contenteditable="true">CERTIFICATE OF TRANSLATION ACCURACY</div>
+      <p contenteditable="true">
+        I, [TRANSLATOR-FULL-NAME], certify that I am competent to translate from Urdu to English, and that the above document is a true, complete, and accurate English translation of the attached Marriage Certificate (Nikah Nama) originally issued in Urdu to the best of my knowledge and ability.
+      </p>
+      <div class="cert-sign-row">
+        <div>
+            Name of Translator: <strong contenteditable="true">Certified Translator, Rahvana</strong><br>
+            Date: <span contenteditable="true">[DATE-OF-TRANSLATION]</span>
+            Job Reference No: <span contenteditable="true">[RAHVANA-JOB-REF-ID]</span>
+          </div>
+        <div style="text-align: right;">
+          Signature of Translator: <span class="sign-line" style="min-width: 120px;" contenteditable="true">Authenticated / Signed</span><br>
+          Verification ID: <strong contenteditable="true">[RAHVANA-VERIFICATION-TOKEN]</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Clean Uniform Page 2 Footer -->
+    <div class="corporate-footer">
+      <div>Certified Document • Page 2 of 3</div>
+      <div class="links-group">
+        <a class="footer-icon-link" href="mailto:support@rahvana.com">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#006363" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+            <polyline points="22,6 12,13 2,6"></polyline>
+          </svg>
+          <span>support@rahvana.com</span>
+        </a>
+        <a class="footer-icon-link" href="https://www.rahvana.com" target="_blank">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#006363" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+          <span>www.rahvana.com</span>
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ================= PAGE 3 ================= -->
+<div class="page-container">
+  <div class="ornamental-border">
+    
+    <!-- Top Corporate Header with Rahvana Logo -->
+    <div class="corporate-header">
+      <div class="brand-left">
+        <img src="/assets/images/RahvanaLogo.png" alt="Rahvana Logo" width="100" height="40">
+      </div>
+      <div class="header-right">
+        <div class="certified-tag">Certified English Translation</div>
+        <div>Reference: <strong>[RAHVANA-ORDER-REF-NO]</strong></div>
+        <div>Support: <strong>support@rahvana.com</strong></div>
+      </div>
+    </div>
+
+    <div class="affidavit-title" contenteditable="true">
+      AFFIDAVIT / CERTIFICATE OF TRANSLATION
+    </div>
+
+    <!-- Official Sworn Affidavit Text branded for Rahvana -->
+    <div class="affidavit-content">
+      <p contenteditable="true" style="margin-bottom: 10px;">
+        I, <strong contenteditable="true">[TRANSLATOR-FULL-NAME]</strong>, representing <strong>Rahvana</strong>, hereby assert, certify, and declare the following:
+      </p>
+
+      <ol>
+        <li contenteditable="true">
+          I am a professional translator at <strong>Rahvana Document Translation Services</strong>. I have examined and translated the official <strong>Marriage Certificate (Nikah Nama)</strong> of <strong contenteditable="true">[BRIDEGROOM-NAME]</strong> and <strong contenteditable="true">[BRIDE-NAME]</strong> from the original Urdu language into the English language.
+        </li>
+        <li contenteditable="true">
+          I am fluent and competent in both the English and Urdu languages, and possess the requisite proficiency and capability to read, comprehend, and translate official civil records from Urdu into English.
+        </li>
+        <li contenteditable="true">
+          I have carefully and accurately translated the aforesaid Marriage Certificate (Nikah Nama) from the original Urdu text into English to the best of my knowledge, skill, and ability.
+        </li>
+        <li contenteditable="true">
+          I hereby certify under penalty of perjury that the English translation is a true, complete, and accurate rendering of the original Urdu document and faithfully reflects the statutory clauses, particulars, and meaning of the original records.
+        </li>
+        <li contenteditable="true">
+          This certification relates strictly to the accuracy and completeness of the linguistic translation and does not constitute any separate certification as to the underlying validity or authenticity of the original municipal document.
+        </li>
+      </ol>
+
+      <!-- Case & Translation Metadata Table -->
+      <div class="affidavit-meta">
+        <table style="width: 100%; border: none; font-size: 10.5px; line-height: 1.5;">
+          <tr>
+            <td style="width: 25%; font-weight: bold;">Translated Document:</td>
+            <td style="width: 75%;" contenteditable="true">Nikah Nama (Marriage Certificate) of GOHAR SROCHE ANWAR &amp; CHAUDHARY NADIA</td>
+          </tr>
+          <tr>
+            <td style="font-weight: bold;">Source Language:</td>
+            <td contenteditable="true">Urdu</td>
+          </tr>
+          <tr>
+            <td style="font-weight: bold;">Target Language:</td>
+            <td contenteditable="true">English</td>
+          </tr>
+          <tr>
+            <td style="font-weight: bold;">Job Reference No:</td>
+            <td contenteditable="true"><strong>[RAHVANA-JOB-REF-ID]</strong></td>
+          </tr>
+          <tr>
+            <td style="font-weight: bold;">Date of Issuance:</td>
+            <td contenteditable="true">August 5, 2026</td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- Execution & Attestation Signatures -->
+      <div class="affidavit-signatures">
+        <div style="width: 48%; border-top: 1px solid #111; padding-top: 6px;">
+          <div><strong>Certifying Translator</strong></div>
+          <div>Rahvana Translation Services</div>
+          <div style="margin-top: 4px;">Status: <span class="sign-line" style="min-width: 130px;" contenteditable="true">Digitally Verified &amp; Signed</span></div>
+        </div>
+        <div style="width: 48%; border-top: 1px solid #111; padding-top: 6px; text-align: right;">
+          <div><strong>Rahvana Document Verification Desk</strong></div>
+          <div>Certification Reference: <span contenteditable="true"><strong>[RAHVANA-CERT-AUTH-NO]</strong></span></div>
+          <div style="margin-top: 4px;">Official Seal: <span class="sign-line" style="min-width: 130px;" contenteditable="true">Certified Record</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Clean Uniform Page 3 Footer -->
+    <div class="corporate-footer">
+      <div>Certified Document • Page 3 of 3</div>
+      <div class="links-group">
+        <a class="footer-icon-link" href="mailto:support@rahvana.com">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#006363" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+            <polyline points="22,6 12,13 2,6"></polyline>
+          </svg>
+          <span>support@rahvana.com</span>
+        </a>
+        <a class="footer-icon-link" href="https://www.rahvana.com" target="_blank">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#006363" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+          <span>www.rahvana.com</span>
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</div>
+
+<script>
+/**
+ * Direct Client-Side PDF Generation for Rahvana.
+ * Renders all 3 .page-container elements sequentially onto exact A4 sheets.
+ * GUARANTEES an exact 3-page PDF with ZERO trailing blank pages.
+ */
+async function saveAsDirectPDF() {
+  const btn = document.getElementById('pdfBtn');
+  btn.disabled = true;
+  btn.innerHTML = 'Generating Clean 3-Page PDF...';
+
+  const pages = document.querySelectorAll('.page-container');
+  if (!pages || pages.length === 0) {
+    btn.disabled = false;
+    btn.innerHTML = '<svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Save as PDF (3 Pages)';
+    return;
+  }
+
+  try {
+    const { jsPDF } = window.jspdf || window;
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4',
+      compress: false
+    });
+
+    for (let i = 0; i < pages.length; i++) {
+      const pageEl = pages[i];
+
+      const canvas = await html2canvas(pageEl, {
+        scale: 2.5,
+        useCORS: true,
+        logging: false,
+        letterRendering: true,
+        scrollY: 0,
+        backgroundColor: '#ffffff'
+      });
+
+      const imgData = canvas.toDataURL('image/jpeg', 1.0);
+
+      if (i > 0) {
+        pdf.addPage('a4', 'portrait');
+      }
+
+      pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
+    }
+
+    pdf.save('Rahvana_Certified_Marriage_Certificate_Translation.pdf');
+    showStatus('✓ Exact 3-Page PDF Downloaded!');
+  } catch (err) {
+    console.error('PDF generation error, fallback to html2pdf:', err);
+    const opt = {
+      margin: 0,
+      filename: 'Rahvana_Certified_Marriage_Certificate_Translation.pdf',
+      image: { type: 'jpeg', quality: 1.0 },
+      html2canvas: { scale: 2.5, useCORS: true, letterRendering: true, scrollY: 0 },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: 'avoid-all' }
+    };
+    html2pdf().set(opt).from(document.getElementById('translationDocumentArea')).save();
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Save as PDF (3 Pages)';
+  }
+}
+
+/**
+ * Direct vector print window fallback.
+ */
+function printDocumentWindow() {
+  const content = document.getElementById('translationDocumentArea').innerHTML;
+  const printWin = window.open('', '_blank', 'width=900,height=1100');
+  
+  if (!printWin) {
+    window.print();
+    return;
+  }
+
+  printWin.document.open();
+  printWin.document.write(`
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>Print Marriage Deed - Rahvana</title>
+        <style>
+          @page { size: A4 portrait; margin: 0; }
+          body { font-family: 'Times New Roman', serif; margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          .page-container { width: 210mm; height: 297mm; box-sizing: border-box; margin: 0; padding: 8mm 12mm 9mm 12mm; page-break-after: always; break-after: page; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; }
+          .page-container:last-child { page-break-after: avoid; break-after: avoid; }
+          .ornamental-border { border: 2px solid #006363; padding: 10px 14px; box-sizing: border-box; height: 100%; display: flex; flex-direction: column; justify-content: space-between; }
+          .corporate-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #006363; padding-bottom: 6px; margin-bottom: 6px; }
+          .brand-left { display: flex; align-items: center; gap: 8px; }
+          .brand-logo-svg { height: 32px; width: auto; }
+          .brand-subtext { font-size: 8.5px; font-family: Arial, sans-serif; color: #006363; font-weight: 700; }
+          .brand-subtext .urdu-title { font-size: 10.5px; color: #222; font-weight: bold; display: block; }
+          .header-right { text-align: right; font-family: Arial, sans-serif; font-size: 8px; color: #444; }
+          .header-right .certified-tag { font-weight: 800; color: #006363; font-size: 9.5px; text-transform: uppercase; }
+          .badge-container { text-align: center; margin: 4px 0 5px 0; }
+          .true-translation-badge { display: inline-block; border: 2px solid #b8860b; color: #996515; background-color: #fffdf5; font-weight: bold; font-size: 16px; letter-spacing: 2px; padding: 3px 24px; }
+          .header-section { text-align: center; margin-bottom: 5px; }
+          .lang-title { font-size: 11.5px; font-weight: bold; text-decoration: underline; margin-bottom: 2px; }
+          .sub-title { font-size: 10px; font-weight: bold; text-transform: uppercase; margin: 1px 0; }
+          .law-rule { font-size: 8.5px; font-weight: bold; text-transform: uppercase; margin: 1px 0 4px 0; line-height: 1.15; }
+          .main-heading { font-size: 16px; font-weight: bold; text-decoration: underline; margin: 3px 0 2px 0; }
+          .meta-row { display: flex; justify-content: space-between; font-size: 11px; font-weight: bold; margin: 3px 2px 5px 2px; }
+          table.deed-table { width: 100%; border-collapse: collapse; font-size: 10.2px; margin-bottom: 3px; flex-grow: 1; }
+          table.deed-table th, table.deed-table td { border: 1px solid #222; padding: 3.8px 5px; vertical-align: middle; }
+          .col-no { width: 5%; text-align: center; font-weight: bold; }
+          .col-q { width: 48%; font-weight: 600; }
+          .col-ans { width: 47%; }
+          .sign-grid-table { width: 100%; border-collapse: collapse; font-size: 9.8px; margin-top: 5px; }
+          .sign-grid-table td { border: 1px solid #222; padding: 6px 8px; height: 44px; }
+          .sign-label { font-weight: bold; display: block; margin-bottom: 5px; }
+          .sign-line { display: inline-block; border-bottom: 1px solid #222; min-width: 130px; padding: 0 4px; font-style: italic; }
+          .cert-box { border: 1.5px solid #006363; padding: 6px 10px; margin-top: 6px; background: #fafcfc; }
+          .cert-box-title { font-size: 11px; font-weight: bold; text-align: center; color: #006363; text-decoration: underline; }
+          .cert-box p { font-size: 9px; line-height: 1.25; margin: 2px 0 4px 0; }
+          .cert-sign-row { display: flex; justify-content: space-between; margin-top: 6px; font-size: 9px; font-weight: 600; }
+          .affidavit-title { font-size: 14.5px; font-weight: bold; text-align: center; text-decoration: underline; margin: 8px 0; }
+          .affidavit-content { font-size: 10.5px; line-height: 1.42; flex-grow: 1; padding: 0 4px; }
+          .affidavit-content ol { margin: 6px 0; padding-left: 20px; }
+          .affidavit-content li { margin-bottom: 8px; }
+          .affidavit-meta { background: #f8fafc; border: 1px solid #cbd5e1; padding: 8px 12px; margin: 10px 0; font-size: 10.5px; }
+          .affidavit-signatures { display: flex; justify-content: space-between; margin-top: 15px; padding-top: 8px; font-size: 10px; }
+          .corporate-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1.5px solid #006363; padding-top: 4px; margin-top: 6px; font-family: Arial, sans-serif; font-size: 8.5px; font-weight: bold; color: #333; }
+          .corporate-footer a { color: #006363; text-decoration: none; } .footer-icon-link { display: inline-flex; align-items: center; gap: 4px; color: #006363; text-decoration: none; } .footer-icon-link svg { width: 11px; height: 11px; flex: 0 0 11px; }
+          .links-group { display: flex; gap: 16px; }
+        </style>
+      </head>
+      <body>
+        ${content}
+      </body>
+    </html>
+  `);
+  printWin.document.close();
+  printWin.focus();
+  setTimeout(() => {
+    printWin.print();
+    printWin.close();
+  }, 350);
+}
+
+function showStatus(text) {
+  const msg = document.getElementById('statusMsg');
+  msg.textContent = text;
+  msg.style.display = 'inline-block';
+  setTimeout(() => {
+    msg.style.display = 'none';
+  }, 4000);
+}
+</script>
+
+</body></html>

@@ -1,0 +1,413 @@
+{
+  "title": "Child Citizenship Guide",
+  "subtitle": "U.S. Citizenship Eligibility & Documentation (Pakistan)",
+  "wizard": {
+    "title": "Child Citizenship Guide",
+    "subtitle": "U.S. Citizenship Eligibility & Documentation (Pakistan)",
+    "last_verified": "November 6, 2026",
+    "whats_this": {
+      "heading": "Welcome to Child Citizenship Guide",
+      "sub": "Official U.S. Government Guidelines for Pakistan",
+      "description": "This guide helps children of U.S. citizens (born or living abroad, including in Pakistan) screen for U.S. citizenship. Citizenship can be acquired at birth, granted automatically after birth, or obtained through naturalization, depending on the parents, the child's age, and where the child lives.",
+      "quick_instructions": [
+        "Answer the eligibility questions to see which citizenship pathway may apply.",
+        "Review the required documents for the pathway you are routed to.",
+        "Follow the application steps and verify translations and final details."
+      ],
+      "disclaimer": "This tool provides general educational guidance based on published U.S. law and Department of State and USCIS policy. It is not legal advice and does not guarantee any outcome. Citizenship laws have changed over time; complex or older cases should be reviewed against current official guidance or by a qualified professional."
+    },
+    "roadmaps": {
+      "crba_route": {
+        "title": "CRBA + U.S. Passport",
+        "subtitle": "Citizenship Acquired at Birth • U.S. Department of State",
+        "estimated_timeline": "6-10 weeks",
+        "onsitePhases": [
+          {
+            "id": 1,
+            "title": "Gather Evidence",
+            "duration": "1-2 weeks",
+            "description": "Collect the child's foreign birth certificate or hospital birth record. Obtain proof of the U.S. citizen parent's citizenship (U.S. passport, naturalization certificate, or U.S. birth certificate). Gather evidence of the parent's physical presence or residence in the U.S. (old passports, school transcripts, employment records, tax returns, medical records). If parents were married, obtain marriage certificate. If DS-5507 applies, prepare the affidavit evidence. Translate all non-English documents with certified translations."
+          },
+          {
+            "id": 2,
+            "title": "Complete Forms",
+            "duration": "2-3 days",
+            "description": "Complete Form DS-2029 (Application for Consular Report of Birth Abroad). Fill DS-5507 (Affidavit of Parentage, Physical Presence, and Support) if applicable to your case. Prepare Form DS-11 (U.S. Passport Application) for the child. Review all forms for accuracy and completeness. Ensure all names match supporting documents exactly."
+          },
+          {
+            "id": 3,
+            "title": "File Through MyTravelGov or Embassy",
+            "duration": "1-2 days",
+            "description": "Check if electronic CRBA filing is available for your embassy/consulate at https://mytravel.state.gov. If available, create MyTravelGov account and upload DS-2029, DS-5507 (if applicable), and all supporting documents. Pay CRBA fee ($100) online. If electronic filing not available, schedule appointment through embassy website. Follow local embassy's specific instructions for appointment scheduling and document submission."
+          },
+          {
+            "id": 4,
+            "title": "Attend Consular Appointment",
+            "duration": "Appointment day",
+            "description": "Bring the child and all original documents to the appointment. U.S. Embassy or Consulate will review the application and evidence. Consular officer will verify parent's U.S. citizenship and physical presence requirements. Child's information and parentage will be confirmed. Officer may request additional evidence if needed. If approved, proceed to passport application during same appointment."
+          },
+          {
+            "id": 5,
+            "title": "Apply for U.S. Passport",
+            "duration": "Same appointment",
+            "description": "Submit Form DS-11 for the child's U.S. passport. Provide child's passport photos (2x2 inches, meeting Department of State requirements). Pay passport fee: $135 for child under 16 (includes $100 book + $35 execution fee). If child is 16-17 years old, pay applicable fee for that age category. Follow post-specific instructions for passport collection or delivery."
+          },
+          {
+            "id": 6,
+            "title": "Receive Documents",
+            "duration": "4-8 weeks",
+            "description": "If approved, receive Consular Report of Birth Abroad (FS-240) documenting citizenship acquired at birth. U.S. passport will be processed and issued after passport application approval. Processing time varies by embassy and season. Track application status through embassy communication. The FS-240 is permanent proof of U.S. citizenship acquired at birth. Note: CRBA documents existing citizenship; it does not grant citizenship."
+          }
+        ],
+        "onlinePhases": [],
+        "documents_checklist": [
+          {
+            "id": "child_birth_cert",
+            "label": "Child's Foreign Birth Certificate",
+            "description": "Original birth certificate from the country of birth, with certified English translation if not in English.",
+            "required": true
+          },
+          {
+            "id": "parent_citizenship_proof",
+            "label": "U.S. Citizen Parent's Proof of Citizenship",
+            "description": "U.S. passport, naturalization certificate, or Consular Report of Birth Abroad of the U.S. citizen parent.",
+            "required": true
+          },
+          {
+            "id": "parent_presence_evidence",
+            "label": "Evidence of Parent's U.S. Physical Presence or Residence",
+            "description": "Old U.S. passports, school records, employment records, tax returns, medical records, or other evidence showing required time in the U.S.",
+            "required": true
+          },
+          {
+            "id": "marriage_cert",
+            "label": "Parents' Marriage Certificate",
+            "description": "If parents were married when child was born, provide marriage certificate with certified translation if applicable.",
+            "required": false
+          },
+          {
+            "id": "ds_5507",
+            "label": "Form DS-5507 (if applicable)",
+            "description": "Affidavit of Parentage, Physical Presence, and Support, required in certain cases.",
+            "required": false
+          },
+          {
+            "id": "passport_photos",
+            "label": "Child's Passport Photos",
+            "description": "Two recent passport photos (2x2 inches) meeting U.S. Department of State requirements.",
+            "required": true
+          }
+        ],
+        "fees": [
+          {
+            "label": "CRBA (Form DS-2029)",
+            "amount": "$100",
+            "note": "One-time fee for Consular Report of Birth Abroad"
+          },
+          {
+            "label": "U.S. Passport Book (under 16)",
+            "amount": "$135",
+            "note": "Includes $100 passport book + $35 execution fee"
+          },
+          {
+            "label": "U.S. Passport Book (16-17 years)",
+            "amount": "Varies",
+            "note": "Check current Department of State fee schedule"
+          }
+        ]
+      },
+      "automatic_citizenship_route": {
+        "title": "Automatic Citizenship Evidence",
+        "subtitle": "INA § 320 • Already a U.S. Citizen",
+        "estimated_timeline": "Option 1: 6-10 weeks (Passport) • Option 2: 8-14 months (N-600)",
+        "onsitePhases": [
+          {
+            "id": 1,
+            "title": "Understand Your Status",
+            "duration": "Information",
+            "description": "Your child may already be a U.S. citizen under INA § 320 if all statutory conditions were met before turning 18. No separate citizenship application is required. You only need to apply for evidence of the citizenship already held. Two evidence options are available: U.S. Passport (faster, less expensive) or Form N-600 Certificate of Citizenship (formal USCIS certificate)."
+          },
+          {
+            "id": 2,
+            "title": "Choose Evidence Option",
+            "duration": "Decision point",
+            "description": "Option 1 - U.S. Passport: Issued by Department of State. Use Form DS-11 where applicable. Faster processing (6-10 weeks). Lower cost. Serves as travel document and citizenship proof. Option 2 - Form N-600 Certificate of Citizenship: Issued by USCIS. Formal certificate documenting automatic citizenship. Longer processing (8-14 months). Higher cost but permanent non-expiring certificate. You may apply for both if desired."
+          }
+        ],
+        "onlinePhases": [
+          {
+            "id": 1,
+            "title": "Option 1: U.S. Passport Application",
+            "duration": "6-10 weeks",
+            "description": "Submit Form DS-11 (Application for U.S. Passport) at designated acceptance facility or U.S. Embassy/Consulate. Provide evidence of U.S. citizenship (how it was acquired automatically under INA § 320). Include proof of identity, parentage, and required parental consent. Submit child's photos meeting Department of State requirements. Pay applicable passport fee based on child's age. Follow Department of State passport instructions for applicant's age category. Passport serves as evidence of citizenship and travel document."
+          },
+          {
+            "id": 2,
+            "title": "Option 2: Form N-600 Application",
+            "duration": "8-14 months",
+            "description": "Prepare Form N-600 (Application for Certificate of Citizenship) documenting citizenship already acquired. Gather supporting evidence: child's permanent resident card (green card), proof of U.S. citizen parent's citizenship, evidence of legal and physical custody, evidence child resides in U.S. with citizen parent. Check if your case qualifies for online filing at https://www.uscis.gov/file-online. If eligible, file online and pay $1,335. If not eligible for online filing, file paper application and pay $1,385. USCIS will review application and may request additional evidence. Attend biometrics appointment if required. Attend interview if scheduled. If approved, receive Certificate of Citizenship confirming automatic acquisition under INA § 320."
+          }
+        ],
+        "documents_checklist": [
+          {
+            "id": "child_green_card",
+            "label": "Child's Permanent Resident Card (Green Card)",
+            "description": "Evidence that child is a lawful permanent resident of the United States.",
+            "required": true
+          },
+          {
+            "id": "parent_citizenship_proof_320",
+            "label": "U.S. Citizen Parent's Citizenship Proof",
+            "description": "U.S. passport, naturalization certificate, or Certificate of Citizenship of the U.S. citizen parent.",
+            "required": true
+          },
+          {
+            "id": "custody_evidence",
+            "label": "Evidence of Legal and Physical Custody",
+            "description": "Court orders, custody agreements, or other proof that child lives in legal and physical custody of U.S. citizen parent.",
+            "required": true
+          },
+          {
+            "id": "child_birth_cert_320",
+            "label": "Child's Birth Certificate",
+            "description": "Original birth certificate showing parentage, with certified English translation if not in English.",
+            "required": true
+          },
+          {
+            "id": "passport_photos_320",
+            "label": "Passport Photos (if applying for passport)",
+            "description": "Recent passport photos meeting U.S. requirements if choosing passport option.",
+            "required": false
+          }
+        ],
+        "fees": [
+          {
+            "label": "U.S. Passport (Option 1)",
+            "amount": "$135 (under 16) or per age category",
+            "note": "Faster and less expensive evidence option"
+          },
+          {
+            "label": "Form N-600 Online Filing (Option 2)",
+            "amount": "$1,335",
+            "note": "USCIS online filing fee (if eligible)"
+          },
+          {
+            "label": "Form N-600 Paper Filing (Option 2)",
+            "amount": "$1,385",
+            "note": "USCIS paper filing fee"
+          }
+        ]
+      },
+      "n600k_route": {
+        "title": "Naturalization Abroad (N-600K)",
+        "subtitle": "INA § 322 • USCIS Application",
+        "estimated_timeline": "12-18 months",
+        "onsitePhases": [
+          {
+            "id": 1,
+            "title": "Confirm Eligibility",
+            "duration": "1-2 weeks",
+            "description": "Verify child meets INA § 322 requirements: child under 18 years old, child resides outside the United States, at least one parent is U.S. citizen, U.S. citizen parent or qualifying grandparent meets physical presence requirement. Determine whether parent or qualifying U.S. citizen grandparent meets the required physical presence in the U.S. (generally 5 years, with at least 2 years after age 14). If U.S. citizen parent is deceased within the preceding 5 years, confirm if qualifying U.S. citizen grandparent or legal guardian can file. Review military exception if applicable."
+          },
+          {
+            "id": 2,
+            "title": "Prepare Form N-600K and Evidence",
+            "duration": "2-3 weeks",
+            "description": "Complete Form N-600K (Application for Citizenship and Issuance of Certificate Under Section 322). Gather supporting evidence: proof of U.S. citizen parent's citizenship, evidence of parent's or grandparent's U.S. physical presence, child's birth certificate showing parentage, evidence of legal and physical custody, child's passport or travel document. Translate all non-English documents with certified translations. Review current N-600K instructions from USCIS website for complete requirements."
+          },
+          {
+            "id": 3,
+            "title": "File N-600K with USCIS",
+            "duration": "1-2 days",
+            "description": "Check current USCIS filing method at https://www.uscis.gov/n-600k (online or paper). If online filing is available and your case qualifies, file electronically and pay $1,335. If paper filing required, mail application to current USCIS address shown in instructions and pay $1,385. Include all supporting documents and certified translations. Request preferred USCIS interview location and date (recommend at least 90 days after filing). Save receipt notice and track case status."
+          },
+          {
+            "id": 4,
+            "title": "USCIS Review and Appointment Notice",
+            "duration": "6-12 months",
+            "description": "USCIS reviews Form N-600K application and supporting evidence. USCIS may issue Request for Evidence (RFE) if additional documents needed. Respond to RFE promptly with requested evidence. USCIS will issue appointment notice with interview date and location. Interview must occur before child's 18th birthday. The requested interview date is not guaranteed; USCIS schedules based on availability."
+          },
+          {
+            "id": 5,
+            "title": "Arrange Child's U.S. Travel (Critical)",
+            "duration": "Varies",
+            "description": "IMPORTANT: Filing N-600K does NOT provide a visa, travel permission, or right to enter the United States. The child must be temporarily present in the U.S. following lawful admission for the USCIS interview. Family must independently arrange appropriate travel document or visa (tourist visa, advance parole, or other lawful entry). Coordinate travel to arrive in U.S. before scheduled interview date. Ensure child's lawful admission is documented. Do not travel without confirmed interview appointment and valid entry permission."
+          },
+          {
+            "id": 6,
+            "title": "Attend USCIS Interview",
+            "duration": "Interview day",
+            "description": "Bring child and all original documents to USCIS interview. U.S. citizen parent must accompany child. USCIS officer will verify all evidence and eligibility requirements. Officer may ask questions about parent's physical presence, child's status, and family circumstances. If deceased-parent scenario applies, qualifying grandparent or legal guardian attends. Officer confirms all INA § 322 statutory conditions are met."
+          },
+          {
+            "id": 7,
+            "title": "Complete Oath of Allegiance",
+            "duration": "Same day or scheduled",
+            "description": "If application approved, child will take Oath of Allegiance as required by law. Oath must be completed before child's 18th birthday. Oath ceremony may occur same day as interview or scheduled separately depending on USCIS office. Parent or legal representative may take oath on behalf of child if child is too young to understand. After oath, naturalization under INA § 322 is complete."
+          },
+          {
+            "id": 8,
+            "title": "Receive Certificate of Citizenship",
+            "duration": "Immediately or within weeks",
+            "description": "After oath completion and approval, USCIS issues Certificate of Citizenship. Certificate is permanent proof of naturalized U.S. citizenship under INA § 322. Child is now a U.S. citizen and may apply for U.S. passport. Entire process including oath must be completed before child turns 18 years old. If child turns 18 before process completes, N-600K cannot be used."
+          }
+        ],
+        "onlinePhases": [],
+        "documents_checklist": [
+          {
+            "id": "n600k_form",
+            "label": "Form N-600K",
+            "description": "Completed Application for Citizenship and Issuance of Certificate Under Section 322.",
+            "required": true
+          },
+          {
+            "id": "parent_citizenship_n600k",
+            "label": "U.S. Citizen Parent's Citizenship Proof",
+            "description": "U.S. passport, naturalization certificate, Certificate of Citizenship, or U.S. birth certificate.",
+            "required": true
+          },
+          {
+            "id": "parent_presence_n600k",
+            "label": "Evidence of Parent's or Grandparent's U.S. Physical Presence",
+            "description": "Proof of required physical presence: old passports, school records, employment history, tax returns, medical records.",
+            "required": true
+          },
+          {
+            "id": "child_birth_n600k",
+            "label": "Child's Birth Certificate",
+            "description": "Original birth certificate establishing parentage, with certified English translation if not in English.",
+            "required": true
+          },
+          {
+            "id": "child_passport",
+            "label": "Child's Passport or Travel Document",
+            "description": "Valid passport from child's country of citizenship or other travel document.",
+            "required": true
+          },
+          {
+            "id": "custody_n600k",
+            "label": "Evidence of Legal and Physical Custody",
+            "description": "Documents showing child is in legal and physical custody of U.S. citizen parent, or grandparent/guardian if applicable.",
+            "required": true
+          },
+          {
+            "id": "travel_docs",
+            "label": "U.S. Entry Documentation",
+            "description": "Visa, advance parole, or other proof of lawful temporary admission to the United States for interview.",
+            "required": true
+          }
+        ],
+        "fees": [
+          {
+            "label": "Form N-600K Online Filing",
+            "amount": "$1,335",
+            "note": "USCIS online filing fee (if eligible and available)"
+          },
+          {
+            "label": "Form N-600K Paper Filing",
+            "amount": "$1,385",
+            "note": "USCIS paper filing fee"
+          }
+        ]
+      }
+    },
+    "info_panel": {
+      "document_need": {
+        "tips": [
+          "Physical presence in the United States counts regardless of the parent's immigration status at the time, including time on H-1B, F-1, or B-1/B-2 visas and time before naturalization (8 FAM 301.7-3).",
+          "The rules differ depending on whether one or both parents were U.S. citizens and whether the parents were married, so answer those questions as accurately as possible."
+        ],
+        "pitfalls": [
+          "Assuming a single rule fits every family. Two U.S. citizen parents use a residence standard, while one U.S. citizen and one foreign-national parent generally use a five-year physical-presence standard."
+        ],
+        "links": [
+          {
+            "label": "8 U.S.C. § 1401 - Citizenship at Birth",
+            "url": "https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title8-section1401&num=0&edition=prelim"
+          },
+          {
+            "label": "8 FAM 301.7 - INA § 301 Guidance",
+            "url": "https://fam.state.gov/fam/08FAM/08FAM030107.html"
+          }
+        ]
+      },
+      "roadmap": {
+        "tips": [
+          "Collect civil documents from the issuing authority (NADRA, Union Council, or CBRC) and, where applicable, obtain the digital/attested copy accepted by the U.S. Embassy.",
+          "Keep evidence of the U.S. citizen parent's citizenship and physical presence together: passport, naturalization certificate, plus old passports, school, employment, tax, or medical records showing time in the United States."
+        ],
+        "pitfalls": [
+          "Missing proof of the parent's physical presence or residence, which is often the deciding factor for citizenship transmitted at birth."
+        ],
+        "links": [
+          {
+            "label": "Acquisition of Citizenship",
+            "url": "https://travel.state.gov/content/travel/en/legal-considerations/us-citizenship-laws-policies/acquisition-of-citizenship.html"
+          },
+          {
+            "label": "U.S. Embassy & Consulates in Pakistan",
+            "url": "https://pk.usembassy.gov/"
+          }
+        ]
+      },
+      "application_process": {
+        "tips": [
+          "A Consular Report of Birth Abroad (FS-240) is evidence of citizenship acquired at birth; a Certificate of Citizenship (Form N-600) is evidence of citizenship already acquired; Form N-600K is used to naturalize a child living abroad under INA § 322.",
+          "Form N-600 is evidence of citizenship already held, while Form N-600K is the request to naturalize. They are not interchangeable.",
+          "Review the application route suggested by your eligibility screening, but you can expand other routes to compare alternatives.",
+          "For N-600K: The child MUST be temporarily present in the United States following lawful admission for the interview. Filing does NOT provide travel permission.",
+          "For CRBA: Age 18 or older - Apply for a U.S. passport and/or Certificate of Citizenship (Form N-600) instead of ordinary CRBA process."
+        ],
+        "pitfalls": [
+          "Applying for the wrong form for the pathway. Confirm whether the child already acquired citizenship (CRBA / N-600) versus still needs to naturalize (N-600K).",
+          "For N-600K: Assuming filing the application gives the child permission to enter the United States. Travel arrangements must be made independently.",
+          "For N-600K: Missing the age 18 deadline - entire process including oath must complete before child turns 18.",
+          "Not verifying current fees against official sources (Department of State or USCIS Form G-1055) before payment."
+        ],
+        "links": [
+          {
+            "label": "Form N-600K (USCIS)",
+            "url": "https://www.uscis.gov/n-600k"
+          },
+          {
+            "label": "Form N-600 (USCIS)",
+            "url": "https://www.uscis.gov/n-600"
+          },
+          {
+            "label": "Department of State - CRBA",
+            "url": "https://travel.state.gov/content/travel/en/international-travel/while-abroad/birth-abroad.html"
+          },
+          {
+            "label": "8 U.S.C. § 1433 - INA § 322",
+            "url": "https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title8-section1433&num=0&edition=prelim"
+          }
+        ]
+      },
+      "validation": {
+        "tips": [
+          "Confirm the child's name, date of birth, and parents' names match exactly across the birth certificate, the parent's citizenship proof, and any marriage documents.",
+          "Re-read the current U.S. Embassy and Department of State or USCIS instructions before submitting, because procedures, appointments, and fees change.",
+          "Urdu/Pashto/Sindhi and other non-English documents must be accompanied by a certified English translation."
+        ],
+        "pitfalls": [
+          "Submitting blurry, cropped, or uncertified scans, or relying on this screening result as a final determination of eligibility.",
+          "Self-translating your own documents without proper certification, or omitting translator's name, signature, date, and contact details."
+        ],
+        "links": [
+          {
+            "label": "8 FAM 301.10 - INA § 320 and § 322",
+            "url": "https://fam.state.gov/fam/08FAM/08FAM030110.html"
+          },
+          {
+            "label": "U.S. Embassy & Consulates in Pakistan",
+            "url": "https://pk.usembassy.gov/"
+          },
+          {
+            "label": "USCIS Translation Requirements",
+            "url": "https://www.uscis.gov/tools/glossary/certificate-of-translation"
+          }
+        ]
+      }
+    }
+  }
+}

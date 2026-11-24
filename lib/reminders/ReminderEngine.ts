@@ -734,6 +734,35 @@ export class ReminderEngine {
         doc_parent_birth_cert: "Parent Birth Certificate",
       },
     },
+    // IR-2 / CR-2 — child of U.S. citizen (child civil documents)
+    "ir-2": {
+      docIds: [
+        "doc_citizenship",
+        "doc_child_birth_cert",
+        "doc_child_crc",
+        "doc_child_passport",
+      ],
+      labels: {
+        doc_citizenship: "Proof of U.S. Citizenship",
+        doc_child_birth_cert: "Child's Birth Certificate",
+        doc_child_crc: "Child Registration Certificate (CRC / B-Form)",
+        doc_child_passport: "Child's Passport",
+      },
+    },
+    "cr-2": {
+      docIds: [
+        "doc_citizenship",
+        "doc_child_birth_cert",
+        "doc_child_crc",
+        "doc_child_passport",
+      ],
+      labels: {
+        doc_citizenship: "Proof of U.S. Citizenship",
+        doc_child_birth_cert: "Child's Birth Certificate",
+        doc_child_crc: "Child Registration Certificate (CRC / B-Form)",
+        doc_child_passport: "Child's Passport",
+      },
+    },
   };
 
   /** Normalize journey_type → config key (tolerant: "IR-5"/"IR5"/"ir5"/"ir5_candidate2" → "ir-5"). */

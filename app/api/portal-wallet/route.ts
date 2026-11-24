@@ -3,8 +3,10 @@ import { createClient } from "@/lib/supabase/server";
 import { encrypt, decrypt } from "@/lib/encryption";
 import { E, msg } from "@/lib/errors";
 import { auditLog } from "@/lib/security/audit-log";
+import { resolveJourneyScope } from "@/lib/portal-wallet/resolve-journey-scope";
 
-const normalizeSecurityAnswer = (answer: string) => answer.trim().replace(/\s+/g, " ").toLowerCase();
+const normalizeSecurityAnswer = (answer: string) =>
+  answer.trim().replace(/\s+/g, " ").toLowerCase();
 
 export async function GET(request: NextRequest) {
   try {
@@ -20,37 +22,56 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
-    const candidateId = request.nextUrl.searchParams.get("candidateId") || null;
+    if (request.nextUrl.searchParams.get("summary") === "true") {
+      const { data: summaryData, error: summaryError } = await supabase
+        .from("portal_wallet_credentials")
+        .select("journey_id, candidate_id, portal_type")
+        .eq("user_id", user.id);
 
-    let query = supabase
+      if (summaryError) {
+        console.error("Error fetching credentials summary:", summaryError);
+        return NextResponse.json({ error: msg(E.PORTAL_WALLET_FETCH_FAILED) }, { status: 500 });
+      }
+
+      return NextResponse.json({ summary: summaryData || [] });
+    }
+
+    const journeyId = request.nextUrl.searchParams.get("journeyId");
+    const candidateId = request.nextUrl.searchParams.get("candidateId");
+
+    const { error: scopeError, scope } = await resolveJourneyScope(
+      supabase,
+      user.id,
+      journeyId,
+      candidateId
+    );
+
+    if (scopeError || !scope) {
+      return scopeError!;
+    }
+
+    const query = supabase
       .from("portal_wallet_credentials")
       .select(
         `
-        id,
-        portal_type,
-        candidate_id,
-        username,
-        nvc_case_number,
-        nvc_invoice_id,
-        created_at,
-        updated_at,
-        portal_wallet_security_questions (
-          id,
-          question
-        )
-      `
+    id,
+    portal_type,
+    candidate_id,
+    username,
+    nvc_case_number,
+    nvc_invoice_id,
+    created_at,
+    updated_at,
+    portal_wallet_security_questions (
+      id,
+      question
+    )
+  `
       )
       .eq("user_id", user.id)
+      .eq("journey_id", scope.journeyId)
+      .eq("candidate_id", scope.candidateId)
       .order("created_at", { ascending: false });
-
-    if (candidateId) {
-      if (candidateId === "ir1") {
-        // IR-1 includes both candidate_id = 'ir1' and legacy un-tagged rows
-        query = query.or("candidate_id.eq.ir1,candidate_id.is.null");
-      } else {
-        query = query.eq("candidate_id", candidateId);
-      }
-    }
 
     const { data, error } = await query;
 
@@ -85,8 +106,52 @@ export async function GET(request: NextRequest) {
                 answer: "••••••",
               })) || [],
 
-          updated_at: cred.updated_at,
+        updated_at: cred.updated_at,
       })) || [];
+
+    let previousUscis: {
+      id: string;
+      username: string;
+      journey_id: string;
+      candidate_id: string;
+      journeyType?: string;
+      updated_at: string;
+    } | null = null;
+
+    const hasUscis = data?.some((cred) => cred.portal_type?.toUpperCase() === "USCIS");
+    if (!hasUscis) {
+      const { data: prevRows } = await supabase
+        .from("portal_wallet_credentials")
+        .select("id, journey_id, candidate_id, username, updated_at")
+        .eq("user_id", user.id)
+        .eq("portal_type", "USCIS")
+        .order("updated_at", { ascending: false });
+
+      const otherRow = prevRows?.find(
+        (row) => row.journey_id !== scope.journeyId || row.candidate_id !== scope.candidateId
+      );
+
+      if (otherRow && otherRow.username) {
+        let journeyType = "";
+        if (otherRow.journey_id) {
+          const { data: jRow } = await supabase
+            .from("journeys")
+            .select("journey_type")
+            .eq("id", otherRow.journey_id)
+            .maybeSingle();
+          journeyType = jRow?.journey_type || "";
+        }
+
+        previousUscis = {
+          id: otherRow.id,
+          username: otherRow.username,
+          journey_id: otherRow.journey_id,
+          candidate_id: otherRow.candidate_id,
+          journeyType: journeyType ? journeyType.toUpperCase() : "Previous Journey",
+          updated_at: otherRow.updated_at,
+        };
+      }
+    }
 
     auditLog({
       userId: user.id,
@@ -97,7 +162,7 @@ export async function GET(request: NextRequest) {
       status: "success",
     });
 
-    return NextResponse.json({ credentials: response });
+    return NextResponse.json({ credentials: response, previousUscis });
   } catch (error) {
     console.error("Unexpected error in GET portal-wallet:", error);
     return NextResponse.json({ error: msg(E.PORTAL_WALLET_FETCH_FAILED) }, { status: 500 });
@@ -120,26 +185,46 @@ export async function POST(req: Request) {
 
     const body = await req.json();
 
-    const { portalType, username, password, securityQuestions, nvcCaseNumber, nvcInvoiceId, candidateId = null } = body;
+    const {
+      portalType,
+      username,
+      password,
+      securityQuestions,
+      nvcCaseNumber,
+      nvcInvoiceId,
+      journeyId,
+      candidateId,
+    } = body;
+
+    const { error: scopeError, scope } = await resolveJourneyScope(
+      supabase,
+      user.id,
+      journeyId,
+      candidateId
+    );
+
+    if (scopeError || !scope) {
+      return scopeError!;
+    }
 
     if (!portalType) {
       return NextResponse.json({ error: "Portal type required" }, { status: 400 });
-      return NextResponse.json({ error: msg(E.PORTAL_WALLET_FETCH_FAILED) }, { status: 400 });
     }
 
-    let existingQuery = supabase
+    const { data: existingCred, error: existingError } = await supabase
       .from("portal_wallet_credentials")
       .select("encrypted_password")
       .eq("user_id", user.id)
-      .eq("portal_type", portalType);
+      .eq("journey_id", scope.journeyId)
+      .eq("candidate_id", scope.candidateId)
+      .eq("portal_type", portalType)
+      .maybeSingle();
 
-    if (candidateId) {
-      existingQuery = existingQuery.eq("candidate_id", candidateId);
-    } else {
-      existingQuery = existingQuery.is("candidate_id", null);
+    if (existingError) {
+      console.error("Error checking existing credentials:", existingError);
+
+      return NextResponse.json({ error: "Failed to check existing credentials" }, { status: 500 });
     }
-
-    const { data: existingCred } = await existingQuery.single();
 
     if (portalType === "NVC") {
       if (!nvcCaseNumber || !nvcInvoiceId) {
@@ -147,13 +232,11 @@ export async function POST(req: Request) {
           { error: "NVC Case Number and Invoice ID required" },
           { status: 400 }
         );
-        return NextResponse.json({ error: msg(E.ADMIN_INVALID_INPUT) }, { status: 400 });
       }
     } else {
       // For USCIS/COURIER, username is required. Password is required for ADD, optional for EDIT.
       if (!username || (!password && !existingCred)) {
         return NextResponse.json({ error: "Username and password required" }, { status: 400 });
-        return NextResponse.json({ error: msg(E.ADMIN_INVALID_INPUT) }, { status: 400 });
       }
     }
 
@@ -168,14 +251,17 @@ export async function POST(req: Request) {
       .upsert(
         {
           user_id: user.id,
-          candidate_id: candidateId,
+          journey_id: scope.journeyId,
+          candidate_id: scope.candidateId,
           portal_type: portalType,
           username: username || null,
           encrypted_password: encryptedPassword,
           nvc_case_number: encryptedCaseNumber,
           nvc_invoice_id: encryptedInvoiceId,
         },
-        { onConflict: "user_id,candidate_id,portal_type" }
+        {
+          onConflict: "user_id,journey_id,candidate_id,portal_type",
+        }
       )
       .select()
       .single();
@@ -186,7 +272,9 @@ export async function POST(req: Request) {
     }
 
     if (portalType !== "NVC" && securityQuestions?.length) {
-      const completedSecurityQuestions = securityQuestions.filter((q: any) => q.question && q.answer);
+      const completedSecurityQuestions = securityQuestions.filter(
+        (q: any) => q.question && q.answer
+      );
       const normalizedAnswers = completedSecurityQuestions.map((q: any) =>
         normalizeSecurityAnswer(q.answer)
       );

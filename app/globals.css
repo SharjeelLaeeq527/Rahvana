@@ -26,6 +26,30 @@ html {
   background: rgba(13, 148, 136, 0.65);
 }
 
+.mobile-bottom-nav {
+  background-image: none;
+}
+
+@media (max-width: 767px) {
+  .mobile-bottom-nav {
+    background-image:
+      radial-gradient(ellipse at 50% -90%, rgba(91, 214, 208, 0.24), transparent 66%),
+      radial-gradient(ellipse at 0% 100%, rgba(13, 115, 119, 0.1), transparent 52%),
+      linear-gradient(135deg, transparent 0 47%, rgba(13, 115, 119, 0.08) 48%, transparent 49%),
+      linear-gradient(45deg, transparent 0 47%, rgba(13, 115, 119, 0.055) 48%, transparent 49%);
+    background-size: auto, auto, 32px 32px, 32px 32px;
+  }
+
+  .dark .mobile-bottom-nav {
+    background-image:
+      radial-gradient(ellipse at 50% -90%, rgba(45, 212, 191, 0.2), transparent 66%),
+      radial-gradient(ellipse at 0% 100%, rgba(45, 212, 191, 0.12), transparent 52%),
+      linear-gradient(135deg, transparent 0 47%, rgba(45, 212, 191, 0.09) 48%, transparent 49%),
+      linear-gradient(45deg, transparent 0 47%, rgba(45, 212, 191, 0.06) 48%, transparent 49%);
+    background-size: auto, auto, 32px 32px, 32px 32px;
+  }
+}
+
 :root {
   --icon-free: url("/icons/Free.png");
   --icon-basic: url("/icons/Basic.png");

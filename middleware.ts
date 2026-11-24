@@ -1,6 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { updateSession } from "./lib/supabase/middleware";
 import { assertMiddlewareBodySize } from "@/lib/security/request-body";
+import { assertStagingBasicAuth } from "@/lib/security/staging-basic-auth";
+import { assertStagingTotpSession } from "@/lib/security/staging-totp-guard";
 
 /**
  * Paid/private route prefixes.
@@ -69,6 +71,7 @@ const PRIVATE_PREFIXES = [
   "/guides/educational-certificates-us-visa",
   "/guides/step-parent-guide",
   "/guides/adoptive-parent-guide",
+  "/guides/child-citizenship-guide",
   // Result pages (paid output)
   "/visa-checker/result",
   "/interview-prep/result",
@@ -91,6 +94,14 @@ function isPrivatePath(pathname: string): boolean {
 }
 
 export async function middleware(request: NextRequest) {
+  // Staging Authenticator (TOTP) Gate (Google / Microsoft Authenticator)
+  const totpGateBlock = await assertStagingTotpSession(request);
+  if (totpGateBlock) return totpGateBlock;
+  // Layer 2: HTTP Basic Authentication for Staging Environment
+  // Fallback: Check HTTP Basic Auth only if TOTP is not configured
+  const hasTotp = !!(process.env.STAGING_TOTP_KEYS?.trim() || process.env.STAGING_TOTP_SECRET?.trim());
+  const basicAuthBlock = !hasTotp ? assertStagingBasicAuth(request) : null;
+  if (basicAuthBlock) return basicAuthBlock;
   if (request.nextUrl.pathname.startsWith("/api/")) {
     const blocked = assertMiddlewareBodySize(request);
     if (blocked) return blocked;
@@ -121,5 +132,11 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
+  // Static files never need a session check, so keep them out of middleware
+  // (fewer invocations, and they keep loading even when Supabase is slow).
+  // .txt / .xml stay IN on purpose so the staging gate still covers
+  // robots.txt and sitemap.xml.
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico|mjs|js|css|map|woff|woff2|ttf|otf|mp4|webm|mp3|wav|lottie)$).*)",
+  ],
 };

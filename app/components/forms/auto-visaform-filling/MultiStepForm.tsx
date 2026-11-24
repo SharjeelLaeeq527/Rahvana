@@ -4,7 +4,12 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getFormConfig, extractInheritableCandidateData } from "@/lib/formConfig";
-import { getCandidateJourneyKey, getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
+import { getBaseVisaCategory } from "@/lib/candidate/candidateSyncService";
+import {
+  getJourneyKeyForCandidate,
+  isCategoryPrimary,
+  resolveCandidateJourneyKey,
+} from "@/lib/candidate/candidateKeys";
 import { Header } from "./Header";
 import { ProgressFooter } from "./ProgressFooter";
 import { FormStep } from "./FormStep";
@@ -197,10 +202,12 @@ export function MultiStepForm({
   const isMultiCandidate = isJourney ? candidateCtx.isMultiCandidate : false;
 
   const candidateTier = isJourney ? activeCandidate?.tier : null;
+  // plan.journeyTiers is keyed by journey_type (and by base category for slot-1 rows),
+  // so look it up by the active candidate's journey key, not by candidate id / row id.
+  const activeKeyForTier = isJourney ? candidateCtx.activeJourneyKey?.toLowerCase() || "" : "";
   const journeyTiersTier = isJourney
-    ? (plan?.journeyTiers?.[(journeyContext as any)?.journeyId || journeyContext?.backendId || journeyContext?.journeySlug || ""] ||
-       plan?.journeyTiers?.[activeCandidate?.id || ""] ||
-       plan?.journeyTiers?.[journeyContext?.candidateId || ""])
+    ? (plan?.journeyTiers?.[activeKeyForTier] ||
+       plan?.journeyTiers?.[activeKeyForTier.replace(/[^a-z0-9]/g, "")])
     : null;
 
   // In journey mode: use the journey's own tier (journeyTier or journeyContext.subscriptionTier,
@@ -249,9 +256,15 @@ export function MultiStepForm({
   const activeCategory = isJourney
     ? (activeCandidate?.visaCategory || journeyContext?.journeyCategory || "IR-5")
     : "";
+  // Draft key = the journey key of the candidate in THIS journey's category (its slot),
+  // so an IR-2 child's drafts live on "ir2" / "ir2_candidate2" and never on an IR-5 key.
   const draftJourneyKey = isJourney
     ? (activeCandId
-        ? getCandidateJourneyKey(activeCategory, activeCandId)
+        ? resolveCandidateJourneyKey(
+            candidates,
+            journeyContext?.journeyCategory || activeCategory,
+            activeCandId
+          )
         : (candidateCtx.activeJourneyKey || "candidate-1"))
     : "standalone";
   const { user, isLoading: isAuthLoading } = useAuth();
@@ -381,7 +394,7 @@ export function MultiStepForm({
           if (siblingCandidates.length > 0) {
             siblingCandidates.forEach((s) => {
               const sBase = getBaseVisaCategory(s.visaCategory || activeBase);
-              const sKey = getCandidateJourneyKey(s.visaCategory || activeBase, s.id);
+              const sKey = getJourneyKeyForCandidate({ ...s, visaCategory: s.visaCategory || activeBase });
               if (!seenKeys.has(sKey)) {
                 seenKeys.add(sKey);
                 const sName = s.fullName || s.label || s.name?.first || "Another Candidate";
@@ -393,14 +406,15 @@ export function MultiStepForm({
 
           // 2. Add canonical fallback candidate keys (handles unfilled rosters & order-agnostic filling)
           const fallbackCandidates: { key: string; name: string; sameJourney: boolean }[] = [];
-          if (currentCandId !== "candidate-1") {
-            // Target is Candidate 2 / 3 -> check Candidate 1 first
+          const currentCand = (candidates || []).find((c) => c.id === currentCandId);
+          if (currentCand ? !isCategoryPrimary(currentCand) : currentCandId !== "candidate-1") {
+            // Target is this category's Candidate 2 / 3 -> check its Candidate 1 first
             fallbackCandidates.push({ key: normBase, name: "Candidate 1", sameJourney: true });
             fallbackCandidates.push({ key: `${normBase}-journey`, name: "Candidate 1", sameJourney: true });
             fallbackCandidates.push({ key: "candidate-1", name: "Candidate 1", sameJourney: true });
             fallbackCandidates.push({ key: "global", name: "Primary Candidate", sameJourney: true });
           } else {
-            // Target is Candidate 1 -> check Candidate 2 / 3
+            // Target is this category's Candidate 1 -> check Candidate 2 / 3
             fallbackCandidates.push({ key: `${normBase}_candidate2`, name: "Candidate 2", sameJourney: true });
             fallbackCandidates.push({ key: `${normBase}_candidate-2`, name: "Candidate 2", sameJourney: true });
             fallbackCandidates.push({ key: `${normBase}_candidate3`, name: "Candidate 3", sameJourney: true });

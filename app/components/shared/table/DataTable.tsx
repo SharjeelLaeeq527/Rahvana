@@ -28,6 +28,8 @@ interface DataTableProps<T> {
   refreshing?: boolean;
   onRowClick?: (item: T, index: number) => void;
   rowClassName?: string;
+  /** Extra classes for the outer card; replaces the default shadow-lg (e.g. inside a tool bench). */
+  containerClassName?: string;
 }
 
 export function DataTable<T>({
@@ -38,12 +40,13 @@ export function DataTable<T>({
   loading,
   refreshing = false,
   onRowClick,
+  containerClassName,
   rowClassName = "hover:bg-slate-50 border-b border-slate-100",
 }: DataTableProps<T>) {
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-teal-600"></div>
+        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-[var(--tool-accent,#0d9488)]"></div>
       </div>
     );
   }
@@ -53,9 +56,11 @@ export function DataTable<T>({
   }
 
   return (
-    <div className="relative overflow-visible rounded-xl border border-slate-200 bg-white shadow-lg">
+    <div
+      className={`relative overflow-visible rounded-xl border border-slate-200 bg-white ${containerClassName ?? "shadow-lg"}`}
+    >
       {refreshing && (
-        <div className="pointer-events-none absolute top-3 right-4 z-20 flex items-center gap-2 rounded-full border border-teal-100 bg-white px-3 py-1.5 text-xs font-medium text-teal-700 shadow-sm">
+        <div className="pointer-events-none absolute top-3 right-4 z-20 flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-[var(--tool-accent,#0f766e)] shadow-sm">
           <Loader size="sm" />
           <span className="hidden lg:inline">Updating...</span>
         </div>
