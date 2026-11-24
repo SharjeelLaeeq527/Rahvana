@@ -809,7 +809,7 @@ function PricingContent() {
         ...c,
         tier: rowTier !== "free" ? rowTier : c.tier || "free",
         createdAt: c.createdAt || row?.created_at,
-      };
+      });
     });
 
     // Legacy rosters may miss a candidate whose journey exists (bought before the roster
