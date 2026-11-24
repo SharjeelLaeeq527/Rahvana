@@ -1043,7 +1043,7 @@ export default function VisaFormSelector({
                   {/* Filter Popover */}
                   {isFilterPopoverOpen && (
                     <div
-                      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm sm:absolute sm:inset-auto sm:top-full sm:right-0 sm:mt-2 sm:block sm:bg-transparent sm:p-0 sm:backdrop-blur-none"
+                      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 pt-[68px] pb-[88px] backdrop-blur-sm sm:absolute sm:inset-auto sm:top-full sm:right-0 sm:mt-2 sm:block sm:bg-transparent sm:p-0 sm:backdrop-blur-none"
                       onClick={(e) => {
                         if (e.target === e.currentTarget) {
                           setIsFilterPopoverOpen(false);
@@ -1052,7 +1052,7 @@ export default function VisaFormSelector({
                     >
                       <div
                         ref={filterPopoverRef}
-                        className="max-h-[85vh] w-full max-w-sm overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-2xl sm:max-h-[500px] sm:w-80 sm:shadow-xl"
+                        className="flex max-h-full w-full max-w-sm flex-col overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-2xl sm:max-h-[500px] sm:w-80 sm:shadow-xl"
                       >
                         {/* Header */}
                         <div className="sticky top-0 flex items-center justify-between border-b border-gray-100 bg-white p-4">
