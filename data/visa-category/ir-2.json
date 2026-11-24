@@ -5521,7 +5521,7 @@
                 "ss_headline": "NVC Fees Cleared",
                 "ss_desc": "IV fee paid; AOS fee paid or I-864W fee exemption acknowledged",
                 "ss_highlight": null,
-                "caption": "If payment was made recently, allow 2-3 business days for clearance. Document upload is unlocked once fees show 'PAID'.",
+                "caption": "If payment was made recently, wait for clearance. Document upload is unlocked once fees show 'PAID'.",
                 "note": "The $325 IV fee is required per child beneficiary. The $120 AOS fee is billed once per petitioner when cases are processed together, or exempt under INA Section 320.",
                 "media": {
                   "type": "img",
@@ -5808,7 +5808,7 @@
                 "label": "Step 2 of 8, Confirm payment or exemption clearance",
                 "heading": "Confirm payment receipt or exemption acknowledgment",
                 "screenTitle": "Confirm payment receipt or exemption acknowledgment",
-                "instruction": "If you paid the $120 AOS fee (required for Form I-864), CEAC will display a payment confirmation showing status 'PAID' once cleared (typically 2-3 business days). If exempt under Form I-864W, ensure NVC has updated the status or proceed as directed. Keep payment receipts or inquiry correspondence in your records.",
+                "instruction": "If you paid the $120 AOS fee (required for Form I-864), CEAC will display a payment confirmation showing status 'PAID' once cleared. If exempt under Form I-864W, ensure NVC has updated the status or proceed as directed. Keep payment receipts or inquiry correspondence in your records.",
                 "url": "ceac.state.gov",
                 "ss_label": "Receipt / Clearance",
                 "ss_headline": "AOS Fee Status Confirmed",
