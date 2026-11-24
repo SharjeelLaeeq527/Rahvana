@@ -1,0 +1,422 @@
+/*
+ * Rahvana service skin (Consultation / Medical / Police / Translation).
+ * Purely presentational: wraps the existing wizards without touching their logic.
+ * Everything is scoped under .svk so nothing leaks into the rest of the app.
+ */
+
+.svk {
+  --svk-bg: #f6f4ef;
+  --svk-ink: #16302c;
+  --svk-mut: #66787a;
+  --svk-line: #ddd9ce;
+  --svk-err: #b3261e;
+  --svk-a: #0f8f80;
+  --svk-ad: #0a4f49;
+  --svk-at: #e1f2ee;
+  --svk-top: 0px;
+  --svk-sans: "Figtree";
+  --svk-serif: "Lora";
+  --svk-vh: 0px;
+
+  /* Re-theme the tools' existing Tailwind teal / primary utilities to the service accent. */
+  --primary: var(--svk-a);
+  --color-teal-50: var(--svk-at);
+  --color-teal-100: var(--svk-at);
+  --color-teal-200: color-mix(in srgb, var(--svk-a) 30%, white);
+  --color-teal-300: color-mix(in srgb, var(--svk-a) 50%, white);
+  --color-teal-400: color-mix(in srgb, var(--svk-a) 75%, white);
+  --color-teal-500: var(--svk-a);
+  --color-teal-600: var(--svk-a);
+  --color-teal-700: color-mix(in srgb, var(--svk-a) 78%, black);
+  --color-teal-800: var(--svk-ad);
+  --color-teal-900: var(--svk-ad);
+
+  container-type: inline-size;
+  container-name: svk;
+  width: 100%;
+  background: #fff;
+  color: var(--svk-ink);
+  font-family: var(--svk-sans), system-ui, sans-serif;
+  font-size: 15px;
+}
+.svk[data-s="medical"] { --svk-a: #c4534b; --svk-ad: #6e2420; --svk-at: #fbe7e4; }
+.svk[data-s="police"] { --svk-a: #4a5bb5; --svk-ad: #232e6b; --svk-at: #e6e9f7; }
+.svk[data-s="translate"] { --svk-a: #b47a12; --svk-ad: #5e3f07; --svk-at: #f9edd3; }
+
+.svk :focus-visible { outline: 2px solid var(--svk-a); outline-offset: 2px; }
+
+/* Everything below scales with the container width (cqw), so the page keeps the same
+   proportions from a 13" laptop to a 27" monitor instead of shrinking into the middle. */
+.svk-split {
+  --svk-px: clamp(24px, 4cqw, 120px);
+  --svk-field: clamp(50px, calc(30px + 1.9cqw), 64px);
+  display: grid;
+  grid-template-columns: clamp(260px, 26cqw, 600px) minmax(0, 1fr);
+  min-height: calc(100vh - var(--svk-vh));
+  font-size: clamp(15px, calc(9px + 0.55cqw), 20px);
+}
+.svk[data-layout="embedded"] .svk-split { min-height: 0; }
+
+.svk-main { background: #fff; }
+
+/* ---------- Left pane ---------- */
+.svk-pane {
+  position: sticky;
+  top: var(--svk-top);
+  align-self: start;
+  height: calc(100vh - var(--svk-vh));
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: clamp(28px, min(3cqw, 4.5vh), 64px) clamp(24px, 2.6cqw, 64px) clamp(24px, min(2.4cqw, 3.5vh), 52px);
+  color: #fff;
+  background:
+    url("/assets/images/service-skin-mark.svg") no-repeat right 12px bottom 56px / min(220px, 80%) auto,
+    var(--svk-ad);
+  transition: background-color 0.3s;
+}
+.svk[data-layout="embedded"] .svk-pane { height: auto; min-height: 560px; border-radius: 20px 0 0 20px; }
+.svk-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 30px; }
+.svk-head-actions { display: flex; align-items: center; gap: 10px; }
+.svk-brand { font: italic 500 clamp(14px, calc(7px + 0.5cqw), 18px)/1.3 var(--svk-serif), Georgia, serif; opacity: 0.85; }
+.svk-mhead, .svk-faq-m { display: none; }
+.svk-dots { display: none; }
+.svk-req {
+  flex: none; display: grid; place-items: center; width: 30px; height: 30px; padding: 0;
+  border: 0; border-radius: 8px; background: transparent; color: #fff; opacity: 0.75; cursor: pointer;
+  transition: opacity 0.15s, background-color 0.15s;
+}
+.svk-req:hover { opacity: 1; background: rgba(255, 255, 255, 0.12); }
+.svk-req:focus-visible { outline: 2px solid #fff; outline-offset: 2px; opacity: 1; }
+.svk-req svg { width: 18px; height: 18px; }
+.svk-title {
+  font-family: var(--svk-serif), Georgia, serif;
+  font-weight: 600;
+  font-size: clamp(26px, min(calc(8px + 2cqw), 4.6vh), 54px);
+  line-height: 1.1;
+  margin: clamp(18px, 3.4vh, 44px) 0 clamp(8px, 1.4vh, 12px);
+  max-width: 12ch;
+  color: #fff;
+}
+.svk-tag { opacity: 0.82; margin: 0 0 clamp(14px, min(2cqw, 2.6vh), 40px); max-width: 32ch; font-size: clamp(14px, calc(8px + 0.5cqw), 19px); line-height: 1.5; }
+
+.svk-steps { list-style: none; margin: 0; padding: 0; counter-reset: svk; }
+.svk-steps li {
+  display: flex; align-items: center; gap: 12px; padding: clamp(4px, min(calc(2px + 0.4cqw), 0.75vh), 11px) 0; opacity: 0.55; font-size: clamp(14px, min(calc(8px + 0.5cqw), 2.05vh), 19px);
+}
+.svk-steps li > span.svk-dot {
+  flex: none; width: clamp(21px, min(calc(10px + 1.1cqw), 3.4vh), 34px); height: clamp(21px, min(calc(10px + 1.1cqw), 3.4vh), 34px); border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.7);
+  display: grid; place-items: center; font-size: 12px; font-weight: 700;
+}
+.svk-steps li.is-on { opacity: 1; font-weight: 700; }
+.svk-steps li.is-on > span.svk-dot { background: #fff; color: var(--svk-ad); border-color: #fff; }
+.svk-steps li.is-done { opacity: 0.9; }
+.svk-steps li.is-done > span.svk-dot { background: rgba(255, 255, 255, 0.2); border-color: transparent; }
+.svk-steps button {
+  all: unset; display: flex; align-items: center; gap: 12px; cursor: pointer; border-radius: 8px;
+}
+.svk-steps button:hover { text-decoration: underline; text-underline-offset: 4px; }
+.svk-steps button:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+
+
+.svk-pfoot { margin-top: auto; padding-top: clamp(14px, 2.4vh, 28px); display: grid; gap: 6px; position: relative; z-index: 1; }
+.svk-link {
+  background: none; border: 0; color: #fff; font-weight: 600; cursor: pointer; padding: 6px 0;
+  text-decoration: underline; text-underline-offset: 4px; opacity: 0.9; justify-self: start; font: inherit;
+}
+/* "Applying for / Booking for": plain text, no badge. */
+.svk-for { display: grid; gap: 2px; padding-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.18); }
+.svk-for span { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.7; }
+.svk-for b { font-size: clamp(14px, calc(8px + 0.5cqw), 19px); font-weight: 600; line-height: 1.35; }
+
+/* "Booking for" picker (standalone Medical / Police): looks exactly like the plain
+   "Booking for" line (bold name, no box), plus a small arrow while it can be changed. */
+.svk-subject { position: relative; display: inline-flex; align-items: center; max-width: 100%; justify-self: start; }
+.svk-subject select {
+  appearance: none; -webkit-appearance: none; max-width: 100%; cursor: pointer;
+  field-sizing: content; /* width follows the chosen name, so the arrow sits right after it */
+  background: none; border: 0; border-radius: 4px; color: #fff; padding: 0 20px 0 0; margin: 0;
+  font: inherit; font-size: clamp(14px, calc(8px + 0.5cqw), 19px); font-weight: 600; line-height: 1.35;
+  text-overflow: ellipsis;
+}
+.svk-subject select:hover:not(:disabled) { text-decoration: underline; text-underline-offset: 3px; }
+.svk-subject select:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.svk-subject select:disabled { cursor: default; opacity: 1; }
+.svk-subject select option { color: #16302c; background: #fff; font-weight: 500; }
+.svk-subject svg { position: absolute; right: 2px; top: 50%; transform: translateY(-50%); pointer-events: none; opacity: 0.85; }
+.svk-subject select:disabled + svg { display: none; }
+
+/* ---------- Main column ---------- */
+.svk-main {
+  padding: 0 var(--svk-px) 32px;
+  display: flex; flex-direction: column; align-items: center; min-width: 0;
+}
+/* Toggle row: pinned to the far right of the white area (it ignores the column padding). */
+.svk-topbar {
+  align-self: stretch; display: flex; justify-content: flex-end; align-items: center; gap: 10px;
+  margin-right: calc(clamp(16px, 1.4cqw, 32px) - var(--svk-px)); padding-top: clamp(18px, 1.6cqw, 32px);
+}
+.svk-topright { display: flex; align-items: center; gap: 8px; }
+
+/* Service switcher: a toggle at the start of the form column (moves with the form). */
+.svk-switch {
+  display: inline-flex; gap: 2px; padding: 3px; margin: 0;
+  border-radius: 999px; background: #eef2f1; max-width: 100%; overflow-x: auto; scrollbar-width: none;
+}
+.svk-switch::-webkit-scrollbar { display: none; }
+.svk-switch button {
+  display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;
+  border: 0; background: none; color: var(--svk-ink); opacity: 0.72; cursor: pointer;
+  font: inherit; font-size: clamp(13px, calc(6px + 0.55cqw), 17px); font-weight: 500; padding: clamp(6px, calc(2px + 0.35cqw), 9px) clamp(14px, calc(6px + 0.7cqw), 20px); border-radius: 999px;
+  transition: background-color 0.15s, color 0.15s, opacity 0.15s;
+}
+.svk-switch button:hover { opacity: 1; }
+.svk-switch button[aria-pressed="true"] { background: var(--svk-ink); color: #fff; opacity: 1; font-weight: 600; }
+.svk-switch-lock { width: 12px; height: 12px; opacity: 0.7; }
+.svk-col { width: 100%; min-width: 0; max-width: clamp(480px, 44cqw, 980px); margin-block: auto; padding: clamp(8px, 1.5vh, 20px) 0 clamp(40px, 14vh, 180px); animation: svk-up 0.35s both; }
+.svk-kick { font-size: clamp(12px, calc(6px + 0.5cqw), 16px); color: var(--svk-mut); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+.svk-h2 {
+  font-family: var(--svk-serif), Georgia, serif; font-weight: 600;
+  font-size: clamp(28px, calc(8px + 2.2cqw), 58px); line-height: 1.15; margin: 0.35em 0 0.2em; color: var(--svk-ink);
+}
+.svk-sub { color: var(--svk-mut); margin: 0 0 1.8em; font-size: 1.06em; }
+.svk-need { background: var(--svk-at); border-radius: 12px; padding: 12px 14px; font-size: 14px; margin-bottom: 22px; }
+.svk-need b { color: var(--svk-ad); }
+
+.svk-actions {
+  position: sticky; bottom: 0; z-index: 5;
+  display: flex; gap: 12px; align-items: center;
+  padding: 1.3em 0 calc(1em + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(rgba(255, 255, 255, 0), #fff 28%);
+}
+.svk-btn {
+  border: 0; border-radius: 12px; padding: 0.8em 1.7em; font-weight: 700; cursor: pointer; min-height: var(--svk-field);
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; font: inherit; font-weight: 700;
+}
+.svk-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.svk-btn-pri { background: var(--svk-a); color: #fff; flex: 1; }
+.svk-btn-pri:not(:disabled):hover { filter: brightness(0.92); }
+.svk-btn-gho { background: none; color: var(--svk-mut); padding: 12px 10px; }
+.svk-btn-gho:not(:disabled):hover { color: var(--svk-ink); }
+.svk-btn-out { background: #fff; color: var(--svk-ink); border: 1.5px solid var(--svk-line); }
+
+/* ---------- Form controls inside the body (visual only) ---------- */
+.svk-body input[type="text"],
+.svk-body input[type="tel"]:not([class*="rounded-s-none"]),
+.svk-body input[type="email"],
+.svk-body input[type="date"],
+.svk-body input[type="number"],
+.svk-body input[type="time"],
+.svk-body input:not([type]),
+.svk-body select,
+.svk-body textarea,
+.svk-body button[role="combobox"] {
+  border: 1.5px solid var(--svk-line);
+  border-radius: 12px;
+  background-color: #fff;
+  min-height: 50px;
+  box-shadow: none;
+}
+.svk-body textarea { min-height: 100px; }
+.svk-body input:focus,
+.svk-body select:focus,
+.svk-body textarea:focus,
+.svk-body button[role="combobox"]:focus,
+.svk-body button[role="combobox"][data-state="open"] {
+  border-color: var(--svk-a);
+  outline: 3px solid var(--svk-at);
+  outline-offset: 0;
+}
+.svk-body label { color: var(--svk-ink); }
+
+/* ---------- Form details (visual only, scoped to the step content) ---------- */
+.svk-body ::placeholder { color: #9aa3a4; }
+.svk-body input:hover:not(:focus):not(:disabled),
+.svk-body textarea:hover:not(:focus):not(:disabled),
+.svk-body button[role="combobox"]:hover { border-color: #c9c4b6; }
+
+/* Clean form look (matches the design): one label style, one field height,
+   even spacing, and flat sections instead of grey boxes. Visual only. */
+.svk-body label {
+  display: inline-block; font-size: 0.93em; font-weight: 600; color: var(--svk-ink);
+  text-transform: none; letter-spacing: 0; margin-left: 0;
+}
+.svk-body input[type="text"],
+.svk-body input[type="email"],
+.svk-body input[type="tel"],
+.svk-body input[type="date"],
+.svk-body input[type="number"],
+.svk-body input:not([type]) {
+  height: var(--svk-field); padding-top: 0; padding-bottom: 0; font-size: 1em; color: var(--svk-ink);
+}
+.svk-body button[role="combobox"] { height: var(--svk-field); font-size: 1em; font-weight: 400; color: var(--svk-ink); }
+.svk-body button[role="combobox"] * { font-weight: inherit; }
+.svk-body textarea { font-size: 1em; }
+
+/* Even rhythm: the tools stack sections with 24-32px gaps; tighten to the design's 20px. */
+.svk-body .space-y-6 > :not(:last-child),
+.svk-body .space-y-8 > :not(:last-child) { margin-block-start: 0; margin-block-end: 1.6em; }
+.svk-body .gap-6 { gap: 1.45em; }
+.svk-body .gap-4 { gap: 1.05em; }
+.svk-body .space-y-2 > :not(:last-child) { margin-block-start: 0; margin-block-end: 0.55em; }
+
+/* One field per row, like the design: the tools' 2- and 3-column field rows stack.
+   (Wider grids such as the 7-day calendar or the checkout layout are left alone.) */
+.svk-body .md\:grid-cols-2,
+.svk-body .md\:grid-cols-3,
+.svk-body .sm\:grid-cols-2,
+.svk-body .lg\:grid-cols-2,
+.svk-body .lg\:grid-cols-3 { grid-template-columns: minmax(0, 1fr); }
+
+/* Choice cards (Medical city / provider): compact left-aligned rows like the design's pick list. */
+.svk-body button.border-2 {
+  text-align: left; padding: 0.85em 1.05em; border-width: 1.5px; border-radius: 12px; min-height: var(--svk-field);
+}
+.svk-body button.border-2 h3,
+.svk-body button.border-2 h4 { margin: 0 0 2px; font-size: 1em; font-weight: 600; }
+.svk-body button.border-2 p { margin: 0; font-size: 0.87em; }
+
+/* Requirement notes stay compact: two short columns, smaller text. */
+.svk-need { font-size: 0.87em; padding: 12px 14px; }
+.svk-need .sm\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 14px; }
+
+/* Neutral section boxes become flat sections with a hairline on top. */
+.svk-body .rounded-4xl.bg-gray-50,
+.svk-body .rounded-3xl.bg-gray-50,
+.svk-body .rounded-3xl.bg-white {
+  background: none; border: 0; border-top: 1px solid var(--svk-line); border-radius: 0;
+  box-shadow: none; padding: 1.8em 0 0; margin-top: 0.5em;
+}
+/* Section titles inside them */
+.svk-body h3 { font-size: 1.07em; font-weight: 600; color: var(--svk-ink); }
+/* Coloured notices stay boxed, just with the design's corners. */
+.svk-body .rounded-3xl.bg-orange-50 { border-radius: 14px; padding: 16px 18px; }
+
+/* Medical renders its own step headings and Back / Next rows: make them match the shell. */
+.svk-med h2 {
+  font-family: var(--svk-serif), Georgia, serif; font-weight: 600;
+  font-size: clamp(28px, calc(8px + 2.2cqw), 58px); line-height: 1.15; color: var(--svk-ink); margin-bottom: 0.2em;
+}
+.svk-body .svk-med h2:not(:last-child) { margin-block-end: 0.3em; }
+.svk-med h2 + p { color: var(--svk-mut); font-size: 1.06em; margin-bottom: 1.4em; }
+.svk-med .flex.pt-4:has(> button[data-slot="button"]) {
+  position: sticky; bottom: 0; z-index: 5; gap: 12px; align-items: center;
+  padding: 20px 0 calc(16px + env(safe-area-inset-bottom, 0px)); margin-top: 4px;
+  background: linear-gradient(rgba(255, 255, 255, 0), #fff 28%);
+}
+.svk-med .flex.pt-4 > button[data-slot="button"] {
+  min-height: var(--svk-field); height: auto; border-radius: 12px; padding: 12px 26px; font-size: 1em; font-weight: 700;
+}
+.svk-med .flex.pt-4 > button[data-slot="button"]:not(.border) { flex: 1; background: var(--svk-a); color: #fff; }
+.svk-med .flex.pt-4 > button[data-slot="button"]:not(.border):hover { filter: brightness(0.92); }
+.svk-med .flex.pt-4 > button[data-slot="button"].border {
+  flex: none; background: none; border-color: transparent; box-shadow: none; color: var(--svk-mut); padding-inline: 10px;
+}
+.svk-med .flex.pt-4 > button[data-slot="button"].border:hover { color: var(--svk-ink); }
+
+/* ---------- Switch confirm dialog ---------- */
+.svk-confirm {
+  position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 10050;
+  width: min(420px, calc(100vw - 32px)); background: #fff; color: #16302c; border-radius: 16px;
+  padding: 22px 22px 16px; box-shadow: 0 20px 50px -20px rgba(0, 0, 0, 0.4);
+  font-family: var(--svk-sans), system-ui, sans-serif; animation: svk-up 0.2s both;
+}
+.svk-confirm h2 { font-family: var(--svk-serif), Georgia, serif; font-weight: 600; font-size: 20px; margin: 0 0 6px; }
+.svk-confirm p { margin: 0 0 16px; color: #66787a; font-size: 14px; }
+.svk-confirm-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.svk-confirm-actions .svk-btn-pri { flex: none; }
+
+/* ---------- Done ---------- */
+.svk-ok { width: 84px; height: 84px; margin: 0 0 18px; }
+.svk-ok circle { fill: none; stroke: var(--svk-a); stroke-width: 4; stroke-dasharray: 240; stroke-dashoffset: 240; animation: svk-draw 0.7s 0.1s forwards; }
+.svk-ok path { fill: none; stroke: var(--svk-a); stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 50; stroke-dashoffset: 50; animation: svk-draw 0.4s 0.7s forwards; }
+
+/* ---------- FAQ drawer (portalled to body, so it is scoped by .svk-drawer) ---------- */
+.svk-scrim { position: fixed; inset: 0; background: rgba(22, 48, 44, 0.28); z-index: 10040; }
+.svk-drawer {
+  position: fixed; top: 0; right: 0; bottom: 0; width: min(420px, 100%);
+  background: #fff; color: #16302c; box-shadow: -20px 0 50px -20px rgba(0, 0, 0, 0.35);
+  z-index: 10050; padding: 28px; overflow: auto; animation: svk-slide 0.3s both;
+  font-family: var(--svk-sans), system-ui, sans-serif;
+}
+.svk-drawer h2 { font-family: var(--svk-serif), Georgia, serif; font-weight: 600; font-size: 22px; margin: 6px 0 10px; }
+.svk-drawer .svk-close { background: none; border: 0; font-weight: 600; cursor: pointer; padding: 6px 0; color: #16302c; text-decoration: underline; text-underline-offset: 4px; }
+.svk-drawer details { border-bottom: 1px solid #ddd9ce; }
+.svk-drawer summary { cursor: pointer; padding: 15px 0; font-weight: 600; list-style: none; display: flex; justify-content: space-between; gap: 12px; }
+.svk-drawer summary::-webkit-details-marker { display: none; }
+.svk-drawer summary::after { content: "+"; color: var(--svk-a, #0f8f80); font-size: 22px; line-height: 1; }
+.svk-drawer details[open] summary::after { content: "-"; }
+.svk-drawer details p { margin: 0 0 15px; color: #66787a; }
+
+@keyframes svk-up { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+@keyframes svk-draw { to { stroke-dashoffset: 0; } }
+@keyframes svk-slide { from { transform: translateX(105%); } to { transform: none; } }
+
+/* ---------- Narrow container (phones, and narrow embedded regions) ----------
+   Coloured header (label + Common questions, service name, the step question) and a
+   white sheet with rounded top corners that overlaps it. */
+@container svk (max-width: 720px) {
+  .svk-split { grid-template-columns: minmax(0, 1fr); min-height: 0; }
+  .svk:not([data-layout="embedded"]) { background: #fff; }
+  .svk-pane, .svk[data-layout="embedded"] .svk-pane {
+    position: static; height: auto; min-height: 0; padding: 18px 20px 46px; border-radius: 0;
+    background:
+      url("/assets/images/service-skin-mark.svg") no-repeat right -40px top -10px / 230px auto,
+      var(--svk-ad);
+  }
+  .svk[data-layout="embedded"] .svk-pane { border-radius: 16px 16px 0 0; }
+  /* Tidy header: service name and Common questions share the top row; no label line. */
+  .svk-pane { position: relative; top: auto; }
+  .svk-brand { display: none; }
+  .svk-head { position: absolute; top: 16px; right: 20px; min-height: 0; gap: 6px; }
+  .svk-faq-m { display: inline; padding: 0; font-size: 13px; font-weight: 500; opacity: 0.85; }
+  .svk-req { width: 26px; height: 26px; }
+  .svk-faq-d, .svk-tag, .svk-steps { display: none; }
+  .svk-title {
+    font: italic 500 16px/1.3 var(--svk-serif), Georgia, serif; opacity: 0.85;
+    margin: -2px 0 18px; max-width: none; padding-right: 150px; min-height: 21px;
+  }
+  .svk-mhead h2 { font: 600 clamp(28px, 8cqw, 36px)/1.12 var(--svk-serif), Georgia, serif; margin: 0 0 8px; color: #fff; }
+  .svk-mhead p { margin: 0; font-size: 14px; opacity: 0.82; line-height: 1.45; max-width: 34ch; }
+  .svk-mhead { display: block; }
+  /* Services that draw their own step headings (Medical): the service name is the header title. */
+  .svk-pane:not(:has(.svk-mhead)) .svk-title {
+    font: 600 clamp(28px, 8cqw, 36px)/1.12 var(--svk-serif), Georgia, serif; opacity: 1; margin: 30px 0 0;
+    padding-right: 0;
+  }
+  .svk-pfoot { margin-top: 14px; padding-top: 0; }
+  .svk-pfoot:not(:has(.svk-for)) { display: none; }
+  /* "Applying for" collapses to one quiet line. */
+  .svk-for { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; border-top: 0; padding-top: 0; }
+  .svk-for span { font-size: 10px; }
+  .svk-pick-for { display: flex; }
+  .svk-subject select { font-size: 13px; font-weight: 500; }
+  .svk-for b { font-size: 13px; font-weight: 500; opacity: 0.9; }
+
+  .svk-main {
+    position: relative; z-index: 1; margin-top: -24px; border-radius: 22px 22px 0 0;
+    padding: 0 20px 24px;
+  }
+  .svk-col { margin-block: 0; max-width: none; padding: 0; }
+  .svk-dots { padding-top: 12px; }
+  .svk-dots { display: flex; justify-content: center; gap: 5px; margin: 0 0 14px; }
+  .svk-dots i { width: 6px; height: 6px; border-radius: 9px; background: var(--svk-line); transition: width 0.25s; }
+  .svk-dots i.dn { background: color-mix(in srgb, var(--svk-a) 45%, white); }
+  .svk-dots i.on { width: 22px; background: var(--svk-a); }
+  .svk-topbar { justify-content: flex-start; margin-right: 0; padding-top: 0; margin-bottom: 18px; }
+  /* The question is shown in the header on phones. */
+  .svk-col > .svk-kick, .svk-col > .svk-h2, .svk-col > .svk-sub { display: none; }
+}
+
+/* Very short laptop windows (about 600px of height): drop the tagline so the step list,
+   "Booking for" and Common questions always fit in the pane (it never scrolls). */
+@media (max-height: 640px) {
+  .svk-tag { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .svk-col, .svk-drawer { animation: none; }
+  .svk-ok circle, .svk-ok path { animation: none; stroke-dashoffset: 0; }
+  .svk-dots i { transition: none; }
+}

@@ -94,6 +94,10 @@ interface EmbeddedToolContainerProps {
    *  module cards), completing the service should also tick that step off. Passed by
    *  RoadmapLayoutEngine when a step card launches a tool via the shared breadcrumb. */
   autoCompleteStepKey?: string | null;
+  /** Opens another toolbox item in place of this one (the dashboard's launchTool).
+   *  When set, the service skin shows a switcher between the four services; the
+   *  target still goes through this container's plan gate. */
+  onSwitchTool?: (toolKey: string) => void;
 }
 
 function ToolSkeleton() {
@@ -333,6 +337,11 @@ function JourneyVisaFormsEmbeddedTool({
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { useJourneyPlan } from "@/app/context/useJourneyPlan";
 import { TOOL_FEATURE_MAP } from "@/lib/constants/journey-app-groups";
+import {
+  SERVICE_TOOL_KEYS,
+  ServiceSwitcherContext,
+  type ServiceSwitcherValue,
+} from "@/components/tools/service-skin/ServiceSwitcherContext";
 import { useJourneyServiceStatus } from "@/lib/journey/useJourneyServiceStatus";
 import { Lock } from "lucide-react";
 
@@ -398,6 +407,7 @@ export function EmbeddedToolContainer({
   data,
   onClose,
   autoCompleteStepKey,
+  onSwitchTool,
 }: EmbeddedToolContainerProps) {
   const { journeySlug, candidateId } = useJourneyEnvironment();
   const { activeCandidate, activeJourneyKey } = useCandidate();
@@ -815,6 +825,21 @@ export function EmbeddedToolContainer({
         );
     }
   };
+
+  // Service switcher (Consultation / Medical / Police / Translation). Switching re-launches
+  // through the dashboard, so the target is gated by this same container (LockedToolGate).
+  const isSkinnedService =
+    Object.values(SERVICE_TOOL_KEYS).includes(toolKey) || toolKey === "document_translation";
+  const serviceSwitcher: ServiceSwitcherValue | null =
+    onSwitchTool && isSkinnedService
+      ? {
+          select: (service) => onSwitchTool(SERVICE_TOOL_KEYS[service]),
+          isLocked: (service) => {
+            const key = TOOL_FEATURE_MAP[SERVICE_TOOL_KEYS[service]];
+            return key ? plan.isLocked(key) : false;
+          },
+        }
+      : null;
 
   const isDocTranslation = toolKey === "doc_translation" || toolKey === "document_translation";
   // Tools on the shared ToolLayout draw their own band and bench edge to edge, exactly as on

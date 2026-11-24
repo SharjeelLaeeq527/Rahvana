@@ -1,3 +1,4 @@
+import { isSomeoneElseRow } from "@/lib/services/serviceSubject";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
@@ -156,6 +157,8 @@ export async function GET(req: NextRequest) {
     // Filter by candidateId if provided
     if (candidateId) {
       sindhPccRequests = sindhPccRequests.filter((item: any) => {
+        // Booked for "Someone else": belongs to the account, shown for every beneficiary.
+        if (isSomeoneElseRow(item)) return true;
         const directId = item.candidate_id;
         const metaId = item.metadata?.candidate_id;
         const notesTag =
@@ -177,6 +180,8 @@ export async function GET(req: NextRequest) {
       });
 
       medicalAppointments = medicalAppointments.filter((item: any) => {
+        // Booked for "Someone else": belongs to the account, shown for every beneficiary.
+        if (isSomeoneElseRow(item)) return true;
         const directId = item.candidate_id;
         const metaId = item.metadata?.candidate_id;
         const notesTag =
@@ -197,6 +202,8 @@ export async function GET(req: NextRequest) {
       });
 
       consultationBookings = consultationBookings.filter((item: any) => {
+        // Booked for "Someone else": belongs to the account, shown for every beneficiary.
+        if (isSomeoneElseRow(item)) return true;
         const directId = item.candidate_id;
         const metaId = item.metadata?.candidate_id;
         const notesTag =
@@ -217,6 +224,8 @@ export async function GET(req: NextRequest) {
       });
 
       translationDocuments = translationDocuments.filter((item: any) => {
+        // Booked for "Someone else": belongs to the account, shown for every beneficiary.
+        if (isSomeoneElseRow(item)) return true;
         const directId = item.candidate_id;
         const metaId = item.metadata?.candidate_id;
 

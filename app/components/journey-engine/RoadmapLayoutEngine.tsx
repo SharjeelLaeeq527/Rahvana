@@ -394,6 +394,7 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
             toolKey={activeToolKey}
             onClose={() => setActiveToolKey(null)}
             autoCompleteStepKey={activeToolAutoCompleteStep}
+            onSwitchTool={(key) => launchTool(key)}
             data={data}
             state={state}
             actions={actions}

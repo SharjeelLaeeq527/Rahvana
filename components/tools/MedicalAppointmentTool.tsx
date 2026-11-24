@@ -3,11 +3,18 @@
 import { useState, useEffect, useRef } from "react";
 import type { ToolModeProps } from "@/types/tool-mode";
 import { useResolveToolMode } from "@/lib/hooks/useResolveToolMode";
+import ServiceSkinShell from "@/components/tools/service-skin/ServiceSkinShell";
+import ServiceSubjectPicker, {
+  SOMEONE_ELSE_ID,
+} from "@/components/tools/service-skin/ServiceSubjectPicker";
+import {
+  SERVICE_SKIN_FAQ,
+  SERVICE_SKIN_TAGLINE,
+} from "@/components/tools/service-skin/serviceSkinCopy";
 import { normalizePlanTier } from "@/app/context/PlanContext";
 import type { PlanTier } from "@/lib/entitlements/config";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { IR5_ENABLED, IR2_ENABLED } from "@/lib/feature-flags";
+import { IR5_ENABLED } from "@/lib/feature-flags";
 import { Input } from "@/components/ui/input";
 import { ResultGate } from "@/app/components/entitlements/ResultGate";
 import { Label } from "@/components/ui/label";
@@ -23,7 +30,6 @@ import MedicalAppointmentCard, {
   type MedicalAppointmentRow,
 } from "@/components/services/MedicalAppointmentCard";
 import { Crown, CreditCard, ShoppingBag, Sparkles, X, Coins } from "lucide-react";
-import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 import { PhoneInput } from "@/components/ui/phone-input";
 import type { Value as E164Number } from "react-phone-number-input";
@@ -300,7 +306,10 @@ const BasicInfoStep = ({
           {isAMC && (
             <>
               <div className="space-y-2">
-                <FieldLabel htmlFor="interviewDate" title={t("bookAppointment.basicInfoStep.interviewDate")} /> 
+                <FieldLabel
+                  htmlFor="interviewDate"
+                  title={t("bookAppointment.basicInfoStep.interviewDate")}
+                />
                 <Input
                   id="interviewDate"
                   name="interviewDate"
@@ -311,7 +320,10 @@ const BasicInfoStep = ({
               </div>
 
               <div className="space-y-2">
-                <FieldLabel htmlFor="visaCategory" title={t("bookAppointment.basicInfoStep.visaCategory")} /> 
+                <FieldLabel
+                  htmlFor="visaCategory"
+                  title={t("bookAppointment.basicInfoStep.visaCategory")}
+                />
                 <CustomDropdown
                   value={formData.visaCategory}
                   onChange={onSelectChange("visaCategory")}
@@ -327,7 +339,10 @@ const BasicInfoStep = ({
               </div>
 
               <div className="space-y-2">
-                <FieldLabel htmlFor="hadMedicalBefore" title={t("bookAppointment.basicInfoStep.hadMedicalBefore")} />
+                <FieldLabel
+                  htmlFor="hadMedicalBefore"
+                  title={t("bookAppointment.basicInfoStep.hadMedicalBefore")}
+                />
                 <CustomDropdown
                   value={formData.hadMedicalBefore}
                   onChange={onSelectChange("hadMedicalBefore")}
@@ -343,7 +358,10 @@ const BasicInfoStep = ({
           )}
 
           <div className="space-y-2">
-            <FieldLabel htmlFor="primaryContact" title={t("bookAppointment.basicInfoStep.mobileNo")} />
+            <FieldLabel
+              htmlFor="primaryContact"
+              title={t("bookAppointment.basicInfoStep.mobileNo")}
+            />
             <PhoneInput
               id="primaryContact"
               value={formData.primaryContact || ""}
@@ -380,7 +398,7 @@ const BasicInfoStep = ({
 
               <div className="space-y-2">
                 <FieldLabel htmlFor="caseRef" title={t("bookAppointment.basicInfoStep.caseRef")} />
-                  <Input
+                <Input
                   id="caseRef"
                   name="caseRef"
                   value={formData.caseRef}
@@ -390,7 +408,10 @@ const BasicInfoStep = ({
               </div>
 
               <div className="space-y-2">
-                <FieldLabel htmlFor="numberOfApplicants" title={t("bookAppointment.basicInfoStep.numberOfApplicants")} />
+                <FieldLabel
+                  htmlFor="numberOfApplicants"
+                  title={t("bookAppointment.basicInfoStep.numberOfApplicants")}
+                />
                 <CustomDropdown
                   value={formData.numberOfApplicants}
                   onChange={onSelectChange("numberOfApplicants")}
@@ -430,7 +451,10 @@ const BasicInfoStep = ({
               </div>
 
               <div className="space-y-2">
-                <FieldLabel htmlFor="visaType" title={t("bookAppointment.basicInfoStep.visaType")} />
+                <FieldLabel
+                  htmlFor="visaType"
+                  title={t("bookAppointment.basicInfoStep.visaType")}
+                />
                 <CustomDropdown
                   value={formData.visaType}
                   onChange={onSelectChange("visaType")}
@@ -534,7 +558,10 @@ const ApplicantInfo = ({ applicant, index, onChange }: ApplicantInfoProps) => {
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div className="space-y-2">
-          <FieldLabel htmlFor={`applicant-${index}-surname`} title={t("bookAppointment.personalInfoStep.surname")} />
+          <FieldLabel
+            htmlFor={`applicant-${index}-surname`}
+            title={t("bookAppointment.personalInfoStep.surname")}
+          />
           <Input
             id={`applicant-${index}-surname`}
             value={applicant.surname}
@@ -544,7 +571,10 @@ const ApplicantInfo = ({ applicant, index, onChange }: ApplicantInfoProps) => {
         </div>
 
         <div className="space-y-2">
-          <FieldLabel htmlFor={`applicant-${index}-givenName`} title={t("bookAppointment.personalInfoStep.givenName")} />
+          <FieldLabel
+            htmlFor={`applicant-${index}-givenName`}
+            title={t("bookAppointment.personalInfoStep.givenName")}
+          />
           <Input
             id={`applicant-${index}-givenName`}
             value={applicant.givenName}
@@ -554,7 +584,10 @@ const ApplicantInfo = ({ applicant, index, onChange }: ApplicantInfoProps) => {
         </div>
 
         <div className="space-y-2">
-          <FieldLabel htmlFor={`applicant-${index}-gender`} title={t("bookAppointment.personalInfoStep.gender")} />
+          <FieldLabel
+            htmlFor={`applicant-${index}-gender`}
+            title={t("bookAppointment.personalInfoStep.gender")}
+          />
           <CustomDropdown
             value={applicant.gender}
             onChange={(value) => onChange(index, "gender", value)}
@@ -569,7 +602,10 @@ const ApplicantInfo = ({ applicant, index, onChange }: ApplicantInfoProps) => {
         </div>
 
         <div className="space-y-2">
-          <FieldLabel htmlFor={`applicant-${index}-dateOfBirth`} title={t("bookAppointment.personalInfoStep.dateOfBirth")} />
+          <FieldLabel
+            htmlFor={`applicant-${index}-dateOfBirth`}
+            title={t("bookAppointment.personalInfoStep.dateOfBirth")}
+          />
           <Input
             id={`applicant-${index}-dateOfBirth`}
             type="date"
@@ -639,7 +675,7 @@ const PersonalInfoStep = ({
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="space-y-2">
-              <FieldLabel htmlFor="surname" title={t("bookAppointment.personalInfoStep.surname")} />  
+              <FieldLabel htmlFor="surname" title={t("bookAppointment.personalInfoStep.surname")} />
               <Input
                 id="surname"
                 name="surname"
@@ -650,7 +686,10 @@ const PersonalInfoStep = ({
             </div>
 
             <div className="space-y-2">
-              <FieldLabel htmlFor="givenName" title={t("bookAppointment.personalInfoStep.givenName")} />
+              <FieldLabel
+                htmlFor="givenName"
+                title={t("bookAppointment.personalInfoStep.givenName")}
+              />
               <Input
                 id="givenName"
                 name="givenName"
@@ -676,7 +715,10 @@ const PersonalInfoStep = ({
             </div>
 
             <div className="space-y-2">
-              <FieldLabel htmlFor="dateOfBirth" title={t("bookAppointment.personalInfoStep.dateOfBirth")} />
+              <FieldLabel
+                htmlFor="dateOfBirth"
+                title={t("bookAppointment.personalInfoStep.dateOfBirth")}
+              />
               <Input
                 id="dateOfBirth"
                 name="dateOfBirth"
@@ -688,7 +730,8 @@ const PersonalInfoStep = ({
               />
               {isPrimaryDobFuture && (
                 <p className="text-xs font-medium text-red-500">
-                  {t("bookAppointment.validation.dobFuture") !== "bookAppointment.validation.dobFuture"
+                  {t("bookAppointment.validation.dobFuture") !==
+                  "bookAppointment.validation.dobFuture"
                     ? t("bookAppointment.validation.dobFuture")
                     : "Date of birth cannot be in the future"}
                 </p>
@@ -761,7 +804,10 @@ const ApplicantPassportInfo = ({
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div className="space-y-2">
-          <FieldLabel htmlFor={`applicant-${index}-passportNumber`} title={t("bookAppointment.passportDetailsStep.passportNumber")} />
+          <FieldLabel
+            htmlFor={`applicant-${index}-passportNumber`}
+            title={t("bookAppointment.passportDetailsStep.passportNumber")}
+          />
           <Input
             id={`applicant-${index}-passportNumber`}
             value={applicant.passportNumber}
@@ -866,7 +912,10 @@ const PassportDetailsStep = ({
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="space-y-2">
-              <FieldLabel htmlFor="passportNumber" title={t("bookAppointment.passportDetailsStep.passportNumber")} />
+              <FieldLabel
+                htmlFor="passportNumber"
+                title={t("bookAppointment.passportDetailsStep.passportNumber")}
+              />
               <Input
                 id="passportNumber"
                 name="passportNumber"
@@ -1008,7 +1057,10 @@ const DocumentsStep = ({ formData, error, onFileChange, onNext, onBack }: Docume
         </div>
 
         <div className="space-y-2">
-          <FieldLabel htmlFor="scannedPassport" title={t("bookAppointment.documentsStep.scannedPassport")} />
+          <FieldLabel
+            htmlFor="scannedPassport"
+            title={t("bookAppointment.documentsStep.scannedPassport")}
+          />
           <label
             htmlFor="scannedPassport"
             className="flex h-24 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 text-slate-500 transition-colors hover:border-teal-500 hover:bg-teal-50 hover:text-teal-600"
@@ -2032,7 +2084,8 @@ const CheckoutStep = ({
                 Secure Transaction
               </h5>
               <p className="mt-1 text-xs leading-relaxed text-slate-500">
-                Standalone bookings are paid with your Rahvana Wallet credits ($1 = 1 credit). If your balance is short, you can top up instantly via Stripe.
+                Standalone bookings are paid with your Rahvana Wallet jarthings ($1 = 1 jarthing).
+                If your balance is short, you can top up instantly via Stripe.
               </p>
             </div>
           </div>
@@ -2050,29 +2103,29 @@ const CheckoutStep = ({
               <div className="space-y-4">
                 <div className="flex items-center justify-between text-sm">
                   <span className="font-medium text-slate-600">1x Medical Exam Booking</span>
-                  <span className="font-bold text-slate-800">5 Credits ($5.00)</span>
+                  <span className="font-bold text-slate-800">5 Jarthings ($5.00)</span>
                 </div>
 
                 <div className="flex items-center justify-between text-sm">
                   <span className="font-medium text-slate-600">Wallet Balance</span>
                   <span className="font-bold text-slate-800">
-                    {walletLoading ? "..." : `${walletBalance ?? 0} Credits`}
+                    {walletLoading ? "..." : `${walletBalance ?? 0} Jarthings`}
                   </span>
                 </div>
                 {hasWalletCredits && (
                   <div className="flex items-center justify-between text-sm text-[#0d7377]">
                     <span className="font-medium">Balance After Booking</span>
-                    <span className="font-bold">{(walletBalance ?? 5) - costCredits} Credits</span>
+                    <span className="font-bold">
+                      {(walletBalance ?? 5) - costCredits} Jarthings
+                    </span>
                   </div>
                 )}
 
                 <div className="mt-2 flex items-center justify-between border-t border-slate-200 pt-4">
                   <span className="text-base font-bold text-slate-900">Total Due</span>
-                  <span className="text-xl font-black text-slate-900">5 Credits ($5.00)</span>
+                  <span className="text-xl font-black text-slate-900">5 Jarthings ($5.00)</span>
                 </div>
               </div>
-
-              
             </div>
 
             {error && (
@@ -2097,8 +2150,8 @@ const CheckoutStep = ({
                 {loading
                   ? "Processing..."
                   : hasWalletCredits
-                    ? "Pay 5 Credits & Confirm"
-                    : `Top up ${deficit} Credits to Book`}
+                    ? "Pay 5 Jarthings & Confirm"
+                    : `Top up ${deficit} Jarthings to Book`}
               </Button>
             </div>
           </div>
@@ -2167,7 +2220,8 @@ export default function MedicalAppointmentTool({
 
   // Effective tier — only evaluated for journey mode
   const rawJourneyTier = propJourneyTier ?? journeyTier ?? journeyContext?.subscriptionTier;
-  const journeyTierEffective: PlanTier | null = isJourney && rawJourneyTier ? normalizePlanTier(rawJourneyTier) : null;
+  const journeyTierEffective: PlanTier | null =
+    isJourney && rawJourneyTier ? normalizePlanTier(rawJourneyTier) : null;
   void journeyTierEffective;
   const [step, setStep] = useState(1);
   // Journey-only intro gate: the overlay first shows a "what is this service" screen
@@ -2212,7 +2266,18 @@ export default function MedicalAppointmentTool({
   const [error, setError] = useState<string | null>(null);
   const [profileLoaded, setProfileLoaded] = useState(false);
   const { user } = useAuth();
-  const { activeCandidate, activeCandidateId, isMultiCandidate } = useCandidate();
+  const { activeCandidate, activeCandidateId, isMultiCandidate, candidates } = useCandidate();
+  // Who this booking is for. In a journey it is the journey's own beneficiary (fixed).
+  // On the standalone page the user picks a beneficiary or "Someone else" (null = follow
+  // the active beneficiary).
+  const [bookingFor, setBookingFor] = useState<string | null>(null);
+  const subjectId = isJourney ? activeCandidateId : (bookingFor ?? activeCandidateId);
+  const isSomeoneElse = !isJourney && subjectId === SOMEONE_ELSE_ID;
+  const subject = isJourney
+    ? activeCandidate
+    : isSomeoneElse
+      ? null
+      : (candidates.find((c) => c.id === subjectId) ?? activeCandidate);
   const { t } = useLanguage();
   const { profile, isProfileLoading, updateProfile } = useUserProfile();
   const wallet = useWallet();
@@ -2221,7 +2286,8 @@ export default function MedicalAppointmentTool({
   const pendingDraftRef = useRef<string | null>(null);
 
   const saveProgressToProfile = (currentFormData = formData) => {
-    if (!user) return;
+    // A booking for someone else must never overwrite the account holder's profile.
+    if (!user || isSomeoneElse) return;
     try {
       const cleanData: Record<string, unknown> = {
         primaryContact: currentFormData.primaryContact,
@@ -2248,7 +2314,7 @@ export default function MedicalAppointmentTool({
     }
   };
 
-  // Auto-fill profile data (prioritizing active candidate biographics)
+  // Auto-fill profile data (prioritizing the chosen beneficiary's biographics)
   useEffect(() => {
     if (isProfileLoading || !profile) return;
 
@@ -2271,26 +2337,36 @@ export default function MedicalAppointmentTool({
       visaCategory: formData.visaCategory || formData.visaType,
     });
 
+    // Someone else: keep only the account holder's contact details (they manage the booking).
+    if (isSomeoneElse || !subject) {
+      setFormData((prev) => ({
+        ...prev,
+        primaryContact: prev.primaryContact || String(mappedData.primaryContact || ""),
+        contactNumber: prev.contactNumber || String(mappedData.contactNumber || ""),
+        email: prev.email || String(mappedData.email || ""),
+      }));
+      setProfileLoaded(true);
+      return;
+    }
+
     const givenName =
-      activeCandidate.name?.first ||
-      (activeCandidate.fullName
-        ? activeCandidate.fullName.split(" ")[0]
-        : mappedData.givenName || "");
+      subject.name?.first ||
+      (subject.fullName ? subject.fullName.split(" ")[0] : mappedData.givenName || "");
     const surname =
-      activeCandidate.name?.last ||
-      (activeCandidate.fullName
-        ? activeCandidate.fullName.split(" ").slice(1).join(" ")
+      subject.name?.last ||
+      (subject.fullName
+        ? subject.fullName.split(" ").slice(1).join(" ")
         : mappedData.surname || "");
     const fullName =
-      activeCandidate.fullName ||
+      subject.fullName ||
       (mappedData.givenName && mappedData.surname
         ? `${mappedData.givenName} ${mappedData.surname}`.trim()
         : mappedData.fullName || "");
-    const passportNumber = activeCandidate.passportNumber || mappedData.passportNumber || "";
-    const dateOfBirth = activeCandidate.dateOfBirth || mappedData.dateOfBirth || "";
-    const caseNumber = activeCandidate.caseNumber || mappedData.caseNumber || "";
+    const passportNumber = subject.passportNumber || mappedData.passportNumber || "";
+    const dateOfBirth = subject.dateOfBirth || mappedData.dateOfBirth || "";
+    const caseNumber = subject.caseNumber || mappedData.caseNumber || "";
     const visaCategory =
-      activeCandidate.visaCategory || mappedData.visaCategory || mappedData.visaType || "IR-5";
+      subject.visaCategory || mappedData.visaCategory || mappedData.visaType || "IR-5";
 
     setFormData((prev) => ({
       ...prev,
@@ -2305,7 +2381,31 @@ export default function MedicalAppointmentTool({
       visaCategory: prev.visaCategory || visaCategory,
     }));
     setProfileLoaded(true);
-  }, [profile, isProfileLoading, activeCandidate]);
+  }, [profile, isProfileLoading, subject, isSomeoneElse]);
+
+  // Standalone "Booking for" change (step 1 only): clear the previous person's details so
+  // the next person's are filled in fresh and two people's data can never mix.
+  const changeBookingFor = (id: string) => {
+    if (isJourney || id === subjectId) return;
+    pendingDraftRef.current = null;
+    setError(null);
+    setFormData((prev) => ({
+      ...prev,
+      surname: "",
+      givenName: "",
+      fullName: "",
+      gender: "",
+      dateOfBirth: "",
+      passportNumber: "",
+      passportIssueDate: "",
+      passportExpiryDate: "",
+      caseNumber: "",
+      caseRef: "",
+      visaType: "",
+      visaCategory: "",
+    }));
+    setBookingFor(id);
+  };
 
   const isAMC = formData.location === "islamabad" && formData.islamabadProvider === "amc";
   const isIOM = formData.location === "islamabad" && formData.islamabadProvider === "iom";
@@ -2574,12 +2674,12 @@ export default function MedicalAppointmentTool({
       // IOM Info step
       const today = new Date().toISOString().split("T")[0];
       const fullName =
-        formData.fullName?.trim() ||
-        `${formData.givenName || ""} ${formData.surname || ""}`.trim();
+        formData.fullName?.trim() || `${formData.givenName || ""} ${formData.surname || ""}`.trim();
       const destinationCountry = formData.destinationCountry?.trim() || "United States";
       const preferredLocation =
         formData.preferredLocation?.trim() || formData.location?.trim() || "islamabad";
-      const visaType = formData.visaType?.trim() || formData.visaCategory?.trim() || "Immigrant Visa";
+      const visaType =
+        formData.visaType?.trim() || formData.visaCategory?.trim() || "Immigrant Visa";
       const contactNumber = formData.contactNumber?.trim() || formData.primaryContact?.trim() || "";
 
       if (
@@ -2636,110 +2736,110 @@ export default function MedicalAppointmentTool({
         const deficit = Math.max(5, 5 - (wallet.balance ?? 0));
         wallet.openTopup({ amount: deficit });
         setError(
-          `You need 5 credits for this booking (Balance: ${wallet.balance ?? 0} credits). Please top up to proceed.`
+          `You need 5 jarthings for this booking (Balance: ${wallet.balance ?? 0} jarthings). Please top up to proceed.`
         );
         return;
       }
 
       let appointmentId = pendingDraftRef.current;
       if (!appointmentId) {
-      // First, submit appointment data to API to get the appointment ID
-      const appointmentResponse = await fetch("/api/book-appointment", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...formData,
-          candidate_id: activeCandidateId || "candidate-1",
-          candidate_name:
-            activeCandidate.fullName ||
-            activeCandidate.label ||
-            formData.fullName ||
-            `${formData.givenName} ${formData.surname}`.trim(),
-          // Origin tag: journey-embedded bookings are kept out of standalone My Resources.
-          ...(isJourney
-            ? {
-                source: "journey",
-                journey_slug: journeyContext?.journeySlug || null,
-                journey_id: journeyContext?.backendId || null,
-                journey_category: journeyContext?.journeyCategory || null,
-              }
-            : { source: "standalone" }),
-          // Exclude file objects from the initial request
-          scannedPassport: undefined,
-          kOneLetter: undefined,
-          appointmentConfirmationLetter: undefined,
-          // Send applicants data separately to prevent circular references
-          applicants: formData.applicants,
-        }),
-      });
+        // First, submit appointment data to API to get the appointment ID
+        const appointmentResponse = await fetch("/api/book-appointment", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ...formData,
+            candidate_id: subjectId || "candidate-1",
+            candidate_name:
+              subject?.fullName ||
+              subject?.label ||
+              formData.fullName ||
+              `${formData.givenName} ${formData.surname}`.trim(),
+            // Origin tag: journey-embedded bookings are kept out of standalone My Resources.
+            ...(isJourney
+              ? {
+                  source: "journey",
+                  journey_slug: journeyContext?.journeySlug || null,
+                  journey_id: journeyContext?.backendId || null,
+                  journey_category: journeyContext?.journeyCategory || null,
+                }
+              : { source: "standalone" }),
+            // Exclude file objects from the initial request
+            scannedPassport: undefined,
+            kOneLetter: undefined,
+            appointmentConfirmationLetter: undefined,
+            // Send applicants data separately to prevent circular references
+            applicants: formData.applicants,
+          }),
+        });
 
-      const appointmentResult = await appointmentResponse.json();
+        const appointmentResult = await appointmentResponse.json();
 
-      if (!appointmentResponse.ok) {
-        throw new Error(appointmentResult.error || t("bookAppointment.validation.submitError"));
-      }
-
-      appointmentId = appointmentResult.id as string;
-      console.log("Appointment created successfully:", appointmentResult);
-
-      // Then upload documents separately if they exist
-      const uploadPromises = [];
-
-      if (formData.scannedPassport) {
-        const formDataUpload = new FormData();
-        formDataUpload.append("appointmentId", appointmentId);
-        formDataUpload.append("fileType", "scannedPassport");
-        formDataUpload.append("file", formData.scannedPassport);
-
-        uploadPromises.push(
-          fetch("/api/upload", {
-            method: "POST",
-            body: formDataUpload,
-          })
-        );
-      }
-
-      if (formData.kOneLetter) {
-        const formDataUpload = new FormData();
-        formDataUpload.append("appointmentId", appointmentId);
-        formDataUpload.append("fileType", "kOneLetter");
-        formDataUpload.append("file", formData.kOneLetter);
-
-        uploadPromises.push(
-          fetch("/api/upload", {
-            method: "POST",
-            body: formDataUpload,
-          })
-        );
-      }
-
-      if (formData.appointmentConfirmationLetter) {
-        const formDataUpload = new FormData();
-        formDataUpload.append("appointmentId", appointmentId);
-        formDataUpload.append("fileType", "appointmentConfirmationLetter");
-        formDataUpload.append("file", formData.appointmentConfirmationLetter);
-
-        uploadPromises.push(
-          fetch("/api/upload", {
-            method: "POST",
-            body: formDataUpload,
-          })
-        );
-      }
-
-      // Wait for all document uploads to complete
-      if (uploadPromises.length > 0) {
-        const uploadResults = await Promise.all(uploadPromises);
-        const uploadErrors = uploadResults.filter((res) => !res.ok);
-
-        if (uploadErrors.length > 0) {
-          const errorText = await uploadErrors[0].text();
-          throw new Error(errorText || t("bookAppointment.validation.uploadError"));
+        if (!appointmentResponse.ok) {
+          throw new Error(appointmentResult.error || t("bookAppointment.validation.submitError"));
         }
-      }
-      if (!isJourney) pendingDraftRef.current = appointmentId;
+
+        appointmentId = appointmentResult.id as string;
+        console.log("Appointment created successfully:", appointmentResult);
+
+        // Then upload documents separately if they exist
+        const uploadPromises = [];
+
+        if (formData.scannedPassport) {
+          const formDataUpload = new FormData();
+          formDataUpload.append("appointmentId", appointmentId);
+          formDataUpload.append("fileType", "scannedPassport");
+          formDataUpload.append("file", formData.scannedPassport);
+
+          uploadPromises.push(
+            fetch("/api/upload", {
+              method: "POST",
+              body: formDataUpload,
+            })
+          );
+        }
+
+        if (formData.kOneLetter) {
+          const formDataUpload = new FormData();
+          formDataUpload.append("appointmentId", appointmentId);
+          formDataUpload.append("fileType", "kOneLetter");
+          formDataUpload.append("file", formData.kOneLetter);
+
+          uploadPromises.push(
+            fetch("/api/upload", {
+              method: "POST",
+              body: formDataUpload,
+            })
+          );
+        }
+
+        if (formData.appointmentConfirmationLetter) {
+          const formDataUpload = new FormData();
+          formDataUpload.append("appointmentId", appointmentId);
+          formDataUpload.append("fileType", "appointmentConfirmationLetter");
+          formDataUpload.append("file", formData.appointmentConfirmationLetter);
+
+          uploadPromises.push(
+            fetch("/api/upload", {
+              method: "POST",
+              body: formDataUpload,
+            })
+          );
+        }
+
+        // Wait for all document uploads to complete
+        if (uploadPromises.length > 0) {
+          const uploadResults = await Promise.all(uploadPromises);
+          const uploadErrors = uploadResults.filter((res) => !res.ok);
+
+          if (uploadErrors.length > 0) {
+            const errorText = await uploadErrors[0].text();
+            throw new Error(errorText || t("bookAppointment.validation.uploadError"));
+          }
+        }
+        if (!isJourney) pendingDraftRef.current = appointmentId;
       }
 
       // 3) MODE BRANCH at the credit gate.
@@ -2773,7 +2873,7 @@ export default function MedicalAppointmentTool({
         const deficit = deductResult.body.deficit ?? 5;
         wallet.openTopup({ amount: deductResult.body.topupAmount ?? deficit });
         setError(
-          `Insufficient credits. Please top up ${deficit} credits to complete your booking.`
+          `Insufficient jarthings. Please top up ${deficit} jarthings to complete your booking.`
         );
         return;
       }
@@ -3008,53 +3108,106 @@ export default function MedicalAppointmentTool({
   // skipped, so the visible wizard is steps 1–7; standalone still counts the checkout (1–8).
   const medTotalSteps = isJourney ? 7 : 8;
   const medCurrentStep = step >= 10 ? medTotalSteps : Math.min(step, medTotalSteps);
-  const medProgressPct = Math.min(100, Math.round((medCurrentStep / medTotalSteps) * 100));
 
-  // Journey intro screen (image 3): a "what is this service" hand-off shown before the
-  // booking wizard. No topbar progress bar / step count here — those appear once started.
+  // Journey intro screen: a "what is this service" hand-off shown before the booking wizard.
   const showIntro = isJourney && !started && step < 10;
-  if (showIntro) {
-    return (
-      <div
-        className={
-          embedded
+
+  // Left-pane step list. Mirrors the real step order of this wizard:
+  //   standard: 1 location > 2 basic > 3 info > 4 passport > 5 docs > 6 when > 7 review > 8 checkout
+  //   IOM:      1 location > 9 IOM info > 7 review > 8 checkout
+  // Journey mode has no checkout step (the plan covers it).
+  const medStepLabels = isIOM
+    ? [
+        t("bookAppointment.progressSteps.location"),
+        t("bookAppointment.progressSteps.iomInfo"),
+        t("bookAppointment.progressSteps.review"),
+        ...(isJourney ? [] : ["Checkout"]),
+      ]
+    : [
+        t("bookAppointment.progressSteps.location"),
+        isAMC ? t("bookAppointment.progressSteps.amcInfo") : t("bookAppointment.progressSteps.hi"),
+        t("bookAppointment.progressSteps.info"),
+        t("bookAppointment.progressSteps.passport"),
+        t("bookAppointment.progressSteps.docs"),
+        t("bookAppointment.progressSteps.when"),
+        t("bookAppointment.progressSteps.review"),
+        ...(isJourney ? [] : ["Checkout"]),
+      ];
+  const iomStepIndex: Record<number, number> = { 1: 0, 9: 1, 7: 2, 8: 3 };
+  const medStepIndex = showIntro ? -1 : isIOM ? (iomStepIndex[step] ?? 0) : step - 1;
+  return (
+    <div
+      className={
+        isJourney
+          ? embedded
             ? "w-full font-sans"
             : "animate-in slide-in-from-bottom-[18px] fixed inset-0 z-[150] overflow-y-auto bg-white font-sans duration-[0.28s] ease-in-out"
+          : "mt-[55px] bg-white"
+      }
+    >
+      {isJourney && !embedded && (
+        <div className="sticky top-0 z-10 flex h-[64px] items-center gap-3 border-b border-[#d0e4f7] bg-white px-4 sm:gap-4 sm:px-6">
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="hover:bg-primary/10 focus:ring-primary flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border-none bg-[#f4f7fb] text-[#3a4f63] transition-all outline-none focus:ring-2"
+          >
+            <X size={16} strokeWidth={2} />
+          </button>
+          <div className="flex-1" />
+          {!showIntro && (
+            <div className="shrink-0 text-[12px] font-medium whitespace-nowrap text-[#6b8097]">
+              Step {medCurrentStep} of {medTotalSteps}
+            </div>
+          )}
+        </div>
+      )}
+
+      <ServiceSkinShell
+        service="medical"
+        title="Medical appointment"
+        tagline={SERVICE_SKIN_TAGLINE.medical}
+        steps={medStepLabels}
+        current={medStepIndex}
+        done={step === 10}
+        heading={showIntro ? "Book your medical exam through Rahvana" : undefined}
+        subheading={
+          showIntro
+            ? "Rahvana will connect you with an embassy-approved physician in your area. Start the booking service below to choose your location and preferred date."
+            : undefined
+        }
+        kicker={showIntro ? "Rahvana booking service" : undefined}
+        timeEstimate="5 min"
+        faq={SERVICE_SKIN_FAQ.medical}
+        layout={isJourney ? (embedded ? "embedded" : "overlay") : "page"}
+        topOffset={isJourney ? (embedded ? 0 : 64) : 60}
+        viewportOffset={isJourney ? (embedded ? 0 : 64) : 60}
+        paneFooter={
+          !isJourney && user ? (
+            <ServiceSubjectPicker
+              label="Booking for"
+              candidates={candidates}
+              value={subjectId}
+              onChange={changeBookingFor}
+              disabled={step !== 1}
+            />
+          ) : isMultiCandidate ? (
+            <div className="svk-for">
+              <span>Booking for</span>
+              <b>
+                {activeCandidate.label || "Beneficiary"} (
+                {activeCandidate.fullName ||
+                  (formData.givenName && formData.surname
+                    ? `${formData.givenName} ${formData.surname}`.trim()
+                    : "Primary Candidate")}
+                )
+              </b>
+            </div>
+          ) : undefined
         }
       >
-        {!embedded && (
-          <div className="sticky top-0 z-10 flex h-[64px] items-center gap-3 border-b border-[#d0e4f7] bg-white px-4 sm:gap-4 sm:px-6">
-            <button
-              onClick={onClose}
-              aria-label="Close"
-              className="hover:bg-primary/10 focus:ring-primary flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border-none bg-[#f4f7fb] text-[#3a4f63] transition-all outline-none focus:ring-2"
-            >
-              <X size={16} strokeWidth={2} />
-            </button>
-            <div className="flex-1" />
-            <QuickAccessButton
-              item={{
-                id: "service-book-medical-appointment",
-                title: "Book Medical Appointment",
-                href: "/book-appointment",
-                icon_name: "Clock",
-              }}
-              mode="icon"
-            />
-          </div>
-        )}
-        <div className="mx-auto w-full max-w-2xl px-5 py-12">
-          <div className="mb-2 text-[11px] font-bold tracking-widest text-teal-700 uppercase">
-            Rahvana Booking Service
-          </div>
-          <h2 className="mb-2 text-2xl font-bold text-slate-900">
-            Book your medical exam through Rahvana
-          </h2>
-          <p className="mb-8 text-sm leading-relaxed text-slate-600">
-            Rahvana will connect you with an embassy-approved physician in your area. Start the
-            booking service below to choose your location and preferred date.
-          </p>
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 shadow-sm">
+        {showIntro ? (
+          <div>
             {existingRequests && existingRequests.length > 0 && (
               <div className="mb-6">
                 <div className="mb-2 text-[11px] font-bold tracking-widest text-teal-700 uppercase">
@@ -3070,7 +3223,7 @@ export default function MedicalAppointmentTool({
             {statusLoading ? (
               <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3.5">
                 <svg
-                  className="h-4 w-4 animate-spin text-[#0d7377]"
+                  className="h-4 w-4 animate-spin text-teal-600"
                   viewBox="0 0 24 24"
                   fill="none"
                   aria-hidden="true"
@@ -3089,7 +3242,9 @@ export default function MedicalAppointmentTool({
                     d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"
                   />
                 </svg>
-                <span className="text-sm text-slate-600">Checking your existing appointments…</span>
+                <span className="text-sm text-slate-600">
+                  Checking your existing appointments...
+                </span>
               </div>
             ) : locked ? (
               <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3.5">
@@ -3113,148 +3268,18 @@ export default function MedicalAppointmentTool({
               </div>
             ) : (
               <button
+                type="button"
                 onClick={() => setStarted(true)}
-                className="w-full cursor-pointer rounded-xl bg-teal-700 py-3.5 font-bold text-white transition-colors hover:bg-teal-800"
+                className="svk-btn svk-btn-pri w-full"
               >
                 Start Booking Service
               </button>
             )}
           </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div
-      className={
-        isJourney
-          ? embedded
-            ? "w-full bg-slate-50 font-sans"
-            : "animate-in slide-in-from-bottom-[18px] fixed inset-0 z-[150] overflow-y-auto bg-slate-50 font-sans duration-[0.28s] ease-in-out"
-          : "site-main-px site-main-py mt-[55px] min-h-screen bg-slate-50"
-      }
-    >
-      {isJourney && !embedded && (
-        <div className="sticky top-0 z-10 flex h-[64px] items-center gap-3 border-b border-[#d0e4f7] bg-white px-4 sm:gap-4 sm:px-6">
-          {/* Close (left) */}
-          <button
-            onClick={onClose}
-            aria-label="Close"
-            className="hover:bg-primary/10 focus:ring-primary flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border-none bg-[#f4f7fb] text-[#3a4f63] transition-all outline-none focus:ring-2"
-          >
-            <X size={16} strokeWidth={2} />
-          </button>
-          {/* Progress (center) */}
-          <div className="h-[5px] min-w-4 flex-1 overflow-hidden rounded-[10px] bg-[#d0e4f7]">
-            <div
-              className="h-full bg-linear-to-r transition-all duration-500"
-              style={{ width: `${medProgressPct}%`, backgroundColor: "#0f766e" }}
-            />
-          </div>
-          <div className="shrink-0 text-[12px] font-medium whitespace-nowrap text-[#6b8097]">
-            Step {medCurrentStep} of {medTotalSteps}
-          </div>
-          {/* Quick access (right) */}
-          <QuickAccessButton
-            item={{
-              id: "service-book-medical-appointment",
-              title: "Book Medical Appointment",
-              href: "/book-appointment",
-              icon_name: "Clock",
-            }}
-            mode="icon"
-          />
-        </div>
-      )}
-      <div className={isJourney ? "mx-auto w-full max-w-4xl px-4 py-6" : "mx-auto max-w-4xl"}>
-        {/* Service heading + subtitle — always shown so the user immediately knows what this screen is. */}
-        <div className="mb-6 text-center sm:mb-8">
-          <h1 className="mb-2 text-2xl font-bold text-slate-900 sm:text-3xl">
-            {t("bookAppointment.title")}
-          </h1>
-          <p className="text-sm text-slate-600 sm:text-base">{t("bookAppointment.description")}</p>
-          {/* Active Candidate context indicator (Global Switcher reactive) */}
-          {isMultiCandidate && (
-            <div className="mt-3 flex justify-center">
-              <div className="inline-flex items-center gap-2 rounded-full border border-teal-200 bg-teal-50/90 px-3 py-1 text-xs font-semibold text-teal-800 shadow-sm backdrop-blur-sm">
-                <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-teal-500" />
-                <span>
-                  Booking for Beneficiary:{" "}
-                  <strong className="text-teal-900">
-                    {activeCandidate.label || "Beneficiary"} (
-                    {activeCandidate.fullName ||
-                      (formData.givenName && formData.surname
-                        ? `${formData.givenName} ${formData.surname}`.trim()
-                        : "Primary Candidate")}
-                    )
-                  </strong>
-                </span>
-              </div>
-            </div>
-          )}
-
-          {/* In-body quick access — standalone only (journey mode already has it in the topbar). */}
-          {!isJourney && (
-            <div className="mt-4 flex justify-center">
-              <QuickAccessButton
-                item={{
-                  id: "service-book-medical-appointment",
-                  title: t("bookAppointment.title") || "Book Medical Appointment",
-                  href: "/book-appointment",
-                  icon_name: "Clock",
-                }}
-              />
-            </div>
-          )}
-
-          
-
-          {step > 1 && step < 10 && step !== 9 && !isIOM && (!isJourney || embedded) && (
-            <div className="mt-6">
-              <div className="mb-2 flex justify-between px-1 text-[10px] text-slate-600 sm:px-0 sm:text-xs">
-                <span>{t("bookAppointment.progressSteps.location")}</span>
-                <span>
-                  {isAMC
-                    ? t("bookAppointment.progressSteps.amcInfo")
-                    : t("bookAppointment.progressSteps.hi")}
-                </span>
-                <span>{t("bookAppointment.progressSteps.info")}</span>
-                <span>{t("bookAppointment.progressSteps.passport")}</span>
-                <span>{t("bookAppointment.progressSteps.docs")}</span>
-                <span>{t("bookAppointment.progressSteps.when")}</span>
-                <span>{step === 8 ? "Checkout" : "Review"}</span>
-              </div>
-              <div className="h-2 w-full rounded-full bg-slate-200">
-                <div
-                  className="h-full rounded-full bg-teal-600 transition-all duration-300"
-                  style={{ width: `${((step - 1) / 7) * 100}%` }}
-                ></div>
-              </div>
-            </div>
-          )}
-          {isIOM && (!isJourney || embedded) && (step === 9 || step === 7 || step === 8) && (
-            <div className="mt-6">
-              <div className="mb-2 flex justify-between text-xs text-slate-600">
-                <span>{t("bookAppointment.progressSteps.location")}</span>
-                <span>{t("bookAppointment.progressSteps.iomInfo")}</span>
-                <span>{t("bookAppointment.progressSteps.review")}</span>
-                <span>Checkout</span>
-              </div>
-              <div className="h-2 w-full rounded-full bg-slate-200">
-                <div
-                  className="h-full rounded-full bg-teal-600 transition-all duration-300"
-                  style={{
-                    width: `${step === 9 ? 33 : step === 7 ? 66 : 100}%`,
-                  }}
-                ></div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        <Card className="border-0 bg-white p-4 shadow-lg sm:p-8">{renderStep()}</Card>
-      </div>
+        ) : (
+          <div className="svk-med">{renderStep()}</div>
+        )}
+      </ServiceSkinShell>
     </div>
   );
 }

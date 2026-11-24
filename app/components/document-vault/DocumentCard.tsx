@@ -71,7 +71,7 @@ export function DocumentCard({
     if (!uploadedDoc) {
       // Show "Missing" for documents not yet uploaded
       return (
-        <Badge className="bg-red-50 text-red-500 border-red-100 hover:bg-red-50 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800/50 flex items-center gap-1 font-bold">
+        <Badge className="flex items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-2 py-1 text-[10.5px] font-bold text-rose-600 hover:bg-rose-50">
           <AlertCircle className="w-3 h-3" />
           {t("documentVaultPage.components.documentCard.status.missing")}
         </Badge>
@@ -144,10 +144,10 @@ export function DocumentCard({
   };
 
   return (
-    <Card className="group relative overflow-hidden border-none shadow-sm hover:shadow-xl transition-all duration-300 bg-white dark:bg-slate-900 flex flex-col h-full">
+    <Card className="group relative flex h-full flex-col overflow-hidden rounded-[20px] border border-slate-200/80 bg-white shadow-[0_2px_8px_rgba(22,48,44,0.04)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#0F8F80]/35 hover:shadow-[0_16px_36px_-18px_rgba(10,79,73,0.30)] dark:border-slate-800 dark:bg-slate-900">
       {/* Top Status Bar */}
       <div
-        className={`h-1.5 w-full ${
+        className={`h-[3px] w-full ${
           !uploadedDoc
             ? "bg-red-400/50"
             : uploadedDoc.status === "UPLOADED"
@@ -158,14 +158,14 @@ export function DocumentCard({
         }`}
       ></div>
 
-      <div className="p-5 flex-1 flex flex-col">
+      <div className="flex flex-1 flex-col p-5">
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
               <div
-                className={`p-2 rounded-xl ${uploadedDoc ? "bg-emerald-50 text-emerald-600" : "bg-slate-50 text-slate-400"}`}
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] border ${uploadedDoc ? "border-emerald-100 bg-emerald-50 text-emerald-600" : "border-slate-200 bg-slate-50 text-slate-500"}`}
               >
-                <FileText className="w-5 h-5" />
+                <FileText className="h-5 w-5" />
               </div>
               <div className="flex-1">
                 {isEditing ? (
@@ -205,7 +205,7 @@ export function DocumentCard({
                     </Button>
                   </div>
                 ) : (
-                  <h3 className="font-extrabold text-slate-900 dark:text-white leading-tight flex items-center gap-1">
+                  <h3 className="flex items-center gap-1 text-[15px] leading-snug font-extrabold tracking-tight text-slate-900 dark:text-white">
                     {t(`documentVaultPage.documents.${documentDef.id}.name`) !==
                     `documentVaultPage.documents.${documentDef.id}.name`
                       ? t(`documentVaultPage.documents.${documentDef.id}.name`)
@@ -246,7 +246,7 @@ export function DocumentCard({
                 )}
               </div>
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-2 leading-relaxed font-medium">
+            <p className="mt-2 line-clamp-2 text-[12.5px] leading-[1.55] font-medium text-slate-500 dark:text-slate-400">
               {t(`documentVaultPage.documents.${documentDef.id}.description`) !==
               `documentVaultPage.documents.${documentDef.id}.description`
                 ? t(`documentVaultPage.documents.${documentDef.id}.description`)
@@ -274,7 +274,7 @@ export function DocumentCard({
 
         {/* Uploaded File Details (Glassmorphism card) */}
         {uploadedDoc && (
-          <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 mb-5 border border-slate-100 dark:border-slate-700/50 space-y-3 relative overflow-hidden">
+          <div className="relative mb-5 overflow-hidden space-y-3 rounded-[14px] border border-slate-200/70 bg-slate-50/80 p-4 dark:border-slate-700/50 dark:bg-slate-800/50">
             <div className="flex items-center justify-between text-[11px]">
               <span className="font-bold text-slate-500 uppercase tracking-tight">
                 {documentDef.multipleFilesAllowed && !documentDef.id.startsWith("dynamic-")
@@ -329,7 +329,7 @@ export function DocumentCard({
             <div className="flex gap-2">
               <Button
                 onClick={() => onUpload()}
-                className="flex-1 font-bold h-10 shadow-lg shadow-primary/20 bg-primary hover:bg-primary/95"
+                className="h-10 flex-1 rounded-[12px] bg-[#0A4F49] text-[12.5px] font-bold shadow-[0_8px_18px_-8px_rgba(10,79,73,0.45)] hover:bg-[#073834]"
               >
                 <Upload className="w-4 h-4 mr-2" />
                 {t("documentVaultPage.components.documentCard.upload")}
@@ -337,7 +337,7 @@ export function DocumentCard({
               <Button
                 onClick={onOpenWizard}
                 variant="outline"
-                className="flex-1 font-bold h-10 border-2"
+                className="h-10 flex-1 rounded-[12px] border border-slate-200 text-[12.5px] font-bold text-slate-700"
               >
                 {t("documentVaultPage.components.documentCard.learnHow")}
               </Button>

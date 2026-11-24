@@ -133,8 +133,8 @@ export function lockHint(feature: string, tier: PlanTier, purchasedAddons: strin
         // Upgrade-first framing: the plan is the recommended path; using the
         // resource on its own (paid with wallet credits) is the fallback.
         return upgradeName && e.upgradeTarget !== tier
-          ? `Included in the ${upgradeName} plan, or use ${e.addon.name} on its own with credits`
-          : `Use ${e.addon.name} on its own with credits`;
+          ? `Included in the ${upgradeName} plan, or use ${e.addon.name} on its own with jarthings`
+          : `Use ${e.addon.name} on its own with jarthings`;
       }
       return "Available as an add-on";
 

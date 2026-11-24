@@ -139,21 +139,21 @@ const RESOURCE_TABS: Record<ResourceMode, ResourceTabInfo> = {
     sub: "Self-serve tools",
     heading: "Individual tools",
     blurb:
-      "Self-serve tools you can use without a journey plan. Unlock each one once with credits.",
+      "Self-serve tools you can use without a journey plan. Unlock each one once with jarthings.",
   },
   services: {
     label: "Services",
     sub: "Expert help",
     heading: "Expert services",
     blurb:
-      "Human-delivered help when you want a specialist on your case. Paid with credits per request.",
+      "Human-delivered help when you want a specialist on your case. Paid with jarthings per request.",
   },
   guides: {
     label: "Guides",
     sub: "Step-by-step guides",
     heading: "Document guides",
     blurb:
-      "Country-specific, step-by-step guides for each required document. Unlock each one once with credits.",
+      "Country-specific, step-by-step guides for each required document. Unlock each one once with jarthings.",
   },
 };
 
@@ -775,25 +775,37 @@ function PricingContent() {
   const categoryCandidates = useMemo(() => {
     if (!isMultiCandidate && !isIr5) return [];
 
-    // Candidates of THIS category's pool (IR-2 and CR-2 children together), each joined
-    // to its own journey row by its category slot. An IR-2 child is never mistaken for an
-    // IR-5 parent, whatever its account-wide id.
-    const roster = (candidates || []) as any[];
-    const members = poolMembers(roster, canonicalVisa);
-    const poolBase = parseJourneyKey(journeyKeyForSlot(canonicalVisa, 1)).base;
-    const poolRows = (userJourneys || []).filter(
-      (j) => parseJourneyKey(String(j.journey_type || "")).base === poolBase
-    );
+    // 1. Base candidates from CandidateContext
+    const baseCandidates = (candidates || []).filter((c) => {
+      const cVisa = getBaseVisaCategory(c.visaCategory);
+      return (
+        cVisa === canonicalVisa ||
+        c.relation === "Mother" ||
+        c.relation === "Father" ||
+        c.relation === "Stepparent" ||
+        c.relation === "AdoptiveParent" ||
+        (!c.visaCategory && c.relation !== "Spouse")
+      );
+    });
 
-    const rowFor = (key: string) => {
-      const rows = poolRows.filter((j) => canonicalJourneyKey(String(j.journey_type || "")) === key);
-      return rows.find((j) => (j.subscription_tier || "free") !== "free") || rows[0];
-    };
+    // 2. Discover IR-5 candidate journeys from DB journeys
+    const ir5DbJourneys = (userJourneys || []).filter((j) => {
+      const raw = String(j.journey_type || "").toLowerCase();
+      return (
+        raw.includes("ir5") || raw.includes("ir-5") || (raw.startsWith("ir") && raw.includes("5"))
+      );
+    });
 
-    const merged = members.map((c) => {
-      const row = rowFor(getJourneyKeyForCandidate(c));
-      const rowTier = row?.subscription_tier || "free";
-      return {
+    if (ir5DbJourneys.length === 0) {
+      return baseCandidates;
+    }
+
+    // Merge DB journeys into candidate roster
+    const mergedMap = new Map<string, any>();
+
+    // Jarthing with baseCandidates
+    baseCandidates.forEach((c) => {
+      mergedMap.set(c.id.toLowerCase(), {
         ...c,
         tier: rowTier !== "free" ? rowTier : c.tier || "free",
         createdAt: c.createdAt || row?.created_at,
@@ -2779,8 +2791,8 @@ function PricingContent() {
                   </h2>
                   <p className="text-muted-foreground mb-4 text-[13.5px]">
                     You can also buy these one at a time, without a journey plan. Tools and guides
-                    unlock once with Rahvana credits, and services are paid with credits each time
-                    you book one ($1 = 1 credit).
+                    unlock once with Rahvana jarthings, and services are paid with jarthings each time
+                    you book one ($1 = 1 jarthing).
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {[
@@ -3015,14 +3027,14 @@ function PricingContent() {
                 <div className="border-border mb-3 flex items-center gap-2.5 border-b pb-3">
                   <Coins className="text-primary h-[18px] w-[18px]" strokeWidth={2} />
                   <span className="text-muted-foreground text-[11px] font-bold tracking-widest uppercase">
-                    Paid with credits
+                    Paid with jarthings
                   </span>
                 </div>
                 <p className="text-muted-foreground mb-4 text-[12.5px] leading-relaxed">
                   {mode === "services"
                     ? "Each service request is paid from your Rahvana wallet when you book it."
                     : "Open any item to preview it, then unlock it once from your Rahvana wallet. It stays unlocked for your account."}{" "}
-                  $1 buys 1 credit, and credits never expire.
+                  $1 buys 1 jarthing, and jarthings never expire.
                 </p>
                 {userId ? (
                   <button
@@ -3030,7 +3042,7 @@ function PricingContent() {
                     onClick={() => openTopup({ returnUrl: `/pricing?mode=${mode}` })}
                     className="bg-primary hover:bg-primary/90 w-full cursor-pointer rounded-full px-5 py-[11px] text-center text-[14px] font-semibold text-white"
                   >
-                    Top up credits
+                    Top up jarthings
                   </button>
                 ) : (
                   <Link
