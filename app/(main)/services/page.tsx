@@ -447,7 +447,6 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
     </div>
   ) : (
     <CatalogShell
-      eyebrow="Rahvana services"
       title={t("pages.services.heroTitle")}
       tagline={t("pages.services.heroDescription")}
       bandContent={

@@ -64,11 +64,11 @@ export function catalogPaletteVars(palette: CatalogPalette): React.CSSProperties
 
 /** Filled accent button (inside a CatalogCard, or any element that sets catalogPaletteVars). */
 export const CATALOG_BTN_PRIMARY =
-  "inline-flex h-9 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-[var(--cat-accent,#0F8F80)] px-4 text-[13px] font-semibold text-white transition-colors hover:bg-[var(--cat-accent-dark,#0A4F49)] focus-visible:ring-2 focus-visible:ring-[var(--cat-accent,#0F8F80)]/40 focus-visible:ring-offset-2 focus-visible:outline-none";
+  "inline-flex h-9 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-lg bg-[var(--cat-accent,#0F8F80)] px-4 text-[13px] font-semibold text-white transition-colors hover:bg-[var(--cat-accent-dark,#0A4F49)] focus-visible:ring-2 focus-visible:ring-[var(--cat-accent,#0F8F80)]/40 focus-visible:ring-offset-2 focus-visible:outline-none";
 
 /** Quiet outlined button that picks up the accent on hover. */
 export const CATALOG_BTN_GHOST =
-  "inline-flex h-9 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-full border border-[#DDD9CE] bg-white px-3.5 text-[13px] font-semibold text-[#16302C] transition-colors hover:border-[var(--cat-accent,#0F8F80)] hover:text-[var(--cat-accent-dark,#0A4F49)] focus-visible:ring-2 focus-visible:ring-[var(--cat-accent,#0F8F80)]/40 focus-visible:outline-none";
+  "inline-flex h-9 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-[#DDD9CE] bg-white px-3.5 text-[13px] font-semibold text-[#16302C] transition-colors hover:border-[var(--cat-accent,#0F8F80)] hover:text-[var(--cat-accent-dark,#0A4F49)] focus-visible:ring-2 focus-visible:ring-[var(--cat-accent,#0F8F80)]/40 focus-visible:outline-none";
 
 /** "Open tool ->" footer cue for cards that are links. */
 export function CatalogOpenCue({ label }: { label: React.ReactNode }) {
@@ -120,7 +120,7 @@ export function CatalogBadge({
 }) {
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10.5px] leading-none font-semibold tracking-wide uppercase ${BADGE_TONES[tone]}`}
+      className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11.5px] leading-none font-medium ${BADGE_TONES[tone]}`}
     >
       {icon}
       {children}
@@ -175,68 +175,53 @@ export function CatalogCard({
   onClick,
   locked = false,
   disabled = false,
-  index = 0,
 }: CatalogCardProps) {
   const interactive = !disabled && (!!href || !!onClick);
-  const className = `group relative flex h-full flex-col overflow-hidden rounded-[20px] border border-[#DDD9CE] bg-white text-left text-[#16302C] shadow-[0_1px_2px_rgba(22,48,44,0.05)] transition-all duration-300 animate-fade-up ${
+  const className = `group relative flex h-full flex-col rounded-[14px] border border-[#E4E0D6] bg-white text-left text-[#16302C] transition-[border-color,box-shadow] duration-200 ${
     disabled
       ? "cursor-not-allowed opacity-70"
-      : "hover:-translate-y-1 hover:border-[var(--cat-accent)]/45 hover:shadow-[0_24px_48px_-26px_rgba(22,48,44,0.42)]"
+      : "hover:border-[#CFC9BB] hover:shadow-[0_6px_18px_-10px_rgba(22,48,44,0.25)]"
   } ${interactive ? "cursor-pointer" : ""}`;
-  const style = {
-    ...catalogPaletteVars(palette),
-    animationDelay: `${Math.min(index, 8) * 70}ms`,
-  } as React.CSSProperties;
+  const style = catalogPaletteVars(palette);
 
   const body = (
     <>
-      {/* Accent rule + oversized ghost icon: the card reads as the tool it opens. */}
-      <span aria-hidden className="absolute inset-x-0 top-0 h-[3px] bg-[var(--cat-accent)]" />
-      <span
-        aria-hidden
-        className="pointer-events-none absolute -top-7 -right-7 text-[var(--cat-accent)] opacity-[0.07] transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-6"
-      >
-        {sizeIcon(icon, "h-36 w-36 stroke-[1.5]")}
-      </span>
-
-      <div className="relative flex grow flex-col px-6 pt-6 pb-5">
-        <div className="flex items-start justify-between gap-3">
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[var(--cat-accent-tint)] text-[var(--cat-accent)] ring-1 ring-[var(--cat-accent)]/10 transition-colors duration-300 group-hover:bg-[var(--cat-accent)] group-hover:text-white">
-            {sizeIcon(icon, "h-[22px] w-[22px] stroke-2")}
+      <div className="flex grow flex-col px-5 pt-5 pb-4">
+        <div className="flex items-start gap-3.5">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--cat-accent-tint)] text-[var(--cat-accent-dark)]">
+            {sizeIcon(icon, "h-5 w-5 stroke-[1.75]")}
           </span>
-          {(locked || topRight) && (
-            <div className="relative z-20 flex items-center gap-1.5">
-              {locked && <CatalogBadge icon={<Lock className="h-3 w-3" />}>Locked</CatalogBadge>}
-              {topRight}
-            </div>
+          <div className="min-w-0 flex-1 pt-0.5">
+            <h3 title={titleAttr} className="text-[16px] leading-snug font-semibold text-[#16302C]">
+              {title}
+            </h3>
+            {(eyebrow || locked) && (
+              <p className="mt-0.5 flex flex-wrap items-center gap-x-2 text-[13px] text-[#16302C]/55">
+                {eyebrow && <span>{eyebrow}</span>}
+                {locked && (
+                  <span className="inline-flex items-center gap-1 text-[#16302C]/60">
+                    <Lock className="h-3 w-3" />
+                    Locked
+                  </span>
+                )}
+              </p>
+            )}
+          </div>
+          {topRight && (
+            <div className="relative z-20 -mt-1 -mr-1 flex items-center">{topRight}</div>
           )}
         </div>
 
-        {eyebrow && (
-          <p className="mt-5 text-[11px] font-semibold tracking-[0.14em] text-[var(--cat-accent-dark)] uppercase">
-            {eyebrow}
-          </p>
-        )}
-        <h3
-          title={titleAttr}
-          className={`${eyebrow ? "mt-1.5" : "mt-5"} font-serif text-[21px] leading-snug font-semibold tracking-tight text-[#16302C]`}
-        >
-          {title}
-        </h3>
-        {subtitle && <p className="mt-1 text-xs leading-snug text-[#16302C]/55">{subtitle}</p>}
+        {subtitle && <p className="mt-3 text-xs leading-snug text-[#16302C]/55">{subtitle}</p>}
         {badges && <div className="mt-3 flex flex-wrap gap-1.5">{badges}</div>}
         {description && (
-          <p className="mt-2.5 grow text-sm leading-relaxed [text-wrap:pretty] text-[#16302C]/72">
-            {description}
-          </p>
+          <p className="mt-3 grow text-[13.5px] leading-relaxed text-[#16302C]/70">{description}</p>
         )}
         {children}
       </div>
 
       {footer && (
-        <div className="relative z-20 mt-auto border-t border-[#EEEBE3] bg-[#FBFAF7] px-6 py-3.5">
-          {footer}
-        </div>
+        <div className="relative z-20 mt-auto border-t border-[#EEEBE3] px-5 py-3">{footer}</div>
       )}
     </>
   );
@@ -340,10 +325,6 @@ export function CatalogBand({
         backgroundSize: "150px auto",
       }}
     >
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(900px_circle_at_12%_-20%,rgba(255,255,255,0.12),transparent_60%)]"
-      />
       <div className="relative mx-auto max-w-6xl">
         {eyebrow && (
           <p className="text-[11px] font-semibold tracking-[0.2em] text-white/60 uppercase">

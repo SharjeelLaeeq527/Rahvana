@@ -479,7 +479,6 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
     <>
       {modals}
       <CatalogShell
-        eyebrow="Rahvana guides"
         title="Master the Paperwork."
         tagline="Step-by-step guides for every document you need. Clear instructions, timelines, and common pitfalls to avoid."
         bandContent={
