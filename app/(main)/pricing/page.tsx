@@ -803,13 +803,15 @@ function PricingContent() {
     // Merge DB journeys into candidate roster
     const mergedMap = new Map<string, any>();
 
+    const rowTier = row?.subscription_tier || "free";
+    
     // Jarthing with baseCandidates
     baseCandidates.forEach((c) => {
       mergedMap.set(c.id.toLowerCase(), {
         ...c,
         tier: rowTier !== "free" ? rowTier : c.tier || "free",
         createdAt: c.createdAt || row?.created_at,
-      };
+      });
     });
 
     // Legacy rosters may miss a candidate whose journey exists (bought before the roster
