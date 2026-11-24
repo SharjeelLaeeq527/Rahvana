@@ -161,7 +161,7 @@ export const ADDON: Record<string, AddonInfo> = {
     id: "consultation",
     name: "Expert Consultation",
     price: 99,
-    unit: "for 1 credit",
+    unit: "per booking",
   },
   medical: {
     id: "medical",

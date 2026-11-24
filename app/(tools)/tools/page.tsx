@@ -437,7 +437,7 @@ export default function ToolsPage({ isEmbedded = false }: { isEmbedded?: boolean
             {/* My Tools — what the user owns */}
             <ResourceSectionHeader
               title="My Tools"
-              subtitle="Tools you've unlocked with credits or an earlier purchase."
+              subtitle="Tools you've unlocked with jarthings or an earlier purchase."
               className="-mt-16"
             />
             <div className="grid grid-cols-1 gap-x-6 gap-y-10 pt-6 md:grid-cols-2 lg:grid-cols-3">
@@ -671,7 +671,7 @@ function ToolCard({
             {isLocked && (
               <div className="shrink-0">
                 <CreditInfoTooltip
-                  message="Unlock once: spend credits one time, then use this tool as much as you like."
+                  message="Unlock once: spend jarthings one time, then use this tool as much as you like."
                   side="top"
                 />
               </div>
@@ -739,7 +739,7 @@ function ToolCard({
                 <button
                   type="button"
                   onClick={() => onLaunch(catalogItem)}
-                  aria-label={`Launch ${tool.title} for ${catalogItem.credits} credits`}
+                  aria-label={`Launch ${tool.title} for ${catalogItem.credits} jarthings`}
                   className="inline-flex h-9 items-center rounded-lg bg-[#0d7377] px-4 text-[13px] font-semibold whitespace-nowrap text-white transition-colors hover:bg-[#0a5c5f]"
                 >
                   Launch
@@ -750,19 +750,21 @@ function ToolCard({
             </div>
             {isPhotoBoothItem(catalogItem) && (
               <p className="text-muted-foreground -mt-1 mb-1 text-xs font-medium">
-                {catalogItem.credits} credits gives you 2 photos. Buy again when both are used.
+                {catalogItem.credits} jarthings gives you 2 photos. Buy again when both are used.
               </p>
             )}
           </>
         )}
         {!showDualCta && (
           <div className="flex items-center justify-between">
-            <span className="text-muted-foreground flex items-center gap-1 text-xs font-medium">
+            <span className="flex items-center">
               {perItemCredits !== null && !isInsideJourney && (
-                <>
-                  <CreditTypeIcon kind="tools" size={18} />
-                  {perItemCredits} credits per form
-                </>
+                <CreditTypeIcon
+                  kind="tools"
+                  size={24}
+                  amount={perItemCredits}
+                  suffix="jarthings per form"
+                />
               )}
             </span>
             {isRouteLocked ? (

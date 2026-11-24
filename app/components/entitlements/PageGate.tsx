@@ -129,7 +129,7 @@ export function PageGate({ feature, children, title, description, allow, creditU
                 onClick={creditUnlock.onUnlock}
                 className="group flex w-full items-center justify-center gap-2 rounded-xl bg-[#0d7377] py-3.5 text-[14px] font-bold text-white shadow-md transition-all hover:bg-[#0a5c5f]"
               >
-                Unlock with {creditUnlock.credits} Credits
+                Unlock with {creditUnlock.credits} Jarthings
                 <Coins size={16} strokeWidth={2.5} className="transition-transform group-hover:scale-110" />
               </button>
               <button

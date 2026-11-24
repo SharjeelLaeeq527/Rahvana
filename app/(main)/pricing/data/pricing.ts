@@ -342,7 +342,7 @@ export const ADDONS = [
     price: 39,
     unit: "per form",
     copy: "Auto-fills your official USCIS form from your profile data and generates a ready-to-upload PDF.",
-    note: "One completed form per credit",
+    note: "One completed form per unlock",
   },
   {
     id: "sponsor",
@@ -387,7 +387,7 @@ export const ADDONS = [
     kind: "services",
     title: "Expert Consultation",
     price: 99,
-    unit: "for 1 credit",
+    unit: "per booking",
     copy: "Targeted 30-minute video session with a specialist for situation-specific guidance on your case.",
     note: "Scheduled within 3 business days",
   },
@@ -545,7 +545,7 @@ export const FAQS: [string, string][] = [
   ],
   [
     "Can I buy a single tool, guide or service?",
-    "Yes, with Rahvana credits ($1 = 1 credit). Top up your wallet, then unlock a tool or guide once from its own page (for example the Smart Form Filler for 39 credits) and it stays unlocked for your account. Services are paid with credits each time you book one. Inside a journey, your journey plan decides what is included. Credits never expire.",
+    "Yes, with Rahvana jarthings ($1 = 1 jarthing). Top up your wallet, then unlock a tool or guide once from its own page (for example the Smart Form Filler for 39 jarthings) and it stays unlocked for your account. Services are paid with jarthings each time you book one. Inside a journey, your journey plan decides what is included. Jarthings never expire.",
   ],
   [
     "Is my data secure?",

@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Calendar,
-  Clock,
   User,
   Mail,
   Phone,
@@ -16,18 +15,21 @@ import {
   ChevronLeft,
   X as CloseIcon,
   Crown,
-  CreditCard,
   ShoppingBag,
   Sparkles,
   ChevronDown,
   Lock,
-  MessageCircle,
   Coins,
 } from "lucide-react";
 import { useWallet } from "@/app/context/WalletContext";
 import { serviceBookingErrorMessage } from "@/lib/wallet/client";
 import type { ToolModeProps } from "@/types/tool-mode";
 import { useResolveToolMode } from "@/lib/hooks/useResolveToolMode";
+import ServiceSkinShell from "@/components/tools/service-skin/ServiceSkinShell";
+import {
+  SERVICE_SKIN_FAQ,
+  SERVICE_SKIN_TAGLINE,
+} from "@/components/tools/service-skin/serviceSkinCopy";
 import { usePlan, normalizePlanTier } from "@/app/context/PlanContext";
 import type { PlanTier } from "@/lib/entitlements/config";
 import type { JourneyServiceRecord } from "@/lib/journey/toolModeGuards";
@@ -44,7 +46,6 @@ import { useAuth } from "@/app/context/AuthContext";
 import { PageGate } from "@/app/components/entitlements/PageGate";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { useToast } from "@/app/components/shared/ToastProvider";
-import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 import { PhoneInput } from "@/components/ui/phone-input";
 import type { Value as E164Number } from "react-phone-number-input";
 import { validatePhoneNumber, formatPhoneNumber } from "@/lib/validation/phone";
@@ -783,7 +784,7 @@ export default function BookConsultationTool({
       if (wallet.balance === null || wallet.balance < costCredits) {
         wallet.openTopup({ amount: deficit });
         showToast(
-          `You need 99 credits for an expert consultation (Balance: ${wallet.balance ?? 0} credits). Please top up to proceed.`,
+          `You need 99 jarthings for an expert consultation (Balance: ${wallet.balance ?? 0} jarthings). Please top up to proceed.`,
           "error"
         );
         setLoading(false);
@@ -903,7 +904,7 @@ export default function BookConsultationTool({
             const deficitAmount = deductResult.body.deficit ?? costCredits;
             wallet.openTopup({ amount: deductResult.body.topupAmount ?? deficitAmount });
             showToast(
-              `Insufficient credits. Please top up ${deficitAmount} credits to complete your booking.`,
+              `Insufficient jarthings. Please top up ${deficitAmount} jarthings to complete your booking.`,
               "error"
             );
             setLoading(false);
@@ -2317,7 +2318,7 @@ export default function BookConsultationTool({
               <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/10 px-4 py-2 backdrop-blur-md">
                 <Coins className="h-4 w-4 text-amber-300" />
                 <span className="text-sm font-semibold">
-                  {wallet.isLoading ? "..." : `${wallet.balance ?? 0} Credits Available`}
+                  {wallet.isLoading ? "..." : `${wallet.balance ?? 0} Jarthings Available`}
                 </span>
               </div>
             </div>
@@ -2419,27 +2420,27 @@ export default function BookConsultationTool({
                     <div className="space-y-4">
                       <div className="flex items-center justify-between text-sm">
                         <span className="font-medium text-slate-600">1x Expert Consultation</span>
-                        <span className="font-bold text-slate-800">99 Credits ($99.00)</span>
+                        <span className="font-bold text-slate-800">99 Jarthings ($99.00)</span>
                       </div>
 
                       <div className="flex items-center justify-between text-sm">
                         <span className="font-medium text-slate-600">Wallet Balance</span>
                         <span className="font-bold text-slate-800">
-                          {wallet.isLoading ? "..." : `${wallet.balance ?? 0} Credits`}
+                          {wallet.isLoading ? "..." : `${wallet.balance ?? 0} Jarthings`}
                         </span>
                       </div>
 
                       {hasWalletCredits && (
                         <div className="flex items-center justify-between text-sm text-[#0d7377]">
                           <span className="font-medium">Balance After Booking</span>
-                          <span className="font-bold">{(wallet.balance ?? 99) - 99} Credits</span>
+                          <span className="font-bold">{(wallet.balance ?? 99) - 99} Jarthings</span>
                         </div>
                       )}
 
                       <div className="mt-2 flex items-center justify-between border-t border-slate-200 pt-4">
                         <span className="text-base font-bold text-slate-900">Total Due</span>
                         <span className="text-xl font-black text-slate-900">
-                          99 Credits ($99.00)
+                          99 Jarthings ($99.00)
                         </span>
                       </div>
                     </div>
@@ -2675,39 +2676,31 @@ export default function BookConsultationTool({
   if (!isOpen) return null;
 
   const consultTotalSteps = isJourney ? 3 : 4;
-  // Metro-line stations. In journey mode the Checkout station is dropped (payment is
-  // handled by the plan/tier gate, not in-wizard Stripe), so the wizard finalizes from
-  // Select Time — mirroring how MedicalAppointmentTool removes its checkout step in
-  // journey (`medTotalSteps = isJourney ? 7 : 8`).
-  const consultMetroSteps = [
-    { step: 1, label: "Case Details", icon: FileText },
-    { step: 2, label: "Contact Info", icon: User },
-    { step: 3, label: "Select Time", icon: Clock },
-    ...(isJourney ? [] : [{ step: 4, label: "Checkout", icon: CreditCard }]),
-  ];
+  // Journey mode has no checkout step: the plan covers payment, so the wizard
+  // finalizes from "Pick a time" (same as Medical / PCC).
   const consultCurrentStep = Math.min(currentStep, consultTotalSteps);
-  const consultProgressPct = Math.min(
-    100,
-    Math.round(((consultCurrentStep - 1) / (consultTotalSteps - 1)) * 100)
-  );
+
+  const consultHeads: Array<[string, string]> = [
+    ["What do you need help with?", "Pick the closest topic. An expert reads it before your call."],
+    ["How can we reach you?", "We send your booking details here."],
+    ["When suits you?", "Pick a day, then a time that works for you."],
+    ["Check and confirm", "Make sure everything looks right before you book."],
+  ];
+  const consultShowIntro = isJourney && !started;
+  const consultHead = consultHeads[consultCurrentStep - 1] ?? consultHeads[0];
 
   return (
     <div
       className={
         isJourney
           ? embedded
-            ? started
-              ? "w-full bg-white font-sans"
-              : "w-full font-sans"
+            ? "w-full font-sans"
             : "animate-in slide-in-from-bottom-[18px] fixed inset-0 z-[150] flex flex-col overflow-hidden bg-white font-sans duration-[0.28s] ease-in-out"
-          : "bg-gray-50 pt-[55px] pb-12"
+          : "bg-white pt-[55px]"
       }
     >
-      {/* Journey topbar — mirrors Medical/PCC exactly (Close button + progress bar + step counter).
-          Uses `shrink-0` (not `sticky`) because the outer wrapper is a flex column with
-          `overflow-hidden`; the scrollable region lives one level deeper. In `embedded`
-          mode this topbar is dropped entirely and the RoadmapLayoutEngine breadcrumb
-          (Dashboard › Expert Consultation › ✕) provides close/back instead. */}
+      {/* Journey overlay topbar: Close only. Progress lives in the service pane. In
+          `embedded` mode the RoadmapLayoutEngine breadcrumb provides close/back instead. */}
       {isJourney && !embedded && (
         <div className="z-10 flex h-[64px] shrink-0 items-center gap-3 border-b border-[#d0e4f7] bg-white px-4 sm:gap-4 sm:px-6">
           <button
@@ -2717,321 +2710,160 @@ export default function BookConsultationTool({
           >
             <CloseIcon size={16} strokeWidth={2} />
           </button>
-          <div className="h-[5px] min-w-4 flex-1 overflow-hidden rounded-[10px] bg-[#d0e4f7]">
-            <div
-              className="h-full transition-all duration-500"
-              style={{ width: `${consultProgressPct}%`, backgroundColor: "#0f766e" }}
-            />
-          </div>
+          <div className="flex-1" />
           <div className="shrink-0 text-[12px] font-medium whitespace-nowrap text-[#6b8097]">
-            Step {consultCurrentStep} of {consultTotalSteps}
+            {consultShowIntro
+              ? "Expert consultation"
+              : `Step ${consultCurrentStep} of ${consultTotalSteps}`}
           </div>
         </div>
       )}
 
-      {/* Standalone-only hero: gradient banner, credits pill, Book New / My Requests tabs.
-          Journey mode replaces all of that with the topbar above, and the wizard's own
-          intro screen already explains what the service does. */}
-      {!isJourney && (
-        <div className="relative mb-10 overflow-hidden bg-linear-to-r from-teal-800 to-teal-600 py-16 text-white">
-          <div className="relative z-10 w-full px-4">
-            <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
+      {/* Single scroll region in journey overlay mode (outer is fixed + overflow-hidden). */}
+      <div className={cn(isJourney && !embedded && "min-h-0 flex-1 overflow-y-auto")}>
+        {activeView === "booking" && (
+          <ServiceSkinShell
+            service="consult"
+            title="Expert consultation"
+            tagline={SERVICE_SKIN_TAGLINE.consult}
+            steps={[
+              "Your case",
+              "Contact",
+              "Pick a time",
+              ...(isJourney ? [] : ["Review & pay"]),
+            ]}
+            current={consultShowIntro ? -1 : consultCurrentStep - 1}
+            onStepSelect={consultShowIntro ? undefined : (j) => setCurrentStep(j + 1)}
+            heading={
+              consultShowIntro ? "Book your expert consultation through Rahvana" : consultHead[0]
+            }
+            subheading={
+              consultShowIntro
+                ? "Rahvana connects you one-on-one with a U.S. immigration expert who will review your case, answer your questions, and help you plan the next step."
+                : consultHead[1]
+            }
+            kicker={consultShowIntro ? "Rahvana consultation service" : undefined}
+            timeEstimate="3 min"
+            faq={SERVICE_SKIN_FAQ.consult}
+            layout={isJourney ? (embedded ? "embedded" : "overlay") : "page"}
+            topOffset={isJourney ? 0 : 60}
+            viewportOffset={isJourney ? (embedded ? 0 : 64) : 60}
+            onRequests={!isJourney ? () => setActiveView("requests") : undefined}
+          >
+            {consultShowIntro ? (
               <div>
-                <h1 className="mb-4 text-4xl font-black md:text-5xl">
-                  Book <span className="text-teal-200">Expert Consultation</span>
-                </h1>
-                <p className="max-w-2xl text-xl font-light text-teal-50">
-                  Personalized guidance for your U.S. immigration journey.
-                </p>
-                <div className="mt-5 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white ring-1 ring-white/20 backdrop-blur-sm">
-                  <Coins className="h-4 w-4 text-amber-300" />
-                  {wallet.isLoading ? (
-                    <span>Loading credits...</span>
-                  ) : (
-                    <span>Wallet Balance: {wallet.balance ?? 0} Credits</span>
-                  )}
+                {existingRequests && existingRequests.length > 0 && (
+                  <div className="mb-6">
+                    <div className="mb-2 text-[11px] font-bold tracking-widest text-teal-700 uppercase">
+                      Your Consultations
+                    </div>
+                    <div className="space-y-4">
+                      {existingRequests.map((req) => (
+                        <ConsultationRequestCard key={req.id} req={req} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {statusLoading ? (
+                  <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3.5">
+                    <svg
+                      className="h-4 w-4 animate-spin text-teal-600"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      aria-hidden="true"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"
+                      />
+                    </svg>
+                    <span className="text-sm text-slate-600">
+                      Checking your existing consultations...
+                    </span>
+                  </div>
+                ) : locked ? (
+                  <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3.5">
+                    <Lock className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+                    <div className="text-sm leading-relaxed text-amber-900">
+                      {lockHint ??
+                        "You already have an active consultation. You can book another once its session takes place."}
+                    </div>
+                  </div>
+                ) : (
                   <button
                     type="button"
-                    onClick={() => wallet.openTopup({ amount: deficit })}
-                    className="ml-2 rounded-full bg-white/20 px-2.5 py-0.5 text-xs font-bold text-white transition-colors hover:bg-white/30"
+                    onClick={() => setStarted(true)}
+                    className="svk-btn svk-btn-pri w-full"
                   >
-                    Top Up
+                    Start Consultation Service
                   </button>
-                </div>
+                )}
+
+                <p className="mt-6 text-[12px] leading-[1.65] text-[#66787a]">
+                  Consultation slots are subject to expert availability. Rahvana provides
+                  scheduling and guidance only; final immigration decisions rest with USCIS and
+                  your consulate.
+                </p>
               </div>
-              <div className="flex shrink-0 flex-col items-start gap-4 md:items-end">
-                <QuickAccessButton
-                  item={{
-                    id: "book-a-consultation",
-                    title: "Book Consultation",
-                    href: "/book-consultation",
-                    icon_name: "Briefcase",
-                  }}
-                  className="!border-white/25 !text-white hover:!bg-white/20 focus-visible:ring-white/50"
-                />
-                <div className="flex gap-3">
-                  <Button
-                    onClick={() => setActiveView("booking")}
-                    className={cn(
-                      "flex items-center gap-2 rounded-full px-6 py-2 text-sm font-bold",
-                      "transition-colors duration-200",
-                      "focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:outline-none",
-                      activeView === "booking"
-                        ? "!bg-white !text-teal-800 shadow-lg hover:!bg-white hover:!text-teal-800"
-                        : "!border !border-white/25 !bg-white/10 !text-white hover:!border-white/40 hover:!bg-white/20 hover:!text-white active:!bg-white/25"
-                    )}
-                  >
-                    Book New
-                  </Button>
-
-                  <Button
-                    onClick={() => setActiveView("requests")}
-                    className={cn(
-                      "rounded-full px-6 py-2 text-sm font-bold",
-                      "transition-colors duration-200",
-                      "focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:outline-none",
-                      activeView === "requests"
-                        ? "!bg-white !text-teal-800 shadow-lg hover:!bg-white hover:!text-teal-800"
-                        : "!border !border-white/25 !bg-white/10 !text-white hover:!border-white/40 hover:!bg-white/20 hover:!text-white active:!bg-white/25"
-                    )}
-                  >
-                    My Requests
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <Globe className="absolute -right-20 -bottom-20 h-80 w-80 text-white/5" />
-        </div>
-      )}
-
-      {/* Scrollable content region — in journey mode this is the single scroll bar
-          (fixed inset-0 flex-col + overflow-hidden outer means the outer doesn't
-          scroll, so no double scroll with the wizard's internal calendar). In
-          standalone mode this wrapper is a passthrough with no styling. */}
-      <div className={cn(isJourney && !embedded && "min-h-0 flex-1 overflow-y-auto")}>
-        <div className={cn("relative z-20 mx-auto max-w-7xl px-4", isJourney && "py-6 sm:py-8")}>
-          {/* Journey mode: intro header shown once the wizard has started. Placed inside the
-              scrollable region so it scrolls away with the content (not pinned). */}
-          {isJourney && started && (
-            <div className="mb-5 px-1 text-center">
-              <h1 className="flex items-center justify-center gap-2.5 text-xl font-bold text-gray-900">
-                <div className="bg-primary/10 shrink-0 rounded-xl p-2">
-                  <MessageCircle className="text-primary" size={22} />
-                </div>
-                Book Expert Consultation
-              </h1>
-              <p className="mt-1.5 text-sm text-slate-600">
-                Get targeted 30-minute guidance from a specialist for your specific case.
-              </p>
-            </div>
-          )}
-
-          {activeView === "booking" && (
-            <div
-              className={cn(
-                "slide-up overflow-hidden rounded-3xl",
-                // Journey intro step: transparent so the page shows through (matches
-                // Medical/PCC). Once the wizard starts (and in standalone) keep the
-                // framed white card.
-                isJourney && !started
-                  ? "bg-transparent"
-                  : "border border-teal-100 bg-white shadow-2xl"
-              )}
-            >
-              {/* Improved Progress Tracker — metro-line stepper.
-                Journey mode: hidden on the intro screen (before `started`), shown once the
-                wizard is running so the metro line matches step 1..4 progress.
-                Standalone mode: always shown below the hero. */}
-              {(!isJourney || started) && (
-                <div className="border-b border-gray-100 bg-gray-50/50 px-3 py-6 sm:p-8">
-                  <div className="relative mx-auto flex max-w-2xl items-start justify-between">
-                    {/* Connecting rail — inset so it runs exactly dot-to-dot
-                    (first/last station centers sit at 12.5% / 87.5% of the row) */}
-                    <div
-                      className="absolute top-4 -z-10 h-0.5 bg-gray-200 sm:top-5"
-                      style={{
-                        left: `${50 / consultMetroSteps.length}%`,
-                        right: `${50 / consultMetroSteps.length}%`,
-                      }}
-                    >
-                      <div
-                        className="h-full bg-teal-600 transition-all duration-500"
-                        style={{ width: `${((currentStep - 1) / (consultTotalSteps - 1)) * 100}%` }}
-                      />
-                    </div>
-
-                    {consultMetroSteps.map((item) => (
-                      <div
-                        key={item.step}
-                        className="flex flex-1 flex-col items-center gap-1.5 px-0.5 sm:gap-2"
-                      >
-                        <div
-                          className={cn(
-                            "flex h-8 w-8 items-center justify-center rounded-full border-2 transition-all duration-300 sm:h-10 sm:w-10",
-                            currentStep >= item.step
-                              ? "border-teal-600 bg-teal-600 text-white shadow-lg shadow-teal-200"
-                              : "border-gray-200 bg-white text-gray-400"
-                          )}
-                        >
-                          {currentStep > item.step ? (
-                            <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5" />
-                          ) : (
-                            <item.icon className="h-4 w-4 sm:h-5 sm:w-5" />
-                          )}
-                        </div>
-                        <span
-                          className={cn(
-                            "text-center text-[10px] leading-tight font-bold tracking-tight uppercase sm:text-xs",
-                            currentStep >= item.step ? "text-teal-900" : "text-gray-400"
-                          )}
-                        >
-                          {item.label}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Journey mode: three-state intro mirrors Medical/PCC exactly —
-                eyebrow + heading + description + framed card containing service blurb,
-                existing-request cards (if any), and one of:
-                  statusLoading → slate/teal "Checking…" row.
-                  locked        → amber Lock banner with full-sentence lockHint.
-                  else          → teal "Start Consultation Service" CTA that flips `started`.
-                Standalone mode skips this whole block (the wizard is revealed immediately). */}
-              {isJourney && !started && (
-                <div className="mx-auto w-full max-w-2xl px-5 py-8">
-                  <div className="mb-2 text-[11px] font-bold tracking-widest text-teal-700 uppercase">
-                    Rahvana Consultation Service
-                  </div>
-                  <h2 className="mb-2 text-2xl font-bold text-slate-900">
-                    Book your expert consultation through Rahvana
-                  </h2>
-                  <p className="mb-8 text-sm leading-relaxed text-slate-600">
-                    Rahvana connects you one-on-one with a U.S. immigration expert who will review
-                    your case, answer your questions, and help you plan the next step. Start the
-                    booking service below to describe your case and pick a slot.
-                  </p>
-
-                  <div className="rounded-2xl bg-slate-50 p-6">
-                    {existingRequests && existingRequests.length > 0 && (
-                      <div className="mb-6">
-                        <div className="mb-2 text-[11px] font-bold tracking-widest text-teal-700 uppercase">
-                          Your Consultations
-                        </div>
-                        <div className="space-y-4">
-                          {existingRequests.map((req) => (
-                            <ConsultationRequestCard key={req.id} req={req} />
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {statusLoading ? (
-                      <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3.5">
-                        <svg
-                          className="h-4 w-4 animate-spin text-[#0d7377]"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          aria-hidden="true"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          />
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"
-                          />
-                        </svg>
-                        <span className="text-sm text-slate-600">
-                          Checking your existing consultations…
-                        </span>
-                      </div>
-                    ) : locked ? (
-                      <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3.5">
-                        <Lock className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
-                        <div className="text-sm leading-relaxed text-amber-900">
-                          {lockHint ??
-                            "You already have an active consultation. You can book another once its session takes place."}
-                        </div>
-                      </div>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => setStarted(true)}
-                        className="w-full cursor-pointer rounded-xl bg-teal-700 py-3.5 font-bold text-white transition-colors hover:bg-teal-800"
-                      >
-                        Start Consultation Service
-                      </button>
-                    )}
-                  </div>
-
-                  <p className="mt-6 text-center text-[11.5px] leading-[1.65] text-[#6b8097]">
-                    Consultation slots are subject to expert availability. Rahvana provides
-                    scheduling and guidance only; final immigration decisions rest with USCIS and
-                    your consulate.
-                  </p>
-                </div>
-              )}
-
-              {(!isJourney || started) && (
-                <form onSubmit={handleSubmit} className="p-4 sm:p-8 md:p-12">
-                  <div>{renderStepContent()}</div>
-                  <div className="mt-4 flex items-center justify-between gap-4 border-t bg-gray-50 px-4 py-3 sm:px-8 sm:py-5">
-                    <Button
+            ) : (
+              <form onSubmit={handleSubmit}>
+                <div>{renderStepContent()}</div>
+                <div className="svk-actions">
+                  {currentStep > 1 && (
+                    <button
                       key="prev-btn"
                       type="button"
-                      variant="ghost"
                       onClick={prevStep}
-                      disabled={currentStep === 1}
-                      className="gap-1 bg-teal-600 px-2 text-xs text-white hover:bg-teal-700 sm:gap-2 sm:px-4 sm:text-sm"
+                      className="svk-btn svk-btn-gho"
                     >
-                      <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4" /> Previous
-                    </Button>
-                    {currentStep < consultTotalSteps ? (
-                      <Button
-                        key="next-btn"
-                        type="button"
-                        onClick={handleNext}
-                        className="gap-1 bg-teal-600 px-4 text-xs hover:bg-teal-700 sm:gap-2 sm:px-8 sm:text-sm"
-                      >
-                        Next <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
-                      </Button>
-                    ) : (
-                      <Button
-                        key="submit-btn"
-                        type={isJourney || hasWalletCredits ? "submit" : "button"}
-                        onClick={
-                          !isJourney && !hasWalletCredits
-                            ? () => wallet.openTopup({ amount: deficit })
-                            : undefined
-                        }
-                        disabled={!formData.selected_slot || loading}
-                        className="gap-1 bg-teal-600 px-4 text-xs hover:bg-teal-700 sm:gap-2 sm:px-8 sm:text-sm"
-                      >
-                        {loading
-                          ? "Processing..."
-                          : isJourney
-                            ? "Confirm & Book"
-                            : hasWalletCredits
-                              ? "Pay 99 Credits & Book"
-                              : `Top up ${deficit} Credits to Book`}
-                      </Button>
-                    )}
-                  </div>
-                </form>
-              )}
-            </div>
-          )}
-        </div>
+                      <ChevronLeft className="h-4 w-4" /> Back
+                    </button>
+                  )}
+                  {currentStep < consultTotalSteps ? (
+                    <button
+                      key="next-btn"
+                      type="button"
+                      onClick={handleNext}
+                      className="svk-btn svk-btn-pri"
+                    >
+                      Continue <ChevronRight className="h-4 w-4" />
+                    </button>
+                  ) : (
+                    <button
+                      key="submit-btn"
+                      type={isJourney || hasWalletCredits ? "submit" : "button"}
+                      onClick={
+                        !isJourney && !hasWalletCredits
+                          ? () => wallet.openTopup({ amount: deficit })
+                          : undefined
+                      }
+                      disabled={!formData.selected_slot || loading}
+                      className="svk-btn svk-btn-pri"
+                    >
+                      {loading
+                        ? "Processing..."
+                        : isJourney
+                          ? "Confirm & Book"
+                          : hasWalletCredits
+                            ? "Pay 99 Jarthings & Book"
+                            : `Top up ${deficit} Jarthings to Book`}
+                    </button>
+                  )}
+                </div>
+              </form>
+            )}
+          </ServiceSkinShell>
+        )}
       </div>
 
       {/* UpgradeModal for expert_consultation */}

@@ -154,7 +154,7 @@ export default function ResourceToolCard({
                 fontFamily: '"DM Serif Display", serif',
               }}
             >
-              {credits !== undefined ? `${credits} credits` : `$${addon.price}`}
+              {credits !== undefined ? `${credits} jarthings` : `$${addon.price}`}
             </div>
 
             <div className="mt-1 whitespace-nowrap text-[8px] text-muted-foreground sm:text-[10px]">

@@ -3611,7 +3611,7 @@
     "progressSteps": {
       "location": "Location",
       "amcInfo": "AMC Info",
-      "hi": "HI",
+      "hi": "Basic Info",
       "info": "Info",
       "passport": "Passport",
       "docs": "Docs",

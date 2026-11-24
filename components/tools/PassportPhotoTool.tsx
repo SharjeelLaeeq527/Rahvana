@@ -658,7 +658,7 @@ export default function PassportPhotoTool({
                     : buysPhotoPacks
                       ? remainingCredits !== null && remainingCredits > 0
                         ? `You can make ${remainingCredits} more photo${remainingCredits === 1 ? "" : "s"}. Each photo you make uses 1.`
-                        : `Buy Photo Booth for ${photoWallet.item?.credits} credits to make ${PHOTO_BOOTH_PHOTOS_PER_PURCHASE} photos. When both are used, buy again for ${PHOTO_BOOTH_PHOTOS_PER_PURCHASE} more.`
+                        : `Buy Photo Booth for ${photoWallet.item?.credits} jarthings to make ${PHOTO_BOOTH_PHOTOS_PER_PURCHASE} photos. When both are used, buy again for ${PHOTO_BOOTH_PHOTOS_PER_PURCHASE} more.`
                       : remainingCredits !== null
                         ? remainingCredits > 0
                           ? `You can make ${remainingCredits} more photo${remainingCredits === 1 ? "" : "s"}.`
@@ -801,7 +801,7 @@ export default function PassportPhotoTool({
                 <Lock className="h-5 w-5" />
                 <span>
                   {buysPhotoPacks && photoWallet.item
-                    ? `Buy ${PHOTO_BOOTH_PHOTOS_PER_PURCHASE} photos for ${photoWallet.item.credits} credits`
+                    ? `Buy ${PHOTO_BOOTH_PHOTOS_PER_PURCHASE} photos for ${photoWallet.item.credits} jarthings`
                     : effectiveTier === "premium"
                       ? "Upgrade to Executive"
                       : "Upgrade to continue"}

@@ -831,7 +831,7 @@ function GuideCard({
             {featureLocked && (
               <div className="shrink-0">
                 <CreditInfoTooltip
-                  message="Unlock once: spend credits one time, then use this guide as much as you like."
+                  message="Unlock once: spend jarthings one time, then use this guide as much as you like."
                   side="top"
                 />
               </div>
@@ -880,7 +880,7 @@ function GuideCard({
           {walletUnlocked && !hasJourneyPlanAccess && !isInsideJourney && (
             <span className="inline-flex items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-blue-800 uppercase dark:border-blue-800/40 dark:bg-blue-950/40 dark:text-blue-300">
               <CheckCircle2 size={11} className="text-blue-600 dark:text-blue-400" />
-              Unlocked with Credits
+              Unlocked with Jarthings
             </span>
           )}
         </div>
@@ -916,7 +916,7 @@ function GuideCard({
                 <button
                   type="button"
                   onClick={() => onLaunch(catalogItem)}
-                  aria-label={`Launch ${guide.title} for ${catalogItem.credits} credits`}
+                  aria-label={`Launch ${guide.title} for ${catalogItem.credits} jarthings`}
                   className="inline-flex h-9 items-center rounded-lg bg-[#0d7377] px-4 text-[13px] font-semibold whitespace-nowrap text-white transition-colors hover:bg-[#0a5c5f]"
                 >
                   Launch

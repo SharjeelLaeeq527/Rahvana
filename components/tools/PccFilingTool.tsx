@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef, Suspense, Fragment } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ShieldCheck,
   ChevronRight,
   ChevronLeft,
   User,
@@ -37,11 +36,18 @@ import { serviceBookingErrorMessage } from "@/lib/wallet/client";
 import { E, msg } from "@/lib/errors";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 import { Input } from "@/components/ui/input";
 import type { ToolModeProps } from "@/types/tool-mode";
 import { useResolveToolMode } from "@/lib/hooks/useResolveToolMode";
+import ServiceSkinShell from "@/components/tools/service-skin/ServiceSkinShell";
+import ServiceSubjectPicker, {
+  SOMEONE_ELSE_ID,
+} from "@/components/tools/service-skin/ServiceSubjectPicker";
+import {
+  SERVICE_SKIN_FAQ,
+  SERVICE_SKIN_TAGLINE,
+} from "@/components/tools/service-skin/serviceSkinCopy";
 import { normalizePlanTier } from "@/app/context/PlanContext";
 import type { PlanTier } from "@/lib/entitlements/config";
 import PccRequestCard, { type PccRequestRow } from "@/components/services/PccRequestCard";
@@ -181,26 +187,26 @@ const CheckoutStep = ({
               <div className="space-y-4">
                 <div className="flex items-center justify-between text-sm">
                   <span className="font-medium text-gray-600">1x PCC Filing (Sindh)</span>
-                  <span className="font-bold text-gray-800">25 Credits ($25.00)</span>
+                  <span className="font-bold text-gray-800">25 Jarthings ($25.00)</span>
                 </div>
 
                 <div className="flex items-center justify-between text-sm">
                   <span className="font-medium text-gray-600">Wallet Balance</span>
                   <span className="font-bold text-gray-800">
-                    {walletLoading ? "..." : `${walletBalance ?? 0} Credits`}
+                    {walletLoading ? "..." : `${walletBalance ?? 0} Jarthings`}
                   </span>
                 </div>
 
                 {hasWalletCredits && (
                   <div className="flex items-center justify-between text-sm text-[#0d7377]">
                     <span className="font-medium">Balance After Booking</span>
-                    <span className="font-bold">{(walletBalance ?? 25) - costCredits} Credits</span>
+                    <span className="font-bold">{(walletBalance ?? 25) - costCredits} Jarthings</span>
                   </div>
                 )}
 
                 <div className="mt-2 flex items-center justify-between border-t border-gray-200 pt-4">
                   <span className="text-base font-bold text-gray-900">Total Due</span>
-                  <span className="text-xl font-black text-gray-900">25 Credits ($25.00)</span>
+                  <span className="text-xl font-black text-gray-900">25 Jarthings ($25.00)</span>
                 </div>
               </div>
             </div>
@@ -228,8 +234,8 @@ const CheckoutStep = ({
                 {loading
                   ? "Processing..."
                   : hasWalletCredits
-                    ? "Pay 25 Credits & Confirm"
-                    : `Top up ${deficit} Credits to Submit`}
+                    ? "Pay 25 Jarthings & Confirm"
+                    : `Top up ${deficit} Jarthings to Submit`}
               </button>
             </div>
           </div>
@@ -260,7 +266,7 @@ function PoliceApplyContent({
   // const searchParams = useSearchParams();
   const router = useRouter();
   const { user } = useAuth();
-  const { activeCandidate, activeCandidateId, isMultiCandidate } = useCandidate();
+  const { activeCandidate, activeCandidateId, isMultiCandidate, candidates } = useCandidate();
   const { profile } = useUserProfile();
   const { showToast } = useToast();
   // const province = searchParams.get("province") || "";
@@ -283,6 +289,18 @@ function PoliceApplyContent({
     journeyContext: propContext,
     journeyTier: propJourneyTier,
   });
+
+  // Who this application is for. In a journey it is the journey's own beneficiary (fixed).
+  // On the standalone page the user picks a beneficiary or "Someone else" (null = follow
+  // the active beneficiary).
+  const [applyingFor, setApplyingFor] = useState<string | null>(null);
+  const subjectId = isJourney ? activeCandidateId : (applyingFor ?? activeCandidateId);
+  const isSomeoneElse = !isJourney && subjectId === SOMEONE_ELSE_ID;
+  const subject = isJourney
+    ? activeCandidate
+    : isSomeoneElse
+      ? null
+      : (candidates.find((c) => c.id === subjectId) ?? activeCandidate);
 
   // 2) Effective tier — journey tier when embedded, null otherwise
   const rawJourneyTier = propJourneyTier ?? journeyTier ?? journeyContext?.subscriptionTier;
@@ -328,20 +346,25 @@ function PoliceApplyContent({
     witness2Address: "",
   });
 
-  // Auto-fill active candidate biographics
+  // Auto-fill the chosen person's biographics
   useEffect(() => {
+    // Someone else: only the account holder's email (they manage the application).
+    if (isSomeoneElse || !subject) {
+      setFormData((prev) => ({ ...prev, email: prev.email || profile?.sponsor?.email || user?.email || "" }));
+      return;
+    }
     setFormData((prev) => ({
       ...prev,
       fullName:
-        activeCandidate.fullName ||
+        subject.fullName ||
         (profile?.name?.first
           ? `${profile.name.first} ${profile.name.last || ""}`.trim()
           : prev.fullName),
-      cnic: activeCandidate.cnic || profile?.cnic || prev.cnic,
-      passport: activeCandidate.passportNumber || profile?.passportNumber || prev.passport,
+      cnic: subject.cnic || profile?.cnic || prev.cnic,
+      passport: subject.passportNumber || profile?.passportNumber || prev.passport,
       passportIssue: profile?.passportIssueDate || prev.passportIssue,
       passportExpiry: profile?.passportExpiry || prev.passportExpiry,
-      dob: activeCandidate.dateOfBirth || profile?.dateOfBirth || prev.dob,
+      dob: subject.dateOfBirth || profile?.dateOfBirth || prev.dob,
       email: prev.email || profile?.sponsor?.email || user?.email || "",
       mobile: prev.mobile || profile?.phone || profile?.sponsor?.phone || "",
       address:
@@ -355,7 +378,32 @@ function PoliceApplyContent({
           ? `${profile.father.name.first} ${profile.father.name.last || ""}`.trim()
           : ""),
     }));
-  }, [activeCandidate, profile, user]);
+  }, [subject, isSomeoneElse, profile, user]);
+
+  // Standalone "Applying for" change (step 1 only): clear the previous person's details so
+  // the next person's are filled in fresh and two people's data can never mix.
+  const changeApplyingFor = (id: string) => {
+    if (isJourney || id === subjectId) return;
+    pendingDraftRef.current = null;
+    setErrors({});
+    setFormData((prev) => ({
+      ...prev,
+      fullName: "",
+      fatherName: "",
+      dob: "",
+      cnic: "",
+      cnicIssue: "",
+      cnicExpiry: "",
+      passport: "",
+      passportIssue: "",
+      passportExpiry: "",
+      mobile: "",
+      address: "",
+      stayFrom: "",
+      stayTo: "",
+    }));
+    setApplyingFor(id);
+  };
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
@@ -623,7 +671,7 @@ function PoliceApplyContent({
         const deficit = Math.max(25, 25 - (wallet.balance ?? 0));
         wallet.openTopup({ amount: deficit });
         setCheckoutError(
-          `You need 25 credits for PCC filing (Balance: ${wallet.balance ?? 0} credits). Please top up to proceed.`
+          `You need 25 jarthings for PCC filing (Balance: ${wallet.balance ?? 0} jarthings). Please top up to proceed.`
         );
         return;
       }
@@ -633,8 +681,8 @@ function PoliceApplyContent({
         // 1. Save application (hidden draft in standalone, active in journey; the server decides)
         const payload = {
           ...formData,
-          candidate_id: activeCandidateId || "candidate-1",
-          candidate_name: activeCandidate.fullName || activeCandidate.label || "",
+          candidate_id: subjectId || "candidate-1",
+          candidate_name: subject?.fullName || subject?.label || formData.fullName || "",
           // Origin tag: journey-embedded requests are kept out of standalone My Resources.
           ...(isJourney
             ? {
@@ -700,7 +748,7 @@ function PoliceApplyContent({
         const deficit = deductResult.body.deficit ?? 25;
         wallet.openTopup({ amount: deductResult.body.topupAmount ?? deficit });
         setCheckoutError(
-          `Insufficient credits. Please top up ${deficit} credits to complete your application.`
+          `Insufficient jarthings. Please top up ${deficit} jarthings to complete your application.`
         );
         return;
       }
@@ -752,134 +800,35 @@ function PoliceApplyContent({
   // skipped, so the visible wizard is steps 1–3; standalone still counts the checkout (1–4).
   const pccTotalSteps = isJourney ? 3 : 4;
   const pccCurrentStep = currentStep >= pccTotalSteps ? pccTotalSteps : currentStep;
-  const pccProgressPct = Math.min(100, Math.round((pccCurrentStep / pccTotalSteps) * 100));
 
-  // Journey intro screen (image 4): shown before the filing wizard. No topbar progress bar /
-  // step count here — those appear once the user clicks Apply for PCC.
+  // Journey intro screen: shown before the filing wizard, inside the same service shell.
   const showIntro = isJourney && !started && currentStep < 5;
-  if (showIntro) {
-    return (
-      <div
-        className={
-          embedded
-            ? "w-full font-sans"
-            : "animate-in slide-in-from-bottom-[18px] fixed inset-0 z-[150] overflow-y-auto bg-white font-sans duration-[0.28s] ease-in-out"
-        }
-      >
-        {!embedded && (
-          <div className="sticky top-0 z-10 flex h-[64px] items-center gap-3 border-b border-[#d0e4f7] bg-white px-4 sm:gap-4 sm:px-6">
-            <button
-              onClick={onClose}
-              aria-label="Close"
-              className="hover:bg-primary/10 focus:ring-primary flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border-none bg-[#f4f7fb] text-[#3a4f63] transition-all outline-none focus:ring-2"
-            >
-              <X size={16} strokeWidth={2} />
-            </button>
-            <div className="flex-1" />
-            <QuickAccessButton
-              item={{
-                id: "service-pcc-filing-service-—-sindh",
-                title: "Sindh Police Verification Service",
-                href: "/police-verification/apply",
-                icon_name: "Shield",
-              }}
-              mode="icon"
-            />
-          </div>
-        )}
-        <div className="mx-auto w-full max-w-2xl px-5 py-12">
-          <div className="mb-2 text-[11px] font-bold tracking-widest text-teal-700 uppercase">
-            PCC Filing Service
-          </div>
-          <h2 className="mb-2 text-2xl font-bold text-slate-900">
-            Rahvana submits your PCC application
-          </h2>
-          <p className="mb-8 text-sm leading-relaxed text-slate-600">
-            This service is available for Sindh residents only. Rahvana will handle the application
-            submission. You must still pick up the certificate yourself when ready.
-          </p>
-          {existingRequests && existingRequests.length > 0 && (
-            <div className="mb-8">
-              <div className="mb-2 text-[11px] font-bold tracking-widest text-teal-700 uppercase">
-                Your PCC Requests
-              </div>
-              <div className="space-y-4">
-                {existingRequests.map((req) => (
-                  <PccRequestCard key={req.id} req={req} />
-                ))}
-              </div>
-            </div>
-          )}
-          {statusLoading ? (
-            <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3.5">
-              <svg
-                className="h-4 w-4 animate-spin text-[#0d7377]"
-                viewBox="0 0 24 24"
-                fill="none"
-                aria-hidden="true"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"
-                />
-              </svg>
-              <span className="text-sm text-slate-600">Checking your existing PCC requests…</span>
-            </div>
-          ) : locked ? (
-            <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3.5">
-              <svg
-                className="mt-0.5 h-4 w-4 shrink-0 text-amber-600"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <rect x="3" y="11" width="18" height="11" rx="2" />
-                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-              </svg>
-              <div className="text-sm leading-relaxed text-amber-900">
-                {lockHint ||
-                  "You already have an active PCC request. You can file another once it completes and its 6-month validity passes."}
-              </div>
-            </div>
-          ) : (
-            <button
-              onClick={() => setStarted(true)}
-              className="w-full cursor-pointer rounded-xl bg-teal-700 py-3.5 font-bold text-white transition-colors hover:bg-teal-800"
-            >
-              Apply for PCC
-            </button>
-          )}
-        </div>
-      </div>
-    );
-  }
 
+  const pccStepLabels = [
+    "Personal info",
+    "Deponents / guarantors",
+    "Documents",
+    ...(isJourney ? [] : ["Payment & confirmation"]),
+  ];
+  const pccHeads: Array<[string, string] | null> = [
+    ["About you", "Enter these exactly as they appear on your CNIC."],
+    ["Your deponents", "Details of the people who can vouch for you."],
+    ["Upload your documents", "Clear photos or PDFs are fine."],
+    null, // Checkout step renders its own heading
+  ];
+  const pccHead = showIntro ? null : pccHeads[pccCurrentStep - 1];
   return (
     <div
       className={
         isJourney
           ? embedded
-            ? "w-full bg-[#f8fafc] font-sans"
-            : "animate-in slide-in-from-bottom-[18px] fixed inset-0 z-[150] overflow-y-auto bg-[#f8fafc] font-sans duration-[0.28s] ease-in-out"
-          : "sm:site-main-px site-main-py flex w-full flex-col items-center bg-[#f8fafc] px-2 pt-24 sm:pt-28 md:mt-8 md:pt-4"
+            ? "w-full font-sans"
+            : "animate-in slide-in-from-bottom-[18px] fixed inset-0 z-[150] overflow-y-auto bg-white font-sans duration-[0.28s] ease-in-out"
+          : "w-full bg-white pt-[55px]"
       }
     >
       {isJourney && !embedded && (
-        <div className="sticky top-0 isolate z-50 mb-4 flex h-[64px] items-center gap-3 border-b border-[#d0e4f7] bg-white px-4 sm:gap-4 sm:px-6">
-          {/* Close (left) */}
+        <div className="sticky top-0 isolate z-50 flex h-[64px] items-center gap-3 border-b border-[#d0e4f7] bg-white px-4 sm:gap-4 sm:px-6">
           <button
             onClick={onClose}
             aria-label="Close"
@@ -887,211 +836,136 @@ function PoliceApplyContent({
           >
             <X size={16} strokeWidth={2} />
           </button>
-          {/* Progress (center) */}
-          <div className="h-[5px] min-w-4 flex-1 overflow-hidden rounded-[10px] bg-[#d0e4f7]">
-            <div
-              className="h-full bg-linear-to-r transition-all duration-500"
-              style={{ width: `${pccProgressPct}%`, backgroundColor: "#0f766e" }}
-            />
-          </div>
-          <div className="shrink-0 text-[12px] font-medium whitespace-nowrap text-[#6b8097]">
-            Step {pccCurrentStep} of {pccTotalSteps}
-          </div>
-          {/* Quick access (right) */}
-          <QuickAccessButton
-            item={{
-              id: "service-pcc-filing-service-—-sindh",
-              title: "Sindh Police Verification Service",
-              href: "/police-verification/apply",
-              icon_name: "Shield",
-            }}
-            mode="icon"
-          />
+          <div className="flex-1" />
+          {!showIntro && (
+            <div className="shrink-0 text-[12px] font-medium whitespace-nowrap text-[#6b8097]">
+              Step {pccCurrentStep} of {pccTotalSteps}
+            </div>
+          )}
         </div>
       )}
-      <div
-        className={
-          isJourney
-            ? "flex w-full flex-col"
-            : "flex min-h-[700px] w-full flex-col overflow-hidden rounded-none border-0 bg-transparent shadow-none md:rounded-[2.5rem] md:border md:border-gray-100 md:bg-white md:shadow-2xl md:shadow-gray-200/50"
+
+      <ServiceSkinShell
+        service="police"
+        title="Police verification"
+        tagline={SERVICE_SKIN_TAGLINE.police}
+        steps={pccStepLabels}
+        current={showIntro ? -1 : pccCurrentStep - 1}
+        onStepSelect={
+          showIntro || currentStep >= 5
+            ? undefined
+            : (j) => {
+                // Same as Back: editing after a failed payment files a fresh request.
+                pendingDraftRef.current = null;
+                setCurrentStep(j + 1);
+              }
+        }
+        done={currentStep === 5}
+        heading={showIntro ? "Rahvana submits your PCC application" : pccHead?.[0]}
+        subheading={
+          showIntro
+            ? "This service is available for Sindh residents only. Rahvana will handle the application submission. You must still pick up the certificate yourself when ready."
+            : pccHead?.[1]
+        }
+        kicker={showIntro ? "PCC filing service" : undefined}
+        timeEstimate="8 min"
+        faq={SERVICE_SKIN_FAQ.police}
+        layout={isJourney ? (embedded ? "embedded" : "overlay") : "page"}
+        topOffset={isJourney ? (embedded ? 0 : 64) : 60}
+        viewportOffset={isJourney ? (embedded ? 0 : 64) : 60}
+        paneFooter={
+          !isJourney && user ? (
+            <ServiceSubjectPicker
+              label="Applying for"
+              candidates={candidates}
+              value={subjectId}
+              onChange={changeApplyingFor}
+              disabled={currentStep !== 1}
+            />
+          ) : isMultiCandidate ? (
+            <div className="svk-for">
+              <span>Applying for</span>
+              <b>
+                {activeCandidate.fullName
+                  ? `${activeCandidate.fullName} (${activeCandidate.label})`
+                  : activeCandidate.label}
+              </b>
+            </div>
+          ) : undefined
         }
       >
-        {/* Journey-only compact heading — keeps the service title + a short description visible
-            so users immediately understand what this screen is (standalone uses the sticky header). */}
-        {isJourney && (
-          <div className="mt-4 mb-5 px-1 text-center">
-            <h1 className="flex items-center justify-center gap-2.5 text-xl font-bold text-gray-900">
-              <div className="bg-primary/10 shrink-0 rounded-xl p-2">
-                <ShieldCheck className="text-primary" size={22} />
+        {showIntro ? (
+          <div>
+            {existingRequests && existingRequests.length > 0 && (
+              <div className="mb-8">
+                <div className="mb-2 text-[11px] font-bold tracking-widest text-teal-700 uppercase">
+                  Your PCC Requests
+                </div>
+                <div className="space-y-4">
+                  {existingRequests.map((req) => (
+                    <PccRequestCard key={req.id} req={req} />
+                  ))}
+                </div>
               </div>
-              Sindh Police Verification Form
-            </h1>
-            <p className="mt-1.5 text-sm text-slate-600">
-              Apply for your Police Character Certificate (PCC) for Sindh.
-            </p>
-          </div>
-        )}
-        {embedded && (
-          <div className="mb-6">
-            <div className="flex items-center justify-center gap-2 sm:gap-3">
-              {[
-                { n: 1, label: "Personal Info" },
-                { n: 2, label: "Details of Deponents/Guarantor" },
-                { n: 3, label: "Documents Required" },
-              ]
-                .filter((s) => s.n <= pccTotalSteps)
-                .map((s, idx) => (
-                  <Fragment key={s.n}>
-                    {idx > 0 && <div className="h-px w-4 shrink-0 bg-gray-200 md:w-8" />}
-                    <div className="flex shrink-0 items-center gap-2 text-sm">
-                      <span
-                        className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${
-                          pccCurrentStep >= s.n
-                            ? "bg-primary text-white"
-                            : "bg-gray-100 text-gray-500"
-                        }`}
-                      >
-                        {s.n}
-                      </span>
-                      <span
-                        className={
-                          pccCurrentStep >= s.n ? "font-semibold text-gray-900" : "text-gray-400"
-                        }
-                      >
-                        {s.label}
-                      </span>
-                    </div>
-                  </Fragment>
-                ))}
-            </div>
-          </div>
-        )}
-        {/* Header (standalone only — journey mode uses the topbar above for title / quick-access / progress) */}
-        {!isJourney && (
-          <div className="sticky top-[36px] z-20 mb-4 border-b border-gray-100 bg-white px-3 py-4 shadow-sm backdrop-blur-md sm:mb-6 sm:p-6 md:top-0 md:bg-white/80 md:p-8 md:pb-6">
-            <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center sm:gap-6">
-              <div className="flex flex-wrap items-center gap-6">
-                <h1 className="flex items-center gap-3 text-xl font-bold text-gray-900 sm:text-2xl">
-                  <div className="bg-primary/10 shrink-0 rounded-xl p-2 sm:rounded-2xl sm:p-2.5">
-                    <ShieldCheck className="text-primary" size={28} />
-                  </div>
-                  {/* {province} */}
-                  Sindh Police Verification Form
-                </h1>
-                {isMultiCandidate && (
-                  <div className="inline-flex items-center gap-2 rounded-full border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-medium text-teal-800">
-                    <span className="h-2 w-2 animate-pulse rounded-full bg-teal-500" />
-                    <span>
-                      Applying for:{" "}
-                      <strong>
-                        {activeCandidate.fullName
-                          ? `${activeCandidate.fullName} (${activeCandidate.label})`
-                          : activeCandidate.label}
-                      </strong>
-                    </span>
-                  </div>
-                )}
-                <QuickAccessButton
-                  item={{
-                    id: "service-pcc-filing-service-—-sindh",
-                    title: "Sindh Police Verification Service",
-                    href: "/police-verification/apply",
-                    icon_name: "Shield",
-                  }}
-                />
-              </div>
-              <div className="flex shrink-0 items-center gap-2">
-                {/* Credit visibility (standalone only — journey mode has no credits) */}
-                {/* {!isJourney && (
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-bold whitespace-nowrap text-teal-800">
-                    <Coins size={14} className="text-[#0d7377]" />
-                    25 Credits ($25) • Balance: {wallet.isLoading ? "..." : `${wallet.balance ?? 0} Credits`}
-                  </span>
-                )} */}
-                {[1, 2, 3, 4].map((s) => (
-                  <div
-                    key={s}
-                    className={`h-2 rounded-full transition-all duration-500 ${
-                      s === currentStep
-                        ? "bg-primary w-8"
-                        : s < currentStep
-                          ? "bg-primary/40 w-4"
-                          : "w-4 bg-gray-200"
-                    }`}
+            )}
+            {statusLoading ? (
+              <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3.5">
+                <svg
+                  className="h-4 w-4 animate-spin text-teal-600"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
                   />
-                ))}
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"
+                  />
+                </svg>
+                <span className="text-sm text-slate-600">Checking your existing PCC requests...</span>
               </div>
-            </div>
-            <div
-              className="flex items-center gap-4 overflow-x-auto pb-4 md:gap-6 md:pb-0"
-              style={{ scrollbarWidth: "none" }}
-            >
-              <div className="flex shrink-0 items-center gap-2 text-sm">
-                <span
-                  className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${
-                    currentStep >= 1 ? "bg-primary text-white" : "bg-gray-100 text-gray-500"
-                  }`}
+            ) : locked ? (
+              <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3.5">
+                <svg
+                  className="mt-0.5 h-4 w-4 shrink-0 text-amber-600"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
                 >
-                  1
-                </span>
-                <span
-                  className={currentStep >= 1 ? "font-semibold text-gray-900" : "text-gray-400"}
-                >
-                  Personal Info
-                </span>
+                  <rect x="3" y="11" width="18" height="11" rx="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+                <div className="text-sm leading-relaxed text-amber-900">
+                  {lockHint ||
+                    "You already have an active PCC request. You can file another once it completes and its 6-month validity passes."}
+                </div>
               </div>
-              <div className="h-px w-4 shrink-0 bg-gray-200 md:w-8" />
-              <div className="flex shrink-0 items-center gap-2 text-sm">
-                <span
-                  className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${
-                    currentStep >= 2 ? "bg-primary text-white" : "bg-gray-100 text-gray-500"
-                  }`}
-                >
-                  2
-                </span>
-                <span
-                  className={currentStep >= 2 ? "font-semibold text-gray-900" : "text-gray-400"}
-                >
-                  Details of Deponents/Guarantor
-                </span>
-              </div>
-              <div className="h-px w-4 shrink-0 bg-gray-200 md:w-8" />
-              <div className="flex shrink-0 items-center gap-2 text-sm">
-                <span
-                  className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${
-                    currentStep >= 3 ? "bg-primary text-white" : "bg-gray-100 text-gray-500"
-                  }`}
-                >
-                  3
-                </span>
-                <span
-                  className={currentStep >= 3 ? "font-semibold text-gray-900" : "text-gray-400"}
-                >
-                  Documents Required
-                </span>
-              </div>
-
-              <div className="h-px w-4 shrink-0 bg-gray-200 md:w-8" />
-              <div className="flex shrink-0 items-center gap-2 text-sm">
-                <span
-                  className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${
-                    currentStep >= 4 ? "bg-primary text-white" : "bg-gray-100 text-gray-500"
-                  }`}
-                >
-                  4
-                </span>
-                <span
-                  className={currentStep >= 4 ? "font-semibold text-gray-900" : "text-gray-400"}
-                >
-                  Payment & Confirmation
-                </span>
-              </div>
-            </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setStarted(true)}
+                className="svk-btn svk-btn-pri w-full"
+              >
+                Apply for PCC
+              </button>
+            )}
           </div>
-        )}
-
-        {/* Form Body */}
-        <div className="flex-1 overflow-y-auto px-3 pt-8 pb-8 sm:p-6 sm:pt-10 md:p-12 md:pt-8">
+        ) : (
+          <>
+            {/* Form Body */}
+            <div>
           <AnimatePresence mode="wait">
             {currentStep === 1 && (
               <motion.div key="step1" {...fadeIn} className="space-y-6 md:space-y-8">
@@ -2167,41 +2041,36 @@ function PoliceApplyContent({
           </AnimatePresence>
         </div>
 
-        {/* Footer */}
-        {currentStep < 4 && (
-          <div className="flex flex-col-reverse items-center justify-between gap-4 border-t border-gray-100 bg-white/90 px-2 py-4 sm:flex-row sm:p-6 md:bg-white md:p-8">
-            <button
-              onClick={handleBack}
-              className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-gray-50 px-8 py-4 font-bold text-gray-600 transition-all hover:bg-gray-100 sm:w-auto"
-            >
-              <ChevronLeft size={20} className="transition-transform group-hover:-translate-x-1" />{" "}
-              Back
-            </button>
-            <button
-              onClick={handleNext}
-              disabled={
-                Object.keys(errors).length > 0 ||
-                (isJourney && currentStep === 3 && checkoutLoading)
-              }
-              className="bg-primary hover:bg-primary/90 group md:shadow-primary/25 flex w-full items-center justify-center gap-2 rounded-2xl px-10 py-4 font-bold text-white transition-all disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto md:not-first:shadow-xl"
-            >
-              {isJourney && currentStep === 3 && checkoutLoading ? (
-                <>
-                  <Loader2 size={20} className="animate-spin" /> Processing...
-                </>
-              ) : (
-                <>
-                  Continue{" "}
-                  <ChevronRight
-                    size={20}
-                    className="transition-transform group-hover:translate-x-1"
-                  />
-                </>
-              )}
-            </button>
-          </div>
+            {/* Footer */}
+            {currentStep < 4 && (
+              <div className="svk-actions">
+                <button type="button" onClick={handleBack} className="svk-btn svk-btn-gho">
+                  <ChevronLeft size={18} /> Back
+                </button>
+                <button
+                  type="button"
+                  onClick={handleNext}
+                  disabled={
+                    Object.keys(errors).length > 0 ||
+                    (isJourney && currentStep === 3 && checkoutLoading)
+                  }
+                  className="svk-btn svk-btn-pri"
+                >
+                  {isJourney && currentStep === 3 && checkoutLoading ? (
+                    <>
+                      <Loader2 size={20} className="animate-spin" /> Processing...
+                    </>
+                  ) : (
+                    <>
+                      Continue <ChevronRight size={18} />
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+          </>
         )}
-      </div>
+      </ServiceSkinShell>
     </div>
   );
 }

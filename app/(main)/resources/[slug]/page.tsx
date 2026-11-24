@@ -211,7 +211,7 @@ export default async function ResourceDetailPage({
               <div className="flex items-center gap-2">
                 <CreditTypeIcon kind={addon.kind} size={38} />
                 <span className="text-muted-foreground flex flex-col text-[13px] font-medium leading-tight">
-                  <span className="font-semibold text-foreground/85">credits</span>
+                  <span className="font-semibold text-foreground/85">jarthings</span>
                   {/* The Smart Form Filler is unlocked one form at a time. */}
                   {walletItem?.resourceId === SMART_FORM_TOOL_ID && <span>per form unlock</span>}
                   {/* Photo Booth is sold in packs of 2 photos. */}
@@ -251,7 +251,7 @@ export default async function ResourceDetailPage({
             </div>
 
             <p className="text-muted-foreground mt-7 text-[12.5px]">
-              No full plan required &nbsp;·&nbsp; Paid with Rahvana credits &nbsp;·&nbsp; Built
+              No full plan required &nbsp;·&nbsp; Paid with Rahvana jarthings &nbsp;·&nbsp; Built
               around your case
             </p>
           </div>

@@ -238,7 +238,7 @@ const UPGRADE_PITCH: Record<string, string> = {
   "221g": "turn a 221(g) notice into a complete recovery plan with expert-backed tools.",
   medical: "get this appointment plus the advanced tools you'll need throughout your journey.",
   translate: "translate every document your case needs, whenever a new requirement comes up.",
-  photo: "keep photo credits ready for retakes and new filings.",
+  photo: "keep photos ready for retakes and new filings.",
   sponsor: "re-check your sponsorship anytime your income or household changes.",
   "doc-review": "get expert reviews included plus the tools to act on the feedback.",
   consultation: "get consultation sessions included plus every tool to prepare for them.",
@@ -710,7 +710,7 @@ export function UpgradeModal({ feature, onClose, onConfirm, interviewMode }: Upg
                 </p>
                 <div className="mb-1 flex items-baseline gap-1.5">
                   <span className="text-[28px] leading-none font-black text-neutral-800">
-                    {standalone.credits} Credits
+                    {standalone.credits} Jarthings
                   </span>
                   <span className="text-[12px] font-medium text-neutral-500 opacity-70">
                     ·{" "}
@@ -725,12 +725,12 @@ export function UpgradeModal({ feature, onClose, onConfirm, interviewMode }: Upg
                 </div>
                 <p className="mb-3 text-[11px] leading-snug text-neutral-500">
                   {standalone.isService
-                    ? `Book ${addon.name} on its own and pay from your Rahvana wallet ($1 = 1 credit).`
+                    ? `Book ${addon.name} on its own and pay from your Rahvana wallet ($1 = 1 jarthing).`
                     : standalone.perForm
-                      ? `Use ${addon.name} on its own, outside a journey plan. Unlock each form you need from your Rahvana wallet ($1 = 1 credit).`
+                      ? `Use ${addon.name} on its own, outside a journey plan. Unlock each form you need from your Rahvana wallet ($1 = 1 jarthing).`
                       : standalone.photoPack
-                        ? `Use ${addon.name} on its own, outside a journey plan. Each purchase from your Rahvana wallet gives you 2 photos ($1 = 1 credit). When both are used, buy again for 2 more.`
-                        : `Use ${addon.name} on its own, outside a journey plan. Unlock it once from your Rahvana wallet ($1 = 1 credit).`}
+                        ? `Use ${addon.name} on its own, outside a journey plan. Each purchase from your Rahvana wallet gives you 2 photos ($1 = 1 jarthing). When both are used, buy again for 2 more.`
+                        : `Use ${addon.name} on its own, outside a journey plan. Unlock it once from your Rahvana wallet ($1 = 1 jarthing).`}
                 </p>
 
                 <Link
@@ -739,7 +739,7 @@ export function UpgradeModal({ feature, onClose, onConfirm, interviewMode }: Upg
                   className="flex w-full items-center justify-center gap-2 rounded-xl bg-neutral-700 py-2.5 text-[13px] font-bold text-white shadow-sm transition-colors hover:bg-neutral-600 active:bg-neutral-800"
                 >
                   <Coins size={14} strokeWidth={2.5} />
-                  {standalone.isService ? "Book with credits" : `Open ${addon.name}`}
+                  {standalone.isService ? "Book with jarthings" : `Open ${addon.name}`}
                 </Link>
               </div>
             )}

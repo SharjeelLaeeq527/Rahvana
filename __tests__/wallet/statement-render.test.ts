@@ -104,7 +104,7 @@ describe("wallet statement PDF", () => {
     // Visible content: title, summary panel, account block, and row data
     // all made it onto the page (the original bug produced headers only).
     const flat = collapse(text);
-    expect(flat).toContain("CreditWalletStatement");
+    expect(flat).toContain("JarthingWalletStatement");
     expect(flat).toContain("TestAccount");
     expect(flat).toContain("OPENINGBALANCE");
     expect(flat).toContain("Wallettop-up");

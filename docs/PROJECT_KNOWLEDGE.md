@@ -286,6 +286,32 @@ launched from the Services folder or from their roadmap step card, and they shar
   lives here; `app/book-consultation/page.tsx` is a thin `Suspense` wrapper around it, so the
   standalone page and the journey use the same component). `EmbeddedToolContainer` imports
   `BookConsultationTool` statically (not `React.lazy`) so it opens with no loading flash.
+- **Visual skin:** all four service wizards (Consultation, Medical, PCC, Translation) render
+  inside `components/tools/service-skin/ServiceSkinShell.tsx` (split layout: accent-coloured
+  left pane (no visible scrollbar) with step list, icon actions and a Common questions drawer; content column
+  on the right; sizes scale with the container width (cqw) and the pane sits flush
+  to the left edge at every width; under 720px it becomes the mobile
+  layout (coloured header with the step question + overlapping white sheet), so it also works
+  when `embedded`).
+  It is presentational only: each tool passes its step labels + current index and renders its
+  own step content, validation and submit buttons as children. Per-service accent comes from
+  `data-s` (`consult` / `medical` / `police` / `translate`) and re-themes the tools' existing
+  `teal-*` / `primary` utilities inside the shell. Copy (FAQ, taglines) lives in
+  `service-skin/serviceSkinCopy.ts`; keep it factual and plain ASCII.
+  **Service switcher** (`service-skin/ServiceSwitcherContext.tsx`): a toggle pinned to the top right
+  of the white area (top of the sheet on phones). Standalone pages navigate between the four service routes (each keeps
+  its own sign-in + per-booking credit checkout). In a journey, `EmbeddedToolContainer` provides
+  the context only when the dashboard passes `onSwitchTool` (both `RoadmapLayoutEngine` and
+  `RoadmapLayoutSpouse` pass `launchTool`), so a switch re-launches through the container's
+  `useJourneyPlan` gate (locked services show a lock and open `LockedToolGate`). Overlays with
+  no provider (e.g. StepView) hide the switcher instead of leaving the journey. Switching
+  mid-form asks for confirmation; answers are not carried over.
+  **Booking for (standalone Medical / PCC):** the pane shows `ServiceSubjectPicker` (beneficiaries +
+  "Someone else"), usable on step 1 only; switching clears that person's fields and re-fills from the
+  chosen beneficiary. "Someone else" tags the row `candidate_id = "someone-else"`
+  (`lib/services/serviceSubject.ts`), skips Medical's write-back into the account profile, and
+  `services-status` always includes such rows for any `candidateId` filter. Inside a journey the
+  person stays fixed to the journey's candidate (read-only line).
 - **Chrome:** `ToolModeProps.embedded` (`types/tool-mode.ts`). `false` = full-screen overlay with its
   own sticky top bar (StepView overlay mounts, e.g. spouse UI); `true` = rendered inline in the
   engine's `roadmap-main` region using the `RoadmapLayoutEngine` breadcrumb for back/close
@@ -585,8 +611,10 @@ journey) can never be deleted. `CandidateContext` also
 exposes the canonical scope of the active journey: **`activeJourneyBase`** (e.g. "IR-1",
 "IR-5") and **`activeJourneyKey`** (the `journey_type` key, `getCandidateJourneyKey(active
 candidate.visaCategory, id)`), derived from the active candidate's own `visaCategory` (not an
-ambient `journey_type`). UI: `CandidateSwitcherTray` (switch / add / rename) is a
-**whole-journey feature rendered in the global `SiteHeader` profile dropdown** (one account,
+ambient `journey_type`). UI: `CandidateSwitcherTray` (switch / add / rename) was a
+**whole-journey feature in the global `SiteHeader` profile dropdown; it is currently NOT rendered
+anywhere** (the component file still exists). Today the active candidate is picked from My Journeys
+(`CandidateProfileLauncherModal`), the vault, Portal Wallet or the Smart Form Filler (one account,
 multiple beneficiary journeys), NOT a vault-only widget. The switcher is **category-agnostic**
 (decision 2): it shows only when the account genuinely has **2+ candidates/journeys** -
 `isMultiCandidate` (candidate roster length > 1) OR `dedupeJourneysByType(fetchUserJourneysCached()).length >= 2`.
@@ -1051,6 +1079,10 @@ Components consume these via hooks/contexts; they should not re-implement domain
   `/api/stripe/checkout` refuses any `addons` (400 `ADDONS_DISCONTINUED`). Add-ons bought before
   this keep working: the webhook / verify-session still record paid add-on sessions,
   `purchased_addons` still grants journey access and legacy unlocks.
+- **Wallet currency name (Nov 2026):** users see the wallet unit as **"Jarthings"** (matches the
+  seed-jar icon, `components/resources/CreditTypeIcon.tsx`, `CURRENCY_LABEL`; "$1 = 1 jarthing").
+  Code, DB columns, RPCs, API fields and error codes keep the word `credits` (`INSUFFICIENT_CREDITS`,
+  `item.credits`, `currency: "credits"`). New user-facing copy says jarthings, never credits.
 - **Wallet** - `lib/wallet/topup.ts`: top-up packs (10/25/50/100), `WALLET_MIN_TOPUP = 5` (an
   exact deficit below it is lifted to it), whole credits only, max 1000. `applyWalletTopup` is
   called by BOTH the webhook (`checkout.session.completed` + `async_payment_succeeded`) and

@@ -687,7 +687,7 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
           <>
             <ResourceSectionHeader
               title="Browse Services"
-              subtitle="Explore more services, preview them or book with credits."
+              subtitle="Explore more services, preview them or book with jarthings."
             />
             <div className="grid grid-cols-1 gap-x-6 gap-y-10 pt-6 md:grid-cols-2 lg:grid-cols-3">
               {browseServices.map((service, index) => (
@@ -1021,7 +1021,7 @@ function ServiceCard({
           {/* Right: Credit info + Quick Access */}
           <div className="flex shrink-0 items-center gap-1">
             <CreditInfoTooltip
-              message="Each booking or request requires credits. You’ll need to pay again for every new request."
+              message="Each booking or request requires jarthings. You’ll need to pay again for every new request."
               side="top"
             />
 
@@ -1080,7 +1080,7 @@ function ServiceCard({
               <button
                 type="button"
                 onClick={() => onLaunch(catalogItem)}
-                aria-label={`Launch ${service.title} for ${catalogItem.credits} credits`}
+                aria-label={`Launch ${service.title} for ${catalogItem.credits} jarthings`}
                 className="inline-flex h-9 items-center rounded-lg bg-[#0d7377] px-4 text-[13px] font-semibold whitespace-nowrap text-white transition-colors hover:bg-[#0a5c5f]"
               >
                 Launch

@@ -131,7 +131,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error:
-            "Add-ons are no longer sold here. Tools and guides unlock with Rahvana credits, and services are paid with credits when you book them.",
+            "Add-ons are no longer sold here. Tools and guides unlock with Rahvana jarthings, and services are paid with jarthings when you book them.",
           code: "ADDONS_DISCONTINUED",
         },
         { status: 400 }
@@ -523,8 +523,8 @@ export async function POST(request: NextRequest) {
           price_data: {
             currency: "usd",
             product_data: {
-              name: `Rahvana Wallet: ${topupCredits} Credits`,
-              description: "Credits for standalone tools, guides and services. 1 credit = $1.",
+              name: `Rahvana Wallet: ${topupCredits} Jarthings`,
+              description: "Jarthings for standalone tools, guides and services. 1 jarthing = $1.",
             },
             unit_amount: topupCredits * 100,
           },
@@ -539,7 +539,7 @@ export async function POST(request: NextRequest) {
         stripe_customer_id: stripeCustomerId!,
         product_type: WALLET_TOPUP_PRODUCT_TYPE,
         product_id: WALLET_TOPUP_PRODUCT_TYPE,
-        product_name: `Rahvana Wallet: ${topupCredits} Credits`,
+        product_name: `Rahvana Wallet: ${topupCredits} Jarthings`,
         credits: String(topupCredits),
         topup_reason: typeof resourceId === "string" && resourceId ? "exact_deficit" : "pack",
         resource_id: typeof resourceId === "string" ? resourceId.slice(0, 100) : "",

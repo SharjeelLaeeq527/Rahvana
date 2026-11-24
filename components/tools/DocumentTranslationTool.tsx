@@ -22,11 +22,15 @@ import { normalizePlanTier } from "@/app/context/PlanContext";
 import type { PlanTier } from "@/lib/entitlements/config";
 
 import { Button } from "@/components/ui/button";
-import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 
 import type { ToolModeProps } from "@/types/tool-mode";
 import { useResolveToolMode } from "@/lib/hooks/useResolveToolMode";
+import ServiceSkinShell from "@/components/tools/service-skin/ServiceSkinShell";
+import {
+  SERVICE_SKIN_FAQ,
+  SERVICE_SKIN_TAGLINE,
+} from "@/components/tools/service-skin/serviceSkinCopy";
 
 interface DocumentTranslationToolProps extends ToolModeProps {
   showHeader?: boolean;
@@ -80,6 +84,8 @@ export default function DocumentTranslationTool({
   void journeyTierEffective;
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // The service skin always shows the service name in its pane; kept for callers.
+  void showHeader;
 
   // Reset form
   const reset = () => {
@@ -218,7 +224,7 @@ export default function DocumentTranslationTool({
         const deficit = Math.max(25, 25 - (wallet.balance ?? 0));
         wallet.openTopup({ amount: deficit });
         setCheckoutError(
-          `You need 25 credits for document translation (Balance: ${wallet.balance ?? 0} credits). Please top up to proceed.`
+          `You need 25 jarthings for document translation (Balance: ${wallet.balance ?? 0} jarthings). Please top up to proceed.`
         );
         setCheckoutLoading(false);
         return;
@@ -256,7 +262,7 @@ export default function DocumentTranslationTool({
           const deficit = deductResult.body.deficit ?? 25;
           wallet.openTopup({ amount: deductResult.body.topupAmount ?? deficit });
           setCheckoutError(
-            `Insufficient credits. Please top up ${deficit} credits to complete your translation request.`
+            `Insufficient jarthings. Please top up ${deficit} jarthings to complete your translation request.`
           );
           setCheckoutLoading(false);
           return;
@@ -359,20 +365,20 @@ export default function DocumentTranslationTool({
                       1x Document Translation Service
                     </span>
 
-                    <span className="font-bold text-slate-800">25 Credits ($25.00)</span>
+                    <span className="font-bold text-slate-800">25 Jarthings ($25.00)</span>
                   </div>
 
                   <div className="flex items-center justify-between text-sm">
                     <span className="font-medium text-slate-600">Wallet Balance</span>
                     <span className="font-bold text-slate-800">
-                      {walletLoading ? "..." : `${walletBalance ?? 0} Credits`}
+                      {walletLoading ? "..." : `${walletBalance ?? 0} Jarthings`}
                     </span>
                   </div>
 
                   {hasWalletCredits && (
                     <div className="flex items-center justify-between text-sm text-[#0d7377]">
                       <span className="font-medium">Balance After Booking</span>
-                      <span className="font-bold">{(walletBalance ?? 25) - costCredits} Credits</span>
+                      <span className="font-bold">{(walletBalance ?? 25) - costCredits} Jarthings</span>
                     </div>
                   )}
 
@@ -380,7 +386,7 @@ export default function DocumentTranslationTool({
                     <span className="text-base font-bold text-slate-900">Total Due</span>
 
                     <span className="text-xl font-black text-slate-900">
-                      25 Credits ($25.00)
+                      25 Jarthings ($25.00)
                     </span>
                   </div>
                 </div>
@@ -411,8 +417,8 @@ export default function DocumentTranslationTool({
                   {loading
                     ? "Processing..."
                     : hasWalletCredits
-                      ? "Pay 25 Credits & Confirm"
-                      : `Top up ${deficit} Credits to Submit`}
+                      ? "Pay 25 Jarthings & Confirm"
+                      : `Top up ${deficit} Jarthings to Submit`}
                 </Button>
               </div>
             </div>
@@ -422,135 +428,97 @@ export default function DocumentTranslationTool({
     );
   };
 
+  const trLabel = (key: string, fallback: string) => {
+    const value = t(key);
+    return value !== key ? value : fallback;
+  };
+  // Journey requests submit straight from the upload step (the plan covers them).
+  const trSteps = isJourney
+    ? [trLabel("documentTranslation.uploadPage.steps.details", "Details")]
+    : [
+        trLabel("documentTranslation.uploadPage.steps.details", "Details"),
+        trLabel("documentTranslation.uploadPage.steps.checkout", "Checkout"),
+      ];
+  const trStepIndex = isJourney ? 0 : Math.min(currentStep, 2) - 1;
+  const onUploadStep = currentStep === 1 || isJourney;
+
   return (
-    <div
-      className={`flex w-full flex-col items-center ${
-        uploadSuccess ? "flex-1 justify-center" : ""
-      } ${className}`}
-    >
-      {/* Header */}
-      {showHeader && (
-        <header className="mb-8 w-full max-w-4xl text-center md:mb-10">
-          <h1 className="text-primary/90 text-3xl leading-tight font-bold sm:text-4xl md:text-5xl">
-            {t("documentTranslation.uploadPage.title")}
-          </h1>
-          <p className="mx-auto mt-3 max-w-2xl text-base text-gray-600 sm:text-lg">
-            {t("documentTranslation.uploadPage.subtitle")}
-          </p>
-          {!isJourney && (
-            <div className="mt-4 flex justify-center">
-              <QuickAccessButton
-                item={{
-                  id: "service-urdu-→-english-translation",
-                  title:
-                    t("documentTranslation.uploadPage.title") || "Certified Document Translation",
-                  href: "/document-translation",
-                  icon_name: "Files",
-                }}
-              />
-            </div>
-          )}
+    <div className={`w-full ${className}`}>
+      <ServiceSkinShell
+        service="translate"
+        title={t("documentTranslation.uploadPage.title") || "Document translation"}
+        tagline={t("documentTranslation.uploadPage.subtitle") || SERVICE_SKIN_TAGLINE.translate}
+        steps={trSteps}
+        current={trStepIndex}
+        onStepSelect={
+          !isJourney && !uploadSuccess
+            ? () => {
+                // Same as the checkout Back button.
+                pendingDraftRef.current = null;
+                setCurrentStep(1);
+              }
+            : undefined
+        }
+        done={uploadSuccess}
+        heading={!uploadSuccess && onUploadStep ? "Upload your Urdu document" : undefined}
+        subheading={
+          !uploadSuccess && onUploadStep ? "We return a certified English translation." : undefined
+        }
+        timeEstimate="2 min"
+        faq={SERVICE_SKIN_FAQ.translate}
+        layout={isJourney ? "embedded" : "page"}
+        topOffset={isJourney ? 0 : 60}
+        onRequests={
+          showRequestsLink && isAuthenticated
+            ? () => (window.location.href = "/document-translation/my-requests")
+            : undefined
+        }
+        requestsLabel={t("documentTranslation.uploadPage.seeMyRequestsBtn") || "My requests"}
+      >
+        {!uploadSuccess ? (
+          onUploadStep ? (
+            <>
+              {/* Requirements */}
+              {showRequirements && (
+                <section className="svk-need">
+                  <b className="mb-2 block">
+                    {t("documentTranslation.uploadPage.requirementsTitle")}
+                  </b>
+                  <ul className="grid gap-2 sm:grid-cols-2">
+                    {[
+                      t("documentTranslation.uploadPage.requirements.1"),
+                      t("documentTranslation.uploadPage.requirements.2"),
+                      t("documentTranslation.uploadPage.requirements.3"),
+                      t("documentTranslation.uploadPage.requirements.4"),
+                      t("documentTranslation.uploadPage.requirements.5"),
+                      t("documentTranslation.uploadPage.requirements.6"),
+                    ].map((req, i) => (
+                      <li key={i} className="flex items-start gap-2">
+                        <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-teal-700" />
+                        <span>{req}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              )}
 
-          {/* Credit visibility for standalone */}
-          {/* {!isJourney && isAuthenticated && (
-            <div className="mt-4 flex justify-center">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-bold text-teal-800">
-                <Coins size={14} className="text-[#0d7377]" />
-                25 Credits ($25) per translation • Balance: {wallet.isLoading ? "..." : `${wallet.balance ?? 0} Credits`}
-              </span>
-            </div>
-          )} */}
-        </header>
-      )}
-
-      {/* Step indicator: orients the user across the 2-step flow (standalone only) */}
-      {!uploadSuccess && !isJourney && (
-        <div className="mx-auto mb-8 flex w-full max-w-sm items-center justify-center gap-2 sm:gap-3">
-          <div className="flex items-center gap-2">
-            <span
-              className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold transition-colors ${
-                currentStep >= 1 ? "bg-teal-600 text-white" : "bg-slate-200 text-slate-500"
-              }`}
-            >
-              {currentStep > 1 ? <CheckCircle className="h-4 w-4" /> : "1"}
-            </span>
-            <span
-              className={`text-sm font-semibold ${currentStep >= 1 ? "text-slate-900" : "text-slate-400"}`}
-            >
-              {t("documentTranslation.uploadPage.steps.details") !==
-              "documentTranslation.uploadPage.steps.details"
-                ? t("documentTranslation.uploadPage.steps.details")
-                : "Details"}
-            </span>
-          </div>
-
-          <div
-            className={`h-0.5 min-w-[24px] flex-1 rounded-full transition-colors ${
-              currentStep >= 2 ? "bg-teal-600" : "bg-slate-200"
-            }`}
-          />
-
-          <div className="flex items-center gap-2">
-            <span
-              className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold transition-colors ${
-                currentStep >= 2 ? "bg-teal-600 text-white" : "bg-slate-200 text-slate-500"
-              }`}
-            >
-              2
-            </span>
-            <span
-              className={`text-sm font-semibold ${currentStep >= 2 ? "text-slate-900" : "text-slate-400"}`}
-            >
-              {t("documentTranslation.uploadPage.steps.checkout") !==
-              "documentTranslation.uploadPage.steps.checkout"
-                ? t("documentTranslation.uploadPage.steps.checkout")
-                : "Checkout"}
-            </span>
-          </div>
-        </div>
-      )}
-
-      {!uploadSuccess ? (
-        currentStep === 1 || isJourney ? (
-          <>
-            {/* Requirements Section */}
-            {showRequirements && (
-              <section className="mb-8 w-full max-w-4xl rounded-xl border border-slate-100 bg-white p-5 shadow-lg sm:p-6 md:mb-12 md:p-8">
-                <h2 className="text-primary/90 mb-5 flex items-center gap-2 text-xl font-semibold sm:mb-6 sm:text-2xl">
-                  <AlertCircle className="h-5 w-5 sm:h-6 sm:w-6" />
-                  {t("documentTranslation.uploadPage.requirementsTitle")}
-                </h2>
-
-                <ul className="grid gap-4 text-gray-700 sm:grid-cols-2 sm:gap-6">
-                  {[
-                    t("documentTranslation.uploadPage.requirements.1"),
-                    t("documentTranslation.uploadPage.requirements.2"),
-                    t("documentTranslation.uploadPage.requirements.3"),
-                    t("documentTranslation.uploadPage.requirements.4"),
-                    t("documentTranslation.uploadPage.requirements.5"),
-                    t("documentTranslation.uploadPage.requirements.6"),
-                  ].map((req, i) => (
-                    <li key={i} className="flex items-start gap-3">
-                      <CheckCircle className="mt-0.5 h-5 w-5 shrink-0 text-green-600" />
-                      <span className="text-sm sm:text-base">
-                        <strong className="mr-1">{i + 1}.</strong> {req}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            )}
-
-            {/* Upload Section - Constraints applied for compactness */}
-            <section className="w-full max-w-2xl">
-              <div className="rounded-xl border border-slate-100 bg-white p-5 shadow-md sm:p-6">
-                <label className="mb-3 block text-center text-sm font-medium text-gray-700 sm:text-left">
+              {/* Upload */}
+              <section>
+                <span className="mb-2 block text-sm font-semibold">
                   {t("documentTranslation.uploadPage.uploadSectionTitle")}
-                </label>
+                </span>
 
                 <div
-                  className={`cursor-pointer rounded-lg border-2 border-dashed p-5 text-center transition-colors sm:p-6 ${file ? "border-indigo-500 bg-indigo-50" : "border-gray-300 hover:border-gray-400"}`}
+                  role="button"
+                  tabIndex={0}
+                  className="cursor-pointer rounded-[14px] border-2 border-dashed border-teal-500 bg-teal-50 p-6 text-center transition-colors hover:brightness-[0.98]"
                   onClick={() => fileInputRef.current?.click()}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      fileInputRef.current?.click();
+                    }
+                  }}
                 >
                   <input
                     ref={fileInputRef}
@@ -561,21 +529,21 @@ export default function DocumentTranslationTool({
                   />
                   {file ? (
                     <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
-                      <FileText className="h-10 w-10 shrink-0 text-indigo-600" />
+                      <FileText className="h-10 w-10 shrink-0 text-teal-700" />
                       <div className="overflow-hidden text-center sm:text-left">
-                        <p className="max-w-[250px] truncate font-medium">{file.name}</p>
+                        <p className="max-w-[250px] truncate font-semibold">{file.name}</p>
                         <p className="text-xs text-gray-500 sm:text-sm">
                           {(file.size / 1024 / 1024).toFixed(2)} MB
                         </p>
                       </div>
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center text-gray-500">
-                      <Upload className="mb-2 h-10 w-10" />
-                      <p className="text-sm font-medium">
+                    <div className="flex flex-col items-center text-teal-800">
+                      <Upload className="mb-2 h-9 w-9" />
+                      <p className="text-sm font-semibold">
                         {t("documentTranslation.uploadPage.clickDragDrop")}
                       </p>
-                      <p className="mt-1 text-xs">
+                      <p className="mt-1 text-xs text-gray-500">
                         {t("documentTranslation.uploadPage.pdfOnlyMax")}
                       </p>
                     </div>
@@ -588,15 +556,15 @@ export default function DocumentTranslationTool({
                       e.stopPropagation();
                       reset();
                     }}
-                    className="mx-auto mt-3 flex cursor-pointer items-center gap-1 rounded-md border-none bg-red-500 p-2 text-sm text-white outline-hidden hover:bg-red-600"
+                    className="svk-btn svk-btn-gho mx-auto mt-2 flex !min-h-0 text-sm"
                   >
                     <X className="h-4 w-4" /> {t("documentTranslation.uploadPage.removeDocument")}
                   </button>
                 )}
 
                 {/* Document Type Selection */}
-                <div className="mt-4">
-                  <label className="mb-2 block text-sm font-medium text-gray-700">
+                <div className="mt-5">
+                  <label className="mb-2 block text-sm font-semibold">
                     {t("documentTranslation.uploadPage.documentTypeLabel")}
                   </label>
                   <CustomDropdown
@@ -620,15 +588,15 @@ export default function DocumentTranslationTool({
                 </div>
 
                 {/* Optional Notes */}
-                <div className="mt-4">
-                  <label className="mb-2 block text-sm font-medium text-gray-700">
+                <div className="mt-5">
+                  <label className="mb-2 block text-sm font-semibold">
                     {t("documentTranslation.uploadPage.additionalNotesLabel")}
                   </label>
                   <textarea
                     value={userNotes}
                     onChange={(e) => setUserNotes(e.target.value)}
                     placeholder={t("documentTranslation.uploadPage.notesPlaceholder")}
-                    className="focus:ring-primary min-h-[80px] w-full rounded-md border p-2 outline-hidden focus:border-transparent focus:ring-2"
+                    className="w-full p-3"
                     maxLength={500}
                   />
                 </div>
@@ -641,100 +609,67 @@ export default function DocumentTranslationTool({
                   </div>
                 )}
 
-                {/* Upload Button */}
-                <button
-                  onClick={() => {
-                    // if (isLocked) {
-                    //   setShowUpgradeModal(true);
-                    //   return;
-                    // }
-
-                    if (!file || !documentType) {
-                      setError(t("documentTranslation.uploadPage.validation.missingFileOrType"));
-                      return;
-                    }
-
-                    if (isJourney) {
-                      void handleUpload();
-                      return;
-                    }
-
-                    setCurrentStep(2);
-                  }}
-                  // disabled={!isLocked && (!file || uploading)}
-                  className={`mt-6 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border-none py-3 font-semibold outline-hidden transition-all ${
-                    // isLocked
-                    //   ? "bg-primary/90 text-white blur-[1.5px] opacity-80 hover:scale-[0.99]"
-                    //   :
-                    !file || uploading
-                      ? "cursor-not-allowed bg-gray-300 text-gray-500"
-                      : "bg-primary/90 hover:bg-primary text-white"
-                  }`}
-                >
-                  {uploading ? (
-                    <>{t("documentTranslation.uploadPage.processingBtn")}</>
-                  ) : (
-                    <>
-                      {/* {isLocked ? <Lock className="w-5 h-5" /> :  */}
-                      <Upload className="h-5 w-5" />
-                      {/* } */}
-                      {t("documentTranslation.uploadPage.uploadBtn")}
-                    </>
-                  )}
-                </button>
-
-                {showRequestsLink && isAuthenticated && (
-                  <div className="mt-4 text-center">
-                    <button
-                      onClick={
-                        // isLocked
-                        //   ? () => setShowUpgradeModal(true)
-                        //   :
-                        () => (window.location.href = "/document-translation/my-requests")
+                <div className="svk-actions">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!file || !documentType) {
+                        setError(t("documentTranslation.uploadPage.validation.missingFileOrType"));
+                        return;
                       }
-                      className={`text-primary mx-auto flex cursor-pointer items-center justify-center gap-1.5 border-none bg-transparent text-sm outline-hidden hover:underline`}
-                    >
-                      {/* {isLocked && <Lock className="w-3.5 h-3.5" />} */}
-                      {t("documentTranslation.uploadPage.seeMyRequestsBtn")}
-                    </button>
-                  </div>
-                )}
-              </div>
-            </section>
-          </>
+
+                      if (isJourney) {
+                        void handleUpload();
+                        return;
+                      }
+
+                      setCurrentStep(2);
+                    }}
+                    className={`svk-btn svk-btn-pri ${!file || uploading ? "opacity-50" : ""}`}
+                  >
+                    {uploading ? (
+                      <>{t("documentTranslation.uploadPage.processingBtn")}</>
+                    ) : (
+                      <>
+                        <Upload className="h-5 w-5" />
+                        {t("documentTranslation.uploadPage.uploadBtn")}
+                      </>
+                    )}
+                  </button>
+                </div>
+              </section>
+            </>
+          ) : (
+            <CheckoutStep
+              file={file}
+              documentType={documentType}
+              userNotes={userNotes}
+              error={checkoutError}
+              loading={checkoutLoading}
+              walletBalance={wallet.balance}
+              walletLoading={wallet.isLoading}
+              onTopup={(deficit) => wallet.openTopup({ amount: deficit })}
+              onBack={() => {
+                pendingDraftRef.current = null;
+                setCurrentStep(1);
+              }}
+              onSubmit={handleCheckoutSubmit}
+            />
+          )
         ) : (
-          <CheckoutStep
-            file={file}
-            documentType={documentType}
-            userNotes={userNotes}
-            error={checkoutError}
-            loading={checkoutLoading}
-            walletBalance={wallet.balance}
-            walletLoading={wallet.isLoading}
-            onTopup={(deficit) => wallet.openTopup({ amount: deficit })}
-            onBack={() => {
-              pendingDraftRef.current = null;
-              setCurrentStep(1);
-            }}
-            onSubmit={handleCheckoutSubmit}
+          <SuccessState
+            onGoToRequests={() => (window.location.href = "/document-translation/my-requests")}
+            onUploadAnother={reset}
+            isJourney={isJourney}
           />
-        )
-      ) : (
-        <SuccessState
-          onGoToRequests={() => (window.location.href = "/document-translation/my-requests")}
-          onUploadAnother={reset}
-          isJourney={isJourney}
-        />
-      )}
+        )}
+      </ServiceSkinShell>
 
       <AuthRequiredModal
         open={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         redirectTo="/document-translation"
       />
-      {/* {showUpgradeModal && (
-        <UpgradeModal feature="document_translation" onClose={() => setShowUpgradeModal(false)} />
-      )} */}
     </div>
   );
 }

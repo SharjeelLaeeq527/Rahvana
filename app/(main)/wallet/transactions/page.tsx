@@ -103,7 +103,7 @@ function StatCard({
   caption,
   icon: Icon,
   tone,
-  unit = "Credits",
+  unit = "Jarthings",
 }: {
   label: string;
   value: string;
@@ -289,19 +289,19 @@ export default function WalletTransactionsPage() {
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="max-w-2xl">
             <h1 className="text-[26px] leading-tight font-extrabold tracking-tight text-[#0a1128]">
-              Credit Wallet &amp; Transactions
+              Jarthing Wallet &amp; Transactions
             </h1>
             <p className="mt-1.5 text-[13.5px] leading-relaxed text-slate-500">
-              Track your credit balance, review standalone tool, guide and service charges, and
+              Track your jarthing balance, review standalone tool, guide and service charges, and
               download a complete statement of every deposit and disbursement.
             </p>
           </div>
           <span
             className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[12px] font-bold text-slate-600 shadow-sm"
-            title="Rahvana Credits map 1:1 to US dollars."
+            title="Rahvana Jarthings map 1:1 to US dollars."
           >
             <Coins size={13} className="text-rahvana-primary" aria-hidden="true" />1 USD = 1 Rahvana
-            Credit
+            Jarthing
           </span>
         </div>
 
@@ -319,7 +319,7 @@ export default function WalletTransactionsPage() {
             />
             <div className="relative">
               <div className="flex items-center justify-between gap-3">
-                <p className="text-[13px] font-semibold text-white/70">Available Credits</p>
+                <p className="text-[13px] font-semibold text-white/70">Available Jarthings</p>
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-bold text-white ring-1 ring-white/15 ring-inset">
                   <span
                     className="bg-rahvana-secondary h-1.5 w-1.5 rounded-full"
@@ -333,7 +333,7 @@ export default function WalletTransactionsPage() {
                   {balance !== null ? formatCredits(balance) : walletLoading ? "…" : "0"}
                 </span>
                 <span className="rounded-md bg-white/15 px-2 py-0.5 text-[11px] font-extrabold tracking-wide text-white uppercase ring-1 ring-white/10 ring-inset">
-                  Credits
+                  Jarthings
                 </span>
                 <span className="text-[13px] font-semibold text-white/60 tabular-nums">
                   {balance !== null ? `\u2248 ${formatUsd(balance)} USD` : ""}
@@ -346,14 +346,14 @@ export default function WalletTransactionsPage() {
               className="text-rahvana-primary-dark hover:bg-rahvana-primary-pale relative mt-6 inline-flex w-fit items-center gap-2 rounded-2xl bg-white px-5 py-3 text-[14px] font-bold shadow-sm transition-all hover:shadow-md"
             >
               <Plus size={16} strokeWidth={2.5} aria-hidden="true" />
-              Top Up Credits
+              Top Up Jarthings
             </button>
           </div>
 
           {/* Stats row (right, three cards side by side) */}
           <div className="grid gap-4 sm:grid-cols-3 lg:col-span-7">
             <StatCard
-              label="Total Credits Added"
+              label="Total Jarthings Added"
               value={summary ? formatCredits(summary.totalAdded) : "—"}
               caption={
                 summary
@@ -364,7 +364,7 @@ export default function WalletTransactionsPage() {
               tone="teal"
             />
             <StatCard
-              label="Credits Spent"
+              label="Jarthings Spent"
               value={summary ? formatCredits(summary.totalSpent) : "—"}
               caption="Tools, guides & booked services"
               icon={Wallet}
@@ -507,7 +507,7 @@ export default function WalletTransactionsPage() {
                 <Loader
                   size="sm"
                   text="Loading your history…"
-                  subText="Reading your credit ledger"
+                  subText="Reading your jarthing ledger"
                 />
               </div>
             ) : rows.length === 0 ? (
@@ -519,7 +519,7 @@ export default function WalletTransactionsPage() {
                 <p className="mx-auto mt-1 max-w-sm text-[13px] text-slate-500">
                   {debouncedSearch || filter !== "all" || days !== 0
                     ? "Nothing matches the current filters. Try widening the range or clearing the search."
-                    : "Top up your wallet or unlock a tool to start your credit history."}
+                    : "Top up your wallet or unlock a tool to start your jarthing history."}
                 </p>
               </div>
             ) : (
@@ -639,7 +639,7 @@ export default function WalletTransactionsPage() {
         </div>
 
         <p className="mt-4 text-center text-[11.5px] text-slate-400">
-          Journey tools on your subscription plan never spend wallet credits. Every line here is a
+          Journey tools on your subscription plan never spend wallet jarthings. Every line here is a
           standalone purchase or top-up.
         </p>
       </div>

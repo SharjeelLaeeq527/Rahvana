@@ -42,12 +42,12 @@ export function validateTopupAmount(raw: unknown): TopupValidation {
     return { ok: false, error: "Top-up amount must be a positive number." };
   }
   if (!Number.isInteger(amount)) {
-    return { ok: false, error: "Top-up amount must be a whole number of credits." };
+    return { ok: false, error: "Top-up amount must be a whole number of jarthings." };
   }
   if (amount > WALLET_MAX_TOPUP) {
     return {
       ok: false,
-      error: `Top-up amount cannot exceed ${WALLET_MAX_TOPUP} credits.`,
+      error: `Top-up amount cannot exceed ${WALLET_MAX_TOPUP} jarthings.`,
     };
   }
   return { ok: true, credits: Math.max(amount, WALLET_MIN_TOPUP) };
@@ -149,7 +149,7 @@ export async function applyWalletTopup(
     p_amount: credits,
     p_stripe_session_id: session.id,
     p_stripe_payment_id: (session.payment_intent as string) || null,
-    p_description: `Wallet Top-Up: ${credits} Credits ($${credits} USD)`,
+    p_description: `Wallet Top-Up: ${credits} Jarthings ($${credits} USD)`,
     p_payment_id: payment?.id ?? null,
     p_metadata: {
       source: "stripe_checkout",

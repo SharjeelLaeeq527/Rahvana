@@ -130,8 +130,8 @@ describe("amount formatting", () => {
   });
 
   it("signs credits and keeps magnitude readable", () => {
-    expect(formatSignedCredits("500")).toBe("+500 Credits");
-    expect(formatSignedCredits("-250.5")).toBe("-250.5 Credits");
+    expect(formatSignedCredits("500")).toBe("+500 Jarthings");
+    expect(formatSignedCredits("-250.5")).toBe("-250.5 Jarthings");
     expect(formatCredits("3500")).toBe("3,500");
   });
 
