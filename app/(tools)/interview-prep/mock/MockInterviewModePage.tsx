@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
@@ -875,101 +876,107 @@ export function MockInterviewModePage({
             </div>
           </div>
 
-          {showAnsweringFlowModal && (
-            <div className="fixed inset-0 z-10000 flex items-center justify-center bg-slate-950/60 px-4 backdrop-blur-sm">
-              <div className="w-full max-w-lg rounded-3xl border border-[#f0d6dc] bg-[#fffdfd] p-6 shadow-[0_30px_80px_-30px_rgba(15,23,42,0.35)] sm:p-8">
-                <div className="mb-6 text-center">
-                  <h3 className="text-2xl font-semibold text-slate-900">
-                    Choose your answering flow
-                  </h3>
-                  <p className="mt-2 text-sm text-slate-500">
-                    Pick the control style you want before entering fullscreen.
-                  </p>
-                </div>
+          {showAnsweringFlowModal &&
+            typeof document !== "undefined" &&
+            createPortal(
+              <div
+                className="fixed inset-0 z-[99999] flex items-center justify-center bg-slate-950/60 px-4 backdrop-blur-sm"
+                style={{ zIndex: 99999 }}
+              >
+                <div className="w-full max-w-lg rounded-3xl border border-[#f0d6dc] bg-[#fffdfd] p-6 shadow-[0_30px_80px_-30px_rgba(15,23,42,0.35)] sm:p-8">
+                  <div className="mb-6 text-center">
+                    <h3 className="text-2xl font-semibold text-slate-900">
+                      Choose your answering flow
+                    </h3>
+                    <p className="mt-2 text-sm text-slate-500">
+                      Pick the control style you want before entering fullscreen.
+                    </p>
+                  </div>
 
-                <div className="mb-6 space-y-3">
-                  <button
-                    type="button"
-                    onClick={() => setAnsweringFlowMode("pushToTalk")}
-                    className={`w-full rounded-2xl border p-4 text-left transition ${
-                      answeringFlowMode === "pushToTalk"
-                        ? "border-[#db8090] bg-[#fff7f8] shadow-[0_4px_16px_-8px_rgba(219,128,144,0.25)]"
-                        : "border-[#f0d6dc] bg-white hover:border-[#db8090]/40 hover:bg-[#fffafb]"
-                    }`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <span className="mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[#db8090]">
-                        <span
-                          className={`h-2.5 w-2.5 rounded-full ${
-                            answeringFlowMode === "pushToTalk" ? "bg-[#db8090]" : "bg-transparent"
-                          }`}
-                        />
-                      </span>
-                      <div>
-                        <div className="font-semibold text-[#4b3b46]">
-                          Flow 1: Hold Space to Talk
-                        </div>
-                        <p className="mt-1 text-sm text-[#8b7280]">
-                          Hold Space to speak and release to stop, while the answer button still
-                          works.
-                        </p>
-                        <span className="mt-2 inline-flex rounded-full bg-[#f3ede7] px-2.5 py-1 text-xs font-medium text-[#9c6f38]">
-                          Most Popular
+                  <div className="mb-6 space-y-3">
+                    <button
+                      type="button"
+                      onClick={() => setAnsweringFlowMode("pushToTalk")}
+                      className={`w-full rounded-2xl border p-4 text-left transition ${
+                        answeringFlowMode === "pushToTalk"
+                          ? "border-[#db8090] bg-[#fff7f8] shadow-[0_4px_16px_-8px_rgba(219,128,144,0.25)]"
+                          : "border-[#f0d6dc] bg-white hover:border-[#db8090]/40 hover:bg-[#fffafb]"
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <span className="mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[#db8090]">
+                          <span
+                            className={`h-2.5 w-2.5 rounded-full ${
+                              answeringFlowMode === "pushToTalk" ? "bg-[#db8090]" : "bg-transparent"
+                            }`}
+                          />
                         </span>
-                      </div>
-                    </div>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setAnsweringFlowMode("toggle")}
-                    className={`w-full rounded-2xl border p-4 text-left transition ${
-                      answeringFlowMode === "toggle"
-                        ? "border-[#db8090] bg-[#fff7f8] shadow-[0_4px_16px_-8px_rgba(219,128,144,0.25)]"
-                        : "border-[#f0d6dc] bg-white hover:border-[#db8090]/40 hover:bg-[#fffafb]"
-                    }`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <span className="mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[#db8090]">
-                        <span
-                          className={`h-2.5 w-2.5 rounded-full ${
-                            answeringFlowMode === "toggle" ? "bg-[#db8090]" : "bg-transparent"
-                          }`}
-                        />
-                      </span>
-                      <div>
-                        <div className="font-semibold text-[#4b3b46]">
-                          Flow 2: Button or Space Toggle
+                        <div>
+                          <div className="font-semibold text-[#4b3b46]">
+                            Flow 1: Hold Space to Talk
+                          </div>
+                          <p className="mt-1 text-sm text-[#8b7280]">
+                            Hold Space to speak and release to stop, while the answer button still
+                            works.
+                          </p>
+                          <span className="mt-2 inline-flex rounded-full bg-[#f3ede7] px-2.5 py-1 text-xs font-medium text-[#9c6f38]">
+                            Most Popular
+                          </span>
                         </div>
-                        <p className="mt-1 text-sm text-[#8b7280]">
-                          Use the answer button or press Space to start and stop.
-                        </p>
                       </div>
-                    </div>
-                  </button>
-                </div>
+                    </button>
 
-                <div className="flex flex-col gap-3 sm:flex-row">
-                  <Button
-                    variant="outline"
-                    className="h-12 flex-1 border-[#f0d6dc] text-slate-700 hover:bg-[#fff7f8]"
-                    onClick={() => setShowAnsweringFlowModal(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    className="h-12 flex-1 bg-[#db8090] font-semibold text-white shadow-[0_4px_16px_-4px_rgba(219,128,144,0.35)] hover:bg-[#c96f80]"
-                    onClick={() => {
-                      setShowAnsweringFlowModal(false);
-                      void startInterview();
-                    }}
-                  >
-                    Continue to Interview
-                  </Button>
+                    <button
+                      type="button"
+                      onClick={() => setAnsweringFlowMode("toggle")}
+                      className={`w-full rounded-2xl border p-4 text-left transition ${
+                        answeringFlowMode === "toggle"
+                          ? "border-[#db8090] bg-[#fff7f8] shadow-[0_4px_16px_-8px_rgba(219,128,144,0.25)]"
+                          : "border-[#f0d6dc] bg-white hover:border-[#db8090]/40 hover:bg-[#fffafb]"
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <span className="mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[#db8090]">
+                          <span
+                            className={`h-2.5 w-2.5 rounded-full ${
+                              answeringFlowMode === "toggle" ? "bg-[#db8090]" : "bg-transparent"
+                            }`}
+                          />
+                        </span>
+                        <div>
+                          <div className="font-semibold text-[#4b3b46]">
+                            Flow 2: Button or Space Toggle
+                          </div>
+                          <p className="mt-1 text-sm text-[#8b7280]">
+                            Use the answer button or press Space to start and stop.
+                          </p>
+                        </div>
+                      </div>
+                    </button>
+                  </div>
+
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <Button
+                      variant="outline"
+                      className="h-12 flex-1 border-[#f0d6dc] text-slate-700 hover:bg-[#fff7f8]"
+                      onClick={() => setShowAnsweringFlowModal(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      className="h-12 flex-1 bg-[#db8090] font-semibold text-white shadow-[0_4px_16px_-4px_rgba(219,128,144,0.35)] hover:bg-[#c96f80]"
+                      onClick={() => {
+                        setShowAnsweringFlowModal(false);
+                        void startInterview();
+                      }}
+                    >
+                      Continue to Interview
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            </div>
-          )}
+              </div>,
+              document.body
+            )}
         </div>
       </div>
     );
@@ -1192,7 +1199,10 @@ export function MockInterviewModePage({
   ];
 
   return (
-    <div className="fixed inset-0 z-9999 flex flex-col overflow-hidden bg-linear-to-br from-[#e8f6f6] via-white to-slate-50 text-slate-900">
+    <div
+      className="fixed inset-0 z-[99999] flex flex-col overflow-hidden bg-linear-to-br from-[#e8f6f6] via-white to-slate-50 text-slate-900"
+      style={{ zIndex: 99999 }}
+    >
       {/* ambient color */}
       <div className="pointer-events-none absolute -top-40 left-1/3 h-120 w-120 rounded-full bg-[#afdbdb]/10 blur-3xl" />
       <div className="pointer-events-none absolute right-0 -bottom-40 h-104 w-104 rounded-full bg-[#0d7377]/5 blur-3xl" />
