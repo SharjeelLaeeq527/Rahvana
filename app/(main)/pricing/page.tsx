@@ -803,6 +803,8 @@ function PricingContent() {
     // Merge DB journeys into candidate roster
     const mergedMap = new Map<string, any>();
 
+    const rowTier = row?.subscription_tier || "free";
+    
     // Jarthing with baseCandidates
     baseCandidates.forEach((c) => {
       mergedMap.set(c.id.toLowerCase(), {
