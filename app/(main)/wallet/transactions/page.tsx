@@ -283,26 +283,6 @@ export default function WalletTransactionsPage() {
 
   return (
     <div className="bg-background min-h-screen pt-16">
-      <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* ---------------- Page header ---------------- */}
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="max-w-2xl">
-            <h1 className="text-[26px] leading-tight font-extrabold tracking-tight text-[#0a1128]">
-              Jarthing Wallet &amp; Transactions
-            </h1>
-            <p className="mt-1.5 text-[13.5px] leading-relaxed text-slate-500">
-              Track your jarthing balance, review standalone tool, guide and service charges, and
-              download a complete statement of every deposit and disbursement.
-            </p>
-          </div>
-          <span
-            className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[12px] font-bold text-slate-600 shadow-sm"
-            title="Rahvana Jarthings map 1:1 to US dollars."
-          >
-            <Coins size={13} className="text-rahvana-primary" aria-hidden="true" />1 USD = 1 Rahvana
-            Jarthing
-          </span>
-        </div>
       <div className="w-full">
         {/* Hero Header Deck */}
         <header className="relative overflow-hidden bg-[#0A4F49] px-4 py-10 pb-20 text-white sm:px-6 lg:px-10">
@@ -441,10 +421,10 @@ export default function WalletTransactionsPage() {
           <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-7">
             <div className="max-w-2xl">
               <h1 className="text-[30px] leading-tight font-extrabold tracking-tight text-white sm:text-[38px] lg:text-[42px]">
-                Credit Wallet &amp; Transactions
+                Jarthing Wallet &amp; Transactions
               </h1>
               <p className="mt-2 text-[14px] leading-relaxed text-white/85 sm:text-[15px]">
-                Track your credit balance, review standalone tool, guide and service charges, and
+                Track your jarthing balance, review standalone tool, guide and service charges, and
                 download a complete statement of every deposit and disbursement.
               </p>
             </div>
@@ -457,7 +437,7 @@ export default function WalletTransactionsPage() {
                 <div>
                   <p className="text-[13px] font-bold text-[#0a1128]">Universal 1:1 Parity</p>
                   <p className="text-[11px] text-slate-500">
-                    1 Credit = $1.00 USD for all services
+                    1 Jarthing = $1.00 USD for all services
                   </p>
                 </div>
               </div>
@@ -476,99 +456,47 @@ export default function WalletTransactionsPage() {
               <div className="relative z-10">
                 <div className="mb-3 flex items-center justify-between">
                   <span className="flex items-center gap-1.5 text-[13.5px] font-bold tracking-wide text-[#0a4f49]">
-                    Available Credits
+                    Available Jarthings
                     <span title="Your available wallet balance">
                       <HelpCircle size={14} className="opacity-80" />
                     </span>
                   </span>
                 </div>
 
-        {/* ---------------- Hero: balance + lifetime stats ---------------- */}
-        <div className="mt-6 grid gap-5 lg:grid-cols-12">
-          {/* Balance card — the platform's premium deep-teal hero treatment */}
-          <div className="shadow-rahvana-primary/20 relative flex flex-col justify-between overflow-hidden rounded-2xl bg-gradient-to-br from-[#0d7377] via-[#095c5f] to-[#063e40] p-6 text-white shadow-lg ring-1 ring-black/5 lg:col-span-5">
-            <div
-              aria-hidden="true"
-              className="bg-rahvana-secondary/15 pointer-events-none absolute -top-16 -right-16 h-48 w-48 rounded-full blur-2xl"
-            />
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute -bottom-20 -left-12 h-40 w-40 rounded-full bg-white/5 blur-2xl"
-            />
-            <div className="relative">
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-[13px] font-semibold text-white/70">Available Jarthings</p>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-bold text-white ring-1 ring-white/15 ring-inset">
-                  <span
-                    className="bg-rahvana-secondary h-1.5 w-1.5 rounded-full"
-                    aria-hidden="true"
-                  />
-                  Active &amp; Unrestricted
-                </span>
+                <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-2">
+                  <span className="font-serif text-[38px] leading-none font-bold tracking-tight text-[#0a4f49] sm:text-[46px]">
+                    {balance !== null ? formatCredits(balance) : walletLoading ? "…" : "0"}
+                  </span>
+
+                  <span className="rounded-md bg-[#0a4f49]/10 px-2 py-1 text-[11px] font-bold tracking-wider text-[#0a4f49] uppercase">
+                    Jarthings
+                  </span>
+
+                  <span className="text-[13px] font-medium text-slate-500 sm:text-[14px]">
+                    {balance !== null ? `≈ ${formatUsd(balance)} USD` : ""}
+                  </span>
+                </div>
               </div>
-              <div className="mt-4 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                <span className="text-[42px] leading-none font-extrabold tracking-tight text-white tabular-nums">
-                  {balance !== null ? formatCredits(balance) : walletLoading ? "…" : "0"}
-                </span>
-                <span className="rounded-md bg-white/15 px-2 py-0.5 text-[11px] font-extrabold tracking-wide text-white uppercase ring-1 ring-white/10 ring-inset">
-                  Jarthings
-                </span>
-                <span className="text-[13px] font-semibold text-white/60 tabular-nums">
-                  {balance !== null ? `\u2248 ${formatUsd(balance)} USD` : ""}
-                </span>
+
+              <div className="relative z-10 mt-6 flex items-center border-t border-[#0a4f49]/15 pt-5">
+                <button
+                  type="button"
+                  onClick={() => openTopup({ returnUrl: "/wallet/transactions" })}
+                  className="inline-flex items-center gap-2 rounded-xl bg-[#0a4f49] px-5 py-3 text-[13.5px] font-bold text-white shadow-md shadow-[#0a4f49]/20 transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#073b37] hover:shadow-lg active:scale-[0.98]"
+                >
+                  <Plus size={16} strokeWidth={2.5} />
+                  Top Up Jarthings
+                </button>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => openTopup({ returnUrl: "/wallet/transactions" })}
-              className="text-rahvana-primary-dark hover:bg-rahvana-primary-pale relative mt-6 inline-flex w-fit items-center gap-2 rounded-2xl bg-white px-5 py-3 text-[14px] font-bold shadow-sm transition-all hover:shadow-md"
-            >
-              <Plus size={16} strokeWidth={2.5} aria-hidden="true" />
-              Top Up Jarthings
-            </button>
-          </div>
 
-          {/* Stats row (right, three cards side by side) */}
-          <div className="grid gap-4 sm:grid-cols-3 lg:col-span-7">
-            <StatCard
-              label="Total Jarthings Added"
-              value={summary ? formatCredits(summary.totalAdded) : "—"}
-              caption={
-                summary
-                  ? `${formatUsd(summary.totalAdded) || "$0.00"} cumulative deposits`
-                  : "Awaiting ledger summary"
-              }
-              icon={ArrowDownLeft}
-              tone="teal"
-            />
-            <StatCard
-              label="Jarthings Spent"
-              value={summary ? formatCredits(summary.totalSpent) : "—"}
-              caption="Tools, guides & booked services"
-              icon={Wallet}
-              tone="violet"
-            />
-            <StatCard
-              label="Pending Items"
-              value={summary ? formatCredits(summary.pendingCount) : "—"}
-              caption={
-                summary && summary.pendingCount > 0
-                  ? "Settlement in progress"
-                  : "All balances settled"
-              }
-              icon={summary && summary.pendingCount > 0 ? Clock : Check}
-              tone={summary && summary.pendingCount > 0 ? "amber" : "emerald"}
-              unit=""
-            />
-          </div>
-        </div>
             {/* Metrics Cluster */}
             <div className="grid gap-4 sm:grid-cols-3 lg:col-span-7">
-              {/* Total Credits Added */}
+              {/* Total Jarthings Added */}
               <div className="relative flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-[#0f8f80]/25 hover:shadow-md">
                 <div className="mb-5 flex items-center justify-between gap-2">
                   <span className="text-[11px] font-bold tracking-wider text-slate-500 uppercase">
-                    Total Credits Added
+                    Total Jarthings Added
                   </span>
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#e8f6f3] text-[#0a4f49]">
                     <ArrowDownLeft size={18} strokeWidth={2.5} />
@@ -578,7 +506,7 @@ export default function WalletTransactionsPage() {
                 <div>
                   <div className="flex flex-wrap items-baseline gap-1.5 text-[24px] leading-tight font-bold text-[#0a1128]">
                     <span>{summary ? formatCredits(summary.totalAdded) : "—"}</span>
-                    <span className="text-[11.5px] font-semibold text-slate-400">Credits</span>
+                    <span className="text-[11.5px] font-semibold text-slate-400">Jarthings</span>
                   </div>
                   <p className="mt-1.5 text-[12px] text-slate-500">
                     {summary
@@ -588,11 +516,11 @@ export default function WalletTransactionsPage() {
                 </div>
               </div>
 
-              {/* Credits Spent */}
+              {/* Jarthings Spent */}
               <div className="relative flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-[#0f8f80]/25 hover:shadow-md">
                 <div className="mb-5 flex items-center justify-between gap-2">
                   <span className="text-[11px] font-bold tracking-wider text-slate-500 uppercase">
-                    Credits Spent
+                    Jarthings Spent
                   </span>
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-purple-100 text-purple-700">
                     <Wallet size={18} />
@@ -602,7 +530,7 @@ export default function WalletTransactionsPage() {
                 <div>
                   <div className="flex flex-wrap items-baseline gap-1.5 text-[24px] leading-tight font-bold text-[#0a1128]">
                     <span>{summary ? formatCredits(summary.totalSpent) : "—"}</span>
-                    <span className="text-[11.5px] font-semibold text-slate-400">Credits</span>
+                    <span className="text-[11.5px] font-semibold text-slate-400">Jarthings</span>
                   </div>
                   <p className="mt-1.5 text-[12px] text-slate-500">Tools, guides &amp; services</p>
                 </div>
@@ -632,7 +560,7 @@ export default function WalletTransactionsPage() {
                 <div>
                   <div className="flex flex-wrap items-baseline gap-1.5 text-[24px] leading-tight font-bold text-[#0a1128]">
                     <span>{summary ? formatCredits(summary.pendingCount) : "—"}</span>
-                    <span className="text-[11.5px] font-semibold text-slate-400">Credits</span>
+                    <span className="text-[11.5px] font-semibold text-slate-400">Jarthings</span>
                   </div>
 
                   <p
@@ -753,138 +681,6 @@ export default function WalletTransactionsPage() {
               </div>
             </div>
 
-          {/* Table */}
-          <div className="border-t border-slate-100">
-            {error ? (
-              <div className="px-6 py-14 text-center">
-                <p className="mx-auto max-w-md text-[13.5px] font-semibold text-red-600">{error}</p>
-                <button
-                  type="button"
-                  onClick={() => void load()}
-                  className="bg-rahvana-primary hover:bg-rahvana-primary-dark mt-4 rounded-2xl px-5 py-2.5 text-[13.5px] font-bold text-white transition-colors"
-                >
-                  Try again
-                </button>
-              </div>
-            ) : loading && !view ? (
-              <div className="flex items-center justify-center px-6 py-16">
-                <Loader
-                  size="sm"
-                  text="Loading your history…"
-                  subText="Reading your jarthing ledger"
-                />
-              </div>
-            ) : rows.length === 0 ? (
-              <div className="px-6 py-16 text-center">
-                <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-500">
-                  <Coins size={24} aria-hidden="true" />
-                </span>
-                <p className="mt-4 text-[15px] font-bold text-slate-800">No transactions found</p>
-                <p className="mx-auto mt-1 max-w-sm text-[13px] text-slate-500">
-                  {debouncedSearch || filter !== "all" || days !== 0
-                    ? "Nothing matches the current filters. Try widening the range or clearing the search."
-                    : "Top up your wallet or unlock a tool to start your jarthing history."}
-                </p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[900px] border-collapse text-left">
-                  <thead>
-                    <tr className="border-b border-slate-200 bg-slate-50/80">
-                      {[
-                        "Transaction Details",
-                        "Date & Time",
-                        "Category",
-                        "Status",
-                        "Amount",
-                        "",
-                      ].map((h, i) => (
-                        <th
-                          key={i}
-                          className={`px-4 py-3 text-[10.5px] font-bold tracking-[0.06em] whitespace-nowrap text-slate-500 uppercase ${i >= 5 ? "text-right" : ""}`}
-                        >
-                          {h}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody
-                    className={loading ? "opacity-60 transition-opacity" : "transition-opacity"}
-                  >
-                    {rows.map((t) => {
-                      const category = categoryFor(t.transaction_type);
-                      const status = statusFor(t.status);
-                      const Icon = CATEGORY_ICONS[t.transaction_type] ?? Coins;
-                      const resource = getCatalogItem(t.resource_type, t.resource_id)?.name;
-                      const debit = isDebit(t);
-                      return (
-                        <tr
-                          key={t.id}
-                          className="border-b border-slate-100 last:border-b-0 hover:bg-slate-50/70"
-                        >
-                          {/* Details */}
-                          <td className="px-4 py-3.5">
-                            <div className="flex items-center gap-3">
-                              <span
-                                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${category.tile}`}
-                                aria-hidden="true"
-                              >
-                                <Icon size={16} />
-                              </span>
-                              <div className="max-w-[300px] min-w-0">
-                                <p className="truncate text-[13.5px] font-bold text-slate-800">
-                                  {t.description}
-                                </p>
-                                <p className="truncate text-[11.5px] font-medium text-slate-400">
-                                  {resource ?? paymentMethodFor(t)}
-                                </p>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-4 py-3.5 text-[12.5px] font-medium whitespace-nowrap text-slate-500">
-                            {formatDateTime(t.created_at)}
-                          </td>
-                          <td className="px-4 py-3.5">
-                            <span
-                              className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold whitespace-nowrap ${category.badge}`}
-                            >
-                              {category.label}
-                            </span>
-                          </td>
-                  <td className="px-4 py-3.5">
-                            <span
-                              className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold whitespace-nowrap ${status.pill}`}
-                            >
-                              {status.label}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3.5 text-right whitespace-nowrap">
-                            <span
-                              className={`text-[13.5px] font-extrabold tabular-nums ${debit ? "text-slate-900" : "text-emerald-600"}`}
-                            >
-                              {formatSignedCredits(t.amount)}
-                            </span>
-                          </td>
-                          {/* Action: full record in a modal */}
-                          <td className="px-4 py-3.5 text-right">
-                            <button
-                              type="button"
-                              onClick={() => setDetail(t)}
-                              aria-label={`View details for ${t.description}`}
-                              title="View transaction details"
-                              className="hover:border-rahvana-primary/40 hover:bg-rahvana-primary-pale hover:text-rahvana-primary-dark inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-sm transition-colors"
-                            >
-                              <Info size={15} strokeWidth={2.25} aria-hidden="true" />
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
             {/* Table */}
             <div className="border-t border-slate-100">
               {error ? (
@@ -905,7 +701,7 @@ export default function WalletTransactionsPage() {
                   <Loader
                     size="sm"
                     text="Loading your history…"
-                    subText="Reading your credit ledger"
+                    subText="Reading your jarthing ledger"
                   />
                 </div>
               ) : rows.length === 0 ? (
@@ -917,7 +713,7 @@ export default function WalletTransactionsPage() {
                   <p className="mx-auto mt-1 max-w-sm text-[13px] text-slate-500">
                     {debouncedSearch || filter !== "all" || days !== 0
                       ? "Nothing matches the current filters. Try widening the range or clearing the search."
-                      : "Top up your wallet or unlock a tool to start your credit history."}
+                      : "Top up your wallet or unlock a tool to start your jarthing history."}
                   </p>
                 </div>
               ) : (
@@ -1036,12 +832,8 @@ export default function WalletTransactionsPage() {
             )}
           </div>
 
-        <p className="mt-4 text-center text-[11.5px] text-slate-400">
-          Journey tools on your subscription plan never spend wallet jarthings. Every line here is a
-          standalone purchase or top-up.
-        </p>
           <p className="mt-4 text-center text-[11.5px] text-slate-400">
-            Journey tools on your subscription plan never spend wallet credits. Every line here is a
+            Journey tools on your subscription plan never spend wallet jarthings. Every line here is a
             standalone purchase or top-up.
           </p>
           {detail && (
