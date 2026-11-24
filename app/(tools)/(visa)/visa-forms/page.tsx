@@ -1043,135 +1043,144 @@ export default function VisaFormSelector({
                   {/* Filter Popover */}
                   {isFilterPopoverOpen && (
                     <div
-                      ref={filterPopoverRef}
-                      className="absolute top-full right-0 z-50 mt-2 max-h-[500px] w-80 overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-xl"
+                      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm sm:absolute sm:inset-auto sm:top-full sm:right-0 sm:mt-2 sm:block sm:bg-transparent sm:p-0 sm:backdrop-blur-none"
+                      onClick={(e) => {
+                        if (e.target === e.currentTarget) {
+                          setIsFilterPopoverOpen(false);
+                        }
+                      }}
                     >
-                      {/* Header */}
-                      <div className="sticky top-0 flex items-center justify-between border-b border-gray-100 bg-white p-4">
-                        <h3 className="font-semibold text-gray-900">Filter Forms</h3>
-                        <button
-                          onClick={() => setIsFilterPopoverOpen(false)}
-                          className="text-gray-600 transition-colors hover:text-gray-900"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      </div>
-
-                      {/* Filter Content */}
-                      <div className="space-y-4 p-4">
-                        {/* Journey Filter */}
-                        <div>
-                          <label className="mb-2 block text-xs font-semibold tracking-wide text-gray-900 uppercase">
-                            Visa Journey
-                          </label>
-                          <div className="flex flex-col gap-2">
-                            {[
-                              { id: "IR1-CR1", label: "IR-1 / CR-1 (Spouse)" },
-                              // IR-5 is hidden on production (see lib/feature-flags) until it launches.
-                              ...(IR5_ENABLED ? [{ id: "IR5", label: "IR-5 (Parent)" }] : []),
-                              // IR-2 is hidden on production (see lib/feature-flags) until it launches.
-                              ...(IR2_ENABLED ? [{ id: "IR2", label: "IR-2 (Child)" }] : []),
-                              // { id: "K1", label: "K-1 (Fiancé)" },
-                              // { id: "AOS", label: "Adjustment of Status" },
-                              // { id: "Naturalization", label: "Naturalization" },
-                            ].map((journey) => (
-                              <button
-                                key={journey.id}
-                                onClick={() => {
-                                  if (currentJourney === journey.id) {
-                                    setCurrentJourney("");
-                                  } else {
-                                    setCurrentJourney(journey.id);
-                                    setCurrentStage("USCIS Filing");
-                                  }
-                                }}
-                                className={`w-full rounded-lg border px-3 py-2 text-left text-sm transition-all duration-200 ${
-                                  currentJourney === journey.id
-                                    ? "border-[#0d7377] bg-[#0d7377] text-white"
-                                    : "border-gray-200 bg-white text-gray-600 hover:border-[#0d7377] hover:text-[#0d7377]"
-                                }`}
-                              >
-                                {journey.label}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Agency Filter */}
-                        <div className="border-t border-gray-100 pt-4">
-                          <label className="mb-2 block text-xs font-semibold tracking-wide text-gray-900 uppercase">
-                            Agency
-                          </label>
-                          <div className="flex flex-col gap-2">
-                            {["USCIS"].map((agency) => (
-                              <button
-                                key={agency}
-                                onClick={() => toggleFilter("agency", agency)}
-                                className={`w-full rounded-lg border px-3 py-2 text-left text-sm transition-all duration-200 ${
-                                  activeFilters.agency.includes(agency)
-                                    ? "border-[#0d7377] bg-[#0d7377] text-white"
-                                    : "border-gray-200 bg-white text-gray-600 hover:border-[#0d7377] hover:text-[#0d7377]"
-                                }`}
-                              >
-                                {agency}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Category Filter */}
-                        <div className="border-t border-gray-100 pt-4">
-                          <label className="mb-2 block text-xs font-semibold tracking-wide text-gray-900 uppercase">
-                            Category
-                          </label>
-                          <div className="flex flex-col gap-2">
-                            {["Family-based", "Financial"].map((category) => (
-                              <button
-                                key={category}
-                                onClick={() => toggleFilter("category", category)}
-                                className={`w-full rounded-lg border px-3 py-2 text-left text-sm transition-all duration-200 ${
-                                  activeFilters.category.includes(category)
-                                    ? "border-[#0d7377] bg-[#0d7377] text-white"
-                                    : "border-gray-200 bg-white text-gray-600 hover:border-[#0d7377] hover:text-[#0d7377]"
-                                }`}
-                              >
-                                {category}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Footer */}
-                      <div className="sticky bottom-0 space-y-3 border-t border-gray-100 bg-gray-50 px-4 py-3">
-                        <div className="flex gap-2">
-                          {(activeFilters.agency.length > 0 ||
-                            activeFilters.category.length > 0 ||
-                            currentJourney) && (
-                            <button
-                              onClick={() => {
-                                clearFilters();
-                                setCurrentJourney("");
-                              }}
-                              className="flex-1 rounded-lg bg-[#0d7377] px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-[#0a5a5d]"
-                            >
-                              Reset
-                            </button>
-                          )}
+                      <div
+                        ref={filterPopoverRef}
+                        className="max-h-[85vh] w-full max-w-sm overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-2xl sm:max-h-[500px] sm:w-80 sm:shadow-xl"
+                      >
+                        {/* Header */}
+                        <div className="sticky top-0 flex items-center justify-between border-b border-gray-100 bg-white p-4">
+                          <h3 className="font-semibold text-gray-900">Filter Forms</h3>
                           <button
                             onClick={() => setIsFilterPopoverOpen(false)}
-                            className="flex-1 rounded-lg bg-gray-200 px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-300"
+                            className="text-gray-600 transition-colors hover:text-gray-900"
                           >
-                            Done
+                            <X className="h-4 w-4" />
                           </button>
                         </div>
-                        <div className="text-center text-xs text-gray-600">
-                          Showing{" "}
-                          <span className="font-semibold text-gray-900">
-                            {filteredForms.length}
-                          </span>{" "}
-                          of{" "}
-                          <span className="font-semibold text-gray-900">{VISA_FORMS.length}</span>
+
+                        {/* Filter Content */}
+                        <div className="space-y-4 p-4">
+                          {/* Journey Filter */}
+                          <div>
+                            <label className="mb-2 block text-xs font-semibold tracking-wide text-gray-900 uppercase">
+                              Visa Journey
+                            </label>
+                            <div className="flex flex-col gap-2">
+                              {[
+                                { id: "IR1-CR1", label: "IR-1 / CR-1 (Spouse)" },
+                                // IR-5 is hidden on production (see lib/feature-flags) until it launches.
+                                ...(IR5_ENABLED ? [{ id: "IR5", label: "IR-5 (Parent)" }] : []),
+                                // IR-2 is hidden on production (see lib/feature-flags) until it launches.
+                                ...(IR2_ENABLED ? [{ id: "IR2", label: "IR-2 (Child)" }] : []),
+                                // { id: "K1", label: "K-1 (Fiancé)" },
+                                // { id: "AOS", label: "Adjustment of Status" },
+                                // { id: "Naturalization", label: "Naturalization" },
+                              ].map((journey) => (
+                                <button
+                                  key={journey.id}
+                                  onClick={() => {
+                                    if (currentJourney === journey.id) {
+                                      setCurrentJourney("");
+                                    } else {
+                                      setCurrentJourney(journey.id);
+                                      setCurrentStage("USCIS Filing");
+                                    }
+                                  }}
+                                  className={`w-full rounded-lg border px-3 py-2 text-left text-sm transition-all duration-200 ${
+                                    currentJourney === journey.id
+                                      ? "border-[#0d7377] bg-[#0d7377] text-white"
+                                      : "border-gray-200 bg-white text-gray-600 hover:border-[#0d7377] hover:text-[#0d7377]"
+                                  }`}
+                                >
+                                  {journey.label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Agency Filter */}
+                          <div className="border-t border-gray-100 pt-4">
+                            <label className="mb-2 block text-xs font-semibold tracking-wide text-gray-900 uppercase">
+                              Agency
+                            </label>
+                            <div className="flex flex-col gap-2">
+                              {["USCIS"].map((agency) => (
+                                <button
+                                  key={agency}
+                                  onClick={() => toggleFilter("agency", agency)}
+                                  className={`w-full rounded-lg border px-3 py-2 text-left text-sm transition-all duration-200 ${
+                                    activeFilters.agency.includes(agency)
+                                      ? "border-[#0d7377] bg-[#0d7377] text-white"
+                                      : "border-gray-200 bg-white text-gray-600 hover:border-[#0d7377] hover:text-[#0d7377]"
+                                  }`}
+                                >
+                                  {agency}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Category Filter */}
+                          <div className="border-t border-gray-100 pt-4">
+                            <label className="mb-2 block text-xs font-semibold tracking-wide text-gray-900 uppercase">
+                              Category
+                            </label>
+                            <div className="flex flex-col gap-2">
+                              {["Family-based", "Financial"].map((category) => (
+                                <button
+                                  key={category}
+                                  onClick={() => toggleFilter("category", category)}
+                                  className={`w-full rounded-lg border px-3 py-2 text-left text-sm transition-all duration-200 ${
+                                    activeFilters.category.includes(category)
+                                      ? "border-[#0d7377] bg-[#0d7377] text-white"
+                                      : "border-gray-200 bg-white text-gray-600 hover:border-[#0d7377] hover:text-[#0d7377]"
+                                  }`}
+                                >
+                                  {category}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="sticky bottom-0 space-y-3 border-t border-gray-100 bg-gray-50 px-4 py-3">
+                          <div className="flex gap-2">
+                            {(activeFilters.agency.length > 0 ||
+                              activeFilters.category.length > 0 ||
+                              currentJourney) && (
+                              <button
+                                onClick={() => {
+                                  clearFilters();
+                                  setCurrentJourney("");
+                                }}
+                                className="flex-1 rounded-lg bg-[#0d7377] px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-[#0a5a5d]"
+                              >
+                                Reset
+                              </button>
+                            )}
+                            <button
+                              onClick={() => setIsFilterPopoverOpen(false)}
+                              className="flex-1 rounded-lg bg-gray-200 px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-300"
+                            >
+                              Done
+                            </button>
+                          </div>
+                          <div className="text-center text-xs text-gray-600">
+                            Showing{" "}
+                            <span className="font-semibold text-gray-900">
+                              {filteredForms.length}
+                            </span>{" "}
+                            of{" "}
+                            <span className="font-semibold text-gray-900">{VISA_FORMS.length}</span>
+                          </div>
                         </div>
                       </div>
                     </div>
