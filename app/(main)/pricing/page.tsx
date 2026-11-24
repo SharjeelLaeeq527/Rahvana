@@ -741,11 +741,11 @@ function PricingContent() {
   const { candidates, activeCandidate } = useCandidate();
   const { openTopup } = useWallet();
 
-  // Multi-parent sponsorship state for IR-5
-  const [parentCount, setParentCount] = useState<number>(() => {
+  // Multi-candidate sponsorship state (IR-5 parents, IR-2/CR-2 children, etc.)
+  const [candidateCount, setCandidateCount] = useState<number>(() => {
     if (typeof window !== "undefined") {
       const urlParams = new URLSearchParams(window.location.search);
-      const pParam = urlParams.get("parents") || urlParams.get("candidate_count");
+      const pParam = urlParams.get("candidate_count") || urlParams.get("parents");
       if (pParam) {
         const parsed = parseInt(pParam, 10);
         if (!isNaN(parsed) && parsed >= 1) return parsed;
@@ -770,6 +770,51 @@ function PricingContent() {
   const selectedBaseKey = useMemo(() => {
     const key = journeyKeyForSlot(isIr5 ? "IR-5" : canonicalVisa, 1);
     return key && key !== "unknown" ? key : "ir1";
+  }, [isIr5, canonicalVisa]);
+
+  // Dynamic terminology for multi-candidate categories (IR-5 Parents vs IR-2/CR-2 Children)
+  const candidateTerm = useMemo(() => {
+    if (isIr5) {
+      return {
+        singular: "Parent",
+        plural: "Parents",
+        addAction: "Add Another Parent",
+        headerTitle: "Beneficiary Parents Selection",
+        addHeaderTitle: "Add Additional Beneficiary Parent",
+        questionText:
+          "How many parents are you petitioning for? Select biological, step, or adoptive parents.",
+        addDescription:
+          "You are adding another parent beneficiary to your IR-5 petition. Choose how many additional parents and select their plan below.",
+        roadmapNote:
+          "Each parent receives their own dedicated journey roadmap, document checklist, and secure vault under your account.",
+      };
+    }
+    if (canonicalVisa === "IR-2" || canonicalVisa === "CR-2") {
+      return {
+        singular: "Child",
+        plural: "Children",
+        addAction: "Add Another Child",
+        headerTitle: "Beneficiary Children Selection",
+        addHeaderTitle: "Add Additional Beneficiary Child",
+        questionText:
+          "How many children are you petitioning for? Select biological, step, or adopted unmarried children under 21.",
+        addDescription:
+          "You are adding another child beneficiary to your IR-2 / CR-2 petition. Choose how many additional children and select their plan below.",
+        roadmapNote:
+          "Each child receives their own dedicated journey roadmap, document checklist, and secure vault under your account.",
+      };
+    }
+    return {
+      singular: "Beneficiary",
+      plural: "Beneficiaries",
+      addAction: "Add Another Beneficiary",
+      headerTitle: "Beneficiary Selection",
+      addHeaderTitle: "Add Additional Beneficiary",
+      questionText: "How many beneficiaries are you petitioning for?",
+      addDescription: "Choose how many beneficiaries and select their plan below.",
+      roadmapNote:
+        "Each beneficiary receives their own dedicated journey roadmap, document checklist, and secure vault under your account.",
+    };
   }, [isIr5, canonicalVisa]);
 
   const categoryCandidates = useMemo(() => {
@@ -1004,25 +1049,26 @@ function PricingContent() {
   }, [activeUpgradeCandidate, selectedUpgradeCandidateId]);
 
   const isAddingCandidate = searchParams.get("action") === "add_candidate";
-  const hasActiveIr5 = Boolean(
-    (journeyTiers.ir5 && journeyTiers.ir5 !== "free") || upgradableCategoryCandidates.length > 0
+  const hasActiveMultiCandidate = Boolean(
+    (journeyTiers[selectedBaseKey] && journeyTiers[selectedBaseKey] !== "free") ||
+      upgradableCategoryCandidates.length > 0
   );
-  const isIr5Executive = Boolean(
+  const isMultiCandidateExecutive = Boolean(
     upgradableCategoryCandidates.length > 0
       ? upgradableCategoryCandidates.every((c) => getCandidateEffectiveTier(c) === "executive")
-      : journeyTiers.ir5?.toLowerCase() === "executive"
+      : journeyTiers[selectedBaseKey]?.toLowerCase() === "executive"
   );
-  const canUpgradeIr5 = Boolean(
-    hasActiveIr5 &&
-    (upgradableCategoryCandidates.length > 0
-      ? upgradableCategoryCandidates.some((c) => {
-          const t = getCandidateEffectiveTier(c);
-          return t !== "executive";
-        })
-      : !isIr5Executive)
+  const canUpgradeMultiCandidate = Boolean(
+    hasActiveMultiCandidate &&
+      (upgradableCategoryCandidates.length > 0
+        ? upgradableCategoryCandidates.some((c) => {
+            const t = getCandidateEffectiveTier(c);
+            return t !== "executive";
+          })
+        : !isMultiCandidateExecutive)
   );
 
-  const [ir5Action, setIr5Action] = useState<"upgrade" | "add_candidate">(() => {
+  const [multiCandidateAction, setMultiCandidateAction] = useState<"upgrade" | "add_candidate">(() => {
     if (typeof window !== "undefined") {
       const actionParam = new URLSearchParams(window.location.search).get("action");
       if (actionParam === "add_candidate") return "add_candidate";
@@ -1031,25 +1077,30 @@ function PricingContent() {
     return "upgrade";
   });
 
-  const isUpgradingIr5 = Boolean(
-    (isMultiCandidate || isIr5) && canUpgradeIr5 && ir5Action === "upgrade"
+  const isUpgradingCandidate = Boolean(
+    (isMultiCandidate || isIr5) && canUpgradeMultiCandidate && multiCandidateAction === "upgrade"
   );
-  const isAddingAnotherParent = Boolean(
+  const isAddingAnotherCandidate = Boolean(
     (isMultiCandidate || isIr5) &&
-    (isAddingCandidate || (hasActiveIr5 && ir5Action === "add_candidate"))
+      (isAddingCandidate || (hasActiveMultiCandidate && multiCandidateAction === "add_candidate"))
   );
-  const existingPurchasedParents = useMemo(() => {
+  const existingPurchasedCandidates = useMemo(() => {
     if (!isIr5 && !isMultiCandidate) return 0;
     if (upgradableCategoryCandidates.length > 0) return upgradableCategoryCandidates.length;
-    if (hasActiveIr5) return 1;
+    if (hasActiveMultiCandidate) return 1;
     return 0;
-  }, [isIr5, isMultiCandidate, upgradableCategoryCandidates.length, hasActiveIr5]);
+  }, [isIr5, isMultiCandidate, upgradableCategoryCandidates.length, hasActiveMultiCandidate]);
 
-  const totalEffectiveParents = useMemo(() => {
-    return isAddingAnotherParent ? existingPurchasedParents + parentCount : parentCount;
-  }, [isAddingAnotherParent, existingPurchasedParents, parentCount]);
+  const totalEffectiveCandidates = useMemo(() => {
+    return isAddingAnotherCandidate ? existingPurchasedCandidates + candidateCount : candidateCount;
+  }, [isAddingAnotherCandidate, existingPurchasedCandidates, candidateCount]);
 
-  const parentMultiplier = (isMultiCandidate || isIr5) && !isUpgradingIr5 ? parentCount : 1;
+  const candidateMultiplier = (isMultiCandidate || isIr5) && !isUpgradingCandidate ? candidateCount : 1;
+
+  // IR-5 statutory eligibility aliases
+  const isAddingAnotherParent = isAddingAnotherCandidate;
+  const totalEffectiveParents = totalEffectiveCandidates;
+
   const isIr1Purchased = Boolean(journeyTiers.ir1 && journeyTiers.ir1 !== "free");
   const isIr1Executive = journeyTiers.ir1?.toLowerCase() === "executive";
   const canUpgradeIr1 = Boolean(isIr1Purchased && !isIr1Executive);
@@ -1061,14 +1112,14 @@ function PricingContent() {
     }
   }, [isIr1Executive, visa]);
 
-  // Reset eligibility confirmation when switching back to <= 2 total parents
+  // Reset eligibility confirmation when switching back to <= 2 total parents (IR-5 only)
   useEffect(() => {
-    if (totalEffectiveParents <= 2) {
+    if (!isIr5 || totalEffectiveCandidates <= 2) {
       setIsEligibilityConfirmed(true);
     } else {
       setIsEligibilityConfirmed(false);
     }
-  }, [totalEffectiveParents]);
+  }, [isIr5, totalEffectiveCandidates]);
 
   const activeVisaCategory = useMemo(
     () => VISA_CATEGORIES.find((v) => v.id === visa) || VISA_CATEGORIES[0],
@@ -1082,23 +1133,23 @@ function PricingContent() {
     [visa]
   );
   const selectedJourneyTier = useMemo(() => {
-    if (isUpgradingIr5 && activeUpgradeCandidate) {
+    if (isUpgradingCandidate && activeUpgradeCandidate) {
       return getCandidateEffectiveTier(activeUpgradeCandidate);
     }
     // The selected category's base journey (IR-2 no longer falls back to IR-1's tier).
     return journeyTiers[selectedBaseKey] ?? "free";
   }, [
-    isUpgradingIr5,
+    isUpgradingCandidate,
     activeUpgradeCandidate,
     getCandidateEffectiveTier,
     selectedBaseKey,
     journeyTiers,
   ]);
 
-  // When viewing single-candidate journey or upgrading IR-5, ensure selectedPlan defaults to a valid upgrade tier
+  // When viewing single-candidate journey or upgrading IR-5 / IR-2, ensure selectedPlan defaults to a valid upgrade tier
   const isUpgradingThisJourney = useMemo(
-    () => (!isMultiCandidate && !isIr5 && canUpgradeIr1) || isUpgradingIr5,
-    [isMultiCandidate, isIr5, canUpgradeIr1, isUpgradingIr5]
+    () => (!isMultiCandidate && canUpgradeIr1) || isUpgradingCandidate,
+    [isMultiCandidate, canUpgradeIr1, isUpgradingCandidate]
   );
 
   // When viewing single-candidate journey or upgrading IR-5, ensure selectedPlan defaults to a valid upgrade tier
@@ -1121,7 +1172,7 @@ function PricingContent() {
   const currentPlanData = activePlans.find((p) => p.id === selectedPlan) || activePlans[2];
 
   const activeSubscriptionStartDate = useMemo(() => {
-    if (isUpgradingIr5 && activeUpgradeCandidate) {
+    if (isUpgradingCandidate && activeUpgradeCandidate) {
       if (activeUpgradeCandidate.createdAt) {
         return activeUpgradeCandidate.createdAt;
       }
@@ -1136,7 +1187,7 @@ function PricingContent() {
     const catKey = selectedBaseKey;
     return journeyStartDates[catKey] || accountPlanPurchaseDate || null;
   }, [
-    isUpgradingIr5,
+    isUpgradingCandidate,
     activeUpgradeCandidate,
     canonicalVisa,
     selectedBaseKey,
@@ -1191,14 +1242,14 @@ function PricingContent() {
     if (diff) {
       return diff.diffMonthly;
     }
-    return plan.monthlyPrice * parentMultiplier;
+    return plan.monthlyPrice * candidateMultiplier;
   };
 
   const summaryBase =
     mode === "plans" && currentPlanData.id !== "free"
       ? currentPlanUpgradeDiff
         ? currentPlanUpgradeDiff.diffAnnual
-        : currentPlanData.annualPrice * parentMultiplier
+        : currentPlanData.annualPrice * candidateMultiplier
       : 0;
   const summaryTotal = summaryBase;
 
@@ -1230,12 +1281,12 @@ function PricingContent() {
             visaCategory: visa,
             billing,
             userId: uid,
-            candidateCount: isIr5 ? (isUpgradingIr5 ? 1 : parentCount) : 1,
+            candidateCount: isMultiCandidate ? (isUpgradingCandidate ? 1 : candidateCount) : 1,
             candidateId:
-              isUpgradingIr5 && activeUpgradeCandidate ? activeUpgradeCandidate.id : undefined,
+              isUpgradingCandidate && activeUpgradeCandidate ? activeUpgradeCandidate.id : undefined,
             action: isUpgradingThisJourney
               ? "upgrade"
-              : isAddingCandidate || (isIr5 && hasActiveIr5 && ir5Action === "add_candidate")
+              : isAddingCandidate || (hasActiveMultiCandidate && multiCandidateAction === "add_candidate")
                 ? "add_candidate"
                 : undefined,
             upgradeTotal: currentPlanUpgradeDiff
@@ -1285,10 +1336,17 @@ function PricingContent() {
       visa,
       billing,
       isIr5,
-      parentCount,
+      isMultiCandidate,
+      candidateCount,
       isProcessingAutoCheckout,
       isAddingCandidate,
-      hasActiveIr5,
+      hasActiveMultiCandidate,
+      activeUpgradeCandidate,
+      currentPlanUpgradeDiff,
+      isUpgradingCandidate,
+      isUpgradingThisJourney,
+      mode,
+      multiCandidateAction,
     ]
   );
 
@@ -1323,13 +1381,13 @@ function PricingContent() {
     const parentsParam = searchParams.get("parents") || searchParams.get("candidate_count");
     if (parentsParam) {
       const parsed = parseInt(parentsParam, 10);
-      if (!isNaN(parsed) && parsed >= 1) setParentCount(parsed);
+      if (!isNaN(parsed) && parsed >= 1) setCandidateCount(parsed);
     }
     if (searchParams.get("action") === "add_candidate") {
-      setIr5Action("add_candidate");
-      setParentCount(1);
+      setMultiCandidateAction("add_candidate");
+      setCandidateCount(1);
     } else if (searchParams.get("action") === "upgrade") {
-      setIr5Action("upgrade");
+      setMultiCandidateAction("upgrade");
     }
     // Restore the order-summary (review) step when deep-linked back to it.
     if (searchParams.get("step") === "review") setPurchaseStep("review");
@@ -1503,14 +1561,14 @@ function PricingContent() {
         <CheckoutButton
           productTier={mode === "plans" && selectedPlan !== "free" ? selectedPlan : undefined}
           visaCategory={visa}
-          candidateCount={isIr5 ? (isUpgradingIr5 ? 1 : parentCount) : 1}
+          candidateCount={isMultiCandidate ? (isUpgradingCandidate ? 1 : candidateCount) : 1}
           candidateId={
-            isUpgradingIr5 && activeUpgradeCandidate ? activeUpgradeCandidate.id : undefined
+            isUpgradingCandidate && activeUpgradeCandidate ? activeUpgradeCandidate.id : undefined
           }
           action={
             isUpgradingThisJourney
               ? "upgrade"
-              : isAddingCandidate || (isIr5 && hasActiveIr5 && ir5Action === "add_candidate")
+              : isAddingCandidate || (hasActiveMultiCandidate && multiCandidateAction === "add_candidate")
                 ? "add_candidate"
                 : undefined
           }
@@ -1520,15 +1578,13 @@ function PricingContent() {
           onLoadingChange={setIsManualCheckoutLoading}
           className="bg-primary hover:bg-primary/90 w-full rounded-full px-5 py-[11px] text-center text-[14px] font-semibold text-white"
         >
-          {isUpgradingIr5 || canUpgradeIr1
+          {isUpgradingThisJourney
             ? `Continue to Upgrade →`
-            : // : canUpgradeIr1
-              //   ? `Continue to Upgrade →`
-              `Continue to Secure Checkout →`}
+            : `Continue to Secure Checkout →`}
         </CheckoutButton>
       ) : (
         <Link
-          href={`/login?redirect=${encodeURIComponent(`/pricing?auto_checkout=true&plan=${selectedPlan}&visa=${encodeURIComponent(visa)}&candidate_count=${parentCount}${isUpgradingIr5 && activeUpgradeCandidate ? `&candidate_id=${encodeURIComponent(activeUpgradeCandidate.id)}` : ""}`)}`}
+          href={`/login?redirect=${encodeURIComponent(`/pricing?auto_checkout=true&plan=${selectedPlan}&visa=${encodeURIComponent(visa)}&candidate_count=${candidateCount}${isUpgradingCandidate && activeUpgradeCandidate ? `&candidate_id=${encodeURIComponent(activeUpgradeCandidate.id)}` : ""}`)}`}
           className="bg-primary hover:bg-primary/90 block w-full rounded-full px-5 py-[11px] text-center text-[14px] font-semibold text-white"
         >
           Sign in to Checkout ({activeExplorerCard?.code || activeVisaCategory.id}) →
@@ -1611,12 +1667,12 @@ function PricingContent() {
     <CheckoutButton
       productTier={mode === "plans" && selectedPlan !== "free" ? selectedPlan : undefined}
       visaCategory={visa}
-      candidateCount={isIr5 ? (isUpgradingIr5 ? 1 : parentCount) : 1}
-      candidateId={isUpgradingIr5 && activeUpgradeCandidate ? activeUpgradeCandidate.id : undefined}
+      candidateCount={isMultiCandidate ? (isUpgradingCandidate ? 1 : candidateCount) : 1}
+      candidateId={isUpgradingCandidate && activeUpgradeCandidate ? activeUpgradeCandidate.id : undefined}
       action={
         isUpgradingThisJourney
           ? "upgrade"
-          : isAddingCandidate || (isIr5 && hasActiveIr5 && ir5Action === "add_candidate")
+          : isAddingCandidate || (hasActiveMultiCandidate && multiCandidateAction === "add_candidate")
             ? "add_candidate"
             : undefined
       }
@@ -1626,11 +1682,11 @@ function PricingContent() {
       onLoadingChange={setIsManualCheckoutLoading}
       className="bg-primary hover:bg-primary/90 w-full rounded-full px-4 py-2.5 text-center text-[13px] font-semibold text-white"
     >
-      {isUpgradingIr5 ? `Upgrade →` : canUpgradeIr1 ? `Upgrade →` : `Checkout →`}
+      {isUpgradingThisJourney ? `Upgrade →` : `Checkout →`}
     </CheckoutButton>
   ) : (
     <Link
-      href={`/login?redirect=${encodeURIComponent(`/pricing?auto_checkout=true&plan=${selectedPlan}&visa=${encodeURIComponent(visa)}&candidate_count=${parentCount}${isUpgradingIr5 && activeUpgradeCandidate ? `&candidate_id=${encodeURIComponent(activeUpgradeCandidate.id)}` : ""}`)}`}
+      href={`/login?redirect=${encodeURIComponent(`/pricing?auto_checkout=true&plan=${selectedPlan}&visa=${encodeURIComponent(visa)}&candidate_count=${candidateCount}${isUpgradingCandidate && activeUpgradeCandidate ? `&candidate_id=${encodeURIComponent(activeUpgradeCandidate.id)}` : ""}`)}`}
       className="bg-primary hover:bg-primary/90 block w-full rounded-full px-4 py-2.5 text-center text-[13px] font-semibold text-white"
     >
       Sign in ({activeExplorerCard?.code || activeVisaCategory.id}) →
@@ -1831,7 +1887,27 @@ function PricingContent() {
                     card.code.includes("CR-1") ||
                     card.slug === "ir-1";
                   const isIr5Card = card.code.includes("IR-5") || card.slug === "ir-5";
-                  const isCardExecutiveMaxed = isIr1Card && isIr1Executive;
+                  const isIr2Card =
+                    card.code.includes("IR-2") ||
+                    card.code.includes("CR-2") ||
+                    card.slug === "ir-2";
+                  const isCardExecutiveMaxed =
+                    (isIr1Card && isIr1Executive) ||
+                    ((isIr5Card || isIr2Card) && isMultiCandidateExecutive && card.code === visa);
+
+                  const hasActiveCardJourney =
+                    isIr5Card
+                      ? Boolean((journeyTiers.ir5 && journeyTiers.ir5 !== "free") || (canonicalVisa === "IR-5" && upgradableCategoryCandidates.length > 0))
+                      : isIr2Card
+                        ? Boolean((journeyTiers.ir2 && journeyTiers.ir2 !== "free") || (canonicalVisa === "IR-2" && upgradableCategoryCandidates.length > 0))
+                        : false;
+
+                  const canUpgradeCard =
+                    isIr5Card
+                      ? (canonicalVisa === "IR-5" ? canUpgradeMultiCandidate : Boolean(journeyTiers.ir5 && journeyTiers.ir5 !== "free" && journeyTiers.ir5.toLowerCase() !== "executive"))
+                      : isIr2Card
+                        ? (canonicalVisa === "IR-2" ? canUpgradeMultiCandidate : Boolean(journeyTiers.ir2 && journeyTiers.ir2 !== "free" && journeyTiers.ir2.toLowerCase() !== "executive"))
+                        : false;
 
                   const topRightSlot = isSelected ? (
                     <span className="inline-flex items-center rounded-full bg-[#0d7a5c] p-1.5 text-[10.5px] font-bold tracking-wide text-white uppercase shadow-sm">
@@ -1843,9 +1919,9 @@ function PricingContent() {
                     <span className="inline-flex items-center gap-1 rounded-full border border-emerald-300 bg-emerald-100 px-2.5 py-1 text-[10.5px] font-bold tracking-wide text-emerald-800 uppercase shadow-sm">
                       Upgrade Available
                     </span>
-                  ) : hasActiveIr5 && isIr5Card ? (
+                  ) : (isIr5Card || isIr2Card) && hasActiveCardJourney && !isCardExecutiveMaxed ? (
                     <span className="inline-flex items-center gap-1 rounded-full border border-teal-300 bg-teal-100 px-2.5 py-1 text-[10.5px] font-bold tracking-wide text-teal-800 uppercase shadow-sm">
-                      {canUpgradeIr5 ? "Upgrade Available" : "Active Plan"}
+                      {canUpgradeCard ? "Upgrade Available" : "Active Plan"}
                     </span>
                   ) : null;
 
@@ -1938,15 +2014,15 @@ function PricingContent() {
 
                   {/* IR-5 / Multi-Candidate Action Switcher & Beneficiary Selector */}
                   <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
-                    {isIr5 &&
-                      hasActiveIr5 &&
-                      (canUpgradeIr5 ? (
+                    {isMultiCandidate &&
+                      hasActiveMultiCandidate &&
+                      (canUpgradeMultiCandidate ? (
                         <div className="bg-card border-border inline-flex shrink-0 rounded-xl border p-1 shadow-xs">
                           <button
                             type="button"
-                            onClick={() => setIr5Action("upgrade")}
+                            onClick={() => setMultiCandidateAction("upgrade")}
                             className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all ${
-                              ir5Action === "upgrade"
+                              multiCandidateAction === "upgrade"
                                 ? "bg-[#0d7377] text-white shadow-xs"
                                 : "text-muted-foreground hover:text-foreground"
                             }`}
@@ -1956,15 +2032,15 @@ function PricingContent() {
                           </button>
                           <button
                             type="button"
-                            onClick={() => setIr5Action("add_candidate")}
+                            onClick={() => setMultiCandidateAction("add_candidate")}
                             className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all ${
-                              ir5Action === "add_candidate"
+                              multiCandidateAction === "add_candidate"
                                 ? "bg-[#0d7377] text-white shadow-xs"
                                 : "text-muted-foreground hover:text-foreground"
                             }`}
                           >
                             <Users className="h-3.5 w-3.5" />
-                            <span>Add Another Parent</span>
+                            <span>{candidateTerm.addAction}</span>
                           </button>
                         </div>
                       ) : (
@@ -1973,8 +2049,8 @@ function PricingContent() {
                         </span>
                       ))}
 
-                    {/* Beneficiary selector dropdown for IR-5 Upgrade */}
-                    {isUpgradingIr5 &&
+                    {/* Beneficiary selector dropdown for IR-5 / Multi-Candidate Upgrade */}
+                    {isUpgradingCandidate &&
                       activeUpgradeCandidate &&
                       upgradableCategoryCandidates.length > 1 && (
                         <div className="flex shrink-0 items-center gap-1.5">
@@ -2023,11 +2099,11 @@ function PricingContent() {
           PLAN CARDS — FULL WIDTH
           ═════════════════════════════════════════════════════════════════ */}
               <div className={`${W}`}>
-                {/* IR-5 Multi-Parent Selector, Action Switcher & Eligibility Disclaimer */}
-                {isIr5 && !isUpgradingIr5 && (
+                {/* Multi-Candidate Selector, Action Switcher & Eligibility Disclaimer */}
+                {isMultiCandidate && !isUpgradingCandidate && (
                   <div className="mb-8 space-y-4">
-                    {/* Parent Selector Card - only shown when adding a candidate or on initial purchase */}
-                    {!isUpgradingIr5 && (
+                    {/* Candidate Selector Card - only shown when adding a candidate or on initial purchase */}
+                    {!isUpgradingCandidate && (
                       <div className="border-border bg-card rounded-[22px] border p-5 shadow-sm sm:p-6">
                         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                           <div className="lg:max-w-xl">
@@ -2037,18 +2113,18 @@ function PricingContent() {
                               </span>
                               <h3 className="text-foreground text-[17px] font-bold">
                                 {isAddingCandidate ||
-                                (hasActiveIr5 && ir5Action === "add_candidate")
-                                  ? "Add Additional Beneficiary Parent"
-                                  : "Beneficiary Parents Selection"}
+                                (hasActiveMultiCandidate && multiCandidateAction === "add_candidate")
+                                  ? candidateTerm.addHeaderTitle
+                                  : candidateTerm.headerTitle}
                               </h3>
                               {/* <span className="rounded-full bg-[#0d7377]/10 px-2.5 py-0.5 text-[11px] font-semibold text-[#0d7377]">
                                 IR-5 Visa
                               </span> */}
                             </div>
                             <p className="text-muted-foreground mt-1 text-[13px]">
-                              {isAddingCandidate || (hasActiveIr5 && ir5Action === "add_candidate")
-                                ? "You are adding another parent beneficiary to your IR-5 petition. Choose how many additional parents and select their plan below."
-                                : "How many parents are you petitioning for? Select biological, step, or adoptive parents."}
+                              {isAddingCandidate || (hasActiveMultiCandidate && multiCandidateAction === "add_candidate")
+                                ? candidateTerm.addDescription
+                                : candidateTerm.questionText}
                             </p>
                           </div>
 
@@ -2059,18 +2135,18 @@ function PricingContent() {
                                 key={count}
                                 type="button"
                                 onClick={() => {
-                                  setParentCount(count);
-                                  if (count <= 2) {
+                                  setCandidateCount(count);
+                                  if (count <= 2 || !isIr5) {
                                     setIsEligibilityConfirmed(true);
                                   }
                                 }}
                                 className={`rounded-xl px-3 py-1.5 text-[12.5px] font-semibold whitespace-nowrap transition-all sm:px-3.5 sm:py-2 sm:text-[13px] ${
-                                  parentCount === count
+                                  candidateCount === count
                                     ? "bg-[#0d7377] text-white shadow-sm ring-2 ring-[#0d7377]/20"
                                     : "border-border bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground border"
                                 }`}
                               >
-                                {count} {count === 1 ? "Parent" : "Parents"}
+                                {count} {count === 1 ? candidateTerm.singular : candidateTerm.plural}
                               </button>
                             ))}
 
@@ -2078,32 +2154,32 @@ function PricingContent() {
                             <div className="border-border bg-muted/20 flex shrink-0 items-center rounded-xl border p-1">
                               <button
                                 type="button"
-                                disabled={parentCount <= 1}
+                                disabled={candidateCount <= 1}
                                 onClick={() => {
-                                  const next = Math.max(1, parentCount - 1);
-                                  setParentCount(next);
-                                  if (next <= 2) setIsEligibilityConfirmed(true);
+                                  const next = Math.max(1, candidateCount - 1);
+                                  setCandidateCount(next);
+                                  if (next <= 2 || !isIr5) setIsEligibilityConfirmed(true);
                                 }}
                                 className="text-muted-foreground hover:bg-card hover:text-foreground flex h-7 w-7 items-center justify-center rounded-lg disabled:opacity-30 disabled:hover:bg-transparent sm:h-8 sm:w-8"
-                                title="Decrease parent count"
+                                title={`Decrease ${candidateTerm.singular.toLowerCase()} count`}
                               >
                                 <Minus className="h-3.5 w-3.5" />
                               </button>
                               <span className="text-foreground min-w-[26px] px-1 text-center text-[13px] font-bold sm:min-w-[30px] sm:px-2">
-                                {parentCount}
+                                {candidateCount}
                               </span>
                               <button
                                 type="button"
-                                disabled={parentCount >= 8}
+                                disabled={candidateCount >= 8}
                                 onClick={() => {
-                                  const next = Math.min(8, parentCount + 1);
-                                  setParentCount(next);
-                                  if (next > 2 && parentCount <= 2) {
+                                  const next = Math.min(8, candidateCount + 1);
+                                  setCandidateCount(next);
+                                  if (isIr5 && next > 2 && candidateCount <= 2) {
                                     setIsEligibilityConfirmed(false);
                                   }
                                 }}
                                 className="text-muted-foreground hover:bg-card hover:text-foreground flex h-7 w-7 items-center justify-center rounded-lg disabled:opacity-30 disabled:hover:bg-transparent sm:h-8 sm:w-8"
-                                title="Increase parent count"
+                                title={`Increase ${candidateTerm.singular.toLowerCase()} count`}
                               >
                                 <Plus className="h-3.5 w-3.5" />
                               </button>
@@ -2115,37 +2191,14 @@ function PricingContent() {
                         <div className="border-border/60 text-muted-foreground mt-4 flex flex-wrap items-center justify-start gap-2 border-t pt-3 text-[12px]">
                           <ShieldCheck className="h-5 w-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
                           <span>
-                            <strong>100% Isolated Roadmaps & Document Vaults:</strong> Each parent
-                            receives their own dedicated journey roadmap, document checklist, and
-                            secure vault under your account.
+                            <strong>100% Isolated Roadmaps & Document Vaults:</strong> {candidateTerm.roadmapNote}
                           </span>
-
-                          {/* <div className="flex items-center gap-1.5">
-                            <Heart className="h-3.5 w-3.5 text-[#0d7377]" />
-                            <span>
-                              {parentCount === 1 ? (
-                                "Petitioning for 1 parent. Standard single-journey pricing applies."
-                              ) : (
-                                <>
-                                  Petitioning for{" "}
-                                  <strong className="text-foreground">{parentCount} parents</strong>{" "}
-                                  ({parentCount}x journey plan). Plan pricing adjusts automatically.
-                                </>
-                              )}
-                            </span>
-                          </div>
-                          {totalEffectiveParents > 2 && (
-                            <span className="font-medium text-amber-600 dark:text-amber-400">
-                              Requires step/adoptive parent eligibility confirmation (
-                              {totalEffectiveParents} total parents)
-                            </span>
-                          )} */}
                         </div>
                       </div>
                     )}
 
-                    {/* Disclaimer when totalEffectiveParents > 2 */}
-                    {!isUpgradingIr5 && totalEffectiveParents > 2 && (
+                    {/* Disclaimer when totalEffectiveParents > 2 (IR-5 statutory requirement) */}
+                    {!isUpgradingCandidate && isIr5 && totalEffectiveParents > 2 && (
                       <div
                         id="parent-eligibility-disclaimer"
                         className={`rounded-[22px] border p-5 transition-all duration-200 ${
@@ -2376,10 +2429,10 @@ function PricingContent() {
                                     </span>
                                   ) : (
                                     <>
-                                      ${plan.annualPrice * parentMultiplier} for 12 months
-                                      {!isUpgradingIr5 && isIr5 && parentCount > 1 && (
+                                      ${plan.annualPrice * candidateMultiplier} for 12 months
+                                      {!isUpgradingCandidate && isMultiCandidate && candidateCount > 1 && (
                                         <div>
-                                          ${plan.annualPrice} per parent x {parentCount} parents
+                                          ${plan.annualPrice} per {candidateTerm.singular.toLowerCase()} x {candidateCount} {candidateTerm.plural.toLowerCase()}
                                         </div>
                                       )}
                                     </>
@@ -2716,10 +2769,10 @@ function PricingContent() {
                               </div>
                             ) : (
                               <>
-                                a month · ${currentPlanData.annualPrice * parentMultiplier} for 12 months
-                                {!isUpgradingIr5 && isIr5 && parentCount > 1 && (
+                                a month · ${currentPlanData.annualPrice * candidateMultiplier} for 12 months
+                                {!isUpgradingCandidate && isMultiCandidate && candidateCount > 1 && (
                                   <div>
-                                    ${currentPlanData.annualPrice} per parent x {parentCount} parents
+                                    ${currentPlanData.annualPrice} per {candidateTerm.singular.toLowerCase()} x {candidateCount} {candidateTerm.plural.toLowerCase()}
                                   </div>
                                 )}
                               </>
@@ -2818,8 +2871,10 @@ function PricingContent() {
                       You pay $
                       {currentPlanData.id !== "free" ? planDisplayPrice(currentPlanData) : 0} a month
                       for 12 months
-                      {isIr5 && parentCount > 1 ? `, covering all ${parentCount} parents` : ""}.
-                      Government fees are not included.
+                      {isMultiCandidate && candidateCount > 1
+                        ? `, covering all ${candidateCount} ${candidateTerm.plural.toLowerCase()}`
+                        : ""}
+                      . Government fees are not included.
                     </>
                   )
                 )}
@@ -2829,18 +2884,18 @@ function PricingContent() {
                   <strong className="text-[12.5px]">{activeVisaCategory.label}</strong>
                 </div>
 
-                {isUpgradingIr5 && activeUpgradeCandidate ? (
+                {isUpgradingCandidate && activeUpgradeCandidate ? (
                   <div className="border-border flex justify-between gap-3 border-b border-dashed py-2.5 text-[13px]">
                     <span className="text-muted-foreground">Upgrading Target</span>
                     <strong className="text-[12.5px] text-emerald-700 dark:text-emerald-400">
                       {getCandidateDisplayName(activeUpgradeCandidate)}
                     </strong>
                   </div>
-                ) : isIr5 ? (
+                ) : isMultiCandidate ? (
                   <div className="border-border flex justify-between gap-3 border-b border-dashed py-2.5 text-[13px]">
                     <span className="text-muted-foreground">Beneficiaries</span>
                     <strong className="text-[12.5px]">
-                      {parentCount} {parentCount === 1 ? "Parent" : "Parents"}
+                      {candidateCount} {candidateCount === 1 ? candidateTerm.singular : candidateTerm.plural}
                     </strong>
                   </div>
                 ) : null}
@@ -2858,8 +2913,8 @@ function PricingContent() {
                       </strong>
                       <span className="text-muted-foreground text-[11px]">
                         ${planDisplayPrice(currentPlanData)} a month
-                        {!currentPlanUpgradeDiff && isIr5 && parentCount > 1 && (
-                          <span> for {parentCount} parents</span>
+                        {!currentPlanUpgradeDiff && isMultiCandidate && candidateCount > 1 && (
+                          <span> for {candidateCount} {candidateTerm.plural.toLowerCase()}</span>
                         )}
                       </span>
                     </div>
