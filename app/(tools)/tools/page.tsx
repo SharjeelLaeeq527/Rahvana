@@ -2,10 +2,8 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import {
   Search,
-  // Coins, // Unused now — replaced by <CreditTypeIcon kind="tools" /> (kept for reference)
   LifeBuoy,
   MessageSquare,
   Calculator,
@@ -15,16 +13,12 @@ import {
   Files,
   PenTool,
   Wand2,
-  ArrowRight,
-  ChevronDown,
   Lock,
 } from "lucide-react";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { usePlan } from "../../context/PlanContext";
 import { UpgradeModal } from "../../components/entitlements/UpgradeModal";
 import { ROUTE_FEATURE_MAP } from "@/lib/entitlements/routeFeatureMap";
-import AddResourceCard from "@/components/resources/AddResourceCard";
-import ResourceSectionHeader from "@/components/resources/ResourceSectionHeader";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 import { useWallet } from "@/app/context/WalletContext";
 import {
@@ -33,18 +27,25 @@ import {
   withPreviewMode,
 } from "@/lib/wallet/resourceMapping";
 import { useJourneyEnvironment } from "@/app/context/JourneyEnvironmentContext";
-import CreditTypeIcon from "@/components/resources/CreditTypeIcon";
 import CreditInfoTooltip from "@/components/resources/CreditInfoTooltip";
 import { isPhotoBoothItem, type WalletCatalogItem } from "@/lib/wallet/catalog";
 import { CreditLaunchModal } from "@/app/components/wallet/CreditLaunchModal";
-import { useQuickAccess } from "@/app/context/QuickAccessContext";
-
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  CATALOG_BAND_PALETTE,
+  CATALOG_BTN_GHOST,
+  CATALOG_BTN_PRIMARY,
+  CatalogCard,
+  CatalogEmpty,
+  CatalogFilters,
+  CatalogGrid,
+  CatalogOpenCue,
+  CatalogPrice,
+  CatalogSearch,
+  CatalogSection,
+  CatalogShell,
+  CatalogToolbar,
+  TOOL_CARD_PALETTES,
+} from "@/components/resources/catalog";
 
 // ─── Data & Types ─────────────────────────────────────────────────────────────
 type ToolCategory =
@@ -194,7 +195,7 @@ const TOOLS: Tool[] = [
   {
     id: "pdf-toolkit",
     title: "PDF Tool Kit",
-    description: "Merge • compress • convert • edit, all in one toolkit.",
+    description: "Merge, compress, convert and edit, all in one toolkit.",
     category: "Docs & PDFs",
     href: "/pdf-processing",
     icon: Files,
@@ -242,7 +243,6 @@ const CATEGORIES: ("All" | ToolCategory)[] = [
 export default function ToolsPage({ isEmbedded = false }: { isEmbedded?: boolean }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<"All" | ToolCategory>("All");
-  const [visibleCount, setVisibleCount] = useState(7);
   const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
   const [launchTarget, setLaunchTarget] = useState<{
     item: WalletCatalogItem;
@@ -256,53 +256,11 @@ export default function ToolsPage({ isEmbedded = false }: { isEmbedded?: boolean
   const wallet = useWallet();
   const { isInsideJourney } = useJourneyEnvironment();
 
-  const containerRef = React.useRef<HTMLDivElement>(null);
-  const measureRef = React.useRef<HTMLDivElement>(null);
-
-  React.useEffect(() => {
-    const calculateVisible = () => {
-      if (!containerRef.current || !measureRef.current) return;
-      const containerWidth = containerRef.current.clientWidth;
-      const measureItems = Array.from(measureRef.current.children) as HTMLDivElement[];
-      const moreButtonEl = measureItems[measureItems.length - 1];
-      const categoryEls = measureItems.slice(0, measureItems.length - 1);
-      const moreButtonWidth = moreButtonEl.offsetWidth;
-      const gap = 12;
-      let totalWidth = 0;
-      let visible = 0;
-
-      for (let i = 0; i < categoryEls.length; i++) {
-        totalWidth += categoryEls[i].offsetWidth;
-        if (i < categoryEls.length - 1) totalWidth += gap;
-      }
-      if (totalWidth <= containerWidth) {
-        setVisibleCount(CATEGORIES.length);
-        return;
-      }
-
-      totalWidth = 0;
-      for (let i = 0; i < categoryEls.length; i++) {
-        const gapWidth = i > 0 ? gap : 0;
-        if (
-          totalWidth + gapWidth + categoryEls[i].offsetWidth + gap + moreButtonWidth <=
-          containerWidth
-        ) {
-          visible++;
-          totalWidth += gapWidth + categoryEls[i].offsetWidth;
-        } else break;
-      }
-      setVisibleCount(visible);
-    };
-
-    calculateVisible();
-    const observer = new ResizeObserver(calculateVisible);
-    if (containerRef.current) observer.observe(containerRef.current);
-    return () => observer.disconnect();
-  }, []);
-
-  const visibleCategories = CATEGORIES.slice(0, visibleCount);
-  const hiddenCategories = CATEGORIES.slice(visibleCount);
-  const isMoreSelected = hiddenCategories.includes(selectedCategory);
+  const categoryLabel = (cat: "All" | ToolCategory) => {
+    const key = `toolsPage.categories.${cat}`;
+    const label = t(key);
+    return label && label !== key ? label : cat;
+  };
 
   const filteredTools = TOOLS.filter((tool) => {
     const matchesSearch =
@@ -316,8 +274,6 @@ export default function ToolsPage({ isEmbedded = false }: { isEmbedded?: boolean
   //  • "My Tools"     — tools the user owns (free/public, wallet-unlocked, or plan-unlocked
   //                     for tools with no credit price)
   //  • "Browse Tools" — everything else, shown as locked/"Unlock" cards to explore
-  // ORIGINAL (plan-tier ownership) — commented out per product decision:
-  // const isOwned = (feature?: string) => !feature || (!plan.isLoading && !plan.isLocked(feature));
   const isOwned = (tool: Tool) => {
     const catalogItem = getToolCatalogItem(tool.id);
     if (catalogItem && !isInsideJourney) {
@@ -338,15 +294,11 @@ export default function ToolsPage({ isEmbedded = false }: { isEmbedded?: boolean
     />
   );
 
-  return (
-    <div
-      className={`bg-background text-foreground selection:bg-primary selection:text-primary-foreground overflow-x-hidden font-sans ${isEmbedded ? "" : "pt-16"}`}
-    >
-      {/* UpgradeModal */}
+  const modals = (
+    <>
       {upgradeModalFeature && (
         <UpgradeModal feature={upgradeModalFeature} onClose={() => setUpgradeModalFeature(null)} />
       )}
-
       {launchTarget && (
         <CreditLaunchModal
           item={launchTarget.item}
@@ -354,214 +306,94 @@ export default function ToolsPage({ isEmbedded = false }: { isEmbedded?: boolean
           onClose={() => setLaunchTarget(null)}
         />
       )}
+    </>
+  );
 
-      {/* Ambient Glow */}
-      <div className="pointer-events-none fixed top-0 left-0 -z-10 h-full w-full">
-        <div className="absolute top-[10%] left-[15%] h-[500px] w-[500px] rounded-full bg-[#0d7377]/5 blur-3xl" />
-        <div className="absolute right-[10%] bottom-[20%] h-[600px] w-[600px] rounded-full bg-[#32e0c4]/5 blur-3xl" />
-      </div>
-
-      <div className="mx-auto w-full px-6 py-8">
-        {/* Hero — hidden in the embedded "My Resources" view */}
-        {!isEmbedded && (
-          <section className="mb-5 pt-1 text-center md:mb-10">
-            <h1 className="from-foreground to-muted-foreground animate-fade-up mb-4 bg-linear-to-r bg-clip-text text-3xl font-bold text-transparent md:text-5xl">
-              {t("toolsPage.heroTitle") || "Create. Check. Comply."}
-            </h1>
-            <p className="text-muted-foreground animate-fade-up mx-auto max-w-2xl text-base [animation-delay:100ms] md:text-lg">
-              {t("toolsPage.heroDescription") ||
-                "A suite of powerful tools designed to simplify complex processes and boost your productivity."}
-            </p>
-          </section>
-        )}
-
-        {/* Search */}
-        {!isEmbedded && (
-          <div className="animate-scale-in relative mx-auto mb-10 max-w-lg [animation-delay:200ms]">
-            <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder={t("toolsPage.searchPlaceholder") || "Search tools..."}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-card border-border text-foreground focus:border-primary focus:ring-primary/10 placeholder:text-muted-foreground w-full rounded-full border-2 py-3 pr-4 pl-11 shadow-sm transition-all focus:ring-4 focus:outline-none"
-            />
-          </div>
-        )}
-
-        {/* Category tabs — hidden in the embedded "My Resources" view */}
-        {!isEmbedded && (
-          <div ref={containerRef} className="relative mb-8 flex w-full justify-center">
-            <div
-              ref={measureRef}
-              aria-hidden="true"
-              className="pointer-events-none absolute top-0 left-0 z-[-1] flex w-full flex-wrap gap-3 opacity-0"
-            >
-              {CATEGORIES.map((cat) => (
-                <div key={cat} className="border px-4 py-2.5 text-sm font-medium whitespace-nowrap">
-                  {t(`toolsPage.categories.${cat}`) || cat}
-                </div>
-              ))}
-              <div
-                data-more-button="true"
-                className="flex items-center gap-1 border px-4 py-2.5 text-sm font-medium whitespace-nowrap"
-              >
-                {t("toolsPage.more") || "More"} <ChevronDown className="ml-1 h-4 w-4" />
-              </div>
-            </div>
-            <div className="animate-fade-in flex flex-wrap gap-3 [animation-delay:300ms]">
-              {visibleCategories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`rounded-full border px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-all duration-200 ${selectedCategory === cat ? "bg-primary text-primary-foreground border-primary shadow-md" : "bg-card text-muted-foreground border-border hover:border-primary hover:bg-primary/5 hover:text-primary"}`}
-                >
-                  {t(`toolsPage.categories.${cat}`) || cat}
-                </button>
-              ))}
-              {hiddenCategories.length > 0 && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button
-                      className={`flex items-center gap-1 rounded-full border px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-all duration-200 ${isMoreSelected ? "bg-primary text-primary-foreground border-primary shadow-md" : "bg-card text-muted-foreground border-border hover:border-primary hover:bg-primary/5 hover:text-primary"}`}
-                    >
-                      {t("toolsPage.more") || "More"} <ChevronDown className="ml-1 h-4 w-4" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-[200px]">
-                    {hiddenCategories.map((cat) => (
-                      <DropdownMenuItem
-                        key={cat}
-                        onClick={() => setSelectedCategory(cat)}
-                        className={`cursor-pointer ${selectedCategory === cat ? "bg-primary/10 text-primary font-semibold" : ""}`}
-                      >
-                        {t(`toolsPage.categories.${cat}`) || cat}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Tools grid */}
-        {isEmbedded ? (
-          <>
-            {/* My Tools — what the user owns */}
-            <ResourceSectionHeader
-              title="My Tools"
-              subtitle="Tools you've unlocked with jarthings or an earlier purchase."
-              className="-mt-16"
-            />
-            <div className="grid grid-cols-1 gap-x-6 gap-y-10 pt-6 md:grid-cols-2 lg:grid-cols-3">
-              {ownedTools.map((tool, index) => renderToolCard(tool, index))}
-              {/* <AddResourceCard
-                href="/pricing?mode=tools"
-                label="Add tool"
-                index={ownedTools.length}
-              /> */}
-            </div>
-
-            {/* Browse Tools — everything not yet owned */}
-            {browseTools.length > 0 && (
-              <>
-                <ResourceSectionHeader
-                  title="Browse Tools"
-                  subtitle="Explore more tools, try a demo or unlock the full version."
-                />
-                <div className="grid grid-cols-1 gap-x-6 gap-y-10 pt-6 md:grid-cols-2 lg:grid-cols-3">
-                  {browseTools.map((tool, index) => renderToolCard(tool, index))}
-                </div>
-              </>
+  // ── Embedded in My Resources: the page band and tabs come from ResourcesContent ──
+  if (isEmbedded) {
+    return (
+      <div className="text-[#16302C]">
+        {modals}
+        <CatalogSection
+          title="My Tools"
+          subtitle="Tools you have unlocked with jarthings or an earlier purchase."
+          count={ownedTools.length}
+        >
+          <CatalogGrid>
+            {ownedTools.map((tool, index) => renderToolCard(tool, index))}
+            {ownedTools.length === 0 && (
+              <CatalogEmpty>No tools unlocked yet. Try one from the catalog below.</CatalogEmpty>
             )}
-          </>
-        ) : (
-          <div className="grid grid-cols-1 gap-x-6 gap-y-10 pt-6 md:grid-cols-2 lg:grid-cols-3">
-            {filteredTools.map((tool, index) => renderToolCard(tool, index))}
-            {filteredTools.length === 0 && (
-              <div className="text-muted-foreground col-span-full py-12 text-center">
-                {t("toolsPage.noToolsFound") || "No tools found matching your search."}
-              </div>
-            )}
-          </div>
+          </CatalogGrid>
+        </CatalogSection>
+
+        {browseTools.length > 0 && (
+          <CatalogSection
+            title="Browse Tools"
+            subtitle="Explore more tools, try a demo or unlock the full version."
+            count={browseTools.length}
+          >
+            <CatalogGrid>
+              {browseTools.map((tool, index) => renderToolCard(tool, index))}
+            </CatalogGrid>
+          </CatalogSection>
         )}
       </div>
-    </div>
+    );
+  }
+
+  // ── Standalone /tools page ──
+  return (
+    <>
+      {modals}
+      <CatalogShell
+        eyebrow="Rahvana tools"
+        title={t("toolsPage.heroTitle") || "Create. Check. Comply."}
+        tagline={
+          t("toolsPage.heroDescription") ||
+          "A suite of powerful tools designed to simplify complex processes and boost your productivity."
+        }
+        bandContent={
+          <CatalogSearch
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder={t("toolsPage.searchPlaceholder") || "Search tools..."}
+          />
+        }
+        toolbar={
+          <CatalogToolbar>
+            <CatalogFilters
+              label="Tool categories"
+              options={CATEGORIES.map((cat) => ({ id: cat, label: categoryLabel(cat) }))}
+              value={selectedCategory}
+              onChange={setSelectedCategory}
+            />
+          </CatalogToolbar>
+        }
+      >
+        <CatalogGrid>
+          {filteredTools.map((tool, index) => renderToolCard(tool, index))}
+          {filteredTools.length === 0 && (
+            <CatalogEmpty>
+              {t("toolsPage.noToolsFound") || "No tools found matching your search."}
+            </CatalogEmpty>
+          )}
+        </CatalogGrid>
+      </CatalogShell>
+    </>
   );
 }
 
-// ─── Category styles ──────────────────────────────────────────────────────────
-
-const CATEGORY_STYLES: Record<
-  ToolCategory,
-  {
-    iconBox: string;
-    innerBox: string;
-    link: string;
-    hoverBg: string;
-    ribbonColor: string;
-    ribbonMid: string;
-    ribbonDeep: string;
-    ribbonIcon: string;
-    ribbonBorder: string;
-  }
-> = {
-  "AI & Planning": {
-    iconBox: "bg-violet-600 text-white border-transparent dark:bg-violet-500",
-    innerBox: "bg-white/20",
-    link: "text-teal-600 dark:text-teal-400",
-    hoverBg: "group-hover:bg-violet-50",
-    ribbonColor: "#f3e8ff",
-    ribbonMid: "#c4b5fd",
-    ribbonDeep: "#7c3aed",
-    ribbonIcon: "#7c3aed",
-    ribbonBorder: "#ddd6fe",
-  },
-  "Money & Sponsorship": {
-    iconBox: "bg-emerald-600 text-white border-transparent dark:bg-emerald-500",
-    innerBox: "bg-white/20",
-    link: "text-teal-600 dark:text-teal-400",
-    hoverBg: "group-hover:bg-emerald-50",
-    ribbonColor: "#dff7ea",
-    ribbonMid: "#86efac",
-    ribbonDeep: "#047857",
-    ribbonIcon: "#047857",
-    ribbonBorder: "#bbf7d0",
-  },
-  Tracking: {
-    iconBox: "bg-amber-600 text-white border-transparent dark:bg-amber-500",
-    innerBox: "bg-white/20",
-    link: "text-teal-600 dark:text-teal-400",
-    hoverBg: "group-hover:bg-amber-50",
-    ribbonColor: "#fff4d6",
-    ribbonMid: "#fcd34d",
-    ribbonDeep: "#b45309",
-    ribbonIcon: "#b45309",
-    ribbonBorder: "#fde68a",
-  },
-  "Docs & PDFs": {
-    iconBox: "bg-rose-600 text-white border-transparent dark:bg-rose-500",
-    innerBox: "bg-white/20",
-    link: "text-teal-600 dark:text-teal-400",
-    hoverBg: "group-hover:bg-rose-50",
-    ribbonColor: "#ffe4e6",
-    ribbonMid: "#fda4af",
-    ribbonDeep: "#be123c",
-    ribbonIcon: "#be123c",
-    ribbonBorder: "#fda4af",
-  },
-  "Forms & Automation": {
-    iconBox: "bg-cyan-600 text-white border-transparent dark:bg-cyan-500",
-    innerBox: "bg-white/20",
-    link: "text-teal-600 dark:text-teal-400",
-    hoverBg: "group-hover:bg-cyan-50",
-    ribbonColor: "#e0f2fe",
-    ribbonMid: "#7dd3fc",
-    ribbonDeep: "#0e7490",
-    ribbonIcon: "#0e7490",
-    ribbonBorder: "#bae6fd",
-  },
+const QUICK_ACCESS_ICONS: Record<string, string> = {
+  "221g-planner": "LifeBuoy",
+  "interview-prep": "MessageSquare",
+  "sponsorship-calculator": "Calculator",
+  "queue-watch": "Clock",
+  "cspa-age-checker": "Clock",
+  "photo-booth": "Camera",
+  "pdf-toolkit": "Files",
+  "snap-sign": "PenTool",
+  "form-forge": "Wand2",
 };
 
 // ─── Tool card ────────────────────────────────────────────────────────────────
@@ -577,11 +409,9 @@ function ToolCard({
   onLaunch: (item: WalletCatalogItem) => void;
 }) {
   const Icon = tool.icon;
-  const styles = CATEGORY_STYLES[tool.category];
   const { t } = useLanguage();
   const plan = usePlan();
   const wallet = useWallet();
-  const { isInQuickAccess } = useQuickAccess();
   const { isInsideJourney } = useJourneyEnvironment();
 
   const planLocked =
@@ -591,7 +421,6 @@ function ToolCard({
   // Unpriced tools keep the plan rule.
   const catalogItem = getToolCatalogItem(tool.id);
   const walletUnlocked = !!catalogItem && isCatalogItemOwned(catalogItem, wallet.isUnlocked);
-  // ORIGINAL: const isLocked = planLocked && !walletUnlocked;
   // Standalone catalog tools: credits/legacy add-on only — plan tier never
   // unlocks them outside a journey. Inside a journey, plan entitlement rules.
   const isLocked =
@@ -609,8 +438,6 @@ function ToolCard({
 
   const isNavigable = !tool.disabled && !isRouteLocked;
 
-  const isPinned = isInQuickAccess(tool.id === "221g-planner" ? "221g-action-planner" : tool.id);
-
   const handleClick = (e: React.MouseEvent) => {
     // Dual-CTA cards own their clicks through the buttons below; no UpgradeModal grab.
     if (!showDualCta && isRouteLocked && tool.entitlementFeature) {
@@ -619,192 +446,106 @@ function ToolCard({
     }
   };
 
-  const CardWrapper = (showDualCta ? "div" : Link) as React.ElementType;
+  const titleKey = `toolsPage.toolsItems.${tool.id}.title`;
+  const descKey = `toolsPage.toolsItems.${tool.id}.desc`;
+  const catKey = `toolsPage.categories.${tool.category}`;
+  const title = t(titleKey) && t(titleKey) !== titleKey ? t(titleKey) : tool.title;
+  const description = t(descKey) && t(descKey) !== descKey ? t(descKey) : tool.description;
+  const category = t(catKey) && t(catKey) !== catKey ? t(catKey) : tool.category;
 
-  const cardClasses = `group relative flex flex-col bg-card rounded-[30px] p-6 pt-7 mt-6 mx-2 md:mx-0
-    transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]
-    ${
-      // isPinned
-      //   ? "border-[3px] border-[#0d7377] dark:border-[#32e0c4] bg-white shadow-[0_8px_30px_rgba(13,115,119,0.08)] hover:-translate-y-2 hover:shadow-xl cursor-pointer"
-      //   :
-      isRouteLocked
-        ? "border-[1.5px] border-slate-200 bg-white cursor-pointer shadow-sm hover:shadow-[0_12px_40px_-12px_rgba(99,102,241,0.18)] hover:-translate-y-1"
-        : isNavigable
-          ? "border-[1.5px] border-slate-200 bg-white hover:-translate-y-2 hover:shadow-xl cursor-pointer"
-          : "border-[1.5px] border-slate-200 bg-white opacity-80 cursor-not-allowed grayscale-[0.5]"
-    }
-    animate-fade-up`;
+  const footer =
+    showDualCta && catalogItem ? (
+      <div className="flex flex-col gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2.5">
+          <div className="flex items-center gap-2">
+            <Link
+              href={
+                catalogItem.legacyAddonId
+                  ? `/resources/${catalogItem.legacyAddonId}`
+                  : withPreviewMode(tool.href)
+              }
+              onClick={(e) => e.stopPropagation()}
+              className={CATALOG_BTN_GHOST}
+            >
+              {catalogItem.legacyAddonId ? "View Details" : "Preview Tool"}
+            </Link>
+            <button
+              type="button"
+              onClick={() => onLaunch(catalogItem)}
+              aria-label={`Launch ${tool.title} for ${catalogItem.credits} jarthings`}
+              className={CATALOG_BTN_PRIMARY}
+            >
+              Launch
+            </button>
+          </div>
+          <CatalogPrice kind="tools" amount={catalogItem.credits} />
+        </div>
+        {isPhotoBoothItem(catalogItem) && (
+          <p className="text-xs font-medium text-[#16302C]/60">
+            {catalogItem.credits} jarthings gives you 2 photos. Buy again when both are used.
+          </p>
+        )}
+      </div>
+    ) : (
+      <div className="flex items-center justify-between gap-3">
+        <span className="flex items-center">
+          {perItemCredits !== null && !isInsideJourney && (
+            <CatalogPrice
+              kind="tools"
+              size={22}
+              amount={perItemCredits}
+              suffix="jarthings per form"
+            />
+          )}
+        </span>
+        {isRouteLocked ? (
+          <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--cat-accent-dark)]">
+            <Lock size={14} />
+            {t("toolsPage.unlockPro") !== "toolsPage.unlockPro"
+              ? t("toolsPage.unlockPro")
+              : "Unlock"}
+          </span>
+        ) : isNavigable ? (
+          <CatalogOpenCue label={t("toolsPage.openTool") || "Open Tool"} />
+        ) : (
+          <span className="text-sm font-semibold text-[#16302C]/40">
+            {t("toolsPage.comingSoon") || "Coming Soon"}
+          </span>
+        )}
+      </div>
+    );
 
   return (
-    <CardWrapper
-      href={showDualCta ? undefined : isNavigable ? tool.href : "#"}
-      onClick={handleClick}
-      className={cardClasses}
-      style={{ animationDelay: `${index * 100}ms` }}
-    >
-      {/* Ribbon bookmark for Locked/Premium cards */}
-      {(isRouteLocked || isResultLocked) && (
-        <div className="pointer-events-none absolute -top-21 -right-10 z-20 -translate-x-12 sm:-right-3 sm:-translate-x-5">
-          <Image
-            src="/icons/ribbon.png"
-            alt="Premium ribbon"
-            width={160}
-            height={220}
-            priority={false}
-            className="h-56 w-40 object-contain drop-shadow-lg"
+    <CatalogCard
+      palette={TOOL_CARD_PALETTES[tool.id] ?? CATALOG_BAND_PALETTE}
+      icon={<Icon />}
+      eyebrow={category}
+      title={title}
+      description={description}
+      locked={isRouteLocked || isResultLocked}
+      disabled={tool.disabled}
+      index={index}
+      href={!showDualCta && isNavigable ? tool.href : undefined}
+      onClick={isRouteLocked ? handleClick : undefined}
+      topRight={
+        isLocked ? (
+          <CreditInfoTooltip
+            message="Unlock once: spend jarthings one time, then use this tool as much as you like."
+            side="top"
           />
-        </div>
-      )}
-      {/* Hover overlay: pastel fill on hover, sits under ribbon (applies to locked + unlocked) */}
-      <div
-        className={`pointer-events-none absolute inset-0 z-0 rounded-[30px] bg-transparent transition-colors duration-400 ${styles.hoverBg}`}
-      />
-
-      {/* Floating icon box */}
-      <div
-        className={`absolute -top-6 left-6 z-40 flex h-12 w-12 items-center justify-center rounded-2xl border shadow-md transition-all duration-400 group-hover:-translate-y-1 group-hover:-rotate-3 group-hover:shadow-lg md:h-14 md:w-14 ${styles.iconBox}`}
-      >
-        <div
-          className={`absolute inset-1 -z-10 rounded-[10px] transition-colors duration-300 ${styles.innerBox}`}
-        />
-        <Icon className="h-5 w-5 stroke-2 md:h-6 md:w-6" />
-      </div>
-
-      {/* Radial glow */}
-      <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(13,115,119,0.04),transparent_40%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100 dark:bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(255,255,255,0.03),transparent_40%)]" />
-
-      {/* Content */}
-      <div className="relative z-30 flex grow flex-col pt-2">
-        <div className="flex items-start justify-between gap-3">
-          {/* Title + Credit tooltip */}
-          <div className="flex min-w-0 flex-1 items-start justify-between gap-3">
-            <h3 className="text-foreground mb-1 min-w-0 text-xl font-bold transition-colors">
-              {t(`toolsPage.toolsItems.${tool.id}.title`) || tool.title}
-            </h3>
-
-            {isLocked && (
-              <div className="shrink-0">
-                <CreditInfoTooltip
-                  message="Unlock once: spend jarthings one time, then use this tool as much as you like."
-                  side="top"
-                />
-              </div>
-            )}
-          </div>
-
-          {/* Quick Access button for unlocked tools */}
-          {!isLocked && (
-            <div className="relative z-50 shrink-0">
-              <QuickAccessButton
-                item={{
-                  id: tool.id === "221g-planner" ? "221g-action-planner" : tool.id,
-                  title: tool.title,
-                  href: tool.href,
-                  icon_name: (() => {
-                    const mapping: Record<string, string> = {
-                      "221g-planner": "LifeBuoy",
-                      "interview-prep": "MessageSquare",
-                      "sponsorship-calculator": "Calculator",
-                      "queue-watch": "Clock",
-                      "cspa-age-checker": "Clock",
-                      "photo-booth": "Camera",
-                      "pdf-toolkit": "Files",
-                      "snap-sign": "PenTool",
-                      "form-forge": "Wand2",
-                    };
-                    return mapping[tool.id] || "Zap";
-                  })(),
-                }}
-                mode="icon"
-              />
-            </div>
-          )}
-        </div>
-
-        {/* Category */}
-        <div className="mb-3 flex items-center gap-2">
-          <span className="text-muted-foreground/80 bg-muted rounded px-2 py-0.5 text-[11px] font-bold tracking-wide uppercase">
-            {t(`toolsPage.categories.${tool.category}`) || tool.category}
-          </span>
-        </div>
-
-        {/* Description */}
-        <p className="mb-4 grow text-sm leading-relaxed text-slate-900 dark:text-white">
-          {t(`toolsPage.toolsItems.${tool.id}.desc`) || tool.description}
-        </p>
-      </div>
-
-      {/* Footer */}
-      <div className="border-border relative z-10 mt-auto flex flex-col border-t pt-3">
-        {showDualCta && catalogItem && (
-          <>
-            <div className="mb-2.5 flex items-center justify-between gap-2 text-sm font-bold text-[#0d7377] dark:text-[#32e0c4]">
-              <div className="flex items-center gap-2.5">
-                <Link
-                  href={
-                    catalogItem.legacyAddonId
-                      ? `/resources/${catalogItem.legacyAddonId}`
-                      : withPreviewMode(tool.href)
-                  }
-                  onClick={(e) => e.stopPropagation()}
-                  className="inline-flex h-9 items-center rounded-lg border border-slate-200 bg-white px-3.5 text-[13px] font-semibold whitespace-nowrap text-slate-700 transition-colors hover:border-[#0d7377]/40 hover:text-[#0d7377]"
-                >
-                  {catalogItem.legacyAddonId ? "View Details" : "Preview Tool"}
-                </Link>
-                <button
-                  type="button"
-                  onClick={() => onLaunch(catalogItem)}
-                  aria-label={`Launch ${tool.title} for ${catalogItem.credits} jarthings`}
-                  className="inline-flex h-9 items-center rounded-lg bg-[#0d7377] px-4 text-[13px] font-semibold whitespace-nowrap text-white transition-colors hover:bg-[#0a5c5f]"
-                >
-                  Launch
-                </button>
-              </div>
-
-              <CreditTypeIcon kind="tools" size={30} amount={catalogItem.credits} />
-            </div>
-            {isPhotoBoothItem(catalogItem) && (
-              <p className="text-muted-foreground -mt-1 mb-1 text-xs font-medium">
-                {catalogItem.credits} jarthings gives you 2 photos. Buy again when both are used.
-              </p>
-            )}
-          </>
-        )}
-        {!showDualCta && (
-          <div className="flex items-center justify-between">
-            <span className="flex items-center">
-              {perItemCredits !== null && !isInsideJourney && (
-                <CreditTypeIcon
-                  kind="tools"
-                  size={24}
-                  amount={perItemCredits}
-                  suffix="jarthings per form"
-                />
-              )}
-            </span>
-            {isRouteLocked ? (
-              <span
-                className={`flex items-center gap-1.5 text-sm font-semibold decoration-2 underline-offset-2 group-hover:underline ${styles.link}`}
-              >
-                <Lock size={14} className="mb-[1px]" />{" "}
-                {t("toolsPage.unlockPro") !== "toolsPage.unlockPro"
-                  ? t("toolsPage.unlockPro")
-                  : "Unlock"}
-              </span>
-            ) : isNavigable ? (
-              <span
-                className={`flex items-center gap-1.5 text-sm font-semibold decoration-2 underline-offset-2 group-hover:underline ${styles.link}`}
-              >
-                {t("toolsPage.openTool") || "Open Tool"} <ArrowRight className="h-4 w-4" />
-              </span>
-            ) : (
-              <span className="text-muted-foreground/50 flex cursor-not-allowed items-center gap-1.5 text-sm font-semibold">
-                {t("toolsPage.comingSoon") || "Coming Soon"}
-              </span>
-            )}
-          </div>
-        )}
-      </div>
-    </CardWrapper>
+        ) : (
+          <QuickAccessButton
+            item={{
+              id: tool.id === "221g-planner" ? "221g-action-planner" : tool.id,
+              title: tool.title,
+              href: tool.href,
+              icon_name: QUICK_ACCESS_ICONS[tool.id] || "Zap",
+            }}
+            mode="icon"
+          />
+        )
+      }
+      footer={footer}
+    />
   );
 }

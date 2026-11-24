@@ -667,6 +667,7 @@ export interface VisaFormSelectorProps {
   journeyTier?: string;
   onSelectForm?: (formCode: string) => void;
   isEmbedded?: boolean;
+  showHeader?: boolean;
 }
 
 export default function VisaFormSelector({
@@ -675,6 +676,7 @@ export default function VisaFormSelector({
   journeyTier: propJourneyTier,
   onSelectForm,
   isEmbedded = false,
+  showHeader = true,
 }: VisaFormSelectorProps = {}) {
   const { isJourney, journeyContext, journeyTier } = useResolveToolMode({
     mode: propMode,
@@ -974,7 +976,7 @@ export default function VisaFormSelector({
       priceOrDuration="Official PDF generator"
       theme="forms"
       layout="single"
-      showHeader={!isEmbedded}
+      showHeader={showHeader}
       quickAccessItem={{
         id: "form-forge",
         title: "Smart Form Filler",

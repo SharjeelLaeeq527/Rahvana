@@ -166,7 +166,7 @@ export const GUIDE_REGISTRY: GuideMetadata[] = [
     resourceId: "guide-step-parent",
     slug: "step-parent-guide",
     title: "Step-Parent",
-    subtitle: "USCIS Eligibility & Document Compilation",
+    subtitle: "",
     description:
       "USCIS roadmap for sponsoring step-parents, marriage rules, and document requirements.",
     category: "Pakistan Document",
@@ -181,7 +181,7 @@ export const GUIDE_REGISTRY: GuideMetadata[] = [
     resourceId: "guide-adoption",
     slug: "adoptive-parent-guide",
     title: "Adoptive Parent & Guardianship",
-    subtitle: "USCIS Eligibility & Document Requirements",
+    subtitle: "",
     description:
       "USCIS adoption criteria, 2-year custody rule, and legal guardianship vs. U.S. adoption.",
     category: "Pakistan Document",
@@ -196,7 +196,7 @@ export const GUIDE_REGISTRY: GuideMetadata[] = [
     resourceId: "guide-child-citizenship",
     slug: "child-citizenship-guide",
     title: "Child Citizenship",
-    subtitle: "U.S. Citizenship Eligibility & Documentation",
+    subtitle: "",
     description:
       "Screen for U.S. citizenship acquired through a U.S. citizen parent: at birth (CRBA), automatically under INA § 320, or by naturalization abroad under INA § 322.",
     category: "Pakistan Document",
