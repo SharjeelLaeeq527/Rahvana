@@ -102,7 +102,7 @@ function StatCard({
   caption,
   icon: Icon,
   tone,
-  unit = "Jarthings",
+  unit = "Credits",
 }: {
   label: string;
   value: string;
@@ -421,10 +421,10 @@ export default function WalletTransactionsPage() {
           <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-7">
             <div className="max-w-2xl">
               <h1 className="text-[30px] leading-tight font-extrabold tracking-tight text-white sm:text-[38px] lg:text-[42px]">
-                Jarthing Wallet &amp; Transactions
+                Credit Wallet &amp; Transactions
               </h1>
               <p className="mt-2 text-[14px] leading-relaxed text-white/85 sm:text-[15px]">
-                Track your jarthing balance, review standalone tool, guide and service charges, and
+                Track your credit balance, review standalone tool, guide and service charges, and
                 download a complete statement of every deposit and disbursement.
               </p>
             </div>
@@ -437,7 +437,7 @@ export default function WalletTransactionsPage() {
                 <div>
                   <p className="text-[13px] font-bold text-[#0a1128]">Universal 1:1 Parity</p>
                   <p className="text-[11px] text-slate-500">
-                    1 Jarthing = $1.00 USD for all services
+                    1 Credit = $1.00 USD for all services
                   </p>
                 </div>
               </div>
@@ -456,7 +456,7 @@ export default function WalletTransactionsPage() {
               <div className="relative z-10">
                 <div className="mb-3 flex items-center justify-between">
                   <span className="flex items-center gap-1.5 text-[13.5px] font-bold tracking-wide text-[#0a4f49]">
-                    Available Jarthings
+                    Available Credits
                     <span title="Your available wallet balance">
                       <HelpCircle size={14} className="opacity-80" />
                     </span>
@@ -469,7 +469,7 @@ export default function WalletTransactionsPage() {
                   </span>
 
                   <span className="rounded-md bg-[#0a4f49]/10 px-2 py-1 text-[11px] font-bold tracking-wider text-[#0a4f49] uppercase">
-                    Jarthings
+                    Credits
                   </span>
 
                   <span className="text-[13px] font-medium text-slate-500 sm:text-[14px]">
@@ -485,18 +485,18 @@ export default function WalletTransactionsPage() {
                   className="inline-flex items-center gap-2 rounded-xl bg-[#0a4f49] px-5 py-3 text-[13.5px] font-bold text-white shadow-md shadow-[#0a4f49]/20 transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#073b37] hover:shadow-lg active:scale-[0.98]"
                 >
                   <Plus size={16} strokeWidth={2.5} />
-                  Top Up Jarthings
+                  Top Up Credits
                 </button>
               </div>
             </div>
 
             {/* Metrics Cluster */}
             <div className="grid gap-4 sm:grid-cols-3 lg:col-span-7">
-              {/* Total Jarthings Added */}
+              {/* Total Credits Added */}
               <div className="relative flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-[#0f8f80]/25 hover:shadow-md">
                 <div className="mb-5 flex items-center justify-between gap-2">
                   <span className="text-[11px] font-bold tracking-wider text-slate-500 uppercase">
-                    Total Jarthings Added
+                    Total Credits Added
                   </span>
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#e8f6f3] text-[#0a4f49]">
                     <ArrowDownLeft size={18} strokeWidth={2.5} />
@@ -506,7 +506,7 @@ export default function WalletTransactionsPage() {
                 <div>
                   <div className="flex flex-wrap items-baseline gap-1.5 text-[24px] leading-tight font-bold text-[#0a1128]">
                     <span>{summary ? formatCredits(summary.totalAdded) : "—"}</span>
-                    <span className="text-[11.5px] font-semibold text-slate-400">Jarthings</span>
+                    <span className="text-[11.5px] font-semibold text-slate-400">Credits</span>
                   </div>
                   <p className="mt-1.5 text-[12px] text-slate-500">
                     {summary
@@ -516,11 +516,11 @@ export default function WalletTransactionsPage() {
                 </div>
               </div>
 
-              {/* Jarthings Spent */}
+              {/* Credits Spent */}
               <div className="relative flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-[#0f8f80]/25 hover:shadow-md">
                 <div className="mb-5 flex items-center justify-between gap-2">
                   <span className="text-[11px] font-bold tracking-wider text-slate-500 uppercase">
-                    Jarthings Spent
+                    Credits Spent
                   </span>
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-purple-100 text-purple-700">
                     <Wallet size={18} />
@@ -530,7 +530,7 @@ export default function WalletTransactionsPage() {
                 <div>
                   <div className="flex flex-wrap items-baseline gap-1.5 text-[24px] leading-tight font-bold text-[#0a1128]">
                     <span>{summary ? formatCredits(summary.totalSpent) : "—"}</span>
-                    <span className="text-[11.5px] font-semibold text-slate-400">Jarthings</span>
+                    <span className="text-[11.5px] font-semibold text-slate-400">Credits</span>
                   </div>
                   <p className="mt-1.5 text-[12px] text-slate-500">Tools, guides &amp; services</p>
                 </div>
@@ -560,7 +560,7 @@ export default function WalletTransactionsPage() {
                 <div>
                   <div className="flex flex-wrap items-baseline gap-1.5 text-[24px] leading-tight font-bold text-[#0a1128]">
                     <span>{summary ? formatCredits(summary.pendingCount) : "—"}</span>
-                    <span className="text-[11.5px] font-semibold text-slate-400">Jarthings</span>
+                    <span className="text-[11.5px] font-semibold text-slate-400">Credits</span>
                   </div>
 
                   <p
@@ -701,7 +701,7 @@ export default function WalletTransactionsPage() {
                   <Loader
                     size="sm"
                     text="Loading your history…"
-                    subText="Reading your jarthing ledger"
+                    subText="Reading your credit ledger"
                   />
                 </div>
               ) : rows.length === 0 ? (
@@ -713,7 +713,7 @@ export default function WalletTransactionsPage() {
                   <p className="mx-auto mt-1 max-w-sm text-[13px] text-slate-500">
                     {debouncedSearch || filter !== "all" || days !== 0
                       ? "Nothing matches the current filters. Try widening the range or clearing the search."
-                      : "Top up your wallet or unlock a tool to start your jarthing history."}
+                      : "Top up your wallet or unlock a tool to start your credit history."}
                   </p>
                 </div>
               ) : (
@@ -833,7 +833,7 @@ export default function WalletTransactionsPage() {
           </div>
 
           <p className="mt-4 text-center text-[11.5px] text-slate-400">
-            Journey tools on your subscription plan never spend wallet jarthings. Every line here is a
+            Journey tools on your subscription plan never spend wallet credits. Every line here is a
             standalone purchase or top-up.
           </p>
           {detail && (

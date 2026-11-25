@@ -381,8 +381,8 @@ try {
           <p className="text-slate-500 text-[13px] leading-relaxed mb-4">
             {walletTopup
               ? walletTopup.credits !== null && walletTopup.balance !== null
-                ? `${walletTopup.credits} jarthings were added to your Rahvana Wallet. Your balance is now ${walletTopup.balance} jarthings.`
-                : "Your jarthings were added to your Rahvana Wallet. Sign in to see your balance."
+                ? `${walletTopup.credits} credits were added to your Rahvana Wallet. Your balance is now ${walletTopup.balance} credits.`
+                : "Your credits were added to your Rahvana Wallet. Sign in to see your balance."
               : verifyStatus === "confirmed"
               ? "Your plan has been activated. Welcome to your new tier!"
               : "Your payment was processed. Plan activation may take a few moments, refresh your dashboard if features are not yet unlocked."}
@@ -397,7 +397,7 @@ try {
               {(walletTopup
                 ? [
                     "You'll receive a confirmation email shortly",
-                    "Your jarthings work across all standalone tools, guides and services",
+                    "Your credits work across all standalone tools, guides and services",
                     "Launch any tool, guide or service from Resources",
                   ]
                 : [

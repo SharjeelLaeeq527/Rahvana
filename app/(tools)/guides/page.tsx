@@ -479,7 +479,6 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
     <>
       {modals}
       <CatalogShell
-        eyebrow="Rahvana guides"
         title="Master the Paperwork."
         tagline="Step-by-step guides for every document you need. Clear instructions, timelines, and common pitfalls to avoid."
         bandContent={
@@ -584,7 +583,7 @@ function GuideCard({
           <button
             type="button"
             onClick={() => onLaunch(catalogItem)}
-            aria-label={`Launch ${guide.title} for ${catalogItem.credits} jarthings`}
+            aria-label={`Launch ${guide.title} for ${catalogItem.credits} credits`}
             className={CATALOG_BTN_PRIMARY}
           >
             Launch
@@ -635,7 +634,7 @@ function GuideCard({
             )}
             {showCreditsBadge && (
               <CatalogBadge tone="info" icon={<CheckCircle2 size={11} />}>
-                Unlocked with jarthings
+                Unlocked with credits
               </CatalogBadge>
             )}
           </>
@@ -644,7 +643,7 @@ function GuideCard({
       topRight={
         featureLocked ? (
           <CreditInfoTooltip
-            message="Unlock once: spend jarthings one time, then use this guide as much as you like."
+            message="Unlock once: spend credits one time, then use this guide as much as you like."
             side="top"
           />
         ) : (

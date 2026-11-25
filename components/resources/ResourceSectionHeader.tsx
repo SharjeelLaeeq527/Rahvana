@@ -26,7 +26,7 @@ export default function ResourceSectionHeader({
         <h2 className="flex items-center gap-2.5 font-serif text-2xl font-semibold tracking-tight text-[#16302C] md:text-[28px]">
           {title}
           {typeof count === "number" && (
-            <span className="rounded-full bg-[#16302C]/[0.06] px-2.5 py-0.5 font-sans text-xs font-semibold text-[#16302C]/60">
+            <span className="font-sans text-base font-normal text-[#16302C]/40 tabular-nums">
               {count}
             </span>
           )}

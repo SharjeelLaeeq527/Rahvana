@@ -428,7 +428,7 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
       {browseServices.length > 0 && (
         <CatalogSection
           title="Browse Services"
-          subtitle="Explore more services, preview them or book with jarthings."
+          subtitle="Explore more services, preview them or book with credits."
           count={browseServices.length}
         >
           <CatalogGrid>
@@ -447,7 +447,6 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
     </div>
   ) : (
     <CatalogShell
-      eyebrow="Rahvana services"
       title={t("pages.services.heroTitle")}
       tagline={t("pages.services.heroDescription")}
       bandContent={
@@ -797,7 +796,7 @@ function ServiceCard({
       topRight={
         <>
           <CreditInfoTooltip
-            message="Each booking or request requires jarthings. You will need to pay again for every new request."
+            message="Each booking or request requires credits. You will need to pay again for every new request."
             side="top"
           />
           <ServiceQuickAccess service={service} />
@@ -821,7 +820,7 @@ function ServiceCard({
               <button
                 type="button"
                 onClick={() => onLaunch(catalogItem)}
-                aria-label={`Launch ${service.title} for ${catalogItem.credits} jarthings`}
+                aria-label={`Launch ${service.title} for ${catalogItem.credits} credits`}
                 className={CATALOG_BTN_PRIMARY}
               >
                 Launch

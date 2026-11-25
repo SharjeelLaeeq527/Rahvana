@@ -334,8 +334,15 @@ Mobile has no header row (the page name sits in the active nav bubble) and fits 
 (spacing tightens on short phones, then content scales to at most 82%); its calendar adds custom events too, and
 Nearby on the Help page lists only places recorded on the journey (interview location, medical clinic) with directions,
 else an explanatory empty state. Tablets (700-1023px) use the mobile skin with two-column pages (mobile.css). Desktop
-designs the board at 1340px, scaled to the screen, normally never below 82%. Short screens step through layouts before
-scaling further: compact (`.frame.cmp`, board < 760: the calendar gets the wider share of the middle row (1.3fr vs tracking
+designs the board at 1340px, scaled to the screen, normally never below 82%. On small screens (device screen up to 1366 x 800 CSS px, i.e. 11-13" laptops; 14-15" models such as 1440x900 /
+1536x864 do not count), a short
+board (the full board would need < 90%) defaults to the **side layout** (`.frame.side`); larger screens keep tracking
+beside the calendar by default: case tracking becomes a full-height 300px column on the right, the left panel narrows to 430px (the
+journey line scales to it), the middle row keeps only the calendar, and the board is designed at 1520 x 540 so it scales
+larger (about 87% on a 1366x650 viewport instead of 82%). Customise > "Tracking as side column" (`Layout.trackPos`: `auto` = the
+small-screen default, or an explicit `side` / `row`; per journey in localStorage; shown whenever the board is short, on
+any screen) overrides it. Tracking beside the calendar
+steps through layouts before scaling further: compact (`.frame.cmp`, board < 760: the calendar gets the wider share of the middle row (1.3fr vs tracking
 1fr), all five tracking stage boxes stay, calendar key dates in a side column) then tight (`.frame.tgt`, board < 650: every row and type size steps down again). Only a screen too short even
 for the tight board scales below 82% (down to 60%), so the board is always one view with no scrolling. A scaled-down
 board may grow wider than 1340px only in proportion to its height (width <= height x 2.2, max 1520px) so it keeps its
@@ -1243,10 +1250,6 @@ Components consume these via hooks/contexts; they should not re-implement domain
   `/api/stripe/checkout` refuses any `addons` (400 `ADDONS_DISCONTINUED`). Add-ons bought before
   this keep working: the webhook / verify-session still record paid add-on sessions,
   `purchased_addons` still grants journey access and legacy unlocks.
-- **Wallet currency name (Nov 2026):** users see the wallet unit as **"Jarthings"** (matches the
-  seed-jar icon, `components/resources/CreditTypeIcon.tsx`, `CURRENCY_LABEL`; "$1 = 1 jarthing").
-  Code, DB columns, RPCs, API fields and error codes keep the word `credits` (`INSUFFICIENT_CREDITS`,
-  `item.credits`, `currency: "credits"`). New user-facing copy says jarthings, never credits.
 - **Wallet** - `lib/wallet/topup.ts`: top-up packs (10/25/50/100), `WALLET_MIN_TOPUP = 5` (an
   exact deficit below it is lifted to it), whole credits only, max 1000. `applyWalletTopup` is
   called by BOTH the webhook (`checkout.session.completed` + `async_payment_succeeded`) and

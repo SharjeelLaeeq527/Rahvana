@@ -69,7 +69,7 @@ export const LEDGER_FILTER_LABELS: Record<LedgerFilter, string> = {
 
 /** What each chip actually covers — surfaced as a tooltip on the chip. */
 export const LEDGER_FILTER_HINTS: Record<LedgerFilter, string> = {
-  all: "Every jarthing deposit and disbursement",
+  all: "Every credit deposit and disbursement",
   topup: "Wallet top-ups and promotional bonuses",
   unlock: "All resource unlocks: standalone tools and guides",
   service: "Consultations and expert services booked on Rahvana",
@@ -204,11 +204,11 @@ export function formatCredits(value: string | number): string {
   return toNumber(value).toLocaleString("en-US");
 }
 
-/** Signed jarthing amount for the table: "+500 Jarthings" / "-250 Jarthings". */
+/** Signed credit amount for the table: "+500 Credits" / "-250 Credits". */
 export function formatSignedCredits(value: string | number): string {
   const n = toNumber(value);
   const abs = Math.abs(n).toLocaleString("en-US");
-  return `${n >= 0 ? "+" : "-"}${abs} Jarthings`;
+  return `${n >= 0 ? "+" : "-"}${abs} Credits`;
 }
 
 /** "$500.00" or "" when the row carries no USD equivalent. */

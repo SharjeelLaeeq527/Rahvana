@@ -236,9 +236,9 @@ export function CreditLaunchModal({ item, href, onLaunched, onClose, onConfirm }
               </h2>
               <p className="text-[12px] font-medium text-slate-600">
                 {shortfall
-                  ? "Add jarthings to continue"
+                  ? "Add credits to continue"
                   : item.resourceType === "service"
-                    ? "Book this service using your Rahvana jarthings"
+                    ? "Book this service using your Rahvana credits"
                     : isSmartFormItem(item)
                       ? "Unlocks this form only. Pay once, use it as often as you like"
                       : isPhotoBoothItem(item)
@@ -284,13 +284,13 @@ export function CreditLaunchModal({ item, href, onLaunched, onClose, onConfirm }
                   <div className="flex items-center justify-between py-1.5 text-[13px]">
                     <span className="font-medium text-slate-500">Your Wallet Balance</span>
                     <span className="font-bold text-slate-900 tabular-nums">
-                      {balance} Jarthings
+                      {balance} Credits
                     </span>
                   </div>
                   <div className="flex items-center justify-between border-t border-slate-200 py-1.5 text-[13px]">
                     <span className="font-medium text-slate-500">{kind} Cost</span>
                     <span className="font-bold text-slate-900 tabular-nums">
-                      {item.credits} Jarthings
+                      {item.credits} Credits
                     </span>
                   </div>
                   <div className="flex items-center justify-between border-t border-slate-200 py-1.5 text-[13px]">
@@ -298,7 +298,7 @@ export function CreditLaunchModal({ item, href, onLaunched, onClose, onConfirm }
                       Balance After {item.resourceType === "service" ? "Booking" : "Launch"}
                     </span>
                     <span className="font-extrabold text-[#0d7377] tabular-nums">
-                      {balanceAfter} Jarthings
+                      {balanceAfter} Credits
                     </span>
                   </div>
                 </div>
@@ -312,10 +312,10 @@ export function CreditLaunchModal({ item, href, onLaunched, onClose, onConfirm }
             )}
 
             <p className="text-[11.5px] leading-relaxed text-slate-500">
-              $1 = 1 jarthing.{" "}
+              $1 = 1 credit.{" "}
               {item.resourceType === "service"
-                ? "Services inside your journey never use jarthings."
-                : "Tools inside your journey never use jarthings."}
+                ? "Services inside your journey never use credits."
+                : "Tools inside your journey never use credits."}
             </p>
           </div>
         ) : (
@@ -324,19 +324,19 @@ export function CreditLaunchModal({ item, href, onLaunched, onClose, onConfirm }
               <div className="flex items-center justify-between py-1.5 text-[13px]">
                 <span className="font-medium text-slate-500">Your Wallet Balance</span>
                 <span className="font-bold text-slate-900 tabular-nums">
-                  {shortfall.available} Jarthings
+                  {shortfall.available} Credits
                 </span>
               </div>
               <div className="flex items-center justify-between border-t border-slate-200 py-1.5 text-[13px]">
                 <span className="font-medium text-slate-500">{kind} Cost</span>
                 <span className="font-bold text-slate-900 tabular-nums">
-                  {shortfall.required} Jarthings
+                  {shortfall.required} Credits
                 </span>
               </div>
               <div className="flex items-center justify-between border-t border-slate-200 py-1.5 text-[13px]">
-                <span className="font-medium text-slate-500">Jarthings Needed</span>
+                <span className="font-medium text-slate-500">Credits Needed</span>
                 <span className="font-extrabold text-amber-600 tabular-nums">
-                  {Math.ceil(shortfall.deficit)} Jarthings
+                  {Math.ceil(shortfall.deficit)} Credits
                 </span>
               </div>
             </div>
@@ -370,7 +370,7 @@ export function CreditLaunchModal({ item, href, onLaunched, onClose, onConfirm }
                       </span>
                       <span>
                         <span className="block text-[14px] font-bold text-slate-900 tabular-nums">
-                          {amount} jarthings
+                          {amount} credits
                         </span>
                         <span className="block text-[11.5px] font-medium text-slate-500">
                           {/* Spell out the math (balance + top-up - cost) so the
@@ -396,7 +396,7 @@ export function CreditLaunchModal({ item, href, onLaunched, onClose, onConfirm }
             )}
 
             <p className="text-[11.5px] leading-relaxed text-slate-500">
-              $1 = 1 jarthing. Secure payment by Stripe. You come back here after paying and can
+              $1 = 1 credit. Secure payment by Stripe. You come back here after paying and can
               launch right away.
             </p>
           </div>
@@ -430,9 +430,9 @@ export function CreditLaunchModal({ item, href, onLaunched, onClose, onConfirm }
                       {item.resourceType === "service" ? "Booking..." : "Unlocking..."}
                     </>
                   ) : item.resourceType === "service" ? (
-                    `Book for ${item.credits} jarthings`
+                    `Book for ${item.credits} credits`
                   ) : (
-                    `Unlock for ${item.credits} jarthings`
+                    `Unlock for ${item.credits} credits`
                   )}
                 </button>
               </div>
@@ -457,7 +457,7 @@ export function CreditLaunchModal({ item, href, onLaunched, onClose, onConfirm }
                       <Loader2 size={16} className="animate-spin" /> Opening secure payment...
                     </>
                   ) : (
-                    `Pay $${selectedTopup} for ${selectedTopup} jarthings`
+                    `Pay $${selectedTopup} for ${selectedTopup} credits`
                   )}
                 </button>
               </div>

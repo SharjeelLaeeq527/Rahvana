@@ -15,7 +15,7 @@ import Image from "next/image";
 export type CreditIconKind = "tools" | "guides" | "services";
 
 /** What users call the wallet currency. Change it here to rename the price labels. */
-export const CURRENCY_LABEL = "jarthings";
+export const CURRENCY_LABEL = "credits";
 
 /*
  * Price text matches the header wallet balance and the card footer actions:

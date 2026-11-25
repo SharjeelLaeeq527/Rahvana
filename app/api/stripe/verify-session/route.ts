@@ -121,7 +121,7 @@ export async function GET(request: NextRequest) {
         session.metadata?.target_candidate_id || session.metadata?.candidate_id || undefined;
 
       // ── 1. Provision Candidates, Journeys, and Document Vaults ─────────────
-      // Automatically creates candidate profiles, jarthings multi-candidate journeys
+      // Automatically creates candidate profiles, credits multi-candidate journeys
       // (candidate-1, candidate-2, etc.), and initializes isolated document vaults.
       await provisionCandidateJourneysAndVaults({
         supabase,
@@ -432,7 +432,7 @@ export async function GET(request: NextRequest) {
               productType === "journey_plan"
                 ? `Your Rahvana ${tierName} Plan is Active!`
                 : walletTopup
-                  ? `${walletTopup.credits} jarthings added to your Rahvana Wallet`
+                  ? `${walletTopup.credits} credits added to your Rahvana Wallet`
                   : "Your Rahvana purchase is confirmed",
             html: `
               <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -440,7 +440,7 @@ export async function GET(request: NextRequest) {
                 <p>Your purchase has been activated on your Rahvana account.</p>
                 <p>${
                   walletTopup
-                    ? `<strong>${walletTopup.credits} jarthings</strong> were added to your Rahvana Wallet. Your balance is now <strong>${walletTopup.balance} jarthings</strong>.`
+                    ? `<strong>${walletTopup.credits} credits</strong> were added to your Rahvana Wallet. Your balance is now <strong>${walletTopup.balance} credits</strong>.`
                     : `You can now access ${productType === "journey_plan" ? `your <strong>${tierName}</strong> plan features` : "your new feature"} immediately.`
                 }</p>
                 <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://rahvana.com"}/user-dashboard"

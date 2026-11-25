@@ -313,7 +313,7 @@ export function renderStatement(input: StatementInput): Promise<Buffer> {
       .font("Helvetica-Bold")
       .fontSize(19)
       .fillColor(TEAL)
-      .text("Jarthing Wallet Statement", PAGE_MARGIN, y);
+      .text("Credit Wallet Statement", PAGE_MARGIN, y);
     const statementNo = `RW-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}`;
     doc
       .font("Helvetica-Bold")
@@ -338,7 +338,7 @@ export function renderStatement(input: StatementInput): Promise<Buffer> {
         `Period: ${input.periodLabel}   |   Generated: ${new Date().toLocaleString("en-US", {
           dateStyle: "medium",
           timeStyle: "short",
-        })}   |   $1 USD = 1 Rahvana Jarthing`,
+        })}   |   $1 USD = 1 Rahvana Credit`,
         PAGE_MARGIN,
         y
       );
@@ -356,14 +356,14 @@ export function renderStatement(input: StatementInput): Promise<Buffer> {
     const stats: Array<{ label: string; value: string; color: string }> = [
       {
         label: "OPENING BALANCE",
-        value: `${creditsFmt(input.openingBalance)} Jarthings`,
+        value: `${creditsFmt(input.openingBalance)} Credits`,
         color: INK,
       },
       { label: "SEEDS ADDED", value: `+${creditsFmt(input.totalAdded)}`, color: GREEN },
       { label: "SEEDS SPENT", value: `-${creditsFmt(input.totalSpent)}`, color: INK },
       {
         label: "CLOSING BALANCE",
-        value: `${creditsFmt(input.closingBalance)} Jarthings`,
+        value: `${creditsFmt(input.closingBalance)} Credits`,
         color: TEAL,
       },
     ];
@@ -518,7 +518,7 @@ doc
         .font("Helvetica")
         .fontSize(7)
         .fillColor(FAINT)
-        .text("Rahvana Wallet - official jarthing statement - rahvana.com", PAGE_MARGIN, pageH - 30);
+        .text("Rahvana Wallet - official credit statement - rahvana.com", PAGE_MARGIN, pageH - 30);
       doc
         .font("Helvetica")
         .fontSize(7)

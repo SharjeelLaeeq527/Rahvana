@@ -7,8 +7,6 @@ import { Icon } from "../icons";
 import type { UscisLiveCheck } from "../useUscisLiveCheck";
 import { MONTHS_SHORT, WEEKDAYS_SHORT } from "./palette";
 
-/** Facts kept on the front when the rest move to the back face. */
-const FRONT_PREVIEW = 2;
 const STAGE_COLORS = ["#0d9488", "#3b62a0", "#6b4f93", "#6b4f93", "#b4405a"];
 
 export function useCopy(): [string | null, (value: string) => void] {
@@ -60,22 +58,22 @@ export function TrackingTicket({
   const tkRef = useRef<HTMLDivElement>(null);
   const tkfRef = useRef<HTMLDivElement>(null);
   const [heavy, setHeavy] = useState(false);
-  // How much of the preview the front can still hold: 0 = two facts and the
-  // button below, 1 = one fact with the button beside it, 2 = just the button.
-  const [squeeze, setSqueeze] = useState(0);
+  // Heavy stage: the front shows as many facts as fit. It starts at all but one
+  // (the back face always adds something) and drops one at a time until it fits.
+  const [drop, setDrop] = useState(0);
   const [back, setBack] = useState(false);
   const [measureKey, setMeasureKey] = useState(0);
   useLayoutEffect(() => {
     setHeavy(false);
-    setSqueeze(0);
+    setDrop(0);
     setBack(false);
   }, [sel, stages]);
   useLayoutEffect(() => {
     const el = tkfRef.current;
     if (!el || el.scrollHeight <= el.clientHeight + 1) return;
     if (!heavy) setHeavy(true);
-    else if (squeeze < 2) setSqueeze((n) => n + 1);
-  }, [heavy, squeeze, sel, stages, measureKey]);
+    else if (drop < stages[sel].facts.length - 1) setDrop((n) => n + 1);
+  }, [heavy, drop, sel, stages, measureKey]);
   useEffect(() => {
     const el = tkRef.current;
     if (!el) return;
@@ -85,7 +83,7 @@ export function TrackingTicket({
     const remeasure = () => {
       if (!alive) return;
       setHeavy(false);
-      setSqueeze(0);
+      setDrop(0);
       setMeasureKey((k) => k + 1);
     };
     const ro = new ResizeObserver(remeasure);
@@ -112,7 +110,7 @@ export function TrackingTicket({
           : null
       : null;
   const showBack = heavy && back;
-  const preview = heavy ? st.facts.slice(0, Math.max(0, FRONT_PREVIEW - squeeze)) : st.facts;
+  const preview = heavy ? st.facts.slice(0, Math.max(0, st.facts.length - 1 - drop)) : st.facts;
 
   const factRows = (facts: typeof st.facts) =>
     facts.map((f) => (
@@ -235,7 +233,7 @@ export function TrackingTicket({
         <div className={`tkf ${anim}`} key={`f${sel}`} ref={tkfRef}>
           {factRows(preview)}
           {heavy ? (
-            <button type="button" className={`tkmore${squeeze === 1 ? " inl" : ""}`} onClick={() => setBack(true)}>
+            <button type="button" className={`tkmore${preview.length % 2 === 1 ? " inl" : ""}`} onClick={() => setBack(true)}>
               {st.facts.length > preview.length
                 ? `${st.facts.length - preview.length} more detail${st.facts.length - preview.length === 1 ? "" : "s"}`
                 : "More details"}

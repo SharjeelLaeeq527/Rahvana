@@ -110,7 +110,7 @@ export function WalletTopupModal({ balance, initialAmount, returnUrl, onClose }:
                 Top up your Rahvana Wallet
               </h2>
               <p className="text-[12px] font-medium text-slate-600">
-                {balance === null ? "$1 = 1 jarthing" : `Current balance: ${balance} jarthings. $1 = 1 jarthing.`}
+                {balance === null ? "$1 = 1 credit" : `Current balance: ${balance} credits. $1 = 1 credit.`}
               </p>
             </div>
           </div>
@@ -134,7 +134,7 @@ export function WalletTopupModal({ balance, initialAmount, returnUrl, onClose }:
                   }`}
                 >
                   <span className="block text-[17px] font-extrabold text-slate-900">${pack}</span>
-                  <span className="block text-[12px] font-medium text-slate-500">{pack} jarthings</span>
+                  <span className="block text-[12px] font-medium text-slate-500">{pack} credits</span>
                 </button>
               );
             })}
@@ -178,8 +178,8 @@ export function WalletTopupModal({ balance, initialAmount, returnUrl, onClose }:
           )}
 
           <p className="text-[11.5px] leading-relaxed text-slate-500">
-            Jarthings are used for standalone tools and guides. Resources inside your journey are covered
-            by your journey plan and never use jarthings.
+            Credits are used for standalone tools and guides. Resources inside your journey are covered
+            by your journey plan and never use credits.
           </p>
         </div>
 
@@ -198,7 +198,7 @@ export function WalletTopupModal({ balance, initialAmount, returnUrl, onClose }:
             ) : amount === null ? (
               "Choose an amount"
             ) : (
-              `Pay $${amount} for ${amount} jarthings`
+              `Pay $${amount} for ${amount} credits`
             )}
           </button>
         </div>

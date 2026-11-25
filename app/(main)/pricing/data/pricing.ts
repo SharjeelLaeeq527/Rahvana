@@ -545,7 +545,7 @@ export const FAQS: [string, string][] = [
   ],
   [
     "Can I buy a single tool, guide or service?",
-    "Yes, with Rahvana jarthings ($1 = 1 jarthing). Top up your wallet, then unlock a tool or guide once from its own page (for example the Smart Form Filler for 39 jarthings) and it stays unlocked for your account. Services are paid with jarthings each time you book one. Inside a journey, your journey plan decides what is included. Jarthings never expire.",
+    "Yes, with Rahvana credits ($1 = 1 credit). Top up your wallet, then unlock a tool or guide once from its own page (for example the Smart Form Filler for 39 credits) and it stays unlocked for your account. Services are paid with credits each time you book one. Inside a journey, your journey plan decides what is included. Credits never expire.",
   ],
   [
     "Is my data secure?",

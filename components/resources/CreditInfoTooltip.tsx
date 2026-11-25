@@ -164,7 +164,7 @@ export default function CreditInfoTooltip({
       <button
         ref={triggerRef}
         type="button"
-        aria-label="Jarthing information"
+        aria-label="Credit information"
         aria-expanded={open}
         aria-describedby={open ? tooltipId : undefined}
         onMouseEnter={handleMouseEnter}
@@ -226,7 +226,7 @@ export default function CreditInfoTooltip({
           >
             <div className="mb-2 flex items-center justify-between gap-3">
               <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#afdbdb]">
-                Jarthing information
+                Credit information
               </span>
 
               <button

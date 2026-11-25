@@ -86,6 +86,6 @@ export async function spendJourneyServiceUse(
   return {
     status: 403,
     code: "SERVICE_LIMIT_REACHED",
-    error: `You have used all the ${label} included in this journey plan. You can still request one from the Services page with jarthings.`,
+    error: `You have used all the ${label} included in this journey plan. You can still request one from the Services page with credits.`,
   };
 }

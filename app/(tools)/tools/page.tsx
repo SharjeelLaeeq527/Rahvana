@@ -316,7 +316,7 @@ export default function ToolsPage({ isEmbedded = false }: { isEmbedded?: boolean
         {modals}
         <CatalogSection
           title="My Tools"
-          subtitle="Tools you have unlocked with jarthings or an earlier purchase."
+          subtitle="Tools you have unlocked with credits or an earlier purchase."
           count={ownedTools.length}
         >
           <CatalogGrid>
@@ -347,7 +347,6 @@ export default function ToolsPage({ isEmbedded = false }: { isEmbedded?: boolean
     <>
       {modals}
       <CatalogShell
-        eyebrow="Rahvana tools"
         title={t("toolsPage.heroTitle") || "Create. Check. Comply."}
         tagline={
           t("toolsPage.heroDescription") ||
@@ -472,7 +471,7 @@ function ToolCard({
             <button
               type="button"
               onClick={() => onLaunch(catalogItem)}
-              aria-label={`Launch ${tool.title} for ${catalogItem.credits} jarthings`}
+              aria-label={`Launch ${tool.title} for ${catalogItem.credits} credits`}
               className={CATALOG_BTN_PRIMARY}
             >
               Launch
@@ -482,7 +481,7 @@ function ToolCard({
         </div>
         {isPhotoBoothItem(catalogItem) && (
           <p className="text-xs font-medium text-[#16302C]/60">
-            {catalogItem.credits} jarthings gives you 2 photos. Buy again when both are used.
+            {catalogItem.credits} credits gives you 2 photos. Buy again when both are used.
           </p>
         )}
       </div>
@@ -494,7 +493,7 @@ function ToolCard({
               kind="tools"
               size={22}
               amount={perItemCredits}
-              suffix="jarthings per form"
+              suffix="credits per form"
             />
           )}
         </span>
@@ -530,7 +529,7 @@ function ToolCard({
       topRight={
         isLocked ? (
           <CreditInfoTooltip
-            message="Unlock once: spend jarthings one time, then use this tool as much as you like."
+            message="Unlock once: spend credits one time, then use this tool as much as you like."
             side="top"
           />
         ) : (

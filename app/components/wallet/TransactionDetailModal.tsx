@@ -134,11 +134,11 @@ export function TransactionDetailModal({ transaction: t, onClose }: Props) {
             <span className="tabular-nums">{formatSignedCredits(t.amount)}</span>
           </Row>
           <Row label="Balance Before">
-            <span className="tabular-nums">{formatCredits(t.balance_before)} Jarthings</span>
+            <span className="tabular-nums">{formatCredits(t.balance_before)} Credits</span>
           </Row>
           <Row label="Balance After">
             <span className="text-[#0d7377] tabular-nums">
-              {formatCredits(t.balance_after)} Jarthings
+              {formatCredits(t.balance_after)} Credits
             </span>
           </Row>
         </dl>

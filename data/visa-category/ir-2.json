@@ -3760,7 +3760,7 @@
           "visible_when": {
             "uscisNoticeType": "rfi"
           },
-          "step_description": "USCIS has issued a Request for Additional Information (RFI) on your I-130 petition. An RFI requests additional or clarifying information. Read the actual notice to determine exactly what USCIS requires and the applicable deadline.",
+          "step_description": "USCIS has issued a Request for Additional Information (RFI) on your I-130 petition. An RFI requests additional or clarifying information. Read the actual notice to determine exactly what USCIS requires and the applicable deadline. USCIS usually asks for missing evidence on an I-130 through a Request for Evidence (RFE); if your notice is titled Request for Evidence, follow the RFE step instead.",
           "who": "Petitioner",
           "where": "my.uscis.gov / mail",
           "timeline": "Before deadline on notice",
@@ -3947,7 +3947,7 @@
               {
                 "label": "NOID Response · Step 2",
                 "title": "Check the response deadline immediately",
-                "text": "The response deadline is printed on your NOID notice. Note it immediately and treat it as your hard deadline. For a NOID the maximum response period is up to 30 days, much shorter than an RFE, and the date on your notice controls. Extensions are generally not granted.",
+                "text": "The response deadline is printed on your NOID notice. Note it immediately and treat it as your hard deadline. For a NOID the maximum response period is 30 days (up to 33 days if USCIS mailed the notice), much shorter than the 12-week maximum for an RFE, and the date on your notice controls. Do not count on an extension.",
                 "note": "Given the seriousness of a NOID, you should begin working on your response immediately, do not wait until close to the deadline."
               },
               {
@@ -3987,8 +3987,8 @@
             },
             "citations": [
               {
-                "text": "USCIS Policy Manual - Notice of Intent to Deny",
-                "link": "https://www.uscis.gov/sites/default/files/document/policy-manual-updates/20210609-RFEs%26NOIDs.pdf"
+                "text": "USCIS Policy Manual, Volume 1, Part E, Chapter 6 (Evidence, RFEs and NOIDs)",
+                "link": "https://www.uscis.gov/policy-manual/volume-1-part-e-chapter-6"
               }
             ],
             "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. A NOID is a serious notice that may require legal analysis. Strongly consider consulting a qualified immigration attorney."
@@ -4071,7 +4071,7 @@
           },
           "step_description": "USCIS has denied the I-130 petition. Review the denial notice carefully to understand the specific reasons and determine which options, appeal, motion, or another strategy, may be appropriate for your situation.",
           "who": "Petitioner",
-          "where": "my.uscis.gov / EOIR",
+          "where": "Denial notice / USCIS (Form I-290B or EOIR-29)",
           "timeline": "Varies, deadlines apply",
           "dependencies": ["step_1_23"],
           "is_required": false,
@@ -4107,20 +4107,20 @@
                   "id": "appeal",
                   "label": "Appeal to the Board of Immigration Appeals (BIA)",
                   "description": "Certain I-130 decisions can be appealed to the Board of Immigration Appeals using Form EOIR-29 (Notice of Appeal to the Board of Immigration Appeals from a Decision of a DHS Officer). USCIS confirms that I-130 appeals are among the appeals filed using Form EOIR-29.",
-                  "important": "Appeals have strict deadlines. Form EOIR-29 is used for eligible appeals of DHS decisions, and it must be filed with the DHS/USCIS office named in the denial notice and the form instructions, not mailed directly to the BIA. Confirm the deadline and filing requirements in your denial notice and the current EOIR-29 instructions.",
+                  "important": "Appeals have strict deadlines. The appeal is generally due within 30 days of service of the decision. Form EOIR-29 must be filed with USCIS (the lockbox listed on the EOIR-29 page for the office that issued the decision), following the instructions in the denial notice, not mailed directly to the BIA. An I-130 appeal is not filed on Form I-290B. Confirm the exact deadline in your denial notice.",
                   "url": "https://www.uscis.gov/eoir-29"
                 },
                 {
                   "id": "motion_reopen",
                   "label": "Motion to Reopen",
-                  "description": "A motion to reopen asks USCIS to reopen the case based on new facts or evidence that was not available at the time of the decision.",
-                  "important": "A motion to reopen is appropriate when there is new factual evidence that was not part of the original record. Review the denial carefully before pursuing this option."
+                  "description": "A motion to reopen asks the USCIS office that denied the petition to reopen the case based on new facts, supported by affidavits or other documentary evidence. It is filed on Form I-290B (Notice of Appeal or Motion).",
+                  "important": "File within 30 calendar days of service of the denial (33 days if USCIS mailed the decision). The new facts must show the child was eligible when the I-130 was filed. Submit any brief or evidence together with the motion."
                 },
                 {
                   "id": "motion_reconsider",
                   "label": "Motion to Reconsider",
-                  "description": "A motion to reconsider asks USCIS to reconsider its decision based on an error of law or incorrect application of policy to the existing facts.",
-                  "important": "A motion to reconsider is appropriate when you believe USCIS made a legal error in the denial, not when you simply have new evidence."
+                  "description": "A motion to reconsider asks USCIS to reconsider its decision because it was based on an incorrect application of law or policy to the evidence already in the record. It is filed on Form I-290B (Notice of Appeal or Motion).",
+                  "important": "File within 30 calendar days of service of the denial (33 days if USCIS mailed the decision), with citations to the statutes, regulations, or precedent decisions that support it. Use it for a legal error, not when you simply have new evidence."
                 },
                 {
                   "id": "new_petition",
@@ -4166,7 +4166,7 @@
                 "link": "https://www.uscis.gov/eoir-29"
               },
               {
-                "text": "USCIS, Motions and Appeals",
+                "text": "Form I-290B, Notice of Appeal or Motion",
                 "link": "https://www.uscis.gov/i-290b"
               }
             ],
@@ -4255,10 +4255,10 @@
                   "description": "If payment could not be processed or an essential document was missing at intake, USCIS issues a notice explaining the intake issue.",
                   "evidence_examples": [
                     "Check the specific rejection reason printed on the notice.",
-                    "Submit corrected fee payment or missing signature promptly.",
+                    "USCIS returns a rejected filing; it is not processed. Correct the problem and refile the complete I-130 package with a new payment form.",
                     "Pay with a valid electronic method: Form G-1450 (credit or debit card) or Form G-1650 (ACH from a U.S. bank account). If you cannot pay electronically, Form G-1651 requests an exemption from the electronic payment requirement; it is not a fee waiver."
                   ],
-                  "important_note": "Pay close attention to any refiling instructions and deadline dates provided on the notice."
+                  "important_note": "A rejected I-130 does not keep its original filing date. For IR-2, the filing date is the date used to protect a child from aging out at 21, so refile quickly if the child is close to 21."
                 }
               ]
             },

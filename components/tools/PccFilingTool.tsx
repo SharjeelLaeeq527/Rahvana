@@ -188,26 +188,26 @@ const CheckoutStep = ({
               <div className="space-y-4">
                 <div className="flex items-center justify-between text-sm">
                   <span className="font-medium text-gray-600">1x PCC Filing (Sindh)</span>
-                  <span className="font-bold text-gray-800">25 Jarthings ($25.00)</span>
+                  <span className="font-bold text-gray-800">25 Credits ($25.00)</span>
                 </div>
 
                 <div className="flex items-center justify-between text-sm">
                   <span className="font-medium text-gray-600">Wallet Balance</span>
                   <span className="font-bold text-gray-800">
-                    {walletLoading ? "..." : `${walletBalance ?? 0} Jarthings`}
+                    {walletLoading ? "..." : `${walletBalance ?? 0} Credits`}
                   </span>
                 </div>
 
                 {hasWalletCredits && (
                   <div className="flex items-center justify-between text-sm text-[#0d7377]">
                     <span className="font-medium">Balance After Booking</span>
-                    <span className="font-bold">{(walletBalance ?? 25) - costCredits} Jarthings</span>
+                    <span className="font-bold">{(walletBalance ?? 25) - costCredits} Credits</span>
                   </div>
                 )}
 
                 <div className="mt-2 flex items-center justify-between border-t border-gray-200 pt-4">
                   <span className="text-base font-bold text-gray-900">Total Due</span>
-                  <span className="text-xl font-black text-gray-900">25 Jarthings ($25.00)</span>
+                  <span className="text-xl font-black text-gray-900">25 Credits ($25.00)</span>
                 </div>
               </div>
             </div>
@@ -235,8 +235,8 @@ const CheckoutStep = ({
                 {loading
                   ? "Processing..."
                   : hasWalletCredits
-                    ? "Pay 25 Jarthings & Confirm"
-                    : `Top up ${deficit} Jarthings to Submit`}
+                    ? "Pay 25 Credits & Confirm"
+                    : `Top up ${deficit} Credits to Submit`}
               </button>
             </div>
           </div>
@@ -672,7 +672,7 @@ function PoliceApplyContent({
         const deficit = Math.max(25, 25 - (wallet.balance ?? 0));
         wallet.openTopup({ amount: deficit });
         setCheckoutError(
-          `You need 25 jarthings for PCC filing (Balance: ${wallet.balance ?? 0} jarthings). Please top up to proceed.`
+          `You need 25 credits for PCC filing (Balance: ${wallet.balance ?? 0} credits). Please top up to proceed.`
         );
         return;
       }
@@ -749,7 +749,7 @@ function PoliceApplyContent({
         const deficit = deductResult.body.deficit ?? 25;
         wallet.openTopup({ amount: deductResult.body.topupAmount ?? deficit });
         setCheckoutError(
-          `Insufficient jarthings. Please top up ${deficit} jarthings to complete your application.`
+          `Insufficient credits. Please top up ${deficit} credits to complete your application.`
         );
         return;
       }
