@@ -930,7 +930,7 @@ export default function USCISCaseStatusPage() {
           </div>
 
           {/* Modal List of all history items */}
-          <div className="max-h-[60vh] overflow-y-auto divide-y divide-[#DDD9CE]/60 p-2">
+          <div className="custom-scrollbar max-h-[60vh] overflow-y-auto divide-y divide-[#DDD9CE]/60 p-2">
             {history.length === 0 ? (
               <div className="py-12 text-center text-xs text-slate-400 italic">
                 No search history found.
@@ -946,34 +946,51 @@ export default function USCISCaseStatusPage() {
                       loadHistory(h);
                       setShowHistoryModal(false);
                     }}
-                    className="group flex w-full items-center justify-between p-3.5 text-left rounded-xl transition-colors hover:bg-[#F6F4EF]"
+                    className="group flex w-full flex-col gap-1.5 rounded-xl p-3 text-left transition-colors hover:bg-[#F6F4EF] sm:flex-row sm:items-center sm:justify-between sm:p-3.5"
                   >
-                    <div className="flex items-center gap-3">
-                      <span className={`h-2.5 w-2.5 rounded-full shrink-0 ${ht.dot}`} />
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-sm font-bold tracking-wider text-[#1B2B44] group-hover:text-[#3D5A80]">
-                            {h.receiptNumber}
-                          </span>
-                          {h.formType && (
-                            <span className="text-[11px] font-medium text-slate-500">
-                              ({h.formType})
+                    {/* Left Column / Mobile Row 1 */}
+                    <div className="flex items-center justify-between sm:justify-start sm:gap-3">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <span className={`h-2.5 w-2.5 rounded-full shrink-0 ${ht.dot}`} />
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-sm font-bold tracking-wider text-[#1B2B44] group-hover:text-[#3D5A80]">
+                              {h.receiptNumber}
                             </span>
-                          )}
+                            {h.formType && (
+                              <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600 whitespace-nowrap">
+                                {h.formType}
+                              </span>
+                            )}
+                          </div>
+                          <p className="hidden sm:block text-xs text-slate-500 mt-0.5">
+                            Checked {new Date(h.checkedAt).toLocaleDateString()}
+                          </p>
                         </div>
-                        <p className="text-xs text-slate-500 mt-0.5">
-                          Checked {new Date(h.checkedAt).toLocaleDateString()}
-                        </p>
                       </div>
-                    </div>
 
-                    <div className="text-right max-w-[45%]">
+                      {/* Mobile only: Status badge in Row 1 right */}
                       <span
-                        className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[10px] font-semibold tracking-wide uppercase ${ht.bg} ${ht.color} ${ht.border}`}
+                        className={`inline-flex sm:hidden items-center rounded-full border px-2 py-0.5 text-[9px] font-bold tracking-wide uppercase whitespace-nowrap shrink-0 ${ht.bg} ${ht.color} ${ht.border}`}
                       >
                         {ht.label}
                       </span>
-                      <p className="text-xs font-semibold text-slate-700 truncate mt-1">
+                    </div>
+
+                    {/* Right Column / Mobile Row 2 */}
+                    <div className="flex items-center justify-between sm:flex-col sm:items-end sm:text-right pl-5 sm:pl-0 sm:max-w-[45%]">
+                      <p className="sm:hidden text-[11px] text-slate-500">
+                        Checked {new Date(h.checkedAt).toLocaleDateString()}
+                      </p>
+
+                      {/* Desktop only: Status badge */}
+                      <span
+                        className={`hidden sm:inline-flex items-center rounded-full border px-2.5 py-0.5 text-[10px] font-semibold tracking-wide uppercase whitespace-nowrap ${ht.bg} ${ht.color} ${ht.border}`}
+                      >
+                        {ht.label}
+                      </span>
+
+                      <p className="text-xs font-semibold text-slate-700 truncate max-w-[170px] sm:max-w-full sm:mt-1">
                         {h.status || "Status Unavailable"}
                       </p>
                     </div>
