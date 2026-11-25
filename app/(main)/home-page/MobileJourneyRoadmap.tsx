@@ -297,7 +297,7 @@ function MobileNodeCircle({
   color?: AnchorColor;
 }) {
   const bgColors: Record<AnchorColor, string> = {
-    teal: "bg-[#0d7377]",
+    teal: "bg-primary",
     amber: "bg-[#8a6200]",
     purple: "bg-[#4a2d8a]",
     rose: "bg-[#c0596a]",
@@ -363,7 +363,7 @@ export default function MobileJourneyRoadmap() {
         >
           {/* Centered Title & Subtitle */}
           <div className="max-w-xs mx-auto text-center mb-8">
-            <h3 className="text-3xl font-semibold text-[#0d7377] tracking-tight leading-tight mb-2">
+            <h3 className="text-3xl font-semibold text-primary tracking-tight leading-tight mb-2">
               Let&apos;s take it one step at a time.
             </h3>
             <p className="text-base text-slate-500 leading-relaxed font-normal">
@@ -417,7 +417,7 @@ export default function MobileJourneyRoadmap() {
           <div className="relative z-10 flex flex-col items-center">
             {/* Text top-left */}
             <div className="w-full text-left mb-4">
-              <h3 className="text-2xl font-semibold text-[#0d7377] tracking-tight leading-snug mb-1">
+              <h3 className="text-2xl font-semibold text-primary tracking-tight leading-snug mb-1">
                 Everything starts<br />with the petition.
               </h3>
               <p className="text-sm text-slate-500 leading-relaxed font-normal">
@@ -450,7 +450,7 @@ export default function MobileJourneyRoadmap() {
             {/* Text only at top — no bird here */}
             <div className="w-[55%] text-left mb-6">
               <p
-                className="text-[1.65rem] leading-snug font-normal text-[#0d7377]"
+                className="text-[1.65rem] leading-snug font-normal text-primary"
                 style={{ fontFamily: "var(--font-caveat), Caveat, cursive" }}
               >
                 &ldquo;Wait... these forms <br />look complicated.&rdquo;
@@ -484,7 +484,7 @@ export default function MobileJourneyRoadmap() {
           <div className="relative z-10 text-left">
             {/* Text on Top Left */}
             <div className="w-[60%] text-left mb-4">
-              <h3 className="text-[1.6rem] font-semibold text-[#0d7377] tracking-tight leading-snug mb-1">
+              <h3 className="text-[1.6rem] font-semibold text-primary tracking-tight leading-snug mb-1">
                 Rahvana breaks <br />it down for you.
               </h3>
               <p className="text-sm text-slate-500 leading-relaxed font-normal">
@@ -519,7 +519,7 @@ export default function MobileJourneyRoadmap() {
             {/* Header text on left */}
             <div className="w-[60%] text-left mb-4">
               <p
-                className="text-3xl text-[#0d7377] font-normal mb-1"
+                className="text-3xl text-primary font-normal mb-1"
                 style={{ fontFamily: "var(--font-caveat), Caveat, cursive" }}
               >
                 &ldquo;... That wasn&apos;t so bad.&rdquo;
@@ -983,7 +983,7 @@ export default function MobileJourneyRoadmap() {
 
             <Link
               href="/visa-category"
-              className="inline-flex items-center justify-center gap-2 w-full py-4 px-6 rounded-xl bg-[#0d7377] text-white font-bold text-base shadow-xs hover:bg-[#0a5c5f] transition-all active:scale-[0.98]"
+              className="inline-flex items-center justify-center gap-2 w-full py-4 px-6 rounded-xl bg-primary text-white font-bold text-base shadow-xs hover:bg-[#0a5c5f] transition-all active:scale-[0.98]"
             >
               <span>Start Your Journey</span>
               <Icons.ArrowRight className="w-5 h-5" />
