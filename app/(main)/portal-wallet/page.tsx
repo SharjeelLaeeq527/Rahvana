@@ -75,7 +75,7 @@ const portals: {
     url: "https://myaccount.uscis.gov/sign-in",
     icon: <Image src="/uscis.png" alt="USCIS" width={64} height={64} className="object-contain" />,
     iconBgColor: "bg-[#e8f6f6]",
-    iconHoverBgColor: "group-hover:bg-[#0d7377]",
+    iconHoverBgColor: "group-hover:bg-primary",
   },
   {
     type: "NVC",
@@ -726,7 +726,7 @@ const PortalWallet: React.FC = () => {
     return (
       <div className="flex h-screen flex-col items-center justify-center gap-4">
         <Loader size="lg" />
-        <p className="mt-2 text-sm font-medium text-[#0d7377]">Loading your vault...</p>
+        <p className="mt-2 text-sm font-medium text-primary">Loading your vault...</p>
       </div>
     );
   }
@@ -742,7 +742,7 @@ const PortalWallet: React.FC = () => {
             fetchCredentials();
             fetchSummary();
           }}
-          className="rounded-lg bg-[#0d7377] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0a5c5f]"
+          className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-[#0a5c5f]"
         >
           Try again
         </button>
@@ -925,9 +925,9 @@ const PortalWallet: React.FC = () => {
 
         {/* Security note */}
         <div className="mt-6 text-center md:mt-10">
-          <div className="inline-flex items-center gap-2 rounded-full border border-[#0d7377]/10 bg-[#e8f6f6] px-4 py-2.5">
-            <Shield size={12} className="text-[#0d7377]" />
-            <span className="text-[9px] font-medium text-[#0d7377] md:text-[12px]">
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/10 bg-[#e8f6f6] px-4 py-2.5">
+            <Shield size={12} className="text-primary" />
+            <span className="text-[9px] font-medium text-primary md:text-[12px]">
               All credentials are encrypted end-to-end. We never store plaintext passwords.
             </span>
           </div>

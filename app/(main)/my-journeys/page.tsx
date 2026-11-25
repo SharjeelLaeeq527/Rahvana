@@ -226,7 +226,7 @@ const getJourneyStatus = (
   if (hasPaidTier || isExplicitlyActive || progress > 0) {
     return {
       label: "Active",
-      className: "border-[#5ce8d4]/30 bg-[#0d7377]/90 text-white",
+      className: "border-[#5ce8d4]/30 bg-primary/90 text-white",
       dotClassName: "bg-[#70f1dd]",
     };
   }
@@ -1074,7 +1074,7 @@ export default function MyJourneysPage() {
 
         <div className="absolute top-36 -right-52 h-[560px] w-[560px] rounded-full bg-[#32e0c4]/10 blur-[150px]" />
 
-        <div className="absolute bottom-0 left-1/3 h-[400px] w-[400px] rounded-full bg-[#0d7377]/5 blur-[130px]" />
+        <div className="absolute bottom-0 left-1/3 h-[400px] w-[400px] rounded-full bg-primary/5 blur-[130px]" />
 
         <div className="absolute inset-x-0 top-0 h-40 bg-linear-to-b from-white/80 to-transparent" />
       </div>
@@ -1207,7 +1207,7 @@ export default function MyJourneysPage() {
                   suppressHydrationWarning
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-white py-3 pr-4 pl-10 text-sm shadow-[0_10px_30px_-12px_rgba(22,48,44,0.12)] transition-all outline-none focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 sm:py-4"
+                  className="w-full rounded-xl border border-slate-200 bg-white py-3 pr-4 pl-10 text-sm shadow-[0_10px_30px_-12px_rgba(22,48,44,0.12)] transition-all outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 sm:py-4"
                   placeholder="Search by journey name, type, or candidate name..."
                 />
               </div>
@@ -1486,7 +1486,7 @@ function JourneyCard({
       className={`group relative flex h-full cursor-pointer flex-col gap-0 overflow-hidden rounded-3xl border p-0 backdrop-blur-xl transition-all duration-500 hover:-translate-y-1.5 focus-visible:ring-2 focus-visible:ring-[#14a0a6]/50 focus-visible:outline-none ${
         isActiveJourney
           ? meta.isCurrentActive
-            ? "border-[#0d7377]/40 bg-white/90 shadow-[0_20px_60px_rgba(13,115,119,0.18)] ring-2 ring-[#0d7377]/25 hover:border-[#0d7377]/60 hover:shadow-[0_28px_70px_rgba(13,115,119,0.24)]"
+            ? "border-primary/40 bg-white/90 shadow-[0_20px_60px_rgba(13,115,119,0.18)] ring-2 ring-primary/25 hover:border-primary/60 hover:shadow-[0_28px_70px_rgba(13,115,119,0.24)]"
             : "border-white/80 bg-white/75 shadow-[0_18px_55px_rgba(15,61,63,0.08)] hover:border-[#14a0a6]/30 hover:shadow-[0_28px_70px_rgba(13,115,119,0.16)]"
           : "border-slate-200/70 bg-slate-100/60 opacity-60 shadow-xs grayscale-[0.75] hover:border-slate-300 hover:opacity-95 hover:shadow-[0_18px_50px_rgba(15,61,63,0.1)] hover:grayscale-0"
       }`}
@@ -1553,7 +1553,7 @@ function JourneyCard({
         <div
           className={`absolute inset-0 transition-opacity duration-500 ${
             isActiveJourney
-              ? "bg-linear-to-br from-[#0d7377]/15 via-transparent to-[#32e0c4]/10"
+              ? "bg-linear-to-br from-primary/15 via-transparent to-[#32e0c4]/10"
               : "bg-transparent"
           }`}
         />
@@ -1600,9 +1600,9 @@ function JourneyCard({
                 onMouseDown={(e) => e.stopPropagation()}
                 onPointerDown={(e) => e.stopPropagation()}
                 title="Journey options"
-                className={`flex h-7 w-7 items-center justify-center rounded-full border border-white/25 bg-slate-950/70 text-white shadow-lg backdrop-blur-md transition-all hover:scale-105 hover:border-teal-300 hover:bg-[#0d7377] active:scale-95 ${
+                className={`flex h-7 w-7 items-center justify-center rounded-full border border-white/25 bg-slate-950/70 text-white shadow-lg backdrop-blur-md transition-all hover:scale-105 hover:border-teal-300 hover:bg-primary active:scale-95 ${
                   isMenuOpen
-                    ? "border-teal-300 bg-[#0d7377] opacity-100 ring-2 ring-teal-400/40"
+                    ? "border-teal-300 bg-primary opacity-100 ring-2 ring-teal-400/40"
                     : "opacity-85 sm:opacity-0 sm:group-hover:opacity-100"
                 }`}
               >
@@ -1692,7 +1692,7 @@ function JourneyCard({
                 }}
                 onMouseDown={(e) => e.stopPropagation()}
                 onPointerDown={(e) => e.stopPropagation()}
-                className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#0d7377] text-white transition-colors hover:bg-[#14a0a6]"
+                className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-white transition-colors hover:bg-[#14a0a6]"
                 title="Save Name"
               >
                 <Check className="h-3.5 w-3.5" />
@@ -1750,9 +1750,9 @@ function JourneyCard({
 
         {/* Progress block / Multi-Candidate Profile summary */}
         {isMultiCandidate && candidateCount && candidateCount > 0 ? (
-          <div className="relative mt-1 flex items-center justify-between rounded-[20px] border border-[#0d7377]/10 bg-linear-to-br from-[#f2fbfb] to-white p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+          <div className="relative mt-1 flex items-center justify-between rounded-[20px] border border-primary/10 bg-linear-to-br from-[#f2fbfb] to-white p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#e8f6f6] text-[#0d7377] shadow-xs">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#e8f6f6] text-primary shadow-xs">
                 <Users className="h-5 w-5" />
               </div>
               <div className="min-w-0">
@@ -1764,7 +1764,7 @@ function JourneyCard({
                 </p>
               </div>
             </div>
-            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#0d7377]/10 px-2.5 py-1 text-[11px] font-semibold text-[#0d7377] transition-colors group-hover:bg-[#0d7377] group-hover:text-white">
+            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-semibold text-primary transition-colors group-hover:bg-primary group-hover:text-white">
               Launch <ArrowRight className="h-3 w-3" />
             </span>
           </div>
@@ -1800,7 +1800,7 @@ function JourneyCard({
                 }}
                 className={`relative h-full rounded-full ${
                   isActiveJourney
-                    ? "bg-linear-to-r from-[#0a5a5d] via-[#0d7377] to-[#32e0c4]"
+                    ? "bg-linear-to-r from-[#0a5a5d] via-primary to-[#32e0c4]"
                     : "bg-linear-to-r from-slate-400 to-slate-500"
                 }`}
               >
@@ -1815,7 +1815,7 @@ function JourneyCard({
           <div className="flex min-w-0 items-center gap-2.5 text-xs text-slate-500">
             <span
               className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
-                isActiveJourney ? "bg-[#e8f6f6] text-[#0d7377]" : "bg-slate-100 text-slate-500"
+                isActiveJourney ? "bg-[#e8f6f6] text-primary" : "bg-slate-100 text-slate-500"
               }`}
             >
               {progress >= 100 ? (
@@ -1836,8 +1836,8 @@ function JourneyCard({
           <span
             className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white transition-all duration-300 group-hover:translate-x-0.5 ${
               isActiveJourney
-                ? "bg-[#0d7377] shadow-[0_8px_20px_rgba(13,115,119,0.22)] group-hover:bg-[#0a5a5d] group-hover:shadow-[0_10px_26px_rgba(13,115,119,0.3)]"
-                : "bg-slate-400 shadow-sm group-hover:bg-[#0d7377]"
+                ? "bg-primary shadow-[0_8px_20px_rgba(13,115,119,0.22)] group-hover:bg-[#0a5a5d] group-hover:shadow-[0_10px_26px_rgba(13,115,119,0.3)]"
+                : "bg-slate-400 shadow-sm group-hover:bg-primary"
             }`}
           >
             <ArrowRight className="h-4 w-4" />
@@ -1868,21 +1868,21 @@ function EmptyJourneyState({
         duration: 0.35,
         ease: [0.22, 1, 0.36, 1],
       }}
-      className="relative overflow-hidden rounded-[28px] border border-[#0d7377]/10 bg-white/85 shadow-[0_24px_70px_rgba(15,61,63,0.08)] backdrop-blur-xl"
+      className="relative overflow-hidden rounded-[28px] border border-primary/10 bg-white/85 shadow-[0_24px_70px_rgba(15,61,63,0.08)] backdrop-blur-xl"
     >
       {/* Subtle decorative glow */}
       <div className="pointer-events-none absolute -top-24 -right-20 h-64 w-64 rounded-full bg-[#32e0c4]/10 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-28 -left-20 h-64 w-64 rounded-full bg-[#0d7377]/5 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-28 -left-20 h-64 w-64 rounded-full bg-primary/5 blur-3xl" />
 
       <div className="relative flex flex-col items-center px-6 py-14 text-center sm:px-10 sm:py-16 lg:py-20">
         {/* Icon */}
-        <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-[#0d7377]/10 bg-[#e8f6f6] text-[#0d7377] shadow-sm">
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-primary/10 bg-[#e8f6f6] text-primary shadow-sm">
           <Route className="h-6 w-6" />
         </div>
 
         {/* Content */}
         <div className="mt-6 max-w-xl">
-          <p className="text-xs font-semibold tracking-[0.2em] text-[#0d7377] uppercase">
+          <p className="text-xs font-semibold tracking-[0.2em] text-primary uppercase">
             {isFiltered ? "No matching journeys" : "No journeys yet"}
           </p>
 
@@ -1902,7 +1902,7 @@ function EmptyJourneyState({
         {/* Action */}
         <Button
           onClick={isFiltered ? onClearFilters : onStartJourney}
-          className="group mt-8 h-12 rounded-full bg-[#0d7377] px-6 font-semibold text-white shadow-[0_12px_28px_rgba(13,115,119,0.22)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#0a5a5d] hover:shadow-[0_16px_34px_rgba(13,115,119,0.28)]"
+          className="group mt-8 h-12 rounded-full bg-primary px-6 font-semibold text-white shadow-[0_12px_28px_rgba(13,115,119,0.22)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#0a5a5d] hover:shadow-[0_16px_34px_rgba(13,115,119,0.28)]"
         >
           {isFiltered ? "Clear Search & Filters" : "Start Your First Journey"}
           <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />

@@ -26,12 +26,12 @@ interface CandidateProfileLauncherModalProps {
 
 const RAHVANA_AVATAR_THEMES = [
   {
-    bg: "from-[#0a5a5d] via-[#0d7377] to-[#14a0a6]",
-    ring: "group-hover:ring-[#0d7377]/30 dark:group-hover:ring-teal-400/40",
+    bg: "from-[#0a5a5d] via-primary to-[#14a0a6]",
+    ring: "group-hover:ring-primary/30 dark:group-hover:ring-teal-400/40",
     shadow: "group-hover:shadow-[0_14px_34px_rgba(13,115,119,0.28)]",
   },
   {
-    bg: "from-[#0d7377] via-[#128286] to-[#32e0c4]",
+    bg: "from-primary via-[#128286] to-[#32e0c4]",
     ring: "group-hover:ring-[#32e0c4]/40 dark:group-hover:ring-teal-300/40",
     shadow: "group-hover:shadow-[0_14px_34px_rgba(50,224,196,0.25)]",
   },
@@ -42,7 +42,7 @@ const RAHVANA_AVATAR_THEMES = [
   },
   {
     bg: "from-[#063e41] via-[#0b5b5f] to-[#15aab0]",
-    ring: "group-hover:ring-[#0d7377]/30 dark:group-hover:ring-teal-400/40",
+    ring: "group-hover:ring-primary/30 dark:group-hover:ring-teal-400/40",
     shadow: "group-hover:shadow-[0_14px_34px_rgba(13,115,119,0.28)]",
   },
 ];
@@ -245,7 +245,7 @@ export function CandidateProfileLauncherModal({
 
           {/* Header */}
           <div className="text-center">
-            <div className="mb-3.5 inline-flex items-center gap-2 rounded-full border border-teal-500/20 bg-teal-50 px-3.5 py-1 text-xs font-bold text-[#0d7377] dark:border-teal-500/30 dark:bg-teal-950/40 dark:text-teal-300">
+            <div className="mb-3.5 inline-flex items-center gap-2 rounded-full border border-teal-500/20 bg-teal-50 px-3.5 py-1 text-xs font-bold text-primary dark:border-teal-500/30 dark:bg-teal-950/40 dark:text-teal-300">
               <span>{journeyName}</span>
             </div>
 
@@ -305,7 +305,7 @@ export function CandidateProfileLauncherModal({
                       }
                     }
                   }}
-                  className="group relative flex w-44 cursor-pointer flex-col items-center justify-between rounded-3xl border border-slate-200/80 bg-white p-4 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-[#0d7377] hover:shadow-xl hover:shadow-[#0d7377]/10 focus:outline-none sm:w-48 sm:p-4.5 dark:border-slate-800 dark:bg-slate-900/90 dark:hover:border-teal-500"
+                  className="group relative flex w-44 cursor-pointer flex-col items-center justify-between rounded-3xl border border-slate-200/80 bg-white p-4 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-primary hover:shadow-xl hover:shadow-primary/10 focus:outline-none sm:w-48 sm:p-4.5 dark:border-slate-800 dark:bg-slate-900/90 dark:hover:border-teal-500"
                 >
                   {/* Hidden File Input for Avatar Upload */}
                   <input
@@ -365,7 +365,7 @@ export function CandidateProfileLauncherModal({
                             e.stopPropagation();
                           }}
                           title="Upload or change photo"
-                          className="absolute right-1.5 bottom-1.5 flex h-7 w-7 items-center justify-center rounded-full border border-white/40 bg-slate-950/70 text-white shadow-md backdrop-blur-md transition-all duration-200 hover:scale-110 hover:border-teal-300 hover:bg-[#0d7377] dark:border-slate-700"
+                          className="absolute right-1.5 bottom-1.5 flex h-7 w-7 items-center justify-center rounded-full border border-white/40 bg-slate-950/70 text-white shadow-md backdrop-blur-md transition-all duration-200 hover:scale-110 hover:border-teal-300 hover:bg-primary dark:border-slate-700"
                         >
                           <Camera className="h-3.5 w-3.5 text-teal-300" />
                         </button>
@@ -404,7 +404,7 @@ export function CandidateProfileLauncherModal({
                               }
                             }}
                             placeholder="Candidate Name"
-                            className="w-28 rounded-lg border border-teal-500/50 bg-white px-2 py-1 text-xs font-bold text-slate-800 shadow-xs focus:ring-2 focus:ring-[#0d7377]/40 focus:outline-none sm:w-32 dark:bg-slate-800 dark:text-slate-100"
+                            className="w-28 rounded-lg border border-teal-500/50 bg-white px-2 py-1 text-xs font-bold text-slate-800 shadow-xs focus:ring-2 focus:ring-primary/40 focus:outline-none sm:w-32 dark:bg-slate-800 dark:text-slate-100"
                             autoFocus
                           />
                           <button
@@ -416,7 +416,7 @@ export function CandidateProfileLauncherModal({
                             }}
                             onMouseDown={(e) => e.stopPropagation()}
                             onPointerDown={(e) => e.stopPropagation()}
-                            className="flex h-6 w-6 items-center justify-center rounded-md bg-[#0d7377] text-white hover:bg-[#0a5a5d]"
+                            className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-white hover:bg-[#0a5a5d]"
                             title="Save"
                           >
                             <Check className="h-3.5 w-3.5" />
@@ -440,7 +440,7 @@ export function CandidateProfileLauncherModal({
                         <div className="flex items-center justify-center gap-1.5">
                           <span
                             title={displayName}
-                            className="max-w-[130px] truncate text-sm font-bold text-slate-800 transition-colors group-hover:text-[#0d7377] sm:max-w-[145px] sm:text-base dark:text-slate-100 dark:group-hover:text-teal-400"
+                            className="max-w-[130px] truncate text-sm font-bold text-slate-800 transition-colors group-hover:text-primary sm:max-w-[145px] sm:text-base dark:text-slate-100 dark:group-hover:text-teal-400"
                           >
                             {displayName}
                           </span>
@@ -454,7 +454,7 @@ export function CandidateProfileLauncherModal({
                             onMouseDown={(e) => e.stopPropagation()}
                             onPointerDown={(e) => e.stopPropagation()}
                             title="Change name"
-                            className="flex h-5 w-5 items-center justify-center rounded-full text-slate-400 opacity-60 transition-all hover:bg-slate-100 hover:text-[#0d7377] hover:opacity-100 dark:hover:bg-slate-800"
+                            className="flex h-5 w-5 items-center justify-center rounded-full text-slate-400 opacity-60 transition-all hover:bg-slate-100 hover:text-primary hover:opacity-100 dark:hover:bg-slate-800"
                           >
                             <Pencil className="h-3 w-3" />
                           </button>
@@ -462,7 +462,7 @@ export function CandidateProfileLauncherModal({
                       )}
 
                       {/* {relationDisplay && (
-                        <span className="mt-1 inline-flex items-center rounded-full border border-teal-500/15 bg-teal-50 px-2.5 py-0.5 text-[10px] font-semibold text-[#0d7377] dark:border-teal-500/25 dark:bg-teal-950/40 dark:text-teal-300">
+                        <span className="mt-1 inline-flex items-center rounded-full border border-teal-500/15 bg-teal-50 px-2.5 py-0.5 text-[10px] font-semibold text-primary dark:border-teal-500/25 dark:bg-teal-950/40 dark:text-teal-300">
                           {relationDisplay}
                         </span>
                       )} */}
@@ -478,13 +478,13 @@ export function CandidateProfileLauncherModal({
                           <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
                             Progress
                           </span>
-                          <span className="font-bold text-[#0d7377] dark:text-teal-400">
+                          <span className="font-bold text-primary dark:text-teal-400">
                             {candProgress.percent}%
                           </span>
                         </div>
                         <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
                           <div
-                            className="h-full rounded-full bg-linear-to-r from-[#0d7377] to-[#32e0c4] transition-all duration-500"
+                            className="h-full rounded-full bg-linear-to-r from-primary to-[#32e0c4] transition-all duration-500"
                             style={{ width: `${candProgress.percent}%` }}
                           />
                         </div>
@@ -512,15 +512,15 @@ export function CandidateProfileLauncherModal({
               className="group flex flex-col items-center justify-center self-center focus:outline-none"
             >
               {/* Plus Tile */}
-              <div className="relative flex h-24 w-24 cursor-pointer items-center justify-center rounded-2xl border-2 border-dashed border-[#0d7377]/30 bg-[#f0f9fa]/80 shadow-xs transition-all duration-200 group-hover:scale-105 group-hover:shadow-[0_12px_28px_rgba(13,115,119,0.18)] hover:border-[#0d7377] hover:bg-[#e4f4f5] sm:h-28 sm:w-28 sm:rounded-3xl dark:border-slate-700 dark:bg-slate-800/40 dark:hover:border-teal-400 dark:hover:bg-slate-800/80">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[#0d7377]/40 text-[#0d7377] transition-all duration-200 group-hover:border-[#0d7377] group-hover:bg-[#0d7377] group-hover:text-white dark:border-teal-500/40 dark:text-teal-300 dark:group-hover:bg-teal-600">
+              <div className="relative flex h-24 w-24 cursor-pointer items-center justify-center rounded-2xl border-2 border-dashed border-primary/30 bg-[#f0f9fa]/80 shadow-xs transition-all duration-200 group-hover:scale-105 group-hover:shadow-[0_12px_28px_rgba(13,115,119,0.18)] hover:border-primary hover:bg-[#e4f4f5] sm:h-28 sm:w-28 sm:rounded-3xl dark:border-slate-700 dark:bg-slate-800/40 dark:hover:border-teal-400 dark:hover:bg-slate-800/80">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-primary/40 text-primary transition-all duration-200 group-hover:border-primary group-hover:bg-primary group-hover:text-white dark:border-teal-500/40 dark:text-teal-300 dark:group-hover:bg-teal-600">
                   <Plus className="h-5 w-5" />
                 </div>
               </div>
 
               {/* Label */}
               <div className="mt-3 flex flex-col items-center text-center">
-                <span className="text-xs font-bold text-slate-700 transition-colors group-hover:text-[#0d7377] sm:text-sm dark:text-slate-300 dark:group-hover:text-teal-400">
+                <span className="text-xs font-bold text-slate-700 transition-colors group-hover:text-primary sm:text-sm dark:text-slate-300 dark:group-hover:text-teal-400">
                   Add Profile
                 </span>
                 <span className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">
@@ -533,7 +533,7 @@ export function CandidateProfileLauncherModal({
           {/* Footer Notice */}
           <div className="mt-10 border-t border-slate-100 pt-4 text-center text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400">
             <span className="inline-flex items-center justify-center gap-1.5">
-              <ShieldCheck className="h-4 w-4 text-[#0d7377] dark:text-teal-400" />
+              <ShieldCheck className="h-4 w-4 text-primary dark:text-teal-400" />
               <span>
                 Each candidate profile operates in a fully isolated journey with independent
                 document vaults.

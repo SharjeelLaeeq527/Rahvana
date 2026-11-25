@@ -552,7 +552,7 @@ function RealDashboardScene({
               {isClicking && (
                 <motion.span
                   key={`hero-cursor-click-${phase}`}
-                  className="absolute left-[-8px] top-[-9px] size-7 rounded-full border-2 border-[#0d7377]/70 bg-[#0d7377]/10"
+                  className="absolute left-[-8px] top-[-9px] size-7 rounded-full border-2 border-primary/70 bg-primary/10"
                   initial={{ opacity: 0.82, scale: 0.45 }}
                   animate={{ opacity: 0, scale: 1.45 }}
                   exit={{ opacity: 0 }}
@@ -615,7 +615,7 @@ function HeroDashboardPanel({
             >
               {index === 0 && chapterTargeted && (
                 <motion.span
-                  className="absolute inset-[-5px] rounded-[22px] border border-[#0d7377]/35"
+                  className="absolute inset-[-5px] rounded-[22px] border border-primary/35"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: [0, 0.72, 0] }}
                   transition={{ duration: 0.9, repeat: 1 }}
@@ -668,7 +668,7 @@ function HeroDashboardPanel({
             <h3 className="text-[12.5px] font-black uppercase tracking-[0.1em] text-[#0c1b33]">
               Milestones
             </h3>
-            <span className="text-[11px] font-black text-[#0d7377]">
+            <span className="text-[11px] font-black text-primary">
               {completedI130 ? "4 / 10" : "3 / 10"}
             </span>
           </div>
@@ -680,7 +680,7 @@ function HeroDashboardPanel({
                   key={label}
                   className={`flex items-center gap-3 rounded-xl border-b px-2 py-2 shadow-[0_8px_22px_rgba(22,33,38,0.08)] ${
                     isDone
-                      ? "border-l-4 border-[#0D7377]/45 bg-[#e8f5ef]"
+                      ? "border-l-4 border-PRIMARY/45 bg-[#e8f5ef]"
                       : "border-l-4 border-[#D9E2E1] bg-white/95"
                   }`}
                 >
@@ -1512,14 +1512,14 @@ function TwoWaysMobile({
             aria-current={activeIndex === index ? "true" : undefined}
             className={`flex w-full items-start gap-3 rounded-[18px] border p-4 text-left transition ${
               activeIndex === index
-                ? "border-[#0d7377] bg-[#edf8f6] shadow-[0_12px_28px_rgba(13,115,119,0.12)]"
+                ? "border-primary bg-[#edf8f6] shadow-[0_12px_28px_rgba(13,115,119,0.12)]"
                 : "border-[#d7e6e2] bg-white/80"
             }`}
           >
             <span
               className={`mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full text-[11px] font-black ${
                 activeIndex === index
-                  ? "bg-[#0d7377] text-white"
+                  ? "bg-primary text-white"
                   : "border border-[#c8d5d3] text-[#7f9290]"
               }`}
             >
@@ -1528,7 +1528,7 @@ function TwoWaysMobile({
             <div>
               <h3
                 className={`text-lg font-black leading-tight ${
-                  activeIndex === index ? "text-[#0d7377]" : "text-[#162126]"
+                  activeIndex === index ? "text-primary" : "text-[#162126]"
                 }`}
               >
                 {path.title}
@@ -1575,14 +1575,14 @@ function TwoWaysMobile({
       <div className="mt-6 flex flex-wrap gap-3">
         <Link
           href={ir1journeyHref}
-          className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#0d7377] px-5 text-sm font-bold text-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#0d7377]/25"
+          className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-bold text-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
         >
           Start the Roadmap
           <ArrowRight className="size-4" />
         </Link>
         <Link
           href={toolsHref}
-          className="inline-flex min-h-11 items-center rounded-xl border border-[#c8d5d3] bg-white px-5 text-sm font-bold text-[#162126] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#0d7377]/20"
+          className="inline-flex min-h-11 items-center rounded-xl border border-[#c8d5d3] bg-white px-5 text-sm font-bold text-[#162126] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/20"
         >
           Browse Resources
         </Link>
@@ -2270,7 +2270,7 @@ function ConsultationBanner({ onConsultationClick }: { onConsultationClick: () =
           <button
             type="button"
             onClick={onConsultationClick}
-            className="mt-8 inline-flex h-[54px] w-fit items-center gap-2 rounded-[13px] bg-[linear-gradient(180deg,#0f8f8f_0%,#0b777f_100%)] px-6 text-base font-bold text-white shadow-[0_8px_18px_rgba(11,119,127,0.18)] transition hover:-translate-y-0.5 hover:shadow-[0_12px_24px_rgba(11,119,127,0.24)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#0d7377]/25"
+            className="mt-8 inline-flex h-[54px] w-fit items-center gap-2 rounded-[13px] bg-[linear-gradient(180deg,#0f8f8f_0%,#0b777f_100%)] px-6 text-base font-bold text-white shadow-[0_8px_18px_rgba(11,119,127,0.18)] transition hover:-translate-y-0.5 hover:shadow-[0_12px_24px_rgba(11,119,127,0.24)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
           >
             Book a Consultation
             <ArrowRight className="size-4" />
