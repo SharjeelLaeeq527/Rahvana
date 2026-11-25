@@ -27,7 +27,7 @@ export default function BottomCta({
           {isService ? `Ready to start ${title}?` : `Ready to use ${title}?`}
         </h2>
         <p className="mt-1.5 text-[14px] text-white/70">
-          Paid with Rahvana jarthings ($1 = 1 jarthing). No full journey plan required.
+          Paid with Rahvana credits ($1 = 1 credit). No full journey plan required.
         </p>
       </div>
       <Link

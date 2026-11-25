@@ -2084,7 +2084,7 @@ const CheckoutStep = ({
                 Secure Transaction
               </h5>
               <p className="mt-1 text-xs leading-relaxed text-slate-500">
-                Standalone bookings are paid with your Rahvana Wallet jarthings ($1 = 1 jarthing).
+                Standalone bookings are paid with your Rahvana Wallet credits ($1 = 1 credit).
                 If your balance is short, you can top up instantly via Stripe.
               </p>
             </div>
@@ -2103,27 +2103,27 @@ const CheckoutStep = ({
               <div className="space-y-4">
                 <div className="flex items-center justify-between text-sm">
                   <span className="font-medium text-slate-600">1x Medical Exam Booking</span>
-                  <span className="font-bold text-slate-800">5 Jarthings ($5.00)</span>
+                  <span className="font-bold text-slate-800">5 Credits ($5.00)</span>
                 </div>
 
                 <div className="flex items-center justify-between text-sm">
                   <span className="font-medium text-slate-600">Wallet Balance</span>
                   <span className="font-bold text-slate-800">
-                    {walletLoading ? "..." : `${walletBalance ?? 0} Jarthings`}
+                    {walletLoading ? "..." : `${walletBalance ?? 0} Credits`}
                   </span>
                 </div>
                 {hasWalletCredits && (
                   <div className="flex items-center justify-between text-sm text-[#0d7377]">
                     <span className="font-medium">Balance After Booking</span>
                     <span className="font-bold">
-                      {(walletBalance ?? 5) - costCredits} Jarthings
+                      {(walletBalance ?? 5) - costCredits} Credits
                     </span>
                   </div>
                 )}
 
                 <div className="mt-2 flex items-center justify-between border-t border-slate-200 pt-4">
                   <span className="text-base font-bold text-slate-900">Total Due</span>
-                  <span className="text-xl font-black text-slate-900">5 Jarthings ($5.00)</span>
+                  <span className="text-xl font-black text-slate-900">5 Credits ($5.00)</span>
                 </div>
               </div>
             </div>
@@ -2150,8 +2150,8 @@ const CheckoutStep = ({
                 {loading
                   ? "Processing..."
                   : hasWalletCredits
-                    ? "Pay 5 Jarthings & Confirm"
-                    : `Top up ${deficit} Jarthings to Book`}
+                    ? "Pay 5 Credits & Confirm"
+                    : `Top up ${deficit} Credits to Book`}
               </Button>
             </div>
           </div>
@@ -2736,7 +2736,7 @@ export default function MedicalAppointmentTool({
         const deficit = Math.max(5, 5 - (wallet.balance ?? 0));
         wallet.openTopup({ amount: deficit });
         setError(
-          `You need 5 jarthings for this booking (Balance: ${wallet.balance ?? 0} jarthings). Please top up to proceed.`
+          `You need 5 credits for this booking (Balance: ${wallet.balance ?? 0} credits). Please top up to proceed.`
         );
         return;
       }
@@ -2873,7 +2873,7 @@ export default function MedicalAppointmentTool({
         const deficit = deductResult.body.deficit ?? 5;
         wallet.openTopup({ amount: deductResult.body.topupAmount ?? deficit });
         setError(
-          `Insufficient jarthings. Please top up ${deficit} jarthings to complete your booking.`
+          `Insufficient credits. Please top up ${deficit} credits to complete your booking.`
         );
         return;
       }

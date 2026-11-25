@@ -224,7 +224,7 @@ export default function DocumentTranslationTool({
         const deficit = Math.max(25, 25 - (wallet.balance ?? 0));
         wallet.openTopup({ amount: deficit });
         setCheckoutError(
-          `You need 25 jarthings for document translation (Balance: ${wallet.balance ?? 0} jarthings). Please top up to proceed.`
+          `You need 25 credits for document translation (Balance: ${wallet.balance ?? 0} credits). Please top up to proceed.`
         );
         setCheckoutLoading(false);
         return;
@@ -262,7 +262,7 @@ export default function DocumentTranslationTool({
           const deficit = deductResult.body.deficit ?? 25;
           wallet.openTopup({ amount: deductResult.body.topupAmount ?? deficit });
           setCheckoutError(
-            `Insufficient jarthings. Please top up ${deficit} jarthings to complete your translation request.`
+            `Insufficient credits. Please top up ${deficit} credits to complete your translation request.`
           );
           setCheckoutLoading(false);
           return;
@@ -365,20 +365,20 @@ export default function DocumentTranslationTool({
                       1x Document Translation Service
                     </span>
 
-                    <span className="font-bold text-slate-800">25 Jarthings ($25.00)</span>
+                    <span className="font-bold text-slate-800">25 Credits ($25.00)</span>
                   </div>
 
                   <div className="flex items-center justify-between text-sm">
                     <span className="font-medium text-slate-600">Wallet Balance</span>
                     <span className="font-bold text-slate-800">
-                      {walletLoading ? "..." : `${walletBalance ?? 0} Jarthings`}
+                      {walletLoading ? "..." : `${walletBalance ?? 0} Credits`}
                     </span>
                   </div>
 
                   {hasWalletCredits && (
                     <div className="flex items-center justify-between text-sm text-[#0d7377]">
                       <span className="font-medium">Balance After Booking</span>
-                      <span className="font-bold">{(walletBalance ?? 25) - costCredits} Jarthings</span>
+                      <span className="font-bold">{(walletBalance ?? 25) - costCredits} Credits</span>
                     </div>
                   )}
 
@@ -386,7 +386,7 @@ export default function DocumentTranslationTool({
                     <span className="text-base font-bold text-slate-900">Total Due</span>
 
                     <span className="text-xl font-black text-slate-900">
-                      25 Jarthings ($25.00)
+                      25 Credits ($25.00)
                     </span>
                   </div>
                 </div>
@@ -417,8 +417,8 @@ export default function DocumentTranslationTool({
                   {loading
                     ? "Processing..."
                     : hasWalletCredits
-                      ? "Pay 25 Jarthings & Confirm"
-                      : `Top up ${deficit} Jarthings to Submit`}
+                      ? "Pay 25 Credits & Confirm"
+                      : `Top up ${deficit} Credits to Submit`}
                 </Button>
               </div>
             </div>

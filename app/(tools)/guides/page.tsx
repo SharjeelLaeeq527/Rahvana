@@ -974,7 +974,7 @@ function GuideCard({
             {featureLocked && (
               <div className="shrink-0">
                 <CreditInfoTooltip
-                  message="Unlock once: spend jarthings one time, then use this guide as much as you like."
+                  message="Unlock once: spend credits one time, then use this guide as much as you like."
                   side="top"
                 />
               </div>
@@ -1059,7 +1059,7 @@ function GuideCard({
                 <button
                   type="button"
                   onClick={() => onLaunch(catalogItem)}
-                  aria-label={`Launch ${guide.title} for ${catalogItem.credits} jarthings`}
+                  aria-label={`Launch ${guide.title} for ${catalogItem.credits} credits`}
                   className="inline-flex h-9 items-center rounded-lg bg-[#0d7377] px-4 text-[13px] font-semibold whitespace-nowrap text-white transition-colors hover:bg-[#0a5c5f]"
                 >
                   Launch

@@ -776,3 +776,34 @@
 .rvd .frame.cmp .tkf.all { margin-top: 8px; gap: 5px 16px; line-height: 1.25; }
 .rvd .frame.cmp .tkf.all .row span { font-size: 10px; }
 .rvd .frame.cmp .tkf.all .tknow { margin-top: 2px; font-size: 11.5px; line-height: 1.3; }
+
+/* Short screens, default: case tracking as a full-height column on the right
+   (Customise > "Tracking as side column" turns it off). The left panel narrows
+   (the journey line scales to it), the middle row keeps only the calendar. */
+.rvd .frame.side .main { column-gap: 14px; }
+.rvd .frame.side .jl { width: 100%; }
+.rvd .frame.side .hero h1 { max-width: 100%; }
+.rvd .frame.side .srow > .sg { grid-template-columns: 200px 1fr; gap: 16px; }
+.rvd .frame.side .srow.open > .sg { grid-template-columns: 170px 1fr; gap: 12px; }
+.rvd .frame.side .tb { gap: 10px; }
+.rvd .frame.side .fd { width: 100px; }
+.rvd .frame.side .side-trk { min-height: 0; overflow: hidden; }
+.rvd .frame.side .side-trk .dt-ms { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.rvd .frame.side .side-trk .tkf { grid-template-columns: minmax(0, 1fr); }
+.rvd .frame.side .side-trk .dt-h h4 { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.rvd .frame.side .side-trk .dt-f { flex-direction: column; align-items: stretch; gap: 8px; }
+.rvd .frame.side .side-trk .dt-a .mu:not(.er) { display: inline; }
+.rvd .frame.side .side-trk .dt-a { justify-content: space-between; }
+/* Side layout, details. Tracking header: label + pager, then the title, then
+   the status on its own line, so nothing is cut in the 300px column. */
+.rvd .frame.side .side-trk .dt-h { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "eb pg" "t t" "ok ok"; }
+.rvd .frame.side .side-trk .dt-h .dt-ok { justify-self: start; margin-top: 2px; }
+.rvd .frame.side .side-trk .tkc.b .dt-h { grid-template-areas: "eb bk" "t bk"; }
+/* Narrow chapter cards: no room for the action word next to the count, and
+   above it the liquid would run through it; the whole card is the button. */
+.rvd .frame.side .lq-cc .go { display: none; }
+.rvd .frame.side .lq .pill { left: 10px; }
+/* Case strength: the two question links stack instead of being cut. */
+.rvd .frame.side .sq { flex-direction: column; align-items: flex-start; gap: 2px; margin-top: 5px; }
+/* The two question links wrap onto a second line when the score column is narrow. */
+.rvd .sq { flex-wrap: wrap; row-gap: 2px; }

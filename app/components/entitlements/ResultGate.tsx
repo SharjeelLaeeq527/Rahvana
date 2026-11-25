@@ -210,7 +210,7 @@ export function ResultGate({
           {/* Description */}
           <p className="mb-3 text-[13px] leading-relaxed text-[#6b8097]">
             {creditItem
-              ? `Unlock ${creditItem.name} for ${creditItem.credits} jarthings and use it as often as you like.`
+              ? `Unlock ${creditItem.name} for ${creditItem.credits} credits and use it as often as you like.`
               : description ||
                 "You've completed every step. Your personalised results are waiting. Upgrading your plan unlocks them instantly, plus every tool behind them."}
           </p>
@@ -226,7 +226,7 @@ export function ResultGate({
                 className="group mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-[#0d7377] py-3 text-[14px] font-bold text-white shadow-md transition-colors hover:bg-[#0a5c5f]"
               >
                 <Coins size={15} strokeWidth={2.5} />
-                {`Unlock for ${creditItem.credits} jarthings`}
+                {`Unlock for ${creditItem.credits} credits`}
               </button>
               <p className="mt-3 text-[11px] text-[#9aa5b1]">
                 Resources inside your journey use your journey plan instead.

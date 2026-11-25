@@ -333,7 +333,7 @@ export function JourneyLine({
               type="button"
               className="cl"
               style={{
-                left: flat ? sx - 60 : sx - 150,
+                left: Math.max(4, Math.min(size.w - 140, flat ? sx - 60 : sx - 150)),
                 top: flat ? (a[1] > H * 0.6 ? sy - 44 : sy + 16) : sy - 34,
                 color: CHAPTER_COLORS[i % CHAPTER_COLORS.length].col,
               }}

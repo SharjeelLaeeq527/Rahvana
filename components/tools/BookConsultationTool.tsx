@@ -784,7 +784,7 @@ export default function BookConsultationTool({
       if (wallet.balance === null || wallet.balance < costCredits) {
         wallet.openTopup({ amount: deficit });
         showToast(
-          `You need 99 jarthings for an expert consultation (Balance: ${wallet.balance ?? 0} jarthings). Please top up to proceed.`,
+          `You need 99 credits for an expert consultation (Balance: ${wallet.balance ?? 0} credits). Please top up to proceed.`,
           "error"
         );
         setLoading(false);
@@ -904,7 +904,7 @@ export default function BookConsultationTool({
             const deficitAmount = deductResult.body.deficit ?? costCredits;
             wallet.openTopup({ amount: deductResult.body.topupAmount ?? deficitAmount });
             showToast(
-              `Insufficient jarthings. Please top up ${deficitAmount} jarthings to complete your booking.`,
+              `Insufficient credits. Please top up ${deficitAmount} credits to complete your booking.`,
               "error"
             );
             setLoading(false);
@@ -2310,7 +2310,7 @@ export default function BookConsultationTool({
               <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/10 px-4 py-2 backdrop-blur-md">
                 <Coins className="h-4 w-4 text-amber-300" />
                 <span className="text-sm font-semibold">
-                  {wallet.isLoading ? "..." : `${wallet.balance ?? 0} Jarthings Available`}
+                  {wallet.isLoading ? "..." : `${wallet.balance ?? 0} Credits Available`}
                 </span>
               </div>
             </div>
@@ -2412,27 +2412,27 @@ export default function BookConsultationTool({
                     <div className="space-y-4">
                       <div className="flex items-center justify-between text-sm">
                         <span className="font-medium text-slate-600">1x Expert Consultation</span>
-                        <span className="font-bold text-slate-800">99 Jarthings ($99.00)</span>
+                        <span className="font-bold text-slate-800">99 Credits ($99.00)</span>
                       </div>
 
                       <div className="flex items-center justify-between text-sm">
                         <span className="font-medium text-slate-600">Wallet Balance</span>
                         <span className="font-bold text-slate-800">
-                          {wallet.isLoading ? "..." : `${wallet.balance ?? 0} Jarthings`}
+                          {wallet.isLoading ? "..." : `${wallet.balance ?? 0} Credits`}
                         </span>
                       </div>
 
                       {hasWalletCredits && (
                         <div className="flex items-center justify-between text-sm text-[#0d7377]">
                           <span className="font-medium">Balance After Booking</span>
-                          <span className="font-bold">{(wallet.balance ?? 99) - 99} Jarthings</span>
+                          <span className="font-bold">{(wallet.balance ?? 99) - 99} Credits</span>
                         </div>
                       )}
 
                       <div className="mt-2 flex items-center justify-between border-t border-slate-200 pt-4">
                         <span className="text-base font-bold text-slate-900">Total Due</span>
                         <span className="text-xl font-black text-slate-900">
-                          99 Jarthings ($99.00)
+                          99 Credits ($99.00)
                         </span>
                       </div>
                     </div>
@@ -2847,8 +2847,8 @@ export default function BookConsultationTool({
                         : isJourney
                           ? "Confirm & Book"
                           : hasWalletCredits
-                            ? "Pay 99 Jarthings & Book"
-                            : `Top up ${deficit} Jarthings to Book`}
+                            ? "Pay 99 Credits & Book"
+                            : `Top up ${deficit} Credits to Book`}
                     </button>
                   )}
                 </div>

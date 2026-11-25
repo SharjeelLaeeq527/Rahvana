@@ -719,7 +719,7 @@ export function UpgradeModal({
                 </p>
                 <div className="mb-1 flex items-baseline gap-1.5">
                   <span className="text-[28px] leading-none font-black text-neutral-800">
-                    {standalone.credits} Jarthings
+                    {standalone.credits} Credits
                   </span>
                   <span className="text-[12px] font-medium text-neutral-500 opacity-70">
                     ·{" "}
@@ -734,12 +734,12 @@ export function UpgradeModal({
                 </div>
                 <p className="mb-3 text-[11px] leading-snug text-neutral-500">
                   {standalone.isService
-                    ? `Book ${addon.name} on its own and pay from your Rahvana wallet ($1 = 1 jarthing).`
+                    ? `Book ${addon.name} on its own and pay from your Rahvana wallet ($1 = 1 credit).`
                     : standalone.perForm
-                      ? `Use ${addon.name} on its own, outside a journey plan. Unlock each form you need from your Rahvana wallet ($1 = 1 jarthing).`
+                      ? `Use ${addon.name} on its own, outside a journey plan. Unlock each form you need from your Rahvana wallet ($1 = 1 credit).`
                       : standalone.photoPack
-                        ? `Use ${addon.name} on its own, outside a journey plan. Each purchase from your Rahvana wallet gives you 2 photos ($1 = 1 jarthing). When both are used, buy again for 2 more.`
-                        : `Use ${addon.name} on its own, outside a journey plan. Unlock it once from your Rahvana wallet ($1 = 1 jarthing).`}
+                        ? `Use ${addon.name} on its own, outside a journey plan. Each purchase from your Rahvana wallet gives you 2 photos ($1 = 1 credit). When both are used, buy again for 2 more.`
+                        : `Use ${addon.name} on its own, outside a journey plan. Unlock it once from your Rahvana wallet ($1 = 1 credit).`}
                 </p>
 
                 <Link
@@ -748,7 +748,7 @@ export function UpgradeModal({
                   className="flex w-full items-center justify-center gap-2 rounded-xl bg-neutral-700 py-2.5 text-[13px] font-bold text-white shadow-sm transition-colors hover:bg-neutral-600 active:bg-neutral-800"
                 >
                   <Coins size={14} strokeWidth={2.5} />
-                  {standalone.isService ? "Book with jarthings" : `Open ${addon.name}`}
+                  {standalone.isService ? "Book with credits" : `Open ${addon.name}`}
                 </Link>
               </div>
             )}

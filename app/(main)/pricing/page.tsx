@@ -139,21 +139,21 @@ const RESOURCE_TABS: Record<ResourceMode, ResourceTabInfo> = {
     sub: "Self-serve tools",
     heading: "Individual tools",
     blurb:
-      "Self-serve tools you can use without a journey plan. Unlock each one once with jarthings.",
+      "Self-serve tools you can use without a journey plan. Unlock each one once with credits.",
   },
   services: {
     label: "Services",
     sub: "Expert help",
     heading: "Expert services",
     blurb:
-      "Human-delivered help when you want a specialist on your case. Paid with jarthings per request.",
+      "Human-delivered help when you want a specialist on your case. Paid with credits per request.",
   },
   guides: {
     label: "Guides",
     sub: "Step-by-step guides",
     heading: "Document guides",
     blurb:
-      "Country-specific, step-by-step guides for each required document. Unlock each one once with jarthings.",
+      "Country-specific, step-by-step guides for each required document. Unlock each one once with credits.",
   },
 };
 
@@ -803,7 +803,7 @@ function PricingContent() {
     // Merge DB journeys into candidate roster
     const mergedMap = new Map<string, any>();
 
-    // Jarthing with baseCandidates
+    // Credit with baseCandidates
     baseCandidates.forEach((c) => {
       mergedMap.set(c.id.toLowerCase(), {
         ...c,
@@ -2791,8 +2791,8 @@ function PricingContent() {
                   </h2>
                   <p className="text-muted-foreground mb-4 text-[13.5px]">
                     You can also buy these one at a time, without a journey plan. Tools and guides
-                    unlock once with Rahvana jarthings, and services are paid with jarthings each time
-                    you book one ($1 = 1 jarthing).
+                    unlock once with Rahvana credits, and services are paid with credits each time
+                    you book one ($1 = 1 credit).
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {[
@@ -3027,14 +3027,14 @@ function PricingContent() {
                 <div className="border-border mb-3 flex items-center gap-2.5 border-b pb-3">
                   <Coins className="text-primary h-[18px] w-[18px]" strokeWidth={2} />
                   <span className="text-muted-foreground text-[11px] font-bold tracking-widest uppercase">
-                    Paid with jarthings
+                    Paid with credits
                   </span>
                 </div>
                 <p className="text-muted-foreground mb-4 text-[12.5px] leading-relaxed">
                   {mode === "services"
                     ? "Each service request is paid from your Rahvana wallet when you book it."
                     : "Open any item to preview it, then unlock it once from your Rahvana wallet. It stays unlocked for your account."}{" "}
-                  $1 buys 1 jarthing, and jarthings never expire.
+                  $1 buys 1 credit, and credits never expire.
                 </p>
                 {userId ? (
                   <button
@@ -3042,7 +3042,7 @@ function PricingContent() {
                     onClick={() => openTopup({ returnUrl: `/pricing?mode=${mode}` })}
                     className="bg-primary hover:bg-primary/90 w-full cursor-pointer rounded-full px-5 py-[11px] text-center text-[14px] font-semibold text-white"
                   >
-                    Top up jarthings
+                    Top up credits
                   </button>
                 ) : (
                   <Link
