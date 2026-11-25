@@ -347,7 +347,6 @@ export default function ToolsPage({ isEmbedded = false }: { isEmbedded?: boolean
     <>
       {modals}
       <CatalogShell
-        eyebrow="Rahvana tools"
         title={t("toolsPage.heroTitle") || "Create. Check. Comply."}
         tagline={
           t("toolsPage.heroDescription") ||

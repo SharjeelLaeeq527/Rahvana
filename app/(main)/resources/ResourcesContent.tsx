@@ -125,7 +125,6 @@ export default function ResourcesContent({ initialTab }: { initialTab: ResourceT
 
   return (
     <CatalogShell
-      eyebrow="Your library"
       title="My Resources"
       tagline={
         <>
