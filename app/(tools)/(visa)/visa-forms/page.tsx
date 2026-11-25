@@ -693,12 +693,16 @@ export default function VisaFormSelector({
   // journey key (category slot), not by candidate id / row id (those never matched).
   const tierKey = isJourney ? (activeJourneyKey || "").toLowerCase() : "";
   const journeyTiersTier = isJourney
-    ? (plan?.journeyTiers?.[tierKey] || plan?.journeyTiers?.[tierKey.replace(/[^a-z0-9]/g, "")])
+    ? plan?.journeyTiers?.[tierKey] || plan?.journeyTiers?.[tierKey.replace(/[^a-z0-9]/g, "")]
     : null;
 
   const effectiveTier = normalizePlanTier(
     isJourney
-      ? (journeyTier ?? journeyContext?.subscriptionTier ?? candidateTier ?? journeyTiersTier ?? (plan?.tier !== "free" ? plan.tier : "free"))
+      ? (journeyTier ??
+          journeyContext?.subscriptionTier ??
+          candidateTier ??
+          journeyTiersTier ??
+          (plan?.tier !== "free" ? plan.tier : "free"))
       : plan.tier
   );
 
@@ -712,7 +716,8 @@ export default function VisaFormSelector({
     if (!isJourney) return "IR1-CR1";
     const cat = (journeyContext?.journeyCategory || "").toUpperCase();
     if (cat.includes("IR-5") || cat.includes("IR5")) return "IR5";
-    if (cat.includes("IR-1") || cat.includes("CR-1") || cat.includes("IR1") || cat.includes("CR1")) return "IR1-CR1";
+    if (cat.includes("IR-1") || cat.includes("CR-1") || cat.includes("IR1") || cat.includes("CR1"))
+      return "IR1-CR1";
     return "IR1-CR1";
   }, [isJourney, journeyContext?.journeyCategory]);
 
@@ -1002,436 +1007,429 @@ export default function VisaFormSelector({
 
       {/* Main Content */}
       <main className="min-w-0">
-            {/* Search & Tabs (Moved Inside Main Content) */}
-            <div className="mb-8 md:mb-10">
-              <div className="mb-6 flex flex-row gap-4">
-                <div className="relative flex-1">
-                  <div className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-gray-400">
-                    <Search className="h-4 w-4" />
-                  </div>
-                  <input
-                    type="text"
-                    suppressHydrationWarning
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full rounded-xl border border-gray-200 py-3 pr-4 pl-10 text-sm shadow-sm transition-all outline-none focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 sm:py-4"
-                    placeholder="Search forms..."
-                  />
-                </div>
-                <div className="relative">
-                  <button
-                    ref={filterButtonRef}
-                    onClick={() => setIsFilterPopoverOpen(!isFilterPopoverOpen)}
-                    className="flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 shadow-sm transition-all hover:border-[#0d7377] hover:text-[#0d7377] sm:px-6 sm:py-4"
-                  >
-                    <Filter className="h-4 w-4" />
-
-                    {/* Hide on mobile, show on sm+ */}
-                    <span className="hidden sm:inline">Filters</span>
-
-                    {(activeFilters.agency.length > 0 ||
-                      activeFilters.category.length > 0 ||
-                      currentJourney) && (
-                      <span className="ml-1 rounded-full bg-[#0d7377] px-2 py-0.5 text-[10px] font-bold text-white">
-                        {activeFilters.agency.length +
-                          activeFilters.category.length +
-                          (currentJourney ? 1 : 0)}
-                      </span>
-                    )}
-                  </button>
-
-                  {/* Filter Popover */}
-                  {isFilterPopoverOpen && (
-                    <div
-                      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 pt-[68px] pb-[88px] backdrop-blur-sm sm:absolute sm:inset-auto sm:top-full sm:right-0 sm:mt-2 sm:block sm:bg-transparent sm:p-0 sm:backdrop-blur-none"
-                      onClick={(e) => {
-                        if (e.target === e.currentTarget) {
-                          setIsFilterPopoverOpen(false);
-                        }
-                      }}
-                    >
-                      <div
-                        ref={filterPopoverRef}
-                        className="flex max-h-full w-full max-w-sm flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-2xl sm:max-h-[500px] sm:w-80 sm:shadow-xl"
-                      >
-                        {/* Header */}
-                        <div className="flex shrink-0 items-center justify-between border-b border-gray-100 bg-white p-4">
-                          <h3 className="font-semibold text-gray-900">Filter Forms</h3>
-                          <button
-                            onClick={() => setIsFilterPopoverOpen(false)}
-                            className="text-gray-600 transition-colors hover:text-gray-900"
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
-                        </div>
-
-                        {/* Filter Content */}
-                        <div className="custom-scrollbar flex-1 space-y-4 overflow-y-auto p-4">
-                          {/* Journey Filter */}
-                          <div>
-                            <label className="mb-2 block text-xs font-semibold tracking-wide text-gray-900 uppercase">
-                              Visa Journey
-                            </label>
-                            <div className="flex flex-col gap-2">
-                              {[
-                                { id: "IR1-CR1", label: "IR-1 / CR-1 (Spouse)" },
-                                // IR-5 is hidden on production (see lib/feature-flags) until it launches.
-                                ...(IR5_ENABLED ? [{ id: "IR5", label: "IR-5 (Parent)" }] : []),
-                                // IR-2 is hidden on production (see lib/feature-flags) until it launches.
-                                ...(IR2_ENABLED ? [{ id: "IR2", label: "IR-2 (Child)" }] : []),
-                                // { id: "K1", label: "K-1 (Fiancé)" },
-                                // { id: "AOS", label: "Adjustment of Status" },
-                                // { id: "Naturalization", label: "Naturalization" },
-                              ].map((journey) => (
-                                <button
-                                  key={journey.id}
-                                  onClick={() => {
-                                    if (currentJourney === journey.id) {
-                                      setCurrentJourney("");
-                                    } else {
-                                      setCurrentJourney(journey.id);
-                                      setCurrentStage("USCIS Filing");
-                                    }
-                                  }}
-                                  className={`w-full rounded-lg border px-3 py-2 text-left text-sm transition-all duration-200 ${
-                                    currentJourney === journey.id
-                                      ? "border-[#0d7377] bg-[#0d7377] text-white"
-                                      : "border-gray-200 bg-white text-gray-600 hover:border-[#0d7377] hover:text-[#0d7377]"
-                                  }`}
-                                >
-                                  {journey.label}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-
-                          {/* Agency Filter */}
-                          <div className="border-t border-gray-100 pt-4">
-                            <label className="mb-2 block text-xs font-semibold tracking-wide text-gray-900 uppercase">
-                              Agency
-                            </label>
-                            <div className="flex flex-col gap-2">
-                              {["USCIS"].map((agency) => (
-                                <button
-                                  key={agency}
-                                  onClick={() => toggleFilter("agency", agency)}
-                                  className={`w-full rounded-lg border px-3 py-2 text-left text-sm transition-all duration-200 ${
-                                    activeFilters.agency.includes(agency)
-                                      ? "border-[#0d7377] bg-[#0d7377] text-white"
-                                      : "border-gray-200 bg-white text-gray-600 hover:border-[#0d7377] hover:text-[#0d7377]"
-                                  }`}
-                                >
-                                  {agency}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-
-                          {/* Category Filter */}
-                          <div className="border-t border-gray-100 pt-4">
-                            <label className="mb-2 block text-xs font-semibold tracking-wide text-gray-900 uppercase">
-                              Category
-                            </label>
-                            <div className="flex flex-col gap-2">
-                              {["Family-based", "Financial"].map((category) => (
-                                <button
-                                  key={category}
-                                  onClick={() => toggleFilter("category", category)}
-                                  className={`w-full rounded-lg border px-3 py-2 text-left text-sm transition-all duration-200 ${
-                                    activeFilters.category.includes(category)
-                                      ? "border-[#0d7377] bg-[#0d7377] text-white"
-                                      : "border-gray-200 bg-white text-gray-600 hover:border-[#0d7377] hover:text-[#0d7377]"
-                                  }`}
-                                >
-                                  {category}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Footer */}
-                        <div className="shrink-0 space-y-3 border-t border-gray-100 bg-gray-50 px-4 py-3">
-                          <div className="flex gap-2">
-                            {(activeFilters.agency.length > 0 ||
-                              activeFilters.category.length > 0 ||
-                              currentJourney) && (
-                              <button
-                                onClick={() => {
-                                  clearFilters();
-                                  setCurrentJourney("");
-                                }}
-                                className="flex-1 rounded-lg bg-[#0d7377] px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-[#0a5a5d]"
-                              >
-                                Reset
-                              </button>
-                            )}
-                            <button
-                              onClick={() => setIsFilterPopoverOpen(false)}
-                              className="flex-1 rounded-lg bg-gray-200 px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-300"
-                            >
-                              Done
-                            </button>
-                          </div>
-                          <div className="text-center text-xs text-gray-600">
-                            Showing{" "}
-                            <span className="font-semibold text-gray-900">
-                              {filteredForms.length}
-                            </span>{" "}
-                            of{" "}
-                            <span className="font-semibold text-gray-900">{VISA_FORMS.length}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
+        {/* Search & Tabs (Moved Inside Main Content) */}
+        <div className="mb-8 md:mb-10">
+          <div className="mb-6 flex flex-row gap-4">
+            <div className="relative flex-1">
+              <div className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-gray-400">
+                <Search className="h-4 w-4" />
               </div>
-              <div className="flex gap-3 sm:gap-4">
-                <button
-                  onClick={() => handleViewChange("journey")}
-                  suppressHydrationWarning
-                  className={`flex-1 rounded-lg border-2 px-4 py-2.5 text-sm font-semibold transition-all sm:px-6 sm:py-3 ${
-                    currentView === "journey"
-                      ? "border-[#0d7377] bg-[#0d7377] text-white"
-                      : "border-gray-200 bg-white text-gray-500 hover:border-[#0d7377] hover:text-[#0d7377]"
-                  }`}
-                >
-                  Journey View
-                </button>
-                <button
-                  onClick={() => handleViewChange("all")}
-                  suppressHydrationWarning
-                  className={`flex-1 rounded-lg border-2 px-4 py-2.5 text-sm font-semibold transition-all sm:px-6 sm:py-3 ${
-                    currentView === "all"
-                      ? "border-[#0d7377] bg-[#0d7377] text-white"
-                      : "border-gray-200 bg-white text-gray-500 hover:border-[#0d7377] hover:text-[#0d7377]"
-                  }`}
-                >
-                  All Forms
-                </button>
-              </div>
+              <input
+                type="text"
+                suppressHydrationWarning
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="focus:border-primary focus:ring-primary/10 w-full rounded-xl border border-gray-200 py-3 pr-4 pl-10 text-sm shadow-sm transition-all outline-none focus:ring-2 sm:py-4"
+                placeholder="Search forms..."
+              />
             </div>
+            <div className="relative">
+              <button
+                ref={filterButtonRef}
+                onClick={() => setIsFilterPopoverOpen(!isFilterPopoverOpen)}
+                className="hover:border-primary hover:text-primary flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 shadow-sm transition-all sm:px-6 sm:py-4"
+              >
+                <Filter className="h-4 w-4" />
 
-            {/* Journey Selector (Only in Journey View) */}
-            {currentView === "journey" && (
-              <div className="mb-8 md:mb-10">
-                {/* Metro Map */}
-                <div className="custom-scrollbar relative mb-6 overflow-x-auto pb-4 md:mb-8">
-                  <div className="min-w-[600px] px-4 md:min-w-175">
-                    <div className="relative flex justify-between pt-4">
-                      {/* Connection Line */}
-                      <div className="absolute top-[26px] right-0 left-0 h-1 w-full rounded-full bg-gray-200" />
+                {/* Hide on mobile, show on sm+ */}
+                <span className="hidden sm:inline">Filters</span>
 
-                      {[
-                        {
-                          id: "USCIS Filing",
-                          label: "USCIS Filing",
-                          desc: "Initial petition",
-                        },
-                        {
-                          id: "NVC/CEAC",
-                          label: "NVC / CEAC",
-                          desc: "Case processing",
-                        },
-                        {
-                          id: "Interview Prep",
-                          label: "Interview Prep",
-                          desc: "Documents & medical",
-                        },
-                        // {
-                        //   id: "Port of Entry",
-                        //   label: "Port of Entry",
-                        //   desc: "Arrival procedures",
-                        // },
-                        // {
-                        //   id: "Post-Entry",
-                        //   label: "Post-Entry",
-                        //   desc: "SSN, work auth",
-                        // },
-                      ].map((stage, index) => {
-                        // Only show stages relevant if we had stage mapping, for now showing all visual
-                        const count = VISA_FORMS.filter(
-                          (f) =>
-                            f.stage === stage.id &&
-                            (!currentJourney || (f.journeys && f.journeys.includes(currentJourney)))
-                        ).length;
+                {(activeFilters.agency.length > 0 ||
+                  activeFilters.category.length > 0 ||
+                  currentJourney) && (
+                  <span className="bg-primary ml-1 rounded-full px-2 py-0.5 text-[10px] font-bold text-white">
+                    {activeFilters.agency.length +
+                      activeFilters.category.length +
+                      (currentJourney ? 1 : 0)}
+                  </span>
+                )}
+              </button>
 
-                        const isActive = currentStage === stage.id;
-
-                        return (
-                          <button
-                            key={index}
-                            suppressHydrationWarning
-                            onClick={() =>
-                              setCurrentStage(currentStage === stage.id ? "" : stage.id)
-                            }
-                            className="group relative flex flex-1 flex-col items-center"
-                          >
-                            <div
-                              className={`z-10 mb-3 h-6 w-6 rounded-full border-4 transition-all duration-300 ${
-                                isActive
-                                  ? "scale-125 border-[#0d7377] bg-[#0d7377]"
-                                  : "border-gray-200 bg-white group-hover:border-[#0d7377]"
-                              }`}
-                            />
-
-                            <div className="flex flex-col items-center text-center">
-                              <div
-                                className={`mb-0.5 text-sm font-bold ${
-                                  isActive
-                                    ? "text-gray-900"
-                                    : "text-gray-500 group-hover:text-gray-700"
-                                }`}
-                              >
-                                {stage.label}
-                              </div>
-                              <div className="mb-2 text-xs text-gray-400">{stage.desc}</div>
-                              <div className="rounded-md bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-700">
-                                {count} forms
-                              </div>
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Forms Grid */}
-            <div className="mb-12 grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
-              {filteredForms.length > 0 ? (
-                filteredForms.map((form) => {
-                  return (
-                    <div
-                      key={form.code}
-                      className="group relative flex h-auto min-h-[370px] flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-teal-900/5 lg:h-[340px] lg:min-h-0"
-                    >
-                      {/* Top Accent Line */}
-                      <div className="absolute top-0 right-10 left-0 h-1 origin-left scale-x-0 transform bg-linear-to-r from-[#0d7377] to-teal-400 transition-transform duration-500 group-hover:scale-x-100" />
-
-                      {/* Folded Corner Effect */}
-                      <div className="absolute top-0 right-0 h-10 w-10 overflow-hidden">
-                        <div className="absolute top-0 right-0 z-10 h-0 w-0 border-t-40 border-l-40 border-t-gray-50 border-l-transparent drop-shadow-sm transition-colors duration-300 group-hover:border-t-gray-50" />
-                        <div className="absolute top-0 right-0 h-0 w-0 border-t-40 border-l-40 border-t-gray-50 border-l-gray-50 shadow-md" />
-                      </div>
-
-                      <div className="relative flex flex-1 flex-col p-7">
-                        {/* Header */}
-                        <div className="mr-8 mb-5 flex items-start justify-between">
-                          <div>
-                            <h2 className="text-3xl font-extrabold tracking-tight text-gray-900 transition-colors group-hover:text-[#0d7377]">
-                              {form.code}
-                            </h2>
-                            <span className="mt-1 inline-block rounded-md bg-gray-100 px-2 py-0.5 text-[10px] font-bold tracking-wider text-gray-600 uppercase">
-                              {form.agency}
-                            </span>
-                          </div>
-
-                          {/* Status Badge */}
-                          <div
-                            className={`rounded-full px-3 py-1 text-xs font-bold tracking-wide uppercase ${
-                              form.type === "online"
-                                ? "bg-blue-50 text-blue-700"
-                                : "bg-teal-50 text-teal-700"
-                            }`}
-                          >
-                            {form.type === "online" ? "Online" : "PDF"}
-                          </div>
-                        </div>
-
-                        {/* Content */}
-                        <div className="min-h-0 flex-1">
-                          <h3
-                            className="mb-3 line-clamp-2 text-lg leading-snug font-bold text-gray-800 transition-colors group-hover:text-[#0d7377] lg:line-clamp-1 lg:truncate"
-                            title={form.name}
-                          >
-                            {form.name}
-                          </h3>
-                          <p
-                            className="text-sm leading-relaxed text-gray-500 lg:line-clamp-2"
-                            title={form.description}
-                          >
-                            {form.description}
-                          </p>
-                          {form.expiryDate && (
-                            <div className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-amber-200/50 bg-amber-50/70 px-2.5 py-1 text-xs font-medium text-amber-600">
-                              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-500"></span>
-                              Valid till {form.expiryDate}
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Footer (Static) */}
-                        <div className="mt-4 hidden items-center justify-between border-t border-gray-50 pt-4 text-xs font-medium text-gray-400 transition-opacity delay-100 duration-200 group-hover:opacity-0 lg:flex">
-                          <span className="flex items-center gap-1.5">
-                            <span className="h-1.5 w-1.5 rounded-full bg-gray-300"></span>
-                            {form.stage}
-                          </span>
-                          {form.category && form.category[0] && <span>{form.category[0]}</span>}
-                        </div>
-
-                        {/* Hover Overlay Actions */}
-                        <div className="relative z-10 mx-[-1.75rem] mt-auto mb-[-1.75rem] flex translate-y-0 flex-col gap-3 border-t border-gray-100 bg-white/95 p-4 transition-transform duration-300 ease-out lg:absolute lg:inset-x-0 lg:bottom-0 lg:mx-0 lg:mb-0 lg:translate-y-full lg:p-6 lg:backdrop-blur-[2px] lg:group-hover:translate-y-0">
-                          <div className="flex gap-3">
-                            <button
-                              onClick={() => setSelectedForm(form)}
-                              suppressHydrationWarning
-                              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#0d7377] px-4 py-3 text-sm font-bold text-white shadow-sm transition-all hover:bg-[#0a5a5d] hover:shadow-lg active:scale-95"
-                            >
-                              View Sample
-                            </button>
-                            <button
-                              onClick={() => handleStartForm(form.code)}
-                              suppressHydrationWarning
-                              className={`flex flex-1 items-center justify-center gap-2 rounded-xl border-2 px-4 py-3 text-sm font-bold shadow-sm transition-all active:scale-95 ${
-                                isFormLocked(form.code)
-                                  ? "border-amber-200 bg-white text-amber-700 hover:border-amber-400 hover:text-amber-800"
-                                  : "border-gray-100 bg-white text-gray-700 hover:border-[#0d7377] hover:text-[#0d7377] hover:shadow-md"
-                              }`}
-                            >
-                              {isFormLocked(form.code) ? (
-                                <>
-                                  <Lock className="h-4 w-4 shrink-0" />
-                                  {smartFormResourceId(form.code) ? "Unlock" : "Upgrade"}
-                                </>
-                              ) : isFormUnlocked(form.code) ? (
-                                "Start"
-                              ) : (
-                                /* Free/Basic can only start the I-130 — label it as the limited demo */
-                                "Start Demo"
-                              )}
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })
-              ) : (
-                <div className="col-span-full py-16 text-center">
-                  <div className="mb-4 flex justify-center">
-                    <FileText className="h-12 w-12 text-gray-300" />
-                  </div>
-                  <h3 className="mb-1 text-lg font-semibold text-gray-900">No forms found</h3>
-                  <p className="text-gray-500">Try adjusting your filters to see more results</p>
-                  <button
-                    onClick={clearFilters}
-                    className="mt-4 font-medium text-[#007f8a] hover:underline"
+              {/* Filter Popover */}
+              {isFilterPopoverOpen && (
+                <div
+                  className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 pt-[68px] pb-[88px] backdrop-blur-sm sm:absolute sm:inset-auto sm:top-full sm:right-0 sm:mt-2 sm:block sm:bg-transparent sm:p-0 sm:backdrop-blur-none"
+                  onClick={(e) => {
+                    if (e.target === e.currentTarget) {
+                      setIsFilterPopoverOpen(false);
+                    }
+                  }}
+                >
+                  <div
+                    ref={filterPopoverRef}
+                    className="flex max-h-full w-full max-w-sm flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-2xl sm:max-h-[500px] sm:w-80 sm:shadow-xl"
                   >
-                    Clear all filters
-                  </button>
+                    {/* Header */}
+                    <div className="flex shrink-0 items-center justify-between border-b border-gray-100 bg-white p-4">
+                      <h3 className="font-semibold text-gray-900">Filter Forms</h3>
+                      <button
+                        onClick={() => setIsFilterPopoverOpen(false)}
+                        className="text-gray-600 transition-colors hover:text-gray-900"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+
+                    {/* Filter Content */}
+                    <div className="custom-scrollbar flex-1 space-y-4 overflow-y-auto p-4">
+                      {/* Journey Filter */}
+                      <div>
+                        <label className="mb-2 block text-xs font-semibold tracking-wide text-gray-900 uppercase">
+                          Visa Journey
+                        </label>
+                        <div className="flex flex-col gap-2">
+                          {[
+                            { id: "IR1-CR1", label: "IR-1 / CR-1 (Spouse)" },
+                            // IR-5 is hidden on production (see lib/feature-flags) until it launches.
+                            ...(IR5_ENABLED ? [{ id: "IR5", label: "IR-5 (Parent)" }] : []),
+                            // IR-2 is hidden on production (see lib/feature-flags) until it launches.
+                            ...(IR2_ENABLED ? [{ id: "IR2", label: "IR-2 (Child)" }] : []),
+                            // { id: "K1", label: "K-1 (Fiancé)" },
+                            // { id: "AOS", label: "Adjustment of Status" },
+                            // { id: "Naturalization", label: "Naturalization" },
+                          ].map((journey) => (
+                            <button
+                              key={journey.id}
+                              onClick={() => {
+                                if (currentJourney === journey.id) {
+                                  setCurrentJourney("");
+                                } else {
+                                  setCurrentJourney(journey.id);
+                                  setCurrentStage("USCIS Filing");
+                                }
+                              }}
+                              className={`w-full rounded-lg border px-3 py-2 text-left text-sm transition-all duration-200 ${
+                                currentJourney === journey.id
+                                  ? "border-primary bg-primary text-white"
+                                  : "hover:border-primary hover:text-primary border-gray-200 bg-white text-gray-600"
+                              }`}
+                            >
+                              {journey.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Agency Filter */}
+                      <div className="border-t border-gray-100 pt-4">
+                        <label className="mb-2 block text-xs font-semibold tracking-wide text-gray-900 uppercase">
+                          Agency
+                        </label>
+                        <div className="flex flex-col gap-2">
+                          {["USCIS"].map((agency) => (
+                            <button
+                              key={agency}
+                              onClick={() => toggleFilter("agency", agency)}
+                              className={`w-full rounded-lg border px-3 py-2 text-left text-sm transition-all duration-200 ${
+                                activeFilters.agency.includes(agency)
+                                  ? "border-primary bg-primary text-white"
+                                  : "hover:border-primary hover:text-primary border-gray-200 bg-white text-gray-600"
+                              }`}
+                            >
+                              {agency}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Category Filter */}
+                      <div className="border-t border-gray-100 pt-4">
+                        <label className="mb-2 block text-xs font-semibold tracking-wide text-gray-900 uppercase">
+                          Category
+                        </label>
+                        <div className="flex flex-col gap-2">
+                          {["Family-based", "Financial"].map((category) => (
+                            <button
+                              key={category}
+                              onClick={() => toggleFilter("category", category)}
+                              className={`w-full rounded-lg border px-3 py-2 text-left text-sm transition-all duration-200 ${
+                                activeFilters.category.includes(category)
+                                  ? "border-primary bg-primary text-white"
+                                  : "hover:border-primary hover:text-primary border-gray-200 bg-white text-gray-600"
+                              }`}
+                            >
+                              {category}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Footer */}
+                    <div className="shrink-0 space-y-3 border-t border-gray-100 bg-gray-50 px-4 py-3">
+                      <div className="flex gap-2">
+                        {(activeFilters.agency.length > 0 ||
+                          activeFilters.category.length > 0 ||
+                          currentJourney) && (
+                          <button
+                            onClick={() => {
+                              clearFilters();
+                              setCurrentJourney("");
+                            }}
+                            className="bg-primary flex-1 rounded-lg px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-[#0a5a5d]"
+                          >
+                            Reset
+                          </button>
+                        )}
+                        <button
+                          onClick={() => setIsFilterPopoverOpen(false)}
+                          className="flex-1 rounded-lg bg-gray-200 px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-300"
+                        >
+                          Done
+                        </button>
+                      </div>
+                      <div className="text-center text-xs text-gray-600">
+                        Showing{" "}
+                        <span className="font-semibold text-gray-900">{filteredForms.length}</span>{" "}
+                        of <span className="font-semibold text-gray-900">{VISA_FORMS.length}</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
+          </div>
+          <div className="flex gap-3 sm:gap-4">
+            <button
+              onClick={() => handleViewChange("journey")}
+              suppressHydrationWarning
+              className={`flex-1 rounded-lg border-2 px-4 py-2.5 text-sm font-semibold transition-all sm:px-6 sm:py-3 ${
+                currentView === "journey"
+                  ? "border-primary bg-primary text-white"
+                  : "hover:border-primary hover:text-primary border-gray-200 bg-white text-gray-500"
+              }`}
+            >
+              Journey View
+            </button>
+            <button
+              onClick={() => handleViewChange("all")}
+              suppressHydrationWarning
+              className={`flex-1 rounded-lg border-2 px-4 py-2.5 text-sm font-semibold transition-all sm:px-6 sm:py-3 ${
+                currentView === "all"
+                  ? "border-primary bg-primary text-white"
+                  : "hover:border-primary hover:text-primary border-gray-200 bg-white text-gray-500"
+              }`}
+            >
+              All Forms
+            </button>
+          </div>
+        </div>
 
-            {/* Help Section */}
-            <div className="grid gap-6 md:grid-cols-1">
-              {/* Process Guide */}
-              {/* Process Guide */}
-              {/* <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        {/* Journey Selector (Only in Journey View) */}
+        {currentView === "journey" && (
+          <div className="mb-8 md:mb-10">
+            {/* Metro Map */}
+            <div className="custom-scrollbar relative mb-6 overflow-x-auto pb-4 md:mb-8">
+              <div className="min-w-[600px] px-4 md:min-w-175">
+                <div className="relative flex justify-between pt-4">
+                  {/* Connection Line */}
+                  <div className="absolute top-[26px] right-0 left-0 h-1 w-full rounded-full bg-gray-200" />
+
+                  {[
+                    {
+                      id: "USCIS Filing",
+                      label: "USCIS Filing",
+                      desc: "Initial petition",
+                    },
+                    {
+                      id: "NVC/CEAC",
+                      label: "NVC / CEAC",
+                      desc: "Case processing",
+                    },
+                    {
+                      id: "Interview Prep",
+                      label: "Interview Prep",
+                      desc: "Documents & medical",
+                    },
+                    // {
+                    //   id: "Port of Entry",
+                    //   label: "Port of Entry",
+                    //   desc: "Arrival procedures",
+                    // },
+                    // {
+                    //   id: "Post-Entry",
+                    //   label: "Post-Entry",
+                    //   desc: "SSN, work auth",
+                    // },
+                  ].map((stage, index) => {
+                    // Only show stages relevant if we had stage mapping, for now showing all visual
+                    const count = VISA_FORMS.filter(
+                      (f) =>
+                        f.stage === stage.id &&
+                        (!currentJourney || (f.journeys && f.journeys.includes(currentJourney)))
+                    ).length;
+
+                    const isActive = currentStage === stage.id;
+
+                    return (
+                      <button
+                        key={index}
+                        suppressHydrationWarning
+                        onClick={() => setCurrentStage(currentStage === stage.id ? "" : stage.id)}
+                        className="group relative flex flex-1 flex-col items-center"
+                      >
+                        <div
+                          className={`z-10 mb-3 h-6 w-6 rounded-full border-4 transition-all duration-300 ${
+                            isActive
+                              ? "border-primary bg-primary scale-125"
+                              : "group-hover:border-primary border-gray-200 bg-white"
+                          }`}
+                        />
+
+                        <div className="flex flex-col items-center text-center">
+                          <div
+                            className={`mb-0.5 text-sm font-bold ${
+                              isActive ? "text-gray-900" : "text-gray-500 group-hover:text-gray-700"
+                            }`}
+                          >
+                            {stage.label}
+                          </div>
+                          <div className="mb-2 text-xs text-gray-400">{stage.desc}</div>
+                          <div className="rounded-md bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-700">
+                            {count} forms
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Forms Grid */}
+        <div className="mb-12 grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+          {filteredForms.length > 0 ? (
+            filteredForms.map((form) => {
+              return (
+                <div
+                  key={form.code}
+                  className="group relative flex h-auto min-h-[370px] flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-teal-900/5 lg:h-[340px] lg:min-h-0"
+                >
+                  {/* Top Accent Line */}
+                  <div className="from-primary absolute top-0 right-10 left-0 h-1 origin-left scale-x-0 transform bg-linear-to-r to-teal-400 transition-transform duration-500 group-hover:scale-x-100" />
+
+                  {/* Folded Corner Effect */}
+                  <div className="absolute top-0 right-0 h-10 w-10 overflow-hidden">
+                    <div className="absolute top-0 right-0 z-10 h-0 w-0 border-t-40 border-l-40 border-t-gray-50 border-l-transparent drop-shadow-sm transition-colors duration-300 group-hover:border-t-gray-50" />
+                    <div className="absolute top-0 right-0 h-0 w-0 border-t-40 border-l-40 border-t-gray-50 border-l-gray-50 shadow-md" />
+                  </div>
+
+                  <div className="relative flex flex-1 flex-col p-7">
+                    {/* Header */}
+                    <div className="mr-8 mb-5 flex items-start justify-between">
+                      <div>
+                        <h2 className="group-hover:text-primary text-3xl font-extrabold tracking-tight text-gray-900 transition-colors">
+                          {form.code}
+                        </h2>
+                        <span className="mt-1 inline-block rounded-md bg-gray-100 px-2 py-0.5 text-[10px] font-bold tracking-wider text-gray-600 uppercase">
+                          {form.agency}
+                        </span>
+                      </div>
+
+                      {/* Status Badge */}
+                      <div
+                        className={`rounded-full px-3 py-1 text-xs font-bold tracking-wide uppercase ${
+                          form.type === "online"
+                            ? "bg-blue-50 text-blue-700"
+                            : "bg-teal-50 text-teal-700"
+                        }`}
+                      >
+                        {form.type === "online" ? "Online" : "PDF"}
+                      </div>
+                    </div>
+
+                    {/* Content */}
+                    <div className="min-h-0 flex-1">
+                      <h3
+                        className="group-hover:text-primary mb-3 line-clamp-2 text-lg leading-snug font-bold text-gray-800 transition-colors lg:line-clamp-1 lg:truncate"
+                        title={form.name}
+                      >
+                        {form.name}
+                      </h3>
+                      <p
+                        className="text-sm leading-relaxed text-gray-500 lg:line-clamp-2"
+                        title={form.description}
+                      >
+                        {form.description}
+                      </p>
+                      {form.expiryDate && (
+                        <div className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-amber-200/50 bg-amber-50/70 px-2.5 py-1 text-xs font-medium text-amber-600">
+                          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-500"></span>
+                          Valid till {form.expiryDate}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Footer (Static) */}
+                    <div className="mt-4 hidden items-center justify-between border-t border-gray-50 pt-4 text-xs font-medium text-gray-400 transition-opacity delay-100 duration-200 group-hover:opacity-0 lg:flex">
+                      <span className="flex items-center gap-1.5">
+                        <span className="h-1.5 w-1.5 rounded-full bg-gray-300"></span>
+                        {form.stage}
+                      </span>
+                      {form.category && form.category[0] && <span>{form.category[0]}</span>}
+                    </div>
+
+                    {/* Hover Overlay Actions */}
+                    <div className="relative z-10 mx-[-1.75rem] mt-auto mb-[-1.75rem] flex translate-y-0 flex-col gap-3 border-t border-gray-100 bg-white/95 p-4 transition-transform duration-300 ease-out lg:absolute lg:inset-x-0 lg:bottom-0 lg:mx-0 lg:mb-0 lg:translate-y-full lg:p-6 lg:backdrop-blur-[2px] lg:group-hover:translate-y-0">
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => setSelectedForm(form)}
+                          suppressHydrationWarning
+                          className="bg-primary flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold text-white shadow-sm transition-all hover:bg-[#0a5a5d] hover:shadow-lg active:scale-95"
+                        >
+                          View Sample
+                        </button>
+                        <button
+                          onClick={() => handleStartForm(form.code)}
+                          suppressHydrationWarning
+                          className={`flex flex-1 items-center justify-center gap-2 rounded-xl border-2 px-4 py-3 text-sm font-bold shadow-sm transition-all active:scale-95 ${
+                            isFormLocked(form.code)
+                              ? "border-amber-200 bg-white text-amber-700 hover:border-amber-400 hover:text-amber-800"
+                              : "hover:border-primary hover:text-primary border-gray-100 bg-white text-gray-700 hover:shadow-md"
+                          }`}
+                        >
+                          {isFormLocked(form.code) ? (
+                            <>
+                              <Lock className="h-4 w-4 shrink-0" />
+                              {smartFormResourceId(form.code) ? "Unlock" : "Upgrade"}
+                            </>
+                          ) : isFormUnlocked(form.code) ? (
+                            "Start"
+                          ) : (
+                            /* Free/Basic can only start the I-130 — label it as the limited demo */
+                            "Start Demo"
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <div className="col-span-full py-16 text-center">
+              <div className="mb-4 flex justify-center">
+                <FileText className="h-12 w-12 text-gray-300" />
+              </div>
+              <h3 className="mb-1 text-lg font-semibold text-gray-900">No forms found</h3>
+              <p className="text-gray-500">Try adjusting your filters to see more results</p>
+              <button
+                onClick={clearFilters}
+                className="text-primary mt-4 font-medium hover:underline"
+              >
+                Clear all filters
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Help Section */}
+        <div className="grid gap-6 md:grid-cols-1">
+          {/* Process Guide */}
+          {/* Process Guide */}
+          {/* <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <button
                   onClick={() => setIsGuideOpen(!isGuideOpen)}
                   className="w-full flex items-center justify-between p-6 text-left"
@@ -1492,8 +1490,8 @@ export default function VisaFormSelector({
                 )}
               </div> */}
 
-              {/* Features */}
-              {/* <div className="bg-linear-to-br from-primary/5 to-primary/10 rounded-xl shadow-sm border border-primary/20 overflow-hidden">
+          {/* Features */}
+          {/* <div className="bg-linear-to-br from-primary/5 to-primary/10 rounded-xl shadow-sm border border-primary/20 overflow-hidden">
                 <button
                   onClick={() => setIsFeaturesOpen(!isFeaturesOpen)}
                   className="w-full flex items-center justify-between p-6 text-left"
@@ -1544,285 +1542,283 @@ export default function VisaFormSelector({
                   </div>
                 )}
               </div> */}
-            </div>
-          </main>
-          {/* Form Detail Modal / Drawer */}
-          {selectedForm && (
-            <div className="fixed inset-0 z-100 flex items-center justify-center p-4 sm:p-8">
-              {/* Backdrop */}
-              <div
-                className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
-                onClick={() => setSelectedForm(null)}
-              />
+        </div>
+      </main>
+      {/* Form Detail Modal / Drawer */}
+      {selectedForm && (
+        <div className="fixed inset-0 z-100 flex items-center justify-center p-4 sm:p-8">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
+            onClick={() => setSelectedForm(null)}
+          />
 
-              {/* Modal */}
-              <div className="animate-in fade-in zoom-in-95 relative flex max-h-[95vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl duration-200 sm:max-h-[90vh]">
-                {/* Header */}
-                <div className="sticky top-0 z-10 flex shrink-0 items-center justify-between border-b border-gray-200 bg-white/95 px-5 py-4 backdrop-blur-md sm:px-8 sm:py-6">
-                  <h2 className="text-xl font-bold text-gray-900 sm:text-2xl">Form Details</h2>
-                  <button
-                    onClick={() => setSelectedForm(null)}
-                    className="rounded-full p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
-                  >
-                    <X className="h-5 w-5 sm:h-6 sm:w-6" />
-                  </button>
+          {/* Modal */}
+          <div className="animate-in fade-in zoom-in-95 relative flex max-h-[95vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl duration-200 sm:max-h-[90vh]">
+            {/* Header */}
+            <div className="sticky top-0 z-10 flex shrink-0 items-center justify-between border-b border-gray-200 bg-white/95 px-5 py-4 backdrop-blur-md sm:px-8 sm:py-6">
+              <h2 className="text-xl font-bold text-gray-900 sm:text-2xl">Form Details</h2>
+              <button
+                onClick={() => setSelectedForm(null)}
+                className="rounded-full p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
+              >
+                <X className="h-5 w-5 sm:h-6 sm:w-6" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="w-full flex-1 overflow-y-auto">
+              <div className="mx-auto w-full max-w-5xl space-y-6 p-5 sm:space-y-8 sm:p-8">
+                {/* Basic Info */}
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-8">
+                  <div>
+                    <div className="mb-1 text-xs font-bold tracking-wider text-gray-500 uppercase sm:mb-2 sm:text-sm">
+                      Form Code
+                    </div>
+                    <div className="text-primary font-mono text-2xl font-bold sm:text-3xl">
+                      {selectedForm.code}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="mb-1 text-xs font-bold tracking-wider text-gray-500 uppercase sm:mb-2 sm:text-sm">
+                      Agency
+                    </div>
+                    <div className="text-lg font-medium text-gray-900 sm:text-xl">
+                      {selectedForm.agency}
+                    </div>
+                  </div>
                 </div>
 
-                {/* Content */}
-                <div className="w-full flex-1 overflow-y-auto">
-                  <div className="mx-auto w-full max-w-5xl space-y-6 p-5 sm:space-y-8 sm:p-8">
-                    {/* Basic Info */}
-                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-8">
-                      <div>
-                        <div className="mb-1 text-xs font-bold tracking-wider text-gray-500 uppercase sm:mb-2 sm:text-sm">
-                          Form Code
-                        </div>
-                        <div className="font-mono text-2xl font-bold text-[#0d7377] sm:text-3xl">
-                          {selectedForm.code}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="mb-1 text-xs font-bold tracking-wider text-gray-500 uppercase sm:mb-2 sm:text-sm">
-                          Agency
-                        </div>
-                        <div className="text-lg font-medium text-gray-900 sm:text-xl">
-                          {selectedForm.agency}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="mb-1 text-xs font-bold tracking-wider text-gray-500 uppercase sm:mb-2 sm:text-sm">
-                        Full Title
-                      </div>
-                      <div className="text-lg leading-relaxed text-gray-900 sm:text-xl">
-                        {selectedForm.name}
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-8">
-                      <div>
-                        <div className="mb-1 text-xs font-bold tracking-wider text-gray-500 uppercase sm:mb-2 sm:text-sm">
-                          Journey Stage
-                        </div>
-                        <div className="text-base text-gray-900 sm:text-lg">
-                          {selectedForm.stage}
-                        </div>
-                      </div>
-                      {selectedForm.expiryDate && (
-                        <div>
-                          <div className="mb-1 text-xs font-bold tracking-wider text-gray-500 uppercase sm:mb-2 sm:text-sm">
-                            Validation Status
-                          </div>
-                          <div className="inline-flex items-center gap-1.5 rounded-lg border border-amber-200/50 bg-amber-50/70 px-3 py-1.5 text-sm font-semibold text-amber-600">
-                            <span className="h-2 w-2 animate-pulse rounded-full bg-amber-500"></span>
-                            Valid till {selectedForm.expiryDate}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Categories & Keywords */}
-                    <div>
-                      <div className="mb-2 text-xs font-bold tracking-wider text-gray-500 uppercase sm:mb-3 sm:text-sm">
-                        Categories
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedForm.category?.map((cat) => (
-                          <span
-                            key={cat}
-                            className="rounded-md bg-[#e8f6f6] px-3 py-1 text-sm font-medium text-[#0a5a5d]"
-                          >
-                            {cat}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="mb-2 text-xs font-bold tracking-wider text-gray-500 uppercase sm:mb-3 sm:text-sm">
-                        Keywords
-                      </div>
-                      <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                        {selectedForm.keywords?.map((kw) => (
-                          <span
-                            key={kw}
-                            className="rounded-md bg-gray-100 px-2 py-1 text-xs text-gray-600 sm:px-3 sm:text-sm"
-                          >
-                            {kw}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="mb-1 text-xs font-bold tracking-wider text-gray-500 uppercase sm:mb-2 sm:text-sm">
-                        Description & Notes
-                      </div>
-                      <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 text-sm leading-relaxed text-gray-700 sm:p-6 sm:text-base">
-                        {renderFormDescription(selectedForm.description)}
-                        {selectedForm.notes && (
-                          <p className="mt-4 border-t border-gray-200 pt-4 text-gray-600 italic">
-                            {selectedForm.notes}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* 31 C.F.R. Part 208 Special Callout for Form G-1651 */}
-                      {selectedForm.code === "G-1651" && (
-                        <div className="mt-3 flex flex-col justify-between gap-3 rounded-xl border border-blue-200/70 bg-blue-50/70 p-3.5 sm:flex-row sm:items-center sm:p-4">
-                          <div className="flex items-center gap-3">
-                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-700">
-                              <Scale className="h-4 w-4" />
-                            </div>
-                            <div>
-                              <div className="text-xs font-bold text-blue-950">
-                                31 C.F.R. Part 208 Undue Hardship Regulation
-                              </div>
-                              <div className="text-[11.5px] leading-normal text-blue-800">
-                                Learn what qualifies as an infrastructure or personal barrier under
-                                Treasury rules
-                              </div>
-                            </div>
-                          </div>
-                          <div className="flex shrink-0 items-center gap-2">
-                            <button
-                              type="button"
-                              onClick={() => setIsCfrModalOpen(true)}
-                              className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-bold text-white shadow-xs transition-all hover:bg-blue-700"
-                            >
-                              <BookOpen className="h-3.5 w-3.5" />
-                              <span>View Explanation</span>
-                            </button>
-                            <a
-                              href="https://www.govinfo.gov/content/pkg/CFR-2025-title31-vol2/pdf/CFR-2025-title31-vol2-sec208-1.pdf"
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 rounded-lg border border-blue-200 bg-white px-3 py-1.5 text-xs font-semibold text-blue-700 transition-all hover:bg-blue-50"
-                            >
-                              <span>GovInfo Citation</span>
-                              <ExternalLink className="h-3 w-3" />
-                            </a>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Hand-sign callout -> Snap & Sign tool */}
-                    {selectedForm.requiresHandSign && (
-                      <div className="flex items-start gap-4 rounded-xl border border-[#0d7377]/20 bg-[#e8f6f6] p-4 sm:p-6">
-                        <PenLine className="mt-1 h-6 w-6 shrink-0 text-[#0d7377]" />
-                        <div>
-                          <h4 className="mb-1 text-base font-bold text-[#0a5a5d] sm:text-lg">
-                            This form needs a handwritten signature
-                          </h4>
-                          <p className="text-sm leading-relaxed text-gray-700 sm:text-base">
-                            Print the form, sign it by hand, then capture your signature with our
-                            Snap and Sign tool to add a clean digital copy to your document.
-                          </p>
-                          <a
-                            href="/signature-image-processing"
-                            className="mt-3 inline-flex items-center gap-2 rounded-lg bg-[#0d7377] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[#0a5a5d]"
-                          >
-                            <PenLine className="h-4 w-4 shrink-0" />
-                            Open Snap and Sign
-                          </a>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Sample form (blank official PDF) or Online callout */}
-                    {selectedForm.type === "online" ? (
-                      <div className="flex items-start gap-4 rounded-xl border border-blue-100 bg-blue-50 p-6">
-                        <ExternalLink className="mt-1 h-6 w-6 shrink-0 text-blue-600" />
-                        <div>
-                          <h4 className="mb-2 text-lg font-bold text-blue-900">Online Form</h4>
-                          <p className="text-blue-800">
-                            This form must be completed online and cannot be downloaded as a PDF.
-                            Visit the official government website to access and submit this form.
-                          </p>
-                        </div>
-                      </div>
-                    ) : selectedForm.officialLink ? (
-                      <div>
-                        <div className="mb-3 text-sm font-bold tracking-wider text-gray-500 uppercase">
-                          Sample Form (Preview)
-                        </div>
-                        <div className="h-[800px] overflow-hidden rounded-xl border border-gray-200 bg-gray-50 shadow-sm">
-                          <iframe
-                            src={selectedForm.officialLink}
-                            className="h-full w-full"
-                            title={`Sample of ${selectedForm.code} (blank official form)`}
-                          />
-                        </div>
-                      </div>
-                    ) : null}
+                <div>
+                  <div className="mb-1 text-xs font-bold tracking-wider text-gray-500 uppercase sm:mb-2 sm:text-sm">
+                    Full Title
                   </div>
-                  {/* Actions Footer */}
-                  <div className="shrink-0 border-t border-gray-200 bg-gray-50 p-4 sm:p-8">
-                    <div className="mx-auto flex max-w-5xl flex-col flex-wrap gap-3 sm:flex-row">
-                      <button className="flex w-full flex-1 items-center justify-center gap-2 rounded-xl bg-[#0d7377] py-3 text-sm font-bold text-white shadow-sm transition-all hover:bg-[#0a5a5d] hover:shadow-md sm:py-4 lg:text-base">
-                        <Plus className="h-4 w-4 shrink-0 sm:h-5 sm:w-5" />
-                        <span className="truncate">Add to AutoFill Queue</span>
-                      </button>
+                  <div className="text-lg leading-relaxed text-gray-900 sm:text-xl">
+                    {selectedForm.name}
+                  </div>
+                </div>
 
-                      {selectedForm.officialLink && selectedForm.type !== "online" && (
-                        <button
-                          onClick={() => window.open(selectedForm.officialLink, "_blank")}
-                          className="flex w-full flex-1 items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white py-3 text-sm font-bold text-gray-700 shadow-sm transition-all hover:border-teal-600 hover:bg-gray-50 hover:text-teal-700 sm:py-4 lg:text-base"
-                        >
-                          <Download className="h-4 w-4 shrink-0 sm:h-5 sm:w-5" />
-                          <span className="truncate">Download PDF</span>
-                        </button>
-                      )}
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-8">
+                  <div>
+                    <div className="mb-1 text-xs font-bold tracking-wider text-gray-500 uppercase sm:mb-2 sm:text-sm">
+                      Journey Stage
+                    </div>
+                    <div className="text-base text-gray-900 sm:text-lg">{selectedForm.stage}</div>
+                  </div>
+                  {selectedForm.expiryDate && (
+                    <div>
+                      <div className="mb-1 text-xs font-bold tracking-wider text-gray-500 uppercase sm:mb-2 sm:text-sm">
+                        Validation Status
+                      </div>
+                      <div className="inline-flex items-center gap-1.5 rounded-lg border border-amber-200/50 bg-amber-50/70 px-3 py-1.5 text-sm font-semibold text-amber-600">
+                        <span className="h-2 w-2 animate-pulse rounded-full bg-amber-500"></span>
+                        Valid till {selectedForm.expiryDate}
+                      </div>
+                    </div>
+                  )}
+                </div>
 
-                      <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(selectedForm.code);
-                          setToast({
-                            message: `${selectedForm.code} copied to clipboard`,
-                            type: "success",
-                          });
-                          setTimeout(() => setToast(null), 3000);
-                        }}
-                        className="flex w-full flex-1 items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white py-3 text-sm font-bold text-gray-700 shadow-sm transition-all hover:border-teal-600 hover:bg-gray-50 hover:text-teal-700 sm:py-4 lg:text-base"
+                {/* Categories & Keywords */}
+                <div>
+                  <div className="mb-2 text-xs font-bold tracking-wider text-gray-500 uppercase sm:mb-3 sm:text-sm">
+                    Categories
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedForm.category?.map((cat) => (
+                      <span
+                        key={cat}
+                        className="rounded-md bg-[#e8f6f6] px-3 py-1 text-sm font-medium text-[#0a5a5d]"
                       >
-                        <Copy className="h-4 w-4 shrink-0 sm:h-5 sm:w-5" />
-                        <span className="truncate">Copy Form Code</span>
-                      </button>
+                        {cat}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="mb-2 text-xs font-bold tracking-wider text-gray-500 uppercase sm:mb-3 sm:text-sm">
+                    Keywords
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                    {selectedForm.keywords?.map((kw) => (
+                      <span
+                        key={kw}
+                        className="rounded-md bg-gray-100 px-2 py-1 text-xs text-gray-600 sm:px-3 sm:text-sm"
+                      >
+                        {kw}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="mb-1 text-xs font-bold tracking-wider text-gray-500 uppercase sm:mb-2 sm:text-sm">
+                    Description & Notes
+                  </div>
+                  <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 text-sm leading-relaxed text-gray-700 sm:p-6 sm:text-base">
+                    {renderFormDescription(selectedForm.description)}
+                    {selectedForm.notes && (
+                      <p className="mt-4 border-t border-gray-200 pt-4 text-gray-600 italic">
+                        {selectedForm.notes}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* 31 C.F.R. Part 208 Special Callout for Form G-1651 */}
+                  {selectedForm.code === "G-1651" && (
+                    <div className="mt-3 flex flex-col justify-between gap-3 rounded-xl border border-blue-200/70 bg-blue-50/70 p-3.5 sm:flex-row sm:items-center sm:p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-700">
+                          <Scale className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <div className="text-xs font-bold text-blue-950">
+                            31 C.F.R. Part 208 Undue Hardship Regulation
+                          </div>
+                          <div className="text-[11.5px] leading-normal text-blue-800">
+                            Learn what qualifies as an infrastructure or personal barrier under
+                            Treasury rules
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setIsCfrModalOpen(true)}
+                          className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-bold text-white shadow-xs transition-all hover:bg-blue-700"
+                        >
+                          <BookOpen className="h-3.5 w-3.5" />
+                          <span>View Explanation</span>
+                        </button>
+                        <a
+                          href="https://www.govinfo.gov/content/pkg/CFR-2025-title31-vol2/pdf/CFR-2025-title31-vol2-sec208-1.pdf"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 rounded-lg border border-blue-200 bg-white px-3 py-1.5 text-xs font-semibold text-blue-700 transition-all hover:bg-blue-50"
+                        >
+                          <span>GovInfo Citation</span>
+                          <ExternalLink className="h-3 w-3" />
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Hand-sign callout -> Snap & Sign tool */}
+                {selectedForm.requiresHandSign && (
+                  <div className="border-primary/20 flex items-start gap-4 rounded-xl border bg-[#e8f6f6] p-4 sm:p-6">
+                    <PenLine className="text-primary mt-1 h-6 w-6 shrink-0" />
+                    <div>
+                      <h4 className="mb-1 text-base font-bold text-[#0a5a5d] sm:text-lg">
+                        This form needs a handwritten signature
+                      </h4>
+                      <p className="text-sm leading-relaxed text-gray-700 sm:text-base">
+                        Print the form, sign it by hand, then capture your signature with our Snap
+                        and Sign tool to add a clean digital copy to your document.
+                      </p>
+                      <a
+                        href="/signature-image-processing"
+                        className="bg-primary mt-3 inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[#0a5a5d]"
+                      >
+                        <PenLine className="h-4 w-4 shrink-0" />
+                        Open Snap and Sign
+                      </a>
                     </div>
                   </div>
+                )}
+
+                {/* Sample form (blank official PDF) or Online callout */}
+                {selectedForm.type === "online" ? (
+                  <div className="flex items-start gap-4 rounded-xl border border-blue-100 bg-blue-50 p-6">
+                    <ExternalLink className="mt-1 h-6 w-6 shrink-0 text-blue-600" />
+                    <div>
+                      <h4 className="mb-2 text-lg font-bold text-blue-900">Online Form</h4>
+                      <p className="text-blue-800">
+                        This form must be completed online and cannot be downloaded as a PDF. Visit
+                        the official government website to access and submit this form.
+                      </p>
+                    </div>
+                  </div>
+                ) : selectedForm.officialLink ? (
+                  <div>
+                    <div className="mb-3 text-sm font-bold tracking-wider text-gray-500 uppercase">
+                      Sample Form (Preview)
+                    </div>
+                    <div className="h-[800px] overflow-hidden rounded-xl border border-gray-200 bg-gray-50 shadow-sm">
+                      <iframe
+                        src={selectedForm.officialLink}
+                        className="h-full w-full"
+                        title={`Sample of ${selectedForm.code} (blank official form)`}
+                      />
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+              {/* Actions Footer */}
+              <div className="shrink-0 border-t border-gray-200 bg-gray-50 p-4 sm:p-8">
+                <div className="mx-auto flex max-w-5xl flex-col flex-wrap gap-3 sm:flex-row">
+                  <button className="bg-primary flex w-full flex-1 items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold text-white shadow-sm transition-all hover:bg-[#0a5a5d] hover:shadow-md sm:py-4 lg:text-base">
+                    <Plus className="h-4 w-4 shrink-0 sm:h-5 sm:w-5" />
+                    <span className="truncate">Add to AutoFill Queue</span>
+                  </button>
+
+                  {selectedForm.officialLink && selectedForm.type !== "online" && (
+                    <button
+                      onClick={() => window.open(selectedForm.officialLink, "_blank")}
+                      className="flex w-full flex-1 items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white py-3 text-sm font-bold text-gray-700 shadow-sm transition-all hover:border-teal-600 hover:bg-gray-50 hover:text-teal-700 sm:py-4 lg:text-base"
+                    >
+                      <Download className="h-4 w-4 shrink-0 sm:h-5 sm:w-5" />
+                      <span className="truncate">Download PDF</span>
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(selectedForm.code);
+                      setToast({
+                        message: `${selectedForm.code} copied to clipboard`,
+                        type: "success",
+                      });
+                      setTimeout(() => setToast(null), 3000);
+                    }}
+                    className="flex w-full flex-1 items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white py-3 text-sm font-bold text-gray-700 shadow-sm transition-all hover:border-teal-600 hover:bg-gray-50 hover:text-teal-700 sm:py-4 lg:text-base"
+                  >
+                    <Copy className="h-4 w-4 shrink-0 sm:h-5 sm:w-5" />
+                    <span className="truncate">Copy Form Code</span>
+                  </button>
                 </div>
               </div>
             </div>
-          )}
-
-        {/* Toast Notification */}
-        {toast && (
-          <div className="animate-in slide-in-from-bottom-5 fade-in fixed right-8 bottom-8 z-200 duration-300">
-            <div
-              className={`flex transform items-center gap-2 rounded-xl px-6 py-4 font-semibold text-white shadow-2xl transition-all ${
-                toast.type === "success" ? "bg-[#0d7377]" : "bg-blue-600"
-              }`}
-            >
-              <CheckCircle className="h-5 w-5" />
-              {toast.message}
-            </div>
           </div>
-        )}
+        </div>
+      )}
 
-        <CfrExplanationModal open={isCfrModalOpen} onOpenChange={setIsCfrModalOpen} />
+      {/* Toast Notification */}
+      {toast && (
+        <div className="animate-in slide-in-from-bottom-5 fade-in fixed right-8 bottom-8 z-200 duration-300">
+          <div
+            className={`flex transform items-center gap-2 rounded-xl px-6 py-4 font-semibold text-white shadow-2xl transition-all ${
+              toast.type === "success" ? "bg-primary" : "bg-blue-600"
+            }`}
+          >
+            <CheckCircle className="h-5 w-5" />
+            {toast.message}
+          </div>
+        </div>
+      )}
 
-        {unlockItem && unlockFormCode && (
-          <CreditLaunchModal
-            item={unlockItem}
-            href={`/visa-forms/${unlockFormCode}/wizard`}
-            onClose={() => setUnlockFormCode(null)}
-          />
-        )}
-        {showUpgradeModal && (
-          <UpgradeModal feature="smart_form_filler" onClose={() => setShowUpgradeModal(false)} />
-        )}
-      </ToolLayout>
-    );
-  }
+      <CfrExplanationModal open={isCfrModalOpen} onOpenChange={setIsCfrModalOpen} />
+
+      {unlockItem && unlockFormCode && (
+        <CreditLaunchModal
+          item={unlockItem}
+          href={`/visa-forms/${unlockFormCode}/wizard`}
+          onClose={() => setUnlockFormCode(null)}
+        />
+      )}
+      {showUpgradeModal && (
+        <UpgradeModal feature="smart_form_filler" onClose={() => setShowUpgradeModal(false)} />
+      )}
+    </ToolLayout>
+  );
+}
