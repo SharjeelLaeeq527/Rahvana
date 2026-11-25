@@ -6,6 +6,8 @@ Follow the phases in order. Do not start a phase until the previous one's "Done 
 
 ## Phase 1: Dark palette
 
+Draft ready: `docs/dark-mode-palette.md` (tokens, contrast check, open decisions).
+
 1. Designer makes a token table: token name, light value, dark value.
 2. Dark surfaces are dark navy (not pure black). Teal stays the brand colour, a bit brighter
    in dark.
