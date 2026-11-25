@@ -581,7 +581,7 @@ function BeneficiaryUpgradeSelectModal({
         {/* Header */}
         <div className="border-border from-muted/30 flex shrink-0 items-center justify-between border-b bg-gradient-to-b to-transparent px-5 py-4 sm:px-6 sm:py-5">
           <div className="flex items-center gap-2.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#0d7377]/10 text-[#0d7377]">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
               <Users className="h-4.5 w-4.5" />
             </span>
             <div>
@@ -634,7 +634,7 @@ function BeneficiaryUpgradeSelectModal({
                     <div
                       className={`flex h-16 w-16 items-center justify-center rounded-full text-xl font-bold transition-all duration-200 sm:h-20 sm:w-20 sm:text-2xl ${
                         isSelected
-                          ? `bg-gradient-to-br ${gradient} ring-offset-card scale-105 text-white opacity-100 shadow-lg ring-4 ring-[#0d7377] ring-offset-2`
+                          ? `bg-gradient-to-br ${gradient} ring-offset-card scale-105 text-white opacity-100 shadow-lg ring-4 ring-primary ring-offset-2`
                           : `bg-gradient-to-br ${gradient} text-white opacity-75 shadow-xs group-hover:scale-105 group-hover:opacity-100 group-hover:shadow-md`
                       }`}
                     >
@@ -660,7 +660,7 @@ function BeneficiaryUpgradeSelectModal({
 
                     {/* Floating Selected Checkmark Badge */}
                     {isSelected && (
-                      <div className="ring-card animate-in zoom-in-75 absolute -right-1 -bottom-1 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-[#0d7377] text-white shadow-xs ring-2 duration-150 sm:h-6 sm:w-6">
+                      <div className="ring-card animate-in zoom-in-75 absolute -right-1 -bottom-1 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-white shadow-xs ring-2 duration-150 sm:h-6 sm:w-6">
                         <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       </div>
                     )}
@@ -671,8 +671,8 @@ function BeneficiaryUpgradeSelectModal({
                     <span
                       className={`line-clamp-1 text-[13.5px] leading-tight font-bold transition-colors ${
                         isSelected
-                          ? "text-[#0d7377] dark:text-teal-400"
-                          : "text-foreground group-hover:text-[#0d7377]"
+                          ? "text-primary dark:text-teal-400"
+                          : "text-foreground group-hover:text-primary"
                       }`}
                       title={displayName}
                     >
@@ -963,7 +963,7 @@ function PricingContent() {
               rose: "from-rose-500 to-pink-600 text-white",
               emerald: "from-emerald-600 to-teal-700 text-white",
             }[cand.colorTag]
-          : "from-[#0d7377] to-[#14919b] text-white";
+          : "from-primary to-[#14919b] text-white";
 
       const avatar = (
         <span
@@ -1862,7 +1862,7 @@ function PricingContent() {
                         if (ir1Card) setVisa(ir1Card.code);
                         setIsChangingJourney(false);
                       }}
-                      className="inline-flex cursor-pointer items-center gap-1 font-semibold text-[#0d7377] hover:underline"
+                      className="inline-flex cursor-pointer items-center gap-1 font-semibold text-primary hover:underline"
                     >
                       Upgrade IR-1 Plan →
                     </button>
@@ -1980,7 +1980,7 @@ function PricingContent() {
 
                     <h1 className="page-heading m-0">
                       Choose your plan for{" "}
-                      <span className="text-[#0d7377] dark:text-[#32e0c4]">
+                      <span className="text-primary dark:text-[#32e0c4]">
                         {activeExplorerCard
                           ? `${activeExplorerCard.code} ${activeExplorerCard.title}`
                           : activeVisaCategory.label}
@@ -2023,7 +2023,7 @@ function PricingContent() {
                             onClick={() => setMultiCandidateAction("upgrade")}
                             className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all ${
                               multiCandidateAction === "upgrade"
-                                ? "bg-[#0d7377] text-white shadow-xs"
+                                ? "bg-primary text-white shadow-xs"
                                 : "text-muted-foreground hover:text-foreground"
                             }`}
                           >
@@ -2035,7 +2035,7 @@ function PricingContent() {
                             onClick={() => setMultiCandidateAction("add_candidate")}
                             className={`flex cursor-pointer items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all ${
                               multiCandidateAction === "add_candidate"
-                                ? "bg-[#0d7377] text-white shadow-xs"
+                                ? "bg-primary text-white shadow-xs"
                                 : "text-muted-foreground hover:text-foreground"
                             }`}
                           >
@@ -2064,7 +2064,7 @@ function PricingContent() {
                             placeholder="Select Beneficiary"
                             className="w-auto"
                             maxLabelWidth="max-w-[120px] sm:max-w-[160px]"
-                            triggerClassName="!min-h-[32px] !h-[32px] !w-auto !py-1 !px-2.5 !gap-1.5 !text-xs !font-bold !rounded-full !border !border-border !bg-card text-foreground shadow-xs hover:border-[#0d7377]/50"
+                            triggerClassName="!min-h-[32px] !h-[32px] !w-auto !py-1 !px-2.5 !gap-1.5 !text-xs !font-bold !rounded-full !border !border-border !bg-card text-foreground shadow-xs hover:border-primary/50"
                           />
                         </div>
                       )}
@@ -2108,7 +2108,7 @@ function PricingContent() {
                         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                           <div className="lg:max-w-xl">
                             <div className="flex items-center gap-2">
-                              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#0d7377]/10 text-[#0d7377]">
+                              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary">
                                 <Users className="h-4 w-4" />
                               </span>
                               <h3 className="text-foreground text-[17px] font-bold">
@@ -2117,7 +2117,7 @@ function PricingContent() {
                                   ? candidateTerm.addHeaderTitle
                                   : candidateTerm.headerTitle}
                               </h3>
-                              {/* <span className="rounded-full bg-[#0d7377]/10 px-2.5 py-0.5 text-[11px] font-semibold text-[#0d7377]">
+                              {/* <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold text-primary">
                                 IR-5 Visa
                               </span> */}
                             </div>
@@ -2142,7 +2142,7 @@ function PricingContent() {
                                 }}
                                 className={`rounded-xl px-3 py-1.5 text-[12.5px] font-semibold whitespace-nowrap transition-all sm:px-3.5 sm:py-2 sm:text-[13px] ${
                                   candidateCount === count
-                                    ? "bg-[#0d7377] text-white shadow-sm ring-2 ring-[#0d7377]/20"
+                                    ? "bg-primary text-white shadow-sm ring-2 ring-primary/20"
                                     : "border-border bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground border"
                                 }`}
                               >
@@ -2276,7 +2276,7 @@ function PricingContent() {
                                   type="checkbox"
                                   checked={isEligibilityConfirmed}
                                   onChange={(e) => setIsEligibilityConfirmed(e.target.checked)}
-                                  className="border-border h-4 w-4 shrink-0 rounded text-[#0d7377] focus:ring-[#0d7377]"
+                                  className="border-border h-4 w-4 shrink-0 rounded text-primary focus:ring-primary"
                                 />
                                 <span className="text-[13px] leading-snug font-medium">
                                   I confirm that all beneficiary parents meet USCIS statutory
@@ -2737,7 +2737,7 @@ function PricingContent() {
                                  {getCandidateDisplayName(activeUpgradeCandidate)} 
                               </span>
                             ) : isIr5 && parentCount > 1 ? (
-                              <span className="rounded-full bg-[#0d7377]/10 px-2.5 py-0.5 text-[11px] font-semibold text-[#0d7377]">
+                              <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold text-primary">
                                 {parentCount} Parents
                               </span>
                             ) : null} */}
@@ -2789,7 +2789,7 @@ function PricingContent() {
                               type="checkbox"
                               checked={isEligibilityConfirmed}
                               onChange={(e) => setIsEligibilityConfirmed(e.target.checked)}
-                              className="border-border mt-0.5 h-4 w-4 rounded text-[#0d7377] focus:ring-[#0d7377]"
+                              className="border-border mt-0.5 h-4 w-4 rounded text-primary focus:ring-primary"
                             />
                             <div>
                               <span className="text-foreground font-semibold">
@@ -2954,7 +2954,7 @@ function PricingContent() {
                         type="checkbox"
                         checked={isEligibilityConfirmed}
                         onChange={(e) => setIsEligibilityConfirmed(e.target.checked)}
-                        className="border-border h-3.5 w-3.5 shrink-0 rounded text-[#0d7377] focus:ring-[#0d7377]"
+                        className="border-border h-3.5 w-3.5 shrink-0 rounded text-primary focus:ring-primary"
                       />
                       <span
                         className={
