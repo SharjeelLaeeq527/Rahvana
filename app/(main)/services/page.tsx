@@ -2,40 +2,18 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
-import {
-  Search,
-  ArrowRight,
-  ChevronDown,
-  X,
-  Shield,
-  Calendar,
-  Info,
-  Video,
-  Coins,
-} from "lucide-react";
+import { X, Shield, Calendar, Video } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { NAV_DATA } from "@/app/components/layout/navigationData";
 import { getServiceCatalogItem, withPreviewMode } from "@/lib/wallet/resourceMapping";
 import type { WalletCatalogItem } from "@/lib/wallet/catalog";
 import { CreditLaunchModal } from "@/app/components/wallet/CreditLaunchModal";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useLanguage } from "@/app/context/LanguageContext";
-import { usePlan } from "@/app/context/PlanContext";
 import { useAuth } from "@/app/context/AuthContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
-import AddResourceCard from "@/components/resources/AddResourceCard";
-import ResourceSectionHeader from "@/components/resources/ResourceSectionHeader";
-import StatCard from "@/app/components/shared/StatCard";
-import { ExpandableTooltip } from "@/app/components/shared/ExpandableTooltip";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Loader } from "@/components/ui/spinner";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
-import { useQuickAccess } from "@/app/context/QuickAccessContext";
 import { useCandidate } from "@/app/context/CandidateContext";
 import PccRequestCard, { type PccRequestRow } from "@/components/services/PccRequestCard";
 import MedicalAppointmentCard, {
@@ -44,8 +22,23 @@ import MedicalAppointmentCard, {
 import ConsultationRequestCard, {
   type ConsultationRow,
 } from "@/components/services/ConsultationRequestCard";
-import CreditTypeIcon from "@/components/resources/CreditTypeIcon";
 import CreditInfoTooltip from "@/components/resources/CreditInfoTooltip";
+import {
+  CATALOG_BAND_PALETTE,
+  CATALOG_BTN_GHOST,
+  CATALOG_BTN_PRIMARY,
+  CatalogCard,
+  CatalogEmpty,
+  CatalogFilters,
+  CatalogGrid,
+  CatalogOpenCue,
+  CatalogPrice,
+  CatalogSearch,
+  CatalogSection,
+  CatalogShell,
+  CatalogToolbar,
+  SERVICE_CATEGORY_PALETTES,
+} from "@/components/resources/catalog";
 
 // --- Types ---
 interface Service {
@@ -112,13 +105,11 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategoryId, setSelectedCategoryId] = useState("All");
-  const [visibleCount, setVisibleCount] = useState(7); // Default to all
   const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
   const [launchTarget, setLaunchTarget] = useState<{
     item: WalletCatalogItem;
     href: string;
   } | null>(null);
-  const plan = usePlan();
 
   const [pccRequests, setPccRequests] = useState<PCCRequest[]>([]);
   const [medicalAppointments, setMedicalAppointments] = useState<MedicalAppointment[]>([]);
@@ -311,9 +302,6 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
     return null;
   };
 
-  const containerRef = React.useRef<HTMLDivElement>(null);
-  const measureRef = React.useRef<HTMLDivElement>(null);
-
   // Memoize services and categories to avoid recalculation on every render
   const { services, categories } = useMemo(() => {
     const servicesList: Service[] = NAV_DATA.services.tabs.flatMap((tab) =>
@@ -352,71 +340,6 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
     return { services: servicesList, categories: categoriesList };
   }, [t]);
 
-  React.useEffect(() => {
-    const calculateVisible = () => {
-      if (!containerRef.current || !measureRef.current) return;
-
-      const containerWidth = containerRef.current.clientWidth;
-      const measureItems = Array.from(measureRef.current.children) as HTMLDivElement[];
-
-      // Extract the More button width (last item) and Category widths
-      const moreButtonEl = measureItems[measureItems.length - 1];
-      const categoryEls = measureItems.slice(0, measureItems.length - 1);
-
-      const moreButtonWidth = moreButtonEl.offsetWidth;
-      const gap = 12; // gap-3 is 12px (0.75rem)
-
-      let totalWidth = 0;
-      let visible = 0;
-
-      // First pass: Check if ALL fit
-      for (let i = 0; i < categoryEls.length; i++) {
-        const itemWidth = categoryEls[i].offsetWidth;
-        const isLast = i === categoryEls.length - 1;
-        totalWidth += itemWidth;
-        if (!isLast) totalWidth += gap;
-      }
-
-      if (totalWidth <= containerWidth) {
-        setVisibleCount(categories.length);
-        return;
-      }
-
-      // Second pass: Calculate how many fit WITH "More" button
-      totalWidth = 0;
-
-      for (let i = 0; i < categoryEls.length; i++) {
-        const itemWidth = categoryEls[i].offsetWidth;
-        // Check if adding this item + gap + MoreButton exceeds container
-        const gapWidth = i > 0 ? gap : 0;
-        const projectedWidth = totalWidth + gapWidth + itemWidth + gap + moreButtonWidth;
-
-        if (projectedWidth <= containerWidth) {
-          visible++;
-          totalWidth += gapWidth + itemWidth;
-        } else {
-          break;
-        }
-      }
-
-      setVisibleCount(visible);
-    };
-
-    calculateVisible();
-
-    // Add resize listener
-    const observer = new ResizeObserver(calculateVisible);
-    if (containerRef.current) {
-      observer.observe(containerRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, [categories]);
-
-  const visibleCategories = categories.slice(0, visibleCount);
-  const hiddenCategories = categories.slice(visibleCount);
-  const isMoreSelected = hiddenCategories.some((c) => c.id === selectedCategoryId);
-
   const filteredServices = services
     .filter((service) => {
       const matchesSearch =
@@ -436,17 +359,45 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
   const browseServices = filteredServices.filter((service) => !hasBooking(service));
   const displayServices = isEmbedded ? bookedServices : filteredServices;
 
-  return (
-    <div
-      className={`bg-background text-foreground selection:bg-primary selection:text-primary-foreground overflow-x-hidden font-sans ${
-        isEmbedded ? "" : "pt-16"
-      }`}
-    >
-      {/* Upgrade Modal */}
+  const renderServiceCard = (service: Service, index: number) => {
+    const bookingData = getActiveBookingData(service.id);
+    if (bookingData) {
+      return (
+        <BookedServiceCard
+          key={service.id}
+          service={service}
+          index={index}
+          booking={bookingData}
+          onOpen={() => {
+            if (bookingData.onClick) {
+              bookingData.onClick();
+            } else if (bookingData.href) {
+              router.push(bookingData.href);
+            }
+          }}
+        />
+      );
+    }
+    return (
+      <ServiceCard
+        key={service.id}
+        service={service}
+        index={index}
+        onLockedClick={(feature) => setUpgradeModalFeature(feature)}
+        onLaunch={() => router.push(service.href)}
+      />
+    );
+  };
+
+  // Who the requests belong to, folded into the section subtitle instead of a separate pill.
+  const forCandidate =
+    isMultiCandidate && activeCandidate?.label ? ` For ${activeCandidate.label}.` : "";
+
+  const modals = (
+    <>
       {upgradeModalFeature && (
         <UpgradeModal feature={upgradeModalFeature} onClose={() => setUpgradeModalFeature(null)} />
       )}
-
       {launchTarget && (
         <CreditLaunchModal
           item={launchTarget.item}
@@ -454,211 +405,34 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
           onClose={() => setLaunchTarget(null)}
         />
       )}
+    </>
+  );
 
-      {/* Ambient Glow */}
-      <div className="pointer-events-none fixed top-0 left-0 -z-10 h-full w-full">
-        <div className="absolute top-[10%] left-[15%] h-[500px] w-[500px] rounded-full bg-[#0d7377]/5 blur-3xl" />
-        <div className="absolute right-[10%] bottom-[20%] h-[600px] w-[600px] rounded-full bg-[#32e0c4]/5 blur-3xl" />
-      </div>
+  const content = isEmbedded ? (
+    <div className="text-[#16302C]">
+      <CatalogSection
+        title="My Services"
+        subtitle={`Requests you made outside a Journey (Journey requests stay in that Journey).${forCandidate}`}
+        count={displayServices.length}
+      >
+        <CatalogGrid>
+          {displayServices.map((service, index) => renderServiceCard(service, index))}
+          {displayServices.length === 0 && (
+            <CatalogEmpty>
+              No active requests yet. Book a service below and it will show up here.
+            </CatalogEmpty>
+          )}
+        </CatalogGrid>
+      </CatalogSection>
 
-      <div className="mx-auto w-full px-6 py-8">
-        {/* Hero Section — hidden in the embedded "My Resources" view */}
-        {!isEmbedded && (
-          <section className={`mb-4 pt-1 text-center md:mb-6`}>
-            <h1 className="from-foreground to-muted-foreground animate-fade-up mb-4 bg-linear-to-r bg-clip-text text-3xl font-bold text-transparent md:text-5xl">
-              {t("pages.services.heroTitle")}
-            </h1>
-            <p className="text-muted-foreground animate-fade-up mx-auto max-w-2xl text-base [animation-delay:100ms] md:text-lg">
-              {t("pages.services.heroDescription")}
-            </p>
-          </section>
-        )}
-
-        {/* Active Candidate Context Indicator (Global Switcher reactive) */}
-        {isMultiCandidate && (
-          <div className="mb-6 flex justify-center">
-            <div className="inline-flex items-center gap-2 rounded-full border border-teal-200 bg-teal-50/90 px-3.5 py-1.5 text-xs font-semibold text-teal-800 shadow-sm backdrop-blur-sm dark:border-teal-900/60 dark:bg-teal-950/40 dark:text-teal-300">
-              <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-teal-500" />
-              <span>
-                Showing service requests & applications for:{" "}
-                <strong className="text-teal-950 dark:text-teal-100">
-                  {activeCandidate.label || "Beneficiary"} (
-                  {activeCandidate.fullName || "Primary Candidate"})
-                </strong>
-              </span>
-            </div>
-          </div>
-        )}
-
-        {/* Search Bar */}
-        {!isEmbedded && (
-          <div className="animate-scale-in relative mx-auto mb-10 max-w-lg [animation-delay:200ms]">
-            <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder={t("pages.services.searchPlaceholder")}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-card border-border text-foreground focus:border-primary focus:ring-primary/10 placeholder:text-muted-foreground w-full rounded-full border-2 py-3 pr-4 pl-11 shadow-sm transition-all focus:ring-4 focus:outline-none"
-            />
-          </div>
-        )}
-
-        {/* Categories — hidden in the embedded "My Resources" view */}
-        {!isEmbedded && (
-          <div ref={containerRef} className="relative mb-8 flex w-full justify-center">
-            {/* Hidden container for measuring */}
-            <div
-              ref={measureRef}
-              aria-hidden="true"
-              className="pointer-events-none absolute top-0 left-0 z-[-1] flex w-full flex-wrap gap-3 opacity-0"
-            >
-              {/* Render all categories to measure them */}
-              {categories.map((cat) => (
-                <div
-                  key={cat.id}
-                  className="border px-5 py-2.5 text-sm font-medium whitespace-nowrap"
-                >
-                  {cat.label}
-                </div>
-              ))}
-              {/* Force render the More button to measure it */}
-              <div className="flex items-center gap-1 border px-5 py-2.5 text-sm font-medium whitespace-nowrap">
-                {t("pages.services.more")} <ChevronDown className="ml-1 h-4 w-4" />
-              </div>
-            </div>
-
-            {/* Visible Container */}
-            <div className="animate-fade-in flex flex-wrap gap-3 [animation-delay:300ms]">
-              {visibleCategories.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => setSelectedCategoryId(cat.id)}
-                  className={`rounded-full border px-5 py-2.5 text-sm font-medium whitespace-nowrap transition-all duration-200 ${
-                    selectedCategoryId === cat.id
-                      ? "bg-primary text-primary-foreground border-primary shadow-md"
-                      : "bg-card text-muted-foreground border-border hover:border-primary hover:bg-primary/5 hover:text-primary"
-                  }`}
-                >
-                  {cat.label}
-                </button>
-              ))}
-
-              {hiddenCategories.length > 0 && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button
-                      className={`flex items-center gap-1 rounded-full border px-5 py-2.5 text-sm font-medium whitespace-nowrap transition-all duration-200 ${
-                        isMoreSelected
-                          ? "bg-primary text-primary-foreground border-primary shadow-md"
-                          : "bg-card text-muted-foreground border-border hover:border-primary hover:bg-primary/5 hover:text-primary"
-                      }`}
-                    >
-                      {t("pages.services.more")} <ChevronDown className="ml-1 h-4 w-4" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-[200px]">
-                    {hiddenCategories.map((cat) => (
-                      <DropdownMenuItem
-                        key={cat.id}
-                        onClick={() => setSelectedCategoryId(cat.id)}
-                        className={`cursor-pointer ${
-                          selectedCategoryId === cat.id
-                            ? "bg-primary/10 text-primary font-semibold"
-                            : ""
-                        }`}
-                      >
-                        {cat.label}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Journey-scope explainer — embedded "My Resources" view only. Mirrors the banner in EmbeddedToolContainer so both surfaces tell the same story. */}
-        {isEmbedded && (
-          <div className="-mt-8">
-            <ExpandableTooltip
-              icon={<Info size={12} />}
-              title="Requests made from a Journey"
-              message="Requests you make while working on a Journey are saved there. This tab only shows requests you made outside of a Journey."
-              defaultOpen={true}
-            />
-          </div>
-        )}
-
-        {/* My Services — owned or with an active booking (embedded view only) */}
-        {isEmbedded && (
-          <ResourceSectionHeader
-            title="My Services"
-            subtitle="Services you've unlocked or already have an active request for."
-          />
-        )}
-
-        {/* Services Grid */}
-        <div className="grid grid-cols-1 gap-x-6 gap-y-10 pt-6 md:grid-cols-2 lg:grid-cols-3">
-          {displayServices.map((service, index) => {
-            const bookingData = getActiveBookingData(service.id);
-            if (bookingData) {
-              return (
-                <div key={service.id} className="mt-6">
-                  <StatCard
-                    title={service.title}
-                    icon={
-                      React.isValidElement(service.icon)
-                        ? React.cloneElement(
-                            service.icon as React.ReactElement<{ className?: string }>,
-                            {
-                              className: "h-5 w-5",
-                            }
-                          )
-                        : service.icon
-                    }
-                    status="live"
-                    count={bookingData.count}
-                    countLabel={bookingData.countLabel}
-                    description={bookingData.description}
-                    extraContent={bookingData.extraContent}
-                    quickAccessButton={
-                      <QuickAccessButton
-                        item={{
-                          id: `service-${service.id}`,
-                          title: service.title,
-                          href: service.href,
-                          icon_name: (() => {
-                            const mapping: Record<string, string> = {
-                              "book-a-consultation": "Briefcase",
-                              "expert-consultation": "Briefcase",
-                              "pcc-filing-service-, -sindh": "Shield",
-                              "pcc-filing-service,-sindh": "Shield",
-                              "pcc-filing-service": "Shield",
-                              "book-medical-appointment": "Clock",
-                              "urdu-→-english-translation": "Files",
-                              "document-translation": "Files",
-                            };
-                            return mapping[service.id] || "Briefcase";
-                          })(),
-                        }}
-                        mode="icon"
-                      />
-                    }
-                    actionButton={bookingData.actionButton}
-                    onClick={() => {
-                      if (bookingData.onClick) {
-                        bookingData.onClick();
-                      } else if (bookingData.href) {
-                        router.push(bookingData.href);
-                      }
-                    }}
-                  />
-                </div>
-              );
-            }
-
-            return (
+      {browseServices.length > 0 && (
+        <CatalogSection
+          title="Browse Services"
+          subtitle="Explore more services, preview them or book with credits."
+          count={browseServices.length}
+        >
+          <CatalogGrid>
+            {browseServices.map((service, index) => (
               <ServiceCard
                 key={service.id}
                 service={service}
@@ -666,43 +440,47 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
                 onLockedClick={(feature) => setUpgradeModalFeature(feature)}
                 onLaunch={() => router.push(service.href)}
               />
-            );
-          })}
-          {/* {isEmbedded && (
-            <AddResourceCard
-              href="/pricing?mode=services"
-              label="Add service"
-              index={displayServices.length}
-            />
-          )} */}
-          {!isEmbedded && displayServices.length === 0 && (
-            <div className="text-muted-foreground col-span-full py-12 text-center">
-              {t("pages.services.noResults")}
-            </div>
-          )}
-        </div>
-
-        {/* Browse Services — everything not yet owned (embedded view only) */}
-        {isEmbedded && browseServices.length > 0 && (
-          <>
-            <ResourceSectionHeader
-              title="Browse Services"
-              subtitle="Explore more services, preview them or book with credits."
-            />
-            <div className="grid grid-cols-1 gap-x-6 gap-y-10 pt-6 md:grid-cols-2 lg:grid-cols-3">
-              {browseServices.map((service, index) => (
-                <ServiceCard
-                  key={service.id}
-                  service={service}
-                  index={index}
-                  onLockedClick={(feature) => setUpgradeModalFeature(feature)}
-                  onLaunch={() => router.push(service.href)}
-                />
-              ))}
-            </div>
-          </>
+            ))}
+          </CatalogGrid>
+        </CatalogSection>
+      )}
+    </div>
+  ) : (
+    <CatalogShell
+      eyebrow="Rahvana services"
+      title={t("pages.services.heroTitle")}
+      tagline={t("pages.services.heroDescription")}
+      bandContent={
+        <CatalogSearch
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder={t("pages.services.searchPlaceholder")}
+        />
+      }
+      toolbar={
+        <CatalogToolbar>
+          <CatalogFilters
+            label="Service categories"
+            options={categories}
+            value={selectedCategoryId}
+            onChange={setSelectedCategoryId}
+          />
+        </CatalogToolbar>
+      }
+    >
+      <CatalogGrid>
+        {displayServices.map((service, index) => renderServiceCard(service, index))}
+        {displayServices.length === 0 && (
+          <CatalogEmpty>{t("pages.services.noResults")}</CatalogEmpty>
         )}
-      </div>
+      </CatalogGrid>
+    </CatalogShell>
+  );
+
+  return (
+    <>
+      {modals}
+      {content}
 
       {/* Dialog modal to show requests and statuses */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
@@ -721,7 +499,7 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
               {/* Static Header */}
               <div className="flex shrink-0 items-center justify-between border-b border-gray-100 px-6 py-5 pr-12">
                 <div className="flex items-center gap-3">
-                  <Shield className="text-teal-650 h-6 w-6 flex-shrink-0" />
+                  <Shield className="h-6 w-6 flex-shrink-0 text-[#4A5BB5]" />
                   <div>
                     <DialogTitle className="text-xl font-bold text-gray-900">
                       Sindh PCC Requests
@@ -758,7 +536,7 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
                         setIsModalOpen(false);
                         router.push("/police-verification/apply?province=Sindh");
                       }}
-                      className="inline-flex cursor-pointer items-center justify-center rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-teal-700"
+                      className="inline-flex cursor-pointer items-center justify-center rounded-lg bg-[#4A5BB5] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#232E6B]"
                     >
                       Apply for PCC Sindh
                     </button>
@@ -814,7 +592,7 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
                         setIsModalOpen(false);
                         router.push("/book-consultation");
                       }}
-                      className="inline-flex cursor-pointer items-center justify-center rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-teal-700"
+                      className="inline-flex cursor-pointer items-center justify-center rounded-lg bg-[#0F8F80] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#0A4F49]"
                     >
                       Book Consultation
                     </button>
@@ -833,7 +611,7 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
               {/* Static Header */}
               <div className="flex shrink-0 items-center justify-between border-b border-gray-100 px-6 py-5 pr-12">
                 <div className="flex items-center gap-3">
-                  <Calendar className="h-6 w-6 flex-shrink-0 text-emerald-600" />
+                  <Calendar className="h-6 w-6 flex-shrink-0 text-[#C4534B]" />
                   <div>
                     <DialogTitle className="text-xl font-bold text-gray-900">
                       Medical Appointments
@@ -870,7 +648,7 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
                         setIsModalOpen(false);
                         router.push("/book-appointment");
                       }}
-                      className="inline-flex cursor-pointer items-center justify-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-700"
+                      className="inline-flex cursor-pointer items-center justify-center rounded-lg bg-[#C4534B] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#6E2420]"
                     >
                       Book Appointment
                     </button>
@@ -887,65 +665,99 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
           )}
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }
 
-// --- Service Card Component ---
+// --- Service cards ---
 
-const CATEGORY_STYLES: Record<
-  string,
-  {
-    iconBox: string;
-    innerBox: string;
-    link: string;
-    borderGradient: string;
-    hoverBg: string;
-    hoverBorder: string;
-  }
-> = {
-  "expert-help": {
-    iconBox: "bg-indigo-600 text-white border-transparent dark:bg-indigo-500",
-    innerBox: "bg-white/20",
-    link: "text-indigo-600 dark:text-indigo-400",
-    borderGradient: "from-indigo-400 to-indigo-300 dark:from-indigo-400 dark:to-indigo-300",
-    hoverBg: "group-hover:bg-indigo-100 dark:group-hover:bg-indigo-950/10",
-    hoverBorder: "group-hover:border-indigo-500/30 dark:group-hover:border-indigo-500/20",
-  },
-  "pakistan-docs-services": {
-    iconBox: "bg-emerald-600 text-white border-transparent dark:bg-emerald-500",
-    innerBox: "bg-white/20",
-    link: "text-emerald-600 dark:text-emerald-400",
-    borderGradient: "from-emerald-400 to-emerald-300 dark:from-emerald-400 dark:to-emerald-300",
-    hoverBg: "group-hover:bg-emerald-100 dark:group-hover:bg-emerald-950/10",
-    hoverBorder: "group-hover:border-emerald-500/30 dark:group-hover:border-emerald-500/20",
-  },
-  medical: {
-    iconBox: "bg-rose-600 text-white border-transparent dark:bg-rose-500",
-    innerBox: "bg-white/20",
-    link: "text-rose-600 dark:text-rose-400",
-    borderGradient: "from-rose-400 to-rose-300 dark:from-rose-400 dark:to-rose-300",
-    hoverBg: "group-hover:bg-rose-100 dark:group-hover:bg-rose-950/10",
-    hoverBorder: "group-hover:border-rose-500/30 dark:group-hover:border-rose-500/20",
-  },
-  documents: {
-    iconBox: "bg-amber-600 text-white border-transparent dark:bg-amber-500",
-    innerBox: "bg-white/20",
-    link: "text-amber-600 dark:text-amber-400",
-    borderGradient: "from-amber-300 to-amber-200 dark:from-amber-300 dark:to-amber-200",
-    hoverBg: "group-hover:bg-amber-100 dark:group-hover:bg-amber-950/10",
-    hoverBorder: "group-hover:border-amber-500/30 dark:group-hover:border-amber-500/20",
-  },
-  // Fallback for any other categories
-  Default: {
-    iconBox: "bg-slate-600 text-white border-transparent dark:bg-slate-500",
-    innerBox: "bg-white/20",
-    link: "text-slate-600 dark:text-slate-400",
-    borderGradient: "from-slate-400 to-slate-300 dark:from-slate-400 dark:to-slate-300",
-    hoverBg: "group-hover:bg-slate-100 dark:group-hover:bg-slate-950/10",
-    hoverBorder: "group-hover:border-slate-500/30 dark:group-hover:border-slate-500/20",
-  },
+const QUICK_ACCESS_ICONS: Record<string, string> = {
+  "book-a-consultation": "Briefcase",
+  "expert-consultation": "Briefcase",
+  "pcc-filing-service-, -sindh": "Shield",
+  "pcc-filing-service,-sindh": "Shield",
+  "pcc-filing-service": "Shield",
+  "book-medical-appointment": "Clock",
+  "urdu-→-english-translation": "Files",
+  "document-translation": "Files",
 };
+
+const servicePalette = (service: Service) =>
+  SERVICE_CATEGORY_PALETTES[service.categoryId] ?? CATALOG_BAND_PALETTE;
+
+function ServiceQuickAccess({ service }: { service: Service }) {
+  return (
+    <QuickAccessButton
+      item={{
+        id: `service-${service.id}`,
+        title: service.title,
+        href: service.href,
+        icon_name: QUICK_ACCESS_ICONS[service.id] || "Briefcase",
+      }}
+      mode="icon"
+    />
+  );
+}
+
+interface BookingSummary {
+  count: number;
+  countLabel: string;
+  description?: React.ReactNode;
+  extraContent?: React.ReactNode;
+  actionButton?: { label: string; href: string };
+}
+
+/** A service the user already has requests for: count, latest status and a "book again" action. */
+function BookedServiceCard({
+  service,
+  index,
+  booking,
+  onOpen,
+}: {
+  service: Service;
+  index: number;
+  booking: BookingSummary;
+  onOpen: () => void;
+}) {
+  return (
+    <CatalogCard
+      palette={servicePalette(service)}
+      icon={service.icon}
+      eyebrow={service.categoryLabel}
+      title={service.title}
+      index={index}
+      onClick={onOpen}
+      topRight={<ServiceQuickAccess service={service} />}
+      footer={
+        <div className="flex items-center justify-between gap-3">
+          <CatalogOpenCue label="View requests" />
+          {booking.actionButton && (
+            <Link
+              href={booking.actionButton.href}
+              onClick={(e) => e.stopPropagation()}
+              className={CATALOG_BTN_PRIMARY}
+            >
+              {booking.actionButton.label}
+            </Link>
+          )}
+        </div>
+      }
+    >
+      <div className="mt-4 flex items-baseline gap-2">
+        <span className="font-serif text-[34px] leading-none font-semibold text-[var(--cat-accent-dark)] tabular-nums">
+          {booking.count}
+        </span>
+        <span className="text-sm font-medium text-[#16302C]/60">{booking.countLabel}</span>
+      </div>
+      {booking.extraContent && <div className="mt-3">{booking.extraContent}</div>}
+      {booking.description && (
+        <div className="mt-3 rounded-xl bg-[var(--cat-accent-tint)]/60 px-3.5 py-3 text-[13px] leading-relaxed text-[#16302C]/75">
+          {booking.description}
+        </div>
+      )}
+    </CatalogCard>
+  );
+}
 
 function ServiceCard({
   service,
@@ -959,8 +771,6 @@ function ServiceCard({
   onLaunch: (item: WalletCatalogItem) => void;
 }) {
   const { t } = useLanguage();
-  const styles = CATEGORY_STYLES[service.categoryId] || CATEGORY_STYLES["Default"];
-  const { isInQuickAccess } = useQuickAccess();
 
   const catalogItem = getServiceCatalogItem(service.id);
   const showDualCta = !!catalogItem && !service.disabled;
@@ -973,97 +783,28 @@ function ServiceCard({
     }
   };
 
-  const CardWrapper = (showDualCta || !isNavigable ? "div" : Link) as React.ElementType;
-
   return (
-    <CardWrapper
-      href={showDualCta ? undefined : isNavigable ? service.href : "#"}
-      onClick={handleClick}
-      className={`group bg-card relative mx-2 mt-6 flex flex-col rounded-[30px] p-6 pt-7 transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] md:mx-0 ${
-        isNavigable
-          ? "border-border cursor-pointer border hover:-translate-y-2 hover:shadow-xl"
-          : "border-border cursor-not-allowed border opacity-80 grayscale-[0.5]"
-      } animate-fade-up`}
-      style={{ animationDelay: `${index * 100}ms` }}
-    >
-      {/* Floating Icon Box */}
-      <div
-        className={`absolute -top-6 left-6 z-10 flex h-12 w-12 items-center justify-center rounded-2xl border shadow-md transition-all duration-400 group-hover:-translate-y-1 group-hover:-rotate-3 group-hover:shadow-lg md:h-14 md:w-14 ${styles.iconBox}`}
-      >
-        <div
-          className={`absolute inset-1 -z-10 rounded-[10px] transition-colors duration-300 ${styles.innerBox}`}
-        />
-        {React.isValidElement(service.icon)
-          ? React.cloneElement(service.icon as React.ReactElement<{ className?: string }>, {
-              className: "w-5 h-5 md:w-6 md:h-6 stroke-2",
-            })
-          : service.icon}
-      </div>
-
-      {/* Hover overlay with light category-specific background & border */}
-      <div
-        className={`pointer-events-none absolute inset-0 z-0 rounded-[30px] border border-transparent transition-all duration-400 ${styles.hoverBg} ${styles.hoverBorder}`}
-      />
-
-      {/* Radial Glow */}
-      <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(13,115,119,0.04),transparent_40%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100 dark:bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(255,255,255,0.03),transparent_40%)]" />
-
-      {/* Content */}
-      <div className="relative z-10 flex grow flex-col pt-2">
-        <div className="flex items-start justify-between gap-3">
-          {/* Left: Service title */}
-          <div className="min-w-0 flex-1">
-            <h3 className="text-foreground mb-1 text-xl font-bold transition-colors">
-              {service.title}
-            </h3>
-          </div>
-
-          {/* Right: Credit info + Quick Access */}
-          <div className="flex shrink-0 items-center gap-1">
-            <CreditInfoTooltip
-              message="Each booking or request requires credits. You’ll need to pay again for every new request."
-              side="top"
-            />
-
-            <div className="relative z-50">
-              <QuickAccessButton
-                item={{
-                  id: `service-${service.id}`,
-                  title: service.title,
-                  href: service.href,
-                  icon_name: (() => {
-                    const mapping: Record<string, string> = {
-                      "book-a-consultation": "Briefcase",
-                      "expert-consultation": "Briefcase",
-                      "pcc-filing-service-, -sindh": "Shield",
-                      "pcc-filing-service,-sindh": "Shield",
-                      "pcc-filing-service": "Shield",
-                      "book-medical-appointment": "Clock",
-                      "urdu-→-english-translation": "Files",
-                      "document-translation": "Files",
-                    };
-
-                    return mapping[service.id] || "Briefcase";
-                  })(),
-                }}
-                mode="icon"
-              />
-            </div>
-          </div>
-        </div>
-        <div className="mb-3">
-          <span className="text-muted-foreground/80 bg-muted rounded px-2 py-0.5 text-[11px] font-bold tracking-wide uppercase">
-            {service.categoryLabel}
-          </span>
-        </div>
-        <p className="mb-6 grow text-sm leading-relaxed text-slate-900 dark:text-white">
-          {service.description}
-        </p>
-      </div>
-
-      {/* Footer / Action */}
-      <div className="border-border relative z-10 mt-auto flex flex-col border-t pt-3">
-        {showDualCta && catalogItem ? (
+    <CatalogCard
+      palette={servicePalette(service)}
+      icon={service.icon}
+      eyebrow={service.categoryLabel}
+      title={service.title}
+      description={service.description}
+      disabled={service.disabled}
+      index={index}
+      href={!showDualCta && isNavigable ? service.href : undefined}
+      onClick={!showDualCta && isNavigable ? handleClick : undefined}
+      topRight={
+        <>
+          <CreditInfoTooltip
+            message="Each booking or request requires credits. You will need to pay again for every new request."
+            side="top"
+          />
+          <ServiceQuickAccess service={service} />
+        </>
+      }
+      footer={
+        showDualCta && catalogItem ? (
           <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2.5">
             <div className="flex items-center gap-2">
               <Link
@@ -1073,41 +814,33 @@ function ServiceCard({
                     : withPreviewMode(service.href)
                 }
                 onClick={(e) => e.stopPropagation()}
-                className="inline-flex h-9 items-center rounded-lg border border-slate-200 bg-white px-3.5 text-[13px] font-semibold whitespace-nowrap text-slate-700 transition-colors hover:border-[#0d7377]/40 hover:text-[#0d7377]"
+                className={CATALOG_BTN_GHOST}
               >
-                {catalogItem.legacyAddonId ? "View Details" : "Preview Guide"}
+                {catalogItem.legacyAddonId ? "View Details" : "Preview"}
               </Link>
               <button
                 type="button"
                 onClick={() => onLaunch(catalogItem)}
                 aria-label={`Launch ${service.title} for ${catalogItem.credits} credits`}
-                className="inline-flex h-9 items-center rounded-lg bg-[#0d7377] px-4 text-[13px] font-semibold whitespace-nowrap text-white transition-colors hover:bg-[#0a5c5f]"
+                className={CATALOG_BTN_PRIMARY}
               >
                 Launch
               </button>
             </div>
-
-            <CreditTypeIcon kind="services" size={30} amount={catalogItem.credits} />
+            <CatalogPrice kind="services" amount={catalogItem.credits} />
           </div>
         ) : (
-          <div className="flex items-center justify-between">
-            <span className="text-muted-foreground flex items-center gap-1 text-xs font-medium" />
+          <div className="flex items-center justify-end">
             {isNavigable ? (
-              <span
-                className={`flex items-center gap-1.5 text-sm font-semibold decoration-2 underline-offset-2 group-hover:underline ${styles.link}`}
-              >
-                {t("pages.services.openService")} <ArrowRight className="h-4 w-4" />
-              </span>
+              <CatalogOpenCue label={t("pages.services.openService")} />
             ) : (
-              <span className="text-muted-foreground/50 flex cursor-not-allowed items-center gap-1.5 text-sm font-semibold">
+              <span className="text-sm font-semibold text-[#16302C]/40">
                 {t("pages.services.comingSoon")}
               </span>
             )}
           </div>
-        )}
-      </div>
-    </CardWrapper>
+        )
+      }
+    />
   );
 }
-
-// --- Collapsible Admin Notes: shared component from @/components/services/PccRequestCard ---

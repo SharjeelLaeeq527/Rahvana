@@ -775,37 +775,27 @@ function PricingContent() {
   const categoryCandidates = useMemo(() => {
     if (!isMultiCandidate && !isIr5) return [];
 
-    // 1. Base candidates from CandidateContext
-    const baseCandidates = (candidates || []).filter((c) => {
-      const cVisa = getBaseVisaCategory(c.visaCategory);
-      return (
-        cVisa === canonicalVisa ||
-        c.relation === "Mother" ||
-        c.relation === "Father" ||
-        c.relation === "Stepparent" ||
-        c.relation === "AdoptiveParent" ||
-        (!c.visaCategory && c.relation !== "Spouse")
+    // Candidates of THIS category's pool (IR-2 and CR-2 children together), each joined
+    // to its own journey row by its category slot. An IR-2 child is never mistaken for an
+    // IR-5 parent, whatever its account-wide id.
+    const roster = candidates || [];
+    const members = poolMembers(roster, canonicalVisa);
+    const poolBase = parseJourneyKey(journeyKeyForSlot(canonicalVisa, 1)).base;
+    const poolRows = (userJourneys || []).filter(
+      (j) => parseJourneyKey(String(j.journey_type || "")).base === poolBase
+    );
+
+    const rowFor = (key: string) => {
+      const rows = poolRows.filter(
+        (j) => canonicalJourneyKey(String(j.journey_type || "")) === key
       );
-    });
+      return rows.find((j) => (j.subscription_tier || "free") !== "free") || rows[0];
+    };
 
-    // 2. Discover IR-5 candidate journeys from DB journeys
-    const ir5DbJourneys = (userJourneys || []).filter((j) => {
-      const raw = String(j.journey_type || "").toLowerCase();
-      return (
-        raw.includes("ir5") || raw.includes("ir-5") || (raw.startsWith("ir") && raw.includes("5"))
-      );
-    });
-
-    if (ir5DbJourneys.length === 0) {
-      return baseCandidates;
-    }
-
-    // Merge DB journeys into candidate roster
-    const mergedMap = new Map<string, any>();
-
-    // Credit with baseCandidates
-    baseCandidates.forEach((c) => {
-      mergedMap.set(c.id.toLowerCase(), {
+    const merged = members.map((c) => {
+      const row = rowFor(getJourneyKeyForCandidate(c));
+      const rowTier = row?.subscription_tier || "free";
+      return {
         ...c,
         tier: rowTier !== "free" ? rowTier : c.tier || "free",
         createdAt: c.createdAt || row?.created_at,

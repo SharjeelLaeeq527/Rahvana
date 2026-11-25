@@ -287,6 +287,12 @@ the route and the journey: `SponsorshipCalculatorLayout` (`components/tools/`) a
   Interview Prep (+ My Sessions), 221(g), Sponsorship, Photo Booth, PDF Toolkit, Snap & Sign, DQ
   status, CSPA, USCIS case status. Not yet: document translation, medical, PCC, consultation,
   Smart Form Filler. Test: `__tests__/tools/tool-layout-placement.test.ts`.
+  The Resources catalog (My Resources tabs and the standalone `/tools`, `/guides`, `/services`
+  pages) uses the same look through `components/resources/catalog.tsx` (`CatalogShell` band,
+  `CatalogCard`, filters, search, section headers). A tool card takes the theme of the tool it
+  opens (`TOOL_CARD_PALETTES`), guides use a palette per category, services the service-skin
+  accents. Presentational only: ownership / credit / launch logic stays in the pages. Test:
+  `__tests__/tools/resources-catalog-render.test.ts`.
 
 **Redesigned journey dashboard.** Both `DashboardView`s (spouse + engine) render only
 `app/components/journey-dashboard/JourneyDashboard.tsx` (the classic layout and its toggle were removed;

@@ -14,7 +14,7 @@ import {
 import { normalizePlanTier } from "@/app/context/PlanContext";
 import type { PlanTier } from "@/lib/entitlements/config";
 import { Button } from "@/components/ui/button";
-import { IR5_ENABLED } from "@/lib/feature-flags";
+import { IR2_ENABLED, IR5_ENABLED } from "@/lib/feature-flags";
 import { Input } from "@/components/ui/input";
 import { ResultGate } from "@/app/components/entitlements/ResultGate";
 import { Label } from "@/components/ui/label";
