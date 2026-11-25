@@ -33,6 +33,7 @@ import {
   SMART_FORM_TOOL_ID,
   smartFormResourceId,
 } from "@/lib/wallet/catalog";
+import { ToolLayout } from "@/components/tools/layout";
 
 interface VisaForm {
   id?: string;
@@ -666,6 +667,7 @@ export interface VisaFormSelectorProps {
   journeyTier?: string;
   onSelectForm?: (formCode: string) => void;
   isEmbedded?: boolean;
+  showHeader?: boolean;
 }
 
 export default function VisaFormSelector({
@@ -674,6 +676,7 @@ export default function VisaFormSelector({
   journeyTier: propJourneyTier,
   onSelectForm,
   isEmbedded = false,
+  showHeader = true,
 }: VisaFormSelectorProps = {}) {
   const { isJourney, journeyContext, journeyTier } = useResolveToolMode({
     mode: propMode,
@@ -890,93 +893,115 @@ export default function VisaFormSelector({
     return 0;
   });
 
+  // Drawer Content
+  // const rules = useMemo(
+  //   () => [
+  //     {
+  //       title: "Handwritten Signatures (Snap & Sign)",
+  //       desc: "Certain forms (e.g. Form I-864 Affidavit of Support and certain paper petitions) require an original ink signature. Stamped or cropped digital signatures from our integrated Snap & Sign tool can be placed before submission.",
+  //     },
+  //     {
+  //       title: "Edition Date Strictness",
+  //       desc: "USCIS and DOS strictly reject petitions filed on expired or obsolete form editions. Always check the edition date printed on the lower left of each page and verify against current government releases.",
+  //     },
+  //     {
+  //       title: "Black Ink & Standard Format",
+  //       desc: "Paper filings must be printed single-sided in black ink on standard 8.5\" × 11\" white paper without staples. Typed answers from the Smart Form Filler prevent illegibility rejections.",
+  //     },
+  //     {
+  //       title: "Addendum & Overflow Sheets",
+  //       desc: "When answers exceed the allotted text boxes, use official Part 12 / Additional Information pages labeled with your full legal name, Alien Registration Number (A-Number), and part/item numbers.",
+  //     },
+  //   ],
+  //   []
+  // );
+
+  const faqs = useMemo(
+    () => [
+      {
+        question: "Can I download official blank PDFs directly?",
+        answer:
+          "Yes, every form card includes a 'View Sample' button with a direct link and in-app preview of the blank official USCIS/DOS PDF.",
+      },
+      {
+        question: "What does the Smart Form Filler do?",
+        answer:
+          "It translates complex legalese government questions into plain conversational questions, pre-fills answers from your profile and journey context, validates errors, and compiles a finalized official government PDF.",
+      },
+      {
+        question: "Which forms can I fill for free?",
+        answer:
+          "Form I-130 has a full interactive demo. Individual forms can be unlocked using credits or are included with paid journey tiers (Premium & Executive).",
+      },
+      {
+        question: "How does auto-population work?",
+        answer:
+          "When logged in, your verified name, address history, family records, and petitioner information automatically cascade across all your petition forms.",
+      },
+    ],
+    []
+  );
+
+  const sources = useMemo(
+    () => [
+      {
+        title: "USCIS All Forms Official Directory",
+        url: "https://www.uscis.gov/forms/all-forms",
+        note: "Official USCIS catalog of immigration forms, filing fees, and edition updates.",
+      },
+      {
+        title: "Department of State CEAC DS-260 Portal",
+        url: "https://ceac.state.gov/",
+        note: "Consular Electronic Application Center for Immigrant Visa processing.",
+      },
+      {
+        title: "USCIS Form G-1055 Fee Schedule",
+        url: "https://www.uscis.gov/g-1055",
+        note: "Current filing fees, fee exemptions, and biometric service fee tables.",
+      },
+      {
+        title: "31 C.F.R. Part 208 Treasury Regulations",
+        url: "https://www.govinfo.gov/content/pkg/CFR-2025-title31-vol2/pdf/CFR-2025-title31-vol2-sec208-1.pdf",
+        note: "Treasury Department undue hardship exceptions and electronic fund transfer exemptions.",
+      },
+    ],
+    []
+  );
+
   return (
-    <div
-      className={
-        isEmbedded
-          ? "w-full"
-          : "from-primary/10 to-primary/5 mt-10 min-h-screen bg-linear-to-br via-white"
-      }
+    <ToolLayout
+      title="Smart Form Filler"
+      tagline="Browse official U.S. immigration forms organized by your journey stage, preview official blanks, and auto-fill with guided questions."
+      category="Document Preparation / USCIS"
+      priceOrDuration="Official PDF generator"
+      theme="forms"
+      layout="single"
+      showHeader={showHeader}
+      quickAccessItem={{
+        id: "form-forge",
+        title: "Smart Form Filler",
+        href: "/visa-forms",
+        icon_name: "Wand2",
+      }}
+      // rules={rules}
+      faqs={faqs}
+      sources={sources}
+      disclaimer="Form templates and guidelines are tracked directly from USCIS and Department of State publications. Always confirm current filing fees and edition dates prior to mailing."
     >
-      <div className={isEmbedded ? "px-2 py-4 sm:px-4" : "site-main-px site-main-py"}>
-        {/* Header */}
-        <div className="mb-8 text-center md:mb-12">
-          <div className="bg-primary/10 mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full md:h-16 md:w-16">
-            <FileText className="text-primary/90 h-6 w-6 md:h-8 md:w-8" />
-          </div>
-          <h1 className="mb-3 text-3xl font-bold text-gray-900 md:text-4xl">
-            Immigration Forms Library
-          </h1>
-          <p className="mx-auto mb-2 max-w-3xl text-lg text-gray-600 md:text-xl">
-            Browse all forms organized by your journey stage, or search instantly to find exactly
-            what you need.
-          </p>
-          {!isEmbedded && (
-            <div className="mt-4 flex justify-center">
-              <QuickAccessButton
-                item={{
-                  id: "form-forge",
-                  title: "Smart Form Filler",
-                  href: "/visa-forms",
-                  icon_name: "Wand2",
-                }}
-              />
-            </div>
-          )}
-          {/* <p className="text-gray-500 max-w-2xl mx-auto">
-            Fill out official U.S. visa forms with helpful guidance at every
-            step
-          </p> */}
+      {/* Free & Basic preview disclaimer */}
+      {!wallet.isLoading && SMART_FORM_CODES.some((code) => isFormLocked(code)) && (
+        <div className="mb-6">
+          <ExpandableTooltip
+            icon={"i"}
+            defaultOpen={false}
+            title="Demo: I-130 only"
+            message="Without an unlock you get a limited demo of the Smart Form Filler on the I-130 form only: answer a few questions, review your answers, and preview the first page of the completed PDF. Unlock a form with credits to start it and download its complete, multi-page PDF. Each form is unlocked on its own. Forms inside your journey follow your journey plan."
+          />
         </div>
+      )}
 
-        {/* Free & Basic preview disclaimer */}
-        {!wallet.isLoading && SMART_FORM_CODES.some((code) => isFormLocked(code)) && (
-          <div className="mx-auto max-w-3xl">
-            <ExpandableTooltip
-              icon={"i"}
-              defaultOpen={false}
-              title="Demo: I-130 only"
-              message="Without an unlock you get a limited demo of the Smart Form Filler on the I-130 form only: answer a few questions, review your answers, and preview the first page of the completed PDF. Unlock a form with credits to start it and download its complete, multi-page PDF. Each form is unlocked on its own. Forms inside your journey follow your journey plan."
-            />
-          </div>
-        )}
-
-        {/* Info Banner */}
-        {/* <div className="bg-primary/5 border border-primary/20 rounded-xl p-6 mb-10">
-          <div className="flex items-start gap-3">
-            <Info className="w-6 h-6 text-primary/90 shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                How It Works
-              </h3>
-              <ul className="space-y-2 text-gray-700">
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="w-5 h-5 text-primary/90 shrink-0 mt-0.5" />
-                  <span>Choose a form below to get started</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="w-5 h-5 text-primary/90 shrink-0 mt-0.5" />
-                  <span>Answer 2-3 questions at a time with helpful tips</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="w-5 h-5 text-primary/90 shrink-0 mt-0.5" />
-                  <span>Your progress is saved automatically</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle className="w-5 h-5 text-primary/90 shrink-0 mt-0.5" />
-                  <span>Review and edit before generating your filled PDF</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div> */}
-
-        {/* Search & View Toggle Section */}
-
-        {/* Content Grid */}
-        <div className="mx-auto max-w-7xl">
-          {/* Main Content */}
-          <main className="min-w-0">
+      {/* Main Content */}
+      <main className="min-w-0">
             {/* Search & Tabs (Moved Inside Main Content) */}
             <div className="mb-8 md:mb-10">
               <div className="mb-6 flex flex-row gap-4">
@@ -1018,135 +1043,144 @@ export default function VisaFormSelector({
                   {/* Filter Popover */}
                   {isFilterPopoverOpen && (
                     <div
-                      ref={filterPopoverRef}
-                      className="absolute top-full right-0 z-50 mt-2 max-h-[500px] w-80 overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-xl"
+                      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 pt-[68px] pb-[88px] backdrop-blur-sm sm:absolute sm:inset-auto sm:top-full sm:right-0 sm:mt-2 sm:block sm:bg-transparent sm:p-0 sm:backdrop-blur-none"
+                      onClick={(e) => {
+                        if (e.target === e.currentTarget) {
+                          setIsFilterPopoverOpen(false);
+                        }
+                      }}
                     >
-                      {/* Header */}
-                      <div className="sticky top-0 flex items-center justify-between border-b border-gray-100 bg-white p-4">
-                        <h3 className="font-semibold text-gray-900">Filter Forms</h3>
-                        <button
-                          onClick={() => setIsFilterPopoverOpen(false)}
-                          className="text-gray-600 transition-colors hover:text-gray-900"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      </div>
-
-                      {/* Filter Content */}
-                      <div className="space-y-4 p-4">
-                        {/* Journey Filter */}
-                        <div>
-                          <label className="mb-2 block text-xs font-semibold tracking-wide text-gray-900 uppercase">
-                            Visa Journey
-                          </label>
-                          <div className="flex flex-col gap-2">
-                            {[
-                              { id: "IR1-CR1", label: "IR-1 / CR-1 (Spouse)" },
-                              // IR-5 is hidden on production (see lib/feature-flags) until it launches.
-                              ...(IR5_ENABLED ? [{ id: "IR5", label: "IR-5 (Parent)" }] : []),
-                              // IR-2 is hidden on production (see lib/feature-flags) until it launches.
-                              ...(IR2_ENABLED ? [{ id: "IR2", label: "IR-2 (Child)" }] : []),
-                              // { id: "K1", label: "K-1 (Fiancé)" },
-                              // { id: "AOS", label: "Adjustment of Status" },
-                              // { id: "Naturalization", label: "Naturalization" },
-                            ].map((journey) => (
-                              <button
-                                key={journey.id}
-                                onClick={() => {
-                                  if (currentJourney === journey.id) {
-                                    setCurrentJourney("");
-                                  } else {
-                                    setCurrentJourney(journey.id);
-                                    setCurrentStage("USCIS Filing");
-                                  }
-                                }}
-                                className={`w-full rounded-lg border px-3 py-2 text-left text-sm transition-all duration-200 ${
-                                  currentJourney === journey.id
-                                    ? "border-[#0d7377] bg-[#0d7377] text-white"
-                                    : "border-gray-200 bg-white text-gray-600 hover:border-[#0d7377] hover:text-[#0d7377]"
-                                }`}
-                              >
-                                {journey.label}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Agency Filter */}
-                        <div className="border-t border-gray-100 pt-4">
-                          <label className="mb-2 block text-xs font-semibold tracking-wide text-gray-900 uppercase">
-                            Agency
-                          </label>
-                          <div className="flex flex-col gap-2">
-                            {["USCIS"].map((agency) => (
-                              <button
-                                key={agency}
-                                onClick={() => toggleFilter("agency", agency)}
-                                className={`w-full rounded-lg border px-3 py-2 text-left text-sm transition-all duration-200 ${
-                                  activeFilters.agency.includes(agency)
-                                    ? "border-[#0d7377] bg-[#0d7377] text-white"
-                                    : "border-gray-200 bg-white text-gray-600 hover:border-[#0d7377] hover:text-[#0d7377]"
-                                }`}
-                              >
-                                {agency}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Category Filter */}
-                        <div className="border-t border-gray-100 pt-4">
-                          <label className="mb-2 block text-xs font-semibold tracking-wide text-gray-900 uppercase">
-                            Category
-                          </label>
-                          <div className="flex flex-col gap-2">
-                            {["Family-based", "Financial"].map((category) => (
-                              <button
-                                key={category}
-                                onClick={() => toggleFilter("category", category)}
-                                className={`w-full rounded-lg border px-3 py-2 text-left text-sm transition-all duration-200 ${
-                                  activeFilters.category.includes(category)
-                                    ? "border-[#0d7377] bg-[#0d7377] text-white"
-                                    : "border-gray-200 bg-white text-gray-600 hover:border-[#0d7377] hover:text-[#0d7377]"
-                                }`}
-                              >
-                                {category}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Footer */}
-                      <div className="sticky bottom-0 space-y-3 border-t border-gray-100 bg-gray-50 px-4 py-3">
-                        <div className="flex gap-2">
-                          {(activeFilters.agency.length > 0 ||
-                            activeFilters.category.length > 0 ||
-                            currentJourney) && (
-                            <button
-                              onClick={() => {
-                                clearFilters();
-                                setCurrentJourney("");
-                              }}
-                              className="flex-1 rounded-lg bg-[#0d7377] px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-[#0a5a5d]"
-                            >
-                              Reset
-                            </button>
-                          )}
+                      <div
+                        ref={filterPopoverRef}
+                        className="flex max-h-full w-full max-w-sm flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-2xl sm:max-h-[500px] sm:w-80 sm:shadow-xl"
+                      >
+                        {/* Header */}
+                        <div className="flex shrink-0 items-center justify-between border-b border-gray-100 bg-white p-4">
+                          <h3 className="font-semibold text-gray-900">Filter Forms</h3>
                           <button
                             onClick={() => setIsFilterPopoverOpen(false)}
-                            className="flex-1 rounded-lg bg-gray-200 px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-300"
+                            className="text-gray-600 transition-colors hover:text-gray-900"
                           >
-                            Done
+                            <X className="h-4 w-4" />
                           </button>
                         </div>
-                        <div className="text-center text-xs text-gray-600">
-                          Showing{" "}
-                          <span className="font-semibold text-gray-900">
-                            {filteredForms.length}
-                          </span>{" "}
-                          of{" "}
-                          <span className="font-semibold text-gray-900">{VISA_FORMS.length}</span>
+
+                        {/* Filter Content */}
+                        <div className="custom-scrollbar flex-1 space-y-4 overflow-y-auto p-4">
+                          {/* Journey Filter */}
+                          <div>
+                            <label className="mb-2 block text-xs font-semibold tracking-wide text-gray-900 uppercase">
+                              Visa Journey
+                            </label>
+                            <div className="flex flex-col gap-2">
+                              {[
+                                { id: "IR1-CR1", label: "IR-1 / CR-1 (Spouse)" },
+                                // IR-5 is hidden on production (see lib/feature-flags) until it launches.
+                                ...(IR5_ENABLED ? [{ id: "IR5", label: "IR-5 (Parent)" }] : []),
+                                // IR-2 is hidden on production (see lib/feature-flags) until it launches.
+                                ...(IR2_ENABLED ? [{ id: "IR2", label: "IR-2 (Child)" }] : []),
+                                // { id: "K1", label: "K-1 (Fiancé)" },
+                                // { id: "AOS", label: "Adjustment of Status" },
+                                // { id: "Naturalization", label: "Naturalization" },
+                              ].map((journey) => (
+                                <button
+                                  key={journey.id}
+                                  onClick={() => {
+                                    if (currentJourney === journey.id) {
+                                      setCurrentJourney("");
+                                    } else {
+                                      setCurrentJourney(journey.id);
+                                      setCurrentStage("USCIS Filing");
+                                    }
+                                  }}
+                                  className={`w-full rounded-lg border px-3 py-2 text-left text-sm transition-all duration-200 ${
+                                    currentJourney === journey.id
+                                      ? "border-[#0d7377] bg-[#0d7377] text-white"
+                                      : "border-gray-200 bg-white text-gray-600 hover:border-[#0d7377] hover:text-[#0d7377]"
+                                  }`}
+                                >
+                                  {journey.label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Agency Filter */}
+                          <div className="border-t border-gray-100 pt-4">
+                            <label className="mb-2 block text-xs font-semibold tracking-wide text-gray-900 uppercase">
+                              Agency
+                            </label>
+                            <div className="flex flex-col gap-2">
+                              {["USCIS"].map((agency) => (
+                                <button
+                                  key={agency}
+                                  onClick={() => toggleFilter("agency", agency)}
+                                  className={`w-full rounded-lg border px-3 py-2 text-left text-sm transition-all duration-200 ${
+                                    activeFilters.agency.includes(agency)
+                                      ? "border-[#0d7377] bg-[#0d7377] text-white"
+                                      : "border-gray-200 bg-white text-gray-600 hover:border-[#0d7377] hover:text-[#0d7377]"
+                                  }`}
+                                >
+                                  {agency}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Category Filter */}
+                          <div className="border-t border-gray-100 pt-4">
+                            <label className="mb-2 block text-xs font-semibold tracking-wide text-gray-900 uppercase">
+                              Category
+                            </label>
+                            <div className="flex flex-col gap-2">
+                              {["Family-based", "Financial"].map((category) => (
+                                <button
+                                  key={category}
+                                  onClick={() => toggleFilter("category", category)}
+                                  className={`w-full rounded-lg border px-3 py-2 text-left text-sm transition-all duration-200 ${
+                                    activeFilters.category.includes(category)
+                                      ? "border-[#0d7377] bg-[#0d7377] text-white"
+                                      : "border-gray-200 bg-white text-gray-600 hover:border-[#0d7377] hover:text-[#0d7377]"
+                                  }`}
+                                >
+                                  {category}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="shrink-0 space-y-3 border-t border-gray-100 bg-gray-50 px-4 py-3">
+                          <div className="flex gap-2">
+                            {(activeFilters.agency.length > 0 ||
+                              activeFilters.category.length > 0 ||
+                              currentJourney) && (
+                              <button
+                                onClick={() => {
+                                  clearFilters();
+                                  setCurrentJourney("");
+                                }}
+                                className="flex-1 rounded-lg bg-[#0d7377] px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-[#0a5a5d]"
+                              >
+                                Reset
+                              </button>
+                            )}
+                            <button
+                              onClick={() => setIsFilterPopoverOpen(false)}
+                              className="flex-1 rounded-lg bg-gray-200 px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-300"
+                            >
+                              Done
+                            </button>
+                          </div>
+                          <div className="text-center text-xs text-gray-600">
+                            Showing{" "}
+                            <span className="font-semibold text-gray-900">
+                              {filteredForms.length}
+                            </span>{" "}
+                            of{" "}
+                            <span className="font-semibold text-gray-900">{VISA_FORMS.length}</span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -1762,7 +1796,6 @@ export default function VisaFormSelector({
               </div>
             </div>
           )}
-        </div>
 
         {/* Toast Notification */}
         {toast && (
@@ -1790,7 +1823,6 @@ export default function VisaFormSelector({
         {showUpgradeModal && (
           <UpgradeModal feature="smart_form_filler" onClose={() => setShowUpgradeModal(false)} />
         )}
-      </div>
-    </div>
-  );
-}
+      </ToolLayout>
+    );
+  }

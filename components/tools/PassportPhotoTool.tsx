@@ -2,16 +2,7 @@
 
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import NextImage from "next/image";
-import {
-  Upload,
-  AlertCircle,
-  Download,
-  CheckCircle,
-  X,
-  Trash2,
-  Clock,
-  Lock,
-} from "lucide-react";
+import { Upload, Download, CheckCircle, X, Trash2, Lock } from "lucide-react";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { useFeatureAccess } from "@/lib/usage/useFeatureAccess";
@@ -531,24 +522,7 @@ export default function PassportPhotoTool({
     showToast("All photo history cleared.", "info");
   };
 
-  // ── Pieces shared by the journey view and the standalone ToolLayout view ──
-
-  const albumButton = (
-    <button
-      type="button"
-      onClick={() => setShowHistoryModal(true)}
-      className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-slate-200/90 bg-white/95 px-3.5 py-1.5 text-xs font-semibold text-slate-700 shadow-sm backdrop-blur-sm transition-all hover:border-[var(--tool-accent,#0d7377)]/50 hover:bg-white hover:text-[var(--tool-accent,#0d7377)] active:scale-95"
-      title="View saved photo history"
-    >
-      <Clock className="h-3.5 w-3.5 text-[var(--tool-accent,#0d7377)]" />
-      <span>My Album</span>
-      {mounted && history.length > 0 && (
-        <span className="rounded-full bg-[var(--tool-accent,#0d7377)] px-1.5 py-0.5 text-[10px] leading-none font-bold text-white">
-          {history.length}
-        </span>
-      )}
-    </button>
-  );
+  // ── Pieces of the tool layout ──
 
   const requirementKeys = ["1", "2", "3", "4", "5", "6", "7"];
 
@@ -733,7 +707,7 @@ export default function PassportPhotoTool({
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <button
               onClick={() => activePhoto && handleDownloadPhoto(activePhoto)}
-              className="flex cursor-pointer items-center gap-2 rounded-xl bg-[var(--tool-accent,#0d7377)] px-6 py-3 font-semibold text-white shadow-lg shadow-[var(--tool-accent,#0d7377)]/30 transition-all hover:bg-[var(--tool-accent-dark,#0a5f63)]"
+              className="flex cursor-pointer items-center gap-2 rounded-xl bg-[var(--tool-accent,#0d7377)] px-6 py-3 font-semibold text-white shadow-[var(--tool-accent,#0d7377)]/30 shadow-lg transition-all hover:bg-[var(--tool-accent-dark,#0a5f63)]"
             >
               <Download className="h-5 w-5" />
               <span>{t("passportPhoto.download")}</span>
@@ -825,148 +799,76 @@ export default function PassportPhotoTool({
     </>
   );
 
-  // ── Standalone page (and the journey tool overlay, which asks for the page chrome) ──
-  if (showHeader) {
-    return (
-      <>
-        <ToolLayout
-          theme="photo"
-          title={t("passportPhoto.title")}
-          tagline={t("passportPhoto.subtitle")}
-          quickAccessItem={
-            isJourney
-              ? undefined
-              : {
-                  id: "photo-booth",
-                  title: "Photo Booth",
-                  href: "/passport",
-                  icon_name: "Camera",
-                }
-          }
-          historyAction={{
-            label: "My Album",
-            count: mounted ? history.length : undefined,
-            isOpen: showHistoryModal,
-            onClick: () => setShowHistoryModal(true),
-          }}
-          layout="split"
-          answer={
-            resultCard ? (
-              <div ref={resultRef} className="animate-in fade-in duration-500">
-                {resultCard}
-              </div>
-            ) : showRequirements ? (
-              <div>
-                <h2 className="font-serif text-xl font-semibold tracking-tight text-[#16302C]">
-                  {t("passportPhoto.requirementsTitle")}
-                </h2>
-                <ul className="mt-4 divide-y divide-[#16302C]/10 border-y border-[#16302C]/10">
-                  {requirementKeys.map((key) => (
-                    <li key={key} className="flex items-start gap-3 py-2.5 text-sm text-[#16302C]/85">
-                      <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-[var(--tool-accent)]" />
-                      <span>{t(`passportPhoto.requirements.${key}`)}</span>
-                    </li>
-                  ))}
-                </ul>
-                <p className="mt-4 text-[13px] text-[#66787A]">
-                  Your finished photo will show here.
-                </p>
-              </div>
-            ) : (
-              <p className="text-sm text-[#66787A]">Your finished photo will show here.</p>
-            )
-          }
-          rules={requirementKeys.map((key) => ({
-            label: `${key}.`,
-            value: t(`passportPhoto.requirements.${key}`),
-          }))}
-          faqs={PHOTO_FAQS}
-          sources={PHOTO_SOURCES}
-          disclaimer="The embassy or consulate makes the final decision on your photo."
-          className={className}
-        >
-          <div className="mb-1 text-xs font-semibold tracking-wider text-[var(--tool-accent)] uppercase">
-            Your photo
-          </div>
-          <h2 className="mb-5 font-serif text-2xl font-semibold tracking-tight text-[#16302C]">
-            {t("passportPhoto.uploadLabel")}
-          </h2>
-          {creditStatus && <div className="mb-5">{creditStatus}</div>}
-          {uploadControls}
-        </ToolLayout>
-        {modals}
-      </>
-    );
-  }
-
-  // ── Journey (embedded, no page chrome): same layout as before ──
+  // One layout for every entry point (standalone page and journey); the launcher sets the
+  // placement (ToolSurfaceProvider) and the layout adapts its chrome.
   return (
-    <div className={`w-full ${className}`}>
-      <div className="relative z-10 flex w-full flex-col items-center px-4 pt-1 pb-4 sm:py-6">
-        <div className="mb-4 flex w-full max-w-2xl items-center justify-end">{albumButton}</div>
-
-        {/* Official Guidelines */}
-        {showRequirements && (
-          <section
-            className="mb-8 w-full max-w-3xl rounded-xl bg-white p-5 shadow-lg md:mb-12 md:p-8"
-            style={{
-              backgroundColor: "rgba(255,255,255,0.78)",
-              backdropFilter: "blur(10px)",
-              boxShadow:
-                "0 8px 32px rgba(74,124,142,0.18), 0 2px 8px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.9)",
-              border: "1px solid rgba(74,124,142,0.2)",
-            }}
-          >
-            <h2 className="text-primary/90 mb-4 flex items-center gap-2 text-xl font-semibold md:mb-6 md:text-2xl">
-              <AlertCircle className="hidden h-5 w-5 shrink-0 sm:block md:h-6 md:w-6" />
-              {t("passportPhoto.requirementsTitle")}
-            </h2>
-
-            <ul className="grid gap-4 text-sm text-gray-700 md:grid-cols-2 md:gap-6 md:text-base">
-              {requirementKeys.map((key) => (
-                <li key={key} className="flex items-start gap-3 md:col-span-1">
-                  <CheckCircle
-                    className="mt-0.5 h-5 w-5 shrink-0 text-green-600"
-                    style={{ color: "#7fb3c8" }}
-                  />
-                  <span>
-                    <strong>{key}.</strong> {t(`passportPhoto.requirements.${key}`)}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-
-        {/* Credit Status */}
-        {creditStatus && <section className="mb-6 w-full max-w-2xl">{creditStatus}</section>}
-
-        {/* Upload Section */}
-        <section className="w-full max-w-2xl py-2 sm:py-4">
-          <div
-            className="rounded-xl bg-white p-4 shadow-md sm:p-6"
-            style={{
-              backgroundColor: "rgba(255,255,255,0.80)",
-              backdropFilter: "blur(10px)",
-              boxShadow:
-                "0 8px 32px rgba(74,124,142,0.18), 0 2px 8px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.9)",
-              border: "1px solid rgba(74,124,142,0.2)",
-            }}
-          >
-            {uploadControls}
-          </div>
-        </section>
-
-        {/* Current Active Result */}
-        {resultCard && (
-          <section ref={resultRef} className="animate-in fade-in mt-8 w-full max-w-2xl duration-500">
-            {resultCard}
-          </section>
-        )}
-      </div>
-
+    <>
+      <ToolLayout
+        theme="photo"
+        showHeader={showHeader}
+        title={t("passportPhoto.title")}
+        tagline={t("passportPhoto.subtitle")}
+        quickAccessItem={
+          isJourney
+            ? undefined
+            : {
+                id: "photo-booth",
+                title: "Photo Booth",
+                href: "/passport",
+                icon_name: "Camera",
+              }
+        }
+        historyAction={{
+          label: "My Album",
+          count: mounted ? history.length : undefined,
+          isOpen: showHistoryModal,
+          onClick: () => setShowHistoryModal(true),
+        }}
+        layout="split"
+        answer={
+          resultCard ? (
+            <div ref={resultRef} className="animate-in fade-in duration-500">
+              {resultCard}
+            </div>
+          ) : showRequirements ? (
+            <div>
+              <h2 className="font-serif text-xl font-semibold tracking-tight text-[#16302C]">
+                {t("passportPhoto.requirementsTitle")}
+              </h2>
+              <ul className="mt-4 divide-y divide-[#16302C]/10 border-y border-[#16302C]/10">
+                {requirementKeys.map((key) => (
+                  <li key={key} className="flex items-start gap-3 py-2.5 text-sm text-[#16302C]/85">
+                    <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-[var(--tool-accent)]" />
+                    <span>{t(`passportPhoto.requirements.${key}`)}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-4 text-[13px] text-[#66787A]">Your finished photo will show here.</p>
+            </div>
+          ) : (
+            <p className="text-sm text-[#66787A]">Your finished photo will show here.</p>
+          )
+        }
+        rules={requirementKeys.map((key) => ({
+          label: `${key}.`,
+          value: t(`passportPhoto.requirements.${key}`),
+        }))}
+        faqs={PHOTO_FAQS}
+        sources={PHOTO_SOURCES}
+        disclaimer="The embassy or consulate makes the final decision on your photo."
+        className={className}
+      >
+        <div className="mb-1 text-xs font-semibold tracking-wider text-[var(--tool-accent)] uppercase">
+          Your photo
+        </div>
+        <h2 className="mb-5 font-serif text-2xl font-semibold tracking-tight text-[#16302C]">
+          {t("passportPhoto.uploadLabel")}
+        </h2>
+        {creditStatus && <div className="mb-5">{creditStatus}</div>}
+        {uploadControls}
+      </ToolLayout>
       {modals}
-    </div>
+    </>
   );
 }
 

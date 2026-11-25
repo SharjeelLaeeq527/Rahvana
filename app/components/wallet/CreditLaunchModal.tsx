@@ -70,11 +70,7 @@ export function CreditLaunchModal({ item, href, onLaunched, onClose, onConfirm }
   const [pickedTopup, setPickedTopup] = useState<number | null>(null);
 
   const kind =
-    item.resourceType === "guide"
-      ? "Guide"
-      : item.resourceType === "service"
-        ? "Service"
-        : "Tool";
+    item.resourceType === "guide" ? "Guide" : item.resourceType === "service" ? "Service" : "Tool";
   const balanceAfter = balance !== null ? balance - item.credits : null;
 
   // Decide the state from the balance up front instead of round-tripping the
@@ -287,7 +283,9 @@ export function CreditLaunchModal({ item, href, onLaunched, onClose, onConfirm }
                 <div className="rounded-2xl border border-slate-200 bg-slate-50/60 px-4 py-3">
                   <div className="flex items-center justify-between py-1.5 text-[13px]">
                     <span className="font-medium text-slate-500">Your Wallet Balance</span>
-                    <span className="font-bold text-slate-900 tabular-nums">{balance} Credits</span>
+                    <span className="font-bold text-slate-900 tabular-nums">
+                      {balance} Credits
+                    </span>
                   </div>
                   <div className="flex items-center justify-between border-t border-slate-200 py-1.5 text-[13px]">
                     <span className="font-medium text-slate-500">{kind} Cost</span>
@@ -314,7 +312,10 @@ export function CreditLaunchModal({ item, href, onLaunched, onClose, onConfirm }
             )}
 
             <p className="text-[11.5px] leading-relaxed text-slate-500">
-              $1 = 1 credit. {item.resourceType === "service" ? "Services inside your journey never use credits." : "Resources inside your journey never use credits."}
+              $1 = 1 credit.{" "}
+              {item.resourceType === "service"
+                ? "Services inside your journey never use credits."
+                : "Tools inside your journey never use credits."}
             </p>
           </div>
         ) : (

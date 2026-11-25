@@ -894,38 +894,43 @@ export default function USCISCaseStatusPage() {
       <Dialog open={showHistoryModal} onOpenChange={setShowHistoryModal}>
         <DialogContent className="w-[95%] max-w-xl bg-white p-0 overflow-hidden rounded-2xl border border-[#DDD9CE] shadow-2xl">
           {/* Modal Header */}
-          <div className="flex items-center justify-between border-b border-[#DDD9CE] px-6 py-4 bg-[#F6F4EF]/70">
-            <div>
-              <DialogTitle className="font-serif text-lg font-bold text-[#16302C]">
+          <div className="flex items-start justify-between gap-3 border-b border-[#DDD9CE] px-4 py-3.5 sm:px-6 sm:py-4 bg-[#F6F4EF]/70">
+            {/* Left: Title & Subtitle */}
+            <div className="min-w-0 flex-1">
+              <DialogTitle className="font-serif text-base sm:text-lg font-bold text-[#16302C]">
                 Search History
               </DialogTitle>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5">
                 {history.length} {history.length === 1 ? "lookup" : "lookups"} saved across your sessions
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              {history.length > 0 && (
-                <button
-                  type="button"
-                  onClick={handleClearHistory}
-                  className="flex items-center gap-1 text-xs font-semibold text-[#BE211A] hover:underline px-2 py-1"
-                >
-                  <Trash2 className="h-3 w-3" /> Clear All
-                </button>
-              )}
+
+            {/* Right: Close "X" button on top, "Clear All" below it */}
+            <div className="flex flex-col items-end gap-1 shrink-0 -mt-0.5">
               <button
                 type="button"
                 onClick={() => setShowHistoryModal(false)}
                 className="p-1 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-200/50 transition-colors"
                 aria-label="Close history modal"
               >
-                <X className="h-5 w-5" />
+                <X className="h-4 w-4 sm:h-5 sm:w-5" />
               </button>
+
+              {history.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleClearHistory}
+                  className="flex items-center gap-1 text-[11px] sm:text-xs font-semibold text-[#BE211A] hover:underline px-1 py-0.5 whitespace-nowrap transition-colors"
+                >
+                  <Trash2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                  <span>Clear All</span>
+                </button>
+              )}
             </div>
           </div>
 
           {/* Modal List of all history items */}
-          <div className="max-h-[60vh] overflow-y-auto divide-y divide-[#DDD9CE]/60 p-2">
+          <div className="custom-scrollbar max-h-[60vh] overflow-y-auto divide-y divide-[#DDD9CE]/60 p-2">
             {history.length === 0 ? (
               <div className="py-12 text-center text-xs text-slate-400 italic">
                 No search history found.
@@ -941,34 +946,51 @@ export default function USCISCaseStatusPage() {
                       loadHistory(h);
                       setShowHistoryModal(false);
                     }}
-                    className="group flex w-full items-center justify-between p-3.5 text-left rounded-xl transition-colors hover:bg-[#F6F4EF]"
+                    className="group flex w-full flex-col gap-1.5 rounded-xl p-3 text-left transition-colors hover:bg-[#F6F4EF] sm:flex-row sm:items-center sm:justify-between sm:p-3.5"
                   >
-                    <div className="flex items-center gap-3">
-                      <span className={`h-2.5 w-2.5 rounded-full shrink-0 ${ht.dot}`} />
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-sm font-bold tracking-wider text-[#1B2B44] group-hover:text-[#3D5A80]">
-                            {h.receiptNumber}
-                          </span>
-                          {h.formType && (
-                            <span className="text-[11px] font-medium text-slate-500">
-                              ({h.formType})
+                    {/* Left Column / Mobile Row 1 */}
+                    <div className="flex items-center justify-between sm:justify-start sm:gap-3">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <span className={`h-2.5 w-2.5 rounded-full shrink-0 ${ht.dot}`} />
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-sm font-bold tracking-wider text-[#1B2B44] group-hover:text-[#3D5A80]">
+                              {h.receiptNumber}
                             </span>
-                          )}
+                            {h.formType && (
+                              <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600 whitespace-nowrap">
+                                {h.formType}
+                              </span>
+                            )}
+                          </div>
+                          <p className="hidden sm:block text-xs text-slate-500 mt-0.5">
+                            Checked {new Date(h.checkedAt).toLocaleDateString()}
+                          </p>
                         </div>
-                        <p className="text-xs text-slate-500 mt-0.5">
-                          Checked {new Date(h.checkedAt).toLocaleDateString()}
-                        </p>
                       </div>
-                    </div>
 
-                    <div className="text-right max-w-[45%]">
+                      {/* Mobile only: Status badge in Row 1 right */}
                       <span
-                        className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[10px] font-semibold tracking-wide uppercase ${ht.bg} ${ht.color} ${ht.border}`}
+                        className={`inline-flex sm:hidden items-center rounded-full border px-2 py-0.5 text-[9px] font-bold tracking-wide uppercase whitespace-nowrap shrink-0 ${ht.bg} ${ht.color} ${ht.border}`}
                       >
                         {ht.label}
                       </span>
-                      <p className="text-xs font-semibold text-slate-700 truncate mt-1">
+                    </div>
+
+                    {/* Right Column / Mobile Row 2 */}
+                    <div className="flex items-center justify-between sm:flex-col sm:items-end sm:text-right pl-5 sm:pl-0 sm:max-w-[45%]">
+                      <p className="sm:hidden text-[11px] text-slate-500">
+                        Checked {new Date(h.checkedAt).toLocaleDateString()}
+                      </p>
+
+                      {/* Desktop only: Status badge */}
+                      <span
+                        className={`hidden sm:inline-flex items-center rounded-full border px-2.5 py-0.5 text-[10px] font-semibold tracking-wide uppercase whitespace-nowrap ${ht.bg} ${ht.color} ${ht.border}`}
+                      >
+                        {ht.label}
+                      </span>
+
+                      <p className="text-xs font-semibold text-slate-700 truncate max-w-[170px] sm:max-w-full sm:mt-1">
                         {h.status || "Status Unavailable"}
                       </p>
                     </div>

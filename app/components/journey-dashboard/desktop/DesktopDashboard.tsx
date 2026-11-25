@@ -42,6 +42,25 @@ const COMPACT_BELOW = 760;
 const TIGHT_BELOW = 650;
 /** Shortest board the tight layout is designed for. */
 const BOARD_MIN_TIGHT = 570;
+/**
+ * Short screens (small laptops): case tracking moves to a full-height column on
+ * the right, so every other row can be shorter and the whole board needs less
+ * scaling (bigger type). Design size of that layout:
+ */
+const SIDE_W = 1520;
+const SIDE_W_MAX = 1640;
+const SIDE_BOARD_MIN = 540;
+/** A screen is "short" when the full board would have to scale below this. */
+const SHORT_ZOOM = 0.9;
+/**
+ * The side layout is the DEFAULT only on small screens (laptop-class displays),
+ * judged by the device screen, not the window, so a short window on a big
+ * monitor keeps the normal layout unless the user picks the side column.
+ */
+// Up to 1366 x 800 CSS px: 11-13" laptops (1280x720 / 800, 1366x768). 14-15" models
+// (1440x900, 1536x864 and up) keep the normal layout by default.
+const SMALL_SCREEN_MAX_W = 1366;
+const SMALL_SCREEN_MAX_H = 800;
 
 // ── Layout preferences (per journey, this browser only) ─────────────────────
 type RowId = "strength" | "mid" | "toolbox";
@@ -51,8 +70,18 @@ interface Layout {
   rows: RowId[];
   cols: ColId[];
   hidden: WidgetId[];
+  /**
+   * Short screens: tracking as a side column or beside the calendar. "auto" =
+   * side column on small screens, beside the calendar on larger ones.
+   */
+  trackPos: "auto" | "side" | "row";
 }
-const DEFAULT_LAYOUT: Layout = { rows: ["strength", "mid", "toolbox"], cols: ["tracking", "calendar"], hidden: [] };
+const DEFAULT_LAYOUT: Layout = {
+  rows: ["strength", "mid", "toolbox"],
+  cols: ["tracking", "calendar"],
+  hidden: [],
+  trackPos: "auto",
+};
 /** Liquid colours for a locked chapter (grey, so it never reads as progress). */
 const LOCKED_FILL = { a: "#d5dade", m: "#c3c9ce", b: "#b0b7bd" };
 const ROW_HEIGHT: Record<RowId, string> = { strength: "208px", mid: "1fr", toolbox: "112px" };
@@ -73,7 +102,8 @@ function readLayout(key: string): Layout {
     const cols = Array.isArray(o.cols) && o.cols.length === 2 && DEFAULT_LAYOUT.cols.every((c) => o.cols.includes(c)) ? o.cols : DEFAULT_LAYOUT.cols;
     let hidden: WidgetId[] = Array.isArray(o.hidden) ? o.hidden.filter((h: unknown) => WIDGETS.some(([w]) => w === h)) : [];
     if (hidden.includes("tracking") && hidden.includes("calendar")) hidden = hidden.filter((h) => h !== "calendar");
-    return { rows, cols, hidden };
+    const trackPos = o.trackPos === "row" || o.trackPos === "side" ? o.trackPos : "auto";
+    return { rows, cols, hidden, trackPos };
   } catch {
     return DEFAULT_LAYOUT;
   }
@@ -84,9 +114,19 @@ function readLayout(key: string): Layout {
  * width first, then give up a little board height (the hero and middle row
  * absorb it), and only shrink further when the window is really short.
  */
-function useFitToScreen() {
+function useFitToScreen(sideAllowed: boolean) {
   const ref = useRef<HTMLDivElement>(null);
-  const [fit, setFit] = useState({ zoom: 1, board: BOARD_MAX, width: FRAME_W, compact: false, tight: false });
+  const [fit, setFit] = useState({
+    zoom: 1,
+    board: BOARD_MAX,
+    width: FRAME_W,
+    compact: false,
+    tight: false,
+    /** Tracking is laid out as a side column. */
+    side: false,
+    /** The screen is short enough for the side layout (Customise shows the switch). */
+    canSide: false,
+  });
   useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
@@ -104,6 +144,17 @@ function useFitToScreen() {
       const top = Math.max(flowTop, coverBottom + 12);
       const availH = Math.max(320, window.innerHeight - top - 16);
       const cw = el.clientWidth;
+      const canSide = availH / (BOARD_MIN + FRAME_CHROME) < Math.min(1.3, cw / FRAME_W, SHORT_ZOOM);
+      // Short screen: tracking becomes a side column, the board can be shorter,
+      // so it scales as large as the height and its own design width allow.
+      if (canSide && sideAllowed) {
+        let z = Math.max(ZOOM_MIN_FIT, Math.min(1.3, cw / SIDE_W, availH / (SIDE_BOARD_MIN + FRAME_CHROME)));
+        const b = Math.min(BOARD_MAX, Math.max(SIDE_BOARD_MIN, availH / z - FRAME_CHROME));
+        if ((b + FRAME_CHROME) * z > availH) z = Math.max(ZOOM_MIN_FIT, availH / (b + FRAME_CHROME));
+        const w = Math.round(Math.max(SIDE_W, Math.min(cw / z, SIDE_W_MAX)));
+        setFit({ zoom: z, board: b, width: w, compact: true, tight: b < TIGHT_BELOW, side: true, canSide });
+        return;
+      }
       // 1. Fill the width (never wider than the design scale allows). A narrow
       //    window lays the board out narrower instead of shrinking the type.
       let zoom = Math.min(1.3, cw / FRAME_W);
@@ -124,7 +175,7 @@ function useFitToScreen() {
       //    board's height so it keeps its shape (see MAX_ASPECT).
       const shapeCap = Math.max(FRAME_W, Math.min(FRAME_MAX_W, (board + FRAME_CHROME) * MAX_ASPECT));
       const width = zoom < 1 ? Math.round(Math.max(FRAME_MIN_W, Math.min(cw / zoom, shapeCap))) : FRAME_W;
-      setFit({ zoom, board, width, compact: board < COMPACT_BELOW, tight: board < TIGHT_BELOW });
+      setFit({ zoom, board, width, compact: board < COMPACT_BELOW, tight: board < TIGHT_BELOW, side: false, canSide });
     };
     run();
     const ro = new ResizeObserver(run);
@@ -139,14 +190,13 @@ function useFitToScreen() {
       window.clearTimeout(late);
       window.removeEventListener("resize", run);
     };
-  }, []);
+  }, [sideAllowed]);
   return { ref, ...fit };
 }
 
 export function DesktopDashboard(props: DashboardSkinProps) {
   const { hero, chapters, path, caseHealth, alerts, tracking, keyDates, groups, personal, actions, nav, journeyId } = props;
   const today = useMemo(() => new Date(), []);
-  const { ref: fitRef, zoom, board, width: frameW, compact, tight } = useFitToScreen();
   const [fanOpen, setFanOpen] = useState(false);
   // Community popup: open while set, holding the bubble's position for the grow-in.
   const [commFrom, setCommFrom] = useState<DOMRect | null | undefined>(undefined);
@@ -181,6 +231,16 @@ export function DesktopDashboard(props: DashboardSkinProps) {
       /* ignore */
     }
   };
+  // Device screen size (read after mount, so the server render never differs).
+  const [smallScreen, setSmallScreen] = useState(false);
+  useEffect(() => {
+    const sw = window.screen?.width || window.innerWidth;
+    const sh = window.screen?.height || window.innerHeight;
+    setSmallScreen(sw <= SMALL_SCREEN_MAX_W && sh <= SMALL_SCREEN_MAX_H);
+  }, []);
+  const trackSide = layout.trackPos === "side" || (layout.trackPos === "auto" && smallScreen);
+  const sideAllowed = trackSide && !layout.hidden.includes("tracking") && !layout.hidden.includes("calendar");
+  const { ref: fitRef, zoom, board, width: frameW, compact, tight, side, canSide } = useFitToScreen(sideAllowed);
   const setNotesOpenSaved = (v: boolean) => {
     setNotesOpen(v);
     try {
@@ -282,6 +342,11 @@ export function DesktopDashboard(props: DashboardSkinProps) {
   const isRowVisible = (r: RowId) => (r === "mid" ? true : !hidden.has(r));
   const visibleRows = layout.rows.filter(isRowVisible);
   const visibleCols = layout.cols.filter((c) => !hidden.has(c));
+  // Side layout: tracking has its own column, the middle row keeps the calendar.
+  const midCols = side ? visibleCols.filter((c) => c !== "tracking") : visibleCols;
+  const trackingCard = (
+    <TrackingTicket tracking={tracking} today={today} uscis={props.uscis} onApTracker={nav.openApTracker} />
+  );
 
   // ── Hero ────────────────────────────────────────────────────────────────
   const iv = hero.interview;
@@ -411,19 +476,19 @@ export function DesktopDashboard(props: DashboardSkinProps) {
           // Short boards: the calendar (month grid + key dates column) gets the wider share;
           // tracking keeps its extra facts on its back face.
           gridTemplateColumns:
-            visibleCols.length === 1
+            midCols.length === 1
               ? "1fr"
               : compact
-                ? visibleCols.map((c) => (c === "calendar" ? "minmax(0, 1.3fr)" : "minmax(0, 1fr)")).join(" ")
+                ? midCols.map((c) => (c === "calendar" ? "minmax(0, 1.3fr)" : "minmax(0, 1fr)")).join(" ")
                 : undefined,
         }}
         {...dragProps("row", "mid")}
       >
-        {visibleCols.map((c) =>
+        {midCols.map((c) =>
           c === "tracking" ? (
             <section key="tracking" className={`card u trk${hintClass("tracking")}`} {...dragProps("col", "tracking")}>
               {handle("col", "tracking")}
-              <TrackingTicket tracking={tracking} today={today} uscis={props.uscis} onApTracker={nav.openApTracker} />
+              {trackingCard}
             </section>
           ) : (
             <div key="calendar" className={`rcol u${hintClass("calendar")}`} {...dragProps("col", "calendar")}>
@@ -519,7 +584,7 @@ export function DesktopDashboard(props: DashboardSkinProps) {
 
   return (
     <div ref={fitRef} className={`rvd ${inter.className}`}>
-      <div className={`frame${arrange ? " arr" : ""}${compact ? " cmp" : ""}${tight ? " tgt" : ""}`} style={{ zoom, height: board + FRAME_CHROME, width: frameW }}>
+      <div className={`frame${arrange ? " arr" : ""}${compact ? " cmp" : ""}${tight ? " tgt" : ""}${side ? " side" : ""}`} style={{ zoom, height: board + FRAME_CHROME, width: frameW }}>
         <div className="board" style={{ height: board, width: frameW - 40 }}>
           <section className="card banner">
             <button type="button" className="num" onClick={() => openAlerts()} aria-label="Open the list of things that need you">
@@ -554,7 +619,7 @@ export function DesktopDashboard(props: DashboardSkinProps) {
             </div>
           </section>
 
-          <div className="main">
+          <div className="main" style={side ? { gridTemplateColumns: "430px minmax(0, 1fr) 300px" } : undefined}>
             <section className="hero">
               <div className="htop">
                 {iv && (
@@ -661,7 +726,11 @@ export function DesktopDashboard(props: DashboardSkinProps) {
                         </svg>
                         <div className="lq-cc">{inner}</div>
                       </div>
-                      {c.limitedAccess && <span className="pill">Limited access</span>}
+                      {c.limitedAccess && (
+                        <span className="pill" title="Some steps in this chapter need a higher plan">
+                          {side ? "Limited" : "Limited access"}
+                        </span>
+                      )}
                     </button>
                   );
                 })}
@@ -687,6 +756,9 @@ export function DesktopDashboard(props: DashboardSkinProps) {
                   <CustomiseMenu
                     layout={layout}
                     arrange={arrange}
+                    canSide={canSide}
+                    trackSide={trackSide}
+                    onTrackPos={(trackPos) => saveLayout({ ...layout, trackPos })}
                     onClose={() => setMenuOpen(false)}
                     onToggle={(id) => {
                       const h = new Set(layout.hidden);
@@ -711,6 +783,7 @@ export function DesktopDashboard(props: DashboardSkinProps) {
             <div className="rc" style={{ gridTemplateRows: visibleRows.map((r) => (tight ? ROW_HEIGHT_TIGHT : compact ? ROW_HEIGHT_COMPACT : ROW_HEIGHT)[r]).join(" ") }}>
               {visibleRows.map((r) => rowEl[r])}
             </div>
+            {side && <section className="card trk side-trk">{trackingCard}</section>}
           </div>
         </div>
       </div>
@@ -821,6 +894,9 @@ function wave(ph: number, amp: number, h: number) {
 function CustomiseMenu({
   layout,
   arrange,
+  canSide,
+  trackSide,
+  onTrackPos,
   onClose,
   onToggle,
   onArrange,
@@ -828,6 +904,11 @@ function CustomiseMenu({
 }: {
   layout: Layout;
   arrange: boolean;
+  /** Short screen: the side-column layout is available. */
+  canSide: boolean;
+  /** The side column is on now (explicit choice, or the small-screen default). */
+  trackSide: boolean;
+  onTrackPos: (pos: Layout["trackPos"]) => void;
   onClose: () => void;
   onToggle: (id: WidgetId) => void;
   onArrange: () => void;
@@ -871,6 +952,24 @@ function CustomiseMenu({
           );
         })}
       </div>
+      {canSide && (
+        <>
+          <div className="eb">Layout</div>
+          <div className="lys">
+            <button
+              type="button"
+              role="switch"
+              aria-checked={trackSide}
+              disabled={hidden.has("tracking") || hidden.has("calendar")}
+              title={hidden.has("tracking") || hidden.has("calendar") ? "Needs both tracking and calendar shown" : undefined}
+              onClick={() => onTrackPos(trackSide ? "row" : "side")}
+            >
+              Tracking as side column
+              <i />
+            </button>
+          </div>
+        </>
+      )}
       <div className="lyr">
         <button type="button" onClick={onArrange}>
           {arrange ? "Done" : "Arrange"}

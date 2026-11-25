@@ -1,5 +1,4 @@
 "use client";
-import Header from "../../components/headers/Header"
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -10,6 +9,7 @@ import { Wrench, BookOpen, Briefcase } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/app/context/AuthContext";
 import { useCandidate } from "@/app/context/CandidateContext";
+import { CatalogShell } from "@/components/resources/catalog";
 
 export type ResourceTab = "toolbox" | "guides" | "services";
 
@@ -77,99 +77,79 @@ export default function ResourcesContent({ initialTab }: { initialTab: ResourceT
     router.replace(`/resources?tab=${tab}`, { scroll: false });
   };
 
-  return (
-    <div className="bg-background text-foreground selection:bg-primary selection:text-primary-foreground min-h-screen overflow-x-hidden font-sans">
-      {/* Ambient Glow */}
-      <div className="pointer-events-none fixed top-0 left-0 -z-10 h-full w-full">
-        <div className="absolute top-[10%] left-[15%] h-[30rem] w-[30rem] rounded-full bg-[#0d7377]/5 blur-3xl" />
-        <div className="absolute right-[10%] bottom-[20%] h-[40rem] w-[40rem] rounded-full bg-[#32e0c4]/5 blur-3xl" />
-      </div>
+  const tabSwitcher = (
+    <div
+      role="tablist"
+      aria-label="Resource type"
+      className="inline-flex gap-1 rounded-full border border-[#DDD9CE] bg-white p-1.5 shadow-[0_14px_40px_-16px_rgba(22,48,44,0.32)]"
+    >
+      {tabs.map((tab) => {
+        const isActive = activeTab === tab.id;
+        const Icon = tab.icon;
+        const hasDot =
+          (tab.id === "services" && hasActiveRequests) || (tab.id === "guides" && hasStartedGuides);
 
-      {/* Page heading */}
-
-        <Header  
-          category="navSections"
-          title= "My Resources" 
-          centered>
-          <p className="mt-3 text-muted-foreground text-base md:text-lg max-w-2xl mx-auto animate-fade-up [animation-delay:100ms] hidden md:block">
-        Everything you've added, plus the full catalog to browse and try anytime.
-        </p>
-        </Header>
-        <p className="mt-3 text-muted-foreground text-base md:text-lg max-w-2xl mx-auto animate-fade-up [animation-delay:100ms] block md:hidden">
-        Your unlocked tools, guides & services.
-        </p>
-      
-
-      {/* Tab Selector Section */}
-      <div className="flex justify-center pt-6 pb-8">
-        <div className="relative flex gap-2 rounded-full border border-slate-200 bg-slate-100 p-1.5 shadow-sm backdrop-blur-md dark:border-slate-700/50 dark:bg-slate-800/50">
-          {tabs.map((tab) => {
-            const isActive = activeTab === tab.id;
-            const Icon = tab.icon;
-
-            return (
-              <button
-                key={tab.id}
-                onClick={() => handleTabChange(tab.id)}
-                className={`relative z-10 flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium transition-colors duration-300 sm:px-6 ${
-                  isActive
-                    ? "text-slate-900 dark:text-white"
-                    : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-                }`}
-              >
-                {isActive && (
-                  <motion.div
-                    layoutId="active-resource-tab"
-                    className="absolute inset-0 rounded-full border border-slate-200/50 bg-white shadow-sm dark:border-slate-600/50 dark:bg-slate-700"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                  />
-                )}
-                <span className="relative z-10 flex items-center gap-2">
-                  <motion.div
-                    animate={{
-                      scale: isActive ? 1.1 : 1,
-                      opacity: isActive ? 1 : 0.7,
-                    }}
-                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                  >
-                    <Icon size={16} strokeWidth={isActive ? 2.2 : 1.8} />
-                  </motion.div>
-                  {tab.label}
-                </span>
-
-                {/* animate-pulse */}
-                {tab.id === "services" && hasActiveRequests && (
-                  <span className="absolute top-1.5 right-2 h-2.5 w-2.5 rounded-full border border-white bg-red-500" />
-                )}
-                {tab.id === "guides" && hasStartedGuides && (
-                  <span className="absolute top-1.5 right-2 h-2.5 w-2.5 rounded-full border border-white bg-red-500" />
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Content Section */}
-      <div className="relative min-h-[50vh] w-full">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
-            transition={{ duration: 0.25, ease: "easeInOut" }}
-            className="h-full w-full"
+        return (
+          <button
+            key={tab.id}
+            type="button"
+            role="tab"
+            aria-selected={isActive}
+            onClick={() => handleTabChange(tab.id)}
+            className={`relative flex cursor-pointer items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition-colors duration-300 sm:px-6 ${
+              isActive ? "text-white" : "text-[#16302C]/60 hover:text-[#16302C]"
+            }`}
           >
-            {activeTab === "toolbox" && <ToolsPage isEmbedded />}
-            {activeTab === "guides" && <GuidesPage isEmbedded />}
-            {activeTab === "services" && <ServicesPage isEmbedded />}
-          </motion.div>
-        </AnimatePresence>
-      </div>
+            {isActive && (
+              <motion.span
+                layoutId="active-resource-tab"
+                className="absolute inset-0 rounded-full bg-[#0A4F49] shadow-sm"
+                transition={{ type: "spring", stiffness: 500, damping: 34 }}
+              />
+            )}
+            <span className="relative z-10 flex items-center gap-2">
+              <Icon size={16} strokeWidth={isActive ? 2.2 : 1.8} />
+              {tab.label}
+            </span>
+            {hasDot && (
+              <span
+                aria-label="Has activity"
+                className="absolute top-1.5 right-2 z-10 h-2.5 w-2.5 rounded-full border-2 border-white bg-[#C4534B]"
+              />
+            )}
+          </button>
+        );
+      })}
     </div>
+  );
+
+  return (
+    <CatalogShell
+      title="My Resources"
+      tagline={
+        <>
+          <span className="hidden md:inline">
+            Everything you have added, plus the full catalog to browse and try anytime.
+          </span>
+          <span className="md:hidden">Your unlocked tools, guides and services.</span>
+        </>
+      }
+      toolbar={tabSwitcher}
+    >
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeTab}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -12 }}
+          transition={{ duration: 0.22, ease: "easeInOut" }}
+          className="min-h-[50vh] w-full"
+        >
+          {activeTab === "toolbox" && <ToolsPage isEmbedded />}
+          {activeTab === "guides" && <GuidesPage isEmbedded />}
+          {activeTab === "services" && <ServicesPage isEmbedded />}
+        </motion.div>
+      </AnimatePresence>
+    </CatalogShell>
   );
 }

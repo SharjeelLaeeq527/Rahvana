@@ -223,13 +223,13 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
       "Applicants who want error-free forms",
     ],
     outcomes: [
-      "One completed official form per credit",
+      "One completed official form per unlock",
       "A ready-to-upload PDF",
       "Hours of form-filling saved",
     ],
     faqs: [
       ["Which forms are supported?", "I-130, I-130A, I-129F, I-864, I-864A, I-864EZ, I-693, I-912 and DS-260. More forms are added over time."],
-      ["How many forms does one credit cover?", "One completed form per credit."],
+      ["How many forms does one unlock cover?", "One form. Each form is unlocked on its own."],
       ["Can I edit before downloading?", "Yes, you review and confirm every field, with a completion summary, before the final PDF is generated."],
     ],
     media: [
@@ -394,12 +394,12 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
       "Families needing multiple compliant photos",
     ],
     outcomes: [
-      "2 credits per purchase — each credit produces one compliant photo output",
+      "2 photos per purchase, each a compliant photo output",
       "Country-correct dimensions (US)",
       "No studio visit required",
     ],
     faqs: [
-      ["How many credits do I get?", "Every Photo Booth purchase grants 2 credits, on any plan — each credit produces one compliant photo output."],
+      ["How many photos do I get?", "Every Photo Booth purchase gives you 2 photos, on any plan. Each one is a compliant photo output."],
       ["What photo should I upload?", "A clear, well-lit, front-facing photo with your full face visible works best."],
       ["Will it definitely be accepted?", "It outputs to the standard size for US and shows the requirements checklist, but always double-check your specific post's instructions before submitting."],
     ],

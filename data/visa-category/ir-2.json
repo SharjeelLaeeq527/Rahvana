@@ -3760,7 +3760,7 @@
           "visible_when": {
             "uscisNoticeType": "rfi"
           },
-          "step_description": "USCIS has issued a Request for Additional Information (RFI) on your I-130 petition. An RFI requests additional or clarifying information. Read the actual notice to determine exactly what USCIS requires and the applicable deadline.",
+          "step_description": "USCIS has issued a Request for Additional Information (RFI) on your I-130 petition. An RFI requests additional or clarifying information. Read the actual notice to determine exactly what USCIS requires and the applicable deadline. USCIS usually asks for missing evidence on an I-130 through a Request for Evidence (RFE); if your notice is titled Request for Evidence, follow the RFE step instead.",
           "who": "Petitioner",
           "where": "my.uscis.gov / mail",
           "timeline": "Before deadline on notice",
@@ -3947,7 +3947,7 @@
               {
                 "label": "NOID Response · Step 2",
                 "title": "Check the response deadline immediately",
-                "text": "The response deadline is printed on your NOID notice. Note it immediately and treat it as your hard deadline. For a NOID the maximum response period is up to 30 days, much shorter than an RFE, and the date on your notice controls. Extensions are generally not granted.",
+                "text": "The response deadline is printed on your NOID notice. Note it immediately and treat it as your hard deadline. For a NOID the maximum response period is 30 days (up to 33 days if USCIS mailed the notice), much shorter than the 12-week maximum for an RFE, and the date on your notice controls. Do not count on an extension.",
                 "note": "Given the seriousness of a NOID, you should begin working on your response immediately, do not wait until close to the deadline."
               },
               {
@@ -3987,8 +3987,8 @@
             },
             "citations": [
               {
-                "text": "USCIS Policy Manual - Notice of Intent to Deny",
-                "link": "https://www.uscis.gov/sites/default/files/document/policy-manual-updates/20210609-RFEs%26NOIDs.pdf"
+                "text": "USCIS Policy Manual, Volume 1, Part E, Chapter 6 (Evidence, RFEs and NOIDs)",
+                "link": "https://www.uscis.gov/policy-manual/volume-1-part-e-chapter-6"
               }
             ],
             "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. A NOID is a serious notice that may require legal analysis. Strongly consider consulting a qualified immigration attorney."
@@ -4071,7 +4071,7 @@
           },
           "step_description": "USCIS has denied the I-130 petition. Review the denial notice carefully to understand the specific reasons and determine which options, appeal, motion, or another strategy, may be appropriate for your situation.",
           "who": "Petitioner",
-          "where": "my.uscis.gov / EOIR",
+          "where": "Denial notice / USCIS (Form I-290B or EOIR-29)",
           "timeline": "Varies, deadlines apply",
           "dependencies": ["step_1_23"],
           "is_required": false,
@@ -4107,20 +4107,20 @@
                   "id": "appeal",
                   "label": "Appeal to the Board of Immigration Appeals (BIA)",
                   "description": "Certain I-130 decisions can be appealed to the Board of Immigration Appeals using Form EOIR-29 (Notice of Appeal to the Board of Immigration Appeals from a Decision of a DHS Officer). USCIS confirms that I-130 appeals are among the appeals filed using Form EOIR-29.",
-                  "important": "Appeals have strict deadlines. Form EOIR-29 is used for eligible appeals of DHS decisions, and it must be filed with the DHS/USCIS office named in the denial notice and the form instructions, not mailed directly to the BIA. Confirm the deadline and filing requirements in your denial notice and the current EOIR-29 instructions.",
+                  "important": "Appeals have strict deadlines. The appeal is generally due within 30 days of service of the decision. Form EOIR-29 must be filed with USCIS (the lockbox listed on the EOIR-29 page for the office that issued the decision), following the instructions in the denial notice, not mailed directly to the BIA. An I-130 appeal is not filed on Form I-290B. Confirm the exact deadline in your denial notice.",
                   "url": "https://www.uscis.gov/eoir-29"
                 },
                 {
                   "id": "motion_reopen",
                   "label": "Motion to Reopen",
-                  "description": "A motion to reopen asks USCIS to reopen the case based on new facts or evidence that was not available at the time of the decision.",
-                  "important": "A motion to reopen is appropriate when there is new factual evidence that was not part of the original record. Review the denial carefully before pursuing this option."
+                  "description": "A motion to reopen asks the USCIS office that denied the petition to reopen the case based on new facts, supported by affidavits or other documentary evidence. It is filed on Form I-290B (Notice of Appeal or Motion).",
+                  "important": "File within 30 calendar days of service of the denial (33 days if USCIS mailed the decision). The new facts must show the child was eligible when the I-130 was filed. Submit any brief or evidence together with the motion."
                 },
                 {
                   "id": "motion_reconsider",
                   "label": "Motion to Reconsider",
-                  "description": "A motion to reconsider asks USCIS to reconsider its decision based on an error of law or incorrect application of policy to the existing facts.",
-                  "important": "A motion to reconsider is appropriate when you believe USCIS made a legal error in the denial, not when you simply have new evidence."
+                  "description": "A motion to reconsider asks USCIS to reconsider its decision because it was based on an incorrect application of law or policy to the evidence already in the record. It is filed on Form I-290B (Notice of Appeal or Motion).",
+                  "important": "File within 30 calendar days of service of the denial (33 days if USCIS mailed the decision), with citations to the statutes, regulations, or precedent decisions that support it. Use it for a legal error, not when you simply have new evidence."
                 },
                 {
                   "id": "new_petition",
@@ -4166,7 +4166,7 @@
                 "link": "https://www.uscis.gov/eoir-29"
               },
               {
-                "text": "USCIS, Motions and Appeals",
+                "text": "Form I-290B, Notice of Appeal or Motion",
                 "link": "https://www.uscis.gov/i-290b"
               }
             ],
@@ -4255,10 +4255,10 @@
                   "description": "If payment could not be processed or an essential document was missing at intake, USCIS issues a notice explaining the intake issue.",
                   "evidence_examples": [
                     "Check the specific rejection reason printed on the notice.",
-                    "Submit corrected fee payment or missing signature promptly.",
+                    "USCIS returns a rejected filing; it is not processed. Correct the problem and refile the complete I-130 package with a new payment form.",
                     "Pay with a valid electronic method: Form G-1450 (credit or debit card) or Form G-1650 (ACH from a U.S. bank account). If you cannot pay electronically, Form G-1651 requests an exemption from the electronic payment requirement; it is not a fee waiver."
                   ],
-                  "important_note": "Pay close attention to any refiling instructions and deadline dates provided on the notice."
+                  "important_note": "A rejected I-130 does not keep its original filing date. For IR-2, the filing date is the date used to protect a child from aging out at 21, so refile quickly if the child is close to 21."
                 }
               ]
             },
@@ -4657,8 +4657,8 @@
           "step_key": "step_2_2",
           "step_number": 2,
           "step_name": "Pay NVC Fees",
-          "step_short_description": "AOS ($120) & IV ($325) fee payment",
-          "step_description": "Pay the required NVC fees through CEAC using a U.S. bank checking or savings account. The $120 Affidavit of Support fee and $325 Immigrant Visa fee must show as PAID (typically 2-3 business days) before your child's DS-260 unlocks.",
+          "step_short_description": "AOS & IV fee payment",
+          "step_description": "NVC fee payment must be completed in CEAC before document submission and later processing can continue.",
           "step_type": "tool",
           "who": "Petitioner",
           "where": "CEAC Portal",
@@ -4672,12 +4672,12 @@
             "Open fee payment area",
             "Pay the $120 Affidavit of Support (AOS) fee (one fee covers siblings billed together)",
             "Pay the $325 Immigrant Visa (IV) fee for the child beneficiary",
-            "Allow 2-3 business days for payment to clear and save status to Portal Wallet"
+            "Save payment status"
           ],
           "tool_data": {
             "id": "step_2_2",
             "title": "Pay Your NVC Fees",
-            "subtitle": "Pay the required NVC fees in CEAC. The $120 AOS fee and $325 IV fee must show as PAID (typically 2-3 business days) before your child's DS-260 unlocks.",
+            "subtitle": "NVC fee payment must be completed in CEAC before document submission and later processing can continue.",
             "chips": [
               {
                 "label": "Petitioner",
@@ -4698,11 +4698,10 @@
               "eyebrow": "Official NVC / CEAC Portal",
               "heading": "Open CEAC to pay your required fees",
               "features": [
-                "Pay using a U.S. bank account (routing and account number)",
-                "$120 Affidavit of Support fee (one fee covers siblings billed together)",
-                "$325 Immigrant Visa application fee per child beneficiary",
-                "Payments take 2-3 business days to change from 'In Process' to 'PAID'",
-                "Record payment status in your Portal Wallet to track clearance"
+                "Sign in with your CEAC case details",
+                "Open the fee payment area",
+                "Review the available fee invoices",
+                "Return here after payment is submitted"
               ],
               "button_label": "Open CEAC Portal",
               "href": "https://ceac.state.gov/IV/Login.aspx",
@@ -4765,12 +4764,12 @@
                 "label": "Step 4 of 6, Review fee invoices",
                 "heading": "Review the required fee invoices",
                 "screenTitle": "Review the required fee invoices",
-                "instruction": "CEAC displays the required fee invoices: the $120 Affidavit of Support (AOS) fee and the $325 Immigrant Visa (IV) application fee. If petitioning multiple children simultaneously, one AOS fee typically covers siblings billed under the same invoice group, but the $325 IV fee is required for each child.",
+                "instruction": "CEAC will display the required fee invoices for your case. Review both the Affidavit of Support fee and the Immigrant Visa fee before proceeding.",
                 "url": "ceac.state.gov",
                 "ss_label": "Fee Invoices",
                 "ss_headline": "Review Fees",
                 "ss_desc": "Affidavit of Support Fee / Immigrant Visa Fee",
-                "note": "Payment must be made from a U.S. bank checking or savings account using an ACH routing number and account number. Credit cards and international cards are not accepted.",
+                "note": "Confirm the exact amounts shown in your CEAC portal before paying. Do not rely on third-party estimates.",
                 "media": {
                   "type": "video",
                   "src": "/assets/videos/ir1-journey/c2_step2/04-payment-method.mp4"
@@ -4785,7 +4784,7 @@
                 "ss_label": "Payment",
                 "ss_headline": "Confirm and Pay",
                 "ss_desc": "Submit Payment",
-                "note": "Payments take 2 to 3 business days to clear. Do not attempt duplicate payments while the status shows 'In Process'. Once status turns 'PAID', Form DS-260 unlocks.",
+                "note": "Do not close the browser tab during payment processing. Wait for the confirmation screen.",
                 "media": {
                   "type": "img",
                   "src": "/assets/images/ir1-journey/c2_step2/05-payment-confirmation.png"
@@ -4794,7 +4793,7 @@
               {
                 "label": "Step 6 of 6, Return and save",
                 "heading": "Return here and save your payment record",
-                "instruction": "Once payment is submitted in CEAC, return to this Rahvana step and record your payment status in the Portal Wallet. When CEAC marks the fees as 'PAID' after 2-3 days, your next step (DS-260) will be ready.",
+                "instruction": "Once payment is submitted in CEAC, return to this Rahvana step and record your payment status in the Portal Wallet. When CEAC marks the fees as 'PAID', your next step (DS-260) will be ready.",
                 "url": "Save to Portal Wallet",
                 "ss_label": "Payment Submitted",
                 "ss_headline": "Return to Rahvana",
@@ -5001,7 +5000,7 @@
                 "label": "Step 4 of 7, Complete section by section",
                 "heading": "Complete section by section",
                 "screenTitle": "Complete section by section",
-                "instruction": "Move through each DS-260 section in sequence: Personal Information, Address & Phone, Family Information (parents' details), Previous U.S. Travel, and Work/Education. For school-age children, provide current or recent school information; for young children, mark employment as Not Applicable.",
+                "instruction": "Move through each DS-260 section in sequence. Enter your information carefully. Keep answers consistent with other immigration forms in your case.",
                 "ss_label": "Form Progress",
                 "ss_headline": "Section-by-Section",
                 "ss_desc": "Personal info -> Travel history -> Work/education -> Security questions -> Review",
@@ -5522,7 +5521,7 @@
                 "ss_headline": "NVC Fees Cleared",
                 "ss_desc": "IV fee paid; AOS fee paid or I-864W fee exemption acknowledged",
                 "ss_highlight": null,
-                "caption": "If payment was made recently, allow 2-3 business days for clearance. Document upload is unlocked once fees show 'PAID'.",
+                "caption": "If payment was made recently, wait for clearance. Document upload is unlocked once fees show 'PAID'.",
                 "note": "The $325 IV fee is required per child beneficiary. The $120 AOS fee is billed once per petitioner when cases are processed together, or exempt under INA Section 320.",
                 "media": {
                   "type": "img",
@@ -5809,7 +5808,7 @@
                 "label": "Step 2 of 8, Confirm payment or exemption clearance",
                 "heading": "Confirm payment receipt or exemption acknowledgment",
                 "screenTitle": "Confirm payment receipt or exemption acknowledgment",
-                "instruction": "If you paid the $120 AOS fee (required for Form I-864), CEAC will display a payment confirmation showing status 'PAID' once cleared (typically 2-3 business days). If exempt under Form I-864W, ensure NVC has updated the status or proceed as directed. Keep payment receipts or inquiry correspondence in your records.",
+                "instruction": "If you paid the $120 AOS fee (required for Form I-864), CEAC will display a payment confirmation showing status 'PAID' once cleared. If exempt under Form I-864W, ensure NVC has updated the status or proceed as directed. Keep payment receipts or inquiry correspondence in your records.",
                 "url": "ceac.state.gov",
                 "ss_label": "Receipt / Clearance",
                 "ss_headline": "AOS Fee Status Confirmed",

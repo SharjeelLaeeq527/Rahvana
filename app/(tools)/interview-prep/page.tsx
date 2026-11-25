@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useRouter } from "next/navigation";
 import { ResultPage } from "./result/ResultPage";
@@ -35,13 +34,21 @@ import {
 import { useJourneyEnvironment } from "@/app/context/JourneyEnvironmentContext";
 import type { DynamicQuestionnaire } from "@/data/interview-categories/schema";
 import { E, msg } from "@/lib/errors";
-import { ToolLayout, type ToolFaq, type ToolRule } from "@/components/tools/layout";
+import { ToolLayout, ToolPageFrame, type ToolFaq, type ToolRule } from "@/components/tools/layout";
 
 const RULES: ToolRule[] = [
   { label: "How it works", value: "Answer a few questions about your case, then practice" },
   { label: "Practice modes", value: "Prep guide, Rapid Fire and a timed Mock Interview" },
   { label: "Cost", value: "200 credits per session, or included in a journey plan" },
   { label: "Your progress", value: "Saved automatically; resume from My sessions" },
+];
+
+// Inside a journey sessions follow the journey plan and live under Session history.
+const JOURNEY_RULES: ToolRule[] = [
+  RULES[0],
+  RULES[1],
+  { label: "Cost", value: "Included in your journey plan" },
+  { label: "Your progress", value: "Saved automatically; resume from Session history" },
 ];
 
 const FAQS: ToolFaq[] = [
@@ -1955,118 +1962,59 @@ export default function InterviewPreparation({
         </div>
       ) : (
         <>
-          {isEmbedded ? (
-            <div className={`site-main-px ${isEmbedded ? "py-4" : "site-main-py"} ${isEmbedded ? "mt-2" : "mt-12"}`}>
-              {isEmbedded && (
-                <div className="mb-6 flex justify-center">
-                  <div className="inline-flex rounded-full bg-slate-100 p-1 border border-slate-200 shadow-xs">
-                    <button
-                      type="button"
-                      onClick={() => setViewMode("prep")}
-                      className={`rounded-full px-5 py-1.5 text-sm font-semibold transition-all ${
-                        viewMode === "prep"
-                          ? "bg-[#0d7377] text-white shadow-sm"
-                          : "text-slate-600 hover:text-slate-900"
-                      }`}
-                    >
-                      Interview Preparation
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setViewMode("sessions")}
-                      className={`rounded-full px-5 py-1.5 text-sm font-semibold transition-all ${
-                        viewMode === "sessions"
-                          ? "bg-[#0d7377] text-white shadow-sm"
-                          : "text-slate-600 hover:text-slate-900"
-                      }`}
-                    >
-                      Session History
-                    </button>
-                  </div>
+          {/* One layout for the standalone page and the journey (EmbeddedToolContainer /
+              ToolPageOverlay set the placement). Only the shell is shared here; the steps and
+              the Prep / Rapid Fire / Mock modes are unchanged. */}
+          <ToolPageFrame>
+            <ToolLayout
+              theme="interview"
+              title="Interview Prep"
+              tagline={
+                selectedCategory
+                  ? selectedCategory.description
+                  : "Practice the questions a consular officer is likely to ask, based on your own case."
+              }
+              category={selectedCategory?.displayName}
+              priceOrDuration={isEmbedded ? undefined : "200 credits per session"}
+              quickAccessItem={{
+                id: "interview-prep",
+                title: "Interview Prep",
+                href: "/interview-prep",
+                icon_name: "MessageSquare",
+              }}
+              historyAction={{
+                label: isEmbedded ? "Session history" : "My sessions",
+                onClick: () =>
+                  isEmbedded
+                    ? setViewMode("sessions")
+                    : router.push("/interview-prep/my-sessions"),
+              }}
+              layout="single"
+              rules={isEmbedded ? JOURNEY_RULES : RULES}
+              faqs={FAQS}
+              disclaimer="Practice material based on common consular questions, not legal advice."
+            >
+              {isMultiCandidate && activeCandidate && (
+                <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[var(--tool-accent)]/20 bg-[var(--tool-accent-tint)] px-3 py-1 text-xs font-semibold text-[var(--tool-accent)]">
+                  <Users className="h-3.5 w-3.5" />
+                  <span>
+                    Beneficiary: {activeCandidate.fullName || activeCandidate.label} ({activeCandidate.relation})
+                  </span>
                 </div>
               )}
 
-              <div className="text-center mb-8">
-                {isMultiCandidate && (
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs font-semibold text-primary mb-3">
-                    <Users className="w-3.5 h-3.5" />
-                    <span>
-                      Beneficiary: {activeCandidate.fullName || activeCandidate.label} ({activeCandidate.relation})
-                    </span>
-                  </div>
-                )}
-                <h1 className="text-3xl font-bold text-slate-900 mb-2">Interview Preparation Tool</h1>
-                <p className="text-slate-600">
-                  {selectedCategory
-                    ? selectedCategory.description
-                    : "Prepare for your visa interview with personalized questions"}
-                </p>
-              </div>
-
               {renderProgressSections()}
 
-              <Card className="p-6 shadow-lg">
-                {!initialCheckDone ? (
-                  <div className="flex flex-col items-center justify-center py-12 space-y-4">
-                    <Loader size="md" />
-                    <p className="text-slate-600">{loadingMessage || "Loading..."}</p>
-                  </div>
-                ) : (
-                  renderStep()
-                )}
-              </Card>
-            </div>
-          ) : (
-            // Standalone page: the shared tool layout (band, bench card, help drawer).
-            // Only the shell changed; the steps and the Prep / Rapid Fire / Mock modes are as before.
-            <div className="mt-[55px]">
-              <ToolLayout
-                theme="interview"
-                title="Interview Prep"
-                tagline={
-                  selectedCategory
-                    ? selectedCategory.description
-                    : "Practice the questions a consular officer is likely to ask, based on your own case."
-                }
-                category={selectedCategory?.displayName}
-                priceOrDuration="200 credits per session"
-                quickAccessItem={{
-                  id: "interview-prep",
-                  title: "Interview Prep",
-                  href: "/interview-prep",
-                  icon_name: "MessageSquare",
-                }}
-                historyAction={{
-                  label: "My sessions",
-                  onClick: () => router.push("/interview-prep/my-sessions"),
-                }}
-                layout="single"
-                rules={RULES}
-                faqs={FAQS}
-                disclaimer="Practice material based on common consular questions, not legal advice."
-              >
-                {isMultiCandidate && activeCandidate && (
-                  <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[var(--tool-accent)]/20 bg-[var(--tool-accent-tint)] px-3 py-1 text-xs font-semibold text-[var(--tool-accent)]">
-                    <Users className="h-3.5 w-3.5" />
-                    <span>
-                      Beneficiary: {activeCandidate.fullName || activeCandidate.label} ({activeCandidate.relation})
-                    </span>
-                  </div>
-                )}
-
-                {renderProgressSections()}
-
-                {!initialCheckDone ? (
-                  <div className="flex flex-col items-center justify-center space-y-4 py-12">
-                    <Loader size="md" />
-                    <p className="text-slate-600">{loadingMessage || "Loading..."}</p>
-                  </div>
-                ) : (
-                  renderStep()
-                )}
-              </ToolLayout>
-            </div>
-          )}
+              {!initialCheckDone ? (
+                <div className="flex flex-col items-center justify-center space-y-4 py-12">
+                  <Loader size="md" />
+                  <p className="text-slate-600">{loadingMessage || "Loading..."}</p>
+                </div>
+              ) : (
+                renderStep()
+              )}
+            </ToolLayout>
+          </ToolPageFrame>
 
           {/* Session Restoration Confirmation Modal */}
           <ConfirmationModal

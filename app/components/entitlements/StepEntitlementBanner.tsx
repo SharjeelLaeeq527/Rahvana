@@ -39,7 +39,7 @@ const FEATURE_LABELS: Record<
   },
   photo_booth: {
     title: "Photo Booth Locked",
-    what: "The Photo Booth tool for taking compliant passport photos is not included in your current plan. You can purchase credits as an add-on.",
+    what: "The Photo Booth tool for taking compliant passport photos is not included in your current plan. You can buy it on its own with credits.",
     icon: "lock",
   },
   medical_booking: {

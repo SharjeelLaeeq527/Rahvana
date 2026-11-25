@@ -759,8 +759,8 @@ export default function SponsorshipCalculatorTool({
         </div>
       )}
 
-      {/* Standalone Page Step Header inside ToolLayout */}
-      {standalonePage && (
+      {/* Step header inside the tool layout (standalone page and journey) */}
+      {(standalonePage || embedded) && (
         <div className="mb-8 flex flex-col gap-2.5 border-b border-[#DDD9CE]/70 pb-5">
           <div className="flex items-center justify-between text-xs font-semibold text-[#16302C]">
             <span className="inline-flex items-center gap-2">
@@ -960,7 +960,7 @@ export default function SponsorshipCalculatorTool({
                     </div>
                   </div>
 
-                  <div className="flex gap-[10px]">
+                  <div className="flex flex-col-reverse gap-3 sm:flex-row sm:gap-[10px]">
                     <button
                       type="button"
                       onClick={() =>
@@ -968,18 +968,18 @@ export default function SponsorshipCalculatorTool({
                           isExemptFlow ? 2 : data.assetValue > 0 || data.sponsorDeceased ? 9 : 8
                         )
                       }
-                      className="flex items-center gap-2 rounded-[10px] border-[1.5px] border-[#d0e4f7] bg-transparent p-[13px_22px] font-medium text-[#3a4f63] hover:border-[#3a4f63]"
+                      className="flex w-full items-center justify-center gap-2 rounded-[10px] border-[1.5px] border-[#d0e4f7] bg-transparent px-5 py-3 font-medium text-[#3a4f63] whitespace-nowrap transition-all hover:border-[#3a4f63] sm:w-auto sm:p-[13px_22px]"
                     >
-                      <ArrowLeft size={14} /> Edit Info
+                      <ArrowLeft size={14} className="shrink-0" /> Edit Info
                     </button>
                     <button
                       type="button"
                       onClick={handleCompleteSave}
                       style={{ backgroundColor: COLORS.primary }}
-                      className="flex flex-1 items-center justify-center gap-2 rounded-[10px] p-[14px_22px] text-[15px] font-semibold text-white shadow-lg transition-all hover:-translate-y-px hover:opacity-90"
+                      className="flex w-full flex-1 items-center justify-center gap-2 rounded-[10px] px-5 py-3.5 text-center text-sm font-semibold text-white shadow-lg transition-all hover:-translate-y-px hover:opacity-90 sm:p-[14px_22px] sm:text-[15px]"
                     >
-                      {isJourney ? "Complete & Save to Roadmap" : "Complete & Save Calculation"}{" "}
-                      <ArrowRight size={14} />
+                      <span>{isJourney ? "Complete & Save to Roadmap" : "Complete & Save Calculation"}</span>
+                      <ArrowRight size={14} className="shrink-0" />
                     </button>
                   </div>
                 </div>

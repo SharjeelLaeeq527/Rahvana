@@ -38,40 +38,30 @@ const PDF_TOOLS: {
   title: string;
   desc: string;
   Icon: typeof PenLine;
-  iconWrap: string;
-  activeCard: string;
 }[] = [
   {
     id: "upload",
     title: "Edit PDF",
     desc: "Add text, shapes, signatures",
     Icon: PenLine,
-    iconWrap: "bg-teal-100 text-teal-600 dark:bg-teal-950/40 dark:text-teal-300",
-    activeCard: "border-teal-500 bg-teal-50/70 dark:bg-teal-950/30",
   },
   {
     id: "merge",
     title: "Merge PDFs",
     desc: "Combine multiple files",
     Icon: GitMerge,
-    iconWrap: "bg-blue-100 text-blue-600 dark:bg-blue-950/40 dark:text-blue-300",
-    activeCard: "border-blue-500 bg-blue-50/70 dark:bg-blue-950/30",
   },
   {
     id: "compress",
     title: "Compress PDF",
     desc: "Shrink file size fast",
     Icon: Shrink,
-    iconWrap: "bg-amber-100 text-amber-600 dark:bg-amber-950/40 dark:text-amber-300",
-    activeCard: "border-amber-500 bg-amber-50/70 dark:bg-amber-950/30",
   },
   {
     id: "convert",
     title: "Convert to PDF",
     desc: "From Word, JPG and more",
     Icon: RefreshCw,
-    iconWrap: "bg-violet-100 text-violet-600 dark:bg-violet-950/40 dark:text-violet-300",
-    activeCard: "border-violet-500 bg-violet-50/70 dark:bg-violet-950/30",
   },
 ];
 
@@ -179,127 +169,77 @@ export default function PdfToolkitTool({
     </ResultGate>
   );
 
-  // ── Standalone page: the shared tool layout (band, bench card, help drawer) ──
-  if (showHeader) {
-    return (
-      <>
-        {/* The editor is a full-screen layer: keep it outside the layout's stacking context. */}
-        {pdfFile && <div style={EDITOR_THEME_VARS}>{editorOverlay}</div>}
-        <ToolLayout
-          theme="pdf"
-          title="PDF Toolkit"
-          tagline="Edit, merge, compress or convert your documents before you upload them."
-          priceOrDuration="4 tools in one"
-          quickAccessItem={
-            isJourney
-              ? undefined
-              : {
-                  id: "pdf-toolkit",
-                  title: "PDF Tool Kit",
-                  href: "/pdf-processing",
-                  icon_name: "Files",
-                }
-          }
-          layout="single"
-          rules={RULES}
-          className={className}
-        >
-          <div style={THEMED_BRAND_VARS}>
-            {/* Tool picker: one accent for all four, so the page reads as one tool */}
-            <div
-              role="tablist"
-              aria-label="PDF tools"
-              className="mb-8 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4"
-            >
-              {PDF_TOOLS.map(({ id, title, desc, Icon }) => {
-                const active = activeTab === id;
-                return (
-                  <button
-                    key={id}
-                    type="button"
-                    role="tab"
-                    aria-selected={active}
-                    onClick={() => setActiveTab(id)}
-                    className={`flex flex-col items-start gap-3 rounded-2xl border-2 p-4 text-left transition ${
-                      active
-                        ? "border-[var(--tool-accent)] bg-[var(--tool-accent-tint)]"
-                        : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
-                    }`}
-                  >
-                    <span
-                      className={`flex h-11 w-11 items-center justify-center rounded-xl ${
-                        active
-                          ? "bg-[var(--tool-accent)] text-white"
-                          : "bg-[var(--tool-accent-tint)] text-[var(--tool-accent-dark)]"
-                      }`}
-                    >
-                      <Icon className="h-5 w-5" />
-                    </span>
-                    <span className="w-full">
-                      <span className="block text-sm font-bold text-slate-900 sm:text-base">
-                        {title}
-                      </span>
-                      <span className="mt-1 block text-xs leading-snug text-slate-600">{desc}</span>
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {!pdfFile && <div className="md:min-h-[50vh]">{activeTool}</div>}
-          </div>
-        </ToolLayout>
-      </>
-    );
-  }
-
-  // ── Journey (embedded, no page chrome): same layout as before ──
+  // One layout for every entry point (standalone page and journey); the launcher sets the
+  // placement (ToolSurfaceProvider) and the layout adapts its chrome.
   return (
-    <div className={`w-full ${className}`}>
-      {editorOverlay}
-
-      {/* Normal UI - Tabs + Content */}
-      {!pdfFile && (
-        <div className="flex flex-col items-center justify-center">
-          {/* Tool picker — accent-colored cards, 2x2 on mobile, 4-across on desktop */}
-          <div className="mb-6 grid w-full max-w-md grid-cols-2 gap-3 sm:gap-4 lg:max-w-4xl lg:grid-cols-4">
-            {PDF_TOOLS.map(({ id, title, desc, Icon, iconWrap, activeCard }) => {
+    <>
+      {/* The editor is a full-screen layer: keep it outside the layout's stacking context. */}
+      {pdfFile && <div style={EDITOR_THEME_VARS}>{editorOverlay}</div>}
+      <ToolLayout
+        theme="pdf"
+        showHeader={showHeader}
+        title="PDF Toolkit"
+        tagline="Edit, merge, compress or convert your documents before you upload them."
+        priceOrDuration="4 tools in one"
+        quickAccessItem={
+          isJourney
+            ? undefined
+            : {
+                id: "pdf-toolkit",
+                title: "PDF Tool Kit",
+                href: "/pdf-processing",
+                icon_name: "Files",
+              }
+        }
+        layout="single"
+        rules={RULES}
+        className={className}
+      >
+        <div style={THEMED_BRAND_VARS}>
+          {/* Tool picker: one accent for all four, so the page reads as one tool */}
+          <div
+            role="tablist"
+            aria-label="PDF tools"
+            className="mb-8 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4"
+          >
+            {PDF_TOOLS.map(({ id, title, desc, Icon }) => {
               const active = activeTab === id;
               return (
                 <button
                   key={id}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
                   onClick={() => setActiveTab(id)}
-                  aria-pressed={active}
-                  className={`flex flex-col items-start gap-3 rounded-2xl border-2 bg-white p-4 text-left shadow-xs transition hover:-translate-y-0.5 hover:shadow-md dark:bg-slate-800/80 ${
+                  className={`flex flex-col items-start gap-3 rounded-2xl border-2 p-4 text-left transition ${
                     active
-                      ? activeCard
-                      : "border-gray-100 hover:border-gray-200 dark:border-slate-700/60 dark:hover:border-slate-600"
+                      ? "border-[var(--tool-accent)] bg-[var(--tool-accent-tint)]"
+                      : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
                   }`}
                 >
                   <span
-                    className={`flex h-11 w-11 items-center justify-center rounded-xl ${iconWrap}`}
+                    className={`flex h-11 w-11 items-center justify-center rounded-xl ${
+                      active
+                        ? "bg-[var(--tool-accent)] text-white"
+                        : "bg-[var(--tool-accent-tint)] text-[var(--tool-accent-dark)]"
+                    }`}
                   >
                     <Icon className="h-5 w-5" />
                   </span>
                   <span className="w-full">
-                    <span className="block text-sm font-bold text-gray-900 sm:text-base dark:text-slate-100">
+                    <span className="block text-sm font-bold text-slate-900 sm:text-base">
                       {title}
                     </span>
-                    <span className="mt-1 block text-xs leading-snug text-gray-500 dark:text-slate-400">
-                      {desc}
-                    </span>
+                    <span className="mt-1 block text-xs leading-snug text-slate-600">{desc}</span>
                   </span>
                 </button>
               );
             })}
           </div>
 
-          {/* Content based on active tab */}
-          <div className="w-full rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm md:min-h-[50vh] md:p-8 dark:border-slate-800 dark:bg-slate-900">
-            {activeTool}
-          </div>
+          {!pdfFile && <div className="md:min-h-[50vh]">{activeTool}</div>}
         </div>
-      )}
-    </div>
+      </ToolLayout>
+    </>
   );
 }

@@ -121,7 +121,7 @@ export async function GET(request: NextRequest) {
         session.metadata?.target_candidate_id || session.metadata?.candidate_id || undefined;
 
       // ── 1. Provision Candidates, Journeys, and Document Vaults ─────────────
-      // Automatically creates candidate profiles, seeds multi-candidate journeys
+      // Automatically creates candidate profiles, credits multi-candidate journeys
       // (candidate-1, candidate-2, etc.), and initializes isolated document vaults.
       await provisionCandidateJourneysAndVaults({
         supabase,

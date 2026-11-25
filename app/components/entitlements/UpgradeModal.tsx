@@ -240,7 +240,7 @@ const UPGRADE_PITCH: Record<string, string> = {
   "221g": "turn a 221(g) notice into a complete recovery plan with expert-backed tools.",
   medical: "get this appointment plus the advanced tools you'll need throughout your journey.",
   translate: "translate every document your case needs, whenever a new requirement comes up.",
-  photo: "keep photo credits ready for retakes and new filings.",
+  photo: "keep photos ready for retakes and new filings.",
   sponsor: "re-check your sponsorship anytime your income or household changes.",
   "doc-review": "get expert reviews included plus the tools to act on the feedback.",
   consultation: "get consultation sessions included plus every tool to prepare for them.",
