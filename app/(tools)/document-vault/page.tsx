@@ -1667,9 +1667,8 @@ export default function DocumentVaultPage() {
                     <div className="flex flex-col gap-[18px] p-6">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <Zap className="h-[18px] w-[18px] text-[#0A4F49]" />
                           <span className="text-[11.5px] font-bold tracking-[0.06em] text-[#0A4F49] uppercase">
-                            {t("documentVaultPage.page.syncProgress")}
+                            Progress Update
                           </span>
                         </div>
                         <Badge
@@ -1725,7 +1724,6 @@ export default function DocumentVaultPage() {
                         <ShieldCheck className="h-4 w-4" />
                         <span>{t("documentVaultPage.page.bankGradeEncryption")}</span>
                       </div>
-                      <div className="h-2 w-2 rounded-full bg-[#0F8F80] shadow-[0_0_0_3px_rgba(15,143,128,0.20)]" />
                     </div>
                   </Card>
 

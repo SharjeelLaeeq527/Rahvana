@@ -280,7 +280,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8fafa]">
+    <div className="min-h-screen bg-[#F6F4EF]">
       {/* HERO HEADER */}
       <header className="site-main-px relative mt-12 overflow-hidden bg-[linear-gradient(135deg,#0A4F49_0%,#073b37_100%)] pt-8 pb-10 text-white sm:pt-10 sm:pb-14">
         {/* Decorative SVG matching Settings & Security Theme */}

@@ -1065,7 +1065,7 @@ export default function MyJourneysPage() {
   }
 
   return (
-    <main className="relative overflow-hidden bg-[#f7fbfb]">
+    <main className="relative overflow-hidden bg-[#F6F4EF]">
       {/* Background */}
       <div className="pointer-events-none absolute inset-0">
         <div className="grid-bg absolute inset-0" />
