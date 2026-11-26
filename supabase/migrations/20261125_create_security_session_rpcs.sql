@@ -197,7 +197,6 @@ REVOKE ALL ON FUNCTION public.list_security_sessions(UUID)
 GRANT EXECUTE ON FUNCTION public.list_security_sessions(UUID)
   TO service_role;
 
--- 6. RLS predicate for the session in the caller's JWT 
 CREATE OR REPLACE FUNCTION public.is_current_app_session_active()
 RETURNS BOOLEAN
 LANGUAGE SQL
@@ -205,16 +204,32 @@ STABLE
 SECURITY DEFINER
 SET search_path = public, auth, pg_temp
 AS $$
-  SELECT EXISTS (
-    SELECT 1
-    FROM public.user_sessions AS s
-    WHERE s.user_id = auth.uid()
-      AND s.session_id = (auth.jwt() ->> 'session_id')::uuid
-      AND s.revoked_at IS NULL
-  );
+  SELECT CASE
+    -- No authenticated user: deny.
+    WHEN auth.uid() IS NULL THEN FALSE
+
+    -- Temporary compatibility for legacy sessions.
+    WHEN NULLIF(auth.jwt() ->> 'session_id', '') IS NULL
+      THEN TRUE
+
+    -- Reject malformed session IDs.
+    WHEN (auth.jwt() ->> 'session_id') !~
+      '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+      THEN FALSE
+
+    -- New sessions must exist and remain active.
+    ELSE EXISTS (
+      SELECT 1
+      FROM public.user_sessions AS s
+      WHERE s.user_id = auth.uid()
+        AND s.session_id = (auth.jwt() ->> 'session_id')::uuid
+        AND s.revoked_at IS NULL
+    )
+  END;
 $$;
 
 REVOKE ALL ON FUNCTION public.is_current_app_session_active()
   FROM PUBLIC, anon;
+
 GRANT EXECUTE ON FUNCTION public.is_current_app_session_active()
   TO authenticated;
