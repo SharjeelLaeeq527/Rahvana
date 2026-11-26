@@ -17,7 +17,16 @@ Draft ready: `docs/dark-mode-palette.md` (tokens, contrast check, open decisions
 
 ---
 
-## Phase 2: Foundation (hidden from users)
+## Phase 2: Foundation (hidden from users) - DONE
+
+Notes from the build:
+- There is no plain `bg-brand` / `text-brand` class on purpose: some vault components already
+  carry those class names and they render nothing today, so defining them would change the
+  light site. Use `bg-primary` for the brand fill and `text-brand-text` for brand text.
+- `--rahvana-primary` / `-light` / `-dark` keep their light values in dark mode: they are used
+  both as button backgrounds (white text) and as text colours, so each screen moves to tokens
+  during its migration.
+- Text tokens give `text-strong`, `text-default`, `text-subtle`, `text-faint`.
 
 ### 2.1 Tokens - `app/globals.css`
 
@@ -194,7 +203,8 @@ form previews.
 | `text-gray-500`, `text-gray-600`, `text-slate-500` | `text-muted-foreground` / `text-subtle` |
 | `text-gray-400` | `text-faint` |
 | `border-gray-200`, `border-slate-200`, `divide-gray-200` | `border-border` / `border-line` |
-| `bg-teal-600`, `#0d7377`, `#0d9488` | `bg-primary` / `bg-brand` |
+| `bg-teal-600`, `#0d7377`, `#0d9488` (fill) | `bg-primary` (+ `text-primary-foreground`) |
+| `text-teal-700`, `text-[#0d7377]` (text) | `text-brand-text` |
 | `bg-teal-50`, `#e8f6f6` | `bg-brand-soft` |
 | `bg-green-50 text-green-700` | `bg-success-soft text-success` |
 | `bg-amber-50 text-amber-700` | `bg-warning-soft text-warning` |

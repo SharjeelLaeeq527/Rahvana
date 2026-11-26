@@ -1,7 +1,7 @@
 # Dark Mode Palette (Phase 1 draft)
 
-Status: **draft, waiting for designer approval.** Phase 2 copies these values into
-`app/globals.css`. Light values match what the site uses today; only the items under
+Status: **approved 2026-11-25, live in `app/globals.css`.** The three open decisions in
+section 5 are not applied yet (light mode is unchanged). Light values match what the site uses today; only the items under
 "Open decisions" change the light look.
 
 Contrast = WCAG ratio, checked with a script. Target: 4.5 for normal text, 3.0 for large
@@ -83,9 +83,9 @@ Every text pair passes 4.5 except the two marked under "Open decisions".
 
 | Variable | Light (today) | Dark |
 |---|---|---|
-| `--rahvana-primary` | `#0d7377` | `#14b8a6` |
-| `--rahvana-primary-light` | `#14a0a6` | `#2dd4bf` |
-| `--rahvana-primary-dark` | `#0a5a5d` | `#0d9488` |
+| `--rahvana-primary` | `#0d7377` | unchanged (see note) |
+| `--rahvana-primary-light` | `#14a0a6` | unchanged (see note) |
+| `--rahvana-primary-dark` | `#0a5a5d` | unchanged (see note) |
 | `--rahvana-primary-pale` | `#e8f6f6` | `#0f2e33` |
 | `--rahvana-secondary` | `#32e0c4` | `#32e0c4` |
 | `--rv-navy` | `#0c1b33` | `#f1f5f9` |
@@ -102,6 +102,10 @@ Every text pair passes 4.5 except the two marked under "Open decisions".
 | `--rv-ch*`, `--rv-launch-*` | already dark | unchanged |
 | `--guide-card-shadow` / `--guide-card-hover-shadow` | teal glow | `0 4px 24px -4px rgb(0 0 0 / 0.5)` / `0 8px 32px -4px rgb(0 0 0 / 0.6)` |
 | `--guide-grid-color` | `hsl(168 70% 42% / 0.025)` | `hsl(168 70% 60% / 0.04)` |
+
+Note: `--rahvana-primary` / `-light` / `-dark` are used both as button backgrounds (with
+white text) and as text colours, and no single dark value works for both. They keep their
+light values; screens switch to `bg-primary` / `text-brand-text` during migration.
 
 Note: `--rv-navy`, `--rv-ink`, `--rv-soft` are used as text colours today, so they flip to
 light values. Any place that uses one of them as a BACKGROUND will need a fix during the

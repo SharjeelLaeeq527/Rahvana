@@ -982,6 +982,22 @@ into `user_profiles.profile_details`** so tools share one profile.
   - **UserProfileContext** — loads `MasterProfile` once ("fill once, use everywhere"),
     optimistic merge + debounced save to `/api/profile/complete` (server-side encryption).
   - **LanguageContext** — `en` / `ur` i18n with `t()`/`tRaw()`, persisted to localStorage.
+- **Theme (dark mode, in rollout; plan `docs/dark-mode-implementation-plan.md`, palette
+  `docs/dark-mode-palette.md`).** `app/components/theme/AppThemeProvider.tsx` (next-themes,
+  `attribute="class"`, default `light`, storage key `rahvana-theme`) wraps everything in
+  `app/layout.tsx`. A route renders dark only when `DARK_MODE_ENABLED` (`lib/feature-flags.ts`,
+  env `NEXT_PUBLIC_ENABLE_DARK_MODE`, off on production by default) AND it is listed in
+  `DARK_READY_PREFIXES` (`lib/theme/darkReadyRoutes.ts`); every other route is `forcedTheme`
+  light, and `/admin` never goes dark. Colours come from tokens in `app/globals.css` (`:root`
+  light, `.dark` dark) exposed as classes `bg-surface` / `-raised` / `-sunken`, `text-strong` /
+  `-default` / `-subtle` / `-faint`, `border-line`, `text-brand-text`, `bg-brand-soft`,
+  `bg-success-soft text-success` (also warning / danger / info), `bg-overlay`; the shadcn
+  variables map onto them in `.dark`. There is no plain `brand` colour class (old vault classes
+  `bg-brand` / `text-brand` would start rendering); use `bg-primary`. Toggle:
+  `app/components/theme/ThemeToggle.tsx` in the `SiteHeader` profile menu + mobile menu.
+  `npm run check:colors` (`scripts/check-hardcoded-colors.mjs`, CI workflow `colors.yml`) fails
+  when a folder's hardcoded colour count (neutral Tailwind classes + hex) rises above
+  `scripts/color-baseline.json`; re-run with `-- --update` after converting a screen.
 - **Server cache:** SWR for reads; 30s cache on `journeys/initialize`.
 - **Client stores (Zustand):** document vault (`lib/document-vault/store.ts`), PDF editor
   (`usePDFStore`) + a roadmap `useStore` (both in `lib/store.ts`), progress tree

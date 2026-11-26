@@ -328,6 +328,32 @@ html {
   --guide-card-hover-shadow: 0 8px 32px -4px hsl(168 70% 42% / 0.25);
   --guide-grid-color: hsl(168 70% 42% / 0.025);
 
+  /* Theme tokens (docs/dark-mode-palette.md). Dark values live in .dark below. */
+  --surface: #f8fafc;
+  --surface-raised: #ffffff;
+  --surface-sunken: #f1f5f9;
+  --text-strong: #0f172a;
+  --text-default: #334155;
+  --text-subtle: #5b6b80;
+  --text-faint: #94a3b8;
+  --line: #e2e8f0;
+  --line-strong: #cbd5e1;
+  --brand: #0d9488;
+  --brand-text: #0f766e;
+  --brand-hover: #0f766e;
+  --brand-soft: #f0fdfa;
+  --brand-contrast: #ffffff;
+  --success: #15744f;
+  --success-soft: #e8f5ef;
+  --warning: #8a6200;
+  --warning-soft: #fef8e8;
+  --danger: #b91c1c;
+  --danger-soft: #fef2f2;
+  --info: #2460bb;
+  --info-soft: #e8f1fb;
+  --overlay: rgb(15 23 42 / 0.5);
+  --shadow-color: rgb(15 23 42 / 0.08);
+
   /* Global Site Padding Variables */
   --site-px-default: 1rem; /* px-4 */
   --site-px-sm: 1.5rem; /* px-6 */
@@ -467,40 +493,109 @@ html {
   }
 }
 
+:root {
+  color-scheme: light;
+}
+
+/* Dark theme (docs/dark-mode-palette.md). Only applied on routes listed in
+   lib/theme/darkReadyRoutes.ts; every other route is forced light. */
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.145 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.145 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(97.572% 0.01181 16.844);
-  --border: oklch(0.269 0 0);
-  --input: oklch(0.269 0 0);
-  --ring: oklch(0.439 0 0);
+  color-scheme: dark;
+
+  /* Theme tokens */
+  --surface: #0b1220;
+  --surface-raised: #111a2e;
+  --surface-sunken: #070d18;
+  --text-strong: #f1f5f9;
+  --text-default: #cbd5e1;
+  --text-subtle: #94a3b8;
+  --text-faint: #64748b;
+  --line: #1e293b;
+  --line-strong: #334155;
+  --brand: #2dd4bf;
+  --brand-text: #2dd4bf;
+  --brand-hover: #5eead4;
+  --brand-soft: #0f2e33;
+  --brand-contrast: #042f2e;
+  --success: #4ade80;
+  --success-soft: #0f2a1d;
+  --warning: #fbbf24;
+  --warning-soft: #2b2108;
+  --danger: #f87171;
+  --danger-soft: #2d1517;
+  --info: #60a5fa;
+  --info-soft: #0f2140;
+  --overlay: rgb(0 0 0 / 0.6);
+  --shadow-color: rgb(0 0 0 / 0.4);
+
+  /* shadcn variables mapped onto the tokens */
+  --background: var(--surface);
+  --foreground: var(--text-strong);
+  --card: var(--surface-raised);
+  --card-foreground: var(--text-strong);
+  --popover: var(--surface-raised);
+  --popover-foreground: var(--text-strong);
+  --primary: var(--brand);
+  --primary-foreground: var(--brand-contrast);
+  --secondary: #1e293b;
+  --secondary-foreground: var(--text-strong);
+  --muted: #1e293b;
+  --muted-foreground: var(--text-subtle);
+  --accent: var(--brand-soft);
+  --accent-foreground: var(--text-strong);
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: var(--line);
+  --input: var(--line-strong);
+  --ring: var(--brand);
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(100% 0.00011 271.152);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.269 0 0);
-  --sidebar-ring: oklch(0.439 0 0);
-  --sidebar-ring: oklch(0.439 0 0);
+  --chart-5: oklch(0.8 0.15 60);
+  --sidebar: var(--surface-raised);
+  --sidebar-foreground: var(--text-strong);
+  --sidebar-primary: var(--brand);
+  --sidebar-primary-foreground: var(--brand-contrast);
+  --sidebar-accent: #1e293b;
+  --sidebar-accent-foreground: var(--text-strong);
+  --sidebar-border: var(--line);
+  --sidebar-ring: var(--brand);
+
+  /* Brand variables. --rahvana-primary / -light / -dark keep their light values:
+     they are used both as button backgrounds (with white text) and as text colours,
+     so each screen moves to tokens during its migration. */
+  --rahvana-primary-pale: #0f2e33;
+
+  --rv-navy: #f1f5f9;
+  --rv-ink: #e2e8f0;
+  --rv-soft: #cbd5e1;
+  --rv-muted: #94a3b8;
+  --rv-line: #1e3350;
+  --rv-sky: #0f2140;
+  --rv-blue: #60a5fa;
+  --rv-blue-dark: #3b82f6;
+  --rv-green: #4ade80;
+  --rv-green-bg: #0f2a1d;
+  --rv-amber: #fbbf24;
+  --rv-amber-bg: #2b2108;
+  --rv-purple: #c4b5fd;
+  --rv-purple-bg: #1f1838;
+  --rv-rose: #fb7185;
+  --rv-rose-bg: #2d1520;
+  --rv-rose-soft: #161a2e;
+
+  --guide-card-shadow: 0 4px 24px -4px rgb(0 0 0 / 0.5);
+  --guide-card-hover-shadow: 0 8px 32px -4px rgb(0 0 0 / 0.6);
+  --guide-grid-color: hsl(168 70% 60% / 0.04);
+}
+
+.dark input:-webkit-autofill,
+.dark textarea:-webkit-autofill,
+.dark select:-webkit-autofill {
+  -webkit-text-fill-color: var(--text-strong);
+  -webkit-box-shadow: 0 0 0 1000px var(--surface-sunken) inset;
+  caret-color: var(--text-strong);
 }
 
 @keyframes fade-up {
@@ -576,6 +671,33 @@ html {
   --color-rahvana-primary-dark: var(--rahvana-primary-dark);
   --color-rahvana-primary-pale: var(--rahvana-primary-pale);
   --color-rahvana-secondary: var(--rahvana-secondary);
+
+  /* Theme tokens -> classes (bg-surface, text-subtle, border-line, bg-success-soft ...).
+     There is deliberately no plain "brand" colour: some vault components already carry
+     bg-brand / text-brand classes that render nothing today. Use bg-primary for the
+     brand fill. */
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-strong: var(--text-strong);
+  --color-default: var(--text-default);
+  --color-subtle: var(--text-subtle);
+  --color-faint: var(--text-faint);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-brand-text: var(--brand-text);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-contrast: var(--brand-contrast);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-overlay: var(--overlay);
 
   --animate-shimmer: shimmer 2.5s infinite;
 

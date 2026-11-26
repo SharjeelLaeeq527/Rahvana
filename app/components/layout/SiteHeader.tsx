@@ -56,6 +56,7 @@ import { useAuth, UserProfile } from "@/app/context/AuthContext";
 // import { useLanguage } from "@/app/context/LanguageContext";
 import { NAV_DATA } from "./navigationData";
 import { ConfirmationModal } from "../shared/ConfirmationModal";
+import { ThemeToggle } from "../theme/ThemeToggle";
 import { requestNavigation } from "@/lib/guides/navigationGuardStore";
 import { ir1journeyHref, ir5journeyHref } from "@/lib/constants/routes";
 import { useCandidate } from "@/app/context/CandidateContext";
@@ -311,7 +312,6 @@ export function SiteHeader({
   // Run cleanup once
   useExtensionCleanup();
   const router = useRouter();
-  // const { theme, setTheme } = useTheme();
 
   const MOBILE_ICONS: Record<string, React.ReactNode> = {
     journeys: (
@@ -1824,6 +1824,7 @@ export function SiteHeader({
                           <Settings className="h-4 w-4 text-slate-500 dark:text-slate-400" />
                           Account Settings
                         </button>
+                        <ThemeToggle />
                       </div>
 
                       {/* Footer - Sign Out */}
@@ -2215,6 +2216,7 @@ export function SiteHeader({
           </div>
 
           <div className="border-t bg-slate-50 p-6">
+            <ThemeToggle className="mb-4 px-0 py-0" />
             {isLoading && !resolvedUser ? (
               <div className="bg-primary/30 h-14 w-full animate-pulse rounded-xl" />
             ) : (

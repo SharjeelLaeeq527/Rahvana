@@ -28,6 +28,12 @@ These cause real bugs and cannot be inferred from the code. Everything else is i
 - **Builds hide TS/ESLint errors** (`ignoreBuildErrors`/`ignoreDuringBuilds`). A green build is not type-clean; run `tsc --noEmit` yourself.
 - **Keep domain logic in `lib/`**, route handlers thin, components presentational.
 - **User-facing copy is plain ASCII** — no em/en-dash, curly quotes, or ellipsis character.
+- **Use colour tokens, never hardcoded colours** (dark mode). New UI uses `bg-surface*`,
+  `text-strong/default/subtle/faint`, `border-line`, `bg-primary`, `text-brand-text`,
+  `bg-*-soft text-*` status pairs (see `docs/dark-mode-implementation-plan.md` cheat sheet) —
+  not `bg-white`, `text-gray-*`, `text-slate-*` or hex in TSX. `npm run check:colors` fails if
+  a folder's count goes up. A route renders dark only once added to
+  `lib/theme/darkReadyRoutes.ts`.
 
 ## Patterns to know
 - `getActiveStepsForStage(stage, filingType, metadata)` — always use for step filtering
