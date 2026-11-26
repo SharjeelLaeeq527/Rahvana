@@ -12,7 +12,7 @@ export type SecurityContext = {
   supabase: SupabaseClient;
   user: User;
   session: Session;
-  sessionId: string;
+  sessionId: string | null;
   device: RequestDevice;
 };
 
@@ -61,24 +61,36 @@ export async function getSecurityContext(
   // session_id is a registry key, not an identity check.
   const encodedPayload = session.access_token.split(".")[1];
   if (!encodedPayload) throw new Error("Authenticated JWT is malformed.");
-  const claims = JSON.parse(Buffer.from(encodedPayload, "base64url").toString("utf8")) as {
+  const base64Payload = encodedPayload.replace(/-/g, "+").replace(/_/g, "/");
+  const paddedPayload = base64Payload.padEnd(Math.ceil(base64Payload.length / 4) * 4, "=");
+  const payloadBytes = Uint8Array.from(atob(paddedPayload), (character) => character.charCodeAt(0));
+  const claims = JSON.parse(new TextDecoder().decode(payloadBytes)) as {
     sub?: unknown;
     session_id?: unknown;
   };
 
-  if (
-    claims.sub !== userData.user.id ||
-    typeof claims.session_id !== "string" ||
-    !SESSION_ID_RE.test(claims.session_id)
-  ) {
+  if (claims.sub !== userData.user.id) {
     throw new Error("Authenticated session claims are invalid.");
+  }
+  
+  let sessionId: string | null = null;
+  
+  if (claims.session_id !== undefined && claims.session_id !== null && claims.session_id !== "") {
+    if (
+      typeof claims.session_id !== "string" ||
+      !SESSION_ID_RE.test(claims.session_id)
+    ) {
+      throw new Error("Authenticated session claims are invalid.");
+    }
+  
+    sessionId = claims.session_id;
   }
 
   return {
     supabase,
     user: userData.user,
     session,
-    sessionId: claims.session_id,
+    sessionId,
     device: getRequestDevice(request),
   };
 }
