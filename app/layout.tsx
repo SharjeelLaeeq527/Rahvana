@@ -4,7 +4,7 @@ import { IR5_ENABLED } from "@/lib/feature-flags";
 import "./globals.css";
 import { ClientHeader } from "./components/layout/ClientHeader";
 import { AuthProvider } from "./context/AuthContext";
-// import { ThemeProvider } from "./components/theme-provider";
+import { AppThemeProvider } from "./components/theme/AppThemeProvider";
 import { ClientWidgets } from "./components/layout/ClientWidgets";
 import Footer from "./components/layout/Footer";
 import { ToastProvider } from "./components/shared/ToastProvider";
@@ -185,6 +185,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             })();
           `}
         </Script>
+        <AppThemeProvider>
         <ToastProvider>
           <AuthProvider>
             <UserProfileProvider>
@@ -193,17 +194,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <QuickAccessProvider>
                     <WalletProvider>
                     <LanguageProvider>
-                      {/* <ThemeProvider
-                  attribute="class"
-                  // un comment if you want bydefault device theme
-                  // defaultTheme="system"
-                  disableTransitionOnChange
-                > */}
                       <ClientHeader />
                       <ToolsGuard>{children}</ToolsGuard>
                       <ClientWidgets />
                       <Footer />
-                      {/* </ThemeProvider> */}
                     </LanguageProvider>
                     </WalletProvider>
                   </QuickAccessProvider>
@@ -214,6 +208,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </UserProfileProvider>
           </AuthProvider>
         </ToastProvider>
+        </AppThemeProvider>
         <Analytics />
       </body>
     </html>

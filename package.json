@@ -13,6 +13,7 @@
     "security:deps": "node scripts/check-security-deps.mjs",
     "security:audit": "npm audit --omit=dev --audit-level=high",
     "lint": "eslint",
+    "check:colors": "node scripts/check-hardcoded-colors.mjs",
     "lint:fix": "eslint --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

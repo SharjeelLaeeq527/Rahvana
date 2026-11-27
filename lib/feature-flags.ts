@@ -26,3 +26,14 @@ export const IR5_ENABLED =
     process.env.NEXT_PUBLIC_ENVIRONMENT !== "production");
 
 export const IR2_ENABLED = true;
+
+/**
+ * Dark mode toggle (docs/dark-mode-implementation-plan.md). Same resolution as
+ * NEXT_PUBLIC_ENABLE_IR5: "true" forces on, "false" forces off, unset = on
+ * everywhere except production. Even when on, only routes listed in
+ * lib/theme/darkReadyRoutes.ts ever render dark.
+ */
+export const DARK_MODE_ENABLED =
+  process.env.NEXT_PUBLIC_ENABLE_DARK_MODE === "true" ||
+  (process.env.NEXT_PUBLIC_ENABLE_DARK_MODE !== "false" &&
+    process.env.NEXT_PUBLIC_ENVIRONMENT !== "production");
