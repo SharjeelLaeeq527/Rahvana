@@ -134,7 +134,7 @@
 
 //   return (
 //     <Card className="mx-auto h-[600px] w-full max-w-2xl flex flex-col shadow-xl">
-//       <CardHeader className="border-b bg-gray-50/50">
+//       <CardHeader className="border-b border-line bg-surface-sunken/50">
 //         <CardTitle className="flex items-center gap-2">
 //           <Bot className="h-6 w-6 text-primary" />
 //           Support Chat

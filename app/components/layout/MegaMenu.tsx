@@ -94,21 +94,21 @@ const MegaMenu: React.FC<MegaMenuProps> = ({
       <div className="relative bg-background rounded-2xl shadow-[0_16px_40px_-12px_rgba(0,0,0,0.15)] border border-border/60 overflow-hidden flex flex-col max-h-[80vh]">
         {/* Horizontal Tabs Header */}
         {tabs && (
-          <div className="w-full bg-slate-50/80 border-b border-slate-100 px-6 pt-4">
+          <div className="w-full bg-surface-sunken/80 border-b border-line px-6 pt-4">
             <div className="flex gap-8 overflow-x-auto no-scrollbar">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={`shrink-0 pb-3 text-sm font-semibold transition-all relative ${
-                    activeTab === tab.id ? "text-[#0d7377]" : "text-slate-500 hover:text-[#0d7377]"
+                    activeTab === tab.id ? "text-brand" : "text-subtle hover:text-brand"
                   }`}
                 >
                   {tab.label}
                   {activeTab === tab.id && (
                     <motion.div
                       layoutId="activeTab"
-                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0d7377] rounded-full"
+                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand rounded-full"
                     />
                   )}
                 </button>
@@ -122,13 +122,13 @@ const MegaMenu: React.FC<MegaMenuProps> = ({
           {/* Search Bar */}
           {showSearch && (
             <div className="relative mb-8">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-faint" />
               <input
                 type="text"
                 placeholder="Search a visa type... (IR-1, H-1B, B-2...)"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200/50 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all outline-none"
+                className="w-full pl-12 pr-4 py-3.5 bg-surface-sunken border border-line rounded-xl text-sm text-strong focus:ring-2 focus:ring-primary/20 focus:bg-surface-raised transition-all outline-none placeholder:text-faint"
               />
             </div>
           )}
@@ -170,7 +170,7 @@ const MegaMenu: React.FC<MegaMenuProps> = ({
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
                           {activeTabData!.categories!.map((category) => (
                             <div key={category.label} className="flex flex-col gap-4">
-                              <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-2">
+                              <h3 className="text-sm font-bold text-subtle uppercase tracking-wider border-b border-line pb-2">
                                 {category.label}
                               </h3>
                               <div className="flex flex-col gap-2">
@@ -198,7 +198,7 @@ const MegaMenu: React.FC<MegaMenuProps> = ({
             </AnimatePresence>
 
             {searchQuery && filteredItems.length === 0 && (
-              <div className="col-span-full py-12 text-center text-slate-400 text-sm italic">
+              <div className="col-span-full py-12 text-center text-subtle text-sm italic">
                 No items found matching &quot;{searchQuery}&quot;
               </div>
             )}
@@ -206,10 +206,10 @@ const MegaMenu: React.FC<MegaMenuProps> = ({
         </div>
 
         {/* Sticky Footer */}
-        <div className="border-t border-slate-100 bg-slate-50/50 p-5 flex justify-between shrink-0">
+        <div className="border-t border-line bg-surface-sunken/50 p-5 flex justify-between shrink-0">
           <Link
             href={footerLink?.href || "#"}
-            className="flex items-center gap-2 text-sm font-bold text-[#0d7377] hover:gap-3 transition-all"
+            className="flex items-center gap-2 text-sm font-bold text-brand hover:gap-3 transition-all"
           >
             {footerLink?.label || "Explore all journeys"}
             <ArrowRight className="h-4 w-4" />
@@ -217,7 +217,7 @@ const MegaMenu: React.FC<MegaMenuProps> = ({
           {!user && (
             <button
               onClick={() => setShowComingSoon(true)}
-              className="flex items-center cursor-pointer gap-2 text-sm font-bold text-[#0d7377] hover:gap-3 transition-all"
+              className="flex items-center cursor-pointer gap-2 text-sm font-bold text-brand hover:gap-3 transition-all"
             >
               Get Early Access
             </button>
