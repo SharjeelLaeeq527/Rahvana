@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
 import { E, msg } from "@/lib/errors";
 import { sendEmail, getPasswordChangedHtml } from "@/lib/email/resend";
 import { validateStrongPassword } from "@/lib/security/password";
 import { checkRateLimit, rateLimitResponse } from "@/lib/security/rate-limit";
 import { auditLog, auditBlocked } from "@/lib/security/audit-log";
+import { recordAccountEvent } from "@/lib/security/security-activity";
+import { getRequestDevice } from "@/lib/security/security-context";
+import { requireActiveSessionForRequest } from "@/lib/security/session-guard";
 
 export async function POST(req: NextRequest) {
   // ── Rate Limit ──
@@ -15,15 +17,9 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
-    }
+    const sessionGuard = await requireActiveSessionForRequest(req);
+    if (!sessionGuard.ok) return sessionGuard.response;
+    const { user, supabase } = sessionGuard.context;
 
     const body = await req.json();
     const currentPassword = String(body.currentPassword || "");
@@ -134,6 +130,21 @@ export async function POST(req: NextRequest) {
     if (updateError) {
       return NextResponse.json({ error: updateError.message }, { status: 400 });
     }
+
+    // Record successful password change in account security activity.
+// The password change remains successful if activity logging fails.
+try {
+  await recordAccountEvent({
+    userId: user.id,
+    eventType: "password_changed",
+    device: getRequestDevice(req),
+  });
+} catch (activityError) {
+  console.error(
+    "[change-password] activity write failed:",
+    activityError
+  );
+}
 
     const emailHtml = getPasswordChangedHtml();
 
