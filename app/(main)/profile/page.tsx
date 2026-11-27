@@ -572,7 +572,7 @@ export default function ProfilePage() {
   const completeness = Math.round((completedSections / sectionConfig.length) * 100);
 
   return (
-    <div className="w-full bg-[#F8F9FA]">
+    <div className="w-full bg-[#F6F4EF]">
       {/* HERO SECTION - Offset below the fixed site navigation */}
       <section className="relative overflow-hidden bg-[#0A4F49] px-4 pt-8 pb-16 text-white sm:px-6 sm:pt-10 sm:pb-20 lg:px-8">
       <svg

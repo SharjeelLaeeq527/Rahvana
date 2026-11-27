@@ -282,7 +282,7 @@ export default function WalletTransactionsPage() {
   }
 
   return (
-    <div className="bg-background min-h-screen pt-16">
+    <div className="bg-[#F6F4EF] min-h-screen pt-16">
       <div className="w-full">
         {/* Hero Header Deck */}
         <header className="relative overflow-hidden bg-[#0A4F49] px-4 py-10 pb-20 text-white sm:px-6 lg:px-10">

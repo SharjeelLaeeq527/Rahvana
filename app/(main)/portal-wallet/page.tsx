@@ -751,7 +751,7 @@ const PortalWallet: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8fafa]">
+    <div className="min-h-screen bg-[#F6F4EF]">
       {/* HTML-matched hero header */}
       <header className="site-main-px relative mt-12 overflow-hidden bg-[linear-gradient(135deg,#0A4F49_0%,#073b37_100%)] py-[42px] pb-[76px] text-white">
       <svg
