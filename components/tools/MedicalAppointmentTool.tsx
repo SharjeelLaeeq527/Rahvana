@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import type { ToolModeProps } from "@/types/tool-mode";
 import { useResolveToolMode } from "@/lib/hooks/useResolveToolMode";
 import ServiceSkinShell from "@/components/tools/service-skin/ServiceSkinShell";
+import StandaloneRequestsView from "@/components/tools/service-skin/StandaloneRequestsView";
 import ServiceSubjectPicker, {
   SOMEONE_ELSE_ID,
 } from "@/components/tools/service-skin/ServiceSubjectPicker";
@@ -2271,6 +2272,8 @@ export default function MedicalAppointmentTool({
   // On the standalone page the user picks a beneficiary or "Someone else" (null = follow
   // the active beneficiary).
   const [bookingFor, setBookingFor] = useState<string | null>(null);
+  // Standalone "My requests" view (opened from the pane's requests icon).
+  const [showRequests, setShowRequests] = useState(false);
   const subjectId = isJourney ? activeCandidateId : (bookingFor ?? activeCandidateId);
   const isSomeoneElse = !isJourney && subjectId === SOMEONE_ELSE_ID;
   const subject = isJourney
@@ -3135,6 +3138,14 @@ export default function MedicalAppointmentTool({
       ];
   const iomStepIndex: Record<number, number> = { 1: 0, 9: 1, 7: 2, 8: 3 };
   const medStepIndex = showIntro ? -1 : isIOM ? (iomStepIndex[step] ?? 0) : step - 1;
+  if (showRequests && !isJourney) {
+    return (
+      <div className="mt-[55px] bg-white">
+        <StandaloneRequestsView service="medical" onBack={() => setShowRequests(false)} />
+      </div>
+    );
+  }
+
   return (
     <div
       className={
@@ -3179,6 +3190,7 @@ export default function MedicalAppointmentTool({
         kicker={showIntro ? "Rahvana booking service" : undefined}
         timeEstimate="5 min"
         faq={SERVICE_SKIN_FAQ.medical}
+        onRequests={!isJourney && user ? () => setShowRequests(true) : undefined}
         layout={isJourney ? (embedded ? "embedded" : "overlay") : "page"}
         topOffset={isJourney ? (embedded ? 0 : 64) : 60}
         viewportOffset={isJourney ? (embedded ? 0 : 64) : 60}

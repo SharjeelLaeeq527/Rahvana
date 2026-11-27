@@ -17,7 +17,6 @@ import {
   Crown,
   ShoppingBag,
   Sparkles,
-  ChevronDown,
   Lock,
   Coins,
 } from "lucide-react";
@@ -26,6 +25,10 @@ import { serviceBookingErrorMessage } from "@/lib/wallet/client";
 import type { ToolModeProps } from "@/types/tool-mode";
 import { useResolveToolMode } from "@/lib/hooks/useResolveToolMode";
 import ServiceSkinShell from "@/components/tools/service-skin/ServiceSkinShell";
+import ServiceRequestList, {
+  ServiceRequestEmpty,
+  type RequestTone,
+} from "@/components/tools/service-skin/ServiceRequestList";
 import {
   SERVICE_SKIN_FAQ,
   SERVICE_SKIN_TAGLINE,
@@ -114,6 +117,13 @@ interface FormData {
   alternate_slots: Date[];
   consent: boolean;
 }
+
+const CONSULT_STATUS_TONE: Partial<Record<Booking["status"], RequestTone>> = {
+  pending_approval: "waiting",
+  alternatives_proposed: "attention",
+  confirmed: "done",
+  completed: "done",
+};
 
 export default function BookConsultationTool({
   isOpen = true,
@@ -2450,165 +2460,132 @@ export default function BookConsultationTool({
 
   if (activeView === ("requests" as "booking" | "requests")) {
     return (
-      <div className="bg-gray-50 pt-[55px] pb-12">
-        <div className="relative mb-10 overflow-hidden bg-linear-to-r from-teal-800 to-teal-600 py-12 text-white shadow-lg">
-          <div className="relative z-10 w-full px-4">
-            <div className="mb-4 flex items-center justify-between">
-              <h1 className="text-3xl font-black tracking-tight">
-                My <span className="text-teal-200">Requests</span>
-              </h1>
-              <Button
-                onClick={() => setActiveView("booking")}
-                variant="outline"
-                className="border-white/30 bg-white/10 text-white hover:bg-white/20"
-              >
-                New Request
-              </Button>
-            </div>
-            <p className="font-light text-teal-50">
-              Track and manage your existing consultation requests.
-            </p>
-          </div>
-          <Globe className="absolute -top-20 -right-20 h-64 w-64 -rotate-12 transform text-white/5" />
-        </div>
-
-        <div className="mx-auto w-full px-4">
-          <div className="min-h-100 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl">
-            <div className="flex flex-col items-center justify-between gap-4 border-b bg-gray-50 p-6 sm:flex-row">
-              <div className="relative w-full sm:max-w-md">
+      <div className="bg-white pt-[55px]">
+        <ServiceSkinShell
+          service="consult"
+          title="Expert consultation"
+          tagline="Track and manage your consultation requests"
+          steps={[]}
+          current={-1}
+          kicker={null}
+          heading="My requests"
+          subheading="Every consultation you have booked, with its status and any times the expert has suggested."
+          faq={SERVICE_SKIN_FAQ.consult}
+          hideSwitcher
+          layout="page"
+          topOffset={60}
+          viewportOffset={60}
+          paneFooter={
+            <button type="button" className="svk-link" onClick={() => setActiveView("booking")}>
+              Book a new consultation
+            </button>
+          }
+        >
+          <div>
+            <div className="mb-6 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
+              <div className="relative w-full">
                 <input
                   type="text"
                   placeholder="Search by name, email or Reference ID..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && fetchUserBookings(searchQuery)}
-                  className="w-full rounded-lg border border-gray-300 py-2 pr-4 pl-10 text-sm transition focus:ring-2 focus:ring-teal-500"
+                    className="w-full pr-4 pl-10"
                 />
-                <Globe className="absolute top-2.5 left-3 h-4 w-4 text-gray-400" />
+                <Globe className="absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-gray-400" />
               </div>
-              <Button
+              <button
+                type="button"
                 onClick={() => fetchUserBookings(searchQuery)}
-                className="bg-teal-600 py-2 text-sm"
+                className="svk-btn svk-btn-pri sm:flex-none"
               >
                 Search
-              </Button>
+              </button>
             </div>
 
-            <div className="p-6">
+            <div>
               {loading ? (
                 <div className="flex justify-center py-20">
                   <Loader size="md" />
                 </div>
               ) : userBookings.length === 0 ? (
-                <div className="py-20 text-center">
-                  <Calendar className="mx-auto mb-4 h-16 w-16 text-gray-300" />
-                  <h3 className="text-lg font-medium text-gray-900">No requests found</h3>
-                  <p className="mt-1 text-gray-500">
-                    We couldn&#39;t find any requests matching your criteria.
-                  </p>
-                </div>
+                <ServiceRequestEmpty
+                  title="No requests found"
+                  body="We could not find any requests matching your search."
+                />
               ) : (
-                <div className="space-y-4">
-                  {userBookings.map((booking: Booking) => (
-                    <div
-                      key={booking.id}
-                      className="flex flex-col gap-4 rounded-2xl border border-gray-100 bg-white p-5 transition hover:border-teal-200 hover:shadow-md"
-                    >
-                      {/* Top Header Row */}
-                      <div className="flex flex-col items-start justify-between gap-2 border-b border-gray-100 pb-3 sm:flex-row sm:items-center">
-                        <div className="flex items-center gap-2">
-                          <span className="rounded-md bg-teal-50 px-2.5 py-1 font-mono text-xs font-bold text-teal-700">
-                            {booking.reference_id}
-                          </span>
-                          <span
-                            className={cn(
-                              "flex items-center gap-1 rounded-md px-2.5 py-1 text-[10px] font-black uppercase",
-                              booking.status === "confirmed"
-                                ? "bg-green-100 text-green-700"
-                                : booking.status === "pending_approval"
-                                  ? "bg-yellow-100 text-yellow-700"
-                                  : booking.status === "alternatives_proposed"
-                                    ? "bg-purple-100 text-purple-700"
-                                    : "bg-gray-100 text-gray-700"
+                <ServiceRequestList
+                  items={userBookings.map((booking: Booking) => {
+                    const issueLabel =
+                      issueCategories.find((c) => c.value === booking.issue_category)?.label ||
+                      booking.issue_category;
+                    const hasAlternatives =
+                      booking.status === "alternatives_proposed" &&
+                      !!booking.alternate_slots &&
+                      booking.alternate_slots.length > 0;
+                    return {
+                      id: booking.id,
+                      title: new Date(booking.selected_slot).toLocaleString(undefined, {
+                        weekday: "short",
+                        month: "short",
+                        day: "numeric",
+                        hour: "numeric",
+                        minute: "2-digit",
+                      }),
+                      subtitle: [booking.full_name, booking.visa_category, issueLabel]
+                        .filter(Boolean)
+                        .join(" - "),
+                      meta: `Ref ${booking.reference_id}`,
+                      status: {
+                        label: (booking.status || "").replace(/_/g, " "),
+                        tone: CONSULT_STATUS_TONE[booking.status] ?? "neutral",
+                      },
+                      children:
+                        booking.admin_notes || hasAlternatives ? (
+                          <>
+                            {hasAlternatives && (
+                              <div>
+                                <p className="mb-2">
+                                  The expert suggested these times. Pick one to confirm it.
+                                </p>
+                                <div className="svk-alt-times">
+                                  {booking.alternate_slots!.map((slot: string, idx: number) => (
+                                    <button
+                                      key={idx}
+                                      type="button"
+                                      onClick={() =>
+                                        handleAcceptAlternative(booking.id, new Date(slot))
+                                      }
+                                    >
+                                      {new Date(slot).toLocaleDateString(undefined, {
+                                        month: "short",
+                                        day: "numeric",
+                                      })}{" "}
+                                      at{" "}
+                                      {new Date(slot).toLocaleTimeString([], {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      })}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
                             )}
-                          >
-                            {booking.status?.replace("_", " ")}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                          <span className="font-medium text-gray-400">Requested Date:</span>
-                          <span className="text-gray-750 rounded bg-gray-50 px-2 py-0.5 font-semibold">
-                            {new Date(booking.selected_slot).toLocaleString(undefined, {
-                              month: "short",
-                              day: "numeric",
-                              hour: "numeric",
-                              minute: "2-digit",
-                            })}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Content Row */}
-                      <div className="space-y-3">
-                        <div className="space-y-1">
-                          <p className="text-[10px] font-bold tracking-wider text-gray-400 uppercase">
-                            Applicant
-                          </p>
-                          <h4 className="text-base leading-tight font-extrabold text-gray-900">
-                            {booking.full_name}
-                          </h4>
-                          <p className="mt-1 text-xs text-gray-500">
-                            Case Stage:{" "}
-                            <span className="font-semibold text-gray-700">
-                              {booking.visa_category} • {booking.issue_category}
-                            </span>
-                          </p>
-                        </div>
-
-                        {booking.admin_notes && (
-                          <CollapsibleAdminNotes notes={booking.admin_notes} />
-                        )}
-                      </div>
-
-                      {/* Alternatives Row */}
-                      {booking.status === "alternatives_proposed" &&
-                        booking.alternate_slots &&
-                        booking.alternate_slots.length > 0 && (
-                          <div className="mt-1 rounded-xl border border-purple-100 bg-purple-50 p-4">
-                            <p className="text-purple-750 mb-2 text-[10px] font-black uppercase">
-                              Alternative Slots Proposed by Admin:
-                            </p>
-                            <div className="flex flex-wrap gap-2">
-                              {booking.alternate_slots.map((slot: string, idx: number) => (
-                                <Button
-                                  key={idx}
-                                  onClick={() =>
-                                    handleAcceptAlternative(booking.id, new Date(slot))
-                                  }
-                                  variant="outline"
-                                  className="hover:bg-purple-650 hover:border-purple-650 text-purple-755 h-auto border-purple-200 bg-white px-3 py-1.5 text-[10px] font-semibold transition-colors hover:text-white"
-                                >
-                                  {new Date(slot).toLocaleDateString(undefined, {
-                                    month: "short",
-                                    day: "numeric",
-                                  })}{" "}
-                                  @{" "}
-                                  {new Date(slot).toLocaleTimeString([], {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  })}
-                                </Button>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                    </div>
-                  ))}
-                </div>
+                            {booking.admin_notes && (
+                              <details>
+                                <summary>Note from our team</summary>
+                                <p>{booking.admin_notes}</p>
+                              </details>
+                            )}
+                          </>
+                        ) : undefined,
+                    };
+                  })}
+                />
               )}
             </div>
           </div>
-        </div>
+        </ServiceSkinShell>
       </div>
     );
   }
@@ -2916,28 +2893,5 @@ const Button: React.FC<ButtonProps> = ({
 };
 
 // --- Collapsible Admin Notes component ---
-function CollapsibleAdminNotes({ notes }: { notes: string }) {
-  const [isOpen, setIsOpen] = useState(false);
-  return (
-    <div className="mt-2 overflow-hidden rounded-lg border border-teal-100">
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex w-full items-center justify-between bg-teal-50/70 px-3 py-2 text-xs font-bold text-teal-800 transition-colors hover:bg-teal-50 focus:outline-none"
-      >
-        <span>Admin Note</span>
-        <ChevronDown
-          className={`h-3.5 w-3.5 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
-        />
-      </button>
-      {isOpen && (
-        <div className="border-t border-teal-50 bg-white px-3 py-2.5 text-xs leading-relaxed text-slate-700">
-          {notes}
-        </div>
-      )}
-    </div>
-  );
-}
-
 // Backward-compatible named alias — safe to drop once all call sites use the default export.
 export { BookConsultationTool as ConsultationBookingPage };

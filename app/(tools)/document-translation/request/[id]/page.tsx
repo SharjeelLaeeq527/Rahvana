@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { Button } from "@/components/ui/button";
+import ServiceSkinShell from "@/components/tools/service-skin/ServiceSkinShell";
+import { SERVICE_SKIN_FAQ } from "@/components/tools/service-skin/serviceSkinCopy";
 import {
   Dialog,
   DialogContent,
@@ -265,17 +267,32 @@ export default function TranslationRequestDetails({ params }: { params: Promise<
 
   return (
     <ResultGate feature="document_translation">
-      <div className="bg-linear-to-br from-slate-50 to-slate-100 text-gray-800 site-main-px site-main-py mt-[55px]">
-        <div className="">
-          {/* Header */}
-          <header className="mb-8">
-            <h1 className="text-3xl md:text-4xl font-bold text-primary/90">
-              {t("documentTranslation.requestDetailsPage.title")}
-            </h1>
-            <p className="mt-2 text-gray-600">
-              {t("documentTranslation.requestDetailsPage.subtitle")}
-            </p>
-          </header>
+      <div className="mt-[55px] bg-white text-gray-800">
+        <ServiceSkinShell
+          service="translate"
+          title="Document translation"
+          tagline="Review your translation, request changes or download the final file"
+          steps={[]}
+          current={-1}
+          kicker={null}
+          heading={t("documentTranslation.requestDetailsPage.title")}
+          subheading={t("documentTranslation.requestDetailsPage.subtitle")}
+          faq={SERVICE_SKIN_FAQ.translate}
+          hideSwitcher
+          layout="page"
+          topOffset={60}
+          viewportOffset={60}
+          paneFooter={
+            <button
+              type="button"
+              className="svk-link"
+              onClick={() => (window.location.href = "/document-translation/my-requests")}
+            >
+              All my requests
+            </button>
+          }
+        >
+        <div>
 
           {/* Back button */}
           <div className="mb-6">
@@ -528,6 +545,7 @@ export default function TranslationRequestDetails({ params }: { params: Promise<
             </div>
           )}
         </div>
+        </ServiceSkinShell>
       </div>
     </ResultGate>
   );

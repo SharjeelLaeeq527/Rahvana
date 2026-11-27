@@ -414,6 +414,14 @@ launched from the Services folder or from their roadmap step card, and they shar
   (`lib/services/serviceSubject.ts`), skips Medical's write-back into the account profile, and
   `services-status` always includes such rows for any `candidateId` filter. Inside a journey the
   person stays fixed to the journey's candidate (read-only line).
+  **My requests pages use the same shell** (no steps, `hideSwitcher`): Consultation's in-tool
+  requests view (`activeView === "requests"`), `/document-translation/my-requests` and
+  `/document-translation/request/[id]` (inside its `ResultGate`). Their data, filters and actions are
+  unchanged; only the page frame is the skin. Standalone Medical and PCC open
+  `service-skin/StandaloneRequestsView.tsx` from the pane icon (reads `services-status`, read-only). The
+  pane icon (`onRequests`) is icon-only; its "My requests" label shows on hover / focus.
+  The lists render through `service-skin/ServiceRequestList.tsx` (bordered rows, status = dot +
+  text with a tone, optional `onOpen` row button and `children` under the row) and `ServiceRequestEmpty`.
 - **Chrome:** `ToolModeProps.embedded` (`types/tool-mode.ts`). `false` = full-screen overlay with its
   own sticky top bar (StepView overlay mounts, e.g. spouse UI); `true` = rendered inline in the
   engine's `roadmap-main` region using the `RoadmapLayoutEngine` breadcrumb for back/close

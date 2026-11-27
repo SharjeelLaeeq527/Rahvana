@@ -68,6 +68,8 @@ export interface ServiceSkinShellProps {
   faq?: Array<[string, string]>;
   /** Extra content at the bottom of the left pane (e.g. the active-candidate badge). */
   paneFooter?: ReactNode;
+  /** Hide the service switcher (e.g. on a "My requests" list, where switching makes no sense). */
+  hideSwitcher?: boolean;
   /** Opens the user's requests. Shown as a small icon at the top right of the pane. */
   onRequests?: () => void;
   requestsLabel?: string;
@@ -97,6 +99,7 @@ export default function ServiceSkinShell({
   paneFooter,
   onRequests,
   requestsLabel = "My requests",
+  hideSwitcher = false,
   topRight,
   layout = "page",
   topOffset = 0,
@@ -109,7 +112,7 @@ export default function ServiceSkinShell({
   const router = useRouter();
   const switcher = useServiceSwitcher();
   // Journey: only when the container wires a switcher. Standalone pages: always.
-  const showSwitcher = !!switcher || layout === "page";
+  const showSwitcher = !hideSwitcher && (!!switcher || layout === "page");
   useEffect(() => setMounted(true), []);
 
   useEffect(() => {
@@ -167,9 +170,11 @@ export default function ServiceSkinShell({
                   className="svk-req"
                   onClick={onRequests}
                   aria-label={requestsLabel}
-                  title={requestsLabel}
                 >
                   <ClipboardList aria-hidden="true" />
+                  <span className="svk-req-label" aria-hidden="true">
+                    {requestsLabel}
+                  </span>
                 </button>
               )}
               {faq && faq.length > 0 && (

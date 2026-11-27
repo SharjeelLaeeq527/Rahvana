@@ -41,6 +41,7 @@ import { Input } from "@/components/ui/input";
 import type { ToolModeProps } from "@/types/tool-mode";
 import { useResolveToolMode } from "@/lib/hooks/useResolveToolMode";
 import ServiceSkinShell from "@/components/tools/service-skin/ServiceSkinShell";
+import StandaloneRequestsView from "@/components/tools/service-skin/StandaloneRequestsView";
 import ServiceSubjectPicker, {
   SOMEONE_ELSE_ID,
 } from "@/components/tools/service-skin/ServiceSubjectPicker";
@@ -295,6 +296,8 @@ function PoliceApplyContent({
   // On the standalone page the user picks a beneficiary or "Someone else" (null = follow
   // the active beneficiary).
   const [applyingFor, setApplyingFor] = useState<string | null>(null);
+  // Standalone "My requests" view (opened from the pane's requests icon).
+  const [showRequests, setShowRequests] = useState(false);
   const subjectId = isJourney ? activeCandidateId : (applyingFor ?? activeCandidateId);
   const isSomeoneElse = !isJourney && subjectId === SOMEONE_ELSE_ID;
   const subject = isJourney
@@ -818,6 +821,14 @@ function PoliceApplyContent({
     null, // Checkout step renders its own heading
   ];
   const pccHead = showIntro ? null : pccHeads[pccCurrentStep - 1];
+  if (showRequests && !isJourney) {
+    return (
+      <div className="w-full bg-white pt-[55px]">
+        <StandaloneRequestsView service="police" onBack={() => setShowRequests(false)} />
+      </div>
+    );
+  }
+
   return (
     <div
       className={
@@ -871,6 +882,7 @@ function PoliceApplyContent({
         kicker={showIntro ? "PCC filing service" : undefined}
         timeEstimate="8 min"
         faq={SERVICE_SKIN_FAQ.police}
+        onRequests={!isJourney && user ? () => setShowRequests(true) : undefined}
         layout={isJourney ? (embedded ? "embedded" : "overlay") : "page"}
         topOffset={isJourney ? (embedded ? 0 : 64) : 60}
         viewportOffset={isJourney ? (embedded ? 0 : 64) : 60}

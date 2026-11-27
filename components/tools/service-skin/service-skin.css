@@ -89,6 +89,17 @@
 .svk-req:hover { opacity: 1; background: rgba(255, 255, 255, 0.12); }
 .svk-req:focus-visible { outline: 2px solid #fff; outline-offset: 2px; opacity: 1; }
 .svk-req svg { width: 18px; height: 18px; }
+/* Text label appears only on hover / keyboard focus, to the left of the icon. */
+.svk-req { position: relative; }
+.svk-req-label {
+  position: absolute; right: calc(100% + 6px); top: 50%; transform: translate(4px, -50%);
+  white-space: nowrap; pointer-events: none; opacity: 0;
+  background: #fff; color: var(--svk-ad); font-size: 12px; font-weight: 600; line-height: 1;
+  padding: 6px 9px; border-radius: 7px; box-shadow: 0 4px 14px -6px rgba(0, 0, 0, 0.35);
+  transition: opacity 0.15s, transform 0.15s;
+}
+.svk-req:hover .svk-req-label,
+.svk-req:focus-visible .svk-req-label { opacity: 1; transform: translate(0, -50%); }
 .svk-title {
   font-family: var(--svk-serif), Georgia, serif;
   font-weight: 600;
@@ -315,6 +326,58 @@
 }
 .svk-med .flex.pt-4 > button[data-slot="button"].border:hover { color: var(--svk-ink); }
 
+/* ---------- My requests list (ServiceRequestList) ---------- */
+.svk-toolbar {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
+  margin-bottom: 1.1em;
+}
+.svk-toolbar .svk-btn { flex: none; min-height: 44px; padding: 0.55em 1.2em; font-size: 0.93em; }
+.svk-rl { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.65em; }
+.svk-rl-item { border: 1.5px solid var(--svk-line); border-radius: 12px; background: #fff; overflow: hidden; }
+.svk-rl-main {
+  all: unset; box-sizing: border-box; width: 100%; display: flex; align-items: center; gap: 14px;
+  padding: 0.9em 1.1em;
+}
+button.svk-rl-main { cursor: pointer; transition: background-color 0.15s; }
+button.svk-rl-main:hover { background: #faf9f6; }
+button.svk-rl-main:focus-visible { outline: 2px solid var(--svk-a); outline-offset: -2px; }
+.svk-rl-text { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.svk-rl-text b { font-weight: 600; color: var(--svk-ink); overflow-wrap: anywhere; }
+.svk-rl-text span { color: var(--svk-mut); font-size: 0.9em; }
+.svk-rl-text small { color: var(--svk-mut); font-size: 0.8em; letter-spacing: 0.02em; }
+.svk-rl-status {
+  display: inline-flex; align-items: center; gap: 7px; flex: none; white-space: nowrap;
+  font-size: 0.86em; font-weight: 600; color: var(--svk-ink); text-transform: capitalize;
+}
+.svk-rl-status::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--svk-dot, #9aa3a4); }
+.svk-rl-status[data-tone="waiting"] { --svk-dot: #d39b21; }
+.svk-rl-status[data-tone="progress"] { --svk-dot: #4a7bd1; }
+.svk-rl-status[data-tone="attention"] { --svk-dot: #c4534b; }
+.svk-rl-status[data-tone="done"] { --svk-dot: #2f9e6b; }
+.svk-rl-chev { flex: none; width: 18px; height: 18px; color: var(--svk-mut); }
+.svk-rl-extra { border-top: 1px solid var(--svk-line); padding: 0.8em 1.1em 1em; display: grid; gap: 0.7em; font-size: 0.93em; }
+.svk-rl-extra .svk-alt-times { display: flex; flex-wrap: wrap; gap: 8px; }
+.svk-rl-extra .svk-alt-times button {
+  border: 1.5px solid var(--svk-line); background: #fff; border-radius: 10px; padding: 7px 12px;
+  cursor: pointer; font: inherit; font-size: 0.9em; font-weight: 500; color: var(--svk-ink);
+}
+.svk-rl-extra .svk-alt-times button:hover { border-color: var(--svk-a); }
+.svk-rl-extra details summary { cursor: pointer; font-weight: 600; color: var(--svk-ink); }
+.svk-rl-extra details p { margin: 0.5em 0 0; color: var(--svk-mut); line-height: 1.5; }
+.svk-empty {
+  border: 1.5px dashed var(--svk-line); border-radius: 14px; padding: 2.4em 1.4em; text-align: center;
+  display: grid; justify-items: center; gap: 0.5em; color: var(--svk-mut);
+}
+.svk-empty b { color: var(--svk-ink); font-size: 1.06em; }
+.svk-empty p { margin: 0 0 0.6em; }
+.svk-empty .svk-btn { flex: none; }
+
+@container svk (max-width: 520px) {
+  .svk-rl-main { flex-wrap: wrap; row-gap: 6px; }
+  .svk-rl-status { order: 3; width: 100%; }
+  .svk-rl-chev { order: 2; }
+}
+
 /* ---------- Switch confirm dialog ---------- */
 .svk-confirm {
   position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 10050;
@@ -400,6 +463,8 @@
   }
   .svk-col { margin-block: 0; max-width: none; padding: 0; }
   .svk-dots { padding-top: 12px; }
+  /* Pages without progress dots or a switcher (e.g. My requests): keep content off the sheet edge. */
+  .svk-main > .svk-col:first-child { padding-top: 22px; }
   .svk-dots { display: flex; justify-content: center; gap: 5px; margin: 0 0 14px; }
   .svk-dots i { width: 6px; height: 6px; border-radius: 9px; background: var(--svk-line); transition: width 0.25s; }
   .svk-dots i.dn { background: color-mix(in srgb, var(--svk-a) 45%, white); }
@@ -419,4 +484,18 @@
   .svk-col, .svk-drawer { animation: none; }
   .svk-ok circle, .svk-ok path { animation: none; stroke-dashoffset: 0; }
   .svk-dots i { transition: none; }
+}
+
+/* Checkout steps: the price box (2/5 of the split) is narrow inside the form column,
+   so its action buttons wrap instead of running out of the card. Layout unchanged. */
+.svk .svk-body .md\:col-span-2 .flex.justify-between.border-t {
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.svk .svk-body .md\:col-span-2 button {
+  min-width: 0;
+  max-width: 100%;
+  height: auto;
+  min-height: 2.5rem;
+  white-space: normal;
 }
