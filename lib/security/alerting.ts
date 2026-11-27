@@ -18,6 +18,7 @@
 
 import { createClient } from "@supabase/supabase-js";
 import { sendEmail } from "@/lib/email/resend";
+import { createSecurityAdmin } from "@/lib/security/security-admin";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -242,6 +243,48 @@ export async function pruneOldAuditLogs(retentionDays = 90): Promise<number> {
     return 0;
   }
   return data?.length ?? 0;
+}
+
+// ── Security activity / revoked session retention ────────────────────────────
+// Retain login activity for 90 days.
+// Retain revoked sessions for 90 days after revocation.
+// Active sessions are never removed by this cleanup.
+export async function pruneOldSecurityData(
+  retentionDays = 90
+): Promise<void> {
+  const cutoff = new Date(
+    Date.now() - retentionDays * 24 * 60 * 60 * 1000
+  ).toISOString();
+
+  const admin = createSecurityAdmin();
+
+  // 1. Remove old login activity records.
+  const { error: activityError } = await admin
+    .from("login_activity")
+    .delete()
+    .lt("created_at", cutoff);
+
+  if (activityError) {
+    console.error(
+      "[security-cleanup] activity prune failed:",
+      activityError.message
+    );
+  }
+
+  // 2. Remove only sessions that were revoked more than retentionDays ago.
+  // Active sessions (revoked_at IS NULL) are intentionally preserved.
+  const { error: sessionsError } = await admin
+    .from("user_sessions")
+    .delete()
+    .not("revoked_at", "is", null)
+    .lt("revoked_at", cutoff);
+
+  if (sessionsError) {
+    console.error(
+      "[security-cleanup] session prune failed:",
+      sessionsError.message
+    );
+  }
 }
 
 // ── Throttled trigger (for the login hot path) ────────────────────────────────

@@ -9,6 +9,8 @@ import {
 } from "@supabase/supabase-js";
 import { auditLog } from "@/lib/security/audit-log";
 import { isStagingEmailAllowed } from "@/lib/security/staging-access";
+import { getSecurityContext } from "@/lib/security/security-context";
+import { assertActiveSession } from "@/lib/security/session-registry";
 
 // =============================
 // Admin Emails
@@ -224,6 +226,36 @@ export async function updateSession(request: NextRequest) {
       url.pathname = "/admin-login";
       url.searchParams.set("redirectTo", request.nextUrl.pathname + request.nextUrl.search);
       return NextResponse.redirect(url);
+    }
+
+    if (isApiAdminRoute && pathname !== "/api/admin/logout") {
+      try {
+        const context = await getSecurityContext(supabase, request);
+        if (!context) {
+          return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        const isActive = await assertActiveSession(
+          context.user.id,
+          context.sessionId,
+          AbortSignal.timeout(MIDDLEWARE_SUPABASE_TIMEOUT_MS)
+        );
+        if (!isActive) {
+          return NextResponse.json(
+            { error: "Session revoked.", code: "SESSION_REVOKED" },
+            { status: 401 }
+          );
+        }
+      } catch (error) {
+        console.warn(`[middleware] active-session check failed on ${pathname}:`, error);
+        return NextResponse.json(
+          {
+            error: "Unable to verify session.",
+            code: "SESSION_VALIDATION_UNAVAILABLE",
+          },
+          { status: 503, headers: { "Retry-After": "30" } }
+        );
+      }
     }
 
     const { data: profile, error: profileError } = await supabaseAdmin

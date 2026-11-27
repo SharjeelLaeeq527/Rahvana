@@ -359,43 +359,61 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const verifyMFALogin = async (factorId: string, challengeId: string, code: string) => {
-    try {
-      const { error } = await supabase.auth.mfa.verify({
+  
+const verifyMFALogin = async (
+  factorId: string,
+  challengeId: string,
+  code: string
+) => {
+  try {
+    const response = await fetch("/api/auth/mfa/verify-login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
         factorId,
         challengeId,
         code,
-      });
+      }),
+    });
 
-      if (error) {
-        return { success: false, error: msg(E.AUTH_MFA_CODE_INVALID) };
-      }
+    const data = await response.json();
 
-      // 🔥 Get updated session AFTER successful verification
-      const {
-        data: { session },
-        error: sessionError,
-      } = await supabase.auth.getSession();
-
-      if (sessionError || !session) {
-        return {
-          success: false,
-          error: "Failed to retrieve upgraded session",
-        };
-      }
-
-      return {
-        success: true,
-        user: session.user,
-        session,
-      };
-    } catch {
+    if (!response.ok) {
       return {
         success: false,
-        error: msg(E.AUTH_MFA_CODE_INVALID),
+        error: data.error || msg(E.AUTH_MFA_CODE_INVALID),
       };
     }
-  };
+
+    // Retrieve the session from the browser's Supabase client.
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession();
+
+    if (sessionError || !session) {
+      return {
+        success: false,
+        error: "Failed to retrieve upgraded session",
+      };
+    }
+
+    return {
+      success: true,
+      user: session.user,
+      session,
+    };
+  } catch (error) {
+    console.error("[AuthContext] MFA verification failed:", error);
+
+    return {
+      success: false,
+      error: msg(E.AUTH_MFA_CODE_INVALID),
+    };
+  }
+};
 
   const getAuthenticatorAssuranceLevel = async () => {
     try {
