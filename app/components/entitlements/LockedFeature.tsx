@@ -53,20 +53,20 @@ export function LockedFeature({
   if (mode === "replace") {
     return (
       <div
-        className={`rounded-xl border border-dashed border-[#c9b8d8] bg-[#faf8fd] px-4 py-3 flex items-center gap-3 ${className ?? ""}`}
+        className={`rounded-xl border border-dashed border-line bg-surface-sunken px-4 py-3 flex items-center gap-3 ${className ?? ""}`}
       >
-        <div className="w-7 h-7 rounded-full bg-[#ede8f5] flex items-center justify-center shrink-0">
-          <Lock size={14} className="text-[#7c5e8a]" strokeWidth={2.5} />
+        <div className="w-7 h-7 rounded-full bg-brand-soft flex items-center justify-center shrink-0">
+          <Lock size={14} className="text-brand" strokeWidth={2.5} />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-[12.5px] font-semibold text-[#4a3b5c] truncate">
+          <p className="text-[12.5px] font-semibold text-default truncate">
             {hint || "Upgrade to unlock"}
           </p>
         </div>
         {cta && onUpgradeClick && (
           <button
             onClick={onUpgradeClick}
-            className="shrink-0 text-[11.5px] font-bold text-[#7c5e8a] hover:text-[#5a3f70] transition-colors"
+            className="shrink-0 text-[11.5px] font-bold text-brand hover:text-brand/80 transition-colors"
           >
             {cta} →
           </button>
@@ -80,17 +80,17 @@ export function LockedFeature({
     <div className={`relative ${className ?? ""}`}>
       <div className="pointer-events-none select-none opacity-30 blur-[1px]">{children}</div>
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-xl">
-        <div className="bg-white/90 backdrop-blur-sm border border-[#c9b8d8] rounded-2xl px-5 py-3 flex flex-col items-center gap-1.5 shadow-lg max-w-[220px] text-center">
-          <div className="w-8 h-8 rounded-full bg-[#ede8f5] flex items-center justify-center">
-            <Lock size={15} className="text-[#7c5e8a]" strokeWidth={2.5} />
+        <div className="bg-surface-raised/90 backdrop-blur-sm border border-line rounded-2xl px-5 py-3 flex flex-col items-center gap-1.5 shadow-lg max-w-[220px] text-center">
+          <div className="w-8 h-8 rounded-full bg-brand-soft flex items-center justify-center">
+            <Lock size={15} className="text-brand" strokeWidth={2.5} />
           </div>
-          <p className="text-[11.5px] font-semibold text-[#4a3b5c] leading-snug">
+          <p className="text-[11.5px] font-semibold text-default leading-snug">
             {hint || "Upgrade to unlock"}
           </p>
           {cta && onUpgradeClick && (
             <button
               onClick={onUpgradeClick}
-              className="text-[11px] font-bold text-white bg-[#7c5e8a] hover:bg-[#5a3f70] transition-colors rounded-full px-3 py-1"
+              className="text-[11px] font-bold text-brand-contrast bg-brand hover:bg-brand/90 transition-colors rounded-full px-3 py-1"
             >
               {cta}
             </button>
@@ -119,7 +119,7 @@ export function LockBadge({
   return (
     <button
       onClick={onClick}
-      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-[#ede8f5] text-[#7c5e8a] border border-[#c9b8d8] hover:bg-[#ddd0ea] transition-colors ${className ?? ""}`}
+      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-brand-soft text-brand border border-brand/30 hover:bg-brand-soft/80 transition-colors ${className ?? ""}`}
     >
       <Lock size={10} strokeWidth={2.5} />
       {cta ?? "Upgrade"}

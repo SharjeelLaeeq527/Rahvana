@@ -357,11 +357,11 @@ export default function LocationAutocomplete({
       {!hideLabel && (
         <label
           htmlFor={`${key}-autocomplete`}
-          className="mb-2 block text-xs font-semibold tracking-wide text-[#384252]"
+          className="mb-2 block text-xs font-semibold tracking-wide text-default"
         >
           {label ?? defaultLabel}
 
-          {required && <span className="ml-1 text-[#db8090]">*</span>}
+          {required && <span className="ml-1 text-destructive">*</span>}
         </label>
       )}
 
@@ -369,7 +369,7 @@ export default function LocationAutocomplete({
       <div className="relative">
         {/* Left icon */}
         {icon && (
-          <div className="pointer-events-none absolute top-1/2 left-3.5 z-10 -translate-y-1/2 text-[#59636f]">
+          <div className="pointer-events-none absolute top-1/2 left-3.5 z-10 -translate-y-1/2 text-subtle">
             {icon}
           </div>
         )}
@@ -395,7 +395,7 @@ export default function LocationAutocomplete({
           }
           className={
             inputClassName ??
-            "w-full rounded-xl border border-[#cbd3d8] bg-white py-3.5 pr-10 pl-10 text-sm text-[#263342] transition-colors outline-none placeholder:text-[#7a838c] focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10"
+            "w-full rounded-xl border border-line bg-surface-raised py-3.5 pr-10 pl-10 text-sm text-strong transition-colors outline-none placeholder:text-faint focus:border-brand focus:ring-2 focus:ring-brand/10"
           }
         />
 
@@ -405,7 +405,7 @@ export default function LocationAutocomplete({
             type="button"
             onClick={handleClear}
             aria-label={`Clear ${label ?? type}`}
-            className="absolute top-1/2 right-3.5 -translate-y-1/2 text-[#8a949d] transition-colors hover:text-[#36424d]"
+            className="absolute top-1/2 right-3.5 -translate-y-1/2 text-subtle transition-colors hover:text-strong"
           >
             <X className="h-4 w-4" />
           </button>
@@ -415,7 +415,7 @@ export default function LocationAutocomplete({
       {/* Loading */}
       {loading && (
         <div
-          className="absolute top-full right-0 left-0 z-50 mt-1 flex items-center justify-center rounded-xl border border-[#dfe5e8] bg-white p-3 shadow-[0_10px_24px_rgba(35,53,78,0.12)]"
+          className="absolute top-full right-0 left-0 z-50 mt-1 flex items-center justify-center rounded-xl border border-line bg-surface-raised p-3 shadow-[0_10px_24px_rgba(35,53,78,0.12)]"
           role="status"
           aria-live="polite"
         >
@@ -432,7 +432,7 @@ export default function LocationAutocomplete({
           id={`${key}-suggestions`}
           ref={listRef}
           role="listbox"
-          className="absolute top-full z-50 mt-1 max-h-60 w-full overflow-x-hidden overflow-y-auto rounded-xl border border-[#dfe5e8] bg-white p-1 shadow-[0_10px_24px_rgba(35,53,78,0.12)]"
+          className="absolute top-full z-50 mt-1 max-h-60 w-full overflow-x-hidden overflow-y-auto rounded-xl border border-line bg-surface-raised p-1 shadow-[0_10px_24px_rgba(35,53,78,0.12)]"
         >
           {suggestions.map((item, index) => {
             const location = getLocationName(item);
@@ -458,8 +458,8 @@ export default function LocationAutocomplete({
                 onMouseEnter={() => setHighlightedIndex(index)}
                 className={`flex w-full cursor-pointer items-center rounded-lg px-3 py-2.5 text-left text-sm transition-colors ${
                   highlighted
-                    ? "bg-[#e9f5f5] text-[#0d7377]"
-                    : "text-[#4b5563] hover:bg-[#e9f5f5] hover:text-[#0d7377]"
+                    ? "bg-brand-soft text-brand font-medium"
+                    : "text-default hover:bg-brand-soft hover:text-brand"
                 }`}
               >
                 {location}

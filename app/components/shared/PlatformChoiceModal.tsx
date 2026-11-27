@@ -52,20 +52,20 @@ const options = [
 export function PlatformChoiceModal({ isOpen, onClose }: PlatformChoiceModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="w-[95%] max-w-5xl bg-white rounded-3xl p-0 gap-0 overflow-hidden border border-gray-100 shadow-2xl max-h-[95vh] overflow-y-auto scrollbar-premium">
+      <DialogContent className="w-[95%] max-w-5xl bg-surface-raised rounded-3xl p-0 gap-0 overflow-hidden border border-line shadow-2xl max-h-[95vh] overflow-y-auto scrollbar-premium">
         {/* Header */}
-        <div className="relative px-6 py-4 border-b border-gray-100">
+        <div className="relative px-6 py-4 border-b border-line">
           {/* Subtle gradient accent */}
-          <div className="absolute inset-0 bg-gradient-to-br from-teal-50/20 via-white to-white pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-br from-brand/5 via-surface-raised to-surface-raised pointer-events-none" />
 
           <div className="relative flex items-center justify-between gap-4">
-            <DialogTitle className="text-lg md:text-xl font-extrabold text-gray-900 leading-tight">
+            <DialogTitle className="text-lg md:text-xl font-extrabold text-strong leading-tight">
               How would you like to use Rahvana?
             </DialogTitle>
             <button
               type="button"
               onClick={onClose}
-              className="flex-shrink-0 p-1.5 rounded-full hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600"
+              className="flex-shrink-0 p-1.5 rounded-full hover:bg-surface-sunken transition-colors text-faint hover:text-strong"
               aria-label="Close"
             >
               <X size={18} />
@@ -87,7 +87,7 @@ export function PlatformChoiceModal({ isOpen, onClose }: PlatformChoiceModalProp
                 <div className="flex flex-col gap-3">
                   {/* Title & Tagline */}
                   <div className="flex flex-col gap-0.5">
-                    <h3 className="text-base md:text-lg font-black text-gray-900 leading-tight">
+                    <h3 className="text-base md:text-lg font-black text-strong leading-tight">
                       {opt.title}
                     </h3>
                     <p
@@ -98,7 +98,7 @@ export function PlatformChoiceModal({ isOpen, onClose }: PlatformChoiceModalProp
                   </div>
 
                   {/* Image wrapper */}
-                  <div className="relative aspect-video w-full rounded-xl overflow-hidden border border-gray-100/60 bg-white">
+                  <div className="relative aspect-video w-full rounded-xl overflow-hidden border border-line bg-surface-sunken">
                     <Image
                       src={opt.image}
                       alt={opt.title}
@@ -139,12 +139,12 @@ export function PlatformChoiceModal({ isOpen, onClose }: PlatformChoiceModalProp
 
         {/* Footer note */}
         <div className="px-6 pb-4 pt-1">
-          <p className="text-center text-[11px] text-gray-400">
+          <p className="text-center text-[11px] text-faint">
             Not sure yet?{" "}
             <button
               type="button"
               onClick={onClose}
-              className="underline underline-offset-2 hover:text-gray-600 transition-colors font-medium"
+              className="underline underline-offset-2 hover:text-default transition-colors font-medium"
             >
               Close and explore the page
             </button>

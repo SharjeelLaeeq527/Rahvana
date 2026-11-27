@@ -85,31 +85,31 @@ export function WalletTopupModal({ balance, initialAmount, returnUrl, onClose }:
       aria-labelledby="wallet-topup-title"
     >
       <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        className="absolute inset-0 bg-overlay backdrop-blur-sm"
         onClick={() => !submitting && onClose()}
       />
 
-      <div className="relative flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl sm:max-w-md sm:rounded-3xl">
+      <div className="relative flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-3xl bg-surface-raised shadow-2xl sm:max-w-md sm:rounded-3xl border border-line">
         <button
           type="button"
           onClick={onClose}
           disabled={submitting}
           aria-label="Close"
-          className="absolute top-3.5 right-3.5 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-black/5 transition-colors hover:bg-black/10 disabled:opacity-40"
+          className="absolute top-3.5 right-3.5 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-surface-sunken text-subtle transition-colors hover:bg-surface-sunken/80 disabled:opacity-40"
         >
-          <X size={14} strokeWidth={2.5} className="text-slate-600" />
+          <X size={14} strokeWidth={2.5} className="text-subtle" />
         </button>
 
-        <div className="shrink-0 border-b border-[#0d7377]/15 bg-gradient-to-br from-[#0d7377]/10 to-[#0d7377]/5 px-5 pt-6 pb-5">
+        <div className="shrink-0 border-b border-brand/15 bg-gradient-to-br from-brand/10 to-brand/5 px-5 pt-6 pb-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#0d7377] text-white">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-brand text-brand-contrast">
               <Coins size={18} />
             </div>
             <div>
-              <h2 id="wallet-topup-title" className="text-[18px] font-extrabold tracking-tight text-[#0d7377]">
+              <h2 id="wallet-topup-title" className="text-[18px] font-extrabold tracking-tight text-brand">
                 Top up your Rahvana Wallet
               </h2>
-              <p className="text-[12px] font-medium text-slate-600">
+              <p className="text-[12px] font-medium text-subtle">
                 {balance === null ? "$1 = 1 credit" : `Current balance: ${balance} credits. $1 = 1 credit.`}
               </p>
             </div>
@@ -129,12 +129,12 @@ export function WalletTopupModal({ balance, initialAmount, returnUrl, onClose }:
                   aria-pressed={active}
                   className={`rounded-2xl border px-4 py-3 text-left transition-all ${
                     active
-                      ? "border-[#0d7377] bg-[#0d7377]/5 ring-2 ring-[#0d7377]/30"
-                      : "border-slate-200 hover:border-[#0d7377]/50"
+                      ? "border-brand bg-brand-soft ring-2 ring-brand/30"
+                      : "border-line hover:border-brand"
                   }`}
                 >
-                  <span className="block text-[17px] font-extrabold text-slate-900">${pack}</span>
-                  <span className="block text-[12px] font-medium text-slate-500">{pack} credits</span>
+                  <span className="block text-[17px] font-extrabold text-strong">${pack}</span>
+                  <span className="block text-[12px] font-medium text-subtle">{pack} credits</span>
                 </button>
               );
             })}
@@ -143,15 +143,15 @@ export function WalletTopupModal({ balance, initialAmount, returnUrl, onClose }:
           <div
             className={`rounded-2xl border px-4 py-3 transition-all ${
               selected === "custom"
-                ? "border-[#0d7377] bg-[#0d7377]/5 ring-2 ring-[#0d7377]/30"
-                : "border-slate-200"
+                ? "border-brand bg-brand-soft ring-2 ring-brand/30"
+                : "border-line"
             }`}
           >
-            <label htmlFor="wallet-custom-amount" className="mb-1.5 block text-[12px] font-bold text-slate-700">
+            <label htmlFor="wallet-custom-amount" className="mb-1.5 block text-[12px] font-bold text-strong">
               Custom amount
             </label>
             <div className="flex items-center gap-2">
-              <span className="text-[16px] font-bold text-slate-500">$</span>
+              <span className="text-[16px] font-bold text-subtle">$</span>
               <input
                 id="wallet-custom-amount"
                 type="text"
@@ -165,30 +165,30 @@ export function WalletTopupModal({ balance, initialAmount, returnUrl, onClose }:
                   setSelected("custom");
                   setCustomValue(e.target.value.replace(/[^\d]/g, "").slice(0, 4));
                 }}
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-[15px] font-semibold text-slate-900 outline-none focus:border-[#0d7377]"
+                className="w-full rounded-lg border border-line bg-surface-sunken px-3 py-2 text-[15px] font-semibold text-strong outline-none focus:border-brand"
               />
             </div>
             {selected === "custom" && customValue !== "" && custom && !custom.ok && (
-              <p className="mt-1.5 text-[12px] font-medium text-red-600">{custom.error}</p>
+              <p className="mt-1.5 text-[12px] font-medium text-danger">{custom.error}</p>
             )}
           </div>
 
           {error && (
-            <p className="rounded-xl bg-red-50 px-3 py-2 text-[12.5px] font-medium text-red-700">{error}</p>
+            <p className="rounded-xl bg-danger-soft px-3 py-2 text-[12.5px] font-medium text-danger">{error}</p>
           )}
 
-          <p className="text-[11.5px] leading-relaxed text-slate-500">
+          <p className="text-[11.5px] leading-relaxed text-subtle">
             Credits are used for standalone tools and guides. Resources inside your journey are covered
             by your journey plan and never use credits.
           </p>
         </div>
 
-        <div className="shrink-0 border-t border-slate-100 px-5 py-4">
+        <div className="shrink-0 border-t border-line px-5 py-4">
           <button
             type="button"
             onClick={handlePay}
             disabled={amount === null || submitting}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#0d7377] px-4 py-3 text-[14px] font-bold text-white transition-colors hover:bg-[#0a5c5f] disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand px-4 py-3 text-[14px] font-bold text-brand-contrast transition-colors hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-50"
           >
             {submitting ? (
               <>

@@ -428,7 +428,7 @@ export function UpgradeModal({
 
   // ─── Shared card wrapper ──────────────────────────────────────────────────
   const cardCls = [
-    "relative bg-white shadow-2xl flex flex-col overflow-hidden",
+    "relative bg-surface-raised shadow-2xl flex flex-col overflow-hidden border border-line",
     "animate-in fade-in zoom-in-95 duration-200",
     "w-full rounded-t-3xl",
     "sm:rounded-3xl sm:w-[440px] sm:max-w-[calc(100vw-2rem)]",
@@ -501,7 +501,7 @@ export function UpgradeModal({
         style={{ zIndex: 2147483000 }}
       >
         <div
-          className="pointer-events-auto absolute inset-0 bg-black/40 backdrop-blur-sm"
+          className="pointer-events-auto absolute inset-0 bg-overlay backdrop-blur-sm"
           onClick={onClose}
         />
 
@@ -542,11 +542,11 @@ export function UpgradeModal({
           >
             {/* ── Interview-prep-specific mode breakdown ── */}
             {interviewMode && (
-              <div className="rounded-2xl border border-slate-200/60 bg-slate-50 p-4">
-                <p className="mb-2.5 text-[10px] font-bold tracking-widest text-slate-400 uppercase">
+              <div className="rounded-2xl border border-line bg-surface-sunken p-4">
+                <p className="mb-2.5 text-[10px] font-bold tracking-widest text-faint uppercase">
                   Interview Prep Features
                 </p>
-                <div className="mb-3 flex gap-1 rounded-xl bg-white p-1 ring-1 ring-slate-200/60">
+                <div className="mb-3 flex gap-1 rounded-xl bg-surface-raised p-1 ring-1 ring-line">
                   {(["prep", "rapid", "mock"] as const).map((mode) => {
                     const cfg = INTERVIEW_MODE_FEATURES[mode];
                     const Icon = cfg.icon;
@@ -558,7 +558,7 @@ export function UpgradeModal({
                         className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-[10.5px] font-bold transition-all ${
                           isActive
                             ? "text-white shadow-sm"
-                            : "bg-transparent text-slate-500 hover:text-slate-700"
+                            : "bg-transparent text-subtle hover:text-strong"
                         }`}
                         style={isActive ? { backgroundColor: cfg.color } : {}}
                       >
@@ -572,7 +572,7 @@ export function UpgradeModal({
                   {INTERVIEW_MODE_FEATURES[interviewTab].features.map((item) => (
                     <li
                       key={item}
-                      className="flex items-start gap-2 text-[11.5px] leading-snug text-slate-600"
+                      className="flex items-start gap-2 text-[11.5px] leading-snug text-default"
                     >
                       <Check
                         size={12}
@@ -599,7 +599,7 @@ export function UpgradeModal({
                   <Zap size={10} strokeWidth={3} /> Recommended · Best Value
                 </span>
                 {fullUpgradeTiers.length > 1 && (
-                  <div className="mb-3 flex gap-0.5 rounded-xl bg-black/5 p-0.5">
+                  <div className="mb-3 flex gap-0.5 rounded-xl bg-surface-sunken p-0.5">
                     {fullUpgradeTiers.map((t) => (
                       <button
                         key={t}
@@ -616,7 +616,7 @@ export function UpgradeModal({
                         className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg py-1.5 text-[10.5px] font-bold transition-all ${
                           selectedTier === t
                             ? "shadow-sm"
-                            : "text-neutral-500 hover:text-neutral-700"
+                            : "text-subtle hover:text-strong"
                         }`}
                       >
                         {TIER_NAMES[t]}
@@ -637,7 +637,7 @@ export function UpgradeModal({
                       </p>
 
                       {/* Explicitly tie the feature they came for to this plan */}
-                      <p className="mb-1 text-[11px] font-semibold text-[#3a4f63]">
+                      <p className="mb-1 text-[11px] font-semibold text-default">
                         ✓ Includes {addon.name}, plus every tool below
                       </p>
 
@@ -648,8 +648,8 @@ export function UpgradeModal({
                           >
                             ${planPrice.monthly}
                           </span>
-                          <span className="text-[12px] font-medium text-neutral-500">/mo</span>
-                          <span className="text-[11px] text-neutral-400">
+                          <span className="text-[12px] font-medium text-subtle">/mo</span>
+                          <span className="text-[11px] text-faint">
                             · ${planPrice.annual} total
                           </span>
                         </div>
@@ -661,7 +661,7 @@ export function UpgradeModal({
                     {TIER_HIGHLIGHTS[selectedTier].slice(0, 4).map((item) => (
                       <li
                         key={item}
-                        className="flex items-start gap-1.5 text-[11.5px] leading-snug text-[#3a4f63]"
+                        className="flex items-start gap-1.5 text-[11.5px] leading-snug text-default"
                       >
                         <Check
                           size={12}
@@ -672,7 +672,7 @@ export function UpgradeModal({
                       </li>
                     ))}
                     {TIER_HIGHLIGHTS[selectedTier].length > 4 && (
-                      <li className="pl-[18px] text-[11px] text-neutral-400">
+                      <li className="pl-[18px] text-[11px] text-faint">
                         + {TIER_HIGHLIGHTS[selectedTier].length - 4} more features
                       </li>
                     )}
@@ -702,26 +702,26 @@ export function UpgradeModal({
             {/* Divider */}
             {showInclusionSection && standalone && (
               <div className="flex items-center gap-3">
-                <div className="flex-1 border-t border-neutral-200" />
-                <span className="text-[11px] font-semibold text-neutral-400">
+                <div className="flex-1 border-t border-line" />
+                <span className="text-[11px] font-semibold text-faint">
                   Just need this resource?
                 </span>
-                <div className="flex-1 border-t border-neutral-200" />
+                <div className="flex-1 border-t border-line" />
               </div>
             )}
 
             {/* Standalone with credits: intentionally neutral, it must not borrow any
                 plan tier's palette, so the two paths read as primary vs secondary. */}
             {standalone && (
-              <div className="rounded-2xl border border-dashed border-neutral-300 bg-neutral-50 p-4">
-                <p className="mb-2 text-[10px] font-bold tracking-widest text-neutral-500 uppercase">
+              <div className="rounded-2xl border border-dashed border-line bg-surface-sunken p-4">
+                <p className="mb-2 text-[10px] font-bold tracking-widest text-faint uppercase">
                   {standalone.isService ? "Booking just this one?" : "Using just this one?"}
                 </p>
                 <div className="mb-1 flex items-baseline gap-1.5">
-                  <span className="text-[28px] leading-none font-black text-neutral-800">
+                  <span className="text-[28px] leading-none font-black text-strong">
                     {standalone.credits} Credits
                   </span>
-                  <span className="text-[12px] font-medium text-neutral-500 opacity-70">
+                  <span className="text-[12px] font-medium text-subtle opacity-70">
                     ·{" "}
                     {standalone.isService
                       ? "per request"
@@ -732,7 +732,7 @@ export function UpgradeModal({
                           : "one-time unlock"}
                   </span>
                 </div>
-                <p className="mb-3 text-[11px] leading-snug text-neutral-500">
+                <p className="mb-3 text-[11px] leading-snug text-subtle">
                   {standalone.isService
                     ? `Book ${addon.name} on its own and pay from your Rahvana wallet ($1 = 1 credit).`
                     : standalone.perForm
@@ -745,7 +745,7 @@ export function UpgradeModal({
                 <Link
                   href={standalone.href}
                   onClick={onClose}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-neutral-700 py-2.5 text-[13px] font-bold text-white shadow-sm transition-colors hover:bg-neutral-600 active:bg-neutral-800"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-line bg-surface-raised py-2.5 text-[13px] font-bold text-strong shadow-sm transition-colors hover:bg-surface-sunken"
                 >
                   <Coins size={14} strokeWidth={2.5} />
                   {standalone.isService ? "Book with credits" : `Open ${addon.name}`}
@@ -764,7 +764,7 @@ export function UpgradeModal({
             )}
 
             <p
-              className="text-center text-[11px] text-neutral-400"
+              className="text-center text-[11px] text-faint"
               style={{ paddingBottom: "max(8px, env(safe-area-inset-bottom))" }}
             >
               Secure checkout powered by Stripe
@@ -793,7 +793,7 @@ export function UpgradeModal({
     >
       {/* Backdrop */}
       <div
-        className="pointer-events-auto absolute inset-0 bg-black/40 backdrop-blur-sm"
+        className="pointer-events-auto absolute inset-0 bg-overlay backdrop-blur-sm"
         onClick={onClose}
       />
 
@@ -846,7 +846,7 @@ export function UpgradeModal({
         >
           {/* Tier tabs */}
           {tabTiers.length > 1 && (
-            <div className="flex gap-1 rounded-2xl bg-neutral-100 p-1">
+            <div className="flex gap-1 rounded-2xl bg-surface-sunken p-1">
               {tabTiers.map((t) => (
                 <button
                   key={t}
@@ -861,7 +861,7 @@ export function UpgradeModal({
                       : {}
                   }
                   className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2 text-[11.5px] font-bold transition-all ${
-                    selectedTier === t ? "shadow-sm" : "text-neutral-500 hover:text-neutral-700"
+                    selectedTier === t ? "shadow-sm" : "text-subtle hover:text-strong"
                   }`}
                 >
                   {/* Icon flush in tab — zero extra padding/wrapper */}
@@ -875,11 +875,11 @@ export function UpgradeModal({
           {/* Feature highlights */}
           {/* ── Interview-prep-specific mode breakdown ── */}
           {interviewMode && (
-            <div className="rounded-2xl border border-slate-200/60 bg-slate-50 p-4">
-              <p className="mb-2.5 text-[10px] font-bold tracking-widest text-slate-400 uppercase">
+            <div className="rounded-2xl border border-line bg-surface-sunken p-4">
+              <p className="mb-2.5 text-[10px] font-bold tracking-widest text-faint uppercase">
                 Interview Prep Features
               </p>
-              <div className="mb-3 flex gap-1 rounded-xl bg-white p-1 ring-1 ring-slate-200/60">
+              <div className="mb-3 flex gap-1 rounded-xl bg-surface-raised p-1 ring-1 ring-line">
                 {(["prep", "rapid", "mock"] as const).map((mode) => {
                   const cfg = INTERVIEW_MODE_FEATURES[mode];
                   const Icon = cfg.icon;
@@ -891,7 +891,7 @@ export function UpgradeModal({
                       className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-[10.5px] font-bold transition-all ${
                         isActive
                           ? "text-white shadow-sm"
-                          : "bg-transparent text-slate-500 hover:text-slate-700"
+                          : "bg-transparent text-subtle hover:text-strong"
                       }`}
                       style={isActive ? { backgroundColor: cfg.color } : {}}
                     >
@@ -905,7 +905,7 @@ export function UpgradeModal({
                 {INTERVIEW_MODE_FEATURES[interviewTab].features.map((item) => (
                   <li
                     key={item}
-                    className="flex items-start gap-2 text-[11.5px] leading-snug text-slate-600"
+                    className="flex items-start gap-2 text-[11.5px] leading-snug text-default"
                   >
                     <Check
                       size={12}
@@ -923,11 +923,11 @@ export function UpgradeModal({
           {/* ── Divider ── */}
           {interviewMode && (
             <div className="flex items-center gap-3">
-              <div className="flex-1 border-t border-neutral-200" />
-              <span className="text-[11px] font-semibold text-neutral-400">
+              <div className="flex-1 border-t border-line" />
+              <span className="text-[11px] font-semibold text-faint">
                 What you get with your plan
               </span>
-              <div className="flex-1 border-t border-neutral-200" />
+              <div className="flex-1 border-t border-line" />
             </div>
           )}
 
@@ -936,7 +936,7 @@ export function UpgradeModal({
             {TIER_HIGHLIGHTS[selectedTier].map((item) => (
               <li
                 key={item}
-                className="flex items-start gap-2 text-[12px] leading-snug text-[#3a4f63]"
+                className="flex items-start gap-2 text-[12px] leading-snug text-default"
               >
                 <Check size={13} strokeWidth={2.5} className={`${style.check} mt-0.5 shrink-0`} />
                 {item}
@@ -968,7 +968,7 @@ export function UpgradeModal({
 
           {/* FIX: replaced pb-safe (non-existent utility) with inline env() style */}
           <p
-            className="text-center text-[11px] text-neutral-400"
+            className="text-center text-[11px] text-faint"
             style={{ paddingBottom: "max(8px, env(safe-area-inset-bottom))" }}
           >
             Billed monthly · No cancellation after grace period

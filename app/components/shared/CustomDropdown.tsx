@@ -113,7 +113,7 @@ export const CustomDropdown = ({
   if (soleOption) {
     return (
       <div className={cn("w-full max-w-full", className)}>
-        <div className="flex min-h-[42px] w-full items-center rounded-lg border border-transparent bg-white px-3 py-2 text-[13.5px] font-semibold text-slate-700 shadow-sm">
+        <div className="flex min-h-[42px] w-full items-center rounded-lg border border-transparent bg-surface-raised px-3 py-2 text-[13.5px] font-semibold text-default shadow-sm">
           {soleOption.label}
         </div>
       </div>
@@ -182,7 +182,7 @@ export const CustomDropdown = ({
             disabled={disabled}
             onKeyDown={handleKeyDown}
             className={cn(
-              "flex h-auto min-h-[42px] w-full max-w-full min-w-0 items-center justify-between gap-2 rounded-lg border border-transparent bg-white px-3 py-2 text-left text-[13.5px] font-semibold whitespace-nowrap text-slate-700 shadow-sm transition-colors hover:border-transparent focus:ring-2 focus:ring-slate-200 focus:ring-offset-0 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 [&>svg]:text-slate-500",
+              "flex h-auto min-h-[42px] w-full max-w-full min-w-0 items-center justify-between gap-2 rounded-lg border border-transparent bg-surface-raised px-3 py-2 text-left text-[13.5px] font-semibold whitespace-nowrap text-default shadow-sm transition-colors hover:border-transparent focus:ring-2 focus:ring-line focus:ring-offset-0 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 [&>svg]:text-subtle",
               triggerClassName
             )}
           >
@@ -218,11 +218,11 @@ export const CustomDropdown = ({
             // Without a search box, keep focus on the trigger so the arrow keys keep working.
             if (!showSearch) event.preventDefault();
           }}
-          className="z-[10100] w-[var(--radix-popover-trigger-width)] max-w-none min-w-[max(250px,var(--radix-popover-trigger-width))] overflow-hidden rounded-lg border border-transparent bg-white p-0 shadow-xl"
+          className="z-[10100] w-[var(--radix-popover-trigger-width)] max-w-none min-w-[max(250px,var(--radix-popover-trigger-width))] overflow-hidden rounded-lg border border-line bg-surface-raised p-0 shadow-xl"
         >
           {showSearch && (
-            <div className="sticky top-0 z-10 flex items-center border-b border-transparent bg-white px-3 py-2.5">
-              <Search className="mr-2 h-4 w-4 shrink-0 text-[#4A7772]" />
+            <div className="sticky top-0 z-10 flex items-center border-b border-line bg-surface-raised px-3 py-2.5">
+              <Search className="mr-2 h-4 w-4 shrink-0 text-brand" />
 
               <input
                 type="text"
@@ -233,7 +233,7 @@ export const CustomDropdown = ({
                   setActive(0);
                 }}
                 onKeyDown={handleKeyDown}
-                className="min-w-0 flex-1 bg-transparent text-sm font-medium text-slate-700 outline-none placeholder:font-normal placeholder:text-slate-400"
+                className="min-w-0 flex-1 bg-transparent text-sm font-medium text-default outline-none placeholder:font-normal placeholder:text-faint"
               />
             </div>
           )}
@@ -265,10 +265,10 @@ export const CustomDropdown = ({
                     onMouseDown={(event) => event.preventDefault()}
                     onClick={() => pick(option)}
                     className={cn(
-                      "w-full min-w-0 cursor-pointer rounded-md px-3.5 py-2.5 text-sm font-medium text-slate-700 transition-colors select-none",
-                      (index === active || checked) && !option.disabled && "bg-[#EAF5F0] text-[#2E5450]",
+                      "w-full min-w-0 cursor-pointer rounded-md px-3.5 py-2.5 text-sm font-medium text-default transition-colors select-none",
+                      (index === active || checked) && !option.disabled && "bg-brand-soft text-brand font-semibold",
                       option.disabled &&
-                        "cursor-not-allowed text-slate-500 opacity-60 hover:bg-amber-50/50 dark:hover:bg-amber-950/20"
+                        "cursor-not-allowed text-faint opacity-60 hover:bg-amber-50/50 dark:hover:bg-amber-950/20"
                     )}
                   >
                     <div className="flex w-full min-w-0 items-center justify-between gap-2.5">
@@ -278,8 +278,8 @@ export const CustomDropdown = ({
                           <span
                             className={cn(
                               "truncate",
-                              option.status === "uploaded" ? "font-bold text-[#2E5450]" : "",
-                              option.disabled ? "font-medium text-slate-500" : ""
+                              option.status === "uploaded" ? "font-bold text-brand" : "",
+                              option.disabled ? "font-medium text-faint" : ""
                             )}
                           >
                             {option.label}
@@ -297,7 +297,7 @@ export const CustomDropdown = ({
                           <span className="shrink-0">{option.rightElement}</span>
                         )}
                         {option.status === "uploaded" && (
-                          <div className="flex shrink-0 items-center gap-1 rounded-md bg-[#EAF5F0] px-1.5 py-0.5 text-[10px] font-black tracking-wider text-[#2E5450] uppercase">
+                          <div className="flex shrink-0 items-center gap-1 rounded-md bg-brand-soft px-1.5 py-0.5 text-[10px] font-black tracking-wider text-brand uppercase">
                             <CheckCircle2 size={10} strokeWidth={3} />
                             Uploaded
                           </div>
@@ -308,7 +308,7 @@ export const CustomDropdown = ({
                 );
               })
             ) : (
-              <li className="px-4 py-5 text-center text-sm text-slate-500">No options found</li>
+              <li className="px-4 py-5 text-center text-sm text-subtle">No options found</li>
             )}
           </ul>
         </PopoverContent>

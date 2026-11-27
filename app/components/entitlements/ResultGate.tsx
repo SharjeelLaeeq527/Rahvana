@@ -182,7 +182,7 @@ export function ResultGate({
 
       {/* Floating upgrade card */}
       <div className="absolute inset-0 z-10 flex items-center justify-center p-4">
-        <div className="animate-in zoom-in-95 w-full max-w-sm rounded-[20px] border border-[#d0e4f7] bg-white p-7 text-center shadow-[0_20px_60px_rgba(12,27,51,0.12)] duration-400">
+        <div className="animate-in zoom-in-95 w-full max-w-sm rounded-[20px] border border-line bg-surface-raised p-7 text-center shadow-lg duration-400">
           {/* Tier icon badge */}
           <div className="mb-5 flex justify-center">
             <div
@@ -197,18 +197,18 @@ export function ResultGate({
           </div>
 
           {/* "Results ready" pill — reward framing, not punishment */}
-          <div className="mb-4 inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-bold tracking-widest text-slate-500 uppercase shadow-sm">
+          <div className="mb-4 inline-flex items-center gap-1.5 rounded-full border border-line bg-surface-sunken px-3 py-1 text-[11px] font-bold tracking-widest text-subtle uppercase shadow-sm">
             <Lock size={11} strokeWidth={2.5} />
             <span>Results Ready</span>
           </div>
 
           {/* Title */}
-          <h2 className="mb-2 text-xl leading-tight font-black text-[#0c1b33]">
+          <h2 className="mb-2 text-xl leading-tight font-black text-strong">
             {title || "Unlock Your Results with a Plan Upgrade"}
           </h2>
 
           {/* Description */}
-          <p className="mb-3 text-[13px] leading-relaxed text-[#6b8097]">
+          <p className="mb-3 text-[13px] leading-relaxed text-subtle">
             {creditItem
               ? `Unlock ${creditItem.name} for ${creditItem.credits} credits and use it as often as you like.`
               : description ||
@@ -216,19 +216,19 @@ export function ResultGate({
           </p>
 
           {/* Hint */}
-          {!creditItem && <p className="mb-5 text-[11px] text-[#9aa5b1]">{hint}</p>}
+          {!creditItem && <p className="mb-5 text-[11px] text-faint">{hint}</p>}
 
           {/* CTA */}
           {creditItem ? (
             <>
               <button
                 onClick={() => setShowCreditModal(true)}
-                className="group mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-[#0d7377] py-3 text-[14px] font-bold text-white shadow-md transition-colors hover:bg-[#0a5c5f]"
+                className="group mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-brand text-brand-contrast py-3 text-[14px] font-bold shadow-md transition-colors hover:bg-brand/90"
               >
                 <Coins size={15} strokeWidth={2.5} />
                 {`Unlock for ${creditItem.credits} credits`}
               </button>
-              <p className="mt-3 text-[11px] text-[#9aa5b1]">
+              <p className="mt-3 text-[11px] text-faint">
                 Resources inside your journey use your journey plan instead.
               </p>
             </>
@@ -247,7 +247,7 @@ export function ResultGate({
           )}
 
           {canBuyAddon && !creditItem && (
-            <p className="mt-3 text-[11px] text-[#9aa5b1]">
+            <p className="mt-3 text-[11px] text-faint">
               Just need this result? A one-time add-on is also available.
             </p>
           )}

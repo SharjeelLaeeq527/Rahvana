@@ -191,13 +191,13 @@ const FileUpload: React.FC<FileUploadProps> = ({
         <div className="mb-2.5 flex items-center justify-between">
           <label
             htmlFor={fieldName}
-            className="text-sm font-semibold text-[#263342]"
+            className="text-sm font-semibold text-strong"
           >
             {label}
           </label>
 
           {hasFiles && (
-            <span className="flex items-center gap-1 text-[11px] font-medium text-[#0d7377]">
+            <span className="flex items-center gap-1 text-[11px] font-medium text-brand">
               <CheckCircle2 className="h-3.5 w-3.5" />
               Uploaded
             </span>
@@ -214,25 +214,25 @@ const FileUpload: React.FC<FileUploadProps> = ({
         style={{ minHeight: height }}
         className={`relative flex w-full flex-col justify-center overflow-hidden rounded-2xl transition-all duration-300 ${
           hasFiles
-            ? "border border-[#0d7377]/25 bg-[#f7fcfc] p-4"
+            ? "border border-brand/25 bg-brand-soft/40 p-4"
             : isPremium
               ? `cursor-pointer border ${
                   isDragging
-                    ? "border-[#0d7377] bg-[#edf8f8] shadow-[0_18px_50px_rgba(13,115,119,0.18)]"
-                    : "border-[#dcecf1] bg-white shadow-[0_10px_40px_rgba(13,115,119,0.10)] hover:border-[#afdbdb] hover:shadow-[0_16px_48px_rgba(13,115,119,0.14)]"
+                    ? "border-brand bg-brand-soft shadow-[0_18px_50px_rgba(13,115,119,0.18)]"
+                    : "border-line bg-surface-raised shadow-[0_10px_40px_rgba(13,115,119,0.10)] hover:border-brand/40 hover:shadow-[0_16px_48px_rgba(13,115,119,0.14)]"
                 } px-6 py-12 sm:px-10 sm:py-16`
               : `cursor-pointer border-2 border-dashed p-6 text-center ${
                   isDragging
-                    ? "border-[#0d7377] bg-[#edf8f8] shadow-[0_0_0_4px_rgba(13,115,119,0.08)]"
-                    : "border-[#d7e1e5] bg-white hover:border-[#0d7377]/45 hover:bg-[#fbfefe] hover:shadow-[0_8px_24px_rgba(35,53,78,0.06)]"
+                    ? "border-brand bg-brand-soft shadow-[0_0_0_4px_rgba(13,115,119,0.08)]"
+                    : "border-line bg-surface-raised hover:border-brand/45 hover:bg-surface-sunken hover:shadow-[0_8px_24px_rgba(35,53,78,0.06)]"
                 }`
         }`}
       >
         {/* BACKGROUND DECORATION */}
         {!hasFiles && (
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
-            <div className="absolute -right-16 -top-16 h-32 w-32 rounded-full bg-[#0d7377]/[0.025]" />
-            <div className="absolute -bottom-20 -left-16 h-36 w-36 rounded-full bg-[#32e0c4]/[0.025]" />
+            <div className="absolute -right-16 -top-16 h-32 w-32 rounded-full bg-brand/[0.025]" />
+            <div className="absolute -bottom-20 -left-16 h-36 w-36 rounded-full bg-brand/[0.025]" />
           </div>
         )}
 
@@ -244,24 +244,24 @@ const FileUpload: React.FC<FileUploadProps> = ({
               className={`mb-6 flex h-16 w-16 items-center justify-center rounded-2xl transition-all duration-300 sm:h-[72px] sm:w-[72px] ${
                 isPremium
                   ? isDragging
-                    ? "scale-105 bg-[#0d7377] shadow-[0_10px_30px_rgba(13,115,119,0.22)]"
-                    : "bg-[#eaf3fb] group-hover:bg-[#e0f0f4]"
+                    ? "scale-105 bg-brand shadow-[0_10px_30px_rgba(13,115,119,0.22)]"
+                    : "bg-surface-sunken group-hover:bg-brand-soft"
                   : isDragging
-                    ? "scale-105 border border-[#0d7377]/20 bg-[#0d7377]/10"
-                    : "border border-[#0d7377]/10 bg-[#edf8f8]"
+                    ? "scale-105 border border-brand/20 bg-brand-soft"
+                    : "border border-brand/10 bg-brand-soft"
               }`}
             >
               {isDragging ? (
                 <ImageIcon
                   className={`h-8 w-8 ${
-                    isPremium ? "text-white" : "text-[#0d7377]"
+                    isPremium ? "text-brand-contrast" : "text-brand"
                   }`}
                 />
               ) : (
                 icon || (
                   <UploadCloud
                     className={`h-8 w-8 ${
-                      isPremium ? "text-[#0d7377]" : "text-[#0d7377]/80"
+                      isPremium ? "text-brand" : "text-brand/80"
                     }`}
                   />
                 )
@@ -272,8 +272,8 @@ const FileUpload: React.FC<FileUploadProps> = ({
             <p
               className={`text-center font-bold ${
                 isPremium
-                  ? "text-xl text-[#123f42] sm:text-2xl"
-                  : "text-sm text-[#263342]"
+                  ? "text-xl text-strong sm:text-2xl"
+                  : "text-sm text-strong"
               }`}
             >
               {isDragging
@@ -287,8 +287,8 @@ const FileUpload: React.FC<FileUploadProps> = ({
             <p
               className={`text-center ${
                 isPremium
-                  ? "mb-7 mt-1.5 text-xs text-[#6b8a8f] sm:text-sm"
-                  : "mt-1 text-xs text-[#7a858e]"
+                  ? "mb-7 mt-1.5 text-xs text-subtle sm:text-sm"
+                  : "mt-1 text-xs text-subtle"
               }`}
             >
               {description}
@@ -300,13 +300,13 @@ const FileUpload: React.FC<FileUploadProps> = ({
                 isPremium ? "w-[201px]" : "w-full max-w-[220px]"
               }`}
             >
-              <span className="h-px flex-1 bg-[#e6ecee]" />
+              <span className="h-px flex-1 bg-line" />
 
-              <span className="text-[10px] font-medium tracking-wider text-[#9aa4ab]">
+              <span className="text-[10px] font-medium tracking-wider text-faint">
                 OR
               </span>
 
-              <span className="h-px flex-1 bg-[#e6ecee]" />
+              <span className="h-px flex-1 bg-line" />
             </div>
 
             {/* BROWSE BUTTON */}
@@ -315,8 +315,8 @@ const FileUpload: React.FC<FileUploadProps> = ({
               onClick={handleBrowse}
               className={`inline-flex items-center justify-center gap-2 transition-all active:scale-[0.98] ${
                 isPremium
-                  ? "w-full rounded-xl bg-[#00595C] px-7 py-3 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(13,115,119,0.25)] hover:bg-[#004a4c] hover:shadow-[0_10px_26px_rgba(13,115,119,0.32)] sm:w-auto"
-                  : "rounded-lg border border-[#0d7377]/25 bg-white px-4 py-2 text-xs font-semibold text-[#0d7377] shadow-sm hover:border-[#0d7377]/40 hover:bg-[#0d7377] hover:text-white hover:shadow-md"
+                  ? "w-full rounded-xl bg-brand text-brand-contrast px-7 py-3 text-sm font-semibold shadow-[0_8px_20px_rgba(13,115,119,0.25)] hover:bg-brand/90 hover:shadow-[0_10px_26px_rgba(13,115,119,0.32)] sm:w-auto"
+                  : "rounded-lg border border-line bg-surface-raised px-4 py-2 text-xs font-semibold text-brand shadow-sm hover:border-brand/40 hover:bg-brand hover:text-brand-contrast hover:shadow-md"
               }`}
             >
               <Upload className="h-3.5 w-3.5" />
@@ -327,8 +327,8 @@ const FileUpload: React.FC<FileUploadProps> = ({
             <p
               className={`text-center ${
                 isPremium
-                  ? "mt-5 text-[11px] text-[#8aa5a8] sm:text-xs"
-                  : "mt-3 text-[10px] text-[#9aa4ab]"
+                  ? "mt-5 text-[11px] text-faint sm:text-xs"
+                  : "mt-3 text-[10px] text-faint"
               }`}
             >
               {helperText}
@@ -343,13 +343,13 @@ const FileUpload: React.FC<FileUploadProps> = ({
               return (
                 <div
                   key={`${file.name}-${index}`}
-                  className={`flex items-center gap-3 rounded-xl border bg-white shadow-[0_4px_14px_rgba(35,53,78,0.05)] ${
+                  className={`flex items-center gap-3 rounded-xl border border-line bg-surface-raised shadow-[0_4px_14px_rgba(35,53,78,0.05)] ${
                     isPremium ? "p-3.5 sm:p-4" : "p-3"
                   }`}
                 >
                   {/* IMAGE PREVIEW / FILE ICON */}
                   {previewUrl ? (
-                    <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-[#dceaea] bg-[#edf8f8]">
+                    <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-line bg-brand-soft">
                       <img
                         src={previewUrl}
                         alt={file.name}
@@ -357,7 +357,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
                       />
                     </div>
                   ) : (
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#edf8f8] text-[#0d7377]">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand">
                       {getFileIcon(file)}
                     </div>
                   )}
@@ -365,20 +365,20 @@ const FileUpload: React.FC<FileUploadProps> = ({
                   {/* FILE INFO */}
                   <div className="min-w-0 flex-1 text-left">
                     <p
-                      className="truncate text-sm font-semibold text-[#263342]"
+                      className="truncate text-sm font-semibold text-strong"
                       title={file.name}
                     >
                       {file.name}
                     </p>
 
                     <div className="mt-1 flex items-center gap-2">
-                      <span className="text-[11px] text-[#7a858e]">
+                      <span className="text-[11px] text-subtle">
                         {formatFileSize(file.size)}
                       </span>
 
-                      <span className="h-1 w-1 rounded-full bg-[#b8c4c9]" />
+                      <span className="h-1 w-1 rounded-full bg-line" />
 
-                      <span className="flex items-center gap-1 text-[11px] font-medium text-[#0d7377]">
+                      <span className="flex items-center gap-1 text-[11px] font-medium text-brand">
                         <CheckCircle2 className="h-3 w-3" />
                         Ready
                       </span>
@@ -393,7 +393,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
                       handleRemove();
                     }}
                     aria-label={`Remove ${file.name}`}
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[#8a969e] transition-all hover:bg-[#fff1f1] hover:text-[#c75c5c] active:scale-95"
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-subtle transition-all hover:bg-destructive/10 hover:text-destructive active:scale-95"
                   >
                     <X className="h-4 w-4" />
                   </button>
@@ -403,7 +403,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
 
             {/* CHANGE FILE */}
             <div className="mt-3 flex items-center justify-between px-1">
-              <span className="text-[11px] text-[#7a858e]">
+              <span className="text-[11px] text-subtle">
                 {multiple && uploadedFiles.length > 1
                   ? `${uploadedFiles.length} files selected`
                   : "File ready to upload"}
@@ -412,7 +412,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
               <button
                 type="button"
                 onClick={handleBrowse}
-                className="text-[11px] font-semibold text-[#0d7377] transition-colors hover:text-[#095c60]"
+                className="text-[11px] font-semibold text-brand transition-colors hover:text-brand/80"
               >
                 Change file
               </button>

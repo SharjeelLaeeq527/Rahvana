@@ -53,7 +53,7 @@ export function ComingSoonModal({ open, onOpenChange }: ComingSoonModalProps) {
               }`}
             >
               <DialogTitle className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 tracking-tight">
-                <span className="text-[#0D7377]">Coming Soon</span>
+                <span className="text-brand">Coming Soon</span>
               </DialogTitle>
             </div>
             {/* Subtitle */}

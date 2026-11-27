@@ -36,14 +36,14 @@ export default function ActionMenu({ onView, onDelete }: ActionMenuProps) {
 
       {open && (
         <div
-          className="fixed mt-2 w-40 bg-white shadow-xl rounded-md border border-slate-200 z-[9999]"
+          className="fixed mt-2 w-40 bg-surface-raised shadow-xl rounded-md border border-line z-[9999]"
           style={{
             top: menuRef.current?.getBoundingClientRect().bottom ?? 0,
             left: (menuRef.current?.getBoundingClientRect().right ?? 0) - 160,
           }}
         >
           <button
-            className="flex items-center gap-2 w-full px-4 py-2 hover:bg-slate-100"
+            className="flex items-center gap-2 w-full px-4 py-2 hover:bg-surface-sunken text-default transition-colors"
             onClick={() => {
               setOpen(false);
               onView();
@@ -53,7 +53,7 @@ export default function ActionMenu({ onView, onDelete }: ActionMenuProps) {
           </button>
           {onDelete && (
             <button
-              className="flex items-center gap-2 w-full px-4 py-2 hover:bg-slate-100 text-red-600"
+              className="flex items-center gap-2 w-full px-4 py-2 hover:bg-surface-sunken text-destructive transition-colors"
               onClick={() => {
                 setOpen(false);
                 onDelete();

@@ -40,7 +40,7 @@ export function PageGate({ feature, children, title, description, planTier, allo
   // the header/footer during access verification for a cleaner, premium user experience.
   if (plan.isLoading) {
     return (
-      <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center overflow-hidden bg-[#fafcff]">
+      <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center overflow-hidden bg-surface-sunken">
         {/* Decorative background elements matching the restricted card screen */}
         <div className="bg-primary/5 pointer-events-none absolute top-0 right-0 h-96 w-96 translate-x-1/3 -translate-y-1/2 rounded-full blur-[100px]" />
         <div className="pointer-events-none absolute bottom-0 left-0 h-80 w-80 -translate-x-1/3 translate-y-1/2 rounded-full bg-purple-500/5 blur-[80px]" />
@@ -79,20 +79,20 @@ export function PageGate({ feature, children, title, description, planTier, allo
         }
       : targetTier === "premium"
         ? {
-            icon: "text-[#5a5a6e]",
-            bg: "bg-[#f0f0f0] border-[#c0c0cc]", // cool grey/silver
-          }
+          icon: "text-[#5a5a6e]",
+          bg: "bg-[#f0f0f0] border-[#c0c0cc]", // cool grey/silver
+        }
         : targetTier === "basic"
           ? {
-              icon: "text-[#2d7a7a]",
-              bg: "bg-[#e8f4f4] border-[#a8d4d4]", // teal
-            }
+            icon: "text-[#2d7a7a]",
+            bg: "bg-[#e8f4f4] border-[#a8d4d4]", // teal
+          }
           : {
-              icon: "text-[#6b8097]",
-              bg: "bg-[#f4f7fb] border-[#d0e4f7]",
-            };
+            icon: "text-[#6b8097]",
+            bg: "bg-[#f4f7fb] border-[#d0e4f7]",
+          };
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#fafcff] p-6">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-surface-sunken p-6">
       {showUpgradeModal && (
         <UpgradeModal feature={feature} onClose={() => setShowUpgradeModal(false)} />
       )}
@@ -101,7 +101,7 @@ export function PageGate({ feature, children, title, description, planTier, allo
       <div className="bg-primary/5 pointer-events-none absolute top-0 right-0 h-96 w-96 translate-x-1/3 -translate-y-1/2 rounded-full blur-[100px]" />
       <div className="pointer-events-none absolute bottom-0 left-0 h-80 w-80 -translate-x-1/3 translate-y-1/2 rounded-full bg-purple-500/5 blur-[80px]" />
 
-      <div className="animate-in zoom-in-95 relative z-10 w-full max-w-md rounded-[24px] border border-[#d0e4f7] bg-white p-8 text-center shadow-[0_20px_40px_rgba(12,27,51,0.05)] duration-500">
+      <div className="animate-in zoom-in-95 relative z-10 w-full max-w-md rounded-[24px] border border-line bg-surface-raised p-8 text-center shadow-lg duration-500">
         <div className="mb-6 flex justify-center">
           <div
             className={`flex h-16 w-16 items-center justify-center rounded-2xl border ${tierColors.bg}`}
@@ -114,37 +114,37 @@ export function PageGate({ feature, children, title, description, planTier, allo
           </div>
         </div>
 
-        <div className="mb-4 inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-bold tracking-widest text-slate-500 uppercase shadow-sm">
+        <div className="mb-4 inline-flex items-center gap-1.5 rounded-full border border-line bg-surface-sunken px-3 py-1 text-[11px] font-bold tracking-widest text-subtle uppercase shadow-sm">
           <Lock size={12} strokeWidth={2.5} />
           <span>Premium Feature</span>
         </div>
 
-        <h1 className="mb-3 text-2xl leading-tight font-black text-[#0c1b33]">
+        <h1 className="mb-3 text-2xl leading-tight font-black text-strong">
           {title || "Included With Your Plan Upgrade"}
         </h1>
 
-        <p className="mb-6 text-[14px] leading-relaxed text-[#6b8097]">
+        <p className="mb-6 text-[14px] leading-relaxed text-subtle">
           {description ||
             (canBuyAddon
               ? "Upgrading your plan is the recommended way to unlock this tool — along with your full journey toolkit. Prefer just this one? A one-time add-on is also available."
               : "Upgrading your plan unlocks this tool along with your full journey toolkit — the recommended way to get more from Rahvana.")}
         </p>
 
-        {!creditUnlock && <p className="mb-6 text-[12px] text-[#9aa5b1]">{hint}</p>}
+        {!creditUnlock && <p className="mb-6 text-[12px] text-faint">{hint}</p>}
 
         <div className="flex flex-col gap-3">
           {creditUnlock ? (
             <>
               <button
                 onClick={creditUnlock.onUnlock}
-                className="group flex w-full items-center justify-center gap-2 rounded-xl bg-[#0d7377] py-3.5 text-[14px] font-bold text-white shadow-md transition-all hover:bg-[#0a5c5f]"
+                className="group flex w-full items-center justify-center gap-2 rounded-xl bg-brand text-brand-contrast py-3.5 text-[14px] font-bold shadow-md transition-all hover:bg-brand/90"
               >
                 Unlock with {creditUnlock.credits} Credits
                 <Coins size={16} strokeWidth={2.5} className="transition-transform group-hover:scale-110" />
               </button>
               <button
                 onClick={() => setShowUpgradeModal(true)}
-                className="w-full rounded-xl border border-[#d0e4f7] bg-white py-3.5 text-[14px] font-bold text-[#0c1b33] transition-colors hover:bg-[#f4f7fb]"
+                className="w-full rounded-xl border border-line bg-surface-raised py-3.5 text-[14px] font-bold text-strong transition-colors hover:bg-surface-sunken"
               >
                 Or upgrade your plan
               </button>
@@ -169,7 +169,7 @@ export function PageGate({ feature, children, title, description, planTier, allo
 
           <button
             onClick={() => router.back()}
-            className="w-full rounded-xl border border-transparent py-3.5 text-[14px] font-bold text-[#6b8097] transition-colors hover:border-[#d0e4f7] hover:bg-[#f4f7fb] hover:text-[#0c1b33]"
+            className="w-full rounded-xl border border-transparent py-3.5 text-[14px] font-bold text-subtle transition-colors hover:border-line hover:bg-surface-sunken hover:text-strong"
           >
             ← Back
           </button>

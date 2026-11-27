@@ -45,7 +45,7 @@ export function ConfirmationModal({
 
           <div className="relative z-10 space-y-3">
             {/* Title */}
-            <DialogTitle className="text-2xl font-bold text-slate-900">{title}</DialogTitle>
+            <DialogTitle className="text-2xl font-bold text-strong">{title}</DialogTitle>
 
             {/* Description */}
             <DialogDescription className="text-muted-foreground">{description}</DialogDescription>
@@ -60,7 +60,7 @@ export function ConfirmationModal({
                     onOpenChange(false);
                   }
                 }}
-                className="px-6 py-3 rounded-lg border border-slate-300 bg-white text-slate-700 font-medium hover:bg-slate-50 transition cursor-pointer"
+                className="px-6 py-3 rounded-lg border border-line bg-surface-raised text-default font-medium hover:bg-surface-sunken transition cursor-pointer"
                 disabled={loading}
               >
                 {cancelText}
