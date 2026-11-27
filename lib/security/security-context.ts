@@ -46,12 +46,17 @@ export function getRequestDevice(request: Request | NextRequest): RequestDevice 
 
 export async function getSecurityContext(
   supabase: SupabaseClient,
-  request: Request | NextRequest
+  request: Request | NextRequest,
+  verifiedUser?: User
 ): Promise<SecurityContext | null> {
-  // Verify the caller before using any JWT claim.
-  const { data: userData, error: userError } = await supabase.auth.getUser();
-  if (userError && (userError.status ?? 0) >= 500) throw userError;
-  if (userError || !userData.user) return null;
+  let user = verifiedUser;
+  if (!user) {
+    // Verify the caller before using any JWT claim.
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError && (userError.status ?? 0) >= 500) throw userError;
+    if (userError || !userData.user) return null;
+    user = userData.user;
+  }
 
   const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
   if (sessionError) throw sessionError;
@@ -69,7 +74,7 @@ export async function getSecurityContext(
     session_id?: unknown;
   };
 
-  if (claims.sub !== userData.user.id) {
+  if (claims.sub !== user.id) {
     throw new Error("Authenticated session claims are invalid.");
   }
   
@@ -88,7 +93,7 @@ export async function getSecurityContext(
 
   return {
     supabase,
-    user: userData.user,
+    user,
     session,
     sessionId,
     device: getRequestDevice(request),
