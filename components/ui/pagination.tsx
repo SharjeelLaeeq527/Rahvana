@@ -45,8 +45,8 @@ const Pagination: React.FC<PaginationProps> = ({
         disabled={currentPage === 1}
         className={`flex items-center cursor-pointer gap-2 px-3 py-2 text-sm font-medium rounded-lg border order-1 sm:order-0 ${
           currentPage === 1
-            ? "text-gray-400 bg-gray-50 border-gray-200 cursor-not-allowed"
-            : "text-gray-700 bg-white border-gray-300 hover:bg-gray-50"
+            ? "text-faint bg-surface-sunken border-line cursor-not-allowed"
+            : "text-default bg-surface-raised border-line hover:bg-surface-sunken hover:text-strong"
         }`}
       >
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -70,10 +70,10 @@ const Pagination: React.FC<PaginationProps> = ({
             disabled={page === "..."}
             className={`min-w-8 h-8 flex items-center justify-center text-sm font-medium rounded-lg ${
               page === currentPage
-                ? "bg-gray-50 text-gray-900 border border-gray-300"
+                ? "bg-surface-sunken text-strong border border-line-strong"
                 : page === "..."
-                  ? "text-gray-400 cursor-default"
-                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                  ? "text-faint cursor-default"
+                  : "text-subtle hover:text-strong hover:bg-surface-sunken"
             }`}
           >
             {page}
@@ -87,8 +87,8 @@ const Pagination: React.FC<PaginationProps> = ({
         disabled={currentPage === totalPages}
         className={`flex items-center cursor-pointer gap-2 px-3 py-2 text-sm font-medium rounded-lg border order-3 sm:order-0 ${
           currentPage === totalPages
-            ? "text-gray-400 bg-gray-50 border-gray-200 cursor-not-allowed"
-            : "text-gray-700 bg-white border-gray-300 hover:bg-gray-50"
+            ? "text-faint bg-surface-sunken border-line cursor-not-allowed"
+            : "text-default bg-surface-raised border-line hover:bg-surface-sunken hover:text-strong"
         }`}
       >
         Next

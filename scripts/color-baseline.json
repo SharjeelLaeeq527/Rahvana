@@ -25,7 +25,7 @@
   "app/(main)/test-option-b": 39,
   "app/(main)/user-dashboard": 38,
   "app/(main)/user-dashboard-v2": 130,
-  "app/(main)/wallet/transactions": 91,
+  "app/(main)/wallet/transactions": 92,
   "app/(tools)/(courier-registration)/courier-registration": 59,
   "app/(tools)/(courier-registration)/view-security-questions": 24,
   "app/(tools)/(visa)/221g-action-planner": 3,
@@ -43,7 +43,7 @@
   "app/(tools)/document-translation": 2,
   "app/(tools)/document-translation/my-requests": 18,
   "app/(tools)/document-translation/request/[id]": 43,
-  "app/(tools)/document-vault": 175,
+  "app/(tools)/document-vault": 173,
   "app/(tools)/document-vault/guide": 43,
   "app/(tools)/guides": 4,
   "app/(tools)/guides/adoptive-parent-guide": 82,
@@ -131,7 +131,7 @@
   "app/components/journey-spouse": 2195,
   "app/components/journey-spouse/components": 2510,
   "app/components/journey-v3/components": 162,
-  "app/components/layout": 261,
+  "app/components/layout": 258,
   "app/components/pdf-editor": 42,
   "app/components/pdf-editor/pages": 9,
   "app/components/pdf-editor/shapes": 37,
@@ -156,5 +156,5 @@
   "components/services": 24,
   "components/tools": 1189,
   "components/tools/layout": 88,
-  "components/ui": 37
+  "components/ui": 12
 }

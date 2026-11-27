@@ -37,7 +37,11 @@ html {
       radial-gradient(ellipse at 0% 100%, rgba(13, 115, 119, 0.1), transparent 52%),
       linear-gradient(135deg, transparent 0 47%, rgba(13, 115, 119, 0.08) 48%, transparent 49%),
       linear-gradient(45deg, transparent 0 47%, rgba(13, 115, 119, 0.055) 48%, transparent 49%);
-    background-size: auto, auto, 32px 32px, 32px 32px;
+    background-size:
+      auto,
+      auto,
+      32px 32px,
+      32px 32px;
   }
 
   .dark .mobile-bottom-nav {
@@ -46,7 +50,11 @@ html {
       radial-gradient(ellipse at 0% 100%, rgba(45, 212, 191, 0.12), transparent 52%),
       linear-gradient(135deg, transparent 0 47%, rgba(45, 212, 191, 0.09) 48%, transparent 49%),
       linear-gradient(45deg, transparent 0 47%, rgba(45, 212, 191, 0.06) 48%, transparent 49%);
-    background-size: auto, auto, 32px 32px, 32px 32px;
+    background-size:
+      auto,
+      auto,
+      32px 32px,
+      32px 32px;
   }
 }
 
@@ -236,7 +244,8 @@ html {
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: #0d9488;
+  --primary: #0d7377;
+  /* --primary: #0d9488; */
   /* --primary: #d884ae; */
   /* refined brand: blue-teal */
   /* --primary: oklch(0.58 0.16 230); refined brand: blue-teal */

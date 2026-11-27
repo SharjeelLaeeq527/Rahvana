@@ -66,7 +66,7 @@ const AccordionItem = ({
   return (
     <div
       data-state={isOpen ? "open" : "closed"}
-      className={cn("border-b border-slate-200", className)}
+      className={cn("border-b border-line", className)}
     >
       {React.Children.map(children, (child) => {
         if (React.isValidElement(child)) {

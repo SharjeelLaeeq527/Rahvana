@@ -95,11 +95,11 @@ export const Compare = ({
       </div>
       {showHandlebar && (
         <div
-          className="absolute inset-y-0 z-30 w-0.5 bg-white shadow-lg pointer-events-none"
+          className="absolute inset-y-0 z-30 w-0.5 bg-surface-raised shadow-lg pointer-events-none"
           style={{ left: `${sliderPercentage}%` }}
         >
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white shadow-xl flex items-center justify-center">
-            <Sparkles className="w-4 h-4 text-[#0d7377]" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-surface-raised shadow-xl flex items-center justify-center">
+            <Sparkles className="w-4 h-4 text-brand" />
           </div>
         </div>
       )}
