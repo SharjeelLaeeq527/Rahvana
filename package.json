@@ -78,7 +78,7 @@
     "libreoffice-convert": "^1.7.0",
     "lucide-react": "^0.545.0",
     "mammoth": "^1.11.0",
-    "markdown-it": "^14.1.0",
+    "markdown-it": "^15.0.3",
     "motion": "^12.38.0",
     "multer": "^2.0.2",
     "next": "^15.5.23",
