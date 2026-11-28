@@ -30,6 +30,7 @@ import { MFACodeModal } from "@/app/components/shared/MFACodeModal";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { validateStrongPassword } from "@/lib/security/password";
 import SurveyModal from "@/app/components/SurveyModal";
+import { SecuritySessionsPanel } from "@/app/components/settings/SecuritySessionsPanel";
 
 export default function SettingsPage() {
   const { t } = useLanguage();
@@ -55,7 +56,7 @@ export default function SettingsPage() {
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [deleteAccountModalOpen, setDeleteAccountModalOpen] = useState(false);
-  const [confirmSignOutOpen, setConfirmSignOutOpen] = useState(false);
+  // const [confirmSignOutOpen, setConfirmSignOutOpen] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -291,12 +292,65 @@ export default function SettingsPage() {
           aria-hidden="true"
         >
           {/* Security Perimeter Rings */}
-          <circle cx="580" cy="520" r="370" fill="none" stroke="currentColor" strokeWidth="5" strokeDasharray="16 12" opacity="0.6" />
-          <circle cx="580" cy="520" r="290" fill="none" stroke="currentColor" strokeWidth="2.5" opacity="0.45" />
-          <circle cx="580" cy="520" r="210" fill="none" stroke="currentColor" strokeWidth="3" strokeDasharray="8 8" opacity="0.5" />
-          <line x1="580" y1="120" x2="580" y2="155" stroke="currentColor" strokeWidth="7" strokeLinecap="round" opacity="0.6" />
-          <line x1="970" y1="520" x2="935" y2="520" stroke="currentColor" strokeWidth="7" strokeLinecap="round" opacity="0.6" />
-          <line x1="190" y1="520" x2="225" y2="520" stroke="currentColor" strokeWidth="7" strokeLinecap="round" opacity="0.6" />
+          <circle
+            cx="580"
+            cy="520"
+            r="370"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="5"
+            strokeDasharray="16 12"
+            opacity="0.6"
+          />
+          <circle
+            cx="580"
+            cy="520"
+            r="290"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            opacity="0.45"
+          />
+          <circle
+            cx="580"
+            cy="520"
+            r="210"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="3"
+            strokeDasharray="8 8"
+            opacity="0.5"
+          />
+          <line
+            x1="580"
+            y1="120"
+            x2="580"
+            y2="155"
+            stroke="currentColor"
+            strokeWidth="7"
+            strokeLinecap="round"
+            opacity="0.6"
+          />
+          <line
+            x1="970"
+            y1="520"
+            x2="935"
+            y2="520"
+            stroke="currentColor"
+            strokeWidth="7"
+            strokeLinecap="round"
+            opacity="0.6"
+          />
+          <line
+            x1="190"
+            y1="520"
+            x2="225"
+            y2="520"
+            stroke="currentColor"
+            strokeWidth="7"
+            strokeLinecap="round"
+            opacity="0.6"
+          />
 
           {/* Security Shield Crest Aura */}
           <path
@@ -323,7 +377,15 @@ export default function SettingsPage() {
           {/* Verified Security Badge */}
           <g transform="translate(210, 610)" opacity="0.7">
             <circle cx="36" cy="36" r="32" fill="none" stroke="currentColor" strokeWidth="5" />
-            <circle cx="36" cy="36" r="22" fill="none" stroke="currentColor" strokeWidth="2.5" strokeDasharray="6 6" />
+            <circle
+              cx="36"
+              cy="36"
+              r="22"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeDasharray="6 6"
+            />
             <polyline
               points="24,36 32,44 48,26"
               fill="none"
@@ -368,7 +430,7 @@ export default function SettingsPage() {
           <div className="absolute bottom-0 left-1/3 h-[380px] w-[380px] rounded-full bg-[#0d7377]/5 blur-[130px]" />
         </div>
 
-        <div className="site-main-px relative z-20 pt-6 sm:pt-8 pb-24 mx-auto max-w-[1100px] space-y-6">
+        <div className="site-main-px relative z-20 mx-auto max-w-[1100px] space-y-6 pt-6 pb-24 sm:pt-8">
           {/* TOP SUMMARY CARDS */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {/* Signed In As */}
@@ -378,9 +440,7 @@ export default function SettingsPage() {
                   <p className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">
                     Signed in as
                   </p>
-                  <p className="mt-1 truncate text-base font-bold text-slate-900">
-                    {user.email}
-                  </p>
+                  <p className="mt-1 truncate text-base font-bold text-slate-900">{user.email}</p>
                   <p className="mt-3.5 text-[11px] font-medium text-slate-500">
                     Active personal account
                   </p>
@@ -402,7 +462,7 @@ export default function SettingsPage() {
                     {profile?.mfa_enabled ? "2FA is Enabled" : "2FA is Disabled"}
                   </p>
                   <p className="mt-3.5 flex items-center gap-1.5 text-[11px] font-medium text-slate-500">
-                    <Info className="h-3.5 w-3.5 text-[#0d7377] shrink-0" />
+                    <Info className="h-3.5 w-3.5 shrink-0 text-[#0d7377]" />
                     <span className="truncate">
                       {profile?.mfa_enabled
                         ? "Account protected with two-factor authentication"
@@ -423,15 +483,13 @@ export default function SettingsPage() {
               <h2 className="text-xs font-bold tracking-wider text-slate-500 uppercase">
                 Security &amp; Access
               </h2>
-              <span className="text-xs font-semibold text-[#0d7377]">
-                High Privacy Tier
-              </span>
+              <span className="text-xs font-semibold text-[#0d7377]">High Privacy Tier</span>
             </div>
 
-            <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_4px_24px_rgba(15,61,63,0.04)] divide-y divide-slate-100">
+            <div className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_4px_24px_rgba(15,61,63,0.04)]">
               {/* Two-Factor Authentication (2FA) */}
               <div className="p-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                   <div className="flex items-start gap-4">
                     <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#e8f6f6] text-[#0d7377]">
                       <ShieldCheck className="h-5 w-5" />
@@ -444,20 +502,21 @@ export default function SettingsPage() {
                         <span
                           className={`rounded-full px-2.5 py-0.5 text-[10.5px] font-semibold ${
                             profile?.mfa_enabled
-                              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                              : "bg-slate-100 text-slate-600 border border-slate-200"
+                              ? "border border-emerald-200 bg-emerald-50 text-emerald-700"
+                              : "border border-slate-200 bg-slate-100 text-slate-600"
                           }`}
                         >
                           {profile?.mfa_enabled ? "Enabled" : "Not enabled yet"}
                         </span>
                       </div>
-                      <p className="mt-1 max-w-xl text-xs sm:text-sm text-slate-500 leading-relaxed">
-                        Add an extra layer of security to your account. You will enter a quick verification code whenever you sign in from a new device.
+                      <p className="mt-1 max-w-xl text-xs leading-relaxed text-slate-500 sm:text-sm">
+                        Add an extra layer of security to your account. You will enter a quick
+                        verification code whenever you sign in from a new device.
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 shrink-0 pt-2 sm:pt-0">
+                  <div className="flex shrink-0 items-center justify-between gap-2 pt-2 sm:flex-col sm:items-end sm:justify-center sm:pt-0">
                     <Switch
                       id="two-factor"
                       checked={!!profile?.mfa_enabled}
@@ -467,7 +526,7 @@ export default function SettingsPage() {
                     <button
                       type="button"
                       onClick={() => router.push("/mfa-setup")}
-                      className="text-xs font-semibold text-[#0d7377] hover:text-[#0A4F49] hover:underline transition-colors"
+                      className="text-xs font-semibold text-[#0d7377] transition-colors hover:text-[#0A4F49] hover:underline"
                     >
                       {profile?.mfa_enabled ? "Manage 2FA" : "Set Up 2FA"}
                     </button>
@@ -490,7 +549,7 @@ export default function SettingsPage() {
                       </div>
                       <div>
                         <h3 className="text-base font-bold text-slate-900">Change Password</h3>
-                        <p className="mt-1 text-xs sm:text-sm text-slate-500">
+                        <p className="mt-1 text-xs text-slate-500 sm:text-sm">
                           Change your password regularly to keep your account safe and secure.
                         </p>
                       </div>
@@ -507,7 +566,10 @@ export default function SettingsPage() {
                       <form onSubmit={handlePasswordChange} className="space-y-4">
                         {/* Current Password Field */}
                         <div className="space-y-1.5">
-                          <Label htmlFor="current-password" className="text-xs font-bold text-slate-700">
+                          <Label
+                            htmlFor="current-password"
+                            className="text-xs font-bold text-slate-700"
+                          >
                             Current Password
                           </Label>
                           <div className="relative">
@@ -516,7 +578,10 @@ export default function SettingsPage() {
                               type={showCurrentPassword ? "text" : "password"}
                               value={passwordForm.currentPassword}
                               onChange={(e) =>
-                                setPasswordForm((prev) => ({ ...prev, currentPassword: e.target.value }))
+                                setPasswordForm((prev) => ({
+                                  ...prev,
+                                  currentPassword: e.target.value,
+                                }))
                               }
                               placeholder="Enter current password"
                               autoComplete="current-password"
@@ -526,18 +591,25 @@ export default function SettingsPage() {
                             <button
                               type="button"
                               onClick={() => setShowCurrentPassword((prev) => !prev)}
-                              className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 hover:text-slate-600 transition-colors"
+                              className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 transition-colors hover:text-slate-600"
                               aria-label={showCurrentPassword ? "Hide password" : "Show password"}
                             >
-                              {showCurrentPassword ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                              {showCurrentPassword ? (
+                                <Eye className="h-4 w-4" />
+                              ) : (
+                                <EyeOff className="h-4 w-4" />
+                              )}
                             </button>
                           </div>
                         </div>
 
                         {/* New Password & Confirm Password */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                           <div className="space-y-1.5">
-                            <Label htmlFor="new-password" className="text-xs font-bold text-slate-700">
+                            <Label
+                              htmlFor="new-password"
+                              className="text-xs font-bold text-slate-700"
+                            >
                               New Password
                             </Label>
                             <div className="relative">
@@ -546,7 +618,10 @@ export default function SettingsPage() {
                                 type={showNewPassword ? "text" : "password"}
                                 value={passwordForm.newPassword}
                                 onChange={(e) =>
-                                  setPasswordForm((prev) => ({ ...prev, newPassword: e.target.value }))
+                                  setPasswordForm((prev) => ({
+                                    ...prev,
+                                    newPassword: e.target.value,
+                                  }))
                                 }
                                 placeholder="Min. 8 characters"
                                 autoComplete="new-password"
@@ -556,16 +631,23 @@ export default function SettingsPage() {
                               <button
                                 type="button"
                                 onClick={() => setShowNewPassword((prev) => !prev)}
-                                className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 hover:text-slate-600 transition-colors"
+                                className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 transition-colors hover:text-slate-600"
                                 aria-label={showNewPassword ? "Hide password" : "Show password"}
                               >
-                                {showNewPassword ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                                {showNewPassword ? (
+                                  <Eye className="h-4 w-4" />
+                                ) : (
+                                  <EyeOff className="h-4 w-4" />
+                                )}
                               </button>
                             </div>
                           </div>
 
                           <div className="space-y-1.5">
-                            <Label htmlFor="confirm-password" className="text-xs font-bold text-slate-700">
+                            <Label
+                              htmlFor="confirm-password"
+                              className="text-xs font-bold text-slate-700"
+                            >
                               Confirm Password
                             </Label>
                             <div className="relative">
@@ -574,7 +656,10 @@ export default function SettingsPage() {
                                 type={showConfirmPassword ? "text" : "password"}
                                 value={passwordForm.confirmPassword}
                                 onChange={(e) =>
-                                  setPasswordForm((prev) => ({ ...prev, confirmPassword: e.target.value }))
+                                  setPasswordForm((prev) => ({
+                                    ...prev,
+                                    confirmPassword: e.target.value,
+                                  }))
                                 }
                                 placeholder="Re-enter password"
                                 autoComplete="new-password"
@@ -584,20 +669,25 @@ export default function SettingsPage() {
                               <button
                                 type="button"
                                 onClick={() => setShowConfirmPassword((prev) => !prev)}
-                                className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 hover:text-slate-600 transition-colors"
+                                className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 transition-colors hover:text-slate-600"
                                 aria-label={showConfirmPassword ? "Hide password" : "Show password"}
                               >
-                                {showConfirmPassword ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                                {showConfirmPassword ? (
+                                  <Eye className="h-4 w-4" />
+                                ) : (
+                                  <EyeOff className="h-4 w-4" />
+                                )}
                               </button>
                             </div>
                           </div>
                         </div>
 
                         {/* Hint Box */}
-                        <div className="rounded-xl border border-[#0d7377]/15 bg-[#e8f6f6]/60 p-3 flex items-start gap-2.5 text-xs text-slate-600">
-                          <CheckCircle2 className="h-4 w-4 text-[#0d7377] shrink-0 mt-0.5" />
+                        <div className="flex items-start gap-2.5 rounded-xl border border-[#0d7377]/15 bg-[#e8f6f6]/60 p-3 text-xs text-slate-600">
+                          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#0d7377]" />
                           <span>
-                            Must be at least 8 characters long, containing at least one uppercase letter and one special symbol.
+                            Must be at least 8 characters long, containing at least one uppercase
+                            letter and one special symbol.
                           </span>
                         </div>
 
@@ -606,7 +696,7 @@ export default function SettingsPage() {
                           <Button
                             type="submit"
                             disabled={isPasswordSaving}
-                            className="h-10 rounded-xl bg-[#0A4F49] hover:bg-[#073b37] px-5 text-xs font-bold text-white shadow-sm transition-all hover:shadow"
+                            className="h-10 rounded-xl bg-[#0A4F49] px-5 text-xs font-bold text-white shadow-sm transition-all hover:bg-[#073b37] hover:shadow"
                           >
                             {isPasswordSaving ? (
                               <>
@@ -621,9 +711,13 @@ export default function SettingsPage() {
                             type="button"
                             onClick={() => {
                               setIsPasswordOpen(false);
-                              setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+                              setPasswordForm({
+                                currentPassword: "",
+                                newPassword: "",
+                                confirmPassword: "",
+                              });
                             }}
-                            className="px-3 py-2 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors"
+                            className="px-3 py-2 text-xs font-semibold text-slate-500 transition-colors hover:text-slate-800"
                           >
                             Cancel
                           </button>
@@ -644,15 +738,17 @@ export default function SettingsPage() {
               </h2>
             </div>
 
-            <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_4px_24px_rgba(15,61,63,0.04)]">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <SecuritySessionsPanel />
+
+            {/* <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_4px_24px_rgba(15,61,63,0.04)]">
+              <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                 <div className="flex items-start gap-4">
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#e8f6f6] text-[#0d7377]">
                     <LogOut className="h-5 w-5" />
                   </div>
                   <div>
                     <h3 className="text-base font-bold text-slate-900">Sign Out</h3>
-                    <p className="mt-1 text-xs sm:text-sm text-slate-500">
+                    <p className="mt-1 text-xs text-slate-500 sm:text-sm">
                       Sign out of your account on this browser, or log out from all devices at once.
                     </p>
                   </div>
@@ -661,13 +757,13 @@ export default function SettingsPage() {
                 <button
                   type="button"
                   onClick={() => setConfirmSignOutOpen(true)}
-                  className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#f1f5f9] hover:bg-[#e2e8f0] px-4 py-2.5 text-xs font-bold text-[#0d7377] transition-colors shrink-0"
+                  className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-[#f1f5f9] px-4 py-2.5 text-xs font-bold text-[#0d7377] transition-colors hover:bg-[#e2e8f0]"
                 >
                   <span>Sign Out</span>
                   <ChevronRight className="h-3.5 w-3.5" />
                 </button>
               </div>
-            </div>
+            </div> */}
           </section>
 
           {/* DANGER ZONE */}
@@ -679,15 +775,16 @@ export default function SettingsPage() {
             </div>
 
             <div className="overflow-hidden rounded-2xl border border-rose-200/80 bg-white p-6 shadow-[0_4px_24px_rgba(244,63,94,0.04)]">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                 <div className="flex items-start gap-4">
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-500">
                     <Trash2 className="h-5 w-5" />
                   </div>
                   <div>
                     <h3 className="text-base font-bold text-slate-900">Delete Account</h3>
-                    <p className="mt-1 text-xs sm:text-sm text-slate-500">
-                      Permanently delete your account, saved documents, and application history. This cannot be undone.
+                    <p className="mt-1 text-xs text-slate-500 sm:text-sm">
+                      Permanently delete your account, saved documents, and application history.
+                      This cannot be undone.
                     </p>
                   </div>
                 </div>
@@ -696,7 +793,7 @@ export default function SettingsPage() {
                   type="button"
                   onClick={() => setIsSurveyOpen(true)}
                   disabled={isDeletingAccount}
-                  className="inline-flex items-center justify-center rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-xs font-bold text-rose-600 transition-colors hover:bg-rose-100 disabled:opacity-50 shrink-0"
+                  className="inline-flex shrink-0 items-center justify-center rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-xs font-bold text-rose-600 transition-colors hover:bg-rose-100 disabled:opacity-50"
                 >
                   {isDeletingAccount ? (
                     <>
@@ -742,7 +839,7 @@ export default function SettingsPage() {
         }}
       />
 
-      <ConfirmationModal
+      {/* <ConfirmationModal
         open={confirmSignOutOpen}
         onOpenChange={setConfirmSignOutOpen}
         title="Sign out of all devices?"
@@ -752,7 +849,7 @@ export default function SettingsPage() {
         onConfirm={handleGlobalSignOut}
         loading={isSigningOut}
         confirmVariant="danger"
-      />
+      /> */}
 
       <ConfirmationModal
         open={passwordChangedModalOpen}
@@ -764,8 +861,26 @@ export default function SettingsPage() {
         confirmVariant="primary"
         loading={isSigningOut}
         onConfirm={async () => {
-          setPasswordChangedModalOpen(false);
-          await handleGlobalSignOut();
+          setIsSigningOut(true);
+
+          try {
+            const response = await fetch("/api/auth/signout", {
+              method: "POST",
+            });
+
+            if (!response.ok) {
+              throw new Error("Unable to sign out of all devices.");
+            }
+
+            setPasswordChangedModalOpen(false);
+            router.replace("/login");
+            router.refresh();
+          } catch (error) {
+            console.error("Global sign-out failed:", error);
+            showToast("Unable to sign out of all devices. Please try again.", "error");
+          } finally {
+            setIsSigningOut(false);
+          }
         }}
       />
 
