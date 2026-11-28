@@ -7,7 +7,7 @@ import { triggerTranslationNotification } from "@/lib/notifications";
 import { buildAddonPurchaseUpdate } from "@/lib/payments/addon-purchase-ledger";
 import { cancelSupersededSubscriptions } from "@/lib/stripe/subscriptionCleanup";
 import { provisionCandidateJourneysAndVaults } from "@/lib/candidate/candidateProvisioningService";
-import { getAuthenticatedUser } from "@/lib/api/authGuards";
+import { requireActiveSessionForRequest } from "@/lib/security/session-guard";
 import {
   WALLET_TOPUP_PRODUCT_TYPE,
   WALLET_DEFAULT_RETURN_PATH,
@@ -45,6 +45,9 @@ const TIER_RANK: Record<string, number> = { free: 0, basic: 1, premium: 2, execu
  */
 
 export async function GET(request: NextRequest) {
+  const sessionGuard = await requireActiveSessionForRequest(request);
+  if (!sessionGuard.ok) return sessionGuard.response;
+
   const sessionId = request.nextUrl.searchParams.get("session_id");
 
   if (!sessionId) {
@@ -67,6 +70,9 @@ export async function GET(request: NextRequest) {
         { activated: false, error: "Invalid session metadata" },
         { status: 400 }
       );
+    }
+    if (userId !== sessionGuard.context.user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     // Confirm payment is complete
@@ -483,10 +489,6 @@ export async function GET(request: NextRequest) {
     // owner-only) credit, but only the signed-in owner sees the amount, balance and
     // tier. Other purchase types keep their existing response.
     if (walletTopup) {
-      const viewer = await getAuthenticatedUser().catch(() => null);
-      if (viewer?.id !== userId) {
-        return NextResponse.json({ activated, productType });
-      }
       return NextResponse.json({ activated, tier: appliedTier, productType, ...walletTopup });
     }
 
