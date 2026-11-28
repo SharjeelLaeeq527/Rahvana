@@ -39,6 +39,7 @@ import {
 import { UNKNOWN_VISA_CATEGORY } from "@/lib/candidate/visaCategory";
 import { journeyService } from "@/lib/journey/service";
 import { hasJourneyConfig, journeyConfigPathFor } from "@/lib/journey/journeyConfig";
+import { requireActiveSession } from "@/lib/security/session-guard";
 
 const RELATIONS: ReadonlySet<CandidateRelation> = new Set([
   "Mother",
@@ -121,15 +122,9 @@ export async function POST(request: Request) {
   try {
     const supabase = await createClient();
 
-    // 1. Authenticate user
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
-    }
+    const sessionGuard = await requireActiveSession(supabase, request);
+    if (!sessionGuard.ok) return sessionGuard.response;
+    const { user } = sessionGuard.context;
 
     const body = (await request.json().catch(() => ({}))) as {
       action?: unknown;
